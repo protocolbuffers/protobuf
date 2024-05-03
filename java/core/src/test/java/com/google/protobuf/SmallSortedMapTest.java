@@ -1,35 +1,17 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
+import static java.lang.Math.min;
+
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,293 +20,250 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-/**
- * @author darick@google.com Darick Tong
- */
-public class SmallSortedMapTest extends TestCase {
-  // java.util.AbstractMap.SimpleEntry is private in JDK 1.5. We re-implement it
-  // here for JDK 1.5 users.
-  private static class SimpleEntry<K, V> implements Map.Entry<K, V> {
-    private final K key;
-    private V value;
+@RunWith(JUnit4.class)
+public class SmallSortedMapTest {
 
-    SimpleEntry(K key, V value) {
-      this.key = key;
-      this.value = value;
-    }
-
-    @Override
-    public K getKey() {
-      return key;
-    }
-
-    @Override
-    public V getValue() {
-      return value;
-    }
-
-    @Override
-    public V setValue(V value) {
-      V oldValue = this.value;
-      this.value = value;
-      return oldValue;
-    }
-
-    private static boolean eq(Object o1, Object o2) {
-      return o1 == null ? o2 == null : o1.equals(o2);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (!(o instanceof Map.Entry))
-        return false;
-      Map.Entry e = (Map.Entry) o;
-      return eq(key, e.getKey()) && eq(value, e.getValue());
-    }
-
-    @Override
-    public int hashCode() {
-      return ((key == null) ? 0 : key.hashCode()) ^
-          ((value == null) ? 0 : value.hashCode());
-    }
-  }
-
+  @Test
   public void testPutAndGetArrayEntriesOnly() {
     runPutAndGetTest(3);
   }
 
+  @Test
   public void testPutAndGetOverflowEntries() {
     runPutAndGetTest(6);
   }
 
   private void runPutAndGetTest(int numElements) {
     // Test with even and odd arraySize
-    SmallSortedMap<Integer, Integer> map1 =
-        SmallSortedMap.newInstanceForTest(3);
-    SmallSortedMap<Integer, Integer> map2 =
-        SmallSortedMap.newInstanceForTest(4);
-    SmallSortedMap<Integer, Integer> map3 =
-        SmallSortedMap.newInstanceForTest(3);
-    SmallSortedMap<Integer, Integer> map4 =
-        SmallSortedMap.newInstanceForTest(4);
+    SmallSortedMap<Integer, Integer> map1 = SmallSortedMap.newInstanceForTest(3);
+    SmallSortedMap<Integer, Integer> map2 = SmallSortedMap.newInstanceForTest(4);
+    SmallSortedMap<Integer, Integer> map3 = SmallSortedMap.newInstanceForTest(3);
+    SmallSortedMap<Integer, Integer> map4 = SmallSortedMap.newInstanceForTest(4);
 
     // Test with puts in ascending order.
     for (int i = 0; i < numElements; i++) {
-      assertNull(map1.put(i, i + 1));
-      assertNull(map2.put(i, i + 1));
+      assertThat(map1.put(i, i + 1)).isNull();
+      assertThat(map2.put(i, i + 1)).isNull();
     }
     // Test with puts in descending order.
     for (int i = numElements - 1; i >= 0; i--) {
-      assertNull(map3.put(i, i + 1));
-      assertNull(map4.put(i, i + 1));
+      assertThat(map3.put(i, i + 1)).isNull();
+      assertThat(map4.put(i, i + 1)).isNull();
     }
 
-    assertEquals(Math.min(3, numElements), map1.getNumArrayEntries());
-    assertEquals(Math.min(4, numElements), map2.getNumArrayEntries());
-    assertEquals(Math.min(3, numElements), map3.getNumArrayEntries());
-    assertEquals(Math.min(4, numElements), map4.getNumArrayEntries());
+    assertThat(map1.getNumArrayEntries()).isEqualTo(min(3, numElements));
+    assertThat(map2.getNumArrayEntries()).isEqualTo(min(4, numElements));
+    assertThat(map3.getNumArrayEntries()).isEqualTo(min(3, numElements));
+    assertThat(map4.getNumArrayEntries()).isEqualTo(min(4, numElements));
 
-    List<SmallSortedMap<Integer, Integer>> allMaps =
-        new ArrayList<SmallSortedMap<Integer, Integer>>();
+    List<SmallSortedMap<Integer, Integer>> allMaps = new ArrayList<>();
     allMaps.add(map1);
     allMaps.add(map2);
     allMaps.add(map3);
     allMaps.add(map4);
 
     for (SmallSortedMap<Integer, Integer> map : allMaps) {
-      assertEquals(numElements, map.size());
+      assertThat(map).hasSize(numElements);
       for (int i = 0; i < numElements; i++) {
-        assertEquals(new Integer(i + 1), map.get(i));
+        assertThat(map).containsEntry(i, Integer.valueOf(i + 1));
       }
     }
 
-    assertEquals(map1, map2);
-    assertEquals(map2, map3);
-    assertEquals(map3, map4);
+    assertThat(map1).isEqualTo(map2);
+    assertThat(map2).isEqualTo(map3);
+    assertThat(map3).isEqualTo(map4);
   }
 
+  @Test
   public void testReplacingPut() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
-      assertNull(map.put(i, i + 1));
-      assertNull(map.remove(i + 1));
+      assertThat(map.put(i, i + 1)).isNull();
+      assertThat(map.remove(i + 1)).isNull();
     }
     for (int i = 0; i < 6; i++) {
-      assertEquals(new Integer(i + 1), map.put(i, i + 2));
+      assertThat(map.put(i, i + 2)).isEqualTo(Integer.valueOf(i + 1));
     }
   }
 
+  @Test
   public void testRemove() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
-      assertNull(map.put(i, i + 1));
-      assertNull(map.remove(i + 1));
+      assertThat(map.put(i, i + 1)).isNull();
+      assertThat(map.remove(i + 1)).isNull();
     }
 
-    assertEquals(3, map.getNumArrayEntries());
-    assertEquals(3, map.getNumOverflowEntries());
-    assertEquals(6,  map.size());
-    assertEquals(makeSortedKeySet(0, 1, 2, 3, 4, 5), map.keySet());
+    assertThat(map.getNumArrayEntries()).isEqualTo(3);
+    assertThat(map.getNumOverflowEntries()).isEqualTo(3);
+    assertThat(map).hasSize(6);
+    assertThat(map.keySet()).isEqualTo(makeSortedKeySet(0, 1, 2, 3, 4, 5));
 
-    assertEquals(new Integer(2), map.remove(1));
-    assertEquals(3, map.getNumArrayEntries());
-    assertEquals(2, map.getNumOverflowEntries());
-    assertEquals(5,  map.size());
-    assertEquals(makeSortedKeySet(0, 2, 3, 4, 5), map.keySet());
+    assertThat(map.remove(1)).isEqualTo(Integer.valueOf(2));
+    assertThat(map.getNumArrayEntries()).isEqualTo(3);
+    assertThat(map.getNumOverflowEntries()).isEqualTo(2);
+    assertThat(map).hasSize(5);
+    assertThat(map.keySet()).isEqualTo(makeSortedKeySet(0, 2, 3, 4, 5));
 
-    assertEquals(new Integer(5), map.remove(4));
-    assertEquals(3, map.getNumArrayEntries());
-    assertEquals(1, map.getNumOverflowEntries());
-    assertEquals(4,  map.size());
-    assertEquals(makeSortedKeySet(0, 2, 3, 5), map.keySet());
+    assertThat(map.remove(4)).isEqualTo(Integer.valueOf(5));
+    assertThat(map.getNumArrayEntries()).isEqualTo(3);
+    assertThat(map.getNumOverflowEntries()).isEqualTo(1);
+    assertThat(map).hasSize(4);
+    assertThat(map.keySet()).isEqualTo(makeSortedKeySet(0, 2, 3, 5));
 
-    assertEquals(new Integer(4), map.remove(3));
-    assertEquals(3, map.getNumArrayEntries());
-    assertEquals(0, map.getNumOverflowEntries());
-    assertEquals(3, map.size());
-    assertEquals(makeSortedKeySet(0, 2, 5), map.keySet());
+    assertThat(map.remove(3)).isEqualTo(Integer.valueOf(4));
+    assertThat(map.getNumArrayEntries()).isEqualTo(3);
+    assertThat(map.getNumOverflowEntries()).isEqualTo(0);
+    assertThat(map).hasSize(3);
+    assertThat(map.keySet()).isEqualTo(makeSortedKeySet(0, 2, 5));
 
-    assertNull(map.remove(3));
-    assertEquals(3, map.getNumArrayEntries());
-    assertEquals(0, map.getNumOverflowEntries());
-    assertEquals(3, map.size());
+    assertThat(map.remove(3)).isNull();
+    assertThat(map.getNumArrayEntries()).isEqualTo(3);
+    assertThat(map.getNumOverflowEntries()).isEqualTo(0);
+    assertThat(map).hasSize(3);
 
-    assertEquals(new Integer(1), map.remove(0));
-    assertEquals(2, map.getNumArrayEntries());
-    assertEquals(0, map.getNumOverflowEntries());
-    assertEquals(2, map.size());
+    assertThat(map.remove(0)).isEqualTo(Integer.valueOf(1));
+    assertThat(map.getNumArrayEntries()).isEqualTo(2);
+    assertThat(map.getNumOverflowEntries()).isEqualTo(0);
+    assertThat(map).hasSize(2);
   }
 
+  @Test
   public void testClear() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
-      assertNull(map.put(i, i + 1));
+      assertThat(map.put(i, i + 1)).isNull();
     }
     map.clear();
-    assertEquals(0, map.getNumArrayEntries());
-    assertEquals(0, map.getNumOverflowEntries());
-    assertEquals(0, map.size());
+    assertThat(map.getNumArrayEntries()).isEqualTo(0);
+    assertThat(map.getNumOverflowEntries()).isEqualTo(0);
+    assertThat(map).isEmpty();
   }
 
+  @Test
   public void testGetArrayEntryAndOverflowEntries() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
-      assertNull(map.put(i, i + 1));
+      assertThat(map.put(i, i + 1)).isNull();
     }
-    assertEquals(3, map.getNumArrayEntries());
+    assertThat(map.getNumArrayEntries()).isEqualTo(3);
     for (int i = 0; i < 3; i++) {
       Map.Entry<Integer, Integer> entry = map.getArrayEntryAt(i);
-      assertEquals(new Integer(i), entry.getKey());
-      assertEquals(new Integer(i + 1), entry.getValue());
+      assertThat(entry.getKey()).isEqualTo(Integer.valueOf(i));
+      assertThat(entry.getValue()).isEqualTo(Integer.valueOf(i + 1));
     }
-    Iterator<Map.Entry<Integer, Integer>> it =
-        map.getOverflowEntries().iterator();
+    Iterator<Map.Entry<Integer, Integer>> it = map.getOverflowEntries().iterator();
     for (int i = 3; i < 6; i++) {
-      assertTrue(it.hasNext());
+      assertThat(it.hasNext()).isTrue();
       Map.Entry<Integer, Integer> entry = it.next();
-      assertEquals(new Integer(i), entry.getKey());
-      assertEquals(new Integer(i + 1), entry.getValue());
+      assertThat(entry.getKey()).isEqualTo(Integer.valueOf(i));
+      assertThat(entry.getValue()).isEqualTo(Integer.valueOf(i + 1));
     }
-    assertFalse(it.hasNext());
+    assertThat(it.hasNext()).isFalse();
   }
 
+  @Test
   public void testEntrySetContains() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
-      assertNull(map.put(i, i + 1));
+      assertThat(map.put(i, i + 1)).isNull();
     }
     Set<Map.Entry<Integer, Integer>> entrySet = map.entrySet();
     for (int i = 0; i < 6; i++) {
-      assertTrue(
-          entrySet.contains(new SimpleEntry<Integer, Integer>(i, i + 1)));
-      assertFalse(
-          entrySet.contains(new SimpleEntry<Integer, Integer>(i, i)));
+      assertThat(entrySet).contains(new AbstractMap.SimpleEntry<Integer, Integer>(i, i + 1));
+      assertThat(entrySet).doesNotContain(new AbstractMap.SimpleEntry<Integer, Integer>(i, i));
     }
   }
 
+  @Test
   public void testEntrySetAdd() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     Set<Map.Entry<Integer, Integer>> entrySet = map.entrySet();
     for (int i = 0; i < 6; i++) {
-      Map.Entry<Integer, Integer> entry =
-          new SimpleEntry<Integer, Integer>(i, i + 1);
-      assertTrue(entrySet.add(entry));
-      assertFalse(entrySet.add(entry));
+      Map.Entry<Integer, Integer> entry = new AbstractMap.SimpleEntry<>(i, i + 1);
+      assertThat(entrySet.add(entry)).isTrue();
+      assertThat(entrySet.add(entry)).isFalse();
     }
     for (int i = 0; i < 6; i++) {
-      assertEquals(new Integer(i + 1), map.get(i));
+      assertThat(map).containsEntry(i, Integer.valueOf(i + 1));
     }
-    assertEquals(3, map.getNumArrayEntries());
-    assertEquals(3, map.getNumOverflowEntries());
-    assertEquals(6, map.size());
+    assertThat(map.getNumArrayEntries()).isEqualTo(3);
+    assertThat(map.getNumOverflowEntries()).isEqualTo(3);
+    assertThat(map).hasSize(6);
   }
 
+  @Test
   public void testEntrySetRemove() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     Set<Map.Entry<Integer, Integer>> entrySet = map.entrySet();
     for (int i = 0; i < 6; i++) {
-      assertNull(map.put(i, i + 1));
+      assertThat(map.put(i, i + 1)).isNull();
     }
     for (int i = 0; i < 6; i++) {
-      Map.Entry<Integer, Integer> entry =
-          new SimpleEntry<Integer, Integer>(i, i + 1);
-      assertTrue(entrySet.remove(entry));
-      assertFalse(entrySet.remove(entry));
+      Map.Entry<Integer, Integer> entry = new AbstractMap.SimpleEntry<>(i, i + 1);
+      assertThat(entrySet.remove(entry)).isTrue();
+      assertThat(entrySet.remove(entry)).isFalse();
     }
-    assertTrue(map.isEmpty());
-    assertEquals(0, map.getNumArrayEntries());
-    assertEquals(0, map.getNumOverflowEntries());
-    assertEquals(0, map.size());
+    assertThat(map).isEmpty();
+    assertThat(map.getNumArrayEntries()).isEqualTo(0);
+    assertThat(map.getNumOverflowEntries()).isEqualTo(0);
+    assertThat(map).isEmpty();
   }
 
+  @Test
   public void testEntrySetClear() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
-      assertNull(map.put(i, i + 1));
+      assertThat(map.put(i, i + 1)).isNull();
     }
-    map.entrySet().clear();
-    assertTrue(map.isEmpty());
-    assertEquals(0, map.getNumArrayEntries());
-    assertEquals(0, map.getNumOverflowEntries());
-    assertEquals(0, map.size());
+    map.clear();
+    assertThat(map).isEmpty();
+    assertThat(map.getNumArrayEntries()).isEqualTo(0);
+    assertThat(map.getNumOverflowEntries()).isEqualTo(0);
+    assertThat(map).isEmpty();
   }
 
+  @Test
   public void testEntrySetIteratorNext() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
-      assertNull(map.put(i, i + 1));
+      assertThat(map.put(i, i + 1)).isNull();
     }
     Iterator<Map.Entry<Integer, Integer>> it = map.entrySet().iterator();
     for (int i = 0; i < 6; i++) {
-      assertTrue(it.hasNext());
+      assertThat(it.hasNext()).isTrue();
       Map.Entry<Integer, Integer> entry = it.next();
-      assertEquals(new Integer(i), entry.getKey());
-      assertEquals(new Integer(i + 1), entry.getValue());
+      assertThat(entry.getKey()).isEqualTo(Integer.valueOf(i));
+      assertThat(entry.getValue()).isEqualTo(Integer.valueOf(i + 1));
     }
-    assertFalse(it.hasNext());
+    assertThat(it.hasNext()).isFalse();
   }
 
+  @Test
   public void testEntrySetIteratorRemove() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
-      assertNull(map.put(i, i + 1));
+      assertThat(map.put(i, i + 1)).isNull();
     }
     Iterator<Map.Entry<Integer, Integer>> it = map.entrySet().iterator();
     for (int i = 0; i < 6; i++) {
-      assertTrue(map.containsKey(i));
+      assertThat(map).containsKey(i);
       it.next();
       it.remove();
-      assertFalse(map.containsKey(i));
-      assertEquals(6 - i - 1, map.size());
+      assertThat(map).doesNotContainKey(i);
+      assertThat(map).hasSize(6 - i - 1);
     }
   }
 
+  @Test
   public void testMapEntryModification() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
-      assertNull(map.put(i, i + 1));
+      assertThat(map.put(i, i + 1)).isNull();
     }
     Iterator<Map.Entry<Integer, Integer>> it = map.entrySet().iterator();
     for (int i = 0; i < 6; i++) {
@@ -332,49 +271,50 @@ public class SmallSortedMapTest extends TestCase {
       entry.setValue(i + 23);
     }
     for (int i = 0; i < 6; i++) {
-      assertEquals(new Integer(i + 23), map.get(i));
+      assertThat(map).containsEntry(i, Integer.valueOf(i + 23));
     }
   }
 
+  @Test
   public void testMakeImmutable() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
-      assertNull(map.put(i, i + 1));
+      assertThat(map.put(i, i + 1)).isNull();
     }
     map.makeImmutable();
-    assertEquals(new Integer(1), map.get(0));
-    assertEquals(6, map.size());
+    assertThat(map).containsEntry(0, Integer.valueOf(1));
+    assertThat(map).hasSize(6);
 
     try {
       map.put(23, 23);
-      fail("Expected UnsupportedOperationException");
+      assertWithMessage("Expected UnsupportedOperationException").fail();
     } catch (UnsupportedOperationException expected) {
     }
 
-    Map<Integer, Integer> other = new HashMap<Integer, Integer>();
+    Map<Integer, Integer> other = new HashMap<>();
     other.put(23, 23);
     try {
       map.putAll(other);
-      fail("Expected UnsupportedOperationException");
+      assertWithMessage("Expected UnsupportedOperationException").fail();
     } catch (UnsupportedOperationException expected) {
     }
 
     try {
       map.remove(0);
-      fail("Expected UnsupportedOperationException");
+      assertWithMessage("Expected UnsupportedOperationException").fail();
     } catch (UnsupportedOperationException expected) {
     }
 
     try {
       map.clear();
-      fail("Expected UnsupportedOperationException");
+      assertWithMessage("Expected UnsupportedOperationException").fail();
     } catch (UnsupportedOperationException expected) {
     }
 
     Set<Map.Entry<Integer, Integer>> entrySet = map.entrySet();
     try {
       entrySet.clear();
-      fail("Expected UnsupportedOperationException");
+      assertWithMessage("Expected UnsupportedOperationException").fail();
     } catch (UnsupportedOperationException expected) {
     }
 
@@ -383,12 +323,12 @@ public class SmallSortedMapTest extends TestCase {
       Map.Entry<Integer, Integer> entry = it.next();
       try {
         entry.setValue(0);
-        fail("Expected UnsupportedOperationException");
+        assertWithMessage("Expected UnsupportedOperationException").fail();
       } catch (UnsupportedOperationException expected) {
       }
       try {
         it.remove();
-        fail("Expected UnsupportedOperationException");
+        assertWithMessage("Expected UnsupportedOperationException").fail();
       } catch (UnsupportedOperationException expected) {
       }
     }
@@ -396,7 +336,7 @@ public class SmallSortedMapTest extends TestCase {
     Set<Integer> keySet = map.keySet();
     try {
       keySet.clear();
-      fail("Expected UnsupportedOperationException");
+      assertWithMessage("Expected UnsupportedOperationException").fail();
     } catch (UnsupportedOperationException expected) {
     }
 
@@ -405,18 +345,18 @@ public class SmallSortedMapTest extends TestCase {
       Integer key = keys.next();
       try {
         keySet.remove(key);
-        fail("Expected UnsupportedOperationException");
+        assertWithMessage("Expected UnsupportedOperationException").fail();
       } catch (UnsupportedOperationException expected) {
       }
       try {
         keys.remove();
-        fail("Expected UnsupportedOperationException");
+        assertWithMessage("Expected UnsupportedOperationException").fail();
       } catch (UnsupportedOperationException expected) {
       }
     }
   }
 
   private Set<Integer> makeSortedKeySet(Integer... keys) {
-    return new TreeSet<Integer>(Arrays.<Integer>asList(keys));
+    return new TreeSet<>(Arrays.<Integer>asList(keys));
   }
 }

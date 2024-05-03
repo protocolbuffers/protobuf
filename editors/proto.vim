@@ -69,10 +69,10 @@ syn keyword pbBool      true false
 syn match   pbInt     /-\?\<\d\+\>/
 syn match   pbInt     /\<0[xX]\x+\>/
 syn match   pbFloat   /\<-\?\d*\(\.\d*\)\?/
-syn region  pbComment start="\/\*" end="\*\/" contains=@pbCommentGrp
-syn region  pbComment start="//" skip="\\$" end="$" keepend contains=@pbCommentGrp
-syn region  pbString  start=/"/ skip=/\\./ end=/"/
-syn region  pbString  start=/'/ skip=/\\./ end=/'/
+syn region  pbComment start="\/\*" end="\*\/" contains=@pbCommentGrp,@Spell
+syn region  pbComment start="//" skip="\\$" end="$" keepend contains=@pbCommentGrp,@Spell
+syn region  pbString  start=/"/ skip=/\\./ end=/"/ contains=@Spell
+syn region  pbString  start=/'/ skip=/\\./ end=/'/ contains=@Spell
 
 if version >= 508 || !exists("did_proto_syn_inits")
   if version < 508

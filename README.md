@@ -1,51 +1,44 @@
 Protocol Buffers - Google's data interchange format
 ===================================================
 
-[![Build Status](https://travis-ci.org/google/protobuf.svg?branch=master)](https://travis-ci.org/google/protobuf) [![Build status](https://ci.appveyor.com/api/projects/status/73ctee6ua4w2ruin?svg=true)](https://ci.appveyor.com/project/protobuf/protobuf) [![Build Status](https://grpc-testing.appspot.com/buildStatus/icon?job=protobuf_branch)](https://grpc-testing.appspot.com/job/protobuf_branch) [![Build Status](https://grpc-testing.appspot.com/job/protobuf_branch_32/badge/icon)](https://grpc-testing.appspot.com/job/protobuf_branch_32) [![Build Status](http://ci.bazel.io/buildStatus/icon?job=protobuf)](http://ci.bazel.io/job/protobuf/)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/protocolbuffers/protobuf/badge)](https://securityscorecards.dev/viewer/?uri=github.com/protocolbuffers/protobuf)
 
-Copyright 2008 Google Inc.
-
-https://developers.google.com/protocol-buffers/
+Copyright 2023 Google LLC
 
 Overview
 --------
 
 Protocol Buffers (a.k.a., protobuf) are Google's language-neutral,
 platform-neutral, extensible mechanism for serializing structured data. You
-can find [protobuf's documentation on the Google Developers site](https://developers.google.com/protocol-buffers/).
+can learn more about it in [protobuf's documentation](https://protobuf.dev).
 
 This README file contains protobuf installation instructions. To install
 protobuf, you need to install the protocol compiler (used to compile .proto
 files) and the protobuf runtime for your chosen programming language.
 
-Protocol Compiler Installation
+Protobuf Compiler Installation
 ------------------------------
 
-The protocol compiler is written in C++. If you are using C++, please follow
+The protobuf compiler is written in C++. If you are using C++, please follow
 the [C++ Installation Instructions](src/README.md) to install protoc along
 with the C++ runtime.
 
 For non-C++ users, the simplest way to install the protocol compiler is to
-download a pre-built binary from our release page:
-
-  [https://github.com/google/protobuf/releases](https://github.com/google/protobuf/releases)
+download a pre-built binary from our [GitHub release page](https://github.com/protocolbuffers/protobuf/releases).
 
 In the downloads section of each release, you can find pre-built binaries in
-zip packages: protoc-$VERSION-$PLATFORM.zip. It contains the protoc binary
-as well as a set of standard .proto files distributed along with protobuf.
+zip packages: `protoc-$VERSION-$PLATFORM.zip`. It contains the protoc binary
+as well as a set of standard `.proto` files distributed along with protobuf.
 
 If you are looking for an old version that is not available in the release
-page, check out the maven repo here:
-
-  [https://repo1.maven.org/maven2/com/google/protobuf/protoc/](https://repo1.maven.org/maven2/com/google/protobuf/protoc/)
+page, check out the [Maven repository](https://repo1.maven.org/maven2/com/google/protobuf/protoc/).
 
 These pre-built binaries are only provided for released versions. If you want
-to use the github master version at HEAD, or you need to modify protobuf code,
+to use the github main version at HEAD, or you need to modify protobuf code,
 or you are using C++, it's recommended to build your own protoc binary from
 source.
 
-If you would like to build protoc binary from source, see the [C++ Installation
-Instructions](src/README.md).
+If you would like to build protoc binary from source, see the [C++ Installation Instructions](src/README.md).
 
 Protobuf Runtime Installation
 -----------------------------
@@ -61,18 +54,34 @@ how to install protobuf runtime for that specific language:
 | Python                               | [python](python)                                            |
 | Objective-C                          | [objectivec](objectivec)                                    |
 | C#                                   | [csharp](csharp)                                            |
-| JavaNano                             | [javanano](javanano)                                        |
-| JavaScript                           | [js](js)                                                    |
 | Ruby                                 | [ruby](ruby)                                                |
-| Go                                   | [golang/protobuf](https://github.com/golang/protobuf)       |
+| Go                                   | [protocolbuffers/protobuf-go](https://github.com/protocolbuffers/protobuf-go)|
 | PHP                                  | [php](php)                                                  |
 | Dart                                 | [dart-lang/protobuf](https://github.com/dart-lang/protobuf) |
+| JavaScript                           | [protocolbuffers/protobuf-javascript](https://github.com/protocolbuffers/protobuf-javascript)|
 
+Quick Start
+-----------
 
-Usage
------
+The best way to learn how to use protobuf is to follow the [tutorials in our
+developer guide](https://protobuf.dev/getting-started).
 
-The complete documentation for Protocol Buffers is available via the
-web at:
+If you want to learn from code examples, take a look at the examples in the
+[examples](examples) directory.
 
-https://developers.google.com/protocol-buffers/
+Documentation
+-------------
+
+The complete documentation is available at the [Protocol Buffers doc site](https://protobuf.dev).
+
+Support Policy
+--------------
+
+Read about our [version support policy](https://protobuf.dev/version-support/)
+to stay current on support timeframes for the language libraries.
+
+Developer Community
+-------------------
+
+To be alerted to upcoming changes in Protocol Buffers and connect with protobuf developers and users,
+[join the Google Group](https://groups.google.com/g/protobuf).

@@ -1,0 +1,75 @@
+################################################################################
+# Protocol Buffers Compiler - Python code generator
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "python",
+    srcs = [
+        "generator.cc",
+        "helpers.cc",
+        "pyi_generator.cc",
+    ],
+    hdrs = [
+        "generator.h",
+        "helpers.h",
+        "pyi_generator.h",
+    ],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/python",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+        "@com_github_grpc_grpc//tools/distrib/python/grpcio_tools:__subpackages__",
+    ],
+    deps = [
+        "//src/google/protobuf:descriptor_legacy",
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:retention",
+        "//src/google/protobuf/compiler:versions",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/synchronization",
+    ],
+)
+
+cc_test(
+    name = "plugin_unittest",
+    srcs = ["plugin_unittest.cc"],
+    copts = COPTS,
+    deps = [
+        ":python",
+        "//src/google/protobuf/compiler:command_line_interface",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/testing",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+################################################################################
+# Distribution packaging
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["**/*"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        allow_empty = True,
+    ),
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)

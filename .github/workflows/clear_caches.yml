@@ -1,0 +1,35 @@
+name: Clear expensive caches to prevent unbounded growth
+
+on:
+  schedule:
+    # Run every 4 months at 10 AM UTC (2 AM PDT)
+    - cron: 0 10 1 */4 *
+
+  # manual
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bazel-repository-cache:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    name: Clear Bazel repository cache ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      actions: write # permission is required to delete caches
+      contents: read
+    steps:
+      - uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+        with:
+          path: ${{ github.workspace }}/${{ steps.output.outputs.repository-cache }}
+          key: repository-cache-${{ github.ref_name }}-${{ runner.os }}-reset-${{ github.sha }}
+
+      - name: Create an empty cache with a single file
+        run: |
+          rm -rf .repository-cache
+          mkdir -p .repository-cache'
+          touch .repository-cache/reset_file

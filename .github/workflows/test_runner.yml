@@ -1,0 +1,195 @@
+name: Tests
+
+# This file implements the protection strategy laid out in
+# go/protobuf-gha-protected-resources.  Pull requests from branches within this
+# repository are considered safe and will immediately start running tests on
+# every commit.  Pull requests from forked repositories are unsafe, and leave
+# us vulnerable to PWN requests and stolen resources.  In these cases, we
+# require a special "safe for tests" tag to be added to the pull request before
+# we start testing.  This will be immediately removed, so that further commits
+# require their own stamp to test.
+
+on:
+  # continuous
+  schedule:
+    # TODO Reduce this frequency
+    # Run every 15 minutes for now to gather statistics
+    - cron: "*/15 * * * *"
+
+  # postsubmit
+  push:
+    branches:
+      - main
+      - '[0-9]+.x'
+      # The 21.x and 22.x branches still use Kokoro
+      - '!2[12].x'
+      # For testing purposes so we can stage this on the `gha` branch.
+      - gha
+
+  # safe presubmit
+  pull_request:
+    branches:
+      - main
+      - '[0-9]+.x'
+      # The 21.x and 22.x branches still use Kokoro
+      - '!2[12].x'
+      # For testing purposes so we can stage this on the `gha` branch.
+      - gha
+
+  # unsafe presubmit
+  pull_request_target:
+    branches:
+      - main
+      - '[0-9]+.x'
+      # The 21.x branch still use Kokoro
+      - '!21.x'
+      # For testing purposes so we can stage this on the `gha` branch.
+      - gha
+    types: [labeled, opened, reopened, synchronize]
+
+  # manual
+  workflow_dispatch:
+  
+permissions:
+  contents: read
+
+jobs:
+  check-tag:
+    name: Check for Safety
+
+    # Avoid running tests twice on PR updates.  If the PR is coming from our
+    # repository, it's safe and we can use `pull_request`.  Otherwise, we should
+    # use `pull_request_target`.
+    if: |
+      (github.event_name != 'pull_request' &&
+       github.event_name != 'pull_request_target' &&
+       github.event.repository.full_name == 'protocolbuffers/protobuf') ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == 'protocolbuffers/protobuf') ||
+      (github.event_name == 'pull_request_target' &&
+       github.event.pull_request.head.repo.full_name != 'protocolbuffers/protobuf')
+
+    runs-on: ubuntu-latest
+    outputs:
+      # Store the sha for checkout so we can easily use it later.  For safe
+      # events, this will be blank and use the defaults.
+      checkout-sha: ${{ steps.safe-checkout.outputs.sha }}
+    steps:
+      - name: Check
+        # Trivially pass for safe PRs, and explicitly error for unsafe ones
+        # unless this is specifically an event for adding the safe label.
+        run: >
+          ${{ github.event_name != 'pull_request_target' || github.event.label.name == ':a: safe for tests' }} ||
+          (echo "This pull request is from an unsafe fork and hasn't been approved to run tests!" && exit 1)
+
+      - name: Cache safe commit
+        id: safe-checkout
+        run: >
+          ${{ github.event_name != 'pull_request_target' }} ||
+          echo "sha=${{ github.event.pull_request.head.sha  }}"  >> $GITHUB_OUTPUT
+
+  remove-tag:
+    name: Remove safety tag
+    needs: [check-tag]
+    if: github.event.action == 'labeled'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions-ecosystem/action-remove-labels@2ce5d41b4b6aa8503e285553f75ed56e0a40bae0 # v1.3.0
+        with:
+          fail_on_error: true
+          labels: ':a: safe for tests'
+
+  # Note: this pattern of passing the head sha is vulnerable to PWN requests for
+  # pull_request_target events. We carefully limit those workflows to require a
+  # human stamp before continuing.
+  cpp:
+    name: C++
+    needs: [check-tag]
+    uses: ./.github/workflows/test_cpp.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  java:
+    name: Java
+    needs: [check-tag]
+    uses: ./.github/workflows/test_java.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  python:
+    name: Python
+    needs: [check-tag]
+    uses: ./.github/workflows/test_python.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  ruby:
+    name: Ruby
+    needs: [check-tag]
+    uses: ./.github/workflows/test_ruby.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  php:
+    name: PHP
+    needs: [check-tag]
+    uses: ./.github/workflows/test_php.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  php-ext:
+    name: PHP Extension
+    needs: [check-tag]
+    uses: ./.github/workflows/test_php_ext.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  csharp:
+    name: C#
+    needs: [check-tag]
+    uses: ./.github/workflows/test_csharp.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  objectivec:
+    name: Objective-C
+    needs: [check-tag]
+    uses: ./.github/workflows/test_objectivec.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  rust:
+    name: Rust
+    needs: [check-tag]
+    uses: ./.github/workflows/test_rust.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  upb:
+    name: μpb
+    needs: [check-tag]
+    uses: ./.github/workflows/test_upb.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  staleness:
+    name: Staleness
+    needs: [check-tag]
+    uses: ./.github/workflows/staleness_check.yml
+    # Staleness tests have scheduled runs during off-hours to avoid race conditions.
+    if: ${{ github.event_name != 'schedule' }}
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit

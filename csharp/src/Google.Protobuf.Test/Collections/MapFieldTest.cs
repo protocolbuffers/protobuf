@@ -1,36 +1,14 @@
 ﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
@@ -86,14 +64,16 @@ namespace Google.Protobuf.Collections
             var map = new MapField<string, ForeignMessage>();
             Assert.Throws<ArgumentNullException>(() => map[null] = new ForeignMessage());
         }
-        
+
         [Test]
         public void AddPreservesInsertionOrder()
         {
-            var map = new MapField<string, string>();
-            map.Add("a", "v1");
-            map.Add("b", "v2");
-            map.Add("c", "v3");
+            var map = new MapField<string, string>
+            {
+                { "a", "v1" },
+                { "b", "v2" },
+                { "c", "v3" }
+            };
             map.Remove("b");
             map.Add("d", "v4");
             CollectionAssert.AreEqual(new[] { "a", "c", "d" }, map.Keys);
@@ -103,13 +83,17 @@ namespace Google.Protobuf.Collections
         [Test]
         public void EqualityIsOrderInsensitive()
         {
-            var map1 = new MapField<string, string>();
-            map1.Add("a", "v1");
-            map1.Add("b", "v2");
+            var map1 = new MapField<string, string>
+            {
+                { "a", "v1" },
+                { "b", "v2" }
+            };
 
-            var map2 = new MapField<string, string>();
-            map2.Add("b", "v2");
-            map2.Add("a", "v1");
+            var map2 = new MapField<string, string>
+            {
+                { "b", "v2" },
+                { "a", "v1" }
+            };
 
             EqualityTester.AssertEquality(map1, map2);
         }
@@ -117,13 +101,17 @@ namespace Google.Protobuf.Collections
         [Test]
         public void EqualityIsKeySensitive()
         {
-            var map1 = new MapField<string, string>();
-            map1.Add("first key", "v1");
-            map1.Add("second key", "v2");
+            var map1 = new MapField<string, string>
+            {
+                { "first key", "v1" },
+                { "second key", "v2" }
+            };
 
-            var map2 = new MapField<string, string>();
-            map2.Add("third key", "v1");
-            map2.Add("fourth key", "v2");
+            var map2 = new MapField<string, string>
+            {
+                { "third key", "v1" },
+                { "fourth key", "v2" }
+            };
 
             EqualityTester.AssertInequality(map1, map2);
         }
@@ -142,13 +130,17 @@ namespace Google.Protobuf.Collections
         {
             // Note: Without some care, it's a little easier than one might
             // hope to see hash collisions, but only in some environments...
-            var map1 = new MapField<string, string>();
-            map1.Add("a", "first value");
-            map1.Add("b", "second value");
+            var map1 = new MapField<string, string>
+            {
+                { "a", "first value" },
+                { "b", "second value" }
+            };
 
-            var map2 = new MapField<string, string>();
-            map2.Add("a", "third value");
-            map2.Add("b", "fourth value");
+            var map2 = new MapField<string, string>
+            {
+                { "a", "third value" },
+                { "b", "fourth value" }
+            };
 
             EqualityTester.AssertInequality(map1, map2);
         }
@@ -182,8 +174,7 @@ namespace Google.Protobuf.Collections
         [Test]
         public void Add_KeyAlreadyExists()
         {
-            var map = new MapField<string, string>();
-            map.Add("foo", "bar");
+            var map = new MapField<string, string> { { "foo", "bar" } };
             Assert.Throws<ArgumentException>(() => map.Add("foo", "baz"));
         }
 
@@ -210,8 +201,7 @@ namespace Google.Protobuf.Collections
         [Test]
         public void Remove_Key()
         {
-            var map = new MapField<string, string>();
-            map.Add("foo", "bar");
+            var map = new MapField<string, string> { { "foo", "bar" } };
             Assert.AreEqual(1, map.Count);
             Assert.IsFalse(map.Remove("missing"));
             Assert.AreEqual(1, map.Count);
@@ -223,8 +213,7 @@ namespace Google.Protobuf.Collections
         [Test]
         public void Remove_Pair()
         {
-            var map = new MapField<string, string>();
-            map.Add("foo", "bar");
+            var map = new MapField<string, string> { { "foo", "bar" } };
             ICollection<KeyValuePair<string, string>> collection = map;
             Assert.AreEqual(1, map.Count);
             Assert.IsFalse(collection.Remove(NewKeyValuePair("wrong key", "bar")));
@@ -239,8 +228,7 @@ namespace Google.Protobuf.Collections
         [Test]
         public void CopyTo_Pair()
         {
-            var map = new MapField<string, string>();
-            map.Add("foo", "bar");
+            var map = new MapField<string, string> { { "foo", "bar" } };
             ICollection<KeyValuePair<string, string>> collection = map;
             KeyValuePair<string, string>[] array = new KeyValuePair<string, string>[3];
             collection.CopyTo(array, 1);
@@ -269,8 +257,7 @@ namespace Google.Protobuf.Collections
         [Test]
         public void Indexer_Set()
         {
-            var map = new MapField<string, string>();
-            map["x"] = "y";
+            var map = new MapField<string, string> { ["x"] = "y" };
             Assert.AreEqual("y", map["x"]);
             map["x"] = "z"; // This won't throw, unlike Add.
             Assert.AreEqual("z", map["x"]);
@@ -356,12 +343,10 @@ namespace Google.Protobuf.Collections
             IDictionary dictionary = map;
             var array = new DictionaryEntry[3];
             dictionary.CopyTo(array, 1);
-            CollectionAssert.AreEqual(new[] { default(DictionaryEntry), new DictionaryEntry("x", "y"), default(DictionaryEntry) },
-                array);
+            CollectionAssert.AreEqual(new[] { default, new DictionaryEntry("x", "y"), default }, array);
             var objectArray = new object[3];
             dictionary.CopyTo(objectArray, 1);
-            CollectionAssert.AreEqual(new object[] { null, new DictionaryEntry("x", "y"), null },
-                objectArray);
+            CollectionAssert.AreEqual(new object[] { null, new DictionaryEntry("x", "y"), null }, objectArray);
         }
 
         [Test]
@@ -471,7 +456,7 @@ namespace Google.Protobuf.Collections
             keys.CopyTo(array, 1);
             CollectionAssert.AreEqual(new[] { null, "foo", "x", null }, array);
         }
-        
+
         // Just test keys - we know the implementation is the same for values
         [Test]
         public void NonGenericViewCopyTo()
@@ -540,7 +525,99 @@ namespace Google.Protobuf.Collections
             Assert.Throws<ArgumentException>(() => map.ToString());
         }
 
-#if !NET35
+        [Test]
+        public void NaNValuesComparedBitwise()
+        {
+            var map1 = new MapField<string, double>
+            {
+                { "x", SampleNaNs.Regular },
+                { "y", SampleNaNs.SignallingFlipped }
+            };
+
+            var map2 = new MapField<string, double>
+            {
+                { "x", SampleNaNs.Regular },
+                { "y", SampleNaNs.PayloadFlipped }
+            };
+
+            var map3 = new MapField<string, double>
+            {
+                { "x", SampleNaNs.Regular },
+                { "y", SampleNaNs.SignallingFlipped }
+            };
+
+            EqualityTester.AssertInequality(map1, map2);
+            EqualityTester.AssertEquality(map1, map3);
+            Assert.True(map1.Values.Contains(SampleNaNs.SignallingFlipped));
+            Assert.False(map2.Values.Contains(SampleNaNs.SignallingFlipped));
+        }
+
+        // This wouldn't usually happen, as protos can't use doubles as map keys,
+        // but let's be consistent.
+        [Test]
+        public void NaNKeysComparedBitwise()
+        {
+            var map = new MapField<double, string>
+            {
+                { SampleNaNs.Regular, "x" },
+                { SampleNaNs.SignallingFlipped, "y" }
+            };
+            Assert.AreEqual("x", map[SampleNaNs.Regular]);
+            Assert.AreEqual("y", map[SampleNaNs.SignallingFlipped]);
+            Assert.False(map.TryGetValue(SampleNaNs.PayloadFlipped, out _));
+        }
+
+        [Test]
+        public void AddEntriesFrom_CodedInputStream()
+        {
+            // map will have string key and string value
+            var keyTag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
+            var valueTag = WireFormat.MakeTag(2, WireFormat.WireType.LengthDelimited);
+
+            var memoryStream = new MemoryStream();
+            var output = new CodedOutputStream(memoryStream);
+            output.WriteLength(20);  // total of keyTag + key + valueTag + value
+            output.WriteTag(keyTag);
+            output.WriteString("the_key");
+            output.WriteTag(valueTag);
+            output.WriteString("the_value");
+            output.Flush();
+
+            var field = new MapField<string,string>();
+            var mapCodec = new MapField<string,string>.Codec(FieldCodec.ForString(keyTag, ""), FieldCodec.ForString(valueTag, ""), 10);
+            var input = new CodedInputStream(memoryStream.ToArray());
+
+            // test the legacy overload of AddEntriesFrom that takes a CodedInputStream
+            field.AddEntriesFrom(input, mapCodec);
+            CollectionAssert.AreEquivalent(new[] { "the_key" }, field.Keys);
+            CollectionAssert.AreEquivalent(new[] { "the_value" }, field.Values);
+            Assert.IsTrue(input.IsAtEnd);
+        }
+
+        [Test]
+        public void AddEntriesFrom_CodedInputStream_MissingKey()
+        {
+            // map will have string key and string value
+            var keyTag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
+            var valueTag = WireFormat.MakeTag(2, WireFormat.WireType.LengthDelimited);
+
+            var memoryStream = new MemoryStream();
+            var output = new CodedOutputStream(memoryStream);
+            output.WriteLength(11);  // total of valueTag + value
+            output.WriteTag(valueTag);
+            output.WriteString("the_value");
+            output.Flush();
+
+            var field = new MapField<string, string>();
+            var mapCodec = new MapField<string, string>.Codec(FieldCodec.ForString(keyTag, ""), FieldCodec.ForString(valueTag, ""), 10);
+            var input = new CodedInputStream(memoryStream.ToArray());
+
+            field.AddEntriesFrom(input, mapCodec);
+            CollectionAssert.AreEquivalent(new[] { "" }, field.Keys);
+            CollectionAssert.AreEquivalent(new[] { "the_value" }, field.Values);
+            Assert.IsTrue(input.IsAtEnd);
+        }
+
         [Test]
         public void IDictionaryKeys_Equals_IReadOnlyDictionaryKeys()
         {
@@ -554,7 +631,59 @@ namespace Google.Protobuf.Collections
             var map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
             CollectionAssert.AreEquivalent(((IDictionary<string, string>)map).Values, ((IReadOnlyDictionary<string, string>)map).Values);
         }
-#endif
+
+        [Test]
+        public void SortIntKeys_RandomOrder()
+        {
+            var map = new MapField<int, string>() { { 1, "val" }, { -1, "val"}, { 0, "val" } };
+            var sortedList = map.GetSortedListCopy(map.ToList()).ToList();
+            var sortedKeys = sortedList.Select(kvp => kvp.Key);
+            CollectionAssert.AreEqual(new[] { -1, 0, 1 }, sortedKeys);
+        }
+
+        [Test]
+        public void SortIntKeys_Empty()
+        {
+            var map = new MapField<int, string> { };
+            var sortedList = map.GetSortedListCopy(map.ToList()).ToList();
+            var sortedKeys = sortedList.Select(kvp => kvp.Key);
+            Assert.IsEmpty(sortedKeys);
+        }
+
+        [Test]
+        public void SortStringKeys_RandomOrder()
+        {
+            var map = new MapField<string, string> { { "a", "val" }, { "c", "val" }, { "b", "val" } };
+            var sortedList = map.GetSortedListCopy(map.ToList()).ToList();
+            var sortedKeys = sortedList.Select(kvp => kvp.Key);
+            CollectionAssert.AreEqual(new[] { "a", "b", "c" }, sortedKeys);
+        }
+
+        [Test]
+        public void SortStringKeys_EnsureOrdinalSort()
+        {
+            var map = new MapField<string, string>
+            {
+                { "i", "val" } , { "I", "val" }, { "ı", "val" }, { "İ", "val" }
+            };
+            var sortedList = map.GetSortedListCopy(map.ToList());
+            var sortedKeys = sortedList.Select(kvp => kvp.Key);
+            // Assert Ordinal sort  I, i, ı, İ (Non-ordinal sort returns i, I, İ, ı)
+            // I == 0x49 , i == 0x69 , İ == 0x130 , ı == 0x131
+            CollectionAssert.AreEqual(new[] { "I", "i", "İ", "ı" }, sortedKeys);
+        }
+
+        [Test]
+        public void SortBoolKeys()
+        {
+            var map = new MapField<bool, string>
+            {
+                { true, "val" } , { false, "val" }
+            };
+            var sortedList = map.GetSortedListCopy(map.ToList());
+            var sortedKeys = sortedList.Select(kvp => kvp.Key);
+            CollectionAssert.AreEqual(new[] { false, true }, sortedKeys);
+        }
 
         private static KeyValuePair<TKey, TValue> NewKeyValuePair<TKey, TValue>(TKey key, TValue value)
         {

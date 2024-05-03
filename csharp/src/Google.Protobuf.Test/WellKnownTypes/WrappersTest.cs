@@ -1,33 +1,10 @@
 ﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using System;
@@ -71,18 +48,42 @@ namespace Google.Protobuf.WellKnownTypes
                 Uint64Field = 4
             };
 
-            var bytes = message.ToByteArray();
-            var parsed = TestWellKnownTypes.Parser.ParseFrom(bytes);
+            MessageParsingHelpers.AssertWritingMessage(message);
 
-            Assert.AreEqual("x", parsed.StringField);
-            Assert.AreEqual(ByteString.CopyFrom(1, 2, 3), parsed.BytesField);
-            Assert.AreEqual(true, parsed.BoolField);
-            Assert.AreEqual(12.5f, parsed.FloatField);
-            Assert.AreEqual(12.25d, parsed.DoubleField);
-            Assert.AreEqual(1, parsed.Int32Field);
-            Assert.AreEqual(2L, parsed.Int64Field);
-            Assert.AreEqual(3U, parsed.Uint32Field);
-            Assert.AreEqual(4UL, parsed.Uint64Field);
+            MessageParsingHelpers.AssertRoundtrip(TestWellKnownTypes.Parser, message, parsed =>
+            {
+                Assert.AreEqual("x", parsed.StringField);
+                Assert.AreEqual(ByteString.CopyFrom(1, 2, 3), parsed.BytesField);
+                Assert.AreEqual(true, parsed.BoolField);
+                Assert.AreEqual(12.5f, parsed.FloatField);
+                Assert.AreEqual(12.25d, parsed.DoubleField);
+                Assert.AreEqual(1, parsed.Int32Field);
+                Assert.AreEqual(2L, parsed.Int64Field);
+                Assert.AreEqual(3U, parsed.Uint32Field);
+                Assert.AreEqual(4UL, parsed.Uint64Field);
+            });
+        }
+
+        [Test]
+        public void NegativeSingleValues()
+        {
+            var message = new TestWellKnownTypes
+            {
+                FloatField = -12.5f,
+                DoubleField = -12.25d,
+                Int32Field = -1,
+                Int64Field = -2
+            };
+
+            MessageParsingHelpers.AssertWritingMessage(message);
+
+            MessageParsingHelpers.AssertRoundtrip(TestWellKnownTypes.Parser, message, parsed =>
+            {
+                Assert.AreEqual(-12.5f, parsed.FloatField);
+                Assert.AreEqual(-12.25d, parsed.DoubleField);
+                Assert.AreEqual(-1, parsed.Int32Field);
+                Assert.AreEqual(-2L, parsed.Int64Field);
+            });
         }
 
         [Test]
@@ -101,18 +102,20 @@ namespace Google.Protobuf.WellKnownTypes
                 Uint64Field = 0
             };
 
-            var bytes = message.ToByteArray();
-            var parsed = TestWellKnownTypes.Parser.ParseFrom(bytes);
+            MessageParsingHelpers.AssertWritingMessage(message);
 
-            Assert.AreEqual("", parsed.StringField);
-            Assert.AreEqual(ByteString.Empty, parsed.BytesField);
-            Assert.AreEqual(false, parsed.BoolField);
-            Assert.AreEqual(0f, parsed.FloatField);
-            Assert.AreEqual(0d, parsed.DoubleField);
-            Assert.AreEqual(0, parsed.Int32Field);
-            Assert.AreEqual(0L, parsed.Int64Field);
-            Assert.AreEqual(0U, parsed.Uint32Field);
-            Assert.AreEqual(0UL, parsed.Uint64Field);
+            MessageParsingHelpers.AssertRoundtrip(TestWellKnownTypes.Parser, message, parsed =>
+            {
+                Assert.AreEqual("", parsed.StringField);
+                Assert.AreEqual(ByteString.Empty, parsed.BytesField);
+                Assert.AreEqual(false, parsed.BoolField);
+                Assert.AreEqual(0f, parsed.FloatField);
+                Assert.AreEqual(0d, parsed.DoubleField);
+                Assert.AreEqual(0, parsed.Int32Field);
+                Assert.AreEqual(0L, parsed.Int64Field);
+                Assert.AreEqual(0U, parsed.Uint32Field);
+                Assert.AreEqual(0UL, parsed.Uint64Field);
+            });
         }
 
         [Test]
@@ -135,17 +138,18 @@ namespace Google.Protobuf.WellKnownTypes
                 DoubleField = { 12.5, -1.5, 0d },
                 FloatField = { 123.25f, -20f, 0f },
                 Int32Field = { int.MaxValue, int.MinValue, 0 },
-                Int64Field = { long.MaxValue, long.MinValue, 0L },                
+                Int64Field = { long.MaxValue, long.MinValue, 0L },
                 StringField = { "First", "Second", "" },
                 Uint32Field = { uint.MaxValue, uint.MinValue, 0U },
                 Uint64Field = { ulong.MaxValue, ulong.MinValue, 0UL },
             };
-            var bytes = message.ToByteArray();
-            var parsed = RepeatedWellKnownTypes.Parser.ParseFrom(bytes);
 
-            Assert.AreEqual(message, parsed);
             // Just to test a single value for sanity...
             Assert.AreEqual("Second", message.StringField[1]);
+
+            MessageParsingHelpers.AssertWritingMessage(message);
+
+            MessageParsingHelpers.AssertRoundtrip(RepeatedWellKnownTypes.Parser, message);
         }
 
         [Test]
@@ -170,6 +174,8 @@ namespace Google.Protobuf.WellKnownTypes
             var message = new RepeatedWellKnownTypes { Int32Field = { 5, 0 } };
             var actualBytes = message.ToByteArray();
             Assert.AreEqual(expectedBytes, actualBytes);
+
+            MessageParsingHelpers.AssertWritingMessage(message);
         }
 
         [Test]
@@ -194,12 +200,12 @@ namespace Google.Protobuf.WellKnownTypes
                 Uint64Field = { { 18, ulong.MaxValue }, { 19, ulong.MinValue }, { 20, 0UL } },
             };
 
-            var bytes = message.ToByteArray();
-            var parsed = MapWellKnownTypes.Parser.ParseFrom(bytes);
-
-            Assert.AreEqual(message, parsed);
             // Just to test a single value for sanity...
             Assert.AreEqual("Second", message.StringField[12]);
+
+            MessageParsingHelpers.AssertWritingMessage(message);
+
+            MessageParsingHelpers.AssertRoundtrip(MapWellKnownTypes.Parser, message);
         }
 
         [Test]
@@ -288,10 +294,10 @@ namespace Google.Protobuf.WellKnownTypes
         private void AssertOneofRoundTrip(OneofWellKnownTypes message)
         {
             // Normal roundtrip, but explicitly checking the case...
-            var bytes = message.ToByteArray();
-            var parsed = OneofWellKnownTypes.Parser.ParseFrom(bytes);
-            Assert.AreEqual(message, parsed);
-            Assert.AreEqual(message.OneofFieldCase, parsed.OneofFieldCase);
+            MessageParsingHelpers.AssertRoundtrip(OneofWellKnownTypes.Parser, message, parsed =>
+            {
+                Assert.AreEqual(message.OneofFieldCase, parsed.OneofFieldCase);
+            });
         }
 
         [Test]
@@ -386,7 +392,7 @@ namespace Google.Protobuf.WellKnownTypes
         }
 
         [Test]
-        public void UnknownFieldInWrapper()
+        public void UnknownFieldInWrapperInt32FastPath()
         {
             var stream = new MemoryStream();
             var output = new CodedOutputStream(stream);
@@ -395,17 +401,102 @@ namespace Google.Protobuf.WellKnownTypes
             var valueTag = WireFormat.MakeTag(Int32Value.ValueFieldNumber, WireFormat.WireType.Varint);
 
             output.WriteTag(wrapperTag);
-            output.WriteLength(4); // unknownTag + value 5 + valueType + value 6, each 1 byte
+            // Wrapper message is just long enough - 6 bytes - to use the wrapper fast-path.
+            output.WriteLength(6); // unknownTag + value 5 + valueType, each 1 byte, + value 65536, 3 bytes
             output.WriteTag(unknownTag);
             output.WriteInt32((int) valueTag); // Sneakily "pretend" it's a tag when it's really a value
+            output.WriteTag(valueTag);
+            output.WriteInt32(65536);
+            
+            output.Flush();
+            Assert.AreEqual(8, stream.Length); // tag (1 byte) + length (1 byte) + message (6 bytes)
+            stream.Position = 0;
+
+            MessageParsingHelpers.AssertReadingMessage(
+                TestWellKnownTypes.Parser,
+                stream.ToArray(),
+                message => Assert.AreEqual(65536, message.Int32Field));
+        }
+
+        [Test]
+        public void UnknownFieldInWrapperInt32SlowPath()
+        {
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            var wrapperTag = WireFormat.MakeTag(TestWellKnownTypes.Int32FieldFieldNumber, WireFormat.WireType.LengthDelimited);
+            var unknownTag = WireFormat.MakeTag(15, WireFormat.WireType.Varint);
+            var valueTag = WireFormat.MakeTag(Int32Value.ValueFieldNumber, WireFormat.WireType.Varint);
+
+            output.WriteTag(wrapperTag);
+            // Wrapper message is too short to be used on the wrapper fast-path.
+            output.WriteLength(4); // unknownTag + value 5 + valueType + value 6, each 1 byte
+            output.WriteTag(unknownTag);
+            output.WriteInt32((int)valueTag); // Sneakily "pretend" it's a tag when it's really a value
             output.WriteTag(valueTag);
             output.WriteInt32(6);
 
             output.Flush();
+            Assert.Less(stream.Length, 8); // tag (1 byte) + length (1 byte) + message
             stream.Position = 0;
-            
-            var message = TestWellKnownTypes.Parser.ParseFrom(stream);
-            Assert.AreEqual(6, message.Int32Field);
+
+            MessageParsingHelpers.AssertReadingMessage(
+                TestWellKnownTypes.Parser,
+                stream.ToArray(),
+                message => Assert.AreEqual(6, message.Int32Field));
+        }
+
+        [Test]
+        public void UnknownFieldInWrapperInt64FastPath()
+        {
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            var wrapperTag = WireFormat.MakeTag(TestWellKnownTypes.Int64FieldFieldNumber, WireFormat.WireType.LengthDelimited);
+            var unknownTag = WireFormat.MakeTag(15, WireFormat.WireType.Varint);
+            var valueTag = WireFormat.MakeTag(Int64Value.ValueFieldNumber, WireFormat.WireType.Varint);
+
+            output.WriteTag(wrapperTag);
+            // Wrapper message is just long enough - 10 bytes - to use the wrapper fast-path.
+            output.WriteLength(11); // unknownTag + value 5 + valueType, each 1 byte, + value 0xfffffffffffff, 8 bytes
+            output.WriteTag(unknownTag);
+            output.WriteInt64((int)valueTag); // Sneakily "pretend" it's a tag when it's really a value
+            output.WriteTag(valueTag);
+            output.WriteInt64(0xfffffffffffffL);
+
+            output.Flush();
+            Assert.AreEqual(13, stream.Length); // tag (1 byte) + length (1 byte) + message (11 bytes)
+            stream.Position = 0;
+
+            MessageParsingHelpers.AssertReadingMessage(
+                TestWellKnownTypes.Parser,
+                stream.ToArray(),
+                message => Assert.AreEqual(0xfffffffffffffL, message.Int64Field));
+        }
+
+        [Test]
+        public void UnknownFieldInWrapperInt64SlowPath()
+        {
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            var wrapperTag = WireFormat.MakeTag(TestWellKnownTypes.Int64FieldFieldNumber, WireFormat.WireType.LengthDelimited);
+            var unknownTag = WireFormat.MakeTag(15, WireFormat.WireType.Varint);
+            var valueTag = WireFormat.MakeTag(Int64Value.ValueFieldNumber, WireFormat.WireType.Varint);
+
+            output.WriteTag(wrapperTag);
+            // Wrapper message is too short to be used on the wrapper fast-path.
+            output.WriteLength(4); // unknownTag + value 5 + valueType + value 6, each 1 byte
+            output.WriteTag(unknownTag);
+            output.WriteInt64((int)valueTag); // Sneakily "pretend" it's a tag when it's really a value
+            output.WriteTag(valueTag);
+            output.WriteInt64(6);
+
+            output.Flush();
+            Assert.Less(stream.Length, 12); // tag (1 byte) + length (1 byte) + message
+            stream.Position = 0;
+
+            MessageParsingHelpers.AssertReadingMessage(
+                TestWellKnownTypes.Parser,
+                stream.ToArray(),
+                message => Assert.AreEqual(6L, message.Int64Field));
         }
 
         [Test]
@@ -416,6 +507,17 @@ namespace Google.Protobuf.WellKnownTypes
             var message = new TestWellKnownTypes { StringField = "foo" };
             TestWellKnownTypes.Descriptor.Fields[TestWellKnownTypes.StringFieldFieldNumber].Accessor.Clear(message);
             Assert.IsNull(message.StringField);
+        }
+
+        [Test]
+        public void NaNComparisons()
+        {
+            var message1 = new TestWellKnownTypes { DoubleField = SampleNaNs.Regular };
+            var message2 = new TestWellKnownTypes { DoubleField = SampleNaNs.PayloadFlipped };
+            var message3 = new TestWellKnownTypes { DoubleField = SampleNaNs.Regular };
+
+            EqualityTester.AssertInequality(message1, message2);
+            EqualityTester.AssertEquality(message1, message3);
         }
     }
 }

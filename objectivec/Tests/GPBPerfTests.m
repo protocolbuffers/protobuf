@@ -1,37 +1,14 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2013 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBTestUtilities.h"
-#import "google/protobuf/Unittest.pbobjc.h"
-#import "google/protobuf/UnittestImport.pbobjc.h"
-#import "google/protobuf/UnittestObjc.pbobjc.h"
+#import "objectivec/Tests/Unittest.pbobjc.h"
+#import "objectivec/Tests/UnittestImport.pbobjc.h"
+#import "objectivec/Tests/UnittestObjc.pbobjc.h"
 
 //
 // This file really just uses the unittests framework as a testbed to
@@ -69,9 +46,9 @@ static const uint32_t kRepeatedCount = 100;
   // lock across threads when parsing different instances. The Serial version of the test should run
   // around ~2 times slower than the Parallel version since it's parsing the protos in the same
   // thread.
-  TestAllTypes *allTypesMessage = [TestAllTypes message];
+  TestAllTypes* allTypesMessage = [TestAllTypes message];
   [self setAllFields:allTypesMessage repeatedCount:2];
-  NSData *allTypesData = allTypesMessage.data;
+  NSData* allTypesData = allTypesMessage.data;
 
   [self measureBlock:^{
     for (int i = 0; i < 500; ++i) {
@@ -86,9 +63,9 @@ static const uint32_t kRepeatedCount = 100;
   // not lock across threads when parsing different instances. The Serial version of the test should
   // run around ~2 times slower than the Parallel version since it's parsing the protos in the same
   // thread.
-  TestAllTypes *allTypesMessage = [TestAllTypes message];
+  TestAllTypes* allTypesMessage = [TestAllTypes message];
   [self setAllFields:allTypesMessage repeatedCount:2];
-  NSData *allTypesData = allTypesMessage.data;
+  NSData* allTypesData = allTypesMessage.data;
 
   dispatch_queue_t concurrentQueue = dispatch_queue_create("perfQueue", DISPATCH_QUEUE_CONCURRENT);
 
@@ -104,7 +81,9 @@ static const uint32_t kRepeatedCount = 100;
         [TestAllTypes parseFromData:allTypesData error:NULL];
       });
 
-      dispatch_group_notify(group, concurrentQueue, ^{});
+      dispatch_group_notify(group, concurrentQueue,
+                            ^{
+                            });
 
       dispatch_release(group);
     }
@@ -118,9 +97,9 @@ static const uint32_t kRepeatedCount = 100;
   // lock across threads when parsing different instances when using extensions. The Serial version
   // of the test should run around ~2 times slower than the Parallel version since it's parsing the
   // protos in the same thread.
-  TestAllExtensions *allExtensionsMessage = [TestAllExtensions message];
+  TestAllExtensions* allExtensionsMessage = [TestAllExtensions message];
   [self setAllExtensions:allExtensionsMessage repeatedCount:2];
-  NSData *allExtensionsData = allExtensionsMessage.data;
+  NSData* allExtensionsData = allExtensionsMessage.data;
 
   [self measureBlock:^{
     for (int i = 0; i < 500; ++i) {
@@ -139,9 +118,9 @@ static const uint32_t kRepeatedCount = 100;
   // not lock across threads when parsing different instances when using extensions. The Serial
   // version of the test should run around ~2 times slower than the Parallel version since it's
   // parsing the protos in the same thread.
-  TestAllExtensions *allExtensionsMessage = [TestAllExtensions message];
+  TestAllExtensions* allExtensionsMessage = [TestAllExtensions message];
   [self setAllExtensions:allExtensionsMessage repeatedCount:2];
-  NSData *allExtensionsData = allExtensionsMessage.data;
+  NSData* allExtensionsData = allExtensionsMessage.data;
 
   dispatch_queue_t concurrentQueue = dispatch_queue_create("perfQueue", DISPATCH_QUEUE_CONCURRENT);
 
@@ -161,7 +140,9 @@ static const uint32_t kRepeatedCount = 100;
                                    error:NULL];
       });
 
-      dispatch_group_notify(group, concurrentQueue, ^{});
+      dispatch_group_notify(group, concurrentQueue,
+                            ^{
+                            });
 
       dispatch_release(group);
     }
@@ -177,8 +158,7 @@ static const uint32_t kRepeatedCount = 100;
       [self setAllExtensions:message repeatedCount:kRepeatedCount];
       NSData* rawBytes = [message data];
       [message release];
-      TestAllExtensions* message2 =
-          [[TestAllExtensions alloc] initWithData:rawBytes error:NULL];
+      TestAllExtensions* message2 = [[TestAllExtensions alloc] initWithData:rawBytes error:NULL];
       [message2 release];
     }
   }];
@@ -204,8 +184,8 @@ static const uint32_t kRepeatedCount = 100;
       [self setPackedExtensions:message repeatedCount:kRepeatedCount];
       NSData* rawBytes = [message data];
       [message release];
-      TestPackedExtensions* message2 =
-          [[TestPackedExtensions alloc] initWithData:rawBytes error:NULL];
+      TestPackedExtensions* message2 = [[TestPackedExtensions alloc] initWithData:rawBytes
+                                                                            error:NULL];
       [message2 release];
     }
   }];

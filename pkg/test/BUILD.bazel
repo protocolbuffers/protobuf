@@ -1,0 +1,40 @@
+# Tests for CMake file list generation
+
+load("//pkg:build_systems.bzl", "gen_file_lists")
+load("//pkg:cc_dist_library.bzl", "cc_dist_library")
+
+cc_library(
+    name = "test_lib",
+    testonly = True,
+    srcs = ["test_lib.cc"],
+    hdrs = ["test_lib.h"],
+)
+
+cc_dist_library(
+    name = "test_lib_dist",
+    testonly = True,
+    deps = [":test_lib"],
+)
+
+gen_file_lists(
+    name = "gen_file_lists",
+    testonly = True,
+    out_stem = "file_lists",
+    src_libs = {
+        ":test_lib_dist": "libtest",
+    },
+)
+
+# This test checks the output from gen_file_lists() against a golden file.
+sh_test(
+    name = "gen_file_lists_golden_test",
+    srcs = ["gen_file_lists_golden_test.sh"],
+    args = [
+        "$(location file_lists.cmake.golden)",
+        "$(location :gen_file_lists)",
+    ],
+    data = [
+        "file_lists.cmake.golden",
+        ":gen_file_lists",
+    ],
+)

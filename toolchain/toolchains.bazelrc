@@ -1,0 +1,16 @@
+build:cross_config --crosstool_top=//toolchain:clang_suite
+build:cross_config --//toolchain:release=true
+build:cross_config --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
+
+build:linux-aarch_64 --config=cross_config --cpu=linux-aarch_64
+build:linux-aarch64 --config=cross_config --cpu=linux-aarch_64
+build:linux-ppcle_64 --config=cross_config --cpu=linux-ppcle_64
+build:linux-ppc64le --config=cross_config --cpu=linux-ppcle_64
+build:linux-s390_64 --config=cross_config --cpu=linux-s390_64
+build:linux-x86_32 --config=cross_config --cpu=linux-x86_32
+build:linux-i386 --config=cross_config --cpu=linux-x86_32
+build:linux-x86_64 --config=cross_config --cpu=linux-x86_64
+build:osx-aarch_64 --config=cross_config --action_env=MACOSX_DEPLOYMENT_TARGET=10.9 --cpu=osx-aarch_64
+build:osx-x86_64 --config=cross_config --action_env=MACOSX_DEPLOYMENT_TARGET=10.9 --cpu=osx-x86_64
+build:win32 --config=cross_config --cpu=win32
+build:win64 --config=cross_config --cpu=win64

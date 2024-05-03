@@ -1,0 +1,65 @@
+################################################################################
+# Protocol Buffers: C++ Runtime
+################################################################################
+
+# Most rules are under google/protobuf. This package exists for convenience.
+load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
+load("//upb/cmake:build_defs.bzl", "staleness_test")
+load("//conformance:defs.bzl", "conformance_test")
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["**"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//src:__pkg__"],
+)
+
+pkg_filegroup(
+    name = "all_dist_files",
+    srcs = [
+        ":dist_files",
+        "//src/google/protobuf:dist_files",
+        "//src/google/protobuf/compiler:dist_files",
+        "//src/google/protobuf/compiler/cpp:dist_files",
+        "//src/google/protobuf/compiler/csharp:dist_files",
+        "//src/google/protobuf/compiler/java:dist_files",
+        "//src/google/protobuf/compiler/objectivec:dist_files",
+        "//src/google/protobuf/compiler/php:dist_files",
+        "//src/google/protobuf/compiler/python:dist_files",
+        "//src/google/protobuf/compiler/ruby:dist_files",
+        "//src/google/protobuf/io:dist_files",
+        "//src/google/protobuf/stubs:dist_files",
+        "//src/google/protobuf/testing:dist_files",
+        "//src/google/protobuf/util:dist_files",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+conformance_test(
+    name = "conformance_test",
+    failure_list = "//conformance:failure_list_cpp.txt",
+    testee = "//conformance:conformance_cpp",
+    text_format_failure_list = "//conformance:text_format_failure_list_cpp.txt",
+)
+
+# Copy the generated file_lists.cmake into a place where the staleness test
+# below can use it.
+genrule(
+    name = "copy_cmake_lists",
+    srcs = ["//pkg:gen_src_file_lists"],
+    outs = ["cmake_copy/file_lists.cmake"],
+    cmd = "cp $< $@",
+    tags = ["manual"],
+    visibility = ["//visibility:private"],
+)
+
+staleness_test(
+    name = "cmake_lists_staleness_test",
+    outs = ["file_lists.cmake"],
+    generated_pattern = "cmake_copy/%s",
+    # Only run this test if it is explicitly specified on the command line (not
+    # via //src:all or ...). This file will be automatically updated in a
+    # GitHub action, so developers should not worry about failures from this
+    # test.
+    tags = ["manual"],
+)

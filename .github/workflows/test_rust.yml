@@ -1,0 +1,32 @@
+name: Rust Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v2
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: rust_linux
+          bazel: >-
+            test //rust:protobuf_upb_test //rust:protobuf_cpp_test
+            //rust/test/rust_proto_library_unit_test:rust_upb_aspect_test
+            //src/google/protobuf/compiler/rust/...

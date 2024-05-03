@@ -1,33 +1,10 @@
 #region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using System;
@@ -42,13 +19,17 @@ namespace Google.Protobuf
         private const int LittleEndian64Size = 8;
         private const int LittleEndian32Size = 4;        
 
+        internal const int DoubleSize = LittleEndian64Size;
+        internal const int FloatSize = LittleEndian32Size;
+        internal const int BoolSize = 1;
+
         /// <summary>
         /// Computes the number of bytes that would be needed to encode a
         /// double field, including the tag.
         /// </summary>
         public static int ComputeDoubleSize(double value)
         {
-            return LittleEndian64Size;
+            return DoubleSize;
         }
 
         /// <summary>
@@ -57,7 +38,7 @@ namespace Google.Protobuf
         /// </summary>
         public static int ComputeFloatSize(float value)
         {
-            return LittleEndian32Size;
+            return FloatSize;
         }
 
         /// <summary>
@@ -119,7 +100,7 @@ namespace Google.Protobuf
         /// </summary>
         public static int ComputeBoolSize(bool value)
         {
-            return 1;
+            return BoolSize;
         }
 
         /// <summary>
@@ -128,7 +109,7 @@ namespace Google.Protobuf
         /// </summary>
         public static int ComputeStringSize(String value)
         {
-            int byteArraySize = Utf8Encoding.GetByteCount(value);
+            int byteArraySize = WritingPrimitives.Utf8Encoding.GetByteCount(value);
             return ComputeLengthSize(byteArraySize) + byteArraySize;
         }
 
@@ -204,7 +185,7 @@ namespace Google.Protobuf
         /// </summary>
         public static int ComputeSInt32Size(int value)
         {
-            return ComputeRawVarint32Size(EncodeZigZag32(value));
+            return ComputeRawVarint32Size(WritingPrimitives.EncodeZigZag32(value));
         }
 
         /// <summary>
@@ -213,7 +194,7 @@ namespace Google.Protobuf
         /// </summary>
         public static int ComputeSInt64Size(long value)
         {
-            return ComputeRawVarint64Size(EncodeZigZag64(value));
+            return ComputeRawVarint64Size(WritingPrimitives.EncodeZigZag64(value));
         }
 
         /// <summary>

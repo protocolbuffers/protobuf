@@ -1,0 +1,609 @@
+# Bazel (https://bazel.build/) BUILD file for Protobuf.
+
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library")
+load("@rules_java//java:defs.bzl", "java_lite_proto_library", "java_proto_library")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+load(":protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library", "internal_ruby_proto_library")
+
+licenses(["notice"])
+
+exports_files(["LICENSE"])
+
+################################################################################
+# Well Known Types Proto Library Rules
+#
+# https://developers.google.com/protocol-buffers/docs/reference/google.protobuf
+################################################################################
+# These proto_library rules can be used with one of the language specific proto
+# library rules i.e. java_proto_library:
+#
+# java_proto_library(
+#   name = "any_java_proto",
+#   deps = ["@com_google_protobuf//:any_proto"],
+# )
+################################################################################
+
+alias(
+    name = "any_proto",
+    actual = "//src/google/protobuf:any_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "api_proto",
+    actual = "//src/google/protobuf:api_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "duration_proto",
+    actual = "//src/google/protobuf:duration_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "empty_proto",
+    actual = "//src/google/protobuf:empty_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "field_mask_proto",
+    actual = "//src/google/protobuf:field_mask_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "source_context_proto",
+    actual = "//src/google/protobuf:source_context_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "struct_proto",
+    actual = "//src/google/protobuf:struct_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "timestamp_proto",
+    actual = "//src/google/protobuf:timestamp_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "type_proto",
+    actual = "//src/google/protobuf:type_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "wrappers_proto",
+    actual = "//src/google/protobuf:wrappers_proto",
+    visibility = ["//visibility:public"],
+)
+
+# Source files: these are aliases to a filegroup, not a `proto_library`.
+#
+# (This is _probably_ not what you want.)
+alias(
+    name = "lite_well_known_protos",
+    actual = "//src/google/protobuf:well_known_type_protos",  # filegroup
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "well_known_type_protos",
+    actual = "//src/google/protobuf:well_known_type_protos",  # filegroup
+    visibility = ["//visibility:public"],
+)
+
+# Built-in runtime protos: these are part of protobuf's internal
+# implementation, but are not Well-Known Types.
+
+alias(
+    name = "cpp_features_proto",
+    actual = "//src/google/protobuf:cpp_features_proto",  # proto_library
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "descriptor_proto",
+    actual = "//src/google/protobuf:descriptor_proto",  # proto_library
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "descriptor_proto_srcs",
+    actual = "//src/google/protobuf:descriptor_proto_srcs",  # filegroup
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "compiler_plugin_proto",
+    actual = "//src/google/protobuf/compiler:plugin_proto",  # proto_library
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cc_wkt_protos",
+    deprecation = "Only for backward compatibility. Do not use.",
+    visibility = ["//visibility:public"],
+)
+
+# Source protos that are typically part of the protobuf runtime.
+#
+# DEPRECATED: Prefer :well_known_type_protos for the Well-Known Types
+# (https://developers.google.com/protocol-buffers/docs/reference/google.protobuf)
+# or :descriptor_proto(_srcs) for descriptor.proto (source), or
+# :compiler_plugin_proto for compiler/plugin.proto.
+filegroup(
+    name = "well_known_protos",
+    srcs = [
+        ":descriptor_proto_srcs",
+        ":well_known_type_protos",
+        "//src/google/protobuf/compiler:plugin.proto",
+    ],
+    deprecation = "Prefer :well_known_type_protos instead.",
+    visibility = ["//visibility:public"],
+)
+
+internal_ruby_proto_library(
+    name = "well_known_ruby_protos",
+    srcs = [":well_known_protos"],
+    default_runtime = "",
+    includes = ["src"],
+    visibility = [
+        "//conformance:__pkg__",
+        "//ruby:__subpackages__",
+    ],
+)
+
+################################################################################
+# Protocol Buffers Compiler
+################################################################################
+
+alias(
+    name = "protoc_lib",
+    actual = "//src/google/protobuf/compiler:protoc_lib",
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "protoc",
+    copts = COPTS,
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
+    deps = ["//src/google/protobuf/compiler:protoc_lib"],
+)
+
+cc_binary(
+    name = "protoc_static",
+    copts = COPTS,
+    features = select({
+        # This isn't possible on mac because there is no static library for lcrt0.o
+        "@platforms//os:osx": [],
+        "//build_defs:config_osx": [],
+        # When cross-compiling we need to statically link all C++ libraries.
+        "//conditions:default": ["fully_static_link"],
+    }),
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
+    deps = ["//src/google/protobuf/compiler:protoc_lib"],
+)
+
+################################################################################
+# C++ runtime
+################################################################################
+
+# Expose the runtime for the proto_lang_toolchain so that it can also be used in
+# a user-defined proto_lang_toolchain.
+alias(
+    name = "protobuf_nowkt",
+    actual = "//src/google/protobuf:protobuf_nowkt",
+    visibility = ["//visibility:public"],
+)
+
+# The "lite" runtime works for .proto files that specify the option:
+#     optimize_for = LITE_RUNTIME;
+#
+# The lite runtime does not include the `Reflection` APIs (including
+# `Descriptor` and related types) or Well-Known Types.
+#
+# See also:
+#     https://developers.google.com/protocol-buffers/docs/reference/cpp-generated#message
+#     https://developers.google.com/protocol-buffers/docs/reference/google.protobuf
+alias(
+    name = "protobuf_lite",
+    actual = "//src/google/protobuf:protobuf_lite",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "protobuf",
+    copts = COPTS,
+    include_prefix = "google/protobuf/io",
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/util:delimited_message_util",
+        "//src/google/protobuf/util:differencer",
+        "//src/google/protobuf/util:field_mask_util",
+        "//src/google/protobuf/util:json_util",
+        "//src/google/protobuf/util:time_util",
+        "//src/google/protobuf/util:type_resolver_util",
+    ],
+)
+
+# This provides just the header files for use in projects that need to build
+# shared libraries for dynamic loading. This target is available until Bazel
+# adds native support for such use cases.
+# TODO: Remove this target once the support gets added to Bazel.
+alias(
+    name = "protobuf_headers",
+    actual = "//src/google/protobuf:protobuf_headers",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "json",
+    actual = "//src/google/protobuf/json",
+    visibility = ["//visibility:public"],
+)
+
+################################################################################
+# Java support
+################################################################################
+
+alias(
+    name = "protobuf_java",
+    actual = "//java/core",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "protobuf_javalite",
+    actual = "//java/lite",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "protobuf_java_util",
+    actual = "//java/util",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "java_toolchain",
+    actual = "//java/core:toolchain",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "javalite_toolchain",
+    actual = "//java/lite:toolchain",
+    visibility = ["//visibility:public"],
+)
+
+################################################################################
+# Python support
+################################################################################
+
+alias(
+    name = "protobuf_python",
+    actual = "//python:protobuf_python",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "python_srcs",
+    actual = "//python:python_srcs",
+    visibility = ["//python:__subpackages__"],
+)
+
+alias(
+    name = "python_test_srcs",
+    actual = "//python:python_test_srcs",
+    visibility = ["//python:__subpackages__"],
+)
+
+alias(
+    name = "well_known_types_py_pb2",
+    actual = "//python:well_known_types_py_pb2",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "python_common_test_protos",
+    actual = "//python:python_common_test_protos",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "python_specific_test_protos",
+    actual = "//python:python_specific_test_protos",
+    visibility = ["//visibility:public"],
+)
+
+proto_lang_toolchain(
+    name = "cc_toolchain",
+    blacklisted_protos = [
+        "//:compiler_plugin_proto",
+        "//:descriptor_proto",
+    ],
+    command_line = "--cpp_out=$(OUT)",
+    runtime = "//src/google/protobuf:protobuf_nowkt",
+    visibility = ["//visibility:public"],
+)
+
+################################################################################
+# Objective-C support
+################################################################################
+
+alias(
+    name = "objectivec",
+    actual = "//objectivec",
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "protobuf_objc",
+    actual = "//objectivec",
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+)
+
+################################################################################
+# Test protos
+################################################################################
+
+alias(
+    name = "lite_test_proto_srcs",
+    actual = "//src/google/protobuf:lite_test_proto_srcs",  # proto_library
+    visibility = ["//:__subpackages__"],
+)
+
+alias(
+    name = "lite_test_protos",
+    actual = "//src/google/protobuf:lite_test_protos",  # proto_library
+    visibility = ["//:__subpackages__"],
+)
+
+alias(
+    name = "test_proto_srcs",
+    actual = "//src/google/protobuf:test_proto_srcs",  # filegroup
+    visibility = ["//:__subpackages__"],
+)
+
+alias(
+    name = "test_protos",
+    actual = "//src/google/protobuf:test_protos",  # proto_library
+    visibility = ["//:__subpackages__"],
+)
+
+# Validate generated proto source inputs:
+
+genrule(
+    name = "generated_protos",
+    testonly = 1,
+    srcs = ["//src/google/protobuf:test_proto_srcs"],
+    outs = ["unittest_gen_import.proto"],
+    cmd = "cat src/google/protobuf/unittest_import.proto > $@",
+)
+
+proto_library(
+    name = "generated_protos_proto",
+    testonly = 1,
+    srcs = [":generated_protos"],
+    deps = ["//src/google/protobuf:generic_test_protos"],
+)
+
+internal_py_proto_library(
+    name = "generated_protos_py",
+    testonly = 1,
+    srcs = [":generated_protos"],
+    default_runtime = "",
+    protoc = ":protoc",
+    deps = ["//python:python_common_test_protos"],
+)
+
+################################################################################
+# Conformance tests
+################################################################################
+
+cc_proto_library(
+    name = "test_messages_proto2_cc_proto",
+    visibility = [
+        "//conformance:__pkg__",
+        "//src:__subpackages__",
+    ],
+    deps = ["//src/google/protobuf:test_messages_proto2_proto"],
+)
+
+cc_proto_library(
+    name = "test_messages_proto3_cc_proto",
+    visibility = [
+        "//conformance:__pkg__",
+        "//src:__subpackages__",
+    ],
+    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
+)
+
+java_proto_library(
+    name = "test_messages_proto2_java_proto",
+    visibility = [
+        "//conformance:__pkg__",
+        "//java:__subpackages__",
+    ],
+    deps = ["//src/google/protobuf:test_messages_proto2_proto"],
+)
+
+java_proto_library(
+    name = "test_messages_proto3_java_proto",
+    visibility = [
+        "//conformance:__pkg__",
+        "//java:__subpackages__",
+    ],
+    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
+)
+
+java_lite_proto_library(
+    name = "test_messages_proto2_java_proto_lite",
+    visibility = [
+        "//conformance:__pkg__",
+        "//java:__subpackages__",
+    ],
+    deps = ["//src/google/protobuf:test_messages_proto2_proto"],
+)
+
+java_lite_proto_library(
+    name = "test_messages_proto3_java_proto_lite",
+    visibility = [
+        "//conformance:__pkg__",
+        "//java:__subpackages__",
+    ],
+    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
+)
+
+internal_objc_proto_library(
+    name = "test_messages_proto2_objc_proto",
+    testonly = 1,
+    srcs = ["//src/google/protobuf:test_messages_proto2.proto"],
+    includes = ["src/google/protobuf"],
+    visibility = [
+        "//conformance:__pkg__",
+        "//objectivec:__subpackages__",
+    ],
+)
+
+internal_objc_proto_library(
+    name = "test_messages_proto3_objc_proto",
+    testonly = 1,
+    srcs = ["//src/google/protobuf:test_messages_proto3.proto"],
+    includes = [
+        "src/google/protobuf",
+        # The above must come first.
+        "src",
+    ],
+    proto_deps = [":well_known_protos"],
+    visibility = [
+        "//conformance:__pkg__",
+        "//objectivec:__subpackages__",
+    ],
+)
+
+internal_php_proto_library(
+    name = "test_messages_proto3_php_proto",
+    testonly = 1,
+    srcs = ["//src/google/protobuf:test_messages_proto3.proto"],
+    outs = [
+        "GPBMetadata/TestMessagesProto3.php",
+        "Protobuf_test_messages/Proto3/EnumOnlyProto3.php",
+        "Protobuf_test_messages/Proto3/EnumOnlyProto3/PBBool.php",
+        "Protobuf_test_messages/Proto3/ForeignEnum.php",
+        "Protobuf_test_messages/Proto3/ForeignMessage.php",
+        "Protobuf_test_messages/Proto3/NullHypothesisProto3.php",
+        "Protobuf_test_messages/Proto3/TestAllTypesProto3.php",
+        "Protobuf_test_messages/Proto3/TestAllTypesProto3/AliasedEnum.php",
+        "Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedEnum.php",
+        "Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedMessage.php",
+    ],
+    includes = [
+        "src/google/protobuf",
+        # The above must come first.
+        "src",
+    ],
+    proto_deps = [":well_known_protos"],
+    visibility = [
+        "//conformance:__pkg__",
+        "//php:__subpackages__",
+    ],
+)
+
+internal_ruby_proto_library(
+    name = "test_messages_proto2_ruby_proto",
+    testonly = 1,
+    srcs = ["//src/google/protobuf:test_messages_proto2.proto"],
+    includes = ["src/google/protobuf"],
+    visibility = [
+        "//conformance:__pkg__",
+        "//ruby:__subpackages__",
+    ],
+)
+
+internal_ruby_proto_library(
+    name = "test_messages_proto3_ruby_proto",
+    testonly = 1,
+    srcs = ["//src/google/protobuf:test_messages_proto3.proto"],
+    includes = [
+        "src/google/protobuf",
+        # The above must come first.
+        "src",
+    ],
+    visibility = [
+        "//conformance:__pkg__",
+        "//ruby:__subpackages__",
+    ],
+    deps = [":well_known_ruby_protos"],
+)
+
+filegroup(
+    name = "bzl_srcs",
+    srcs = glob(["**/*.bzl"]),
+    visibility = ["//visibility:public"],
+)
+
+################################################################################
+# Packaging rules
+################################################################################
+
+# Files included in all source distributions
+pkg_files(
+    name = "common_dist_files",
+    srcs = glob(
+        [
+            "*.bzl",
+            "cmake/*.cmake",
+            "cmake/*.in",
+            "editors/*",
+        ],
+        allow_empty = True,
+    ) + [
+        "BUILD.bazel",
+        "CMakeLists.txt",
+        "CONTRIBUTORS.txt",
+        "LICENSE",
+        "README.md",
+        "WORKSPACE",
+        "cmake/README.md",
+        "generate_descriptor_proto.sh",
+        "maven_install.json",
+        "//third_party:BUILD.bazel",
+        "//third_party:zlib.BUILD",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
+)
+
+# Additional files for C#
+pkg_files(
+    name = "csharp_dist_files",
+    srcs = [
+        "global.json",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+# Additional files for ObjC
+pkg_files(
+    name = "objectivec_dist_files",
+    srcs = [
+        "Protobuf.podspec",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)

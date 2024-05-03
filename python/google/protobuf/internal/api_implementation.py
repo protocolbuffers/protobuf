@@ -1,104 +1,104 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 """Determine which implementation of the protobuf API is used in this process.
 """
 
+import importlib
 import os
-import warnings
 import sys
+import warnings
 
+
+def _ApiVersionToImplementationType(api_version):
+  if api_version == 2:
+    return 'cpp'
+  if api_version == 1:
+    raise ValueError('api_version=1 is no longer supported.')
+  if api_version == 0:
+    return 'python'
+  return None
+
+
+_implementation_type = None
 try:
   # pylint: disable=g-import-not-at-top
   from google.protobuf.internal import _api_implementation
   # The compile-time constants in the _api_implementation module can be used to
   # switch to a certain implementation of the Python API at build time.
-  _api_version = _api_implementation.api_version
-  _proto_extension_modules_exist_in_build = True
+  _implementation_type = _ApiVersionToImplementationType(
+      _api_implementation.api_version)
 except ImportError:
-  _api_version = -1  # Unspecified by compiler flags.
-  _proto_extension_modules_exist_in_build = False
+  pass  # Unspecified by compiler flags.
 
-if _api_version == 1:
-  raise ValueError('api_version=1 is no longer supported.')
-if _api_version < 0:  # Still unspecified?
+
+def _CanImport(mod_name):
   try:
-    # The presence of this module in a build allows the proto implementation to
-    # be upgraded merely via build deps rather than a compiler flag or the
-    # runtime environment variable.
-    # pylint: disable=g-import-not-at-top
-    from google.protobuf import _use_fast_cpp_protos
+    mod = importlib.import_module(mod_name)
     # Work around a known issue in the classic bootstrap .par import hook.
-    if not _use_fast_cpp_protos:
-      raise ImportError('_use_fast_cpp_protos import succeeded but was None')
-    del _use_fast_cpp_protos
-    _api_version = 2
+    if not mod:
+      raise ImportError(mod_name + ' import succeeded but was None')
+    return True
   except ImportError:
-    if _proto_extension_modules_exist_in_build:
-      if sys.version_info[0] >= 3:  # Python 3 defaults to C++ impl v2.
-        _api_version = 2
-      # TODO(b/17427486): Make Python 2 default to C++ impl v2.
+    return False
 
-_default_implementation_type = (
-    'python' if _api_version <= 0 else 'cpp')
+
+if _implementation_type is None:
+  if _CanImport('google._upb._message'):
+    _implementation_type = 'upb'
+  elif _CanImport('google.protobuf.pyext._message'):
+    _implementation_type = 'cpp'
+  else:
+    _implementation_type = 'python'
+
 
 # This environment variable can be used to switch to a certain implementation
 # of the Python API, overriding the compile-time constants in the
-# _api_implementation module. Right now only 'python' and 'cpp' are valid
-# values. Any other value will be ignored.
+# _api_implementation module. Right now only 'python', 'cpp' and 'upb' are
+# valid values. Any other value will raise error.
 _implementation_type = os.getenv('PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION',
-                                 _default_implementation_type)
+                                 _implementation_type)
 
-if _implementation_type != 'python':
-  _implementation_type = 'cpp'
+if _implementation_type not in ('python', 'cpp', 'upb'):
+  raise ValueError('PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION {0} is not '
+                   'supported. Please set to \'python\', \'cpp\' or '
+                   '\'upb\'.'.format(_implementation_type))
 
 if 'PyPy' in sys.version and _implementation_type == 'cpp':
   warnings.warn('PyPy does not work yet with cpp protocol buffers. '
                 'Falling back to the python implementation.')
   _implementation_type = 'python'
 
-# This environment variable can be used to switch between the two
-# 'cpp' implementations, overriding the compile-time constants in the
-# _api_implementation module. Right now only '2' is supported. Any other
-# value will cause an error to be raised.
-_implementation_version_str = os.getenv(
-    'PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION', '2')
+_c_module = None
 
-if _implementation_version_str != '2':
-  raise ValueError(
-      'unsupported PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION: "' +
-      _implementation_version_str + '" (supported versions: 2)'
-      )
+if _implementation_type == 'cpp':
+  try:
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf.pyext import _message
+    sys.modules['google3.net.proto2.python.internal.cpp._message'] = _message
+    _c_module = _message
+    del _message
+  except ImportError:
+    # TODO: fail back to python
+    warnings.warn(
+        'Selected implementation cpp is not available.')
+    pass
 
-_implementation_version = int(_implementation_version_str)
-
+if _implementation_type == 'upb':
+  try:
+    # pylint: disable=g-import-not-at-top
+    from google._upb import _message
+    _c_module = _message
+    del _message
+  except ImportError:
+    warnings.warn('Selected implementation upb is not available. '
+                  'Falling back to the python implementation.')
+    _implementation_type = 'python'
+    pass
 
 # Detect if serialization should be deterministic by default
 try:
@@ -130,8 +130,9 @@ def Type():
 
 
 # See comment on 'Type' above.
+# TODO: Remove the API, it returns a constant. b/228102101
 def Version():
-  return _implementation_version
+  return 2
 
 
 # For internal use only

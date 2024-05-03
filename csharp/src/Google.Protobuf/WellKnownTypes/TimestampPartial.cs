@@ -1,33 +1,10 @@
 ﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using System;
@@ -36,7 +13,7 @@ using System.Text;
 
 namespace Google.Protobuf.WellKnownTypes
 {
-    public partial class Timestamp : ICustomDiagnosticMessage
+    public partial class Timestamp : ICustomDiagnosticMessage, IComparable<Timestamp>
     {
         private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         // Constants determined programmatically, but then hard-coded so they can be constant expressions.
@@ -59,8 +36,8 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>The difference between the two specified timestamps.</returns>
         public static Duration operator -(Timestamp lhs, Timestamp rhs)
         {
-            ProtoPreconditions.CheckNotNull(lhs, "lhs");
-            ProtoPreconditions.CheckNotNull(rhs, "rhs");
+            ProtoPreconditions.CheckNotNull(lhs, nameof(lhs));
+            ProtoPreconditions.CheckNotNull(rhs, nameof(rhs));
             checked
             {
                 return Duration.Normalize(lhs.Seconds - rhs.Seconds, lhs.Nanos - rhs.Nanos);
@@ -75,8 +52,8 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>The result of adding the duration to the timestamp.</returns>
         public static Timestamp operator +(Timestamp lhs, Duration rhs)
         {
-            ProtoPreconditions.CheckNotNull(lhs, "lhs");
-            ProtoPreconditions.CheckNotNull(rhs, "rhs");
+            ProtoPreconditions.CheckNotNull(lhs, nameof(lhs));
+            ProtoPreconditions.CheckNotNull(rhs, nameof(rhs));
             checked
             {
                 return Normalize(lhs.Seconds + rhs.Seconds, lhs.Nanos + rhs.Nanos);
@@ -91,8 +68,8 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>The result of subtracting the duration from the timestamp.</returns>
         public static Timestamp operator -(Timestamp lhs, Duration rhs)
         {
-            ProtoPreconditions.CheckNotNull(lhs, "lhs");
-            ProtoPreconditions.CheckNotNull(rhs, "rhs");
+            ProtoPreconditions.CheckNotNull(lhs, nameof(lhs));
+            ProtoPreconditions.CheckNotNull(rhs, nameof(rhs));
             checked
             {
                 return Normalize(lhs.Seconds - rhs.Seconds, lhs.Nanos - rhs.Nanos);
@@ -220,6 +197,109 @@ namespace Google.Protobuf.WellKnownTypes
             {
                 throw new InvalidOperationException("Non-normalized timestamp value");
             }
+        }
+
+        /// <summary>
+        /// Given another timestamp, returns 0 if the timestamps are equivalent, -1 if this timestamp precedes the other, and 1 otherwise
+        /// </summary>
+        /// <remarks>
+        /// Make sure the timestamps are normalized. Comparing non-normalized timestamps is not specified and may give unexpected results.
+        /// </remarks>
+        /// <param name="other">Timestamp to compare</param>
+        /// <returns>an integer indicating whether this timestamp precedes or follows the other</returns>
+        public int CompareTo(Timestamp other)
+        {
+            return other == null ? 1
+                : Seconds < other.Seconds ? -1
+                : Seconds > other.Seconds ? 1
+                : Nanos < other.Nanos ? -1
+                : Nanos > other.Nanos ? 1
+                : 0;
+        }
+
+        /// <summary>
+        /// Compares two timestamps and returns whether the first is less than (chronologically precedes) the second
+        /// </summary>
+        /// <remarks>
+        /// Make sure the timestamps are normalized. Comparing non-normalized timestamps is not specified and may give unexpected results.
+        /// </remarks>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>true if a precedes b</returns>
+        public static bool operator <(Timestamp a, Timestamp b)
+        {
+            return a.CompareTo(b) < 0;
+        }
+
+        /// <summary>
+        /// Compares two timestamps and returns whether the first is greater than (chronologically follows) the second
+        /// </summary>
+        /// <remarks>
+        /// Make sure the timestamps are normalized. Comparing non-normalized timestamps is not specified and may give unexpected results.
+        /// </remarks>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>true if a follows b</returns>
+        public static bool operator >(Timestamp a, Timestamp b)
+        {
+            return a.CompareTo(b) > 0;
+        }
+
+        /// <summary>
+        /// Compares two timestamps and returns whether the first is less than (chronologically precedes) the second
+        /// </summary>
+        /// <remarks>
+        /// Make sure the timestamps are normalized. Comparing non-normalized timestamps is not specified and may give unexpected results.
+        /// </remarks>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>true if a precedes b</returns>
+        public static bool operator <=(Timestamp a, Timestamp b)
+        {
+            return a.CompareTo(b) <= 0;
+        }
+
+        /// <summary>
+        /// Compares two timestamps and returns whether the first is greater than (chronologically follows) the second
+        /// </summary>
+        /// <remarks>
+        /// Make sure the timestamps are normalized. Comparing non-normalized timestamps is not specified and may give unexpected results.
+        /// </remarks>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>true if a follows b</returns>
+        public static bool operator >=(Timestamp a, Timestamp b)
+        {
+            return a.CompareTo(b) >= 0;
+        }
+
+
+        /// <summary>
+        /// Returns whether two timestamps are equivalent
+        /// </summary>
+        /// <remarks>
+        /// Make sure the timestamps are normalized. Comparing non-normalized timestamps is not specified and may give unexpected results.
+        /// </remarks>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>true if the two timestamps refer to the same nanosecond</returns>
+        public static bool operator ==(Timestamp a, Timestamp b)
+        {
+            return ReferenceEquals(a, b) || (a is null ? (b is null) : a.Equals(b));
+        }
+
+        /// <summary>
+        /// Returns whether two timestamps differ
+        /// </summary>
+        /// <remarks>
+        /// Make sure the timestamps are normalized. Comparing non-normalized timestamps is not specified and may give unexpected results.
+        /// </remarks>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>true if the two timestamps differ</returns>
+        public static bool operator !=(Timestamp a, Timestamp b)
+        {
+            return !(a == b);
         }
 
         /// <summary>

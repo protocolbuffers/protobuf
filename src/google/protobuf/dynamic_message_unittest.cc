@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -40,27 +17,22 @@
 // reflection_ops_unittest, cover the rest of the functionality used by
 // DynamicMessage.
 
+#include "google/protobuf/dynamic_message.h"
+
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/test_util.h>
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/unittest_no_field_presence.pb.h>
-
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/test_util.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_no_field_presence.pb.h"
 
 namespace google {
 namespace protobuf {
 
-class DynamicMessageTest : public testing::Test {
+class DynamicMessageTest : public ::testing::TestWithParam<bool> {
  protected:
   DescriptorPool pool_;
   DynamicMessageFactory factory_;
@@ -75,9 +47,9 @@ class DynamicMessageTest : public testing::Test {
   const Descriptor* proto3_descriptor_;
   const Message* proto3_prototype_;
 
-  DynamicMessageTest(): factory_(&pool_) {}
+  DynamicMessageTest() : factory_(&pool_) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     // We want to make sure that DynamicMessage works (particularly with
     // extensions) even if we use descriptors that are *not* from compiled-in
     // types, so we make copies of the descriptors for unittest.proto and
@@ -89,40 +61,39 @@ class DynamicMessageTest : public testing::Test {
 
     unittest::TestAllTypes::descriptor()->file()->CopyTo(&unittest_file);
     unittest_import::ImportMessage::descriptor()->file()->CopyTo(
-      &unittest_import_file);
+        &unittest_import_file);
     unittest_import::PublicImportMessage::descriptor()->file()->CopyTo(
-      &unittest_import_public_file);
-    proto2_nofieldpresence_unittest::TestAllTypes::descriptor()->
-        file()->CopyTo(&unittest_no_field_presence_file);
+        &unittest_import_public_file);
+    proto2_nofieldpresence_unittest::TestAllTypes::descriptor()->file()->CopyTo(
+        &unittest_no_field_presence_file);
 
-    ASSERT_TRUE(pool_.BuildFile(unittest_import_public_file) != NULL);
-    ASSERT_TRUE(pool_.BuildFile(unittest_import_file) != NULL);
-    ASSERT_TRUE(pool_.BuildFile(unittest_file) != NULL);
-    ASSERT_TRUE(pool_.BuildFile(unittest_no_field_presence_file) != NULL);
+    ASSERT_TRUE(pool_.BuildFile(unittest_import_public_file) != nullptr);
+    ASSERT_TRUE(pool_.BuildFile(unittest_import_file) != nullptr);
+    ASSERT_TRUE(pool_.BuildFile(unittest_file) != nullptr);
+    ASSERT_TRUE(pool_.BuildFile(unittest_no_field_presence_file) != nullptr);
 
     descriptor_ = pool_.FindMessageTypeByName("protobuf_unittest.TestAllTypes");
-    ASSERT_TRUE(descriptor_ != NULL);
+    ASSERT_TRUE(descriptor_ != nullptr);
     prototype_ = factory_.GetPrototype(descriptor_);
 
     extensions_descriptor_ =
-      pool_.FindMessageTypeByName("protobuf_unittest.TestAllExtensions");
-    ASSERT_TRUE(extensions_descriptor_ != NULL);
+        pool_.FindMessageTypeByName("protobuf_unittest.TestAllExtensions");
+    ASSERT_TRUE(extensions_descriptor_ != nullptr);
     extensions_prototype_ = factory_.GetPrototype(extensions_descriptor_);
 
     packed_descriptor_ =
-      pool_.FindMessageTypeByName("protobuf_unittest.TestPackedTypes");
-    ASSERT_TRUE(packed_descriptor_ != NULL);
+        pool_.FindMessageTypeByName("protobuf_unittest.TestPackedTypes");
+    ASSERT_TRUE(packed_descriptor_ != nullptr);
     packed_prototype_ = factory_.GetPrototype(packed_descriptor_);
 
     oneof_descriptor_ =
-      pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2");
-    ASSERT_TRUE(oneof_descriptor_ != NULL);
+        pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2");
+    ASSERT_TRUE(oneof_descriptor_ != nullptr);
     oneof_prototype_ = factory_.GetPrototype(oneof_descriptor_);
 
-    proto3_descriptor_ =
-      pool_.FindMessageTypeByName(
-          "proto2_nofieldpresence_unittest.TestAllTypes");
-    ASSERT_TRUE(proto3_descriptor_ != NULL);
+    proto3_descriptor_ = pool_.FindMessageTypeByName(
+        "proto2_nofieldpresence_unittest.TestAllTypes");
+    ASSERT_TRUE(proto3_descriptor_ != nullptr);
     proto3_prototype_ = factory_.GetPrototype(proto3_descriptor_);
   }
 };
@@ -144,54 +115,72 @@ TEST_F(DynamicMessageTest, Defaults) {
   reflection_tester.ExpectClearViaReflection(*prototype_);
 }
 
-TEST_F(DynamicMessageTest, IndependentOffsets) {
+TEST_P(DynamicMessageTest, IndependentOffsets) {
   // Check that all fields have independent offsets by setting each
   // one to a unique value then checking that they all still have those
   // unique values (i.e. they don't stomp each other).
-  google::protobuf::scoped_ptr<Message> message(prototype_->New());
+  Arena arena;
+  Message* message = prototype_->New(GetParam() ? &arena : nullptr);
   TestUtil::ReflectionTester reflection_tester(descriptor_);
 
-  reflection_tester.SetAllFieldsViaReflection(message.get());
+  reflection_tester.SetAllFieldsViaReflection(message);
   reflection_tester.ExpectAllFieldsSetViaReflection(*message);
+
+  if (!GetParam()) {
+    delete message;
+  }
 }
 
-TEST_F(DynamicMessageTest, Extensions) {
+TEST_P(DynamicMessageTest, Extensions) {
   // Check that extensions work.
-  google::protobuf::scoped_ptr<Message> message(extensions_prototype_->New());
+  Arena arena;
+  Message* message = extensions_prototype_->New(GetParam() ? &arena : nullptr);
   TestUtil::ReflectionTester reflection_tester(extensions_descriptor_);
 
-  reflection_tester.SetAllFieldsViaReflection(message.get());
+  reflection_tester.SetAllFieldsViaReflection(message);
   reflection_tester.ExpectAllFieldsSetViaReflection(*message);
+
+  if (!GetParam()) {
+    delete message;
+  }
 }
 
-TEST_F(DynamicMessageTest, PackedFields) {
+TEST_P(DynamicMessageTest, PackedFields) {
   // Check that packed fields work properly.
-  google::protobuf::scoped_ptr<Message> message(packed_prototype_->New());
+  Arena arena;
+  Message* message = packed_prototype_->New(GetParam() ? &arena : nullptr);
   TestUtil::ReflectionTester reflection_tester(packed_descriptor_);
 
-  reflection_tester.SetPackedFieldsViaReflection(message.get());
+  reflection_tester.SetPackedFieldsViaReflection(message);
   reflection_tester.ExpectPackedFieldsSetViaReflection(*message);
+
+  if (!GetParam()) {
+    delete message;
+  }
 }
 
-TEST_F(DynamicMessageTest, Oneof) {
+TEST_P(DynamicMessageTest, Oneof) {
   // Check that oneof fields work properly.
-  google::protobuf::scoped_ptr<Message> message(oneof_prototype_->New());
+  Arena arena;
+  Message* message = oneof_prototype_->New(GetParam() ? &arena : nullptr);
 
   // Check default values.
   const Descriptor* descriptor = message->GetDescriptor();
   const Reflection* reflection = message->GetReflection();
-  EXPECT_EQ(0, reflection->GetInt32(
-      *message, descriptor->FindFieldByName("foo_int")));
+  EXPECT_EQ(0, reflection->GetInt32(*message,
+                                    descriptor->FindFieldByName("foo_int")));
   EXPECT_EQ("", reflection->GetString(
-      *message, descriptor->FindFieldByName("foo_string")));
+                    *message, descriptor->FindFieldByName("foo_string")));
+  EXPECT_EQ("", reflection->GetString(*message,
+                                      descriptor->FindFieldByName("foo_cord")));
   EXPECT_EQ("", reflection->GetString(
-      *message, descriptor->FindFieldByName("foo_cord")));
+                    *message, descriptor->FindFieldByName("foo_string_piece")));
   EXPECT_EQ("", reflection->GetString(
-      *message, descriptor->FindFieldByName("foo_string_piece")));
-  EXPECT_EQ("", reflection->GetString(
-      *message, descriptor->FindFieldByName("foo_bytes")));
-  EXPECT_EQ(unittest::TestOneof2::FOO, reflection->GetEnum(
-      *message, descriptor->FindFieldByName("foo_enum"))->number());
+                    *message, descriptor->FindFieldByName("foo_bytes")));
+  EXPECT_EQ(
+      unittest::TestOneof2::FOO,
+      reflection->GetEnum(*message, descriptor->FindFieldByName("foo_enum"))
+          ->number());
   const Descriptor* nested_descriptor;
   const Message* nested_prototype;
   nested_descriptor =
@@ -206,58 +195,79 @@ TEST_F(DynamicMessageTest, Oneof) {
       pool_.FindMessageTypeByName("protobuf_unittest.TestOneof2.FooGroup");
   foogroup_prototype = factory_.GetPrototype(foogroup_descriptor);
   EXPECT_EQ(foogroup_prototype,
-            &reflection->GetMessage(
-                *message, descriptor->FindFieldByName("foogroup")));
+            &reflection->GetMessage(*message,
+                                    descriptor->FindFieldByName("foogroup")));
   EXPECT_NE(foogroup_prototype,
             &reflection->GetMessage(
                 *message, descriptor->FindFieldByName("foo_lazy_message")));
-  EXPECT_EQ(5, reflection->GetInt32(
-      *message, descriptor->FindFieldByName("bar_int")));
+  EXPECT_EQ(5, reflection->GetInt32(*message,
+                                    descriptor->FindFieldByName("bar_int")));
   EXPECT_EQ("STRING", reflection->GetString(
-      *message, descriptor->FindFieldByName("bar_string")));
+                          *message, descriptor->FindFieldByName("bar_string")));
   EXPECT_EQ("CORD", reflection->GetString(
-      *message, descriptor->FindFieldByName("bar_cord")));
-  EXPECT_EQ("SPIECE", reflection->GetString(
-      *message, descriptor->FindFieldByName("bar_string_piece")));
+                        *message, descriptor->FindFieldByName("bar_cord")));
+  EXPECT_EQ("SPIECE",
+            reflection->GetString(
+                *message, descriptor->FindFieldByName("bar_string_piece")));
   EXPECT_EQ("BYTES", reflection->GetString(
-      *message, descriptor->FindFieldByName("bar_bytes")));
-  EXPECT_EQ(unittest::TestOneof2::BAR, reflection->GetEnum(
-      *message, descriptor->FindFieldByName("bar_enum"))->number());
+                         *message, descriptor->FindFieldByName("bar_bytes")));
+  EXPECT_EQ(
+      unittest::TestOneof2::BAR,
+      reflection->GetEnum(*message, descriptor->FindFieldByName("bar_enum"))
+          ->number());
 
   // Check set functions.
   TestUtil::ReflectionTester reflection_tester(oneof_descriptor_);
-  reflection_tester.SetOneofViaReflection(message.get());
+  reflection_tester.SetOneofViaReflection(message);
   reflection_tester.ExpectOneofSetViaReflection(*message);
+
+  if (!GetParam()) {
+    delete message;
+  }
 }
 
-TEST_F(DynamicMessageTest, SpaceUsed) {
-  // Test that SpaceUsed() works properly
+TEST_P(DynamicMessageTest, SpaceUsed) {
+  // Test that SpaceUsedLong() works properly
 
   // Since we share the implementation with generated messages, we don't need
   // to test very much here.  Just make sure it appears to be working.
 
-  google::protobuf::scoped_ptr<Message> message(prototype_->New());
+  Arena arena;
+  Message* message = prototype_->New(GetParam() ? &arena : nullptr);
   TestUtil::ReflectionTester reflection_tester(descriptor_);
 
-  int initial_space_used = message->SpaceUsed();
+  size_t initial_space_used = message->SpaceUsedLong();
 
-  reflection_tester.SetAllFieldsViaReflection(message.get());
-  EXPECT_LT(initial_space_used, message->SpaceUsed());
+  reflection_tester.SetAllFieldsViaReflection(message);
+  EXPECT_LT(initial_space_used, message->SpaceUsedLong());
+
+  if (!GetParam()) {
+    delete message;
+  }
 }
 
 TEST_F(DynamicMessageTest, Arena) {
   Arena arena;
   Message* message = prototype_->New(&arena);
-  (void)message;  // avoid unused-variable error.
+  Message* extension_message = extensions_prototype_->New(&arena);
+  Message* packed_message = packed_prototype_->New(&arena);
+  Message* oneof_message = oneof_prototype_->New(&arena);
+
+  // avoid unused-variable error.
+  (void)message;
+  (void)extension_message;
+  (void)packed_message;
+  (void)oneof_message;
   // Return without freeing: should not leak.
 }
+
 
 TEST_F(DynamicMessageTest, Proto3) {
   Message* message = proto3_prototype_->New();
   const Reflection* refl = message->GetReflection();
   const Descriptor* desc = message->GetDescriptor();
 
-  // Just test a single primtive and single message field here to make sure we
+  // Just test a single primitive and single message field here to make sure we
   // are getting the no-field-presence semantics elsewhere. DynamicMessage uses
   // GeneratedMessageReflection under the hood, so the rest should be fine as
   // long as GMR recognizes that we're using a proto3 message.
@@ -265,8 +275,8 @@ TEST_F(DynamicMessageTest, Proto3) {
       desc->FindFieldByName("optional_int32");
   const FieldDescriptor* optional_msg =
       desc->FindFieldByName("optional_nested_message");
-  EXPECT_TRUE(optional_int32 != NULL);
-  EXPECT_TRUE(optional_msg != NULL);
+  EXPECT_TRUE(optional_int32 != nullptr);
+  EXPECT_TRUE(optional_msg != nullptr);
 
   EXPECT_EQ(false, refl->HasField(*message, optional_int32));
   refl->SetInt32(message, optional_int32, 42);
@@ -286,6 +296,7 @@ TEST_F(DynamicMessageTest, Proto3) {
   delete message;
 }
 
+INSTANTIATE_TEST_SUITE_P(UseArena, DynamicMessageTest, ::testing::Bool());
 
 }  // namespace protobuf
 }  // namespace google

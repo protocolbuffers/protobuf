@@ -1,0 +1,17 @@
+{
+    "25.x": {
+        "protoc_version": "25.0",
+        "lts": false,
+        "date": "2023-11-01",
+        "languages": {
+            "cpp": "4.25.0",
+            "csharp": "3.25.0",
+            "java": "3.25.0",
+            "javascript": "3.25.0",
+            "objectivec": "3.25.0",
+            "php": "3.25.0",
+            "python": "4.25.0",
+            "ruby": "3.25.0"
+        }
+    }
+}

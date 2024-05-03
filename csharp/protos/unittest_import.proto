@@ -1,0 +1,44 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Author: kenton@google.com (Kenton Varda)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// A proto file which is imported by unittest.proto to test importing.
+
+syntax = "proto2";
+
+// We don't put this in a package within proto2 because we need to make sure
+// that the generated code doesn't depend on being in the proto2 namespace.
+// In test_util.h we do
+// "using namespace unittest_import = protobuf_unittest_import".
+package protobuf_unittest_import_proto2;
+
+option optimize_for = SPEED;
+option cc_enable_arenas = true;
+option csharp_namespace = "Google.Protobuf.TestProtos.Proto2";
+
+// Test public import
+import public "csharp/protos/unittest_import_public.proto";
+
+message ImportMessage {
+  optional int32 d = 1;
+}
+
+enum ImportEnum {
+  IMPORT_FOO = 7;
+  IMPORT_BAR = 8;
+  IMPORT_BAZ = 9;
+}
+
+// To use an enum in a map, it must has the first value as 0.
+enum ImportEnumForMap {
+  UNKNOWN = 0;
+  FOO = 1;
+  BAR = 2;
+}

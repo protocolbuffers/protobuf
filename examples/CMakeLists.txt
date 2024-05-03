@@ -8,7 +8,7 @@ project(protobuf-examples)
 find_package(protobuf CONFIG REQUIRED)
 
 if(protobuf_VERBOSE)
-  message(STATUS "Using Protocol Buffers ${Protobuf_VERSION}")
+  message(STATUS "Using Protocol Buffers ${protobuf_VERSION}")
 endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)

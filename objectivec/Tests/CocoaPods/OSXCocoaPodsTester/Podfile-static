@@ -1,8 +1,0 @@
-source 'https://github.com/CocoaPods/Specs.git'
-platform :osx, '10.9'
-
-install! 'cocoapods', :deterministic_uuids => false
-
-target 'OSXCocoaPodsTester' do
-  pod 'Protobuf', :path => '../../../..'
-end

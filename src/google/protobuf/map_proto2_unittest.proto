@@ -1,37 +1,15 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 syntax = "proto2";
-option cc_enable_arenas = true;
 
 import "google/protobuf/unittest_import.proto";
+
+option cc_enable_arenas = true;
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
@@ -39,26 +17,54 @@ import "google/protobuf/unittest_import.proto";
 package protobuf_unittest;
 
 enum Proto2MapEnum {
-  PROTO2_MAP_ENUM_FOO   = 0;
-  PROTO2_MAP_ENUM_BAR   = 1;
-  PROTO2_MAP_ENUM_BAZ   = 2;
+  PROTO2_MAP_ENUM_FOO = 0;
+  PROTO2_MAP_ENUM_BAR = 1;
+  PROTO2_MAP_ENUM_BAZ = 2;
 }
 
 enum Proto2MapEnumPlusExtra {
-  E_PROTO2_MAP_ENUM_FOO   = 0;
-  E_PROTO2_MAP_ENUM_BAR   = 1;
-  E_PROTO2_MAP_ENUM_BAZ   = 2;
+  E_PROTO2_MAP_ENUM_FOO = 0;
+  E_PROTO2_MAP_ENUM_BAR = 1;
+  E_PROTO2_MAP_ENUM_BAZ = 2;
   E_PROTO2_MAP_ENUM_EXTRA = 3;
 }
 
 message TestEnumMap {
   map<int32, Proto2MapEnum> known_map_field = 101;
   map<int32, Proto2MapEnum> unknown_map_field = 102;
+
+  // Other maps with all key types to test the unknown entry serialization
+  map<int64, Proto2MapEnum> unknown_map_field_int64 = 200;
+  map<uint64, Proto2MapEnum> unknown_map_field_uint64 = 201;
+  map<int32, Proto2MapEnum> unknown_map_field_int32 = 202;
+  map<uint32, Proto2MapEnum> unknown_map_field_uint32 = 203;
+  map<fixed32, Proto2MapEnum> unknown_map_field_fixed32 = 204;
+  map<fixed64, Proto2MapEnum> unknown_map_field_fixed64 = 205;
+  map<bool, Proto2MapEnum> unknown_map_field_bool = 206;
+  map<string, Proto2MapEnum> unknown_map_field_string = 207;
+  map<sint32, Proto2MapEnum> unknown_map_field_sint32 = 208;
+  map<sint64, Proto2MapEnum> unknown_map_field_sint64 = 209;
+  map<sfixed32, Proto2MapEnum> unknown_map_field_sfixed32 = 210;
+  map<sfixed64, Proto2MapEnum> unknown_map_field_sfixed64 = 211;
 }
 
 message TestEnumMapPlusExtra {
   map<int32, Proto2MapEnumPlusExtra> known_map_field = 101;
   map<int32, Proto2MapEnumPlusExtra> unknown_map_field = 102;
+
+  // Other maps with all key types to test the unknown entry serialization
+  map<int64, Proto2MapEnumPlusExtra> unknown_map_field_int64 = 200;
+  map<uint64, Proto2MapEnumPlusExtra> unknown_map_field_uint64 = 201;
+  map<int32, Proto2MapEnumPlusExtra> unknown_map_field_int32 = 202;
+  map<uint32, Proto2MapEnumPlusExtra> unknown_map_field_uint32 = 203;
+  map<fixed32, Proto2MapEnumPlusExtra> unknown_map_field_fixed32 = 204;
+  map<fixed64, Proto2MapEnumPlusExtra> unknown_map_field_fixed64 = 205;
+  map<bool, Proto2MapEnumPlusExtra> unknown_map_field_bool = 206;
+  map<string, Proto2MapEnumPlusExtra> unknown_map_field_string = 207;
+  map<sint32, Proto2MapEnumPlusExtra> unknown_map_field_sint32 = 208;
+  map<sint64, Proto2MapEnumPlusExtra> unknown_map_field_sint64 = 209;
+  map<sfixed32, Proto2MapEnumPlusExtra> unknown_map_field_sfixed32 = 210;
+  map<sfixed64, Proto2MapEnumPlusExtra> unknown_map_field_sfixed64 = 211;
 }
 
 message TestImportEnumMap {
@@ -88,4 +94,9 @@ message TestMaps {
 // Test maps in submessages.
 message TestSubmessageMaps {
   optional TestMaps m = 1;
+}
+
+message TestProto2BytesMap {
+  map<int32, bytes> map_bytes = 1;
+  map<int32, string> map_string = 2;
 }

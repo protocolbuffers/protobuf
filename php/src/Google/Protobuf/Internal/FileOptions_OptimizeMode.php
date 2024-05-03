@@ -4,30 +4,13 @@
 
 namespace Google\Protobuf\Internal;
 
-/**
- * Generated classes can be optimized for speed or code size.
- *
- * Protobuf enum <code>Google\Protobuf\Internal</code>
- */
-class FileOptions_OptimizeMode
-{
+if (false) {
     /**
-     * Generate complete code for parsing, serialization,
-     *
-     * Generated from protobuf enum <code>SPEED = 1;</code>
+     * This class is deprecated. Use Google\Protobuf\Internal\FileOptions\OptimizeMode instead.
+     * @deprecated
      */
-    const SPEED = 1;
-    /**
-     * etc.
-     *
-     * Generated from protobuf enum <code>CODE_SIZE = 2;</code>
-     */
-    const CODE_SIZE = 2;
-    /**
-     * Generate code using MessageLite and the lite runtime.
-     *
-     * Generated from protobuf enum <code>LITE_RUNTIME = 3;</code>
-     */
-    const LITE_RUNTIME = 3;
+    class FileOptions_OptimizeMode {}
 }
+class_exists(FileOptions\OptimizeMode::class);
+@trigger_error('Google\Protobuf\Internal\FileOptions_OptimizeMode is deprecated and will be removed in the next major release. Use Google\Protobuf\Internal\FileOptions\OptimizeMode instead', E_USER_DEPRECATED);
 

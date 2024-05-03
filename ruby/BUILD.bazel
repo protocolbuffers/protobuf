@@ -1,0 +1,273 @@
+# Protobuf Ruby runtime
+#
+# See also code generation logic under /src/google/protobuf/compiler/ruby.
+
+load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_ruby//ruby:defs.bzl", "ruby_library")
+load("//build_defs:internal_shell.bzl", "inline_sh_binary")
+load("//:protobuf.bzl", "internal_ruby_proto_library")
+load("//conformance:defs.bzl", "conformance_test")
+load("//:protobuf_version.bzl", "PROTOBUF_RUBY_VERSION")
+
+################################################################################
+# Ruby Runtime
+################################################################################
+
+string_flag(
+    name = "ffi",
+    build_setting_default = "disabled",
+    values = [
+        "enabled",
+        "disabled",
+    ],
+)
+
+config_setting(
+    name = "ffi_enabled",
+    flag_values = {
+        ":ffi": "enabled",
+    },
+)
+
+config_setting(
+    name = "ffi_disabled",
+    flag_values = {
+        ":ffi": "disabled",
+    },
+)
+
+selects.config_setting_group(
+    name = "jruby_ffi",
+    match_all = [
+        ":ffi_enabled",
+        "@rules_ruby//ruby/runtime:config_jruby",
+    ],
+)
+
+selects.config_setting_group(
+    name = "jruby_native",
+    match_all = [
+        ":ffi_disabled",
+        "@rules_ruby//ruby/runtime:config_jruby",
+    ],
+)
+
+selects.config_setting_group(
+    name = "ruby_ffi",
+    match_all = [
+        ":ffi_enabled",
+        "@rules_ruby//ruby/runtime:config_ruby",
+    ],
+)
+
+selects.config_setting_group(
+    name = "ruby_native",
+    match_all = [
+        ":ffi_disabled",
+        "@rules_ruby//ruby/runtime:config_ruby",
+    ],
+)
+
+selects.config_setting_group(
+    name = "macos_ffi_enabled",
+    match_all = [
+        ":ffi_enabled",
+        "@platforms//os:osx",
+    ],
+)
+
+selects.config_setting_group(
+    name = "linux_ffi_enabled",
+    match_all = [
+        ":ffi_enabled",
+        "@platforms//os:linux",
+    ],
+)
+
+ruby_library(
+    name = "protobuf",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = ["//ruby/lib/google:protobuf_lib"],
+)
+
+# Note: these can be greatly simplified using inline_sh_binary in Bazel 6,
+# but doesn't work prior to that due to https://github.com/bazelbuild/bazel/issues/15043.
+# Instead, we need to manually copy all of the srcs into gendir from a genrule.
+genrule(
+    name = "jruby_release",
+    srcs = [
+        "@utf8_range//:utf8_range_srcs",
+        "@utf8_range//:LICENSE",
+        "//ruby/lib/google:copy_jar",
+        "//ruby/lib/google:dist_files",
+        "//ruby/ext/google/protobuf_c:dist_files",
+        "//:well_known_ruby_protos",
+        "google-protobuf.gemspec",
+    ],
+    outs = ["google-protobuf-" + PROTOBUF_RUBY_VERSION + "-java.gem"],
+    cmd = """
+        set -eux
+        mkdir tmp
+        for src in $(SRCS); do
+            cp --parents -L "$$src" tmp
+        done
+        mkdir -p "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
+        for utf in $(execpaths @utf8_range//:utf8_range_srcs) $(execpath @utf8_range//:LICENSE); do
+            mv "tmp/$$utf" "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
+        done
+        for wkt in $(execpaths //:well_known_ruby_protos); do
+            mv "tmp/$$wkt" "tmp/ruby/lib/google/protobuf/"
+        done
+        mv "tmp/$(execpath //ruby/lib/google:copy_jar)" "tmp/ruby/lib/google"
+        cd tmp/ruby
+        chmod -R 777 ./
+        gem build google-protobuf.gemspec
+        cd ../..
+        mv tmp/ruby/google-protobuf-*.gem $@
+    """,
+    tags = ["manual"],
+    target_compatible_with = select({
+        "@rules_ruby//ruby/runtime:config_jruby": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+)
+
+genrule(
+    name = "ruby_release",
+    srcs = [
+        "@utf8_range//:utf8_range_srcs",
+        "@utf8_range//:LICENSE",
+        "//:well_known_ruby_protos",
+        "//ruby/ext/google/protobuf_c:dist_files",
+        "//ruby/lib/google:dist_files",
+        "google-protobuf.gemspec",
+    ],
+    outs = ["google-protobuf-" + PROTOBUF_RUBY_VERSION + ".gem"],
+    cmd = """
+        set -eux
+        mkdir tmp
+        for src in $(SRCS); do
+            cp --parents -L "$$src" "tmp"
+        done
+        mkdir -p "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
+        for utf in $(execpaths @utf8_range//:utf8_range_srcs) $(execpath @utf8_range//:LICENSE); do
+            mv "tmp/$$utf" "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
+        done
+        for wkt in $(execpaths //:well_known_ruby_protos); do
+            mv "tmp/$$wkt" "tmp/ruby/lib/google/protobuf/"
+        done
+        cd tmp/ruby
+        chmod -R 777 ./
+        gem build google-protobuf.gemspec
+        cd ../..
+        mv tmp/ruby/google-protobuf-*.gem $@
+    """,
+    tags = ["manual"],
+    target_compatible_with = select({
+        "@rules_ruby//ruby/runtime:config_ruby": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+)
+
+filegroup(
+    name = "release",
+    srcs = select({
+        "@rules_ruby//ruby/runtime:config_jruby": [":jruby_release"],
+        "//conditions:default": [":ruby_release"],
+    }),
+    tags = ["manual"],
+)
+
+################################################################################
+# Tests
+################################################################################
+
+# Define this here so the descriptor paths match what we get in Rake tests.
+internal_ruby_proto_library(
+    name = "test_ruby_protos",
+    srcs = ["//ruby/tests:test_protos"],
+    includes = [
+        ".",
+        "ruby/tests",
+        "src",
+    ],
+    visibility = [
+        "//ruby:__subpackages__",
+    ],
+    deps = ["//:well_known_ruby_protos"],
+)
+
+conformance_test(
+    name = "conformance_test",
+    failure_list = "//conformance:failure_list_ruby.txt",
+    target_compatible_with = select({
+        ":ruby_native": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    testee = "//conformance:conformance_ruby",
+    text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
+)
+
+conformance_test(
+    name = "conformance_test_ffi",
+    env = {
+        "PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION": "ffi",
+    },
+    failure_list = "//conformance:failure_list_ruby.txt",
+    target_compatible_with = select({
+        ":ruby_ffi": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    testee = "//conformance:conformance_ruby",
+    text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
+)
+
+conformance_test(
+    name = "conformance_test_jruby",
+    failure_list = "//conformance:failure_list_jruby.txt",
+    target_compatible_with = select({
+        ":jruby_native": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    testee = "//conformance:conformance_ruby",
+    text_format_failure_list = "//conformance:text_format_failure_list_jruby.txt",
+)
+
+conformance_test(
+    name = "conformance_test_jruby_ffi",
+    env = {
+        "PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION": "ffi",
+    },
+    failure_list = "//conformance:failure_list_jruby_ffi.txt",
+    target_compatible_with = select({
+        ":jruby_ffi": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    testee = "//conformance:conformance_ruby",
+    text_format_failure_list = "//conformance:text_format_failure_list_jruby.txt",
+)
+
+################################################################################
+# Distribution files
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = [
+        ".gitignore",
+        "BUILD.bazel",
+        "Gemfile",
+        "README.md",
+        "Rakefile",
+        "//ruby/ext/google/protobuf_c:dist_files",
+        "//ruby/lib/google:dist_files",
+        "//ruby/src/main/java:dist_files",
+        "//ruby/tests:dist_files",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
+)

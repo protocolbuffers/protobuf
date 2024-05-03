@@ -1,0 +1,4 @@
+exports_files([
+    "BUILD.bazel",
+    "zlib.BUILD",
+])

@@ -1,0 +1,450 @@
+# Copyright (c) 2009-2022, Google LLC
+# All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("@rules_python//python:packaging.bzl", "py_wheel")
+load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
+load("//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
+load("//bazel:py_proto_library.bzl", "py_proto_library")
+load("@bazel_skylib//lib:selects.bzl", "selects")
+load(":dist.bzl", "py_dist", "py_dist_module")
+
+licenses(["notice"])
+
+py_dist_module(
+    name = "message_mod",
+    extension = "//python:_message_binary",
+    module_name = "google._upb._message",
+)
+
+py_proto_library(
+    name = "well_known_proto_py_pb2",
+    deps = [
+        "//:any_proto",
+        "//:api_proto",
+        "//:descriptor_proto",
+        "//:duration_proto",
+        "//:empty_proto",
+        "//:field_mask_proto",
+        "//:source_context_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:type_proto",
+        "//:wrappers_proto",
+    ],
+)
+
+py_proto_library(
+    name = "plugin_py_pb2",
+    deps = ["//:compiler_plugin_proto"],
+)
+
+config_setting(
+    name = "linux_aarch64_release",
+    flag_values = {
+        "//toolchain:release": "True",
+    },
+    values = {"cpu": "linux-aarch_64"},
+)
+
+config_setting(
+    name = "linux_aarch64_local",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
+    ],
+    flag_values = {
+        "//toolchain:release": "False",
+    },
+)
+
+config_setting(
+    name = "linux_x86_64_release",
+    flag_values = {
+        "//toolchain:release": "True",
+    },
+    values = {"cpu": "linux-x86_64"},
+)
+
+config_setting(
+    name = "linux_x86_64_local",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    flag_values = {
+        "//toolchain:release": "False",
+    },
+)
+
+config_setting(
+    name = "osx_x86_64_release",
+    flag_values = {
+        "//toolchain:release": "True",
+    },
+    values = {"cpu": "osx-x86_64"},
+)
+
+config_setting(
+    name = "osx_x86_64_local",
+    constraint_values = [
+        "@platforms//os:osx",
+        "@platforms//cpu:x86_64",
+    ],
+    flag_values = {
+        "//toolchain:release": "False",
+    },
+)
+
+selects.config_setting_group(
+    name = "osx_x86_64",
+    match_any = [
+        ":osx_x86_64_release",
+        ":osx_x86_64_local",
+    ],
+)
+
+config_setting(
+    name = "osx_aarch64_release",
+    flag_values = {
+        "//toolchain:release": "True",
+    },
+    values = {"cpu": "osx-aarch_64"},
+)
+
+config_setting(
+    name = "osx_aarch64_local",
+    constraint_values = [
+        "@platforms//os:osx",
+        "@platforms//cpu:aarch64",
+    ],
+    flag_values = {
+        "//toolchain:release": "False",
+    },
+)
+
+selects.config_setting_group(
+    name = "osx_aarch64",
+    match_any = [
+        ":osx_aarch64_release",
+        ":osx_aarch64_local",
+    ],
+)
+
+config_setting(
+    name = "osx_universal2",
+    values = {"cpu": "osx-universal2"},
+)
+
+config_setting(
+    name = "windows_x86_32_release",
+    flag_values = {
+        "//toolchain:release": "True",
+    },
+    values = {"cpu": "win32"},
+)
+
+config_setting(
+    name = "windows_x86_32_local",
+    constraint_values = [
+        "@platforms//os:windows",
+        "@platforms//cpu:x86_32",
+    ],
+    flag_values = {
+        "//toolchain:release": "False",
+    },
+)
+
+selects.config_setting_group(
+    name = "windows_x86_32",
+    match_any = [
+        ":windows_x86_32_release",
+        ":windows_x86_32_local",
+    ],
+)
+
+config_setting(
+    name = "windows_x86_64_release",
+    flag_values = {
+        "//toolchain:release": "True",
+    },
+    values = {"cpu": "win64"},
+)
+
+config_setting(
+    name = "windows_x86_64_local",
+    constraint_values = [
+        "@platforms//os:windows",
+        "@platforms//cpu:x86_64",
+    ],
+    flag_values = {
+        "//toolchain:release": "False",
+    },
+)
+
+selects.config_setting_group(
+    name = "windows_x86_64",
+    match_any = [
+        ":windows_x86_64_release",
+        ":windows_x86_64_local",
+    ],
+)
+
+pkg_files(
+    name = "generated_wkt",
+    srcs = [
+        ":well_known_proto_py_pb2",
+        "//upb:descriptor_upb_minitable_proto",
+        "//upb:descriptor_upb_proto",
+        "//upb:descriptor_upb_proto_reflection",
+    ],
+    prefix = "google/protobuf",
+)
+
+pkg_files(
+    name = "generated_wkt_compiler",
+    srcs = [
+        ":plugin_py_pb2",
+    ],
+    prefix = "google/protobuf/compiler",
+)
+
+pkg_files(
+    name = "utf8_range_source_files",
+    srcs = ["@utf8_range//:utf8_range_srcs"],
+    prefix = "utf8_range",
+)
+
+pkg_files(
+    name = "dist_source_files",
+    srcs = [
+        "MANIFEST.in",
+        "setup.py",
+    ],
+)
+
+# Passing filegroups to pkg_tar directly results in incorrect
+# `protobuf/external/upb/` directory structure when built from the protobuf
+# repo. This can be removed once repositories are merged.
+pkg_files(
+    name = "filegroup_source_files",
+    srcs = [
+        "//:LICENSE",
+        "//python:message_srcs",
+        "//upb:source_files",
+        "//upb/base:source_files",
+        "//upb/collections:source_files",
+        "//upb/hash:source_files",
+        "//upb/lex:source_files",
+        "//upb/mem:source_files",
+        "//upb/message:source_files",
+        "//upb/mini_descriptor:source_files",
+        "//upb/mini_table:source_files",
+        "//upb/port:source_files",
+        "//upb/text:source_files",
+        "//upb/util:source_files",
+        "//upb/wire:source_files",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+)
+
+# NOTE: This package currently only works for macos and ubuntu, MSVC users
+# should use a binary wheel.
+pkg_tar(
+    name = "source_tarball",
+    srcs = [
+        ":dist_source_files",
+        ":filegroup_source_files",
+        ":generated_wkt",
+        ":generated_wkt_compiler",
+        ":utf8_range_source_files",
+        "//python:python_source_files",
+    ],
+    extension = "tar.gz",
+    package_dir = "protobuf",
+    package_file_name = "protobuf.tar.gz",
+    strip_prefix = ".",
+    target_compatible_with = select({
+        "@system_python//:none": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+)
+
+genrule(
+    name = "source_wheel",
+    srcs = [":source_tarball"],
+    outs = ["protobuf-%s.tar.gz" % PROTOBUF_PYTHON_VERSION],
+    cmd = """
+        set -eux
+        tar -xzvf $(location :source_tarball)
+        cd protobuf/
+        python3 setup.py sdist
+        cd ..
+        mv protobuf/dist/*.tar.gz $@
+    """,
+    target_compatible_with = select({
+        "@system_python//:none": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+)
+
+py_wheel(
+    name = "binary_wheel",
+    abi = select({
+        "//python:full_api_3.8": "cp38",
+        "//python:full_api_3.9": "cp39",
+        "//conditions:default": "abi3",
+    }),
+    author = "protobuf@googlegroups.com",
+    author_email = "protobuf@googlegroups.com",
+    classifiers = [
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+    ],
+    distribution = "protobuf",
+    extra_distinfo_files = {
+        "//:LICENSE": "LICENSE",
+    },
+    homepage = "https://developers.google.com/protocol-buffers/",
+    license = "3-Clause BSD License",
+    platform = select({
+        ":linux_x86_64_local": "linux_x86_64",
+        ":linux_x86_64_release": "manylinux2014_x86_64",
+        ":linux_aarch64_local": "linux_aarch64",
+        ":linux_aarch64_release": "manylinux2014_aarch64",
+        ":osx_universal2": "macosx_10_9_universal2",
+        ":osx_aarch64": "macosx_11_0_arm64",
+        ":windows_x86_32": "win32",
+        ":windows_x86_64": "win_amd64",
+        "//conditions:default": "any",
+    }),
+    python_requires = ">=3.8",
+    python_tag = selects.with_or({
+        "//python:full_api_3.8": "cp38",
+        "//python:full_api_3.9": "cp39",
+        "//python:limited_api_3.10": "cp310",
+        "//conditions:default": "cp" + SYSTEM_PYTHON_VERSION,
+    }),
+    strip_path_prefixes = [
+        "python/dist/",
+        "python/",
+        "src/",
+    ],
+    target_compatible_with = select({
+        "@system_python//:none": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+    version = PROTOBUF_PYTHON_VERSION,
+    deps = [
+        ":message_mod",
+        ":plugin_py_pb2",
+        ":well_known_proto_py_pb2",
+        "//:python_srcs",
+    ],
+)
+
+py_wheel(
+    name = "pure_python_wheel",
+    abi = "none",
+    author = "protobuf@googlegroups.com",
+    author_email = "protobuf@googlegroups.com",
+    classifiers = [
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+    ],
+    distribution = "protobuf",
+    extra_distinfo_files = {
+        "//:LICENSE": "LICENSE",
+    },
+    homepage = "https://developers.google.com/protocol-buffers/",
+    license = "3-Clause BSD License",
+    platform = "any",
+    python_requires = ">=3.8",
+    python_tag = "py3",
+    strip_path_prefixes = [
+        "python/",
+        "src/",
+    ],
+    target_compatible_with = select({
+        "@system_python//:none": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+    version = PROTOBUF_PYTHON_VERSION,
+    deps = [
+        ":plugin_py_pb2",
+        ":well_known_proto_py_pb2",
+        "//:python_srcs",
+    ],
+)
+
+py_wheel(
+    name = "test_wheel",
+    testonly = True,
+    abi = "none",
+    distribution = "protobuftests",
+    extra_distinfo_files = {
+        "//:LICENSE": "LICENSE",
+    },
+    platform = "any",
+    python_tag = "py3",
+    strip_path_prefixes = [
+        "python/",
+        "src/",
+    ],
+    target_compatible_with = select({
+        "@system_python//:none": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+    version = PROTOBUF_PYTHON_VERSION,
+    deps = [
+        "//:python_common_test_protos",
+        "//:python_specific_test_protos",
+        "//:python_test_srcs",
+        "//python/pb_unit_tests:test_files",
+        "//src/google/protobuf:testdata",
+    ],
+)
+
+py_dist(
+    name = "dist",
+    binary_wheel = ":binary_wheel",
+    full_api_cpus = [
+        # TODO: fix win32 build
+        "win32",
+        "win64",
+    ],
+    # Windows needs version-specific wheels until 3.10.
+    full_api_versions = [
+        "38",
+        "39",
+    ],
+    # Limited API: these wheels will satisfy any Python version >= the
+    # given version.
+    #
+    # Technically the limited API doesn't have the functions we need until
+    # 3.10, but on Linux we can get away with using 3.7 (see ../python_api.h for
+    # details).
+    limited_api_wheels = {
+        # TODO: fix win32 build
+        "win32": "310",
+        "win64": "310",
+        "linux-x86_64": "38",
+        "linux-aarch_64": "38",
+        "osx-universal2": "38",
+    },
+    pure_python_wheel = ":pure_python_wheel",
+    tags = ["manual"],
+)

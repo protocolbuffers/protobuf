@@ -1,34 +1,12 @@
 ﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -138,6 +116,34 @@ namespace Google.Protobuf
         protected abstract JsonToken NextImpl();
 
         /// <summary>
+        /// Skips the value we're about to read. This must only be called immediately after reading a property name.
+        /// If the value is an object or an array, the complete object/array is skipped.
+        /// </summary>
+        internal void SkipValue()
+        {
+            // We'll assume that Next() makes sure that the end objects and end arrays are all valid.
+            // All we care about is the total nesting depth we need to close.
+            int depth = 0;
+
+            // do/while rather than while loop so that we read at least one token.
+            do
+            {
+                var token = Next();
+                switch (token.Type)
+                {
+                    case JsonToken.TokenType.EndArray:
+                    case JsonToken.TokenType.EndObject:
+                        depth--;
+                        break;
+                    case JsonToken.TokenType.StartArray:
+                    case JsonToken.TokenType.StartObject:
+                        depth++;
+                        break;
+                }
+            } while (depth != 0);
+        }
+
+        /// <summary>
         /// Tokenizer which first exhausts a list of tokens, then consults another tokenizer.
         /// </summary>
         private class JsonReplayTokenizer : JsonTokenizer
@@ -217,7 +223,7 @@ namespace Google.Protobuf
                             state = State.ObjectAfterColon;
                             break;
                         case ',':
-                            ValidateState(State.ObjectAfterProperty | State.ArrayAfterValue, "Invalid state to read a colon: ");
+                            ValidateState(State.ObjectAfterProperty | State.ArrayAfterValue, "Invalid state to read a comma: ");
                             state = state == State.ObjectAfterProperty ? State.ObjectAfterComma : State.ArrayAfterComma;
                             break;
                         case '"':
@@ -334,29 +340,19 @@ namespace Google.Protobuf
             private char ReadEscapedCharacter()
             {
                 char c = reader.ReadOrFail("Unexpected end of text while reading character escape sequence");
-                switch (c)
+                return c switch
                 {
-                    case 'n':
-                        return '\n';
-                    case '\\':
-                        return '\\';
-                    case 'b':
-                        return '\b';
-                    case 'f':
-                        return '\f';
-                    case 'r':
-                        return '\r';
-                    case 't':
-                        return '\t';
-                    case '"':
-                        return '"';
-                    case '/':
-                        return '/';
-                    case 'u':
-                        return ReadUnicodeEscape();
-                    default:
-                        throw reader.CreateException(string.Format(CultureInfo.InvariantCulture, "Invalid character in character escape sequence: U+{0:x4}", (int) c));
-                }
+                    'n' => '\n',
+                    '\\' => '\\',
+                    'b' => '\b',
+                    'f' => '\f',
+                    'r' => '\r',
+                    't' => '\t',
+                    '"' => '"',
+                    '/' => '/',
+                    'u' => ReadUnicodeEscape(),
+                    _ => throw reader.CreateException(string.Format(CultureInfo.InvariantCulture, "Invalid character in character escape sequence: U+{0:x4}", (int)c)),
+                };
             }
 
             /// <summary>
@@ -443,9 +439,18 @@ namespace Google.Protobuf
                 // TODO: What exception should we throw if the value can't be represented as a double?
                 try
                 {
-                    return double.Parse(builder.ToString(),
+                    double result = double.Parse(builder.ToString(),
                         NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent,
                         CultureInfo.InvariantCulture);
+
+                    // .NET Core 3.0 and later returns infinity if the number is too large or small to be represented.
+                    // For compatibility with other Protobuf implementations the tokenizer should still throw.
+                    if (double.IsInfinity(result))
+                    {
+                        throw reader.CreateException("Numeric value out of range: " + builder);
+                    }
+
+                    return result;
                 }
                 catch (OverflowException)
                 {
@@ -461,8 +466,7 @@ namespace Google.Protobuf
                     throw reader.CreateException("Invalid numeric literal");
                 }
                 builder.Append(first);
-                int digitCount;
-                char? next = ConsumeDigits(builder, out digitCount);
+                char? next = ConsumeDigits(builder, out int digitCount);
                 if (first == '0' && digitCount != 0)
                 {
                     throw reader.CreateException("Invalid numeric literal: leading 0 for non-zero value.");
@@ -473,8 +477,7 @@ namespace Google.Protobuf
             private char? ReadFrac(StringBuilder builder)
             {
                 builder.Append('.'); // Already consumed this
-                int digitCount;
-                char? next = ConsumeDigits(builder, out digitCount);
+                char? next = ConsumeDigits(builder, out int digitCount);
                 if (digitCount == 0)
                 {
                     throw reader.CreateException("Invalid numeric literal: fraction with no trailing digits");
@@ -498,8 +501,7 @@ namespace Google.Protobuf
                 {
                     reader.PushBack(next.Value);
                 }
-                int digitCount;
-                next = ConsumeDigits(builder, out digitCount);
+                next = ConsumeDigits(builder, out int digitCount);
                 if (digitCount == 0)
                 {
                     throw reader.CreateException("Invalid numeric literal: exponent without value");
@@ -554,20 +556,13 @@ namespace Google.Protobuf
             {
                 containerStack.Pop();
                 var parent = containerStack.Peek();
-                switch (parent)
+                state = parent switch
                 {
-                    case ContainerType.Object:
-                        state = State.ObjectAfterProperty;
-                        break;
-                    case ContainerType.Array:
-                        state = State.ArrayAfterValue;
-                        break;
-                    case ContainerType.Document:
-                        state = State.ExpectedEndOfDocument;
-                        break;
-                    default:
-                        throw new InvalidOperationException("Unexpected container type: " + parent);
-                }
+                    ContainerType.Object => State.ObjectAfterProperty,
+                    ContainerType.Array => State.ArrayAfterValue,
+                    ContainerType.Document => State.ExpectedEndOfDocument,
+                    _ => throw new InvalidOperationException("Unexpected container type: " + parent),
+                };
             }
 
             private enum ContainerType
@@ -586,7 +581,7 @@ namespace Google.Protobuf
             /// where ^ represents the current position within the text stream. The examples all use string values,
             /// but could be any value, including nested objects/arrays.
             /// The complete state of the tokenizer also includes a stack to indicate the contexts (arrays/objects).
-            /// Any additional notional state of "AfterValue" indicates that a value has been completed, at which 
+            /// Any additional notional state of "AfterValue" indicates that a value has been completed, at which
             /// point there's an immediate transition to ExpectedEndOfDocument,  ObjectAfterProperty or ArrayAfterValue.
             /// </para>
             /// <para>
@@ -627,7 +622,7 @@ namespace Google.Protobuf
                 /// <summary>
                 /// { "foo" : ^ "bar", "x": "y" }
                 /// Before any property other than the first in an object.
-                /// (Equivalently: after any property in an object) 
+                /// (Equivalently: after any property in an object)
                 /// Next states:
                 /// "AfterValue" (value is simple)
                 /// ObjectStart (value is object)

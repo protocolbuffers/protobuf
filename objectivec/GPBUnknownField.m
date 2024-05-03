@@ -1,37 +1,15 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBUnknownField_PackagePrivate.h"
 
 #import "GPBArray.h"
 #import "GPBCodedOutputStream_PackagePrivate.h"
+#import "GPBUnknownFieldSet.h"
 
 @implementation GPBUnknownField {
  @protected
@@ -39,8 +17,8 @@
   GPBUInt64Array *mutableVarintList_;
   GPBUInt32Array *mutableFixed32List_;
   GPBUInt64Array *mutableFixed64List_;
-  NSMutableArray<NSData*> *mutableLengthDelimitedList_;
-  NSMutableArray<GPBUnknownFieldSet*> *mutableGroupList_;
+  NSMutableArray<NSData *> *mutableLengthDelimitedList_;
+  NSMutableArray<GPBUnknownFieldSet *> *mutableGroupList_;
 }
 
 @synthesize number = number_;
@@ -74,16 +52,14 @@
 #pragma clang diagnostic ignored "-Wdirect-ivar-access"
 
 - (id)copyWithZone:(NSZone *)zone {
-  GPBUnknownField *result =
-      [[GPBUnknownField allocWithZone:zone] initWithNumber:number_];
+  GPBUnknownField *result = [[GPBUnknownField allocWithZone:zone] initWithNumber:number_];
   result->mutableFixed32List_ = [mutableFixed32List_ copyWithZone:zone];
   result->mutableFixed64List_ = [mutableFixed64List_ copyWithZone:zone];
-  result->mutableLengthDelimitedList_ =
-      [mutableLengthDelimitedList_ copyWithZone:zone];
+  result->mutableLengthDelimitedList_ = [mutableLengthDelimitedList_ mutableCopyWithZone:zone];
   result->mutableVarintList_ = [mutableVarintList_ copyWithZone:zone];
   if (mutableGroupList_.count) {
-    result->mutableGroupList_ = [[NSMutableArray allocWithZone:zone]
-        initWithCapacity:mutableGroupList_.count];
+    result->mutableGroupList_ =
+        [[NSMutableArray allocWithZone:zone] initWithCapacity:mutableGroupList_.count];
     for (GPBUnknownFieldSet *group in mutableGroupList_) {
       GPBUnknownFieldSet *copied = [group copyWithZone:zone];
       [result->mutableGroupList_ addObject:copied];
@@ -97,26 +73,22 @@
   if (self == object) return YES;
   if (![object isKindOfClass:[GPBUnknownField class]]) return NO;
   GPBUnknownField *field = (GPBUnknownField *)object;
-  BOOL equalVarint =
-      (mutableVarintList_.count == 0 && field->mutableVarintList_.count == 0) ||
-      [mutableVarintList_ isEqual:field->mutableVarintList_];
+  if (number_ != field->number_) return NO;
+  BOOL equalVarint = (mutableVarintList_.count == 0 && field->mutableVarintList_.count == 0) ||
+                     [mutableVarintList_ isEqual:field->mutableVarintList_];
   if (!equalVarint) return NO;
-  BOOL equalFixed32 = (mutableFixed32List_.count == 0 &&
-                       field->mutableFixed32List_.count == 0) ||
+  BOOL equalFixed32 = (mutableFixed32List_.count == 0 && field->mutableFixed32List_.count == 0) ||
                       [mutableFixed32List_ isEqual:field->mutableFixed32List_];
   if (!equalFixed32) return NO;
-  BOOL equalFixed64 = (mutableFixed64List_.count == 0 &&
-                       field->mutableFixed64List_.count == 0) ||
+  BOOL equalFixed64 = (mutableFixed64List_.count == 0 && field->mutableFixed64List_.count == 0) ||
                       [mutableFixed64List_ isEqual:field->mutableFixed64List_];
   if (!equalFixed64) return NO;
   BOOL equalLDList =
-      (mutableLengthDelimitedList_.count == 0 &&
-       field->mutableLengthDelimitedList_.count == 0) ||
+      (mutableLengthDelimitedList_.count == 0 && field->mutableLengthDelimitedList_.count == 0) ||
       [mutableLengthDelimitedList_ isEqual:field->mutableLengthDelimitedList_];
   if (!equalLDList) return NO;
-  BOOL equalGroupList =
-      (mutableGroupList_.count == 0 && field->mutableGroupList_.count == 0) ||
-      [mutableGroupList_ isEqual:field->mutableGroupList_];
+  BOOL equalGroupList = (mutableGroupList_.count == 0 && field->mutableGroupList_.count == 0) ||
+                        [mutableGroupList_ isEqual:field->mutableGroupList_];
   if (!equalGroupList) return NO;
   return YES;
 }
@@ -159,20 +131,17 @@
   __block size_t result = 0;
   int32_t number = number_;
   [mutableVarintList_
-      enumerateValuesWithBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+      enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
         result += GPBComputeUInt64Size(number, value);
       }];
 
   [mutableFixed32List_
-      enumerateValuesWithBlock:^(uint32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+      enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
         result += GPBComputeFixed32Size(number, value);
       }];
 
   [mutableFixed64List_
-      enumerateValuesWithBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+      enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
         result += GPBComputeFixed64Size(number, value);
       }];
 
@@ -202,23 +171,20 @@
 }
 
 - (NSString *)description {
-  NSMutableString *description = [NSMutableString
-      stringWithFormat:@"<%@ %p>: Field: %d {\n", [self class], self, number_];
+  NSMutableString *description =
+      [NSMutableString stringWithFormat:@"<%@ %p>: Field: %d {\n", [self class], self, number_];
   [mutableVarintList_
-      enumerateValuesWithBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+      enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
         [description appendFormat:@"\t%llu\n", value];
       }];
 
   [mutableFixed32List_
-      enumerateValuesWithBlock:^(uint32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+      enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
         [description appendFormat:@"\t%u\n", value];
       }];
 
   [mutableFixed64List_
-      enumerateValuesWithBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
+      enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
         [description appendFormat:@"\t%llu\n", value];
       }];
 
@@ -266,16 +232,14 @@
     if (mutableLengthDelimitedList_ == nil) {
       mutableLengthDelimitedList_ = [otherLengthDelimitedList mutableCopy];
     } else {
-      [mutableLengthDelimitedList_
-          addObjectsFromArray:otherLengthDelimitedList];
+      [mutableLengthDelimitedList_ addObjectsFromArray:otherLengthDelimitedList];
     }
   }
 
   NSArray *otherGroupList = other.groupList;
   if (otherGroupList.count > 0) {
     if (mutableGroupList_ == nil) {
-      mutableGroupList_ =
-          [[NSMutableArray alloc] initWithCapacity:otherGroupList.count];
+      mutableGroupList_ = [[NSMutableArray alloc] initWithCapacity:otherGroupList.count];
     }
     // Make our own mutable copies.
     for (GPBUnknownFieldSet *group in otherGroupList) {
@@ -296,8 +260,7 @@
 
 - (void)addFixed32:(uint32_t)value {
   if (mutableFixed32List_ == nil) {
-    mutableFixed32List_ =
-        [[GPBUInt32Array alloc] initWithValues:&value count:1];
+    mutableFixed32List_ = [[GPBUInt32Array alloc] initWithValues:&value count:1];
   } else {
     [mutableFixed32List_ addValue:value];
   }
@@ -305,8 +268,7 @@
 
 - (void)addFixed64:(uint64_t)value {
   if (mutableFixed64List_ == nil) {
-    mutableFixed64List_ =
-        [[GPBUInt64Array alloc] initWithValues:&value count:1];
+    mutableFixed64List_ = [[GPBUInt64Array alloc] initWithValues:&value count:1];
   } else {
     [mutableFixed64List_ addValue:value];
   }
@@ -314,8 +276,7 @@
 
 - (void)addLengthDelimited:(NSData *)value {
   if (mutableLengthDelimitedList_ == nil) {
-    mutableLengthDelimitedList_ =
-        [[NSMutableArray alloc] initWithObjects:&value count:1];
+    mutableLengthDelimitedList_ = [[NSMutableArray alloc] initWithObjects:&value count:1];
   } else {
     [mutableLengthDelimitedList_ addObject:value];
   }

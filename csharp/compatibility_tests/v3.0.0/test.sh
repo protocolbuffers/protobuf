@@ -2,17 +2,17 @@
 
 function run_test() {
   # Generate test proto files.
-  ./protoc_1 -Iprotos/src -I../../../src/ --csharp_out=src/Google.Protobuf.Test \
+  $1 -Iprotos/src -I../../../src/ --csharp_out=src/Google.Protobuf.Test \
     --csharp_opt=base_namespace=Google.Protobuf \
     protos/src/google/protobuf/unittest_import_proto3.proto \
     protos/src/google/protobuf/unittest_import_public_proto3.proto \
     protos/src/google/protobuf/unittest_well_known_types.proto
 
-  ./protoc_1 -Iprotos/csharp --csharp_out=src/Google.Protobuf.Test \
+  $1 -Iprotos/csharp --csharp_out=src/Google.Protobuf.Test \
     --csharp_opt=base_namespace=UnitTest.Issues \
     protos/csharp/protos/unittest_issues.proto
 
-  ./protoc_2 -Iprotos/src --csharp_out=src/Google.Protobuf.Test \
+  $2 -Iprotos/src --csharp_out=src/Google.Protobuf.Test \
     --csharp_opt=base_namespace=Google.Protobuf \
     protos/src/google/protobuf/unittest_proto3.proto \
     protos/src/google/protobuf/map_unittest_proto3.proto
@@ -22,10 +22,12 @@ function run_test() {
   dotnet restore src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
   dotnet build -c Release src/Google.Protobuf/Google.Protobuf.csproj
   dotnet build -c Release src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
-  dotnet run -c Release -f netcoreapp1.0 -p src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
+  dotnet run -c Release -f net6.0 -p src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
 }
 
 set -ex
+
+PROTOC=$(realpath ${2:-../../../bazel-bin/protoc})
 
 # Change to the script's directory.
 cd $(dirname $0)
@@ -37,31 +39,15 @@ TEST_VERSION=3.0.0
 # The old version of protobuf that we are testing compatibility against. This
 # is usually the same as TEST_VERSION (i.e., we use the tests extracted from
 # that version to test compatibility of the newest runtime against it), but it
-# is also possible to use this same test set to test the compatibiilty of the
+# is also possible to use this same test set to test the compatibility of the
 # latest version against other versions.
-case "$1" in
-  ""|3.0.0)
-    OLD_VERSION=3.0.0
-    OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/3.0.0/protoc-3.0.0-linux-x86_64.exe
-    ;;
-  3.0.2)
-    OLD_VERSION=3.0.2
-    OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/3.0.2/protoc-3.0.2-linux-x86_64.exe
-    ;;
-  3.1.0)
-    OLD_VERSION=3.1.0
-    OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/3.1.0/protoc-3.1.0-linux-x86_64.exe
-    ;;
-  *)
-    echo "[ERROR]: Unknown version number: $1"
-    exit 1
-    ;;
-esac
+OLD_VERSION=$1
+OLD_VERSION_PROTOC=https://repo1.maven.org/maven2/com/google/protobuf/protoc/$OLD_VERSION/protoc-$OLD_VERSION-linux-x86_64.exe
 
 echo "Running compatibility tests with $OLD_VERSION"
 
 # Check protoc
-[ -f ../../../src/protoc ] || {
+[ -f $PROTOC ] || {
   echo "[ERROR]: Please build protoc first."
   exit 1
 }
@@ -79,26 +65,18 @@ cp ../../keys . -r
 # Test A.1:
 #   proto set 1: use old version
 #   proto set 2 which may import protos in set 1: use old version
-cp old_protoc protoc_1
-cp old_protoc protoc_2
-run_test
+run_test "./old_protoc" "./old_protoc"
 
 # Test A.2:
 #   proto set 1: use new version
 #   proto set 2 which may import protos in set 1: use old version
-cp ../../../src/protoc protoc_1
-cp old_protoc protoc_2
-run_test
+run_test "$PROTOC" "./old_protoc"
 
 # Test A.3:
 #   proto set 1: use old version
 #   proto set 2 which may import protos in set 1: use new version
-cp old_protoc protoc_1
-cp ../../../src/protoc protoc_2
-run_test
+run_test "./old_protoc" "$PROTOC"
 
-rm protoc_1
-rm protoc_2
 rm old_protoc
 rm keys -r
 rm src/Google.Protobuf -r

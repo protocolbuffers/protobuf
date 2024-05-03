@@ -1,0 +1,61 @@
+name: CMake Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  GOOGLETEST_PINNED_COMMIT: 4c9a3bb62bf3ba1f1010bf96f9c8ed767b363774
+  ABSEIL_PINNED_COMMIT: 273292d1cfc0a94a65082ee350509af1d113344d
+  INSTALL_DIR: /tmp/install
+
+jobs:
+  install:
+    name: CMake
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Googletest
+        run: |
+          git clone --no-checkout https://github.com/google/googletest
+          git -C googletest reset --hard $GOOGLETEST_PINNED_COMMIT
+          cd googletest && cmake . -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR && make install -j20
+      - name: Install Abseil
+        run: |
+          git clone --no-checkout https://github.com/abseil/abseil-cpp
+          git -C abseil-cpp reset --hard $ABSEIL_PINNED_COMMIT
+          cd abseil-cpp && cmake . -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR && make install -j20
+      - name: Configure
+        run: cd ${{ github.workspace }} && cmake . -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR
+      - name: Build
+        run: cd ${{ github.workspace }} && cmake --build . -j20
+      - name: Test
+        run: cd ${{ github.workspace }} && ctest
+
+  test:
+    name: Cmake Install
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Googletest
+        run: |
+          git clone --no-checkout https://github.com/google/googletest
+          git -C googletest reset --hard $GOOGLETEST_PINNED_COMMIT
+          cd googletest && cmake . -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR && make install -j20
+      - name: Download Abseil
+        run: |
+          git clone --no-checkout https://github.com/abseil/abseil-cpp /tmp/abseil-cpp
+          git -C /tmp/abseil-cpp reset --hard $ABSEIL_PINNED_COMMIT
+      - name: Configure
+        run: cd ${{ github.workspace }} && cmake . -DABSL_ROOT_DIR=/tmp/abseil-cpp -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR
+      - name: Build
+        run: cd ${{ github.workspace }} && cmake --build . -j20
+      - name: Install
+        run: cd ${{ github.workspace }} && make install
+      - name: Test
+        run: cd ${{ github.workspace }} && ctest

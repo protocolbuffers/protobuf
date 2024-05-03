@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -34,47 +11,46 @@ import static com.google.protobuf.UnsafeUtil.addressOffset;
 import static com.google.protobuf.UnsafeUtil.hasUnsafeArrayOperations;
 import static com.google.protobuf.UnsafeUtil.hasUnsafeByteBufferOperations;
 import static java.lang.Character.MAX_SURROGATE;
+import static java.lang.Character.MIN_HIGH_SURROGATE;
+import static java.lang.Character.MIN_LOW_SURROGATE;
+import static java.lang.Character.MIN_SUPPLEMENTARY_CODE_POINT;
 import static java.lang.Character.MIN_SURROGATE;
 import static java.lang.Character.isSurrogatePair;
 import static java.lang.Character.toCodePoint;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
- * A set of low-level, high-performance static utility methods related
- * to the UTF-8 character encoding.  This class has no dependencies
- * outside of the core JDK libraries.
+ * A set of low-level, high-performance static utility methods related to the UTF-8 character
+ * encoding. This class has no dependencies outside of the core JDK libraries.
  *
- * <p>There are several variants of UTF-8.  The one implemented by
- * this class is the restricted definition of UTF-8 introduced in
- * Unicode 3.1, which mandates the rejection of "overlong" byte
- * sequences as well as rejection of 3-byte surrogate codepoint byte
- * sequences.  Note that the UTF-8 decoder included in Oracle's JDK
- * has been modified to also reject "overlong" byte sequences, but (as
- * of 2011) still accepts 3-byte surrogate codepoint byte sequences.
+ * <p>There are several variants of UTF-8. The one implemented by this class is the restricted
+ * definition of UTF-8 introduced in Unicode 3.1, which mandates the rejection of "overlong" byte
+ * sequences as well as rejection of 3-byte surrogate codepoint byte sequences. Note that the UTF-8
+ * decoder included in Oracle's JDK has been modified to also reject "overlong" byte sequences, but
+ * (as of 2011) still accepts 3-byte surrogate codepoint byte sequences.
  *
- * <p>The byte sequences considered valid by this class are exactly
- * those that can be roundtrip converted to Strings and back to bytes
- * using the UTF-8 charset, without loss: <pre> {@code
+ * <p>The byte sequences considered valid by this class are exactly those that can be roundtrip
+ * converted to Strings and back to bytes using the UTF-8 charset, without loss:
+ *
+ * <pre>{@code
  * Arrays.equals(bytes, new String(bytes, Internal.UTF_8).getBytes(Internal.UTF_8))
  * }</pre>
  *
- * <p>See the Unicode Standard,</br>
- * Table 3-6. <em>UTF-8 Bit Distribution</em>,</br>
- * Table 3-7. <em>Well Formed UTF-8 Byte Sequences</em>.
+ * <p>See the Unicode Standard,</br> Table 3-6. <em>UTF-8 Bit Distribution</em>,</br> Table 3-7.
+ * <em>Well Formed UTF-8 Byte Sequences</em>.
  *
- * <p>This class supports decoding of partial byte sequences, so that the
- * bytes in a complete UTF-8 byte sequences can be stored in multiple
- * segments.  Methods typically return {@link #MALFORMED} if the partial
- * byte sequence is definitely not well-formed, {@link #COMPLETE} if it is
- * well-formed in the absence of additional input, or if the byte sequence
- * apparently terminated in the middle of a character, an opaque integer
- * "state" value containing enough information to decode the character when
- * passed to a subsequent invocation of a partial decoding method.
+ * <p>This class supports decoding of partial byte sequences, so that the bytes in a complete UTF-8
+ * byte sequence can be stored in multiple segments. Methods typically return {@link #MALFORMED} if
+ * the partial byte sequence is definitely not well-formed; {@link #COMPLETE} if it is well-formed
+ * in the absence of additional input; or, if the byte sequence apparently terminated in the middle
+ * of a character, an opaque integer "state" value containing enough information to decode the
+ * character when passed to a subsequent invocation of a partial decoding method.
  *
  * @author martinrb@google.com (Martin Buchholz)
  */
-// TODO(nathanmittler): Copy changes in this class back to Guava
+// TODO: Copy changes in this class back to Guava
 final class Utf8 {
 
   /**
@@ -83,7 +59,9 @@ final class Utf8 {
    * delegate for which all methods are delegated directly to.
    */
   private static final Processor processor =
-      UnsafeProcessor.isAvailable() ? new UnsafeProcessor() : new SafeProcessor();
+      (UnsafeProcessor.isAvailable() && !Android.isOnAndroidDevice())
+          ? new UnsafeProcessor()
+          : new SafeProcessor();
 
   /**
    * A mask used when performing unsafe reads to determine if a long value contains any non-ASCII
@@ -93,31 +71,28 @@ final class Utf8 {
 
   /**
    * Maximum number of bytes per Java UTF-16 char in UTF-8.
+   *
    * @see java.nio.charset.CharsetEncoder#maxBytesPerChar()
    */
   static final int MAX_BYTES_PER_CHAR = 3;
 
   /**
-   * State value indicating that the byte sequence is well-formed and
-   * complete (no further bytes are needed to complete a character).
+   * State value indicating that the byte sequence is well-formed and complete (no further bytes are
+   * needed to complete a character).
    */
-  public static final int COMPLETE = 0;
+  static final int COMPLETE = 0;
 
-  /**
-   * State value indicating that the byte sequence is definitely not
-   * well-formed.
-   */
-  public static final int MALFORMED = -1;
+  /** State value indicating that the byte sequence is definitely not well-formed. */
+  static final int MALFORMED = -1;
 
   /**
    * Used by {@code Unsafe} UTF-8 string validation logic to determine the minimum string length
    * above which to employ an optimized algorithm for counting ASCII characters. The reason for this
    * threshold is that for small strings, the optimization may not be beneficial or may even
-   * negatively impact performance since it requires additional logic to avoid unaligned reads
-   * (when calling {@code Unsafe.getLong}). This threshold guarantees that even if the initial
-   * offset is unaligned, we're guaranteed to make at least one call to {@code Unsafe.getLong()}
-   * which provides a performance improvement that entirely subsumes the cost of the additional
-   * logic.
+   * negatively impact performance since it requires additional logic to avoid unaligned reads (when
+   * calling {@code Unsafe.getLong}). This threshold guarantees that even if the initial offset is
+   * unaligned, we're guaranteed to make at least one call to {@code Unsafe.getLong()} which
+   * provides a performance improvement that entirely subsumes the cost of the additional logic.
    */
   private static final int UNSAFE_COUNT_ASCII_THRESHOLD = 16;
 
@@ -141,76 +116,69 @@ final class Utf8 {
   // are valid trailing bytes.
 
   /**
-   * Returns {@code true} if the given byte array is a well-formed
-   * UTF-8 byte sequence.
+   * Returns {@code true} if the given byte array is a well-formed UTF-8 byte sequence.
    *
-   * <p>This is a convenience method, equivalent to a call to {@code
-   * isValidUtf8(bytes, 0, bytes.length)}.
+   * <p>This is a convenience method, equivalent to a call to {@code isValidUtf8(bytes, 0,
+   * bytes.length)}.
    */
-  public static boolean isValidUtf8(byte[] bytes) {
+  static boolean isValidUtf8(byte[] bytes) {
     return processor.isValidUtf8(bytes, 0, bytes.length);
   }
 
   /**
-   * Returns {@code true} if the given byte array slice is a
-   * well-formed UTF-8 byte sequence.  The range of bytes to be
-   * checked extends from index {@code index}, inclusive, to {@code
-   * limit}, exclusive.
+   * Returns {@code true} if the given byte array slice is a well-formed UTF-8 byte sequence. The
+   * range of bytes to be checked extends from index {@code index}, inclusive, to {@code limit},
+   * exclusive.
    *
-   * <p>This is a convenience method, equivalent to {@code
-   * partialIsValidUtf8(bytes, index, limit) == Utf8.COMPLETE}.
+   * <p>This is a convenience method, equivalent to {@code partialIsValidUtf8(bytes, index, limit)
+   * == Utf8.COMPLETE}.
    */
-  public static boolean isValidUtf8(byte[] bytes, int index, int limit) {
+  static boolean isValidUtf8(byte[] bytes, int index, int limit) {
     return processor.isValidUtf8(bytes, index, limit);
   }
 
   /**
-   * Tells whether the given byte array slice is a well-formed,
-   * malformed, or incomplete UTF-8 byte sequence.  The range of bytes
-   * to be checked extends from index {@code index}, inclusive, to
+   * Tells whether the given byte array slice is a well-formed, malformed, or incomplete UTF-8 byte
+   * sequence. The range of bytes to be checked extends from index {@code index}, inclusive, to
    * {@code limit}, exclusive.
    *
-   * @param state either {@link Utf8#COMPLETE} (if this is the initial decoding
-   * operation) or the value returned from a call to a partial decoding method
-   * for the previous bytes
-   *
-   * @return {@link #MALFORMED} if the partial byte sequence is
-   * definitely not well-formed, {@link #COMPLETE} if it is well-formed
-   * (no additional input needed), or if the byte sequence is
-   * "incomplete", i.e. apparently terminated in the middle of a character,
-   * an opaque integer "state" value containing enough information to
-   * decode the character when passed to a subsequent invocation of a
-   * partial decoding method.
+   * @param state either {@link Utf8#COMPLETE} (if this is the initial decoding operation) or the
+   *     value returned from a call to a partial decoding method for the previous bytes
+   * @return {@link #MALFORMED} if the partial byte sequence is definitely not well-formed, {@link
+   *     #COMPLETE} if it is well-formed (no additional input needed), or if the byte sequence is
+   *     "incomplete", i.e. apparently terminated in the middle of a character, an opaque integer
+   *     "state" value containing enough information to decode the character when passed to a
+   *     subsequent invocation of a partial decoding method.
    */
-  public static int partialIsValidUtf8(int state, byte[] bytes, int index, int limit) {
+  static int partialIsValidUtf8(int state, byte[] bytes, int index, int limit) {
     return processor.partialIsValidUtf8(state, bytes, index, limit);
   }
 
   private static int incompleteStateFor(int byte1) {
-    return (byte1 > (byte) 0xF4) ?
-        MALFORMED : byte1;
+    return (byte1 > (byte) 0xF4) ? MALFORMED : byte1;
   }
 
   private static int incompleteStateFor(int byte1, int byte2) {
-    return (byte1 > (byte) 0xF4 ||
-            byte2 > (byte) 0xBF) ?
-        MALFORMED : byte1 ^ (byte2 << 8);
+    return (byte1 > (byte) 0xF4 || byte2 > (byte) 0xBF) ? MALFORMED : byte1 ^ (byte2 << 8);
   }
 
   private static int incompleteStateFor(int byte1, int byte2, int byte3) {
-    return (byte1 > (byte) 0xF4 ||
-            byte2 > (byte) 0xBF ||
-            byte3 > (byte) 0xBF) ?
-        MALFORMED : byte1 ^ (byte2 << 8) ^ (byte3 << 16);
+    return (byte1 > (byte) 0xF4 || byte2 > (byte) 0xBF || byte3 > (byte) 0xBF)
+        ? MALFORMED
+        : byte1 ^ (byte2 << 8) ^ (byte3 << 16);
   }
 
   private static int incompleteStateFor(byte[] bytes, int index, int limit) {
     int byte1 = bytes[index - 1];
     switch (limit - index) {
-      case 0: return incompleteStateFor(byte1);
-      case 1: return incompleteStateFor(byte1, bytes[index]);
-      case 2: return incompleteStateFor(byte1, bytes[index], bytes[index + 1]);
-      default: throw new AssertionError();
+      case 0:
+        return incompleteStateFor(byte1);
+      case 1:
+        return incompleteStateFor(byte1, bytes[index]);
+      case 2:
+        return incompleteStateFor(byte1, bytes[index], bytes[index + 1]);
+      default:
+        throw new AssertionError();
     }
   }
 
@@ -231,7 +199,7 @@ final class Utf8 {
   // These UTF-8 handling methods are copied from Guava's Utf8 class with a modification to throw
   // a protocol buffer local exception. This exception is then caught in CodedOutputStream so it can
   // fallback to more lenient behavior.
-  
+
   static class UnpairedSurrogateException extends IllegalArgumentException {
     UnpairedSurrogateException(int index, int length) {
       super("Unpaired surrogate at index " + index + " of " + length);
@@ -239,9 +207,9 @@ final class Utf8 {
   }
 
   /**
-   * Returns the number of bytes in the UTF-8-encoded form of {@code sequence}. For a string,
-   * this method is equivalent to {@code string.getBytes(UTF_8).length}, but is more efficient in
-   * both time and space.
+   * Returns the number of bytes in the UTF-8-encoded form of {@code sequence}. For a string, this
+   * method is equivalent to {@code string.getBytes(UTF_8).length}, but is more efficient in both
+   * time and space.
    *
    * @throws IllegalArgumentException if {@code sequence} contains ill-formed UTF-16 (unpaired
    *     surrogates)
@@ -261,7 +229,7 @@ final class Utf8 {
     for (; i < utf16Length; i++) {
       char c = sequence.charAt(i);
       if (c < 0x800) {
-        utf8Length += ((0x7f - c) >>> 31);  // branch free!
+        utf8Length += ((0x7f - c) >>> 31); // branch free!
       } else {
         utf8Length += encodedLengthGeneral(sequence, i);
         break;
@@ -270,8 +238,8 @@ final class Utf8 {
 
     if (utf8Length < utf16Length) {
       // Necessary and sufficient condition for overflow because of maximum 3x expansion
-      throw new IllegalArgumentException("UTF-8 length does not fit in int: "
-              + (utf8Length + (1L << 32)));
+      throw new IllegalArgumentException(
+          "UTF-8 length does not fit in int: " + (utf8Length + (1L << 32)));
     }
     return utf8Length;
   }
@@ -289,7 +257,7 @@ final class Utf8 {
         if (Character.MIN_SURROGATE <= c && c <= Character.MAX_SURROGATE) {
           // Check that we have a well-formed surrogate pair.
           int cp = Character.codePointAt(sequence, i);
-          if (cp < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+          if (cp < MIN_SUPPLEMENTARY_CODE_POINT) {
             throw new UnpairedSurrogateException(i, utf16Length);
           }
           i++;
@@ -331,6 +299,26 @@ final class Utf8 {
   }
 
   /**
+   * Decodes the given UTF-8 portion of the {@link ByteBuffer} into a {@link String}.
+   *
+   * @throws InvalidProtocolBufferException if the input is not valid UTF-8.
+   */
+  static String decodeUtf8(ByteBuffer buffer, int index, int size)
+      throws InvalidProtocolBufferException {
+    return processor.decodeUtf8(buffer, index, size);
+  }
+
+  /**
+   * Decodes the given UTF-8 encoded byte array slice into a {@link String}.
+   *
+   * @throws InvalidProtocolBufferException if the input is not valid UTF-8.
+   */
+  static String decodeUtf8(byte[] bytes, int index, int size)
+      throws InvalidProtocolBufferException {
+    return processor.decodeUtf8(bytes, index, size);
+  }
+
+  /**
    * Encodes the given characters to the target {@link ByteBuffer} using UTF-8 encoding.
    *
    * <p>Selects an optimal algorithm based on the type of {@link ByteBuffer} (i.e. heap or direct)
@@ -345,15 +333,15 @@ final class Utf8 {
   }
 
   /**
-   * Counts (approximately) the number of consecutive ASCII characters in the given buffer.
-   * The byte order of the {@link ByteBuffer} does not matter, so performance can be improved if
-   * native byte order is used (i.e. no byte-swapping in {@link ByteBuffer#getLong(int)}).
+   * Counts (approximately) the number of consecutive ASCII characters in the given buffer. The byte
+   * order of the {@link ByteBuffer} does not matter, so performance can be improved if native byte
+   * order is used (i.e. no byte-swapping in {@link ByteBuffer#getLong(int)}).
    *
    * @param buffer the buffer to be scanned for ASCII chars
    * @param index the starting index of the scan
    * @param limit the limit within buffer for the scan
-   * @return the number of ASCII characters found. The stopping position will be at or
-   * before the first non-ASCII byte.
+   * @return the number of ASCII characters found. The stopping position will be at or before the
+   *     first non-ASCII byte.
    */
   private static int estimateConsecutiveAscii(ByteBuffer buffer, int index, int limit) {
     int i = index;
@@ -365,52 +353,43 @@ final class Utf8 {
     return i - index;
   }
 
-  /**
-   * A processor of UTF-8 strings, providing methods for checking validity and encoding.
-   */
-  // TODO(nathanmittler): Add support for Memory/MemoryBlock on Android.
+  /** A processor of UTF-8 strings, providing methods for checking validity and encoding. */
+  // TODO: Add support for Memory/MemoryBlock on Android.
   abstract static class Processor {
     /**
-     * Returns {@code true} if the given byte array slice is a
-     * well-formed UTF-8 byte sequence.  The range of bytes to be
-     * checked extends from index {@code index}, inclusive, to {@code
-     * limit}, exclusive.
+     * Returns {@code true} if the given byte array slice is a well-formed UTF-8 byte sequence. The
+     * range of bytes to be checked extends from index {@code index}, inclusive, to {@code limit},
+     * exclusive.
      *
-     * <p>This is a convenience method, equivalent to {@code
-     * partialIsValidUtf8(bytes, index, limit) == Utf8.COMPLETE}.
+     * <p>This is a convenience method, equivalent to {@code partialIsValidUtf8(bytes, index, limit)
+     * == Utf8.COMPLETE}.
      */
     final boolean isValidUtf8(byte[] bytes, int index, int limit) {
       return partialIsValidUtf8(COMPLETE, bytes, index, limit) == COMPLETE;
     }
 
     /**
-     * Tells whether the given byte array slice is a well-formed,
-     * malformed, or incomplete UTF-8 byte sequence.  The range of bytes
-     * to be checked extends from index {@code index}, inclusive, to
-     * {@code limit}, exclusive.
+     * Tells whether the given byte array slice is a well-formed, malformed, or incomplete UTF-8
+     * byte sequence. The range of bytes to be checked extends from index {@code index}, inclusive,
+     * to {@code limit}, exclusive.
      *
-     * @param state either {@link Utf8#COMPLETE} (if this is the initial decoding
-     * operation) or the value returned from a call to a partial decoding method
-     * for the previous bytes
-     *
-     * @return {@link #MALFORMED} if the partial byte sequence is
-     * definitely not well-formed, {@link #COMPLETE} if it is well-formed
-     * (no additional input needed), or if the byte sequence is
-     * "incomplete", i.e. apparently terminated in the middle of a character,
-     * an opaque integer "state" value containing enough information to
-     * decode the character when passed to a subsequent invocation of a
-     * partial decoding method.
+     * @param state either {@link Utf8#COMPLETE} (if this is the initial decoding operation) or the
+     *     value returned from a call to a partial decoding method for the previous bytes
+     * @return {@link #MALFORMED} if the partial byte sequence is definitely not well-formed, {@link
+     *     #COMPLETE} if it is well-formed (no additional input needed), or if the byte sequence is
+     *     "incomplete", i.e. apparently terminated in the middle of a character, an opaque integer
+     *     "state" value containing enough information to decode the character when passed to a
+     *     subsequent invocation of a partial decoding method.
      */
     abstract int partialIsValidUtf8(int state, byte[] bytes, int index, int limit);
 
     /**
-     * Returns {@code true} if the given portion of the {@link ByteBuffer} is a
-     * well-formed UTF-8 byte sequence.  The range of bytes to be
-     * checked extends from index {@code index}, inclusive, to {@code
-     * limit}, exclusive.
+     * Returns {@code true} if the given portion of the {@link ByteBuffer} is a well-formed UTF-8
+     * byte sequence. The range of bytes to be checked extends from index {@code index}, inclusive,
+     * to {@code limit}, exclusive.
      *
-     * <p>This is a convenience method, equivalent to {@code
-     * partialIsValidUtf8(bytes, index, limit) == Utf8.COMPLETE}.
+     * <p>This is a convenience method, equivalent to {@code partialIsValidUtf8(bytes, index, limit)
+     * == Utf8.COMPLETE}.
      */
     final boolean isValidUtf8(ByteBuffer buffer, int index, int limit) {
       return partialIsValidUtf8(COMPLETE, buffer, index, limit) == COMPLETE;
@@ -427,22 +406,20 @@ final class Utf8 {
       if (buffer.hasArray()) {
         final int offset = buffer.arrayOffset();
         return partialIsValidUtf8(state, buffer.array(), offset + index, offset + limit);
-      } else if (buffer.isDirect()){
+      } else if (buffer.isDirect()) {
         return partialIsValidUtf8Direct(state, buffer, index, limit);
       }
       return partialIsValidUtf8Default(state, buffer, index, limit);
     }
 
-    /**
-     * Performs validation for direct {@link ByteBuffer} instances.
-     */
+    /** Performs validation for direct {@link ByteBuffer} instances. */
     abstract int partialIsValidUtf8Direct(
         final int state, final ByteBuffer buffer, int index, final int limit);
 
     /**
      * Performs validation for {@link ByteBuffer} instances using the {@link ByteBuffer} API rather
-     * than potentially faster approaches. This first completes validation for the current
-     * character (provided by {@code state}) and then finishes validation for the sequence.
+     * than potentially faster approaches. This first completes validation for the current character
+     * (provided by {@code state}) and then finishes validation for the sequence.
      */
     final int partialIsValidUtf8Default(
         final int state, final ByteBuffer buffer, int index, final int limit) {
@@ -541,9 +518,9 @@ final class Utf8 {
     private static int partialIsValidUtf8(final ByteBuffer buffer, int index, final int limit) {
       index += estimateConsecutiveAscii(buffer, index, limit);
 
-      for (;;) {
+      for (; ; ) {
         // Optimize for interior runs of ASCII bytes.
-        // TODO(nathanmittler): Consider checking 8 bytes at a time after some threshold?
+        // TODO: Consider checking 8 bytes at a time after some threshold?
         // Maybe after seeing a few in a row that are ASCII, go back to fast mode?
         int byte1;
         do {
@@ -573,7 +550,7 @@ final class Utf8 {
             return incompleteStateFor(buffer, byte1, index, limit - index);
           }
 
-          final byte byte2 = buffer.get(index++);
+          byte byte2 = buffer.get(index++);
           if (byte2 > (byte) 0xBF
               // overlong? 5 most significant bits must not all be zero
               || (byte1 == (byte) 0xE0 && byte2 < (byte) 0xA0)
@@ -591,8 +568,8 @@ final class Utf8 {
             return incompleteStateFor(buffer, byte1, index, limit - index);
           }
 
-          // TODO(nathanmittler): Consider using getInt() to improve performance.
-          final int byte2 = buffer.get(index++);
+          // TODO: Consider using getInt() to improve performance.
+          int byte2 = buffer.get(index++);
           if (byte2 > (byte) 0xBF
               // Check that 1 <= plane <= 16.  Tricky optimized form of:
               // if (byte1 > (byte) 0xF4 ||
@@ -610,23 +587,132 @@ final class Utf8 {
     }
 
     /**
+     * Decodes the given byte array slice into a {@link String}.
+     *
+     * @throws InvalidProtocolBufferException if the byte array slice is not valid UTF-8
+     */
+    abstract String decodeUtf8(byte[] bytes, int index, int size)
+        throws InvalidProtocolBufferException;
+
+    /**
+     * Decodes the given portion of the {@link ByteBuffer} into a {@link String}.
+     *
+     * @throws InvalidProtocolBufferException if the portion of the buffer is not valid UTF-8
+     */
+    final String decodeUtf8(ByteBuffer buffer, int index, int size)
+        throws InvalidProtocolBufferException {
+      if (buffer.hasArray()) {
+        final int offset = buffer.arrayOffset();
+        return decodeUtf8(buffer.array(), offset + index, size);
+      } else if (buffer.isDirect()) {
+        return decodeUtf8Direct(buffer, index, size);
+      }
+      return decodeUtf8Default(buffer, index, size);
+    }
+
+    /** Decodes direct {@link ByteBuffer} instances into {@link String}. */
+    abstract String decodeUtf8Direct(ByteBuffer buffer, int index, int size)
+        throws InvalidProtocolBufferException;
+
+    /**
+     * Decodes {@link ByteBuffer} instances using the {@link ByteBuffer} API rather than potentially
+     * faster approaches.
+     */
+    final String decodeUtf8Default(ByteBuffer buffer, int index, int size)
+        throws InvalidProtocolBufferException {
+      // Bitwise OR combines the sign bits so any negative value fails the check.
+      if ((index | size | buffer.limit() - index - size) < 0) {
+        throw new ArrayIndexOutOfBoundsException(
+            String.format("buffer limit=%d, index=%d, limit=%d", buffer.limit(), index, size));
+      }
+
+      int offset = index;
+      int limit = offset + size;
+
+      // The longest possible resulting String is the same as the number of input bytes, when it is
+      // all ASCII. For other cases, this over-allocates and we will truncate in the end.
+      char[] resultArr = new char[size];
+      int resultPos = 0;
+
+      // Optimize for 100% ASCII (Hotspot loves small simple top-level loops like this).
+      // This simple loop stops when we encounter a byte >= 0x80 (i.e. non-ASCII).
+      while (offset < limit) {
+        byte b = buffer.get(offset);
+        if (!DecodeUtil.isOneByte(b)) {
+          break;
+        }
+        offset++;
+        DecodeUtil.handleOneByte(b, resultArr, resultPos++);
+      }
+
+      while (offset < limit) {
+        byte byte1 = buffer.get(offset++);
+        if (DecodeUtil.isOneByte(byte1)) {
+          DecodeUtil.handleOneByte(byte1, resultArr, resultPos++);
+          // It's common for there to be multiple ASCII characters in a run mixed in, so add an
+          // extra optimized loop to take care of these runs.
+          while (offset < limit) {
+            byte b = buffer.get(offset);
+            if (!DecodeUtil.isOneByte(b)) {
+              break;
+            }
+            offset++;
+            DecodeUtil.handleOneByte(b, resultArr, resultPos++);
+          }
+        } else if (DecodeUtil.isTwoBytes(byte1)) {
+          if (offset >= limit) {
+            throw InvalidProtocolBufferException.invalidUtf8();
+          }
+          DecodeUtil.handleTwoBytes(
+              byte1, /* byte2 */ buffer.get(offset++), resultArr, resultPos++);
+        } else if (DecodeUtil.isThreeBytes(byte1)) {
+          if (offset >= limit - 1) {
+            throw InvalidProtocolBufferException.invalidUtf8();
+          }
+          DecodeUtil.handleThreeBytes(
+              byte1,
+              /* byte2 */ buffer.get(offset++),
+              /* byte3 */ buffer.get(offset++),
+              resultArr,
+              resultPos++);
+        } else {
+          if (offset >= limit - 2) {
+            throw InvalidProtocolBufferException.invalidUtf8();
+          }
+          DecodeUtil.handleFourBytes(
+              byte1,
+              /* byte2 */ buffer.get(offset++),
+              /* byte3 */ buffer.get(offset++),
+              /* byte4 */ buffer.get(offset++),
+              resultArr,
+              resultPos++);
+          // 4-byte case requires two chars.
+          resultPos++;
+        }
+      }
+
+      return new String(resultArr, 0, resultPos);
+    }
+
+    /**
      * Encodes an input character sequence ({@code in}) to UTF-8 in the target array ({@code out}).
      * For a string, this method is similar to
+     *
      * <pre>{@code
      * byte[] a = string.getBytes(UTF_8);
      * System.arraycopy(a, 0, bytes, offset, a.length);
      * return offset + a.length;
      * }</pre>
      *
-     * but is more efficient in both time and space. One key difference is that this method
-     * requires paired surrogates, and therefore does not support chunking.
-     * While {@code String.getBytes(UTF_8)} replaces unpaired surrogates with the default
-     * replacement character, this method throws {@link UnpairedSurrogateException}.
+     * but is more efficient in both time and space. One key difference is that this method requires
+     * paired surrogates, and therefore does not support chunking. While {@code
+     * String.getBytes(UTF_8)} replaces unpaired surrogates with the default replacement character,
+     * this method throws {@link UnpairedSurrogateException}.
      *
      * <p>To ensure sufficient space in the output buffer, either call {@link #encodedLength} to
-     * compute the exact amount needed, or leave room for 
-     * {@code Utf8.MAX_BYTES_PER_CHAR * sequence.length()}, which is the largest possible number
-     * of bytes that any input can be encoded to.
+     * compute the exact amount needed, or leave room for {@code Utf8.MAX_BYTES_PER_CHAR *
+     * sequence.length()}, which is the largest possible number of bytes that any input can be
+     * encoded to.
      *
      * @param in the input character sequence to be encoded
      * @param out the target array
@@ -643,27 +729,25 @@ final class Utf8 {
     /**
      * Encodes an input character sequence ({@code in}) to UTF-8 in the target buffer ({@code out}).
      * Upon returning from this method, the {@code out} position will point to the position after
-     * the last encoded byte. This method requires paired surrogates, and therefore does not
-     * support chunking.
+     * the last encoded byte. This method requires paired surrogates, and therefore does not support
+     * chunking.
      *
      * <p>To ensure sufficient space in the output buffer, either call {@link #encodedLength} to
-     * compute the exact amount needed, or leave room for
-     * {@code Utf8.MAX_BYTES_PER_CHAR * in.length()}, which is the largest possible number
-     * of bytes that any input can be encoded to.
+     * compute the exact amount needed, or leave room for {@code Utf8.MAX_BYTES_PER_CHAR *
+     * in.length()}, which is the largest possible number of bytes that any input can be encoded to.
      *
      * @param in the source character sequence to be encoded
      * @param out the target buffer
      * @throws UnpairedSurrogateException if {@code in} contains ill-formed UTF-16 (unpaired
      *     surrogates)
-     * @throws ArrayIndexOutOfBoundsException if {@code in} encoded in UTF-8 is longer than
-     *     {@code out.remaining()}
+     * @throws ArrayIndexOutOfBoundsException if {@code in} encoded in UTF-8 is longer than {@code
+     *     out.remaining()}
      */
     final void encodeUtf8(CharSequence in, ByteBuffer out) {
       if (out.hasArray()) {
         final int offset = out.arrayOffset();
-        int endIndex =
-            Utf8.encode(in, out.array(), offset + out.position(), out.remaining());
-        out.position(endIndex - offset);
+        int endIndex = Utf8.encode(in, out.array(), offset + out.position(), out.remaining());
+        Java8Compatibility.position(out, endIndex - offset);
       } else if (out.isDirect()) {
         encodeUtf8Direct(in, out);
       } else {
@@ -671,9 +755,7 @@ final class Utf8 {
       }
     }
 
-    /**
-     * Encodes the input character sequence to a direct {@link ByteBuffer} instance.
-     */
+    /** Encodes the input character sequence to a direct {@link ByteBuffer} instance. */
     abstract void encodeUtf8Direct(CharSequence in, ByteBuffer out);
 
     /**
@@ -690,13 +772,13 @@ final class Utf8 {
       // if it occurs.
       try {
         // Designed to take advantage of
-        // https://wikis.oracle.com/display/HotSpotInternals/RangeCheckElimination
+        // https://wiki.openjdk.java.net/display/HotSpotInternals/RangeCheckElimination
         for (char c; inIx < inLength && (c = in.charAt(inIx)) < 0x80; ++inIx) {
           out.put(outIx + inIx, (byte) c);
         }
         if (inIx == inLength) {
           // Successfully encoded the entire string.
-          out.position(outIx + inIx);
+          Java8Compatibility.position(out, outIx + inIx);
           return;
         }
 
@@ -729,7 +811,7 @@ final class Utf8 {
             if (inIx + 1 == inLength || !isSurrogatePair(c, (low = in.charAt(++inIx)))) {
               throw new UnpairedSurrogateException(inIx, inLength);
             }
-            // TODO(nathanmittler): Consider using putInt() to improve performance.
+            // TODO: Consider using putInt() to improve performance.
             int codePoint = toCodePoint(c, low);
             out.put(outIx++, (byte) ((0xF << 4) | (codePoint >>> 18)));
             out.put(outIx++, (byte) (0x80 | (0x3F & (codePoint >>> 12))));
@@ -739,9 +821,9 @@ final class Utf8 {
         }
 
         // Successfully encoded the entire string.
-        out.position(outIx);
+        Java8Compatibility.position(out, outIx);
       } catch (IndexOutOfBoundsException e) {
-        // TODO(nathanmittler): Consider making the API throw IndexOutOfBoundsException instead.
+        // TODO: Consider making the API throw IndexOutOfBoundsException instead.
 
         // If we failed in the outer ASCII loop, outIx will not have been updated. In this case,
         // use inIx to determine the bad write index.
@@ -752,9 +834,7 @@ final class Utf8 {
     }
   }
 
-  /**
-   * {@link Processor} implementation that does not use any {@code sun.misc.Unsafe} methods.
-   */
+  /** {@link Processor} implementation that does not use any {@code sun.misc.Unsafe} methods. */
   static final class SafeProcessor extends Processor {
     @Override
     int partialIsValidUtf8(int state, byte[] bytes, int index, int limit) {
@@ -766,7 +846,7 @@ final class Utf8 {
         //
         // We expect such "straddler characters" to be rare.
 
-        if (index >= limit) {  // No bytes? No progress.
+        if (index >= limit) { // No bytes? No progress.
           return state;
         }
         int byte1 = (byte) state;
@@ -851,13 +931,95 @@ final class Utf8 {
     }
 
     @Override
+    String decodeUtf8(byte[] bytes, int index, int size) throws InvalidProtocolBufferException {
+      // Bitwise OR combines the sign bits so any negative value fails the check.
+      if ((index | size | bytes.length - index - size) < 0) {
+        throw new ArrayIndexOutOfBoundsException(
+            String.format("buffer length=%d, index=%d, size=%d", bytes.length, index, size));
+      }
+
+      int offset = index;
+      final int limit = offset + size;
+
+      // The longest possible resulting String is the same as the number of input bytes, when it is
+      // all ASCII. For other cases, this over-allocates and we will truncate in the end.
+      char[] resultArr = new char[size];
+      int resultPos = 0;
+
+      // Optimize for 100% ASCII (Hotspot loves small simple top-level loops like this).
+      // This simple loop stops when we encounter a byte >= 0x80 (i.e. non-ASCII).
+      while (offset < limit) {
+        byte b = bytes[offset];
+        if (!DecodeUtil.isOneByte(b)) {
+          break;
+        }
+        offset++;
+        DecodeUtil.handleOneByte(b, resultArr, resultPos++);
+      }
+
+      while (offset < limit) {
+        byte byte1 = bytes[offset++];
+        if (DecodeUtil.isOneByte(byte1)) {
+          DecodeUtil.handleOneByte(byte1, resultArr, resultPos++);
+          // It's common for there to be multiple ASCII characters in a run mixed in, so add an
+          // extra optimized loop to take care of these runs.
+          while (offset < limit) {
+            byte b = bytes[offset];
+            if (!DecodeUtil.isOneByte(b)) {
+              break;
+            }
+            offset++;
+            DecodeUtil.handleOneByte(b, resultArr, resultPos++);
+          }
+        } else if (DecodeUtil.isTwoBytes(byte1)) {
+          if (offset >= limit) {
+            throw InvalidProtocolBufferException.invalidUtf8();
+          }
+          DecodeUtil.handleTwoBytes(byte1, /* byte2 */ bytes[offset++], resultArr, resultPos++);
+        } else if (DecodeUtil.isThreeBytes(byte1)) {
+          if (offset >= limit - 1) {
+            throw InvalidProtocolBufferException.invalidUtf8();
+          }
+          DecodeUtil.handleThreeBytes(
+              byte1,
+              /* byte2 */ bytes[offset++],
+              /* byte3 */ bytes[offset++],
+              resultArr,
+              resultPos++);
+        } else {
+          if (offset >= limit - 2) {
+            throw InvalidProtocolBufferException.invalidUtf8();
+          }
+          DecodeUtil.handleFourBytes(
+              byte1,
+              /* byte2 */ bytes[offset++],
+              /* byte3 */ bytes[offset++],
+              /* byte4 */ bytes[offset++],
+              resultArr,
+              resultPos++);
+          // 4-byte case requires two chars.
+          resultPos++;
+        }
+      }
+
+      return new String(resultArr, 0, resultPos);
+    }
+
+    @Override
+    String decodeUtf8Direct(ByteBuffer buffer, int index, int size)
+        throws InvalidProtocolBufferException {
+      // For safe processing, we have to use the ByteBufferAPI.
+      return decodeUtf8Default(buffer, index, size);
+    }
+
+    @Override
     int encodeUtf8(CharSequence in, byte[] out, int offset, int length) {
       int utf16Length = in.length();
       int j = offset;
       int i = 0;
       int limit = offset + length;
       // Designed to take advantage of
-      // https://wikis.oracle.com/display/HotSpotInternals/RangeCheckElimination
+      // https://wiki.openjdk.java.net/display/HotSpotInternals/RangeCheckElimination
       for (char c; i < utf16Length && i + j < limit && (c = in.charAt(i)) < 0x80; i++) {
         out[j + i] = (byte) c;
       }
@@ -881,8 +1043,7 @@ final class Utf8 {
           // Minimum code point represented by a surrogate pair is 0x10000, 17 bits,
           // four UTF-8 bytes
           final char low;
-          if (i + 1 == in.length()
-                  || !Character.isSurrogatePair(c, (low = in.charAt(++i)))) {
+          if (i + 1 == in.length() || !Character.isSurrogatePair(c, (low = in.charAt(++i)))) {
             throw new UnpairedSurrogateException((i - 1), utf16Length);
           }
           int codePoint = Character.toCodePoint(c, low);
@@ -894,8 +1055,7 @@ final class Utf8 {
           // If we are surrogates and we're not a surrogate pair, always throw an
           // UnpairedSurrogateException instead of an ArrayOutOfBoundsException.
           if ((Character.MIN_SURROGATE <= c && c <= Character.MAX_SURROGATE)
-              && (i + 1 == in.length()
-                  || !Character.isSurrogatePair(c, in.charAt(i + 1)))) {
+              && (i + 1 == in.length() || !Character.isSurrogatePair(c, in.charAt(i + 1)))) {
             throw new UnpairedSurrogateException(i, utf16Length);
           }
           throw new ArrayIndexOutOfBoundsException("Failed writing " + c + " at index " + j);
@@ -921,8 +1081,9 @@ final class Utf8 {
     }
 
     private static int partialIsValidUtf8NonAscii(byte[] bytes, int index, int limit) {
-      for (;;) {
-        int byte1, byte2;
+      for (; ; ) {
+        int byte1;
+        int byte2;
 
         // Optimize for interior runs of ASCII bytes.
         do {
@@ -941,8 +1102,7 @@ final class Utf8 {
 
           // Simultaneously checks for illegal trailing-byte in
           // leading position and overlong 2-byte form.
-          if (byte1 < (byte) 0xC2
-              || bytes[index++] > (byte) 0xBF) {
+          if (byte1 < (byte) 0xC2 || bytes[index++] > (byte) 0xBF) {
             return MALFORMED;
           }
         } else if (byte1 < (byte) 0xF0) {
@@ -963,7 +1123,7 @@ final class Utf8 {
         } else {
           // four-byte form
 
-          if (index >= limit - 2) {  // incomplete sequence
+          if (index >= limit - 2) { // incomplete sequence
             return incompleteStateFor(bytes, index, limit);
           }
           if ((byte2 = bytes[index++]) > (byte) 0xBF
@@ -983,19 +1143,16 @@ final class Utf8 {
     }
   }
 
-  /**
-   * {@link Processor} that uses {@code sun.misc.Unsafe} where possible to improve performance.
-   */
+  /** {@link Processor} that uses {@code sun.misc.Unsafe} where possible to improve performance. */
   static final class UnsafeProcessor extends Processor {
-    /**
-     * Indicates whether or not all required unsafe operations are supported on this platform.
-     */
+    /** Indicates whether or not all required unsafe operations are supported on this platform. */
     static boolean isAvailable() {
       return hasUnsafeArrayOperations() && hasUnsafeByteBufferOperations();
     }
 
     @Override
     int partialIsValidUtf8(int state, byte[] bytes, final int index, final int limit) {
+      // Bitwise OR combines the sign bits so any negative value fails the check.
       if ((index | limit | bytes.length - limit) < 0) {
         throw new ArrayIndexOutOfBoundsException(
             String.format("Array length=%d, index=%d, limit=%d", bytes.length, index, limit));
@@ -1010,7 +1167,7 @@ final class Utf8 {
         //
         // We expect such "straddler characters" to be rare.
 
-        if (offset >= offsetLimit) {  // No bytes? No progress.
+        if (offset >= offsetLimit) { // No bytes? No progress.
           return state;
         }
         int byte1 = (byte) state;
@@ -1091,6 +1248,7 @@ final class Utf8 {
     @Override
     int partialIsValidUtf8Direct(
         final int state, ByteBuffer buffer, final int index, final int limit) {
+      // Bitwise OR combines the sign bits so any negative value fails the check.
       if ((index | limit | buffer.limit() - limit) < 0) {
         throw new ArrayIndexOutOfBoundsException(
             String.format("buffer limit=%d, index=%d, limit=%d", buffer.limit(), index, limit));
@@ -1185,6 +1343,105 @@ final class Utf8 {
     }
 
     @Override
+    String decodeUtf8(byte[] bytes, int index, int size) throws InvalidProtocolBufferException {
+      String s = new String(bytes, index, size, Internal.UTF_8);
+
+      // "\uFFFD" is UTF-8 default replacement string, which illegal byte sequences get replaced
+      // with.
+      if (!s.contains("\uFFFD")) {
+        return s;
+      }
+
+      // Since s contains "\uFFFD" there are 2 options:
+      // 1) The byte array slice is invalid UTF-8.
+      // 2) The byte array slice is valid UTF-8 and contains encodings for "\uFFFD".
+      // To rule out (1), we encode s and compare it to the byte array slice.
+      // If the byte array slice was invalid UTF-8, then we would get a different sequence of bytes.
+      if (Arrays.equals(
+          s.getBytes(Internal.UTF_8), Arrays.copyOfRange(bytes, index, index + size))) {
+        return s;
+      }
+
+      throw InvalidProtocolBufferException.invalidUtf8();
+    }
+
+    @Override
+    String decodeUtf8Direct(ByteBuffer buffer, int index, int size)
+        throws InvalidProtocolBufferException {
+      // Bitwise OR combines the sign bits so any negative value fails the check.
+      if ((index | size | buffer.limit() - index - size) < 0) {
+        throw new ArrayIndexOutOfBoundsException(
+            String.format("buffer limit=%d, index=%d, limit=%d", buffer.limit(), index, size));
+      }
+      long address = UnsafeUtil.addressOffset(buffer) + index;
+      final long addressLimit = address + size;
+
+      // The longest possible resulting String is the same as the number of input bytes, when it is
+      // all ASCII. For other cases, this over-allocates and we will truncate in the end.
+      char[] resultArr = new char[size];
+      int resultPos = 0;
+
+      // Optimize for 100% ASCII (Hotspot loves small simple top-level loops like this).
+      // This simple loop stops when we encounter a byte >= 0x80 (i.e. non-ASCII).
+      while (address < addressLimit) {
+        byte b = UnsafeUtil.getByte(address);
+        if (!DecodeUtil.isOneByte(b)) {
+          break;
+        }
+        address++;
+        DecodeUtil.handleOneByte(b, resultArr, resultPos++);
+      }
+
+      while (address < addressLimit) {
+        byte byte1 = UnsafeUtil.getByte(address++);
+        if (DecodeUtil.isOneByte(byte1)) {
+          DecodeUtil.handleOneByte(byte1, resultArr, resultPos++);
+          // It's common for there to be multiple ASCII characters in a run mixed in, so add an
+          // extra optimized loop to take care of these runs.
+          while (address < addressLimit) {
+            byte b = UnsafeUtil.getByte(address);
+            if (!DecodeUtil.isOneByte(b)) {
+              break;
+            }
+            address++;
+            DecodeUtil.handleOneByte(b, resultArr, resultPos++);
+          }
+        } else if (DecodeUtil.isTwoBytes(byte1)) {
+          if (address >= addressLimit) {
+            throw InvalidProtocolBufferException.invalidUtf8();
+          }
+          DecodeUtil.handleTwoBytes(
+              byte1, /* byte2 */ UnsafeUtil.getByte(address++), resultArr, resultPos++);
+        } else if (DecodeUtil.isThreeBytes(byte1)) {
+          if (address >= addressLimit - 1) {
+            throw InvalidProtocolBufferException.invalidUtf8();
+          }
+          DecodeUtil.handleThreeBytes(
+              byte1,
+              /* byte2 */ UnsafeUtil.getByte(address++),
+              /* byte3 */ UnsafeUtil.getByte(address++),
+              resultArr,
+              resultPos++);
+        } else {
+          if (address >= addressLimit - 2) {
+            throw InvalidProtocolBufferException.invalidUtf8();
+          }
+          DecodeUtil.handleFourBytes(
+              byte1,
+              /* byte2 */ UnsafeUtil.getByte(address++),
+              /* byte3 */ UnsafeUtil.getByte(address++),
+              /* byte4 */ UnsafeUtil.getByte(address++),
+              resultArr,
+              resultPos++);
+          // 4-byte case requires two chars.
+          resultPos++;
+        }
+      }
+
+      return new String(resultArr, 0, resultPos);
+    }
+
+    @Override
     int encodeUtf8(final CharSequence in, final byte[] out, final int offset, final int length) {
       long outIx = offset;
       final long outLimit = outIx + length;
@@ -1196,7 +1453,7 @@ final class Utf8 {
       }
 
       // Designed to take advantage of
-      // https://wikis.oracle.com/display/HotSpotInternals/RangeCheckElimination
+      // https://wiki.openjdk.java.net/display/HotSpotInternals/RangeCheckElimination
       int inIx = 0;
       for (char c; inIx < inLimit && (c = in.charAt(inIx)) < 0x80; ++inIx) {
         UnsafeUtil.putByte(out, outIx++, (byte) c);
@@ -1258,14 +1515,14 @@ final class Utf8 {
       }
 
       // Designed to take advantage of
-      // https://wikis.oracle.com/display/HotSpotInternals/RangeCheckElimination
+      // https://wiki.openjdk.java.net/display/HotSpotInternals/RangeCheckElimination
       int inIx = 0;
       for (char c; inIx < inLimit && (c = in.charAt(inIx)) < 0x80; ++inIx) {
         UnsafeUtil.putByte(outIx++, (byte) c);
       }
       if (inIx == inLimit) {
         // We're done, it was ASCII encoded.
-        out.position((int) (outIx - address));
+        Java8Compatibility.position(out, (int) (outIx - address));
         return;
       }
 
@@ -1305,7 +1562,7 @@ final class Utf8 {
       }
 
       // All bytes have been encoded.
-      out.position((int) (outIx - address));
+      Java8Compatibility.position(out, (int) (outIx - address));
     }
 
     /**
@@ -1315,8 +1572,8 @@ final class Utf8 {
      * @param bytes the array containing the character sequence
      * @param offset the offset position of the index (same as index + arrayBaseOffset)
      * @param maxChars the maximum number of characters to count
-     * @return the number of ASCII characters found. The stopping position will be at or
-     * before the first non-ASCII byte.
+     * @return the number of ASCII characters found. The stopping position will be at or before the
+     *     first non-ASCII byte.
      */
     private static int unsafeEstimateConsecutiveAscii(
         byte[] bytes, long offset, final int maxChars) {
@@ -1325,7 +1582,29 @@ final class Utf8 {
         return 0;
       }
 
-      for (int i = 0; i < maxChars; i++) {
+      // Read bytes until 8-byte aligned so that we can read longs in the loop below.
+      // Byte arrays are already either 8 or 16-byte aligned, so we just need to make sure that
+      // the index (relative to the start of the array) is also 8-byte aligned. We do this by
+      // ANDing the index with 7 to determine the number of bytes that need to be read before
+      // we're 8-byte aligned.
+      final int unaligned = 8 - ((int) offset & 7);
+      int i;
+      for (i = 0; i < unaligned; i++) {
+        if (UnsafeUtil.getByte(bytes, offset++) < 0) {
+          return i;
+        }
+      }
+
+      for (; i + 8 <= maxChars; i += 8) {
+        if ((UnsafeUtil.getLong(bytes, UnsafeUtil.BYTE_ARRAY_BASE_OFFSET + offset)
+                & ASCII_MASK_LONG)
+            != 0L) {
+          break;
+        }
+        offset += 8;
+      }
+
+      for (; i < maxChars; i++) {
         if (UnsafeUtil.getByte(bytes, offset++) < 0) {
           return i;
         }
@@ -1345,9 +1624,9 @@ final class Utf8 {
       }
 
       // Read bytes until 8-byte aligned so that we can read longs in the loop below.
-      // We do this by ANDing the address with 7 to determine the number of bytes that need to
-      // be read before we're 8-byte aligned.
-      final int unaligned = (int) address & 7;
+      // This is equivalent to (8-address) mod 8, the number of bytes we need to read before we're
+      // 8-byte aligned.
+      final int unaligned = (int) (-address & 7);
       for (int j = unaligned; j > 0; j--) {
         if (UnsafeUtil.getByte(address++) < 0) {
           return unaligned - j;
@@ -1358,24 +1637,24 @@ final class Utf8 {
       // To speed things up further, we're reading longs instead of bytes so we use a mask to
       // determine if any byte in the current long is non-ASCII.
       remaining -= unaligned;
-      for (; remaining >= 8 && (UnsafeUtil.getLong(address) & ASCII_MASK_LONG) == 0;
+      for (;
+          remaining >= 8 && (UnsafeUtil.getLong(address) & ASCII_MASK_LONG) == 0;
           address += 8, remaining -= 8) {}
       return maxChars - remaining;
     }
 
     private static int partialIsValidUtf8(final byte[] bytes, long offset, int remaining) {
-      // Skip past ASCII characters as quickly as possible. 
+      // Skip past ASCII characters as quickly as possible.
       final int skipped = unsafeEstimateConsecutiveAscii(bytes, offset, remaining);
       remaining -= skipped;
       offset += skipped;
 
-      for (;;) {
+      for (; ; ) {
         // Optimize for interior runs of ASCII bytes.
-        // TODO(nathanmittler): Consider checking 8 bytes at a time after some threshold?
+        // TODO: Consider checking 8 bytes at a time after some threshold?
         // Maybe after seeing a few in a row that are ASCII, go back to fast mode?
         int byte1 = 0;
-        for (; remaining > 0 && (byte1 = UnsafeUtil.getByte(bytes, offset++)) >= 0; --remaining) {
-        }
+        for (; remaining > 0 && (byte1 = UnsafeUtil.getByte(bytes, offset++)) >= 0; --remaining) {}
         if (remaining == 0) {
           return COMPLETE;
         }
@@ -1392,8 +1671,7 @@ final class Utf8 {
 
           // Simultaneously checks for illegal trailing-byte in
           // leading position and overlong 2-byte form.
-          if (byte1 < (byte) 0xC2
-              || UnsafeUtil.getByte(bytes, offset++) > (byte) 0xBF) {
+          if (byte1 < (byte) 0xC2 || UnsafeUtil.getByte(bytes, offset++) > (byte) 0xBF) {
             return MALFORMED;
           }
         } else if (byte1 < (byte) 0xF0) {
@@ -1445,13 +1723,12 @@ final class Utf8 {
       address += skipped;
       remaining -= skipped;
 
-      for (;;) {
+      for (; ; ) {
         // Optimize for interior runs of ASCII bytes.
-        // TODO(nathanmittler): Consider checking 8 bytes at a time after some threshold?
+        // TODO: Consider checking 8 bytes at a time after some threshold?
         // Maybe after seeing a few in a row that are ASCII, go back to fast mode?
         int byte1 = 0;
-        for (; remaining > 0 && (byte1 = UnsafeUtil.getByte(address++)) >= 0; --remaining) {
-        }
+        for (; remaining > 0 && (byte1 = UnsafeUtil.getByte(address++)) >= 0; --remaining) {}
         if (remaining == 0) {
           return COMPLETE;
         }
@@ -1516,41 +1793,142 @@ final class Utf8 {
       }
     }
 
-    private static int unsafeIncompleteStateFor(byte[] bytes, int byte1, long offset,
-        int remaining) {
+    private static int unsafeIncompleteStateFor(
+        byte[] bytes, int byte1, long offset, int remaining) {
       switch (remaining) {
-        case 0: {
+        case 0:
           return incompleteStateFor(byte1);
-        }
-        case 1: {
+        case 1:
           return incompleteStateFor(byte1, UnsafeUtil.getByte(bytes, offset));
-        }
-        case 2: {
-          return incompleteStateFor(byte1, UnsafeUtil.getByte(bytes, offset),
-              UnsafeUtil.getByte(bytes, offset + 1));
-        }
-        default: {
+        case 2:
+          return incompleteStateFor(
+              byte1, UnsafeUtil.getByte(bytes, offset), UnsafeUtil.getByte(bytes, offset + 1));
+        default:
           throw new AssertionError();
-        }
       }
     }
 
     private static int unsafeIncompleteStateFor(long address, final int byte1, int remaining) {
       switch (remaining) {
-        case 0: {
+        case 0:
           return incompleteStateFor(byte1);
-        }
-        case 1: {
+        case 1:
           return incompleteStateFor(byte1, UnsafeUtil.getByte(address));
-        }
-        case 2: {
-          return incompleteStateFor(byte1, UnsafeUtil.getByte(address),
-              UnsafeUtil.getByte(address + 1));
-        }
-        default: {
+        case 2:
+          return incompleteStateFor(
+              byte1, UnsafeUtil.getByte(address), UnsafeUtil.getByte(address + 1));
+        default:
           throw new AssertionError();
-        }
       }
+    }
+  }
+
+  /**
+   * Utility methods for decoding bytes into {@link String}. Callers are responsible for extracting
+   * bytes (possibly using Unsafe methods), and checking remaining bytes. All other UTF-8 validity
+   * checks and codepoint conversion happen in this class.
+   */
+  private static class DecodeUtil {
+
+    /** Returns whether this is a single-byte codepoint (i.e., ASCII) with the form '0XXXXXXX'. */
+    private static boolean isOneByte(byte b) {
+      return b >= 0;
+    }
+
+    /**
+     * Returns whether this is a two-byte codepoint with the form '10XXXXXX' iff
+     * {@link #isOneByte(byte)} is false. This private method works in the limited use in
+     * this class where this method is only called when {@link #isOneByte(byte)} has already
+     * returned false. It is not suitable for general or public use.
+     */
+    private static boolean isTwoBytes(byte b) {
+      return b < (byte) 0xE0;
+    }
+
+    /**
+     * Returns whether this is a three-byte codepoint with the form '110XXXXX' iff
+     * {@link #isOneByte(byte)} and {@link #isTwoBytes(byte)} are false.
+     * This private method works in the limited use in
+     * this class where this method is only called when {@link #isOneByte(byte)} an
+     * {@link #isTwoBytes(byte)} have already returned false. It is not suitable for general
+     * or public use.
+     */
+    private static boolean isThreeBytes(byte b) {
+      return b < (byte) 0xF0;
+    }
+
+    private static void handleOneByte(byte byte1, char[] resultArr, int resultPos) {
+      resultArr[resultPos] = (char) byte1;
+    }
+
+    private static void handleTwoBytes(byte byte1, byte byte2, char[] resultArr, int resultPos)
+        throws InvalidProtocolBufferException {
+      // Simultaneously checks for illegal trailing-byte in leading position (<= '11000000') and
+      // overlong 2-byte, '11000001'.
+      if (byte1 < (byte) 0xC2 || isNotTrailingByte(byte2)) {
+        throw InvalidProtocolBufferException.invalidUtf8();
+      }
+      resultArr[resultPos] = (char) (((byte1 & 0x1F) << 6) | trailingByteValue(byte2));
+    }
+
+    private static void handleThreeBytes(
+        byte byte1, byte byte2, byte byte3, char[] resultArr, int resultPos)
+        throws InvalidProtocolBufferException {
+      if (isNotTrailingByte(byte2)
+          // overlong? 5 most significant bits must not all be zero
+          || (byte1 == (byte) 0xE0 && byte2 < (byte) 0xA0)
+          // check for illegal surrogate codepoints
+          || (byte1 == (byte) 0xED && byte2 >= (byte) 0xA0)
+          || isNotTrailingByte(byte3)) {
+        throw InvalidProtocolBufferException.invalidUtf8();
+      }
+      resultArr[resultPos] =
+          (char)
+              (((byte1 & 0x0F) << 12) | (trailingByteValue(byte2) << 6) | trailingByteValue(byte3));
+    }
+
+    private static void handleFourBytes(
+        byte byte1, byte byte2, byte byte3, byte byte4, char[] resultArr, int resultPos)
+        throws InvalidProtocolBufferException {
+      if (isNotTrailingByte(byte2)
+          // Check that 1 <= plane <= 16.  Tricky optimized form of:
+          //   valid 4-byte leading byte?
+          // if (byte1 > (byte) 0xF4 ||
+          //   overlong? 4 most significant bits must not all be zero
+          //     byte1 == (byte) 0xF0 && byte2 < (byte) 0x90 ||
+          //   codepoint larger than the highest code point (U+10FFFF)?
+          //     byte1 == (byte) 0xF4 && byte2 > (byte) 0x8F)
+          || (((byte1 << 28) + (byte2 - (byte) 0x90)) >> 30) != 0
+          || isNotTrailingByte(byte3)
+          || isNotTrailingByte(byte4)) {
+        throw InvalidProtocolBufferException.invalidUtf8();
+      }
+      int codepoint =
+          ((byte1 & 0x07) << 18)
+              | (trailingByteValue(byte2) << 12)
+              | (trailingByteValue(byte3) << 6)
+              | trailingByteValue(byte4);
+      resultArr[resultPos] = DecodeUtil.highSurrogate(codepoint);
+      resultArr[resultPos + 1] = DecodeUtil.lowSurrogate(codepoint);
+    }
+
+    /** Returns whether the byte is not a valid continuation of the form '10XXXXXX'. */
+    private static boolean isNotTrailingByte(byte b) {
+      return b > (byte) 0xBF;
+    }
+
+    /** Returns the actual value of the trailing byte (removes the prefix '10') for composition. */
+    private static int trailingByteValue(byte b) {
+      return b & 0x3F;
+    }
+
+    private static char highSurrogate(int codePoint) {
+      return (char)
+          ((MIN_HIGH_SURROGATE - (MIN_SUPPLEMENTARY_CODE_POINT >>> 10)) + (codePoint >>> 10));
+    }
+
+    private static char lowSurrogate(int codePoint) {
+      return (char) (MIN_LOW_SURROGATE + (codePoint & 0x3ff));
     }
   }
 

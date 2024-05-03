@@ -1,33 +1,52 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- If you update this, update the .csproj in the Docker file as well -->
 
   <PropertyGroup>
     <Description>C# runtime library for Protocol Buffers - Google's data interchange format.</Description>
     <Copyright>Copyright 2015, Google Inc.</Copyright>
     <AssemblyTitle>Google Protocol Buffers</AssemblyTitle>
-    <VersionPrefix>3.4.0</VersionPrefix>
+    <VersionPrefix>3.25.0</VersionPrefix>
+    <LangVersion>10.0</LangVersion>
     <Authors>Google Inc.</Authors>
-    <TargetFrameworks>netstandard1.0;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard1.1;netstandard2.0;net45;net50</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyOriginatorKeyFile>../../keys/Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageTags>Protocol;Buffers;Binary;Serialization;Format;Google;proto;proto3</PackageTags>
     <PackageReleaseNotes>C# proto3 support</PackageReleaseNotes>
-    <PackageProjectUrl>https://github.com/google/protobuf</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/google/protobuf/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/protocolbuffers/protobuf</PackageProjectUrl>
+    <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/google/protobuf.git</RepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <IncludeSource>true</IncludeSource>
+    <RepositoryUrl>https://github.com/protocolbuffers/protobuf.git</RepositoryUrl>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <!-- Include PDB in the built .nupkg -->
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
-  <!-- 
-    - Override target frameworks on non-Windows to just .NET Core
-    - Doing this conditionally in the initial PropertyGroup confuses
-    - Visual Studio.
-    -->
-  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
-    <TargetFrameworks>netstandard1.0</TargetFrameworks>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);GOOGLE_PROTOBUF_SUPPORT_FAST_STRING</DefineConstants>
   </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net50' ">
+    <DefineConstants>$(DefineConstants);GOOGLE_PROTOBUF_SUPPORT_FAST_STRING;GOOGLE_PROTOBUF_SIMD</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" Version="1.0.0"/>
+    <!-- Needed for the net45 build to work on Unix. See https://github.com/dotnet/designs/pull/33 -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="1.0.0"/>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' OR '$(TargetFramework)' == 'netstandard1.1' ">
+    <PackageReference Include="System.Memory" Version="4.5.3"/>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.Memory" Version="4.5.3"/>
+    <!-- Needed for netcoreapp3.1 to work correctly. .NET is not able to load the assembly without this -->
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2"/>
+  </ItemGroup>
 
 </Project>

@@ -1,0 +1,64 @@
+################################################################################
+# Protocol Buffers Compiler - PHP code generator
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "names",
+    srcs = ["names.cc"],
+    hdrs = ["names.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/php",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler:code_generator",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "php",
+    srcs = ["php_generator.cc"],
+    hdrs = ["php_generator.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/php",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
+    deps = [
+        ":names",
+        "//src/google/protobuf:descriptor_legacy",
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:retention",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+################################################################################
+# Distribution packaging
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["**/*"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        allow_empty = True,
+    ),
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)

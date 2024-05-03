@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.4.0</version>
+    <version>3.25.0</version>
   </parent>
 
   <artifactId>protobuf-java</artifactId>
@@ -25,13 +23,18 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.easymock</groupId>
-      <artifactId>easymock</artifactId>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.easymock</groupId>
-      <artifactId>easymockclassextension</artifactId>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.truth</groupId>
+      <artifactId>truth</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -57,6 +60,15 @@
         </includes>
       </resource>
     </resources>
+    <testResources>
+      <testResource>
+        <directory>${protobuf.source.dir}</directory>
+        <includes>
+          <include>google/protobuf/testdata/golden_message_oneof_implemented</include>
+          <include>google/protobuf/testdata/golden_packed_fields_message</include>
+        </includes>
+      </testResource>
+    </testResources>
 
     <plugins>
       <!-- Use Antrun plugin to generate sources with protoc -->
@@ -132,9 +144,11 @@
         <extensions>true</extensions>
         <configuration>
           <instructions>
+            <Automatic-Module-Name>com.google.protobuf</Automatic-Module-Name> <!-- Java9+ Jigsaw module name -->
             <Bundle-DocURL>https://developers.google.com/protocol-buffers/</Bundle-DocURL>
             <Bundle-SymbolicName>com.google.protobuf</Bundle-SymbolicName>
             <Export-Package>com.google.protobuf;version=${project.version}</Export-Package>
+            <Import-Package>sun.misc;resolution:=optional,*</Import-Package>
           </instructions>
         </configuration>
       </plugin>

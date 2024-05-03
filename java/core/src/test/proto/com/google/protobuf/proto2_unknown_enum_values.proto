@@ -1,0 +1,37 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package proto2_unknown_enum_values;
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "Proto2UnknownEnumValuesTestProto";
+
+enum Proto2TestEnum {
+  ZERO = 0;
+  ONE = 1;
+  TWO = 2;
+}
+
+message Proto2EnumMessage {
+  repeated Proto2TestEnum repeated_packed_enum = 1 [packed = true];
+}
+
+// An enum containing a subset of the values of Proto2TestEnum, to test
+// parsing unknown packed enum values
+enum Proto2TestEnumSubset {
+  TESTENUM_SUBSET_ZERO = 0;
+  TESTENUM_SUBSET_ONE = 1;
+  // No enum value with number 2.
+}
+
+// Test messages for packed enum, with identical field number as
+// Proto2Message, to test parsing unknown packed enums.
+message Proto2EnumMessageWithEnumSubset {
+  repeated Proto2TestEnumSubset repeated_packed_enum = 1 [packed = true];
+}

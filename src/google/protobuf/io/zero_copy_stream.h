@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -107,24 +84,29 @@
 #ifndef GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_H__
 #define GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_H__
 
-#include <string>
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/common.h"
+#include "absl/strings/cord.h"
+#include "google/protobuf/port.h"
+
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
-
 namespace protobuf {
 namespace io {
 
-// Defined in this file.
-class ZeroCopyInputStream;
-class ZeroCopyOutputStream;
-
 // Abstract interface similar to an input stream but designed to minimize
 // copying.
-class LIBPROTOBUF_EXPORT ZeroCopyInputStream {
+class PROTOBUF_EXPORT ZeroCopyInputStream {
  public:
-  ZeroCopyInputStream() {}
-  virtual ~ZeroCopyInputStream() {}
+  ZeroCopyInputStream() = default;
+  virtual ~ZeroCopyInputStream() = default;
+
+  ZeroCopyInputStream(const ZeroCopyInputStream&) = delete;
+  ZeroCopyInputStream& operator=(const ZeroCopyInputStream&) = delete;
+  ZeroCopyInputStream(ZeroCopyInputStream&&) = delete;
+  ZeroCopyInputStream& operator=(ZeroCopyInputStream&&) = delete;
 
   // Obtains a chunk of data from the stream.
   //
@@ -162,25 +144,40 @@ class LIBPROTOBUF_EXPORT ZeroCopyInputStream {
   //   the same data again before producing new data.
   virtual void BackUp(int count) = 0;
 
-  // Skips a number of bytes.  Returns false if the end of the stream is
-  // reached or some input error occurred.  In the end-of-stream case, the
-  // stream is advanced to the end of the stream (so ByteCount() will return
-  // the total size of the stream).
+  // Skips `count` number of bytes.
+  // Returns true on success, or false if some input error occurred, or `count`
+  // exceeds the end of the stream. This function may skip up to `count - 1`
+  // bytes in case of failure.
+  //
+  // Preconditions:
+  // * `count` is non-negative.
+  //
   virtual bool Skip(int count) = 0;
 
   // Returns the total number of bytes read since this object was created.
-  virtual int64 ByteCount() const = 0;
+  virtual int64_t ByteCount() const = 0;
 
+  // Read the next `count` bytes and append it to the given Cord.
+  //
+  // In the case of a read error, the method reads as much data as possible into
+  // the cord before returning false. The default implementation iterates over
+  // the buffers and appends up to `count` bytes of data into `cord` using the
+  // `absl::CordBuffer` API.
+  //
+  // Some streams may implement this in a way that avoids copying by sharing or
+  // reference counting existing data managed by the stream implementation.
+  //
+  virtual bool ReadCord(absl::Cord* cord, int count);
 
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ZeroCopyInputStream);
 };
 
 // Abstract interface similar to an output stream but designed to minimize
 // copying.
-class LIBPROTOBUF_EXPORT ZeroCopyOutputStream {
+class PROTOBUF_EXPORT ZeroCopyOutputStream {
  public:
   ZeroCopyOutputStream() {}
+  ZeroCopyOutputStream(const ZeroCopyOutputStream&) = delete;
+  ZeroCopyOutputStream& operator=(const ZeroCopyOutputStream&) = delete;
   virtual ~ZeroCopyOutputStream() {}
 
   // Obtains a buffer into which data can be written.  Any data written
@@ -211,6 +208,13 @@ class LIBPROTOBUF_EXPORT ZeroCopyOutputStream {
   // than you needed.  You don't want to write a bunch of garbage after the
   // end of your data, so you use BackUp() to back up.
   //
+  // This method can be called with `count = 0` to finalize (flush) any
+  // previously returned buffer. For example, a file output stream can
+  // flush buffers returned from a previous call to Next() upon such
+  // BackUp(0) invocations. ZeroCopyOutputStream callers should always
+  // invoke BackUp() after a final Next() call, even if there is no
+  // excess buffer data to be backed up to indicate a flush point.
+  //
   // Preconditions:
   // * The last method called must have been Next().
   // * count must be less than or equal to the size of the last buffer
@@ -224,11 +228,11 @@ class LIBPROTOBUF_EXPORT ZeroCopyOutputStream {
   virtual void BackUp(int count) = 0;
 
   // Returns the total number of bytes written since this object was created.
-  virtual int64 ByteCount() const = 0;
+  virtual int64_t ByteCount() const = 0;
 
   // Write a given chunk of data to the output.  Some output streams may
   // implement this in a way that avoids copying. Check AllowsAliasing() before
-  // calling WriteAliasedRaw(). It will GOOGLE_CHECK fail if WriteAliasedRaw() is
+  // calling WriteAliasedRaw(). It will ABSL_CHECK fail if WriteAliasedRaw() is
   // called on a stream that does not allow aliasing.
   //
   // NOTE: It is caller's responsibility to ensure that the chunk of memory
@@ -236,13 +240,21 @@ class LIBPROTOBUF_EXPORT ZeroCopyOutputStream {
   virtual bool WriteAliasedRaw(const void* data, int size);
   virtual bool AllowsAliasing() const { return false; }
 
+  // Writes the given Cord to the output.
+  //
+  // The default implementation iterates over all Cord chunks copying all cord
+  // data into the buffer(s) returned by the stream's `Next()` method.
+  //
+  // Some streams may implement this in a way that avoids copying the cord
+  // data by copying and managing a copy of the provided cord instead.
+  virtual bool WriteCord(const absl::Cord& cord);
 
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ZeroCopyOutputStream);
 };
 
 }  // namespace io
 }  // namespace protobuf
-
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
+
 #endif  // GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_H__

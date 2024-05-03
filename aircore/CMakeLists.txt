@@ -1,4 +1,10 @@
 # build libprotobuf
+cmake_policy(SET CMP0079 NEW)
+cmake_policy(SET CMP0077 NEW)
+
+set(protobuf_ABSL_PROVIDER "none" CACHE STRING "")
+add_subdirectory_once(${at_media_deps_dir}/abseil-cpp ${CMAKE_BINARY_DIR}/abseil-cpp)
+set(protobuf_INSTALL NO)
 
 set(INCLUDE_LIBPROTOBUF 1)
 
@@ -7,7 +13,7 @@ set(protobuf_BUILD_TESTS OFF CACHE INTERNAL "")
 if (ANDROID OR IOS)
   set(BUILD_PROTOC_EXE OFF CACHE INTERNAL "")
 endif()
-add_subdirectory(${at_media_deps_dir}/protobuf/cmake ${CMAKE_BINARY_DIR}/protobuf/src/cmake)
+add_subdirectory(${at_media_deps_dir}/protobuf ${CMAKE_BINARY_DIR}/protobuf/src/cmake)
 
 # On Clang 9 (Starting Android NDK r21b) this is nesserary to compile.
 # (Error later seen on Xcode 12 too).

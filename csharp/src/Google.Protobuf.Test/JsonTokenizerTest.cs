@@ -1,34 +1,12 @@
 ﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
+
 using NUnit.Framework;
 using System;
 using System.IO;
@@ -126,7 +104,7 @@ namespace Google.Protobuf
             tokenizer.PushBack(token);
             Assert.AreEqual(0, tokenizer.ObjectDepth);
             // Read the same token again, and get back to depth 1
-            token = tokenizer.Next();
+            _ = tokenizer.Next();
             Assert.AreEqual(1, tokenizer.ObjectDepth);
 
             // Now the same in reverse, with EndObject
@@ -240,7 +218,7 @@ namespace Google.Protobuf
             AssertTokens("{'x': 'y'}",
                 JsonToken.StartObject, JsonToken.Name("x"), JsonToken.Value("y"), JsonToken.EndObject);
         }
-        
+
         [Test]
         [TestCase("[10, 20", 3)]
         [TestCase("[10,", 2)]
@@ -305,7 +283,7 @@ namespace Google.Protobuf
         [Test]
         public void ObjectMixedType()
         {
-            AssertTokens(@"{'a': 1, 'b': 'bar', 'c': null, 'd': false, 'e': true, 
+            AssertTokens(@"{'a': 1, 'b': 'bar', 'c': null, 'd': false, 'e': true,
                            'f': [2], 'g': {'x':'y' }}",
                 JsonToken.StartObject,
                 JsonToken.Name("a"),
@@ -349,12 +327,28 @@ namespace Google.Protobuf
             Assert.AreEqual(JsonToken.EndDocument, tokenizer.Next());
             Assert.Throws<InvalidOperationException>(() => tokenizer.Next());
         }
-       
+
+        [Test]
+        [TestCase("{ 'skip': 0, 'next': 1")]
+        [TestCase("{ 'skip': [0, 1, 2], 'next': 1")]
+        [TestCase("{ 'skip': 'x', 'next': 1")]
+        [TestCase("{ 'skip': ['x', 'y'], 'next': 1")]
+        [TestCase("{ 'skip': {'a': 0}, 'next': 1")]
+        [TestCase("{ 'skip': {'a': [0, {'b':[]}]}, 'next': 1")]
+        public void SkipValue(string json)
+        {
+            var tokenizer = JsonTokenizer.FromTextReader(new StringReader(json.Replace('\'', '"')));
+            Assert.AreEqual(JsonToken.StartObject, tokenizer.Next());
+            Assert.AreEqual("skip", tokenizer.Next().StringValue);
+            tokenizer.SkipValue();
+            Assert.AreEqual("next", tokenizer.Next().StringValue);
+        }
+
         /// <summary>
         /// Asserts that the specified JSON is tokenized into the given sequence of tokens.
         /// All apostrophes are first converted to double quotes, allowing any tests
         /// that don't need to check actual apostrophe handling to use apostrophes in the JSON, avoiding
-        /// messy string literal escaping. The "end document" token is not specified in the list of 
+        /// messy string literal escaping. The "end document" token is not specified in the list of
         /// expected tokens, but is implicit.
         /// </summary>
         private static void AssertTokens(string json, params JsonToken[] expectedTokens)
@@ -366,7 +360,7 @@ namespace Google.Protobuf
         /// Asserts that the specified JSON is tokenized into the given sequence of tokens.
         /// Unlike <see cref="AssertTokens(string, JsonToken[])"/>, this does not perform any character
         /// replacement on the specified JSON, and should be used when the text contains apostrophes which
-        /// are expected to be used *as* apostrophes. The "end document" token is not specified in the list of 
+        /// are expected to be used *as* apostrophes. The "end document" token is not specified in the list of
         /// expected tokens, but is implicit.
         /// </summary>
         private static void AssertTokensNoReplacement(string json, params JsonToken[] expectedTokens)

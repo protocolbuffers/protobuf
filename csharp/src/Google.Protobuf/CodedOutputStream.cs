@@ -1,39 +1,15 @@
 #region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
-using Google.Protobuf.Collections;
 using System;
 using System.IO;
-using System.Text;
+using System.Security;
 
 namespace Google.Protobuf
 {
@@ -55,11 +31,9 @@ namespace Google.Protobuf
     /// and <c>MapField&lt;TKey, TValue&gt;</c> to serialize such fields.
     /// </para>
     /// </remarks>
+    [SecuritySafeCritical]
     public sealed partial class CodedOutputStream : IDisposable
     {
-        // "Local" copy of Encoding.UTF8, for efficiency. (Yes, it makes a difference.)
-        internal static readonly Encoding Utf8Encoding = Encoding.UTF8;
-
         /// <summary>
         /// The buffer size used by CreateInstance(Stream).
         /// </summary>
@@ -67,8 +41,8 @@ namespace Google.Protobuf
 
         private readonly bool leaveOpen;
         private readonly byte[] buffer;
-        private readonly int limit;
-        private int position;
+        private WriterInternalState state;
+
         private readonly Stream output;
 
         #region Construction
@@ -89,9 +63,10 @@ namespace Google.Protobuf
         private CodedOutputStream(byte[] buffer, int offset, int length)
         {
             this.output = null;
-            this.buffer = buffer;
-            this.position = offset;
-            this.limit = offset + length;
+            this.buffer = ProtoPreconditions.CheckNotNull(buffer, nameof(buffer));
+            this.state.position = offset;
+            this.state.limit = offset + length;
+            WriteBufferHelper.Initialize(this, out this.state.writeBufferHelper);
             leaveOpen = true; // Simple way of avoiding trying to dispose of a null reference
         }
 
@@ -99,8 +74,9 @@ namespace Google.Protobuf
         {
             this.output = ProtoPreconditions.CheckNotNull(output, nameof(output));
             this.buffer = buffer;
-            this.position = 0;
-            this.limit = buffer.Length;
+            this.state.position = 0;
+            this.state.limit = buffer.Length;
+            WriteBufferHelper.Initialize(this, out this.state.writeBufferHelper);
             this.leaveOpen = leaveOpen;
         }
 
@@ -155,11 +131,38 @@ namespace Google.Protobuf
             {
                 if (output != null)
                 {
-                    return output.Position + position;
+                    return output.Position + state.position;
                 }
-                return position;
+                return state.position;
             }
         }
+
+        /// <summary>
+        /// Configures whether or not serialization is deterministic.
+        /// </summary>
+        /// <remarks>
+        /// Deterministic serialization guarantees that for a given binary, equal messages (defined by the
+        /// equals methods in protos) will always be serialized to the same bytes. This implies:
+        /// <list type="bullet">
+        /// <item><description>Repeated serialization of a message will return the same bytes.</description></item>
+        /// <item><description>Different processes of the same binary (which may be executing on different machines)
+        /// will serialize equal messages to the same bytes.</description></item>
+        /// </list>
+        /// Note the deterministic serialization is NOT canonical across languages; it is also unstable
+        /// across different builds with schema changes due to unknown fields. Users who need canonical
+        /// serialization, e.g. persistent storage in a canonical form, fingerprinting, etc, should define
+        /// their own canonicalization specification and implement the serializer using reflection APIs
+        /// rather than relying on this API.
+        /// Once set, the serializer will: (Note this is an implementation detail and may subject to
+        /// change in the future)
+        /// <list type="bullet">
+        /// <item><description>Sort map entries by keys in lexicographical order or numerical order. Note: For string
+        /// keys, the order is based on comparing the UTF-16 code unit value of each character in the strings.
+        /// The order may be different from the deterministic serialization in other languages where
+        /// maps are sorted on the lexicographical order of the UTF8 encoded keys.</description></item>
+        /// </list>
+        /// </remarks>
+        public bool Deterministic { get; set; }
 
         #region Writing of values (not including tags)
 
@@ -169,7 +172,8 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteDouble(double value)
         {
-            WriteRawLittleEndian64((ulong)BitConverter.DoubleToInt64Bits(value));
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteDouble(ref span, ref state, value);
         }
 
         /// <summary>
@@ -178,23 +182,8 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteFloat(float value)
         {
-            byte[] rawBytes = BitConverter.GetBytes(value);
-            if (!BitConverter.IsLittleEndian)
-            {
-                ByteArray.Reverse(rawBytes);
-            }
-
-            if (limit - position >= 4)
-            {
-                buffer[position++] = rawBytes[0];
-                buffer[position++] = rawBytes[1];
-                buffer[position++] = rawBytes[2];
-                buffer[position++] = rawBytes[3];
-            }
-            else
-            {
-                WriteRawBytes(rawBytes, 0, 4);
-            }
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteFloat(ref span, ref state, value);
         }
 
         /// <summary>
@@ -203,7 +192,8 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteUInt64(ulong value)
         {
-            WriteRawVarint64(value);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteUInt64(ref span, ref state, value);
         }
 
         /// <summary>
@@ -212,7 +202,8 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteInt64(long value)
         {
-            WriteRawVarint64((ulong) value);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteInt64(ref span, ref state, value);
         }
 
         /// <summary>
@@ -221,15 +212,8 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteInt32(int value)
         {
-            if (value >= 0)
-            {
-                WriteRawVarint32((uint) value);
-            }
-            else
-            {
-                // Must sign-extend.
-                WriteRawVarint64((ulong) value);
-            }
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteInt32(ref span, ref state, value);
         }
 
         /// <summary>
@@ -238,7 +222,8 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteFixed64(ulong value)
         {
-            WriteRawLittleEndian64(value);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteFixed64(ref span, ref state, value);
         }
 
         /// <summary>
@@ -247,7 +232,8 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteFixed32(uint value)
         {
-            WriteRawLittleEndian32(value);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteFixed32(ref span, ref state, value);
         }
 
         /// <summary>
@@ -256,7 +242,8 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteBool(bool value)
         {
-            WriteRawByte(value ? (byte) 1 : (byte) 0);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteBool(ref span, ref state, value);
         }
 
         /// <summary>
@@ -266,30 +253,8 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteString(string value)
         {
-            // Optimise the case where we have enough space to write
-            // the string directly to the buffer, which should be common.
-            int length = Utf8Encoding.GetByteCount(value);
-            WriteLength(length);
-            if (limit - position >= length)
-            {
-                if (length == value.Length) // Must be all ASCII...
-                {
-                    for (int i = 0; i < length; i++)
-                    {
-                        buffer[position + i] = (byte)value[i];
-                    }
-                }
-                else
-                {
-                    Utf8Encoding.GetBytes(value, 0, value.Length, buffer, position);
-                }
-                position += length;
-            }
-            else
-            {
-                byte[] bytes = Utf8Encoding.GetBytes(value);
-                WriteRawBytes(bytes);
-            }
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteString(ref span, ref state, value);
         }
 
         /// <summary>
@@ -299,8 +264,59 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteMessage(IMessage value)
         {
-            WriteLength(value.CalculateSize());
-            value.WriteTo(this);
+            // TODO: if the message doesn't implement IBufferMessage (and thus does not provide the InternalWriteTo method),
+            // what we're doing here works fine, but could be more efficient.
+            // For now, this inefficiency is fine, considering this is only a backward-compatibility scenario (and regenerating the code fixes it).
+            var span = new Span<byte>(buffer);
+            WriteContext.Initialize(ref span, ref state, out WriteContext ctx);
+            try
+            {
+                WritingPrimitivesMessages.WriteMessage(ref ctx, value);
+            }
+            finally
+            {
+                ctx.CopyStateTo(this);
+            }
+        }
+
+        /// <summary>
+        /// Writes a message, without a tag, to the stream.
+        /// Only the message data is written, without a length-delimiter.
+        /// </summary>
+        /// <param name="value">The value to write</param>
+        public void WriteRawMessage(IMessage value)
+        {
+            // TODO: if the message doesn't implement IBufferMessage (and thus does not provide the InternalWriteTo method),
+            // what we're doing here works fine, but could be more efficient.
+            // For now, this inefficiency is fine, considering this is only a backward-compatibility scenario (and regenerating the code fixes it).
+            var span = new Span<byte>(buffer);
+            WriteContext.Initialize(ref span, ref state, out WriteContext ctx);
+            try
+            {
+                WritingPrimitivesMessages.WriteRawMessage(ref ctx, value);
+            }
+            finally
+            {
+                ctx.CopyStateTo(this);
+            }
+        }
+
+        /// <summary>
+        /// Writes a group, without a tag, to the stream.
+        /// </summary>
+        /// <param name="value">The value to write</param>
+        public void WriteGroup(IMessage value)
+        {
+            var span = new Span<byte>(buffer);
+            WriteContext.Initialize(ref span, ref state, out WriteContext ctx);
+            try
+            {
+                WritingPrimitivesMessages.WriteGroup(ref ctx, value);
+            }
+            finally
+            {
+                ctx.CopyStateTo(this);
+            }
         }
 
         /// <summary>
@@ -310,8 +326,8 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteBytes(ByteString value)
         {
-            WriteLength(value.Length);
-            value.WriteRawBytesTo(this);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteBytes(ref span, ref state, value);
         }
 
         /// <summary>
@@ -320,7 +336,8 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteUInt32(uint value)
         {
-            WriteRawVarint32(value);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteUInt32(ref span, ref state, value);
         }
 
         /// <summary>
@@ -329,7 +346,8 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteEnum(int value)
         {
-            WriteInt32(value);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteEnum(ref span, ref state, value);
         }
 
         /// <summary>
@@ -338,7 +356,8 @@ namespace Google.Protobuf
         /// <param name="value">The value to write.</param>
         public void WriteSFixed32(int value)
         {
-            WriteRawLittleEndian32((uint) value);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteSFixed32(ref span, ref state, value);
         }
 
         /// <summary>
@@ -347,7 +366,8 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteSFixed64(long value)
         {
-            WriteRawLittleEndian64((ulong) value);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteSFixed64(ref span, ref state, value);
         }
 
         /// <summary>
@@ -356,7 +376,8 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteSInt32(int value)
         {
-            WriteRawVarint32(EncodeZigZag32(value));
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteSInt32(ref span, ref state, value);
         }
 
         /// <summary>
@@ -365,7 +386,8 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteSInt64(long value)
         {
-            WriteRawVarint64(EncodeZigZag64(value));
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteSInt64(ref span, ref state, value);
         }
 
         /// <summary>
@@ -377,7 +399,8 @@ namespace Google.Protobuf
         /// <param name="length">Length value, in bytes.</param>
         public void WriteLength(int length)
         {
-            WriteRawVarint32((uint) length);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteLength(ref span, ref state, length);
         }
 
         #endregion
@@ -390,7 +413,8 @@ namespace Google.Protobuf
         /// <param name="type">The wire format type of the tag to write</param>
         public void WriteTag(int fieldNumber, WireFormat.WireType type)
         {
-            WriteRawVarint32(WireFormat.MakeTag(fieldNumber, type));
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteTag(ref span, ref state, fieldNumber, type);
         }
 
         /// <summary>
@@ -399,7 +423,8 @@ namespace Google.Protobuf
         /// <param name="tag">The encoded tag</param>
         public void WriteTag(uint tag)
         {
-            WriteRawVarint32(tag);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteTag(ref span, ref state, tag);
         }
 
         /// <summary>
@@ -408,7 +433,8 @@ namespace Google.Protobuf
         /// <param name="b1">The encoded tag</param>
         public void WriteRawTag(byte b1)
         {
-            WriteRawByte(b1);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteRawTag(ref span, ref state, b1);
         }
 
         /// <summary>
@@ -418,8 +444,8 @@ namespace Google.Protobuf
         /// <param name="b2">The second byte of the encoded tag</param>
         public void WriteRawTag(byte b1, byte b2)
         {
-            WriteRawByte(b1);
-            WriteRawByte(b2);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteRawTag(ref span, ref state, b1, b2);
         }
 
         /// <summary>
@@ -430,9 +456,8 @@ namespace Google.Protobuf
         /// <param name="b3">The third byte of the encoded tag</param>
         public void WriteRawTag(byte b1, byte b2, byte b3)
         {
-            WriteRawByte(b1);
-            WriteRawByte(b2);
-            WriteRawByte(b3);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteRawTag(ref span, ref state, b1, b2, b3);
         }
 
         /// <summary>
@@ -444,10 +469,8 @@ namespace Google.Protobuf
         /// <param name="b4">The fourth byte of the encoded tag</param>
         public void WriteRawTag(byte b1, byte b2, byte b3, byte b4)
         {
-            WriteRawByte(b1);
-            WriteRawByte(b2);
-            WriteRawByte(b3);
-            WriteRawByte(b4);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteRawTag(ref span, ref state, b1, b2, b3, b4);
         }
 
         /// <summary>
@@ -460,15 +483,13 @@ namespace Google.Protobuf
         /// <param name="b5">The fifth byte of the encoded tag</param>
         public void WriteRawTag(byte b1, byte b2, byte b3, byte b4, byte b5)
         {
-            WriteRawByte(b1);
-            WriteRawByte(b2);
-            WriteRawByte(b3);
-            WriteRawByte(b4);
-            WriteRawByte(b5);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteRawTag(ref span, ref state, b1, b2, b3, b4, b5);
         }
         #endregion
 
         #region Underlying writing primitives
+
         /// <summary>
         /// Writes a 32 bit value as a varint. The fast route is taken when
         /// there's enough buffer space left to whizz through without checking
@@ -476,112 +497,26 @@ namespace Google.Protobuf
         /// </summary>
         internal void WriteRawVarint32(uint value)
         {
-            // Optimize for the common case of a single byte value
-            if (value < 128 && position < limit)
-            {
-                buffer[position++] = (byte)value;
-                return;
-            }
-
-            while (value > 127 && position < limit)
-            {
-                buffer[position++] = (byte) ((value & 0x7F) | 0x80);
-                value >>= 7;
-            }
-            while (value > 127)
-            {
-                WriteRawByte((byte) ((value & 0x7F) | 0x80));
-                value >>= 7;
-            }
-            if (position < limit)
-            {
-                buffer[position++] = (byte) value;
-            }
-            else
-            {
-                WriteRawByte((byte) value);
-            }
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteRawVarint32(ref span, ref state, value);
         }
 
         internal void WriteRawVarint64(ulong value)
         {
-            while (value > 127 && position < limit)
-            {
-                buffer[position++] = (byte) ((value & 0x7F) | 0x80);
-                value >>= 7;
-            }
-            while (value > 127)
-            {
-                WriteRawByte((byte) ((value & 0x7F) | 0x80));
-                value >>= 7;
-            }
-            if (position < limit)
-            {
-                buffer[position++] = (byte) value;
-            }
-            else
-            {
-                WriteRawByte((byte) value);
-            }
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteRawVarint64(ref span, ref state, value);
         }
 
         internal void WriteRawLittleEndian32(uint value)
         {
-            if (position + 4 > limit)
-            {
-                WriteRawByte((byte) value);
-                WriteRawByte((byte) (value >> 8));
-                WriteRawByte((byte) (value >> 16));
-                WriteRawByte((byte) (value >> 24));
-            }
-            else
-            {
-                buffer[position++] = ((byte) value);
-                buffer[position++] = ((byte) (value >> 8));
-                buffer[position++] = ((byte) (value >> 16));
-                buffer[position++] = ((byte) (value >> 24));
-            }
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteRawLittleEndian32(ref span, ref state, value);
         }
 
         internal void WriteRawLittleEndian64(ulong value)
         {
-            if (position + 8 > limit)
-            {
-                WriteRawByte((byte) value);
-                WriteRawByte((byte) (value >> 8));
-                WriteRawByte((byte) (value >> 16));
-                WriteRawByte((byte) (value >> 24));
-                WriteRawByte((byte) (value >> 32));
-                WriteRawByte((byte) (value >> 40));
-                WriteRawByte((byte) (value >> 48));
-                WriteRawByte((byte) (value >> 56));
-            }
-            else
-            {
-                buffer[position++] = ((byte) value);
-                buffer[position++] = ((byte) (value >> 8));
-                buffer[position++] = ((byte) (value >> 16));
-                buffer[position++] = ((byte) (value >> 24));
-                buffer[position++] = ((byte) (value >> 32));
-                buffer[position++] = ((byte) (value >> 40));
-                buffer[position++] = ((byte) (value >> 48));
-                buffer[position++] = ((byte) (value >> 56));
-            }
-        }
-
-        internal void WriteRawByte(byte value)
-        {
-            if (position == limit)
-            {
-                RefreshBuffer();
-            }
-
-            buffer[position++] = value;
-        }
-
-        internal void WriteRawByte(uint value)
-        {
-            WriteRawByte((byte) value);
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteRawLittleEndian64(ref span, ref state, value);
         }
 
         /// <summary>
@@ -597,84 +532,11 @@ namespace Google.Protobuf
         /// </summary>
         internal void WriteRawBytes(byte[] value, int offset, int length)
         {
-            if (limit - position >= length)
-            {
-                ByteArray.Copy(value, offset, buffer, position, length);
-                // We have room in the current buffer.
-                position += length;
-            }
-            else
-            {
-                // Write extends past current buffer.  Fill the rest of this buffer and
-                // flush.
-                int bytesWritten = limit - position;
-                ByteArray.Copy(value, offset, buffer, position, bytesWritten);
-                offset += bytesWritten;
-                length -= bytesWritten;
-                position = limit;
-                RefreshBuffer();
-
-                // Now deal with the rest.
-                // Since we have an output stream, this is our buffer
-                // and buffer offset == 0
-                if (length <= limit)
-                {
-                    // Fits in new buffer.
-                    ByteArray.Copy(value, offset, buffer, 0, length);
-                    position = length;
-                }
-                else
-                {
-                    // Write is very big.  Let's do it all at once.
-                    output.Write(value, offset, length);
-                }
-            }
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteRawBytes(ref span, ref state, value, offset, length);
         }
 
         #endregion
-
-        /// <summary>
-        /// Encode a 32-bit value with ZigZag encoding.
-        /// </summary>
-        /// <remarks>
-        /// ZigZag encodes signed integers into values that can be efficiently
-        /// encoded with varint.  (Otherwise, negative values must be 
-        /// sign-extended to 64 bits to be varint encoded, thus always taking
-        /// 10 bytes on the wire.)
-        /// </remarks>
-        internal static uint EncodeZigZag32(int n)
-        {
-            // Note:  the right-shift must be arithmetic
-            return (uint) ((n << 1) ^ (n >> 31));
-        }
-
-        /// <summary>
-        /// Encode a 64-bit value with ZigZag encoding.
-        /// </summary>
-        /// <remarks>
-        /// ZigZag encodes signed integers into values that can be efficiently
-        /// encoded with varint.  (Otherwise, negative values must be 
-        /// sign-extended to 64 bits to be varint encoded, thus always taking
-        /// 10 bytes on the wire.)
-        /// </remarks>
-        internal static ulong EncodeZigZag64(long n)
-        {
-            return (ulong) ((n << 1) ^ (n >> 63));
-        }
-
-        private void RefreshBuffer()
-        {
-            if (output == null)
-            {
-                // We're writing to a single buffer.
-                throw new OutOfSpaceException();
-            }
-
-            // Since we have an output stream, this is our buffer
-            // and buffer offset == 0
-            output.Write(buffer, 0, position);
-            position = 0;
-        }
 
         /// <summary>
         /// Indicates that a CodedOutputStream wrapping a flat byte array
@@ -717,45 +579,31 @@ namespace Google.Protobuf
         /// </summary>
         public void Flush()
         {
-            if (output != null)
-            {
-                RefreshBuffer();
-            }
+            var span = new Span<byte>(buffer);
+            WriteBufferHelper.Flush(ref span, ref state);
         }
 
         /// <summary>
         /// Verifies that SpaceLeft returns zero. It's common to create a byte array
         /// that is exactly big enough to hold a message, then write to it with
         /// a CodedOutputStream. Calling CheckNoSpaceLeft after writing verifies that
-        /// the message was actually as big as expected, which can help bugs.
+        /// the message was actually as big as expected, which can help finding bugs.
         /// </summary>
         public void CheckNoSpaceLeft()
         {
-            if (SpaceLeft != 0)
-            {
-                throw new InvalidOperationException("Did not write as much data as expected.");
-            }
+            WriteBufferHelper.CheckNoSpaceLeft(ref state);
         }
 
         /// <summary>
         /// If writing to a flat array, returns the space left in the array. Otherwise,
         /// throws an InvalidOperationException.
         /// </summary>
-        public int SpaceLeft
-        {
-            get
-            {
-                if (output == null)
-                {
-                    return limit - position;
-                }
-                else
-                {
-                    throw new InvalidOperationException(
-                        "SpaceLeft can only be called on CodedOutputStreams that are " +
-                        "writing to a flat array.");
-                }
-            }
-        }
+        public int SpaceLeft => WriteBufferHelper.GetSpaceLeft(ref state);
+
+        internal byte[] InternalBuffer => buffer;
+
+        internal Stream InternalOutputStream => output;
+
+        internal ref WriterInternalState InternalState => ref state;
     }
 }

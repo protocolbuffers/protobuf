@@ -1,0 +1,406 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// LINT: ALLOW_GROUPS
+syntax = "proto2";
+
+package protobuf.experimental;
+
+option java_package = "com.google.protobuf.testing";
+option java_outer_classname = "Proto2Testing";
+
+message Proto2SpecialFieldName {
+  optional double regular_name = 1;
+  optional int32 cached_size = 2;
+  optional int64 serialized_size = 3;
+  optional string class = 4;
+}
+
+message Proto2Message {
+
+  enum TestEnum {
+    ZERO = 0;
+    ONE = 1;
+    TWO = 2;
+  }
+
+  optional double field_double_1 = 1;
+  optional float field_float_2 = 2;
+  optional int64 field_int64_3 = 3;
+  optional uint64 field_uint64_4 = 4;
+  optional int32 field_int32_5 = 5;
+  optional fixed64 field_fixed64_6 = 6;
+  optional fixed32 field_fixed32_7 = 7;
+  optional bool field_bool_8 = 8;
+  optional string field_string_9 = 9;
+  optional Proto2Message field_message_10 = 10;
+  optional bytes field_bytes_11 = 11;
+  optional uint32 field_uint32_12 = 12;
+  optional TestEnum field_enum_13 = 13;
+  optional sfixed32 field_sfixed32_14 = 14;
+  optional sfixed64 field_sfixed64_15 = 15;
+  optional sint32 field_sint32_16 = 16;
+  optional sint64 field_sint64_17 = 17;
+  repeated double field_double_list_18 = 18 [packed = false];
+  repeated float field_float_list_19 = 19 [packed = false];
+  repeated int64 field_int64_list_20 = 20 [packed = false];
+  repeated uint64 field_uint64_list_21 = 21 [packed = false];
+  repeated int32 field_int32_list_22 = 22 [packed = false];
+  repeated fixed64 field_fixed64_list_23 = 23 [packed = false];
+  repeated fixed32 field_fixed32_list_24 = 24 [packed = false];
+  repeated bool field_bool_list_25 = 25 [packed = false];
+  repeated string field_string_list_26 = 26 [packed = false];
+  repeated Proto2Message field_message_list_27 = 27 [packed = false];
+  repeated bytes field_bytes_list_28 = 28 [packed = false];
+  repeated uint32 field_uint32_list_29 = 29 [packed = false];
+  repeated TestEnum field_enum_list_30 = 30 [packed = false];
+  repeated sfixed32 field_sfixed32_list_31 = 31 [packed = false];
+  repeated sfixed64 field_sfixed64_list_32 = 32 [packed = false];
+  repeated sint32 field_sint32_list_33 = 33 [packed = false];
+  repeated sint64 field_sint64_list_34 = 34 [packed = false];
+  repeated double field_double_list_packed_35 = 35 [packed = true];
+  repeated float field_float_list_packed_36 = 36 [packed = true];
+  repeated int64 field_int64_list_packed_37 = 37 [packed = true];
+  repeated uint64 field_uint64_list_packed_38 = 38 [packed = true];
+  repeated int32 field_int32_list_packed_39 = 39 [packed = true];
+  repeated fixed64 field_fixed64_list_packed_40 = 40 [packed = true];
+  repeated fixed32 field_fixed32_list_packed_41 = 41 [packed = true];
+  repeated bool field_bool_list_packed_42 = 42 [packed = true];
+  repeated uint32 field_uint32_list_packed_43 = 43 [packed = true];
+  repeated TestEnum field_enum_list_packed_44 = 44 [packed = true];
+  repeated sfixed32 field_sfixed32_list_packed_45 = 45 [packed = true];
+  repeated sfixed64 field_sfixed64_list_packed_46 = 46 [packed = true];
+  repeated sint32 field_sint32_list_packed_47 = 47 [packed = true];
+  repeated sint64 field_sint64_list_packed_48 = 48 [packed = true];
+  optional group FieldGroup49 = 49 {
+    optional int32 field_int32_50 = 50;
+  }
+  repeated group FieldGroupList51 = 51 {
+    optional int32 field_int32_52 = 52;
+  }
+  oneof test_oneof {
+    double field_double_53 = 53;
+    float field_float_54 = 54;
+    int64 field_int64_55 = 55;
+    uint64 field_uint64_56 = 56;
+    int32 field_int32_57 = 57;
+    fixed64 field_fixed64_58 = 58;
+    fixed32 field_fixed32_59 = 59;
+    bool field_bool_60 = 60;
+    string field_string_61 = 61;
+    Proto2Message field_message_62 = 62;
+    bytes field_bytes_63 = 63;
+    uint32 field_uint32_64 = 64;
+    sfixed32 field_sfixed32_65 = 65;
+    sfixed64 field_sfixed64_66 = 66;
+    sint32 field_sint32_67 = 67;
+    sint64 field_sint64_68 = 68;
+    group FieldGroup69 = 69 {
+      optional int32 field_int32_70 = 70;
+    }
+  }
+
+  message RequiredNestedMessage {
+    optional int32 value = 1;
+  }
+
+  required double field_required_double_71 = 71;
+  required float field_required_float_72 = 72;
+  required int64 field_required_int64_73 = 73;
+  required uint64 field_required_uint64_74 = 74;
+  required int32 field_required_int32_75 = 75;
+  required fixed64 field_required_fixed64_76 = 76;
+  required fixed32 field_required_fixed32_77 = 77;
+  required bool field_required_bool_78 = 78;
+  required string field_required_string_79 = 79;
+  required RequiredNestedMessage field_required_message_80 = 80;
+  required bytes field_required_bytes_81 = 81;
+  required uint32 field_required_uint32_82 = 82;
+  required TestEnum field_required_enum_83 = 83;
+  required sfixed32 field_required_sfixed32_84 = 84;
+  required sfixed64 field_required_sfixed64_85 = 85;
+  required sint32 field_required_sint32_86 = 86;
+  required sint64 field_required_sint64_87 = 87;
+  required group FieldRequiredGroup88 = 88 {
+    optional int32 field_int32_89 = 89;
+  }
+}
+
+message Proto2Empty {}
+
+message Proto2MessageWithExtensions {
+  extensions 1 to 10000;
+}
+
+extend Proto2MessageWithExtensions {
+  optional double field_double_1 = 1;
+  optional float field_float_2 = 2;
+  optional int64 field_int64_3 = 3;
+  optional uint64 field_uint64_4 = 4;
+  optional int32 field_int32_5 = 5;
+  optional fixed64 field_fixed64_6 = 6;
+  optional fixed32 field_fixed32_7 = 7;
+  optional bool field_bool_8 = 8;
+  optional string field_string_9 = 9;
+  optional Proto2Message field_message_10 = 10;
+  optional bytes field_bytes_11 = 11;
+  optional uint32 field_uint32_12 = 12;
+  optional Proto2Message.TestEnum field_enum_13 = 13;
+  optional sfixed32 field_sfixed32_14 = 14;
+  optional sfixed64 field_sfixed64_15 = 15;
+  optional sint32 field_sint32_16 = 16;
+  optional sint64 field_sint64_17 = 17;
+
+  repeated double field_double_list_18 = 18 [packed = false];
+  repeated float field_float_list_19 = 19 [packed = false];
+  repeated int64 field_int64_list_20 = 20 [packed = false];
+  repeated uint64 field_uint64_list_21 = 21 [packed = false];
+  repeated int32 field_int32_list_22 = 22 [packed = false];
+  repeated fixed64 field_fixed64_list_23 = 23 [packed = false];
+  repeated fixed32 field_fixed32_list_24 = 24 [packed = false];
+  repeated bool field_bool_list_25 = 25 [packed = false];
+  repeated string field_string_list_26 = 26 [packed = false];
+  repeated Proto2Message field_message_list_27 = 27 [packed = false];
+  repeated bytes field_bytes_list_28 = 28 [packed = false];
+  repeated uint32 field_uint32_list_29 = 29 [packed = false];
+  repeated Proto2Message.TestEnum field_enum_list_30 = 30 [packed = false];
+  repeated sfixed32 field_sfixed32_list_31 = 31 [packed = false];
+  repeated sfixed64 field_sfixed64_list_32 = 32 [packed = false];
+  repeated sint32 field_sint32_list_33 = 33 [packed = false];
+  repeated sint64 field_sint64_list_34 = 34 [packed = false];
+
+  repeated double field_double_list_packed_35 = 35 [packed = true];
+  repeated float field_float_list_packed_36 = 36 [packed = true];
+  repeated int64 field_int64_list_packed_37 = 37 [packed = true];
+  repeated uint64 field_uint64_list_packed_38 = 38 [packed = true];
+  repeated int32 field_int32_list_packed_39 = 39 [packed = true];
+  repeated fixed64 field_fixed64_list_packed_40 = 40 [packed = true];
+  repeated fixed32 field_fixed32_list_packed_41 = 41 [packed = true];
+  repeated bool field_bool_list_packed_42 = 42 [packed = true];
+  repeated uint32 field_uint32_list_packed_43 = 43 [packed = true];
+  repeated Proto2Message.TestEnum field_enum_list_packed_44 = 44
+      [packed = true];
+  repeated sfixed32 field_sfixed32_list_packed_45 = 45 [packed = true];
+  repeated sfixed64 field_sfixed64_list_packed_46 = 46 [packed = true];
+  repeated sint32 field_sint32_list_packed_47 = 47 [packed = true];
+  repeated sint64 field_sint64_list_packed_48 = 48 [packed = true];
+
+  optional group FieldGroup49 = 49 {
+    optional int32 field_int32_50 = 50;
+  }
+
+  repeated group FieldGroupList51 = 51 {
+    optional int32 field_int32_52 = 52;
+  }
+}
+
+message Proto2MessageWithMaps {
+  map<bool, bool> field_map_bool_bool_1 = 1;
+  map<bool, bytes> field_map_bool_bytes_2 = 2;
+  map<bool, double> field_map_bool_double_3 = 3;
+  map<bool, Proto2Message.TestEnum> field_map_bool_enum_4 = 4;
+  map<bool, fixed32> field_map_bool_fixed32_5 = 5;
+  map<bool, fixed64> field_map_bool_fixed64_6 = 6;
+  map<bool, float> field_map_bool_float_7 = 7;
+  map<bool, int32> field_map_bool_int32_8 = 8;
+  map<bool, int64> field_map_bool_int64_9 = 9;
+  map<bool, Proto2Message> field_map_bool_message_10 = 10;
+  map<bool, sfixed32> field_map_bool_sfixed32_11 = 11;
+  map<bool, sfixed64> field_map_bool_sfixed64_12 = 12;
+  map<bool, sint32> field_map_bool_sint32_13 = 13;
+  map<bool, sint64> field_map_bool_sint64_14 = 14;
+  map<bool, string> field_map_bool_string_15 = 15;
+  map<bool, uint32> field_map_bool_uint32_16 = 16;
+  map<bool, uint64> field_map_bool_uint64_17 = 17;
+  map<fixed32, bool> field_map_fixed32_bool_18 = 18;
+  map<fixed32, bytes> field_map_fixed32_bytes_19 = 19;
+  map<fixed32, double> field_map_fixed32_double_20 = 20;
+  map<fixed32, Proto2Message.TestEnum> field_map_fixed32_enum_21 = 21;
+  map<fixed32, fixed32> field_map_fixed32_fixed32_22 = 22;
+  map<fixed32, fixed64> field_map_fixed32_fixed64_23 = 23;
+  map<fixed32, float> field_map_fixed32_float_24 = 24;
+  map<fixed32, int32> field_map_fixed32_int32_25 = 25;
+  map<fixed32, int64> field_map_fixed32_int64_26 = 26;
+  map<fixed32, Proto2Message> field_map_fixed32_message_27 = 27;
+  map<fixed32, sfixed32> field_map_fixed32_sfixed32_28 = 28;
+  map<fixed32, sfixed64> field_map_fixed32_sfixed64_29 = 29;
+  map<fixed32, sint32> field_map_fixed32_sint32_30 = 30;
+  map<fixed32, sint64> field_map_fixed32_sint64_31 = 31;
+  map<fixed32, string> field_map_fixed32_string_32 = 32;
+  map<fixed32, uint32> field_map_fixed32_uint32_33 = 33;
+  map<fixed32, uint64> field_map_fixed32_uint64_34 = 34;
+  map<fixed64, bool> field_map_fixed64_bool_35 = 35;
+  map<fixed64, bytes> field_map_fixed64_bytes_36 = 36;
+  map<fixed64, double> field_map_fixed64_double_37 = 37;
+  map<fixed64, Proto2Message.TestEnum> field_map_fixed64_enum_38 = 38;
+  map<fixed64, fixed32> field_map_fixed64_fixed32_39 = 39;
+  map<fixed64, fixed64> field_map_fixed64_fixed64_40 = 40;
+  map<fixed64, float> field_map_fixed64_float_41 = 41;
+  map<fixed64, int32> field_map_fixed64_int32_42 = 42;
+  map<fixed64, int64> field_map_fixed64_int64_43 = 43;
+  map<fixed64, Proto2Message> field_map_fixed64_message_44 = 44;
+  map<fixed64, sfixed32> field_map_fixed64_sfixed32_45 = 45;
+  map<fixed64, sfixed64> field_map_fixed64_sfixed64_46 = 46;
+  map<fixed64, sint32> field_map_fixed64_sint32_47 = 47;
+  map<fixed64, sint64> field_map_fixed64_sint64_48 = 48;
+  map<fixed64, string> field_map_fixed64_string_49 = 49;
+  map<fixed64, uint32> field_map_fixed64_uint32_50 = 50;
+  map<fixed64, uint64> field_map_fixed64_uint64_51 = 51;
+  map<int32, bool> field_map_int32_bool_52 = 52;
+  map<int32, bytes> field_map_int32_bytes_53 = 53;
+  map<int32, double> field_map_int32_double_54 = 54;
+  map<int32, Proto2Message.TestEnum> field_map_int32_enum_55 = 55;
+  map<int32, fixed32> field_map_int32_fixed32_56 = 56;
+  map<int32, fixed64> field_map_int32_fixed64_57 = 57;
+  map<int32, float> field_map_int32_float_58 = 58;
+  map<int32, int32> field_map_int32_int32_59 = 59;
+  map<int32, int64> field_map_int32_int64_60 = 60;
+  map<int32, Proto2Message> field_map_int32_message_61 = 61;
+  map<int32, sfixed32> field_map_int32_sfixed32_62 = 62;
+  map<int32, sfixed64> field_map_int32_sfixed64_63 = 63;
+  map<int32, sint32> field_map_int32_sint32_64 = 64;
+  map<int32, sint64> field_map_int32_sint64_65 = 65;
+  map<int32, string> field_map_int32_string_66 = 66;
+  map<int32, uint32> field_map_int32_uint32_67 = 67;
+  map<int32, uint64> field_map_int32_uint64_68 = 68;
+  map<int64, bool> field_map_int64_bool_69 = 69;
+  map<int64, bytes> field_map_int64_bytes_70 = 70;
+  map<int64, double> field_map_int64_double_71 = 71;
+  map<int64, Proto2Message.TestEnum> field_map_int64_enum_72 = 72;
+  map<int64, fixed32> field_map_int64_fixed32_73 = 73;
+  map<int64, fixed64> field_map_int64_fixed64_74 = 74;
+  map<int64, float> field_map_int64_float_75 = 75;
+  map<int64, int32> field_map_int64_int32_76 = 76;
+  map<int64, int64> field_map_int64_int64_77 = 77;
+  map<int64, Proto2Message> field_map_int64_message_78 = 78;
+  map<int64, sfixed32> field_map_int64_sfixed32_79 = 79;
+  map<int64, sfixed64> field_map_int64_sfixed64_80 = 80;
+  map<int64, sint32> field_map_int64_sint32_81 = 81;
+  map<int64, sint64> field_map_int64_sint64_82 = 82;
+  map<int64, string> field_map_int64_string_83 = 83;
+  map<int64, uint32> field_map_int64_uint32_84 = 84;
+  map<int64, uint64> field_map_int64_uint64_85 = 85;
+  map<sfixed32, bool> field_map_sfixed32_bool_86 = 86;
+  map<sfixed32, bytes> field_map_sfixed32_bytes_87 = 87;
+  map<sfixed32, double> field_map_sfixed32_double_88 = 88;
+  map<sfixed32, Proto2Message.TestEnum> field_map_sfixed32_enum_89 = 89;
+  map<sfixed32, fixed32> field_map_sfixed32_fixed32_90 = 90;
+  map<sfixed32, fixed64> field_map_sfixed32_fixed64_91 = 91;
+  map<sfixed32, float> field_map_sfixed32_float_92 = 92;
+  map<sfixed32, int32> field_map_sfixed32_int32_93 = 93;
+  map<sfixed32, int64> field_map_sfixed32_int64_94 = 94;
+  map<sfixed32, Proto2Message> field_map_sfixed32_message_95 = 95;
+  map<sfixed32, sfixed32> field_map_sfixed32_sfixed32_96 = 96;
+  map<sfixed32, sfixed64> field_map_sfixed32_sfixed64_97 = 97;
+  map<sfixed32, sint32> field_map_sfixed32_sint32_98 = 98;
+  map<sfixed32, sint64> field_map_sfixed32_sint64_99 = 99;
+  map<sfixed32, string> field_map_sfixed32_string_100 = 100;
+  map<sfixed32, uint32> field_map_sfixed32_uint32_101 = 101;
+  map<sfixed32, uint64> field_map_sfixed32_uint64_102 = 102;
+  map<sfixed64, bool> field_map_sfixed64_bool_103 = 103;
+  map<sfixed64, bytes> field_map_sfixed64_bytes_104 = 104;
+  map<sfixed64, double> field_map_sfixed64_double_105 = 105;
+  map<sfixed64, Proto2Message.TestEnum> field_map_sfixed64_enum_106 = 106;
+  map<sfixed64, fixed32> field_map_sfixed64_fixed32_107 = 107;
+  map<sfixed64, fixed64> field_map_sfixed64_fixed64_108 = 108;
+  map<sfixed64, float> field_map_sfixed64_float_109 = 109;
+  map<sfixed64, int32> field_map_sfixed64_int32_110 = 110;
+  map<sfixed64, int64> field_map_sfixed64_int64_111 = 111;
+  map<sfixed64, Proto2Message> field_map_sfixed64_message_112 = 112;
+  map<sfixed64, sfixed32> field_map_sfixed64_sfixed32_113 = 113;
+  map<sfixed64, sfixed64> field_map_sfixed64_sfixed64_114 = 114;
+  map<sfixed64, sint32> field_map_sfixed64_sint32_115 = 115;
+  map<sfixed64, sint64> field_map_sfixed64_sint64_116 = 116;
+  map<sfixed64, string> field_map_sfixed64_string_117 = 117;
+  map<sfixed64, uint32> field_map_sfixed64_uint32_118 = 118;
+  map<sfixed64, uint64> field_map_sfixed64_uint64_119 = 119;
+  map<sint32, bool> field_map_sint32_bool_120 = 120;
+  map<sint32, bytes> field_map_sint32_bytes_121 = 121;
+  map<sint32, double> field_map_sint32_double_122 = 122;
+  map<sint32, Proto2Message.TestEnum> field_map_sint32_enum_123 = 123;
+  map<sint32, fixed32> field_map_sint32_fixed32_124 = 124;
+  map<sint32, fixed64> field_map_sint32_fixed64_125 = 125;
+  map<sint32, float> field_map_sint32_float_126 = 126;
+  map<sint32, int32> field_map_sint32_int32_127 = 127;
+  map<sint32, int64> field_map_sint32_int64_128 = 128;
+  map<sint32, Proto2Message> field_map_sint32_message_129 = 129;
+  map<sint32, sfixed32> field_map_sint32_sfixed32_130 = 130;
+  map<sint32, sfixed64> field_map_sint32_sfixed64_131 = 131;
+  map<sint32, sint32> field_map_sint32_sint32_132 = 132;
+  map<sint32, sint64> field_map_sint32_sint64_133 = 133;
+  map<sint32, string> field_map_sint32_string_134 = 134;
+  map<sint32, uint32> field_map_sint32_uint32_135 = 135;
+  map<sint32, uint64> field_map_sint32_uint64_136 = 136;
+  map<sint64, bool> field_map_sint64_bool_137 = 137;
+  map<sint64, bytes> field_map_sint64_bytes_138 = 138;
+  map<sint64, double> field_map_sint64_double_139 = 139;
+  map<sint64, Proto2Message.TestEnum> field_map_sint64_enum_140 = 140;
+  map<sint64, fixed32> field_map_sint64_fixed32_141 = 141;
+  map<sint64, fixed64> field_map_sint64_fixed64_142 = 142;
+  map<sint64, float> field_map_sint64_float_143 = 143;
+  map<sint64, int32> field_map_sint64_int32_144 = 144;
+  map<sint64, int64> field_map_sint64_int64_145 = 145;
+  map<sint64, Proto2Message> field_map_sint64_message_146 = 146;
+  map<sint64, sfixed32> field_map_sint64_sfixed32_147 = 147;
+  map<sint64, sfixed64> field_map_sint64_sfixed64_148 = 148;
+  map<sint64, sint32> field_map_sint64_sint32_149 = 149;
+  map<sint64, sint64> field_map_sint64_sint64_150 = 150;
+  map<sint64, string> field_map_sint64_string_151 = 151;
+  map<sint64, uint32> field_map_sint64_uint32_152 = 152;
+  map<sint64, uint64> field_map_sint64_uint64_153 = 153;
+  map<string, bool> field_map_string_bool_154 = 154;
+  map<string, bytes> field_map_string_bytes_155 = 155;
+  map<string, double> field_map_string_double_156 = 156;
+  map<string, Proto2Message.TestEnum> field_map_string_enum_157 = 157;
+  map<string, fixed32> field_map_string_fixed32_158 = 158;
+  map<string, fixed64> field_map_string_fixed64_159 = 159;
+  map<string, float> field_map_string_float_160 = 160;
+  map<string, int32> field_map_string_int32_161 = 161;
+  map<string, int64> field_map_string_int64_162 = 162;
+  map<string, Proto2Message> field_map_string_message_163 = 163;
+  map<string, sfixed32> field_map_string_sfixed32_164 = 164;
+  map<string, sfixed64> field_map_string_sfixed64_165 = 165;
+  map<string, sint32> field_map_string_sint32_166 = 166;
+  map<string, sint64> field_map_string_sint64_167 = 167;
+  map<string, string> field_map_string_string_168 = 168;
+  map<string, uint32> field_map_string_uint32_169 = 169;
+  map<string, uint64> field_map_string_uint64_170 = 170;
+  map<uint32, bool> field_map_uint32_bool_171 = 171;
+  map<uint32, bytes> field_map_uint32_bytes_172 = 172;
+  map<uint32, double> field_map_uint32_double_173 = 173;
+  map<uint32, Proto2Message.TestEnum> field_map_uint32_enum_174 = 174;
+  map<uint32, fixed32> field_map_uint32_fixed32_175 = 175;
+  map<uint32, fixed64> field_map_uint32_fixed64_176 = 176;
+  map<uint32, float> field_map_uint32_float_177 = 177;
+  map<uint32, int32> field_map_uint32_int32_178 = 178;
+  map<uint32, int64> field_map_uint32_int64_179 = 179;
+  map<uint32, Proto2Message> field_map_uint32_message_180 = 180;
+  map<uint32, sfixed32> field_map_uint32_sfixed32_181 = 181;
+  map<uint32, sfixed64> field_map_uint32_sfixed64_182 = 182;
+  map<uint32, sint32> field_map_uint32_sint32_183 = 183;
+  map<uint32, sint64> field_map_uint32_sint64_184 = 184;
+  map<uint32, string> field_map_uint32_string_185 = 185;
+  map<uint32, uint32> field_map_uint32_uint32_186 = 186;
+  map<uint32, uint64> field_map_uint32_uint64_187 = 187;
+  map<uint64, bool> field_map_uint64_bool_188 = 188;
+  map<uint64, bytes> field_map_uint64_bytes_189 = 189;
+  map<uint64, double> field_map_uint64_double_190 = 190;
+  map<uint64, Proto2Message.TestEnum> field_map_uint64_enum_191 = 191;
+  map<uint64, fixed32> field_map_uint64_fixed32_192 = 192;
+  map<uint64, fixed64> field_map_uint64_fixed64_193 = 193;
+  map<uint64, float> field_map_uint64_float_194 = 194;
+  map<uint64, int32> field_map_uint64_int32_195 = 195;
+  map<uint64, int64> field_map_uint64_int64_196 = 196;
+  map<uint64, Proto2Message> field_map_uint64_message_197 = 197;
+  map<uint64, sfixed32> field_map_uint64_sfixed32_198 = 198;
+  map<uint64, sfixed64> field_map_uint64_sfixed64_199 = 199;
+  map<uint64, sint32> field_map_uint64_sint32_200 = 200;
+  map<uint64, sint64> field_map_uint64_sint64_201 = 201;
+  map<uint64, string> field_map_uint64_string_202 = 202;
+  map<uint64, uint32> field_map_uint64_uint32_203 = 203;
+  map<uint64, uint64> field_map_uint64_uint64_204 = 204;
+}

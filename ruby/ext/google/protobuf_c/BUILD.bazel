@@ -1,0 +1,178 @@
+load("@build_bazel_rules_apple//apple:apple_binary.bzl", "apple_binary")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("//upb/cmake:build_defs.bzl", "staleness_test")
+
+package(default_visibility = ["//ruby:__subpackages__"])
+
+PROTOBUF_C_SOURCES = [
+    "convert.c",
+    "convert.h",
+    "defs.c",
+    "defs.h",
+    "map.c",
+    "map.h",
+    "message.c",
+    "message.h",
+    "protobuf.c",
+    "protobuf.h",
+    "repeated_field.c",
+    "repeated_field.h",
+    "shared_convert.c",
+    "shared_convert.h",
+    "shared_message.c",
+    "shared_message.h",
+    "wrap_memcpy.c",
+]
+
+# We copy everything into a copy/ subdirectory so that we can use the
+# up-to-date Bazel-generated amalgamation files without conflicting with the
+# possibly stale checked-in amalgamations.
+genrule(
+    name = "copy_sources",
+    srcs = PROTOBUF_C_SOURCES + [
+        "glue.c",
+        "//upb:gen_ruby_amalgamation",
+    ],
+    outs = ["copy/%s" % src for src in PROTOBUF_C_SOURCES] + [
+        "copy/glue.c",
+        "copy/ruby-upb.h",
+        "copy/ruby-upb.c",
+    ],
+    cmd = "cp $(SRCS) $(RULEDIR)/copy",
+)
+
+cc_library(
+    name = "protobuf_c",
+    srcs = ["copy/%s" % src for src in PROTOBUF_C_SOURCES] + [
+        "copy/ruby-upb.c",
+        "copy/ruby-upb.h",
+    ],
+    linkstatic = True,
+    target_compatible_with = select({
+        "@rules_ruby//ruby/runtime:config_jruby": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+    deps = [
+        "@rules_ruby//ruby/runtime:headers",
+        "@utf8_range",
+    ],
+    alwayslink = True,
+)
+
+# Needs to be compiled with UPB_BUILD_API in order to expose functions called
+# via FFI directly by Ruby.
+cc_library(
+    name = "upb_api",
+    srcs = [
+        "copy/ruby-upb.c",
+    ],
+    hdrs = [
+        "copy/ruby-upb.h",
+    ],
+    copts = ["-fvisibility=hidden"],
+    linkstatic = False,
+    local_defines = [
+        "UPB_BUILD_API",
+    ],
+    target_compatible_with = select({
+        "//ruby:ffi_disabled": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+    deps = [
+        "@utf8_range",
+    ],
+)
+
+cc_library(
+    name = "protobuf_c_ffi",
+    srcs = ["copy/%s" % src for src in [
+        "glue.c",
+        "shared_convert.c",
+        "shared_convert.h",
+        "shared_message.c",
+        "shared_message.h",
+    ]],
+    copts = [
+        "-std=gnu99",
+        "-O3",
+        "-Wall",
+        "-Wsign-compare",
+        "-Wno-declaration-after-statement",
+    ],
+    linkstatic = True,
+    local_defines = [
+        "NDEBUG",
+    ],
+    target_compatible_with = select({
+        "//ruby:ffi_disabled": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+    deps = [":upb_api"],
+    alwayslink = 1,
+)
+
+apple_binary(
+    name = "ffi_bundle",
+    binary_type = "loadable_bundle",
+    linkopts = [
+        "-undefined,dynamic_lookup",
+        "-multiply_defined,suppress",
+    ],
+    minimum_os_version = "10.11",
+    platform_type = "macos",
+    tags = ["manual"],
+    deps = [
+        ":protobuf_c_ffi",
+    ],
+)
+
+apple_binary(
+    name = "bundle",
+    binary_type = "loadable_bundle",
+    linkopts = [
+        "-undefined,dynamic_lookup",
+        "-multiply_defined,suppress",
+    ],
+    minimum_os_version = "10.11",
+    platform_type = "macos",
+    tags = ["manual"],
+    deps = [
+        ":protobuf_c",
+    ],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob([
+        "*.h",
+        "*.c",
+        "*.rb",
+        "Rakefile",
+    ]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//ruby:__pkg__"],
+)
+
+genrule(
+    name = "copy_ruby_amalgamation_h",
+    srcs = ["//upb:ruby-upb.h"],
+    outs = ["generated-in/ruby-upb.h"],
+    cmd = "cp $< $@",
+)
+
+genrule(
+    name = "copy_ruby_amalgamation_c",
+    srcs = ["//upb:ruby-upb.c"],
+    outs = ["generated-in/ruby-upb.c"],
+    cmd = "cp $< $@",
+)
+
+staleness_test(
+    name = "test_amalgamation_staleness",
+    outs = [
+        "ruby-upb.c",
+        "ruby-upb.h",
+    ],
+    generated_pattern = "generated-in/%s",
+    tags = ["manual"],
+)

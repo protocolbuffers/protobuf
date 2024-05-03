@@ -1,0 +1,115 @@
+name: Java Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: OpenJDK 8
+            version: '8'
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
+            targets: //java/... //java/internal:java_version
+          - name: OpenJDK 11
+            version: '11'
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
+            targets: //java/... //java/internal:java_version
+          - name: OpenJDK 17
+            version: '17'
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
+            targets: //java/... //java/internal:java_version
+          - name: aarch64
+            version: 'aarch64'
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17
+            targets: //java/... //src/google/protobuf/compiler:protoc_aarch64_test
+
+    name: Linux ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v2
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        with:
+          image: ${{ matrix.image }}
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: java_linux/${{ matrix.version }}
+          bazel: test ${{ matrix.targets }} --test_env=KOKORO_JAVA_VERSION
+
+  linkage-monitor:
+    name: Linux Linkage Monitor
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v2
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run Linkage Monitor test
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: java_linux/8
+          bazel: test --test_output=all //java:linkage_monitor --spawn_strategy=standalone
+
+  protobuf-bom:
+    name: Protobuf Maven BOM
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout pending changes
+      uses: protocolbuffers/protobuf-ci/checkout@v2
+      with:
+        ref: ${{ inputs.safe-checkout }}
+    - name: Build protoc
+      id: build-protoc
+      uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v2
+      with:
+        image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+        credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+        architecture: linux-x86_64
+    - name: Move protoc into place and clean up
+      run: |
+        mv ${{ steps.build-protoc.outputs.protoc }} protoc
+        sudo rm -rf _build
+    - name: Install snapshot version locally (not using generated pom.xml)
+      run: |
+        mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
+      working-directory: java
+    - name: Generate pom.xml files from the template
+      uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+      with:
+        image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
+        credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+        bazel-cache: java_linux/11
+        # protobuf-java and protobuf-java-util are the member of the BOM
+        bash: |
+          bazel build //java/core:core_mvn-pom //java/util:util_mvn-pom
+          cp bazel-bin/java/core/core_mvn-pom.xml .
+          cp bazel-bin/java/util/util_mvn-pom.xml .
+    - name: Copy the generated pom.xml files to the local Maven repository
+      shell: bash
+      run: |
+        LOCAL_MAVEN_GROUP_DIR="${HOME}/.m2/repository/com/google/protobuf"
+        VERSION=$(grep "<version>" core_mvn-pom.xml | sed "s/<version>\(.*\)<\/version>/\1/" | xargs)
+        cp core_mvn-pom.xml ${LOCAL_MAVEN_GROUP_DIR}/protobuf-java/${VERSION}/protobuf-java-${VERSION}.pom
+        cp util_mvn-pom.xml ${LOCAL_MAVEN_GROUP_DIR}/protobuf-java-util/${VERSION}/protobuf-java-util-${VERSION}.pom
+    - name: Clean up
+      run: |
+        sudo rm -rf _build
+    - name: Validate Protobuf BOM
+      uses: googleapis/java-cloud-bom/tests/validate-bom@fd56f04bb0bc581776a74031591f0b3bc5e7920a # v26.13.0
+      with:
+        bom-path: java/bom/pom.xml

@@ -1,0 +1,34 @@
+# This information is extracted from the MacOS runner specs located at:
+# https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
+#
+# When updating, also ensure the "xcode_destination" entries in
+# `.github/workflows/test_objectivec.yml` are supported for the given versions
+# of Xcode.
+xcode_version(
+    name = "version14_2_14C18",
+    aliases = ["14C18"],
+    default_ios_sdk_version = "16.2",
+    default_macos_sdk_version = "13.1",
+    default_tvos_sdk_version = "16.1",
+    default_watchos_sdk_version = "9.1",
+    version = "14.2.14C18",
+)
+
+xcode_version(
+    name = "version14_1_0_14B47b",
+    aliases = ["14B47b"],
+    default_ios_sdk_version = "16.1",
+    default_macos_sdk_version = "13.0",
+    default_tvos_sdk_version = "16.1",
+    default_watchos_sdk_version = "9.1",
+    version = "14.1.0.14B47b",
+)
+
+xcode_config(
+    name = "host_xcodes",
+    default = ":version14_1_0_14B47b",
+    versions = [
+        ":version14_2_14C18",
+        ":version14_1_0_14B47b",
+    ],
+)

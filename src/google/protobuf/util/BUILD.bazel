@@ -1,0 +1,296 @@
+################################################################################
+# Protocol Buffers C++ Utilities
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "delimited_message_util",
+    srcs = ["delimited_message_util.cc"],
+    hdrs = ["delimited_message_util.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//:protobuf_lite",
+        "//src/google/protobuf/io",
+    ],
+)
+
+cc_test(
+    name = "delimited_message_util_test",
+    srcs = ["delimited_message_util_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":delimited_message_util",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:test_util",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "differencer",
+    srcs = [
+        "field_comparator.cc",
+        "message_differencer.cc",
+    ],
+    hdrs = [
+        "field_comparator.h",
+        "message_differencer.h",
+    ],
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+    ],
+)
+
+cc_test(
+    name = "field_comparator_test",
+    srcs = ["field_comparator_test.cc"],
+    deps = [
+        ":differencer",
+        ":message_differencer_unittest_cc_proto",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "message_differencer_unittest",
+    srcs = ["message_differencer_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    deps = [
+        ":differencer",
+        ":message_differencer_unittest_cc_proto",
+        ":message_differencer_unittest_proto3_cc_proto",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:test_util",
+        "//src/google/protobuf/testing",
+        "@com_google_absl//absl/functional:bind_front",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "field_mask_util",
+    srcs = ["field_mask_util.cc"],
+    hdrs = ["field_mask_util.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf/stubs",
+        "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/log:die_if_null",
+        "@com_google_absl//absl/memory",
+    ],
+)
+
+cc_test(
+    name = "field_mask_util_test",
+    srcs = ["field_mask_util_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":field_mask_util",
+        "//src/google/protobuf",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:test_util",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "json_util",
+    hdrs = ["json_util.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = ["//src/google/protobuf/json"],
+)
+
+cc_library(
+    name = "time_util",
+    srcs = ["time_util.cc"],
+    hdrs = ["time_util.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf/stubs",
+        "@com_google_absl//absl/log:absl_check",
+    ],
+)
+
+cc_test(
+    name = "time_util_test",
+    srcs = ["time_util_test.cc"],
+    deps = [
+        ":time_util",
+        "//src/google/protobuf",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "type_resolver_util",
+    srcs = ["type_resolver_util.cc"],
+    hdrs = [
+        "type_resolver.h",
+        "type_resolver_util.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:descriptor_legacy",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/status",
+    ],
+)
+
+cc_test(
+    name = "type_resolver_util_test",
+    srcs = ["type_resolver_util_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":json_format_cc_proto",
+        ":json_format_proto3_cc_proto",
+        ":json_util",
+        "//src/google/protobuf",
+        "//src/google/protobuf:test_util",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+# Testonly protos
+
+filegroup(
+    name = "test_proto_srcs",
+    testonly = 1,
+    srcs = [
+        "json_format.proto",
+        "json_format_proto3.proto",
+        "message_differencer_unittest.proto",
+        "message_differencer_unittest_proto3.proto",
+    ],
+    visibility = [
+        "//pkg:__pkg__",
+        "//python:__pkg__",
+    ],
+)
+
+proto_library(
+    name = "json_format_proto",
+    testonly = 1,
+    srcs = ["json_format.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "json_format_cc_proto",
+    testonly = 1,
+    visibility = ["//:__subpackages__"],
+    deps = [":json_format_proto"],
+)
+
+proto_library(
+    name = "json_format_proto3_proto",
+    testonly = 1,
+    srcs = ["json_format_proto3.proto"],
+    strip_import_prefix = "/src",
+    deps = [
+        "//:any_proto",
+        "//:duration_proto",
+        "//:field_mask_proto",
+        "//:struct_proto",
+        "//:test_protos",
+        "//:timestamp_proto",
+        "//:wrappers_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "json_format_proto3_cc_proto",
+    testonly = 1,
+    visibility = ["//:__subpackages__"],
+    deps = [":json_format_proto3_proto"],
+)
+
+proto_library(
+    name = "message_differencer_unittest_proto",
+    testonly = 1,
+    srcs = ["message_differencer_unittest.proto"],
+    strip_import_prefix = "/src",
+    deps = ["//:any_proto"],
+)
+
+cc_proto_library(
+    name = "message_differencer_unittest_cc_proto",
+    testonly = 1,
+    deps = [":message_differencer_unittest_proto"],
+)
+
+proto_library(
+    name = "message_differencer_unittest_proto3_proto",
+    testonly = 1,
+    srcs = ["message_differencer_unittest_proto3.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "message_differencer_unittest_proto3_cc_proto",
+    testonly = 1,
+    deps = [":message_differencer_unittest_proto3_proto"],
+)
+
+################################################################################
+# Distribution packaging
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["**"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob([
+        "*_test.cc",
+        "*unittest.cc",
+    ]),
+    visibility = ["//pkg:__pkg__"],
+)

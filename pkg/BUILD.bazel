@@ -1,0 +1,245 @@
+load("@rules_pkg//:pkg.bzl", "pkg_zip")
+load(
+    "@rules_pkg//:mappings.bzl",
+    "pkg_attributes",
+    "pkg_files",
+)
+load("//:protobuf_release.bzl", "package_naming")
+load(":build_systems.bzl", "gen_file_lists")
+load(":cc_dist_library.bzl", "cc_dist_library")
+
+package_naming(
+    name = "protobuf_pkg_naming",
+)
+
+pkg_files(
+    name = "wkt_protos_files",
+    srcs = [
+        "//:well_known_type_protos",
+        "//src/google/protobuf:descriptor_proto_srcs",
+    ],
+    prefix = "include/google/protobuf",
+    visibility = ["//visibility:private"],
+)
+
+pkg_files(
+    name = "compiler_plugin_protos_files",
+    srcs = [
+        "//src/google/protobuf/compiler:compiler_plugin_protos_files",
+    ],
+    prefix = "include/google/protobuf/compiler",
+    visibility = ["//visibility:private"],
+)
+
+################################################################################
+# Generates protoc release artifacts.
+################################################################################
+
+genrule(
+    name = "protoc_readme",
+    outs = ["readme.txt"],
+    cmd = """
+echo "Protocol Buffers - Google's data interchange format
+Copyright 2008 Google Inc.
+https://developers.google.com/protocol-buffers/
+This package contains a precompiled binary version of the protocol buffer
+compiler (protoc). This binary is intended for users who want to use Protocol
+Buffers in languages other than C++ but do not want to compile protoc
+themselves. To install, simply place this binary somewhere in your PATH.
+If you intend to use the included well known types then don't forget to
+copy the contents of the 'include' directory somewhere as well, for example
+into '/usr/local/include/'.
+Please refer to our official github site for more installation instructions:
+  https://github.com/protocolbuffers/protobuf" > $@
+    """,
+    visibility = ["//visibility:private"],
+)
+
+genrule(
+    name = "rename_protoc",
+    srcs = ["//:protoc_static"],
+    outs = ["bin/protoc"],
+    cmd = "cp $< $@",
+    tags = ["manual"],
+)
+
+genrule(
+    name = "rename_protoc_exe",
+    srcs = ["//:protoc_static"],
+    outs = ["bin/protoc.exe"],
+    cmd = "cp $< $@",
+    tags = ["manual"],
+)
+
+pkg_files(
+    name = "protoc_files",
+    srcs = select({
+        "//build_defs:config_win": ["bin/protoc.exe"],
+        "//conditions:default": ["bin/protoc"],
+    }),
+    attributes = pkg_attributes(mode = "0555"),
+    prefix = "bin/",
+    visibility = ["//visibility:private"],
+)
+
+pkg_zip(
+    name = "protoc_release",
+    srcs = [
+        ":compiler_plugin_protos_files",
+        ":protoc_files",
+        ":protoc_readme",
+        ":wkt_protos_files",
+    ],
+    package_file_name = "protoc-{version}-{platform}.zip",
+    package_variables = ":protobuf_pkg_naming",
+)
+
+################################################################################
+# Generated file lists for build systems
+################################################################################
+
+gen_file_lists(
+    name = "gen_src_file_lists",
+    testonly = 1,
+    out_stem = "src_file_lists",
+    src_libs = {
+        # {[source rule]: [name in generated file]}
+        # Libraries:
+        ":protobuf": "libprotobuf",
+        ":protobuf_lite": "libprotobuf_lite",
+        ":protoc": "libprotoc",
+        # Protos:
+        "//src/google/protobuf:well_known_type_protos": "wkt_protos",
+        "//src/google/protobuf:cpp_features_proto": "cpp_features_proto",
+        "//src/google/protobuf:descriptor_proto": "descriptor_proto",
+        "//src/google/protobuf/compiler:plugin_proto": "plugin_proto",
+        "//java/core:java_features_proto": "java_features_proto,src/google/protobuf/compiler/java/",
+
+        # Test libraries:
+        ":common_test": "common_test",
+        ":lite_test_util": "lite_test_util",
+        ":test_util": "test_util",
+        # Tests and test-only protos:
+        "//src/google/protobuf:full_test_srcs": "protobuf_test",
+        "//src/google/protobuf:test_proto_all_srcs": "protobuf_test_protos",
+        "//src/google/protobuf:lite_test_srcs": "protobuf_lite_test",
+        "//src/google/protobuf:lite_test_proto_srcs": "protobuf_lite_test_protos",
+        "//src/google/protobuf/compiler:fake_plugin_srcs": "fake_plugin",
+        "//src/google/protobuf/compiler:test_srcs": "compiler_test",
+        "//src/google/protobuf/compiler:test_proto_srcs": "compiler_test_protos",
+        "//src/google/protobuf/compiler:test_plugin_srcs": "test_plugin",
+        "//src/google/protobuf/io:test_srcs": "io_test",
+        "//src/google/protobuf/util:test_srcs": "util_test",
+        "//src/google/protobuf/util:test_proto_srcs": "util_test_protos",
+        "//src/google/protobuf/stubs:test_srcs": "stubs_test",
+    },
+)
+
+################################################################################
+# Protobuf runtime libraries.
+################################################################################
+
+cc_dist_library(
+    name = "protobuf_lite",
+    linkopts = select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": ["-lpthread"],
+    }),
+    tags = ["manual"],
+    deps = [
+        "//src/google/protobuf:arena_align",
+        "//src/google/protobuf:protobuf_lite",
+    ],
+)
+
+cc_dist_library(
+    name = "protobuf",
+    linkopts = select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-lz",
+            "-lpthread",
+        ],
+    }),
+    tags = ["manual"],
+    deps = [
+        "//src/google/protobuf:arena_align",
+        "//src/google/protobuf:cmake_wkt_cc_proto",
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/json",
+        "//src/google/protobuf/util:delimited_message_util",
+        "//src/google/protobuf/util:differencer",
+        "//src/google/protobuf/util:field_mask_util",
+        "//src/google/protobuf/util:json_util",
+        "//src/google/protobuf/util:time_util",
+        "//src/google/protobuf/util:type_resolver_util",
+    ],
+)
+
+cc_dist_library(
+    name = "protoc",
+    dist_deps = [
+        ":protobuf",
+        ":protobuf_lite",
+    ],
+    tags = ["manual"],
+    deps = [
+        "//src/google/protobuf/compiler:command_line_interface",
+        "//src/google/protobuf/compiler/cpp",
+        "//src/google/protobuf/compiler/csharp",
+        "//src/google/protobuf/compiler/java",
+        "//src/google/protobuf/compiler/objectivec",
+        "//src/google/protobuf/compiler/php",
+        "//src/google/protobuf/compiler/python",
+        "//src/google/protobuf/compiler/ruby",
+        "//src/google/protobuf/compiler/rust",
+    ],
+)
+
+cc_dist_library(
+    name = "lite_test_util",
+    testonly = 1,
+    dist_deps = [":protobuf"],
+    tags = ["manual"],
+    deps = ["//src/google/protobuf:lite_test_util"],
+)
+
+cc_dist_library(
+    name = "test_util",
+    testonly = 1,
+    dist_deps = [
+        ":common_test",
+        ":lite_test_util",
+        ":protoc",
+        ":protobuf",
+        ":protobuf_lite",
+    ],
+    tags = ["manual"],
+    deps = [
+        "//src/google/protobuf:lite_test_util",
+        "//src/google/protobuf:test_util",
+        "//src/google/protobuf:test_util2",
+        "//src/google/protobuf/compiler:annotation_test_util",
+        "//src/google/protobuf/compiler/cpp:unittest_lib",
+        "//src/google/protobuf/io:test_zero_copy_stream",
+    ],
+)
+
+cc_dist_library(
+    name = "common_test",
+    testonly = 1,
+    dist_deps = [
+        ":protobuf",
+        ":protobuf_lite",
+        ":protoc",
+    ],
+    tags = ["manual"],
+    deps = [
+        "//src/google/protobuf:internal_visibility_for_testing",
+        "//src/google/protobuf:test_textproto",
+        "//src/google/protobuf/compiler:command_line_interface_tester",
+        "//src/google/protobuf/compiler:mock_code_generator",
+        "//src/google/protobuf/testing",
+    ],
+)

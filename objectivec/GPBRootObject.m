@@ -1,36 +1,14 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBRootObject_PackagePrivate.h"
 
 #import <objc/runtime.h>
+#import <os/lock.h>
 
 #import <CoreFoundation/CoreFoundation.h>
 
@@ -41,6 +19,14 @@
 @interface GPBExtensionDescriptor (GPBRootObject)
 // Get singletonName as a c string.
 - (const char *)singletonNameC;
+@end
+
+// We need some object to conform to the MessageSignatureProtocol to make sure
+// the selectors in it are recorded in our Objective C runtime information.
+// GPBMessage is arguably the more "obvious" choice, but given that all messages
+// inherit from GPBMessage, conflicts seem likely, so we are using GPBRootObject
+// instead.
+@interface GPBRootObject () <GPBMessageSignatureProtocol>
 @end
 
 @implementation GPBRootObject
@@ -65,26 +51,19 @@ static uint32_t jenkins_one_at_a_time_hash(const char *key) {
 // to worry about deallocation. All of the items are added to it at
 // startup, and so the keys don't need to be retained/released.
 // Keys are NULL terminated char *.
-static const void *GPBRootExtensionKeyRetain(CFAllocatorRef allocator,
-                                             const void *value) {
-#pragma unused(allocator)
+static const void *GPBRootExtensionKeyRetain(__unused CFAllocatorRef allocator, const void *value) {
   return value;
 }
 
-static void GPBRootExtensionKeyRelease(CFAllocatorRef allocator,
-                                       const void *value) {
-#pragma unused(allocator)
-#pragma unused(value)
-}
+static void GPBRootExtensionKeyRelease(__unused CFAllocatorRef allocator,
+                                       __unused const void *value) {}
 
 static CFStringRef GPBRootExtensionCopyKeyDescription(const void *value) {
   const char *key = (const char *)value;
-  return CFStringCreateWithCString(kCFAllocatorDefault, key,
-                                   kCFStringEncodingUTF8);
+  return CFStringCreateWithCString(kCFAllocatorDefault, key, kCFStringEncodingUTF8);
 }
 
-static Boolean GPBRootExtensionKeyEqual(const void *value1,
-                                        const void *value2) {
+static Boolean GPBRootExtensionKeyEqual(const void *value1, const void *value2) {
   const char *key1 = (const char *)value1;
   const char *key2 = (const char *)value2;
   return strcmp(key1, key2) == 0;
@@ -95,31 +74,34 @@ static CFHashCode GPBRootExtensionKeyHash(const void *value) {
   return jenkins_one_at_a_time_hash(key);
 }
 
-// NOTE: OSSpinLock may seem like a good fit here but Apple engineers have
-// pointed out that they are vulnerable to live locking on iOS in cases of
-// priority inversion:
+// Long ago, this was an OSSpinLock, but then it came to light that there were issues for that on
+// iOS:
 //   http://mjtsai.com/blog/2015/12/16/osspinlock-is-unsafe/
 //   https://lists.swift.org/pipermail/swift-dev/Week-of-Mon-20151214/000372.html
-static dispatch_semaphore_t gExtensionSingletonDictionarySemaphore;
+// It was changed to a dispatch_semaphore_t, but that has potential for priority inversion issues.
+// The minOS versions are now high enough that os_unfair_lock can be used, and should provide
+// all the support we need. For more information in the concurrency/locking space see:
+//   https://gist.github.com/tclementdev/6af616354912b0347cdf6db159c37057
+//   https://developer.apple.com/library/archive/documentation/Performance/Conceptual/EnergyGuide-iOS/PrioritizeWorkWithQoS.html
+//   https://developer.apple.com/videos/play/wwdc2017/706/
+static os_unfair_lock gExtensionSingletonDictionaryLock = OS_UNFAIR_LOCK_INIT;
 static CFMutableDictionaryRef gExtensionSingletonDictionary = NULL;
 static GPBExtensionRegistry *gDefaultExtensionRegistry = NULL;
 
 + (void)initialize {
   // Ensure the global is started up.
   if (!gExtensionSingletonDictionary) {
-    gExtensionSingletonDictionarySemaphore = dispatch_semaphore_create(1);
     CFDictionaryKeyCallBacks keyCallBacks = {
-      // See description above for reason for using custom dictionary.
-      0,
-      GPBRootExtensionKeyRetain,
-      GPBRootExtensionKeyRelease,
-      GPBRootExtensionCopyKeyDescription,
-      GPBRootExtensionKeyEqual,
-      GPBRootExtensionKeyHash,
+        // See description above for reason for using custom dictionary.
+        0,
+        GPBRootExtensionKeyRetain,
+        GPBRootExtensionKeyRelease,
+        GPBRootExtensionCopyKeyDescription,
+        GPBRootExtensionKeyEqual,
+        GPBRootExtensionKeyHash,
     };
-    gExtensionSingletonDictionary =
-        CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &keyCallBacks,
-                                  &kCFTypeDictionaryValueCallBacks);
+    gExtensionSingletonDictionary = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &keyCallBacks,
+                                                              &kCFTypeDictionaryValueCallBacks);
     gDefaultExtensionRegistry = [[GPBExtensionRegistry alloc] init];
   }
 
@@ -139,10 +121,9 @@ static GPBExtensionRegistry *gDefaultExtensionRegistry = NULL;
 
 + (void)globallyRegisterExtension:(GPBExtensionDescriptor *)field {
   const char *key = [field singletonNameC];
-  dispatch_semaphore_wait(gExtensionSingletonDictionarySemaphore,
-                          DISPATCH_TIME_FOREVER);
+  os_unfair_lock_lock(&gExtensionSingletonDictionaryLock);
   CFDictionarySetValue(gExtensionSingletonDictionary, key, field);
-  dispatch_semaphore_signal(gExtensionSingletonDictionarySemaphore);
+  os_unfair_lock_unlock(&gExtensionSingletonDictionaryLock);
 }
 
 static id ExtensionForName(id self, SEL _cmd) {
@@ -174,21 +155,20 @@ static id ExtensionForName(id self, SEL _cmd) {
   key[classNameLen + 1 + selNameLen] = '\0';
 
   // NOTE: Even though this method is called from another C function,
-  // gExtensionSingletonDictionarySemaphore and gExtensionSingletonDictionary
+  // gExtensionSingletonDictionaryLock and gExtensionSingletonDictionary
   // will always be initialized. This is because this call flow is just to
   // lookup the Extension, meaning the code is calling an Extension class
   // message on a Message or Root class. This guarantees that the class was
   // initialized and Message classes ensure their Root was also initialized.
   NSAssert(gExtensionSingletonDictionary, @"Startup order broken!");
 
-  dispatch_semaphore_wait(gExtensionSingletonDictionarySemaphore,
-                          DISPATCH_TIME_FOREVER);
+  os_unfair_lock_lock(&gExtensionSingletonDictionaryLock);
   id extension = (id)CFDictionaryGetValue(gExtensionSingletonDictionary, key);
   // We can't remove the key from the dictionary here (as an optimization),
   // two threads could have gone into +resolveClassMethod: for the same method,
   // and ended up here; there's no way to ensure both return YES without letting
   // both try to wire in the method.
-  dispatch_semaphore_signal(gExtensionSingletonDictionarySemaphore);
+  os_unfair_lock_unlock(&gExtensionSingletonDictionaryLock);
   return extension;
 }
 
@@ -204,11 +184,9 @@ BOOL GPBResolveExtensionClassMethod(Class self, SEL sel) {
   // file.
   id extension = ExtensionForName(self, sel);
   if (extension != nil) {
-    const char *encoding =
-        GPBMessageEncodingForSelector(@selector(getClassValue), NO);
+    const char *encoding = GPBMessageEncodingForSelector(@selector(getClassValue), NO);
     Class metaClass = objc_getMetaClass(class_getName(self));
-    IMP imp = imp_implementationWithBlock(^(id obj) {
-#pragma unused(obj)
+    IMP imp = imp_implementationWithBlock(^(__unused id obj) {
       return extension;
     });
     BOOL methodAdded = class_addMethod(metaClass, sel, imp, encoding);
@@ -225,7 +203,6 @@ BOOL GPBResolveExtensionClassMethod(Class self, SEL sel) {
   }
   return NO;
 }
-
 
 + (BOOL)resolveClassMethod:(SEL)sel {
   if (GPBResolveExtensionClassMethod(self, sel)) {

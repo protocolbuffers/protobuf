@@ -2,33 +2,10 @@
 
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 namespace Google\Protobuf\Internal;
 
@@ -50,8 +27,8 @@ class GPBWire
 
     public static function getTagFieldNumber($tag)
     {
-        return ($tag >> self::TAG_TYPE_BITS) &
-            (1 << ((PHP_INT_SIZE * 8) - self::TAG_TYPE_BITS)) - 1;
+        // We have to mask because PHP has no arithmetic shift.
+        return ($tag >> self::TAG_TYPE_BITS) & 0x1fffffff;
     }
 
     public static function getTagWireType($tag)
@@ -146,7 +123,7 @@ class GPBWire
                 return bcsub(bcmul(bcsub(0, $int64), 2), 1);
             }
         } else {
-            return ($int64 << 1) ^ ($int64 >> 63);
+            return ((int)$int64 << 1) ^ ((int)$int64 >> 63);
         }
     }
 
@@ -241,7 +218,7 @@ class GPBWire
         if (!$input->readRaw(4, $data)) {
             return false;
         }
-        $value = unpack('f', $data)[1];
+        $value = unpack('g', $data)[1];
         return true;
     }
 
@@ -251,7 +228,7 @@ class GPBWire
         if (!$input->readRaw(8, $data)) {
             return false;
         }
-        $value = unpack('d', $data)[1];
+        $value = unpack('e', $data)[1];
         return true;
     }
 
@@ -360,13 +337,13 @@ class GPBWire
 
     public static function writeFloat(&$output, $value)
     {
-        $data = pack("f", $value);
+        $data = pack("g", $value);
         return $output->writeRaw($data, 4);
     }
 
     public static function writeDouble(&$output, $value)
     {
-        $data = pack("d", $value);
+        $data = pack("e", $value);
         return $output->writeRaw($data, 8);
     }
 
@@ -446,7 +423,7 @@ class GPBWire
             if (bccomp($value, 0) < 0 ||
                 bccomp($value, "9223372036854775807") > 0) {
                 return 10;
-            }    
+            }
             if (bccomp($value, 1 << 7) < 0) {
                 return 1;
             }
@@ -475,7 +452,7 @@ class GPBWire
         } else {
             if ($value < 0) {
                 return 10;
-            }    
+            }
             if ($value < (1 <<  7)) {
                 return 1;
             }

@@ -1,0 +1,271 @@
+name: μpb Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  linux-clang:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        config:
+          - { name: "Fastbuild" }
+          - { name: "Optimized", flags: "-c opt" }
+          - { name: "FastTable", flags: "--//upb:fasttable_enabled=true" }
+          - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/..." }
+          - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/... -//lua/..." }
+          - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-//benchmarks:benchmark -//python/..." }
+          # TODO: b/297027295 - Add 32-bit ASAN test
+
+    name: ${{ matrix.config.name }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v2
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:04cd765285bc52cbbf51d66c8c66d8603579cf0f19cc42df26b09d2c270541fb
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: upb-bazel
+          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //bazel/... //benchmarks/... //lua/... //protos/... //protos_generator/... //python/... //upb/... //upb_generator/... ${{ matrix.config.flags }}
+          exclude-targets: ${{ matrix.config.exclude-targets }}
+
+  linux-gcc:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+    name: GCC Optimized
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v2
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        with:
+          image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-63dd26c0c7a808d92673a3e52e848189d4ab0f17"
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: "upb-bazel-gcc"
+          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt //bazel/... //benchmarks/... //lua/... //protos/... //protos_generator/... //python/... //upb/... //upb_generator/...
+
+  windows:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+    name: Windows
+    runs-on: windows-2019
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v2
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel@v2
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: "upb-bazel-windows"
+          bazel: test --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 //upb/... //upb_generator/... //python/... //protos/... //protos_generator/...
+          exclude-targets: -//python:conformance_test -//upb:def_builder_test
+
+  macos:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        config:
+          - { name: "macOS", bazel-command: "test" }
+          - { name: "macOS ARM (build only)", bazel-command: "build", flags: "--cpu=darwin_arm64" }
+    name: ${{ matrix.config.name }}
+    runs-on: macos-12
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v2
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel@v2
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: "upb-bazel-macos"
+          bazel: ${{ matrix.config.bazel-command }} --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 ${{ matrix.config.flags }} //bazel/... //benchmarks/... //lua/... //protos/... //protos_generator/... //python/... //upb/... //upb_generator/...
+
+  no-python:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+    name: No System Python
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v2
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: "upb-bazel-no-python"
+          bash: >-
+            which python3 &&
+            mv `which python3` /tmp &&
+            ! which python3 &&
+            bazel test $BAZEL_FLAGS --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //python/... -- -//python/dist:source_wheel
+
+  build_wheels:
+    name: Build Wheels
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request_target' }}
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v2
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Build Wheels
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        with:
+          image: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple@sha256:b3dc9b75d8e599b0e95ed245d89f44b5a4231112f975da89dd02006a484a58df
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: upb-bazel-python
+          bazel: build --crosstool_top=//toolchain:clang_suite --//toolchain:release=true --symlink_prefix=/ -c dbg //python/dist //python/dist:test_wheel //python/dist:source_wheel
+      - name: Move Wheels
+        run: mkdir wheels && find _build/out \( -name 'protobuf*.whl' -o -name 'protobuf-*.tar.gz' \) -exec mv '{}' wheels ';'
+      - uses: actions/upload-artifact@v3
+        with:
+          name: python-wheels
+          path: wheels/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: requirements
+          # Tests shouldn't have access to the whole upb repo, upload the one file we need
+          path: python/requirements.txt
+
+  test_wheels:
+    name: Test Wheels
+    needs: build_wheels
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          # Linux and Mac use the limited API, so all Python versions will use
+          # a single wheel. As a result we can just test the oldest and newest
+          # supported Python versions and assume this gives us sufficient test
+          # coverage.
+          - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'binary' }
+          - { os: macos-11, python-version: "3.8", architecture: x64, type: 'binary' }
+          - { os: ubuntu-latest, python-version: "3.11", architecture: x64, type: 'binary' }
+          - { os: macos-12, python-version: "3.11", architecture: x64, type: 'binary' }
+          - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'source' }
+          - { os: macos-11, python-version: "3.8", architecture: x64, type: 'source' }
+          - { os: ubuntu-latest, python-version: "3.11", architecture: x64, type: 'source' }
+          - { os: macos-12, python-version: "3.11", architecture: x64, type: 'source' }
+
+          # Windows uses the full API up until Python 3.10, so each of these
+          # jobs tests a distinct binary wheel.
+          - { os: windows-2019, python-version: "3.8", architecture: x86, type: 'binary' }
+          - { os: windows-2019, python-version: "3.9", architecture: x86, type: 'binary' }
+          - { os: windows-2019, python-version: "3.10", architecture: x86, type: 'binary' }
+          - { os: windows-2019, python-version: "3.11", architecture: x86, type: 'binary' }
+          - { os: windows-2019, python-version: "3.8", architecture: x64, type: 'binary' }
+          - { os: windows-2019, python-version: "3.9", architecture: x64, type: 'binary' }
+          - { os: windows-2019, python-version: "3.10", architecture: x64, type: 'binary' }
+          - { os: windows-2019, python-version: "3.11", architecture: x64, type: 'binary' }
+    runs-on: ${{ matrix.os }}
+    if: ${{ github.event_name != 'pull_request_target' }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Download Wheels
+        uses: actions/download-artifact@v3
+        with:
+          name: python-wheels
+          path: wheels
+      - name: Download Requirements
+        uses: actions/download-artifact@v3
+        with:
+          name: requirements
+          path: requirements
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: ${{ matrix.architecture }}
+      - name: Setup Python venv
+        run: |
+          python -m pip install --upgrade pip
+          python -m venv env
+          # Windows uses 'Scripts' instead of 'bin'
+          source env/bin/activate || source env/Scripts/activate
+          echo "VIRTUAL ENV:" $VIRTUAL_ENV
+      - name: Install tzdata
+        run: pip install tzdata
+        # Only needed on Windows, Linux ships with tzdata.
+        if: ${{ contains(matrix.os, 'windows') }}
+      - name: Install requirements
+        run: pip install -r requirements/requirements.txt
+      - name: Install Protobuf Binary Wheel
+        run: pip install -vvv --no-index --find-links wheels protobuf
+        if: ${{ matrix.type == 'binary' }}
+      - name: Install Protobuf Source Wheel
+        run: |
+          cd wheels
+          tar -xzvf *.tar.gz
+          cd protobuf-*/
+          pip install .
+        if: ${{ matrix.type == 'source' }}
+      - name: Test that module is importable
+        run: python -v -c 'from google._upb import _message; assert "google._upb._message.MessageMeta" in str(_message.MessageMeta)'
+      - name: Install Protobuf Test Wheel
+        run: pip install -vvv --no-index --find-links wheels protobuftests
+      - name: Run the unit tests
+        run: |
+          TESTS=$(pip show -f protobuftests | grep pb_unit_tests.*py$ | sed 's,/,.,g' | sed 's,\\,.,g' | sed -E 's,.py$,,g')
+          for test in $TESTS; do
+            python -m unittest -v $test
+          done
+
+  test_pure_python_wheels:
+    name: Test Pure Python Wheels
+    needs: build_wheels
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        python-version: ["3.8", "3.11"]
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request_target' }}
+    steps:
+      - name: Download Wheels
+        uses: actions/download-artifact@v3
+        with:
+          name: python-wheels
+          path: wheels
+      - name: Delete Binary Wheels
+        run: find wheels -type f | grep -v none-any | xargs rm
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Setup Python venv
+        run: |
+          python -m pip install --upgrade pip
+          python -m venv env
+          source env/bin/activate
+          echo "VIRTUAL ENV:" $VIRTUAL_ENV
+      - name: Install numpy
+        run: pip install numpy
+      - name: Install Protobuf Wheels
+        run: pip install -vvv --no-index --find-links wheels protobuf protobuftests
+      - name: Run the unit tests
+        run: |
+          TESTS=$(pip show -f protobuftests | grep _test.py | sed 's,/,.,g' | sed -E 's,.py$,,g')
+          for test in $TESTS; do
+            python -m unittest -v $test
+          done

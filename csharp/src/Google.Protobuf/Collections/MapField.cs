@@ -1,42 +1,20 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using Google.Protobuf.Compatibility;
-using Google.Protobuf.Reflection;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security;
 
 namespace Google.Protobuf.Collections
 {
@@ -66,15 +44,16 @@ namespace Google.Protobuf.Collections
     /// in future versions.
     /// </para>
     /// </remarks>
-    public sealed class MapField<TKey, TValue> : IDeepCloneable<MapField<TKey, TValue>>, IDictionary<TKey, TValue>, IEquatable<MapField<TKey, TValue>>, IDictionary
-#if !NET35
-        , IReadOnlyDictionary<TKey, TValue>
-#endif
+    [DebuggerDisplay("Count = {Count}")]
+    [DebuggerTypeProxy(typeof(MapField<,>.MapFieldDebugView))]
+    public sealed class MapField<TKey, TValue> : IDeepCloneable<MapField<TKey, TValue>>, IDictionary<TKey, TValue>, IEquatable<MapField<TKey, TValue>>, IDictionary, IReadOnlyDictionary<TKey, TValue>
     {
+        private static readonly EqualityComparer<TValue> ValueEqualityComparer = ProtobufEqualityComparers.GetEqualityComparer<TValue>();
+        private static readonly EqualityComparer<TKey> KeyEqualityComparer = ProtobufEqualityComparers.GetEqualityComparer<TKey>();
+
         // TODO: Don't create the map/list until we have an entry. (Assume many maps will be empty.)
-        private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> map =
-            new Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>();
-        private readonly LinkedList<KeyValuePair<TKey, TValue>> list = new LinkedList<KeyValuePair<TKey, TValue>>();
+        private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> map = new(KeyEqualityComparer);
+        private readonly LinkedList<KeyValuePair<TKey, TValue>> list = new();
 
         /// <summary>
         /// Creates a deep clone of this object.
@@ -131,11 +110,8 @@ namespace Google.Protobuf.Collections
             return map.ContainsKey(key);
         }
 
-        private bool ContainsValue(TValue value)
-        {
-            var comparer = EqualityComparer<TValue>.Default;
-            return list.Any(pair => comparer.Equals(pair.Value, value));
-        }
+        private bool ContainsValue(TValue value) =>
+            list.Any(pair => ValueEqualityComparer.Equals(pair.Value, value));
 
         /// <summary>
         /// Removes the entry identified by the given key from the map.
@@ -145,8 +121,7 @@ namespace Google.Protobuf.Collections
         public bool Remove(TKey key)
         {
             ProtoPreconditions.CheckNotNullUnconstrained(key, nameof(key));
-            LinkedListNode<KeyValuePair<TKey, TValue>> node;
-            if (map.TryGetValue(key, out node))
+            if (map.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>> node))
             {
                 map.Remove(key);
                 node.List.Remove(node);
@@ -168,15 +143,14 @@ namespace Google.Protobuf.Collections
         /// <returns><c>true</c> if the map contains an element with the specified key; otherwise, <c>false</c>.</returns>
         public bool TryGetValue(TKey key, out TValue value)
         {
-            LinkedListNode<KeyValuePair<TKey, TValue>> node;
-            if (map.TryGetValue(key, out node))
+            if (map.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>> node))
             {
                 value = node.Value.Value;
                 return true;
             }
             else
             {
-                value = default(TValue);
+                value = default;
                 return false;
             }
         }
@@ -193,8 +167,7 @@ namespace Google.Protobuf.Collections
             get
             {
                 ProtoPreconditions.CheckNotNullUnconstrained(key, nameof(key));
-                TValue value;
-                if (TryGetValue(key, out value))
+                if (TryGetValue(key, out TValue value))
                 {
                     return value;
                 }
@@ -208,9 +181,8 @@ namespace Google.Protobuf.Collections
                 {
                     ProtoPreconditions.CheckNotNullUnconstrained(value, nameof(value));
                 }
-                LinkedListNode<KeyValuePair<TKey, TValue>> node;
                 var pair = new KeyValuePair<TKey, TValue>(key, value);
-                if (map.TryGetValue(key, out node))
+                if (map.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>> node))
                 {
                     node.Value = pair;
                 }
@@ -225,12 +197,12 @@ namespace Google.Protobuf.Collections
         /// <summary>
         /// Gets a collection containing the keys in the map.
         /// </summary>
-        public ICollection<TKey> Keys { get { return new MapView<TKey>(this, pair => pair.Key, ContainsKey); } }
+        public ICollection<TKey> Keys => new MapView<TKey>(this, pair => pair.Key, ContainsKey);
 
         /// <summary>
         /// Gets a collection containing the values in the map.
         /// </summary>
-        public ICollection<TValue> Values { get { return new MapView<TValue>(this, pair => pair.Value, ContainsValue); } }
+        public ICollection<TValue> Values => new MapView<TValue>(this, pair => pair.Value, ContainsValue);
 
         /// <summary>
         /// Adds the specified entries to the map. The keys and values are not automatically cloned.
@@ -246,15 +218,27 @@ namespace Google.Protobuf.Collections
         }
 
         /// <summary>
+        /// Adds the specified entries to the map, replacing any existing entries with the same keys.
+        /// The keys and values are not automatically cloned.
+        /// </summary>
+        /// <remarks>This method primarily exists to be called from MergeFrom methods in generated classes for messages.</remarks>
+        /// <param name="entries">The entries to add to the map.</param>
+        public void MergeFrom(IDictionary<TKey, TValue> entries)
+        {
+            ProtoPreconditions.CheckNotNull(entries, nameof(entries));
+            foreach (var pair in entries)
+            {
+                this[pair.Key] = pair.Value;
+            }
+        }
+
+        /// <summary>
         /// Returns an enumerator that iterates through the collection.
         /// </summary>
         /// <returns>
         /// An enumerator that can be used to iterate through the collection.
         /// </returns>
-        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
-        {
-            return list.GetEnumerator();
-        }
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => list.GetEnumerator();
 
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
@@ -262,19 +246,13 @@ namespace Google.Protobuf.Collections
         /// <returns>
         /// An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.
         /// </returns>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>
         /// Adds the specified item to the map.
         /// </summary>
         /// <param name="item">The item to add to the map.</param>
-        void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
-        {
-            Add(item.Key, item.Value);
-        }
+        void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item) => Add(item.Key, item.Value);
 
         /// <summary>
         /// Removes all items from the map.
@@ -290,22 +268,16 @@ namespace Google.Protobuf.Collections
         /// </summary>
         /// <param name="item">The key/value pair to find.</param>
         /// <returns></returns>
-        bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
-        {
-            TValue value;
-            return TryGetValue(item.Key, out value)
-                && EqualityComparer<TValue>.Default.Equals(item.Value, value);
-        }
+        bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item) =>
+            TryGetValue(item.Key, out TValue value) && ValueEqualityComparer.Equals(item.Value, value);
 
         /// <summary>
         /// Copies the key/value pairs in this map to an array.
         /// </summary>
         /// <param name="array">The array to copy the entries into.</param>
         /// <param name="arrayIndex">The index of the array at which to start copying values.</param>
-        void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
-        {
+        void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) =>
             list.CopyTo(array, arrayIndex);
-        }
 
         /// <summary>
         /// Removes the specified key/value pair from the map.
@@ -319,8 +291,7 @@ namespace Google.Protobuf.Collections
             {
                 throw new ArgumentException("Key is null", nameof(item));
             }
-            LinkedListNode<KeyValuePair<TKey, TValue>> node;
-            if (map.TryGetValue(item.Key, out node) &&
+            if (map.TryGetValue(item.Key, out LinkedListNode<KeyValuePair<TKey, TValue>> node) &&
                 EqualityComparer<TValue>.Default.Equals(item.Value, node.Value.Value))
             {
                 map.Remove(item.Key);
@@ -336,12 +307,12 @@ namespace Google.Protobuf.Collections
         /// <summary>
         /// Gets the number of elements contained in the map.
         /// </summary>
-        public int Count { get { return list.Count; } }
+        public int Count => list.Count;
 
         /// <summary>
         /// Gets a value indicating whether the map is read-only.
         /// </summary>
-        public bool IsReadOnly { get { return false; } }
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
@@ -350,24 +321,22 @@ namespace Google.Protobuf.Collections
         /// <returns>
         ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
-        public override bool Equals(object other)
-        {
-            return Equals(other as MapField<TKey, TValue>);
-        }
+        public override bool Equals(object other) => Equals(other as MapField<TKey, TValue>);
 
         /// <summary>
         /// Returns a hash code for this instance.
         /// </summary>
         /// <returns>
-        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.
         /// </returns>
         public override int GetHashCode()
         {
-            var valueComparer = EqualityComparer<TValue>.Default;
+            var keyComparer = KeyEqualityComparer;
+            var valueComparer = ValueEqualityComparer;
             int hash = 0;
             foreach (var pair in list)
             {
-                hash ^= pair.Key.GetHashCode() * 31 + valueComparer.GetHashCode(pair.Value);
+                hash ^= keyComparer.GetHashCode(pair.Key) * 31 + valueComparer.GetHashCode(pair.Value);
             }
             return hash;
         }
@@ -394,11 +363,10 @@ namespace Google.Protobuf.Collections
             {
                 return false;
             }
-            var valueComparer = EqualityComparer<TValue>.Default;
+            var valueComparer = ValueEqualityComparer;
             foreach (var pair in this)
             {
-                TValue value;
-                if (!other.TryGetValue(pair.Key, out value))
+                if (!other.TryGetValue(pair.Key, out TValue value))
                 {
                     return false;
                 }
@@ -422,13 +390,35 @@ namespace Google.Protobuf.Collections
         /// <param name="codec">Codec describing how the key/value pairs are encoded</param>
         public void AddEntriesFrom(CodedInputStream input, Codec codec)
         {
-            var adapter = new Codec.MessageAdapter(codec);
+            ParseContext.Initialize(input, out ParseContext ctx);
+            try
+            {
+                AddEntriesFrom(ref ctx, codec);
+            }
+            finally
+            {
+                ctx.CopyStateTo(input);
+            }
+        }
+
+        /// <summary>
+        /// Adds entries to the map from the given parse context.
+        /// </summary>
+        /// <remarks>
+        /// It is assumed that the input is initially positioned after the tag specified by the codec.
+        /// This method will continue reading entries from the input until the end is reached, or
+        /// a different tag is encountered.
+        /// </remarks>
+        /// <param name="ctx">Input to read from</param>
+        /// <param name="codec">Codec describing how the key/value pairs are encoded</param>
+        [SecuritySafeCritical]
+        public void AddEntriesFrom(ref ParseContext ctx, Codec codec)
+        {
             do
             {
-                adapter.Reset();
-                input.ReadMessage(adapter);
-                this[adapter.Key] = adapter.Value;
-            } while (input.MaybeConsumeTag(codec.MapTag));
+                KeyValuePair<TKey, TValue> entry = ParsingPrimitivesMessages.ReadMapEntry(ref ctx, codec);
+                this[entry.Key] = entry.Value;
+            } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, codec.MapTag));
         }
 
         /// <summary>
@@ -439,13 +429,67 @@ namespace Google.Protobuf.Collections
         /// <param name="codec">The codec to use for each entry.</param>
         public void WriteTo(CodedOutputStream output, Codec codec)
         {
-            var message = new Codec.MessageAdapter(codec);
-            foreach (var entry in list)
+            WriteContext.Initialize(output, out WriteContext ctx);
+            try
             {
-                message.Key = entry.Key;
-                message.Value = entry.Value;
-                output.WriteTag(codec.MapTag);
-                output.WriteMessage(message);
+                IEnumerable<KeyValuePair<TKey, TValue>> listToWrite = list;
+
+                if (output.Deterministic)
+                {
+                    listToWrite = GetSortedListCopy(list);
+                }
+                WriteTo(ref ctx, codec, listToWrite);
+            }
+            finally
+            {
+                ctx.CopyStateTo(output);
+            }
+        }
+
+        internal IEnumerable<KeyValuePair<TKey, TValue>> GetSortedListCopy(IEnumerable<KeyValuePair<TKey, TValue>> listToSort)
+        {
+            // We can't sort the list in place, as that would invalidate the linked list.
+            // Instead, we create a new list, sort that, and then write it out.
+            var listToWrite = new List<KeyValuePair<TKey, TValue>>(listToSort);
+            listToWrite.Sort((pair1, pair2) =>
+            {
+                if (typeof(TKey) == typeof(string))
+                {
+                    // Use Ordinal, otherwise Comparer<string>.Default uses StringComparer.CurrentCulture
+                    return StringComparer.Ordinal.Compare(pair1.Key.ToString(), pair2.Key.ToString());
+                }
+                return Comparer<TKey>.Default.Compare(pair1.Key, pair2.Key);
+            });
+            return listToWrite;
+        }
+
+        /// <summary>
+        /// Writes the contents of this map to the given write context, using the specified codec
+        /// to encode each entry.
+        /// </summary>
+        /// <param name="ctx">The write context to write to.</param>
+        /// <param name="codec">The codec to use for each entry.</param>
+        [SecuritySafeCritical]
+        public void WriteTo(ref WriteContext ctx, Codec codec)
+        {
+            IEnumerable<KeyValuePair<TKey, TValue>> listToWrite = list;
+            if (ctx.state.CodedOutputStream?.Deterministic ?? false)
+            {
+                listToWrite = GetSortedListCopy(list);
+            }
+            WriteTo(ref ctx, codec, listToWrite);
+        }
+
+        [SecuritySafeCritical]
+        private void WriteTo(ref WriteContext ctx, Codec codec, IEnumerable<KeyValuePair<TKey, TValue>> listKvp)
+        {
+            foreach (var entry in listKvp)
+            {
+                ctx.WriteTag(codec.MapTag);
+
+                WritingPrimitives.WriteLength(ref ctx.buffer, ref ctx.state, CalculateEntrySize(codec, entry));
+                codec.KeyCodec.WriteTagAndValue(ref ctx, entry.Key);
+                codec.ValueCodec.WriteTagAndValue(ref ctx, entry.Value);
             }
         }
 
@@ -460,16 +504,20 @@ namespace Google.Protobuf.Collections
             {
                 return 0;
             }
-            var message = new Codec.MessageAdapter(codec);
             int size = 0;
             foreach (var entry in list)
             {
-                message.Key = entry.Key;
-                message.Value = entry.Value;
+                int entrySize = CalculateEntrySize(codec, entry);
+
                 size += CodedOutputStream.ComputeRawVarint32Size(codec.MapTag);
-                size += CodedOutputStream.ComputeMessageSize(message);
+                size += CodedOutputStream.ComputeLengthSize(entrySize) + entrySize;
             }
             return size;
+        }
+
+        private static int CalculateEntrySize(Codec codec, KeyValuePair<TKey, TValue> entry)
+        {
+            return codec.KeyCodec.CalculateSizeWithTag(entry.Key) + codec.ValueCodec.CalculateSizeWithTag(entry.Value);
         }
 
         /// <summary>
@@ -484,33 +532,20 @@ namespace Google.Protobuf.Collections
         }
 
         #region IDictionary explicit interface implementation
-        void IDictionary.Add(object key, object value)
-        {
-            Add((TKey)key, (TValue)value);
-        }
 
-        bool IDictionary.Contains(object key)
-        {
-            if (!(key is TKey))
-            {
-                return false;
-            }
-            return ContainsKey((TKey)key);
-        }
+        void IDictionary.Add(object key, object value) => Add((TKey)key, (TValue)value);
 
-        IDictionaryEnumerator IDictionary.GetEnumerator()
-        {
-            return new DictionaryEnumerator(GetEnumerator());
-        }
+        bool IDictionary.Contains(object key) => key is TKey k && ContainsKey(k);
+
+        IDictionaryEnumerator IDictionary.GetEnumerator() => new DictionaryEnumerator(GetEnumerator());
 
         void IDictionary.Remove(object key)
         {
             ProtoPreconditions.CheckNotNull(key, nameof(key));
-            if (!(key is TKey))
+            if (key is TKey k)
             {
-                return;
+                Remove(k);
             }
-            Remove((TKey)key);
         }
 
         void ICollection.CopyTo(Array array, int index)
@@ -520,28 +555,27 @@ namespace Google.Protobuf.Collections
             temp.CopyTo(array, index);
         }
 
-        bool IDictionary.IsFixedSize { get { return false; } }
+        bool IDictionary.IsFixedSize => false;
 
-        ICollection IDictionary.Keys { get { return (ICollection)Keys; } }
+        ICollection IDictionary.Keys => (ICollection)Keys;
 
-        ICollection IDictionary.Values { get { return (ICollection)Values; } }
+        ICollection IDictionary.Values => (ICollection)Values;
 
-        bool ICollection.IsSynchronized { get { return false; } }
+        bool ICollection.IsSynchronized => false;
 
-        object ICollection.SyncRoot { get { return this; } }
+        object ICollection.SyncRoot => this;
 
         object IDictionary.this[object key]
         {
             get
             {
                 ProtoPreconditions.CheckNotNull(key, nameof(key));
-                if (!(key is TKey))
+                if (key is TKey k)
                 {
-                    return null;
+                    TryGetValue(k, out TValue value);
+                    return value;
                 }
-                TValue value;
-                TryGetValue((TKey)key, out value);
-                return value;
+                return null;
             }
 
             set
@@ -552,11 +586,8 @@ namespace Google.Protobuf.Collections
         #endregion
 
         #region IReadOnlyDictionary explicit interface implementation
-#if !NET35
         IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => Keys;
-
         IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => Values;
-#endif
         #endregion
 
         private class DictionaryEnumerator : IDictionaryEnumerator
@@ -568,20 +599,14 @@ namespace Google.Protobuf.Collections
                 this.enumerator = enumerator;
             }
 
-            public bool MoveNext()
-            {
-                return enumerator.MoveNext();
-            }
+            public bool MoveNext() => enumerator.MoveNext();
 
-            public void Reset()
-            {
-                enumerator.Reset();
-            }
+            public void Reset() => enumerator.Reset();
 
-            public object Current { get { return Entry; } }
-            public DictionaryEntry Entry { get { return new DictionaryEntry(Key, Value); } }
-            public object Key { get { return enumerator.Current.Key; } }
-            public object Value { get { return enumerator.Current.Value; } }
+            public object Current => Entry;
+            public DictionaryEntry Entry => new DictionaryEntry(Key, Value);
+            public object Key => enumerator.Current.Key;
+            public object Value => enumerator.Current.Value;
         }
 
         /// <summary>
@@ -609,76 +634,19 @@ namespace Google.Protobuf.Collections
             }
 
             /// <summary>
-            /// The tag used in the enclosing message to indicate map entries.
+            /// The key codec.
             /// </summary>
-            internal uint MapTag { get { return mapTag; } }
+            internal FieldCodec<TKey> KeyCodec => keyCodec;
 
             /// <summary>
-            /// A mutable message class, used for parsing and serializing. This
-            /// delegates the work to a codec, but implements the <see cref="IMessage"/> interface
-            /// for interop with <see cref="CodedInputStream"/> and <see cref="CodedOutputStream"/>.
-            /// This is nested inside Codec as it's tightly coupled to the associated codec,
-            /// and it's simpler if it has direct access to all its fields.
+            /// The value codec.
             /// </summary>
-            internal class MessageAdapter : IMessage
-            {
-                private static readonly byte[] ZeroLengthMessageStreamData = new byte[] { 0 };
+            internal FieldCodec<TValue> ValueCodec => valueCodec;
 
-                private readonly Codec codec;
-                internal TKey Key { get; set; }
-                internal TValue Value { get; set; }
-
-                internal MessageAdapter(Codec codec)
-                {
-                    this.codec = codec;
-                }
-
-                internal void Reset()
-                {
-                    Key = codec.keyCodec.DefaultValue;
-                    Value = codec.valueCodec.DefaultValue;
-                }
-
-                public void MergeFrom(CodedInputStream input)
-                {
-                    uint tag;
-                    while ((tag = input.ReadTag()) != 0)
-                    {
-                        if (tag == codec.keyCodec.Tag)
-                        {
-                            Key = codec.keyCodec.Read(input);
-                        }
-                        else if (tag == codec.valueCodec.Tag)
-                        {
-                            Value = codec.valueCodec.Read(input);
-                        }
-                        else 
-                        {
-                            input.SkipLastField();
-                        }
-                    }
-
-                    // Corner case: a map entry with a key but no value, where the value type is a message.
-                    // Read it as if we'd seen an input stream with no data (i.e. create a "default" message).
-                    if (Value == null)
-                    {
-                        Value = codec.valueCodec.Read(new CodedInputStream(ZeroLengthMessageStreamData));
-                    }
-                }
-
-                public void WriteTo(CodedOutputStream output)
-                {
-                    codec.keyCodec.WriteTagAndValue(output, Key);
-                    codec.valueCodec.WriteTagAndValue(output, Value);
-                }
-
-                public int CalculateSize()
-                {
-                    return codec.keyCodec.CalculateSizeWithTag(Key) + codec.valueCodec.CalculateSizeWithTag(Value);
-                }
-
-                MessageDescriptor IMessage.Descriptor { get { return null; } }
-            }
+            /// <summary>
+            /// The tag used in the enclosing message to indicate map entries.
+            /// </summary>
+            internal uint MapTag => mapTag;
         }
 
         private class MapView<T> : ICollection<T>, ICollection
@@ -697,28 +665,19 @@ namespace Google.Protobuf.Collections
                 this.containsCheck = containsCheck;
             }
 
-            public int Count { get { return parent.Count; } }
+            public int Count => parent.Count;
 
-            public bool IsReadOnly { get { return true; } }
+            public bool IsReadOnly => true;
 
-            public bool IsSynchronized { get { return false; } }
+            public bool IsSynchronized => false;
 
-            public object SyncRoot { get { return parent; } }
+            public object SyncRoot => parent;
 
-            public void Add(T item)
-            {
-                throw new NotSupportedException();
-            }
+            public void Add(T item) => throw new NotSupportedException();
 
-            public void Clear()
-            {
-                throw new NotSupportedException();
-            }
+            public void Clear() => throw new NotSupportedException();
 
-            public bool Contains(T item)
-            {
-                return containsCheck(item);
-            }
+            public bool Contains(T item) => containsCheck(item);
 
             public void CopyTo(T[] array, int arrayIndex)
             {
@@ -741,15 +700,9 @@ namespace Google.Protobuf.Collections
                 return parent.list.Select(projection).GetEnumerator();
             }
 
-            public bool Remove(T item)
-            {
-                throw new NotSupportedException();
-            }
+            public bool Remove(T item) => throw new NotSupportedException();
 
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
             public void CopyTo(Array array, int index)
             {
@@ -766,6 +719,19 @@ namespace Google.Protobuf.Collections
                     array.SetValue(item, index++);
                 }
             }
+        }
+
+        private sealed class MapFieldDebugView
+        {
+            private readonly MapField<TKey, TValue> map;
+
+            public MapFieldDebugView(MapField<TKey, TValue> map)
+            {
+                this.map = map;
+            }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public KeyValuePair<TKey, TValue>[] Items => map.list.ToArray();
         }
     }
 }

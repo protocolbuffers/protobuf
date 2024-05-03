@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -41,9 +18,11 @@ import static com.google.protobuf.WireFormat.MAX_VARINT_SIZE;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -59,30 +38,73 @@ import java.util.List;
  */
 public abstract class CodedInputStream {
   private static final int DEFAULT_BUFFER_SIZE = 4096;
-  private static final int DEFAULT_RECURSION_LIMIT = 100;
   // Integer.MAX_VALUE == 0x7FFFFFF == INT_MAX from limits.h
   private static final int DEFAULT_SIZE_LIMIT = Integer.MAX_VALUE;
+  private static volatile int defaultRecursionLimit = 100;
 
   /** Visible for subclasses. See setRecursionLimit() */
   int recursionDepth;
 
-  int recursionLimit = DEFAULT_RECURSION_LIMIT;
+  int recursionLimit = defaultRecursionLimit;
 
   /** Visible for subclasses. See setSizeLimit() */
   int sizeLimit = DEFAULT_SIZE_LIMIT;
+
+  /** Used to adapt to the experimental {@link Reader} interface. */
+  CodedInputStreamReader wrapper;
 
   /** Create a new CodedInputStream wrapping the given InputStream. */
   public static CodedInputStream newInstance(final InputStream input) {
     return newInstance(input, DEFAULT_BUFFER_SIZE);
   }
 
-  /** Create a new CodedInputStream wrapping the given InputStream. */
-  static CodedInputStream newInstance(final InputStream input, int bufferSize) {
+  /** Create a new CodedInputStream wrapping the given InputStream, with a specified buffer size. */
+  public static CodedInputStream newInstance(final InputStream input, int bufferSize) {
+    if (bufferSize <= 0) {
+      throw new IllegalArgumentException("bufferSize must be > 0");
+    }
     if (input == null) {
-      // TODO(nathanmittler): Ideally we should throw here. This is done for backward compatibility.
+      // Ideally we would throw here. This is done for backward compatibility.
       return newInstance(EMPTY_BYTE_ARRAY);
     }
     return new StreamDecoder(input, bufferSize);
+  }
+
+  /** Create a new CodedInputStream wrapping the given {@code Iterable <ByteBuffer>}. */
+  public static CodedInputStream newInstance(final Iterable<ByteBuffer> input) {
+    if (!UnsafeDirectNioDecoder.isSupported()) {
+      return newInstance(new IterableByteBufferInputStream(input));
+    }
+    return newInstance(input, false);
+  }
+
+  /** Create a new CodedInputStream wrapping the given {@code Iterable <ByteBuffer>}. */
+  static CodedInputStream newInstance(
+      final Iterable<ByteBuffer> bufs, final boolean bufferIsImmutable) {
+    // flag is to check the type of input's ByteBuffers.
+    // flag equals 1: all ByteBuffers have array.
+    // flag equals 2: all ByteBuffers are direct ByteBuffers.
+    // flag equals 3: some ByteBuffers are direct and some have array.
+    // flag greater than 3: other cases.
+    int flag = 0;
+    // Total size of the input
+    int totalSize = 0;
+    for (ByteBuffer buf : bufs) {
+      totalSize += buf.remaining();
+      if (buf.hasArray()) {
+        flag |= 1;
+      } else if (buf.isDirect()) {
+        flag |= 2;
+      } else {
+        flag |= 4;
+      }
+    }
+    if (flag == 2) {
+      return new IterableDirectByteBufferDecoder(bufs, totalSize, bufferIsImmutable);
+    } else {
+      // TODO: add another decoders to deal case 1 and 3.
+      return newInstance(new IterableByteBufferInputStream(bufs));
+    }
   }
 
   /** Create a new CodedInputStream wrapping the given byte array. */
@@ -92,7 +114,7 @@ public abstract class CodedInputStream {
 
   /** Create a new CodedInputStream wrapping the given byte array slice. */
   public static CodedInputStream newInstance(final byte[] buf, final int off, final int len) {
-    return newInstance(buf, off, len, false /* bufferIsImmutable */);
+    return newInstance(buf, off, len, /* bufferIsImmutable= */ false);
   }
 
   /** Create a new CodedInputStream wrapping the given byte array slice. */
@@ -128,7 +150,7 @@ public abstract class CodedInputStream {
    * trying to alter the ByteBuffer's status.
    */
   public static CodedInputStream newInstance(ByteBuffer buf) {
-    return newInstance(buf, false /* bufferIsImmutable */);
+    return newInstance(buf, /* bufferIsImmutable= */ false);
   }
 
   /** Create a new CodedInputStream wrapping the given buffer. */
@@ -144,12 +166,17 @@ public abstract class CodedInputStream {
 
     // The buffer is non-direct and does not expose the underlying array. Using the ByteBuffer API
     // to access individual bytes is very slow, so just copy the buffer to an array.
-    // TODO(nathanmittler): Re-evaluate with Java 9
+    // TODO: Re-evaluate with Java 9
     byte[] buffer = new byte[buf.remaining()];
     buf.duplicate().get(buffer);
     return newInstance(buffer, 0, buffer.length, true);
   }
 
+  public void checkRecursionLimit() throws InvalidProtocolBufferException {
+    if (recursionDepth >= recursionLimit) {
+      throw InvalidProtocolBufferException.recursionLimitExceeded();
+    }
+  }
   /** Disable construction/inheritance outside of this class. */
   private CodedInputStream() {}
 
@@ -204,7 +231,6 @@ public abstract class CodedInputStream {
    */
   public abstract void skipMessage(CodedOutputStream output) throws IOException;
 
-
   // -----------------------------------------------------------------
 
   /** Read a {@code double} field value from the stream. */
@@ -250,7 +276,6 @@ public abstract class CodedInputStream {
       final ExtensionRegistryLite extensionRegistry)
       throws IOException;
 
-
   /** Read a {@code group} field value from the stream. */
   public abstract <T extends MessageLite> T readGroup(
       final int fieldNumber, final Parser<T> parser, final ExtensionRegistryLite extensionRegistry)
@@ -271,7 +296,6 @@ public abstract class CodedInputStream {
   public abstract void readMessage(
       final MessageLite.Builder builder, final ExtensionRegistryLite extensionRegistry)
       throws IOException;
-
 
   /** Read an embedded message field value from the stream. */
   public abstract <T extends MessageLite> T readMessage(
@@ -336,7 +360,7 @@ public abstract class CodedInputStream {
   /**
    * Set the maximum message recursion depth. In order to prevent malicious messages from causing
    * stack overflows, {@code CodedInputStream} limits how deeply messages may be nested. The default
-   * limit is 64.
+   * limit is 100.
    *
    * @return the old limit.
    */
@@ -354,9 +378,9 @@ public abstract class CodedInputStream {
    *
    * <p>Set the maximum message size. In order to prevent malicious messages from exhausting memory
    * or causing integer overflows, {@code CodedInputStream} limits how large a message may be. The
-   * default limit is {@code Integer.MAX_INT}. You should set this limit as small as you can without
-   * harming your app's functionality. Note that size limits only apply when reading from an {@code
-   * InputStream}, not when constructed around a raw byte array.
+   * default limit is {@code Integer.MAX_VALUE}. You should set this limit as small as you can
+   * without harming your app's functionality. Note that size limits only apply when reading from an
+   * {@code InputStream}, not when constructed around a raw byte array.
    *
    * <p>If you want to read several messages from a single CodedInputStream, you could call {@link
    * #resetSizeCounter()} after each one to avoid hitting the size limit.
@@ -372,23 +396,7 @@ public abstract class CodedInputStream {
     return oldLimit;
   }
 
-
-  private boolean explicitDiscardUnknownFields = false;
-
-  /** TODO(liujisi): flip the default.*/
-  private static volatile boolean proto3DiscardUnknownFieldsDefault = true;
-
-  static void setProto3DiscardUnknownsByDefaultForTest() {
-    proto3DiscardUnknownFieldsDefault = true;
-  }
-
-  static void setProto3KeepUnknownsByDefaultForTest() {
-    proto3DiscardUnknownFieldsDefault = false;
-  }
-
-  static boolean getProto3DiscardUnknownFieldsDefault() {
-    return proto3DiscardUnknownFieldsDefault;
-  }
+  private boolean shouldDiscardUnknownFields = false;
 
   /**
    * Sets this {@code CodedInputStream} to discard unknown fields. Only applies to full runtime
@@ -399,7 +407,7 @@ public abstract class CodedInputStream {
    * runtime.
    */
   final void discardUnknownFields() {
-    explicitDiscardUnknownFields = true;
+    shouldDiscardUnknownFields = true;
   }
 
   /**
@@ -407,7 +415,7 @@ public abstract class CodedInputStream {
    * default.
    */
   final void unsetDiscardUnknownFields() {
-    explicitDiscardUnknownFields = false;
+    shouldDiscardUnknownFields = false;
   }
 
   /**
@@ -415,19 +423,7 @@ public abstract class CodedInputStream {
    * runtime messages.
    */
   final boolean shouldDiscardUnknownFields() {
-    return explicitDiscardUnknownFields;
-  }
-
-  /**
-   * Whether unknown fields in this input stream should be discarded during parsing for proto3 full
-   * runtime messages.
-   *
-   * <p>This function was temporarily introduced before proto3 unknown fields behavior is changed.
-   * TODO(liujisi): remove this and related code in GeneratedMessage after proto3 unknown
-   * fields migration is done.
-   */
-  final boolean shouldDiscardUnknownFieldsProto3() {
-    return explicitDiscardUnknownFields ? true : proto3DiscardUnknownFieldsDefault;
+    return shouldDiscardUnknownFields;
   }
 
   /**
@@ -467,7 +463,9 @@ public abstract class CodedInputStream {
   /**
    * Returns true if the stream has reached the end of the input. This is the case if either the end
    * of the underlying input source has been reached or if the stream has reached a limit created
-   * using {@link #pushLimit(int)}.
+   * using {@link #pushLimit(int)}. This function may get blocked when using StreamDecoder as it
+   * invokes {@link StreamDecoder#tryRefillBuffer(int)} in this function which will try to read
+   * bytes from input.
    */
   public abstract boolean isAtEnd() throws IOException;
 
@@ -656,33 +654,33 @@ public abstract class CodedInputStream {
         case WireFormat.WIRETYPE_VARINT:
           {
             long value = readInt64();
-            output.writeRawVarint32(tag);
+            output.writeUInt32NoTag(tag);
             output.writeUInt64NoTag(value);
             return true;
           }
         case WireFormat.WIRETYPE_FIXED64:
           {
             long value = readRawLittleEndian64();
-            output.writeRawVarint32(tag);
+            output.writeUInt32NoTag(tag);
             output.writeFixed64NoTag(value);
             return true;
           }
         case WireFormat.WIRETYPE_LENGTH_DELIMITED:
           {
             ByteString value = readBytes();
-            output.writeRawVarint32(tag);
+            output.writeUInt32NoTag(tag);
             output.writeBytesNoTag(value);
             return true;
           }
         case WireFormat.WIRETYPE_START_GROUP:
           {
-            output.writeRawVarint32(tag);
+            output.writeUInt32NoTag(tag);
             skipMessage(output);
             int endtag =
                 WireFormat.makeTag(
                     WireFormat.getTagFieldNumber(tag), WireFormat.WIRETYPE_END_GROUP);
             checkLastTagWas(endtag);
-            output.writeRawVarint32(endtag);
+            output.writeUInt32NoTag(endtag);
             return true;
           }
         case WireFormat.WIRETYPE_END_GROUP:
@@ -692,7 +690,7 @@ public abstract class CodedInputStream {
         case WireFormat.WIRETYPE_FIXED32:
           {
             int value = readRawLittleEndian32();
-            output.writeRawVarint32(tag);
+            output.writeUInt32NoTag(tag);
             output.writeFixed32NoTag(value);
             return true;
           }
@@ -720,7 +718,6 @@ public abstract class CodedInputStream {
         }
       }
     }
-
 
     // -----------------------------------------------------------------
 
@@ -788,13 +785,9 @@ public abstract class CodedInputStream {
     public String readStringRequireUtf8() throws IOException {
       final int size = readRawVarint32();
       if (size > 0 && size <= (limit - pos)) {
-        // TODO(martinrb): We could save a pass by validating while decoding.
-        if (!Utf8.isValidUtf8(buffer, pos, pos + size)) {
-          throw InvalidProtocolBufferException.invalidUtf8();
-        }
-        final int tempPos = pos;
+        String result = Utf8.decodeUtf8(buffer, pos, size);
         pos += size;
-        return new String(buffer, tempPos, size, UTF_8);
+        return result;
       }
 
       if (size == 0) {
@@ -812,15 +805,12 @@ public abstract class CodedInputStream {
         final MessageLite.Builder builder,
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
-      if (recursionDepth >= recursionLimit) {
-        throw InvalidProtocolBufferException.recursionLimitExceeded();
-      }
+      checkRecursionLimit();
       ++recursionDepth;
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
       --recursionDepth;
     }
-
 
     @Override
     public <T extends MessageLite> T readGroup(
@@ -828,9 +818,7 @@ public abstract class CodedInputStream {
         final Parser<T> parser,
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
-      if (recursionDepth >= recursionLimit) {
-        throw InvalidProtocolBufferException.recursionLimitExceeded();
-      }
+      checkRecursionLimit();
       ++recursionDepth;
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
@@ -850,30 +838,31 @@ public abstract class CodedInputStream {
         final MessageLite.Builder builder, final ExtensionRegistryLite extensionRegistry)
         throws IOException {
       final int length = readRawVarint32();
-      if (recursionDepth >= recursionLimit) {
-        throw InvalidProtocolBufferException.recursionLimitExceeded();
-      }
+      checkRecursionLimit();
       final int oldLimit = pushLimit(length);
       ++recursionDepth;
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(0);
       --recursionDepth;
+      if (getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
       popLimit(oldLimit);
     }
-
 
     @Override
     public <T extends MessageLite> T readMessage(
         final Parser<T> parser, final ExtensionRegistryLite extensionRegistry) throws IOException {
       int length = readRawVarint32();
-      if (recursionDepth >= recursionLimit) {
-        throw InvalidProtocolBufferException.recursionLimitExceeded();
-      }
+      checkRecursionLimit();
       final int oldLimit = pushLimit(length);
       ++recursionDepth;
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(0);
       --recursionDepth;
+      if (getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
       popLimit(oldLimit);
       return result;
     }
@@ -918,7 +907,7 @@ public abstract class CodedInputStream {
                 ? ByteBuffer.wrap(buffer, pos, size).slice()
                 : ByteBuffer.wrap(Arrays.copyOfRange(buffer, pos, pos + size));
         pos += size;
-        // TODO(nathanmittler): Investigate making the ByteBuffer be made read-only
+        // TODO: Investigate making the ByteBuffer be made read-only
         return result;
       }
 
@@ -1128,7 +1117,7 @@ public abstract class CodedInputStream {
 
       final byte[] buffer = this.buffer;
       pos = tempPos + FIXED32_SIZE;
-      return (((buffer[tempPos] & 0xff))
+      return ((buffer[tempPos] & 0xff)
           | ((buffer[tempPos + 1] & 0xff) << 8)
           | ((buffer[tempPos + 2] & 0xff) << 16)
           | ((buffer[tempPos + 3] & 0xff) << 24));
@@ -1144,7 +1133,7 @@ public abstract class CodedInputStream {
 
       final byte[] buffer = this.buffer;
       pos = tempPos + FIXED64_SIZE;
-      return (((buffer[tempPos] & 0xffL))
+      return ((buffer[tempPos] & 0xffL)
           | ((buffer[tempPos + 1] & 0xffL) << 8)
           | ((buffer[tempPos + 2] & 0xffL) << 16)
           | ((buffer[tempPos + 3] & 0xffL) << 24)
@@ -1170,6 +1159,9 @@ public abstract class CodedInputStream {
         throw InvalidProtocolBufferException.negativeSize();
       }
       byteLimit += getTotalBytesRead();
+      if (byteLimit < 0) {
+        throw InvalidProtocolBufferException.parseFailure();
+      }
       final int oldLimit = currentLimit;
       if (byteLimit > oldLimit) {
         throw InvalidProtocolBufferException.truncatedMessage();
@@ -1374,33 +1366,33 @@ public abstract class CodedInputStream {
         case WireFormat.WIRETYPE_VARINT:
           {
             long value = readInt64();
-            output.writeRawVarint32(tag);
+            output.writeUInt32NoTag(tag);
             output.writeUInt64NoTag(value);
             return true;
           }
         case WireFormat.WIRETYPE_FIXED64:
           {
             long value = readRawLittleEndian64();
-            output.writeRawVarint32(tag);
+            output.writeUInt32NoTag(tag);
             output.writeFixed64NoTag(value);
             return true;
           }
         case WireFormat.WIRETYPE_LENGTH_DELIMITED:
           {
             ByteString value = readBytes();
-            output.writeRawVarint32(tag);
+            output.writeUInt32NoTag(tag);
             output.writeBytesNoTag(value);
             return true;
           }
         case WireFormat.WIRETYPE_START_GROUP:
           {
-            output.writeRawVarint32(tag);
+            output.writeUInt32NoTag(tag);
             skipMessage(output);
             int endtag =
                 WireFormat.makeTag(
                     WireFormat.getTagFieldNumber(tag), WireFormat.WIRETYPE_END_GROUP);
             checkLastTagWas(endtag);
-            output.writeRawVarint32(endtag);
+            output.writeUInt32NoTag(endtag);
             return true;
           }
         case WireFormat.WIRETYPE_END_GROUP:
@@ -1410,7 +1402,7 @@ public abstract class CodedInputStream {
         case WireFormat.WIRETYPE_FIXED32:
           {
             int value = readRawLittleEndian32();
-            output.writeRawVarint32(tag);
+            output.writeUInt32NoTag(tag);
             output.writeFixed32NoTag(value);
             return true;
           }
@@ -1438,7 +1430,6 @@ public abstract class CodedInputStream {
         }
       }
     }
-
 
     // -----------------------------------------------------------------
 
@@ -1486,7 +1477,9 @@ public abstract class CodedInputStream {
     public String readString() throws IOException {
       final int size = readRawVarint32();
       if (size > 0 && size <= remaining()) {
-        // TODO(nathanmittler): Is there a way to avoid this copy?
+        // TODO: Is there a way to avoid this copy?
+        // TODO: It might be possible to share the optimized loop with
+        // readStringRequireUtf8 by implementing Java replacement logic there.
         // The same as readBytes' logic
         byte[] bytes = new byte[size];
         UnsafeUtil.copyMemory(pos, bytes, 0, size);
@@ -1507,17 +1500,9 @@ public abstract class CodedInputStream {
     @Override
     public String readStringRequireUtf8() throws IOException {
       final int size = readRawVarint32();
-      if (size >= 0 && size <= remaining()) {
-        // TODO(nathanmittler): Is there a way to avoid this copy?
-        // The same as readBytes' logic
-        byte[] bytes = new byte[size];
-        UnsafeUtil.copyMemory(pos, bytes, 0, size);
-        // TODO(martinrb): We could save a pass by validating while decoding.
-        if (!Utf8.isValidUtf8(bytes)) {
-          throw InvalidProtocolBufferException.invalidUtf8();
-        }
-
-        String result = new String(bytes, UTF_8);
+      if (size > 0 && size <= remaining()) {
+        final int bufferPos = bufferPos(pos);
+        String result = Utf8.decodeUtf8(buffer, bufferPos, size);
         pos += size;
         return result;
       }
@@ -1537,15 +1522,12 @@ public abstract class CodedInputStream {
         final MessageLite.Builder builder,
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
-      if (recursionDepth >= recursionLimit) {
-        throw InvalidProtocolBufferException.recursionLimitExceeded();
-      }
+      checkRecursionLimit();
       ++recursionDepth;
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
       --recursionDepth;
     }
-
 
     @Override
     public <T extends MessageLite> T readGroup(
@@ -1553,9 +1535,7 @@ public abstract class CodedInputStream {
         final Parser<T> parser,
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
-      if (recursionDepth >= recursionLimit) {
-        throw InvalidProtocolBufferException.recursionLimitExceeded();
-      }
+      checkRecursionLimit();
       ++recursionDepth;
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
@@ -1575,30 +1555,31 @@ public abstract class CodedInputStream {
         final MessageLite.Builder builder, final ExtensionRegistryLite extensionRegistry)
         throws IOException {
       final int length = readRawVarint32();
-      if (recursionDepth >= recursionLimit) {
-        throw InvalidProtocolBufferException.recursionLimitExceeded();
-      }
+      checkRecursionLimit();
       final int oldLimit = pushLimit(length);
       ++recursionDepth;
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(0);
       --recursionDepth;
+      if (getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
       popLimit(oldLimit);
     }
-
 
     @Override
     public <T extends MessageLite> T readMessage(
         final Parser<T> parser, final ExtensionRegistryLite extensionRegistry) throws IOException {
       int length = readRawVarint32();
-      if (recursionDepth >= recursionLimit) {
-        throw InvalidProtocolBufferException.recursionLimitExceeded();
-      }
+      checkRecursionLimit();
       final int oldLimit = pushLimit(length);
       ++recursionDepth;
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(0);
       --recursionDepth;
+      if (getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
       popLimit(oldLimit);
       return result;
     }
@@ -1652,7 +1633,7 @@ public abstract class CodedInputStream {
           pos += size;
           return ByteBuffer.wrap(bytes);
         }
-        // TODO(nathanmittler): Investigate making the ByteBuffer be made read-only
+        // TODO: Investigate making the ByteBuffer be made read-only
       }
 
       if (size == 0) {
@@ -1858,7 +1839,7 @@ public abstract class CodedInputStream {
       }
 
       pos = tempPos + FIXED32_SIZE;
-      return (((UnsafeUtil.getByte(tempPos) & 0xff))
+      return ((UnsafeUtil.getByte(tempPos) & 0xff)
           | ((UnsafeUtil.getByte(tempPos + 1) & 0xff) << 8)
           | ((UnsafeUtil.getByte(tempPos + 2) & 0xff) << 16)
           | ((UnsafeUtil.getByte(tempPos + 3) & 0xff) << 24));
@@ -1873,7 +1854,7 @@ public abstract class CodedInputStream {
       }
 
       pos = tempPos + FIXED64_SIZE;
-      return (((UnsafeUtil.getByte(tempPos) & 0xffL))
+      return ((UnsafeUtil.getByte(tempPos) & 0xffL)
           | ((UnsafeUtil.getByte(tempPos + 1) & 0xffL) << 8)
           | ((UnsafeUtil.getByte(tempPos + 2) & 0xffL) << 16)
           | ((UnsafeUtil.getByte(tempPos + 3) & 0xffL) << 24)
@@ -2000,15 +1981,20 @@ public abstract class CodedInputStream {
     private ByteBuffer slice(long begin, long end) throws IOException {
       int prevPos = buffer.position();
       int prevLimit = buffer.limit();
+      // View ByteBuffer as Buffer to avoid cross-Java version issues.
+      // See https://issues.apache.org/jira/browse/MRESOLVER-85
+      Buffer asBuffer = buffer;
       try {
-        buffer.position(bufferPos(begin));
-        buffer.limit(bufferPos(end));
+        asBuffer.position(bufferPos(begin));
+        asBuffer.limit(bufferPos(end));
         return buffer.slice();
       } catch (IllegalArgumentException e) {
-        throw InvalidProtocolBufferException.truncatedMessage();
+        InvalidProtocolBufferException ex = InvalidProtocolBufferException.truncatedMessage();
+        ex.initCause(e);
+        throw ex;
       } finally {
-        buffer.position(prevPos);
-        buffer.limit(prevLimit);
+        asBuffer.position(prevPos);
+        asBuffer.limit(prevLimit);
       }
     }
   }
@@ -2044,6 +2030,44 @@ public abstract class CodedInputStream {
       this.bufferSize = 0;
       pos = 0;
       totalBytesRetired = 0;
+    }
+
+    /*
+     * The following wrapper methods exist so that InvalidProtocolBufferExceptions thrown by the
+     * InputStream can be differentiated from ones thrown by CodedInputStream itself. Each call to
+     * an InputStream method that can throw IOException must be wrapped like this. We do this
+     * because we sometimes need to modify IPBE instances after they are thrown far away from where
+     * they are thrown (ex. to add unfinished messages) and we use this signal elsewhere in the
+     * exception catch chain to know when to perform these operations directly or to wrap the
+     * exception in their own IPBE so the extra information can be communicated without trampling
+     * downstream information.
+     */
+    private static int read(InputStream input, byte[] data, int offset, int length)
+        throws IOException {
+      try {
+        return input.read(data, offset, length);
+      } catch (InvalidProtocolBufferException e) {
+        e.setThrownFromInputStream();
+        throw e;
+      }
+    }
+
+    private static long skip(InputStream input, long length) throws IOException {
+      try {
+        return input.skip(length);
+      } catch (InvalidProtocolBufferException e) {
+        e.setThrownFromInputStream();
+        throw e;
+      }
+    }
+
+    private static int available(InputStream input) throws IOException {
+      try {
+        return input.available();
+      } catch (InvalidProtocolBufferException e) {
+        e.setThrownFromInputStream();
+        throw e;
+      }
     }
 
     @Override
@@ -2107,33 +2131,33 @@ public abstract class CodedInputStream {
         case WireFormat.WIRETYPE_VARINT:
           {
             long value = readInt64();
-            output.writeRawVarint32(tag);
+            output.writeUInt32NoTag(tag);
             output.writeUInt64NoTag(value);
             return true;
           }
         case WireFormat.WIRETYPE_FIXED64:
           {
             long value = readRawLittleEndian64();
-            output.writeRawVarint32(tag);
+            output.writeUInt32NoTag(tag);
             output.writeFixed64NoTag(value);
             return true;
           }
         case WireFormat.WIRETYPE_LENGTH_DELIMITED:
           {
             ByteString value = readBytes();
-            output.writeRawVarint32(tag);
+            output.writeUInt32NoTag(tag);
             output.writeBytesNoTag(value);
             return true;
           }
         case WireFormat.WIRETYPE_START_GROUP:
           {
-            output.writeRawVarint32(tag);
+            output.writeUInt32NoTag(tag);
             skipMessage(output);
             int endtag =
                 WireFormat.makeTag(
                     WireFormat.getTagFieldNumber(tag), WireFormat.WIRETYPE_END_GROUP);
             checkLastTagWas(endtag);
-            output.writeRawVarint32(endtag);
+            output.writeUInt32NoTag(endtag);
             return true;
           }
         case WireFormat.WIRETYPE_END_GROUP:
@@ -2143,7 +2167,7 @@ public abstract class CodedInputStream {
         case WireFormat.WIRETYPE_FIXED32:
           {
             int value = readRawLittleEndian32();
-            output.writeRawVarint32(tag);
+            output.writeUInt32NoTag(tag);
             output.writeFixed32NoTag(value);
             return true;
           }
@@ -2196,7 +2220,6 @@ public abstract class CodedInputStream {
         }
       }
     }
-
 
     // -----------------------------------------------------------------
 
@@ -2260,7 +2283,7 @@ public abstract class CodedInputStream {
         return result;
       }
       // Slow path:  Build a byte array first then copy it.
-      return new String(readRawBytesSlowPath(size), UTF_8);
+      return new String(readRawBytesSlowPath(size, /* ensureNoLeakedReferences= */ false), UTF_8);
     }
 
     @Override
@@ -2284,14 +2307,10 @@ public abstract class CodedInputStream {
         pos = tempPos + size;
       } else {
         // Slow path:  Build a byte array first then copy it.
-        bytes = readRawBytesSlowPath(size);
+        bytes = readRawBytesSlowPath(size, /* ensureNoLeakedReferences= */ false);
         tempPos = 0;
       }
-      // TODO(martinrb): We could save a pass by validating while decoding.
-      if (!Utf8.isValidUtf8(bytes, tempPos, tempPos + size)) {
-        throw InvalidProtocolBufferException.invalidUtf8();
-      }
-      return new String(bytes, tempPos, size, UTF_8);
+      return Utf8.decodeUtf8(bytes, tempPos, size);
     }
 
     @Override
@@ -2300,15 +2319,12 @@ public abstract class CodedInputStream {
         final MessageLite.Builder builder,
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
-      if (recursionDepth >= recursionLimit) {
-        throw InvalidProtocolBufferException.recursionLimitExceeded();
-      }
+      checkRecursionLimit();
       ++recursionDepth;
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
       --recursionDepth;
     }
-
 
     @Override
     public <T extends MessageLite> T readGroup(
@@ -2316,9 +2332,7 @@ public abstract class CodedInputStream {
         final Parser<T> parser,
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
-      if (recursionDepth >= recursionLimit) {
-        throw InvalidProtocolBufferException.recursionLimitExceeded();
-      }
+      checkRecursionLimit();
       ++recursionDepth;
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
@@ -2338,30 +2352,31 @@ public abstract class CodedInputStream {
         final MessageLite.Builder builder, final ExtensionRegistryLite extensionRegistry)
         throws IOException {
       final int length = readRawVarint32();
-      if (recursionDepth >= recursionLimit) {
-        throw InvalidProtocolBufferException.recursionLimitExceeded();
-      }
+      checkRecursionLimit();
       final int oldLimit = pushLimit(length);
       ++recursionDepth;
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(0);
       --recursionDepth;
+      if (getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
       popLimit(oldLimit);
     }
-
 
     @Override
     public <T extends MessageLite> T readMessage(
         final Parser<T> parser, final ExtensionRegistryLite extensionRegistry) throws IOException {
       int length = readRawVarint32();
-      if (recursionDepth >= recursionLimit) {
-        throw InvalidProtocolBufferException.recursionLimitExceeded();
-      }
+      checkRecursionLimit();
       final int oldLimit = pushLimit(length);
       ++recursionDepth;
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(0);
       --recursionDepth;
+      if (getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
       popLimit(oldLimit);
       return result;
     }
@@ -2393,7 +2408,8 @@ public abstract class CodedInputStream {
         return result;
       } else {
         // Slow path: Build a byte array first then copy it.
-        return readRawBytesSlowPath(size);
+        // TODO: Do we want to protect from malicious input streams here?
+        return readRawBytesSlowPath(size, /* ensureNoLeakedReferences= */ false);
       }
     }
 
@@ -2410,7 +2426,10 @@ public abstract class CodedInputStream {
         return Internal.EMPTY_BYTE_BUFFER;
       }
       // Slow path: Build a byte array first then copy it.
-      return ByteBuffer.wrap(readRawBytesSlowPath(size));
+      
+      // We must copy as the byte array was handed off to the InputStream and a malicious
+      // implementation could retain a reference.
+      return ByteBuffer.wrap(readRawBytesSlowPath(size, /* ensureNoLeakedReferences= */ true));
     }
 
     @Override
@@ -2611,7 +2630,7 @@ public abstract class CodedInputStream {
 
       final byte[] buffer = this.buffer;
       pos = tempPos + FIXED32_SIZE;
-      return (((buffer[tempPos] & 0xff))
+      return ((buffer[tempPos] & 0xff)
           | ((buffer[tempPos + 1] & 0xff) << 8)
           | ((buffer[tempPos + 2] & 0xff) << 16)
           | ((buffer[tempPos + 3] & 0xff) << 24));
@@ -2642,7 +2661,7 @@ public abstract class CodedInputStream {
 
     @Override
     public void enableAliasing(boolean enabled) {
-      // TODO(nathanmittler): Ideally we should throw here. Do nothing for backward compatibility.
+      // TODO: Ideally we should throw here. Do nothing for backward compatibility.
     }
 
     @Override
@@ -2774,7 +2793,8 @@ public abstract class CodedInputStream {
 
       // Here we should refill the buffer as many bytes as possible.
       int bytesRead =
-          input.read(
+          read(
+              input,
               buffer,
               bufferSize,
               Math.min(
@@ -2784,7 +2804,8 @@ public abstract class CodedInputStream {
                   sizeLimit - totalBytesRetired - bufferSize));
       if (bytesRead == 0 || bytesRead < -1 || bytesRead > buffer.length) {
         throw new IllegalStateException(
-            "InputStream#read(byte[]) returned invalid result: "
+            input.getClass()
+                + "#read(byte[]) returned invalid result: "
                 + bytesRead
                 + "\nThe InputStream implementation is buggy.");
       }
@@ -2812,19 +2833,24 @@ public abstract class CodedInputStream {
         pos = tempPos + size;
         return Arrays.copyOfRange(buffer, tempPos, tempPos + size);
       } else {
-        return readRawBytesSlowPath(size);
+        // TODO: Do we want to protect from malicious input streams here?
+        return readRawBytesSlowPath(size, /* ensureNoLeakedReferences= */ false);
       }
     }
 
     /**
      * Exactly like readRawBytes, but caller must have already checked the fast path: (size <=
      * (bufferSize - pos) && size > 0)
+     * 
+     * If ensureNoLeakedReferences is true, the value is guaranteed to have not escaped to
+     * untrusted code.
      */
-    private byte[] readRawBytesSlowPath(final int size) throws IOException {
+    private byte[] readRawBytesSlowPath(
+        final int size, boolean ensureNoLeakedReferences) throws IOException {
       // Attempt to read the data in one byte array when it's safe to do.
       byte[] result = readRawBytesSlowPathOneChunk(size);
       if (result != null) {
-        return result;
+        return ensureNoLeakedReferences ? result.clone() : result;
       }
 
       final int originalBufferPos = pos;
@@ -2862,6 +2888,8 @@ public abstract class CodedInputStream {
     /**
      * Attempts to read the data in one byte array when it's safe to do. Returns null if the size to
      * read is too large and needs to be allocated in smaller chunks for security reasons.
+     *
+     * <p>Returns a byte[] that may have escaped to user code via InputStream APIs.
      */
     private byte[] readRawBytesSlowPathOneChunk(final int size) throws IOException {
       if (size == 0) {
@@ -2887,8 +2915,8 @@ public abstract class CodedInputStream {
       final int bufferedBytes = bufferSize - pos;
       // Determine the number of bytes we need to read from the input stream.
       int sizeLeft = size - bufferedBytes;
-      // TODO(nathanmittler): Consider using a value larger than DEFAULT_BUFFER_SIZE.
-      if (sizeLeft < DEFAULT_BUFFER_SIZE || sizeLeft <= input.available()) {
+      // TODO: Consider using a value larger than DEFAULT_BUFFER_SIZE.
+      if (sizeLeft < DEFAULT_BUFFER_SIZE || sizeLeft <= available(input)) {
         // Either the bytes we need are known to be available, or the required buffer is
         // within an allowed threshold - go ahead and allocate the buffer now.
         final byte[] bytes = new byte[size];
@@ -2902,7 +2930,7 @@ public abstract class CodedInputStream {
         // Fill the remaining bytes from the input stream.
         int tempPos = bufferedBytes;
         while (tempPos < bytes.length) {
-          int n = input.read(bytes, tempPos, size - tempPos);
+          int n = read(input, bytes, tempPos, size - tempPos);
           if (n == -1) {
             throw InvalidProtocolBufferException.truncatedMessage();
           }
@@ -2916,7 +2944,11 @@ public abstract class CodedInputStream {
       return null;
     }
 
-    /** Reads the remaining data in small chunks from the input stream. */
+    /**
+     * Reads the remaining data in small chunks from the input stream.
+     * 
+     * Returns a byte[] that may have escaped to user code via InputStream APIs.
+     */
     private List<byte[]> readRawBytesSlowPathRemainingChunks(int sizeLeft) throws IOException {
       // The size is very large.  For security reasons, we can't allocate the
       // entire byte array yet.  The size comes directly from the input, so a
@@ -2925,10 +2957,10 @@ public abstract class CodedInputStream {
       // by allocating and reading only a small chunk at a time, so that the
       // malicious message must actually *be* extremely large to cause
       // problems.  Meanwhile, we limit the allowed size of a message elsewhere.
-      final List<byte[]> chunks = new ArrayList<byte[]>();
+      final List<byte[]> chunks = new ArrayList<>();
 
       while (sizeLeft > 0) {
-        // TODO(nathanmittler): Consider using a value larger than DEFAULT_BUFFER_SIZE.
+        // TODO: Consider using a value larger than DEFAULT_BUFFER_SIZE.
         final byte[] chunk = new byte[Math.min(sizeLeft, DEFAULT_BUFFER_SIZE)];
         int tempPos = 0;
         while (tempPos < chunk.length) {
@@ -2953,7 +2985,9 @@ public abstract class CodedInputStream {
     private ByteString readBytesSlowPath(final int size) throws IOException {
       final byte[] result = readRawBytesSlowPathOneChunk(size);
       if (result != null) {
-        return ByteString.wrap(result);
+        // We must copy as the byte array was handed off to the InputStream and a malicious
+        // implementation could retain a reference.
+        return ByteString.copyFrom(result);
       }
 
       final int originalBufferPos = pos;
@@ -2971,13 +3005,20 @@ public abstract class CodedInputStream {
       // chunks.
       List<byte[]> chunks = readRawBytesSlowPathRemainingChunks(sizeLeft);
 
-      // Wrap the byte arrays into a single ByteString.
-      List<ByteString> byteStrings = new ArrayList<ByteString>(1 + chunks.size());
-      byteStrings.add(ByteString.copyFrom(buffer, originalBufferPos, bufferedBytes));
-      for (byte[] chunk : chunks) {
-        byteStrings.add(ByteString.wrap(chunk));
+      // OK, got everything.  Now concatenate it all into one buffer.
+      final byte[] bytes = new byte[size];
+
+      // Start by copying the leftover bytes from this.buffer.
+      System.arraycopy(buffer, originalBufferPos, bytes, 0, bufferedBytes);
+
+      // And now all the chunks.
+      int tempPos = bufferedBytes;
+      for (final byte[] chunk : chunks) {
+        System.arraycopy(chunk, 0, bytes, tempPos, chunk.length);
+        tempPos += chunk.length;
       }
-      return ByteString.copyFrom(byteStrings);
+      
+      return ByteString.wrap(bytes);
     }
 
     @Override
@@ -3006,20 +3047,899 @@ public abstract class CodedInputStream {
         throw InvalidProtocolBufferException.truncatedMessage();
       }
 
-      // Skipping more bytes than are in the buffer.  First skip what we have.
-      int tempPos = bufferSize - pos;
-      pos = bufferSize;
+      int totalSkipped = 0;
+      if (refillCallback == null) {
+        // Skipping more bytes than are in the buffer.  First skip what we have.
+        totalBytesRetired += pos;
+        totalSkipped = bufferSize - pos;
+        bufferSize = 0;
+        pos = 0;
 
-      // Keep refilling the buffer until we get to the point we wanted to skip to.
-      // This has the side effect of ensuring the limits are updated correctly.
-      refillBuffer(1);
-      while (size - tempPos > bufferSize) {
-        tempPos += bufferSize;
+        try {
+          while (totalSkipped < size) {
+            int toSkip = size - totalSkipped;
+            long skipped = skip(input, toSkip);
+            if (skipped < 0 || skipped > toSkip) {
+              throw new IllegalStateException(
+                  input.getClass()
+                      + "#skip returned invalid result: "
+                      + skipped
+                      + "\nThe InputStream implementation is buggy.");
+            } else if (skipped == 0) {
+              // The API contract of skip() permits an inputstream to skip zero bytes for any reason
+              // it wants. In particular, ByteArrayInputStream will just return zero over and over
+              // when it's at the end of its input. In order to actually confirm that we've hit the
+              // end of input, we need to issue a read call via the other path.
+              break;
+            }
+            totalSkipped += (int) skipped;
+          }
+        } finally {
+          totalBytesRetired += totalSkipped;
+          recomputeBufferSizeAfterLimit();
+        }
+      }
+      if (totalSkipped < size) {
+        // Skipping more bytes than are in the buffer.  First skip what we have.
+        int tempPos = bufferSize - pos;
         pos = bufferSize;
+
+        // Keep refilling the buffer until we get to the point we wanted to skip to.
+        // This has the side effect of ensuring the limits are updated correctly.
         refillBuffer(1);
+        while (size - tempPos > bufferSize) {
+          tempPos += bufferSize;
+          pos = bufferSize;
+          refillBuffer(1);
+        }
+
+        pos = size - tempPos;
+      }
+    }
+  }
+
+  /**
+   * Implementation of {@link CodedInputStream} that uses an {@link Iterable <ByteBuffer>} as the
+   * data source. Requires the use of {@code sun.misc.Unsafe} to perform fast reads on the buffer.
+   */
+  private static final class IterableDirectByteBufferDecoder extends CodedInputStream {
+    /** The object that need to decode. */
+    private final Iterable<ByteBuffer> input;
+    /** The {@link Iterator} with type {@link ByteBuffer} of {@code input} */
+    private final Iterator<ByteBuffer> iterator;
+    /** The current ByteBuffer; */
+    private ByteBuffer currentByteBuffer;
+    /**
+     * If {@code true}, indicates that all the buffers are backing a {@link ByteString} and are
+     * therefore considered to be an immutable input source.
+     */
+    private final boolean immutable;
+    /**
+     * If {@code true}, indicates that calls to read {@link ByteString} or {@code byte[]}
+     * <strong>may</strong> return slices of the underlying buffer, rather than copies.
+     */
+    private boolean enableAliasing;
+    /** The global total message length limit */
+    private int totalBufferSize;
+    /** The amount of available data in the input beyond {@link #currentLimit}. */
+    private int bufferSizeAfterCurrentLimit;
+    /** The absolute position of the end of the current message. */
+    private int currentLimit = Integer.MAX_VALUE;
+    /** The last tag that was read from this stream. */
+    private int lastTag;
+    /** Total Bytes have been Read from the {@link Iterable} {@link ByteBuffer} */
+    private int totalBytesRead;
+    /** The start position offset of the whole message, used as to reset the totalBytesRead */
+    private int startOffset;
+    /** The current position for current ByteBuffer */
+    private long currentByteBufferPos;
+
+    private long currentByteBufferStartPos;
+    /**
+     * If the current ByteBuffer is unsafe-direct based, currentAddress is the start address of this
+     * ByteBuffer; otherwise should be zero.
+     */
+    private long currentAddress;
+    /** The limit position for current ByteBuffer */
+    private long currentByteBufferLimit;
+
+    /**
+     * The constructor of {@code Iterable<ByteBuffer>} decoder.
+     *
+     * @param inputBufs The input data.
+     * @param size The total size of the input data.
+     * @param immutableFlag whether the input data is immutable.
+     */
+    private IterableDirectByteBufferDecoder(
+        Iterable<ByteBuffer> inputBufs, int size, boolean immutableFlag) {
+      totalBufferSize = size;
+      input = inputBufs;
+      iterator = input.iterator();
+      immutable = immutableFlag;
+      startOffset = totalBytesRead = 0;
+      if (size == 0) {
+        currentByteBuffer = EMPTY_BYTE_BUFFER;
+        currentByteBufferPos = 0;
+        currentByteBufferStartPos = 0;
+        currentByteBufferLimit = 0;
+        currentAddress = 0;
+      } else {
+        tryGetNextByteBuffer();
+      }
+    }
+
+    /** To get the next ByteBuffer from {@code input}, and then update the parameters */
+    private void getNextByteBuffer() throws InvalidProtocolBufferException {
+      if (!iterator.hasNext()) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+      tryGetNextByteBuffer();
+    }
+
+    private void tryGetNextByteBuffer() {
+      currentByteBuffer = iterator.next();
+      totalBytesRead += (int) (currentByteBufferPos - currentByteBufferStartPos);
+      currentByteBufferPos = currentByteBuffer.position();
+      currentByteBufferStartPos = currentByteBufferPos;
+      currentByteBufferLimit = currentByteBuffer.limit();
+      currentAddress = UnsafeUtil.addressOffset(currentByteBuffer);
+      currentByteBufferPos += currentAddress;
+      currentByteBufferStartPos += currentAddress;
+      currentByteBufferLimit += currentAddress;
+    }
+
+    @Override
+    public int readTag() throws IOException {
+      if (isAtEnd()) {
+        lastTag = 0;
+        return 0;
       }
 
-      pos = size - tempPos;
+      lastTag = readRawVarint32();
+      if (WireFormat.getTagFieldNumber(lastTag) == 0) {
+        // If we actually read zero (or any tag number corresponding to field
+        // number zero), that's not a valid tag.
+        throw InvalidProtocolBufferException.invalidTag();
+      }
+      return lastTag;
+    }
+
+    @Override
+    public void checkLastTagWas(final int value) throws InvalidProtocolBufferException {
+      if (lastTag != value) {
+        throw InvalidProtocolBufferException.invalidEndTag();
+      }
+    }
+
+    @Override
+    public int getLastTag() {
+      return lastTag;
+    }
+
+    @Override
+    public boolean skipField(final int tag) throws IOException {
+      switch (WireFormat.getTagWireType(tag)) {
+        case WireFormat.WIRETYPE_VARINT:
+          skipRawVarint();
+          return true;
+        case WireFormat.WIRETYPE_FIXED64:
+          skipRawBytes(FIXED64_SIZE);
+          return true;
+        case WireFormat.WIRETYPE_LENGTH_DELIMITED:
+          skipRawBytes(readRawVarint32());
+          return true;
+        case WireFormat.WIRETYPE_START_GROUP:
+          skipMessage();
+          checkLastTagWas(
+              WireFormat.makeTag(WireFormat.getTagFieldNumber(tag), WireFormat.WIRETYPE_END_GROUP));
+          return true;
+        case WireFormat.WIRETYPE_END_GROUP:
+          return false;
+        case WireFormat.WIRETYPE_FIXED32:
+          skipRawBytes(FIXED32_SIZE);
+          return true;
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
+
+    @Override
+    public boolean skipField(final int tag, final CodedOutputStream output) throws IOException {
+      switch (WireFormat.getTagWireType(tag)) {
+        case WireFormat.WIRETYPE_VARINT:
+          {
+            long value = readInt64();
+            output.writeUInt32NoTag(tag);
+            output.writeUInt64NoTag(value);
+            return true;
+          }
+        case WireFormat.WIRETYPE_FIXED64:
+          {
+            long value = readRawLittleEndian64();
+            output.writeUInt32NoTag(tag);
+            output.writeFixed64NoTag(value);
+            return true;
+          }
+        case WireFormat.WIRETYPE_LENGTH_DELIMITED:
+          {
+            ByteString value = readBytes();
+            output.writeUInt32NoTag(tag);
+            output.writeBytesNoTag(value);
+            return true;
+          }
+        case WireFormat.WIRETYPE_START_GROUP:
+          {
+            output.writeUInt32NoTag(tag);
+            skipMessage(output);
+            int endtag =
+                WireFormat.makeTag(
+                    WireFormat.getTagFieldNumber(tag), WireFormat.WIRETYPE_END_GROUP);
+            checkLastTagWas(endtag);
+            output.writeUInt32NoTag(endtag);
+            return true;
+          }
+        case WireFormat.WIRETYPE_END_GROUP:
+          {
+            return false;
+          }
+        case WireFormat.WIRETYPE_FIXED32:
+          {
+            int value = readRawLittleEndian32();
+            output.writeUInt32NoTag(tag);
+            output.writeFixed32NoTag(value);
+            return true;
+          }
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
+
+    @Override
+    public void skipMessage() throws IOException {
+      while (true) {
+        final int tag = readTag();
+        if (tag == 0 || !skipField(tag)) {
+          return;
+        }
+      }
+    }
+
+    @Override
+    public void skipMessage(CodedOutputStream output) throws IOException {
+      while (true) {
+        final int tag = readTag();
+        if (tag == 0 || !skipField(tag, output)) {
+          return;
+        }
+      }
+    }
+
+    // -----------------------------------------------------------------
+
+    @Override
+    public double readDouble() throws IOException {
+      return Double.longBitsToDouble(readRawLittleEndian64());
+    }
+
+    @Override
+    public float readFloat() throws IOException {
+      return Float.intBitsToFloat(readRawLittleEndian32());
+    }
+
+    @Override
+    public long readUInt64() throws IOException {
+      return readRawVarint64();
+    }
+
+    @Override
+    public long readInt64() throws IOException {
+      return readRawVarint64();
+    }
+
+    @Override
+    public int readInt32() throws IOException {
+      return readRawVarint32();
+    }
+
+    @Override
+    public long readFixed64() throws IOException {
+      return readRawLittleEndian64();
+    }
+
+    @Override
+    public int readFixed32() throws IOException {
+      return readRawLittleEndian32();
+    }
+
+    @Override
+    public boolean readBool() throws IOException {
+      return readRawVarint64() != 0;
+    }
+
+    @Override
+    public String readString() throws IOException {
+      final int size = readRawVarint32();
+      if (size > 0 && size <= currentByteBufferLimit - currentByteBufferPos) {
+        byte[] bytes = new byte[size];
+        UnsafeUtil.copyMemory(currentByteBufferPos, bytes, 0, size);
+        String result = new String(bytes, UTF_8);
+        currentByteBufferPos += size;
+        return result;
+      } else if (size > 0 && size <= remaining()) {
+        // TODO: To use an underlying bytes[] instead of allocating a new bytes[]
+        byte[] bytes = new byte[size];
+        readRawBytesTo(bytes, 0, size);
+        String result = new String(bytes, UTF_8);
+        return result;
+      }
+
+      if (size == 0) {
+        return "";
+      }
+      if (size < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+
+    @Override
+    public String readStringRequireUtf8() throws IOException {
+      final int size = readRawVarint32();
+      if (size > 0 && size <= currentByteBufferLimit - currentByteBufferPos) {
+        final int bufferPos = (int) (currentByteBufferPos - currentByteBufferStartPos);
+        String result = Utf8.decodeUtf8(currentByteBuffer, bufferPos, size);
+        currentByteBufferPos += size;
+        return result;
+      }
+      if (size >= 0 && size <= remaining()) {
+        byte[] bytes = new byte[size];
+        readRawBytesTo(bytes, 0, size);
+        return Utf8.decodeUtf8(bytes, 0, size);
+      }
+
+      if (size == 0) {
+        return "";
+      }
+      if (size <= 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+
+    @Override
+    public void readGroup(
+        final int fieldNumber,
+        final MessageLite.Builder builder,
+        final ExtensionRegistryLite extensionRegistry)
+        throws IOException {
+      checkRecursionLimit();
+      ++recursionDepth;
+      builder.mergeFrom(this, extensionRegistry);
+      checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
+      --recursionDepth;
+    }
+
+    @Override
+    public <T extends MessageLite> T readGroup(
+        final int fieldNumber,
+        final Parser<T> parser,
+        final ExtensionRegistryLite extensionRegistry)
+        throws IOException {
+      checkRecursionLimit();
+      ++recursionDepth;
+      T result = parser.parsePartialFrom(this, extensionRegistry);
+      checkLastTagWas(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
+      --recursionDepth;
+      return result;
+    }
+
+    @Deprecated
+    @Override
+    public void readUnknownGroup(final int fieldNumber, final MessageLite.Builder builder)
+        throws IOException {
+      readGroup(fieldNumber, builder, ExtensionRegistryLite.getEmptyRegistry());
+    }
+
+    @Override
+    public void readMessage(
+        final MessageLite.Builder builder, final ExtensionRegistryLite extensionRegistry)
+        throws IOException {
+      final int length = readRawVarint32();
+      checkRecursionLimit();
+      final int oldLimit = pushLimit(length);
+      ++recursionDepth;
+      builder.mergeFrom(this, extensionRegistry);
+      checkLastTagWas(0);
+      --recursionDepth;
+      if (getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+      popLimit(oldLimit);
+    }
+
+    @Override
+    public <T extends MessageLite> T readMessage(
+        final Parser<T> parser, final ExtensionRegistryLite extensionRegistry) throws IOException {
+      int length = readRawVarint32();
+      checkRecursionLimit();
+      final int oldLimit = pushLimit(length);
+      ++recursionDepth;
+      T result = parser.parsePartialFrom(this, extensionRegistry);
+      checkLastTagWas(0);
+      --recursionDepth;
+      if (getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+      popLimit(oldLimit);
+      return result;
+    }
+
+    @Override
+    public ByteString readBytes() throws IOException {
+      final int size = readRawVarint32();
+      if (size > 0 && size <= currentByteBufferLimit - currentByteBufferPos) {
+        if (immutable && enableAliasing) {
+          final int idx = (int) (currentByteBufferPos - currentAddress);
+          final ByteString result = ByteString.wrap(slice(idx, idx + size));
+          currentByteBufferPos += size;
+          return result;
+        } else {
+          byte[] bytes = new byte[size];
+          UnsafeUtil.copyMemory(currentByteBufferPos, bytes, 0, size);
+          currentByteBufferPos += size;
+          return ByteString.wrap(bytes);
+        }
+      } else if (size > 0 && size <= remaining()) {
+        if (immutable && enableAliasing) {
+          ArrayList<ByteString> byteStrings = new ArrayList<>();
+          int l = size;
+          while (l > 0) {
+            if (currentRemaining() == 0) {
+              getNextByteBuffer();
+            }
+            int bytesToCopy = Math.min(l, (int) currentRemaining());
+            int idx = (int) (currentByteBufferPos - currentAddress);
+            byteStrings.add(ByteString.wrap(slice(idx, idx + bytesToCopy)));
+            l -= bytesToCopy;
+            currentByteBufferPos += bytesToCopy;
+          }
+          return ByteString.copyFrom(byteStrings);
+        } else {
+          byte[] temp = new byte[size];
+          readRawBytesTo(temp, 0, size);
+          return ByteString.wrap(temp);
+        }
+      }
+
+      if (size == 0) {
+        return ByteString.EMPTY;
+      }
+      if (size < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+
+    @Override
+    public byte[] readByteArray() throws IOException {
+      return readRawBytes(readRawVarint32());
+    }
+
+    @Override
+    public ByteBuffer readByteBuffer() throws IOException {
+      final int size = readRawVarint32();
+      if (size > 0 && size <= currentRemaining()) {
+        if (!immutable && enableAliasing) {
+          currentByteBufferPos += size;
+          return slice(
+              (int) (currentByteBufferPos - currentAddress - size),
+              (int) (currentByteBufferPos - currentAddress));
+        } else {
+          byte[] bytes = new byte[size];
+          UnsafeUtil.copyMemory(currentByteBufferPos, bytes, 0, size);
+          currentByteBufferPos += size;
+          return ByteBuffer.wrap(bytes);
+        }
+      } else if (size > 0 && size <= remaining()) {
+        byte[] temp = new byte[size];
+        readRawBytesTo(temp, 0, size);
+        return ByteBuffer.wrap(temp);
+      }
+
+      if (size == 0) {
+        return EMPTY_BYTE_BUFFER;
+      }
+      if (size < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+
+    @Override
+    public int readUInt32() throws IOException {
+      return readRawVarint32();
+    }
+
+    @Override
+    public int readEnum() throws IOException {
+      return readRawVarint32();
+    }
+
+    @Override
+    public int readSFixed32() throws IOException {
+      return readRawLittleEndian32();
+    }
+
+    @Override
+    public long readSFixed64() throws IOException {
+      return readRawLittleEndian64();
+    }
+
+    @Override
+    public int readSInt32() throws IOException {
+      return decodeZigZag32(readRawVarint32());
+    }
+
+    @Override
+    public long readSInt64() throws IOException {
+      return decodeZigZag64(readRawVarint64());
+    }
+
+    @Override
+    public int readRawVarint32() throws IOException {
+      fastpath:
+      {
+        long tempPos = currentByteBufferPos;
+
+        if (currentByteBufferLimit == currentByteBufferPos) {
+          break fastpath;
+        }
+
+        int x;
+        if ((x = UnsafeUtil.getByte(tempPos++)) >= 0) {
+          currentByteBufferPos++;
+          return x;
+        } else if (currentByteBufferLimit - currentByteBufferPos < 10) {
+          break fastpath;
+        } else if ((x ^= (UnsafeUtil.getByte(tempPos++) << 7)) < 0) {
+          x ^= (~0 << 7);
+        } else if ((x ^= (UnsafeUtil.getByte(tempPos++) << 14)) >= 0) {
+          x ^= (~0 << 7) ^ (~0 << 14);
+        } else if ((x ^= (UnsafeUtil.getByte(tempPos++) << 21)) < 0) {
+          x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21);
+        } else {
+          int y = UnsafeUtil.getByte(tempPos++);
+          x ^= y << 28;
+          x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21) ^ (~0 << 28);
+          if (y < 0
+              && UnsafeUtil.getByte(tempPos++) < 0
+              && UnsafeUtil.getByte(tempPos++) < 0
+              && UnsafeUtil.getByte(tempPos++) < 0
+              && UnsafeUtil.getByte(tempPos++) < 0
+              && UnsafeUtil.getByte(tempPos++) < 0) {
+            break fastpath; // Will throw malformedVarint()
+          }
+        }
+        currentByteBufferPos = tempPos;
+        return x;
+      }
+      return (int) readRawVarint64SlowPath();
+    }
+
+    @Override
+    public long readRawVarint64() throws IOException {
+      fastpath:
+      {
+        long tempPos = currentByteBufferPos;
+
+        if (currentByteBufferLimit == currentByteBufferPos) {
+          break fastpath;
+        }
+
+        long x;
+        int y;
+        if ((y = UnsafeUtil.getByte(tempPos++)) >= 0) {
+          currentByteBufferPos++;
+          return y;
+        } else if (currentByteBufferLimit - currentByteBufferPos < 10) {
+          break fastpath;
+        } else if ((y ^= (UnsafeUtil.getByte(tempPos++) << 7)) < 0) {
+          x = y ^ (~0 << 7);
+        } else if ((y ^= (UnsafeUtil.getByte(tempPos++) << 14)) >= 0) {
+          x = y ^ ((~0 << 7) ^ (~0 << 14));
+        } else if ((y ^= (UnsafeUtil.getByte(tempPos++) << 21)) < 0) {
+          x = y ^ ((~0 << 7) ^ (~0 << 14) ^ (~0 << 21));
+        } else if ((x = y ^ ((long) UnsafeUtil.getByte(tempPos++) << 28)) >= 0L) {
+          x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28);
+        } else if ((x ^= ((long) UnsafeUtil.getByte(tempPos++) << 35)) < 0L) {
+          x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28) ^ (~0L << 35);
+        } else if ((x ^= ((long) UnsafeUtil.getByte(tempPos++) << 42)) >= 0L) {
+          x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28) ^ (~0L << 35) ^ (~0L << 42);
+        } else if ((x ^= ((long) UnsafeUtil.getByte(tempPos++) << 49)) < 0L) {
+          x ^=
+              (~0L << 7)
+                  ^ (~0L << 14)
+                  ^ (~0L << 21)
+                  ^ (~0L << 28)
+                  ^ (~0L << 35)
+                  ^ (~0L << 42)
+                  ^ (~0L << 49);
+        } else {
+          x ^= ((long) UnsafeUtil.getByte(tempPos++) << 56);
+          x ^=
+              (~0L << 7)
+                  ^ (~0L << 14)
+                  ^ (~0L << 21)
+                  ^ (~0L << 28)
+                  ^ (~0L << 35)
+                  ^ (~0L << 42)
+                  ^ (~0L << 49)
+                  ^ (~0L << 56);
+          if (x < 0L) {
+            if (UnsafeUtil.getByte(tempPos++) < 0L) {
+              break fastpath; // Will throw malformedVarint()
+            }
+          }
+        }
+        currentByteBufferPos = tempPos;
+        return x;
+      }
+      return readRawVarint64SlowPath();
+    }
+
+    @Override
+    long readRawVarint64SlowPath() throws IOException {
+      long result = 0;
+      for (int shift = 0; shift < 64; shift += 7) {
+        final byte b = readRawByte();
+        result |= (long) (b & 0x7F) << shift;
+        if ((b & 0x80) == 0) {
+          return result;
+        }
+      }
+      throw InvalidProtocolBufferException.malformedVarint();
+    }
+
+    @Override
+    public int readRawLittleEndian32() throws IOException {
+      if (currentRemaining() >= FIXED32_SIZE) {
+        long tempPos = currentByteBufferPos;
+        currentByteBufferPos += FIXED32_SIZE;
+        return ((UnsafeUtil.getByte(tempPos) & 0xff)
+            | ((UnsafeUtil.getByte(tempPos + 1) & 0xff) << 8)
+            | ((UnsafeUtil.getByte(tempPos + 2) & 0xff) << 16)
+            | ((UnsafeUtil.getByte(tempPos + 3) & 0xff) << 24));
+      }
+      return ((readRawByte() & 0xff)
+          | ((readRawByte() & 0xff) << 8)
+          | ((readRawByte() & 0xff) << 16)
+          | ((readRawByte() & 0xff) << 24));
+    }
+
+    @Override
+    public long readRawLittleEndian64() throws IOException {
+      if (currentRemaining() >= FIXED64_SIZE) {
+        long tempPos = currentByteBufferPos;
+        currentByteBufferPos += FIXED64_SIZE;
+        return ((UnsafeUtil.getByte(tempPos) & 0xffL)
+            | ((UnsafeUtil.getByte(tempPos + 1) & 0xffL) << 8)
+            | ((UnsafeUtil.getByte(tempPos + 2) & 0xffL) << 16)
+            | ((UnsafeUtil.getByte(tempPos + 3) & 0xffL) << 24)
+            | ((UnsafeUtil.getByte(tempPos + 4) & 0xffL) << 32)
+            | ((UnsafeUtil.getByte(tempPos + 5) & 0xffL) << 40)
+            | ((UnsafeUtil.getByte(tempPos + 6) & 0xffL) << 48)
+            | ((UnsafeUtil.getByte(tempPos + 7) & 0xffL) << 56));
+      }
+      return ((readRawByte() & 0xffL)
+          | ((readRawByte() & 0xffL) << 8)
+          | ((readRawByte() & 0xffL) << 16)
+          | ((readRawByte() & 0xffL) << 24)
+          | ((readRawByte() & 0xffL) << 32)
+          | ((readRawByte() & 0xffL) << 40)
+          | ((readRawByte() & 0xffL) << 48)
+          | ((readRawByte() & 0xffL) << 56));
+    }
+
+    @Override
+    public void enableAliasing(boolean enabled) {
+      this.enableAliasing = enabled;
+    }
+
+    @Override
+    public void resetSizeCounter() {
+      startOffset = (int) (totalBytesRead + currentByteBufferPos - currentByteBufferStartPos);
+    }
+
+    @Override
+    public int pushLimit(int byteLimit) throws InvalidProtocolBufferException {
+      if (byteLimit < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
+      byteLimit += getTotalBytesRead();
+      final int oldLimit = currentLimit;
+      if (byteLimit > oldLimit) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+      currentLimit = byteLimit;
+
+      recomputeBufferSizeAfterLimit();
+
+      return oldLimit;
+    }
+
+    private void recomputeBufferSizeAfterLimit() {
+      totalBufferSize += bufferSizeAfterCurrentLimit;
+      final int bufferEnd = totalBufferSize - startOffset;
+      if (bufferEnd > currentLimit) {
+        // Limit is in current buffer.
+        bufferSizeAfterCurrentLimit = bufferEnd - currentLimit;
+        totalBufferSize -= bufferSizeAfterCurrentLimit;
+      } else {
+        bufferSizeAfterCurrentLimit = 0;
+      }
+    }
+
+    @Override
+    public void popLimit(final int oldLimit) {
+      currentLimit = oldLimit;
+      recomputeBufferSizeAfterLimit();
+    }
+
+    @Override
+    public int getBytesUntilLimit() {
+      if (currentLimit == Integer.MAX_VALUE) {
+        return -1;
+      }
+
+      return currentLimit - getTotalBytesRead();
+    }
+
+    @Override
+    public boolean isAtEnd() throws IOException {
+      return totalBytesRead + currentByteBufferPos - currentByteBufferStartPos == totalBufferSize;
+    }
+
+    @Override
+    public int getTotalBytesRead() {
+      return (int)
+          (totalBytesRead - startOffset + currentByteBufferPos - currentByteBufferStartPos);
+    }
+
+    @Override
+    public byte readRawByte() throws IOException {
+      if (currentRemaining() == 0) {
+        getNextByteBuffer();
+      }
+      return UnsafeUtil.getByte(currentByteBufferPos++);
+    }
+
+    @Override
+    public byte[] readRawBytes(final int length) throws IOException {
+      if (length >= 0 && length <= currentRemaining()) {
+        byte[] bytes = new byte[length];
+        UnsafeUtil.copyMemory(currentByteBufferPos, bytes, 0, length);
+        currentByteBufferPos += length;
+        return bytes;
+      }
+      if (length >= 0 && length <= remaining()) {
+        byte[] bytes = new byte[length];
+        readRawBytesTo(bytes, 0, length);
+        return bytes;
+      }
+
+      if (length <= 0) {
+        if (length == 0) {
+          return EMPTY_BYTE_ARRAY;
+        } else {
+          throw InvalidProtocolBufferException.negativeSize();
+        }
+      }
+
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+
+    /**
+     * Try to get raw bytes from {@code input} with the size of {@code length} and copy to {@code
+     * bytes} array. If the size is bigger than the number of remaining bytes in the input, then
+     * throw {@code truncatedMessage} exception.
+     */
+    private void readRawBytesTo(byte[] bytes, int offset, final int length) throws IOException {
+      if (length >= 0 && length <= remaining()) {
+        int l = length;
+        while (l > 0) {
+          if (currentRemaining() == 0) {
+            getNextByteBuffer();
+          }
+          int bytesToCopy = Math.min(l, (int) currentRemaining());
+          UnsafeUtil.copyMemory(currentByteBufferPos, bytes, length - l + offset, bytesToCopy);
+          l -= bytesToCopy;
+          currentByteBufferPos += bytesToCopy;
+        }
+        return;
+      }
+
+      if (length <= 0) {
+        if (length == 0) {
+          return;
+        } else {
+          throw InvalidProtocolBufferException.negativeSize();
+        }
+      }
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+
+    @Override
+    public void skipRawBytes(final int length) throws IOException {
+      if (length >= 0
+          && length
+              <= (totalBufferSize
+                  - totalBytesRead
+                  - currentByteBufferPos
+                  + currentByteBufferStartPos)) {
+        // We have all the bytes we need already.
+        int l = length;
+        while (l > 0) {
+          if (currentRemaining() == 0) {
+            getNextByteBuffer();
+          }
+          int rl = Math.min(l, (int) currentRemaining());
+          l -= rl;
+          currentByteBufferPos += rl;
+        }
+        return;
+      }
+
+      if (length < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+
+    // TODO: optimize to fastpath
+    private void skipRawVarint() throws IOException {
+      for (int i = 0; i < MAX_VARINT_SIZE; i++) {
+        if (readRawByte() >= 0) {
+          return;
+        }
+      }
+      throw InvalidProtocolBufferException.malformedVarint();
+    }
+
+    /**
+     * Try to get the number of remaining bytes in {@code input}.
+     *
+     * @return the number of remaining bytes in {@code input}.
+     */
+    private int remaining() {
+      return (int)
+          (totalBufferSize - totalBytesRead - currentByteBufferPos + currentByteBufferStartPos);
+    }
+
+    /**
+     * Try to get the number of remaining bytes in {@code currentByteBuffer}.
+     *
+     * @return the number of remaining bytes in {@code currentByteBuffer}
+     */
+    private long currentRemaining() {
+      return (currentByteBufferLimit - currentByteBufferPos);
+    }
+
+    private ByteBuffer slice(int begin, int end) throws IOException {
+      int prevPos = currentByteBuffer.position();
+      int prevLimit = currentByteBuffer.limit();
+      // View ByteBuffer as Buffer to avoid cross-Java version issues.
+      // See https://issues.apache.org/jira/browse/MRESOLVER-85
+      Buffer asBuffer = currentByteBuffer;
+      try {
+        asBuffer.position(begin);
+        asBuffer.limit(end);
+        return currentByteBuffer.slice();
+      } catch (IllegalArgumentException e) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      } finally {
+        asBuffer.position(prevPos);
+        asBuffer.limit(prevLimit);
+      }
     }
   }
 }

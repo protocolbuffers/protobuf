@@ -1,0 +1,5 @@
+googleapis-common-protos==1.56.1
+jinja2==3.0.0
+sphinx==3.0.4
+sphinx_rtd_theme==0.4.3
+sphinxcontrib-napoleon==0.7

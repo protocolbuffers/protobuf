@@ -4,104 +4,13 @@
 
 namespace Google\Protobuf\Internal;
 
-use Google\Protobuf\Internal\GPBType;
-use Google\Protobuf\Internal\GPBWire;
-use Google\Protobuf\Internal\RepeatedField;
-use Google\Protobuf\Internal\InputStream;
-use Google\Protobuf\Internal\GPBUtil;
-
-/**
- * Range of reserved tag numbers. Reserved tag numbers may not be used by
- * fields or extension ranges in the same message. Reserved ranges may
- * not overlap.
- *
- * Generated from protobuf message <code>google.protobuf.DescriptorProto.ReservedRange</code>
- */
-class DescriptorProto_ReservedRange extends \Google\Protobuf\Internal\Message
-{
+if (false) {
     /**
-     * Inclusive.
-     *
-     * Generated from protobuf field <code>optional int32 start = 1;</code>
+     * This class is deprecated. Use Google\Protobuf\Internal\DescriptorProto\ReservedRange instead.
+     * @deprecated
      */
-    private $start = 0;
-    private $has_start = false;
-    /**
-     * Exclusive.
-     *
-     * Generated from protobuf field <code>optional int32 end = 2;</code>
-     */
-    private $end = 0;
-    private $has_end = false;
-
-    public function __construct() {
-        \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
-        parent::__construct();
-    }
-
-    /**
-     * Inclusive.
-     *
-     * Generated from protobuf field <code>optional int32 start = 1;</code>
-     * @return int
-     */
-    public function getStart()
-    {
-        return $this->start;
-    }
-
-    /**
-     * Inclusive.
-     *
-     * Generated from protobuf field <code>optional int32 start = 1;</code>
-     * @param int $var
-     * @return $this
-     */
-    public function setStart($var)
-    {
-        GPBUtil::checkInt32($var);
-        $this->start = $var;
-        $this->has_start = true;
-
-        return $this;
-    }
-
-    public function hasStart()
-    {
-        return $this->has_start;
-    }
-
-    /**
-     * Exclusive.
-     *
-     * Generated from protobuf field <code>optional int32 end = 2;</code>
-     * @return int
-     */
-    public function getEnd()
-    {
-        return $this->end;
-    }
-
-    /**
-     * Exclusive.
-     *
-     * Generated from protobuf field <code>optional int32 end = 2;</code>
-     * @param int $var
-     * @return $this
-     */
-    public function setEnd($var)
-    {
-        GPBUtil::checkInt32($var);
-        $this->end = $var;
-        $this->has_end = true;
-
-        return $this;
-    }
-
-    public function hasEnd()
-    {
-        return $this->has_end;
-    }
-
+    class DescriptorProto_ReservedRange {}
 }
+class_exists(DescriptorProto\ReservedRange::class);
+@trigger_error('Google\Protobuf\Internal\DescriptorProto_ReservedRange is deprecated and will be removed in the next major release. Use Google\Protobuf\Internal\DescriptorProto\ReservedRange instead', E_USER_DEPRECATED);
 

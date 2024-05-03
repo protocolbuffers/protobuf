@@ -1,0 +1,24 @@
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+
+package(default_visibility = ["//java:__subpackages__"])
+
+pkg_files(
+    name = "dist_files",
+    srcs = [
+        "BUILD.bazel",
+        "JavaVersionTest.java",
+        "testing.bzl",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//java:__pkg__"],
+)
+
+java_test(
+    name = "java_version",
+    srcs = ["JavaVersionTest.java"],
+    test_class = "JavaVersionTest",
+    deps = [
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+    ],
+)

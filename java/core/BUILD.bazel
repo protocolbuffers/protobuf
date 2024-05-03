@@ -1,0 +1,540 @@
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@rules_java//java:defs.bzl", "java_lite_proto_library", "java_proto_library")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
+load("//build_defs:java_opts.bzl", "protobuf_java_export", "protobuf_java_library", "protobuf_versioned_java_library")
+load("//conformance:defs.bzl", "conformance_test")
+load("//:protobuf.bzl", "internal_gen_well_known_protos_java")
+load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
+load("//java/internal:testing.bzl", "junit_tests")
+
+LITE_SRCS = [
+    # Keep in sync with `//java/lite:pom.xml`.
+    "src/main/java/com/google/protobuf/AbstractMessageLite.java",
+    "src/main/java/com/google/protobuf/AbstractParser.java",
+    "src/main/java/com/google/protobuf/AbstractProtobufList.java",
+    "src/main/java/com/google/protobuf/AllocatedBuffer.java",
+    "src/main/java/com/google/protobuf/Android.java",
+    "src/main/java/com/google/protobuf/ArrayDecoders.java",
+    "src/main/java/com/google/protobuf/BinaryReader.java",
+    "src/main/java/com/google/protobuf/BinaryWriter.java",
+    "src/main/java/com/google/protobuf/BooleanArrayList.java",
+    "src/main/java/com/google/protobuf/BufferAllocator.java",
+    "src/main/java/com/google/protobuf/ByteBufferWriter.java",
+    "src/main/java/com/google/protobuf/ByteOutput.java",
+    "src/main/java/com/google/protobuf/ByteString.java",
+    "src/main/java/com/google/protobuf/CanIgnoreReturnValue.java",
+    "src/main/java/com/google/protobuf/CheckReturnValue.java",
+    "src/main/java/com/google/protobuf/CodedInputStream.java",
+    "src/main/java/com/google/protobuf/CodedInputStreamReader.java",
+    "src/main/java/com/google/protobuf/CodedOutputStream.java",
+    "src/main/java/com/google/protobuf/CodedOutputStreamWriter.java",
+    "src/main/java/com/google/protobuf/CompileTimeConstant.java",
+    "src/main/java/com/google/protobuf/DoubleArrayList.java",
+    "src/main/java/com/google/protobuf/ExperimentalApi.java",
+    "src/main/java/com/google/protobuf/ExtensionLite.java",
+    "src/main/java/com/google/protobuf/ExtensionRegistryFactory.java",
+    "src/main/java/com/google/protobuf/ExtensionRegistryLite.java",
+    "src/main/java/com/google/protobuf/ExtensionSchema.java",
+    "src/main/java/com/google/protobuf/ExtensionSchemaLite.java",
+    "src/main/java/com/google/protobuf/ExtensionSchemas.java",
+    "src/main/java/com/google/protobuf/FieldInfo.java",
+    "src/main/java/com/google/protobuf/FieldSet.java",
+    "src/main/java/com/google/protobuf/FieldType.java",
+    "src/main/java/com/google/protobuf/FloatArrayList.java",
+    "src/main/java/com/google/protobuf/GeneratedMessageInfoFactory.java",
+    "src/main/java/com/google/protobuf/GeneratedMessageLite.java",
+    "src/main/java/com/google/protobuf/InlineMe.java",
+    "src/main/java/com/google/protobuf/IntArrayList.java",
+    "src/main/java/com/google/protobuf/Internal.java",
+    "src/main/java/com/google/protobuf/InvalidProtocolBufferException.java",
+    "src/main/java/com/google/protobuf/IterableByteBufferInputStream.java",
+    "src/main/java/com/google/protobuf/Java8Compatibility.java",
+    "src/main/java/com/google/protobuf/JavaType.java",
+    "src/main/java/com/google/protobuf/LazyField.java",
+    "src/main/java/com/google/protobuf/LazyFieldLite.java",
+    "src/main/java/com/google/protobuf/LazyStringArrayList.java",
+    "src/main/java/com/google/protobuf/LazyStringList.java",
+    "src/main/java/com/google/protobuf/ListFieldSchema.java",
+    "src/main/java/com/google/protobuf/LongArrayList.java",
+    "src/main/java/com/google/protobuf/ManifestSchemaFactory.java",
+    "src/main/java/com/google/protobuf/MapEntryLite.java",
+    "src/main/java/com/google/protobuf/MapFieldLite.java",
+    "src/main/java/com/google/protobuf/MapFieldSchema.java",
+    "src/main/java/com/google/protobuf/MapFieldSchemaLite.java",
+    "src/main/java/com/google/protobuf/MapFieldSchemas.java",
+    "src/main/java/com/google/protobuf/MessageInfo.java",
+    "src/main/java/com/google/protobuf/MessageInfoFactory.java",
+    "src/main/java/com/google/protobuf/MessageLite.java",
+    "src/main/java/com/google/protobuf/MessageLiteOrBuilder.java",
+    "src/main/java/com/google/protobuf/MessageLiteToString.java",
+    "src/main/java/com/google/protobuf/MessageSchema.java",
+    "src/main/java/com/google/protobuf/MessageSetSchema.java",
+    "src/main/java/com/google/protobuf/MutabilityOracle.java",
+    "src/main/java/com/google/protobuf/NewInstanceSchema.java",
+    "src/main/java/com/google/protobuf/NewInstanceSchemaLite.java",
+    "src/main/java/com/google/protobuf/NewInstanceSchemas.java",
+    "src/main/java/com/google/protobuf/NioByteString.java",
+    "src/main/java/com/google/protobuf/OneofInfo.java",
+    "src/main/java/com/google/protobuf/Parser.java",
+    "src/main/java/com/google/protobuf/PrimitiveNonBoxingCollection.java",
+    "src/main/java/com/google/protobuf/ProtoSyntax.java",
+    "src/main/java/com/google/protobuf/Protobuf.java",
+    "src/main/java/com/google/protobuf/ProtobufArrayList.java",
+    "src/main/java/com/google/protobuf/ProtocolStringList.java",
+    "src/main/java/com/google/protobuf/RawMessageInfo.java",
+    "src/main/java/com/google/protobuf/Reader.java",
+    "src/main/java/com/google/protobuf/RopeByteString.java",
+    "src/main/java/com/google/protobuf/Schema.java",
+    "src/main/java/com/google/protobuf/SchemaFactory.java",
+    "src/main/java/com/google/protobuf/SchemaUtil.java",
+    "src/main/java/com/google/protobuf/SmallSortedMap.java",
+    "src/main/java/com/google/protobuf/StructuralMessageInfo.java",
+    "src/main/java/com/google/protobuf/TextFormatEscaper.java",
+    "src/main/java/com/google/protobuf/UninitializedMessageException.java",
+    "src/main/java/com/google/protobuf/UnknownFieldSchema.java",
+    "src/main/java/com/google/protobuf/UnknownFieldSetLite.java",
+    "src/main/java/com/google/protobuf/UnknownFieldSetLiteSchema.java",
+    "src/main/java/com/google/protobuf/UnmodifiableLazyStringList.java",
+    "src/main/java/com/google/protobuf/UnsafeByteOperations.java",
+    "src/main/java/com/google/protobuf/UnsafeUtil.java",
+    "src/main/java/com/google/protobuf/Utf8.java",
+    "src/main/java/com/google/protobuf/WireFormat.java",
+    "src/main/java/com/google/protobuf/Writer.java",
+]
+
+internal_gen_well_known_protos_java(
+    name = "gen_well_known_protos_javalite",
+    javalite = True,
+    deps = [
+        "//:any_proto",
+        "//:api_proto",
+        "//:duration_proto",
+        "//:empty_proto",
+        "//:field_mask_proto",
+        "//:source_context_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:type_proto",
+        "//:wrappers_proto",
+    ],
+)
+
+# Should be used as `//java/lite`.
+java_library(
+    name = "lite",
+    srcs = LITE_SRCS + [
+        ":gen_well_known_protos_javalite",
+    ],
+    visibility = [
+        "//java/lite:__pkg__",
+    ],
+)
+
+protobuf_versioned_java_library(
+    name = "lite_bundle",
+    srcs = LITE_SRCS + [
+        ":gen_well_known_protos_javalite",
+    ],
+    bundle_description = "Lite version of Protocol Buffers library. This " +
+                         "version is optimized for code size, but does not " +
+                         "guarantee API/ABI stability.",
+    bundle_name = "Protocol Buffers [Lite]",
+    bundle_symbolic_name = "com.google.protobuf",
+    visibility = [
+        "//java/lite:__pkg__",
+    ],
+)
+
+# Bazel users, don't depend on this target, use //java/lite.
+protobuf_java_export(
+    name = "lite_mvn",
+    maven_coordinates = "com.google.protobuf:protobuf-javalite:%s" % PROTOBUF_JAVA_VERSION,
+    pom_template = "//java/lite:pom_template.xml",
+    resources = [
+        "//:lite_well_known_protos",
+    ],
+    tags = ["manual"],
+    runtime_deps = [":lite_bundle"],
+)
+
+protobuf_java_library(
+    name = "lite_runtime_only",
+    srcs = LITE_SRCS,
+)
+
+proto_library(
+    name = "java_features_proto",
+    srcs = ["src/main/java/com/google/protobuf/java_features.proto"],
+    visibility = ["//pkg:__pkg__"],
+    deps = ["//:descriptor_proto"],
+)
+
+internal_gen_well_known_protos_java(
+    name = "gen_well_known_protos_java",
+    deps = [
+        "//:any_proto",
+        "//:api_proto",
+        "//:compiler_plugin_proto",
+        "//:descriptor_proto",
+        "//:duration_proto",
+        "//:empty_proto",
+        "//:field_mask_proto",
+        "//:source_context_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:type_proto",
+        "//:wrappers_proto",
+    ],
+)
+
+java_library(
+    name = "core",
+    srcs = glob(
+        [
+            "src/main/java/com/google/protobuf/*.java",
+        ],
+        exclude = LITE_SRCS,
+    ) + [
+        ":gen_well_known_protos_java",
+    ],
+    visibility = ["//visibility:public"],
+    exports = [
+        ":lite_runtime_only",
+    ],
+    deps = [
+        ":lite_runtime_only",
+    ],
+)
+
+protobuf_versioned_java_library(
+    name = "core_bundle",
+    srcs = glob(
+        [
+            "src/main/java/com/google/protobuf/*.java",
+        ],
+        exclude = LITE_SRCS,
+    ) + [
+        ":gen_well_known_protos_java",
+    ],
+    bundle_description = "Core Protocol Buffers library. Protocol Buffers " +
+                         "are a way of encoding structured data in an " +
+                         "efficient yet extensible format.",
+    bundle_name = "Protocol Buffers [Core]",
+    bundle_symbolic_name = "com.google.protobuf",
+    visibility = ["//visibility:public"],
+    exports = [
+        ":lite_runtime_only",
+    ],
+    deps = [
+        ":lite_runtime_only",
+    ],
+)
+
+# Bazel users, don't depend on this target, use :core.
+protobuf_java_export(
+    name = "core_mvn",
+    maven_coordinates = "com.google.protobuf:protobuf-java:%s" % PROTOBUF_JAVA_VERSION,
+    pom_template = "pom_template.xml",
+    resources = [
+        "//:well_known_type_protos",
+        "//src/google/protobuf:descriptor_proto_srcs",
+    ],
+    tags = ["manual"],
+    runtime_deps = [":core_bundle"],
+)
+
+filegroup(
+    name = "release",
+    srcs = [
+        ":core_mvn-docs",
+        ":core_mvn-maven-source",
+        ":core_mvn-pom",
+        ":core_mvn-project",
+        ":lite_mvn-docs",
+        ":lite_mvn-maven-source",
+        ":lite_mvn-pom",
+        ":lite_mvn-project",
+    ],
+    visibility = ["//java:__pkg__"],
+)
+
+proto_lang_toolchain(
+    name = "toolchain",
+    # keep this in sync w/ WELL_KNOWN_PROTO_MAP in //:BUILD
+    blacklisted_protos = [
+        "//:any_proto",
+        "//:api_proto",
+        "//:compiler_plugin_proto",
+        "//:descriptor_proto",
+        "//:duration_proto",
+        "//:empty_proto",
+        "//:field_mask_proto",
+        "//:source_context_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:type_proto",
+        "//:wrappers_proto",
+    ],
+    command_line = "--java_out=$(OUT)",
+    runtime = ":core",
+    visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "java_test_protos",
+    srcs = glob(["src/test/proto/**/*.proto"]),
+    strip_import_prefix = "src/test/proto",
+    deps = [
+        "//:any_proto",
+        "//:descriptor_proto",
+        "//:lite_test_protos",
+        "//:wrappers_proto",
+        "//src/google/protobuf:generic_test_protos",
+    ],
+)
+
+java_proto_library(
+    name = "generic_test_protos_java_proto",
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    deps = ["//src/google/protobuf:generic_test_protos"],
+)
+
+java_proto_library(
+    name = "lite_test_protos_java_proto",
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    deps = ["//:lite_test_protos"],
+)
+
+java_proto_library(
+    name = "java_test_protos_java_proto",
+    deps = [":java_test_protos"],
+)
+
+protobuf_java_library(
+    name = "test_util",
+    srcs = [
+        "src/test/java/com/google/protobuf/TestUtil.java",
+        "src/test/java/com/google/protobuf/TestUtilLite.java",
+    ],
+    visibility = ["//java:__subpackages__"],
+    deps = [
+        ":core",
+        ":generic_test_protos_java_proto",
+        ":java_test_protos_java_proto",
+        ":lite_test_protos_java_proto",
+        "@maven//:com_google_guava_guava",
+        "@maven//:junit_junit",
+    ],
+)
+
+test_suite(
+    name = "tests",
+    tests = [
+        "conformance_test",
+        "core_build_test",
+        "core_tests",
+        "utf8_tests",
+    ],
+)
+
+build_test(
+    name = "core_build_test",
+    targets = [
+        ":core",
+    ],
+)
+
+conformance_test(
+    name = "conformance_test",
+    failure_list = "//conformance:failure_list_java.txt",
+    testee = "//conformance:conformance_java",
+    text_format_failure_list = "//conformance:text_format_failure_list_java.txt",
+)
+
+junit_tests(
+    name = "core_tests",
+    size = "small",
+    srcs = glob(
+        ["src/test/java/**/*.java"],
+        exclude = [
+            "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
+            "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
+            "src/test/java/com/google/protobuf/TestUtil.java",
+            "src/test/java/com/google/protobuf/TestUtilLite.java",
+        ],
+    ),
+    data = ["//src/google/protobuf:testdata"],
+    deps = [
+        ":core",
+        ":generic_test_protos_java_proto",
+        ":java_test_protos_java_proto",
+        ":lite_test_protos_java_proto",
+        ":test_util",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+        "@maven//:org_mockito_mockito_core",
+    ],
+)
+
+# The UTF-8 validation tests are much slower than the other tests, so they get
+# their own test target with a longer timeout.
+junit_tests(
+    name = "utf8_tests",
+    size = "large",
+    srcs = [
+        "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
+        "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
+        "src/test/java/com/google/protobuf/IsValidUtf8TestUtil.java",
+    ],
+    deps = [
+        ":core",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+    ],
+)
+
+java_lite_proto_library(
+    name = "generic_test_protos_java_proto_lite",
+    visibility = [
+        "//java/kotlin-lite:__pkg__",
+        "//java/lite:__pkg__",
+    ],
+    deps = ["//src/google/protobuf:generic_test_protos"],
+)
+
+java_lite_proto_library(
+    name = "lite_test_protos_java_proto_lite",
+    visibility = [
+        "//java/kotlin-lite:__pkg__",
+        "//java/lite:__pkg__",
+    ],
+    deps = ["//:lite_test_protos"],
+)
+
+java_lite_proto_library(
+    name = "java_test_protos_java_proto_lite",
+    visibility = [
+        "//java/lite:__pkg__",
+    ],
+    deps = [":java_test_protos"],
+)
+
+genrule(
+    name = "rewrite_javalite_test_util",
+    srcs = [
+        "//java/lite:lite.awk",
+        "src/test/java/com/google/protobuf/TestUtil.java",
+    ],
+    outs = ["TestUtil.java"],
+    cmd = "awk -f $(location //java/lite:lite.awk) $(location src/test/java/com/google/protobuf/TestUtil.java) > $@",
+)
+
+protobuf_java_library(
+    name = "test_util_lite",
+    srcs = [
+        "src/test/java/com/google/protobuf/TestUtilLite.java",
+        ":rewrite_javalite_test_util",
+    ],
+    visibility = [
+        "//java/kotlin-lite:__pkg__",
+        "//java/lite:__pkg__",
+    ],
+    deps = [
+        ":generic_test_protos_java_proto_lite",
+        ":java_test_protos_java_proto_lite",
+        ":lite_runtime_only",
+        ":lite_test_protos_java_proto_lite",
+        "@maven//:com_google_guava_guava",
+        "@maven//:junit_junit",
+    ],
+)
+
+LITE_TEST_EXCLUSIONS = [
+    # Keep in sync with //java/lite:pom.xml id=copy-test-source-files execution.
+    "src/test/java/com/google/protobuf/AbstractMessageTest.java",
+    "src/test/java/com/google/protobuf/AbstractProto2SchemaTest.java",
+    "src/test/java/com/google/protobuf/AnyTest.java",
+    "src/test/java/com/google/protobuf/CodedInputStreamTest.java",
+    "src/test/java/com/google/protobuf/DeprecatedFieldTest.java",
+    "src/test/java/com/google/protobuf/DescriptorsTest.java",
+    "src/test/java/com/google/protobuf/DiscardUnknownFieldsTest.java",
+    "src/test/java/com/google/protobuf/DynamicMessageTest.java",
+    "src/test/java/com/google/protobuf/ExtensionRegistryFactoryTest.java",
+    "src/test/java/com/google/protobuf/FieldPresenceTest.java",
+    "src/test/java/com/google/protobuf/ForceFieldBuildersPreRun.java",
+    "src/test/java/com/google/protobuf/GeneratedMessageTest.java",
+    "src/test/java/com/google/protobuf/LazyFieldTest.java",
+    "src/test/java/com/google/protobuf/LazyStringEndToEndTest.java",
+    "src/test/java/com/google/protobuf/MapForProto2Test.java",
+    "src/test/java/com/google/protobuf/MapTest.java",
+    "src/test/java/com/google/protobuf/MessageTest.java",
+    "src/test/java/com/google/protobuf/NestedBuildersTest.java",
+    "src/test/java/com/google/protobuf/PackedFieldTest.java",
+    "src/test/java/com/google/protobuf/ParserTest.java",
+    "src/test/java/com/google/protobuf/ParseExceptionsTest.java",
+    "src/test/java/com/google/protobuf/Proto2ExtensionLookupSchemaTest.java",
+    "src/test/java/com/google/protobuf/Proto2SchemaTest.java",
+    "src/test/java/com/google/protobuf/Proto2UnknownEnumValueTest.java",
+    "src/test/java/com/google/protobuf/RepeatedFieldBuilderV3Test.java",
+    "src/test/java/com/google/protobuf/ServiceTest.java",
+    "src/test/java/com/google/protobuf/SingleFieldBuilderV3Test.java",
+    "src/test/java/com/google/protobuf/TestBadIdentifiers.java",
+    "src/test/java/com/google/protobuf/TextFormatParseInfoTreeTest.java",
+    "src/test/java/com/google/protobuf/TextFormatParseLocationTest.java",
+    "src/test/java/com/google/protobuf/TextFormatPerformanceTest.java",
+    "src/test/java/com/google/protobuf/TextFormatTest.java",
+    "src/test/java/com/google/protobuf/TestUtil.java",
+    "src/test/java/com/google/protobuf/TestUtilLite.java",
+    "src/test/java/com/google/protobuf/TypeRegistryTest.java",
+    "src/test/java/com/google/protobuf/UnknownEnumValueTest.java",
+    "src/test/java/com/google/protobuf/UnknownFieldSetLiteTest.java",
+    "src/test/java/com/google/protobuf/UnknownFieldSetPerformanceTest.java",
+    "src/test/java/com/google/protobuf/UnknownFieldSetTest.java",
+    "src/test/java/com/google/protobuf/WellKnownTypesTest.java",
+    "src/test/java/com/google/protobuf/WireFormatTest.java",
+]
+
+junit_tests(
+    name = "lite_tests",
+    size = "large",
+    srcs = glob(
+        ["src/test/java/**/*.java"],
+        exclude = LITE_TEST_EXCLUSIONS,
+    ),
+    data = ["//src/google/protobuf:testdata"],
+    test_prefix = "Lite",
+    deps = [
+        ":generic_test_protos_java_proto_lite",
+        ":java_test_protos_java_proto_lite",
+        ":lite",
+        ":lite_test_protos_java_proto_lite",
+        ":test_util_lite",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+        "@maven//:org_mockito_mockito_core",
+    ],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob([
+        "src/main/java/com/google/protobuf/*.java",
+        "src/test/java/**/*.java",
+        "src/test/proto/**/*.proto",
+    ]) + [
+        "BUILD.bazel",
+        "generate-sources-build.xml",
+        "generate-test-sources-build.xml",
+        "pom.xml",
+        "pom_template.xml",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//java:__pkg__"],
+)

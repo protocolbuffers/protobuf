@@ -4,24 +4,13 @@
 
 namespace Google\Protobuf\Internal;
 
-/**
- * Protobuf enum <code>Google\Protobuf\Internal</code>
- */
-class FieldOptions_CType
-{
+if (false) {
     /**
-     * Default mode.
-     *
-     * Generated from protobuf enum <code>STRING = 0;</code>
+     * This class is deprecated. Use Google\Protobuf\Internal\FieldOptions\CType instead.
+     * @deprecated
      */
-    const STRING = 0;
-    /**
-     * Generated from protobuf enum <code>CORD = 1;</code>
-     */
-    const CORD = 1;
-    /**
-     * Generated from protobuf enum <code>STRING_PIECE = 2;</code>
-     */
-    const STRING_PIECE = 2;
+    class FieldOptions_CType {}
 }
+class_exists(FieldOptions\CType::class);
+@trigger_error('Google\Protobuf\Internal\FieldOptions_CType is deprecated and will be removed in the next major release. Use Google\Protobuf\Internal\FieldOptions\CType instead', E_USER_DEPRECATED);
 

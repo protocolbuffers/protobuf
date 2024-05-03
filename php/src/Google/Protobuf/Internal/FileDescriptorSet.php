@@ -22,11 +22,19 @@ class FileDescriptorSet extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>repeated .google.protobuf.FileDescriptorProto file = 1;</code>
      */
     private $file;
-    private $has_file = false;
 
-    public function __construct() {
+    /**
+     * Constructor.
+     *
+     * @param array $data {
+     *     Optional. Data for populating the Message object.
+     *
+     *     @type array<\Google\Protobuf\Internal\FileDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $file
+     * }
+     */
+    public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
-        parent::__construct();
+        parent::__construct($data);
     }
 
     /**
@@ -40,21 +48,15 @@ class FileDescriptorSet extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FileDescriptorProto file = 1;</code>
-     * @param \Google\Protobuf\Internal\FileDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param array<\Google\Protobuf\Internal\FileDescriptorProto>|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setFile($var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\FileDescriptorProto::class);
         $this->file = $arr;
-        $this->has_file = true;
 
         return $this;
-    }
-
-    public function hasFile()
-    {
-        return $this->has_file;
     }
 
 }

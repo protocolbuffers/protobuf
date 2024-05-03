@@ -1,65 +1,38 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
+import static com.google.protobuf.Internal.checkNotNull;
+
 /**
- * {@code SingleFieldBuilder} implements a structure that a protocol
- * message uses to hold a single field of another protocol message. It supports
- * the classical use case of setting an immutable {@link Message} as the value
- * of the field and is highly optimized around this.
+ * {@code SingleFieldBuilder} implements a structure that a protocol message uses to hold a single
+ * field of another protocol message. It supports the classical use case of setting an immutable
+ * {@link Message} as the value of the field and is highly optimized around this.
+ *
+ * <p>It also supports the additional use case of setting a {@link Message.Builder} as the field and
+ * deferring conversion of that {@code Builder} to an immutable {@code Message}. In this way, it's
+ * possible to maintain a tree of {@code Builder}'s that acts as a fully read/write data structure.
  * <br>
- * It also supports the additional use case of setting a {@link Message.Builder}
- * as the field and deferring conversion of that {@code Builder}
- * to an immutable {@code Message}. In this way, it's possible to maintain
- * a tree of {@code Builder}'s that acts as a fully read/write data
- * structure.
- * <br>
- * Logically, one can think of a tree of builders as converting the entire tree
- * to messages when build is called on the root or when any method is called
- * that desires a Message instead of a Builder. In terms of the implementation,
- * the {@code SingleFieldBuilder} and {@code RepeatedFieldBuilder}
- * classes cache messages that were created so that messages only need to be
- * created when some change occurred in its builder or a builder for one of its
- * descendants.
+ * Logically, one can think of a tree of builders as converting the entire tree to messages when
+ * build is called on the root or when any method is called that desires a Message instead of a
+ * Builder. In terms of the implementation, the {@code SingleFieldBuilder} and {@code
+ * RepeatedFieldBuilder} classes cache messages that were created so that messages only need to be
+ * created when some change occurred in its builder or a builder for one of its descendants.
  *
  * @param <MType> the type of message for the field
  * @param <BType> the type of builder for the field
  * @param <IType> the common interface for the message and the builder
- *
  * @author jonp@google.com (Jon Perlow)
  */
-public class SingleFieldBuilder
-    <MType extends GeneratedMessage,
-     BType extends GeneratedMessage.Builder,
-     IType extends MessageOrBuilder>
+public class SingleFieldBuilder<
+        MType extends GeneratedMessage,
+        BType extends GeneratedMessage.Builder,
+        IType extends MessageOrBuilder>
     implements GeneratedMessage.BuilderParent {
 
   // Parent to send changes to.
@@ -80,14 +53,8 @@ public class SingleFieldBuilder
   // to dispatch dirty invalidations. See GeneratedMessage.BuilderListener.
   private boolean isClean;
 
-  public SingleFieldBuilder(
-      MType message,
-      GeneratedMessage.BuilderParent parent,
-      boolean isClean) {
-    if (message == null) {
-      throw new NullPointerException();
-    }
-    this.message = message;
+  public SingleFieldBuilder(MType message, GeneratedMessage.BuilderParent parent, boolean isClean) {
+    this.message = checkNotNull(message);
     this.parent = parent;
     this.isClean = isClean;
   }
@@ -98,10 +65,9 @@ public class SingleFieldBuilder
   }
 
   /**
-   * Get the message for the field. If the message is currently stored
-   * as a {@code Builder}, it is converted to a {@code Message} by
-   * calling {@link Message.Builder#buildPartial} on it. If no message has
-   * been set, returns the default instance of the message.
+   * Get the message for the field. If the message is currently stored as a {@code Builder}, it is
+   * converted to a {@code Message} by calling {@link Message.Builder#buildPartial} on it. If no
+   * message has been set, returns the default instance of the message.
    *
    * @return the message for the field
    */
@@ -127,8 +93,8 @@ public class SingleFieldBuilder
   }
 
   /**
-   * Gets a builder for the field. If no builder has been created yet, a
-   * builder is created on demand by calling {@link Message#toBuilder}.
+   * Gets a builder for the field. If no builder has been created yet, a builder is created on
+   * demand by calling {@link Message#toBuilder}.
    *
    * @return The builder for the field
    */
@@ -147,32 +113,29 @@ public class SingleFieldBuilder
   }
 
   /**
-   * Gets the base class interface for the field. This may either be a builder
-   * or a message. It will return whatever is more efficient.
+   * Gets the base class interface for the field. This may either be a builder or a message. It will
+   * return whatever is more efficient.
    *
    * @return the message or builder for the field as the base class interface
    */
   @SuppressWarnings("unchecked")
   public IType getMessageOrBuilder() {
     if (builder != null) {
-      return  (IType) builder;
+      return (IType) builder;
     } else {
       return (IType) message;
     }
   }
 
   /**
-   * Sets a  message for the field replacing any existing value.
+   * Sets a message for the field replacing any existing value.
    *
    * @param message the message to set
    * @return the builder
    */
-  public SingleFieldBuilder<MType, BType, IType> setMessage(
-      MType message) {
-    if (message == null) {
-      throw new NullPointerException();
-    }
-    this.message = message;
+  @CanIgnoreReturnValue
+  public SingleFieldBuilder<MType, BType, IType> setMessage(MType message) {
+    this.message = checkNotNull(message);
     if (builder != null) {
       builder.dispose();
       builder = null;
@@ -187,8 +150,8 @@ public class SingleFieldBuilder
    * @param value the value to merge from
    * @return the builder
    */
-  public SingleFieldBuilder<MType, BType, IType> mergeFrom(
-      MType value) {
+  @CanIgnoreReturnValue
+  public SingleFieldBuilder<MType, BType, IType> mergeFrom(MType value) {
     if (builder == null && message == message.getDefaultInstanceForType()) {
       message = value;
     } else {
@@ -204,21 +167,27 @@ public class SingleFieldBuilder
    * @return the builder
    */
   @SuppressWarnings("unchecked")
+  @CanIgnoreReturnValue
   public SingleFieldBuilder<MType, BType, IType> clear() {
-    message = (MType) (message != null ?
-        message.getDefaultInstanceForType() :
-        builder.getDefaultInstanceForType());
+    message =
+        (MType)
+            (message != null
+                ? message.getDefaultInstanceForType()
+                : builder.getDefaultInstanceForType());
     if (builder != null) {
       builder.dispose();
       builder = null;
     }
     onChanged();
+    // After clearing, parent is dirty, but this field builder is now clean and any changes should
+    // trickle up.
+    isClean = true;
     return this;
   }
 
   /**
-   * Called when a the builder or one of its nested children has changed
-   * and any parent should be notified of its invalidation.
+   * Called when a the builder or one of its nested children has changed and any parent should be
+   * notified of its invalidation.
    */
   private void onChanged() {
     // If builder is null, this is the case where onChanged is being called

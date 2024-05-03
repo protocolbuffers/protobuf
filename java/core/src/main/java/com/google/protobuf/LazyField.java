@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -34,25 +11,25 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 /**
- * LazyField encapsulates the logic of lazily parsing message fields. It stores
- * the message in a ByteString initially and then parse it on-demand.
+ * LazyField encapsulates the logic of lazily parsing message fields. It stores the message in a
+ * ByteString initially and then parses it on-demand.
  *
- * Most of key methods are implemented in {@link LazyFieldLite} but this class
- * can contain default instance of the message to provide {@code hashCode()},
- * {@code euqals()} and {@code toString()}.
+ * <p>Most methods are implemented in {@link LazyFieldLite} but this class can contain a
+ * default instance of the message to provide {@code hashCode()}, {@code equals()}, and {@code
+ * toString()}.
  *
  * @author xiangl@google.com (Xiang Li)
  */
 public class LazyField extends LazyFieldLite {
 
   /**
-   * Carry a message's default instance which is used by {@code hashCode()}, {@code euqals()} and
+   * Carry a message's default instance which is used by {@code hashCode()}, {@code equals()}, and
    * {@code toString()}.
    */
   private final MessageLite defaultInstance;
 
-  public LazyField(MessageLite defaultInstance,
-      ExtensionRegistryLite extensionRegistry, ByteString bytes) {
+  public LazyField(
+      MessageLite defaultInstance, ExtensionRegistryLite extensionRegistry, ByteString bytes) {
     super(extensionRegistry, bytes);
 
     this.defaultInstance = defaultInstance;
@@ -85,8 +62,8 @@ public class LazyField extends LazyFieldLite {
   // ====================================================
 
   /**
-   * LazyEntry and LazyIterator are used to encapsulate the LazyField, when
-   * users iterate all fields from FieldSet.
+   * LazyEntry and LazyIterator are used to encapsulate the LazyField, when users iterate all fields
+   * from FieldSet.
    */
   static class LazyEntry<K> implements Entry<K, Object> {
     private Entry<K, LazyField> entry;
@@ -118,7 +95,7 @@ public class LazyField extends LazyFieldLite {
       if (!(value instanceof MessageLite)) {
         throw new IllegalArgumentException(
             "LazyField now only used for MessageSet, "
-            + "and the value of MessageSet must be an instance of MessageLite");
+                + "and the value of MessageSet must be an instance of MessageLite");
       }
       return entry.getValue().setValue((MessageLite) value);
     }

@@ -18,6 +18,7 @@ lib/NUnit
 # 	Untracked files
 #
 .vs
+.cr
 *.user
 *.suo
 *.nupkg
@@ -29,3 +30,11 @@ mono/*.exe
 mono/*.dll
 lib/protoc.exe
 *.ncrunch*
+
+# Benchmark output
+BenchmarkDotNet.Artifacts/
+
+# Reinstate generated code for test files
+!any_test.pb.*
+!map*unittest.pb.*
+!unittest*.pb.*

@@ -1,0 +1,75 @@
+################################################################################
+# Protocol Buffers Compiler - Ruby code generator
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "ruby",
+    srcs = ["ruby_generator.cc"],
+    hdrs = ["ruby_generator.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/ruby",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
+    deps = [
+        "//src/google/protobuf:descriptor_legacy",
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler:retention",
+    ],
+)
+
+cc_test(
+    name = "generator_unittest",
+    srcs = ["ruby_generator_unittest.cc"],
+    data = [
+        "ruby_generated_code.proto",
+        "ruby_generated_code_pb.rb",
+        "ruby_generated_code_proto2.proto",
+        "ruby_generated_code_proto2_import.proto",
+        "ruby_generated_code_proto2_pb.rb",
+        "ruby_generated_pkg_explicit.proto",
+        "ruby_generated_pkg_explicit_legacy.proto",
+        "ruby_generated_pkg_explicit_legacy_pb.rb",
+        "ruby_generated_pkg_explicit_pb.rb",
+        "ruby_generated_pkg_implicit.proto",
+        "ruby_generated_pkg_implicit_pb.rb",
+        "//src/google/protobuf:testdata",
+    ],
+    deps = [
+        ":ruby",
+        "//src/google/protobuf/compiler:command_line_interface",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+################################################################################
+# Distribution packaging
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["**/*"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        allow_empty = True,
+    ),
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)

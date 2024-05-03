@@ -2,12 +2,12 @@
 
 define("GOOGLE_INTERNAL_NAMESPACE", "Google\\Protobuf\\Internal\\");
 define("GOOGLE_NAMESPACE", "Google\\Protobuf\\");
-define("GOOGLE_GPBMETADATA_NAMESPACE", "GPBMetadata\\Google\\Protobuf\\Internal\\");
+define("GOOGLE_GPBMETADATA_NAMESPACE", "GPBMetadata\\Google\\Protobuf\\");
 
 function protobuf_autoloader_impl($class, $prefix) {
     $length = strlen($prefix);
     if ((substr($class, 0, $length) === $prefix)) {
-        $path = '../php/src/' . implode('/', array_map('ucwords', explode('\\', $class))) . '.php';
+        $path = 'php/src/' . implode('/', array_map('ucwords', explode('\\', $class))) . '.php';
         include_once $path;
     }
 }

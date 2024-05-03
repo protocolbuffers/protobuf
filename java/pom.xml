@@ -1,17 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.google</groupId>
-    <artifactId>google</artifactId>
-    <version>1</version>
-  </parent>
 
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-parent</artifactId>
-  <version>3.4.0</version>
+  <version>3.25.0</version>
   <packaging>pom</packaging>
 
   <name>Protocol Buffers [Parent]</name>
@@ -22,6 +15,17 @@
     extensible format.
   </description>
 
+  <developers>
+    <developer>
+      <id>protobuf</id>
+      <name>Protocol Buffers</name>
+      <email>protobuf@googlegroups.com</email>
+      <organization>Google</organization>
+      <organizationUrl>https://protobuf.dev</organizationUrl>
+      <timezone>America/Los_Angeles</timezone>
+    </developer>
+  </developers>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -29,25 +33,23 @@
     <!-- These are relative to the submodules -->
     <protobuf.basedir>${project.basedir}/../..</protobuf.basedir>
     <protobuf.source.dir>${protobuf.basedir}/src</protobuf.source.dir>
-    <protoc>${protobuf.source.dir}/protoc</protoc>
+    <protoc>${protobuf.basedir}/protoc</protoc>
     <test.proto.dir>src/test/proto</test.proto.dir>
     <generated.sources.dir>${project.build.directory}/generated-sources</generated.sources.dir>
     <generated.testsources.dir>${project.build.directory}/generated-test-sources</generated.testsources.dir>
-    <generated.sources.lite.dir>${project.build.directory}/generated-sources-lite</generated.sources.lite.dir>
-    <generated.testsources.lite.dir>${project.build.directory}/generated-test-sources-lite</generated.testsources.lite.dir>
   </properties>
 
   <licenses>
     <license>
-      <name>3-Clause BSD License</name>
+      <name>BSD-3-Clause</name>
       <url>https://opensource.org/licenses/BSD-3-Clause</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
 
   <scm>
-    <url>https://github.com/google/protobuf</url>
-    <connection>scm:git:https://github.com/google/protobuf.git</connection>
+    <url>https://github.com/protocolbuffers/protobuf</url>
+    <connection>scm:git:https://github.com/protocolbuffers/protobuf.git</connection>
   </scm>
 
   <distributionManagement>
@@ -64,27 +66,40 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-bom</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.12</version>
+        <version>4.13.2</version>
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>org.easymock</groupId>
-        <artifactId>easymock</artifactId>
-        <version>2.2</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.easymock</groupId>
-        <artifactId>easymockclassextension</artifactId>
-        <version>2.2.1</version>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>4.3.1</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>19.0</version>
+        <version>32.0.1-android</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava-testlib</artifactId>
+        <version>32.0.1-android</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.google.truth</groupId>
+        <artifactId>truth</artifactId>
+        <version>1.1.2</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -94,10 +109,10 @@
       <plugins>
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.6.0</version>
+          <version>3.6.1</version>
           <configuration>
-            <source>1.6</source>
-            <target>1.6</target>
+            <source>1.7</source>
+            <target>1.7</target>
           </configuration>
         </plugin>
         <plugin>
@@ -121,6 +136,9 @@
               <goals>
                 <goal>jar</goal>
               </goals>
+              <configuration>
+                <failOnError>false</failOnError>
+              </configuration>
             </execution>
           </executions>
         </plugin>
@@ -140,10 +158,45 @@
         </plugin>
         <plugin>
           <artifactId>maven-antrun-plugin</artifactId>
-          <version>1.8</version>
+          <version>3.0.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.0.0-M5</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>animal-sniffer-maven-plugin</artifactId>
+          <version>1.20</version>
         </plugin>
       </plugins>
     </pluginManagement>
+    
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>animal-sniffer-maven-plugin</artifactId>
+        <configuration>
+          <signature>
+            <groupId>net.sf.androidscents.signature</groupId>
+            <artifactId>android-api-level-14</artifactId>
+            <version>4.0_r4</version>
+          </signature>
+          <ignores>
+            <ignore>sun.misc.Unsafe</ignore>
+          </ignores>
+        </configuration>
+        <executions>
+          <execution>
+            <id>android</id>
+            <phase>test</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
   </build>
 
   <profiles>
@@ -167,13 +220,16 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.9.1</version>
+            <version>2.10.3</version>
             <executions>
               <execution>
                 <id>attach-javadocs</id>
                 <goals>
                   <goal>jar</goal>
                 </goals>
+                <configuration>
+                  <failOnError>false</failOnError>
+                </configuration>
               </execution>
             </executions>
           </plugin>
@@ -201,15 +257,31 @@
               <autoReleaseAfterClose>false</autoReleaseAfterClose>
             </configuration>
           </plugin>
+          <plugin>
+            <groupId>org.jetbrains.dokka</groupId>
+            <artifactId>dokka-maven-plugin</artifactId>
+            <version>1.4.32</version>
+            <executions>
+              <execution>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>javadocJar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
       </build>
     </profile>
   </profiles>
 
   <modules>
+    <module>bom</module>
+    <module>lite</module>
     <module>core</module>
-    <!-- <module>lite</module> -->
     <module>util</module>
+    <module>kotlin</module>
+    <module>kotlin-lite</module>
   </modules>
 
 </project>

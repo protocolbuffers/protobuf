@@ -1,0 +1,94 @@
+load("//build_defs:internal_shell.bzl", "inline_sh_binary")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+
+inline_sh_binary(
+    name = "build_conformance_test",
+    srcs = ["Google.Protobuf.Conformance.csproj"],
+    cmd = "dotnet build -c Release $(SRCS)",
+    visibility = ["//visibility:private"],
+)
+
+CONFORMANCE_DEPS = [
+    "Google.Protobuf.dll",
+    "Google.Protobuf.Conformance.deps.json",
+    "Google.Protobuf.Conformance.pdb",
+    "Google.Protobuf.Conformance.runtimeconfig.json",
+    "Google.Protobuf.Test.dll",
+    "Google.Protobuf.Test.TestProtos.dll",
+    "Microsoft.TestPlatform.CommunicationUtilities.dll",
+    "Microsoft.TestPlatform.CoreUtilities.dll",
+    "Microsoft.TestPlatform.CrossPlatEngine.dll",
+    "Microsoft.TestPlatform.PlatformAbstractions.dll",
+    "Microsoft.TestPlatform.Utilities.dll",
+    "Microsoft.VisualStudio.CodeCoverage.Shim.dll",
+    "Microsoft.VisualStudio.TestPlatform.Common.dll",
+    "Microsoft.VisualStudio.TestPlatform.ObjectModel.dll",
+    "NUnit3.TestAdapter.dll",
+    "Newtonsoft.Json.dll",
+    "NuGet.Frameworks.dll",
+    "nunit.engine.api.dll",
+    "nunit.engine.core.dll",
+    "nunit.engine.dll",
+    "nunit.framework.dll",
+    "testcentric.engine.metadata.dll",
+    "testhost.dll",
+]
+
+filegroup(
+    name = "srcs",
+    srcs = [
+        "Google.Protobuf.Conformance.csproj",
+        "Program.cs",
+    ],
+    visibility = [
+        "//csharp:__subpackages__",
+    ],
+)
+
+genrule(
+    name = "package_conformance_test",
+    srcs = [
+        "Program.cs",
+        "Google.Protobuf.Conformance.csproj",
+        "//conformance:conformance_csharp_proto",
+        "//csharp:srcs",
+    ],
+    outs = CONFORMANCE_DEPS + ["Google.Protobuf.Conformance.dll"],
+    cmd = """
+        SRCDIR=$$(dirname $(location :Program.cs))
+        cp $(location //conformance:conformance_csharp_proto) $$SRCDIR
+        DOTNET_CLI_HOME=/tmp ./$(location :build_conformance_test)
+        cp -r $$SRCDIR/bin/Release/net6.0/* $(RULEDIR)
+    """,
+    tools = [":build_conformance_test"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "conformance_dll",
+    srcs = ["Google.Protobuf.Conformance.dll"],
+    data = [":package_conformance_test"],
+    visibility = ["//conformance:__subpackages__"],
+)
+
+filegroup(
+    name = "conformance_runfiles",
+    srcs = CONFORMANCE_DEPS,
+    data = [":package_conformance_test"],
+    visibility = ["//conformance:__subpackages__"],
+)
+
+################################################################################
+# Distribution files
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = [
+        "BUILD.bazel",
+        "Google.Protobuf.Conformance.csproj",
+        "Program.cs",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//csharp:__pkg__"],
+)
