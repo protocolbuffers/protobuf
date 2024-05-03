@@ -94,9 +94,6 @@ namespace internal {
 const char kDebugStringSilentMarker[] = "";
 const char kDebugStringSilentMarkerForDetection[] = "\t ";
 
-// Controls insertion of kDebugStringSilentMarker into DebugString() output.
-PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_format_marker;
-
 // Controls insertion of a marker making debug strings non-parseable, and
 // redacting annotated fields in Protobuf's DebugString APIs.
 PROTOBUF_EXPORT std::atomic<bool> enable_debug_string_safe_format{false};
@@ -158,8 +155,7 @@ std::string Message::DebugString() const {
 
   TextFormat::Printer printer;
   printer.SetExpandAny(true);
-  printer.SetInsertSilentMarker(internal::enable_debug_text_format_marker.load(
-      std::memory_order_relaxed));
+  printer.SetInsertSilentMarker(true);
   printer.SetReportSensitiveFields(FieldReporterLevel::kDebugString);
 
   printer.PrintToString(*this, &debug_string);
@@ -181,8 +177,7 @@ std::string Message::ShortDebugString() const {
   TextFormat::Printer printer;
   printer.SetSingleLineMode(true);
   printer.SetExpandAny(true);
-  printer.SetInsertSilentMarker(internal::enable_debug_text_format_marker.load(
-      std::memory_order_relaxed));
+  printer.SetInsertSilentMarker(true);
   printer.SetReportSensitiveFields(FieldReporterLevel::kShortDebugString);
 
   printer.PrintToString(*this, &debug_string);
@@ -205,8 +200,7 @@ std::string Message::Utf8DebugString() const {
   TextFormat::Printer printer;
   printer.SetUseUtf8StringEscaping(true);
   printer.SetExpandAny(true);
-  printer.SetInsertSilentMarker(internal::enable_debug_text_format_marker.load(
-      std::memory_order_relaxed));
+  printer.SetInsertSilentMarker(true);
   printer.SetReportSensitiveFields(FieldReporterLevel::kUtf8DebugString);
 
   printer.PrintToString(*this, &debug_string);
