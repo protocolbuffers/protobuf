@@ -4059,6 +4059,22 @@ class ValidationErrorTest : public testing::Test {
     return ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
   }
 
+  const FileDescriptor* ParseAndBuildFile(absl::string_view file_name,
+                                          absl::string_view file_text) {
+    io::ArrayInputStream input_stream(file_text.data(), file_text.size());
+    SimpleErrorCollector error_collector;
+    io::Tokenizer tokenizer(&input_stream, &error_collector);
+    compiler::Parser parser;
+    parser.RecordErrorsTo(&error_collector);
+    FileDescriptorProto proto;
+    ABSL_CHECK(parser.Parse(&tokenizer, &proto))
+        << error_collector.last_error() << "\n"
+        << file_text;
+    ABSL_CHECK_EQ("", error_collector.last_error());
+    proto.set_name(file_name);
+    return pool_.BuildFile(proto);
+  }
+
 
   // Add file_proto to the DescriptorPool. Expect errors to be produced which
   // match the given error text.
@@ -8613,7 +8629,9 @@ TEST_F(FeaturesTest, OneofFieldFeaturesOverride) {
 }
 
 TEST_F(FeaturesTest, MapFieldFeaturesOverride) {
-  constexpr absl::string_view kProtoFile = R"schema(
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  const FileDescriptor* file = ParseAndBuildFile("foo.proto", R"schema(
     edition = "2023";
 
     import "google/protobuf/unittest_features.proto";
@@ -8630,22 +8648,7 @@ TEST_F(FeaturesTest, MapFieldFeaturesOverride) {
         features.(pb.test).multiple_feature = VALUE3
       ];
     }
-  )schema";
-  io::ArrayInputStream input_stream(kProtoFile.data(), kProtoFile.size());
-  SimpleErrorCollector error_collector;
-  io::Tokenizer tokenizer(&input_stream, &error_collector);
-  compiler::Parser parser;
-  parser.RecordErrorsTo(&error_collector);
-  FileDescriptorProto proto;
-  ASSERT_TRUE(parser.Parse(&tokenizer, &proto))
-      << error_collector.last_error() << "\n"
-      << kProtoFile;
-  ASSERT_EQ("", error_collector.last_error());
-  proto.set_name("foo.proto");
-
-  BuildDescriptorMessagesInTestPool();
-  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
-  const FileDescriptor* file = pool_.BuildFile(proto);
+  )schema");
   ASSERT_THAT(file, NotNull());
 
   const FieldDescriptor* map_field = file->message_type(0)->field(0);
@@ -8673,7 +8676,8 @@ TEST_F(FeaturesTest, MapFieldFeaturesOverride) {
 }
 
 TEST_F(FeaturesTest, MapFieldFeaturesStringValidation) {
-  constexpr absl::string_view kProtoFile = R"schema(
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = ParseAndBuildFile("foo.proto", R"schema(
     edition = "2023";
 
     message Foo {
@@ -8687,21 +8691,7 @@ TEST_F(FeaturesTest, MapFieldFeaturesStringValidation) {
         features.utf8_validation = NONE
       ];
     }
-  )schema";
-  io::ArrayInputStream input_stream(kProtoFile.data(), kProtoFile.size());
-  SimpleErrorCollector error_collector;
-  io::Tokenizer tokenizer(&input_stream, &error_collector);
-  compiler::Parser parser;
-  parser.RecordErrorsTo(&error_collector);
-  FileDescriptorProto proto;
-  ASSERT_TRUE(parser.Parse(&tokenizer, &proto))
-      << error_collector.last_error() << "\n"
-      << kProtoFile;
-  ASSERT_EQ("", error_collector.last_error());
-  proto.set_name("foo.proto");
-
-  BuildDescriptorMessagesInTestPool();
-  const FileDescriptor* file = pool_.BuildFile(proto);
+  )schema");
   ASSERT_THAT(file, NotNull());
 
   auto validate_map_field = [](const FieldDescriptor* field) {
@@ -8716,6 +8706,109 @@ TEST_F(FeaturesTest, MapFieldFeaturesStringValidation) {
   validate_map_field(file->message_type(0)->field(0));
   validate_map_field(file->message_type(0)->field(1));
   validate_map_field(file->message_type(0)->field(2));
+}
+
+TEST_F(FeaturesTest, MapFieldFeaturesImplicitPresence) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* editions = ParseAndBuildFile("editions.proto", R"schema(
+    edition = "2023";
+
+    option features.field_presence = IMPLICIT;
+
+    message Foo {
+      map<string, Foo> message_map = 1;
+      map<string, string> string_map = 2;
+    }
+  )schema");
+  ASSERT_THAT(editions, NotNull());
+  const FileDescriptor* proto3 = ParseAndBuildFile("proto3.proto", R"schema(
+    syntax = "proto3";
+
+    message Bar {
+      map<string, Bar> message_map = 1;
+      map<string, string> string_map = 2;
+    }
+  )schema");
+  ASSERT_THAT(proto3, NotNull());
+
+  auto validate_maps = [](const FileDescriptor* file) {
+    const FieldDescriptor* message_map = file->message_type(0)->field(0);
+    EXPECT_FALSE(message_map->has_presence());
+    EXPECT_FALSE(message_map->message_type()->field(0)->has_presence());
+    EXPECT_TRUE(message_map->message_type()->field(1)->has_presence());
+
+    const FieldDescriptor* string_map = file->message_type(0)->field(1);
+    EXPECT_FALSE(string_map->has_presence());
+    EXPECT_FALSE(string_map->message_type()->field(0)->has_presence());
+    EXPECT_FALSE(string_map->message_type()->field(1)->has_presence());
+  };
+  validate_maps(editions);
+  validate_maps(proto3);
+}
+
+TEST_F(FeaturesTest, MapFieldFeaturesExplicitPresence) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* editions = ParseAndBuildFile("editions.proto", R"schema(
+    edition = "2023";
+
+    message Foo {
+      map<string, Foo> message_map = 1;
+      map<string, string> string_map = 2;
+    }
+  )schema");
+  ASSERT_THAT(editions, NotNull());
+  const FileDescriptor* proto2 = ParseAndBuildFile("google.protobuf.proto", R"schema(
+    syntax = "proto2";
+
+    message Bar {
+      map<string, Bar> message_map = 1;
+      map<string, string> string_map = 2;
+    }
+  )schema");
+  ASSERT_THAT(proto2, NotNull());
+
+  auto validate_maps = [](const FileDescriptor* file) {
+    const FieldDescriptor* message_map = file->message_type(0)->field(0);
+    EXPECT_FALSE(message_map->has_presence());
+    EXPECT_TRUE(message_map->message_type()->field(0)->has_presence());
+    EXPECT_TRUE(message_map->message_type()->field(1)->has_presence());
+
+    const FieldDescriptor* string_map = file->message_type(0)->field(1);
+    EXPECT_FALSE(string_map->has_presence());
+    EXPECT_TRUE(string_map->message_type()->field(0)->has_presence());
+    EXPECT_TRUE(string_map->message_type()->field(1)->has_presence());
+  };
+  validate_maps(editions);
+  validate_maps(proto2);
+}
+
+TEST_F(FeaturesTest, MapFieldFeaturesInheritedMessageEncoding) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = ParseAndBuildFile("foo.proto", R"schema(
+    edition = "2023";
+    
+    option features.message_encoding = DELIMITED;
+
+    message Foo {
+      map<int32, Foo> message_map = 1;
+      map<string, string> string_map = 2;
+    }
+  )schema");
+  ASSERT_THAT(file, NotNull());
+
+  const FieldDescriptor* message_map = file->message_type(0)->field(0);
+  EXPECT_EQ(message_map->type(), FieldDescriptor::TYPE_MESSAGE);
+  EXPECT_EQ(message_map->message_type()->field(0)->type(),
+            FieldDescriptor::TYPE_INT32);
+  EXPECT_EQ(message_map->message_type()->field(1)->type(),
+            FieldDescriptor::TYPE_MESSAGE);
+
+  const FieldDescriptor* string_map = file->message_type(0)->field(1);
+  EXPECT_EQ(string_map->type(), FieldDescriptor::TYPE_MESSAGE);
+  EXPECT_EQ(string_map->message_type()->field(0)->type(),
+            FieldDescriptor::TYPE_STRING);
+  EXPECT_EQ(string_map->message_type()->field(1)->type(),
+            FieldDescriptor::TYPE_STRING);
 }
 
 TEST_F(FeaturesTest, RootExtensionFeaturesOverride) {
@@ -9666,7 +9759,62 @@ TEST_F(FeaturesTest, InvalidFieldImplicitDefault) {
       "defaults.\n");
 }
 
-TEST_F(FeaturesTest, InvalidFieldImplicitOpen) {
+TEST_F(FeaturesTest, ValidExtensionFieldImplicitDefault) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = BuildFile(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        options { features { field_presence: IMPLICIT } }
+        message_type {
+          name: "Foo"
+          extension_range { start: 1 end: 100 }
+        }
+        extension {
+          name: "bar"
+          number: 1
+          label: LABEL_OPTIONAL
+          type: TYPE_STRING
+          default_value: "Hello world"
+          extendee: "Foo"
+        }
+      )pb");
+  ASSERT_THAT(file, NotNull());
+
+  EXPECT_TRUE(file->extension(0)->has_presence());
+  EXPECT_EQ(file->extension(0)->default_value_string(), "Hello world");
+}
+
+TEST_F(FeaturesTest, ValidOneofFieldImplicitDefault) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = BuildFile(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        options { features { field_presence: IMPLICIT } }
+        message_type {
+          name: "Foo"
+          field {
+            name: "bar"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+            default_value: "Hello world"
+            oneof_index: 0
+          }
+          oneof_decl { name: "_foo" }
+        }
+      )pb");
+  ASSERT_THAT(file, NotNull());
+
+  EXPECT_TRUE(file->message_type(0)->field(0)->has_presence());
+  EXPECT_EQ(file->message_type(0)->field(0)->default_value_string(),
+            "Hello world");
+}
+
+TEST_F(FeaturesTest, InvalidFieldImplicitClosed) {
   BuildDescriptorMessagesInTestPool();
   BuildFileWithErrors(
       R"pb(
@@ -9692,6 +9840,68 @@ TEST_F(FeaturesTest, InvalidFieldImplicitOpen) {
       )pb",
       "foo.proto: Foo.bar: NAME: Implicit presence enum fields must always "
       "be open.\n");
+}
+
+TEST_F(FeaturesTest, ValidRepeatedFieldImplicitClosed) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = BuildFile(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        options { features { field_presence: IMPLICIT } }
+        message_type {
+          name: "Foo"
+          field {
+            name: "bar"
+            number: 1
+            label: LABEL_REPEATED
+            type: TYPE_ENUM
+            type_name: "Enum"
+          }
+        }
+        enum_type {
+          name: "Enum"
+          value { name: "BAR" number: 0 }
+          options { features { enum_type: CLOSED } }
+        }
+      )pb");
+  ASSERT_THAT(file, NotNull());
+
+  EXPECT_FALSE(file->message_type(0)->field(0)->has_presence());
+  EXPECT_TRUE(file->enum_type(0)->is_closed());
+}
+
+TEST_F(FeaturesTest, ValidOneofFieldImplicitClosed) {
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* file = BuildFile(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        options { features { field_presence: IMPLICIT } }
+        message_type {
+          name: "Foo"
+          field {
+            name: "bar"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Enum"
+            oneof_index: 0
+          }
+          oneof_decl { name: "_foo" }
+        }
+        enum_type {
+          name: "Enum"
+          value { name: "BAR" number: 0 }
+          options { features { enum_type: CLOSED } }
+        }
+      )pb");
+  ASSERT_THAT(file, NotNull());
+
+  EXPECT_TRUE(file->message_type(0)->field(0)->has_presence());
+  EXPECT_TRUE(file->enum_type(0)->is_closed());
 }
 
 TEST_F(FeaturesTest, InvalidFieldRequiredExtension) {
