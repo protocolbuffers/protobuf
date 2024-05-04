@@ -4,10 +4,6 @@ Recommended.*.FieldMaskTooManyUnderscore.JsonOutput
 Recommended.*.JsonInput.BytesFieldBase64Url.JsonOutput
 Recommended.*.JsonInput.BytesFieldBase64Url.ProtobufOutput
 Recommended.*.JsonInput.FieldMaskInvalidCharacter
-Recommended.*.JsonInput.IgnoreUnknownEnumStringValueInMapValue.ProtobufOutput
-Recommended.*.JsonInput.IgnoreUnknownEnumStringValueInRepeatedField.ProtobufOutput
-Recommended.*.JsonInput.IgnoreUnknownEnumStringValueInRepeatedPart.ProtobufOutput
-Recommended.*.JsonInput.IgnoreUnknownEnumStringValueInMapPart.ProtobufOutput
 Recommended.*.ProtobufInput.ValidDataOneofBinary.MESSAGE.Merge.ProtobufOutput
 Recommended.*.ValueRejectInfNumberValue.JsonOutput # Should have failed to serialize, but didn't.
 Recommended.*.ValueRejectNanNumberValue.JsonOutput # Should have failed to serialize, but didn't.
