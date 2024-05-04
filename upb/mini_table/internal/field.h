@@ -165,6 +165,18 @@ UPB_API_INLINE bool upb_MiniTableField_IsSubMessage(
          f->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Group;
 }
 
+UPB_API_INLINE bool upb_MiniTableField_IsString(
+    const struct upb_MiniTableField* f) {
+  return f->UPB_PRIVATE(descriptortype) == kUpb_FieldType_String ||
+         f->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Bytes;
+}
+
+UPB_API_INLINE bool upb_MiniTableField_IsPrimitive(
+    const struct upb_MiniTableField* f) {
+  return f->UPB_PRIVATE(descriptortype) <= kUpb_FieldType_Bool ||
+         f->UPB_PRIVATE(descriptortype) >= kUpb_FieldType_UInt32;
+}
+
 UPB_API_INLINE bool upb_MiniTableField_HasPresence(
     const struct upb_MiniTableField* f) {
   if (upb_MiniTableField_IsExtension(f)) {

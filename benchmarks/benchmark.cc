@@ -11,26 +11,44 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <cstdio>
+#include <cstdlib>
 #include <string>
 #include <vector>
 
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/file.h"
 #include "google/ads/googleads/v16/services/google_ads_service.upbdefs.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.upb.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/json/json.h"
 #include "benchmarks/descriptor.pb.h"
 #include "benchmarks/descriptor.upb.h"
+#include "benchmarks/descriptor.upb_minitable.h"
 #include "benchmarks/descriptor.upbdefs.h"
 #include "benchmarks/descriptor_sv.pb.h"
+#include "upb/base/status.h"
 #include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
 #include "upb/mem/arena.h"
+#include "upb/mem/arena.hpp"
+#include "upb/message/message.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
+#include "upb/reflection/internal/def_pool.h"
+#include "upb/wire/batched_decode.h"
+#include "upb/wire/batched_encode.h"
 #include "upb/wire/decode.h"
+#include "upb/wire/encode.h"
 
 upb_StringView descriptor =
     benchmarks_descriptor_proto_upbdefinit.descriptor;
@@ -277,6 +295,59 @@ BENCHMARK_TEMPLATE(BM_Parse_Upb_FileDesc, UseArena, Alias);
 BENCHMARK_TEMPLATE(BM_Parse_Upb_FileDesc, InitBlock, Copy);
 BENCHMARK_TEMPLATE(BM_Parse_Upb_FileDesc, InitBlock, Alias);
 
+static upb_benchmark_FileDescriptorProto* UpbParseDescriptor(upb_Arena* arena) {
+  upb_benchmark_FileDescriptorProto* set =
+      upb_benchmark_FileDescriptorProto_parse(descriptor.data, descriptor.size,
+                                              arena);
+  if (!set) {
+    printf("Failed to parse.\n");
+    exit(1);
+  }
+  return set;
+}
+
+std::string UpbEncodeBatched() {
+  upb::Arena arena;
+  upb_benchmark_FileDescriptorProto* msg = UpbParseDescriptor(arena.ptr());
+  char* buf;
+  size_t size;
+  upb_EncodeStatus status = upb_BatchedEncode(
+      UPB_UPCAST(msg), &upb_0benchmark__FileDescriptorProto_msg_init, 0,
+      arena.ptr(), &buf, &size);
+  EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
+  EXPECT_GT(size, 0);
+  return std::string(buf, size);
+}
+
+template <ArenaMode AMode, CopyStrings Copy>
+static void BM_Parse_UpbBatched_FileDesc(benchmark::State& state) {
+  std::string batched = UpbEncodeBatched();
+  for (auto _ : state) {
+    upb_Arena* arena;
+    if (AMode == InitBlock) {
+      arena = upb_Arena_Init(buf, sizeof(buf), nullptr);
+    } else {
+      arena = upb_Arena_New();
+    }
+    upb_Message* msg =
+        upb_Message_New(&upb_0benchmark__FileDescriptorProto_msg_init, arena);
+    upb_DecodeStatus dec_status = upb_BatchedDecode(
+        batched.data(), batched.size(), msg,
+        &upb_0benchmark__FileDescriptorProto_msg_init, nullptr,
+        Copy == Alias ? kUpb_DecodeOption_AliasString : 0, arena);
+    if (dec_status != kUpb_DecodeStatus_Ok) {
+      printf("Failed to parse.\n");
+      exit(1);
+    }
+    upb_Arena_Free(arena);
+  }
+  state.SetBytesProcessed(state.iterations() * descriptor.size);
+}
+BENCHMARK_TEMPLATE(BM_Parse_UpbBatched_FileDesc, UseArena, Copy);
+BENCHMARK_TEMPLATE(BM_Parse_UpbBatched_FileDesc, UseArena, Alias);
+BENCHMARK_TEMPLATE(BM_Parse_UpbBatched_FileDesc, InitBlock, Copy);
+BENCHMARK_TEMPLATE(BM_Parse_UpbBatched_FileDesc, InitBlock, Alias);
+
 template <ArenaMode AMode, class P>
 struct Proto2Factory;
 
@@ -350,17 +421,6 @@ static void BM_SerializeDescriptor_Proto2(benchmark::State& state) {
   state.SetBytesProcessed(state.iterations() * descriptor.size);
 }
 BENCHMARK(BM_SerializeDescriptor_Proto2);
-
-static upb_benchmark_FileDescriptorProto* UpbParseDescriptor(upb_Arena* arena) {
-  upb_benchmark_FileDescriptorProto* set =
-      upb_benchmark_FileDescriptorProto_parse(descriptor.data, descriptor.size,
-                                              arena);
-  if (!set) {
-    printf("Failed to parse.\n");
-    exit(1);
-  }
-  return set;
-}
 
 static void BM_SerializeDescriptor_Upb(benchmark::State& state) {
   int64_t total = 0;
@@ -469,3 +529,34 @@ static void BM_JsonSerialize_Proto2(benchmark::State& state) {
   state.SetBytesProcessed(state.iterations() * json.size());
 }
 BENCHMARK(BM_JsonSerialize_Proto2);
+
+TEST(BenchmarkTest, TestBatched) {
+  upb::Arena arena;
+  std::string batched = UpbEncodeBatched();
+  auto ok = File::SetContents("/tmp/batched.bin",
+                              absl::string_view(batched.data(), batched.size()),
+                              true);
+  auto ok2 = File::SetContents(
+      "/tmp/wire.bin", absl::string_view(descriptor.data, descriptor.size),
+      true);
+
+  upb_Message* msg2 = upb_Message_New(
+      &upb_0benchmark__FileDescriptorProto_msg_init, arena.ptr());
+  upb_DecodeStatus dec_status = upb_BatchedDecode(
+      batched.data(), batched.size(), msg2,
+      &upb_0benchmark__FileDescriptorProto_msg_init, NULL, 0, arena.ptr());
+  EXPECT_EQ(dec_status, kUpb_DecodeStatus_Ok);
+
+  char* buf2;
+  size_t size2;
+  upb_EncodeStatus status2 =
+      upb_Encode(msg2, &upb_0benchmark__FileDescriptorProto_msg_init, 0,
+                 arena.ptr(), &buf2, &size2);
+  EXPECT_EQ(status2, kUpb_EncodeStatus_Ok);
+
+  upb_benchmark::FileDescriptorProto proto1;
+  proto1.ParseFromArray(descriptor.data, descriptor.size);
+  upb_benchmark::FileDescriptorProto proto2;
+  google.protobuf.ParseFromArray(buf2, size2);
+  EXPECT_THAT(proto2, ::testing::EqualsProto(proto1));
+}

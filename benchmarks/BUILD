@@ -9,6 +9,10 @@ load("@rules_python//python:defs.bzl", "py_binary")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load(
+    "//bazel:upb_minitable_proto_library.bzl",
+    "upb_minitable_proto_library",
+)
+load(
     "//bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
     "upb_proto_reflection_library",
@@ -33,6 +37,11 @@ proto_library(
 
 upb_c_proto_library(
     name = "benchmark_descriptor_upb_proto",
+    deps = [":descriptor_proto"],
+)
+
+upb_minitable_proto_library(
+    name = "benchmark_descriptor_upb_minitable_proto",
     deps = [":descriptor_proto"],
 )
 
@@ -69,19 +78,29 @@ cc_test(
         ":ads_upb_proto_reflection",
         ":benchmark_descriptor_cc_proto",
         ":benchmark_descriptor_sv_cc_proto",
+        ":benchmark_descriptor_upb_minitable_proto",
         ":benchmark_descriptor_upb_proto",
         ":benchmark_descriptor_upb_proto_reflection",
         "//:protobuf",
+        "//file/base:options_cc",
+        "//src/google/protobuf:arena",
         "//src/google/protobuf/json",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
         "//upb:base",
         "//upb:descriptor_upb_proto",
+        "//upb:generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
         "//upb:json",
         "//upb:mem",
+        "//upb:message",
+        "//upb:mini_table",
         "//upb:reflection",
         "//upb:wire",
+        "//upb/wire:batched",
         "@com_github_google_benchmark//:benchmark_main",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings:string_view",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

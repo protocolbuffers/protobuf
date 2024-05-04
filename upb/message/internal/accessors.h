@@ -156,7 +156,7 @@ UPB_INLINE const void* UPB_PRIVATE(_upb_Message_DataPtr)(
 
 UPB_INLINE void UPB_PRIVATE(_upb_Message_SetPresence)(
     struct upb_Message* msg, const upb_MiniTableField* f) {
-  if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f)) {
+  if (UPB_LIKELY(UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f))) {
     UPB_PRIVATE(_upb_Message_SetHasbit)(msg, f);
   } else if (upb_MiniTableField_IsInOneof(f)) {
     UPB_PRIVATE(_upb_Message_SetOneofCase)(msg, f);

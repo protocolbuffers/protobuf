@@ -8,6 +8,38 @@
 load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 cc_library(
+    name = "batched",
+    srcs = [
+        "batched.h",
+        "batched_decode.c",
+        "batched_encode.c",
+        "internal/constants.h",
+    ],
+    hdrs = [
+        "batched_decode.h",
+        "batched_encode.h",
+    ],
+    visibility = ["//upb:__subpackages__"],
+    deps = [
+        ":eps_copy_input_stream",
+        ":reader",
+        ":wire",
+        "//third_party/utf8_range",
+        "//upb:base",
+        "//upb:mem",
+        "//upb:message",
+        "//upb:mini_table",
+        "//upb:port",
+        "//upb/base:internal",
+        "//upb/hash",
+        "//upb/mem:internal",
+        "//upb/message:internal",
+        "//upb/message:types",
+        "//upb/mini_table:internal",
+    ],
+)
+
+cc_library(
     name = "wire",
     srcs = [
         "decode.c",
