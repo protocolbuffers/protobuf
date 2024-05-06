@@ -638,9 +638,11 @@ message TestDupFieldNumber {                        // NO_PROTO1
 // Additional messages for testing lazy fields.
 message TestEagerMessage {
   optional TestAllTypes sub_message = 1 [lazy=false];
+  repeated TestAllTypes repeated_sub_message = 2 [lazy=false];
 }
 message TestLazyMessage {
   optional TestAllTypes sub_message = 1 [lazy=true];
+  repeated TestAllTypes repeated_sub_message = 2 [lazy=true];
 }
 message TestLazyMessageRepeated {
   repeated TestLazyMessage repeated_message = 1;
