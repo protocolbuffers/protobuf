@@ -47,16 +47,12 @@ UPB_API void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m);
 UPB_API_INLINE bool upb_Message_IsFrozen(const upb_Message* msg);
 
 #ifdef UPB_TRACING_ENABLED
-UPB_INLINE void upb_Message_SetNewMessageTraceHandler(
-    void (*newMessageTraceHandler)(const upb_MiniTable* mini_table,
-                                   const upb_Arena* arena)) {
-  UPB_PRIVATE(upb_Message_SetNewMessageTraceHandler)(newMessageTraceHandler);
-}
-UPB_INLINE void upb_Message_LogNewMessage(const upb_MiniTable* mini_table,
-                                          const upb_Arena* arena) {
-  UPB_PRIVATE(upb_Message_LogNewMessage)(mini_table, arena);
-}
-#endif
+UPB_API void upb_Message_LogNewMessage(const upb_MiniTable* m,
+                                       const upb_Arena* arena);
+
+UPB_API void upb_Message_SetNewMessageTraceHandler(
+    void (*handler)(const upb_MiniTable* m, const upb_Arena* arena));
+#endif  // UPB_TRACING_ENABLED
 
 #ifdef __cplusplus
 } /* extern "C" */
