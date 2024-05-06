@@ -67,27 +67,6 @@
 // - MSVC: https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes-history
 //         https://docs.microsoft.com/en-us/visualstudio/releasenotes/vs2017-relnotes-history
 
-// Portable PROTOBUF_BUILTIN_BSWAPxx definitions
-// Code must check for availability, e.g.: `defined(PROTOBUF_BUILTIN_BSWAP32)`
-#ifdef PROTOBUF_BUILTIN_BSWAP16
-#error PROTOBUF_BUILTIN_BSWAP16 was previously defined
-#endif
-#ifdef PROTOBUF_BUILTIN_BSWAP32
-#error PROTOBUF_BUILTIN_BSWAP32 was previously defined
-#endif
-#ifdef PROTOBUF_BUILTIN_BSWAP64
-#error PROTOBUF_BUILTIN_BSWAP64 was previously defined
-#endif
-#if defined(__GNUC__) || ABSL_HAVE_BUILTIN(__builtin_bswap16)
-#define PROTOBUF_BUILTIN_BSWAP16(x) __builtin_bswap16(x)
-#endif
-#if defined(__GNUC__) || ABSL_HAVE_BUILTIN(__builtin_bswap32)
-#define PROTOBUF_BUILTIN_BSWAP32(x) __builtin_bswap32(x)
-#endif
-#if defined(__GNUC__) || ABSL_HAVE_BUILTIN(__builtin_bswap64)
-#define PROTOBUF_BUILTIN_BSWAP64(x) __builtin_bswap64(x)
-#endif
-
 // Portable check for gcc-style atomic built-ins
 #if ABSL_HAVE_BUILTIN(__atomic_load_n)
 #define PROTOBUF_BUILTIN_ATOMIC 1
