@@ -1336,6 +1336,24 @@ class MessageTest(unittest.TestCase):
         union.DESCRIPTOR, message_module.TestAllTypes.NestedEnum.DESCRIPTOR
     )
 
+  def testIn(self, message_module):
+    m = message_module.TestAllTypes()
+    self.assertNotIn('optional_nested_message', m)
+    self.assertNotIn('oneof_bytes', m)
+    self.assertNotIn('oneof_string', m)
+    with self.assertRaises(ValueError) as e:
+      'repeated_int32' in m
+    with self.assertRaises(ValueError) as e:
+      'repeated_nested_message' in m
+    with self.assertRaises(ValueError) as e:
+      1 in m
+    with self.assertRaises(ValueError) as e:
+      'not_a_field' in m
+    test_util.SetAllFields(m)
+    self.assertIn('optional_nested_message', m)
+    self.assertIn('oneof_bytes', m)
+    self.assertNotIn('oneof_string', m)
+
 
 # Class to test proto2-only features (required, extensions, etc.)
 @testing_refleaks.TestCase
@@ -1367,6 +1385,9 @@ class Proto2Test(unittest.TestCase):
     self.assertTrue(message.HasField('optional_int32'))
     self.assertTrue(message.HasField('optional_bool'))
     self.assertTrue(message.HasField('optional_nested_message'))
+    self.assertIn('optional_int32', message)
+    self.assertIn('optional_bool', message)
+    self.assertIn('optional_nested_message', message)
 
     # Set the fields to non-default values.
     message.optional_int32 = 5
@@ -1385,6 +1406,9 @@ class Proto2Test(unittest.TestCase):
     self.assertFalse(message.HasField('optional_int32'))
     self.assertFalse(message.HasField('optional_bool'))
     self.assertFalse(message.HasField('optional_nested_message'))
+    self.assertNotIn('optional_int32', message)
+    self.assertNotIn('optional_bool', message)
+    self.assertNotIn('optional_nested_message', message)
     self.assertEqual(0, message.optional_int32)
     self.assertEqual(False, message.optional_bool)
     self.assertEqual(0, message.optional_nested_message.bb)
@@ -1711,6 +1735,12 @@ class Proto3Test(unittest.TestCase):
     with self.assertRaises(ValueError):
       message.HasField('repeated_nested_message')
 
+    # Can not test "in" operator.
+    with self.assertRaises(ValueError):
+      'repeated_int32' in message
+    with self.assertRaises(ValueError):
+      'repeated_nested_message' in message
+
     # Fields should default to their type-specific default.
     self.assertEqual(0, message.optional_int32)
     self.assertEqual(0, message.optional_float)
@@ -1721,6 +1751,7 @@ class Proto3Test(unittest.TestCase):
     # Setting a submessage should still return proper presence information.
     message.optional_nested_message.bb = 0
     self.assertTrue(message.HasField('optional_nested_message'))
+    self.assertIn('optional_nested_message', message)
 
     # Set the fields to non-default values.
     message.optional_int32 = 5
