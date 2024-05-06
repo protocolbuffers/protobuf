@@ -137,8 +137,8 @@ std::string StringifyMessage(const Message& message, Option option,
 }
 
 PROTOBUF_EXPORT std::string StringifyMessage(const Message& message) {
-  return StringifyMessage(message, Option::kNone,
-                          FieldReporterLevel::kAbslStringify, true);
+  return StringifyMessage(message, Option::kNone, FieldReporterLevel::kNoReport,
+                          true);
 }
 }  // namespace internal
 
@@ -212,12 +212,12 @@ void Message::PrintDebugString() const { printf("%s", DebugString().c_str()); }
 
 PROTOBUF_EXPORT std::string ShortFormat(const Message& message) {
   return internal::StringifyMessage(message, internal::Option::kShort,
-                                    FieldReporterLevel::kShortFormat, true);
+                                    FieldReporterLevel::kNoReport, true);
 }
 
 PROTOBUF_EXPORT std::string Utf8Format(const Message& message) {
   return internal::StringifyMessage(message, internal::Option::kUTF8,
-                                    FieldReporterLevel::kUtf8Format, true);
+                                    FieldReporterLevel::kNoReport, true);
 }
 
 
