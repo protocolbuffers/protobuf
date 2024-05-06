@@ -31,6 +31,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/barrier.h"
 #include "absl/utility/utility.h"
+#include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/extension_set.h"
@@ -1406,12 +1407,12 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
   // Preallocate an initial arena block to avoid mallocs during hooked region.
   std::vector<char> arena_block(1024 * 1024);
   Arena arena(arena_block.data(), arena_block.size());
+  const size_t initial_allocated_size = arena.SpaceAllocated();
 
   {
-    internal::NoHeapChecker no_heap;
-
-    // Fill some repeated fields on the arena to test for leaks. Also verify no
-    // memory allocations.
+    // Fill some repeated fields on the arena to test for leaks. Also that the
+    // newly allocated memory is approximately the size of the cleanups for the
+    // repeated messages.
     RepeatedField<int32_t> repeated_int32(&arena);
     RepeatedPtrField<TestAllTypes> repeated_message(&arena);
     for (int i = 0; i < 100; i++) {
@@ -1432,10 +1433,14 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
     repeated_message.UnsafeArenaExtractSubrange(0, 5, extracted_messages);
     EXPECT_EQ(&arena, repeated_message.Get(0).GetArena());
     EXPECT_EQ(5, repeated_message.size());
+    // Upper bound of the size of the cleanups of new repeated messages.
+    const size_t upperbound_cleanup_size =
+        2 * 110 * sizeof(internal::cleanup::CleanupNode);
+    EXPECT_GT(initial_allocated_size + upperbound_cleanup_size,
+              arena.SpaceAllocated());
   }
 
-  // Now, outside the scope of the NoHeapChecker, test ExtractSubrange's copying
-  // semantics.
+  // Now test ExtractSubrange's copying semantics.
   {
     RepeatedPtrField<TestAllTypes> repeated_message(&arena);
     for (int i = 0; i < 100; i++) {
@@ -1577,8 +1582,11 @@ TEST(ArenaTest, NoHeapAllocationsTest) {
   Arena arena(options);
 
   {
-
+    // We need to call Arena::Create before NoHeapChecker because the ArenaDtor
+    // allocates a new cleanup chunk.
     TestAllTypes* message = Arena::Create<TestAllTypes>(&arena);
+
+
     FillArenaAwareFields(message);
   }
 
@@ -1610,8 +1618,9 @@ TEST(ArenaTest, MessageLiteOnArena) {
   initial_message.SerializeToString(&serialized);
 
   {
-
     MessageLite* generic_message = prototype->New(&arena);
+
+
     EXPECT_TRUE(generic_message != nullptr);
     EXPECT_EQ(&arena, generic_message->GetArena());
     EXPECT_TRUE(generic_message->ParseFromString(serialized));
@@ -1678,6 +1687,23 @@ TEST(ArenaTest, FirstArenaOverhead) {
   VerifyArenaOverhead(arena, internal::SerialArena::kBlockHeaderSize);
 }
 
+
+TEST(ArenaTest, StartingBlockSize) {
+  Arena default_arena;
+  EXPECT_EQ(0, default_arena.SpaceAllocated());
+
+  // Allocate something to get starting block size.
+  Arena::CreateArray<char>(&default_arena, 1);
+  ArenaOptions options;
+  // First block size should be the default starting block size.
+  EXPECT_EQ(default_arena.SpaceAllocated(), options.start_block_size);
+
+  // Use a custom starting block size.
+  options.start_block_size *= 2;
+  Arena custom_arena(options);
+  Arena::CreateArray<char>(&custom_arena, 1);
+  EXPECT_EQ(custom_arena.SpaceAllocated(), options.start_block_size);
+}
 
 TEST(ArenaTest, BlockSizeDoubling) {
   Arena arena;
