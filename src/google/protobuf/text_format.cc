@@ -722,6 +722,15 @@ class TextFormat::Parser::ParserImpl {
             break;
           }
           DO(Consume(","));
+          if (TryConsume("]")) {
+            // Check closing bracket again, such that things like
+            // [
+            //   "foo",
+            //   "bar",
+            // ]
+            // will work.
+            break;
+          }
         }
       }
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
