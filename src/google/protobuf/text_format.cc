@@ -144,8 +144,8 @@ std::string StringifyMessage(const Message& message, Option option,
 }
 
 PROTOBUF_EXPORT std::string StringifyMessage(const Message& message) {
-  return StringifyMessage(message, Option::kNone,
-                          FieldReporterLevel::kAbslStringify, true);
+  return StringifyMessage(message, Option::kNone, FieldReporterLevel::kNoReport,
+                          true);
 }
 }  // namespace internal
 
@@ -154,7 +154,7 @@ std::string Message::DebugString() const {
       internal::enable_debug_string_safe_format.load(std::memory_order_relaxed);
   if (enable_safe_format) {
     return StringifyMessage(*this, internal::Option::kNone,
-                            FieldReporterLevel::kDebugString, true);
+                            FieldReporterLevel::kNoReport, true);
   }
   // Indicate all scoped reflection calls are from DebugString function.
   ScopedReflectionMode scope(ReflectionMode::kDebugString);
@@ -175,7 +175,7 @@ std::string Message::ShortDebugString() const {
       internal::enable_debug_string_safe_format.load(std::memory_order_relaxed);
   if (enable_safe_format) {
     return StringifyMessage(*this, internal::Option::kShort,
-                            FieldReporterLevel::kShortDebugString, true);
+                            FieldReporterLevel::kNoReport, true);
   }
   // Indicate all scoped reflection calls are from DebugString function.
   ScopedReflectionMode scope(ReflectionMode::kDebugString);
@@ -198,7 +198,7 @@ std::string Message::Utf8DebugString() const {
       internal::enable_debug_string_safe_format.load(std::memory_order_relaxed);
   if (enable_safe_format) {
     return StringifyMessage(*this, internal::Option::kUTF8,
-                            FieldReporterLevel::kUtf8DebugString, true);
+                            FieldReporterLevel::kNoReport, true);
   }
   // Indicate all scoped reflection calls are from DebugString function.
   ScopedReflectionMode scope(ReflectionMode::kDebugString);
@@ -219,12 +219,12 @@ void Message::PrintDebugString() const { printf("%s", DebugString().c_str()); }
 
 PROTOBUF_EXPORT std::string ShortFormat(const Message& message) {
   return internal::StringifyMessage(message, internal::Option::kShort,
-                                    FieldReporterLevel::kShortFormat, true);
+                                    FieldReporterLevel::kNoReport, true);
 }
 
 PROTOBUF_EXPORT std::string Utf8Format(const Message& message) {
   return internal::StringifyMessage(message, internal::Option::kUTF8,
-                                    FieldReporterLevel::kUtf8Format, true);
+                                    FieldReporterLevel::kNoReport, true);
 }
 
 
