@@ -31,6 +31,10 @@
 // must be last
 #include "google/protobuf/port_def.inc"
 
+#ifdef PROTOBUF_ASAN  // But this one comes after port_def.inc
+#include <sanitizer/asan_interface.h>
+#endif
+
 
 namespace google {
 namespace protobuf {
@@ -307,6 +311,18 @@ inline PROTOBUF_ALWAYS_INLINE void TSanWrite(T* impl) {
 inline PROTOBUF_ALWAYS_INLINE void TSanRead(const void*) {}
 inline PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
 #endif
+
+#ifdef PROTOBUF_ASAN
+inline void PoisonMemoryRegion(const void* ptr, size_t size) {
+  ASAN_POISON_MEMORY_REGION(ptr, size);
+}
+inline void UnpoisonMemoryRegion(const void* ptr, size_t size) {
+  ASAN_UNPOISON_MEMORY_REGION(ptr, size);
+}
+#else   // PROTOBUF_ASAN
+inline void PoisonMemoryRegion(const void*, size_t) {}
+inline void UnpoisonMemoryRegion(const void*, size_t) {}
+#endif  // PROTOBUF_ASAN
 
 // This trampoline allows calling from codegen without needing a #include to
 // absl. It simplifies IWYU and deps.

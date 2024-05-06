@@ -116,10 +116,10 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   //    __asan_address_is_poisoned is allowed to have false negatives.
   class LimitToken {
    public:
-    LimitToken() { PROTOBUF_POISON_MEMORY_REGION(&token_, sizeof(token_)); }
+    LimitToken() { PoisonMemoryRegion(&token_, sizeof(token_)); }
 
     explicit LimitToken(int token) : token_(token) {
-      PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_));
+      UnpoisonMemoryRegion(&token_, sizeof(token_));
     }
 
     LimitToken(const LimitToken&) = delete;
@@ -128,17 +128,17 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     LimitToken(LimitToken&& other) { *this = std::move(other); }
 
     LimitToken& operator=(LimitToken&& other) {
-      PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_));
+      UnpoisonMemoryRegion(&token_, sizeof(token_));
       token_ = other.token_;
-      PROTOBUF_POISON_MEMORY_REGION(&other.token_, sizeof(token_));
+      PoisonMemoryRegion(&other.token_, sizeof(token_));
       return *this;
     }
 
-    ~LimitToken() { PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_)); }
+    ~LimitToken() { UnpoisonMemoryRegion(&token_, sizeof(token_)); }
 
     int token() && {
       int t = token_;
-      PROTOBUF_POISON_MEMORY_REGION(&token_, sizeof(token_));
+      PoisonMemoryRegion(&token_, sizeof(token_));
       return t;
     }
 

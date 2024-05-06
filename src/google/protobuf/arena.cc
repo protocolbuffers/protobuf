@@ -336,7 +336,7 @@ void SerialArena::AllocateNewBlock(size_t n) {
   // Previous writes must take effect before writing new head.
   head_.store(new_head, std::memory_order_release);
 
-  PROTOBUF_POISON_MEMORY_REGION(ptr(), limit_ - ptr());
+  PoisonMemoryRegion(ptr(), limit_ - ptr());
 }
 
 uint64_t SerialArena::SpaceUsed() const {
@@ -711,7 +711,7 @@ void ThreadSafeArena::UnpoisonAllArenaBlocks() const {
   VisitSerialArena([](const SerialArena* serial) {
     for (const auto* b = serial->head(); b != nullptr && !b->IsSentry();
          b = b->next) {
-      PROTOBUF_UNPOISON_MEMORY_REGION(b, b->size);
+      UnpoisonMemoryRegion(b, b->size);
     }
   });
 }
@@ -741,7 +741,7 @@ ThreadSafeArena::~ThreadSafeArena() {
   auto mem = Free();
   if (alloc_policy_.is_user_owned_initial_block()) {
     // Unpoison the initial block, now that it's going back to the user.
-    PROTOBUF_UNPOISON_MEMORY_REGION(mem.p, mem.n);
+    UnpoisonMemoryRegion(mem.p, mem.n);
   } else if (mem.n > 0) {
     GetDeallocator(alloc_policy_.get())(mem);
   }

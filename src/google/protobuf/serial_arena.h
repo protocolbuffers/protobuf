@@ -100,7 +100,7 @@ class PROTOBUF_EXPORT SerialArena {
     if (cached_head == nullptr) return nullptr;
 
     void* ret = cached_head;
-    PROTOBUF_UNPOISON_MEMORY_REGION(ret, size);
+    UnpoisonMemoryRegion(ret, size);
     cached_head = cached_head->next;
     return ret;
   }
@@ -175,7 +175,7 @@ class PROTOBUF_EXPORT SerialArena {
 
       // We need to unpoison this memory before filling it in case it has been
       // poisoned by another santizer client.
-      PROTOBUF_UNPOISON_MEMORY_REGION(
+      UnpoisonMemoryRegion(
           new_list + cached_block_length_,
           (new_size - cached_block_length_) * sizeof(CachedBlock*));
 
@@ -194,7 +194,7 @@ class PROTOBUF_EXPORT SerialArena {
     auto* new_node = static_cast<CachedBlock*>(p);
     new_node->next = cached_head;
     cached_head = new_node;
-    PROTOBUF_POISON_MEMORY_REGION(p, size);
+    PoisonMemoryRegion(p, size);
   }
 
  public:
@@ -210,7 +210,7 @@ class PROTOBUF_EXPORT SerialArena {
                                reinterpret_cast<uintptr_t>(limit_))) {
       return false;
     }
-    PROTOBUF_UNPOISON_MEMORY_REGION(ret, n);
+    UnpoisonMemoryRegion(ret, n);
     *out = ret;
     char* next = ret + n;
     set_ptr(next);
@@ -236,7 +236,7 @@ class PROTOBUF_EXPORT SerialArena {
                                reinterpret_cast<uintptr_t>(limit_))) {
       return AllocateAlignedWithCleanupFallback(n, align, destructor);
     }
-    PROTOBUF_UNPOISON_MEMORY_REGION(ret, n);
+    UnpoisonMemoryRegion(ret, n);
     char* next = ret + n;
     set_ptr(next);
     AddCleanup(ret, destructor);
