@@ -155,6 +155,14 @@ impl InnerRepeated {
     pub fn as_mut(&mut self) -> InnerRepeatedMut<'_> {
         InnerRepeatedMut::new(Private, self.raw, &self.arena)
     }
+
+    pub fn raw(&self) -> RawRepeatedField {
+        self.raw
+    }
+
+    pub fn arena(&self) -> &Arena {
+        &self.arena
+    }
 }
 
 /// The raw type-erased pointer version of `RepeatedMut`.

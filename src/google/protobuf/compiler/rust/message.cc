@@ -285,6 +285,16 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
   ABSL_LOG(FATAL) << "unreachable";
 }
 
+void MessageGetMinitable(Context& ctx, const Descriptor& msg) {
+  if (ctx.opts().kernel == Kernel::kUpb) {
+    ctx.Emit({{"minitable", UpbMinitableName(msg)}}, R"rs(
+      pub fn raw_minitable(_private: $pbi$::Private) -> *const $pbr$::upb_MiniTable {
+        unsafe { $std$::ptr::addr_of!($minitable$) }
+      }
+    )rs");
+  }
+}
+
 void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
@@ -363,7 +373,6 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
             }
           }
         }
-
       )rs");
       return;
     case Kernel::kUpb:
@@ -821,6 +830,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }},
        {"into_proxied_impl", [&] { IntoProxiedForMessage(ctx, msg); }},
+       {"get_upb_minitable", [&] { MessageGetMinitable(ctx, msg); }},
        {"repeated_impl", [&] { MessageProxiedInRepeated(ctx, msg); }},
        {"map_value_impl", [&] { MessageProxiedInMapValue(ctx, msg); }},
        {"unwrap_upb",
@@ -976,6 +986,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             $pb$::ViewProxy::as_view(self).serialize()
           }
 
+          $get_upb_minitable$
+
           $raw_arena_getter_for_msgmut$
 
           $accessor_fns_for_muts$
@@ -1042,6 +1054,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           pub fn as_mut(&mut self) -> $Msg$Mut {
             $Msg$Mut::new($pbi$::Private, &mut self.inner)
           }
+
+          $get_upb_minitable$
 
           $accessor_fns$
         }  // impl $Msg$

@@ -15,7 +15,7 @@ use std::iter::FusedIterator;
 use std::marker::PhantomData;
 
 use crate::{
-    Mut, MutProxied, MutProxy, Proxied, View, ViewProxy,
+    IntoProxied, Mut, MutProxied, MutProxy, Proxied, View, ViewProxy,
     __internal::Private,
     __runtime::{InnerRepeated, InnerRepeatedMut, RawRepeatedField},
 };
@@ -208,6 +208,49 @@ where
     }
 }
 
+impl<T> Repeated<T>
+where
+    T: ?Sized + ProxiedInRepeated,
+{
+    pub fn as_view(&self) -> View<Repeated<T>> {
+        RepeatedView { raw: self.inner.raw(), _phantom: PhantomData }
+    }
+
+    #[doc(hidden)]
+    pub fn inner(&self, _private: Private) -> &InnerRepeated {
+        &self.inner
+    }
+}
+
+impl<T> IntoProxied<Repeated<T>> for Repeated<T>
+where
+    T: ?Sized + ProxiedInRepeated,
+{
+    fn into(self, _private: Private) -> Repeated<T> {
+        self
+    }
+}
+
+impl<'msg, T> IntoProxied<Repeated<T>> for RepeatedView<'msg, T>
+where
+    T: 'msg + ?Sized + ProxiedInRepeated,
+{
+    fn into(self, _private: Private) -> Repeated<T> {
+        let mut repeated: Repeated<T> = Repeated::new();
+        T::repeated_copy_from(self, repeated.as_mut());
+        repeated
+    }
+}
+
+impl<'msg, T> IntoProxied<Repeated<T>> for RepeatedMut<'msg, T>
+where
+    T: 'msg + ?Sized + ProxiedInRepeated,
+{
+    fn into(self, _private: Private) -> Repeated<T> {
+        IntoProxied::into(self.as_view(), _private)
+    }
+}
+
 /// Types that can appear in a `Repeated<T>`.
 ///
 /// This trait is implemented by generated code to communicate how the proxied
@@ -275,7 +318,7 @@ impl<'msg, T: ?Sized> Debug for RepeatedIter<'msg, T> {
 /// Users will generally write [`View<Repeated<T>>`](RepeatedView) or
 /// [`Mut<Repeated<T>>`](RepeatedMut) to access the repeated elements
 pub struct Repeated<T: ?Sized + ProxiedInRepeated> {
-    inner: InnerRepeated,
+    pub(crate) inner: InnerRepeated,
     _phantom: PhantomData<T>,
 }
 

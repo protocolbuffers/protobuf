@@ -22,14 +22,18 @@ pub use map::{
 
 mod message;
 pub use message::{
-    upb_Message, upb_Message_DeepClone, upb_Message_DeepCopy, upb_Message_New, RawMessage,
+    upb_Message, upb_Message_DeepClone, upb_Message_DeepCopy, upb_Message_New,
+    upb_Message_SetBaseField, RawMessage,
 };
 
 mod message_value;
 pub use message_value::{upb_MessageValue, upb_MutableMessageValue};
 
 mod mini_table;
-pub use mini_table::{upb_MiniTable, RawMiniTable};
+pub use mini_table::{
+    upb_MiniTable, upb_MiniTableField, upb_MiniTable_FindFieldByNumber, RawMiniTable,
+    RawMiniTableField,
+};
 
 mod opaque_pointee;
 
