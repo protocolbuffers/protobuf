@@ -373,16 +373,21 @@ struct SerialArenaChunkHeader {
 class ThreadSafeArena::SerialArenaChunk {
  public:
   SerialArenaChunk(uint32_t capacity, void* me, SerialArena* serial) {
-    new (&header()) SerialArenaChunkHeader{capacity, 1};
+    // We use `layout`/`ids`/`arenas` local variables to avoid recomputing
+    // offsets if we were to call id(i)/arena(i) repeatedly.
+    const layout_type layout = Layout(capacity);
+    new (layout.Pointer<kHeader>(ptr())) SerialArenaChunkHeader{capacity, 1};
 
-    new (&id(0)) std::atomic<void*>{me};
+    std::atomic<void*>* ids = layout.Pointer<kIds>(ptr());
+    new (&ids[0]) std::atomic<void*>{me};
     for (uint32_t i = 1; i < capacity; ++i) {
-      new (&id(i)) std::atomic<void*>{nullptr};
+      new (&ids[i]) std::atomic<void*>{nullptr};
     }
 
-    new (&arena(0)) std::atomic<SerialArena*>{serial};
+    std::atomic<SerialArena*>* arenas = layout.Pointer<kArenas>(ptr());
+    new (&arenas[0]) std::atomic<SerialArena*>{serial};
     for (uint32_t i = 1; i < capacity; ++i) {
-      new (&arena(i)) std::atomic<void*>{nullptr};
+      new (&arenas[i]) std::atomic<SerialArena*>{nullptr};
     }
   }
 
@@ -401,30 +406,30 @@ class ThreadSafeArena::SerialArenaChunk {
 
   // ids: returns up to size().
   absl::Span<const std::atomic<void*>> ids() const {
-    return Layout(capacity()).Slice<kIds>(ptr()).first(safe_size());
+    return Layout().Slice<kIds>(ptr()).first(safe_size());
   }
   absl::Span<std::atomic<void*>> ids() {
-    return Layout(capacity()).Slice<kIds>(ptr()).first(safe_size());
+    return Layout().Slice<kIds>(ptr()).first(safe_size());
   }
   std::atomic<void*>& id(uint32_t i) {
     ABSL_DCHECK_LT(i, capacity());
-    return Layout(capacity()).Pointer<kIds>(ptr())[i];
+    return Layout().Pointer<kIds>(ptr())[i];
   }
 
   // arenas: returns up to size().
   absl::Span<const std::atomic<SerialArena*>> arenas() const {
-    return Layout(capacity()).Slice<kArenas>(ptr()).first(safe_size());
+    return Layout().Slice<kArenas>(ptr()).first(safe_size());
   }
   absl::Span<std::atomic<SerialArena*>> arenas() {
-    return Layout(capacity()).Slice<kArenas>(ptr()).first(safe_size());
+    return Layout().Slice<kArenas>(ptr()).first(safe_size());
   }
   const std::atomic<SerialArena*>& arena(uint32_t i) const {
     ABSL_DCHECK_LT(i, capacity());
-    return Layout(capacity()).Pointer<kArenas>(ptr())[i];
+    return Layout().Pointer<kArenas>(ptr())[i];
   }
   std::atomic<SerialArena*>& arena(uint32_t i) {
     ABSL_DCHECK_LT(i, capacity());
-    return Layout(capacity()).Pointer<kArenas>(ptr())[i];
+    return Layout().Pointer<kArenas>(ptr())[i];
   }
 
   // Tries to insert {id, serial} to head chunk. Returns false if the head is
@@ -481,6 +486,7 @@ class ThreadSafeArena::SerialArenaChunk {
   constexpr static layout_type Layout(size_t n) {
     return layout_type(/*header*/ 1, /*ids*/ n, /*arenas*/ n);
   }
+  layout_type Layout() const { return Layout(capacity()); }
 };
 
 constexpr SerialArenaChunkHeader kSentryArenaChunk = {0, 0};
