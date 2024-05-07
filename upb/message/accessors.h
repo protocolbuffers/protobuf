@@ -54,6 +54,10 @@ UPB_API_INLINE void upb_Message_ClearBaseField(upb_Message* msg,
 UPB_API_INLINE void upb_Message_ClearExtension(upb_Message* msg,
                                                const upb_MiniTableExtension* e);
 
+UPB_API_INLINE void upb_Message_ClearOneof(upb_Message* msg,
+                                           const upb_MiniTable* m,
+                                           const upb_MiniTableField* f);
+
 UPB_API_INLINE bool upb_Message_HasBaseField(const upb_Message* msg,
                                              const upb_MiniTableField* f);
 
