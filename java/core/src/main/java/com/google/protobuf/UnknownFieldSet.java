@@ -83,6 +83,11 @@ public final class UnknownFieldSet implements MessageLite {
     return fields.hashCode();
   }
 
+  /** Whether the field set has no fields. */
+  public boolean isEmpty() {
+    return fields.isEmpty();
+  }
+
   /** Get a map of fields in the set by number. */
   public Map<Integer, Field> asMap() {
     // Avoid an allocation for the common case of an empty map.
