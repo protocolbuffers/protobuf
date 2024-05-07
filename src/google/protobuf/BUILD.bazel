@@ -841,6 +841,16 @@ filegroup(
 )
 
 filegroup(
+    name = "unittest_proto_srcs",
+    srcs = [
+        "unittest.proto",
+        "unittest_import.proto",
+        "unittest_import_public.proto",
+    ],
+    visibility = ["//:__subpackages__"],
+)
+
+filegroup(
     name = "test_proto_editions_srcs",
     srcs = [
         "edition_unittest.proto",

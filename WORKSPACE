@@ -226,3 +226,18 @@ crates_repository(
 
 load("@crate_index//:defs.bzl", "crate_repositories")
 crate_repositories()
+
+# For testing runtime against old gencode from a previous major version.
+http_archive(
+    name = "com_google_protobuf_v25.0",
+    strip_prefix = "protobuf-25.0",
+    url = "https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz",
+)
+
+# Needed as a dependency of @com_google_protobuf_v25.x, which was before
+# utf8_range was merged in.
+http_archive(
+    name = "utf8_range",
+    strip_prefix = "utf8_range-d863bc33e15cba6d873c878dcca9e6fe52b2f8cb",
+    url = "https://github.com/protocolbuffers/utf8_range/archive/d863bc33e15cba6d873c878dcca9e6fe52b2f8cb.zip",
+)
