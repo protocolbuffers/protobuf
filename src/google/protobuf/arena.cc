@@ -60,43 +60,27 @@ ArenaBlock* SentryArenaBlock() {
 }
 #endif
 
-inline size_t AllocationSize(size_t last_size, size_t start_size,
-                             size_t max_size) {
-  if (last_size == 0) return start_size;
-  // Double the current block size, up to a limit.
-  return std::min(2 * last_size, max_size);
-}
-
-SizedPtr AllocateMemory(const AllocationPolicy& policy, size_t size) {
-  if (policy.block_alloc == nullptr) {
-    return AllocateAtLeast(size);
-  }
-  return {policy.block_alloc(size), size};
-}
-
-SizedPtr AllocateBlock(const AllocationPolicy* policy_ptr, size_t last_size,
-                       size_t min_bytes) {
+SizedPtr AllocateMemory(const AllocationPolicy* policy_ptr, size_t last_size,
+                        size_t min_bytes) {
   AllocationPolicy policy;  // default policy
   if (policy_ptr) policy = *policy_ptr;
-  size_t size =
-      AllocationSize(last_size, policy.start_block_size, policy.max_block_size);
+  size_t size;
+  if (last_size != 0) {
+    // Double the current block size, up to a limit.
+    auto max_size = policy.max_block_size;
+    size = std::min(2 * last_size, max_size);
+  } else {
+    size = policy.start_block_size;
+  }
   // Verify that min_bytes + kBlockHeaderSize won't overflow.
   ABSL_CHECK_LE(min_bytes, std::numeric_limits<size_t>::max() -
                                SerialArena::kBlockHeaderSize);
   size = std::max(size, SerialArena::kBlockHeaderSize + min_bytes);
 
-  return AllocateMemory(policy, size);
-}
-
-SizedPtr AllocateCleanupChunk(const AllocationPolicy* policy_ptr,
-                              size_t last_size) {
-  constexpr size_t kStartSize = 64;
-  constexpr size_t kMaxSize = 4 << 10;
-  static_assert(kStartSize % sizeof(cleanup::CleanupNode) == 0, "");
-
-  const size_t size = AllocationSize(last_size, kStartSize, kMaxSize);
-  if (policy_ptr == nullptr) return AllocateAtLeast(size);
-  return AllocateMemory(*policy_ptr, size);
+  if (policy.block_alloc == nullptr) {
+    return AllocateAtLeast(size);
+  }
+  return {policy.block_alloc(size), size};
 }
 
 class GetDeallocator {
@@ -118,88 +102,6 @@ class GetDeallocator {
 
 }  // namespace
 
-namespace cleanup {
-struct ChunkList::Chunk {
-  CleanupNode* First() { return reinterpret_cast<CleanupNode*>(this + 1); }
-  CleanupNode* Last() { return First() + Capacity() - 1; }
-  static size_t Capacity(size_t size) {
-    return (size - sizeof(Chunk)) / sizeof(CleanupNode);
-  }
-  size_t Capacity() const { return Capacity(size); }
-
-  Chunk* next;
-  size_t size;
-  // Cleanup nodes follow.
-};
-
-void ChunkList::AddFallback(void* elem, void (*destructor)(void*),
-                            SerialArena& arena) {
-  ABSL_DCHECK_EQ(next_, limit_);
-  SizedPtr mem = AllocateCleanupChunk(arena.parent_.AllocPolicy(),
-                                      head_ == nullptr ? 0 : head_->size);
-  arena.AddSpaceAllocated(mem.n);
-  head_ = new (mem.p) Chunk{head_, mem.n};
-  next_ = head_->First();
-  prefetch_ptr_ = reinterpret_cast<char*>(next_);
-  limit_ = next_ + Chunk::Capacity(mem.n);
-  AddFromExisting(elem, destructor);
-}
-
-void ChunkList::Cleanup(const SerialArena& arena) {
-  Chunk* c = head_;
-  if (c == nullptr) return;
-  GetDeallocator deallocator(arena.parent_.AllocPolicy());
-
-  // Iterate backwards in order to destroy in the right order.
-  CleanupNode* it = next_ - 1;
-  while (true) {
-    CleanupNode* first = c->First();
-    // A prefetch distance of 8 here was chosen arbitrarily.
-    constexpr int kPrefetchDistance = 8;
-    CleanupNode* prefetch = it;
-    // Prefetch the first kPrefetchDistance nodes.
-    for (int i = 0; prefetch >= first && i < kPrefetchDistance;
-         --prefetch, ++i) {
-      prefetch->Prefetch();
-    }
-    // For the middle nodes, run destructor and prefetch the node
-    // kPrefetchDistance after the current one.
-    for (; prefetch >= first; --it, --prefetch) {
-      it->Destroy();
-      prefetch->Prefetch();
-    }
-    // Note: we could consider prefetching `next` chunk earlier.
-    absl::PrefetchToLocalCacheNta(c->next);
-    // Destroy the rest without prefetching.
-    for (; it >= first; --it) {
-      it->Destroy();
-    }
-    Chunk* next = c->next;
-    deallocator({c, c->size});
-    if (next == nullptr) return;
-    c = next;
-    it = c->Last();
-  };
-}
-
-std::vector<void*> ChunkList::PeekForTesting() {
-  std::vector<void*> ret;
-  Chunk* c = head_;
-  if (c == nullptr) return ret;
-  // Iterate backwards to match destruction order.
-  CleanupNode* it = next_ - 1;
-  while (true) {
-    CleanupNode* first = c->First();
-    for (; it >= first; --it) {
-      ret.push_back(it->elem);
-    }
-    c = c->next;
-    if (c == nullptr) return ret;
-    it = c->Last();
-  };
-}
-}  // namespace cleanup
-
 // It is guaranteed that this is constructed in `b`. IOW, this is not the first
 // arena and `b` cannot be sentry.
 SerialArena::SerialArena(ArenaBlock* b, ThreadSafeArena& parent)
@@ -207,6 +109,7 @@ SerialArena::SerialArena(ArenaBlock* b, ThreadSafeArena& parent)
       limit_{b->Limit()},
       prefetch_ptr_(
           b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize)),
+      prefetch_limit_(b->Limit()),
       head_{b},
       space_allocated_{b->size},
       parent_{parent} {
@@ -227,7 +130,22 @@ SerialArena::SerialArena(FirstSerialArena, ArenaBlock* b,
 }
 
 std::vector<void*> SerialArena::PeekCleanupListForTesting() {
-  return cleanup_list_.PeekForTesting();
+  std::vector<void*> res;
+
+  ArenaBlock* b = head();
+  if (b->IsSentry()) return res;
+
+  const auto peek_list = [&](char* pos, char* end) {
+    for (; pos != end; pos += cleanup::Size()) {
+      cleanup::PeekNode(pos, res);
+    }
+  };
+
+  peek_list(limit_, b->Limit());
+  for (b = b->next; b; b = b->next) {
+    peek_list(reinterpret_cast<char*>(b->cleanup_nodes), b->Limit());
+  }
+  return res;
 }
 
 std::vector<void*> ThreadSafeArena::PeekCleanupListForTesting() {
@@ -305,9 +223,15 @@ void* SerialArena::AllocateFromStringBlockFallback() {
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateAlignedWithCleanupFallback(
     size_t n, size_t align, void (*destructor)(void*)) {
-  size_t required = AlignUpTo(n, align);
+  size_t required = AlignUpTo(n, align) + cleanup::Size();
   AllocateNewBlock(required);
   return AllocateAlignedWithCleanup(n, align, destructor);
+}
+
+PROTOBUF_NOINLINE
+void SerialArena::AddCleanupFallback(void* elem, void (*destructor)(void*)) {
+  AllocateNewBlock(cleanup::Size());
+  AddCleanupFromExisting(elem, destructor);
 }
 
 void SerialArena::AllocateNewBlock(size_t n) {
@@ -315,6 +239,9 @@ void SerialArena::AllocateNewBlock(size_t n) {
   size_t wasted = 0;
   ArenaBlock* old_head = head();
   if (!old_head->IsSentry()) {
+    // Sync limit to block
+    old_head->cleanup_nodes = limit_;
+
     // Record how much used in this block.
     used = static_cast<size_t>(ptr() - old_head->Pointer(kBlockHeaderSize));
     wasted = old_head->size - used - kBlockHeaderSize;
@@ -326,7 +253,7 @@ void SerialArena::AllocateNewBlock(size_t n) {
   // but with a CPU regression. The regression might have been an artifact of
   // the microbenchmark.
 
-  auto mem = AllocateBlock(parent_.AllocPolicy(), old_head->size, n);
+  auto mem = AllocateMemory(parent_.AllocPolicy(), old_head->size, n);
   AddSpaceAllocated(mem.n);
   ThreadSafeArenaStats::RecordAllocateStats(parent_.arena_stats_.MutableStats(),
                                             /*used=*/used,
@@ -385,6 +312,34 @@ size_t SerialArena::FreeStringBlocks(StringBlock* string_block,
     deallocated += StringBlock::Delete(string_block);
   }
   return deallocated;
+}
+
+void SerialArena::CleanupList() {
+  ArenaBlock* b = head();
+  if (b->IsSentry()) return;
+
+  b->cleanup_nodes = limit_;
+  do {
+    char* limit = b->Limit();
+    char* it = reinterpret_cast<char*>(b->cleanup_nodes);
+    ABSL_DCHECK(!b->IsSentry() || it == limit);
+    // A prefetch distance of 8 here was chosen arbitrarily.
+    char* prefetch = it;
+    int prefetch_dist = 8;
+    for (; prefetch < limit && --prefetch_dist; prefetch += cleanup::Size()) {
+      cleanup::PrefetchNode(prefetch);
+    }
+    for (; prefetch < limit;
+         it += cleanup::Size(), prefetch += cleanup::Size()) {
+      cleanup::DestroyNode(it);
+      cleanup::PrefetchNode(prefetch);
+    }
+    absl::PrefetchToLocalCacheNta(b->next);
+    for (; it < limit; it += cleanup::Size()) {
+      cleanup::DestroyNode(it);
+    }
+    b = b->next;
+  } while (b);
 }
 
 // Stores arrays of void* and SerialArena* instead of linked list of
@@ -595,7 +550,7 @@ ArenaBlock* ThreadSafeArena::FirstBlock(void* buf, size_t size,
 
   SizedPtr mem;
   if (buf == nullptr || size < kBlockHeaderSize + kAllocPolicySize) {
-    mem = AllocateBlock(&policy, 0, kAllocPolicySize);
+    mem = AllocateMemory(&policy, 0, kAllocPolicySize);
   } else {
     mem = {buf, size};
     // Record user-owned block.
@@ -779,8 +734,6 @@ uint64_t ThreadSafeArena::Reset() {
   // Have to do this in a first pass, because some of the destructors might
   // refer to memory in other blocks.
   CleanupList();
-  // Reset the first arena's cleanup list.
-  first_arena_.cleanup_list_ = cleanup::ChunkList();
 
   // Discard all blocks except the first one. Whether it is user-provided or
   // allocated, always reuse the first block for the first arena.
@@ -960,7 +913,7 @@ SerialArena* ThreadSafeArena::GetSerialArenaFallback(size_t n) {
     // have any blocks yet.  So we'll allocate its first block now. It must be
     // big enough to host SerialArena and the pending request.
     serial = SerialArena::New(
-        AllocateBlock(alloc_policy_.get(), 0, n + kSerialArenaSize), *this);
+        AllocateMemory(alloc_policy_.get(), 0, n + kSerialArenaSize), *this);
 
     AddSerialArena(id, serial);
   }
