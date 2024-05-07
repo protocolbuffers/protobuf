@@ -314,6 +314,8 @@ inline void PrefetchToLocalCache(const void* ptr) {
   absl::PrefetchToLocalCache(ptr);
 }
 
+constexpr bool IsOss() { return true; }
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
