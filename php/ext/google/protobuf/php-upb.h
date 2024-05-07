@@ -3269,6 +3269,21 @@ UPB_API_INLINE void upb_Message_ClearExtension(
   }
 }
 
+UPB_API_INLINE void upb_Message_ClearOneof(struct upb_Message* msg,
+                                           const upb_MiniTable* m,
+                                           const upb_MiniTableField* f) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  uint32_t field_number = upb_Message_WhichOneofFieldNumber(msg, f);
+  if (field_number == 0) {
+    // No field in the oneof is set.
+    return;
+  }
+
+  const upb_MiniTableField* field =
+      upb_MiniTable_FindFieldByNumber(m, field_number);
+  upb_Message_ClearBaseField(msg, field);
+}
+
 UPB_API_INLINE void* upb_Message_ResizeArrayUninitialized(
     struct upb_Message* msg, const upb_MiniTableField* f, size_t size,
     upb_Arena* arena) {
@@ -3543,6 +3558,10 @@ UPB_API_INLINE void upb_Message_ClearBaseField(upb_Message* msg,
 
 UPB_API_INLINE void upb_Message_ClearExtension(upb_Message* msg,
                                                const upb_MiniTableExtension* e);
+
+UPB_API_INLINE void upb_Message_ClearOneof(upb_Message* msg,
+                                           const upb_MiniTable* m,
+                                           const upb_MiniTableField* f);
 
 UPB_API_INLINE bool upb_Message_HasBaseField(const upb_Message* msg,
                                              const upb_MiniTableField* f);
