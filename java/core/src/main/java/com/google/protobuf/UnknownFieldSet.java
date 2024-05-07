@@ -85,6 +85,10 @@ public final class UnknownFieldSet implements MessageLite {
 
   /** Get a map of fields in the set by number. */
   public Map<Integer, Field> asMap() {
+    // Avoid an allocation for the common case of an empty map.
+    if (fields.isEmpty()) {
+      return Collections.emptyMap();
+    }
     return (Map<Integer, Field>) fields.clone();
   }
 
