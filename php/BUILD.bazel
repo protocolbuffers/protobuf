@@ -109,6 +109,15 @@ staleness_test(
     tags = ["manual"],
 )
 
+#staleness_test(
+#    name = "test_wkt_staleness",
+#    outs = [
+#        "ext/google/protobuf/wkt.inc",
+#    ],
+#    generated_pattern = "generated-in/%s",
+#    tags = ["manual"],
+#)
+
 ################################################################################
 # Distribution files
 ################################################################################

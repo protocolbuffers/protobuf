@@ -957,7 +957,7 @@ static void jsondec_field(jsondec* d, upb_Message* msg,
   }
 
   if (upb_FieldDef_RealContainingOneof(f) &&
-      upb_Message_WhichOneof(msg, upb_FieldDef_ContainingOneof(f))) {
+      upb_Message_WhichOneofByDef(msg, upb_FieldDef_ContainingOneof(f))) {
     jsondec_err(d, "More than one field for this oneof.");
   }
 

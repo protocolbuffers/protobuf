@@ -41,8 +41,8 @@ bool upb_Message_HasFieldByDef(const upb_Message* msg, const upb_FieldDef* f) {
   }
 }
 
-const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
-                                           const upb_OneofDef* o) {
+const upb_FieldDef* upb_Message_WhichOneofByDef(const upb_Message* msg,
+                                                const upb_OneofDef* o) {
   const upb_FieldDef* f = upb_OneofDef_Field(o, 0);
   if (upb_OneofDef_IsSynthetic(o)) {
     UPB_ASSERT(upb_OneofDef_FieldCount(o) == 1);
@@ -54,6 +54,14 @@ const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
     UPB_ASSERT((f != NULL) == (oneof_case != 0));
     return f;
   }
+}
+
+const upb_MiniTableField* upb_Message_WhichOneof(const upb_Message* msg,
+                                                 const upb_OneofDef* o) {
+  const upb_FieldDef* f = upb_OneofDef_Field(o, 0);
+  // Question for Haberman: should we do anything if synthetic?
+  // if (upb_OneofDef_IsSynthetic(o)) {...}
+  return upb_FieldDef_MiniTable(f);
 }
 
 upb_MessageValue upb_Message_GetFieldByDef(const upb_Message* msg,

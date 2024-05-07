@@ -248,7 +248,7 @@ static int extract_method_call(VALUE method_name, Message* self,
 static VALUE Message_oneof_accessor(VALUE _self, const upb_OneofDef* o,
                                     int accessor_type) {
   Message* self = ruby_to_Message(_self);
-  const upb_FieldDef* oneof_field = upb_Message_WhichOneof(self->msg, o);
+  const upb_FieldDef* oneof_field = upb_Message_WhichOneofByDef(self->msg, o);
 
   switch (accessor_type) {
     case METHOD_PRESENCE:

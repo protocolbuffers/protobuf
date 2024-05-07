@@ -1350,7 +1350,7 @@ static PHP_METHOD(google_protobuf_Value, getKind) {
   const upb_OneofDef *oneof = upb_MessageDef_FindOneofByName(
       intern->desc->msgdef, "kind");
   const upb_FieldDef *field = 
-      upb_Message_WhichOneof(intern->msg, oneof);
+      upb_Message_WhichOneofByDef(intern->msg, oneof);
   RETURN_STRING(field ? upb_FieldDef_Name(field) : "");
 }
 static zend_function_entry google_protobuf_Value_phpmethods[] = {

@@ -1758,7 +1758,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
         "  const upb_OneofDef *oneof = upb_MessageDef_FindOneofByName(\n"
         "      intern->desc->msgdef, \"$name$\");\n"
         "  const upb_FieldDef *field = \n"
-        "      upb_Message_WhichOneof(intern->msg, oneof);\n"
+        "      upb_Message_WhichOneofByDef(intern->msg, oneof);\n"
         "  RETURN_STRING(field ? upb_FieldDef_Name(field) : \"\");\n"
         "}\n",
         "c_name", c_name, "name", oneof->name(), "camel_name",
