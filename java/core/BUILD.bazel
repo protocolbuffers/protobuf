@@ -520,6 +520,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/AnyTest.java",
     "src/test/java/com/google/protobuf/CodedInputStreamTest.java",
     "src/test/java/com/google/protobuf/DeprecatedFieldTest.java",
+    "src/test/java/com/google/protobuf/DebugFormatTest.java",
     "src/test/java/com/google/protobuf/DescriptorsTest.java",
     "src/test/java/com/google/protobuf/DiscardUnknownFieldsTest.java",
     "src/test/java/com/google/protobuf/DynamicMessageTest.java",
