@@ -429,6 +429,37 @@ UPB_API_INLINE const struct upb_Map* upb_Message_GetMap(
   return ret;
 }
 
+UPB_API_INLINE uintptr_t upb_Message_GetTaggedMessagePtr(
+    const struct upb_Message* msg, const upb_MiniTableField* f,
+    struct upb_Message* default_val) {
+  UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
+             UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
+  UPB_ASSUME(upb_MiniTableField_IsScalar(f));
+  uintptr_t tagged;
+  _upb_Message_GetNonExtensionField(msg, f, &default_val, &tagged);
+  return tagged;
+}
+
+// For internal use only; users cannot set tagged messages because only the
+// parser and the message copier are allowed to directly create an empty
+// message.
+UPB_INLINE void UPB_PRIVATE(_upb_Message_SetTaggedMessagePtr)(
+    struct upb_Message* msg, const upb_MiniTableField* f,
+    uintptr_t sub_message) {
+  UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
+             UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
+  UPB_ASSUME(upb_MiniTableField_IsScalar(f));
+  upb_Message_SetBaseField(msg, f, &sub_message);
+}
+
+UPB_API_INLINE const struct upb_Message* upb_Message_GetMessage(
+    const struct upb_Message* msg, const upb_MiniTableField* f) {
+  uintptr_t tagged = upb_Message_GetTaggedMessagePtr(msg, f, NULL);
+  return upb_TaggedMessagePtr_GetNonEmptyMessage(tagged);
+}
+
 UPB_API_INLINE upb_Array* upb_Message_GetMutableArray(
     struct upb_Message* msg, const upb_MiniTableField* f) {
   UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(f);
@@ -438,6 +469,11 @@ UPB_API_INLINE upb_Array* upb_Message_GetMutableArray(
 UPB_API_INLINE struct upb_Map* upb_Message_GetMutableMap(
     struct upb_Message* msg, const upb_MiniTableField* f) {
   return (struct upb_Map*)upb_Message_GetMap(msg, f);
+}
+
+UPB_API_INLINE struct upb_Message* upb_Message_GetMutableMessage(
+    struct upb_Message* msg, const upb_MiniTableField* f) {
+  return (struct upb_Message*)upb_Message_GetMessage(msg, f);
 }
 
 UPB_API_INLINE upb_Array* upb_Message_GetOrCreateMutableArray(
@@ -611,6 +647,16 @@ UPB_API_INLINE bool upb_Message_SetInt64(struct upb_Message* msg,
   upb_MessageValue val;
   val.int64_val = value;
   return UPB_PRIVATE(_upb_Message_SetField)(msg, f, val, a);
+}
+
+// Sets the value of a message-typed field. The mini_tables of `msg` and
+// `sub_message` must have been linked for this to work correctly.
+UPB_API_INLINE void upb_Message_SetMessage(struct upb_Message* msg,
+                                           const upb_MiniTable* m,
+                                           const upb_MiniTableField* f,
+                                           struct upb_Message* sub_message) {
+  UPB_PRIVATE(_upb_Message_SetTaggedMessagePtr)
+  (msg, f, UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(sub_message, false));
 }
 
 // Sets the value of a `string` or `bytes` field. The bytes of the value are not

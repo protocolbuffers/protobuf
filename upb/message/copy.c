@@ -215,7 +215,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
               return NULL;
             }
             UPB_PRIVATE(_upb_Message_SetTaggedMessagePtr)
-            (dst, mini_table, field,
+            (dst, field,
              UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(dst_sub_message,
                                                      is_empty));
           }
