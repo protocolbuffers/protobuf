@@ -911,6 +911,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             $Msg::serialize$
           }
 
+          pub fn to_owned(&self) -> $Msg$ {
+            $pb$::IntoProxied::into(*self, $pbi$::Private)
+          }
+
           $accessor_fns_for_views$
         }
 
@@ -984,6 +988,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
           pub fn serialize(&self) -> $pbr$::SerializedData {
             $pb$::ViewProxy::as_view(self).serialize()
+          }
+
+          pub fn to_owned(&self) -> $Msg$ {
+            $pb$::ViewProxy::as_view(self).to_owned()
           }
 
           $get_upb_minitable$
