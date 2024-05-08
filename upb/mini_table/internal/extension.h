@@ -49,6 +49,11 @@ UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
   e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;
 }
 
+UPB_INLINE upb_FieldRep UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(
+    const struct upb_MiniTableExtension* e) {
+  return UPB_PRIVATE(_upb_MiniTableField_GetRep)(&e->UPB_PRIVATE(field));
+}
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
