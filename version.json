@@ -2,7 +2,7 @@
     "27.x": {
         "protoc_version": "27.0-dev",
         "lts": false,
-        "date": "2024-04-17",
+        "date": "2024-05-08",
         "languages": {
             "cpp": "5.27.0-dev",
             "csharp": "3.27.0-dev",
