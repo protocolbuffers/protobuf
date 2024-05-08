@@ -141,6 +141,14 @@ std::string FileJavaPackage(const FileDescriptor* file, Options options) {
   return FileJavaPackage(file, true /* immutable */, options);
 }
 
+std::string JavaPackageDirectory(const FileDescriptor* file) {
+  return JavaPackageToDir(FileJavaPackage(file));
+}
+
+std::string FileClassName(const FileDescriptor* file) {
+  return FileClassName(file, /*immutable=*/true);
+}
+
 std::string CapitalizedFieldName(const FieldDescriptor* field) {
   return UnderscoresToCamelCase(FieldName(field), true);
 }

@@ -78,8 +78,7 @@ std::string UniqueFileScopeIdentifier(const Descriptor* descriptor);
 // Gets the unqualified class name for the file.  For each .proto file, there
 // will be one Java class containing all the immutable messages and another
 // Java class containing all the mutable messages.
-// TODO: remove the default value after updating client code.
-std::string FileClassName(const FileDescriptor* file, bool immutable = true);
+std::string FileClassName(const FileDescriptor* file, bool immutable);
 
 // Returns the file's Java package name.
 std::string FileJavaPackage(const FileDescriptor* file, bool immutable,
