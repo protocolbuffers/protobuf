@@ -898,26 +898,5 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual(2, span[1]);
             Assert.AreEqual(3, span[2]);
         }
-
-        [Test]
-        public void Memory_Empty()
-        {
-            var list = new RepeatedField<int>();
-            var memory = list.Memory;
-
-            Assert.AreEqual(0, memory.Length);
-        }
-
-        [Test]
-        public void Memory_Access()
-        {
-            var list = new RepeatedField<int> { 1, 2, 3 };
-            var memory = list.Memory;
-
-            Assert.AreEqual(3, memory.Length);
-            Assert.AreEqual(1, memory.Span[0]);
-            Assert.AreEqual(2, memory.Span[1]);
-            Assert.AreEqual(3, memory.Span[2]);
-        }
     }
 }

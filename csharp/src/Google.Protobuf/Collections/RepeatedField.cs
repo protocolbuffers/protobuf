@@ -41,18 +41,13 @@ namespace Google.Protobuf.Collections
         /// Provides read-only access to the data of this <see cref="RepeatedField{T}"/>.
         /// No data is copied so this is the most efficient way of accessing.
         /// </summary>
+        /// <remarks>
+        /// Modifying the contents of the <see cref="RepeatedField{T}"/> while using the returned
+        /// <see cref="ReadOnlySpan{T}"/> can lead to undefined behavior.
+        /// </remarks>
         public ReadOnlySpan<T> Span
         {
             get { return array.AsSpan(0, count); }
-        }
-
-        /// <summary>
-        /// Provides read-only access to the data of this <see cref="RepeatedField{T}"/>.
-        /// No data is copied so this is the most efficient way of accessing.
-        /// </summary>
-        public ReadOnlyMemory<T> Memory
-        {
-            get { return array.AsMemory(0, count); }
         }
 
         /// <summary>
