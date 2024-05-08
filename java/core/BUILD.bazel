@@ -60,6 +60,8 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/LazyStringArrayList.java",
     "src/main/java/com/google/protobuf/LazyStringList.java",
     "src/main/java/com/google/protobuf/ListFieldSchema.java",
+    "src/main/java/com/google/protobuf/ListFieldSchemaLite.java",
+    "src/main/java/com/google/protobuf/ListFieldSchemas.java",
     "src/main/java/com/google/protobuf/LongArrayList.java",
     "src/main/java/com/google/protobuf/ManifestSchemaFactory.java",
     "src/main/java/com/google/protobuf/MapEntryLite.java",

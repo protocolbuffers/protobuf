@@ -22,6 +22,10 @@ import java.util.concurrent.ConcurrentMap;
 final class Protobuf {
   private static final Protobuf INSTANCE = new Protobuf();
 
+  // short circuit the full runtime support via assumevalues trickery
+  @SuppressWarnings("JavaOptionalSuggestions")
+  static boolean assumeLiteRuntime = false;
+
   private final SchemaFactory schemaFactory;
 
   // TODO: Consider using ClassValue instead.
