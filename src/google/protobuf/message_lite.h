@@ -21,6 +21,7 @@
 #include <cstdint>
 #include <iosfwd>
 #include <string>
+#include <type_traits>
 
 #include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
@@ -53,6 +54,7 @@ class FastReflectionStringSetter;
 class Reflection;
 class Descriptor;
 class AssignDescriptorsHelper;
+class MessageLite;
 
 namespace io {
 
@@ -119,6 +121,9 @@ class PROTOBUF_EXPORT CachedSize {
   std::atomic<Scalar> atom_;
 #endif
 };
+
+// For MessageLite to friend.
+class TypeId;
 
 class SwapFieldHelper;
 
@@ -638,6 +643,15 @@ class PROTOBUF_EXPORT MessageLite {
   // return a default table instead of a unique one.
   virtual const ClassData* GetClassData() const = 0;
 
+  template <typename T>
+  static auto GetClassDataGenerated() {
+    // We could speed this up if needed by avoiding the function call.
+    // In LTO this is likely inlined, so it might not matter.
+    static_assert(
+        std::is_same<const T&, decltype(T::default_instance())>::value, "");
+    return T::default_instance().T::GetClassData();
+  }
+
   internal::InternalMetadata _internal_metadata_;
 
   // Return the cached size object as described by
@@ -682,6 +696,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::LazyField;
   friend class internal::SwapFieldHelper;
   friend class internal::TcParser;
+  friend class internal::TypeId;
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
 
@@ -716,6 +731,32 @@ class PROTOBUF_EXPORT MessageLite {
 };
 
 namespace internal {
+
+// A typeinfo equivalent for protobuf message types. Used for
+// DynamicCastToGenerated.
+// We might make this class public later on to have an alternative to
+// `std::type_info` that works when RTTI is disabled.
+class TypeId {
+ public:
+  constexpr explicit TypeId(const MessageLite::ClassData* data) : data_(data) {}
+
+  friend constexpr bool operator==(TypeId a, TypeId b) {
+    return a.data_ == b.data_;
+  }
+  friend constexpr bool operator!=(TypeId a, TypeId b) { return !(a == b); }
+
+  static TypeId Get(const MessageLite& msg) {
+    return TypeId(msg.GetClassData());
+  }
+
+  template <typename T>
+  static TypeId Get() {
+    return TypeId(MessageLite::GetClassDataGenerated<T>());
+  }
+
+ private:
+  const MessageLite::ClassData* data_;
+};
 
 template <bool alias>
 bool MergeFromImpl(absl::string_view input, MessageLite* msg,
@@ -819,6 +860,83 @@ T* OnShutdownDelete(T* p) {
 
 std::string ShortFormat(const MessageLite& message_lite);
 std::string Utf8Format(const MessageLite& message_lite);
+
+// Tries to downcast this message to a generated message type.  Returns nullptr
+// if this class is not an instance of T.  This works even if RTTI is disabled.
+//
+// This also has the effect of creating a strong reference to T that will
+// prevent the linker from stripping it out at link time.  This can be important
+// if you are using a DynamicMessageFactory that delegates to the generated
+// factory.
+template <typename T>
+const T* DynamicCastToGenerated(const MessageLite* from) {
+  static_assert(std::is_base_of<MessageLite, T>::value, "");
+
+  internal::StrongReferenceToType<T>();
+  // We might avoid the call to T::GetClassData() altogether if T were to
+  // expose the class data pointer.
+  if (from == nullptr ||
+      internal::TypeId::Get<T>() != internal::TypeId::Get(*from)) {
+    return nullptr;
+  }
+
+  return static_cast<const T*>(from);
+}
+
+template <typename T>
+const T* DynamicCastToGenerated(const MessageLite* from);
+
+template <typename T>
+T* DynamicCastToGenerated(MessageLite* from) {
+  return const_cast<T*>(
+      DynamicCastToGenerated<T>(static_cast<const MessageLite*>(from)));
+}
+
+// An overloaded version of DynamicCastToGenerated for downcasting references to
+// base Message class. If the argument is not an instance of T, it terminates
+// with an error.
+template <typename T>
+const T& DynamicCastToGenerated(const MessageLite& from) {
+  const T* destination_message = DynamicCastToGenerated<T>(&from);
+  ABSL_CHECK(destination_message != nullptr)
+      << "Cannot downcast " << from.GetTypeName() << " to "
+      << T::default_instance().GetTypeName();
+  return *destination_message;
+}
+
+template <typename T>
+T& DynamicCastToGenerated(MessageLite& from) {
+  return const_cast<T&>(
+      DynamicCastToGenerated<T>(static_cast<const MessageLite&>(from)));
+}
+
+// A lightweight function for downcasting base MessageLite pointer to derived
+// type. It should only be used when the caller is certain that the argument is
+// of instance T and T is a generated message type.
+template <typename T>
+const T* DownCastToGenerated(const MessageLite* from) {
+  internal::StrongReferenceToType<T>();
+  ABSL_DCHECK(DynamicCastToGenerated<T>(from) == from)
+      << "Cannot downcast " << from->GetTypeName() << " to "
+      << T::default_instance().GetTypeName();
+  return static_cast<const T*>(from);
+}
+
+template <typename T>
+T* DownCastToGenerated(MessageLite* from) {
+  return const_cast<T*>(
+      DownCastToGenerated<T>(static_cast<const MessageLite*>(from)));
+}
+
+template <typename T>
+const T& DownCastToGenerated(const MessageLite& from) {
+  return *DownCastToGenerated<T>(&from);
+}
+
+template <typename T>
+T& DownCastToGenerated(MessageLite& from) {
+  return *DownCastToGenerated<T>(&from);
+}
 
 }  // namespace protobuf
 }  // namespace google
