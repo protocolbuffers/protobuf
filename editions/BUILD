@@ -1,5 +1,5 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("//:protobuf.bzl", "internal_objc_proto_library", "internal_py_proto_library")
+load("//:protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflection_library")
 load(":defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
@@ -234,6 +234,31 @@ java_lite_proto_library(
     testonly = True,
     visibility = ["//conformance:__pkg__"],
     deps = [":test_messages_proto3_editions_proto"],
+)
+
+internal_php_proto_library(
+    name = "test_messages_proto3_editions_php_proto",
+    testonly = 1,
+    srcs = ["golden/test_messages_proto3_editions.proto"],
+    outs = [
+        "GPBMetadata/TestMessagesProto3Editions.php",
+        "Protobuf_test_messages/Editions/Proto3/EnumOnlyProto3.php",
+        "Protobuf_test_messages/Editions/Proto3/EnumOnlyProto3/PBBool.php",
+        "Protobuf_test_messages/Editions/Proto3/ForeignEnum.php",
+        "Protobuf_test_messages/Editions/Proto3/ForeignMessage.php",
+        "Protobuf_test_messages/Editions/Proto3/NullHypothesisProto3.php",
+        "Protobuf_test_messages/Editions/Proto3/TestAllTypesProto3.php",
+        "Protobuf_test_messages/Editions/Proto3/TestAllTypesProto3/AliasedEnum.php",
+        "Protobuf_test_messages/Editions/Proto3/TestAllTypesProto3/NestedEnum.php",
+        "Protobuf_test_messages/Editions/Proto3/TestAllTypesProto3/NestedMessage.php",
+    ],
+    enable_editions = True,
+    includes = [
+        "golden",
+        "src",
+    ],
+    proto_deps = ["//:well_known_protos"],
+    visibility = ["//conformance:__pkg__"],
 )
 
 internal_py_proto_library(

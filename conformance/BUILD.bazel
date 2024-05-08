@@ -332,13 +332,14 @@ inline_sh_binary(
     ],
     cmd = """
         php -dextension=$(rootpath //php:extension) \\
-            -d include_path=conformance:src/google/protobuf \\
+            -d include_path=conformance:src/google/protobuf:editions/golden \\
             $(rootpath conformance_php.php)
     """,
     visibility = ["//php:__subpackages__"],
     deps = [
         ":conformance_php_proto",
         "//:test_messages_proto3_php_proto",
+        "//editions:test_messages_proto3_editions_php_proto",
     ],
 )
 
