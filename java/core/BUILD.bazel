@@ -384,6 +384,34 @@ junit_tests(
     ],
 )
 
+
+junit_tests(
+    name = "head_core_tests",
+    size = "small",
+    srcs = glob(
+        ["src/test/java/**/*.java"],
+        exclude = [
+            "src/test/java/com/google/protobuf/GeneratedMessageTest.java", # TOO: why?
+            "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
+            "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
+            "src/test/java/com/google/protobuf/TestUtil.java",
+            "src/test/java/com/google/protobuf/TestUtilLite.java",
+        ],
+    ),
+    data = ["//src/google/protobuf:testdata"],
+    deps = [
+        "@com_google_protobuf//java/core:core",
+        ":generic_test_protos_java_proto",
+        ":java_test_protos_java_proto",
+        ":lite_test_protos_java_proto",
+        ":test_util",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+        "@maven//:org_mockito_mockito_core",
+    ],
+)
+
 # The UTF-8 validation tests are much slower than the other tests, so they get
 # their own test target with a longer timeout.
 junit_tests(

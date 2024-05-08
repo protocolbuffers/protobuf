@@ -198,3 +198,11 @@ crates_repository(
 
 load("@crate_index//:defs.bzl", "crate_repositories")
 crate_repositories()
+
+# For testing previous major version against latest runtime.
+http_archive(
+    name = "com_google_protobuf",
+    # TODO: Update via GHA via CI (maybe with staleness tests)
+    strip_prefix = "protobuf-94cf1e9446d265453c8b72a352c6c926a1eea25f",
+    url = "https://github.com/protocolbuffers/protobuf/archive/HEAD.zip", # Check for bazel caching issues
+)
