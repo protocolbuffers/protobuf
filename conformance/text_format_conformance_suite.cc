@@ -440,13 +440,11 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunAllTests() {
         absl::StrCat("FloatFieldLargerThanUint64", name_suffix), REQUIRED,
         absl::StrCat("optional_float: 18446744073709551616", suffix));
     // https://protobuf.dev/reference/protobuf/textformat-spec/#literals says
-    // "-0" is a valid float literal.
-    // TODO: Figure out if this should count as not setting
-    // presence or if -0 should be reflected back.
-    // RunValidTextFormatTestWithExpected(
-    //     absl::StrCat("FloatFieldNegativeZero", name_suffix), REQUIRED,
-    //     absl::StrCat("optional_float: -0", suffix),
-    //     "" /* implicit presence, so zero means unset*/);
+    // "-0" is a valid float literal. -0 should be considered not the same as 0
+    // when considering implicit presence, and so should round trip.
+    RunValidTextFormatTest(absl::StrCat("FloatFieldNegativeZero", name_suffix),
+                           REQUIRED,
+                           absl::StrCat("optional_float: -0", suffix));
     // https://protobuf.dev/reference/protobuf/textformat-spec/#literals says
     // ".123", "-.123", ".123e2" are a valid float literal.
     RunValidTextFormatTest(absl::StrCat("FloatFieldNoLeadingZero", name_suffix),
@@ -502,6 +500,19 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunAllTests() {
   RunValidTextFormatTestWithExpected(
       "DoubleFieldOverflowInfinityHugeExponent", REQUIRED,
       "optional_double: 1e18446744073709551616", "optional_double: inf");
+  RunValidTextFormatTestWithExpected(
+      "DoubleFieldLargeNegativeExponentParsesAsZero", REQUIRED,
+      "optional_double: 1e-18446744073709551616", "");
+  RunValidTextFormatTestWithExpected(
+      "NegDoubleFieldLargeNegativeExponentParsesAsNegZero", REQUIRED,
+      "optional_double: -1e-18446744073709551616", "optional_double: -0");
+
+  RunValidTextFormatTestWithExpected(
+      "FloatFieldLargeNegativeExponentParsesAsZero", REQUIRED,
+      "optional_float: 1e-50", "");
+  RunValidTextFormatTestWithExpected(
+      "NegFloatFieldLargeNegativeExponentParsesAsNegZero", REQUIRED,
+      "optional_float: -1e-50", "optional_float: -0");
 
   // String literals x {Strings, Bytes}
   for (const auto& field_type : std::vector<std::string>{"String", "Bytes"}) {
