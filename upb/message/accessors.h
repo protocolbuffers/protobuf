@@ -153,9 +153,8 @@ UPB_API_INLINE bool upb_Message_SetInt64(upb_Message* msg,
                                          int64_t value, upb_Arena* a);
 
 UPB_API_INLINE void upb_Message_SetMessage(upb_Message* msg,
-                                           const upb_MiniTable* m,
                                            const upb_MiniTableField* f,
-                                           upb_Message* sub_message);
+                                           upb_Message* value);
 
 UPB_API_INLINE bool upb_Message_SetString(upb_Message* msg,
                                           const upb_MiniTableField* f,

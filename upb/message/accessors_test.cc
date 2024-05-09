@@ -329,10 +329,8 @@ TEST(GeneratedCode, SubMessage) {
           arena));
   upb_Message_SetInt32(new_nested_message, nested_message_a_field, 123,
                        nullptr);
-  upb_Message_SetMessage(
-      UPB_UPCAST(msg),
-      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
-      optional_message_field, new_nested_message);
+  upb_Message_SetMessage(UPB_UPCAST(msg), optional_message_field,
+                         new_nested_message);
 
   upb_Message* mutable_message = upb_Message_GetOrCreateMutableMessage(
       UPB_UPCAST(msg),

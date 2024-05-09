@@ -188,7 +188,7 @@ upb_DecodeStatus upb_Message_PromoteMessage(upb_Message* parent,
       upb_Message_PromoteOne(&tagged, sub_table, decode_options, arena);
   if (ret == kUpb_DecodeStatus_Ok) {
     *promoted = upb_TaggedMessagePtr_GetNonEmptyMessage(tagged);
-    upb_Message_SetMessage(parent, mini_table, field, *promoted);
+    upb_Message_SetMessage(parent, field, *promoted);
   }
   return ret;
 }
@@ -280,7 +280,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
     if (is_oneof) {
       UPB_PRIVATE(_upb_Message_SetOneofCase)(msg, field);
     }
-    upb_Message_SetMessage(msg, mini_table, field, message);
+    upb_Message_SetMessage(msg, field, message);
     ret.message = message;
   }
   return ret;
