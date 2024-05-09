@@ -28,4 +28,6 @@ final class NewInstanceSchemas {
       return null;
     }
   }
+
+  private NewInstanceSchemas() {}
 }

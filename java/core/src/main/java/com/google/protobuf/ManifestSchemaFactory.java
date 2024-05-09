@@ -34,57 +34,37 @@ final class ManifestSchemaFactory implements SchemaFactory {
 
     // MessageSet has a special schema.
     if (messageInfo.isMessageSetWireFormat()) {
-      if (GeneratedMessageLite.class.isAssignableFrom(messageType)) {
-        return MessageSetSchema.newSchema(
-            SchemaUtil.unknownFieldSetLiteSchema(),
-            ExtensionSchemas.lite(),
-            messageInfo.getDefaultInstance());
-      }
-      return MessageSetSchema.newSchema(
-          SchemaUtil.unknownFieldSetFullSchema(),
-          ExtensionSchemas.full(),
-          messageInfo.getDefaultInstance());
+      return useLiteRuntime(messageType)
+          ? MessageSetSchema.newSchema(
+              SchemaUtil.unknownFieldSetLiteSchema(),
+              ExtensionSchemas.lite(),
+              messageInfo.getDefaultInstance())
+          : MessageSetSchema.newSchema(
+              SchemaUtil.unknownFieldSetFullSchema(),
+              ExtensionSchemas.full(),
+              messageInfo.getDefaultInstance());
     }
 
     return newSchema(messageType, messageInfo);
   }
 
   private static <T> Schema<T> newSchema(Class<T> messageType, MessageInfo messageInfo) {
-    if (GeneratedMessageLite.class.isAssignableFrom(messageType)) {
-      return allowExtensions(messageInfo)
-          ? MessageSchema.newSchema(
-              messageType,
-              messageInfo,
-              NewInstanceSchemas.lite(),
-              ListFieldSchema.lite(),
-              SchemaUtil.unknownFieldSetLiteSchema(),
-              ExtensionSchemas.lite(),
-              MapFieldSchemas.lite())
-          : MessageSchema.newSchema(
-              messageType,
-              messageInfo,
-              NewInstanceSchemas.lite(),
-              ListFieldSchema.lite(),
-              SchemaUtil.unknownFieldSetLiteSchema(),
-              /* extensionSchema= */ null,
-              MapFieldSchemas.lite());
-    }
-    return allowExtensions(messageInfo)
+    return useLiteRuntime(messageType)
         ? MessageSchema.newSchema(
             messageType,
             messageInfo,
-            NewInstanceSchemas.full(),
-            ListFieldSchema.full(),
-            SchemaUtil.unknownFieldSetFullSchema(),
-            ExtensionSchemas.full(),
-            MapFieldSchemas.full())
+            NewInstanceSchemas.lite(),
+            ListFieldSchemas.lite(),
+            SchemaUtil.unknownFieldSetLiteSchema(),
+            allowExtensions(messageInfo) ? ExtensionSchemas.lite() : null,
+            MapFieldSchemas.lite())
         : MessageSchema.newSchema(
             messageType,
             messageInfo,
             NewInstanceSchemas.full(),
-            ListFieldSchema.full(),
+            ListFieldSchemas.full(),
             SchemaUtil.unknownFieldSetFullSchema(),
-            /* extensionSchema= */ null,
+            allowExtensions(messageInfo) ? ExtensionSchemas.full() : null,
             MapFieldSchemas.full());
   }
 
@@ -151,5 +131,9 @@ final class ManifestSchemaFactory implements SchemaFactory {
     } catch (Exception e) {
       return EMPTY_FACTORY;
     }
+  }
+
+  private static boolean useLiteRuntime(Class<?> messageType) {
+    return GeneratedMessageLite.class.isAssignableFrom(messageType);
   }
 }
