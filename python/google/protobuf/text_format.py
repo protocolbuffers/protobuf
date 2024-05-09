@@ -28,6 +28,8 @@ import re
 
 from google.protobuf.internal import decoder
 from google.protobuf.internal import type_checkers
+from google.protobuf.internal import encoder
+from google.protobuf.internal import wire_format
 from google.protobuf import descriptor
 from google.protobuf import text_encoding
 from google.protobuf import unknown_fields
@@ -1809,7 +1811,7 @@ def ParseFloat(text):
       try:
         return float(text.rstrip('f'))
       except ValueError:
-        raise ValueError('Couldn\'t parse float: %s' % text)
+        raise ValueError("Couldn't parse float: %s" % text)
 
 
 def ParseBool(text):

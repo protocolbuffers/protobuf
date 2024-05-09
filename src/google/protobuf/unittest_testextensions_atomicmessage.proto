@@ -1,0 +1,11 @@
+syntax = "proto2";
+
+package protobuf_unittest;
+
+import "//google/protobuf/unittest_atomicmessage.proto";
+
+option java_multiple_files = true;
+
+extend TestExtensionsWithMetadata {
+  optional protobuf_unittest.AtomicExtensionMessage optional_atomic_extension = 4;
+}

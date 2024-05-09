@@ -39,6 +39,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_util.h"
@@ -121,6 +122,7 @@ class TextFormatTest : public TextFormatTestBase {
  protected:
   // Text format read from text_format_unittest_data.txt.
   const std::string proto_text_format_;
+
  private:
   static std::string static_proto_text_format_;
 };
@@ -993,6 +995,7 @@ TEST_F(TextFormatExtensionsTest, ParseExtensions) {
   TextFormat::Parse(&input_stream, &proto_);
   TestUtil::ExpectAllExtensionsSet(proto_);
 }
+
 
 TEST_F(TextFormatTest, ParseEnumFieldFromNumber) {
   // Create a parse string with a numerical value for an enum field.
@@ -2036,6 +2039,7 @@ TEST_F(TextFormatParserTest, InvalidToken) {
   ExpectFailure("\"some string\"", "Expected identifier, got: \"some string\"",
                 1, 1);
 }
+
 
 TEST_F(TextFormatParserTest, InvalidFieldName) {
   ExpectFailure(
