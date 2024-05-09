@@ -56,6 +56,16 @@ module CommonTests
     assert_equal :C, m.optional_enum
   end
 
+  def test_float_precision
+    # See https://github.com/protocolbuffers/protobuf/issues/6966
+    # A float field in protobuf is a single-precision floating point value.
+    # The Ruby Float type uses double-precision floating point.
+    # When you convert a double-precision floating point value to single precision, there is going to be some loss of precision.
+    m = proto_module::TestMessage.new
+    m.optional_float = 0.1
+    refute_equal 0.1, m.optional_float
+  end
+
   def test_ctor_args
     m = proto_module::TestMessage.new(:optional_int32 => -42,
                                       :optional_msg => proto_module::TestMessage2.new,
