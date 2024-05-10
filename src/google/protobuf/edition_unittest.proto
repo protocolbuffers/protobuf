@@ -1254,11 +1254,11 @@ message TestNestedGroupExtensionOuter {
     message Layer2RepeatedGroup {
       extensions 3
         // NOTE: extension metadata is not supported due to targets such as
-        // `//third_party/protobuf_legacy_opensource/src:shell_scripts_test`,
+        // `//google/protobuf_legacy_opensource/src:shell_scripts_test`,
         // eee https://screenshot.googleplex.com/Axz2QD8nxjdpyFF
         //[metadata = {
         // NOTE: can't write type there due to some clever build gen code at
-        // http://google3/net/proto2/internal/BUILD;l=1247;rcl=411090862
+        // http://google3/google/protobuf/BUILD;l=1247;rcl=411090862
         // type: "edition_unittest.TestNestedGroupExtensionInnerExtension",
         // name: "inner",
         // }]
