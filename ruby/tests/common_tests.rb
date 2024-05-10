@@ -210,6 +210,51 @@ module CommonTests
     assert_raises(FrozenError) { m.optional_string.encode!('ASCII-8BIT') }
   end
 
+  def test_bad_8bit_string
+    bad_str = "\x80".force_encoding(Encoding::ASCII_8BIT)
+
+    assert_equal Encoding::ASCII_8BIT, bad_str.encoding
+    assert_true bad_str.valid_encoding?
+
+    assert_raises Encoding::UndefinedConversionError do
+      m = proto_module::TestMessage.new(
+        optional_string: bad_str,
+      )
+    end
+  end
+
+  def test_bad_utf8
+    bad_str = "\x80"
+
+    # Despite the fact that this string is invalid UTF-8, Ruby considers it to
+    # have UTF-8 encoding.
+    assert_equal Encoding::UTF_8, bad_str.encoding
+    assert_false bad_str.valid_encoding?
+
+    # Because the string claims to be UTF-8, the library doesn't double-check
+    # it and allows this invalid UTF-8 into the message. :(
+    m = proto_module::TestMessage.new(
+      optional_string: bad_str,
+    )
+
+    # The invalid UTF-8 serializes to a string, where it creates bad UTF-8 on
+    # the wire.
+    data = proto_module::TestMessage.encode m
+
+    # Now when we parse it back, it will fail for proto3 messages, but pass for
+    # proto2.
+    if proto_module::TestMessage.descriptor.name == "basic_test.TestMessage"
+      # proto3: the invalid UTF-8 is rejected by the parser.
+      assert_raises Google::Protobuf::ParseError do
+        m2 = proto_module::TestMessage.decode data
+      end
+    else
+      # proto3: the invalid UTF-8 is accepted by the parser.
+      m2 = proto_module::TestMessage.decode data
+      assert_equal bad_str, m.optional_string
+    end
+  end
+
   def test_rptfield_int32
     l = Google::Protobuf::RepeatedField.new(:int32)
     assert_equal 0, l.count
