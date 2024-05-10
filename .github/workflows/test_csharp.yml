@@ -36,7 +36,7 @@ jobs:
             dotnet test -c Release -f net6.0 src/Google.Protobuf.Test/Google.Protobuf.Test.csproj"
 
       - name: Clear bazel between docker instances
-        run: sudo rm -rf _build
+        run: sudo rm -rf _build .repository-cache
 
       - name: Run conformance tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
