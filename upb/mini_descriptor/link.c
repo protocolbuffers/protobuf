@@ -50,12 +50,12 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
       return false;
   }
 
-  upb_MiniTableSub* table_sub =
-      (void*)&table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)];
+  int idx = field->UPB_PRIVATE(submsg_index);
+  upb_MiniTableSub* table_subs = (void*)table->UPB_PRIVATE(subs);
   // TODO: Add this assert back once YouTube is updated to not call
   // this function repeatedly.
   // UPB_ASSERT(UPB_PRIVATE(_upb_MiniTable_IsEmpty)(table_sub->submsg));
-  *table_sub = upb_MiniTableSub_FromMessage(sub);
+  table_subs[idx] = upb_MiniTableSub_FromMessage(sub);
   return true;
 }
 
