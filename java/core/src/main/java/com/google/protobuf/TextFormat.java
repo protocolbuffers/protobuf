@@ -581,6 +581,9 @@ public final class TextFormat {
 
     private static void printUnknownFields(
         final UnknownFieldSet unknownFields, final TextGenerator generator) throws IOException {
+      if (unknownFields.isEmpty()) {
+        return;
+      }
       for (Map.Entry<Integer, UnknownFieldSet.Field> entry : unknownFields.asMap().entrySet()) {
         final int number = entry.getKey();
         final UnknownFieldSet.Field field = entry.getValue();
