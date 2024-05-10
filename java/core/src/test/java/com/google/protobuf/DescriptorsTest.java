@@ -1158,7 +1158,7 @@ public class DescriptorsTest {
                   .setOptions(FileOptions.newBuilder().setJavaStringCheckUtf8(true))
                   .build(),
               new FileDescriptor[0]);
-      assertThat(file.features.getExtension(JavaFeaturesProto.java).getUtf8Validation())
+      assertThat(file.features.getExtension(JavaFeaturesProto.java_).getUtf8Validation())
           .isEqualTo(JavaFeaturesProto.JavaFeatures.Utf8Validation.VERIFY);
     }
 
@@ -1178,8 +1178,8 @@ public class DescriptorsTest {
       assertThat(features.getJsonFormat())
           .isEqualTo(DescriptorProtos.FeatureSet.JsonFormat.LEGACY_BEST_EFFORT);
 
-      assertThat(features.getExtension(JavaFeaturesProto.java).getLegacyClosedEnum()).isTrue();
-      assertThat(features.getExtension(JavaFeaturesProto.java).getUtf8Validation())
+      assertThat(features.getExtension(JavaFeaturesProto.java_).getLegacyClosedEnum()).isTrue();
+      assertThat(features.getExtension(JavaFeaturesProto.java_).getUtf8Validation())
           .isEqualTo(JavaFeaturesProto.JavaFeatures.Utf8Validation.DEFAULT);
     }
 
@@ -1198,8 +1198,8 @@ public class DescriptorsTest {
       assertThat(features.getMessageEncoding())
           .isEqualTo(DescriptorProtos.FeatureSet.MessageEncoding.LENGTH_PREFIXED);
 
-      assertThat(features.getExtension(JavaFeaturesProto.java).getLegacyClosedEnum()).isFalse();
-      assertThat(features.getExtension(JavaFeaturesProto.java).getUtf8Validation())
+      assertThat(features.getExtension(JavaFeaturesProto.java_).getLegacyClosedEnum()).isFalse();
+      assertThat(features.getExtension(JavaFeaturesProto.java_).getUtf8Validation())
           .isEqualTo(JavaFeaturesProto.JavaFeatures.Utf8Validation.DEFAULT);
     }
 

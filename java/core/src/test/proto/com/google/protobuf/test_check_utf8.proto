@@ -12,7 +12,10 @@ edition = "2023";
 
 package proto2_test_check_utf8;
 
-option features.utf8_validation = VERIFY;
+import "google/protobuf/java_features.proto";
+
+option features.utf8_validation = NONE;
+option features.(pb.java).utf8_validation = VERIFY;
 option java_outer_classname = "TestCheckUtf8";
 
 message StringWrapper {
