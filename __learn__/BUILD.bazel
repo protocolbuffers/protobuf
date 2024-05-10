@@ -416,3 +416,19 @@ internal_objc_proto_library(
     "//objectivec:__subpackages__",
   ],
 )
+
+internal_objc_proto_library(
+  name = "test_messages_proto3_objc_proto",
+  testonly = 1,
+  srcs = ["//src/google/protobuf:test_messages_proto3.proto"],
+  includes = [
+    "src/google/protobuf", 
+    # sequencing is important
+    "src",
+  ],
+  proto_deps = [":well_known_protos"],
+  visibility = [
+    "//conformance:__pkg__",
+    "//objectivec:__subpackages__",
+  ],
+)
