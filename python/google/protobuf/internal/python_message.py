@@ -1000,6 +1000,21 @@ def _AddUnicodeMethod(unused_message_descriptor, cls):
   cls.__unicode__ = __unicode__
 
 
+def _AddContainsMethod(message_descriptor, cls):
+
+  if message_descriptor.full_name == 'google.protobuf.Struct':
+    def __contains__(self, key):
+      return key in self.fields
+  elif message_descriptor.full_name == 'google.protobuf.ListValue':
+    def __contains__(self, value):
+      return value in self.items()
+  else:
+    def __contains__(self, field):
+      return self.HasField(field)
+
+  cls.__contains__ = __contains__
+
+
 def _BytesForNonRepeatedElement(value, field_number, field_type):
   """Returns the number of bytes needed to serialize a non-repeated element.
   The returned byte count includes space for tag information and any
@@ -1394,6 +1409,7 @@ def _AddMessageMethods(message_descriptor, cls):
   _AddStrMethod(message_descriptor, cls)
   _AddReprMethod(message_descriptor, cls)
   _AddUnicodeMethod(message_descriptor, cls)
+  _AddContainsMethod(message_descriptor, cls)
   _AddByteSizeMethod(message_descriptor, cls)
   _AddSerializeToStringMethod(message_descriptor, cls)
   _AddSerializePartialToStringMethod(message_descriptor, cls)

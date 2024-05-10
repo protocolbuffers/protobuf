@@ -22,18 +22,15 @@ use std::fmt;
 /// These are the items protobuf users can access directly.
 #[doc(hidden)]
 pub mod __public {
-    pub use crate::r#enum::UnknownEnumValue;
+    pub use crate::r#enum::{Enum, UnknownEnumValue};
     pub use crate::map::{Map, MapIter, MapMut, MapView, ProxiedInMapValue};
-    pub use crate::optional::{AbsentField, FieldEntry, Optional, PresentField};
-    pub use crate::primitive::PrimitiveMut;
+    pub use crate::optional::Optional;
     pub use crate::proto;
-    pub use crate::proxied::{
-        Mut, MutProxied, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy,
-    };
+    pub use crate::proxied::{IntoProxied, Mut, MutProxied, MutProxy, Proxied, View, ViewProxy};
     pub use crate::repeated::{
         ProxiedInRepeated, Repeated, RepeatedIter, RepeatedMut, RepeatedView,
     };
-    pub use crate::string::{BytesMut, ProtoStr, ProtoStrMut};
+    pub use crate::string::ProtoStr;
     pub use crate::ParseError;
 }
 pub use __public::*;
@@ -56,7 +53,6 @@ pub mod __runtime;
 
 #[path = "enum.rs"]
 mod r#enum;
-mod macros;
 mod map;
 mod optional;
 mod primitive;
@@ -64,7 +60,6 @@ mod proto_macro;
 mod proxied;
 mod repeated;
 mod string;
-mod vtable;
 
 /// An error that happened during deserialization.
 #[derive(Debug, Clone)]

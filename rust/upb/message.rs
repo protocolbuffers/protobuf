@@ -1,5 +1,5 @@
 use crate::opaque_pointee::opaque_pointee;
-use crate::{upb_MiniTable, RawArena};
+use crate::{upb_MiniTable, upb_MiniTableField, RawArena};
 use std::ptr::NonNull;
 
 opaque_pointee!(upb_Message);
@@ -22,4 +22,10 @@ extern "C" {
         mini_table: *const upb_MiniTable,
         arena: RawArena,
     ) -> Option<RawMessage>;
+
+    pub fn upb_Message_SetBaseField(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableField,
+        val: *const std::ffi::c_void,
+    );
 }

@@ -324,13 +324,17 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
     if is_upb:
         thunks_cc_info = target[UpbWrappedCcInfo].cc_info_with_thunks
     else:
+        dep_cc_infos = []
+        for dep in proto_deps:
+            dep_cc_infos.append(dep[CcInfo])
+
         thunks_cc_info = cc_common.merge_cc_infos(cc_infos = [_compile_cc(
             feature_configuration = feature_configuration,
             src = thunk,
             ctx = ctx,
             attr = attr,
             cc_toolchain = cc_toolchain,
-            cc_infos = [target[CcInfo], ctx.attr._cpp_thunks_deps[CcInfo]],
+            cc_infos = [target[CcInfo], ctx.attr._cpp_thunks_deps[CcInfo]] + dep_cc_infos,
         ) for thunk in thunks])
 
     runtime = proto_lang_toolchain.runtime

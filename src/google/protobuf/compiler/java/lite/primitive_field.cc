@@ -21,6 +21,7 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/internal_helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/wire_format.h"
 
@@ -217,10 +218,9 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
         "private static final $field_type$ $bytes_default$ = $default$;\n");
   }
   if (!context_->options().opensource_runtime) {
-    printer->Print(
-        variables_,
-        "@com.google.protobuf.ProtoField(\n"
-        "  isRequired=$required$)\n");
+    printer->Print(variables_,
+                   "@com.google.protobuf.ProtoField(\n"
+                   "  isRequired=$required$)\n");
     if (HasHasbit(descriptor_)) {
       printer->Print(variables_,
                      "@com.google.protobuf.ProtoPresenceCheckedField(\n"
@@ -329,14 +329,27 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateBuilderMembers(
 void ImmutablePrimitiveFieldLiteGenerator::GenerateKotlinDslMembers(
     io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_, context_->options());
-  printer->Print(variables_,
-                 "$kt_deprecation$public var $kt_name$: $kt_type$\n"
-                 "  @JvmName(\"${$get$kt_capitalized_name$$}$\")\n"
-                 "  get() = $kt_dsl_builder$.${$get$capitalized_name$$}$()\n"
-                 "  @JvmName(\"${$set$kt_capitalized_name$$}$\")\n"
-                 "  set(value) {\n"
-                 "    $kt_dsl_builder$.${$set$capitalized_name$$}$(value)\n"
-                 "  }\n");
+  if (descriptor_->name() == "is_initialized") {
+    printer->Print(
+        variables_,
+        "// TODO: b/336400327 - remove this hack; we should access properties\n"
+        "$kt_deprecation$public var $kt_name$: $kt_type$\n"
+        "  @JvmName(\"${$get$kt_capitalized_name$$}$\")\n"
+        "  get() = $kt_dsl_builder$.get${$$kt_capitalized_name$$}$()\n"
+        "  @JvmName(\"${$set$kt_capitalized_name$$}$\")\n"
+        "  set(value) {\n"
+        "    $kt_dsl_builder$.${$set$kt_capitalized_name$$}$(value)\n"
+        "  }\n");
+  } else {
+    printer->Print(variables_,
+                   "$kt_deprecation$public var $kt_name$: $kt_type$\n"
+                   "  @JvmName(\"${$get$kt_capitalized_name$$}$\")\n"
+                   "  get() = $kt_dsl_builder$.${$$kt_safe_name$$}$\n"
+                   "  @JvmName(\"${$set$kt_capitalized_name$$}$\")\n"
+                   "  set(value) {\n"
+                   "    $kt_dsl_builder$.${$$kt_safe_name$$}$ = value\n"
+                   "  }\n");
+  }
 
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                context_->options(),
@@ -718,7 +731,7 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateKotlinDslMembers(
                  "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
                  "  @kotlin.jvm.JvmSynthetic\n"
                  "  get() = com.google.protobuf.kotlin.DslList(\n"
-                 "    $kt_dsl_builder$.${$get$capitalized_name$List$}$()\n"
+                 "    $kt_dsl_builder$.${$$kt_property_name$List$}$\n"
                  "  )\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,

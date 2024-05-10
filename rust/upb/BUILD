@@ -46,5 +46,6 @@ cc_library(
         "//upb:mem",
         "//upb:message",
         "//upb:message_copy",
+        "//upb/mini_table",
     ],
 )

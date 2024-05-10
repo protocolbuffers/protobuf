@@ -9,6 +9,7 @@
 
 use enums_proto::*;
 use googletest::prelude::*;
+use protobuf::Enum;
 use unittest_proto::*;
 
 #[test]
@@ -60,12 +61,12 @@ fn test_closed_enum_is_nonexhaustive() {
 #[test]
 fn test_closed_enum_conversion() {
     assert_that!(i32::from(TestSparseEnum::SparseA), eq(123));
-    assert_that!(TestSparseEnum::try_from(123), ok(eq(TestSparseEnum::SparseA)));
+    assert_that!(TestSparseEnum::try_from(123), ok(eq(&TestSparseEnum::SparseA)));
 
     assert_that!(i32::from(TestSparseEnum::SparseD), eq(-15));
-    assert_that!(TestSparseEnum::try_from(-15), ok(eq(TestSparseEnum::SparseD)));
+    assert_that!(TestSparseEnum::try_from(-15), ok(eq(&TestSparseEnum::SparseD)));
 
-    assert_that!(TestSparseEnum::try_from(0), ok(eq(TestSparseEnum::SparseF)));
+    assert_that!(TestSparseEnum::try_from(0), ok(eq(&TestSparseEnum::SparseF)));
     assert_that!(TestSparseEnum::try_from(1), err(anything()));
 }
 
@@ -77,9 +78,9 @@ fn test_closed_aliased_enum_conversion() {
     assert_that!(i32::from(TestEnumWithDupValue::Bar2), eq(2));
     assert_that!(i32::from(TestEnumWithDupValue::Baz), eq(3));
 
-    assert_that!(TestEnumWithDupValue::try_from(1), ok(eq(TestEnumWithDupValue::Foo1)));
-    assert_that!(TestEnumWithDupValue::try_from(2), ok(eq(TestEnumWithDupValue::Bar1)));
-    assert_that!(TestEnumWithDupValue::try_from(3), ok(eq(TestEnumWithDupValue::Baz)));
+    assert_that!(TestEnumWithDupValue::try_from(1), ok(eq(&TestEnumWithDupValue::Foo1)));
+    assert_that!(TestEnumWithDupValue::try_from(2), ok(eq(&TestEnumWithDupValue::Bar1)));
+    assert_that!(TestEnumWithDupValue::try_from(3), ok(eq(&TestEnumWithDupValue::Baz)));
     assert_that!(TestEnumWithDupValue::try_from(0), err(anything()));
     assert_that!(TestEnumWithDupValue::try_from(4), err(anything()));
 
@@ -166,4 +167,25 @@ fn test_enum_conversion_failure_display() {
 fn test_enum_conversion_failure_impls_std_error() {
     let err = TestSparseEnum::try_from(1).unwrap_err();
     let _test_compiles: &dyn std::error::Error = &err;
+}
+
+#[test]
+fn test_is_known_for_closed_enum() {
+    assert_that!(test_all_types::NestedEnum::is_known(-2), eq(false));
+    assert_that!(test_all_types::NestedEnum::is_known(-1), eq(true));
+    assert_that!(test_all_types::NestedEnum::is_known(0), eq(false));
+    assert_that!(test_all_types::NestedEnum::is_known(1), eq(true));
+    assert_that!(test_all_types::NestedEnum::is_known(2), eq(true));
+    assert_that!(test_all_types::NestedEnum::is_known(3), eq(true));
+    assert_that!(test_all_types::NestedEnum::is_known(4), eq(false));
+}
+
+#[test]
+fn test_is_known_for_open_enum() {
+    assert_that!(TestEnumWithNumericNames::is_known(-1), eq(false));
+    assert_that!(TestEnumWithNumericNames::is_known(0), eq(true));
+    assert_that!(TestEnumWithNumericNames::is_known(1), eq(true));
+    assert_that!(TestEnumWithNumericNames::is_known(2), eq(true));
+    assert_that!(TestEnumWithNumericNames::is_known(3), eq(true));
+    assert_that!(TestEnumWithNumericNames::is_known(4), eq(false));
 }

@@ -15,7 +15,7 @@ use std::iter::FusedIterator;
 use std::marker::PhantomData;
 
 use crate::{
-    Mut, MutProxied, MutProxy, Proxied, SettableValue, View, ViewProxy,
+    IntoProxied, Mut, MutProxied, MutProxy, Proxied, View, ViewProxy,
     __internal::Private,
     __runtime::{InnerRepeated, InnerRepeatedMut, RawRepeatedField},
 };
@@ -208,6 +208,49 @@ where
     }
 }
 
+impl<T> Repeated<T>
+where
+    T: ?Sized + ProxiedInRepeated,
+{
+    pub fn as_view(&self) -> View<Repeated<T>> {
+        RepeatedView { raw: self.inner.raw(), _phantom: PhantomData }
+    }
+
+    #[doc(hidden)]
+    pub fn inner(&self, _private: Private) -> &InnerRepeated {
+        &self.inner
+    }
+}
+
+impl<T> IntoProxied<Repeated<T>> for Repeated<T>
+where
+    T: ?Sized + ProxiedInRepeated,
+{
+    fn into(self, _private: Private) -> Repeated<T> {
+        self
+    }
+}
+
+impl<'msg, T> IntoProxied<Repeated<T>> for RepeatedView<'msg, T>
+where
+    T: 'msg + ?Sized + ProxiedInRepeated,
+{
+    fn into(self, _private: Private) -> Repeated<T> {
+        let mut repeated: Repeated<T> = Repeated::new();
+        T::repeated_copy_from(self, repeated.as_mut());
+        repeated
+    }
+}
+
+impl<'msg, T> IntoProxied<Repeated<T>> for RepeatedMut<'msg, T>
+where
+    T: 'msg + ?Sized + ProxiedInRepeated,
+{
+    fn into(self, _private: Private) -> Repeated<T> {
+        IntoProxied::into(self.as_view(), _private)
+    }
+}
+
 /// Types that can appear in a `Repeated<T>`.
 ///
 /// This trait is implemented by generated code to communicate how the proxied
@@ -275,7 +318,7 @@ impl<'msg, T: ?Sized> Debug for RepeatedIter<'msg, T> {
 /// Users will generally write [`View<Repeated<T>>`](RepeatedView) or
 /// [`Mut<Repeated<T>>`](RepeatedMut) to access the repeated elements
 pub struct Repeated<T: ?Sized + ProxiedInRepeated> {
-    inner: InnerRepeated,
+    pub(crate) inner: InnerRepeated,
     _phantom: PhantomData<T>,
 }
 
@@ -372,18 +415,6 @@ where
         'msg: 'shorter,
     {
         RepeatedMut { inner: self.inner, _phantom: PhantomData }
-    }
-}
-
-impl<'msg, T> SettableValue<Repeated<T>> for RepeatedView<'msg, T>
-where
-    T: ProxiedInRepeated + ?Sized + 'msg,
-{
-    fn set_on<'b>(self, _private: Private, mutator: Mut<'b, Repeated<T>>)
-    where
-        Repeated<T>: 'b,
-    {
-        T::repeated_copy_from(self, mutator)
     }
 }
 
@@ -491,8 +522,7 @@ mod tests {
                     assert_that!(r.len(), eq(expected_len));
 
                 )*
-                assert_that!(
-                    r.iter().collect::<Vec<$t>>(), elements_are![$(eq($vals)),*]);
+                assert_that!(r, elements_are![$(eq($vals)),*]);
                 r.set(0, <$t as Default>::default());
                 assert_that!(r.get(0).expect("elem 0"), eq(<$t as Default>::default()));
 
@@ -519,15 +549,12 @@ mod tests {
         assert_that!(r.as_mut().len(), eq(0));
 
         r.as_mut().extend([0, 1]);
-        assert_that!(r.as_mut().iter().collect::<Vec<_>>(), elements_are![eq(0), eq(1)]);
+        assert_that!(r.as_mut(), elements_are![eq(0), eq(1)]);
         let mut x = Repeated::<i32>::new();
         x.as_mut().extend([2, 3]);
 
         r.as_mut().extend(&x.as_mut());
 
-        assert_that!(
-            r.as_mut().iter().collect::<Vec<_>>(),
-            elements_are![eq(0), eq(1), eq(2), eq(3)]
-        );
+        assert_that!(r.as_mut(), elements_are![eq(0), eq(1), eq(2), eq(3)]);
     }
 }

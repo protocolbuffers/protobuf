@@ -226,33 +226,56 @@ void MessageDrop(Context& ctx, const Descriptor& msg) {
   )rs");
 }
 
-void MessageSettableValueForView(Context& ctx, const Descriptor& msg) {
+void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
       ctx.Emit({{"copy_from_thunk", ThunkName(ctx, msg, "copy_from")}}, R"rs(
-        impl<'msg> $pb$::SettableValue<$Msg$> for $Msg$View<'msg> {
-          fn set_on<'dst>(
-            self, _private: $pbi$::Private, mutator: $pb$::Mut<'dst, $Msg$>)
-            where $Msg$: 'dst {
-            unsafe { $copy_from_thunk$(mutator.inner.msg(), self.msg) };
+        impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$View<'msg> {
+          fn into(self, _private: $pbi$::Private) -> $Msg$ {
+            let dst = $Msg$::new();
+            unsafe { $copy_from_thunk$(dst.inner.msg, self.msg) };
+            dst
+          }
+        }
+
+        impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$Mut<'msg> {
+          fn into(self, _private: $pbi$::Private) -> $Msg$ {
+            $pb$::IntoProxied::into($pb$::ViewProxy::into_view(self), _private)
+          }
+        }
+
+        impl $pb$::IntoProxied<$Msg$> for $Msg$ {
+          fn into(self, _private: $pbi$::Private) -> $Msg$ {
+            self
           }
         }
       )rs");
       return;
 
     case Kernel::kUpb:
-      // TODO: Add owned SettableValue impl for upb messages.
       ctx.Emit({{"minitable", UpbMinitableName(msg)}}, R"rs(
-        impl<'msg> $pb$::SettableValue<$Msg$> for $Msg$View<'msg> {
-          fn set_on<'dst>(
-            self, _private: $pbi$::Private, mutator: $pb$::Mut<'dst, $Msg$>)
-            where $Msg$: 'dst {
+        impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$View<'msg> {
+          fn into(self, _private: $pbi$::Private) -> $Msg$ {
+            let dst = $Msg$::new();
             unsafe { $pbr$::upb_Message_DeepCopy(
-              mutator.inner.msg(),
+              dst.inner.msg,
               self.msg,
               $std$::ptr::addr_of!($minitable$),
-              mutator.inner.arena($pbi$::Private).raw(),
+              dst.inner.arena.raw(),
             ) };
+            dst
+          }
+        }
+
+        impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$Mut<'msg> {
+          fn into(self, _private: $pbi$::Private) -> $Msg$ {
+            $pb$::IntoProxied::into($pb$::ViewProxy::into_view(self), _private)
+          }
+        }
+
+        impl $pb$::IntoProxied<$Msg$> for $Msg$ {
+          fn into(self, _private: $pbi$::Private) -> $Msg$ {
+            self
           }
         }
       )rs");
@@ -260,6 +283,16 @@ void MessageSettableValueForView(Context& ctx, const Descriptor& msg) {
   }
 
   ABSL_LOG(FATAL) << "unreachable";
+}
+
+void MessageGetMinitable(Context& ctx, const Descriptor& msg) {
+  if (ctx.opts().kernel == Kernel::kUpb) {
+    ctx.Emit({{"minitable", UpbMinitableName(msg)}}, R"rs(
+      pub fn raw_minitable(_private: $pbi$::Private) -> *const $pbr$::upb_MiniTable {
+        unsafe { $std$::ptr::addr_of!($minitable$) }
+      }
+    )rs");
+  }
 }
 
 void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
@@ -340,7 +373,6 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
             }
           }
         }
-
       )rs");
       return;
     case Kernel::kUpb:
@@ -797,8 +829,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
                                    AccessorCase::MUT);
           }
         }},
-       {"settable_impl_for_view",
-        [&] { MessageSettableValueForView(ctx, msg); }},
+       {"into_proxied_impl", [&] { IntoProxiedForMessage(ctx, msg); }},
+       {"get_upb_minitable", [&] { MessageGetMinitable(ctx, msg); }},
        {"repeated_impl", [&] { MessageProxiedInRepeated(ctx, msg); }},
        {"map_value_impl", [&] { MessageProxiedInMapValue(ctx, msg); }},
        {"unwrap_upb",
@@ -879,6 +911,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             $Msg::serialize$
           }
 
+          pub fn to_owned(&self) -> $Msg$ {
+            $pb$::IntoProxied::into(*self, $pbi$::Private)
+          }
+
           $accessor_fns_for_views$
         }
 
@@ -902,75 +938,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }
 
-        impl $pbi$::ProxiedWithRawVTable for $Msg$ {
-          type VTable = $pbr$::MessageVTable;
-
-          fn make_view(_private: $pbi$::Private,
-                      mut_inner: $pbi$::RawVTableMutator<'_, Self>)
-                      -> $pb$::View<'_, Self> {
-            let msg = unsafe {
-              (mut_inner.vtable().getter)(mut_inner.msg_ref().msg())
-            };
-            $Msg$View::new($pbi$::Private, msg$unwrap_upb$)
-          }
-
-          fn make_mut(_private: $pbi$::Private,
-                      inner: $pbi$::RawVTableMutator<'_, Self>)
-                      -> $pb$::Mut<'_, Self> {
-            let raw_submsg = unsafe {
-              (inner.vtable().mut_getter)(inner.msg_ref().msg()$upb_arena$)
-            };
-            $Msg$Mut::from_parent($pbi$::Private, inner.msg_ref(), raw_submsg)
-          }
-        }
-
-        impl $pbi$::ProxiedWithRawOptionalVTable for $Msg$ {
-          type OptionalVTable = $pbr$::MessageVTable;
-
-          fn upcast_vtable(_private: $pbi$::Private,
-                           optional_vtable: &'static Self::OptionalVTable)
-                          -> &'static Self::VTable {
-            &optional_vtable
-          }
-        }
-
-        impl $pb$::ProxiedWithPresence for $Msg$ {
-          type PresentMutData<'a> = $pbr$::MessagePresentMutData<'a, $Msg$>;
-          type AbsentMutData<'a> = $pbr$::MessageAbsentMutData<'a, $Msg$>;
-
-          fn clear_present_field(present_mutator: Self::PresentMutData<'_>)
-             -> Self::AbsentMutData<'_> {
-             // SAFETY: The raw ptr msg_ref is valid
-            unsafe {
-              (present_mutator.optional_vtable().clearer)(present_mutator.msg_ref().msg());
-
-             $pbi$::RawVTableOptionalMutatorData::new($pbi$::Private,
-               present_mutator.msg_ref(),
-               present_mutator.optional_vtable())
-            }
-          }
-
-          fn set_absent_to_default(absent_mutator: Self::AbsentMutData<'_>)
-             -> Self::PresentMutData<'_> {
-           unsafe {
-             $pbi$::RawVTableOptionalMutatorData::new($pbi$::Private,
-               absent_mutator.msg_ref(),
-               absent_mutator.optional_vtable())
-           }
-          }
-        }
-
-        $settable_impl_for_view$
-
-        impl $pb$::SettableValue<$Msg$> for $Msg$ {
-          fn set_on<'dst>(
-            self, _private: $pbi$::Private, mutator: $pb$::Mut<'dst, $Msg$>)
-            where $Msg$: 'dst {
-            //~ TODO: b/320701507 - This current will copy the message and then
-            //~ drop it, this copy would be avoided on upb kernel.
-            self.as_view().set_on($pbi$::Private, mutator);
-          }
-        }
+        $into_proxied_impl$
 
         $repeated_impl$
         $map_value_impl$
@@ -1013,13 +981,20 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             self.inner.msg()
           }
 
-          fn as_mutator_message_ref(&mut self) -> $pbr$::MutatorMessageRef<'msg> {
+          pub fn as_mutator_message_ref(&mut self, _private: $pbi$::Private)
+            -> $pbr$::MutatorMessageRef<'msg> {
             self.inner
           }
 
           pub fn serialize(&self) -> $pbr$::SerializedData {
             $pb$::ViewProxy::as_view(self).serialize()
           }
+
+          pub fn to_owned(&self) -> $Msg$ {
+            $pb$::ViewProxy::as_view(self).to_owned()
+          }
+
+          $get_upb_minitable$
 
           $raw_arena_getter_for_msgmut$
 
@@ -1059,7 +1034,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             self.inner.msg
           }
 
-          fn as_mutator_message_ref(&mut self) -> $pbr$::MutatorMessageRef {
+          pub fn as_mutator_message_ref(&mut self, _private: $pbi$::Private) -> $pbr$::MutatorMessageRef {
             $pbr$::MutatorMessageRef::new($pbi$::Private, &mut self.inner)
           }
 
@@ -1087,6 +1062,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           pub fn as_mut(&mut self) -> $Msg$Mut {
             $Msg$Mut::new($pbi$::Private, &mut self.inner)
           }
+
+          $get_upb_minitable$
 
           $accessor_fns$
         }  // impl $Msg$

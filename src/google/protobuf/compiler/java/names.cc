@@ -39,16 +39,17 @@ const char* DefaultPackage(Options options) {
 bool IsReservedName(absl::string_view name) {
   static const auto& kReservedNames =
       *new absl::flat_hash_set<absl::string_view>({
-          "abstract",   "assert",       "boolean",   "break",      "byte",
-          "case",       "catch",        "char",      "class",      "const",
-          "continue",   "default",      "do",        "double",     "else",
-          "enum",       "extends",      "final",     "finally",    "float",
-          "for",        "goto",         "if",        "implements", "import",
-          "instanceof", "int",          "interface", "long",       "native",
-          "new",        "package",      "private",   "protected",  "public",
-          "return",     "short",        "static",    "strictfp",   "super",
-          "switch",     "synchronized", "this",      "throw",      "throws",
-          "transient",  "try",          "void",      "volatile",   "while",
+          "abstract",  "assert",     "boolean",   "break",        "byte",
+          "case",      "catch",      "char",      "class",        "const",
+          "continue",  "default",    "do",        "double",       "else",
+          "enum",      "extends",    "false",     "final",        "finally",
+          "float",     "for",        "goto",      "if",           "implements",
+          "import",    "instanceof", "int",       "interface",    "long",
+          "native",    "new",        "null",      "package",      "private",
+          "protected", "public",     "return",    "short",        "static",
+          "strictfp",  "super",      "switch",    "synchronized", "this",
+          "throw",     "throws",     "transient", "true",         "try",
+          "void",      "volatile",   "while",
       });
   return kReservedNames.contains(name);
 }
@@ -138,6 +139,14 @@ std::string FileJavaPackage(const FileDescriptor* file, bool immutable,
 
 std::string FileJavaPackage(const FileDescriptor* file, Options options) {
   return FileJavaPackage(file, true /* immutable */, options);
+}
+
+std::string JavaPackageDirectory(const FileDescriptor* file) {
+  return JavaPackageToDir(FileJavaPackage(file));
+}
+
+std::string FileClassName(const FileDescriptor* file) {
+  return FileClassName(file, /*immutable=*/true);
 }
 
 std::string CapitalizedFieldName(const FieldDescriptor* field) {

@@ -27,6 +27,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_lite_test_util.h"
 #include "google/protobuf/map_lite_unittest.pb.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/test_util_lite.h"
 #include "google/protobuf/unittest_lite.pb.h"
@@ -1324,6 +1325,92 @@ TEST(LiteBasicTest, CodedInputStreamRollback) {
     EXPECT_EQ(memcmp(data, "   ", 3), 0);
   }
 }
+
+// Two arbitary types
+using CastType1 = protobuf_unittest::TestAllTypesLite;
+using CastType2 = protobuf_unittest::TestPackedTypesLite;
+
+TEST(LiteTest, DynamicCastToGenerated) {
+  CastType1 test_type_1;
+
+  MessageLite* test_type_1_pointer = &test_type_1;
+  EXPECT_EQ(&test_type_1,
+            DynamicCastToGenerated<CastType1>(test_type_1_pointer));
+  EXPECT_EQ(nullptr, DynamicCastToGenerated<CastType2>(test_type_1_pointer));
+
+  const MessageLite* test_type_1_pointer_const = &test_type_1;
+  EXPECT_EQ(&test_type_1,
+            DynamicCastToGenerated<const CastType1>(test_type_1_pointer_const));
+  EXPECT_EQ(nullptr,
+            DynamicCastToGenerated<const CastType2>(test_type_1_pointer_const));
+
+  MessageLite* test_type_1_pointer_nullptr = nullptr;
+  EXPECT_EQ(nullptr,
+            DynamicCastToGenerated<CastType1>(test_type_1_pointer_nullptr));
+
+  MessageLite& test_type_1_pointer_ref = test_type_1;
+  EXPECT_EQ(&test_type_1,
+            &DynamicCastToGenerated<CastType1>(test_type_1_pointer_ref));
+
+  const MessageLite& test_type_1_pointer_const_ref = test_type_1;
+  EXPECT_EQ(&test_type_1,
+            &DynamicCastToGenerated<CastType1>(test_type_1_pointer_const_ref));
+}
+
+#if GTEST_HAS_DEATH_TEST
+TEST(LiteTest, DynamicCastToGeneratedInvalidReferenceType) {
+  CastType1 test_type_1;
+  const MessageLite& test_type_1_pointer_const_ref = test_type_1;
+  ASSERT_DEATH(DynamicCastToGenerated<CastType2>(test_type_1_pointer_const_ref),
+               "Cannot downcast " + test_type_1.GetTypeName() + " to " +
+                   CastType2::default_instance().GetTypeName());
+}
+#endif  // GTEST_HAS_DEATH_TEST
+
+TEST(LiteTest, DownCastToGeneratedValidType) {
+  CastType1 test_type_1;
+
+  MessageLite* test_type_1_pointer = &test_type_1;
+  EXPECT_EQ(&test_type_1, DownCastToGenerated<CastType1>(test_type_1_pointer));
+
+  const MessageLite* test_type_1_pointer_const = &test_type_1;
+  EXPECT_EQ(&test_type_1,
+            DownCastToGenerated<const CastType1>(test_type_1_pointer_const));
+
+  MessageLite* test_type_1_pointer_nullptr = nullptr;
+  EXPECT_EQ(nullptr,
+            DownCastToGenerated<CastType1>(test_type_1_pointer_nullptr));
+
+  MessageLite& test_type_1_pointer_ref = test_type_1;
+  EXPECT_EQ(&test_type_1,
+            &DownCastToGenerated<CastType1>(test_type_1_pointer_ref));
+
+  const MessageLite& test_type_1_pointer_const_ref = test_type_1;
+  EXPECT_EQ(&test_type_1,
+            &DownCastToGenerated<CastType1>(test_type_1_pointer_const_ref));
+}
+
+#if GTEST_HAS_DEATH_TEST
+TEST(LiteTest, DownCastToGeneratedInvalidPointerType) {
+  CastType1 test_type_1;
+
+  MessageLite* test_type_1_pointer = &test_type_1;
+
+  ASSERT_DEBUG_DEATH(DownCastToGenerated<CastType2>(test_type_1_pointer),
+                     "Cannot downcast " + test_type_1.GetTypeName() + " to " +
+                         CastType2::default_instance().GetTypeName());
+}
+
+TEST(LiteTest, DownCastToGeneratedInvalidReferenceType) {
+  CastType1 test_type_1;
+
+  MessageLite& test_type_1_pointer = test_type_1;
+
+  ASSERT_DEBUG_DEATH(DownCastToGenerated<CastType2>(test_type_1_pointer),
+                     "Cannot downcast " + test_type_1.GetTypeName() + " to " +
+                         CastType2::default_instance().GetTypeName());
+}
+#endif  // GTEST_HAS_DEATH_TEST
 
 }  // namespace
 }  // namespace protobuf

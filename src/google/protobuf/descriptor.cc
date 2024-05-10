@@ -2808,7 +2808,7 @@ bool DescriptorPool::TryFindExtensionInFallbackDatabase(
 // ===================================================================
 
 bool FieldDescriptor::is_map_message_type() const {
-  return type_descriptor_.message_type->options().map_entry();
+  return message_type()->options().map_entry();
 }
 
 std::string FieldDescriptor::DefaultValueAsString(
@@ -4362,7 +4362,8 @@ class DescriptorBuilder {
       DescriptorPool::ErrorCollector::ErrorLocation error_location,
       bool force_merge = false);
 
-  void PostProcessFieldFeatures(FieldDescriptor& field);
+  void PostProcessFieldFeatures(FieldDescriptor& field,
+                                const FieldDescriptorProto& proto);
 
   // Allocates an array of two strings, the first one is a copy of
   // `proto_name`, and the second one is the full name. Full proto name is
@@ -5542,7 +5543,8 @@ void DescriptorBuilder::ResolveFeatures(const FileDescriptorProto& proto,
                       /*force_merge=*/true);
 }
 
-void DescriptorBuilder::PostProcessFieldFeatures(FieldDescriptor& field) {
+void DescriptorBuilder::PostProcessFieldFeatures(
+    FieldDescriptor& field, const FieldDescriptorProto& proto) {
   // TODO This can be replace by a runtime check in `is_required`
   // once the `label` getter is hidden.
   if (field.features().field_presence() == FeatureSet::LEGACY_REQUIRED &&
@@ -5552,8 +5554,15 @@ void DescriptorBuilder::PostProcessFieldFeatures(FieldDescriptor& field) {
   // TODO This can be replace by a runtime check of `is_delimited`
   // once the `TYPE_GROUP` value is removed.
   if (field.type_ == FieldDescriptor::TYPE_MESSAGE &&
+      !field.containing_type()->options().map_entry() &&
       field.features().message_encoding() == FeatureSet::DELIMITED) {
-    field.type_ = FieldDescriptor::TYPE_GROUP;
+    Symbol type =
+        LookupSymbol(proto.type_name(), field.full_name(),
+                     DescriptorPool::PLACEHOLDER_MESSAGE, LOOKUP_TYPES, false);
+    if (type.descriptor() == nullptr ||
+        !type.descriptor()->options().map_entry()) {
+      field.type_ = FieldDescriptor::TYPE_GROUP;
+    }
   }
 }
 
@@ -6099,9 +6108,11 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
         });
 
     // Post-process cleanup for field features.
-    internal::VisitDescriptors(*result, [&](const FieldDescriptor& field) {
-      PostProcessFieldFeatures(const_cast<FieldDescriptor&>(field));
-    });
+    internal::VisitDescriptors(
+        *result, proto,
+        [&](const FieldDescriptor& field, const FieldDescriptorProto& proto) {
+          PostProcessFieldFeatures(const_cast<FieldDescriptor&>(field), proto);
+        });
 
     // Interpret any remaining uninterpreted options gathered into
     // options_to_interpret_ during descriptor building.  Cross-linking has made
@@ -6503,12 +6514,8 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
 
   result->has_json_name_ = proto.has_json_name();
 
-  // Some compilers do not allow static_cast directly between two enum types,
-  // so we must cast to int first.
-  result->type_ = static_cast<FieldDescriptor::Type>(
-      absl::implicit_cast<int>(proto.type()));
-  result->label_ = static_cast<FieldDescriptor::Label>(
-      absl::implicit_cast<int>(proto.label()));
+  result->type_ = proto.type();
+  result->label_ = proto.label();
   result->is_repeated_ = result->label_ == FieldDescriptor::LABEL_REPEATED;
 
   if (result->label() == FieldDescriptor::LABEL_REQUIRED) {
@@ -7388,6 +7395,10 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
 
     if (type.IsNull()) {
       if (is_lazy) {
+        ABSL_CHECK(field->type_ == FieldDescriptor::TYPE_MESSAGE ||
+                   field->type_ == FieldDescriptor::TYPE_GROUP ||
+                   field->type_ == FieldDescriptor::TYPE_ENUM)
+            << proto;
         // Save the symbol names for later for lookup, and allocate the once
         // object needed for the accessors.
         const std::string& name = proto.type_name();
@@ -8073,16 +8084,16 @@ void DescriptorBuilder::ValidateFieldFeatures(
   }
 
   // Validate fully resolved features.
-  if (field->has_default_value() &&
-      field->features().field_presence() == FeatureSet::IMPLICIT) {
-    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-             "Implicit presence fields can't specify defaults.");
-  }
-  if (field->enum_type() != nullptr &&
-      field->enum_type()->features().enum_type() != FeatureSet::OPEN &&
-      field->features().field_presence() == FeatureSet::IMPLICIT) {
-    AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-             "Implicit presence enum fields must always be open.");
+  if (!field->is_repeated() && !field->has_presence()) {
+    if (field->has_default_value()) {
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Implicit presence fields can't specify defaults.");
+    }
+    if (field->enum_type() != nullptr &&
+        field->enum_type()->features().enum_type() != FeatureSet::OPEN) {
+      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Implicit presence enum fields must always be open.");
+    }
   }
   if (field->is_extension() &&
       field->features().field_presence() == FeatureSet::LEGACY_REQUIRED) {
@@ -9584,19 +9595,23 @@ void FieldDescriptor::TypeOnceInit(const FieldDescriptor* to_init) {
 // all share the same absl::call_once init path to do lazy
 // import building and cross linking of a field of a message.
 const Descriptor* FieldDescriptor::message_type() const {
-  if (type_once_) {
-    absl::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);
+  if (type_ == TYPE_MESSAGE || type_ == TYPE_GROUP) {
+    if (type_once_) {
+      absl::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);
+    }
+    return type_descriptor_.message_type;
   }
-  return type_ == TYPE_MESSAGE || type_ == TYPE_GROUP
-             ? type_descriptor_.message_type
-             : nullptr;
+  return nullptr;
 }
 
 const EnumDescriptor* FieldDescriptor::enum_type() const {
-  if (type_once_) {
-    absl::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);
+  if (type_ == TYPE_ENUM) {
+    if (type_once_) {
+      absl::call_once(*type_once_, FieldDescriptor::TypeOnceInit, this);
+    }
+    return type_descriptor_.enum_type;
   }
-  return type_ == TYPE_ENUM ? type_descriptor_.enum_type : nullptr;
+  return nullptr;
 }
 
 const EnumValueDescriptor* FieldDescriptor::default_value_enum() const {

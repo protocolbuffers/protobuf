@@ -22,6 +22,7 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/internal_helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/wire_format.h"
 
@@ -336,10 +337,10 @@ void ImmutableStringFieldLiteGenerator::GenerateKotlinDslMembers(
   printer->Print(variables_,
                  "$kt_deprecation$public var $kt_name$: kotlin.String\n"
                  "  @JvmName(\"${$get$kt_capitalized_name$$}$\")\n"
-                 "  get() = $kt_dsl_builder$.${$get$capitalized_name$$}$()\n"
+                 "  get() = $kt_dsl_builder$.${$$kt_safe_name$$}$\n"
                  "  @JvmName(\"${$set$kt_capitalized_name$$}$\")\n"
                  "  set(value) {\n"
-                 "    $kt_dsl_builder$.${$set$capitalized_name$$}$(value)\n"
+                 "    $kt_dsl_builder$.${$$kt_safe_name$$}$ = value\n"
                  "  }\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
@@ -825,7 +826,7 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateKotlinDslMembers(
       "@kotlin.OptIn"
       "(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)\n"
       "  get() = com.google.protobuf.kotlin.DslList(\n"
-      "    $kt_dsl_builder$.${$get$capitalized_name$List$}$()\n"
+      "    $kt_dsl_builder$.${$$kt_property_name$List$}$\n"
       "  )\n");
 
   // List<String>.add(String)

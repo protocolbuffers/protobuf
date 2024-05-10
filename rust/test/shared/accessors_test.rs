@@ -8,7 +8,7 @@
 //! Tests covering accessors for singular bool, int32, int64, and bytes fields.
 
 use googletest::prelude::*;
-use protobuf::{MutProxy, Optional};
+use protobuf::Optional;
 use unittest_proto::{test_all_types, TestAllTypes};
 
 #[test]
@@ -16,7 +16,7 @@ fn test_default_accessors() {
     let msg: TestAllTypes = Default::default();
     assert_that!(
         msg,
-        matches_pattern!(TestAllTypes{
+        matches_pattern!(&TestAllTypes{
             default_int32(): eq(41),
             default_int64(): eq(42),
             default_uint32(): eq(43),
@@ -498,24 +498,15 @@ fn test_nonempty_default_string_accessors() {
 
 #[test]
 fn test_singular_msg_field() {
-    use test_all_types::*;
-
     let mut msg = TestAllTypes::new();
     let msg_view = msg.optional_nested_message();
     // testing reading an int inside a view
     assert_that!(msg_view.bb(), eq(0));
 
     assert_that!(msg.has_optional_nested_message(), eq(false));
-    let mut nested_msg_mut = msg.optional_nested_message_mut();
-
+    let nested_msg_mut = msg.optional_nested_message_mut();
     // test reading an int inside a mut
     assert_that!(nested_msg_mut.bb(), eq(0));
-
-    // Test setting an owned NestedMessage onto another message.
-    let mut new_nested = NestedMessage::new();
-    new_nested.set_bb(7);
-    nested_msg_mut.set(new_nested);
-    assert_that!(nested_msg_mut.bb(), eq(7));
 
     assert_that!(msg.has_optional_nested_message(), eq(true));
 }
@@ -763,18 +754,6 @@ fn test_msg_oneof_default_accessors() {
 }
 
 #[test]
-fn test_set_message_from_view() {
-    use protobuf::MutProxy;
-
-    let mut m1 = TestAllTypes::new();
-    m1.set_optional_int32(1);
-    let mut m2 = TestAllTypes::new();
-    m2.as_mut().set(m1.as_view());
-
-    assert_that!(m2.optional_int32(), eq(1i32));
-}
-
-#[test]
 fn test_group() {
     let mut m = TestAllTypes::new();
 
@@ -798,4 +777,28 @@ fn test_submsg_setter() {
     parent.set_optional_nested_message(nested);
 
     assert_that!(parent.optional_nested_message().bb(), eq(7));
+}
+
+#[test]
+fn test_to_owned() {
+    let mut m = TestAllTypes::new();
+    m.set_optional_int32(42);
+    let clone = m.as_view().to_owned();
+    assert_that!(clone.optional_int32(), eq(42));
+
+    // to_owned should create a new message (modifying the original shouldn't affect
+    // the to_owned).
+    m.clear_optional_int32();
+    assert_that!(m.has_optional_int32(), eq(false));
+    assert_that!(clone.has_optional_int32(), eq(true));
+    assert_that!(clone.optional_int32(), eq(42));
+
+    let mut submsg_mut = m.optional_nested_message_mut();
+    submsg_mut.set_bb(7);
+    let submsg_clone = submsg_mut.to_owned();
+    assert_that!(submsg_clone.bb(), eq(7));
+    assert_that!(submsg_mut.bb(), eq(7));
+    submsg_mut.set_bb(8);
+    assert_that!(submsg_clone.bb(), eq(7));
+    assert_that!(submsg_mut.bb(), eq(8));
 }

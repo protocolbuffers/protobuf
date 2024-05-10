@@ -2,6 +2,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//python/dist:python_downloads.bzl", "python_nuget_package", "python_source_archive")
+load("//python/dist:system_python.bzl", "system_python")
 
 PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.caliper:caliper:1.0-beta-3",
@@ -102,6 +103,12 @@ def protobuf_deps():
             sha256 = "9d04041ac92a0985e344235f5d946f71ac543f1b1565f2cdbc9a2aaee8adf55b",
             strip_prefix = "rules_python-0.26.0",
             url = "https://github.com/bazelbuild/rules_python/releases/download/0.26.0/rules_python-0.26.0.tar.gz",
+        )
+
+    if not native.existing_rule("system_python"):
+        system_python(
+            name = "system_python",
+            minimum_python_version = "3.7",
         )
 
     if not native.existing_rule("rules_jvm_external"):

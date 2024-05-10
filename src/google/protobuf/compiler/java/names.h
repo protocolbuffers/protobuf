@@ -74,6 +74,20 @@ std::string FileJavaPackage(const FileDescriptor* descriptor,
 
 // Requires:
 //   descriptor != NULL
+//
+// Returns:
+//   Java package directory.
+std::string JavaPackageDirectory(const FileDescriptor* file);
+
+// Requires:
+//   descriptor != NULL
+//
+// Returns:
+//   The unqualified Java class name.
+std::string FileClassName(const FileDescriptor* file);
+
+// Requires:
+//   descriptor != NULL
 // Returns:
 //   Capitalized camel case field name.
 std::string CapitalizedFieldName(const FieldDescriptor* field);

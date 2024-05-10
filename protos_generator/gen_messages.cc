@@ -7,11 +7,14 @@
 
 #include "protos_generator/gen_messages.h"
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "protos_generator/gen_accessors.h"
 #include "protos_generator/gen_enums.h"
@@ -120,6 +123,55 @@ void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
   output("};\n");
 }
 
+std::string UnderscoresToCamelCase(absl::string_view input,
+                                   bool cap_next_letter) {
+  std::string result;
+
+  for (size_t i = 0; i < input.size(); i++) {
+    if (absl::ascii_islower(input[i])) {
+      if (cap_next_letter) {
+        result += absl::ascii_toupper(input[i]);
+      } else {
+        result += input[i];
+      }
+      cap_next_letter = false;
+    } else if (absl::ascii_isupper(input[i])) {
+      // Capital letters are left as-is.
+      result += input[i];
+      cap_next_letter = false;
+    } else if (absl::ascii_isdigit(input[i])) {
+      result += input[i];
+      cap_next_letter = true;
+    } else {
+      cap_next_letter = true;
+    }
+  }
+  return result;
+}
+
+std::string FieldConstantName(const protobuf::FieldDescriptor* field) {
+  std::string field_name = UnderscoresToCamelCase(field->name(), true);
+  std::string result = absl::StrCat("k", field_name, "FieldNumber");
+
+  if (!field->is_extension() &&
+      field->containing_type()->FindFieldByCamelcaseName(
+          field->camelcase_name()) != field) {
+    // This field's camelcase name is not unique, add field number to make it
+    // unique.
+    absl::StrAppend(&result, "_", field->number());
+  }
+  return result;
+}
+
+void WriteConstFieldNumbers(Output& output,
+                            const protobuf::Descriptor* descriptor) {
+  for (auto field : FieldRange(descriptor)) {
+    output("static constexpr ::uint32_t $0 = $1;\n", FieldConstantName(field),
+           field->number());
+  }
+  output("\n\n");
+}
+
 void WriteModelPublicDeclaration(
     const protobuf::Descriptor* descriptor,
     const std::vector<const protobuf::FieldDescriptor*>& file_exts,
@@ -178,6 +230,7 @@ void WriteModelPublicDeclaration(
       )cc",
       ClassName(descriptor));
   output("\n");
+  WriteConstFieldNumbers(output, descriptor);
   output(
       R"cc(
         private:

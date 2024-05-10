@@ -10,14 +10,8 @@
 #![allow(unused)]
 
 use crate::__internal::Private;
-use crate::__runtime::{
-    BytesAbsentMutData, BytesPresentMutData, InnerBytesMut, PtrAndLen, RawMessage,
-};
-use crate::macros::impl_forwarding_settable_value;
-use crate::{
-    AbsentField, FieldEntry, Mut, MutProxied, MutProxy, Optional, PresentField, Proxied,
-    ProxiedWithPresence, SettableValue, View, ViewProxy,
-};
+use crate::__runtime::{PtrAndLen, RawMessage};
+use crate::{Mut, MutProxied, MutProxy, Optional, Proxied, View, ViewProxy};
 use std::borrow::Cow;
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use std::convert::{AsMut, AsRef};
@@ -27,119 +21,8 @@ use std::iter;
 use std::ops::{Deref, DerefMut};
 use utf8::Utf8Chunks;
 
-/// A mutator for `bytes` fields - this type is `protobuf::Mut<'msg, [u8]>`.
-///
-/// This type implements `Deref<Target = [u8]>`, so many operations are
-/// provided through that, including indexing and slicing.
-///
-/// Conceptually, this type is like a `&'msg mut &'msg str`, though the actual
-/// implementation is dependent on runtime and `'msg` is covariant.
-///
-/// Unlike `Vec<u8>`, this type has no in-place concatenation functions like
-/// `extend_from_slice`.
-///
-/// `BytesMut` is not intended to be grown and reallocated like a `Vec`. It's
-/// recommended to instead build a `Vec<u8>` or `String` and pass that directly
-/// to `set`, which will reuse the allocation if supported by the runtime.
-#[derive(Debug)]
-pub struct BytesMut<'msg> {
-    inner: InnerBytesMut<'msg>,
-}
-
-// SAFETY:
-// - Protobuf Rust messages don't allow shared mutation across threads.
-// - Protobuf Rust messages don't share arenas.
-// - All access that touches an arena occurs behind a `&mut`.
-// - All mutators that store an arena are `!Send`.
-unsafe impl Sync for BytesMut<'_> {}
-
-impl<'msg> BytesMut<'msg> {
-    /// Constructs a new `BytesMut` from its internal, runtime-dependent part.
-    #[doc(hidden)]
-    pub fn from_inner(_private: Private, inner: InnerBytesMut<'msg>) -> Self {
-        Self { inner }
-    }
-
-    /// Gets the current value of the field.
-    pub fn get(&self) -> &[u8] {
-        self.as_view()
-    }
-
-    /// Sets the byte string to the given `val`, cloning any borrowed data.
-    ///
-    /// This method accepts both owned and borrowed byte strings; if the runtime
-    /// supports it, an owned value will not reallocate when setting the
-    /// string.
-    pub fn set(&mut self, val: impl SettableValue<[u8]>) {
-        val.set_on(Private, MutProxy::as_mut(self))
-    }
-
-    /// Truncates the byte string.
-    ///
-    /// Has no effect if `new_len` is larger than the current `len`.
-    pub fn truncate(&mut self, new_len: usize) {
-        self.inner.truncate(new_len)
-    }
-
-    /// Clears the byte string to the empty string.
-    ///
-    /// # Compared with `FieldEntry::clear`
-    ///
-    /// Note that this is different than marking an `optional bytes` field as
-    /// absent; if these `bytes` are in an `optional`, `FieldEntry::is_set`
-    /// will still return `true` after this method is invoked.
-    ///
-    /// This also means that if the field has a non-empty default,
-    /// `BytesMut::clear` results in the accessor returning an empty string
-    /// while `FieldEntry::clear` results in the non-empty default.
-    ///
-    /// However, for a proto3 `bytes` that has implicit presence, there is no
-    /// distinction between these states: unset `bytes` is the same as empty
-    /// `bytes` and the default is always the empty string.
-    ///
-    /// In the C++ API, this is the difference between `msg.clear_bytes_field()`
-    /// and `msg.mutable_bytes_field()->clear()`.
-    ///
-    /// Having the same name and signature as `FieldEntry::clear` makes code
-    /// that calls `field_mut().clear()` easier to migrate from implicit
-    /// to explicit presence.
-    pub fn clear(&mut self) {
-        self.truncate(0);
-    }
-}
-
-impl Deref for BytesMut<'_> {
-    type Target = [u8];
-    fn deref(&self) -> &[u8] {
-        self.as_ref()
-    }
-}
-
-impl AsRef<[u8]> for BytesMut<'_> {
-    fn as_ref(&self) -> &[u8] {
-        unsafe { self.inner.get() }
-    }
-}
-
 impl Proxied for [u8] {
     type View<'msg> = &'msg [u8];
-}
-
-impl MutProxied for [u8] {
-    type Mut<'msg> = BytesMut<'msg>;
-}
-
-impl ProxiedWithPresence for [u8] {
-    type PresentMutData<'msg> = BytesPresentMutData<'msg>;
-    type AbsentMutData<'msg> = BytesAbsentMutData<'msg>;
-
-    fn clear_present_field(present_mutator: Self::PresentMutData<'_>) -> Self::AbsentMutData<'_> {
-        present_mutator.clear()
-    }
-
-    fn set_absent_to_default(absent_mutator: Self::AbsentMutData<'_>) -> Self::PresentMutData<'_> {
-        absent_mutator.set_absent_to_default()
-    }
 }
 
 impl<'msg> ViewProxy<'msg> for &'msg [u8] {
@@ -154,47 +37,6 @@ impl<'msg> ViewProxy<'msg> for &'msg [u8] {
         'msg: 'shorter,
     {
         self
-    }
-}
-
-impl<'msg> ViewProxy<'msg> for BytesMut<'msg> {
-    type Proxied = [u8];
-
-    fn as_view(&self) -> &[u8] {
-        self.as_ref()
-    }
-
-    fn into_view<'shorter>(self) -> &'shorter [u8]
-    where
-        'msg: 'shorter,
-    {
-        self.inner.get()
-    }
-}
-
-impl<'msg> MutProxy<'msg> for BytesMut<'msg> {
-    fn as_mut(&mut self) -> BytesMut<'_> {
-        BytesMut { inner: self.inner }
-    }
-
-    fn into_mut<'shorter>(self) -> BytesMut<'shorter>
-    where
-        'msg: 'shorter,
-    {
-        BytesMut { inner: self.inner }
-    }
-}
-
-impl Hash for BytesMut<'_> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.deref().hash(state)
-    }
-}
-
-impl Eq for BytesMut<'_> {}
-impl<'msg> Ord for BytesMut<'msg> {
-    fn cmp(&self, other: &BytesMut<'msg>) -> Ordering {
-        self.deref().cmp(other.deref())
     }
 }
 
@@ -423,23 +265,6 @@ impl Proxied for ProtoStr {
     type View<'msg> = &'msg ProtoStr;
 }
 
-impl MutProxied for ProtoStr {
-    type Mut<'msg> = ProtoStrMut<'msg>;
-}
-
-impl ProxiedWithPresence for ProtoStr {
-    type PresentMutData<'msg> = StrPresentMutData<'msg>;
-    type AbsentMutData<'msg> = StrAbsentMutData<'msg>;
-
-    fn clear_present_field(present_mutator: Self::PresentMutData<'_>) -> Self::AbsentMutData<'_> {
-        StrAbsentMutData(present_mutator.0.clear())
-    }
-
-    fn set_absent_to_default(absent_mutator: Self::AbsentMutData<'_>) -> Self::PresentMutData<'_> {
-        StrPresentMutData(absent_mutator.0.set_absent_to_default())
-    }
-}
-
 impl<'msg> ViewProxy<'msg> for &'msg ProtoStr {
     type Proxied = ProtoStr;
 
@@ -452,205 +277,6 @@ impl<'msg> ViewProxy<'msg> for &'msg ProtoStr {
         'msg: 'shorter,
     {
         self
-    }
-}
-
-/// Non-exported newtype for `ProxiedWithPresence::PresentData`
-#[derive(Debug)]
-pub struct StrPresentMutData<'msg>(BytesPresentMutData<'msg>);
-
-impl<'msg> ViewProxy<'msg> for StrPresentMutData<'msg> {
-    type Proxied = ProtoStr;
-
-    fn as_view(&self) -> View<'_, ProtoStr> {
-        // SAFETY: The `ProtoStr` API guards against non-UTF-8 data. The runtime does
-        // not require `ProtoStr` to be UTF-8 if it could be mutated outside of these
-        // guards, such as through FFI.
-        unsafe { ProtoStr::from_utf8_unchecked(self.0.as_view()) }
-    }
-
-    fn into_view<'shorter>(self) -> View<'shorter, ProtoStr>
-    where
-        'msg: 'shorter,
-    {
-        // SAFETY: The `ProtoStr` API guards against non-UTF-8 data. The runtime does
-        // not require `ProtoStr` to be UTF-8 if it could be mutated outside of these
-        // guards, such as through FFI.
-        unsafe { ProtoStr::from_utf8_unchecked(self.0.into_view()) }
-    }
-}
-
-impl<'msg> MutProxy<'msg> for StrPresentMutData<'msg> {
-    fn as_mut(&mut self) -> Mut<'_, ProtoStr> {
-        ProtoStrMut { bytes: self.0.as_mut() }
-    }
-
-    fn into_mut<'shorter>(self) -> Mut<'shorter, ProtoStr>
-    where
-        'msg: 'shorter,
-    {
-        ProtoStrMut { bytes: self.0.into_mut() }
-    }
-}
-
-/// Non-exported newtype for `ProxiedWithPresence::AbsentData`
-#[derive(Debug)]
-pub struct StrAbsentMutData<'msg>(BytesAbsentMutData<'msg>);
-
-impl<'msg> ViewProxy<'msg> for StrAbsentMutData<'msg> {
-    type Proxied = ProtoStr;
-
-    fn as_view(&self) -> View<'_, ProtoStr> {
-        // SAFETY: The `ProtoStr` API guards against non-UTF-8 data. The runtime does
-        // not require `ProtoStr` to be UTF-8 if it could be mutated outside of these
-        // guards, such as through FFI.
-        unsafe { ProtoStr::from_utf8_unchecked(self.0.as_view()) }
-    }
-
-    fn into_view<'shorter>(self) -> View<'shorter, ProtoStr>
-    where
-        'msg: 'shorter,
-    {
-        // SAFETY: The `ProtoStr` API guards against non-UTF-8 data. The runtime does
-        // not require `ProtoStr` to be UTF-8 if it could be mutated outside of these
-        // guards, such as through FFI.
-        unsafe { ProtoStr::from_utf8_unchecked(self.0.into_view()) }
-    }
-}
-
-#[derive(Debug)]
-pub struct ProtoStrMut<'msg> {
-    bytes: BytesMut<'msg>,
-}
-
-impl<'msg> ProtoStrMut<'msg> {
-    /// Constructs a new `ProtoStrMut` from its internal, runtime-dependent
-    /// part.
-    #[doc(hidden)]
-    pub fn from_inner(_private: Private, inner: InnerBytesMut<'msg>) -> Self {
-        Self { bytes: BytesMut { inner } }
-    }
-
-    /// Converts a `bytes` `FieldEntry` into a `string` one. Used by gencode.
-    #[doc(hidden)]
-    pub fn field_entry_from_bytes(
-        _private: Private,
-        field_entry: FieldEntry<'_, [u8]>,
-    ) -> FieldEntry<ProtoStr> {
-        match field_entry {
-            Optional::Set(present) => {
-                Optional::Set(PresentField::from_inner(Private, StrPresentMutData(present.inner)))
-            }
-            Optional::Unset(absent) => {
-                Optional::Unset(AbsentField::from_inner(Private, StrAbsentMutData(absent.inner)))
-            }
-        }
-    }
-
-    /// Gets the current value of the field.
-    pub fn get(&self) -> &ProtoStr {
-        self.as_view()
-    }
-
-    /// Sets the string to the given `val`, cloning any borrowed data.
-    ///
-    /// This method accepts both owned and borrowed strings; if the runtime
-    /// supports it, an owned value will not reallocate when setting the
-    /// string.
-    pub fn set(&mut self, val: impl SettableValue<ProtoStr>) {
-        val.set_on(Private, MutProxy::as_mut(self))
-    }
-
-    /// Truncates the string.
-    ///
-    /// Has no effect if `new_len` is larger than the current `len`.
-    ///
-    /// If `new_len` does not lie on a UTF-8 `char` boundary, behavior is
-    /// runtime-dependent. If this occurs, the runtime may:
-    ///
-    /// - Panic
-    /// - Truncate the string further to be on a `char` boundary.
-    /// - Truncate to `new_len`, resulting in a `ProtoStr` with a non-UTF8 tail.
-    pub fn truncate(&mut self, new_len: usize) {
-        self.bytes.truncate(new_len)
-    }
-
-    /// Clears the string, setting it to the empty string.
-    ///
-    /// # Compared with `FieldEntry::clear`
-    ///
-    /// Note that this is different than marking an `optional string` field as
-    /// absent; if this cleared `string` is in an `optional`,
-    /// `FieldEntry::is_set` will still return `true` after this method is
-    /// invoked.
-    ///
-    /// This also means that if the field has a non-empty default,
-    /// `ProtoStrMut::clear` results in the accessor returning an empty string
-    /// while `FieldEntry::clear` results in the non-empty default.
-    ///
-    /// However, for a proto3 `string` that has implicit presence, there is no
-    /// distinction between these states: unset `string` is the same as empty
-    /// `string` and the default is always the empty string.
-    ///
-    /// In the C++ API, this is the difference between
-    /// `msg.clear_string_field()`
-    /// and `msg.mutable_string_field()->clear()`.
-    ///
-    /// Having the same name and signature as `FieldEntry::clear` makes code
-    /// that calls `field_mut().clear()` easier to migrate from implicit
-    /// to explicit presence.
-    pub fn clear(&mut self) {
-        self.truncate(0);
-    }
-}
-
-impl Deref for ProtoStrMut<'_> {
-    type Target = ProtoStr;
-    fn deref(&self) -> &ProtoStr {
-        self.as_view()
-    }
-}
-
-impl AsRef<ProtoStr> for ProtoStrMut<'_> {
-    fn as_ref(&self) -> &ProtoStr {
-        self.as_view()
-    }
-}
-
-impl AsRef<[u8]> for ProtoStrMut<'_> {
-    fn as_ref(&self) -> &[u8] {
-        self.as_view().as_bytes()
-    }
-}
-
-impl<'msg> ViewProxy<'msg> for ProtoStrMut<'msg> {
-    type Proxied = ProtoStr;
-
-    fn as_view(&self) -> &ProtoStr {
-        // SAFETY: The `ProtoStr` API guards against non-UTF-8 data. The runtime does
-        // not require `ProtoStr` to be UTF-8 if it could be mutated outside of these
-        // guards, such as through FFI.
-        unsafe { ProtoStr::from_utf8_unchecked(self.bytes.as_view()) }
-    }
-
-    fn into_view<'shorter>(self) -> &'shorter ProtoStr
-    where
-        'msg: 'shorter,
-    {
-        unsafe { ProtoStr::from_utf8_unchecked(self.bytes.into_view()) }
-    }
-}
-
-impl<'msg> MutProxy<'msg> for ProtoStrMut<'msg> {
-    fn as_mut(&mut self) -> ProtoStrMut<'_> {
-        ProtoStrMut { bytes: BytesMut { inner: self.bytes.inner } }
-    }
-
-    fn into_mut<'shorter>(self) -> ProtoStrMut<'shorter>
-    where
-        'msg: 'shorter,
-    {
-        ProtoStrMut { bytes: BytesMut { inner: self.bytes.inner } }
     }
 }
 
@@ -678,19 +304,6 @@ impl AsRef<ProtoStr> for &ProtoStr {
     }
 }
 
-impl Hash for ProtoStrMut<'_> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.deref().hash(state)
-    }
-}
-
-impl Eq for ProtoStrMut<'_> {}
-impl<'msg> Ord for ProtoStrMut<'msg> {
-    fn cmp(&self, other: &ProtoStrMut<'msg>) -> Ordering {
-        self.deref().cmp(other.deref())
-    }
-}
-
 /// Implements `PartialCmp` and `PartialEq` for the `lhs` against the `rhs`
 /// using `AsRef<[u8]>`.
 // TODO: consider improving to not require a `<()>` if no generics are
@@ -713,33 +326,12 @@ macro_rules! impl_bytes_partial_cmp {
 }
 
 impl_bytes_partial_cmp!(
-    // Should `BytesMut` compare with `str` and `ProtoStr[Mut]` with `[u8]`?
-    // `[u8]` and `str` do not compare with each other in the stdlib.
-
-    // `BytesMut` against protobuf types
-    <('a, 'b)> BytesMut<'a> => BytesMut<'b>,
-
-    // `BytesMut` against foreign types
-    <('a)> BytesMut<'a> => [u8],
-    <('a)> [u8] => BytesMut<'a>,
-    <('a, const N: usize)> BytesMut<'a> => [u8; N],
-    <('a, const N: usize)> [u8; N] => BytesMut<'a>,
-
     // `ProtoStr` against protobuf types
     <()> ProtoStr => ProtoStr,
-    <('a)> ProtoStr => ProtoStrMut<'a>,
 
     // `ProtoStr` against foreign types
     <()> ProtoStr => str,
     <()> str => ProtoStr,
-
-    // `ProtoStrMut` against protobuf types
-    <('a, 'b)> ProtoStrMut<'a> => ProtoStrMut<'b>,
-    <('a)> ProtoStrMut<'a> => ProtoStr,
-
-    // `ProtoStrMut` against foreign types
-    <('a)> ProtoStrMut<'a> => str,
-    <('a)> str => ProtoStrMut<'a>,
 );
 
 #[cfg(test)]

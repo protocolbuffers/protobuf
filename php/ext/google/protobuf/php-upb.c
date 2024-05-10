@@ -404,7 +404,8 @@ void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
  *     google/protobuf/descriptor.proto
  *
  * Do not edit -- your changes will be discarded when the file is
- * regenerated. */
+ * regenerated.
+ * NO CHECKED-IN PROTOBUF GENCODE */
 
 #include <stddef.h>
 
@@ -1762,7 +1763,8 @@ const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout = {
  *     google/protobuf/descriptor.proto
  *
  * Do not edit -- your changes will be discarded when the file is
- * regenerated. */
+ * regenerated.
+ * NO CHECKED-IN PROTOBUF GENCODE */
 
 
 static const char descriptor[12155] = {'\n', ' ', 'g', 'o', 'o', 'g', 'l', 'e', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 'd', 'e', 's', 'c', 'r', 'i', 'p', 
@@ -6155,10 +6157,10 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
             if (dst_sub_message == NULL) {
               return NULL;
             }
-            _upb_Message_SetTaggedMessagePtr(
-                dst, mini_table, field,
-                UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(dst_sub_message,
-                                                        is_empty));
+            UPB_PRIVATE(_upb_Message_SetTaggedMessagePtr)
+            (dst, field,
+             UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(dst_sub_message,
+                                                     is_empty));
           }
         } break;
         case kUpb_CType_String:
@@ -7303,12 +7305,12 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
       return false;
   }
 
-  upb_MiniTableSub* table_sub =
-      (void*)&table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)];
+  int idx = field->UPB_PRIVATE(submsg_index);
+  upb_MiniTableSub* table_subs = (void*)table->UPB_PRIVATE(subs);
   // TODO: Add this assert back once YouTube is updated to not call
   // this function repeatedly.
   // UPB_ASSERT(UPB_PRIVATE(_upb_MiniTable_IsEmpty)(table_sub->submsg));
-  *table_sub = upb_MiniTableSub_FromMessage(sub);
+  table_subs[idx] = upb_MiniTableSub_FromMessage(sub);
   return true;
 }
 
@@ -12059,21 +12061,19 @@ bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
 }
 
 #if UPB_TRACING_ENABLED
-static void (*_new_message_trace_handler)(const upb_MiniTable*,
-                                          const upb_Arena*);
+static void (*_message_trace_handler)(const upb_MiniTable*, const upb_Arena*);
 
-void UPB_PRIVATE(upb_Message_SetNewMessageTraceHandler)(
-    void (*new_message_trace_handler)(const upb_MiniTable*, const upb_Arena*)) {
-  _new_message_trace_handler = new_message_trace_handler;
-}
-
-void UPB_PRIVATE(upb_Message_LogNewMessage)(const upb_MiniTable* mini_table,
-                                            const upb_Arena* arena) {
-  if (_new_message_trace_handler) {
-    _new_message_trace_handler(mini_table, arena);
+void upb_Message_LogNewMessage(const upb_MiniTable* m, const upb_Arena* arena) {
+  if (_message_trace_handler) {
+    _message_trace_handler(m, arena);
   }
 }
-#endif
+
+void upb_Message_SetNewMessageTraceHandler(void (*handler)(const upb_MiniTable*,
+                                                           const upb_Arena*)) {
+  _message_trace_handler = handler;
+}
+#endif  // UPB_TRACING_ENABLED
 
 
 const char _kUpb_ToBase92[] = {

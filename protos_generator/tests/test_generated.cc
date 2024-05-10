@@ -9,6 +9,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -1132,6 +1133,11 @@ TEST(CppGeneratedCode, HasExtensionAndRegistry) {
   ::protos::ExtensionRegistry extensions({&theme}, arena);
   TestModel parsed_model = ::protos::Parse<TestModel>(data, extensions).value();
   EXPECT_TRUE(::protos::HasExtension(&parsed_model, theme));
+}
+
+TEST(CppGeneratedCode, FieldNumberConstants) {
+  static_assert(TestModel::kChildMapFieldNumber == 225);
+  EXPECT_EQ(225, TestModel::kChildMapFieldNumber);
 }
 
 // TODO : Add BUILD rule to test failures below.

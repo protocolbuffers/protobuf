@@ -202,11 +202,23 @@ bool RustGenerator::Generate(const FileDescriptor* file,
     thunks_cc.reset(generator_context->Open(GetThunkCcFile(ctx, *file)));
     thunks_printer = std::make_unique<io::Printer>(thunks_cc.get());
 
-    thunks_printer->Emit({{"proto_h", GetHeaderFile(ctx, *file)}},
-                         R"cc(
+    thunks_printer->Emit(
+        {{"proto_h", GetHeaderFile(ctx, *file)},
+         {"proto_deps_h",
+          [&] {
+            for (int i = 0; i < file->dependency_count(); i++) {
+              thunks_printer->Emit(
+                  {{"proto_dep_h", GetHeaderFile(ctx, *file->dependency(i))}},
+                  R"cc(
+#include "$proto_dep_h$"
+                  )cc");
+            }
+          }}},
+        R"cc(
 #include "$proto_h$"
+          $proto_deps_h$
 #include "google/protobuf/rust/cpp_kernel/cpp_api.h"
-                         )cc");
+        )cc");
   }
 
   for (int i = 0; i < file->message_type_count(); ++i) {

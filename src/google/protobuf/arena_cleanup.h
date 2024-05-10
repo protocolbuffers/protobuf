@@ -21,6 +21,9 @@
 namespace google {
 namespace protobuf {
 namespace internal {
+
+class SerialArena;
+
 namespace cleanup {
 
 // Helper function invoking the destructor of `object`
@@ -33,44 +36,61 @@ void arena_destruct_object(void* object) {
 // destroyed, and the function to destroy it (`destructor`)
 // elem must be aligned at minimum on a 4 byte boundary.
 struct CleanupNode {
+  // Optimization: performs a prefetch on the elem for the cleanup node. We
+  // explicitly use NTA prefetch here to avoid polluting remote caches: we are
+  // destroying these instances, there is no purpose for these cache lines to
+  // linger around in remote caches.
+  ABSL_ATTRIBUTE_ALWAYS_INLINE void Prefetch() {
+    // TODO: we should also prefetch the destructor code once
+    // processors support code prefetching.
+    absl::PrefetchToLocalCacheNta(elem);
+  }
+
+  // Destroys the object referenced by the cleanup node.
+  ABSL_ATTRIBUTE_ALWAYS_INLINE void Destroy() { destructor(elem); }
+
   void* elem;
   void (*destructor)(void*);
 };
 
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE CleanupNode* ToCleanup(void* pos) {
-  return reinterpret_cast<CleanupNode*>(pos);
-}
+// Manages the list of cleanup nodes in a chunked linked list. Chunks grow by
+// factors of two up to a limit. Trivially destructible, but Cleanup() must be
+// called before destruction.
+class ChunkList {
+ public:
+  PROTOBUF_ALWAYS_INLINE void Add(void* elem, void (*destructor)(void*),
+                                  SerialArena& arena) {
+    if (PROTOBUF_PREDICT_TRUE(next_ < limit_)) {
+      AddFromExisting(elem, destructor);
+      return;
+    }
+    AddFallback(elem, destructor, arena);
+  }
 
-// Adds a cleanup entry at memory location `pos`.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE void CreateNode(void* pos, void* elem,
+  // Runs all inserted cleanups and frees allocated chunks. Must be called
+  // before destruction.
+  void Cleanup(const SerialArena& arena);
+
+ private:
+  struct Chunk;
+  friend class internal::SerialArena;
+
+  void AddFallback(void* elem, void (*destructor)(void*), SerialArena& arena);
+  ABSL_ATTRIBUTE_ALWAYS_INLINE void AddFromExisting(void* elem,
                                                     void (*destructor)(void*)) {
-  CleanupNode n = {elem, destructor};
-  memcpy(pos, &n, sizeof(n));
-}
+    *next_++ = CleanupNode{elem, destructor};
+  }
 
-// Optimization: performs a prefetch on the elem for the cleanup node at `pos`.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE void PrefetchNode(void* pos) {
-  // We explicitly use NTA prefetch here to avoid polluting remote caches: we
-  // are destroying these instances, there is no purpose for these cache lines
-  // to linger around in remote caches.
-  absl::PrefetchToLocalCacheNta(ToCleanup(pos)->elem);
-}
+  // Returns the pointers to the to-be-cleaned objects.
+  std::vector<void*> PeekForTesting();
 
-// Destroys the object referenced by the cleanup node.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE void DestroyNode(void* pos) {
-  CleanupNode* cleanup = ToCleanup(pos);
-  cleanup->destructor(cleanup->elem);
-}
-
-// Append in `out` the pointer to the to-be-cleaned object in `pos`.
-inline void PeekNode(void* pos, std::vector<void*>& out) {
-  out.push_back(ToCleanup(pos)->elem);
-}
-
-// Returns the required size for a cleanup node.
-constexpr ABSL_ATTRIBUTE_ALWAYS_INLINE size_t Size() {
-  return sizeof(CleanupNode);
-}
+  Chunk* head_ = nullptr;
+  CleanupNode* next_ = nullptr;
+  CleanupNode* limit_ = nullptr;
+  // Current prefetch position. Data from `next_` up to but not including
+  // `prefetch_ptr_` is software prefetched. Used in SerialArena prefetching.
+  const char* prefetch_ptr_ = nullptr;
+};
 
 }  // namespace cleanup
 }  // namespace internal

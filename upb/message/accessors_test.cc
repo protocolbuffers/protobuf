@@ -329,10 +329,8 @@ TEST(GeneratedCode, SubMessage) {
           arena));
   upb_Message_SetInt32(new_nested_message, nested_message_a_field, 123,
                        nullptr);
-  upb_Message_SetMessage(
-      UPB_UPCAST(msg),
-      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
-      optional_message_field, new_nested_message);
+  upb_Message_SetMessage(UPB_UPCAST(msg), optional_message_field,
+                         new_nested_message);
 
   upb_Message* mutable_message = upb_Message_GetOrCreateMutableMessage(
       UPB_UPCAST(msg),
@@ -475,6 +473,30 @@ TEST(GeneratedCode, EnumClosedCheck) {
   const upb_MiniTableField* closedEnumField = &table->UPB_PRIVATE(fields)[1];
   EXPECT_EQ(upb_MiniTableField_Type(closedEnumField), kUpb_FieldType_Enum);
   EXPECT_TRUE(upb_MiniTableField_IsClosedEnum(closedEnumField));
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, OneofClear) {
+  upb_Arena* arena = upb_Arena_New();
+
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+
+  const upb_MiniTable* table =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+
+  // oneof_uint32
+  const upb_MiniTableField* oneofField =
+      upb_MiniTable_FindFieldByNumber(table, 111);
+  EXPECT_TRUE(upb_MiniTableField_IsInOneof(oneofField));
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_oneof_uint32(msg, 522);
+  EXPECT_TRUE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_oneof_uint32(msg));
+
+  upb_Message_ClearOneof((upb_Message*)msg, table, oneofField);
+  EXPECT_FALSE(
+      protobuf_test_messages_proto2_TestAllTypesProto2_has_oneof_uint32(msg));
+
   upb_Arena_Free(arena);
 }
 

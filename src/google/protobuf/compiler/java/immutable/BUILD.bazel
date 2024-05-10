@@ -35,6 +35,7 @@ cc_library(
         "//src/google/protobuf:port",
         "//src/google/protobuf/compiler/java:generator_common",
         "//src/google/protobuf/compiler/java:helpers",
+        "//src/google/protobuf/compiler/java:internal_helpers",
         "//src/google/protobuf/io:printer",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/log:absl_check",
@@ -84,9 +85,11 @@ cc_library(
         "//src/google/protobuf:port",
         "//src/google/protobuf/compiler/java:generator_common",
         "//src/google/protobuf/compiler/java:helpers",
+        "//src/google/protobuf/compiler/java:internal_helpers",
         "//src/google/protobuf/io:printer",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 

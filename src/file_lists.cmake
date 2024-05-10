@@ -346,6 +346,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/primitive_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/service.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/string_field.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/internal_helpers.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/kotlin_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/enum.cc
@@ -474,6 +475,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/primitive_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/service.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/string_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/internal_helpers.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/kotlin_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/enum.h

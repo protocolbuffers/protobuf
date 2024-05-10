@@ -10,7 +10,7 @@
 use crate::__internal::{Enum, Private};
 use crate::{
     Map, MapIter, MapMut, MapView, Mut, ProtoStr, Proxied, ProxiedInMapValue, ProxiedInRepeated,
-    Repeated, RepeatedMut, RepeatedView, SettableValue, View, ViewProxy,
+    Repeated, RepeatedMut, RepeatedView, View, ViewProxy,
 };
 use core::fmt::Debug;
 use std::alloc::Layout;
@@ -59,32 +59,6 @@ impl ScratchSpace {
 }
 
 pub type SerializedData = upb::OwnedArenaBox<[u8]>;
-
-// TODO: Investigate replacing this with direct access to UPB bits.
-pub type MessagePresentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutatorData<'msg, T>;
-pub type MessageAbsentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutatorData<'msg, T>;
-pub type BytesPresentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
-pub type BytesAbsentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
-pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;
-pub type InnerPrimitiveMut<'msg, T> = crate::vtable::RawVTableMutator<'msg, T>;
-
-#[derive(Debug)]
-pub struct MessageVTable {
-    pub getter: unsafe extern "C" fn(msg: RawMessage) -> Option<RawMessage>,
-    pub mut_getter: unsafe extern "C" fn(msg: RawMessage, arena: RawArena) -> RawMessage,
-    pub clearer: unsafe extern "C" fn(msg: RawMessage),
-}
-
-impl MessageVTable {
-    pub const fn new(
-        _private: Private,
-        getter: unsafe extern "C" fn(msg: RawMessage) -> Option<RawMessage>,
-        mut_getter: unsafe extern "C" fn(msg: RawMessage, arena: RawArena) -> RawMessage,
-        clearer: unsafe extern "C" fn(msg: RawMessage),
-    ) -> Self {
-        MessageVTable { getter, mut_getter, clearer }
-    }
-}
 
 /// The raw contents of every generated message.
 #[derive(Debug)]
@@ -180,6 +154,14 @@ pub struct InnerRepeated {
 impl InnerRepeated {
     pub fn as_mut(&mut self) -> InnerRepeatedMut<'_> {
         InnerRepeatedMut::new(Private, self.raw, &self.arena)
+    }
+
+    pub fn raw(&self) -> RawRepeatedField {
+        self.raw
+    }
+
+    pub fn arena(&self) -> &Arena {
+        &self.arena
     }
 }
 

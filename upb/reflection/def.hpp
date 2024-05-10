@@ -61,6 +61,13 @@ class FieldDefPtr {
     return upb_FieldDef_MiniTable(ptr_);
   }
 
+  std::string MiniDescriptorEncode() const {
+    upb::Arena arena;
+    upb_StringView md;
+    upb_FieldDef_MiniDescriptorEncode(ptr_, arena.ptr(), &md);
+    return std::string(md.data, md.size);
+  }
+
   const UPB_DESC(FieldOptions) * options() const {
     return upb_FieldDef_Options(ptr_);
   }

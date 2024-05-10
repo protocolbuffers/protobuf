@@ -214,10 +214,10 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
             if (dst_sub_message == NULL) {
               return NULL;
             }
-            _upb_Message_SetTaggedMessagePtr(
-                dst, mini_table, field,
-                UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(dst_sub_message,
-                                                        is_empty));
+            UPB_PRIVATE(_upb_Message_SetTaggedMessagePtr)
+            (dst, field,
+             UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(dst_sub_message,
+                                                     is_empty));
           }
         } break;
         case kUpb_CType_String:

@@ -20,6 +20,7 @@
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
+#include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
@@ -109,6 +110,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   friend class TcParser;
   friend class SerialArena;
   friend struct SerialArenaChunkHeader;
+  friend class cleanup::ChunkList;
   static uint64_t GetNextLifeCycleId();
 
   class SerialArenaChunk;
@@ -207,7 +209,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Releases all memory except the first block which it returns. The first
   // block might be owned by the user and thus need some extra checks before
   // deleting.
-  SizedPtr Free(size_t* space_allocated);
+  SizedPtr Free();
 
   // ThreadCache is accessed very frequently, so we align it such that it's
   // located within a single cache line.

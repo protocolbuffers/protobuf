@@ -44,9 +44,7 @@
 //! implemented the concept of "proxy" types. Proxy types are a reference-like
 //! indirection between the user and the internal memory representation.
 
-use crate::RepeatedMut;
 use crate::__internal::Private;
-use crate::repeated::ProxiedInRepeated;
 use std::fmt::Debug;
 
 /// A type that can be accessed through a reference-like proxy.
@@ -134,7 +132,7 @@ pub trait ViewProxy<'msg>: 'msg + Sync + Unpin + Sized + Debug {
     ///     y: View<'b, T>,
     /// ) -> [View<'b, T>; 2]
     /// where
-    ///     T: Proxied,
+    ///     T: MutProxied,
     ///     'a: 'b,
     /// {
     ///     // `[x, y]` fails to compile because `'a` is not the same as `'b` and the `View`
@@ -165,13 +163,6 @@ where
     /// for your use, use that instead.
     fn get(&self) -> View<'_, Self::Proxied> {
         self.as_view()
-    }
-
-    /// Sets this field to the given `val`.
-    ///
-    /// Any borrowed data from `val` will be cloned.
-    fn set(&mut self, val: impl SettableValue<Self::Proxied>) {
-        val.set_on(Private, self.as_mut())
     }
 
     /// Converts a borrow into a `Mut` with the lifetime of that borrow.
@@ -216,83 +207,17 @@ where
         'msg: 'shorter;
 }
 
-// TODO: move this to `optional.rs` as it's only used for optionals
-/// `Proxied` types that can be optionally set or unset.
+/// A value to `Proxied`-value conversion that consumes the input value.
 ///
-/// All scalar and message types implement `ProxiedWithPresence`, while repeated
-/// types don't.
-pub trait ProxiedWithPresence: MutProxied {
-    /// The data necessary to store a present field mutator proxying `Self`.
-    /// This is the contents of `PresentField<'msg, Self>`.
-    type PresentMutData<'msg>: MutProxy<'msg, Proxied = Self>;
-
-    /// The data necessary to store an absent field mutator proxying `Self`.
-    /// This is the contents of `AbsentField<'msg, Self>`.
-    type AbsentMutData<'msg>: ViewProxy<'msg, Proxied = Self>;
-
-    /// Clears a present field.
-    fn clear_present_field(present_mutator: Self::PresentMutData<'_>) -> Self::AbsentMutData<'_>;
-
-    /// Sets an absent field to its default value.
-    ///
-    /// This can be more efficient than setting with a default value, e.g.
-    /// a default submessage could share resources with the parent message.
-    fn set_absent_to_default(absent_mutator: Self::AbsentMutData<'_>) -> Self::PresentMutData<'_>;
-}
-
-/// Values that can be used to set a field of `T`.
-pub trait SettableValue<T>: Sized
-where
-    T: MutProxied + ?Sized,
-{
-    /// Consumes `self` to set the given mutator to the value of `self`.
-    #[doc(hidden)]
-    fn set_on<'msg>(self, _private: Private, mutator: Mut<'msg, T>)
-    where
-        T: 'msg;
-
-    /// Consumes `self` and `absent_mutator` to set the given empty field to
-    /// the value of `self`.
-    #[doc(hidden)]
-    fn set_on_absent(
-        self,
-        _private: Private,
-        absent_mutator: T::AbsentMutData<'_>,
-    ) -> T::PresentMutData<'_>
-    where
-        T: ProxiedWithPresence,
-    {
-        let mut present = T::set_absent_to_default(absent_mutator);
-        self.set_on(Private, present.as_mut());
-        present
-    }
-
-    /// Consumes `self` and `present_mutator` to set the given present field
-    /// to the value of `self`.
-    #[doc(hidden)]
-    fn set_on_present(self, _private: Private, mut present_mutator: T::PresentMutData<'_>)
-    where
-        T: ProxiedWithPresence,
-    {
-        self.set_on(Private, present_mutator.as_mut())
-    }
-
-    /// Consumes `self` and `repeated_mutator` to set the value at the
-    /// given index to the value of `self`.
-    ///
-    /// # Safety
-    /// `index` must be less than `repeated_mutator.len()`
-    #[doc(hidden)]
-    unsafe fn set_on_repeated_unchecked(
-        self,
-        _private: Private,
-        mut _repeated_mutator: RepeatedMut<T>,
-        _index: usize,
-    ) where
-        T: ProxiedInRepeated,
-    {
-        unimplemented!()
-    }
+/// All setter functions accept types that implement `IntoProxied`. The purpose
+/// of `IntoProxied` is to allow setting arbitrary values on Protobuf fields
+/// with the minimal number of copies.
+///
+/// This trait must not be implemented on types outside the Protobuf codegen and
+/// runtime. We expect it to change in backwards incompatible ways in the
+/// future.
+pub trait IntoProxied<T: Proxied> {
+    fn into(self, _private: Private) -> T;
 }
 
 #[cfg(test)]
@@ -382,45 +307,6 @@ mod tests {
         }
     }
 
-    impl SettableValue<MyProxied> for MyProxiedView<'_> {
-        fn set_on<'msg>(self, _private: Private, mutator: Mut<'msg, MyProxied>)
-        where
-            MyProxied: 'msg,
-        {
-            mutator.my_proxied_ref.val = self.my_proxied_ref.val.clone();
-        }
-    }
-
-    impl SettableValue<MyProxied> for String {
-        fn set_on<'msg>(self, _private: Private, mutator: Mut<'msg, MyProxied>)
-        where
-            MyProxied: 'msg,
-        {
-            mutator.my_proxied_ref.val = self;
-        }
-    }
-
-    impl SettableValue<MyProxied> for &'_ str {
-        fn set_on<'msg>(self, _private: Private, mutator: Mut<'msg, MyProxied>)
-        where
-            MyProxied: 'msg,
-        {
-            mutator.my_proxied_ref.val.replace_range(.., self);
-        }
-    }
-
-    impl SettableValue<MyProxied> for Cow<'_, str> {
-        fn set_on<'msg>(self, _private: Private, mutator: Mut<'msg, MyProxied>)
-        where
-            MyProxied: 'msg,
-        {
-            match self {
-                Cow::Owned(x) => <String as SettableValue<MyProxied>>::set_on(x, Private, mutator),
-                Cow::Borrowed(x) => <&str as SettableValue<MyProxied>>::set_on(x, Private, mutator),
-            }
-        }
-    }
-
     #[test]
     fn test_as_view() {
         let my_proxied = MyProxied { val: "Hello World".to_string() };
@@ -428,18 +314,6 @@ mod tests {
         let my_view = my_proxied.as_view();
 
         assert_that!(my_view.val(), eq(&my_proxied.val));
-    }
-
-    #[test]
-    fn test_as_mut() {
-        let mut my_proxied = MyProxied { val: "Hello World".to_string() };
-
-        let mut my_mut = my_proxied.as_mut();
-        my_mut.set("Hello indeed".to_string());
-
-        let val_after_set = my_mut.as_view().val().to_string();
-        assert_that!(my_proxied.val, eq(val_after_set));
-        assert_that!(my_proxied.val, eq("Hello indeed"));
     }
 
     fn reborrow_mut_into_view<'msg>(x: Mut<'msg, MyProxied>) -> View<'msg, MyProxied> {
@@ -564,18 +438,5 @@ mod tests {
             // lifetime.
             reborrow_generic_mut_into_mut::<MyProxied>(my_mut, other_mut);
         }
-    }
-
-    #[test]
-    fn test_set() {
-        let mut my_proxied = MyProxied::default();
-        my_proxied.as_mut().set("hello");
-        assert_that!(my_proxied.as_view().val(), eq("hello"));
-
-        my_proxied.as_mut().set(String::from("hello2"));
-        assert_that!(my_proxied.as_view().val(), eq("hello2"));
-
-        my_proxied.as_mut().set(Cow::Borrowed("hello3"));
-        assert_that!(my_proxied.as_view().val(), eq("hello3"));
     }
 }

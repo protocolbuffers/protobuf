@@ -67,27 +67,6 @@
 // - MSVC: https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes-history
 //         https://docs.microsoft.com/en-us/visualstudio/releasenotes/vs2017-relnotes-history
 
-// Portable PROTOBUF_BUILTIN_BSWAPxx definitions
-// Code must check for availability, e.g.: `defined(PROTOBUF_BUILTIN_BSWAP32)`
-#ifdef PROTOBUF_BUILTIN_BSWAP16
-#error PROTOBUF_BUILTIN_BSWAP16 was previously defined
-#endif
-#ifdef PROTOBUF_BUILTIN_BSWAP32
-#error PROTOBUF_BUILTIN_BSWAP32 was previously defined
-#endif
-#ifdef PROTOBUF_BUILTIN_BSWAP64
-#error PROTOBUF_BUILTIN_BSWAP64 was previously defined
-#endif
-#if defined(__GNUC__) || ABSL_HAVE_BUILTIN(__builtin_bswap16)
-#define PROTOBUF_BUILTIN_BSWAP16(x) __builtin_bswap16(x)
-#endif
-#if defined(__GNUC__) || ABSL_HAVE_BUILTIN(__builtin_bswap32)
-#define PROTOBUF_BUILTIN_BSWAP32(x) __builtin_bswap32(x)
-#endif
-#if defined(__GNUC__) || ABSL_HAVE_BUILTIN(__builtin_bswap64)
-#define PROTOBUF_BUILTIN_BSWAP64(x) __builtin_bswap64(x)
-#endif
-
 // Portable check for gcc-style atomic built-ins
 #if ABSL_HAVE_BUILTIN(__atomic_load_n)
 #define PROTOBUF_BUILTIN_ATOMIC 1
@@ -424,39 +403,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #error PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION was previously defined
 #endif
 
-// Specify memory alignment for structs, classes, etc.
-// Use like:
-//   class PROTOBUF_ALIGNAS(16) MyClass { ... }
-//   PROTOBUF_ALIGNAS(16) int array[4];
-//
-// In most places you can use the C++11 keyword "alignas", which is preferred.
-//
-// But compilers have trouble mixing __attribute__((...)) syntax with
-// alignas(...) syntax.
-//
-// Doesn't work in clang or gcc:
-//   struct alignas(16) __attribute__((packed)) S { char c; };
-// Works in clang but not gcc:
-//   struct __attribute__((packed)) alignas(16) S2 { char c; };
-// Works in clang and gcc:
-//   struct alignas(16) S3 { char c; } __attribute__((packed));
-//
-// There are also some attributes that must be specified *before* a class
-// definition: visibility (used for exporting functions/classes) is one of
-// these attributes. This means that it is not possible to use alignas() with a
-// class that is marked as exported.
-#ifdef PROTOBUF_ALIGNAS
-#error PROTOBUF_ALIGNAS was previously defined
-#endif
-#if defined(_MSC_VER)
-#define PROTOBUF_ALIGNAS(byte_alignment) __declspec(align(byte_alignment))
-#elif defined(__GNUC__)
-#define PROTOBUF_ALIGNAS(byte_alignment) \
-  __attribute__((aligned(byte_alignment)))
-#else
-#define PROTOBUF_ALIGNAS(byte_alignment) alignas(byte_alignment)
-#endif
-
 #ifdef PROTOBUF_THREAD_LOCAL
 #error PROTOBUF_THREAD_LOCAL was previously defined
 #endif
@@ -617,13 +563,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #else
 #define PROTOBUF_TSAN_DECLARE_MEMBER
 #endif
-
-#ifdef PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION
-#error PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION was previously defined
-#endif
-#if !defined(PROTOBUF_TEMPORARY_DISABLE_TABLE_PARSER_ON_REFLECTION)
-#define PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION 1
-#endif  // PROTOBUF_ENABLE_FORCE_ALLOCATION_ON_CONSTRUCTION
 
 // Note that this is performance sensitive: changing the parameters will change
 // the registers used by the ABI calling convention, which subsequently affects
@@ -939,8 +878,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #else
 #define PROTOBUF_DEBUG false
 #endif
-
-#define PROTO2_IS_OSS true
 
 #ifdef PROTOBUF_NO_THREADLOCAL
 #error PROTOBUF_NO_THREADLOCAL was previously defined

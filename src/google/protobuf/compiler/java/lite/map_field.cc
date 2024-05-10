@@ -14,6 +14,7 @@
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/internal_helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/io/printer.h"
 
@@ -857,7 +858,7 @@ void ImmutableMapFieldLiteGenerator::GenerateKotlinDslMembers(
       "  @kotlin.jvm.JvmSynthetic\n"
       "  @JvmName(\"get$kt_capitalized_name$Map\")\n"
       "  get() = com.google.protobuf.kotlin.DslMap(\n"
-      "    $kt_dsl_builder$.${$get$capitalized_name$Map$}$()\n"
+      "    $kt_dsl_builder$.${$$kt_property_name$Map$}$\n"
       "  )\n");
 
   WriteFieldDocComment(printer, descriptor_, context_->options(),
