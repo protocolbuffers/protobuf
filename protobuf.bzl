@@ -1,5 +1,6 @@
 load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@rules_cc//cc:defs.bzl", "objc_library")
+load("@rules_java//java:defs.bzl", "java_library")
 load("@rules_proto//proto:defs.bzl", "ProtoInfo")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_ruby//ruby:defs.bzl", "ruby_library")
@@ -65,6 +66,12 @@ def _PyOuts(srcs, use_grpc_plugin = False):
 
 def _RubyOuts(srcs):
     return [s[:-len(".proto")] + "_pb.rb" for s in srcs]
+
+def _JavaOuts(srcs):
+    return [
+        "".join([token.capitalize() for token in src[:-len(".proto")].split("_")]) + ".java"
+        for src in srcs
+    ]
 
 def _CsharpOuts(srcs):
     return [
@@ -152,6 +159,8 @@ def _proto_gen_impl(ctx):
                 outs.extend(_PyOuts([src.basename], use_grpc_plugin = use_grpc_plugin))
             elif lang == "ruby":
                 outs.extend(_RubyOuts([src.basename]))
+            # elif lang == "java":
+            #     outs.extend(_JavaOuts([src.basename]))
 
             # Otherwise, rely on user-supplied outs.
             args += [("--%s_out=" + path_tpl) % (lang, gen_dir)]
@@ -644,6 +653,72 @@ def py_proto_library(
       introduce support for py_proto_library, which should be used instead.
     """
     internal_py_proto_library(*args, **kwargs)
+
+
+def internal_java_proto_library(
+        name,
+        srcs = [],
+        deps = [],
+        outs = [],
+        proto_deps = [],
+        includes = ["."],
+        default_runtime = Label("//:protobuf_java"),
+        protoc = Label("//:protoc"),
+        testonly = None,
+        visibility = ["//visibility:public"],
+        **kwargs):
+    """Bazel rule to create a Java protobuf library from proto sources
+    NOTE: the rule is only an internal workaround to generate protos. The
+    interface may change and the rule may be removed when bazel has introduced
+    the native rule.
+    Args:
+      name: the name of the java_proto_library.
+      srcs: the .proto files to compile.
+      deps: a list of dependency labels; must be java_proto_library.
+      proto_deps: a list of proto file dependencies that don't have a
+        objc_proto_library rule.
+      includes: a string indicating the include path of the .proto files.
+      default_runtime: the Java Protobuf runtime
+      protoc: the label of the protocol compiler to generate the sources.
+      testonly: common rule attribute (see:
+          https://bazel.build/reference/be/common-definitions#common-attributes)
+      visibility: the visibility of the generated files.
+      **kwargs: other keyword arguments that are passed to py_library.
+    """
+    full_deps = [d + "_genproto" for d in deps]
+
+    if proto_deps:
+        _proto_gen(
+            name = name + "_deps_genproto",
+            testonly = testonly,
+            srcs = proto_deps,
+            protoc = protoc,
+            includes = includes,
+            
+        )
+        full_deps.append(":%s_deps_genproto" % name)
+
+    _proto_gen(
+        name = name + "_genproto",
+        srcs = srcs,
+        deps = full_deps,
+        langs = ["java"],
+        outs = outs,
+        includes = includes,
+        protoc = protoc,
+        testonly = testonly,
+        visibility = visibility,
+        tags = ["manual"],
+    )
+
+    java_library(
+        name = name,
+        srcs = [name + "_genproto"],
+        deps = [default_runtime],
+        testonly = testonly,
+        visibility = visibility,
+        **kwargs
+    )
 
 def _source_proto_library(
         name,

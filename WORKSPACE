@@ -201,8 +201,16 @@ crate_repositories()
 
 # For testing previous major version against latest runtime.
 http_archive(
-    name = "com_google_protobuf",
+    name = "com_google_protobuf_head",
     # TODO: Update via GHA via CI (maybe with staleness tests)
-    strip_prefix = "protobuf-94cf1e9446d265453c8b72a352c6c926a1eea25f",
-    url = "https://github.com/protocolbuffers/protobuf/archive/HEAD.zip", # Check for bazel caching issues
+    strip_prefix = "protobuf-main",
+    url = "https://github.com/protocolbuffers/protobuf/archive/main.zip", # Check for bazel caching issues
+)
+
+# To appease bazel tools from com_google_protobuf_head.
+# Note this is the wrong version from com_google_protobuf_head's perspective, but protoc should not actually need this
+http_archive(
+    name = "com_google_protobuf",
+    strip_prefix = "protobuf-25.x",
+    url = "https://github.com/protocolbuffers/protobuf/archive/25.x.zip",
 )
