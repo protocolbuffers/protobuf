@@ -336,6 +336,7 @@ proto_library(
     deps = [
         "//:any_proto",
         "//:descriptor_proto",
+        "//:java_features_proto",
         "//:lite_test_protos",
         "//:wrappers_proto",
         "//src/google/protobuf:generic_test_protos",
