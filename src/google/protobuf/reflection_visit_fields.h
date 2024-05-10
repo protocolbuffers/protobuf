@@ -139,30 +139,30 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
         PROTOBUF_HANDLE_REPEATED_CASE(SINT64, int64_t, SInt64);
 
 #define PROTOBUF_HANDLE_REPEATED_PTR_CASE(TYPE, CPPTYPE, NAME)                 \
-  case FieldDescriptor::TYPE_##TYPE: {                                         \
-    if (PROTOBUF_PREDICT_TRUE(!field->is_map())) {                             \
-      /* Handle repeated fields. */                                            \
-      const auto& rep = reflection->GetRawNonOneof<RepeatedPtrField<CPPTYPE>>( \
-          message, field);                                                     \
-      if (rep.size() == 0) continue;                                           \
-      func(internal::Repeated##NAME##DynamicFieldInfo<MessageT>{               \
-          reflection, message, field, rep});                                   \
-    } else {                                                                   \
-      /* Handle map fields. */                                                 \
-      const auto& map =                                                        \
-          reflection->GetRawNonOneof<MapFieldBase>(message, field);            \
-      if (map.size() == 0) continue; /* NOLINT */                              \
-      const Descriptor* desc = field->message_type();                          \
-      func(internal::MapDynamicFieldInfo<MessageT>{reflection, message, field, \
-                                                   desc->map_key(),            \
-                                                   desc->map_value(), map});   \
-    }                                                                          \
-    break;                                                                     \
-  }
+  if (PROTOBUF_PREDICT_TRUE(!field->is_map())) {                               \
+    /* Handle repeated fields. */                                              \
+    const auto& rep =                                                          \
+        reflection->GetRawNonOneof<RepeatedPtrField<CPPTYPE>>(message, field); \
+    if (rep.size() == 0) continue;                                             \
+    func(internal::Repeated##NAME##DynamicFieldInfo<MessageT>{                 \
+        reflection, message, field, rep});                                     \
+  } else {                                                                     \
+    /* Handle map fields. */                                                   \
+    const auto& map =                                                          \
+        reflection->GetRawNonOneof<MapFieldBase>(message, field);              \
+    if (map.size() == 0) continue; /* NOLINT */                                \
+    const Descriptor* desc = field->message_type();                            \
+    func(internal::MapDynamicFieldInfo<MessageT>{                              \
+        reflection, message, field, desc->map_key(), desc->map_value(), map}); \
+  }                                                                            \
+  break;
 
-        PROTOBUF_HANDLE_REPEATED_PTR_CASE(MESSAGE, Message, Message);
-        PROTOBUF_HANDLE_REPEATED_PTR_CASE(GROUP, Message, Group);
-
+        case FieldDescriptor::TYPE_MESSAGE: {
+          PROTOBUF_HANDLE_REPEATED_PTR_CASE(MESSAGE, Message, Message);
+        }
+        case FieldDescriptor::TYPE_GROUP: {
+          PROTOBUF_HANDLE_REPEATED_PTR_CASE(GROUP, Message, Group);
+        }
         case FieldDescriptor::TYPE_BYTES:
         case FieldDescriptor::TYPE_STRING:
 #define PROTOBUF_IMPL_STRING_CASE(CPPTYPE, NAME)                               \

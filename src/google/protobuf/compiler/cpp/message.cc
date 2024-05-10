@@ -1284,10 +1284,22 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
     auto v = p->WithVars(FieldVars(field, options_));
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
     if (field->is_repeated()) {
+      if (!IsLazy(field, options_, scc_analyzer_)) {
+        p->Emit(R"cc(
+          inline int $classname$::_internal_$name_internal$_size() const {
+            return _internal_$name_internal$().size();
+          }
+        )cc");
+      } else {
+        p->Emit(R"cc(
+          inline int $classname$::_internal_$name_internal$_size() const {
+            if ($field$.IsClear()) {
+              return 0;
+            }
+            return _internal_$name_internal$().size();
+          })cc");
+      }
       p->Emit(R"cc(
-        inline int $classname$::_internal_$name_internal$_size() const {
-          return _internal_$name_internal$().size();
-        }
         inline int $classname$::$name$_size() const {
           $WeakDescriptorSelfPin$;
           $annotate_size$;

@@ -64,6 +64,7 @@ using google::protobuf::internal::GetEmptyString;
 using google::protobuf::internal::InlinedStringField;
 using google::protobuf::internal::InternalMetadata;
 using google::protobuf::internal::LazyField;
+using google::protobuf::internal::LazyRepeatedPtrField;
 using google::protobuf::internal::MapFieldBase;
 using google::protobuf::internal::MigrationSchema;
 using google::protobuf::internal::OnShutdownDelete;
@@ -421,7 +422,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
             // so we use RepeatedPtrFieldBase directly.
             total_size +=
                 GetRaw<RepeatedPtrFieldBase>(message, field)
-                    .SpaceUsedExcludingSelfLong<GenericTypeHandler<Message> >();
+                    .SpaceUsedExcludingSelfLong<GenericTypeHandler<Message>>();
           }
 
           break;
@@ -2474,10 +2475,10 @@ const Message& Reflection::GetRepeatedMessage(const Message& message,
     if (IsMapFieldInApi(field)) {
       return GetRaw<MapFieldBase>(message, field)
           .GetRepeatedField()
-          .Get<GenericTypeHandler<Message> >(index);
+          .Get<GenericTypeHandler<Message>>(index);
     } else {
       return GetRaw<RepeatedPtrFieldBase>(message, field)
-          .Get<GenericTypeHandler<Message> >(index);
+          .Get<GenericTypeHandler<Message>>(index);
     }
   }
 }
