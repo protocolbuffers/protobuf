@@ -901,6 +901,42 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void WriteValueWithIndentation_Any()
+        {
+            var registry = TypeRegistry.FromMessages(ForeignMessage.Descriptor);
+            var formatter = JsonFormatter.Settings.Default.WithIndentation().WithTypeRegistry(registry);
+
+            var nestedMessage = new ForeignMessage { C = 1 };
+            var value = Any.Pack(nestedMessage);
+            const string expectedJson = @"
+{
+  '@type': 'type.googleapis.com/protobuf_unittest3.ForeignMessage',
+  'c': 1
+}";
+
+            AssertWriteValue(value, expectedJson, formatter);
+        }
+
+        [Test]
+        public void WriteValueWithIndentation_NestedAny()
+        {
+            var registry = TypeRegistry.FromMessages(ForeignMessage.Descriptor);
+            var formatter = JsonFormatter.Settings.Default.WithIndentation().WithTypeRegistry(registry);
+
+            var nestedMessage = new ForeignMessage { C = 1 };
+            var value = new TestWellKnownTypes { AnyField = Any.Pack(nestedMessage) };
+            const string expectedJson = @"
+{
+  'anyField': {
+    '@type': 'type.googleapis.com/protobuf_unittest3.ForeignMessage',
+    'c': 1
+  }
+}";
+
+            AssertWriteValue(value, expectedJson, formatter);
+        }
+
+        [Test]
         public void WriteValueWithIndentation_CustomIndentation()
         {
             var value = new RepeatedField<int> { 1, 2, 3 };
