@@ -179,8 +179,8 @@ TEST(GeneratedCode, ScalarsProto2) {
       0, protobuf_test_messages_proto2_TestAllTypesProto2_optional_int32(msg));
 
   EXPECT_EQ(0, upb_Message_GetInt32(UPB_UPCAST(msg), optional_int32_field, 0));
-  upb_Message_SetInt32(UPB_UPCAST(msg), optional_int32_field, kTestInt32,
-                       nullptr);
+  upb_Message_SetBaseFieldInt32(UPB_UPCAST(msg), optional_int32_field,
+                                kTestInt32);
   EXPECT_EQ(true,
             upb_Message_HasBaseField(UPB_UPCAST(msg), optional_int32_field));
   EXPECT_EQ(kTestInt32,
@@ -196,8 +196,8 @@ TEST(GeneratedCode, ScalarsProto2) {
       0, protobuf_test_messages_proto2_TestAllTypesProto2_optional_uint32(msg));
   EXPECT_EQ(0,
             upb_Message_GetUInt32(UPB_UPCAST(msg), optional_uint32_field, 0));
-  upb_Message_SetUInt32(UPB_UPCAST(msg), optional_uint32_field, kTestUInt32,
-                        nullptr);
+  upb_Message_SetBaseFieldUInt32(UPB_UPCAST(msg), optional_uint32_field,
+                                 kTestUInt32);
   EXPECT_EQ(kTestUInt32,
             upb_Message_GetUInt32(UPB_UPCAST(msg), optional_uint32_field, 0));
   EXPECT_EQ(
@@ -219,15 +219,15 @@ TEST(GeneratedCode, ScalarProto3) {
 
   EXPECT_EQ(
       0, protobuf_test_messages_proto3_TestAllTypesProto3_optional_int64(msg));
-  upb_Message_SetInt64(UPB_UPCAST(msg), optional_int64_field, -1, nullptr);
+  upb_Message_SetBaseFieldInt64(UPB_UPCAST(msg), optional_int64_field, -1);
   EXPECT_EQ(
       -1, protobuf_test_messages_proto3_TestAllTypesProto3_optional_int64(msg));
   EXPECT_EQ(-1, upb_Message_GetInt64(UPB_UPCAST(msg), optional_int64_field, 0));
 
   EXPECT_EQ(
       0, protobuf_test_messages_proto3_TestAllTypesProto3_optional_uint64(msg));
-  upb_Message_SetUInt64(UPB_UPCAST(msg), optional_uint64_field, kTestUInt64,
-                        nullptr);
+  upb_Message_SetBaseFieldUInt64(UPB_UPCAST(msg), optional_uint64_field,
+                                 kTestUInt64);
   EXPECT_EQ(
       kTestUInt64,
       protobuf_test_messages_proto3_TestAllTypesProto3_optional_uint64(msg));
@@ -265,8 +265,8 @@ TEST(GeneratedCode, Strings) {
       false,
       protobuf_test_messages_proto2_TestAllTypesProto2_has_optional_string(
           msg));
-  upb_Message_SetString(UPB_UPCAST(msg), optional_string_field,
-                        upb_StringView_FromString(kTestStr2), nullptr);
+  upb_Message_SetBaseFieldString(UPB_UPCAST(msg), optional_string_field,
+                                 upb_StringView_FromString(kTestStr2));
   EXPECT_EQ(true,
             upb_Message_HasBaseField(UPB_UPCAST(msg), optional_string_field));
   EXPECT_EQ(
@@ -327,8 +327,8 @@ TEST(GeneratedCode, SubMessage) {
   upb_Message* new_nested_message = UPB_UPCAST(
       protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_new(
           arena));
-  upb_Message_SetInt32(new_nested_message, nested_message_a_field, 123,
-                       nullptr);
+  upb_Message_SetBaseFieldInt32(new_nested_message, nested_message_a_field,
+                                123);
   upb_Message_SetMessage(UPB_UPCAST(msg), optional_message_field,
                          new_nested_message);
 

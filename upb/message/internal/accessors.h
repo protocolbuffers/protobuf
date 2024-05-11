@@ -657,13 +657,14 @@ UPB_API_INLINE void upb_Message_SetBaseFieldUInt64(struct upb_Message* msg,
   upb_Message_SetBaseField(msg, f, &value);
 }
 
-UPB_API_INLINE void upb_Message_SetClosedEnum(
-    struct upb_Message* msg, const upb_MiniTable* msg_mini_table,
-    const upb_MiniTableField* f, int32_t value) {
+UPB_API_INLINE void upb_Message_SetClosedEnum(struct upb_Message* msg,
+                                              const upb_MiniTable* m,
+                                              const upb_MiniTableField* f,
+                                              int32_t value) {
   UPB_ASSERT(upb_MiniTableField_IsClosedEnum(f));
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) == kUpb_FieldRep_4Byte);
-  UPB_ASSERT(upb_MiniTableEnum_CheckValue(
-      upb_MiniTable_GetSubEnumTable(msg_mini_table, f), value));
+  UPB_ASSERT(
+      upb_MiniTableEnum_CheckValue(upb_MiniTable_GetSubEnumTable(m, f), value));
   upb_Message_SetBaseField(msg, f, &value);
 }
 
