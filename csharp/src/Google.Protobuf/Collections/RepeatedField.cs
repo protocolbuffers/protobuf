@@ -34,21 +34,8 @@ namespace Google.Protobuf.Collections
         private static readonly T[] EmptyArray = new T[0];
         private const int MinArraySize = 8;
 
-        private T[] array = EmptyArray;
-        private int count = 0;
-
-        /// <summary>
-        /// Provides read-only access to the data of this <see cref="RepeatedField{T}"/>.
-        /// No data is copied so this is the most efficient way of accessing.
-        /// </summary>
-        /// <remarks>
-        /// Modifying the contents of the <see cref="RepeatedField{T}"/> while using the returned
-        /// <see cref="ReadOnlySpan{T}"/> can lead to undefined behavior.
-        /// </remarks>
-        public ReadOnlySpan<T> Span
-        {
-            get { return array.AsSpan(0, count); }
-        }
+        internal T[] array = EmptyArray;
+        internal int count = 0;
 
         /// <summary>
         /// Creates a deep clone of this repeated field.
@@ -292,17 +279,6 @@ namespace Google.Protobuf.Collections
                 {
                     SetSize(value);
                 }
-            }
-        }
-
-        // May increase the size of the internal array, but will never shrink it.
-        private void EnsureSize(int size)
-        {
-            if (array.Length < size)
-            {
-                size = Math.Max(size, MinArraySize);
-                int newSize = Math.Max(array.Length * 2, size);
-                SetSize(newSize);
             }
         }
 
@@ -621,6 +597,17 @@ namespace Google.Protobuf.Collections
                 }
                 ProtoPreconditions.CheckNotNullUnconstrained(value, nameof(value));
                 array[index] = value;
+            }
+        }
+
+        // May increase the size of the internal array, but will never shrink it.
+        internal void EnsureSize(int size)
+        {
+            if (array.Length < size)
+            {
+                size = Math.Max(size, MinArraySize);
+                int newSize = Math.Max(array.Length * 2, size);
+                SetSize(newSize);
             }
         }
 

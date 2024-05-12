@@ -877,26 +877,5 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual(0, list.Count);
             Assert.AreEqual(8, list.Capacity);
         }
-
-        [Test]
-        public void Span_Empty()
-        {
-            var list = new RepeatedField<int>();
-            var span = list.Span;
-
-            Assert.AreEqual(0, span.Length);
-        }
-
-        [Test]
-        public void Span_Access()
-        {
-            var list = new RepeatedField<int> { 1, 2, 3 };
-            var span = list.Span;
-
-            Assert.AreEqual(3, span.Length);
-            Assert.AreEqual(1, span[0]);
-            Assert.AreEqual(2, span[1]);
-            Assert.AreEqual(3, span[2]);
-        }
     }
 }
