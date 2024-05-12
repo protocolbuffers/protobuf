@@ -24,11 +24,11 @@ namespace Google.Protobuf
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The methods in this class should only be called if it is guaranteed that the <see
-    /// cref="RepeatedField{T}"/> will not be modified while the returned <see cref="Span{T}"/> is
-    /// in use. Modifying a <see cref="RepeatedField{T}"/> while a <see cref="Span{T}"/> is in use
-    /// can lead to unexpected and undesirable consequences in your application, and will likely be
-    /// difficult to debug. Proceed with caution!
+    /// The methods in this class should only be called if it is guaranteed that the
+    /// <see cref="RepeatedField{T}"/> will not be modified while the returned <see cref="Span{T}"/>
+    /// is in use. Modifying a <see cref="RepeatedField{T}"/> while a <see cref="Span{T}"/> is in
+    /// use can lead to unexpected and undesirable consequences in your application, and will likely
+    /// be difficult to debug. Proceed with caution!
     /// </para>
     /// <para>
     /// Modifying a <see cref="RepeatedField{T}"/> while a <see cref="Span{T}"/> is in use can have
