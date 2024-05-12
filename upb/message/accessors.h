@@ -120,10 +120,6 @@ UPB_API_INLINE uint64_t upb_Message_GetUInt64(const upb_Message* msg,
                                               const upb_MiniTableField* f,
                                               uint64_t default_val);
 
-UPB_API_INLINE void upb_Message_SetClosedEnum(
-    upb_Message* msg, const upb_MiniTable* msg_mini_table,
-    const upb_MiniTableField* f, int32_t value);
-
 // BaseField Setters ///////////////////////////////////////////////////////////
 
 UPB_API_INLINE void upb_Message_SetBaseField(upb_Message* msg,
@@ -137,6 +133,10 @@ UPB_API_INLINE void upb_Message_SetBaseFieldBool(struct upb_Message* msg,
 UPB_API_INLINE void upb_Message_SetBaseFieldDouble(struct upb_Message* msg,
                                                    const upb_MiniTableField* f,
                                                    double value);
+
+UPB_API_INLINE void upb_Message_SetBaseFieldEnum(struct upb_Message* msg,
+                                                 const upb_MiniTableField* f,
+                                                 int32_t value);
 
 UPB_API_INLINE void upb_Message_SetBaseFieldFloat(struct upb_Message* msg,
                                                   const upb_MiniTableField* f,
@@ -176,6 +176,10 @@ UPB_API_INLINE bool upb_Message_SetExtensionDouble(
     struct upb_Message* msg, const upb_MiniTableExtension* e, double value,
     upb_Arena* a);
 
+UPB_API_INLINE bool upb_Message_SetExtensionEnum(
+    struct upb_Message* msg, const upb_MiniTableExtension* e, int32_t value,
+    upb_Arena* a);
+
 UPB_API_INLINE bool upb_Message_SetExtensionFloat(
     struct upb_Message* msg, const upb_MiniTableExtension* e, float value,
     upb_Arena* a);
@@ -209,6 +213,10 @@ UPB_API_INLINE bool upb_Message_SetBool(upb_Message* msg,
 UPB_API_INLINE bool upb_Message_SetDouble(upb_Message* msg,
                                           const upb_MiniTableField* f,
                                           double value, upb_Arena* a);
+
+UPB_API_INLINE bool upb_Message_SetEnum(upb_Message* msg,
+                                        const upb_MiniTableField* f,
+                                        int32_t value, upb_Arena* a);
 
 UPB_API_INLINE bool upb_Message_SetFloat(upb_Message* msg,
                                          const upb_MiniTableField* f,
