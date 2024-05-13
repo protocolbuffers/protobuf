@@ -621,7 +621,6 @@ namespace Google.Protobuf.Collections
 
         internal void SetCount(int targetCount)
         {
-
             if (targetCount > Capacity)
             {
                 EnsureSize(targetCount);
