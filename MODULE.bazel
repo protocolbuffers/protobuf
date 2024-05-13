@@ -20,9 +20,29 @@ bazel_dep(name = "rules_cc", version = "0.0.9")
 bazel_dep(name = "rules_java", version = "5.3.5")
 bazel_dep(name = "rules_jvm_external", version = "5.1")
 bazel_dep(name = "rules_pkg", version = "0.7.0")
-bazel_dep(name = "rules_python", version = "0.10.2")
+bazel_dep(name = "rules_python", version = "0.28.0")
 bazel_dep(name = "platforms", version = "0.0.8")
 bazel_dep(name = "zlib", version = "1.2.11")
 
 # TODO: remove after toolchain types are moved to protobuf
 bazel_dep(name = "rules_proto", version = "4.0.0")
+
+SUPPORTED_PYTHON_VERSIONS = [
+    "3.8",
+    "3.9",
+    "3.10",
+    "3.11",
+    "3.12",
+]
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+
+[
+    python.toolchain(
+        # Required to avoid an error when running as root in OSS-Fuzz.
+        ignore_root_user_error = True,
+        is_default = python_version == SUPPORTED_PYTHON_VERSIONS[-1],
+        python_version = python_version,
+    )
+    for python_version in SUPPORTED_PYTHON_VERSIONS
+]

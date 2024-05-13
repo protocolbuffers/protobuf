@@ -1,7 +1,6 @@
 """Rules to create python distribution files and properly name them"""
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
 
 def _get_suffix(limited_api, python_version, cpu):
     """Computes an ABI version tag for an extension module per PEP 3149."""
@@ -15,29 +14,28 @@ def _get_suffix(limited_api, python_version, cpu):
         else:
             fail("Unsupported CPU: " + cpu)
         return ".cp{}-{}.{}".format(python_version, abi, "pyd")
-
-    if python_version == "system":
-        python_version = SYSTEM_PYTHON_VERSION
-        if int(python_version) < 38:
-            python_version += "m"
-        abis = {
-            "darwin_arm64": "darwin",
-            "darwin_x86_64": "darwin",
-            "darwin": "darwin",
-            "osx-x86_64": "darwin",
-            "osx-aarch_64": "darwin",
-            "linux-aarch_64": "aarch64-linux-gnu",
-            "linux-x86_64": "x86_64-linux-gnu",
-            "k8": "x86_64-linux-gnu",
-        }
-
-        return ".cpython-{}-{}.{}".format(
-            python_version,
-            abis[cpu],
-            "so" if limited_api else "abi3.so",
-        )
     elif limited_api:
         return ".abi3.so"
+
+    python_version = runtime.interpreter_version_info
+    if int(python_version) < 38:
+        python_version += "m"
+    abis = {
+        "darwin_arm64": "darwin",
+        "darwin_x86_64": "darwin",
+        "darwin": "darwin",
+        "osx-x86_64": "darwin",
+        "osx-aarch_64": "darwin",
+        "linux-aarch_64": "aarch64-linux-gnu",
+        "linux-x86_64": "x86_64-linux-gnu",
+        "k8": "x86_64-linux-gnu",
+    }
+
+    return ".cpython-{}-{}.{}".format(
+        python_version,
+        abis[cpu],
+        "so" if limited_api else "abi3.so",
+    )
 
     fail("Unsupported combination of flags")
 
@@ -114,6 +112,7 @@ def _py_dist_module_impl(ctx):
 
 py_dist_module = rule(
     implementation = _py_dist_module_impl,
+    toolchains = ["@rules_python//python:toolchain_type"],
     attrs = {
         "module_name": attr.string(mandatory = True),
         "extension": attr.label(

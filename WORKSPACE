@@ -25,6 +25,10 @@ load("@rules_python//python:repositories.bzl", "py_repositories")
 
 py_repositories()
 
+load("@rules_python//python/pip_install:repositories.bzl", "pip_install_dependencies")
+
+pip_install_dependencies()
+
 # Bazel platform rules.
 http_archive(
     name = "platforms",
@@ -164,11 +168,31 @@ http_archive(
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
 )
 
-load("@system_python//:pip.bzl", "pip_parse")
+load("@rules_python//python:repositories.bzl", "python_register_multi_toolchains")
+
+SUPPORTED_PYTHON_VERSIONS = [
+    "3.8",
+    "3.9",
+    "3.10",
+    "3.11",
+    "3.12",
+]
+
+python_register_multi_toolchains(
+    name = "python",
+    default_version = SUPPORTED_PYTHON_VERSIONS[-1],
+    python_versions = SUPPORTED_PYTHON_VERSIONS,
+    ignore_root_user_error = True,
+)
+
+load("@python_{}//:defs.bzl".format(SUPPORTED_PYTHON_VERSIONS[-1].replace(".", "_")), "interpreter")
+
+load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
     name = "pip_deps",
-    requirements = "//python:requirements.txt",
+    requirements_lock = "//python:requirements.txt",
+    python_interpreter_target = interpreter,
 )
 
 load("@pip_deps//:requirements.bzl", "install_deps")
@@ -177,9 +201,9 @@ install_deps()
 
 http_archive(
     name = "rules_fuzzing",
-    sha256 = "ff52ef4845ab00e95d29c02a9e32e9eff4e0a4c9c8a6bcf8407a2f19eb3f9190",
-    strip_prefix = "rules_fuzzing-0.4.1",
-    urls = ["https://github.com/bazelbuild/rules_fuzzing/releases/download/v0.4.1/rules_fuzzing-0.4.1.zip"],
+    sha256 = "77206c54b71f4dd5335123a6ff2a8ea688eca5378d34b4838114dff71652cf26",
+    strip_prefix = "rules_fuzzing-0.5.1",
+    urls = ["https://github.com/bazelbuild/rules_fuzzing/releases/download/v0.5.1/rules_fuzzing-0.5.1.zip"],
     patches = ["//third_party:rules_fuzzing.patch"],
     patch_args = ["-p1"],
 )
@@ -191,10 +215,6 @@ rules_fuzzing_dependencies()
 load("@rules_fuzzing//fuzzing:init.bzl", "rules_fuzzing_init")
 
 rules_fuzzing_init()
-
-load("@fuzzing_py_deps//:requirements.bzl", fuzzing_py_deps_install_deps = "install_deps")
-
-fuzzing_py_deps_install_deps()
 
 http_archive(
     name = "rules_rust",
