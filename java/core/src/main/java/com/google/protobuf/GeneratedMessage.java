@@ -476,6 +476,9 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     // to dispatch dirty invalidations. See GeneratedMessage.BuilderListener.
     private boolean isClean;
 
+    // Indicates that the default instance can be used
+    private boolean isDefault = true;
+
     /**
      * This field holds either an {@link UnknownFieldSet} or {@link UnknownFieldSet.Builder}.
      *
@@ -525,6 +528,15 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
      */
     protected boolean isClean() {
       return isClean;
+    }
+
+    /**
+     * Gets whether the default instance can be used
+     *
+     * @return whether the default instance can be used
+     */
+    protected boolean isDefault() {
+      return isDefault;
     }
 
     @Override
@@ -834,6 +846,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         // Don't keep dispatching invalidations until build is called again.
         isClean = false;
       }
+      isDefault = false;
     }
 
     /**

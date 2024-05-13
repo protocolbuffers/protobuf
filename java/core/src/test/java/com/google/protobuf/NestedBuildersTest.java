@@ -157,6 +157,20 @@ public class NestedBuildersTest {
   }
 
   @Test
+  public void testUsesDefaultInstance() {
+    Vehicle vehicle1 = Vehicle.newBuilder().build();
+    // Should use the default instance -- no allocation
+    assertThat(vehicle1).isSameInstanceAs(Vehicle.getDefaultInstance());
+
+    Vehicle vehicle2 =
+        Vehicle.newBuilder()
+            .addWheel(Wheel.newBuilder().build())
+            .build();
+    // Should use the default instance -- no allocation
+    assertThat(vehicle2.getWheel(0)).isSameInstanceAs(Wheel.getDefaultInstance());
+  }
+
+  @Test
   public void testGettingBuilderMarksFieldAsHaving() {
     Vehicle.Builder vehicleBuilder = Vehicle.newBuilder();
     vehicleBuilder.getEngineBuilder();
