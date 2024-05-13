@@ -46,8 +46,8 @@ cc_library(
 
 cc_library(
     name = "mfg",
-    srcs = ["make_field_generators.cc"],
-    hdrs = ["make_field_generators.h"],
+    srcs = ["make_field_gens.cc"],
+    hdrs = ["make_field_gens.h"],
     strip_include_prefix = "/src",
     deps = [
         ":fg",
@@ -94,7 +94,7 @@ cc_library(
 )
 
 cc_library(
-    name = "immutable",
+    name = "full",
     srcs = [
         "extension.cc",
         "generator_factory.cc",

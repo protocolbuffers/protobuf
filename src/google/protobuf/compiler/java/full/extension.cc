@@ -9,7 +9,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include "google/protobuf/compiler/java/immutable/extension.h"
+#include "google/protobuf/compiler/java/full/extension.h"
 
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"

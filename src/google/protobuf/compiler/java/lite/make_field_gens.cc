@@ -9,7 +9,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include "google/protobuf/compiler/java/lite/make_field_generators.h"
+#include "google/protobuf/compiler/java/lite/make_field_gens.h"
 
 #include <memory>
 #include <utility>

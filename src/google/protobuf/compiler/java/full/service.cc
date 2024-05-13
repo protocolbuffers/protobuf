@@ -9,7 +9,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include "google/protobuf/compiler/java/immutable/service.h"
+#include "google/protobuf/compiler/java/full/service.h"
 
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"

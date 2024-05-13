@@ -9,7 +9,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include "google/protobuf/compiler/java/immutable/enum.h"
+#include "google/protobuf/compiler/java/full/enum.h"
 
 #include <algorithm>
 #include <cmath>

@@ -20,9 +20,9 @@ cc_library(
     ],
     hdrs = [
         "accessor_case.h",
-        "accessor_generator.h",
         "accessors.h",
         "default_value.h",
+        "generator.h",
     ],
     copts = COPTS,
     strip_include_prefix = "/src",

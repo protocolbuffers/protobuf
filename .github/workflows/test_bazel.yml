@@ -47,8 +47,6 @@ jobs:
 
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel@v3
-        # TODO Silence this until we have a fix.
-        if: runner.os != 'Windows' || matrix.bzlmod
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: examples

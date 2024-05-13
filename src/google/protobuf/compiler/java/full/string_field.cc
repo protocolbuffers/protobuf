@@ -10,7 +10,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include "google/protobuf/compiler/java/immutable/string_field.h"
+#include "google/protobuf/compiler/java/full/string_field.h"
 
 #include <cstdint>
 #include <string>

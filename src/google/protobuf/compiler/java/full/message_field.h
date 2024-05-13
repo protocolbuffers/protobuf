@@ -6,17 +6,17 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
-// Author: jonp@google.com (Jon Perlow)
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_STRING_FIELD_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_STRING_FIELD_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_FIELD_H__
+#define GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_FIELD_H__
 
 #include <string>
 
-#include "google/protobuf/compiler/java/immutable/field_generator.h"
+#include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
@@ -34,15 +34,17 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-class ImmutableStringFieldGenerator : public ImmutableFieldGenerator {
+class ImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
  public:
-  explicit ImmutableStringFieldGenerator(const FieldDescriptor* descriptor,
-                                         int messageBitIndex,
-                                         int builderBitIndex, Context* context);
-  ImmutableStringFieldGenerator(const ImmutableStringFieldGenerator&) = delete;
-  ImmutableStringFieldGenerator& operator=(
-      const ImmutableStringFieldGenerator&) = delete;
-  ~ImmutableStringFieldGenerator() override;
+  explicit ImmutableMessageFieldGenerator(const FieldDescriptor* descriptor,
+                                          int messageBitIndex,
+                                          int builderBitIndex,
+                                          Context* context);
+  ImmutableMessageFieldGenerator(const ImmutableMessageFieldGenerator&) =
+      delete;
+  ImmutableMessageFieldGenerator& operator=(
+      const ImmutableMessageFieldGenerator&) = delete;
+  ~ImmutableMessageFieldGenerator() override;
 
   // implements ImmutableFieldGenerator
   // ---------------------------------------
@@ -73,44 +75,56 @@ class ImmutableStringFieldGenerator : public ImmutableFieldGenerator {
   int message_bit_index_;
   int builder_bit_index_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
-  Context* context_;
   ClassNameResolver* name_resolver_;
-};
+  Context* context_;
 
-class ImmutableStringOneofFieldGenerator
-    : public ImmutableStringFieldGenerator {
- public:
-  ImmutableStringOneofFieldGenerator(const FieldDescriptor* descriptor,
-                                     int messageBitIndex, int builderBitIndex,
-                                     Context* context);
-  ImmutableStringOneofFieldGenerator(
-      const ImmutableStringOneofFieldGenerator&) = delete;
-  ImmutableStringOneofFieldGenerator& operator=(
-      const ImmutableStringOneofFieldGenerator&) = delete;
-  ~ImmutableStringOneofFieldGenerator() override;
+  virtual void PrintNestedBuilderCondition(
+      io::Printer* printer, const char* regular_case,
+      const char* nested_builder_case) const;
+  virtual void PrintNestedBuilderFunction(
+      io::Printer* printer, const char* method_prototype,
+      const char* regular_case, const char* nested_builder_case,
+      const char* trailing_code,
+      absl::optional<io::AnnotationCollector::Semantic> semantic =
+          absl::nullopt) const;
 
  private:
+  void GenerateKotlinOrNull(io::Printer* printer) const;
+};
+
+class ImmutableMessageOneofFieldGenerator
+    : public ImmutableMessageFieldGenerator {
+ public:
+  ImmutableMessageOneofFieldGenerator(const FieldDescriptor* descriptor,
+                                      int messageBitIndex, int builderBitIndex,
+                                      Context* context);
+  ImmutableMessageOneofFieldGenerator(
+      const ImmutableMessageOneofFieldGenerator&) = delete;
+  ImmutableMessageOneofFieldGenerator& operator=(
+      const ImmutableMessageOneofFieldGenerator&) = delete;
+  ~ImmutableMessageOneofFieldGenerator() override;
+
   void GenerateMembers(io::Printer* printer) const override;
   void GenerateBuilderMembers(io::Printer* printer) const override;
   void GenerateBuilderClearCode(io::Printer* printer) const override;
-  void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateBuildingCode(io::Printer* printer) const override;
+  void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateBuilderParsingCode(io::Printer* printer) const override;
   void GenerateSerializationCode(io::Printer* printer) const override;
   void GenerateSerializedSizeCode(io::Printer* printer) const override;
 };
 
-class RepeatedImmutableStringFieldGenerator
-    : public ImmutableStringFieldGenerator {
+class RepeatedImmutableMessageFieldGenerator
+    : public ImmutableMessageFieldGenerator {
  public:
-  explicit RepeatedImmutableStringFieldGenerator(
+  explicit RepeatedImmutableMessageFieldGenerator(
       const FieldDescriptor* descriptor, int messageBitIndex,
       int builderBitIndex, Context* context);
-  RepeatedImmutableStringFieldGenerator(
-      const RepeatedImmutableStringFieldGenerator&) = delete;
-  RepeatedImmutableStringFieldGenerator& operator=(
-      const RepeatedImmutableStringFieldGenerator&) = delete;
-  ~RepeatedImmutableStringFieldGenerator() override;
+  RepeatedImmutableMessageFieldGenerator(
+      const RepeatedImmutableMessageFieldGenerator&) = delete;
+  RepeatedImmutableMessageFieldGenerator& operator=(
+      const RepeatedImmutableMessageFieldGenerator&) = delete;
+  ~RepeatedImmutableMessageFieldGenerator() override;
 
   // implements ImmutableFieldGenerator ---------------------------------------
   int GetNumBitsForMessage() const override;
@@ -132,6 +146,17 @@ class RepeatedImmutableStringFieldGenerator
   void GenerateKotlinDslMembers(io::Printer* printer) const override;
 
   std::string GetBoxedType() const override;
+
+ protected:
+  void PrintNestedBuilderCondition(
+      io::Printer* printer, const char* regular_case,
+      const char* nested_builder_case) const override;
+  void PrintNestedBuilderFunction(
+      io::Printer* printer, const char* method_prototype,
+      const char* regular_case, const char* nested_builder_case,
+      const char* trailing_code,
+      absl::optional<io::AnnotationCollector::Semantic> semantic =
+          absl::nullopt) const override;
 };
 
 }  // namespace java
@@ -139,4 +164,4 @@ class RepeatedImmutableStringFieldGenerator
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_STRING_FIELD_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_FIELD_H__

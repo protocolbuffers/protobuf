@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "absl/container/btree_map.h"
-#include "google/protobuf/compiler/java/immutable/field_generator.h"
+#include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
