@@ -69,12 +69,22 @@ namespace Google.Protobuf
         /// <param name="field">
         /// The <see cref="RepeatedField{T}"/> to wrap.
         /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="field"/> is <see langword="null"/>.
+        /// </exception>
         /// <returns>
         /// A <see cref="Span{T}"/> that wraps the backing array of the
         /// <see cref="RepeatedField{T}"/>.
         /// </returns>
         public static Span<T> AsSpan<T>(RepeatedField<T> field)
-            => field is not null ? field.AsSpan() : default;
+        {
+            if (field is null)
+            {
+                throw new ArgumentNullException(nameof(field));
+            }
+
+            return field.AsSpan();
+        }
 
         /// <summary>
         /// Sets the count of the <see cref="RepeatedField{T}"/> to the specified value.

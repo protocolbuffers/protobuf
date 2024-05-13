@@ -14,6 +14,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security;
+#if NET5_0_OR_GREATER
+using System.Runtime.CompilerServices;
+#endif
 
 namespace Google.Protobuf.Collections
 {
