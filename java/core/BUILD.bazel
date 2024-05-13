@@ -390,7 +390,6 @@ internal_java_proto_library(
     srcs = glob(["src/test/proto/**/*.proto"]),
     includes = ["src/", "java/core/src/test/proto/"],
     default_runtime = "@com_google_protobuf//:protobuf_java",
-    outs = [""], # TODO: Override the incorrect paths
     proto_deps = [
         "//:well_known_type_protos",
         "//:descriptor_proto_srcs",
@@ -399,6 +398,39 @@ internal_java_proto_library(
     ],
 )
 
+
+internal_java_proto_library(
+    name = "internal_test_check_utf8_size_java_protos",
+    protoc = "//:protoc",
+    srcs = ["src/test/proto/com/google/protobuf/test_check_utf8_size.proto"],
+    includes = ["java/core/src/test/proto/", "src/"],
+    default_runtime = "@com_google_protobuf//:protobuf_java",
+    proto_deps = [
+        "//:well_known_type_protos",
+        "//:descriptor_proto_srcs",
+        "//:lite_test_proto_srcs",
+        "//src/google/protobuf:test_proto_srcs",
+    ],
+)
+
+internal_java_proto_library(
+    name = "internal_deprecated_file_java_protos",
+    protoc = "//:protoc",
+    srcs = ["src/test/proto/com/google/protobuf/deprecated_file.proto"],
+    outs = ["deprecated_file/DeprecatedFile.java"],
+    includes = [
+        "src/test/proto",
+       # The above must come first.
+       "src"
+    ],
+    default_runtime = "@com_google_protobuf//:protobuf_java",
+    proto_deps = [
+        "//:well_known_type_protos",
+        "//:descriptor_proto_srcs",
+        "//:lite_test_proto_srcs",
+        "//src/google/protobuf:test_proto_srcs",
+    ],
+)
 
 internal_java_proto_library(
     name = "internal_well_known_type_protos",

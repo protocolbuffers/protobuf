@@ -107,7 +107,6 @@ def _proto_gen_impl(ctx):
     if ctx.attr.includes:
         for include in ctx.attr.includes:
             import_flags += ["-I" + _GetPath(ctx, include)]
-
     import_flags = depset(direct = import_flags)
 
     for dep in ctx.attr.deps:
@@ -161,13 +160,18 @@ def _proto_gen_impl(ctx):
                 outs.extend(_RubyOuts([src.basename]))
             # elif lang == "java":
             #     outs.extend(_JavaOuts([src.basename]))
-
             # Otherwise, rely on user-supplied outs.
             args += [("--%s_out=" + path_tpl) % (lang, gen_dir)]
 
         if ctx.attr.outs:
             outs.extend(ctx.attr.outs)
         outs = [ctx.actions.declare_file(out, sibling = src) for out in outs]
+        print("foo:")
+        print(outs)
+        outs = [ctx.actions.declare_file("src/test/proto/com/google/protobuf/deprecated_file/DeprecatedFile.java")]
+        print("bar:")
+        print(outs)
+
         generated_files.extend(outs)
 
         inputs = [src] + deps.to_list()
@@ -187,7 +191,9 @@ def _proto_gen_impl(ctx):
             args += [("--plugin=protoc-gen-%s=" + path_tpl) % (lang, plugin.path)]
             args += ["--%s_out=%s" % (lang, outdir)]
             tools.append(plugin)
-
+      
+        print (outs)
+        print (args + import_flags.to_list() + [src.path])
         if not in_gen_dir:
             ctx.actions.run(
                 inputs = inputs,
@@ -196,6 +202,11 @@ def _proto_gen_impl(ctx):
                 arguments = args + import_flags.to_list() + [src.path],
                 executable = ctx.executable.protoc,
                 mnemonic = "ProtoCompile",
+                use_default_shell_env = True,
+            )
+            ctx.actions.run_shell(
+                command = "find .",
+                outputs = "foo",
                 use_default_shell_env = True,
             )
         else:
@@ -222,6 +233,7 @@ def _proto_gen_impl(ctx):
                     use_default_shell_env = True,
                 )
 
+    print("ProtoGenInfo")
     return [
         ProtoGenInfo(
             srcs = srcs,
@@ -230,6 +242,8 @@ def _proto_gen_impl(ctx):
         ),
         DefaultInfo(files = depset(generated_files)),
     ]
+    print( "done ProtoGenInfo")
+
 
 """Generates codes from Protocol Buffers definitions.
 
