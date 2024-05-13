@@ -9,7 +9,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_MAP_FIELD_H__
 
 #include "google/protobuf/compiler/java/context.h"
-#include "google/protobuf/compiler/java/immutable/field_generator.h"
+#include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 

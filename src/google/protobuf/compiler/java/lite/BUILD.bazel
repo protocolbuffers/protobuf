@@ -3,7 +3,7 @@ cc_library(
     srcs = [
         "enum_field.cc",
         "extension.cc",
-        "make_field_generators.cc",
+        "make_field_gens.cc",
         "map_field.cc",
         "message_field.cc",
         "primitive_field.cc",
@@ -11,7 +11,7 @@ cc_library(
     ],
     hdrs = [
         "field_generator.h",
-        "make_field_generators.h",
+        "make_field_gens.h",
         # We don't actually want to put the remaining headers in `hdrs`.
         # They are logically private, and should be in srcs=[], but
         # unfortunately `strip_include_prefix` doesn't have any effect
@@ -68,7 +68,7 @@ cc_library(
         "//src/google/protobuf/compiler/java:generator_common",
         "//src/google/protobuf/compiler/java:helpers",
         "//src/google/protobuf/compiler/java:internal_helpers",
-        "//src/google/protobuf/compiler/java/immutable:service",
+        "//src/google/protobuf/compiler/java/full:service",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
         "@com_google_absl//absl/container:btree",

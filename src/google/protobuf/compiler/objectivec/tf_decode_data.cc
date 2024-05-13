@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/compiler/objectivec/text_format_decode_data.h"
+#include "google/protobuf/compiler/objectivec/tf_decode_data.h"
 
 #include <cstdint>
 #include <sstream>

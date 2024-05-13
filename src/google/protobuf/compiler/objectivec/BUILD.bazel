@@ -73,7 +73,7 @@ cc_library(
         "message_field.cc",
         "oneof.cc",
         "primitive_field.cc",
-        "text_format_decode_data.cc",
+        "tf_decode_data.cc",
     ],
     hdrs = [
         "enum.h",
@@ -90,7 +90,7 @@ cc_library(
         "oneof.h",
         "options.h",
         "primitive_field.h",
-        "text_format_decode_data.h",
+        "tf_decode_data.h",
     ],
     copts = COPTS,
     strip_include_prefix = "/src",

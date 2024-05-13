@@ -9,7 +9,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include "google/protobuf/compiler/java/immutable/message.h"
+#include "google/protobuf/compiler/java/full/message.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -28,10 +28,10 @@
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/generator_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
-#include "google/protobuf/compiler/java/immutable/enum.h"
-#include "google/protobuf/compiler/java/immutable/extension.h"
-#include "google/protobuf/compiler/java/immutable/make_field_generators.h"
-#include "google/protobuf/compiler/java/immutable/message_builder.h"
+#include "google/protobuf/compiler/java/full/enum.h"
+#include "google/protobuf/compiler/java/full/extension.h"
+#include "google/protobuf/compiler/java/full/make_field_gens.h"
+#include "google/protobuf/compiler/java/full/message_builder.h"
 #include "google/protobuf/compiler/java/message_serialization.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/descriptor.h"

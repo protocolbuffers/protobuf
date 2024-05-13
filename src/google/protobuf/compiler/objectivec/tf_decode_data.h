@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_TEXT_FORMAT_DECODE_DATA_H__
-#define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_TEXT_FORMAT_DECODE_DATA_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_TF_DECODE_DATA_H__
+#define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_TF_DECODE_DATA_H__
 
 #include <cstddef>
 #include <cstdint>
@@ -55,4 +55,4 @@ class PROTOC_EXPORT TextFormatDecodeData {
 
 #include "google/protobuf/port_undef.inc"
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_TEXT_FORMAT_DECODE_DATA_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_TF_DECODE_DATA_H__
