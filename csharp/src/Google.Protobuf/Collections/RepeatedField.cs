@@ -611,13 +611,7 @@ namespace Google.Protobuf.Collections
             }
         }
 
-        internal Span<T> AsSpan()
-        {
-            var size = count;
-            var items = array;
-
-            return items.AsSpan(0, size);
-        }
+        internal Span<T> AsSpan() => array.AsSpan(0, count);
 
         internal void SetCount(int targetCount)
         {
