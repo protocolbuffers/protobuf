@@ -4,8 +4,8 @@ pub use arena::{upb_Arena, Arena, RawArena};
 mod array;
 pub use array::{
     upb_Array, upb_Array_Append, upb_Array_DataPtr, upb_Array_Get, upb_Array_GetMutable,
-    upb_Array_MutableDataPtr, upb_Array_New, upb_Array_Resize, upb_Array_Set, upb_Array_Size,
-    RawArray,
+    upb_Array_MutableDataPtr, upb_Array_New, upb_Array_Reserve, upb_Array_Resize, upb_Array_Set,
+    upb_Array_Size, RawArray,
 };
 
 mod ctype;

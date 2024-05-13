@@ -180,6 +180,8 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
               {"repeated_clear_thunk", ThunkName(ctx, msg, "repeated_clear")},
               {"repeated_copy_from_thunk",
                ThunkName(ctx, msg, "repeated_copy_from")},
+              {"repeated_reserve_thunk",
+               ThunkName(ctx, msg, "repeated_reserve")},
           },
           R"rs(
           fn $new_thunk$() -> $pbr$::RawMessage;
@@ -193,6 +195,7 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
           fn $repeated_get_mut_thunk$(raw: $pbr$::RawRepeatedField, index: usize) -> $pbr$::RawMessage;
           fn $repeated_clear_thunk$(raw: $pbr$::RawRepeatedField);
           fn $repeated_copy_from_thunk$(dst: $pbr$::RawRepeatedField, src: $pbr$::RawRepeatedField);
+          fn $repeated_reserve_thunk$(raw: $pbr$::RawRepeatedField, additional: usize);
         )rs");
       return;
 
@@ -310,6 +313,8 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
               {"repeated_clear_thunk", ThunkName(ctx, msg, "repeated_clear")},
               {"repeated_copy_from_thunk",
                ThunkName(ctx, msg, "repeated_copy_from")},
+              {"repeated_reserve_thunk",
+               ThunkName(ctx, msg, "repeated_reserve")},
           },
           R"rs(
         unsafe impl $pb$::ProxiedInRepeated for $Msg$ {
@@ -371,6 +376,15 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
             unsafe {
               $repeated_copy_from_thunk$(dest.as_raw($pbi$::Private), src.as_raw($pbi$::Private));
             }
+          }
+
+          fn repeated_reserve(
+            mut f: $pb$::Mut<$pb$::Repeated<Self>>,
+            additional: usize,
+          ) {
+            // SAFETY:
+            // - `f.as_raw()` is a valid `RepeatedPtrField*`.
+            unsafe { $repeated_reserve_thunk$(f.as_raw($pbi$::Private), additional) }
           }
         }
       )rs");
@@ -464,6 +478,18 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
               unsafe {
                 $pbr$::repeated_message_copy_from(src, dest, $std$::ptr::addr_of!($minitable$));
               }
+          }
+
+          fn repeated_reserve(
+            mut f: $pb$::Mut<$pb$::Repeated<Self>>,
+            additional: usize,
+          ) {
+            // SAFETY:
+            // - `f.as_raw()` is a valid `upb_Array*`.
+            unsafe {
+              let size = $pbr$::upb_Array_Size(f.as_raw($pbi$::Private));
+              $pbr$::upb_Array_Reserve(f.as_raw($pbi$::Private), size + additional, f.raw_arena($pbi$::Private));
+            }
           }
         }
       )rs");
@@ -1152,6 +1178,7 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
        {"repeated_add_thunk", ThunkName(ctx, msg, "repeated_add")},
        {"repeated_clear_thunk", ThunkName(ctx, msg, "repeated_clear")},
        {"repeated_copy_from_thunk", ThunkName(ctx, msg, "repeated_copy_from")},
+       {"repeated_reserve_thunk", ThunkName(ctx, msg, "repeated_reserve")},
        {"nested_msg_thunks",
         [&] {
           for (int i = 0; i < msg.nested_type_count(); ++i) {
@@ -1216,6 +1243,11 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
           google::protobuf::RepeatedPtrField<$QualifiedMsg$>& dst,
           const google::protobuf::RepeatedPtrField<$QualifiedMsg$>& src) {
           dst = src;
+        }
+        void $repeated_reserve_thunk$(
+          google::protobuf::RepeatedPtrField<$QualifiedMsg$>* field,
+          size_t additional) {
+          field->Reserve(field->size() + additional);
         }
 
         $accessor_thunks$

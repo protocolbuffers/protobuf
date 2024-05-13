@@ -374,7 +374,8 @@ macro_rules! impl_repeated_primitives {
         $get_thunk:ident,
         $set_thunk:ident,
         $clear_thunk:ident,
-        $copy_from_thunk:ident $(,)?
+        $copy_from_thunk:ident,
+        $reserve_thunk:ident $(,)?
     ]),* $(,)?) => {
         $(
             extern "C" {
@@ -391,6 +392,9 @@ macro_rules! impl_repeated_primitives {
                     v: <$t as CppTypeConversions>::ElemType);
                 fn $clear_thunk(f: RawRepeatedField);
                 fn $copy_from_thunk(src: RawRepeatedField, dst: RawRepeatedField);
+                fn $reserve_thunk(
+                    f: RawRepeatedField,
+                    additional: usize);
             }
 
             unsafe impl ProxiedInRepeated for $t {
@@ -423,6 +427,9 @@ macro_rules! impl_repeated_primitives {
                 fn repeated_copy_from(src: View<Repeated<$t>>, mut dest: Mut<Repeated<$t>>) {
                     unsafe { $copy_from_thunk(src.as_raw(Private), dest.as_raw(Private)) }
                 }
+                fn repeated_reserve(mut f: Mut<Repeated<$t>>, additional: usize) {
+                    unsafe { $reserve_thunk(f.as_raw(Private), additional) }
+                }
             }
         )*
     };
@@ -438,6 +445,7 @@ macro_rules! impl_repeated_primitives {
                     [< __pb_rust_RepeatedField_ $t _set >],
                     [< __pb_rust_RepeatedField_ $t _clear >],
                     [< __pb_rust_RepeatedField_ $t _copy_from >],
+                    [< __pb_rust_RepeatedField_ $t _reserve >],
                 ],
             )*);
         }
@@ -472,6 +480,17 @@ pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
             InnerRepeatedMut { raw: repeated.as_raw(Private), _phantom: PhantomData },
         )
     }
+}
+
+/// Cast a `RepeatedMut<SomeEnum>` to `RepeatedMut<c_int>` and call
+/// repeated_reserve.
+pub fn reserve_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
+    private: Private,
+    repeated: RepeatedMut<E>,
+    additional: usize,
+) {
+    let int_repeated = cast_enum_repeated_mut(private, repeated);
+    ProxiedInRepeated::repeated_reserve(int_repeated, additional);
 }
 
 #[derive(Debug)]

@@ -296,6 +296,10 @@ pub unsafe trait ProxiedInRepeated: Proxied {
 
     /// Copies the values in the `src` repeated field into `dest`.
     fn repeated_copy_from(src: View<Repeated<Self>>, dest: Mut<Repeated<Self>>);
+
+    /// Ensures that the repeated field has enough space allocated to insert at
+    /// least `additional` values without an allocation.
+    fn repeated_reserve(repeated: Mut<Repeated<Self>>, additional: usize);
 }
 
 /// An iterator over the values inside of a [`View<Repeated<T>>`](RepeatedView).
@@ -489,6 +493,8 @@ where
     ViewT: Into<View<'view, T>>,
 {
     fn extend<I: IntoIterator<Item = ViewT>>(&mut self, iter: I) {
+        let iter = iter.into_iter();
+        T::repeated_reserve(self.as_mut(), iter.size_hint().0);
         for item in iter {
             self.push(item.into());
         }

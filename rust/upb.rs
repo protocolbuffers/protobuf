@@ -226,6 +226,16 @@ macro_rules! impl_repeated_base {
                 )
             }
         }
+        fn repeated_reserve(mut f: Mut<Repeated<$t>>, additional: usize) {
+            // SAFETY:
+            // - `upb_Array_Reserve` is unsafe but assumed to be sound when called on a
+            //   valid array.
+            unsafe {
+                let arena = f.raw_arena(Private);
+                let size = upb_Array_Size(f.as_raw(Private));
+                assert!(upb_Array_Reserve(f.as_raw(Private), size + additional, arena));
+            }
+        }
     };
 }
 
@@ -371,6 +381,17 @@ pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
         let InnerRepeatedMut { arena, raw, .. } = repeated.inner;
         RepeatedMut::from_inner(private, InnerRepeatedMut { arena, raw })
     }
+}
+
+/// Cast a `RepeatedMut<SomeEnum>` to `RepeatedMut<i32>` and call
+/// repeated_reserve.
+pub fn reserve_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
+    private: Private,
+    repeated: RepeatedMut<E>,
+    additional: usize,
+) {
+    let int_repeated = cast_enum_repeated_mut(private, repeated);
+    ProxiedInRepeated::repeated_reserve(int_repeated, additional);
 }
 
 /// Returns a static empty RepeatedView.

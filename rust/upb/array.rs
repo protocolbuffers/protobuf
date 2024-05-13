@@ -12,6 +12,7 @@ extern "C" {
     pub fn upb_Array_Get(arr: RawArray, i: usize) -> upb_MessageValue;
     pub fn upb_Array_Append(arr: RawArray, val: upb_MessageValue, arena: RawArena) -> bool;
     pub fn upb_Array_Resize(arr: RawArray, size: usize, arena: RawArena) -> bool;
+    pub fn upb_Array_Reserve(arr: RawArray, size: usize, arena: RawArena) -> bool;
     pub fn upb_Array_MutableDataPtr(arr: RawArray) -> *mut std::ffi::c_void;
     pub fn upb_Array_DataPtr(arr: RawArray) -> *const std::ffi::c_void;
     pub fn upb_Array_GetMutable(arr: RawArray, i: usize) -> upb_MutableMessageValue;
