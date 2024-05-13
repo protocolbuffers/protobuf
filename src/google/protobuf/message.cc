@@ -63,12 +63,11 @@ void RegisterFileLevelMetadata(const DescriptorTable* descriptor_table);
 
 }  // namespace internal
 
-using internal::DownCast;
 using internal::ReflectionOps;
 using internal::WireFormat;
 
 void Message::MergeImpl(MessageLite& to, const MessageLite& from) {
-  ReflectionOps::Merge(DownCast<const Message&>(from), DownCast<Message*>(&to));
+  ReflectionOps::Merge(DownCastToMessage(from), DownCastToMessage(&to));
 }
 
 void Message::MergeFrom(const Message& from) {
@@ -82,7 +81,7 @@ void Message::MergeFrom(const Message& from) {
 }
 
 void Message::CheckTypeAndMergeFrom(const MessageLite& other) {
-  MergeFrom(*DownCast<const Message*>(&other));
+  MergeFrom(DownCastToMessage(other));
 }
 
 void Message::CopyFrom(const Message& from) {
@@ -113,7 +112,7 @@ void Message::CopyFrom(const Message& from) {
 void Message::Clear() { ReflectionOps::Clear(this); }
 
 bool Message::IsInitializedImpl(const MessageLite& msg) {
-  return ReflectionOps::IsInitialized(DownCast<const Message&>(msg));
+  return ReflectionOps::IsInitialized(DownCastToMessage(msg));
 }
 
 void Message::FindInitializationErrors(std::vector<std::string>* errors) const {
@@ -189,20 +188,20 @@ size_t Message::SpaceUsedLong() const {
 }
 
 static std::string GetTypeNameImpl(const MessageLite& msg) {
-  return DownCast<const Message&>(msg).GetDescriptor()->full_name();
+  return DownCastToMessage(msg).GetDescriptor()->full_name();
 }
 
 static std::string InitializationErrorStringImpl(const MessageLite& msg) {
-  return DownCast<const Message&>(msg).InitializationErrorString();
+  return DownCastToMessage(msg).InitializationErrorString();
 }
 
 const internal::TcParseTableBase* Message::GetTcParseTableImpl(
     const MessageLite& msg) {
-  return DownCast<const Message&>(msg).GetReflection()->GetTcParseTable();
+  return DownCastToMessage(msg).GetReflection()->GetTcParseTable();
 }
 
 size_t Message::SpaceUsedLongImpl(const MessageLite& msg_lite) {
-  auto& msg = DownCast<const Message&>(msg_lite);
+  auto& msg = DownCastToMessage(msg_lite);
   return msg.GetReflection()->SpaceUsedLong(msg);
 }
 

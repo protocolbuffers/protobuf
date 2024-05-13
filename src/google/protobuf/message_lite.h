@@ -124,6 +124,7 @@ class PROTOBUF_EXPORT CachedSize {
 
 // For MessageLite to friend.
 class TypeId;
+auto GetClassData(const MessageLite& msg);
 
 class SwapFieldHelper;
 
@@ -705,6 +706,8 @@ class PROTOBUF_EXPORT MessageLite {
   template <typename Type>
   friend class internal::GenericTypeHandler;
 
+  friend auto internal::GetClassData(const MessageLite& msg);
+
   void LogInitializationErrorMessage() const;
 
   bool MergeFromImpl(io::CodedInputStream* input, ParseFlags parse_flags);
@@ -757,6 +760,8 @@ class TypeId {
  private:
   const MessageLite::ClassData* data_;
 };
+
+inline auto GetClassData(const MessageLite& msg) { return msg.GetClassData(); }
 
 template <bool alias>
 bool MergeFromImpl(absl::string_view input, MessageLite* msg,

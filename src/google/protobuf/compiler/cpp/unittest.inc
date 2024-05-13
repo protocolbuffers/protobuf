@@ -1314,13 +1314,13 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethodTypeFailure) {
   EXPECT_DEBUG_DEATH(
     mock_service_.CallMethod(foo_, &mock_controller_,
                              &foo_request_, &bar_response_, done_.get()),
-    "dynamic_cast");
+    "DynamicCastToGenerated");
 
   mock_service_.Reset();
   EXPECT_DEBUG_DEATH(
     mock_service_.CallMethod(foo_, &mock_controller_,
                              &bar_request_, &foo_response_, done_.get()),
-    "dynamic_cast");
+    "DynamicCastToGenerated");
 #endif  // GTEST_HAS_DEATH_TEST
 }
 

@@ -3747,8 +3747,7 @@ void MessageGenerator::GenerateMergeFrom(io::Printer* p) {
     format(
         "void $classname$::CheckTypeAndMergeFrom(\n"
         "    const ::$proto_ns$::MessageLite& from) {\n"
-        "  MergeFrom(*::_pbi::DownCast<const $classname$*>(\n"
-        "      &from));\n"
+        "  MergeFrom(::$proto_ns$::DownCastToGenerated<$classname$>(from));\n"
         "}\n");
   }
 }

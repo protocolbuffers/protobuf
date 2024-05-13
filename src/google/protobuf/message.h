@@ -1449,6 +1449,47 @@ void LinkMessageReflection() {
   internal::StrongReferenceToType<T>();
 }
 
+// Tries to downcast this message from MessageLite to Message.  Returns nullptr
+// if this class is not an instance of Message. eg if the message was defined
+// with optimized_for=LITE_RUNTIME. This works even if RTTI is disabled.
+inline const Message* DynamicCastToMessage(const MessageLite* lite) {
+  return lite == nullptr || internal::GetClassData(*lite)->is_lite
+             ? nullptr
+             : static_cast<const Message*>(lite);
+}
+inline Message* DynamicCastToMessage(MessageLite* lite) {
+  return const_cast<Message*>(
+      DynamicCastToMessage(static_cast<const MessageLite*>(lite)));
+}
+inline const Message& DynamicCastToMessage(const MessageLite& lite) {
+  auto* res = DynamicCastToMessage(&lite);
+  ABSL_CHECK(res != nullptr)
+      << "Cannot to `Message` type " << lite.GetTypeName();
+  return *res;
+}
+inline Message& DynamicCastToMessage(MessageLite& lite) {
+  return const_cast<Message&>(
+      DynamicCastToMessage(static_cast<const MessageLite&>(lite)));
+}
+
+// A lightweight function for downcasting a MessageLite to Message. It should
+// only be used when the caller is certain that the argument is a Message
+// object.
+inline const Message* DownCastToMessage(const MessageLite* lite) {
+  ABSL_CHECK(lite == nullptr || DynamicCastToMessage(lite) != nullptr);
+  return static_cast<const Message*>(lite);
+}
+inline Message* DownCastToMessage(MessageLite* lite) {
+  return const_cast<Message*>(
+      DownCastToMessage(static_cast<const MessageLite*>(lite)));
+}
+inline const Message& DownCastToMessage(const MessageLite& lite) {
+  return *DownCastToMessage(&lite);
+}
+inline Message& DownCastToMessage(MessageLite& lite) {
+  return *DownCastToMessage(&lite);
+}
+
 // =============================================================================
 // Implementation details for {Get,Mutable}RawRepeatedPtrField.  We provide
 // specializations for <std::string>, <StringPieceField> and <Message> and
