@@ -34,8 +34,8 @@ namespace Google.Protobuf.Collections
         private static readonly T[] EmptyArray = new T[0];
         private const int MinArraySize = 8;
 
-        internal T[] array = EmptyArray;
-        internal int count = 0;
+        private T[] array = EmptyArray;
+        private int count = 0;
 
         /// <summary>
         /// Creates a deep clone of this repeated field.
@@ -279,6 +279,17 @@ namespace Google.Protobuf.Collections
                 {
                     SetSize(value);
                 }
+            }
+        }
+
+        // May increase the size of the internal array, but will never shrink it.
+        private void EnsureSize(int size)
+        {
+            if (array.Length < size)
+            {
+                size = Math.Max(size, MinArraySize);
+                int newSize = Math.Max(array.Length * 2, size);
+                SetSize(newSize);
             }
         }
 
@@ -600,15 +611,35 @@ namespace Google.Protobuf.Collections
             }
         }
 
-        // May increase the size of the internal array, but will never shrink it.
-        internal void EnsureSize(int size)
+        internal Span<T> AsSpan()
         {
-            if (array.Length < size)
+            var size = count;
+            var items = array;
+
+            return items.AsSpan(0, size);
+        }
+
+        internal void SetCount(int targetCount)
+        {
+
+            if (targetCount > Capacity)
             {
-                size = Math.Max(size, MinArraySize);
-                int newSize = Math.Max(array.Length * 2, size);
-                SetSize(newSize);
+                EnsureSize(targetCount);
             }
+#if NET5_0_OR_GREATER
+            else if (targetCount < count && RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            {
+                // Only reference types need to be cleared to allow GC to collect them.
+                Array.Clear(array, targetCount, count - targetCount);
+            }
+#else
+            else if (targetCount < count)
+            {
+                Array.Clear(array, targetCount, count - targetCount);
+            }
+#endif
+
+            count = targetCount;
         }
 
         #region Explicit interface implementation for IList and ICollection.

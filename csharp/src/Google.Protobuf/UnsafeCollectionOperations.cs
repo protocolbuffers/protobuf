@@ -73,73 +73,36 @@ namespace Google.Protobuf
         /// A <see cref="Span{T}"/> that wraps the backing array of the
         /// <see cref="RepeatedField{T}"/>.
         /// </returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Span<T> AsSpan<T>(RepeatedField<T> field)
-        {
-            Span<T> span = default;
-            if (field is not null)
-            {
-                var size = field.count;
-                var items = field.array;
-
-                Debug.Assert(items is not null, "Implementation depends on RepeatedField<T> always having an array.");
-
-                if ((uint) size > (uint) items.Length)
-                {
-                    // RepeatedField<T> was erroneously mutated concurrently with this call, leading
-                    // to a count larger than its array.
-                    throw new InvalidOperationException("Operations that change non-concurrent collections must have exclusive access. A concurrent update was performed on this collection and corrupted its state. The collection's state is no longer correct.");
-                }
-
-                Debug.Assert(typeof(T[]) == field.array.GetType(), "Implementation depends on RepeatedField<T> always using a T[] and not U[] where U : T.");
-
-                span = items.AsSpan(0, size);
-            }
-
-            return span;
-        }
+            => field is not null ? field.AsSpan() : default;
 
         /// <summary>
         /// Sets the count of the <see cref="RepeatedField{T}"/> to the specified value.
+        /// This method should only be called if the subsequent code guarantees to populate
+        /// the field with the specified number of items.
         /// </summary>
         /// <param name="field">The field to set the count of.</param>
         /// <param name="count">The value to set the field's count to.</param>
         /// <typeparam name="T">The type of the elements in the field.</typeparam>
-        /// <exception cref="NullReferenceException">
+        /// <exception cref="ArgumentNullException">
         /// <paramref name="field"/> is <see langword="null"/>.
         /// </exception>
         /// <exception cref="ArgumentOutOfRangeException">
         /// <paramref name="count"/> is negative.
         /// </exception>
-        /// <remarks>
-        /// When increasing the count, uninitialized data is being exposed.
-        /// </remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetCount<T>(RepeatedField<T> field, int count)
         {
+            if (field is null)
+            {
+                throw new ArgumentNullException(nameof(field));
+            }
+
             if (count < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(count), count, "Non-negative number required.");
             }
 
-            if (count > field.Capacity)
-            {
-                field.EnsureSize(count);
-            }
-#if NET5_0_OR_GREATER
-            else if (count < field.count && RuntimeHelpers.IsReferenceOrContainsReferences<T>())
-            {
-                // Only reference types need to be cleared to allow GC to collect them.
-                Array.Clear(field.array, count, field.count - count);
-            }
-#else
-            else if (count < field.count)
-            {
-                Array.Clear(field.array, count, field.count - count);
-            }
-#endif
-
-            field.count = count;
+            field.SetCount(count);
         }
     }
 }

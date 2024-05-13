@@ -1,3 +1,12 @@
+#region Copyright notice and license
+// Protocol Buffers - Google's data interchange format
+// Copyright 2015 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+#endregion
+
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -32,7 +41,7 @@ public class UnsafeCollectionOperationsTest
     }
 
     [Test]
-    public void AsSpanOnConcurrentFieldAcccessThrows()
+    public void AsSpanOnConcurrentFieldAccessThrows()
     {
         var field = new RepeatedField<int>();
         field.count = 100;
@@ -205,6 +214,5 @@ public class UnsafeCollectionOperationsTest
     private class IntAsObject
     {
         public int Value;
-        public int Property { get; set; }
     }
 }
