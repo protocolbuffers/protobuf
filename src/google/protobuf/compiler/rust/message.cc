@@ -1102,6 +1102,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }
 
+        impl $std$::clone::Clone for $Msg$ {
+          fn clone(&self) -> Self {
+            self.as_view().to_owned()
+          }
+        }
+
         extern "C" {
           $Msg_externs$
 

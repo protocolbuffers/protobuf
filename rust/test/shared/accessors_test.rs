@@ -780,6 +780,18 @@ fn test_submsg_setter() {
 }
 
 #[test]
+fn test_clone() {
+    let mut m = TestAllTypes::new();
+    m.set_optional_int32(42);
+    let clone = m.clone();
+    assert_that!(clone.optional_int32(), eq(42));
+    m.clear_optional_int32();
+    assert_that!(m.has_optional_int32(), eq(false));
+    assert_that!(clone.has_optional_int32(), eq(true));
+    assert_that!(clone.optional_int32(), eq(42));
+}
+
+#[test]
 fn test_to_owned() {
     let mut m = TestAllTypes::new();
     m.set_optional_int32(42);
