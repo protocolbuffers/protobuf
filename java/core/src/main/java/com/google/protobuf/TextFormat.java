@@ -60,11 +60,12 @@ public final class TextFormat {
    */
   public static void printUnknownFieldValue(
       final int tag, final Object value, final Appendable output) throws IOException {
-    printUnknownFieldValue(tag, value, setSingleLineOutput(output, false));
+    printUnknownFieldValue(tag, value, setSingleLineOutput(output, false), false);
   }
 
   private static void printUnknownFieldValue(
-      final int tag, final Object value, final TextGenerator generator) throws IOException {
+      final int tag, final Object value, final TextGenerator generator, boolean redact)
+      throws IOException {
     switch (WireFormat.getTagWireType(tag)) {
       case WireFormat.WIRETYPE_VARINT:
         generator.print(unsignedToString((Long) value));
@@ -82,7 +83,7 @@ public final class TextFormat {
           generator.print("{");
           generator.eol();
           generator.indent();
-          Printer.printUnknownFields(message, generator);
+          Printer.printUnknownFields(message, generator, redact);
           generator.outdent();
           generator.print("}");
         } catch (InvalidProtocolBufferException e) {
@@ -93,7 +94,7 @@ public final class TextFormat {
         }
         break;
       case WireFormat.WIRETYPE_START_GROUP:
-        Printer.printUnknownFields((UnknownFieldSet) value, generator);
+        Printer.printUnknownFields((UnknownFieldSet) value, generator, redact);
         break;
       default:
         throw new IllegalArgumentException("Bad tag: " + tag);
@@ -223,7 +224,8 @@ public final class TextFormat {
 
     /** Outputs a textual representation of {@code fields} to {@code output}. */
     public void print(final UnknownFieldSet fields, final Appendable output) throws IOException {
-      printUnknownFields(fields, setSingleLineOutput(output, this.singleLine));
+      printUnknownFields(
+          fields, setSingleLineOutput(output, this.singleLine), this.enablingSafeDebugFormat);
     }
 
     private void print(final MessageOrBuilder message, final TextGenerator generator)
@@ -597,7 +599,7 @@ public final class TextFormat {
     public String shortDebugString(final UnknownFieldSet fields) {
       try {
         final StringBuilder text = new StringBuilder();
-        printUnknownFields(fields, setSingleLineOutput(text, true));
+        printUnknownFields(fields, setSingleLineOutput(text, true), this.enablingSafeDebugFormat);
         return text.toString();
       } catch (IOException e) {
         throw new IllegalStateException(e);
@@ -605,16 +607,26 @@ public final class TextFormat {
     }
 
     private static void printUnknownFieldValue(
-        final int tag, final Object value, final TextGenerator generator) throws IOException {
+        final int tag, final Object value, final TextGenerator generator, boolean redact)
+        throws IOException {
       switch (WireFormat.getTagWireType(tag)) {
         case WireFormat.WIRETYPE_VARINT:
-          generator.print(unsignedToString((Long) value));
+          generator.print(
+              redact
+                  ? String.format("UNKNOWN_VARINT %s", REDACTED_MARKER)
+                  : unsignedToString((Long) value));
           break;
         case WireFormat.WIRETYPE_FIXED32:
-          generator.print(String.format((Locale) null, "0x%08x", (Integer) value));
+          generator.print(
+              redact
+                  ? String.format("UNKNOWN_FIXED32 %s", REDACTED_MARKER)
+                  : String.format((Locale) null, "0x%08x", (Integer) value));
           break;
         case WireFormat.WIRETYPE_FIXED64:
-          generator.print(String.format((Locale) null, "0x%016x", (Long) value));
+          generator.print(
+              redact
+                  ? String.format("UNKNOWN_FIXED64 %s", REDACTED_MARKER)
+                  : String.format((Locale) null, "0x%016x", (Long) value));
           break;
         case WireFormat.WIRETYPE_LENGTH_DELIMITED:
           try {
@@ -623,18 +635,22 @@ public final class TextFormat {
             generator.print("{");
             generator.eol();
             generator.indent();
-            printUnknownFields(message, generator);
+            printUnknownFields(message, generator, redact);
             generator.outdent();
             generator.print("}");
           } catch (InvalidProtocolBufferException e) {
             // If not parseable as a message, print as a String
+            if (redact) {
+              generator.print(String.format("UNKNOWN_STRING %s", REDACTED_MARKER));
+              break;
+            }
             generator.print("\"");
             generator.print(escapeBytes((ByteString) value));
             generator.print("\"");
           }
           break;
         case WireFormat.WIRETYPE_START_GROUP:
-          printUnknownFields((UnknownFieldSet) value, generator);
+          printUnknownFields((UnknownFieldSet) value, generator, redact);
           break;
         default:
           throw new IllegalArgumentException("Bad tag: " + tag);
@@ -646,7 +662,7 @@ public final class TextFormat {
       for (Map.Entry<FieldDescriptor, Object> field : message.getAllFields().entrySet()) {
         printField(field.getKey(), field.getValue(), generator);
       }
-      printUnknownFields(message.getUnknownFields(), generator);
+      printUnknownFields(message.getUnknownFields(), generator, this.enablingSafeDebugFormat);
     }
 
     private void printSingleField(
@@ -692,27 +708,32 @@ public final class TextFormat {
     }
 
     private static void printUnknownFields(
-        final UnknownFieldSet unknownFields, final TextGenerator generator) throws IOException {
+        final UnknownFieldSet unknownFields, final TextGenerator generator, boolean redact)
+        throws IOException {
       if (unknownFields.isEmpty()) {
         return;
       }
       for (Map.Entry<Integer, UnknownFieldSet.Field> entry : unknownFields.asMap().entrySet()) {
         final int number = entry.getKey();
         final UnknownFieldSet.Field field = entry.getValue();
-        printUnknownField(number, WireFormat.WIRETYPE_VARINT, field.getVarintList(), generator);
-        printUnknownField(number, WireFormat.WIRETYPE_FIXED32, field.getFixed32List(), generator);
-        printUnknownField(number, WireFormat.WIRETYPE_FIXED64, field.getFixed64List(), generator);
+        printUnknownField(
+            number, WireFormat.WIRETYPE_VARINT, field.getVarintList(), generator, redact);
+        printUnknownField(
+            number, WireFormat.WIRETYPE_FIXED32, field.getFixed32List(), generator, redact);
+        printUnknownField(
+            number, WireFormat.WIRETYPE_FIXED64, field.getFixed64List(), generator, redact);
         printUnknownField(
             number,
             WireFormat.WIRETYPE_LENGTH_DELIMITED,
             field.getLengthDelimitedList(),
-            generator);
+            generator,
+            redact);
         for (final UnknownFieldSet value : field.getGroupList()) {
           generator.print(entry.getKey().toString());
           generator.print(" {");
           generator.eol();
           generator.indent();
-          printUnknownFields(value, generator);
+          printUnknownFields(value, generator, redact);
           generator.outdent();
           generator.print("}");
           generator.eol();
@@ -721,12 +742,16 @@ public final class TextFormat {
     }
 
     private static void printUnknownField(
-        final int number, final int wireType, final List<?> values, final TextGenerator generator)
+        final int number,
+        final int wireType,
+        final List<?> values,
+        final TextGenerator generator,
+        boolean redact)
         throws IOException {
       for (final Object value : values) {
         generator.print(String.valueOf(number));
         generator.print(": ");
-        printUnknownFieldValue(wireType, value, generator);
+        printUnknownFieldValue(wireType, value, generator, redact);
         generator.eol();
       }
     }

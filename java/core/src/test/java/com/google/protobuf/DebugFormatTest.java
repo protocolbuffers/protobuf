@@ -5,6 +5,7 @@ import static protobuf_unittest.UnittestProto.redactedExtension;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import protobuf_unittest.UnittestProto.RedactedFields;
+import protobuf_unittest.UnittestProto.TestEmptyMessage;
 import protobuf_unittest.UnittestProto.TestNestedMessageRedaction;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -155,4 +156,55 @@ public final class DebugFormatTest {
             String.format("%soptional_unredacted_string: \"foo\"", UNSTABLE_PREFIX_SINGLE_LINE));
   }
 
+  private UnknownFieldSet makeUnknownFieldSet() {
+    return UnknownFieldSet.newBuilder()
+        .addField(
+            5,
+            UnknownFieldSet.Field.newBuilder()
+                .addVarint(1)
+                .addFixed32(2)
+                .addFixed64(3)
+                .addLengthDelimited(ByteString.copyFromUtf8("4"))
+                .addLengthDelimited(
+                    UnknownFieldSet.newBuilder()
+                        .addField(12, UnknownFieldSet.Field.newBuilder().addVarint(6).build())
+                        .build()
+                        .toByteString())
+                .addGroup(
+                    UnknownFieldSet.newBuilder()
+                        .addField(10, UnknownFieldSet.Field.newBuilder().addVarint(5).build())
+                        .build())
+                .build())
+        .addField(
+            8, UnknownFieldSet.Field.newBuilder().addVarint(1).addVarint(2).addVarint(3).build())
+        .addField(
+            15,
+            UnknownFieldSet.Field.newBuilder()
+                .addVarint(0xABCDEF1234567890L)
+                .addFixed32(0xABCD1234)
+                .addFixed64(0xABCDEF1234567890L)
+                .build())
+        .build();
+  }
+
+  @Test
+  public void unknownFieldsDebugFormat_returnsExpectedFormat() {
+    TestEmptyMessage unknownFields =
+        TestEmptyMessage.newBuilder().setUnknownFields(makeUnknownFieldSet()).build();
+
+    assertThat(DebugFormat.multiline().toString(unknownFields))
+        .matches(
+            String.format("%s5: UNKNOWN_VARINT %s\n", UNSTABLE_PREFIX_MULTILINE, REDACTED_REGEX)
+                + String.format("5: UNKNOWN_FIXED32 %s\n", REDACTED_REGEX)
+                + String.format("5: UNKNOWN_FIXED64 %s\n", REDACTED_REGEX)
+                + String.format("5: UNKNOWN_STRING %s\n", REDACTED_REGEX)
+                + String.format("5: \\{\n  12: UNKNOWN_VARINT %s\n\\}\n", REDACTED_REGEX)
+                + String.format("5 \\{\n  10: UNKNOWN_VARINT %s\n\\}\n", REDACTED_REGEX)
+                + String.format("8: UNKNOWN_VARINT %s\n", REDACTED_REGEX)
+                + String.format("8: UNKNOWN_VARINT %s\n", REDACTED_REGEX)
+                + String.format("8: UNKNOWN_VARINT %s\n", REDACTED_REGEX)
+                + String.format("15: UNKNOWN_VARINT %s\n", REDACTED_REGEX)
+                + String.format("15: UNKNOWN_FIXED32 %s\n", REDACTED_REGEX)
+                + String.format("15: UNKNOWN_FIXED64 %s\n", REDACTED_REGEX));
+  }
 }
