@@ -1738,6 +1738,12 @@ message RedactedFields {
   repeated TestNestedMessageRedaction repeated_unredacted_message = 8;
   map<string, string> map_redacted_string = 9 [debug_redact = true];
   map<string, string> map_unredacted_string = 10;
+  optional string optional_redacted_false_string = 11 [debug_redact = false];
+  extensions 20 to 30;
+}
+
+extend RedactedFields {
+  optional string redacted_extension = 20 [debug_redact = true];
 }
 
 message TestCord{
