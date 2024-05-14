@@ -14,7 +14,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -169,13 +168,13 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
   /** @return An iterable over the overflow entries. */
   public Iterable<Map.Entry<K, V>> getOverflowEntries() {
     return overflowEntries.isEmpty()
-        ? EmptySet.<Map.Entry<K, V>>iterable()
+        ? Collections.emptySet()
         : overflowEntries.entrySet();
   }
 
   Iterable<Map.Entry<K, V>> getOverflowEntriesDescending() {
     return overflowEntriesDescending.isEmpty()
-        ? EmptySet.<Map.Entry<K, V>>iterable()
+        ? Collections.emptySet()
         : overflowEntriesDescending.entrySet();
   }
 
@@ -594,45 +593,6 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
         lazyOverflowIterator = overflowEntriesDescending.entrySet().iterator();
       }
       return lazyOverflowIterator;
-    }
-  }
-
-  /**
-   * Helper class that holds immutable instances of an Iterable/Iterator that we return when the
-   * overflow entries is empty. This eliminates the creation of an Iterator object when there is
-   * nothing to iterate over.
-   */
-  private static class EmptySet {
-
-    private static final Iterator<Object> ITERATOR =
-        new Iterator<Object>() {
-          @Override
-          public boolean hasNext() {
-            return false;
-          }
-
-          @Override
-          public Object next() {
-            throw new NoSuchElementException();
-          }
-
-          @Override
-          public void remove() {
-            throw new UnsupportedOperationException();
-          }
-        };
-
-    private static final Iterable<Object> ITERABLE =
-        new Iterable<Object>() {
-          @Override
-          public Iterator<Object> iterator() {
-            return ITERATOR;
-          }
-        };
-
-    @SuppressWarnings("unchecked")
-    static <T> Iterable<T> iterable() {
-      return (Iterable<T>) ITERABLE;
     }
   }
 
