@@ -96,7 +96,7 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     uint16_t type_card;
 
     // For internal caching.
-    cpp::Utf8CheckMode utf8_check_mode : 8;
+    cpp::Utf8CheckMode utf8_check_mode;
   };
   std::vector<FieldEntryInfo> field_entries;
 
