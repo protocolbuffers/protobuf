@@ -1,10 +1,15 @@
 matrix:
   platform: ["debian10", "macos", "ubuntu2004", "windows"]
+  bazel: [6.x, 7.x]
 
 tasks:
   verify_targets:
     name: "Verify build targets"
     platform: ${{ platform }}
+    bazel: ${{ bazel }}
+    build_flags:
+    - '--host_cxxopt=-std=c++14'
+    - '--cxxopt=-std=c++14'
     build_targets:
     - '@protobuf//:protobuf'
     - '@protobuf//:protobuf_lite'
@@ -17,9 +22,14 @@ bcr_test_module:
   matrix:
 
     platform: ["debian10", "macos", "ubuntu2004", "windows"]
+    bazel: [6.x, 7.x]
   tasks:
     run_test_module:
       name: "Run test module"
       platform: ${{ platform }}
+      bazel: ${{ bazel }}
+      build_flags:
+      - '--host_cxxopt=-std=c++14'
+      - '--cxxopt=-std=c++14'
       build_targets:
       - "//..."
