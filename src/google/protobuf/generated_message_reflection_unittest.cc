@@ -41,6 +41,7 @@
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
+#include "google/protobuf/unittest_proto3.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -1754,6 +1755,13 @@ TEST(GeneratedMessageReflection, ListFieldsSorted) {
                           Pointee(Property(&FieldDescriptor::number, 5)),
                           Pointee(Property(&FieldDescriptor::number, 50)),
                           Pointee(Property(&FieldDescriptor::number, 101))));
+}
+
+TEST(GeneratedMessageReflection, SwapImplicitPresenceShouldWork) {
+  proto3_unittest::TestHasbits lhs, rhs;
+  rhs.mutable_child()->set_optional_int32(-1);
+  lhs.GetReflection()->Swap(&lhs, &rhs);
+  EXPECT_EQ(lhs.child().optional_int32(), -1);
 }
 
 }  // namespace
