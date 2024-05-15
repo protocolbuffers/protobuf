@@ -452,7 +452,7 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
         }
 
         fn repeated_reserve(
-            mut r: $pb$::Mut<$pb$::Repeated<Self>>,
+            r: $pb$::Mut<$pb$::Repeated<Self>>,
             additional: usize,
         ) {
             // SAFETY:
