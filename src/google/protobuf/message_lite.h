@@ -863,6 +863,11 @@ T* OnShutdownDelete(T* p) {
   return p;
 }
 
+inline void AssertDownCast(const MessageLite& from, const MessageLite& to) {
+  ABSL_DCHECK(internal::TypeId::Get(from) == internal::TypeId::Get(to))
+      << "Cannot downcast " << from.GetTypeName() << " to " << to.GetTypeName();
+}
+
 }  // namespace internal
 
 std::string ShortFormat(const MessageLite& message_lite);

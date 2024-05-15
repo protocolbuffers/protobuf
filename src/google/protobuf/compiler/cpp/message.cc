@@ -3744,11 +3744,14 @@ void MessageGenerator::GenerateMergeFrom(io::Printer* p) {
 
   if (!HasDescriptorMethods(descriptor_->file(), options_)) {
     // Generate CheckTypeAndMergeFrom().
-    format(
-        "void $classname$::CheckTypeAndMergeFrom(\n"
-        "    const ::$proto_ns$::MessageLite& from) {\n"
-        "  MergeFrom(::$proto_ns$::DownCastToGenerated<$classname$>(from));\n"
-        "}\n");
+    // We pass `*this` instead of `default_instance()` to allow for ICF.
+    p->Emit(R"cc(
+      void $classname$::CheckTypeAndMergeFrom(
+          const ::$proto_ns$::MessageLite& from) {
+        $pbi$::AssertDownCast(from, *this);
+        MergeFrom(static_cast<const $classname$&>(from));
+      }
+    )cc");
   }
 }
 
