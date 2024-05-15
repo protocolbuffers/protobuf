@@ -125,6 +125,9 @@ final class ManifestSchemaFactory implements SchemaFactory {
       };
 
   private static MessageInfoFactory getDescriptorMessageInfoFactory() {
+    if (Protobuf.assumeLiteRuntime) {
+      return EMPTY_FACTORY;
+    }
     try {
       Class<?> clazz = Class.forName("com.google.protobuf.DescriptorMessageInfoFactory");
       return (MessageInfoFactory) clazz.getDeclaredMethod("getInstance").invoke(null);
@@ -134,6 +137,6 @@ final class ManifestSchemaFactory implements SchemaFactory {
   }
 
   private static boolean useLiteRuntime(Class<?> messageType) {
-    return GeneratedMessageLite.class.isAssignableFrom(messageType);
+    return Protobuf.assumeLiteRuntime || GeneratedMessageLite.class.isAssignableFrom(messageType);
   }
 }
