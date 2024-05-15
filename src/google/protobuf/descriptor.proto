@@ -1066,11 +1066,24 @@ message FeatureSet {
 
   reserved 999;
 
-  extensions 1000;  // for Protobuf C++
-  extensions 1001;  // for Protobuf Java
-  extensions 1002;  // for Protobuf Go
-
-  extensions 9990;  // for deprecated Java Proto1
+  extensions 1000 to 9994 [
+    declaration = {
+      number: 1000,
+      full_name: ".pb.cpp",
+      type: ".pb.CppFeatures"
+    },
+    declaration = {
+      number: 1001,
+      full_name: ".pb.java",
+      type: ".pb.JavaFeatures"
+    },
+    declaration = { number: 1002, full_name: ".pb.go", type: ".pb.GoFeatures" },
+    declaration = {
+      number: 9990,
+      full_name: ".pb.proto1",
+      type: ".pb.Proto1Features"
+    }
+  ];
 
   extensions 9995 to 9999;  // For internal testing
   extensions 10000;         // for https://github.com/bufbuild/protobuf-es
