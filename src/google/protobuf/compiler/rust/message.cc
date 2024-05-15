@@ -1000,9 +1000,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             Self{ inner: $pbr$::MutatorMessageRef::new(_private, msg) }
           }
 
-          #[deprecated = "This .or_default() is a no-op, usages can be safely removed"]
-          pub fn or_default(self) -> Self { self }
-
           fn raw_msg(&self) -> $pbr$::RawMessage {
             self.inner.msg()
           }
