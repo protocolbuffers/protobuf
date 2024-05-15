@@ -33,6 +33,10 @@ RustProtoInfo = provider(
     },
 )
 
+def label_to_crate_name(label):
+    # TODO: Use the import! macro once available
+    return str(label).rsplit(":", 1)[1].replace("-", "_")
+
 def proto_rust_toolchain_label(is_upb):
     if is_upb:
         return "//rust:proto_rust_upb_toolchain"
@@ -74,9 +78,6 @@ def _render_text_crate_mapping(mapping):
             <one import path per line>\n
     """
     crate_name = mapping.crate_name
-
-    # proto_library targets may contain '-', but rust crates don't.
-    crate_name = crate_name.replace("-", "_")
     import_paths = mapping.import_paths
     return "\n".join(([crate_name, str(len(import_paths))] + list(import_paths)))
 
@@ -217,8 +218,7 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
     toolchain = ctx.toolchains["@rules_rust//rust:toolchain_type"]
     output_hash = repr(hash(src.path))
 
-    # TODO: Use the import! macro once available
-    crate_name = ctx.label.name.replace("-", "_")
+    crate_name = label_to_crate_name(ctx.label)
 
     lib_name = "{prefix}{name}-{lib_hash}{extension}".format(
         prefix = "lib",
@@ -359,7 +359,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         dep_variant_info = dep_variant_info,
         crate_mapping = depset(
             direct = [CrateMappingInfo(
-                crate_name = target.label.name,
+                crate_name = label_to_crate_name(target.label),
                 import_paths = tuple([get_import_path(f) for f in proto_srcs]),
             )],
             transitive = transitive_crate_mappings,
