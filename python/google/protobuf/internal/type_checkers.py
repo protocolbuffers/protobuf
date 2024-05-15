@@ -22,7 +22,7 @@ TYPE_TO_DESERIALIZE_METHOD: A dictionary with field types and deserialization
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
-import ctypes
+import struct
 import numbers
 
 from google.protobuf.internal import decoder
@@ -34,7 +34,7 @@ _FieldDescriptor = descriptor.FieldDescriptor
 
 
 def TruncateToFourByteFloat(original):
-  return ctypes.c_float(original).value
+  return struct.unpack('<f', struct.pack('<f', original))[0]
 
 
 def ToShortestFloat(original):

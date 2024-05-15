@@ -243,19 +243,20 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
 }
 
 ::size_t SourceContext::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceContext)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceContext)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  // string file_name = 1;
-  if (!this->_internal_file_name().empty()) {
-    total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                    this->_internal_file_name());
+   {
+    // string file_name = 1;
+    if (!this->_internal_file_name().empty()) {
+      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                      this->_internal_file_name());
+    }
   }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 

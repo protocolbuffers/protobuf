@@ -94,97 +94,37 @@ namespace internal {
 const char kDebugStringSilentMarker[] = "";
 const char kDebugStringSilentMarkerForDetection[] = "\t ";
 
-// Controls insertion of kDebugStringSilentMarker into DebugString() output.
-PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_format_marker;
-
 // Controls insertion of a marker making debug strings non-parseable, and
-// redacting annotated fields.
-PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_redaction{true};
+// redacting annotated fields in Protobuf's DebugString APIs.
+PROTOBUF_EXPORT std::atomic<bool> enable_debug_string_safe_format{false};
 
 int64_t GetRedactedFieldCount() {
   return num_redacted_field.load(std::memory_order_relaxed);
 }
-}  // namespace internal
-
-std::string Message::DebugString() const {
-  // Indicate all scoped reflection calls are from DebugString function.
-  ScopedReflectionMode scope(ReflectionMode::kDebugString);
-  std::string debug_string;
-
-  TextFormat::Printer printer;
-  printer.SetExpandAny(true);
-  printer.SetInsertSilentMarker(internal::enable_debug_text_format_marker.load(
-      std::memory_order_relaxed));
-  printer.SetReportSensitiveFields(FieldReporterLevel::kDebugString);
-
-  printer.PrintToString(*this, &debug_string);
-
-  return debug_string;
-}
-
-std::string Message::ShortDebugString() const {
-  // Indicate all scoped reflection calls are from DebugString function.
-  ScopedReflectionMode scope(ReflectionMode::kDebugString);
-  std::string debug_string;
-
-  TextFormat::Printer printer;
-  printer.SetSingleLineMode(true);
-  printer.SetExpandAny(true);
-  printer.SetInsertSilentMarker(internal::enable_debug_text_format_marker.load(
-      std::memory_order_relaxed));
-  printer.SetReportSensitiveFields(FieldReporterLevel::kShortDebugString);
-
-  printer.PrintToString(*this, &debug_string);
-  TrimTrailingSpace(debug_string);
-
-  return debug_string;
-}
-
-std::string Message::Utf8DebugString() const {
-  // Indicate all scoped reflection calls are from DebugString function.
-  ScopedReflectionMode scope(ReflectionMode::kDebugString);
-  std::string debug_string;
-
-  TextFormat::Printer printer;
-  printer.SetUseUtf8StringEscaping(true);
-  printer.SetExpandAny(true);
-  printer.SetInsertSilentMarker(internal::enable_debug_text_format_marker.load(
-      std::memory_order_relaxed));
-  printer.SetReportSensitiveFields(FieldReporterLevel::kUtf8DebugString);
-
-  printer.PrintToString(*this, &debug_string);
-
-  return debug_string;
-}
-
-void Message::PrintDebugString() const { printf("%s", DebugString().c_str()); }
-
-namespace internal {
 
 enum class Option { kNone, kShort, kUTF8 };
 
-std::string StringifyMessage(const Message& message, Option option) {
+std::string StringifyMessage(const Message& message, Option option,
+                             FieldReporterLevel reporter_level,
+                             bool enable_safe_format) {
   // Indicate all scoped reflection calls are from DebugString function.
   ScopedReflectionMode scope(ReflectionMode::kDebugString);
 
   TextFormat::Printer printer;
-  internal::FieldReporterLevel reporter = FieldReporterLevel::kAbslStringify;
+  internal::FieldReporterLevel reporter = reporter_level;
   switch (option) {
     case Option::kShort:
       printer.SetSingleLineMode(true);
-      reporter = FieldReporterLevel::kShortFormat;
       break;
     case Option::kUTF8:
       printer.SetUseUtf8StringEscaping(true);
-      reporter = FieldReporterLevel::kUtf8Format;
       break;
     case Option::kNone:
       break;
   }
   printer.SetExpandAny(true);
-  printer.SetRedactDebugString(
-      internal::enable_debug_text_redaction.load(std::memory_order_relaxed));
-  printer.SetRandomizeDebugString(true);
+  printer.SetRedactDebugString(enable_safe_format);
+  printer.SetRandomizeDebugString(enable_safe_format);
   printer.SetReportSensitiveFields(reporter);
   std::string result;
   printer.PrintToString(message, &result);
@@ -197,17 +137,87 @@ std::string StringifyMessage(const Message& message, Option option) {
 }
 
 PROTOBUF_EXPORT std::string StringifyMessage(const Message& message) {
-  return StringifyMessage(message, Option::kNone);
+  return StringifyMessage(message, Option::kNone,
+                          FieldReporterLevel::kAbslStringify, true);
 }
-
 }  // namespace internal
 
+std::string Message::DebugString() const {
+  bool enable_safe_format =
+      internal::enable_debug_string_safe_format.load(std::memory_order_relaxed);
+  if (enable_safe_format) {
+    return StringifyMessage(*this, internal::Option::kNone,
+                            FieldReporterLevel::kDebugString, true);
+  }
+  // Indicate all scoped reflection calls are from DebugString function.
+  ScopedReflectionMode scope(ReflectionMode::kDebugString);
+  std::string debug_string;
+
+  TextFormat::Printer printer;
+  printer.SetExpandAny(true);
+  printer.SetInsertSilentMarker(true);
+  printer.SetReportSensitiveFields(FieldReporterLevel::kDebugString);
+
+  printer.PrintToString(*this, &debug_string);
+
+  return debug_string;
+}
+
+std::string Message::ShortDebugString() const {
+  bool enable_safe_format =
+      internal::enable_debug_string_safe_format.load(std::memory_order_relaxed);
+  if (enable_safe_format) {
+    return StringifyMessage(*this, internal::Option::kShort,
+                            FieldReporterLevel::kShortDebugString, true);
+  }
+  // Indicate all scoped reflection calls are from DebugString function.
+  ScopedReflectionMode scope(ReflectionMode::kDebugString);
+  std::string debug_string;
+
+  TextFormat::Printer printer;
+  printer.SetSingleLineMode(true);
+  printer.SetExpandAny(true);
+  printer.SetInsertSilentMarker(true);
+  printer.SetReportSensitiveFields(FieldReporterLevel::kShortDebugString);
+
+  printer.PrintToString(*this, &debug_string);
+  TrimTrailingSpace(debug_string);
+
+  return debug_string;
+}
+
+std::string Message::Utf8DebugString() const {
+  bool enable_safe_format =
+      internal::enable_debug_string_safe_format.load(std::memory_order_relaxed);
+  if (enable_safe_format) {
+    return StringifyMessage(*this, internal::Option::kUTF8,
+                            FieldReporterLevel::kUtf8DebugString, true);
+  }
+  // Indicate all scoped reflection calls are from DebugString function.
+  ScopedReflectionMode scope(ReflectionMode::kDebugString);
+  std::string debug_string;
+
+  TextFormat::Printer printer;
+  printer.SetUseUtf8StringEscaping(true);
+  printer.SetExpandAny(true);
+  printer.SetInsertSilentMarker(true);
+  printer.SetReportSensitiveFields(FieldReporterLevel::kUtf8DebugString);
+
+  printer.PrintToString(*this, &debug_string);
+
+  return debug_string;
+}
+
+void Message::PrintDebugString() const { printf("%s", DebugString().c_str()); }
+
 PROTOBUF_EXPORT std::string ShortFormat(const Message& message) {
-  return internal::StringifyMessage(message, internal::Option::kShort);
+  return internal::StringifyMessage(message, internal::Option::kShort,
+                                    FieldReporterLevel::kShortFormat, true);
 }
 
 PROTOBUF_EXPORT std::string Utf8Format(const Message& message) {
-  return internal::StringifyMessage(message, internal::Option::kUTF8);
+  return internal::StringifyMessage(message, internal::Option::kUTF8,
+                                    FieldReporterLevel::kUtf8Format, true);
 }
 
 
@@ -1358,8 +1368,8 @@ class TextFormat::Parser::ParserImpl {
     return result;
   }
 
-  // Attempts to consume the supplied value. Returns false if a the
-  // token found does not match the value specified.
+  // Attempts to consume the supplied value. Returns false if the token found
+  // does not match the value specified.
   bool TryConsume(const std::string& value) {
     if (tokenizer_.current().text == value) {
       tokenizer_.Next();

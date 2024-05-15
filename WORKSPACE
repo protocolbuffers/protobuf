@@ -164,13 +164,6 @@ http_archive(
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
 )
 
-load("//python/dist:system_python.bzl", "system_python")
-
-system_python(
-    name = "system_python",
-    minimum_python_version = "3.7",
-)
-
 load("@system_python//:pip.bzl", "pip_parse")
 
 pip_parse(
@@ -222,7 +215,8 @@ crates_repository(
     lockfile = "//:Cargo.bazel.lock",
     packages = {
         "googletest": crate.spec(
-            version = ">0.0.0",
+            git = "https://github.com/google/googletest-rust",
+            rev = "471d4a2a8e8bc74f6d7d9c8eecb4d4e3157b2a9f",
         ),
         "paste": crate.spec(
           version = ">=1",
@@ -232,3 +226,18 @@ crates_repository(
 
 load("@crate_index//:defs.bzl", "crate_repositories")
 crate_repositories()
+
+# For testing runtime against old gencode from a previous major version.
+http_archive(
+    name = "com_google_protobuf_v25.0",
+    strip_prefix = "protobuf-25.0",
+    url = "https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz",
+)
+
+# Needed as a dependency of @com_google_protobuf_v25.x, which was before
+# utf8_range was merged in.
+http_archive(
+    name = "utf8_range",
+    strip_prefix = "utf8_range-d863bc33e15cba6d873c878dcca9e6fe52b2f8cb",
+    url = "https://github.com/protocolbuffers/utf8_range/archive/d863bc33e15cba6d873c878dcca9e6fe52b2f8cb.zip",
+)

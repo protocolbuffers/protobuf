@@ -422,7 +422,7 @@ void ReflectionVisit::VisitMessageFields(const Message& message,
                              FieldDescriptor::CPPTYPE_MESSAGE) {
           if constexpr (info.is_repeated) {
             for (const auto& it : info.Get()) {
-              func(DownCast<const Message&>(it));
+              func(DownCastToMessage(it));
             }
           } else {
             func(info.Get());
@@ -452,7 +452,7 @@ void ReflectionVisit::VisitMessageFields(Message& message, CallbackFn&& func) {
                              FieldDescriptor::CPPTYPE_MESSAGE) {
           if constexpr (info.is_repeated) {
             for (auto& it : info.Mutable()) {
-              func(DownCast<Message&>(it));
+              func(DownCastToMessage(it));
             }
           } else {
             func(info.Mutable());

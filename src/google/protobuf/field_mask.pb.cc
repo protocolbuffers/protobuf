@@ -240,19 +240,24 @@ PROTOBUF_NOINLINE void FieldMask::Clear() {
 }
 
 ::size_t FieldMask::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldMask)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldMask)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
-  // repeated string paths = 1;
-  total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_paths().size());
-  for (int i = 0, n = _internal_paths().size(); i < n; ++i) {
-    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
-        _internal_paths().Get(i));
+  ::_pbi::Prefetch5LinesFrom7Lines(
+      reinterpret_cast<const void*>(this));
+   {
+    // repeated string paths = 1;
+     {
+      total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_paths().size());
+      for (int i = 0, n = _internal_paths().size(); i < n; ++i) {
+        total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+            _internal_paths().Get(i));
+      }
+    }
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }

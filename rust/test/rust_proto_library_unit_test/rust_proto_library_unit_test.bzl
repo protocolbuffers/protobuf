@@ -1,7 +1,6 @@
 """This module contains unit tests for rust_proto_library and its aspect."""
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
-load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//rust:aspects.bzl", "RustProtoInfo")
 load("//rust:defs.bzl", "rust_cc_proto_library", "rust_upb_proto_library")
 load(":defs.bzl", "ActionsInfo", "attach_cc_aspect", "attach_upb_aspect")
@@ -160,7 +159,7 @@ def _rust_cc_aspect_test_impl(ctx):
 rust_cc_aspect_test = analysistest.make(_rust_cc_aspect_test_impl)
 
 def _test_cc_aspect():
-    attach_cc_aspect(name = "child_proto_with_cc_aspect", dep = ":child_cc_proto")
+    attach_cc_aspect(name = "child_proto_with_cc_aspect", dep = ":child_proto")
 
     rust_cc_aspect_test(
         name = "rust_cc_aspect_test",
@@ -230,7 +229,6 @@ def rust_proto_library_unit_test(name):
         srcs = ["child.proto"],
         deps = [":parent_proto", ":parent2_proto"],
     )
-    cc_proto_library(name = "child_cc_proto", deps = [":child_proto"])
 
     _test_upb_aspect()
     _test_cc_aspect()

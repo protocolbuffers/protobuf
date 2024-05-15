@@ -33,7 +33,7 @@
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/lite/enum.h"
 #include "google/protobuf/compiler/java/lite/extension.h"
-#include "google/protobuf/compiler/java/lite/make_field_generators.h"
+#include "google/protobuf/compiler/java/lite/make_field_gens.h"
 #include "google/protobuf/compiler/java/lite/message_builder.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/descriptor.pb.h"

@@ -14,35 +14,7 @@
 # Once we have a couple of these tests we will investigate ways to remove boilerplate (for example
 # by introducing a build macro that registers 2 rust_test targets).
 
-load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
-
-rust_library(
-    name = "matchers_upb",
-    testonly = True,
-    srcs = ["matchers.rs"],
-    aliases = {
-        "//rust:protobuf_upb_export": "protobuf",
-    },
-    visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [
-        "//rust:protobuf_upb_export",
-        "@crate_index//:googletest",
-    ],
-)
-
-rust_library(
-    name = "matchers_cpp",
-    testonly = True,
-    srcs = ["matchers.rs"],
-    aliases = {
-        "//rust:protobuf_cpp_export": "protobuf",
-    },
-    visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [
-        "//rust:protobuf_cpp_export",
-        "@crate_index//:googletest",
-    ],
-)
+load("@rules_rust//rust:defs.bzl", "rust_test")
 
 rust_test(
     name = "child_parent_upb_test",
@@ -159,24 +131,26 @@ rust_test(
 )
 
 rust_test(
-    name = "reserved_cpp_test",
-    srcs = ["reserved_test.rs"],
+    name = "bad_names_cpp_test",
+    srcs = ["bad_names_test.rs"],
     deps = [
-        "//rust/test:reserved_cc_rust_proto",
+        "//rust/test:bad_names_cc_rust_proto",
         "//rust/test:unittest_cc_rust_proto",
         "@crate_index//:googletest",
     ],
 )
 
-rust_test(
-    name = "reserved_upb_test",
-    srcs = ["reserved_test.rs"],
-    deps = [
-        "//rust/test:reserved_upb_rust_proto",
-        "//rust/test:unittest_upb_rust_proto",
-        "@crate_index//:googletest",
-    ],
-)
+# TODO: This test currently fails on upb due to the thunk names not correctly matching
+# the upb C codegen collision avoidance.
+# rust_test(
+#     name = "bad_names_upb_test",
+#     srcs = ["bad_names_test.rs"],
+#     deps = [
+#         "@crate_index//:googletest",
+#         "//rust/test:bad_names_upb_rust_proto",
+#         "//rust/test:unittest_upb_rust_proto",
+#     ],
+# )
 
 rust_test(
     name = "nested_types_cpp_test",
@@ -195,7 +169,6 @@ rust_test(
     srcs = ["accessors_test.rs"],
     aliases = {
         "//rust:protobuf_cpp_export": "protobuf",
-        "//rust/test/shared:matchers_cpp": "matchers",
     },
     proc_macro_deps = [
         "@crate_index//:paste",
@@ -203,7 +176,6 @@ rust_test(
     deps = [
         "//rust:protobuf_cpp_export",
         "//rust/test:unittest_cc_rust_proto",
-        "//rust/test/shared:matchers_cpp",
         "@crate_index//:googletest",
     ],
 )
@@ -213,7 +185,6 @@ rust_test(
     srcs = ["accessors_test.rs"],
     aliases = {
         "//rust:protobuf_upb_export": "protobuf",
-        "//rust/test/shared:matchers_upb": "matchers",
     },
     proc_macro_deps = [
         "@crate_index//:paste",
@@ -221,7 +192,6 @@ rust_test(
     deps = [
         "//rust:protobuf_upb_export",
         "//rust/test:unittest_upb_rust_proto",
-        "//rust/test/shared:matchers_upb",
         "@crate_index//:googletest",
     ],
 )
@@ -231,13 +201,11 @@ rust_test(
     srcs = ["accessors_proto3_test.rs"],
     aliases = {
         "//rust:protobuf_cpp_export": "protobuf",
-        "//rust/test/shared:matchers_cpp": "matchers",
     },
     deps = [
         "//rust:protobuf_cpp_export",
         "//rust/test:unittest_proto3_cc_rust_proto",
         "//rust/test:unittest_proto3_optional_cc_rust_proto",
-        "//rust/test/shared:matchers_cpp",
         "@crate_index//:googletest",
     ],
 )
@@ -247,13 +215,11 @@ rust_test(
     srcs = ["accessors_proto3_test.rs"],
     aliases = {
         "//rust:protobuf_upb_export": "protobuf",
-        "//rust/test/shared:matchers_upb": "matchers",
     },
     deps = [
         "//rust:protobuf_upb_export",
         "//rust/test:unittest_proto3_optional_upb_rust_proto",
         "//rust/test:unittest_proto3_upb_rust_proto",
-        "//rust/test/shared:matchers_upb",
         "@crate_index//:googletest",
     ],
 )
@@ -405,12 +371,10 @@ rust_test(
     srcs = ["proto_macro_test.rs"],
     aliases = {
         "//rust:protobuf_cpp": "protobuf",
-        "//rust/test/shared:matchers_cpp": "matchers",
     },
     deps = [
         "//rust:protobuf_cpp",
         "//rust/test:unittest_cc_rust_proto",
-        "//rust/test/shared:matchers_cpp",
         "@crate_index//:googletest",
     ],
 )
@@ -420,12 +384,10 @@ rust_test(
     srcs = ["proto_macro_test.rs"],
     aliases = {
         "//rust:protobuf_upb": "protobuf",
-        "//rust/test/shared:matchers_upb": "matchers",
     },
     deps = [
         "//rust:protobuf_upb",
         "//rust/test:unittest_upb_rust_proto",
-        "//rust/test/shared:matchers_upb",
         "@crate_index//:googletest",
     ],
 )

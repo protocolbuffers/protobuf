@@ -139,6 +139,8 @@
                     <include>LazyStringArrayList.java</include>
                     <include>LazyStringList.java</include>
                     <include>ListFieldSchema.java</include>
+                    <include>ListFieldSchemaLite.java</include>
+                    <include>ListFieldSchemas.java</include>
                     <include>LongArrayList.java</include>
                     <include>ManifestSchemaFactory.java</include>
                     <include>MapEntryLite.java</include>

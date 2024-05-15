@@ -31,4 +31,6 @@ final class ExtensionSchemas {
     }
     return FULL_SCHEMA;
   }
+
+  private ExtensionSchemas() {}
 }

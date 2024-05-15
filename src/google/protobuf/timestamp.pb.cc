@@ -245,26 +245,27 @@ PROTOBUF_NOINLINE void Timestamp::Clear() {
 }
 
 ::size_t Timestamp::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Timestamp)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Timestamp)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(reinterpret_cast<const void*>(this));
-  // int64 seconds = 1;
-  if (this->_internal_seconds() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
-        this->_internal_seconds());
+  ::_pbi::Prefetch5LinesFrom7Lines(
+      reinterpret_cast<const void*>(this));
+   {
+    // int64 seconds = 1;
+    if (this->_internal_seconds() != 0) {
+      total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
+          this->_internal_seconds());
+    }
+    // int32 nanos = 2;
+    if (this->_internal_nanos() != 0) {
+      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+          this->_internal_nanos());
+    }
   }
-
-  // int32 nanos = 2;
-  if (this->_internal_nanos() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-        this->_internal_nanos());
-  }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 

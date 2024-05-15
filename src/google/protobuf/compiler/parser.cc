@@ -38,6 +38,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/wire_format.h"
 
@@ -48,8 +49,6 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace {
-
-using ::google::protobuf::internal::DownCast;
 
 using TypeNameMap =
     absl::flat_hash_map<absl::string_view, FieldDescriptorProto::Type>;
@@ -1566,8 +1565,9 @@ bool Parser::ParseOption(Message* options,
   }
 
   UninterpretedOption* uninterpreted_option =
-      DownCast<UninterpretedOption*>(options->GetReflection()->AddMessage(
-          options, uninterpreted_option_field));
+      DownCastToGenerated<UninterpretedOption>(
+          options->GetReflection()->AddMessage(options,
+                                               uninterpreted_option_field));
 
   // Parse dot-separated name.
   {
@@ -1623,12 +1623,21 @@ bool Parser::ParseOption(Message* options,
       case io::Tokenizer::TYPE_IDENTIFIER: {
         value_location.AddPath(
             UninterpretedOption::kIdentifierValueFieldNumber);
-        if (is_negative) {
-          RecordError("Invalid '-' symbol before identifier.");
-          return false;
-        }
         std::string value;
         DO(ConsumeIdentifier(&value, "Expected identifier."));
+        if (is_negative) {
+          if (value == "inf") {
+            uninterpreted_option->set_double_value(
+                -std::numeric_limits<double>::infinity());
+          } else if (value == "nan") {
+            uninterpreted_option->set_double_value(
+                std::numeric_limits<double>::quiet_NaN());
+          } else {
+            RecordError("Identifier after '-' symbol must be inf or nan.");
+            return false;
+          }
+          break;
+        }
         uninterpreted_option->set_identifier_value(value);
         break;
       }

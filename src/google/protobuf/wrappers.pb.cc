@@ -457,12 +457,7 @@ PROTOBUF_NOINLINE void DoubleValue::Clear() {
   (void)cached_has_bits;
 
   // double value = 1;
-  static_assert(sizeof(::uint64_t) == sizeof(double),
-                "Code assumes ::uint64_t and double are the same size.");
-  double tmp_value = this->_internal_value();
-  ::uint64_t raw_value;
-  memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
-  if (raw_value != 0) {
+  if (::absl::bit_cast<::uint64_t>(this->_internal_value()) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteDoubleToArray(
         1, this->_internal_value(), target);
@@ -478,23 +473,19 @@ PROTOBUF_NOINLINE void DoubleValue::Clear() {
 }
 
 ::size_t DoubleValue::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.DoubleValue)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.DoubleValue)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  // double value = 1;
-  static_assert(sizeof(::uint64_t) == sizeof(double),
-                "Code assumes ::uint64_t and double are the same size.");
-  double tmp_value = this->_internal_value();
-  ::uint64_t raw_value;
-  memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
-  if (raw_value != 0) {
-    total_size += 9;
+   {
+    // double value = 1;
+    if (::absl::bit_cast<::uint64_t>(this->_internal_value()) != 0) {
+      total_size += 9;
+    }
   }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -507,12 +498,7 @@ void DoubleValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  static_assert(sizeof(::uint64_t) == sizeof(double),
-                "Code assumes ::uint64_t and double are the same size.");
-  double tmp_value = from._internal_value();
-  ::uint64_t raw_value;
-  memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
-  if (raw_value != 0) {
+  if (::absl::bit_cast<::uint64_t>(from._internal_value()) != 0) {
     _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
@@ -643,12 +629,7 @@ PROTOBUF_NOINLINE void FloatValue::Clear() {
   (void)cached_has_bits;
 
   // float value = 1;
-  static_assert(sizeof(::uint32_t) == sizeof(float),
-                "Code assumes ::uint32_t and float are the same size.");
-  float tmp_value = this->_internal_value();
-  ::uint32_t raw_value;
-  memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
-  if (raw_value != 0) {
+  if (::absl::bit_cast<::uint32_t>(this->_internal_value()) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteFloatToArray(
         1, this->_internal_value(), target);
@@ -664,23 +645,19 @@ PROTOBUF_NOINLINE void FloatValue::Clear() {
 }
 
 ::size_t FloatValue::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.FloatValue)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FloatValue)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  // float value = 1;
-  static_assert(sizeof(::uint32_t) == sizeof(float),
-                "Code assumes ::uint32_t and float are the same size.");
-  float tmp_value = this->_internal_value();
-  ::uint32_t raw_value;
-  memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
-  if (raw_value != 0) {
-    total_size += 5;
+   {
+    // float value = 1;
+    if (::absl::bit_cast<::uint32_t>(this->_internal_value()) != 0) {
+      total_size += 5;
+    }
   }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -693,12 +670,7 @@ void FloatValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  static_assert(sizeof(::uint32_t) == sizeof(float),
-                "Code assumes ::uint32_t and float are the same size.");
-  float tmp_value = from._internal_value();
-  ::uint32_t raw_value;
-  memcpy(&raw_value, &tmp_value, sizeof(tmp_value));
-  if (raw_value != 0) {
+  if (::absl::bit_cast<::uint32_t>(from._internal_value()) != 0) {
     _this->_impl_.value_ = from._impl_.value_;
   }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
@@ -845,19 +817,20 @@ PROTOBUF_NOINLINE void Int64Value::Clear() {
 }
 
 ::size_t Int64Value::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Int64Value)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Int64Value)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  // int64 value = 1;
-  if (this->_internal_value() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
-        this->_internal_value());
+   {
+    // int64 value = 1;
+    if (this->_internal_value() != 0) {
+      total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
+          this->_internal_value());
+    }
   }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -1017,19 +990,20 @@ PROTOBUF_NOINLINE void UInt64Value::Clear() {
 }
 
 ::size_t UInt64Value::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.UInt64Value)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.UInt64Value)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  // uint64 value = 1;
-  if (this->_internal_value() != 0) {
-    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(
-        this->_internal_value());
+   {
+    // uint64 value = 1;
+    if (this->_internal_value() != 0) {
+      total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(
+          this->_internal_value());
+    }
   }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -1189,19 +1163,20 @@ PROTOBUF_NOINLINE void Int32Value::Clear() {
 }
 
 ::size_t Int32Value::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Int32Value)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Int32Value)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  // int32 value = 1;
-  if (this->_internal_value() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-        this->_internal_value());
+   {
+    // int32 value = 1;
+    if (this->_internal_value() != 0) {
+      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+          this->_internal_value());
+    }
   }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -1361,19 +1336,20 @@ PROTOBUF_NOINLINE void UInt32Value::Clear() {
 }
 
 ::size_t UInt32Value::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.UInt32Value)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.UInt32Value)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  // uint32 value = 1;
-  if (this->_internal_value() != 0) {
-    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(
-        this->_internal_value());
+   {
+    // uint32 value = 1;
+    if (this->_internal_value() != 0) {
+      total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(
+          this->_internal_value());
+    }
   }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -1533,18 +1509,19 @@ PROTOBUF_NOINLINE void BoolValue::Clear() {
 }
 
 ::size_t BoolValue::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.BoolValue)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.BoolValue)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  // bool value = 1;
-  if (this->_internal_value() != 0) {
-    total_size += 2;
+   {
+    // bool value = 1;
+    if (this->_internal_value() != 0) {
+      total_size += 2;
+    }
   }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -1722,19 +1699,20 @@ PROTOBUF_NOINLINE void StringValue::Clear() {
 }
 
 ::size_t StringValue::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.StringValue)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.StringValue)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  // string value = 1;
-  if (!this->_internal_value().empty()) {
-    total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                    this->_internal_value());
+   {
+    // string value = 1;
+    if (!this->_internal_value().empty()) {
+      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                      this->_internal_value());
+    }
   }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -1909,19 +1887,20 @@ PROTOBUF_NOINLINE void BytesValue::Clear() {
 }
 
 ::size_t BytesValue::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:google.protobuf.BytesValue)
+  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.BytesValue)
   ::size_t total_size = 0;
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
-  // bytes value = 1;
-  if (!this->_internal_value().empty()) {
-    total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
-                                    this->_internal_value());
+   {
+    // bytes value = 1;
+    if (!this->_internal_value().empty()) {
+      total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
+                                      this->_internal_value());
+    }
   }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 

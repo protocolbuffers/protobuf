@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use crate::{
-    Mut, MutProxy, Proxied, SettableValue, View, ViewProxy,
+    Mut, MutProxied, MutProxy, Proxied, View, ViewProxy,
     __internal::Private,
     __runtime::{InnerMap, InnerMapMut, RawMap, RawMapIter},
 };
@@ -95,18 +95,10 @@ where
 
 impl<K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> Proxied for Map<K, V> {
     type View<'msg> = MapView<'msg, K, V> where K: 'msg, V: 'msg;
-    type Mut<'msg> = MapMut<'msg, K, V> where K: 'msg, V: 'msg;
 }
 
-impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> SettableValue<Map<K, V>>
-    for MapView<'msg, K, V>
-{
-    fn set_on<'b>(self, _private: Private, mut mutator: Mut<'b, Map<K, V>>)
-    where
-        Map<K, V>: 'b,
-    {
-        mutator.copy_from(self);
-    }
+impl<K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> MutProxied for Map<K, V> {
+    type Mut<'msg> = MapMut<'msg, K, V> where K: 'msg, V: 'msg;
 }
 
 impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> ViewProxy<'msg>
@@ -529,13 +521,13 @@ mod tests {
         assert_that!(
             map.as_view().iter().collect::<Vec<_>>(),
             unordered_elements_are![
-                eq((3, ProtoStr::from_str("fizz"))),
-                eq((5, ProtoStr::from_str("buzz"))),
-                eq((15, ProtoStr::from_str("fizzbuzz")))
+                eq(&(3, ProtoStr::from_str("fizz"))),
+                eq(&(5, ProtoStr::from_str("buzz"))),
+                eq(&(15, ProtoStr::from_str("fizzbuzz")))
             ]
         );
         assert_that!(
-            map.as_view().into_iter().collect::<Vec<_>>(),
+            map.as_view(),
             unordered_elements_are![
                 eq((3, ProtoStr::from_str("fizz"))),
                 eq((5, ProtoStr::from_str("buzz"))),
@@ -543,7 +535,15 @@ mod tests {
             ]
         );
         assert_that!(
-            map.as_view().into_iter().collect::<Vec<_>>(),
+            map.as_mut().iter().collect::<Vec<_>>(),
+            unordered_elements_are![
+                eq(&(3, ProtoStr::from_str("fizz"))),
+                eq(&(5, ProtoStr::from_str("buzz"))),
+                eq(&(15, ProtoStr::from_str("fizzbuzz")))
+            ]
+        );
+        assert_that!(
+            map.as_mut(),
             unordered_elements_are![
                 eq((3, ProtoStr::from_str("fizz"))),
                 eq((5, ProtoStr::from_str("buzz"))),
@@ -559,10 +559,7 @@ mod tests {
         assert!(map_mut.insert(0, "fizz"));
         // insert should return false when the key is already present
         assert!(!map_mut.insert(0, "buzz"));
-        assert_that!(
-            map.as_mut().iter().collect::<Vec<_>>(),
-            unordered_elements_are![eq((0, ProtoStr::from_str("buzz"))),]
-        );
+        assert_that!(map.as_mut(), unordered_elements_are![eq((0, ProtoStr::from_str("buzz"))),]);
     }
 
     #[test]
@@ -576,7 +573,7 @@ mod tests {
         map_mut.extend([(0, "fizz"), (1, "buzz"), (2, "fizzbuzz")]);
 
         assert_that!(
-            map.as_view().into_iter().collect::<Vec<_>>(),
+            map.as_view(),
             unordered_elements_are![
                 eq((0, ProtoStr::from_str("fizz"))),
                 eq((1, ProtoStr::from_str("buzz"))),
@@ -592,7 +589,7 @@ mod tests {
         map_mut.extend(&map_2);
 
         assert_that!(
-            map.as_view().into_iter().collect::<Vec<_>>(),
+            map.as_view(),
             unordered_elements_are![
                 eq((0, ProtoStr::from_str("fizz"))),
                 eq((1, ProtoStr::from_str("buzz"))),
@@ -609,7 +606,7 @@ mod tests {
         map_mut.copy_from([(0, "fizz"), (1, "buzz"), (2, "fizzbuzz")]);
 
         assert_that!(
-            map.as_view().into_iter().collect::<Vec<_>>(),
+            map.as_view(),
             unordered_elements_are![
                 eq((0, ProtoStr::from_str("fizz"))),
                 eq((1, ProtoStr::from_str("buzz"))),
@@ -625,7 +622,7 @@ mod tests {
         map_mut.copy_from(&map_2);
 
         assert_that!(
-            map.as_view().into_iter().collect::<Vec<_>>(),
+            map.as_view(),
             unordered_elements_are![
                 eq((2, ProtoStr::from_str("bing"))),
                 eq((3, ProtoStr::from_str("bong")))

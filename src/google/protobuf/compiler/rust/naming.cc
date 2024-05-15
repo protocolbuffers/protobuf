@@ -270,6 +270,40 @@ std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field) {
   return comment;
 }
 
+static constexpr absl::string_view kAccessorPrefixes[] = {"clear_", "has_",
+                                                          "set_"};
+
+static constexpr absl::string_view kAccessorSuffixes[] = {"_mut", "_opt"};
+
+std::string FieldNameWithCollisionAvoidance(const FieldDescriptor& field) {
+  absl::string_view name = field.name();
+  const Descriptor& msg = *field.containing_type();
+
+  for (absl::string_view prefix : kAccessorPrefixes) {
+    if (absl::StartsWith(name, prefix)) {
+      absl::string_view without_prefix = name;
+      without_prefix.remove_prefix(prefix.size());
+
+      if (msg.FindFieldByName(without_prefix) != nullptr) {
+        return absl::StrCat(name, "_", field.number());
+      }
+    }
+  }
+
+  for (absl::string_view suffix : kAccessorSuffixes) {
+    if (absl::EndsWith(name, suffix)) {
+      absl::string_view without_suffix = name;
+      without_suffix.remove_suffix(suffix.size());
+
+      if (msg.FindFieldByName(without_suffix) != nullptr) {
+        return absl::StrCat(name, "_", field.number());
+      }
+    }
+  }
+
+  return std::string(name);
+}
+
 std::string RsSafeName(absl::string_view name) {
   if (!IsLegalRawIdentifierName(name)) {
     return absl::StrCat(name,

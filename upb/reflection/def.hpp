@@ -61,6 +61,13 @@ class FieldDefPtr {
     return upb_FieldDef_MiniTable(ptr_);
   }
 
+  std::string MiniDescriptorEncode() const {
+    upb::Arena arena;
+    upb_StringView md;
+    upb_FieldDef_MiniDescriptorEncode(ptr_, arena.ptr(), &md);
+    return std::string(md.data, md.size);
+  }
+
   const UPB_DESC(FieldOptions) * options() const {
     return upb_FieldDef_Options(ptr_);
   }
@@ -105,6 +112,7 @@ class FieldDefPtr {
   OneofDefPtr real_containing_oneof() const;
 
   // Convenient field type tests.
+  bool IsEnum() const { return upb_FieldDef_IsEnum(ptr_); }
   bool IsSubMessage() const { return upb_FieldDef_IsSubMessage(ptr_); }
   bool IsString() const { return upb_FieldDef_IsString(ptr_); }
   bool IsSequence() const { return upb_FieldDef_IsRepeated(ptr_); }

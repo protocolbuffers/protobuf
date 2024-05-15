@@ -48,14 +48,12 @@ rust_library(
 PROTOBUF_SHARED = [
     "enum.rs",
     "internal.rs",
-    "macros.rs",
-    "optional.rs",
     "primitive.rs",
+    "optional.rs",
     "proxied.rs",
     "repeated.rs",
     "shared.rs",
     "string.rs",
-    "vtable.rs",
     "map.rs",
     "proto_macro.rs",
 ]
@@ -170,6 +168,11 @@ proto_lang_toolchain(
     progress_message = "Generating Rust proto_library %{label}",
     runtime = ":protobuf_cpp",
     visibility = ["//visibility:public"],
+)
+
+package_group(
+    name = "rust_proto_library_allowed_in_different_package",
+    packages = ["//rust/test"],  # for unittest proto_libraries
 )
 
 # This flag controls what kernel all Rust Protobufs are using in the current build.

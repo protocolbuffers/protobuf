@@ -11,7 +11,7 @@ import com.google.protobuf.MapEntryLite.Metadata;
 import java.util.Map;
 
 @CheckReturnValue
-class MapFieldSchemaLite implements MapFieldSchema {
+final class MapFieldSchemaLite implements MapFieldSchema {
 
   @Override
   public Map<?, ?> forMutableMapData(Object mapField) {

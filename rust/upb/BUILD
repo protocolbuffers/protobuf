@@ -23,6 +23,7 @@ rust_library(
         "message_value.rs",
         "mini_table.rs",
         "opaque_pointee.rs",
+        "owned_arena_box.rs",
         "string_view.rs",
         "wire.rs",
     ],
@@ -45,5 +46,6 @@ cc_library(
         "//upb:mem",
         "//upb:message",
         "//upb:message_copy",
+        "//upb/mini_table",
     ],
 )

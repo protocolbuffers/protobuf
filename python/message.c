@@ -1044,6 +1044,35 @@ static PyObject* PyUpb_Message_HasField(PyObject* _self, PyObject* arg) {
                                      NULL);
 }
 
+static PyObject* PyUpb_Message_Contains(PyObject* _self, PyObject* arg) {
+  const upb_MessageDef* msgdef = PyUpb_Message_GetMsgdef(_self);
+  switch (upb_MessageDef_WellKnownType(msgdef)) {
+    case kUpb_WellKnown_Struct: {
+      // For WKT Struct, check if the key is in the fields.
+      PyUpb_Message* self = (void*)_self;
+      if (PyUpb_Message_IsStub(self)) Py_RETURN_FALSE;
+      upb_Message* msg = PyUpb_Message_GetMsg(self);
+      const upb_FieldDef* f = upb_MessageDef_FindFieldByName(msgdef, "fields");
+      const upb_Map* map = upb_Message_GetFieldByDef(msg, f).map_val;
+      const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
+      const upb_FieldDef* key_f = upb_MessageDef_Field(entry_m, 0);
+      upb_MessageValue u_key;
+      if (!PyUpb_PyToUpb(arg, key_f, &u_key, NULL)) return NULL;
+      return PyBool_FromLong(upb_Map_Get(map, u_key, NULL));
+    }
+    case kUpb_WellKnown_ListValue: {
+      // For WKT ListValue, check if the key is in the items.
+      PyUpb_Message* self = (void*)_self;
+      if (PyUpb_Message_IsStub(self)) Py_RETURN_FALSE;
+      PyObject* items = PyObject_CallMethod(_self, "items", NULL);
+      return PyBool_FromLong(PySequence_Contains(items, arg));
+    }
+    default:
+      // For other messages, check with HasField.
+      return PyUpb_Message_HasField(_self, arg);
+  }
+}
+
 static PyObject* PyUpb_Message_FindInitializationErrors(PyObject* _self,
                                                         PyObject* arg);
 
@@ -1642,6 +1671,8 @@ static PyMethodDef PyUpb_Message_Methods[] = {
     // TODO
     //{ "__unicode__", (PyCFunction)ToUnicode, METH_NOARGS,
     //  "Outputs a unicode representation of the message." },
+    {"__contains__", PyUpb_Message_Contains, METH_O,
+     "Checks if a message field is set."},
     {"ByteSize", (PyCFunction)PyUpb_Message_ByteSize, METH_NOARGS,
      "Returns the size of the message in bytes."},
     {"Clear", (PyCFunction)PyUpb_Message_Clear, METH_NOARGS,

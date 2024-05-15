@@ -1424,90 +1424,6 @@ DECLARE_GET_REPEATED_FIELD(bool)
 
 #undef DECLARE_GET_REPEATED_FIELD
 
-// Tries to downcast this message to a generated message type.  Returns nullptr
-// if this class is not an instance of T.  This works even if RTTI is disabled.
-//
-// This also has the effect of creating a strong reference to T that will
-// prevent the linker from stripping it out at link time.  This can be important
-// if you are using a DynamicMessageFactory that delegates to the generated
-// factory.
-template <typename T>
-const T* DynamicCastToGenerated(const Message* from) {
-  // Compile-time assert that T is a generated type that has a
-  // default_instance() accessor, but avoid actually calling it.
-  const T& (*get_default_instance)() = &T::default_instance;
-  (void)get_default_instance;
-
-  // Compile-time assert that T is a subclass of google::protobuf::Message.
-  const Message* unused = static_cast<T*>(nullptr);
-  (void)unused;
-
-#if PROTOBUF_RTTI
-  internal::StrongReferenceToType<T>();
-  return dynamic_cast<const T*>(from);
-#else
-  bool ok = from != nullptr &&
-            T::default_instance().GetReflection() == from->GetReflection();
-  return ok ? internal::DownCast<const T*>(from) : nullptr;
-#endif
-}
-
-template <typename T>
-T* DynamicCastToGenerated(Message* from) {
-  const Message* message_const = from;
-  return const_cast<T*>(DynamicCastToGenerated<T>(message_const));
-}
-
-// An overloaded version of DynamicCastToGenerated for downcasting references to
-// base Message class. If the destination type T if the argument is not an
-// instance of T and dynamic_cast returns nullptr, it terminates with an error.
-template <typename T>
-const T& DynamicCastToGenerated(const Message& from) {
-  const T* destination_message = DynamicCastToGenerated<T>(&from);
-  ABSL_CHECK(destination_message != nullptr)
-      << "Cannot downcast " << from.GetTypeName() << " to "
-      << T::default_instance().GetTypeName();
-  return *destination_message;
-}
-
-template <typename T>
-T& DynamicCastToGenerated(Message& from) {
-  const Message& message_const = from;
-  const T& destination_message = DynamicCastToGenerated<T>(message_const);
-  return const_cast<T&>(destination_message);
-}
-
-// A lightweight function for downcasting base Message pointer to derived type.
-// It should only be used when the caller is certain that the argument is of
-// instance T and T is a type derived from base Message class.
-template <typename T>
-const T* DownCastToGenerated(const Message* from) {
-  internal::StrongReferenceToType<T>();
-  ABSL_DCHECK(DynamicCastToGenerated<T>(from) == from)
-      << "Cannot downcast " << from->GetTypeName() << " to "
-      << T::default_instance().GetTypeName();
-
-  return static_cast<const T*>(from);
-}
-
-template <typename T>
-T* DownCastToGenerated(Message* from) {
-  const Message* message_const = from;
-  return const_cast<T*>(DownCastToGenerated<T>(message_const));
-}
-
-template <typename T>
-const T& DownCastToGenerated(const Message& from) {
-  return *DownCastToGenerated<T>(&from);
-}
-
-template <typename T>
-T& DownCastToGenerated(Message& from) {
-  const Message& message_const = from;
-  const T& destination_message = DownCastToGenerated<T>(message_const);
-  return const_cast<T&>(destination_message);
-}
-
 // Call this function to ensure that this message's reflection is linked into
 // the binary:
 //
@@ -1531,6 +1447,47 @@ T& DownCastToGenerated(Message& from) {
 template <typename T>
 void LinkMessageReflection() {
   internal::StrongReferenceToType<T>();
+}
+
+// Tries to downcast this message from MessageLite to Message.  Returns nullptr
+// if this class is not an instance of Message. eg if the message was defined
+// with optimized_for=LITE_RUNTIME. This works even if RTTI is disabled.
+inline const Message* DynamicCastToMessage(const MessageLite* lite) {
+  return lite == nullptr || internal::GetClassData(*lite)->is_lite
+             ? nullptr
+             : static_cast<const Message*>(lite);
+}
+inline Message* DynamicCastToMessage(MessageLite* lite) {
+  return const_cast<Message*>(
+      DynamicCastToMessage(static_cast<const MessageLite*>(lite)));
+}
+inline const Message& DynamicCastToMessage(const MessageLite& lite) {
+  auto* res = DynamicCastToMessage(&lite);
+  ABSL_CHECK(res != nullptr)
+      << "Cannot to `Message` type " << lite.GetTypeName();
+  return *res;
+}
+inline Message& DynamicCastToMessage(MessageLite& lite) {
+  return const_cast<Message&>(
+      DynamicCastToMessage(static_cast<const MessageLite&>(lite)));
+}
+
+// A lightweight function for downcasting a MessageLite to Message. It should
+// only be used when the caller is certain that the argument is a Message
+// object.
+inline const Message* DownCastToMessage(const MessageLite* lite) {
+  ABSL_CHECK(lite == nullptr || DynamicCastToMessage(lite) != nullptr);
+  return static_cast<const Message*>(lite);
+}
+inline Message* DownCastToMessage(MessageLite* lite) {
+  return const_cast<Message*>(
+      DownCastToMessage(static_cast<const MessageLite*>(lite)));
+}
+inline const Message& DownCastToMessage(const MessageLite& lite) {
+  return *DownCastToMessage(&lite);
+}
+inline Message& DownCastToMessage(MessageLite& lite) {
+  return *DownCastToMessage(&lite);
 }
 
 // =============================================================================

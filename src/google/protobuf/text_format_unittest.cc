@@ -93,7 +93,20 @@ constexpr absl::string_view kEscapeTestStringEscaped =
 
 constexpr absl::string_view value_replacement = "\\[REDACTED\\]";
 
-class TextFormatTest : public testing::Test {
+class TextFormatTestBase : public testing::Test {
+ public:
+  void SetUp() override {
+    single_line_debug_format_prefix_ = "";
+    multi_line_debug_format_prefix_ = proto_.DebugString();
+  }
+
+ protected:
+  unittest::TestAllTypes proto_;
+  std::string single_line_debug_format_prefix_;
+  std::string multi_line_debug_format_prefix_;
+};
+
+class TextFormatTest : public TextFormatTestBase {
  public:
   static void SetUpTestSuite() {
     ABSL_CHECK_OK(File::GetContents(
@@ -108,8 +121,6 @@ class TextFormatTest : public testing::Test {
  protected:
   // Text format read from text_format_unittest_data.txt.
   const std::string proto_text_format_;
-  unittest::TestAllTypes proto_;
-
  private:
   static std::string static_proto_text_format_;
 };
@@ -157,8 +168,8 @@ TEST_F(TextFormatTest, ShortDebugString) {
   proto_.mutable_optional_foreign_message();
 
   EXPECT_EQ(proto_.ShortDebugString(),
-            absl::StrCat("optional_int32: ", kDebugStringSilentMarker,
-                         "1 "
+            absl::StrCat(single_line_debug_format_prefix_,
+                         "optional_int32: 1 "
                          "optional_string: \"hello\" "
                          "optional_nested_message { bb: 2 } "
                          "optional_foreign_message { }"));
@@ -337,8 +348,8 @@ TEST_F(TextFormatTest, StringEscape) {
 
   // Hardcode a correct value to test against.
   std::string correct_string =
-      absl::StrCat("optional_string: ", kDebugStringSilentMarker,
-                   kEscapeTestStringEscaped, "\n");
+      absl::StrCat(multi_line_debug_format_prefix_,
+                   "optional_string: ", kEscapeTestStringEscaped, "\n");
 
   // Compare.
   EXPECT_EQ(correct_string, debug_string);
@@ -346,8 +357,9 @@ TEST_F(TextFormatTest, StringEscape) {
   // the protocol buffer contains no UTF-8 text.
   EXPECT_EQ(correct_string, utf8_debug_string);
 
-  std::string expected_short_debug_string = absl::StrCat(
-      "optional_string: ", kDebugStringSilentMarker, kEscapeTestStringEscaped);
+  std::string expected_short_debug_string =
+      absl::StrCat(single_line_debug_format_prefix_,
+                   "optional_string: ", kEscapeTestStringEscaped);
   EXPECT_EQ(expected_short_debug_string, proto_.ShortDebugString());
 }
 
@@ -362,12 +374,12 @@ TEST_F(TextFormatTest, Utf8DebugString) {
 
   // Hardcode a correct value to test against.
   std::string correct_utf8_string =
-      absl::StrCat("optional_string: ", kDebugStringSilentMarker,
-                   "\"\350\260\267\346\255\214\"\n"
+      absl::StrCat(multi_line_debug_format_prefix_,
+                   "optional_string: \"\350\260\267\346\255\214\"\n"
                    "optional_bytes: \"\\350\\260\\267\\346\\255\\214\"\n");
   std::string correct_string =
-      absl::StrCat("optional_string: ", kDebugStringSilentMarker,
-                   "\"\\350\\260\\267\\346\\255\\214\"\n"
+      absl::StrCat(multi_line_debug_format_prefix_,
+                   "optional_string: \"\\350\\260\\267\\346\\255\\214\"\n"
                    "optional_bytes: \"\\350\\260\\267\\346\\255\\214\"\n");
 
   // Compare.
@@ -404,8 +416,9 @@ TEST_F(TextFormatTest, PrintUnknownFields) {
   unknown_fields->AddVarint(8, 2);
   unknown_fields->AddVarint(8, 3);
 
-  EXPECT_EQ(absl::StrCat("5: ", kDebugStringSilentMarker,
-                         "1\n"
+  std::string message_text;
+  TextFormat::PrintToString(message, &message_text);
+  EXPECT_EQ(absl::StrCat("5: 1\n"
                          "5: 0x00000002\n"
                          "5: 0x0000000000000003\n"
                          "5: \"4\"\n"
@@ -415,7 +428,7 @@ TEST_F(TextFormatTest, PrintUnknownFields) {
                          "8: 1\n"
                          "8: 2\n"
                          "8: 3\n"),
-            message.DebugString());
+            message_text);
 
   EXPECT_THAT(absl::StrCat(message), testing::MatchesRegex(absl::Substitute(
                                          "5: UNKNOWN_VARINT $0\n"
@@ -1012,8 +1025,8 @@ TEST_F(TextFormatTest, PrintUnknownEnumFieldProto3) {
   proto.add_repeated_nested_enum(
       static_cast<proto3_unittest::TestAllTypes::NestedEnum>(-2147483648));
 
-  EXPECT_EQ(absl::StrCat("repeated_nested_enum: ", kDebugStringSilentMarker,
-                         "10\n"
+  EXPECT_EQ(absl::StrCat(multi_line_debug_format_prefix_,
+                         "repeated_nested_enum: 10\n"
                          "repeated_nested_enum: -10\n"
                          "repeated_nested_enum: 2147483647\n"
                          "repeated_nested_enum: -2147483648\n"),
@@ -1464,8 +1477,8 @@ TEST_F(TextFormatTest, PrintExotic) {
   //   have this problem, so we switched to that instead.
 
   EXPECT_EQ(
-      absl::StrCat("repeated_int64: ", kDebugStringSilentMarker,
-                   "-9223372036854775808\n"
+      absl::StrCat(multi_line_debug_format_prefix_,
+                   "repeated_int64: -9223372036854775808\n"
                    "repeated_uint64: 18446744073709551615\n"
                    "repeated_double: 123.456\n"
                    "repeated_double: 1.23e+21\n"
@@ -1524,8 +1537,8 @@ TEST_F(TextFormatTest, PrintFloatPrecision) {
   message.add_repeated_double(1.2345678987654e100);
   message.add_repeated_double(1.23456789876543e100);
 
-  EXPECT_EQ(absl::StrCat("repeated_float: ", kDebugStringSilentMarker,
-                         "1\n"
+  EXPECT_EQ(absl::StrCat(multi_line_debug_format_prefix_,
+                         "repeated_float: 1\n"
                          "repeated_float: 1.2\n"
                          "repeated_float: 1.23\n"
                          "repeated_float: 1.234\n"

@@ -2,6 +2,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//python/dist:python_downloads.bzl", "python_nuget_package", "python_source_archive")
+load("//python/dist:system_python.bzl", "system_python")
 
 PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.caliper:caliper:1.0-beta-3",
@@ -43,6 +44,8 @@ def protobuf_deps():
         _github_archive(
             name = "com_google_absl",
             repo = "https://github.com/abseil/abseil-cpp",
+            # TODO: use Layout::WithStaticSizes in SerialArenaChunk when we update
+            # abseil to new release.
             commit = "4a2c63365eff8823a5221db86ef490e828306f9d",  # Abseil LTS 20240116.0
             sha256 = "f49929d22751bf70dd61922fb1fd05eb7aec5e7a7f870beece79a6e28f0a06c1",
         )
@@ -100,6 +103,12 @@ def protobuf_deps():
             sha256 = "9d04041ac92a0985e344235f5d946f71ac543f1b1565f2cdbc9a2aaee8adf55b",
             strip_prefix = "rules_python-0.26.0",
             url = "https://github.com/bazelbuild/rules_python/releases/download/0.26.0/rules_python-0.26.0.tar.gz",
+        )
+
+    if not native.existing_rule("system_python"):
+        system_python(
+            name = "system_python",
+            minimum_python_version = "3.7",
         )
 
     if not native.existing_rule("rules_jvm_external"):

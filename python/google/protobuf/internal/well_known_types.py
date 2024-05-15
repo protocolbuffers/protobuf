@@ -497,9 +497,6 @@ class Struct(object):
   def __getitem__(self, key):
     return _GetStructValue(self.fields[key])
 
-  def __contains__(self, item):
-    return item in self.fields
-
   def __setitem__(self, key, value):
     _SetStructValue(self.fields[key], value)
 

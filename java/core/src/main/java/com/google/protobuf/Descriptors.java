@@ -94,7 +94,7 @@ public final class Descriptors {
         if (javaEditionDefaults == null) {
           try {
             ExtensionRegistry registry = ExtensionRegistry.newInstance();
-            registry.add(JavaFeaturesProto.java);
+            registry.add(JavaFeaturesProto.java_);
             setTestJavaEditionDefaults(
                 FeatureSetDefaults.parseFrom(
                     JavaEditionDefaults.PROTOBUF_INTERNAL_JAVA_EDITION_DEFAULTS.getBytes(
@@ -679,7 +679,7 @@ public final class Descriptors {
       if (getEdition() == Edition.EDITION_PROTO2) {
         if (proto.getOptions().getJavaStringCheckUtf8()) {
           features.setExtension(
-              JavaFeaturesProto.java,
+              JavaFeaturesProto.java_,
               JavaFeatures.newBuilder()
                   .setUtf8Validation(JavaFeatures.Utf8Validation.VERIFY)
                   .build());
@@ -1320,7 +1320,7 @@ public final class Descriptors {
         return true;
       }
       if (this.features
-          .getExtension(JavaFeaturesProto.java)
+          .getExtension(JavaFeaturesProto.java_)
           .getUtf8Validation()
           .equals(JavaFeatures.Utf8Validation.VERIFY)) {
         return true;
@@ -1577,7 +1577,7 @@ public final class Descriptors {
       }
 
       return getType() == Type.ENUM
-          && (this.features.getExtension(JavaFeaturesProto.java).getLegacyClosedEnum()
+          && (this.features.getExtension(JavaFeaturesProto.java_).getLegacyClosedEnum()
               || enumType.isClosed());
     }
 

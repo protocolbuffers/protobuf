@@ -620,6 +620,7 @@ DynamicMessageFactory::~DynamicMessageFactory() {
 }
 
 const Message* DynamicMessageFactory::GetPrototype(const Descriptor* type) {
+  ABSL_CHECK(type != nullptr);
   absl::MutexLock lock(&prototypes_mutex_);
   return GetPrototypeNoLock(type);
 }

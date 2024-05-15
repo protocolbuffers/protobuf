@@ -28,4 +28,6 @@ final class MapFieldSchemas {
       return null;
     }
   }
+
+  private MapFieldSchemas() {}
 }

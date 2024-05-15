@@ -10,6 +10,7 @@
 
 #include "google/protobuf/pyext/message.h"
 
+#include <Python.h>
 #include <structmember.h>  // A Python header file.
 
 #include <cstdint>
@@ -36,6 +37,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unknown_field_set.h"
@@ -84,6 +86,12 @@ class MessageReflectionFriend {
                           const FieldDescriptor* field) {
     return reflection->IsLazyField(field) ||
            reflection->IsLazyExtension(message, field);
+  }
+  static bool ContainsMapKey(const Reflection* reflection,
+                             const Message& message,
+                             const FieldDescriptor* field,
+                             const MapKey& map_key) {
+    return reflection->ContainsMapKey(message, field, map_key);
   }
 };
 
@@ -1293,11 +1301,16 @@ PyObject* HasField(CMessage* self, PyObject* arg) {
   char* field_name;
   Py_ssize_t size;
   field_name = const_cast<char*>(PyUnicode_AsUTF8AndSize(arg, &size));
+  Message* message = self->message;
+
   if (!field_name) {
+    PyErr_Format(PyExc_ValueError,
+                 "The field name passed to message %s"
+                 " is not a str.",
+                 message->GetDescriptor()->name().c_str());
     return nullptr;
   }
 
-  Message* message = self->message;
   bool is_in_oneof;
   const FieldDescriptor* field_descriptor = FindFieldWithOneofs(
       message, absl::string_view(field_name, size), &is_in_oneof);
@@ -2290,6 +2303,48 @@ PyObject* ToUnicode(CMessage* self) {
   return decoded;
 }
 
+PyObject* Contains(CMessage* self, PyObject* arg) {
+  Message* message = self->message;
+  const Descriptor* descriptor = message->GetDescriptor();
+  switch (descriptor->well_known_type()) {
+    case Descriptor::WELLKNOWNTYPE_STRUCT: {
+      // For WKT Struct, check if the key is in the fields.
+      const Reflection* reflection = message->GetReflection();
+      const FieldDescriptor* map_field = descriptor->FindFieldByName("fields");
+      const FieldDescriptor* key_field = map_field->message_type()->map_key();
+      PyObject* py_string = CheckString(arg, key_field);
+      if (!py_string) {
+        PyErr_SetString(PyExc_TypeError,
+                        "The key passed to Struct message must be a str.");
+        return nullptr;
+      }
+      char* value;
+      Py_ssize_t value_len;
+      if (PyBytes_AsStringAndSize(py_string, &value, &value_len) < 0) {
+        Py_DECREF(py_string);
+        Py_RETURN_FALSE;
+      }
+      std::string key_str;
+      key_str.assign(value, value_len);
+      Py_DECREF(py_string);
+
+      MapKey map_key;
+      map_key.SetStringValue(key_str);
+      return PyBool_FromLong(MessageReflectionFriend::ContainsMapKey(
+          reflection, *message, map_field, map_key));
+    }
+    case Descriptor::WELLKNOWNTYPE_LISTVALUE: {
+      // For WKT ListValue, check if the key is in the items.
+      PyObject* items = PyObject_CallMethod(reinterpret_cast<PyObject*>(self),
+                                            "items", nullptr);
+      return PyBool_FromLong(PySequence_Contains(items, arg));
+    }
+    default:
+      // For other messages, check with HasField.
+      return HasField(self, arg);
+  }
+}
+
 // CMessage static methods:
 PyObject* _CheckCalledFromGeneratedFile(PyObject* unused,
                                         PyObject* unused_arg) {
@@ -2338,6 +2393,8 @@ static PyMethodDef Methods[] = {
      "Makes a deep copy of the class."},
     {"__unicode__", (PyCFunction)ToUnicode, METH_NOARGS,
      "Outputs a unicode representation of the message."},
+    {"__contains__", (PyCFunction)Contains, METH_O,
+     "Checks if a message field is set."},
     {"ByteSize", (PyCFunction)ByteSize, METH_NOARGS,
      "Returns the size of the message in bytes."},
     {"Clear", (PyCFunction)Clear, METH_NOARGS, "Clears the message."},

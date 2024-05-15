@@ -10,13 +10,11 @@
 use crate::__internal::{Enum, Private};
 use crate::{
     Map, MapIter, MapMut, MapView, Mut, ProtoStr, Proxied, ProxiedInMapValue, ProxiedInRepeated,
-    Repeated, RepeatedMut, RepeatedView, SettableValue, View, ViewProxy,
+    Repeated, RepeatedMut, RepeatedView, View, ViewProxy,
 };
 use core::fmt::Debug;
 use std::alloc::Layout;
-use std::fmt;
 use std::mem::{size_of, ManuallyDrop, MaybeUninit};
-use std::ops::Deref;
 use std::ptr::{self, NonNull};
 use std::slice;
 use std::sync::OnceLock;
@@ -60,83 +58,7 @@ impl ScratchSpace {
     }
 }
 
-/// Serialized Protobuf wire format data.
-///
-/// It's typically produced by `<Message>::serialize()`.
-pub struct SerializedData {
-    data: NonNull<u8>,
-    len: usize,
-
-    // The arena that owns `data`.
-    _arena: Arena,
-}
-
-impl SerializedData {
-    /// Construct `SerializedData` from raw pointers and its owning arena.
-    ///
-    /// # Safety
-    /// - `arena` must be have allocated `data`
-    /// - `data` must be readable for `len` bytes and not mutate while this
-    ///   struct exists
-    pub unsafe fn from_raw_parts(arena: Arena, data: NonNull<u8>, len: usize) -> Self {
-        SerializedData { _arena: arena, data, len }
-    }
-
-    /// Gets a raw slice pointer.
-    pub fn as_ptr(&self) -> *const [u8] {
-        ptr::slice_from_raw_parts(self.data.as_ptr(), self.len)
-    }
-}
-
-impl Deref for SerializedData {
-    type Target = [u8];
-    fn deref(&self) -> &Self::Target {
-        // SAFETY: `data` is valid for `len` bytes as promised by
-        //         the caller of `SerializedData::from_raw_parts`.
-        unsafe { slice::from_raw_parts(self.data.as_ptr(), self.len) }
-    }
-}
-
-impl fmt::Debug for SerializedData {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Debug::fmt(self.deref(), f)
-    }
-}
-
-impl SettableValue<[u8]> for SerializedData {
-    fn set_on<'msg>(self, _private: Private, mut mutator: Mut<'msg, [u8]>)
-    where
-        [u8]: 'msg,
-    {
-        mutator.set(self.as_ref())
-    }
-}
-
-// TODO: Investigate replacing this with direct access to UPB bits.
-pub type MessagePresentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutatorData<'msg, T>;
-pub type MessageAbsentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutatorData<'msg, T>;
-pub type BytesPresentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
-pub type BytesAbsentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
-pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;
-pub type InnerPrimitiveMut<'msg, T> = crate::vtable::RawVTableMutator<'msg, T>;
-
-#[derive(Debug)]
-pub struct MessageVTable {
-    pub getter: unsafe extern "C" fn(msg: RawMessage) -> Option<RawMessage>,
-    pub mut_getter: unsafe extern "C" fn(msg: RawMessage, arena: RawArena) -> RawMessage,
-    pub clearer: unsafe extern "C" fn(msg: RawMessage),
-}
-
-impl MessageVTable {
-    pub const fn new(
-        _private: Private,
-        getter: unsafe extern "C" fn(msg: RawMessage) -> Option<RawMessage>,
-        mut_getter: unsafe extern "C" fn(msg: RawMessage, arena: RawArena) -> RawMessage,
-        clearer: unsafe extern "C" fn(msg: RawMessage),
-    ) -> Self {
-        MessageVTable { getter, mut_getter, clearer }
-    }
-}
+pub type SerializedData = upb::OwnedArenaBox<[u8]>;
 
 /// The raw contents of every generated message.
 #[derive(Debug)]
@@ -233,6 +155,14 @@ impl InnerRepeated {
     pub fn as_mut(&mut self) -> InnerRepeatedMut<'_> {
         InnerRepeatedMut::new(Private, self.raw, &self.arena)
     }
+
+    pub fn raw(&self) -> RawRepeatedField {
+        self.raw
+    }
+
+    pub fn arena(&self) -> &Arena {
+        &self.arena
+    }
 }
 
 /// The raw type-erased pointer version of `RepeatedMut`.
@@ -252,6 +182,7 @@ impl<'msg> InnerRepeatedMut<'msg> {
 macro_rules! impl_repeated_base {
     ($t:ty, $elem_t:ty, $ufield:ident, $upb_tag:expr) => {
         #[allow(dead_code)]
+        #[inline]
         fn repeated_new(_: Private) -> Repeated<$t> {
             let arena = Arena::new();
             Repeated::from_inner(InnerRepeated {
@@ -263,9 +194,11 @@ macro_rules! impl_repeated_base {
         unsafe fn repeated_free(_: Private, _f: &mut Repeated<$t>) {
             // No-op: the memory will be dropped by the arena.
         }
+        #[inline]
         fn repeated_len(f: View<Repeated<$t>>) -> usize {
             unsafe { upb_Array_Size(f.as_raw(Private)) }
         }
+        #[inline]
         fn repeated_push(mut f: Mut<Repeated<$t>>, v: View<$t>) {
             let arena = f.raw_arena(Private);
             unsafe {
@@ -276,16 +209,19 @@ macro_rules! impl_repeated_base {
                 ));
             }
         }
+        #[inline]
         fn repeated_clear(mut f: Mut<Repeated<$t>>) {
             unsafe {
                 upb_Array_Resize(f.as_raw(Private), 0, f.raw_arena(Private));
             }
         }
+        #[inline]
         unsafe fn repeated_get_unchecked(f: View<Repeated<$t>>, i: usize) -> View<$t> {
             unsafe {
                 <$t as UpbTypeConversions>::from_message_value(upb_Array_Get(f.as_raw(Private), i))
             }
         }
+        #[inline]
         unsafe fn repeated_set_unchecked(mut f: Mut<Repeated<$t>>, i: usize, v: View<$t>) {
             let arena = f.raw_arena(Private);
             unsafe {
@@ -294,6 +230,17 @@ macro_rules! impl_repeated_base {
                     i,
                     <$t as UpbTypeConversions>::to_message_value_copy_if_required(arena, v.into()),
                 )
+            }
+        }
+        #[inline]
+        fn repeated_reserve(mut f: Mut<Repeated<$t>>, additional: usize) {
+            // SAFETY:
+            // - `upb_Array_Reserve` is unsafe but assumed to be sound when called on a
+            //   valid array.
+            unsafe {
+                let arena = f.raw_arena(Private);
+                let size = upb_Array_Size(f.as_raw(Private));
+                assert!(upb_Array_Reserve(f.as_raw(Private), size + additional, arena));
             }
         }
     };
@@ -332,6 +279,7 @@ macro_rules! impl_repeated_bytes {
             unsafe impl ProxiedInRepeated for $t {
                 impl_repeated_base!($t, PtrAndLen, str_val, $upb_tag);
 
+                #[inline]
                 fn repeated_copy_from(src: View<Repeated<$t>>, mut dest: Mut<Repeated<$t>>) {
                     let len = src.len();
                     // SAFETY:
@@ -441,6 +389,17 @@ pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
         let InnerRepeatedMut { arena, raw, .. } = repeated.inner;
         RepeatedMut::from_inner(private, InnerRepeatedMut { arena, raw })
     }
+}
+
+/// Cast a `RepeatedMut<SomeEnum>` to `RepeatedMut<i32>` and call
+/// repeated_reserve.
+pub fn reserve_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
+    private: Private,
+    repeated: RepeatedMut<E>,
+    additional: usize,
+) {
+    let int_repeated = cast_enum_repeated_mut(private, repeated);
+    ProxiedInRepeated::repeated_reserve(int_repeated, additional);
 }
 
 /// Returns a static empty RepeatedView.
@@ -813,22 +772,6 @@ pub unsafe fn upb_Map_InsertAndReturnIfInserted(
 mod tests {
     use super::*;
     use googletest::prelude::*;
-
-    #[test]
-    fn test_serialized_data_roundtrip() {
-        let arena = Arena::new();
-        let original_data = b"Hello world";
-        let len = original_data.len();
-
-        let serialized_data = unsafe {
-            SerializedData::from_raw_parts(
-                arena,
-                NonNull::new(original_data as *const _ as *mut _).unwrap(),
-                len,
-            )
-        };
-        assert_that!(&*serialized_data, eq(b"Hello world"));
-    }
 
     #[test]
     fn assert_c_type_sizes() {

@@ -10,7 +10,7 @@
 use crate::__internal::{Enum, Private};
 use crate::{
     Map, MapIter, Mut, ProtoStr, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
-    RepeatedMut, RepeatedView, SettableValue, View,
+    RepeatedMut, RepeatedView, View,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -171,6 +171,13 @@ impl Deref for SerializedData {
     }
 }
 
+// TODO: remove after IntoProxied has been implemented for bytes.
+impl AsRef<[u8]> for SerializedData {
+    fn as_ref(&self) -> &[u8] {
+        self
+    }
+}
+
 impl Drop for SerializedData {
     fn drop(&mut self) {
         // SAFETY: `data` was allocated by the Rust global allocator with a
@@ -182,15 +189,6 @@ impl Drop for SerializedData {
 impl fmt::Debug for SerializedData {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Debug::fmt(self.deref(), f)
-    }
-}
-
-impl SettableValue<[u8]> for SerializedData {
-    fn set_on<'msg>(self, _private: Private, mut mutator: Mut<'msg, [u8]>)
-    where
-        [u8]: 'msg,
-    {
-        mutator.set(self.as_ref())
     }
 }
 
@@ -235,31 +233,7 @@ pub fn debug_string(_private: Private, msg: RawMessage, f: &mut fmt::Formatter<'
     write!(f, "{dbg_str}")
 }
 
-pub type MessagePresentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutatorData<'msg, T>;
-pub type MessageAbsentMutData<'msg, T> = crate::vtable::RawVTableOptionalMutatorData<'msg, T>;
-pub type BytesPresentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
-pub type BytesAbsentMutData<'msg> = crate::vtable::RawVTableOptionalMutatorData<'msg, [u8]>;
-pub type InnerBytesMut<'msg> = crate::vtable::RawVTableMutator<'msg, [u8]>;
-pub type InnerPrimitiveMut<'msg, T> = crate::vtable::RawVTableMutator<'msg, T>;
 pub type RawMapIter = UntypedMapIterator;
-
-#[derive(Debug)]
-pub struct MessageVTable {
-    pub getter: unsafe extern "C" fn(msg: RawMessage) -> RawMessage,
-    pub mut_getter: unsafe extern "C" fn(msg: RawMessage) -> RawMessage,
-    pub clearer: unsafe extern "C" fn(msg: RawMessage),
-}
-
-impl MessageVTable {
-    pub const fn new(
-        _private: Private,
-        getter: unsafe extern "C" fn(msg: RawMessage) -> RawMessage,
-        mut_getter: unsafe extern "C" fn(msg: RawMessage) -> RawMessage,
-        clearer: unsafe extern "C" fn(msg: RawMessage),
-    ) -> Self {
-        MessageVTable { getter, mut_getter, clearer }
-    }
-}
 
 /// The raw contents of every generated message.
 #[derive(Debug)]
@@ -326,6 +300,10 @@ pub struct InnerRepeated {
 impl InnerRepeated {
     pub fn as_mut(&mut self) -> InnerRepeatedMut<'_> {
         InnerRepeatedMut::new(Private, self.raw)
+    }
+
+    pub fn raw(&self) -> RawRepeatedField {
+        self.raw
     }
 }
 
@@ -396,7 +374,8 @@ macro_rules! impl_repeated_primitives {
         $get_thunk:ident,
         $set_thunk:ident,
         $clear_thunk:ident,
-        $copy_from_thunk:ident $(,)?
+        $copy_from_thunk:ident,
+        $reserve_thunk:ident $(,)?
     ]),* $(,)?) => {
         $(
             extern "C" {
@@ -413,37 +392,52 @@ macro_rules! impl_repeated_primitives {
                     v: <$t as CppTypeConversions>::ElemType);
                 fn $clear_thunk(f: RawRepeatedField);
                 fn $copy_from_thunk(src: RawRepeatedField, dst: RawRepeatedField);
+                fn $reserve_thunk(
+                    f: RawRepeatedField,
+                    additional: usize);
             }
 
             unsafe impl ProxiedInRepeated for $t {
                 #[allow(dead_code)]
+                #[inline]
                 fn repeated_new(_: Private) -> Repeated<$t> {
                     Repeated::from_inner(InnerRepeated {
                         raw: unsafe { $new_thunk() }
                     })
                 }
                 #[allow(dead_code)]
+                #[inline]
                 unsafe fn repeated_free(_: Private, f: &mut Repeated<$t>) {
                     unsafe { $free_thunk(f.as_mut().as_raw(Private)) }
                 }
+                #[inline]
                 fn repeated_len(f: View<Repeated<$t>>) -> usize {
                     unsafe { $size_thunk(f.as_raw(Private)) }
                 }
+                #[inline]
                 fn repeated_push(mut f: Mut<Repeated<$t>>, v: View<$t>) {
                     unsafe { $add_thunk(f.as_raw(Private), v.into()) }
                 }
+                #[inline]
                 fn repeated_clear(mut f: Mut<Repeated<$t>>) {
                     unsafe { $clear_thunk(f.as_raw(Private)) }
                 }
+                #[inline]
                 unsafe fn repeated_get_unchecked(f: View<Repeated<$t>>, i: usize) -> View<$t> {
                     <$t as CppTypeConversions>::elem_to_view(
                         unsafe { $get_thunk(f.as_raw(Private), i) })
                 }
+                #[inline]
                 unsafe fn repeated_set_unchecked(mut f: Mut<Repeated<$t>>, i: usize, v: View<$t>) {
                     unsafe { $set_thunk(f.as_raw(Private), i, v.into()) }
                 }
+                #[inline]
                 fn repeated_copy_from(src: View<Repeated<$t>>, mut dest: Mut<Repeated<$t>>) {
                     unsafe { $copy_from_thunk(src.as_raw(Private), dest.as_raw(Private)) }
+                }
+                #[inline]
+                fn repeated_reserve(mut f: Mut<Repeated<$t>>, additional: usize) {
+                    unsafe { $reserve_thunk(f.as_raw(Private), additional) }
                 }
             }
         )*
@@ -460,6 +454,7 @@ macro_rules! impl_repeated_primitives {
                     [< __pb_rust_RepeatedField_ $t _set >],
                     [< __pb_rust_RepeatedField_ $t _clear >],
                     [< __pb_rust_RepeatedField_ $t _copy_from >],
+                    [< __pb_rust_RepeatedField_ $t _reserve >],
                 ],
             )*);
         }
@@ -494,6 +489,17 @@ pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
             InnerRepeatedMut { raw: repeated.as_raw(Private), _phantom: PhantomData },
         )
     }
+}
+
+/// Cast a `RepeatedMut<SomeEnum>` to `RepeatedMut<c_int>` and call
+/// repeated_reserve.
+pub fn reserve_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
+    private: Private,
+    repeated: RepeatedMut<E>,
+    additional: usize,
+) {
+    let int_repeated = cast_enum_repeated_mut(private, repeated);
+    ProxiedInRepeated::repeated_reserve(int_repeated, additional);
 }
 
 #[derive(Debug)]

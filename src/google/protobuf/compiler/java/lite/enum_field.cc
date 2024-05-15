@@ -17,11 +17,11 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_join.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/internal_helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
@@ -308,10 +308,10 @@ void ImmutableEnumFieldLiteGenerator::GenerateKotlinDslMembers(
   printer->Print(variables_,
                  "$kt_deprecation$public var $kt_name$: $kt_type$\n"
                  "  @JvmName(\"${$get$kt_capitalized_name$$}$\")\n"
-                 "  get() = $kt_dsl_builder$.${$get$capitalized_name$$}$()\n"
+                 "  get() = $kt_dsl_builder$.${$$kt_safe_name$$}$\n"
                  "  @JvmName(\"${$set$kt_capitalized_name$$}$\")\n"
                  "  set(value) {\n"
-                 "    $kt_dsl_builder$.${$set$capitalized_name$$}$(value)\n"
+                 "    $kt_dsl_builder$.${$$kt_safe_name$$}$ = value\n"
                  "  }\n");
 
   if (SupportUnknownEnumValue(descriptor_)) {
@@ -319,10 +319,10 @@ void ImmutableEnumFieldLiteGenerator::GenerateKotlinDslMembers(
         variables_,
         "$kt_deprecation$public var $kt_name$Value: kotlin.Int\n"
         "  @JvmName(\"${$get$kt_capitalized_name$Value$}$\")\n"
-        "  get() = $kt_dsl_builder$.${$get$capitalized_name$Value$}$()\n"
+        "  get() = $kt_dsl_builder$.${$$kt_property_name$Value$}$\n"
         "  @JvmName(\"${$set$kt_capitalized_name$Value$}$\")\n"
         "  set(value) {\n"
-        "    $kt_dsl_builder$.${$set$capitalized_name$Value$}$(value)\n"
+        "    $kt_dsl_builder$.${$$kt_property_name$Value$}$ = value\n"
         "  }\n");
   }
 
@@ -597,12 +597,12 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
       variables_,
       "private com.google.protobuf.Internal.IntList $name$_;\n"
       "private static final "
-      "com.google.protobuf.Internal.ListAdapter.Converter<\n"
-      "    java.lang.Integer, $type$> $name$_converter_ =\n"
-      "        new com.google.protobuf.Internal.ListAdapter.Converter<\n"
-      "            java.lang.Integer, $type$>() {\n"
+      "com.google.protobuf.Internal.IntListAdapter.IntConverter<\n"
+      "    $type$> $name$_converter_ =\n"
+      "        new com.google.protobuf.Internal.IntListAdapter.IntConverter<\n"
+      "            $type$>() {\n"
       "          @java.lang.Override\n"
-      "          public $type$ convert(java.lang.Integer from) {\n"
+      "          public $type$ convert(int from) {\n"
       "            $type$ result = $type$.forNumber(from);\n"
       "            return result == null ? $unknown$ : result;\n"
       "          }\n"
@@ -610,14 +610,13 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
   PrintExtraFieldInfo(variables_, printer);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER,
                                context_->options());
-  printer->Print(
-      variables_,
-      "@java.lang.Override\n"
-      "$deprecation$public java.util.List<$type$> "
-      "${$get$capitalized_name$List$}$() {\n"
-      "  return new com.google.protobuf.Internal.ListAdapter<\n"
-      "      java.lang.Integer, $type$>($name$_, $name$_converter_);\n"
-      "}\n");
+  printer->Print(variables_,
+                 "@java.lang.Override\n"
+                 "$deprecation$public java.util.List<$type$> "
+                 "${$get$capitalized_name$List$}$() {\n"
+                 "  return new com.google.protobuf.Internal.IntListAdapter<\n"
+                 "      $type$>($name$_, $name$_converter_);\n"
+                 "}\n");
   printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT,
                                context_->options());
@@ -914,7 +913,7 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateKotlinDslMembers(
                  "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
                  "  @kotlin.jvm.JvmSynthetic\n"
                  "  get() = com.google.protobuf.kotlin.DslList(\n"
-                 "    $kt_dsl_builder$.${$get$capitalized_name$List$}$()\n"
+                 "    $kt_dsl_builder$.${$$kt_property_name$List$}$\n"
                  "  )\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
