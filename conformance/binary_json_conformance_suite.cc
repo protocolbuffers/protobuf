@@ -1353,7 +1353,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownOrdering() {
   // Implementations must preserve the ordering of different unknown fields for
   // the same field number.  This is because some field types will accept
   // multiple wire types for the same field.  For example, repeated primitive
-  // fields will accept both length-delimited (packed) and
+  // fields will accept both length-prefixed (packed) and
   // varint/fixed32/fixed64 (unpacked) wire types, and reordering these could
   // reorder the elements of the repeated field.
   MessageType message;

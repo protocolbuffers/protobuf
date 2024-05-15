@@ -23,7 +23,7 @@
 //
 // CodedOutputStream example:
 //   // Write some data to "myfile".  First we write a 4-byte "magic number"
-//   // to identify the file type, then write a length-delimited string.  The
+//   // to identify the file type, then write a length-prefixed string.  The
 //   // string is composed of a varint giving the length followed by the raw
 //   // bytes.
 //   int fd = open("myfile", O_CREAT | O_WRONLY);
@@ -313,7 +313,7 @@ class PROTOBUF_EXPORT CodedInputStream {
   void SetConsumed() { legitimate_message_end_ = true; }
 
   // Limits ----------------------------------------------------------
-  // Limits are used when parsing length-delimited embedded messages.
+  // Limits are used when parsing length-prefixed embedded messages.
   // After the message's length is read, PushLimit() is used to prevent
   // the CodedInputStream from reading beyond that length.  Once the
   // embedded message has been parsed, PopLimit() is called to undo the

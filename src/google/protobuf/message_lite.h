@@ -490,9 +490,11 @@ class PROTOBUF_EXPORT MessageLite {
   uint8_t* SerializeWithCachedSizesToArray(uint8_t* target) const;
 
   // Returns the result of the last call to ByteSize().  An embedded message's
-  // size is needed both to serialize it (because embedded messages are
-  // length-delimited) and to compute the outer message's size.  Caching
+  // size is needed both to serialize it (only true for length-prefixed
+  // submessages) and to compute the outer message's size.  Caching
   // the size avoids computing it multiple times.
+  // Note that the submessage size is unnecessary when using
+  // group encoding / delimited since we have SGROUP/EGROUP bounds.
   //
   // ByteSize() does not automatically use the cached size when available
   // because this would require invalidating it every time the message was

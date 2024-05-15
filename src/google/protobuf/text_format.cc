@@ -2300,7 +2300,7 @@ bool TextFormat::Printer::Print(const Message& message,
   return !generator.failed();
 }
 
-// Maximum recursion depth for heuristically printing out length-delimited
+// Maximum recursion depth for heuristically printing out length-prefixed
 // unknown fields as messages.
 static constexpr int kUnknownFieldRecursionLimit = 10;
 
