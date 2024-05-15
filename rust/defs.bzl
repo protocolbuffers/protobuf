@@ -30,40 +30,60 @@ def rust_proto_library(name, deps, **args):
         **args: other args passed to the rust_<kernel>_proto_library targets.
     """
     if not name.endswith("_rust_proto"):
-        fail("Name of each rust_proto_library target should end with `_rust_proto`")
-
+        fail(
+            "{}: Name rust_proto_library target should end with `_rust_proto`, but was '{}'"
+                .format(name),
+        )
+    name = name.removesuffix("_rust_proto")
     alias_args = {}
     if "visibility" in args:
         alias_args["visibility"] = args.pop("visibility")
     native.alias(
-        name = name,
+        name = name + "_rust_proto",
         actual = select({
-            "//rust:use_upb_kernel": name + "_upb_kernel",
-            "//conditions:default": name + "_cpp_kernel",
+            "//rust:use_upb_kernel": name + "_upb_rust_proto",
+            "//conditions:default": name + "_cpp_rust_proto",
         }),
         **alias_args
     )
 
     rust_upb_proto_library(
-        name = name + "_upb_kernel",
+        name = name + "_upb_rust_proto",
         deps = deps,
         visibility = ["//visibility:private"],
         **args
     )
 
     rust_cc_proto_library(
-        name = name + "_cpp_kernel",
+        name = name + "_cpp_rust_proto",
         deps = deps,
         visibility = ["//visibility:private"],
         **args
     )
 
+def _user_visible_label(ctx):
+    label = str(ctx.label)
+    label = label.removesuffix("_cpp_rust_proto")
+    label = label.removesuffix("_upb_rust_proto")
+    return label + "_rust_proto"
+
 def _rust_proto_library_impl(ctx):
+    if not ctx.label.name.endswith("_rust_proto"):
+        fail(
+            "{}: Name of rust_proto_library target should end with `_rust_proto`."
+                .format(_user_visible_label(ctx)),
+        )
     deps = ctx.attr.deps
     if not deps:
-        fail("Exactly 1 dependency in `deps` attribute expected, none were provided.")
+        fail(
+            "{}: Exactly 1 dependency in `deps` attribute expected, none were provided."
+                .format(_user_visible_label(ctx)),
+        )
     if len(deps) > 1:
-        fail("Exactly 1 dependency in `deps` attribute expected, too many were provided.")
+        fail(
+            "{}: Exactly 1 dependency in `deps` attribute expected, too many were provided."
+                .format(_user_visible_label(ctx)),
+        )
 
     dep = deps[0]
     rust_proto_info = dep[RustProtoInfo]
