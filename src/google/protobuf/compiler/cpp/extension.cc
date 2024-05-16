@@ -209,7 +209,6 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
       if (using_implicit_weak_descriptors) {
         p->Emit({{"enum_name", ClassName(descriptor_->enum_type(), true)}},
                 R"cc(
-#if defined(PROTOBUF_INTERNAL_TEMPORARY_WEAK_EXTENSION_OPT_IN)
                   (::_pbi::ExtensionSet::ShouldRegisterAtThisTime(
                        {{&$extendee_table$, $extendee_index$}}, $preregister$)
                        ? ::_pbi::ExtensionSet::RegisterEnumExtension(
@@ -218,21 +217,14 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
                              $number$, $field_type$, $repeated$, $packed$,
                              $enum_name$_IsValid)
                        : (void)0),
-#else
                 )cc");
-      }
-      if (priority == kInitPriority102) {
+      } else if (priority == kInitPriority102) {
         p->Emit({{"enum_name", ClassName(descriptor_->enum_type(), true)}},
                 R"cc(
                   ::_pbi::ExtensionSet::RegisterEnumExtension(
                       &$extendee$::default_instance(), $number$, $field_type$,
                       $repeated$, $packed$, $enum_name$_IsValid),
                 )cc");
-      }
-      if (using_implicit_weak_descriptors) {
-        p->Emit(R"cc(
-#endif
-        )cc");
       }
 
       break;
@@ -261,7 +253,6 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
                 {"extension_index", find_index(descriptor_->message_type())},
             },
             R"cc(
-#if defined(PROTOBUF_INTERNAL_TEMPORARY_WEAK_EXTENSION_OPT_IN)
               (::_pbi::ExtensionSet::ShouldRegisterAtThisTime(
                    {{&$extendee_table$, $extendee_index$},
                     {&$extension_table$, $extension_index$}},
@@ -274,20 +265,13 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
                              &$extension_table$, $extension_index$, true),
                          $verify$, ::_pbi::LazyAnnotation::$lazy$)
                    : (void)0),
-#else
             )cc");
-      }
-      if (priority == kInitPriority102) {
+      } else if (priority == kInitPriority102) {
         p->Emit(R"cc(
           ::_pbi::ExtensionSet::RegisterMessageExtension(
               &$extendee$::default_instance(), $number$, $field_type$,
               $repeated$, $packed$, &$message_type$::default_instance(),
               $verify$, ::_pbi::LazyAnnotation::$lazy$),
-        )cc");
-      }
-      if (using_implicit_weak_descriptors) {
-        p->Emit(R"cc(
-#endif
         )cc");
       }
       break;
@@ -296,7 +280,6 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
     default:
       if (using_implicit_weak_descriptors) {
         p->Emit(R"cc(
-#if defined(PROTOBUF_INTERNAL_TEMPORARY_WEAK_EXTENSION_OPT_IN)
           (::_pbi::ExtensionSet::ShouldRegisterAtThisTime(
                {{&$extendee_table$, $extendee_index$}}, $preregister$)
                ? ::_pbi::ExtensionSet::RegisterExtension(
@@ -305,21 +288,14 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
                                                            true),
                      $number$, $field_type$, $repeated$, $packed$)
                : (void)0),
-#else
         )cc");
-      }
-      if (priority == kInitPriority102) {
+      } else if (priority == kInitPriority102) {
         p->Emit(
             R"cc(
               ::_pbi::ExtensionSet::RegisterExtension(
                   &$extendee$::default_instance(), $number$, $field_type$,
                   $repeated$, $packed$),
             )cc");
-      }
-      if (using_implicit_weak_descriptors) {
-        p->Emit(R"cc(
-#endif
-        )cc");
       }
 
       break;
