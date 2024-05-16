@@ -1110,19 +1110,6 @@ void RestoreFeaturesToOptions(const FeatureSet* features, ProtoT* proto) {
   }
 }
 
-template <typename OptionsT>
-bool HasFeatures(const OptionsT& options) {
-  if (options.has_features()) return true;
-
-  for (const auto& opt : options.uninterpreted_option()) {
-    if (opt.name_size() > 0 && opt.name(0).name_part() == "features" &&
-        !opt.name(0).is_extension()) {
-      return true;
-    }
-  }
-  return false;
-}
-
 template <typename DescriptorT>
 absl::string_view GetFullName(const DescriptorT& desc) {
   return desc.full_name();
@@ -8783,6 +8770,19 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
     } else {
       // accumulate field numbers to form path to interpreted option
       dest_path.push_back(field->number());
+
+      // Special handling to prevent feature use in the same file as the
+      // definition.
+      // TODO Add proper support for cases where this can work.
+      if (field->file() == builder_->file_ &&
+          uninterpreted_option_->name(0).name_part() == "features" &&
+          !uninterpreted_option_->name(0).is_extension()) {
+        return AddNameError([&] {
+          return absl::StrCat(
+              "Feature \"", debug_msg_name,
+              "\" can't be used in the same file it's defined in.");
+        });
+      }
 
       if (i < uninterpreted_option_->name_size() - 1) {
         if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {

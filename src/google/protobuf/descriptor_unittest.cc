@@ -4059,8 +4059,8 @@ class ValidationErrorTest : public testing::Test {
     return ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
   }
 
-  const FileDescriptor* ParseAndBuildFile(absl::string_view file_name,
-                                          absl::string_view file_text) {
+  FileDescriptorProto ParseFile(absl::string_view file_name,
+                                absl::string_view file_text) {
     io::ArrayInputStream input_stream(file_text.data(), file_text.size());
     SimpleErrorCollector error_collector;
     io::Tokenizer tokenizer(&input_stream, &error_collector);
@@ -4072,7 +4072,12 @@ class ValidationErrorTest : public testing::Test {
         << file_text;
     ABSL_CHECK_EQ("", error_collector.last_error());
     proto.set_name(file_name);
-    return pool_.BuildFile(proto);
+    return proto;
+  }
+
+  const FileDescriptor* ParseAndBuildFile(absl::string_view file_name,
+                                          absl::string_view file_text) {
+    return pool_.BuildFile(ParseFile(file_name, file_text));
   }
 
 
@@ -4094,6 +4099,17 @@ class ValidationErrorTest : public testing::Test {
     FileDescriptorProto file_proto;
     ASSERT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
     BuildFileWithErrors(file_proto, expected_errors);
+  }
+
+  // Parse a proto file and build it.  Expect errors to be produced which match
+  // the given error text.
+  void ParseAndBuildFileWithErrors(absl::string_view file_name,
+                                   absl::string_view file_text,
+                                   absl::string_view expected_errors) {
+    MockErrorCollector error_collector;
+    EXPECT_TRUE(pool_.BuildFileCollectingErrors(ParseFile(file_name, file_text),
+                                                &error_collector) == nullptr);
+    EXPECT_EQ(expected_errors, error_collector.text_);
   }
 
   // Parse file_text as a FileDescriptorProto in text format and add it
@@ -10352,6 +10368,44 @@ TEST_F(FeaturesTest, InvalidOpenEnumNonZeroFirstValue) {
       )pb",
       "foo.proto: Enum: NUMBER: The first enum value must be zero for open "
       "enums.\n");
+}
+
+TEST_F(FeaturesTest, InvalidUseFeaturesInSameFile) {
+  BuildDescriptorMessagesInTestPool();
+  ParseAndBuildFileWithErrors("foo.proto", R"schema(
+    edition = "2023";
+
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    message Foo {
+      string bar = 1 [
+        features.(test.custom).foo = "xyz",
+        features.(test.another) = {foo: -321}
+      ];
+    }
+
+    message Custom {
+      string foo = 1 [features = { [test.custom]: {foo: "abc"} }];
+    }
+    message Another {
+      Enum foo = 1;
+    }
+
+    enum Enum {
+      option features.enum_type = CLOSED;
+      ZERO = 0;
+      ONE = 1;
+    }
+
+    extend google.protobuf.FeatureSet {
+      Custom custom = 1002 [features.message_encoding=DELIMITED];
+      Another another = 1001;
+    }
+  )schema",
+                              "foo.proto: test.Foo.bar: OPTION_NAME: Feature "
+                              "\"features.(test.custom)\" can't be used in the "
+                              "same file it's defined in.\n");
 }
 
 TEST_F(FeaturesTest, ClosedEnumNonZeroFirstValue) {
