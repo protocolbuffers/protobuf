@@ -447,12 +447,14 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
             case FieldOptions::CORD:
               if (schema_.InRealOneof(field)) {
                 total_size += GetField<absl::Cord*>(message, field)
-                                  ->EstimatedMemoryUsage();
+                                  ->EstimatedMemoryUsage(
+                                      absl::CordMemoryAccounting::kFairShare);
 
               } else {
                 // sizeof(absl::Cord) is included to self.
                 total_size += GetField<absl::Cord>(message, field)
-                                  .EstimatedMemoryUsage() -
+                                  .EstimatedMemoryUsage(
+                                      absl::CordMemoryAccounting::kFairShare) -
                               sizeof(absl::Cord);
               }
               break;

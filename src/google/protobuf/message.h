@@ -302,6 +302,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Computes (an estimate of) the total number of bytes currently used for
   // storing the message in memory.
   //
+  // For Cord-backed fields, this method will estimate the memory used with the
+  // absl::CordMemoryAccounting::kFairShare method.
+  //
   // SpaceUsed() is noticeably slower than ByteSize(), as it is implemented
   // using reflection (rather than the generated code implementation for
   // ByteSize()). Like ByteSize(), its CPU time is linear in the number of
