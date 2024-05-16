@@ -10,109 +10,72 @@
 #endregion
 
 using System;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Security;
 using Google.Protobuf.Collections;
 
-namespace Google.Protobuf
+namespace Google.Protobuf;
+
+/// <summary>
+/// An unsafe class that provides a set of methods to access the underlying data representations of
+/// collections.
+/// </summary>
+[SecuritySafeCritical]
+public static class UnsafeCollectionOperations
 {
     /// <summary>
-    /// Provides unsafe operations for working with <see cref="RepeatedField{T}"/> instances. These
-    /// methods are referred to as "unsafe" due to the fact that they potentially expose the backing
-    /// buffer of a <see cref="RepeatedField{T}"/> to the application.
-    /// </summary>
-    /// <remarks>
     /// <para>
-    /// The methods in this class should only be called if it is guaranteed that the
-    /// <see cref="RepeatedField{T}"/> will not be modified while the returned <see cref="Span{T}"/>
-    /// is in use. Modifying a <see cref="RepeatedField{T}"/> while a <see cref="Span{T}"/> is in
-    /// use can lead to unexpected and undesirable consequences in your application, and will likely
-    /// be difficult to debug. Proceed with caution!
-    /// </para>
-    /// <para>
-    /// Modifying a <see cref="RepeatedField{T}"/> while a <see cref="Span{T}"/> is in use can have
-    /// a number of significant side effects:
-    /// </para>
-    /// <list type="bullet">
-    /// <item>
-    /// <description>
-    /// The <see cref="Span{T}"/> may or may not reflect the changes made to the
+    /// Returns a <see cref="Span{T}"/> that wraps the current backing array of the given
     /// <see cref="RepeatedField{T}"/>.
-    /// </description>
-    /// </item>
-    /// <item>
-    /// <description>
-    /// If the backing array of the <see cref="RepeatedField{T}"/> is reallocated, further updates
-    /// to the <see cref="Span{T}"/> will not be visible.
-    /// </description>
-    /// </item>
-    /// <item>
-    /// <description>
-    /// The state of the <see cref="Span{T}"/> is undefined after any modifications to the <see
-    /// cref="RepeatedField{T}"/>.
-    /// </description>
-    /// </item>
-    /// </list>
-    /// </remarks>
-    [SecuritySafeCritical]
-    public static class UnsafeCollectionOperations
+    /// </para>
+    /// <para>
+    /// Values in the <see cref="Span{T}"/> should not be set to null. Use
+    /// <see cref="RepeatedField{T}.Remove(T)"/> or <see cref="RepeatedField{T}.RemoveAt(int)"/> to
+    /// remove items instead.
+    /// </para>
+    /// <para>
+    /// The returned <see cref="Span{T}"/> is only valid until the <see cref="RepeatedField{T}"/> is
+    /// modified, after which its state becomes undefined.
+    /// </para>
+    /// </summary>
+    /// <typeparam name="T">
+    /// The type of elements in the <see cref="RepeatedField{T}"/>.
+    /// </typeparam>
+    /// <param name="field">The <see cref="RepeatedField{T}"/> to wrap.</param>
+    /// <returns>
+    /// A <see cref="Span{T}"/> that wraps the current backing array of the
+    /// <see cref="RepeatedField{T}"/>.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown if <paramref name="field"/> is <see langword="null"/>.
+    /// </exception>
+    public static Span<T> AsSpan<T>(RepeatedField<T> field)
     {
-        /// <summary>
-        /// Returns a <see cref="Span{T}"/> that wraps the backing array of the specified
-        /// <see cref="RepeatedField{T}"/>. The returned <see cref="Span{T}"/> should not be used
-        /// after any modifications are made to the <see cref="RepeatedField{T}"/>.
-        /// </summary>
-        /// <typeparam name="T">
-        /// The element type of the <see cref="RepeatedField{T}"/>.
-        /// </typeparam>
-        /// <param name="field">
-        /// The <see cref="RepeatedField{T}"/> to wrap.
-        /// </param>
-        /// <exception cref="ArgumentNullException">
-        /// <paramref name="field"/> is <see langword="null"/>.
-        /// </exception>
-        /// <returns>
-        /// A <see cref="Span{T}"/> that wraps the backing array of the
-        /// <see cref="RepeatedField{T}"/>.
-        /// </returns>
-        public static Span<T> AsSpan<T>(RepeatedField<T> field)
-        {
-            if (field is null)
-            {
-                throw new ArgumentNullException(nameof(field));
-            }
+        ProtoPreconditions.CheckNotNull(field, nameof(field));
 
-            return field.AsSpan();
-        }
+        return field.AsSpan();
+    }
 
-        /// <summary>
-        /// Sets the count of the <see cref="RepeatedField{T}"/> to the specified value.
-        /// This method should only be called if the subsequent code guarantees to populate
-        /// the field with the specified number of items.
-        /// </summary>
-        /// <param name="field">The field to set the count of.</param>
-        /// <param name="count">The value to set the field's count to.</param>
-        /// <typeparam name="T">The type of the elements in the field.</typeparam>
-        /// <exception cref="ArgumentNullException">
-        /// <paramref name="field"/> is <see langword="null"/>.
-        /// </exception>
-        /// <exception cref="ArgumentOutOfRangeException">
-        /// <paramref name="count"/> is negative.
-        /// </exception>
-        public static void SetCount<T>(RepeatedField<T> field, int count)
-        {
-            if (field is null)
-            {
-                throw new ArgumentNullException(nameof(field));
-            }
+    /// <summary>
+    /// <para>
+    /// Sets the count of the specified <see cref="RepeatedField{T}"/> to the given value.
+    /// </para>
+    /// <para>
+    /// This method should only be called if the subsequent code guarantees to populate
+    /// the field with the specified number of items.
+    /// </para>
+    /// </summary>
+    /// <typeparam name="T">
+    /// The type of elements in the <see cref="RepeatedField{T}"/>.
+    /// </typeparam>
+    /// <param name="field">The field to set the count of.</param>
+    /// <param name="count">The value to set the field's count to.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown if <paramref name="field"/> is <see langword="null"/>.
+    /// </exception>
+    public static void SetCount<T>(RepeatedField<T> field, int count)
+    {
+        ProtoPreconditions.CheckNotNull(field, nameof(field));
 
-            if (count < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(count), count, "Non-negative number required.");
-            }
-
-            field.SetCount(count);
-        }
+        field.SetCount(count);
     }
 }

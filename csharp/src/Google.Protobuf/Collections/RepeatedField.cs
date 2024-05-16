@@ -618,6 +618,14 @@ namespace Google.Protobuf.Collections
 
         internal void SetCount(int targetCount)
         {
+            if (targetCount < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(targetCount),
+                    targetCount,
+                    "Non-negative number required.");
+            }
+
             if (targetCount > Capacity)
             {
                 EnsureSize(targetCount);
