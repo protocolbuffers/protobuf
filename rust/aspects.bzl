@@ -33,8 +33,7 @@ RustProtoInfo = provider(
     },
 )
 
-def label_to_crate_name(label):
-    # TODO: Use the import! macro once available
+def label_to_crate_name(ctx, label, toolchain):
     return str(label).rsplit(":", 1)[1].replace("-", "_")
 
 def proto_rust_toolchain_label(is_upb):
@@ -218,7 +217,7 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
     toolchain = ctx.toolchains["@rules_rust//rust:toolchain_type"]
     output_hash = repr(hash(src.path))
 
-    crate_name = label_to_crate_name(ctx.label)
+    crate_name = label_to_crate_name(ctx, ctx.label, toolchain)
 
     lib_name = "{prefix}{name}-{lib_hash}{extension}".format(
         prefix = "lib",
@@ -291,6 +290,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
 
     proto_lang_toolchain = ctx.attr._proto_lang_toolchain[proto_common.ProtoLangToolchainInfo]
     cc_toolchain = find_cpp_toolchain(ctx)
+    toolchain = ctx.toolchains["@rules_rust//rust:toolchain_type"]
 
     feature_configuration = cc_common.configure_features(
         ctx = ctx,
@@ -359,7 +359,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         dep_variant_info = dep_variant_info,
         crate_mapping = depset(
             direct = [CrateMappingInfo(
-                crate_name = label_to_crate_name(target.label),
+                crate_name = label_to_crate_name(ctx, target.label, toolchain),
                 import_paths = tuple([get_import_path(f) for f in proto_srcs]),
             )],
             transitive = transitive_crate_mappings,

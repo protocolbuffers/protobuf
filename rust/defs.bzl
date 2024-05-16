@@ -102,8 +102,11 @@ def _rust_proto_library_impl(ctx):
     #
     # Since Starlark providers are frozen once they leave the _impl function that defines them,
     # we have to create a shallow copy.
+    toolchain = ctx.toolchains["@rules_rust//rust:toolchain_type"]
     fields = {field: getattr(crate_info, field) for field in dir(crate_info)}
-    fields["name"] = label_to_crate_name(_user_visible_label(ctx))
+    pkg, name = _user_visible_label(ctx).rsplit(":")
+    label = struct(**{"name": name, "pkg": pkg})
+    fields["name"] = label_to_crate_name(ctx, label, toolchain)
     crate_info_with_rust_proto_name = rust_common.crate_info(**fields)
 
     return [
@@ -126,6 +129,9 @@ def _make_rust_proto_library(is_upb):
                 default = Label(proto_rust_toolchain_label(is_upb)),
             ),
         },
+        toolchains = [
+            "@rules_rust//rust:toolchain_type",
+        ],
     )
 
 rust_upb_proto_library = _make_rust_proto_library(is_upb = True)
