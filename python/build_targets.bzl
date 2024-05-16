@@ -421,6 +421,11 @@ def build_targets(name):
         srcs = ["google/protobuf/internal/proto_test.py"],
     )
 
+    internal_py_test(
+        name = "proto_json_test",
+        srcs = ["google/protobuf/internal/proto_json_test.py"],
+    )
+
     native.cc_library(
         name = "proto_api",
         hdrs = ["google/protobuf/proto_api.h"],
