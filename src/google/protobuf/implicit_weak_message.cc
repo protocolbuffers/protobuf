@@ -7,6 +7,8 @@
 
 #include "google/protobuf/implicit_weak_message.h"
 
+#include <string>
+
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
@@ -23,6 +25,15 @@ namespace internal {
 const char* ImplicitWeakMessage::ParseImpl(ImplicitWeakMessage* msg,
                                            const char* ptr, ParseContext* ctx) {
   return ctx->AppendString(ptr, msg->data_);
+}
+
+void ImplicitWeakMessage::MergeImpl(MessageLite& self,
+                                    const MessageLite& other) {
+  const std::string* other_data =
+      static_cast<const ImplicitWeakMessage&>(other).data_;
+  if (other_data != nullptr) {
+    static_cast<ImplicitWeakMessage&>(self).data_->append(*other_data);
+  }
 }
 
 struct ImplicitWeakMessageDefaultType {
@@ -55,6 +66,7 @@ const MessageLite::ClassData* ImplicitWeakMessage::GetClassData() const {
           &table.header,
           nullptr,  // on_demand_register_arena_dtor
           nullptr,  // is_initialized (always true)
+          MergeImpl,
           PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
           true,
       },
