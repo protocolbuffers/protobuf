@@ -1,4 +1,4 @@
-use debug_proto::DebugMsg;
+use debug_rust_proto::DebugMsg;
 use googletest::prelude::*;
 
 #[test]

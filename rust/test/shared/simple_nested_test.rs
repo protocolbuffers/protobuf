@@ -6,9 +6,9 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use googletest::prelude::*;
-use nested_proto::outer::inner::InnerEnum;
-use nested_proto::outer::InnerView;
-use nested_proto::*;
+use nested_rust_proto::outer::inner::InnerEnum;
+use nested_rust_proto::outer::InnerView;
+use nested_rust_proto::*;
 
 #[test]
 fn test_deeply_nested_message() {
@@ -89,7 +89,7 @@ fn test_msg_from_outside() {
 
 #[test]
 fn test_recursive_view() {
-    let rec = nested_proto::Recursive::new();
+    let rec = nested_rust_proto::Recursive::new();
     assert_that!(rec.num(), eq(0));
     assert_that!(rec.rec().num(), eq(0));
     assert_that!(rec.rec().rec().num(), eq(0)); // turtles all the way down...
@@ -102,7 +102,7 @@ fn test_recursive_view() {
 
 #[test]
 fn test_recursive_mut() {
-    let mut rec = nested_proto::Recursive::new();
+    let mut rec = nested_rust_proto::Recursive::new();
     let mut one = rec.rec_mut();
     let mut two = one.rec_mut();
     let mut three = two.rec_mut();

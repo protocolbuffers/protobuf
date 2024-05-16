@@ -9,7 +9,7 @@
 
 use googletest::prelude::*;
 use protobuf::proto;
-use unittest_proto::{
+use unittest_rust_proto::{
     test_all_types::{self, NestedMessage},
     NestedTestAllTypes, TestAllTypes,
 };
@@ -100,8 +100,8 @@ fn single_nested_message() {
 
     // empty nested message should be present
     // make sure that qualified path names work
-    let msg = proto!(::unittest_proto::TestAllTypes {
-        optional_nested_message: unittest_proto::test_all_types::NestedMessage {}
+    let msg = proto!(::unittest_rust_proto::TestAllTypes {
+        optional_nested_message: unittest_rust_proto::test_all_types::NestedMessage {}
     });
     assert_that!(msg.has_optional_nested_message(), eq(true));
 }

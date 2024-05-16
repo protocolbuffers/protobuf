@@ -12,8 +12,8 @@ use googletest::prelude::*;
 
 #[test]
 fn test_message_field_generated() {
-    use fields_with_imported_types_proto::MsgWithFieldsWithImportedTypes;
-    use imported_types_proto::ImportedMessageView;
+    use fields_with_imported_types_rust_proto::MsgWithFieldsWithImportedTypes;
+    use imported_types_rust_proto::ImportedMessageView;
 
     let msg = MsgWithFieldsWithImportedTypes::new();
     assert_that!(msg.imported_message_field(), matches_pattern!(ImportedMessageView { .. }));
@@ -21,8 +21,8 @@ fn test_message_field_generated() {
 
 #[test]
 fn test_enum_field_generated() {
-    use fields_with_imported_types_proto::MsgWithFieldsWithImportedTypes;
-    use imported_types_proto::ImportedEnum;
+    use fields_with_imported_types_rust_proto::MsgWithFieldsWithImportedTypes;
+    use imported_types_rust_proto::ImportedEnum;
 
     let msg = MsgWithFieldsWithImportedTypes::new();
     assert_that!(msg.imported_enum_field(), eq(ImportedEnum::Unknown));
@@ -30,10 +30,10 @@ fn test_enum_field_generated() {
 
 #[test]
 fn test_oneof_message_field_generated() {
-    use fields_with_imported_types_proto::msg_with_fields_with_imported_types::ImportedTypesOneof::not_set;
-    use fields_with_imported_types_proto::MsgWithFieldsWithImportedTypes;
-    use imported_types_proto::ImportedEnum;
-    use imported_types_proto::ImportedMessageView;
+    use fields_with_imported_types_rust_proto::msg_with_fields_with_imported_types::ImportedTypesOneof::not_set;
+    use fields_with_imported_types_rust_proto::MsgWithFieldsWithImportedTypes;
+    use imported_types_rust_proto::ImportedEnum;
+    use imported_types_rust_proto::ImportedMessageView;
 
     let msg = MsgWithFieldsWithImportedTypes::new();
     assert_that!(msg.imported_message_oneof(), matches_pattern!(ImportedMessageView { .. }));

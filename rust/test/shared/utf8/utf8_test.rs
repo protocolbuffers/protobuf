@@ -13,10 +13,10 @@
 // behavior. Do not assume that the Protobuf team is intentional about these
 // behaviors while b/304774814 is open.
 
-use feature_verify_proto::Verify;
+use feature_verify_rust_proto::Verify;
 use googletest::prelude::*;
-use no_features_proto2_proto::NoFeaturesProto2;
-use no_features_proto3_proto::NoFeaturesProto3;
+use no_features_proto2_rust_proto::NoFeaturesProto2;
+use no_features_proto3_rust_proto::NoFeaturesProto3;
 use protobuf::{ParseError, ProtoStr};
 
 // We use 0b1000_0000, since 0b1XXX_XXXX in UTF-8 denotes a byte 2-4, but never

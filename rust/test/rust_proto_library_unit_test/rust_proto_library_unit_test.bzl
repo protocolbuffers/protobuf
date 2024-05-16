@@ -173,7 +173,7 @@ def _rust_outputs_test_impl(ctx):
     target_under_test = analysistest.target_under_test(env)
 
     label_to_file = {
-        "child_cc_rust_proto": "child.c.pb.rs",
+        "child_cpp_rust_proto": "child.c.pb.rs",
         "child_upb_rust_proto": "child.u.pb.rs",
     }
     expected_output = label_to_file[target_under_test.label.name]
@@ -185,13 +185,13 @@ rust_outputs_test = analysistest.make(_rust_outputs_test_impl)
 
 def _test_cc_outputs():
     rust_cc_proto_library(
-        name = "child_cc_rust_proto",
+        name = "child_cpp_rust_proto",
         deps = [":child_proto"],
     )
 
     rust_outputs_test(
         name = "rust_cc_outputs_test",
-        target_under_test = ":child_cc_rust_proto",
+        target_under_test = ":child_cpp_rust_proto",
     )
 
 def _test_upb_outputs():
