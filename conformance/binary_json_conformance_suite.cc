@@ -22,6 +22,7 @@
 #include "absl/log/die_if_null.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "conformance/conformance.pb.h"
@@ -1304,6 +1305,24 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestIllegalTags() {
 }
 
 template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownWireType() {
+  for (uint8_t type : {0x6, 0x7}) {
+    for (uint8_t field = 0; field < 4; ++field) {
+      for (uint8_t value = 0; value < 4; ++value) {
+        std::string name = absl::StrFormat("UnknownWireType%d_Field%d_Verion%d",
+                                           type, field, value);
+
+        char data[2];
+        data[0] = (field << 3) | type;  // unknown wire type.
+        data[1] = value;
+        std::string proto = {data, 2};
+        ExpectParseFailureForProto(proto, name, REQUIRED);
+      }
+    }
+  }
+}
+
+template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestOneofMessage() {
   MessageType message;
   message.set_oneof_uint32(0);
@@ -1466,6 +1485,8 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
     }
 
     TestIllegalTags();
+
+    TestUnknownWireType();
 
     int64_t kInt64Min = -9223372036854775808ULL;
     int64_t kInt64Max = 9223372036854775807ULL;
