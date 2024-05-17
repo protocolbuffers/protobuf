@@ -836,10 +836,10 @@ PROTOBUF_NOINLINE static void GenerateSyntheticOneofs(
       // Avoid prepending a double-underscore because such names are
       // reserved in C++.
       if (oneof_name.empty() || oneof_name[0] != '_') {
-        oneof_name = '_' + oneof_name;
+        oneof_name.insert(0, "_");
       }
       while (names.count(oneof_name) > 0) {
-        oneof_name = 'X' + oneof_name;
+        oneof_name.insert(0, "X");
       }
 
       names.insert(oneof_name);
@@ -1797,8 +1797,7 @@ bool Parser::ParseExtensions(DescriptorProto* message,
     // Then copy the extension range options to all of the other ranges we've
     // parsed.
     for (int i = old_range_size + 1; i < message->extension_range_size(); i++) {
-      message->mutable_extension_range(i)->mutable_options()->CopyFrom(
-          *options);
+      *message->mutable_extension_range(i)->mutable_options() = *options;
     }
     // and copy source locations to the other ranges, too
     for (int i = old_range_size; i < message->extension_range_size(); i++) {
