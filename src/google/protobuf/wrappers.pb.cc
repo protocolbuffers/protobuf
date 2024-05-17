@@ -392,10 +392,10 @@ DoubleValue::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &DoubleValue::MergeImpl,
               PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_._cached_size_),
               false,
           },
-          &DoubleValue::MergeImpl,
           &DoubleValue::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
@@ -489,7 +489,6 @@ PROTOBUF_NOINLINE void DoubleValue::Clear() {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-
 void DoubleValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<DoubleValue*>(&to_msg);
   auto& from = static_cast<const DoubleValue&>(from_msg);
@@ -564,10 +563,10 @@ FloatValue::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &FloatValue::MergeImpl,
               PROTOBUF_FIELD_OFFSET(FloatValue, _impl_._cached_size_),
               false,
           },
-          &FloatValue::MergeImpl,
           &FloatValue::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
@@ -661,7 +660,6 @@ PROTOBUF_NOINLINE void FloatValue::Clear() {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-
 void FloatValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<FloatValue*>(&to_msg);
   auto& from = static_cast<const FloatValue&>(from_msg);
@@ -736,10 +734,10 @@ Int64Value::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &Int64Value::MergeImpl,
               PROTOBUF_FIELD_OFFSET(Int64Value, _impl_._cached_size_),
               false,
           },
-          &Int64Value::MergeImpl,
           &Int64Value::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
@@ -834,7 +832,6 @@ PROTOBUF_NOINLINE void Int64Value::Clear() {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-
 void Int64Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Int64Value*>(&to_msg);
   auto& from = static_cast<const Int64Value&>(from_msg);
@@ -909,10 +906,10 @@ UInt64Value::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &UInt64Value::MergeImpl,
               PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_._cached_size_),
               false,
           },
-          &UInt64Value::MergeImpl,
           &UInt64Value::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
@@ -1007,7 +1004,6 @@ PROTOBUF_NOINLINE void UInt64Value::Clear() {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-
 void UInt64Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<UInt64Value*>(&to_msg);
   auto& from = static_cast<const UInt64Value&>(from_msg);
@@ -1082,10 +1078,10 @@ Int32Value::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &Int32Value::MergeImpl,
               PROTOBUF_FIELD_OFFSET(Int32Value, _impl_._cached_size_),
               false,
           },
-          &Int32Value::MergeImpl,
           &Int32Value::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
@@ -1180,7 +1176,6 @@ PROTOBUF_NOINLINE void Int32Value::Clear() {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-
 void Int32Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Int32Value*>(&to_msg);
   auto& from = static_cast<const Int32Value&>(from_msg);
@@ -1255,10 +1250,10 @@ UInt32Value::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &UInt32Value::MergeImpl,
               PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_._cached_size_),
               false,
           },
-          &UInt32Value::MergeImpl,
           &UInt32Value::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
@@ -1353,7 +1348,6 @@ PROTOBUF_NOINLINE void UInt32Value::Clear() {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-
 void UInt32Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<UInt32Value*>(&to_msg);
   auto& from = static_cast<const UInt32Value&>(from_msg);
@@ -1428,10 +1422,10 @@ BoolValue::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &BoolValue::MergeImpl,
               PROTOBUF_FIELD_OFFSET(BoolValue, _impl_._cached_size_),
               false,
           },
-          &BoolValue::MergeImpl,
           &BoolValue::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
@@ -1525,7 +1519,6 @@ PROTOBUF_NOINLINE void BoolValue::Clear() {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-
 void BoolValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<BoolValue*>(&to_msg);
   auto& from = static_cast<const BoolValue&>(from_msg);
@@ -1614,10 +1607,10 @@ StringValue::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &StringValue::MergeImpl,
               PROTOBUF_FIELD_OFFSET(StringValue, _impl_._cached_size_),
               false,
           },
-          &StringValue::MergeImpl,
           &StringValue::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
@@ -1716,7 +1709,6 @@ PROTOBUF_NOINLINE void StringValue::Clear() {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-
 void StringValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<StringValue*>(&to_msg);
   auto& from = static_cast<const StringValue&>(from_msg);
@@ -1807,10 +1799,10 @@ BytesValue::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &BytesValue::MergeImpl,
               PROTOBUF_FIELD_OFFSET(BytesValue, _impl_._cached_size_),
               false,
           },
-          &BytesValue::MergeImpl,
           &BytesValue::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fwrappers_2eproto,
           nullptr,  // tracker
@@ -1903,7 +1895,6 @@ PROTOBUF_NOINLINE void BytesValue::Clear() {
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
-
 
 void BytesValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<BytesValue*>(&to_msg);

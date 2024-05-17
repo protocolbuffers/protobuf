@@ -155,10 +155,10 @@ FieldMask::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &FieldMask::MergeImpl,
               PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._cached_size_),
               false,
           },
-          &FieldMask::MergeImpl,
           &FieldMask::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto,
           nullptr,  // tracker
@@ -261,7 +261,6 @@ PROTOBUF_NOINLINE void FieldMask::Clear() {
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
-
 
 void FieldMask::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<FieldMask*>(&to_msg);

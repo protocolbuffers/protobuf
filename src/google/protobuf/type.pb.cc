@@ -496,10 +496,10 @@ Type::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &Type::MergeImpl,
               PROTOBUF_FIELD_OFFSET(Type, _impl_._cached_size_),
               false,
           },
-          &Type::MergeImpl,
           &Type::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2ftype_2eproto,
           nullptr,  // tracker
@@ -748,7 +748,6 @@ PROTOBUF_NOINLINE void Type::Clear() {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-
 void Type::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Type*>(&to_msg);
   auto& from = static_cast<const Type&>(from_msg);
@@ -897,10 +896,10 @@ Field::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &Field::MergeImpl,
               PROTOBUF_FIELD_OFFSET(Field, _impl_._cached_size_),
               false,
           },
-          &Field::MergeImpl,
           &Field::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2ftype_2eproto,
           nullptr,  // tracker
@@ -1189,7 +1188,6 @@ PROTOBUF_NOINLINE void Field::Clear() {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-
 void Field::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Field*>(&to_msg);
   auto& from = static_cast<const Field&>(from_msg);
@@ -1345,10 +1343,10 @@ Enum::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &Enum::MergeImpl,
               PROTOBUF_FIELD_OFFSET(Enum, _impl_._cached_size_),
               false,
           },
-          &Enum::MergeImpl,
           &Enum::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2ftype_2eproto,
           nullptr,  // tracker
@@ -1574,7 +1572,6 @@ PROTOBUF_NOINLINE void Enum::Clear() {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-
 void Enum::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Enum*>(&to_msg);
   auto& from = static_cast<const Enum&>(from_msg);
@@ -1701,10 +1698,10 @@ EnumValue::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &EnumValue::MergeImpl,
               PROTOBUF_FIELD_OFFSET(EnumValue, _impl_._cached_size_),
               false,
           },
-          &EnumValue::MergeImpl,
           &EnumValue::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2ftype_2eproto,
           nullptr,  // tracker
@@ -1852,7 +1849,6 @@ PROTOBUF_NOINLINE void EnumValue::Clear() {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-
 void EnumValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<EnumValue*>(&to_msg);
   auto& from = static_cast<const EnumValue&>(from_msg);
@@ -1966,10 +1962,10 @@ Option::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &Option::MergeImpl,
               PROTOBUF_FIELD_OFFSET(Option, _impl_._cached_size_),
               false,
           },
-          &Option::MergeImpl,
           &Option::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2ftype_2eproto,
           nullptr,  // tracker
@@ -2096,7 +2092,6 @@ PROTOBUF_NOINLINE void Option::Clear() {
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
-
 
 void Option::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Option*>(&to_msg);

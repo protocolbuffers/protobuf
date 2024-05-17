@@ -8507,6 +8507,27 @@ upb_DecodeStatus upb_DecodeLengthPrefixed(const char* buf, size_t size,
   return upb_Decode(buf, msg_len, msg, mt, extreg, options, arena);
 }
 
+const char* upb_DecodeStatus_String(upb_DecodeStatus status) {
+  switch (status) {
+    case kUpb_DecodeStatus_Ok:
+      return "Ok";
+    case kUpb_DecodeStatus_Malformed:
+      return "Wire format was corrupt";
+    case kUpb_DecodeStatus_OutOfMemory:
+      return "Arena alloc failed";
+    case kUpb_DecodeStatus_BadUtf8:
+      return "String field had bad UTF-8";
+    case kUpb_DecodeStatus_MaxDepthExceeded:
+      return "Exceeded upb_DecodeOptions_MaxDepth";
+    case kUpb_DecodeStatus_MissingRequired:
+      return "Missing required field";
+    case kUpb_DecodeStatus_UnlinkedSubMessage:
+      return "Unlinked sub-message field was present";
+    default:
+      return "Unknown decode status";
+  }
+}
+
 #undef OP_FIXPCK_LG2
 #undef OP_VARPCK_LG2
 
@@ -9147,6 +9168,20 @@ upb_EncodeStatus upb_EncodeLengthPrefixed(const upb_Message* msg,
   return _upb_Encode(msg, l, options, arena, buf, size, true);
 }
 
+const char* upb_EncodeStatus_String(upb_EncodeStatus status) {
+  switch (status) {
+    case kUpb_EncodeStatus_Ok:
+      return "Ok";
+    case kUpb_EncodeStatus_MissingRequired:
+      return "Missing required field";
+    case kUpb_EncodeStatus_MaxDepthExceeded:
+      return "Max depth exceeded";
+    case kUpb_EncodeStatus_OutOfMemory:
+      return "Arena alloc failed";
+    default:
+      return "Unknown encode status";
+  }
+}
 // Fast decoder: ~3x the speed of decode.c, but requires x86-64/ARM64.
 // Also the table size grows by 2x.
 //
