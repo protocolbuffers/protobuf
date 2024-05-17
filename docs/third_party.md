@@ -255,3 +255,4 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
     `clojurescript`
 *   [gRPC Federation - generates a gRPC server by writing a custom option in
     Protocol Buffers](https://github.com/mercari/grpc-federation)
+*   [ProtobufJson - CLI tool that converts between proto and json encodings](https://github.com/hq6/ProtobufJson)
