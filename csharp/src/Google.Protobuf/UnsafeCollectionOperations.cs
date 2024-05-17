@@ -40,7 +40,9 @@ public static class UnsafeCollectionOperations
     /// <typeparam name="T">
     /// The type of elements in the <see cref="RepeatedField{T}"/>.
     /// </typeparam>
-    /// <param name="field">The <see cref="RepeatedField{T}"/> to wrap.</param>
+    /// <param name="field">
+    /// The <see cref="RepeatedField{T}"/> for which to wrap the current backing array.
+    /// </param>
     /// <returns>
     /// A <see cref="Span{T}"/> that wraps the current backing array of the
     /// <see cref="RepeatedField{T}"/>.
@@ -62,6 +64,11 @@ public static class UnsafeCollectionOperations
     /// <para>
     /// This method should only be called if the subsequent code guarantees to populate
     /// the field with the specified number of items.
+    /// </para>
+    /// <para>
+    /// If count is less than <see cref="RepeatedField{T}.Count"/> the collection is effectively
+    /// trimmed down to the first count elements. <see cref="RepeatedField{T}.Capacity"/>
+    /// is unchanged, meaning the underlying array remains allocated.
     /// </para>
     /// </summary>
     /// <typeparam name="T">
