@@ -49,31 +49,35 @@ inline PROTOBUF_ALWAYS_INLINE void StrongPointer(T* var) {
 #endif
 }
 
-// Similar to the overload above, but optimized for constant inputs.
+#if defined(__x86_64__) && defined(__linux__) && !defined(__APPLE__) && \
+    !defined(__ANDROID__) && defined(__clang__) && __clang_major__ >= 19
+// Optimized implementation for clang where we can generate a relocation without
+// adding runtime instructions.
 template <typename T, T ptr>
 inline PROTOBUF_ALWAYS_INLINE void StrongPointer() {
-#if defined(__x86_64__) && defined(__linux__) && !defined(__APPLE__) &&     \
-    !defined(__ANDROID__) && defined(__clang__) && __clang_major__ >= 19 && \
-    !defined(PROTOBUF_INTERNAL_TEMPORARY_STRONG_POINTER_OPT_OUT)
   // This injects a relocation in the code path without having to run code, but
   // we can only do it with a newer clang.
   asm(".reloc ., BFD_RELOC_NONE, %p0" ::"Ws"(ptr));
-#else
-  StrongPointer(ptr);
-#endif
 }
 
 template <typename T>
 inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
-  constexpr auto ptr = T::template GetStrongPointerForType<T>();
-#if defined(__cpp_nontype_template_args) && \
-    __cpp_nontype_template_args >= 201411L
-  // We can only use `ptr` as a template parameter since C++17
+  static constexpr auto ptr = T::template GetStrongPointerForType<T>();
   return StrongPointer<decltype(ptr), ptr>();
-#else
-  return StrongPointer(ptr);
-#endif
 }
+#else   // .reloc
+// Portable fallback. It usually generates a single LEA instruction or
+// equivalent.
+template <typename T, T ptr>
+inline PROTOBUF_ALWAYS_INLINE void StrongPointer() {
+  StrongPointer(ptr);
+}
+
+template <typename T>
+inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
+  return StrongPointer(T::template GetStrongPointerForType<T>());
+}
+#endif  // .reloc
 
 
 // See comments on `AllocateAtLeast` for information on size returning new.
