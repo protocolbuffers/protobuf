@@ -7,8 +7,6 @@
 
 package com.google.protobuf;
 
-import java.util.logging.Logger;
-
 /**
  * Provides the version of this Protobuf Java runtime, and methods for Protobuf Java gencode to
  * validate that versions are compatible. Fields and methods in this class should be only accessed
@@ -38,7 +36,6 @@ public final class RuntimeVersion {
   public static final String SUFFIX = OSS_SUFFIX;
 
   private static final String VERSION_STRING = versionString(MAJOR, MINOR, PATCH, SUFFIX);
-  private static final Logger logger = Logger.getLogger(RuntimeVersion.class.getName());
 
   /**
    * Validates that the gencode version is compatible with this runtime version according to
