@@ -70,7 +70,7 @@ module Google
               case wkt
               when :Timestamp
                 raise TypeError.new "Invalid type #{value.class} to assign to submessage field '#{name}'." unless value.kind_of? Time
-                new_message = Google::Protobuf::FFI.new_message_from_def msg_or_enum_def, arena
+                new_message = Google::Protobuf::FFI.new_message_from_def Google::Protobuf::FFI.get_mini_table(msg_or_enum_def), arena
                 sec = Google::Protobuf::FFI::MessageValue.new
                 sec[:int64_val] = value.tv_sec
                 sec_field_def = Google::Protobuf::FFI.get_field_by_number msg_or_enum_def, 1
@@ -82,7 +82,7 @@ module Google
                 return_value[:msg_val] = new_message
               when :Duration
                 raise TypeError.new "Invalid type #{value.class} to assign to submessage field '#{name}'." unless value.kind_of? Numeric
-                new_message = Google::Protobuf::FFI.new_message_from_def msg_or_enum_def, arena
+                new_message = Google::Protobuf::FFI.new_message_from_def Google::Protobuf::FFI.get_mini_table(msg_or_enum_def), arena
                 sec = Google::Protobuf::FFI::MessageValue.new
                 sec[:int64_val] = value
                 sec_field_def = Google::Protobuf::FFI.get_field_by_number msg_or_enum_def, 1
