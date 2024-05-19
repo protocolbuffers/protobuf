@@ -33,6 +33,7 @@
 
 import unittest
 from google.protobuf.pyext import _message
+import i_suspect_this_file_is_not_covered
 from google3.net.proto2.python.internal import api_implementation
 from google.protobuf import unittest_pb2
 from google.protobuf import map_unittest_pb2
