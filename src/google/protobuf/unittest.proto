@@ -182,8 +182,20 @@ message TestDeprecatedFields {
   optional TestDeprecatedFields nested = 5;
 }
 
+// Prefer using another version of this message.
+// You may find it in another file //my-file.proto
 message TestDeprecatedMessage {
   option deprecated = true;
+}
+
+// Prefer using another version of this enum.
+// You may find it in another file //my-file.proto
+enum TestDeprecatedEnum {
+  option deprecated = true;
+
+  VALUE_A = 0;
+  VALUE_B = 1;
+  VALUE_C = 2 [deprecated=true]; // No longer used.
 }
 
 // Define these after TestAllTypes to make sure the compiler can handle

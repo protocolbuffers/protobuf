@@ -477,6 +477,7 @@ std::vector<Sub> ClassVars(const Descriptor* desc, Options opts) {
       // Old-style names, to be removed once all usages are gone in this and
       // other files.
       {"classname", ClassName(desc, false)},
+      {"DEPRECATED_Class", DeprecatedAttribute(desc)},
       {"classtype", QualifiedClassName(desc, opts)},
       {"full_name", desc->full_name()},
       {"superclass", SuperClassName(desc, opts)},
@@ -1921,7 +1922,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                   )cc");
         }}},
       R"cc(
-        class $dllexport_decl $$classname$ final : public $superclass$
+        class $dllexport_decl $$DEPRECATED_Class$$classname$ final : "
+        "public $superclass$
         /* @@protoc_insertion_point(class_definition:$full_name$) */ {
          public:
           inline $classname$() : $classname$(nullptr) {}

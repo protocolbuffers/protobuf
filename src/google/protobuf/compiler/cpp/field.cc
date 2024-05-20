@@ -61,7 +61,7 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       Sub("PrepareSplitMessageForWrite",
           split ? "PrepareSplitMessageForWrite();" : "")
           .WithSuffix(";"),
-      Sub("DEPRECATED", DeprecatedAttribute(opts, field)).WithSuffix(" "),
+      Sub("DEPRECATED", DeprecatedAttribute(field)).WithSuffix(" "),
 
       // These variables are placeholders to pick out the beginning and ends of
       // identifiers for annotations (when doing so with existing variables
@@ -84,7 +84,7 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"classname", ClassName(FieldScope(field), false)},
       {"ns", Namespace(field, opts)},
       {"tag_size", WireFormat::TagSize(field->number(), field->type())},
-      {"deprecated_attr", DeprecatedAttribute(opts, field)},
+      {"deprecated_attr", DeprecatedAttribute(field)},
       Sub("WeakDescriptorSelfPin",
           UsingImplicitWeakDescriptor(field->file(), opts)
               ? absl::StrCat(
