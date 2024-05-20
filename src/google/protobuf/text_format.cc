@@ -19,6 +19,7 @@
 #include <climits>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <string>
 #include <utility>
@@ -917,7 +918,7 @@ class TextFormat::Parser::ParserImpl {
         if (LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
           uint64_t value;
           DO(ConsumeUnsignedInteger(&value, 1));
-          SET_FIELD(Bool, bool, value);
+          SET_FIELD(Bool, bool, static_cast<bool>(value));
         } else {
           std::string value;
           DO(ConsumeIdentifier(&value));
