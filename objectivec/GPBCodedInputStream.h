@@ -218,6 +218,11 @@ __attribute__((objc_subclassing_restricted))
 - (void)popLimit:(size_t)oldLimit;
 
 /**
+ * @return The number of bytes from the current position to the current limit.
+ */
+- (size_t)bytesUntilLimit;
+
+/**
  * Verifies that the last call to -readTag returned the given tag value. This
  * is used to verify that a nested group ended with the correct end tag.
  *

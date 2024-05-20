@@ -384,6 +384,10 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state, int32_t
   GPBCodedInputStreamPopLimit(&state_, oldLimit);
 }
 
+- (size_t)bytesUntilLimit {
+  return GPBCodedInputStreamBytesUntilLimit(&state_);
+}
+
 - (double)readDouble {
   return GPBCodedInputStreamReadDouble(&state_);
 }
