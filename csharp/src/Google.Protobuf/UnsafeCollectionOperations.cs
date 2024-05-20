@@ -33,15 +33,18 @@ public static class UnsafeCollectionOperations
     /// remove items instead.
     /// </para>
     /// <para>
-    /// The returned <see cref="Span{T}"/> is only valid until the <see cref="RepeatedField{T}"/> is
-    /// modified, after which its state becomes undefined.
+    /// The returned <see cref="Span{T}"/> is only valid until the size of the
+    /// <see cref="RepeatedField{T}"/> is modified, after which its state becomes undefined.
+    /// Modifying existing elements without changing the size is safe as long as the modifications
+    /// do not set null values.
     /// </para>
     /// </summary>
     /// <typeparam name="T">
     /// The type of elements in the <see cref="RepeatedField{T}"/>.
     /// </typeparam>
     /// <param name="field">
-    /// The <see cref="RepeatedField{T}"/> for which to wrap the current backing array.
+    /// The <see cref="RepeatedField{T}"/> for which to wrap the current backing array. Must not be
+    /// null.
     /// </param>
     /// <returns>
     /// A <see cref="Span{T}"/> that wraps the current backing array of the
@@ -53,7 +56,6 @@ public static class UnsafeCollectionOperations
     public static Span<T> AsSpan<T>(RepeatedField<T> field)
     {
         ProtoPreconditions.CheckNotNull(field, nameof(field));
-
         return field.AsSpan();
     }
 
@@ -66,7 +68,7 @@ public static class UnsafeCollectionOperations
     /// the field with the specified number of items.
     /// </para>
     /// <para>
-    /// If count is less than <see cref="RepeatedField{T}.Count"/> the collection is effectively
+    /// If count is less than <see cref="RepeatedField{T}.Count"/>, the collection is effectively
     /// trimmed down to the first count elements. <see cref="RepeatedField{T}.Capacity"/>
     /// is unchanged, meaning the underlying array remains allocated.
     /// </para>
@@ -74,15 +76,21 @@ public static class UnsafeCollectionOperations
     /// <typeparam name="T">
     /// The type of elements in the <see cref="RepeatedField{T}"/>.
     /// </typeparam>
-    /// <param name="field">The field to set the count of.</param>
-    /// <param name="count">The value to set the field's count to.</param>
+    /// <param name="field">
+    /// The field to set the count of. Must not be null.
+    /// </param>
+    /// <param name="count">
+    /// The value to set the field's count to. Must be non-negative.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown if <paramref name="field"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown if <paramref name="count"/> is negative.
     /// </exception>
     public static void SetCount<T>(RepeatedField<T> field, int count)
     {
         ProtoPreconditions.CheckNotNull(field, nameof(field));
-
         field.SetCount(count);
     }
 }
