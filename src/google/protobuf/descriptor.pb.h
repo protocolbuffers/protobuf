@@ -701,8 +701,11 @@ inline bool Edition_Parse(absl::string_view name, Edition* value) {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption.NamePart) */ {
+class PROTOBUF_EXPORT UninterpretedOption_NamePart final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption.NamePart)
+ */
+{
  public:
   inline UninterpretedOption_NamePart() : UninterpretedOption_NamePart(nullptr) {}
   ~UninterpretedOption_NamePart() override;
@@ -898,8 +901,11 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo.Location) */ {
+class PROTOBUF_EXPORT SourceCodeInfo_Location final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo.Location)
+ */
+{
  public:
   inline SourceCodeInfo_Location() : SourceCodeInfo_Location(nullptr) {}
   ~SourceCodeInfo_Location() override;
@@ -1168,8 +1174,11 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo.Annotation) */ {
+class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo.Annotation)
+ */
+{
  public:
   inline GeneratedCodeInfo_Annotation() : GeneratedCodeInfo_Annotation(nullptr) {}
   ~GeneratedCodeInfo_Annotation() override;
@@ -1427,8 +1436,11 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions.FeatureSupport) */ {
+class PROTOBUF_EXPORT FieldOptions_FeatureSupport final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions.FeatureSupport)
+ */
+{
  public:
   inline FieldOptions_FeatureSupport() : FieldOptions_FeatureSupport(nullptr) {}
   ~FieldOptions_FeatureSupport() override;
@@ -1645,8 +1657,11 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions.EditionDefault) */ {
+class PROTOBUF_EXPORT FieldOptions_EditionDefault final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions.EditionDefault)
+ */
+{
  public:
   inline FieldOptions_EditionDefault() : FieldOptions_EditionDefault(nullptr) {}
   ~FieldOptions_EditionDefault() override;
@@ -2381,8 +2396,11 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions.Declaration) */ {
+class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions.Declaration)
+ */
+{
  public:
   inline ExtensionRangeOptions_Declaration() : ExtensionRangeOptions_Declaration(nullptr) {}
   ~ExtensionRangeOptions_Declaration() override;
@@ -2618,8 +2636,11 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto.EnumReservedRange) */ {
+class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto.EnumReservedRange)
+ */
+{
  public:
   inline EnumDescriptorProto_EnumReservedRange() : EnumDescriptorProto_EnumReservedRange(nullptr) {}
   ~EnumDescriptorProto_EnumReservedRange() override;
@@ -2804,8 +2825,11 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ReservedRange) */ {
+class PROTOBUF_EXPORT DescriptorProto_ReservedRange final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ReservedRange)
+ */
+{
  public:
   inline DescriptorProto_ReservedRange() : DescriptorProto_ReservedRange(nullptr) {}
   ~DescriptorProto_ReservedRange() override;
@@ -2990,8 +3014,11 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption) */ {
+class PROTOBUF_EXPORT UninterpretedOption final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption)
+ */
+{
  public:
   inline UninterpretedOption() : UninterpretedOption(nullptr) {}
   ~UninterpretedOption() override;
@@ -3272,7 +3299,8 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo) */ {
+/* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo) */
+{
  public:
   inline SourceCodeInfo() : SourceCodeInfo(nullptr) {}
   ~SourceCodeInfo() override;
@@ -3450,8 +3478,11 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo) */ {
+class PROTOBUF_EXPORT GeneratedCodeInfo final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo)
+ */
+{
  public:
   inline GeneratedCodeInfo() : GeneratedCodeInfo(nullptr) {}
   ~GeneratedCodeInfo() override;
@@ -3629,8 +3660,11 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault) */ {
+class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
+ */
+{
  public:
   inline FeatureSetDefaults_FeatureSetEditionDefault() : FeatureSetDefaults_FeatureSetEditionDefault(nullptr) {}
   ~FeatureSetDefaults_FeatureSetEditionDefault() override;
@@ -3842,7 +3876,8 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.ServiceOptions) */ {
+/* @@protoc_insertion_point(class_definition:google.protobuf.ServiceOptions) */
+{
  public:
   inline ServiceOptions() : ServiceOptions(nullptr) {}
   ~ServiceOptions() override;
@@ -5044,7 +5079,8 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.MessageOptions) */ {
+/* @@protoc_insertion_point(class_definition:google.protobuf.MessageOptions) */
+{
  public:
   inline MessageOptions() : MessageOptions(nullptr) {}
   ~MessageOptions() override;
@@ -5257,10 +5293,42 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
-  [[deprecated]]  bool has_deprecated_legacy_json_field_conflicts() const;
-  [[deprecated]]  void clear_deprecated_legacy_json_field_conflicts() ;
-  [[deprecated]] bool deprecated_legacy_json_field_conflicts() const;
-  [[deprecated]] void set_deprecated_legacy_json_field_conflicts(bool value);
+   [[deprecated(
+       "Enable the legacy handling of JSON field name conflicts.  This "
+       "lowercases and strips underscored from the fields before comparison in "
+       "proto3 only. The new behavior takes `json_name` into account and "
+       "applies to proto2 as well. This should only be used as a temporary "
+       "measure against broken builds due to the change in behavior for JSON "
+       "field name conflicts. TODO This is legacy behavior we "
+       "plan to remove once downstream teams have had time to migrate.")]] bool
+   has_deprecated_legacy_json_field_conflicts() const;
+   [[deprecated(
+       "Enable the legacy handling of JSON field name conflicts.  This "
+       "lowercases and strips underscored from the fields before comparison in "
+       "proto3 only. The new behavior takes `json_name` into account and "
+       "applies to proto2 as well. This should only be used as a temporary "
+       "measure against broken builds due to the change in behavior for JSON "
+       "field name conflicts. TODO This is legacy behavior we "
+       "plan to remove once downstream teams have had time to migrate.")]] void
+   clear_deprecated_legacy_json_field_conflicts();
+   [[deprecated(
+       "Enable the legacy handling of JSON field name conflicts.  This "
+       "lowercases and strips underscored from the fields before comparison in "
+       "proto3 only. The new behavior takes `json_name` into account and "
+       "applies to proto2 as well. This should only be used as a temporary "
+       "measure against broken builds due to the change in behavior for JSON "
+       "field name conflicts. TODO This is legacy behavior we "
+       "plan to remove once downstream teams have had time to migrate.")]] bool
+   deprecated_legacy_json_field_conflicts() const;
+   [[deprecated(
+       "Enable the legacy handling of JSON field name conflicts.  This "
+       "lowercases and strips underscored from the fields before comparison in "
+       "proto3 only. The new behavior takes `json_name` into account and "
+       "applies to proto2 as well. This should only be used as a temporary "
+       "measure against broken builds due to the change in behavior for JSON "
+       "field name conflicts. TODO This is legacy behavior we "
+       "plan to remove once downstream teams have had time to migrate.")]] void
+   set_deprecated_legacy_json_field_conflicts(bool value);
 
   private:
   bool _internal_deprecated_legacy_json_field_conflicts() const;
@@ -5874,10 +5942,14 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
-  [[deprecated]]  bool has_java_generate_equals_and_hash() const;
-  [[deprecated]]  void clear_java_generate_equals_and_hash() ;
-  [[deprecated]] bool java_generate_equals_and_hash() const;
-  [[deprecated]] void set_java_generate_equals_and_hash(bool value);
+   [[deprecated("This option does nothing.")]] bool
+   has_java_generate_equals_and_hash() const;
+   [[deprecated("This option does nothing.")]] void
+   clear_java_generate_equals_and_hash();
+   [[deprecated("This option does nothing.")]] bool
+   java_generate_equals_and_hash() const;
+   [[deprecated("This option does nothing.")]] void
+   set_java_generate_equals_and_hash(bool value);
 
   private:
   bool _internal_java_generate_equals_and_hash() const;
@@ -6841,8 +6913,11 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSetDefaults) */ {
+class PROTOBUF_EXPORT FeatureSetDefaults final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.FeatureSetDefaults)
+ */
+{
  public:
   inline FeatureSetDefaults() : FeatureSetDefaults(nullptr) {}
   ~FeatureSetDefaults() override;
@@ -7052,8 +7127,11 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions) */ {
+class PROTOBUF_EXPORT ExtensionRangeOptions final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions)
+ */
+{
  public:
   inline ExtensionRangeOptions() : ExtensionRangeOptions(nullptr) {}
   ~ExtensionRangeOptions() override;
@@ -7485,8 +7563,11 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueOptions) */ {
+class PROTOBUF_EXPORT EnumValueOptions final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueOptions)
+ */
+{
  public:
   inline EnumValueOptions() : EnumValueOptions(nullptr) {}
   ~EnumValueOptions() override;
@@ -8082,10 +8163,34 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
-  [[deprecated]]  bool has_deprecated_legacy_json_field_conflicts() const;
-  [[deprecated]]  void clear_deprecated_legacy_json_field_conflicts() ;
-  [[deprecated]] bool deprecated_legacy_json_field_conflicts() const;
-  [[deprecated]] void set_deprecated_legacy_json_field_conflicts(bool value);
+   [[deprecated(
+       "Enable the legacy handling of JSON field name conflicts.  This "
+       "lowercases and strips underscored from the fields before comparison in "
+       "proto3 only. The new behavior takes `json_name` into account and "
+       "applies to proto2 as well. TODO Remove this legacy "
+       "behavior once downstream teams have had time to migrate.")]] bool
+   has_deprecated_legacy_json_field_conflicts() const;
+   [[deprecated(
+       "Enable the legacy handling of JSON field name conflicts.  This "
+       "lowercases and strips underscored from the fields before comparison in "
+       "proto3 only. The new behavior takes `json_name` into account and "
+       "applies to proto2 as well. TODO Remove this legacy "
+       "behavior once downstream teams have had time to migrate.")]] void
+   clear_deprecated_legacy_json_field_conflicts();
+   [[deprecated(
+       "Enable the legacy handling of JSON field name conflicts.  This "
+       "lowercases and strips underscored from the fields before comparison in "
+       "proto3 only. The new behavior takes `json_name` into account and "
+       "applies to proto2 as well. TODO Remove this legacy "
+       "behavior once downstream teams have had time to migrate.")]] bool
+   deprecated_legacy_json_field_conflicts() const;
+   [[deprecated(
+       "Enable the legacy handling of JSON field name conflicts.  This "
+       "lowercases and strips underscored from the fields before comparison in "
+       "proto3 only. The new behavior takes `json_name` into account and "
+       "applies to proto2 as well. TODO Remove this legacy "
+       "behavior once downstream teams have had time to migrate.")]] void
+   set_deprecated_legacy_json_field_conflicts(bool value);
 
   private:
   bool _internal_deprecated_legacy_json_field_conflicts() const;
@@ -8312,8 +8417,11 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.OneofDescriptorProto) */ {
+class PROTOBUF_EXPORT OneofDescriptorProto final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.OneofDescriptorProto)
+ */
+{
  public:
   inline OneofDescriptorProto() : OneofDescriptorProto(nullptr) {}
   ~OneofDescriptorProto() override;
@@ -8513,8 +8621,11 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.MethodDescriptorProto) */ {
+class PROTOBUF_EXPORT MethodDescriptorProto final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.MethodDescriptorProto)
+ */
+{
  public:
   inline MethodDescriptorProto() : MethodDescriptorProto(nullptr) {}
   ~MethodDescriptorProto() override;
@@ -8778,8 +8889,11 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.FieldDescriptorProto) */ {
+class PROTOBUF_EXPORT FieldDescriptorProto final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.FieldDescriptorProto)
+ */
+{
  public:
   inline FieldDescriptorProto() : FieldDescriptorProto(nullptr) {}
   ~FieldDescriptorProto() override;
@@ -9175,8 +9289,11 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueDescriptorProto) */ {
+class PROTOBUF_EXPORT EnumValueDescriptorProto final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueDescriptorProto)
+ */
+{
  public:
   inline EnumValueDescriptorProto() : EnumValueDescriptorProto(nullptr) {}
   ~EnumValueDescriptorProto() override;
@@ -9389,8 +9506,11 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ExtensionRange) */ {
+class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ExtensionRange)
+ */
+{
  public:
   inline DescriptorProto_ExtensionRange() : DescriptorProto_ExtensionRange(nullptr) {}
   ~DescriptorProto_ExtensionRange() override;
@@ -9597,8 +9717,11 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.ServiceDescriptorProto) */ {
+class PROTOBUF_EXPORT ServiceDescriptorProto final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.ServiceDescriptorProto)
+ */
+{
  public:
   inline ServiceDescriptorProto() : ServiceDescriptorProto(nullptr) {}
   ~ServiceDescriptorProto() override;
@@ -9817,8 +9940,11 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto) */ {
+class PROTOBUF_EXPORT EnumDescriptorProto final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto)
+ */
+{
  public:
   inline EnumDescriptorProto() : EnumDescriptorProto(nullptr) {}
   ~EnumDescriptorProto() override;
@@ -10088,7 +10214,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto) */ {
+/* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto) */
+{
  public:
   inline DescriptorProto() : DescriptorProto(nullptr) {}
   ~DescriptorProto() override;
@@ -10453,8 +10580,11 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorProto) */ {
+class PROTOBUF_EXPORT FileDescriptorProto final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorProto)
+ */
+{
  public:
   inline FileDescriptorProto() : FileDescriptorProto(nullptr) {}
   ~FileDescriptorProto() override;
@@ -10868,8 +10998,11 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorSet) */ {
+class PROTOBUF_EXPORT FileDescriptorSet final
+    : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorSet)
+ */
+{
  public:
   inline FileDescriptorSet() : FileDescriptorSet(nullptr) {}
   ~FileDescriptorSet() override;

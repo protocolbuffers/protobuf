@@ -48,7 +48,7 @@ absl::flat_hash_map<absl::string_view, std::string> EnumVars(
        enum_->containing_type() == nullptr ? "" : absl::StrCat(classname, "_")},
       {"kMin", absl::StrCat(min->number())},
       {"kMax", absl::StrCat(max->number())},
-  };
+      {"DEPRECATED_Enum", DeprecatedAttribute(enum_)}};
 }
 
 // The ARRAYSIZE constant is the max enum value plus 1. If the max enum value
@@ -121,8 +121,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
                                         EnumValueName(value)))
                            .AnnotatedAs(value),
                        {"kNumber", Int32ToString(value->number())},
-                       {"DEPRECATED",
-                        value->options().deprecated() ? "[[deprecated]]" : ""},
+                       {"DEPRECATED", DeprecatedAttribute(value)},
                    },
                    R"cc(
                      $Msg_Enum_VALUE$$ DEPRECATED$ = $kNumber$,
@@ -153,7 +152,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
            }},
       },
       R"cc(
-        enum $Msg_Enum_annotated$ : int {
+        enum $DEPRECATED_Enum$$Msg_Enum_annotated$ : int {
           $values$,
           $open_enum_sentinels$,
         };
@@ -277,8 +276,7 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
     p->Emit(
         {
             Sub("VALUE", EnumValueName(enum_->value(j))).AnnotatedAs(value),
-            {"DEPRECATED",
-             value->options().deprecated() ? "[[deprecated]]" : ""},
+            {"DEPRECATED", DeprecatedAttribute(value)},
         },
         R"cc(
           $DEPRECATED $static constexpr $Enum_$ $VALUE$ = $Msg_Enum$_$VALUE$;

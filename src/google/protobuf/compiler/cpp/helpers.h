@@ -19,7 +19,9 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -55,14 +57,38 @@ inline std::string MacroPrefix(const Options& options) {
   return options.opensource_runtime ? "GOOGLE_PROTOBUF" : "GOOGLE_PROTOBUF";
 }
 
-inline std::string DeprecatedAttribute(const Options&,
-                                       const FieldDescriptor* d) {
-  return d->options().deprecated() ? "[[deprecated]] " : "";
-}
+template <class T>
+inline std::string DeprecatedAttribute(const T* d) {
+  if (!d->options().deprecated()) {
+    return "";
+  }
 
-inline std::string DeprecatedAttribute(const Options&,
-                                       const EnumValueDescriptor* d) {
-  return d->options().deprecated() ? "[[deprecated]] " : "";
+  std::string comment = "";
+  SourceLocation location;
+  if (!d->GetSourceLocation(&location)) {
+    return "[[deprecated]] ";
+  }
+
+  absl::flat_hash_map<std::string, std::string> comment_replacer = {
+      {"\n", ""},
+      {"\"", "\\\""},
+      {"\\", "\\\\"},
+  };
+  auto leading_comments = absl::StrReplaceAll(
+      absl::StripAsciiWhitespace(location.leading_comments), comment_replacer);
+  auto trailing_comments = absl::StrReplaceAll(
+      absl::StripAsciiWhitespace(location.trailing_comments), comment_replacer);
+
+  if (!leading_comments.empty() && !trailing_comments.empty()) {
+    comment =
+        absl::StrCat("(\"", leading_comments, ". ", trailing_comments, "\")");
+  } else if (!leading_comments.empty()) {
+    comment = absl::StrCat("(\"", leading_comments, "\")");
+  } else if (!trailing_comments.empty()) {
+    comment = absl::StrCat("(\"", trailing_comments, "\")");
+  }
+
+  return absl::StrCat("[[deprecated", comment, "]] ");
 }
 
 // Commonly-used separator comments.  Thick is a line of '=', thin is a line
