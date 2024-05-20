@@ -21,6 +21,9 @@ final class ListFieldSchemas {
   }
 
   private static ListFieldSchema loadSchemaForFullRuntime() {
+    if (Protobuf.assumeLiteRuntime) {
+      return null;
+    }
     try {
       Class<?> clazz = Class.forName("com.google.protobuf.ListFieldSchemaFull");
       return (ListFieldSchema) clazz.getDeclaredConstructor().newInstance();
