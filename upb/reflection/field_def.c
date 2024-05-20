@@ -596,7 +596,7 @@ static bool _upb_FieldDef_InferLegacyFeatures(
 //   if (syntax == kUpb_Syntax_Proto3 &&
 //       UPB_DESC(FieldOptions_has_enforce_utf8)(options) &&
 //       !UPB_DESC(FieldOptions_enforce_utf8)(options)) {
-//     int val = UPB_DESC(FeatureSet_UNVERIFIED);
+//     int val = UPB_DESC(FeatureSet_NONE);
 //     UPB_DESC(FeatureSet_set_utf8_validation(features, val));
 //     ret = true;
 //   }

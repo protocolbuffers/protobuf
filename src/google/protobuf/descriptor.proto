@@ -1017,6 +1017,7 @@ message FeatureSet {
     UTF8_VALIDATION_UNKNOWN = 0;
     VERIFY = 2;
     NONE = 3;
+    reserved 1;
   }
   optional Utf8Validation utf8_validation = 4 [
     retention = RETENTION_RUNTIME,
