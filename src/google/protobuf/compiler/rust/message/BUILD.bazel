@@ -1,0 +1,34 @@
+################################################################################
+# Protocol Buffers Compiler - Rust code generator for messages.
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "message",
+    srcs = ["message.cc"],
+    hdrs = ["message.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler/rust:__subpackages__",
+    ],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler/cpp:names",
+        "//src/google/protobuf/compiler/cpp:names_internal",
+        "//src/google/protobuf/compiler/rust:accessor_case",
+        "//src/google/protobuf/compiler/rust:context",
+        "//src/google/protobuf/compiler/rust:naming",
+        "//src/google/protobuf/compiler/rust/enum",
+        "//src/google/protobuf/compiler/rust/message/accessors",
+        "//src/google/protobuf/compiler/rust/oneof",
+        "//upb_generator:mangle",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+    ],
+)

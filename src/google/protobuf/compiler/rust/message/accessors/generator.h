@@ -13,7 +13,7 @@
 #include <utility>
 
 #include "absl/log/absl_check.h"
-#include "google/protobuf/compiler/rust/accessors/accessor_case.h"
+#include "google/protobuf/compiler/rust/accessor_case.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"

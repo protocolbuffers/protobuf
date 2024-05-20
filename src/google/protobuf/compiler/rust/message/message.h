@@ -8,10 +8,6 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_RUST_MESSAGE_H__
 #define GOOGLE_PROTOBUF_COMPILER_RUST_MESSAGE_H__
 
-#include <memory>
-#include <vector>
-
-#include "google/protobuf/compiler/rust/accessors/accessors.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/descriptor.h"
 

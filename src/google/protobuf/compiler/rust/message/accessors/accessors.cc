@@ -5,14 +5,14 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/compiler/rust/accessors/accessors.h"
+#include "google/protobuf/compiler/rust/message/accessors/accessors.h"
 
 #include <memory>
 
 #include "absl/log/absl_log.h"
-#include "google/protobuf/compiler/rust/accessors/accessor_case.h"
-#include "google/protobuf/compiler/rust/accessors/generator.h"
+#include "google/protobuf/compiler/rust/accessor_case.h"
 #include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/compiler/rust/message/accessors/generator.h"
 #include "google/protobuf/compiler/rust/rust_field_type.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"

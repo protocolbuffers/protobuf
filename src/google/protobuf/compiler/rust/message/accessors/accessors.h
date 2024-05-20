@@ -8,7 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_ACCESSORS_H__
 #define GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_ACCESSORS_H__
 
-#include "google/protobuf/compiler/rust/accessors/accessor_case.h"
+#include "google/protobuf/compiler/rust/accessor_case.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/descriptor.h"
 

@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/compiler/rust/message.h"
+#include "google/protobuf/compiler/rust/message/message.h"
 
 #include <string>
 
@@ -14,12 +14,12 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
-#include "google/protobuf/compiler/rust/accessors/accessor_case.h"
-#include "google/protobuf/compiler/rust/accessors/accessors.h"
+#include "google/protobuf/compiler/rust/accessor_case.h"
 #include "google/protobuf/compiler/rust/context.h"
-#include "google/protobuf/compiler/rust/enum.h"
+#include "google/protobuf/compiler/rust/enum/enum.h"
+#include "google/protobuf/compiler/rust/message/accessors/accessors.h"
 #include "google/protobuf/compiler/rust/naming.h"
-#include "google/protobuf/compiler/rust/oneof.h"
+#include "google/protobuf/compiler/rust/oneof/oneof.h"
 #include "google/protobuf/descriptor.h"
 #include "upb_generator/mangle.h"
 

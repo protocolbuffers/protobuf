@@ -1,4 +1,4 @@
-#include "google/protobuf/compiler/rust/enum.h"
+#include "google/protobuf/compiler/rust/enum/enum.h"
 
 #include <cstdint>
 

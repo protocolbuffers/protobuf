@@ -1,4 +1,4 @@
-#include "google/protobuf/compiler/rust/accessors/accessor_case.h"
+#include "google/protobuf/compiler/rust/accessor_case.h"
 
 #include "absl/strings/string_view.h"
 

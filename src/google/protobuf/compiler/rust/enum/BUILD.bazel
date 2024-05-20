@@ -1,0 +1,40 @@
+################################################################################
+# Protocol Buffers Compiler - Rust code generator for enum type definitions.
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "enum",
+    srcs = ["enum.cc"],
+    hdrs = ["enum.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler/rust:__subpackages__",
+    ],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler/cpp:names",
+        "//src/google/protobuf/compiler/rust:context",
+        "//src/google/protobuf/compiler/rust:naming",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_test(
+    name = "enum_test",
+    srcs = ["enum_test.cc"],
+    deps = [
+        ":enum",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)

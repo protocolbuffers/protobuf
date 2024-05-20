@@ -6,9 +6,9 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/rust/accessors/accessor_case.h"
-#include "google/protobuf/compiler/rust/accessors/generator.h"
+#include "google/protobuf/compiler/rust/accessor_case.h"
 #include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/compiler/rust/message/accessors/generator.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {

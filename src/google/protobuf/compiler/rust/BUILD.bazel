@@ -18,14 +18,14 @@ cc_library(
     deps = [
         ":context",
         ":crate_mapping",
-        ":enum",
-        ":message",
         ":naming",
         ":relative_path",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler/cpp:names",
+        "//src/google/protobuf/compiler/rust/enum",
+        "//src/google/protobuf/compiler/rust/message",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
         "@com_google_absl//absl/algorithm:container",
@@ -76,29 +76,6 @@ cc_test(
 )
 
 cc_library(
-    name = "message",
-    srcs = ["message.cc"],
-    hdrs = ["message.h"],
-    copts = COPTS,
-    strip_include_prefix = "/src",
-    deps = [
-        ":context",
-        ":enum",
-        ":naming",
-        ":oneof",
-        "//src/google/protobuf",
-        "//src/google/protobuf/compiler/cpp:names",
-        "//src/google/protobuf/compiler/cpp:names_internal",
-        "//src/google/protobuf/compiler/rust/accessors",
-        "//upb_generator:mangle",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:str_format",
-    ],
-)
-
-cc_library(
     name = "context",
     srcs = ["context.cc"],
     hdrs = ["context.h"],
@@ -119,36 +96,6 @@ cc_library(
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
-    ],
-)
-
-cc_library(
-    name = "enum",
-    srcs = ["enum.cc"],
-    hdrs = ["enum.h"],
-    copts = COPTS,
-    strip_include_prefix = "/src",
-    deps = [
-        ":context",
-        ":naming",
-        "//src/google/protobuf",
-        "//src/google/protobuf/compiler/cpp:names",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/types:span",
-    ],
-)
-
-cc_test(
-    name = "enum_test",
-    srcs = ["enum_test.cc"],
-    deps = [
-        ":enum",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -176,25 +123,6 @@ cc_library(
         "//src/google/protobuf/compiler/cpp:names_internal",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/strings",
-    ],
-)
-
-cc_library(
-    name = "oneof",
-    srcs = ["oneof.cc"],
-    hdrs = ["oneof.h"],
-    copts = COPTS,
-    strip_include_prefix = "/src",
-    deps = [
-        ":context",
-        ":naming",
-        ":rust_field_type",
-        "//src/google/protobuf",
-        "//src/google/protobuf/compiler/cpp:names",
-        "//src/google/protobuf/compiler/cpp:names_internal",
-        "//src/google/protobuf/compiler/rust/accessors",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],
@@ -233,5 +161,18 @@ cc_library(
     deps = [
         "//src/google/protobuf",
         "@com_google_absl//absl/log:absl_log",
+    ],
+)
+
+cc_library(
+    name = "accessor_case",
+    srcs = ["accessor_case.cc"],
+    hdrs = ["accessor_case.h"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//src/google/protobuf/compiler/rust:__subpackages__",
+    ],
+    deps = [
+        "@com_google_absl//absl/strings",
     ],
 )
