@@ -2782,6 +2782,18 @@ public final class Descriptors {
     public abstract FileDescriptor getFile();
 
     void resolveFeatures(FeatureSet unresolvedFeatures) throws DescriptorValidationException {
+      if (!unresolvedFeatures.getUnknownFields().isEmpty()) {
+        ExtensionRegistry registry = ExtensionRegistry.newInstance();
+        registry.add(JavaFeaturesProto.java_);
+        ByteString bytes = unresolvedFeatures.toByteString();
+        try {
+          unresolvedFeatures = FeatureSet.parseFrom(bytes, registry);
+        } catch (InvalidProtocolBufferException e) {
+          throw new DescriptorValidationException(
+              this, "Failed to reparse unknown features with Java feature registry.");
+        }
+      }
+
       if (this.parent != null
           && unresolvedFeatures.equals(FeatureSet.getDefaultInstance())
           && !hasInferredLegacyProtoFeatures()) {
