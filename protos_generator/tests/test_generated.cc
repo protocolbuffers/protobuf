@@ -21,6 +21,7 @@
 #include "protos/protos.h"
 #include "protos/repeated_field.h"
 #include "protos/repeated_field_iterator.h"
+#include "protos/requires.h"
 #include "protos_generator/tests/child_model.upb.proto.h"
 #include "protos_generator/tests/no_package.upb.proto.h"
 #include "protos_generator/tests/test_model.upb.proto.h"
@@ -29,6 +30,7 @@
 
 namespace {
 
+using ::protos::internal::Requires;
 using ::protos_generator::test::protos::ChildModel1;
 using ::protos_generator::test::protos::container_ext;
 using ::protos_generator::test::protos::ContainerExtension;
@@ -43,12 +45,6 @@ using ::protos_generator::test::protos::TestModel_Category_VIDEO;
 using ::protos_generator::test::protos::theme;
 using ::protos_generator::test::protos::ThemeExtension;
 using ::testing::ElementsAre;
-
-// C++17 port of C++20 `requires`
-template <typename... T, typename F>
-constexpr bool Requires(F) {
-  return std::is_invocable_v<F, T...>;
-}
 
 TEST(CppGeneratedCode, Constructor) { TestModel test_model; }
 
