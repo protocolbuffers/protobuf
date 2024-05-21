@@ -59,14 +59,16 @@ namespace Pb {
             "IOkHElQKDmZ1dHVyZV9mZWF0dXJlGBIgASgOMg8ucGIuRW51bUZlYXR1cmVC",
             "K4gBAZgBAZgBBKIBCxIGVkFMVUUxGIQHogELEgZWQUxVRTIY6QeyAQMI6QcS",
             "VwoObGVnYWN5X2ZlYXR1cmUYEyABKA4yDy5wYi5FbnVtRmVhdHVyZUIuiAEB",
-            "mAEBmAEEogELEgZWQUxVRTEYhAeiAQsSBlZBTFVFMhjoB7IBBgjmByDoByrm",
-            "AQoLRW51bUZlYXR1cmUSHQoZVEVTVF9FTlVNX0ZFQVRVUkVfVU5LTk9XThAA",
+            "mAEBmAEEogELEgZWQUxVRTEYhAeiAQsSBlZBTFVFMhjoB7IBBgjmByDoByrJ",
+            "AgoLRW51bUZlYXR1cmUSHQoZVEVTVF9FTlVNX0ZFQVRVUkVfVU5LTk9XThAA",
             "EgoKBlZBTFVFMRABEgoKBlZBTFVFMhACEgoKBlZBTFVFMxADEgoKBlZBTFVF",
             "NBAEEgoKBlZBTFVFNRAFEgoKBlZBTFVFNhAGEgoKBlZBTFVFNxAHEgoKBlZB",
             "TFVFOBAIEgoKBlZBTFVFORAJEgsKB1ZBTFVFMTAQChILCgdWQUxVRTExEAsS",
             "CwoHVkFMVUUxMhAMEgsKB1ZBTFVFMTMQDRILCgdWQUxVRTE0EA4SCwoHVkFM",
-            "VUUxNRAPOjwKBHRlc3QSGy5nb29nbGUucHJvdG9idWYuRmVhdHVyZVNldBiP",
-            "TiABKAsyEC5wYi5UZXN0RmVhdHVyZXM="));
+            "VUUxNRAPEhsKE1ZBTFVFX0VNUFRZX1NVUFBPUlQQYhoCIgASRAoMVkFMVUVf",
+            "RlVUVVJFEGMaMiIwCJ2NBhCejQYaIkN1c3RvbSBmZWF0dXJlIGRlcHJlY2F0",
+            "aW9uIHdhcm5pbmcgn40GOjwKBHRlc3QSGy5nb29nbGUucHJvdG9idWYuRmVh",
+            "dHVyZVNldBiPTiABKAsyEC5wYi5UZXN0RmVhdHVyZXM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Pb.EnumFeature), }, new pb::Extension[] { UnittestFeaturesExtensions.Test }, new pbr::GeneratedClrTypeInfo[] {
@@ -101,6 +103,8 @@ namespace Pb {
     [pbr::OriginalName("VALUE13")] Value13 = 13,
     [pbr::OriginalName("VALUE14")] Value14 = 14,
     [pbr::OriginalName("VALUE15")] Value15 = 15,
+    [pbr::OriginalName("VALUE_EMPTY_SUPPORT")] ValueEmptySupport = 98,
+    [pbr::OriginalName("VALUE_FUTURE")] ValueFuture = 99,
   }
 
   #endregion
