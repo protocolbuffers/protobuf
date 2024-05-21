@@ -494,6 +494,7 @@ message FileOptions {
   optional bool java_generic_services = 17 [default = false];
   optional bool py_generic_services = 18 [default = false];
   reserved 42;  // removed php_generic_services
+  reserved "php_generic_services";
 
   // Is this file deprecated?
   // Depending on the target platform, this can emit Deprecated annotations
@@ -1017,6 +1018,7 @@ message FeatureSet {
     UTF8_VALIDATION_UNKNOWN = 0;
     VERIFY = 2;
     NONE = 3;
+    reserved 1;
   }
   optional Utf8Validation utf8_validation = 4 [
     retention = RETENTION_RUNTIME,
@@ -1106,6 +1108,9 @@ message FeatureSetDefaults {
 
     // Defaults of features that can't be overridden in this edition.
     optional FeatureSet fixed_features = 5;
+
+    reserved 1, 2;
+    reserved "features";
   }
   repeated FeatureSetEditionDefault defaults = 1;
 
