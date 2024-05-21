@@ -10447,11 +10447,13 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
       total_size +=
           1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.features_);
     }
+
     // optional .google.protobuf.FieldOptions.FeatureSupport feature_support = 4;
     if (cached_has_bits & 0x00000002u) {
       total_size +=
           1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.feature_support_);
     }
+
     // optional bool deprecated = 1 [default = false];
     if (cached_has_bits & 0x00000004u) {
       total_size += 2;
