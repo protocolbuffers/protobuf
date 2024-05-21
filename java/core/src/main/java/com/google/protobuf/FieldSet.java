@@ -213,6 +213,10 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
    * library as it is not protected from mutation when fields is not immutable.
    */
   public Iterator<Map.Entry<T, Object>> iterator() {
+    // Avoid allocation in the common case of empty FieldSet.
+    if (isEmpty()) {
+      return Collections.emptyIterator();
+    }
     if (hasLazyField) {
       return new LazyIterator<T>(fields.entrySet().iterator());
     }
@@ -225,6 +229,10 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
    * fields is not immutable.
    */
   Iterator<Map.Entry<T, Object>> descendingIterator() {
+    // Avoid an allocation in the common case of empty FieldSet.
+    if (isEmpty()) {
+      return Collections.emptyIterator();
+    }
     if (hasLazyField) {
       return new LazyIterator<T>(fields.descendingEntrySet().iterator());
     }
