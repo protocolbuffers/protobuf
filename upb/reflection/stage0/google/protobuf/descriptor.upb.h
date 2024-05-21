@@ -4962,6 +4962,22 @@ UPB_INLINE bool google_protobuf_EnumValueOptions_has_debug_redact(const google_p
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__EnumValueOptions_msg_init(), 3);
   return upb_Message_HasBaseField(UPB_UPCAST(msg), &field);
 }
+UPB_INLINE void google_protobuf_EnumValueOptions_clear_feature_support(google_protobuf_EnumValueOptions* msg) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__EnumValueOptions_msg_init(), 4);
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), &field);
+}
+UPB_INLINE const google_protobuf_FieldOptions_FeatureSupport* google_protobuf_EnumValueOptions_feature_support(const google_protobuf_EnumValueOptions* msg) {
+  const google_protobuf_FieldOptions_FeatureSupport* default_val = NULL;
+  const google_protobuf_FieldOptions_FeatureSupport* ret;
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__EnumValueOptions_msg_init(), 4);
+  _upb_Message_GetNonExtensionField(UPB_UPCAST(msg), &field,
+                                    &default_val, &ret);
+  return ret;
+}
+UPB_INLINE bool google_protobuf_EnumValueOptions_has_feature_support(const google_protobuf_EnumValueOptions* msg) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__EnumValueOptions_msg_init(), 4);
+  return upb_Message_HasBaseField(UPB_UPCAST(msg), &field);
+}
 UPB_INLINE void google_protobuf_EnumValueOptions_clear_uninterpreted_option(google_protobuf_EnumValueOptions* msg) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__EnumValueOptions_msg_init(), 999);
   upb_Message_ClearBaseField(UPB_UPCAST(msg), &field);
@@ -5014,6 +5030,18 @@ UPB_INLINE struct google_protobuf_FeatureSet* google_protobuf_EnumValueOptions_m
 UPB_INLINE void google_protobuf_EnumValueOptions_set_debug_redact(google_protobuf_EnumValueOptions *msg, bool value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__EnumValueOptions_msg_init(), 3);
   upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+}
+UPB_INLINE void google_protobuf_EnumValueOptions_set_feature_support(google_protobuf_EnumValueOptions *msg, google_protobuf_FieldOptions_FeatureSupport* value) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__EnumValueOptions_msg_init(), 4);
+  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+}
+UPB_INLINE struct google_protobuf_FieldOptions_FeatureSupport* google_protobuf_EnumValueOptions_mutable_feature_support(google_protobuf_EnumValueOptions* msg, upb_Arena* arena) {
+  struct google_protobuf_FieldOptions_FeatureSupport* sub = (struct google_protobuf_FieldOptions_FeatureSupport*)google_protobuf_EnumValueOptions_feature_support(msg);
+  if (sub == NULL) {
+    sub = (struct google_protobuf_FieldOptions_FeatureSupport*)_upb_Message_New(google__protobuf__FieldOptions__FeatureSupport_msg_init(), arena);
+    if (sub) google_protobuf_EnumValueOptions_set_feature_support(msg, sub);
+  }
+  return sub;
 }
 UPB_INLINE google_protobuf_UninterpretedOption** google_protobuf_EnumValueOptions_mutable_uninterpreted_option(google_protobuf_EnumValueOptions* msg, size_t* size) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__EnumValueOptions_msg_init(), 999);
