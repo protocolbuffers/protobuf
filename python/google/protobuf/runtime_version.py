@@ -31,8 +31,8 @@ class VersionError(Exception):
 DOMAIN = Domain.PUBLIC
 MAJOR = 5
 MINOR = 27
-PATCH = 0
-SUFFIX = ''
+PATCH = 1
+SUFFIX = '-dev'
 
 
 def ValidateProtobufRuntimeVersion(
