@@ -1344,6 +1344,10 @@ class DescriptorPool::DeferredValidation {
     lifetimes_info_map_[file].emplace_back(std::move(info));
   }
 
+  void RollbackFile(const FileDescriptor* file) {
+    lifetimes_info_map_.erase(file);
+  }
+
   // Create a new file proto with an extended lifetime for deferred error
   // reporting.  If any temporary file protos don't outlive this object, the
   // reported errors won't be able to safely reference a location in the
@@ -1446,7 +1450,7 @@ class DescriptorPool::Tables {
 
   // Roll back the Tables to the state of the checkpoint at the top of the
   // stack, removing everything that was added after that point.
-  void RollbackToLastCheckpoint();
+  void RollbackToLastCheckpoint(DeferredValidation& deferred_validation);
 
   // The stack of files which are currently being built.  Used to detect
   // cyclic dependencies when loading files from a DescriptorDatabase.  Not
@@ -1638,7 +1642,8 @@ void DescriptorPool::Tables::ClearLastCheckpoint() {
   }
 }
 
-void DescriptorPool::Tables::RollbackToLastCheckpoint() {
+void DescriptorPool::Tables::RollbackToLastCheckpoint(
+    DeferredValidation& deferred_validation) {
   ABSL_DCHECK(!checkpoints_.empty());
   const CheckPoint& checkpoint = checkpoints_.back();
 
@@ -1648,6 +1653,7 @@ void DescriptorPool::Tables::RollbackToLastCheckpoint() {
   }
   for (size_t i = checkpoint.pending_files_before_checkpoint;
        i < files_after_checkpoint_.size(); i++) {
+    deferred_validation.RollbackFile(files_after_checkpoint_[i]);
     files_by_name_.erase(files_after_checkpoint_[i]);
   }
   for (size_t i = checkpoint.pending_extensions_before_checkpoint;
@@ -5822,7 +5828,7 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
     result->finished_building_ = true;
     alloc->ExpectConsumed();
   } else {
-    tables_->RollbackToLastCheckpoint();
+    tables_->RollbackToLastCheckpoint(deferred_validation_);
   }
 
   return result;

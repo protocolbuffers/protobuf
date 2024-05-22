@@ -12265,6 +12265,70 @@ TEST_F(DatabaseBackedPoolTest, FeatureLifetimeError) {
       "pb.TestFeatures.future_feature wasn't introduced until edition 2024\n");
 }
 
+TEST_F(DatabaseBackedPoolTest, FeatureLifetimeErrorUnknownDependencies) {
+  FileDescriptorProto proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
+  std::string text_proto;
+  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+  AddToDatabase(&database_, text_proto);
+  pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
+  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+  AddToDatabase(&database_, text_proto);
+  AddToDatabase(&database_, R"pb(
+    name: "option.proto"
+    syntax: "editions"
+    edition: EDITION_2023
+    dependency: "google/protobuf/descriptor.proto"
+    dependency: "google/protobuf/unittest_features.proto"
+    extension {
+      name: "foo_extension"
+      number: 1000
+      type: TYPE_STRING
+      extendee: ".google.protobuf.MessageOptions"
+      options {
+        features {
+          [pb.test] { legacy_feature: VALUE9 }
+        }
+      }
+    }
+  )pb");
+
+  // Note, we very carefully don't put a dependency here, otherwise option.proto
+  // will be built eagerly beforehand.  This triggers a rare condition where
+  // DeferredValidation is filled with descriptors that are then rolled back.
+  AddToDatabase(&database_, R"pb(
+    name: "use_option.proto"
+    syntax: "editions"
+    edition: EDITION_2023
+    message_type {
+      name: "FooMessage"
+      options {
+        uninterpreted_option {
+          name { name_part: "foo_extension" is_extension: true }
+          string_value: "test"
+        }
+      }
+      field { name: "bar" number: 1 type: TYPE_INT64 }
+    }
+  )pb");
+  MockErrorCollector error_collector;
+  DescriptorPool pool(&database_, &error_collector);
+
+  ASSERT_EQ(pool.FindMessageTypeByName("FooMessage"), nullptr);
+  EXPECT_EQ(error_collector.text_,
+            "use_option.proto: FooMessage: OPTION_NAME: Option "
+            "\"(foo_extension)\" unknown. Ensure that your proto definition "
+            "file imports the proto which defines the option.\n");
+
+  // Verify that the extension does trigger a lifetime error.
+  error_collector.text_.clear();
+  ASSERT_EQ(pool.FindExtensionByName("foo_extension"), nullptr);
+  EXPECT_EQ(
+      error_collector.text_,
+      "option.proto: foo_extension: NAME: Feature "
+      "pb.TestFeatures.legacy_feature has been removed in edition 2023\n");
+}
+
 TEST_F(DatabaseBackedPoolTest, DoesntRetryDbUnnecessarily) {
   // Searching for a child of an existing descriptor should never fall back
   // to the DescriptorDatabase even if it isn't found, because we know all
