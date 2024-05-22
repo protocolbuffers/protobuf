@@ -49,21 +49,19 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     MessageLite.Builder internalMergeFrom(MessageLite.Builder to, MessageLite from);
   }
 
-  private static final int DEFAULT_FIELD_MAP_ARRAY_SIZE = 16;
-
   private final SmallSortedMap<T, Object> fields;
   private boolean isImmutable;
   private boolean hasLazyField;
 
   /** Construct a new FieldSet. */
   private FieldSet() {
-    this.fields = SmallSortedMap.newFieldMap(DEFAULT_FIELD_MAP_ARRAY_SIZE);
+    this.fields = SmallSortedMap.newFieldMap();
   }
 
   /** Construct an empty FieldSet. This is only used to initialize DEFAULT_INSTANCE. */
   @SuppressWarnings("unused")
   private FieldSet(final boolean dummy) {
-    this(SmallSortedMap.<T>newFieldMap(0));
+    this(SmallSortedMap.<T>newFieldMap());
     makeImmutable();
   }
 
@@ -185,7 +183,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
 
   private static <T extends FieldDescriptorLite<T>> SmallSortedMap<T, Object> cloneAllFieldsMap(
       SmallSortedMap<T, Object> fields, boolean copyList, boolean resolveLazyFields) {
-    SmallSortedMap<T, Object> result = SmallSortedMap.newFieldMap(DEFAULT_FIELD_MAP_ARRAY_SIZE);
+    SmallSortedMap<T, Object> result = SmallSortedMap.newFieldMap();
     for (int i = 0; i < fields.getNumArrayEntries(); i++) {
       cloneFieldEntry(result, fields.getArrayEntryAt(i), copyList, resolveLazyFields);
     }
@@ -931,7 +929,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     private boolean hasNestedBuilders;
 
     private Builder() {
-      this(SmallSortedMap.<T>newFieldMap(DEFAULT_FIELD_MAP_ARRAY_SIZE));
+      this(SmallSortedMap.<T>newFieldMap());
     }
 
     private Builder(SmallSortedMap<T, Object> fields) {
