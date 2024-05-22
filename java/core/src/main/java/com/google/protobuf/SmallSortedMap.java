@@ -172,12 +172,6 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
         : overflowEntries.entrySet();
   }
 
-  Iterable<Map.Entry<K, V>> getOverflowEntriesDescending() {
-    return overflowEntriesDescending.isEmpty()
-        ? Collections.emptySet()
-        : overflowEntriesDescending.entrySet();
-  }
-
   @Override
   public int size() {
     return entryList.size() + overflowEntries.size();
