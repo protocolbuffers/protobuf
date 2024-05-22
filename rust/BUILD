@@ -1,5 +1,6 @@
 # Protobuf Rust runtime packages.
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
@@ -190,4 +191,15 @@ config_setting(
     flag_values = {
         ":rust_proto_library_kernel": "upb",
     },
+)
+
+bzl_library(
+    name = "defs_bzl",
+    srcs = ["defs.bzl"],
+    parse_tests = False,
+    visibility = ["//visibility:private"],
+    deps = [
+        "//tools/build_defs/proto:proto_common_bzl",
+        "@rules_rust//rust:bzl_lib",
+    ],
 )
