@@ -25,6 +25,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -2056,7 +2059,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           if (i < descriptor.getRealOneofs().size()) {
             oneofs[i] =
                 new RealOneofAccessor(
-                    descriptor, i, camelCaseNames[i + fieldsSize], messageClass, builderClass);
+                    descriptor, camelCaseNames[i + fieldsSize], messageClass, builderClass);
           } else {
             oneofs[i] = new SyntheticOneofAccessor(descriptor, i);
           }
@@ -2148,7 +2151,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     private static class RealOneofAccessor implements OneofAccessor {
       RealOneofAccessor(
           final Descriptor descriptor,
-          final int oneofIndex,
           final String camelCaseName,
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder<?>> builderClass) {
