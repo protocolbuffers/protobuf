@@ -295,7 +295,7 @@ class ExtensionRegistry {
   ExtensionRegistry(
       const std::vector<const ::protos::internal::ExtensionMiniTableProvider*>&
           extensions,
-      const upb::Arena& arena)
+      const Arena& arena)
       : registry_(upb_ExtensionRegistry_New(arena.ptr())) {
     if (registry_) {
       for (const auto& ext_provider : extensions) {
@@ -528,7 +528,7 @@ absl::StatusOr<T> Parse(absl::string_view bytes,
 }
 
 template <typename T>
-absl::StatusOr<absl::string_view> Serialize(const T* message, upb::Arena& arena,
+absl::StatusOr<absl::string_view> Serialize(const T* message, Arena& arena,
                                             int options = 0) {
   return ::protos::internal::Serialize(
       internal::GetInternalMsg(message),
@@ -536,7 +536,7 @@ absl::StatusOr<absl::string_view> Serialize(const T* message, upb::Arena& arena,
 }
 
 template <typename T>
-absl::StatusOr<absl::string_view> Serialize(Ptr<T> message, upb::Arena& arena,
+absl::StatusOr<absl::string_view> Serialize(Ptr<T> message, Arena& arena,
                                             int options = 0) {
   return ::protos::internal::Serialize(
       internal::GetInternalMsg(message),
