@@ -131,7 +131,9 @@ std::string CreatePluginArg() {
 
 class CommandLineInterfaceTest : public CommandLineInterfaceTester {
  protected:
-  CommandLineInterfaceTest();
+  CommandLineInterfaceTest() = default;
+
+  void SetUp() override;
 
   // Runs the CommandLineInterface with the given command line.  The
   // command is automatically split on spaces, and the string "$tmpdir"
@@ -235,9 +237,14 @@ class CommandLineInterfaceTest::NullCodeGenerator : public CodeGenerator {
   }
 };
 
+class ProtocMinimalCLITest : public CommandLineInterfaceTest {
+ protected:
+  void SetUp() override {}
+};
+
 // ===================================================================
 
-CommandLineInterfaceTest::CommandLineInterfaceTest() {
+void CommandLineInterfaceTest::SetUp() {
   // Reset the mock generator's test case environment variable.
   SetMockGeneratorTestCase("");
 
