@@ -14,14 +14,17 @@
 #include "google/protobuf/util/message_differencer.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <random>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
+#include "net/proto2/static_reflection/equal/equal.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "absl/flags/flag.h"
 #include "absl/functional/bind_front.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
@@ -38,10 +41,18 @@
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/util/field_comparator.h"
 #include "google/protobuf/util/message_differencer_unittest.pb.h"
+#include "google/protobuf/util/message_differencer_unittest.proto.static_reflection.equal.h"
 #include "google/protobuf/util/message_differencer_unittest_proto3.pb.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
+#include "thread/thread.h"
 
+ABSL_FLAG(size_t, deep_recursion_test_stack_size, 1 << 16,
+          "The stack size with which to test recursion depth");
+ABSL_FLAG(int, deep_recursion_test_max_depth, 500,
+          "How deep to test recursion depth");
+ABSL_FLAG(bool, deep_recursion_test_use_static_reflection, true,
+          "Whether to test recursion depth using static reflection");
 
 namespace google {
 namespace protobuf {
