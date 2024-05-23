@@ -32,11 +32,10 @@ namespace internal {
 // An implementation of MessageLite that treats all data as unknown. This type
 // acts as a placeholder for an implicit weak field in the case where the true
 // message type does not get linked into the binary.
-class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
+class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
  public:
   ImplicitWeakMessage() : ImplicitWeakMessage(nullptr) {}
-  explicit constexpr ImplicitWeakMessage(ConstantInitialized)
-      : data_(nullptr) {}
+  explicit constexpr ImplicitWeakMessage(ConstantInitialized);
   ImplicitWeakMessage(const ImplicitWeakMessage&) = delete;
   ImplicitWeakMessage& operator=(const ImplicitWeakMessage&) = delete;
 
@@ -54,7 +53,7 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
     delete data_;
   }
 
-  static const ImplicitWeakMessage* default_instance();
+  static const ImplicitWeakMessage& default_instance();
 
   const ClassData* GetClassData() const final;
 
@@ -81,9 +80,12 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
 
   typedef void InternalArenaConstructable_;
 
- private:
   static const char* ParseImpl(ImplicitWeakMessage* msg, const char* ptr,
                                ParseContext* ctx);
+
+ private:
+  static const ClassDataLite<1> class_data_;
+
   static void MergeImpl(MessageLite&, const MessageLite&);
 
   // This std::string is allocated on the heap, but we use a raw pointer so that

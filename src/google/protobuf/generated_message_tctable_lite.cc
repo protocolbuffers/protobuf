@@ -2562,7 +2562,7 @@ PROTOBUF_NOINLINE void TcParser::DestroyMapNode(NodeBase* node,
         ->~basic_string();
   } else if (map_info.value_type_card.cpp_type() == MapTypeCard::kMessage) {
     static_cast<MessageLite*>(node->GetVoidValue(map_info.node_size_info))
-        ->~MessageLite();
+        ->DestroyInstance(false);
   }
   map.DeallocNode(node, map_info.node_size_info);
 }

@@ -35,9 +35,6 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-void DestroyMessage(const void* message) {
-  static_cast<const MessageLite*>(message)->~MessageLite();
-}
 void DestroyString(const void* s) {
   static_cast<const std::string*>(s)->~basic_string();
 }

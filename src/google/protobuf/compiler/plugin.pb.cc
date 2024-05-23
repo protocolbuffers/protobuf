@@ -359,25 +359,26 @@ inline void Version::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-Version::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              nullptr,  // IsInitialized
-              &Version::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(Version, _impl_._cached_size_),
-              false,
-          },
-          &Version::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    Version::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            nullptr,  // IsInitialized
+            &Version::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(Version, _impl_._cached_size_),
+            false,
+        },
+        &Version::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* Version::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
@@ -663,25 +664,26 @@ inline void CodeGeneratorRequest::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-CodeGeneratorRequest::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              CodeGeneratorRequest::IsInitializedImpl,
-              &CodeGeneratorRequest::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._cached_size_),
-              false,
-          },
-          &CodeGeneratorRequest::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    CodeGeneratorRequest::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            CodeGeneratorRequest::IsInitializedImpl,
+            &CodeGeneratorRequest::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._cached_size_),
+            false,
+        },
+        &CodeGeneratorRequest::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* CodeGeneratorRequest::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
@@ -1020,25 +1022,26 @@ inline void CodeGeneratorResponse_File::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-CodeGeneratorResponse_File::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              nullptr,  // IsInitialized
-              &CodeGeneratorResponse_File::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._cached_size_),
-              false,
-          },
-          &CodeGeneratorResponse_File::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    CodeGeneratorResponse_File::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            nullptr,  // IsInitialized
+            &CodeGeneratorResponse_File::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._cached_size_),
+            false,
+        },
+        &CodeGeneratorResponse_File::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* CodeGeneratorResponse_File::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ = {
@@ -1333,25 +1336,26 @@ inline void CodeGeneratorResponse::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-CodeGeneratorResponse::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              nullptr,  // IsInitialized
-              &CodeGeneratorResponse::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._cached_size_),
-              false,
-          },
-          &CodeGeneratorResponse::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    CodeGeneratorResponse::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            nullptr,  // IsInitialized
+            &CodeGeneratorResponse::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._cached_size_),
+            false,
+        },
+        &CodeGeneratorResponse::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* CodeGeneratorResponse::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<3, 5, 1, 60, 2> CodeGeneratorResponse::_table_ = {

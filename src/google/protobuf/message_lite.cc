@@ -45,6 +45,11 @@
 namespace google {
 namespace protobuf {
 
+void MessageLite::DestroyInstance(bool free_memory) {
+  ABSL_DCHECK(!free_memory);
+  this->~MessageLite();
+}
+
 void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
   auto* data = GetClassData();
   auto* other_data = other.GetClassData();

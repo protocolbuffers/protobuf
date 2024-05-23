@@ -2335,8 +2335,7 @@ TEST(MapEntryTest, ConstInit) {
   // This verifies that `MapEntry` can be constant initialized.
   PROTOBUF_CONSTINIT static MyMapEntry entry{};
   // Use the object in some way to make sure the vtable is there.
-  const google::protobuf::Message* volatile m = &entry;
-  delete m->New();
+  EXPECT_NE("", absl::StrFormat("%p", &entry));
 }
 
 // Generated Message Test ===========================================
