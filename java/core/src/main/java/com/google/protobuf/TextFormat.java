@@ -550,6 +550,7 @@ public final class TextFormat {
         throw new IllegalStateException(e);
       }
     }
+
     /** Like {@code print()}, but writes directly to a {@code String} and returns it. */
     public String printToString(final UnknownFieldSet fields) {
       try {
@@ -1494,6 +1495,17 @@ public final class TextFormat {
    * control the parser behavior.
    */
   public static class Parser {
+    private final AtomicInteger debugStringSilentMarker = new AtomicInteger();
+    private final AtomicInteger textFormatParsingCount = new AtomicInteger();
+    private static ThreadLocal<Descriptor> rootType = new ThreadLocal<Descriptor>();
+
+    public int getSilentMarkerCount() {
+      return debugStringSilentMarker.intValue();
+    }
+
+    public int getTextFormatParsingCount() {
+      return textFormatParsingCount.intValue();
+    }
 
     /**
      * A valid silent marker appears between a field name and its value. If there is a ":" in
