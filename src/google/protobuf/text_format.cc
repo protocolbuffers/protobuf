@@ -11,7 +11,6 @@
 
 #include "google/protobuf/text_format.h"
 
-#include <float.h>
 #include <stdio.h>
 
 #include <algorithm>
@@ -21,16 +20,20 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/any.h"
@@ -41,7 +44,6 @@
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
@@ -499,7 +501,6 @@ class TextFormat::Parser::ParserImpl {
     return true;
   }
 
-
   // Consumes the current field (as returned by the tokenizer) on the
   // passed in message.
   bool ConsumeField(Message* message) {
@@ -620,7 +621,6 @@ class TextFormat::Parser::ParserImpl {
           reserved_field = descriptor->IsReservedName(field_name);
         }
       }
-
       if (field == nullptr && !reserved_field) {
         if (!allow_unknown_field_) {
           ReportError(absl::StrCat("Message type \"", descriptor->full_name(),

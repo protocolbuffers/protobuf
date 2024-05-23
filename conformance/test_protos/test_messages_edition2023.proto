@@ -13,6 +13,10 @@ option java_package = "com.google.protobuf_test_messages.edition2023";
 option java_multiple_files = true;
 option objc_class_prefix = "Editions";
 
+message ComplexMessage {
+  int32 d = 1;
+}
+
 message TestAllTypesEdition2023 {
   message NestedMessage {
     int32 a = 1;
