@@ -45,6 +45,7 @@
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unittest.pb.h"
+#include "util/random/shared_bit_gen.h"
 
 
 // Must be included last.
