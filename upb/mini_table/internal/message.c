@@ -5,18 +5,20 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "upb/mini_table/message.h"
+#include "upb/mini_table/internal/message.h"
 
 #include <stddef.h>
+
+#include "upb/message/internal/types.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
 // A MiniTable for an empty message, used for unlinked sub-messages.
-const upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty) = {
+const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty) = {
     .UPB_PRIVATE(subs) = NULL,
     .UPB_PRIVATE(fields) = NULL,
-    .UPB_PRIVATE(size) = 0,
+    .UPB_PRIVATE(size) = sizeof(struct upb_Message),
     .UPB_PRIVATE(field_count) = 0,
     .UPB_PRIVATE(ext) = kUpb_ExtMode_NonExtendable,
     .UPB_PRIVATE(dense_below) = 0,

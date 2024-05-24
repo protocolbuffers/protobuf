@@ -100,6 +100,29 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void Roundtrip_UnpairedSurrogate()
+        {
+            var message = new TestAllTypes { SingleString = "\ud83d" };
+
+            Assert.AreEqual("\ud83d", message.SingleString);
+
+            // The serialized bytes contain the replacement character.
+            var bytes = message.ToByteArray();
+            CollectionAssert.AreEqual(bytes, new byte[] { 0x72, 3, 0xEF, 0xBF, 0xBD });
+        }
+
+        [Test]
+        public void InvalidUtf8ParsesAsReplacementChars()
+        {
+            var payload = new byte[] { 0x72, 1, 0x80 };
+
+            // We would prefer to have this parse operation fail, but at the moment it substitutes
+            // the replacement character.
+            var message = TestAllTypes.Parser.ParseFrom(payload);
+            Assert.AreEqual("\ufffd", message.SingleString);
+        }
+
+        [Test]
         public void RoundTrip_Empty()
         {
             var message = new TestAllTypes();

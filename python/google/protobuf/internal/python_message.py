@@ -240,7 +240,6 @@ def _AddSlots(message_descriptor, dictionary):
                              '_cached_byte_size_dirty',
                              '_fields',
                              '_unknown_fields',
-                             '_unknown_field_set',
                              '_is_present_in_parent',
                              '_listener',
                              '_listener_for_children',
@@ -503,9 +502,6 @@ def _AddInitMethod(message_descriptor, cls):
     # _unknown_fields is () when empty for efficiency, and will be turned into
     # a list if fields are added.
     self._unknown_fields = ()
-    # _unknown_field_set is None when empty for efficiency, and will be
-    # turned into UnknownFieldSet struct if fields are added.
-    self._unknown_field_set = None      # pylint: disable=protected-access
     self._is_present_in_parent = False
     self._listener = message_listener_mod.NullMessageListener()
     self._listener_for_children = _Listener(self)
@@ -779,15 +775,6 @@ def _AddPropertiesForExtensions(descriptor, cls):
     pool = descriptor.file.pool
 
 def _AddStaticMethods(cls):
-  # TODO: This probably needs to be thread-safe(?)
-  def RegisterExtension(field_descriptor):
-    field_descriptor.containing_type = cls.DESCRIPTOR
-    # TODO: Use cls.MESSAGE_FACTORY.pool when available.
-    # pylint: disable=protected-access
-    cls.DESCRIPTOR.file.pool._AddExtensionDescriptor(field_descriptor)
-    _AttachFieldHelpers(cls, field_descriptor)
-  cls.RegisterExtension = staticmethod(RegisterExtension)
-
   def FromString(s):
     message = cls()
     message.MergeFromString(s)
@@ -1013,6 +1000,21 @@ def _AddUnicodeMethod(unused_message_descriptor, cls):
   cls.__unicode__ = __unicode__
 
 
+def _AddContainsMethod(message_descriptor, cls):
+
+  if message_descriptor.full_name == 'google.protobuf.Struct':
+    def __contains__(self, key):
+      return key in self.fields
+  elif message_descriptor.full_name == 'google.protobuf.ListValue':
+    def __contains__(self, value):
+      return value in self.items()
+  else:
+    def __contains__(self, field):
+      return self.HasField(field)
+
+  cls.__contains__ = __contains__
+
+
 def _BytesForNonRepeatedElement(value, field_number, field_type):
   """Returns the number of bytes needed to serialize a non-repeated element.
   The returned byte count includes space for tag information and any
@@ -1153,8 +1155,6 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
     assert isinstance(buffer, memoryview)
     self._Modified()
     field_dict = self._fields
-    # pylint: disable=protected-access
-    unknown_field_set = self._unknown_field_set
     while pos != end:
       (tag_bytes, new_pos) = local_ReadTag(buffer, pos)
       field_decoder, field_des = message_set_decoders_by_tag.get(
@@ -1167,11 +1167,6 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
       if field_des is None:
         if not self._unknown_fields:   # pylint: disable=protected-access
           self._unknown_fields = []    # pylint: disable=protected-access
-        if unknown_field_set is None:
-          # pylint: disable=protected-access
-          self._unknown_field_set = containers.UnknownFieldSet()
-          # pylint: disable=protected-access
-          unknown_field_set = self._unknown_field_set
         # pylint: disable=protected-access
         (tag, _) = decoder._DecodeVarint(tag_bytes, 0)
         field_number, wire_type = wire_format.UnpackTag(tag)
@@ -1183,8 +1178,6 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
             buffer, new_pos, wire_type)  # pylint: disable=protected-access
         if new_pos == -1:
           return pos
-        # pylint: disable=protected-access
-        unknown_field_set._add(field_number, wire_type, data)
         # TODO: remove _unknown_fields.
         new_pos = local_SkipField(buffer, old_pos, end, tag_bytes)
         if new_pos == -1:
@@ -1345,10 +1338,6 @@ def _AddMergeFromMethod(cls):
       if not self._unknown_fields:
         self._unknown_fields = []
       self._unknown_fields.extend(msg._unknown_fields)
-      # pylint: disable=protected-access
-      if self._unknown_field_set is None:
-        self._unknown_field_set = containers.UnknownFieldSet()
-      self._unknown_field_set._extend(msg._unknown_field_set)
 
   cls.MergeFrom = MergeFrom
 
@@ -1375,10 +1364,6 @@ def _Clear(self):
   # Clear fields.
   self._fields = {}
   self._unknown_fields = ()
-  # pylint: disable=protected-access
-  if self._unknown_field_set is not None:
-    self._unknown_field_set._clear()
-    self._unknown_field_set = None
 
   self._oneofs = {}
   self._Modified()
@@ -1392,7 +1377,6 @@ def _UnknownFields(self):
 
 def _DiscardUnknownFields(self):
   self._unknown_fields = []
-  self._unknown_field_set = None      # pylint: disable=protected-access
   for field, value in self.ListFields():
     if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
       if _IsMapField(field):
@@ -1425,6 +1409,7 @@ def _AddMessageMethods(message_descriptor, cls):
   _AddStrMethod(message_descriptor, cls)
   _AddReprMethod(message_descriptor, cls)
   _AddUnicodeMethod(message_descriptor, cls)
+  _AddContainsMethod(message_descriptor, cls)
   _AddByteSizeMethod(message_descriptor, cls)
   _AddSerializeToStringMethod(message_descriptor, cls)
   _AddSerializePartialToStringMethod(message_descriptor, cls)
@@ -1434,7 +1419,6 @@ def _AddMessageMethods(message_descriptor, cls):
   _AddWhichOneofMethod(message_descriptor, cls)
   # Adds methods which do not depend on cls.
   cls.Clear = _Clear
-  cls.UnknownFields = _UnknownFields
   cls.DiscardUnknownFields = _DiscardUnknownFields
   cls._SetListener = _SetListener
 

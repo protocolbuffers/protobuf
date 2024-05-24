@@ -96,8 +96,7 @@ void Builder::BuildEnums() {
 }
 
 bool Builder::LinkExtension(upb_MiniTableExtension* ext) {
-  upb_MiniTableField* field =
-      (upb_MiniTableField*)upb_MiniTableExtension_AsField(ext);
+  upb_MiniTableField* field = &ext->UPB_PRIVATE(field);
   if (upb_MiniTableField_CType(field) == kUpb_CType_Message) {
     auto mt = NextMiniTable();
     if (!mt) field->UPB_PRIVATE(descriptortype) = kUpb_FieldType_Int32;

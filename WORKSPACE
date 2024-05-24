@@ -5,6 +5,10 @@ workspace(name = "com_google_protobuf")
 # buildifier: disable=duplicated-name
 local_repository(name = "com_google_protobuf", path = ".")
 
+# Second self-reference that makes it possible to load proto rules from @protobuf.
+# buildifier: disable=duplicated-name
+local_repository(name = "protobuf", path = ".")
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 local_repository(
@@ -82,6 +86,14 @@ load("@build_bazel_rules_apple//apple:repositories.bzl", "apple_rules_dependenci
 
 apple_rules_dependencies()
 
+load("@build_bazel_apple_support//lib:repositories.bzl", "apple_support_dependencies")
+
+apple_support_dependencies()
+
+load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
+
+rules_cc_dependencies()
+
 # For `kt_jvm_library`
 load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
 
@@ -127,7 +139,7 @@ ruby_bundle(
 
 http_archive(
     name = "lua",
-    build_file = "//bazel:lua.BUILD",
+    build_file = "//python/dist:lua.BUILD",
     sha256 = "b9e2e4aad6789b3b63a056d442f7b39f0ecfca3ae0f1fc0ae4e9614401b69f4b",
     strip_prefix = "lua-5.2.4",
     urls = [
@@ -145,18 +157,11 @@ http_archive(
 
 http_archive(
     name = "com_google_googleapis",
-    urls = ["https://github.com/googleapis/googleapis/archive/30ed2662a85403cbdeb9ea38df1e414a2a276b83.zip"],
-    strip_prefix = "googleapis-30ed2662a85403cbdeb9ea38df1e414a2a276b83",
-    sha256 = "4dfc28101127d22abd6f0f6308d915d490c4594c0cfcf7643769c446d6763a46",
+    urls = ["https://github.com/googleapis/googleapis/archive/d81d0b9e6993d6ab425dff4d7c3d05fb2e59fa57.zip"],
+    strip_prefix = "googleapis-d81d0b9e6993d6ab425dff4d7c3d05fb2e59fa57",
+    sha256 = "d986023c3d8d2e1b161e9361366669cac9fb97c2a07e656c2548aca389248bb4",
     build_file = "//benchmarks:BUILD.googleapis",
     patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
-)
-
-load("//bazel:system_python.bzl", "system_python")
-
-system_python(
-    name = "system_python",
-    minimum_python_version = "3.7",
 )
 
 load("@system_python//:pip.bzl", "pip_parse")
@@ -191,11 +196,6 @@ load("@fuzzing_py_deps//:requirements.bzl", fuzzing_py_deps_install_deps = "inst
 
 fuzzing_py_deps_install_deps()
 
-bind(
-    name = "python_headers",
-    actual = "@system_python//:python_headers",
-)
-
 http_archive(
     name = "rules_rust",
     sha256 = "9ecd0f2144f0a24e6bc71ebcc50a1ee5128cedeceb32187004532c9710cb2334",
@@ -215,7 +215,8 @@ crates_repository(
     lockfile = "//:Cargo.bazel.lock",
     packages = {
         "googletest": crate.spec(
-            version = ">0.0.0",
+            git = "https://github.com/google/googletest-rust",
+            rev = "471d4a2a8e8bc74f6d7d9c8eecb4d4e3157b2a9f",
         ),
         "paste": crate.spec(
           version = ">=1",
@@ -225,3 +226,18 @@ crates_repository(
 
 load("@crate_index//:defs.bzl", "crate_repositories")
 crate_repositories()
+
+# For testing runtime against old gencode from a previous major version.
+http_archive(
+    name = "com_google_protobuf_v25.0",
+    strip_prefix = "protobuf-25.0",
+    url = "https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz",
+)
+
+# Needed as a dependency of @com_google_protobuf_v25.x, which was before
+# utf8_range was merged in.
+http_archive(
+    name = "utf8_range",
+    strip_prefix = "utf8_range-d863bc33e15cba6d873c878dcca9e6fe52b2f8cb",
+    url = "https://github.com/protocolbuffers/utf8_range/archive/d863bc33e15cba6d873c878dcca9e6fe52b2f8cb.zip",
+)

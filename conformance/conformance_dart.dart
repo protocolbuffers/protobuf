@@ -49,8 +49,8 @@ ConformanceResponse doTest(ConformanceRequest request) {
     case ConformanceRequest_payload.protobufPayload:
       try {
         testMessage = isProto3
-            ? TestAllTypesProto3.fromBinary(request.protobufPayload)
-            : TestAllTypesProto2.fromBinary(request.protobufPayload);
+            ? TestAllTypesProto3.fromBuffer(request.protobufPayload)
+            : TestAllTypesProto2.fromBuffer(request.protobufPayload);
       } catch (e) {
         final parseErrorResponse = ConformanceResponse();
         parseErrorResponse.parseError = '$e';
@@ -84,7 +84,7 @@ Future<bool> doTestIo() async {
   if (serializedMsg == null) {
     throw 'Unexpected EOF from test program.';
   }
-  final request = ConformanceRequest.fromBinary(serializedMsg);
+  final request = ConformanceRequest.fromBuffer(serializedMsg);
   final response = doTest(request);
   final serializedOutput = pb.GeneratedMessage.toBinary(response);
   writeLittleEndianIntToStdout(serializedOutput.length);

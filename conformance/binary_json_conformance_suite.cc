@@ -14,7 +14,6 @@
 #include <cstring>
 #include <memory>
 #include <string>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -23,13 +22,14 @@
 #include "absl/log/die_if_null.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include "json/json.h"
 #include "conformance/conformance.pb.h"
 #include "conformance_test.h"
-#include "google/protobuf/editions/golden/test_messages_proto2_editions.pb.h"
-#include "google/protobuf/editions/golden/test_messages_proto3_editions.pb.h"
+#include "conformance/test_protos/test_messages_edition2023.pb.h"
+#include "editions/golden/test_messages_proto2_editions.pb.h"
+#include "editions/golden/test_messages_proto3_editions.pb.h"
 #include "google/protobuf/endian.h"
 #include "google/protobuf/json/json.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
@@ -37,6 +37,7 @@
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/text_format.h"
+#include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/util/type_resolver_util.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -48,6 +49,7 @@ using google::protobuf::FieldDescriptor;
 using google::protobuf::internal::WireFormatLite;
 using google::protobuf::internal::little_endian::FromHost;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
+using protobuf_test_messages::editions::TestAllTypesEdition2023;
 using protobuf_test_messages::proto2::TestAllTypesProto2;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
 using TestAllTypesProto2Editions =
@@ -142,6 +144,16 @@ std::string tag(uint32_t fieldnum, char wire_type) {
 
 std::string tag(int fieldnum, char wire_type) {
   return tag(static_cast<uint32_t>(fieldnum), wire_type);
+}
+
+std::string field(uint32_t fieldnum, char wire_type, std::string content) {
+  return absl::StrCat(tag(fieldnum, wire_type), content);
+}
+
+std::string group(uint32_t fieldnum, std::string content) {
+  return absl::StrCat(tag(fieldnum, WireFormatLite::WIRETYPE_START_GROUP),
+                      content,
+                      tag(fieldnum, WireFormatLite::WIRETYPE_END_GROUP));
 }
 
 std::string GetDefaultValue(FieldDescriptor::Type type) {
@@ -264,6 +276,7 @@ bool BinaryAndJsonConformanceSuite::ParseJsonResponse(
                                response.json_payload(), &binary_protobuf);
 
   if (!status.ok()) {
+    ABSL_LOG(ERROR) << status;
     return false;
   }
 
@@ -323,7 +336,8 @@ bool BinaryAndJsonConformanceSuite::ParseResponse(
 
     default:
       ABSL_LOG(FATAL) << test_name
-                      << ": unknown payload type: " << response.result_case();
+                      << ": unknown payload type: " << response.result_case()
+                      << ", response: " << response;
   }
 
   return true;
@@ -342,7 +356,35 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
         this, /*run_proto3_tests=*/true);
     BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto2Editions>(
         this, /*run_proto3_tests=*/false);
+    RunDelimitedFieldTests();
   }
+}
+
+void BinaryAndJsonConformanceSuite::RunDelimitedFieldTests() {
+  TestAllTypesEdition2023 prototype;
+  SetTypeUrl(GetTypeUrl(TestAllTypesEdition2023::GetDescriptor()));
+
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("ValidDelimitedField.GroupLike"), REQUIRED,
+      group(201, field(202, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+      R"pb(groupliketype { group_int32: 99 })pb");
+
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("ValidDelimitedField.NotGroupLike"), REQUIRED,
+      group(202, field(202, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+      R"pb(delimited_field { group_int32: 99 })pb");
+
+  // Note: extensions don't work with TypeResolver, which is used by
+  // binary->JSON tests.
+  RunValidBinaryProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("ValidDelimitedExtension.GroupLike"), REQUIRED,
+      group(121, field(1, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+      R"pb([protobuf_test_messages.editions.groupliketype] { c: 99 })pb");
+
+  RunValidBinaryProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("ValidDelimitedExtension.NotGroupLike"), REQUIRED,
+      group(122, field(1, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+      R"pb([protobuf_test_messages.editions.delimited_ext] { c: 99 })pb");
 }
 
 template <typename MessageType>
@@ -447,23 +489,43 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
 }
 
 template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunValidProtobufTest(
+void BinaryAndJsonConformanceSuite::RunValidBinaryProtobufTest(
     const std::string& test_name, ConformanceLevel level,
     const std::string& input_protobuf,
     const std::string& equivalent_text_format) {
   MessageType prototype;
 
-  ConformanceRequestSetting setting1(
+  ConformanceRequestSetting binary_to_binary(
       level, conformance::PROTOBUF, conformance::PROTOBUF,
       conformance::BINARY_TEST, prototype, test_name, input_protobuf);
-  suite_.RunValidInputTest(setting1, equivalent_text_format);
+  RunValidInputTest(binary_to_binary, equivalent_text_format);
+}
 
-  if (run_proto3_tests_) {
-    ConformanceRequestSetting setting2(
-        level, conformance::PROTOBUF, conformance::JSON,
-        conformance::BINARY_TEST, prototype, test_name, input_protobuf);
-    suite_.RunValidInputTest(setting2, equivalent_text_format);
-  }
+template <typename MessageType>
+void BinaryAndJsonConformanceSuite::RunValidProtobufTest(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_protobuf,
+    const std::string& equivalent_text_format) {
+  MessageType prototype;
+
+  ConformanceRequestSetting binary_to_binary(
+      level, conformance::PROTOBUF, conformance::PROTOBUF,
+      conformance::BINARY_TEST, prototype, test_name, input_protobuf);
+  RunValidInputTest(binary_to_binary, equivalent_text_format);
+
+  ConformanceRequestSetting binary_to_json(
+      level, conformance::PROTOBUF, conformance::JSON, conformance::BINARY_TEST,
+      prototype, test_name, input_protobuf);
+  RunValidInputTest(binary_to_json, equivalent_text_format);
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunValidProtobufTest(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_protobuf,
+    const std::string& equivalent_text_format) {
+  suite_.RunValidProtobufTest<MessageType>(test_name, level, input_protobuf,
+                                           equivalent_text_format);
 }
 
 template <typename MessageType>
@@ -1243,6 +1305,24 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestIllegalTags() {
 }
 
 template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownWireType() {
+  for (uint8_t type : {0x6, 0x7}) {
+    for (uint8_t field = 0; field < 4; ++field) {
+      for (uint8_t value = 0; value < 4; ++value) {
+        std::string name = absl::StrFormat("UnknownWireType%d_Field%d_Verion%d",
+                                           type, field, value);
+
+        char data[2];
+        data[0] = (field << 3) | type;  // unknown wire type.
+        data[1] = value;
+        std::string proto = {data, 2};
+        ExpectParseFailureForProto(proto, name, REQUIRED);
+      }
+    }
+  }
+}
+
+template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestOneofMessage() {
   MessageType message;
   message.set_oneof_uint32(0);
@@ -1285,6 +1365,55 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownMessage() {
   message.ParseFromString("\xA8\x1F\x01");
   RunValidBinaryProtobufTest("UnknownVarint", REQUIRED,
                              message.SerializeAsString());
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownOrdering() {
+  // Implementations must preserve the ordering of different unknown fields for
+  // the same field number.  This is because some field types will accept
+  // multiple wire types for the same field.  For example, repeated primitive
+  // fields will accept both length-prefixed (packed) and
+  // varint/fixed32/fixed64 (unpacked) wire types, and reordering these could
+  // reorder the elements of the repeated field.
+  MessageType message;
+  MessageType prototype;
+  message.mutable_unknown_fields()->AddLengthDelimited(UNKNOWN_FIELD, "abc");
+  message.mutable_unknown_fields()->AddVarint(UNKNOWN_FIELD, 123);
+  message.mutable_unknown_fields()->AddLengthDelimited(UNKNOWN_FIELD, "def");
+  message.mutable_unknown_fields()->AddVarint(UNKNOWN_FIELD, 456);
+  std::string serialized = message.SerializeAsString();
+
+  ConformanceRequestSetting setting(
+      REQUIRED, conformance::PROTOBUF, conformance::PROTOBUF,
+      conformance::BINARY_TEST, prototype, "UnknownOrdering", serialized);
+  const ConformanceRequest& request = setting.GetRequest();
+  ConformanceResponse response;
+  suite_.RunTest(setting.GetTestName(), request, &response);
+  MessageType response_message;
+  if (response.result_case() == ConformanceResponse::kSkipped) {
+    suite_.ReportSkip(setting.GetTestName(), request, response);
+    return;
+  }
+  suite_.ParseResponse(response, setting, &response_message);
+
+  const UnknownFieldSet& ufs = response_message.unknown_fields();
+  if (ufs.field_count() != 4 || ufs.field(0).number() != UNKNOWN_FIELD ||
+      ufs.field(1).number() != UNKNOWN_FIELD ||
+      ufs.field(2).number() != UNKNOWN_FIELD ||
+      ufs.field(3).number() != UNKNOWN_FIELD ||
+      ufs.field(0).type() != UnknownField::Type::TYPE_LENGTH_DELIMITED ||
+      ufs.field(1).type() != UnknownField::Type::TYPE_VARINT ||
+      ufs.field(2).type() != UnknownField::Type::TYPE_LENGTH_DELIMITED ||
+      ufs.field(3).type() != UnknownField::Type::TYPE_VARINT ||
+      ufs.field(0).length_delimited() != "abc" ||
+      ufs.field(1).varint() != 123 ||
+      ufs.field(2).length_delimited() != "def" ||
+      ufs.field(3).varint() != 456) {
+    suite_.ReportFailure(setting.GetTestName(), setting.GetLevel(), request,
+                         response, "Unknown field mismatch");
+  } else {
+    suite_.ReportSuccess(setting.GetTestName());
+  }
 }
 
 template <typename MessageType>
@@ -1356,6 +1485,8 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
     }
 
     TestIllegalTags();
+
+    TestUnknownWireType();
 
     int64_t kInt64Min = -9223372036854775808ULL;
     int64_t kInt64Max = 9223372036854775807ULL;
@@ -1573,6 +1704,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
     // Required.Proto3.ProtobufInput.UnknownVarint.ProtobufOutput
     // from failure list of python_cpp python java
     TestUnknownMessage();
+    TestUnknownOrdering();
     TestOneofMessage();
 
     RunJsonTests();
@@ -1673,77 +1805,67 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTests() {
-  if (!run_proto3_tests_) {
-    RunValidJsonTestWithValidator(
-        "StoresDefaultPrimitive", REQUIRED,
-        R"({
-        "FieldName13": 0
-      })",
-        [](const Json::Value& value) { return value.isMember("FieldName13"); });
-    std::vector<const FieldDescriptor*> extensions;
-    MessageType::GetDescriptor()->file()->pool()->FindAllExtensions(
-        MessageType::GetDescriptor(), &extensions);
-    RunValidJsonTestWithValidator("FieldNameExtension", RECOMMENDED,
-                                  absl::Substitute(R"({
-        "[$0]": 1
-      })",
-                                                   extensions[0]->full_name()),
-                                  [&](const Json::Value& value) {
-                                    return value.isMember(absl::StrCat(
-                                        "[", extensions[0]->full_name(), "]"));
-                                  });
-    return;
-  }
   RunValidJsonTest("HelloWorld", REQUIRED,
                    "{\"optionalString\":\"Hello, World!\"}",
                    "optional_string: 'Hello, World!'");
 
   // NOTE: The spec for JSON support is still being sorted out, these may not
   // all be correct.
-
   RunJsonTestsForFieldNameConvention();
   RunJsonTestsForNonRepeatedTypes();
   RunJsonTestsForRepeatedTypes();
   RunJsonTestsForNullTypes();
-  RunJsonTestsForWrapperTypes();
-  RunJsonTestsForFieldMask();
-  RunJsonTestsForStruct();
-  RunJsonTestsForValue();
-  RunJsonTestsForAny();
+
+  if (run_proto3_tests_) {
+    RunJsonTestsForWrapperTypes();
+    RunJsonTestsForFieldMask();
+    RunJsonTestsForStruct();
+    RunJsonTestsForValue();
+    RunJsonTestsForAny();
+  } else {
+    // Currently Proto2 only, but should also be run on Proto3-optional.
+    RunJsonTestsForStoresDefaultPrimitive();
+  }
+
   RunJsonTestsForUnknownEnumStringValues();
 
   RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonNumber", REQUIRED,
-                                R"({
-        "unknown": 1
-      })",
-                                "");
+                                R"({"unknown": 1})", "");
   RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonString", REQUIRED,
-                                R"({
-        "unknown": "a"
-      })",
-                                "");
+                                R"({"unknown": "a"})", "");
   RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonTrue", REQUIRED,
-                                R"({
-        "unknown": true
-      })",
-                                "");
+                                R"({"unknown": true})", "");
   RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonFalse", REQUIRED,
-                                R"({
-        "unknown": false
-      })",
-                                "");
+                                R"({"unknown": false})", "");
   RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonNull", REQUIRED,
-                                R"({
-        "unknown": null
-      })",
-                                "");
+                                R"({"unknown": null})", "");
   RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonObject", REQUIRED,
-                                R"({
-        "unknown": {"a": 1}
-      })",
-                                "");
+                                R"({"unknown": {"a": 1}})", "");
 
   ExpectParseFailureForJson("RejectTopLevelNull", REQUIRED, "null");
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<
+    MessageType>::RunJsonTestsForStoresDefaultPrimitive() {
+  RunValidJsonTestWithValidator(
+      "StoresDefaultPrimitive", REQUIRED,
+      R"({
+          "FieldName13": 0
+        })",
+      [](const Json::Value& value) { return value.isMember("FieldName13"); });
+  std::vector<const FieldDescriptor*> extensions;
+  MessageType::GetDescriptor()->file()->pool()->FindAllExtensions(
+      MessageType::GetDescriptor(), &extensions);
+  RunValidJsonTestWithValidator("FieldNameExtension", RECOMMENDED,
+                                absl::Substitute(R"({
+          "[$0]": 1
+        })",
+                                                 extensions[0]->full_name()),
+                                [&](const Json::Value& value) {
+                                  return value.isMember(absl::StrCat(
+                                      "[", extensions[0]->full_name(), "]"));
+                                });
 }
 
 template <typename MessageType>
@@ -1781,6 +1903,38 @@ void BinaryAndJsonConformanceSuiteImpl<
         absl::StrCat("IgnoreUnknownEnumStringValue", test_case.enum_location),
         RECOMMENDED, test_case.input_json, "");
   }
+
+  // This test is similar to "InRepeatedField" from above, but it highlights the
+  // potentially unexpected behavior in an array with mixed known and unknown
+  // enum string values.
+  RunValidJsonIgnoreUnknownTest("IgnoreUnknownEnumStringValueInRepeatedPart",
+                                RECOMMENDED,
+                                R"json({
+    "repeated_nested_enum": [
+      "FOO",
+      "UNKNOWN_ENUM_VALUE",
+      "FOO"
+    ]})json",
+                                R"(
+    repeated_nested_enum: FOO
+    repeated_nested_enum: FOO
+  )");
+
+  // This test is similar to "InMapValue" from above with mixture of known and
+  // unknown enum string values in the map.
+  RunValidJsonIgnoreUnknownTest("IgnoreUnknownEnumStringValueInMapPart",
+                                RECOMMENDED,
+                                R"json({
+    "map_string_nested_enum": {
+      "key1": "FOO",
+      "key2": "UNKNOWN_ENUM_VALUE"
+    }})json",
+                                R"(
+    map_string_nested_enum: {
+      key: "key1"
+      value: FOO
+    }
+  )");
 }
 
 template <typename MessageType>
@@ -2011,12 +2165,14 @@ void BinaryAndJsonConformanceSuiteImpl<
                value.isMember("fieldName15") && value.isMember("fieldName16") &&
                value.isMember("fieldName17") && value.isMember("FieldName18");
       });
-  RunValidJsonTestWithValidator(
-      "SkipsDefaultPrimitive", REQUIRED,
-      R"({
-        "FieldName13": 0
-      })",
-      [](const Json::Value& value) { return !value.isMember("FieldName13"); });
+
+  if (run_proto3_tests_) {
+    RunValidJsonTestWithValidator("SkipsDefaultPrimitive", REQUIRED,
+                                  R"({"FieldName13": 0})",
+                                  [](const Json::Value& value) {
+                                    return !value.isMember("FieldName13");
+                                  });
+  }
 }
 
 template <typename MessageType>
@@ -2273,19 +2429,23 @@ void BinaryAndJsonConformanceSuiteImpl<
   // Enum fields.
   RunValidJsonTest("EnumField", REQUIRED, R"({"optionalNestedEnum": "FOO"})",
                    "optional_nested_enum: FOO");
+
   // Enum fields with alias
-  RunValidJsonTest("EnumFieldWithAlias", REQUIRED,
-                   R"({"optionalAliasedEnum": "ALIAS_BAZ"})",
-                   "optional_aliased_enum: ALIAS_BAZ");
-  RunValidJsonTest("EnumFieldWithAliasUseAlias", REQUIRED,
-                   R"({"optionalAliasedEnum": "MOO"})",
-                   "optional_aliased_enum: ALIAS_BAZ");
-  RunValidJsonTest("EnumFieldWithAliasLowerCase", REQUIRED,
-                   R"({"optionalAliasedEnum": "moo"})",
-                   "optional_aliased_enum: ALIAS_BAZ");
-  RunValidJsonTest("EnumFieldWithAliasDifferentCase", REQUIRED,
-                   R"({"optionalAliasedEnum": "bAz"})",
-                   "optional_aliased_enum: ALIAS_BAZ");
+  if (run_proto3_tests_) {
+    RunValidJsonTest("EnumFieldWithAlias", REQUIRED,
+                     R"({"optionalAliasedEnum": "ALIAS_BAZ"})",
+                     "optional_aliased_enum: ALIAS_BAZ");
+    RunValidJsonTest("EnumFieldWithAliasUseAlias", REQUIRED,
+                     R"({"optionalAliasedEnum": "MOO"})",
+                     "optional_aliased_enum: ALIAS_BAZ");
+    RunValidJsonTest("EnumFieldWithAliasLowerCase", REQUIRED,
+                     R"({"optionalAliasedEnum": "moo"})",
+                     "optional_aliased_enum: ALIAS_BAZ");
+    RunValidJsonTest("EnumFieldWithAliasDifferentCase", REQUIRED,
+                     R"({"optionalAliasedEnum": "bAz"})",
+                     "optional_aliased_enum: ALIAS_BAZ");
+  }
+
   // Enum values must be represented as strings.
   ExpectParseFailureForJson("EnumFieldNotQuoted", REQUIRED,
                             R"({"optionalNestedEnum": FOO})");
@@ -2294,13 +2454,16 @@ void BinaryAndJsonConformanceSuiteImpl<
                    R"({"optionalNestedEnum": 0})", "optional_nested_enum: FOO");
   RunValidJsonTest("EnumFieldNumericValueNonZero", REQUIRED,
                    R"({"optionalNestedEnum": 1})", "optional_nested_enum: BAR");
-  // Unknown enum values are represented as numeric values.
-  RunValidJsonTestWithValidator(
-      "EnumFieldUnknownValue", REQUIRED, R"({"optionalNestedEnum": 123})",
-      [](const Json::Value& value) {
-        return value["optionalNestedEnum"].type() == Json::intValue &&
-               value["optionalNestedEnum"].asInt() == 123;
-      });
+
+  if (run_proto3_tests_) {
+    // Unknown enum values are represented as numeric values.
+    RunValidJsonTestWithValidator(
+        "EnumFieldUnknownValue", REQUIRED, R"({"optionalNestedEnum": 123})",
+        [](const Json::Value& value) {
+          return value["optionalNestedEnum"].type() == Json::intValue &&
+                 value["optionalNestedEnum"].asInt() == 123;
+        });
+  }
 
   // String fields.
   RunValidJsonTest("StringField", REQUIRED,
@@ -3002,18 +3165,18 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTestsForValue() {
     }
   ]
       )");
-  RunValidJsonTestWithValidator(
-      "NullValueInOtherOneofOldFormat", RECOMMENDED,
-      R"({"oneofNullValue": "NULL_VALUE"})", [](const Json::Value& value) {
-        return (value.isMember("oneofNullValue") &&
-                value["oneofNullValue"].isNull());
-      });
-  RunValidJsonTestWithValidator(
-      "NullValueInOtherOneofNewFormat", RECOMMENDED,
-      R"({"oneofNullValue": null})", [](const Json::Value& value) {
-        return (value.isMember("oneofNullValue") &&
-                value["oneofNullValue"].isNull());
-      });
+  RunValidJsonTestWithValidator("NullValueInOtherOneofOldFormat", RECOMMENDED,
+                                R"({"oneofNullValue": "NULL_VALUE"})",
+                                [](const Json::Value& value) {
+                                  return (value.isMember("oneofNullValue") &&
+                                          value["oneofNullValue"].isNull());
+                                });
+  RunValidJsonTestWithValidator("NullValueInOtherOneofNewFormat", RECOMMENDED,
+                                R"({"oneofNullValue": null})",
+                                [](const Json::Value& value) {
+                                  return (value.isMember("oneofNullValue") &&
+                                          value["oneofNullValue"].isNull());
+                                });
   RunValidJsonTestWithValidator(
       "NullValueInNormalMessage", RECOMMENDED, R"({"optionalNullValue": null})",
       [](const Json::Value& value) { return value.empty(); });

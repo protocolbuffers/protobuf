@@ -12,7 +12,10 @@
 
 #include "upb/base/descriptor_constants.h"
 #include "upb/mem/arena.h"
-#include "upb/message/value.h"  // IWYU pragma: export
+#include "upb/message/internal/array.h"
+#include "upb/message/value.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -27,10 +30,14 @@ extern "C" {
 UPB_API upb_Array* upb_Array_New(upb_Arena* a, upb_CType type);
 
 // Returns the number of elements in the array.
-UPB_API size_t upb_Array_Size(const upb_Array* arr);
+UPB_API_INLINE size_t upb_Array_Size(const upb_Array* arr);
 
 // Returns the given element, which must be within the array's current size.
 UPB_API upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i);
+
+// Returns a mutating pointer to the given element, which must be within the
+// array's current size.
+UPB_API upb_MutableMessageValue upb_Array_GetMutable(upb_Array* arr, size_t i);
 
 // Sets the given element, which must be within the array's current size.
 UPB_API void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val);
@@ -56,15 +63,27 @@ UPB_API bool upb_Array_Insert(upb_Array* array, size_t i, size_t count,
 // REQUIRES: `i + count <= upb_Array_Size(arr)`
 UPB_API void upb_Array_Delete(upb_Array* array, size_t i, size_t count);
 
+// Reserves |size| elements of storage for the array.
+UPB_API_INLINE bool upb_Array_Reserve(struct upb_Array* array, size_t size,
+                                      upb_Arena* arena);
+
 // Changes the size of a vector. New elements are initialized to NULL/0.
 // Returns false on allocation failure.
 UPB_API bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
 
 // Returns pointer to array data.
-UPB_API const void* upb_Array_DataPtr(const upb_Array* arr);
+UPB_API_INLINE const void* upb_Array_DataPtr(const upb_Array* arr);
 
 // Returns mutable pointer to array data.
-UPB_API void* upb_Array_MutableDataPtr(upb_Array* arr);
+UPB_API_INLINE void* upb_Array_MutableDataPtr(upb_Array* arr);
+
+// Mark an array and all of its descendents as frozen/immutable.
+// If the array elements are messages then |m| must point to the minitable for
+// those messages. Otherwise |m| must be NULL.
+UPB_API void upb_Array_Freeze(upb_Array* arr, const upb_MiniTable* m);
+
+// Returns whether an array has been frozen.
+UPB_API_INLINE bool upb_Array_IsFrozen(const upb_Array* arr);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -1346,13 +1346,13 @@ final class Utf8 {
     String decodeUtf8(byte[] bytes, int index, int size) throws InvalidProtocolBufferException {
       String s = new String(bytes, index, size, Internal.UTF_8);
 
-      // "\uFFFD" is UTF-8 default replacement string, which illegal byte sequences get replaced
+      // '\uFFFD' is the UTF-8 default replacement char, which illegal byte sequences get replaced
       // with.
-      if (!s.contains("\uFFFD")) {
+      if (s.indexOf('\uFFFD') < 0) {
         return s;
       }
 
-      // Since s contains "\uFFFD" there are 2 options:
+      // Since s contains '\uFFFD' there are 2 options:
       // 1) The byte array slice is invalid UTF-8.
       // 2) The byte array slice is valid UTF-8 and contains encodings for "\uFFFD".
       // To rule out (1), we encode s and compare it to the byte array slice.

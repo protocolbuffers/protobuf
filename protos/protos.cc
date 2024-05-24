@@ -16,10 +16,11 @@
 #include "absl/strings/string_view.h"
 #include "protos/protos_extension_lock.h"
 #include "upb/mem/arena.h"
+#include "upb/message/accessors.h"
 #include "upb/message/copy.h"
-#include "upb/message/internal/extension.h"
+#include "upb/message/message.h"
 #include "upb/message/promote.h"
-#include "upb/message/types.h"
+#include "upb/message/value.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/message.h"
@@ -114,24 +115,18 @@ class MessageLock {
 bool HasExtensionOrUnknown(const upb_Message* msg,
                            const upb_MiniTableExtension* eid) {
   MessageLock msg_lock(msg);
-  return _upb_Message_Getext(msg, eid) != nullptr ||
-         upb_Message_FindUnknown(msg, upb_MiniTableExtension_Number(eid), 0)
-                 .status == kUpb_FindUnknown_Ok;
+  if (upb_Message_HasExtension(msg, eid)) return true;
+
+  const int number = upb_MiniTableExtension_Number(eid);
+  return upb_Message_FindUnknown(msg, number, 0).status == kUpb_FindUnknown_Ok;
 }
 
-const upb_Extension* GetOrPromoteExtension(upb_Message* msg,
-                                           const upb_MiniTableExtension* eid,
-                                           upb_Arena* arena) {
+bool GetOrPromoteExtension(upb_Message* msg, const upb_MiniTableExtension* eid,
+                           upb_Arena* arena, upb_MessageValue* value) {
   MessageLock msg_lock(msg);
-  const upb_Extension* ext = _upb_Message_Getext(msg, eid);
-  if (ext == nullptr) {
-    upb_GetExtension_Status ext_status = upb_MiniTable_GetOrPromoteExtension(
-        (upb_Message*)msg, eid, 0, arena, &ext);
-    if (ext_status != kUpb_GetExtension_Ok) {
-      ext = nullptr;
-    }
-  }
-  return ext;
+  upb_GetExtension_Status ext_status = upb_Message_GetOrPromoteExtension(
+      (upb_Message*)msg, eid, 0, arena, value);
+  return ext_status == kUpb_GetExtension_Ok;
 }
 
 absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
@@ -163,37 +158,26 @@ upb_Message* DeepClone(const upb_Message* source,
 absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
                            const upb_MiniTableExtension* ext,
                            upb_Message* extension, upb_Arena* extension_arena) {
-  upb_Extension* msg_ext =
-      _upb_Message_GetOrCreateExtension(message, ext, message_arena);
-  if (!msg_ext) {
-    return MessageAllocationError();
+  if (message_arena != extension_arena &&
+      // Try fuse, if fusing is not allowed or fails, create copy of extension.
+      !upb_Arena_Fuse(message_arena, extension_arena)) {
+    extension = DeepClone(extension, upb_MiniTableExtension_GetSubMessage(ext),
+                          message_arena);
   }
-  if (message_arena != extension_arena) {
-    // Try fuse, if fusing is not allowed or fails, create copy of extension.
-    if (!upb_Arena_Fuse(message_arena, extension_arena)) {
-      msg_ext->data.ptr = DeepClone(
-          extension, upb_MiniTableExtension_GetSubMessage(msg_ext->ext),
-          message_arena);
-      return absl::OkStatus();
-    }
-  }
-  msg_ext->data.ptr = extension;
-  return absl::OkStatus();
+  return upb_Message_SetExtension(message, ext, &extension, message_arena)
+             ? absl::OkStatus()
+             : MessageAllocationError();
 }
 
 absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
                           const upb_MiniTableExtension* ext,
                           const upb_Message* extension) {
-  upb_Extension* msg_ext =
-      _upb_Message_GetOrCreateExtension(message, ext, message_arena);
-  if (!msg_ext) {
-    return MessageAllocationError();
-  }
   // Clone extension into target message arena.
-  msg_ext->data.ptr =
-      DeepClone(extension, upb_MiniTableExtension_GetSubMessage(msg_ext->ext),
-                message_arena);
-  return absl::OkStatus();
+  extension = DeepClone(extension, upb_MiniTableExtension_GetSubMessage(ext),
+                        message_arena);
+  return upb_Message_SetExtension(message, ext, &extension, message_arena)
+             ? absl::OkStatus()
+             : MessageAllocationError();
 }
 
 }  // namespace internal

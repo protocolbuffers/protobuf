@@ -2,8 +2,8 @@
 #
 # See also code generation logic under /src/google/protobuf/compiler/php.
 
-load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//:protobuf_version.bzl", "PROTOBUF_PHP_VERSION", "PROTOC_VERSION")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("//conformance:defs.bzl", "conformance_test")
@@ -64,6 +64,7 @@ genrule(
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_php.txt",
+    maximum_edition = "2023",
     target_compatible_with = select({
         "@platforms//os:osx": ["@platforms//:incompatible"],
         "//conditions:default": [],
@@ -75,6 +76,7 @@ conformance_test(
 conformance_test(
     name = "conformance_test_c",
     failure_list = "//conformance:failure_list_php_c.txt",
+    maximum_edition = "2023",
     target_compatible_with = select({
         "@platforms//os:osx": [],
         "//conditions:default": ["@platforms//:incompatible"],

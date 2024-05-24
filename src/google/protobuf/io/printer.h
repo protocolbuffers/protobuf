@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2024 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -24,6 +24,7 @@
 
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/functional/any_invocable.h"
 #include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/meta/type_traits.h"
@@ -148,12 +149,12 @@ class AnnotationProtoCollector : public AnnotationCollector {
 
 // A source code printer for assisting in code generation.
 //
-// This type implements a simple templating language for substiting variables
+// This type implements a simple templating language for substituting variables
 // into static, user-provided strings, and also tracks indentation
 // automatically.
 //
 // The main entry-point for this type is the Emit function, which can be used
-// thus:
+// as thus:
 //
 //   Printer p(output);
 //   p.Emit({{"class", my_class_name}}, R"cc(
@@ -449,8 +450,8 @@ class PROTOBUF_EXPORT Printer {
   // released.
   struct SourceLocation {
     static SourceLocation current() { return {}; }
-    absl::string_view file_name() { return "<unknown>"; }
-    int line() { return 0; }
+    absl::string_view file_name() const { return "<unknown>"; }
+    int line() const { return 0; }
   };
 
   static constexpr char kDefaultVariableDelimiter = '$';
@@ -655,6 +656,18 @@ class PROTOBUF_EXPORT Printer {
   void FormatInternal(absl::Span<const std::string> args, const Map& vars,
                       absl::string_view format);
 
+  // Injects a substitution listener for the lifetime of the RAII object
+  // returned.
+  // While the listener is active it will receive a callback on each
+  // substitution label found.
+  // This can be used to add basic verification on top of emit routines.
+  auto WithSubstitutionListener(
+      absl::AnyInvocable<void(absl::string_view, SourceLocation)> listener) {
+    ABSL_CHECK(substitution_listener_ == nullptr);
+    substitution_listener_ = std::move(listener);
+    return absl::MakeCleanup([this] { substitution_listener_ = nullptr; });
+  }
+
  private:
   struct PrintOptions;
   struct Format;
@@ -752,6 +765,11 @@ class PROTOBUF_EXPORT Printer {
   std::vector<
       std::function<absl::optional<AnnotationRecord>(absl::string_view)>>
       annotation_lookups_;
+
+  // If set, we invoke this when we do a label substitution. This can be used to
+  // verify consistency of the generated code while we generate it.
+  absl::AnyInvocable<void(absl::string_view, SourceLocation)>
+      substitution_listener_;
 
   // A map from variable name to [start, end) offsets in the output buffer.
   //

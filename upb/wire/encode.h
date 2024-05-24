@@ -14,6 +14,7 @@
 #include <stdint.h>
 
 #include "upb/mem/arena.h"
+#include "upb/message/message.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -32,13 +33,14 @@ enum {
    * memory during encode. */
   kUpb_EncodeOption_Deterministic = 1,
 
-  // When set, unknown fields are not printed.
+  // When set, unknown fields are not encoded.
   kUpb_EncodeOption_SkipUnknown = 2,
 
   // When set, the encode will fail if any required fields are missing.
   kUpb_EncodeOption_CheckRequired = 4,
 };
 
+// LINT.IfChange
 typedef enum {
   kUpb_EncodeStatus_Ok = 0,
   kUpb_EncodeStatus_OutOfMemory = 1,  // Arena alloc failed
@@ -47,6 +49,7 @@ typedef enum {
   // kUpb_EncodeOption_CheckRequired failed but the parse otherwise succeeded.
   kUpb_EncodeStatus_MissingRequired = 3,
 } upb_EncodeStatus;
+// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/upb.rs:encode_status)
 
 UPB_INLINE uint32_t upb_EncodeOptions_MaxDepth(uint16_t depth) {
   return (uint32_t)depth << 16;
@@ -63,9 +66,18 @@ UPB_INLINE int upb_Encode_LimitDepth(uint32_t encode_options, uint32_t limit) {
   return upb_EncodeOptions_MaxDepth(max_depth) | (encode_options & 0xffff);
 }
 
-UPB_API upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
-                                    int options, upb_Arena* arena, char** buf,
-                                    size_t* size);
+UPB_API upb_EncodeStatus upb_Encode(const upb_Message* msg,
+                                    const upb_MiniTable* l, int options,
+                                    upb_Arena* arena, char** buf, size_t* size);
+
+// Encodes the message prepended by a varint of the serialized length.
+UPB_API upb_EncodeStatus upb_EncodeLengthPrefixed(const upb_Message* msg,
+                                                  const upb_MiniTable* l,
+                                                  int options, upb_Arena* arena,
+                                                  char** buf, size_t* size);
+// Utility function for wrapper languages to get an error string from a
+// upb_EncodeStatus.
+UPB_API const char* upb_EncodeStatus_String(upb_EncodeStatus status);
 
 #ifdef __cplusplus
 } /* extern "C" */

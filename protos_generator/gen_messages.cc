@@ -7,11 +7,14 @@
 
 #include "protos_generator/gen_messages.h"
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "protos_generator/gen_accessors.h"
 #include "protos_generator/gen_enums.h"
@@ -120,6 +123,55 @@ void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
   output("};\n");
 }
 
+std::string UnderscoresToCamelCase(absl::string_view input,
+                                   bool cap_next_letter) {
+  std::string result;
+
+  for (size_t i = 0; i < input.size(); i++) {
+    if (absl::ascii_islower(input[i])) {
+      if (cap_next_letter) {
+        result += absl::ascii_toupper(input[i]);
+      } else {
+        result += input[i];
+      }
+      cap_next_letter = false;
+    } else if (absl::ascii_isupper(input[i])) {
+      // Capital letters are left as-is.
+      result += input[i];
+      cap_next_letter = false;
+    } else if (absl::ascii_isdigit(input[i])) {
+      result += input[i];
+      cap_next_letter = true;
+    } else {
+      cap_next_letter = true;
+    }
+  }
+  return result;
+}
+
+std::string FieldConstantName(const protobuf::FieldDescriptor* field) {
+  std::string field_name = UnderscoresToCamelCase(field->name(), true);
+  std::string result = absl::StrCat("k", field_name, "FieldNumber");
+
+  if (!field->is_extension() &&
+      field->containing_type()->FindFieldByCamelcaseName(
+          field->camelcase_name()) != field) {
+    // This field's camelcase name is not unique, add field number to make it
+    // unique.
+    absl::StrAppend(&result, "_", field->number());
+  }
+  return result;
+}
+
+void WriteConstFieldNumbers(Output& output,
+                            const protobuf::Descriptor* descriptor) {
+  for (auto field : FieldRange(descriptor)) {
+    output("static constexpr ::uint32_t $0 = $1;\n", FieldConstantName(field),
+           field->number());
+  }
+  output("\n\n");
+}
+
 void WriteModelPublicDeclaration(
     const protobuf::Descriptor* descriptor,
     const std::vector<const protobuf::FieldDescriptor*>& file_exts,
@@ -142,13 +194,13 @@ void WriteModelPublicDeclaration(
           $0& operator=(const CProxy& from);
 
           $0($0&& m)
-              : Access(absl::exchange(m.msg_, nullptr),
-                       absl::exchange(m.arena_, nullptr)),
+              : Access(std::exchange(m.msg_, nullptr),
+                       std::exchange(m.arena_, nullptr)),
                 owned_arena_(std::move(m.owned_arena_)) {}
 
           $0& operator=($0&& m) {
-            msg_ = absl::exchange(m.msg_, nullptr);
-            arena_ = absl::exchange(m.arena_, nullptr);
+            msg_ = std::exchange(m.msg_, nullptr);
+            arena_ = std::exchange(m.arena_, nullptr);
             owned_arena_ = std::move(m.owned_arena_);
             return *this;
           }
@@ -178,11 +230,12 @@ void WriteModelPublicDeclaration(
       )cc",
       ClassName(descriptor));
   output("\n");
+  WriteConstFieldNumbers(output, descriptor);
   output(
       R"cc(
         private:
-        const void* msg() const { return msg_; }
-        void* msg() { return msg_; }
+        const upb_Message* msg() const { return UPB_UPCAST(msg_); }
+        upb_Message* msg() { return UPB_UPCAST(msg_); }
 
         $0(upb_Message* msg, upb_Arena* arena) : $0Access() {
           msg_ = ($1*)msg;
@@ -242,9 +295,10 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
   output(
       R"cc(
         private:
-        void* msg() const { return msg_; }
+        upb_Message* msg() const { return UPB_UPCAST(msg_); }
 
-        $0Proxy(void* msg, upb_Arena* arena) : internal::$0Access(($1*)msg, arena) {}
+        $0Proxy(upb_Message* msg, upb_Arena* arena)
+            : internal::$0Access(($1*)msg, arena) {}
         friend $0::Proxy(::protos::CreateMessage<$0>(::protos::Arena& arena));
         friend $0::Proxy(::protos::internal::CreateMessageProxy<$0>(
             upb_Message*, upb_Arena*));
@@ -295,9 +349,9 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
       R"cc(
         private:
         using AsNonConst = $0Proxy;
-        const void* msg() const { return msg_; }
+        const upb_Message* msg() const { return UPB_UPCAST(msg_); }
 
-        $0CProxy(const void* msg, upb_Arena* arena)
+        $0CProxy(const upb_Message* msg, upb_Arena* arena)
             : internal::$0Access(($1*)msg, arena){};
         friend struct ::protos::internal::PrivateAccess;
         friend class RepeatedFieldProxy;
@@ -340,7 +394,7 @@ void WriteMessageImplementation(
           }
           $0::$0(const $0& from) : $0Access() {
             arena_ = owned_arena_.ptr();
-            msg_ = ($1*)::protos::internal::DeepClone(from.msg_, &$2, arena_);
+            msg_ = ($1*)::protos::internal::DeepClone(UPB_UPCAST(from.msg_), &$2, arena_);
           }
           $0::$0(const CProxy& from) : $0Access() {
             arena_ = owned_arena_.ptr();
@@ -354,7 +408,7 @@ void WriteMessageImplementation(
           }
           $0& $0::operator=(const $3& from) {
             arena_ = owned_arena_.ptr();
-            msg_ = ($1*)::protos::internal::DeepClone(from.msg_, &$2, arena_);
+            msg_ = ($1*)::protos::internal::DeepClone(UPB_UPCAST(from.msg_), &$2, arena_);
             return *this;
           }
           $0& $0::operator=(const CProxy& from) {

@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+import com.google.protobuf.AbstractMessageLite;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.ExtensionRegistryLite;
@@ -12,6 +13,10 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
 import com.google.protobuf.Parser;
 import com.google.protobuf.conformance.Conformance;
+import com.google.protobuf_test_messages.edition2023.TestAllTypesEdition2023;
+import com.google.protobuf_test_messages.edition2023.TestMessagesEdition2023;
+import com.google.protobuf_test_messages.editions.proto2.TestMessagesProto2Editions;
+import com.google.protobuf_test_messages.editions.proto3.TestMessagesProto3Editions;
 import com.google.protobuf_test_messages.proto2.TestMessagesProto2;
 import com.google.protobuf_test_messages.proto2.TestMessagesProto2.TestAllTypesProto2;
 import com.google.protobuf_test_messages.proto3.TestMessagesProto3;
@@ -203,42 +208,66 @@ class ConformanceJavaLite {
     return messages.get(0);
   }
 
+  private Class<? extends AbstractMessageLite> createTestMessage(String messageType) {
+    switch (messageType) {
+      case "protobuf_test_messages.proto3.TestAllTypesProto3":
+        return TestAllTypesProto3.class;
+      case "protobuf_test_messages.proto2.TestAllTypesProto2":
+        return TestAllTypesProto2.class;
+      case "protobuf_test_messages.editions.TestAllTypesEdition2023":
+        return TestAllTypesEdition2023.class;
+      case "protobuf_test_messages.editions.proto3.TestAllTypesProto3":
+        return TestMessagesProto3Editions.TestAllTypesProto3.class;
+      case "protobuf_test_messages.editions.proto2.TestAllTypesProto2":
+        return TestMessagesProto2Editions.TestAllTypesProto2.class;
+      default:
+        throw new IllegalArgumentException(
+            "Protobuf request has unexpected payload type: " + messageType);
+    }
+  }
+
+  private Class<?> createTestFile(String messageType) {
+    switch (messageType) {
+      case "protobuf_test_messages.proto3.TestAllTypesProto3":
+        return TestMessagesProto3.class;
+      case "protobuf_test_messages.proto2.TestAllTypesProto2":
+        return TestMessagesProto2.class;
+      case "protobuf_test_messages.editions.TestAllTypesEdition2023":
+        return TestMessagesEdition2023.class;
+      case "protobuf_test_messages.editions.proto3.TestAllTypesProto3":
+        return TestMessagesProto3Editions.class;
+      case "protobuf_test_messages.editions.proto2.TestAllTypesProto2":
+        return TestMessagesProto2Editions.class;
+      default:
+        throw new IllegalArgumentException(
+            "Protobuf request has unexpected payload type: " + messageType);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
   private Conformance.ConformanceResponse doTest(Conformance.ConformanceRequest request) {
     com.google.protobuf.MessageLite testMessage;
-    boolean isProto3 =
-        request.getMessageType().equals("protobuf_test_messages.proto3.TestAllTypesProto3");
-    boolean isProto2 =
-        request.getMessageType().equals("protobuf_test_messages.proto2.TestAllTypesProto2");
-
+    String messageType = request.getMessageType();
     switch (request.getPayloadCase()) {
       case PROTOBUF_PAYLOAD:
         {
-          if (isProto3) {
-            try {
-              ExtensionRegistryLite extensions = ExtensionRegistryLite.newInstance();
-              TestMessagesProto3.registerAllExtensions(extensions);
-              testMessage =
-                  parseBinary(
-                      request.getProtobufPayload(), TestAllTypesProto3.parser(), extensions);
-            } catch (InvalidProtocolBufferException e) {
-              return Conformance.ConformanceResponse.newBuilder()
-                  .setParseError(e.getMessage())
-                  .build();
-            }
-          } else if (isProto2) {
-            try {
-              ExtensionRegistryLite extensions = ExtensionRegistryLite.newInstance();
-              TestMessagesProto2.registerAllExtensions(extensions);
-              testMessage =
-                  parseBinary(
-                      request.getProtobufPayload(), TestAllTypesProto2.parser(), extensions);
-            } catch (InvalidProtocolBufferException e) {
-              return Conformance.ConformanceResponse.newBuilder()
-                  .setParseError(e.getMessage())
-                  .build();
-            }
-          } else {
-            throw new RuntimeException("Protobuf request doesn't have specific payload type.");
+          try {
+            ExtensionRegistryLite extensions = ExtensionRegistryLite.newInstance();
+            createTestFile(messageType)
+                .getMethod("registerAllExtensions", ExtensionRegistryLite.class)
+                .invoke(null, extensions);
+            testMessage =
+                parseBinary(
+                    request.getProtobufPayload(),
+                    (Parser<AbstractMessageLite>)
+                        createTestMessage(messageType).getMethod("parser").invoke(null),
+                    extensions);
+          } catch (InvalidProtocolBufferException e) {
+            return Conformance.ConformanceResponse.newBuilder()
+                .setParseError(e.getMessage())
+                .build();
+          } catch (Exception e) {
+            throw new RuntimeException(e);
           }
           break;
         }

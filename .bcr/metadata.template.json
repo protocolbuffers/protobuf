@@ -1,0 +1,23 @@
+{
+  "homepage": "https://github.com/protocolbuffers/protobuf",
+  "maintainers": [
+    {
+      "email": "sandyzhang@google.com",
+      "github": "zhangskz",
+      "name": "Sandy Zhang"
+    },
+    {
+      "email": "mkruskal@google.com",
+      "github": "mkruskal-google",
+      "name": "Mike Kruskal"
+    },
+    {
+      "email": "gberg@google.com",
+      "github": "googleberg",
+      "name": "Jerry Berg"
+    }
+  ],
+  "repository": ["github:protocolbuffers/protobuf"],
+  "versions": [],
+  "yanked_versions": {}
+}

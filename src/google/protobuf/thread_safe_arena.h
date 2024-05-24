@@ -10,12 +10,13 @@
 #ifndef GOOGLE_PROTOBUF_THREAD_SAFE_ARENA_H__
 #define GOOGLE_PROTOBUF_THREAD_SAFE_ARENA_H__
 
-#include <algorithm>
 #include <atomic>
-#include <string>
+#include <cstddef>
+#include <cstdint>
 #include <type_traits>
-#include <utility>
+#include <vector>
 
+#include "absl/base/attributes.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
@@ -109,6 +110,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   friend class TcParser;
   friend class SerialArena;
   friend struct SerialArenaChunkHeader;
+  friend class cleanup::ChunkList;
   static uint64_t GetNextLifeCycleId();
 
   class SerialArenaChunk;
@@ -128,6 +130,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   // Adds SerialArena to the chunked list. May create a new chunk.
   void AddSerialArena(void* id, SerialArena* serial);
+
+  void UnpoisonAllArenaBlocks() const;
 
   // Members are declared here to track sizeof(ThreadSafeArena) and hotness
   // centrally.
@@ -189,22 +193,23 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   // Executes callback function over SerialArenaChunk. Passes const
   // SerialArenaChunk*.
-  template <typename Functor>
-  void WalkConstSerialArenaChunk(Functor fn) const;
+  template <typename Callback>
+  void WalkConstSerialArenaChunk(Callback fn) const;
 
   // Executes callback function over SerialArenaChunk.
-  template <typename Functor>
-  void WalkSerialArenaChunk(Functor fn);
+  template <typename Callback>
+  void WalkSerialArenaChunk(Callback fn);
 
-  // Executes callback function over SerialArena in chunked list in reverse
-  // chronological order. Passes const SerialArena*.
-  template <typename Functor>
-  void PerConstSerialArenaInChunk(Functor fn) const;
+  // Visits SerialArena and calls "fn", including "first_arena" and ones on
+  // chunks. Do not rely on the order of visit. The callback function should
+  // accept `const SerialArena*`.
+  template <typename Callback>
+  void VisitSerialArena(Callback fn) const;
 
   // Releases all memory except the first block which it returns. The first
   // block might be owned by the user and thus need some extra checks before
   // deleting.
-  SizedPtr Free(size_t* space_allocated);
+  SizedPtr Free();
 
   // ThreadCache is accessed very frequently, so we align it such that it's
   // located within a single cache line.

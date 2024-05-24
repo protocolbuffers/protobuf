@@ -20,6 +20,7 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 import calendar
 import collections.abc
 import datetime
+import warnings
 
 from google.protobuf.internal import field_mask
 
@@ -399,7 +400,7 @@ class Duration(object):
     self.seconds = seconds
     self.nanos = 0
 
-  def ToTimedelta(self):
+  def ToTimedelta(self) -> datetime.timedelta:
     """Converts Duration to timedelta."""
     return datetime.timedelta(
         seconds=self.seconds, microseconds=_RoundTowardZero(
@@ -495,9 +496,6 @@ class Struct(object):
 
   def __getitem__(self, key):
     return _GetStructValue(self.fields[key])
-
-  def __contains__(self, item):
-    return item in self.fields
 
   def __setitem__(self, key, value):
     _SetStructValue(self.fields[key], value)

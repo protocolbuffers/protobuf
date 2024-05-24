@@ -16,13 +16,14 @@
 #ifndef GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 
-#include <atomic>
 #include <climits>
+#include <cstddef>
+#include <cstdint>
 #include <iosfwd>
 #include <string>
+#include <type_traits>
 
-#include "google/protobuf/stubs/common.h"
-#include "absl/base/call_once.h"
+#include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
@@ -51,6 +52,9 @@ class RepeatedPtrField;
 class FastReflectionMessageMutator;
 class FastReflectionStringSetter;
 class Reflection;
+class Descriptor;
+class AssignDescriptorsHelper;
+class MessageLite;
 
 namespace io {
 
@@ -118,15 +122,22 @@ class PROTOBUF_EXPORT CachedSize {
 #endif
 };
 
+// For MessageLite to friend.
+class TypeId;
+auto GetClassData(const MessageLite& msg);
+
 class SwapFieldHelper;
 
 // See parse_context.h for explanation
 class ParseContext;
 
+struct DescriptorTable;
+class DescriptorPoolExtensionFinder;
 class ExtensionSet;
 class LazyField;
 class RepeatedPtrFieldBase;
 class TcParser;
+struct TcParseTableBase;
 class WireFormatLite;
 class WeakFieldMap;
 
@@ -203,7 +214,7 @@ PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
 // the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT MessageLite {
  public:
-  constexpr MessageLite() {}
+  constexpr MessageLite() = default;
   MessageLite(const MessageLite&) = delete;
   MessageLite& operator=(const MessageLite&) = delete;
   virtual ~MessageLite() = default;
@@ -235,7 +246,7 @@ class PROTOBUF_EXPORT MessageLite {
   virtual void Clear() = 0;
 
   // Quickly check if all required fields have values set.
-  virtual bool IsInitialized() const = 0;
+  bool IsInitialized() const;
 
   // This is not implemented for Lite messages -- it just returns "(cannot
   // determine missing fields for lite message)".  However, it is implemented
@@ -244,7 +255,7 @@ class PROTOBUF_EXPORT MessageLite {
 
   // If |other| is the exact same class as this, calls MergeFrom(). Otherwise,
   // results are undefined (probably crash).
-  virtual void CheckTypeAndMergeFrom(const MessageLite& other) = 0;
+  void CheckTypeAndMergeFrom(const MessageLite& other);
 
   // These methods return a human-readable summary of the message. Note that
   // since the MessageLite interface does not support reflection, there is very
@@ -479,9 +490,11 @@ class PROTOBUF_EXPORT MessageLite {
   uint8_t* SerializeWithCachedSizesToArray(uint8_t* target) const;
 
   // Returns the result of the last call to ByteSize().  An embedded message's
-  // size is needed both to serialize it (because embedded messages are
-  // length-delimited) and to compute the outer message's size.  Caching
+  // size is needed both to serialize it (only true for length-prefixed
+  // submessages) and to compute the outer message's size.  Caching
   // the size avoids computing it multiple times.
+  // Note that the submessage size is unnecessary when using
+  // group encoding / delimited since we have SGROUP/EGROUP bounds.
   //
   // ByteSize() does not automatically use the cached size when available
   // because this would require invalidating it every time the message was
@@ -491,10 +504,7 @@ class PROTOBUF_EXPORT MessageLite {
   // method.)
   int GetCachedSize() const;
 
-  virtual const char* _InternalParse(const char* /*ptr*/,
-                                     internal::ParseContext* /*ctx*/) {
-    return nullptr;
-  }
+  const char* _InternalParse(const char* ptr, internal::ParseContext* ctx);
 
   void OnDemandRegisterArenaDtor(Arena* arena);
 
@@ -514,6 +524,18 @@ class PROTOBUF_EXPORT MessageLite {
     return static_cast<T*>(Arena::CopyConstruct<T>(arena, &from));
   }
 
+  const internal::TcParseTableBase* GetTcParseTable() const {
+    auto* data = GetClassData();
+    ABSL_DCHECK(data != nullptr);
+
+    auto* tc_table = data->tc_table;
+    if (ABSL_PREDICT_FALSE(tc_table == nullptr)) {
+      ABSL_DCHECK(!data->is_lite);
+      return data->full().descriptor_methods->get_tc_table(*this);
+    }
+    return tc_table;
+  }
+
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
 
   // We use a secondary vtable for descriptor based methods. This way ClassData
@@ -522,13 +544,23 @@ class PROTOBUF_EXPORT MessageLite {
   struct DescriptorMethods {
     std::string (*get_type_name)(const MessageLite&);
     std::string (*initialization_error_string)(const MessageLite&);
+    const internal::TcParseTableBase* (*get_tc_table)(const MessageLite&);
+    size_t (*space_used_long)(const MessageLite&);
   };
   struct ClassDataFull;
   // Note: The order of arguments in the functions is chosen so that it has
   // the same ABI as the member function that calls them. Eg the `this`
   // pointer becomes the first argument in the free function.
+  //
+  // Future work:
+  // We could save more data by omitting any optional pointer that would
+  // otherwise be null. We can have some metadata in ClassData telling us if we
+  // have them and their offset.
   struct ClassData {
+    const internal::TcParseTableBase* tc_table;
     void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
+    bool (*is_initialized)(const MessageLite&);
+    void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
 
     // Offset of the CachedSize member.
     uint32_t cached_size_offset;
@@ -536,14 +568,22 @@ class PROTOBUF_EXPORT MessageLite {
     // char[] just beyond the ClassData.
     bool is_lite;
 
-    constexpr ClassData(void (*on_demand_register_arena_dtor)(MessageLite&,
+    constexpr ClassData(const internal::TcParseTableBase* tc_table,
+                        void (*on_demand_register_arena_dtor)(MessageLite&,
                                                               Arena&),
+                        bool (*is_initialized)(const MessageLite&),
+                        void (*merge_to_from)(MessageLite& to,
+                                              const MessageLite& from_msg),
                         uint32_t cached_size_offset, bool is_lite)
-        : on_demand_register_arena_dtor(on_demand_register_arena_dtor),
+        : tc_table(tc_table),
+          on_demand_register_arena_dtor(on_demand_register_arena_dtor),
+          is_initialized(is_initialized),
+          merge_to_from(merge_to_from),
           cached_size_offset(cached_size_offset),
           is_lite(is_lite) {}
 
     const ClassDataFull& full() const {
+      ABSL_DCHECK(!is_lite);
       return *static_cast<const ClassDataFull*>(this);
     }
   };
@@ -551,18 +591,39 @@ class PROTOBUF_EXPORT MessageLite {
   struct ClassDataLite {
     ClassData header;
     const char type_name[N];
+
+    constexpr const ClassData* base() const { return &header; }
   };
   struct ClassDataFull : ClassData {
     constexpr ClassDataFull(ClassData base,
-                            void (*merge_to_from)(MessageLite& to,
-                                                  const MessageLite& from_msg),
-                            const DescriptorMethods* descriptor_methods)
+                            const DescriptorMethods* descriptor_methods,
+                            const internal::DescriptorTable* descriptor_table,
+                            void (*get_metadata_tracker)())
         : ClassData(base),
-          merge_to_from(merge_to_from),
-          descriptor_methods(descriptor_methods) {}
+          descriptor_methods(descriptor_methods),
+          descriptor_table(descriptor_table),
+          reflection(),
+          descriptor(),
+          get_metadata_tracker(get_metadata_tracker) {}
 
-    void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
+    constexpr const ClassData* base() const { return this; }
+
     const DescriptorMethods* descriptor_methods;
+
+    // Codegen types will provide a DescriptorTable to do lazy
+    // registration/initialization of the reflection objects.
+    // Other types, like DynamicMessage, keep the table as null but eagerly
+    // populate `reflection`/`descriptor` fields.
+    const internal::DescriptorTable* descriptor_table;
+    // Accesses are protected by the once_flag in `descriptor_table`. When the
+    // table is null these are populated from the beginning and need to
+    // protection.
+    mutable const Reflection* reflection;
+    mutable const Descriptor* descriptor;
+
+    // When an access tracker is installed, this function notifies the tracker
+    // that GetMetadata was called.
+    void (*get_metadata_tracker)();
   };
 
   // GetClassData() returns a pointer to a ClassData struct which
@@ -573,6 +634,15 @@ class PROTOBUF_EXPORT MessageLite {
   // This is a work in progress. There are still some types (eg MapEntry) that
   // return a default table instead of a unique one.
   virtual const ClassData* GetClassData() const = 0;
+
+  template <typename T>
+  static auto GetClassDataGenerated() {
+    // We could speed this up if needed by avoiding the function call.
+    // In LTO this is likely inlined, so it might not matter.
+    static_assert(
+        std::is_same<const T&, decltype(T::default_instance())>::value, "");
+    return T::default_instance().T::GetClassData();
+  }
 
   internal::InternalMetadata _internal_metadata_;
 
@@ -609,13 +679,16 @@ class PROTOBUF_EXPORT MessageLite {
 
  private:
   friend class FastReflectionMessageMutator;
+  friend class AssignDescriptorsHelper;
   friend class FastReflectionStringSetter;
   friend class Message;
   friend class Reflection;
+  friend class internal::DescriptorPoolExtensionFinder;
   friend class internal::ExtensionSet;
   friend class internal::LazyField;
   friend class internal::SwapFieldHelper;
   friend class internal::TcParser;
+  friend class internal::TypeId;
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
 
@@ -624,31 +697,87 @@ class PROTOBUF_EXPORT MessageLite {
   template <typename Type>
   friend class internal::GenericTypeHandler;
 
+  friend auto internal::GetClassData(const MessageLite& msg);
+
   void LogInitializationErrorMessage() const;
 
   bool MergeFromImpl(io::CodedInputStream* input, ParseFlags parse_flags);
+
+  template <typename T, const void* ptr = T::_raw_default_instance_>
+  static constexpr auto GetStrongPointerForTypeImpl(int) {
+    return ptr;
+  }
+  template <typename T>
+  static constexpr auto GetStrongPointerForTypeImpl(char) {
+    return &T::default_instance;
+  }
+  // Return a pointer we can use to make a strong reference to a type.
+  // Ideally, this is a pointer to the default instance.
+  // If we can't get that, then we use a pointer to the `default_instance`
+  // function. The latter always works but pins the function artificially into
+  // the binary so we avoid it.
+  template <typename T>
+  static constexpr auto GetStrongPointerForType() {
+    return GetStrongPointerForTypeImpl<T>(0);
+  }
+  template <typename T>
+  friend void internal::StrongReferenceToType();
 };
 
 namespace internal {
 
+// A typeinfo equivalent for protobuf message types. Used for
+// DynamicCastToGenerated.
+// We might make this class public later on to have an alternative to
+// `std::type_info` that works when RTTI is disabled.
+class TypeId {
+ public:
+  constexpr explicit TypeId(const MessageLite::ClassData* data) : data_(data) {}
+
+  friend constexpr bool operator==(TypeId a, TypeId b) {
+    return a.data_ == b.data_;
+  }
+  friend constexpr bool operator!=(TypeId a, TypeId b) { return !(a == b); }
+
+  static TypeId Get(const MessageLite& msg) {
+    return TypeId(msg.GetClassData());
+  }
+
+  template <typename T>
+  static TypeId Get() {
+    return TypeId(MessageLite::GetClassDataGenerated<T>());
+  }
+
+ private:
+  const MessageLite::ClassData* data_;
+};
+
+inline auto GetClassData(const MessageLite& msg) { return msg.GetClassData(); }
+
 template <bool alias>
 bool MergeFromImpl(absl::string_view input, MessageLite* msg,
+                   const internal::TcParseTableBase* tc_table,
                    MessageLite::ParseFlags parse_flags);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<false>(
     absl::string_view input, MessageLite* msg,
+    const internal::TcParseTableBase* tc_table,
     MessageLite::ParseFlags parse_flags);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<true>(
     absl::string_view input, MessageLite* msg,
+    const internal::TcParseTableBase* tc_table,
     MessageLite::ParseFlags parse_flags);
 
 template <bool alias>
 bool MergeFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg,
+                   const internal::TcParseTableBase* tc_table,
                    MessageLite::ParseFlags parse_flags);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<false>(
     io::ZeroCopyInputStream* input, MessageLite* msg,
+    const internal::TcParseTableBase* tc_table,
     MessageLite::ParseFlags parse_flags);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<true>(
     io::ZeroCopyInputStream* input, MessageLite* msg,
+    const internal::TcParseTableBase* tc_table,
     MessageLite::ParseFlags parse_flags);
 
 struct BoundedZCIS {
@@ -658,19 +787,25 @@ struct BoundedZCIS {
 
 template <bool alias>
 bool MergeFromImpl(BoundedZCIS input, MessageLite* msg,
+                   const internal::TcParseTableBase* tc_table,
                    MessageLite::ParseFlags parse_flags);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<false>(
-    BoundedZCIS input, MessageLite* msg, MessageLite::ParseFlags parse_flags);
+    BoundedZCIS input, MessageLite* msg,
+    const internal::TcParseTableBase* tc_table,
+    MessageLite::ParseFlags parse_flags);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<true>(
-    BoundedZCIS input, MessageLite* msg, MessageLite::ParseFlags parse_flags);
+    BoundedZCIS input, MessageLite* msg,
+    const internal::TcParseTableBase* tc_table,
+    MessageLite::ParseFlags parse_flags);
 
 template <typename T>
 struct SourceWrapper;
 
 template <bool alias, typename T>
 bool MergeFromImpl(const SourceWrapper<T>& input, MessageLite* msg,
+                   const internal::TcParseTableBase* tc_table,
                    MessageLite::ParseFlags parse_flags) {
-  return input.template MergeInto<alias>(msg, parse_flags);
+  return input.template MergeInto<alias>(msg, tc_table, parse_flags);
 }
 
 }  // namespace internal
@@ -679,7 +814,9 @@ template <MessageLite::ParseFlags flags, typename T>
 bool MessageLite::ParseFrom(const T& input) {
   if (flags & kParse) Clear();
   constexpr bool alias = (flags & kMergeWithAliasing) != 0;
-  return internal::MergeFromImpl<alias>(input, this, flags);
+  const internal::TcParseTableBase* tc_table;
+  PROTOBUF_ALWAYS_INLINE_CALL tc_table = GetTcParseTable();
+  return internal::MergeFromImpl<alias>(input, this, tc_table, flags);
 }
 
 // ===================================================================
@@ -715,10 +852,92 @@ T* OnShutdownDelete(T* p) {
   return p;
 }
 
+inline void AssertDownCast(const MessageLite& from, const MessageLite& to) {
+  ABSL_DCHECK(internal::TypeId::Get(from) == internal::TypeId::Get(to))
+      << "Cannot downcast " << from.GetTypeName() << " to " << to.GetTypeName();
+}
+
 }  // namespace internal
 
 std::string ShortFormat(const MessageLite& message_lite);
 std::string Utf8Format(const MessageLite& message_lite);
+
+// Tries to downcast this message to a generated message type.  Returns nullptr
+// if this class is not an instance of T.  This works even if RTTI is disabled.
+//
+// This also has the effect of creating a strong reference to T that will
+// prevent the linker from stripping it out at link time.  This can be important
+// if you are using a DynamicMessageFactory that delegates to the generated
+// factory.
+template <typename T>
+const T* DynamicCastToGenerated(const MessageLite* from) {
+  static_assert(std::is_base_of<MessageLite, T>::value, "");
+
+  internal::StrongReferenceToType<T>();
+  // We might avoid the call to T::GetClassData() altogether if T were to
+  // expose the class data pointer.
+  if (from == nullptr ||
+      internal::TypeId::Get<T>() != internal::TypeId::Get(*from)) {
+    return nullptr;
+  }
+
+  return static_cast<const T*>(from);
+}
+
+template <typename T>
+const T* DynamicCastToGenerated(const MessageLite* from);
+
+template <typename T>
+T* DynamicCastToGenerated(MessageLite* from) {
+  return const_cast<T*>(
+      DynamicCastToGenerated<T>(static_cast<const MessageLite*>(from)));
+}
+
+// An overloaded version of DynamicCastToGenerated for downcasting references to
+// base Message class. If the argument is not an instance of T, it terminates
+// with an error.
+template <typename T>
+const T& DynamicCastToGenerated(const MessageLite& from) {
+  const T* destination_message = DynamicCastToGenerated<T>(&from);
+  ABSL_CHECK(destination_message != nullptr)
+      << "Cannot downcast " << from.GetTypeName() << " to "
+      << T::default_instance().GetTypeName();
+  return *destination_message;
+}
+
+template <typename T>
+T& DynamicCastToGenerated(MessageLite& from) {
+  return const_cast<T&>(
+      DynamicCastToGenerated<T>(static_cast<const MessageLite&>(from)));
+}
+
+// A lightweight function for downcasting base MessageLite pointer to derived
+// type. It should only be used when the caller is certain that the argument is
+// of instance T and T is a generated message type.
+template <typename T>
+const T* DownCastToGenerated(const MessageLite* from) {
+  internal::StrongReferenceToType<T>();
+  ABSL_DCHECK(DynamicCastToGenerated<T>(from) == from)
+      << "Cannot downcast " << from->GetTypeName() << " to "
+      << T::default_instance().GetTypeName();
+  return static_cast<const T*>(from);
+}
+
+template <typename T>
+T* DownCastToGenerated(MessageLite* from) {
+  return const_cast<T*>(
+      DownCastToGenerated<T>(static_cast<const MessageLite*>(from)));
+}
+
+template <typename T>
+const T& DownCastToGenerated(const MessageLite& from) {
+  return *DownCastToGenerated<T>(&from);
+}
+
+template <typename T>
+T& DownCastToGenerated(MessageLite& from) {
+  return *DownCastToGenerated<T>(&from);
+}
 
 }  // namespace protobuf
 }  // namespace google

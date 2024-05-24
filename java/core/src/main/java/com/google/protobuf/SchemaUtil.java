@@ -31,17 +31,18 @@ final class SchemaUtil {
   private SchemaUtil() {}
 
   /**
-   * Requires that the given message extend {@link com.google.protobuf.GeneratedMessageV3} or {@link
+   * Requires that the given message extend {@link com.google.protobuf.GeneratedMessage} or {@link
    * GeneratedMessageLite}.
    */
   public static void requireGeneratedMessage(Class<?> messageType) {
     // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     if (!GeneratedMessageLite.class.isAssignableFrom(messageType)
+        && !Protobuf.assumeLiteRuntime
         && GENERATED_MESSAGE_CLASS != null
         && !GENERATED_MESSAGE_CLASS.isAssignableFrom(messageType)) {
       throw new IllegalArgumentException(
-          "Message classes must extend GeneratedMessageV3 or GeneratedMessageLite");
+          "Message classes must extend GeneratedMessage or GeneratedMessageLite");
     }
   }
 
@@ -781,16 +782,22 @@ final class SchemaUtil {
   }
 
   private static Class<?> getGeneratedMessageClass() {
+    if (Protobuf.assumeLiteRuntime) {
+      return null;
+    }
     try {
       // TODO decide if we're keeping support for Full in schema classes and handle
       // this better.
-      return Class.forName("com.google.protobuf.GeneratedMessageV3");
+      return Class.forName("com.google.protobuf.GeneratedMessage");
     } catch (Throwable e) {
       return null;
     }
   }
 
   private static Class<?> getUnknownFieldSetSchemaClass() {
+    if (Protobuf.assumeLiteRuntime) {
+      return null;
+    }
     try {
       return Class.forName("com.google.protobuf.UnknownFieldSetSchema");
     } catch (Throwable e) {

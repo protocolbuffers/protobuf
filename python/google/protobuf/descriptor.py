@@ -745,8 +745,11 @@ class FieldDescriptor(DescriptorBase):
     """
     if self.label == FieldDescriptor.LABEL_REPEATED:
       return False
-    if (self.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE or
-        self.containing_oneof):
+    if (
+        self.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE
+        or self.is_extension
+        or self.containing_oneof
+    ):
       return True
 
     return (
@@ -1278,13 +1281,6 @@ class FileDescriptor(DescriptorBase):
   @property
   def _parent(self):
     return None
-
-  @property
-  def edition(self):
-    # pylint: disable=g-import-not-at-top
-    from google.protobuf import descriptor_pb2
-
-    return descriptor_pb2.Edition.Value(self._edition)
 
 
 def _ParseOptions(message, string):

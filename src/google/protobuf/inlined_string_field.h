@@ -373,6 +373,19 @@ inline InlinedStringField::InlinedStringField(
 }
 
 
+#ifdef GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE
+constexpr uint32_t InitDonatingStates() { return ~0u; }
+inline void InternalRegisterArenaDtor(Arena*, void*, void (*)(void*)) {}
+#else   // !GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE
+constexpr uint32_t InitDonatingStates() { return 0u; }
+inline void InternalRegisterArenaDtor(Arena* arena, void* object,
+                                      void (*destruct)(void*)) {
+  if (arena != nullptr) {
+    arena->OwnCustomDestructor(object, destruct);
+  }
+}
+#endif  // GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE
+
 inline InlinedStringField::InlinedStringField(Arena* /*arena*/) { Init(); }
 
 inline InlinedStringField::InlinedStringField(Arena* arena,

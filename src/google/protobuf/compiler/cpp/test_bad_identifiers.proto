@@ -120,13 +120,13 @@ message TestConflictingSymbolNames {
   // For clashing local variables in Serialize and ByteSize calculation.
   optional string target = 38;
 
-  extensions 1000 to max;  // NO_PROTO3
+  extensions 1000 to max [verification = UNVERIFIED];  // NO_PROTO3
 }
 
 message TestConflictingSymbolNamesExtension {                      // NO_PROTO3
   extend TestConflictingSymbolNames {                              // NO_PROTO3
     repeated int32 repeated_int32_ext = 20423638 [packed = true];  // NO_PROTO3
-  }                                                                // NO_PROTO3
+  }  // NO_PROTO3
 }  // NO_PROTO3
 
 message TestConflictingEnumNames {  // NO_PROTO3
@@ -137,7 +137,7 @@ message TestConflictingEnumNames {  // NO_PROTO3
     int = 3;                        // NO_PROTO3
     typedef = 4;                    // NO_PROTO3
     XOR = 5;                        // NO_PROTO3
-  }                                 // NO_PROTO3
+  }  // NO_PROTO3
 
   optional while conflicting_enum = 1;  // NO_PROTO3
 }  // NO_PROTO3

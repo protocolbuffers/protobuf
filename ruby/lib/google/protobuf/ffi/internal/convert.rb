@@ -32,7 +32,7 @@ module Google
             raise TypeError.new "Invalid argument for boolean field '#{name}' (given #{value.class})." unless [TrueClass, FalseClass].include? value.class
             return_value[:bool_val] = value
           when :string
-            raise TypeError.new "Invalid argument for string field '#{name}' (given #{value.class})." unless [Symbol, String].include? value.class
+            raise TypeError.new "Invalid argument for string field '#{name}' (given #{value.class})." unless value.is_a?(String) or value.is_a?(Symbol)
             begin
               string_value = value.to_s.encode("UTF-8")
             rescue Encoding::UndefinedConversionError
@@ -70,7 +70,7 @@ module Google
               case wkt
               when :Timestamp
                 raise TypeError.new "Invalid type #{value.class} to assign to submessage field '#{name}'." unless value.kind_of? Time
-                new_message = Google::Protobuf::FFI.new_message_from_def msg_or_enum_def, arena
+                new_message = Google::Protobuf::FFI.new_message_from_def Google::Protobuf::FFI.get_mini_table(msg_or_enum_def), arena
                 sec = Google::Protobuf::FFI::MessageValue.new
                 sec[:int64_val] = value.tv_sec
                 sec_field_def = Google::Protobuf::FFI.get_field_by_number msg_or_enum_def, 1
@@ -82,7 +82,7 @@ module Google
                 return_value[:msg_val] = new_message
               when :Duration
                 raise TypeError.new "Invalid type #{value.class} to assign to submessage field '#{name}'." unless value.kind_of? Numeric
-                new_message = Google::Protobuf::FFI.new_message_from_def msg_or_enum_def, arena
+                new_message = Google::Protobuf::FFI.new_message_from_def Google::Protobuf::FFI.get_mini_table(msg_or_enum_def), arena
                 sec = Google::Protobuf::FFI::MessageValue.new
                 sec[:int64_val] = value
                 sec_field_def = Google::Protobuf::FFI.get_field_by_number msg_or_enum_def, 1
@@ -190,39 +190,23 @@ module Google
         def to_h_internal(msg, message_descriptor)
           return nil if msg.nil? or msg.null?
           hash = {}
-          is_proto2 = Google::Protobuf::FFI.message_def_syntax(message_descriptor) == :Proto2
-          message_descriptor.each do |field_descriptor|
-            # TODO: Legacy behavior, remove when we fix the is_proto2 differences.
-            if !is_proto2 and
-              field_descriptor.sub_message? and
-              !field_descriptor.repeated? and
-              !Google::Protobuf::FFI.get_message_has(msg, field_descriptor)
-              hash[field_descriptor.name.to_sym] = nil
-              next
-            end
+          iter = ::FFI::MemoryPointer.new(:size_t, 1)
+          iter.write(:size_t, Google::Protobuf::FFI::Upb_Message_Begin)
+          message_value = Google::Protobuf::FFI::MessageValue.new
+          field_def_ptr = ::FFI::MemoryPointer.new :pointer
 
-            # Do not include fields that are not present (oneof or optional fields).
-            if is_proto2 and field_descriptor.has_presence? and !Google::Protobuf::FFI.get_message_has(msg, field_descriptor)
-              next
-            end
+          while Google::Protobuf::FFI::message_next(msg, message_descriptor, nil, field_def_ptr, message_value, iter) do
+            field_descriptor = FieldDescriptor.from_native field_def_ptr.get_pointer(0)
 
-            message_value = Google::Protobuf::FFI.get_message_value msg, field_descriptor
-
-            # Proto2 omits empty map/repeated fields also.
             if field_descriptor.map?
               hash_entry = map_create_hash(message_value[:map_val], field_descriptor)
             elsif field_descriptor.repeated?
-              array = message_value[:array_val]
-              if is_proto2 and (array.null? || Google::Protobuf::FFI.array_size(array).zero?)
-                next
-              end
-              hash_entry = repeated_field_create_array(array, field_descriptor, field_descriptor.type)
+              hash_entry = repeated_field_create_array(message_value[:array_val], field_descriptor, field_descriptor.type)
             else
               hash_entry = scalar_create_hash(message_value, field_descriptor.type, field_descriptor: field_descriptor)
             end
 
             hash[field_descriptor.name.to_sym] = hash_entry
-
           end
 
           hash

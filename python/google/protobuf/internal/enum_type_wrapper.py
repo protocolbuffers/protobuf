@@ -12,6 +12,8 @@ on proto classes.  For usage, see:
   reflection_test.py
 """
 
+import sys
+
 __author__ = 'rabsatt@google.com (Kevin Rabsatt)'
 
 
@@ -99,3 +101,12 @@ class EnumTypeWrapper(object):
       pass  # fall out to break exception chaining
     raise AttributeError('Enum {} has no value defined for name {!r}'.format(
         self._enum_type.name, name))
+
+  def __or__(self, other):
+    """Returns the union type of self and other."""
+    if sys.version_info >= (3, 10):
+      return type(self) | other
+    else:
+      raise NotImplementedError(
+          'You may not use | on EnumTypes (or classes) below python 3.10'
+      )

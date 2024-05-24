@@ -6,7 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    "//bazel:build_defs.bzl",
+    "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_COPTS",
 )
 
@@ -14,7 +14,6 @@ cc_library(
     name = "mini_table",
     srcs = [
         "extension_registry.c",
-        "internal/message.c",
         "message.c",
     ],
     hdrs = [
@@ -23,6 +22,26 @@ cc_library(
         "extension_registry.h",
         "field.h",
         "file.h",
+        "message.h",
+        "sub.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":internal",
+        "//upb:base",
+        "//upb:mem",
+        "//upb:port",
+        "//upb/hash",
+    ],
+)
+
+cc_library(
+    name = "internal",
+    srcs = [
+        "internal/message.c",
+    ],
+    hdrs = [
         "internal/enum.h",
         "internal/extension.h",
         "internal/field.h",
@@ -30,18 +49,15 @@ cc_library(
         "internal/message.h",
         "internal/size_log2.h",
         "internal/sub.h",
-        "message.h",
-        "sub.h",
-        "types.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
-        "//upb:hash",
         "//upb:mem",
-        "//upb:message_types",
         "//upb:port",
+        "//upb/hash",
+        "//upb/message:types",
     ],
 )
 
@@ -58,9 +74,9 @@ cc_library(
     deps = [
         ":mini_table",
         "//upb:base",
-        "//upb:hash",
         "//upb:mem",
         "//upb:port",
+        "//upb/hash",
     ],
 )
 
@@ -68,11 +84,12 @@ cc_test(
     name = "compat_test",
     srcs = ["compat_test.cc"],
     deps = [
-        "@com_google_googletest//:gtest_main",
         "//upb:mini_table_compat",
         "//upb/test:test_messages_proto2_upb_minitable",
         "//upb/test:test_messages_proto3_upb_minitable",
         "//upb/test:test_upb_proto",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -86,8 +103,20 @@ filegroup(
         ],
     ),
     visibility = [
-        "//upb/cmake:__pkg__",
         "//python/dist:__pkg__",
-    ]
+        "//upb/cmake:__pkg__",
+    ],
+)
+# end:github_only
+
+# begin:github_only
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "**/*test.cc",
+        ],
+    ),
+    visibility = ["//upb:__pkg__"],
 )
 # end:github_only

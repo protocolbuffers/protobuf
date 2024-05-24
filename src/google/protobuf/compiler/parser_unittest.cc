@@ -12,6 +12,7 @@
 #include "google/protobuf/compiler/parser.h"
 
 #include <algorithm>
+#include <cmath>
 #include <memory>
 #include <string>
 #include <utility>
@@ -19,11 +20,13 @@
 
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/descriptor.pb.h"
+#include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/retention.h"
@@ -131,7 +134,8 @@ class ParserTest : public testing::Test {
   }
 
   // Parse the text and expect that the given errors are reported.
-  void ExpectHasErrors(const char* text, const char* expected_errors) {
+  void ExpectHasErrors(absl::string_view text,
+                       const testing::Matcher<std::string>& expected_errors) {
     ExpectHasEarlyExitErrors(text, expected_errors);
     EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
   }
@@ -148,20 +152,22 @@ class ParserTest : public testing::Test {
 
   // Same as above but does not expect that the parser parses the complete
   // input.
-  void ExpectHasEarlyExitErrors(absl::string_view text,
-                                absl::string_view expected_errors) {
+  void ExpectHasEarlyExitErrors(
+      absl::string_view text,
+      const testing::Matcher<std::string>& expected_errors) {
     SetupParser(text);
     SourceLocationTable source_locations;
     parser_->RecordSourceLocationsTo(&source_locations);
     FileDescriptorProto file;
     EXPECT_FALSE(parser_->Parse(input_.get(), &file));
-    EXPECT_EQ(expected_errors, error_collector_.text_);
+    EXPECT_THAT(error_collector_.text_, expected_errors);
   }
 
   // Parse the text as a file and validate it (with a DescriptorPool), and
   // expect that the validation step reports the given errors.
-  void ExpectHasValidationErrors(const char* text,
-                                 const char* expected_errors) {
+  void ExpectHasValidationErrors(
+      absl::string_view text,
+      const testing::Matcher<std::string>& expected_errors) {
     SetupParser(text);
     SourceLocationTable source_locations;
     parser_->RecordSourceLocationsTo(&source_locations);
@@ -176,7 +182,7 @@ class ParserTest : public testing::Test {
                                                             &error_collector_);
     EXPECT_TRUE(pool_.BuildFileCollectingErrors(
                     file, &validation_error_collector) == nullptr);
-    EXPECT_EQ(expected_errors, error_collector_.text_);
+    EXPECT_THAT(error_collector_.text_, expected_errors);
   }
 
   MockErrorCollector error_collector_;
@@ -455,6 +461,7 @@ TEST_F(ParseMessageTest, FieldDefaults) {
       "  required double foo = 1 [default= inf ];\n"
       "  required double foo = 1 [default=-inf ];\n"
       "  required double foo = 1 [default= nan ];\n"
+      "  required double foo = 1 [default= -nan ];\n"
       "  required string foo = 1 [default='13\\001'];\n"
       "  required string foo = 1 [default='a' \"b\" \n \"c\"];\n"
       "  required bytes  foo = 1 [default='14\\002'];\n"
@@ -503,6 +510,8 @@ TEST_F(ParseMessageTest, FieldDefaults) {
       "  field { type:TYPE_DOUBLE  default_value:\"-inf\"      " ETC
       " }"
       "  field { type:TYPE_DOUBLE  default_value:\"nan\"       " ETC
+      " }"
+      "  field { type:TYPE_DOUBLE  default_value:\"-nan\"      " ETC
       " }"
       "  field { type:TYPE_STRING  default_value:\"13\\001\"   " ETC
       " }"
@@ -647,6 +656,65 @@ TEST_F(ParseMessageTest, FieldOptionsSupportLargeDecimalLiteral) {
       "      uninterpreted_option{"
       "        name{ name_part: \"f\" is_extension: true }"
       "        double_value: -1.8446744073709552e+19"
+      "      }"
+      "    }"
+      "  }"
+      "}");
+}
+
+TEST_F(ParseMessageTest, FieldOptionsSupportInfAndNan) {
+  ExpectParsesTo(
+      "import \"google/protobuf/descriptor.proto\";\n"
+      "extend google.protobuf.FieldOptions {\n"
+      "  optional double f = 10101;\n"
+      "}\n"
+      "message TestMessage {\n"
+      "  optional double a = 1 [(f) = inf];\n"
+      "  optional double b = 2 [(f) = -inf];\n"
+      "  optional double c = 3 [(f) = nan];\n"
+      "  optional double d = 4 [(f) = -nan];\n"
+      "}\n",
+
+      "dependency: \"google/protobuf/descriptor.proto\""
+      "extension {"
+      "  name: \"f\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 10101"
+      "  extendee: \"google.protobuf.FieldOptions\""
+      "}"
+      "message_type {"
+      "  name: \"TestMessage\""
+      "  field {"
+      "    name: \"a\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 1"
+      "    options{"
+      "      uninterpreted_option{"
+      "        name{ name_part: \"f\" is_extension: true }"
+      "        identifier_value: \"inf\""
+      "      }"
+      "    }"
+      "  }"
+      "  field {"
+      "    name: \"b\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 2"
+      "    options{"
+      "      uninterpreted_option{"
+      "        name{ name_part: \"f\" is_extension: true }"
+      "        double_value: -infinity"
+      "      }"
+      "    }"
+      "  }"
+      "  field {"
+      "    name: \"c\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 3"
+      "    options{"
+      "      uninterpreted_option{"
+      "        name{ name_part: \"f\" is_extension: true }"
+      "        identifier_value: \"nan\""
+      "      }"
+      "    }"
+      "  }"
+      "  field {"
+      "    name: \"d\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 4"
+      "    options{"
+      "      uninterpreted_option{"
+      "        name{ name_part: \"f\" is_extension: true }"
+      "        double_value: nan"
       "      }"
       "    }"
       "  }"
@@ -1391,6 +1459,48 @@ TEST_F(ParseMiscTest, ParseFileOptions) {
       "}");
 }
 
+TEST_F(ParseMiscTest, InterpretedOptions) {
+  // Since we're importing the generated code from parsing/compiling
+  // unittest_custom_options.proto, we can just look at the option
+  // values from that file's descriptor in the generated code.
+  {
+    const MessageOptions& options =
+        protobuf_unittest::SettingRealsFromInf ::descriptor()->options();
+    float float_val = options.GetExtension(protobuf_unittest::float_opt);
+    ASSERT_TRUE(std::isinf(float_val));
+    ASSERT_GT(float_val, 0);
+    double double_val = options.GetExtension(protobuf_unittest::double_opt);
+    ASSERT_TRUE(std::isinf(double_val));
+    ASSERT_GT(double_val, 0);
+  }
+  {
+    const MessageOptions& options =
+        protobuf_unittest::SettingRealsFromNegativeInf ::descriptor()->options();
+    float float_val = options.GetExtension(protobuf_unittest::float_opt);
+    ASSERT_TRUE(std::isinf(float_val));
+    ASSERT_LT(float_val, 0);
+    double double_val = options.GetExtension(protobuf_unittest::double_opt);
+    ASSERT_TRUE(std::isinf(double_val));
+    ASSERT_LT(double_val, 0);
+  }
+  {
+    const MessageOptions& options =
+        protobuf_unittest::SettingRealsFromNan ::descriptor()->options();
+    float float_val = options.GetExtension(protobuf_unittest::float_opt);
+    ASSERT_TRUE(std::isnan(float_val));
+    double double_val = options.GetExtension(protobuf_unittest::double_opt);
+    ASSERT_TRUE(std::isnan(double_val));
+  }
+  {
+    const MessageOptions& options =
+        protobuf_unittest::SettingRealsFromNegativeNan ::descriptor()->options();
+    float float_val = options.GetExtension(protobuf_unittest::float_opt);
+    ASSERT_TRUE(std::isnan(float_val));
+    double double_val = options.GetExtension(protobuf_unittest::double_opt);
+    ASSERT_TRUE(std::isnan(double_val));
+  }
+}
+
 // ===================================================================
 // Error tests
 //
@@ -1452,6 +1562,41 @@ TEST_F(ParseErrorTest, EofInMessage) {
   ExpectHasErrors(
       "message TestMessage {",
       "0:21: Reached end of input in message definition (missing '}').\n");
+}
+
+TEST_F(ParseErrorTest, NestingIsLimitedWithoutCrashing) {
+  std::string start = "syntax = \"proto2\";\n";
+  std::string end;
+
+  const auto add = [&] {
+    absl::StrAppend(&start, "message M {");
+    absl::StrAppend(&end, "}");
+  };
+  const auto input = [&] { return absl::StrCat(start, end); };
+
+  // The first ones work correctly.
+  for (int i = 1; i < internal::cpp::MaxMessageDeclarationNestingDepth(); ++i) {
+    add();
+    const std::string str = input();
+    SetupParser(str);
+    FileDescriptorProto proto;
+    proto.set_name("foo.proto");
+    EXPECT_TRUE(parser_->Parse(input_.get(), &proto)) << input();
+    EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
+    ASSERT_EQ("", error_collector_.text_);
+    DescriptorPool pool;
+    ASSERT_TRUE(pool.BuildFile(proto));
+  }
+  // The rest have parsing errors but they don't crash no matter how deep we
+  // make them.
+  const auto error = testing::HasSubstr(
+      "Reached maximum recursion limit for nested messages.");
+  add();
+  ExpectHasErrors(input(), error);
+  for (int i = 0; i < 100000; ++i) {
+    add();
+  }
+  ExpectHasErrors(input(), error);
 }
 
 TEST_F(ParseErrorTest, MissingFieldNumber) {
@@ -2307,15 +2452,32 @@ TEST_F(ParserValidationErrorTest, Proto2CustomJsonConflictError) {
 }
 
 TEST_F(ParserValidationErrorTest, Proto3JsonConflictLegacy) {
-  ExpectHasValidationErrors(
+  ExpectParsesTo(
       "syntax = 'proto3';\n"
       "message TestMessage {\n"
       "  option deprecated_legacy_json_field_conflicts = true;\n"
       "  uint32 fooBar = 1;\n"
       "  uint32 foo_bar = 2;\n"
       "}\n",
-      "4:9: The default JSON name of field \"foo_bar\" (\"fooBar\") conflicts "
-      "with the default JSON name of field \"fooBar\".\n");
+      "syntax: 'proto3'\n"
+      "message_type {\n"
+      "  name: 'TestMessage'\n"
+      "  field {\n"
+      "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'fooBar' number: 1\n"
+      "  }\n"
+      "  field {\n"
+      "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'foo_bar' number: 2\n"
+      "  }\n"
+      "  options {\n"
+      "    uninterpreted_option {\n"
+      "      name {\n"
+      "        name_part: 'deprecated_legacy_json_field_conflicts'\n"
+      "        is_extension: false\n"
+      "      }\n"
+      "      identifier_value: 'true'\n"
+      "    }\n"
+      "  }\n"
+      "}\n");
 }
 
 TEST_F(ParserValidationErrorTest, Proto2JsonConflictLegacy) {

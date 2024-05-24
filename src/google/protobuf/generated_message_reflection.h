@@ -310,7 +310,6 @@ struct PROTOBUF_EXPORT DescriptorTable {
   const Message* const* default_instances;
   const uint32_t* offsets;
   // update the following descriptor arrays.
-  Metadata* file_level_metadata;
   const EnumDescriptor** file_level_enum_descriptors;
   const ServiceDescriptor** file_level_service_descriptors;
 };
@@ -321,14 +320,9 @@ struct PROTOBUF_EXPORT DescriptorTable {
 // called the first time anyone calls descriptor() or GetReflection() on one of
 // the types defined in the file.  AssignDescriptors() is thread-safe.
 void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* table);
-
-// Overload used to implement GetMetadataStatic in the generated code.
-// See comments in compiler/cpp/file.cc as to why.
-// It takes a `Metadata` and returns it to allow for tail calls and reduce
-// binary size.
-Metadata PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* (*table)(),
-                                           absl::once_flag* once,
-                                           const Metadata& metadata);
+// As above, but the caller did the call_once call already.
+void PROTOBUF_EXPORT
+AssignDescriptorsOnceInnerCall(const DescriptorTable* table);
 
 // These cannot be in lite so we put them in the reflection.
 PROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8_t* base,
@@ -345,9 +339,11 @@ struct PROTOBUF_EXPORT AddDescriptorsRunner {
 };
 
 // Retrieves the existing prototype out of a descriptor table.
-// If it doesn't exist, asks the generated message factory for one.
+// If it doesn't exist:
+//  - If force_build is true, asks the generated message factory for one.
+//  - Otherwise, return null
 const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
-                                             int index);
+                                             int index, bool force_build);
 
 struct DenseEnumCacheInfo {
   std::atomic<const std::string**> cache;

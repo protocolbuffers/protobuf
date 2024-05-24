@@ -12,6 +12,7 @@
 #include "google/protobuf/compiler/cpp/generator.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <utility>
@@ -22,13 +23,16 @@
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/strings/match.h"
+#include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/file.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/io/printer.h"
@@ -83,6 +87,7 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
        "K"},
   };
 }
+
 
 }  // namespace
 
@@ -142,8 +147,9 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     } else if (key == "lite_implicit_weak_fields") {
       file_options.enforce_mode = EnforceOptimizeMode::kLiteRuntime;
       file_options.lite_implicit_weak_fields = true;
-      if (!value.empty()) {
-        file_options.num_cc_files = std::strtol(value.c_str(), nullptr, 10);
+      int num_cc_files;
+      if (!value.empty() && absl::SimpleAtoi(value, &num_cc_files)) {
+        file_options.num_cc_files = num_cc_files;
       }
     } else if (key == "descriptor_implicit_weak_messages") {
       file_options.descriptor_implicit_weak_messages = true;
@@ -218,6 +224,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     *error = std::string(validation_result.message());
     return false;
   }
+
 
   FileGenerator file_generator(file, file_options);
 
@@ -348,6 +355,8 @@ static bool IsEnumMapType(const FieldDescriptor& field) {
 
 absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
   absl::Status status = absl::OkStatus();
+  auto edition = GetEdition(*file);
+
   google::protobuf::internal::VisitDescriptors(*file, [&](const FieldDescriptor& field) {
     const FeatureSet& resolved_features = GetResolvedSourceFeatures(field);
     const pb::CppFeatures& unresolved_features =
@@ -376,8 +385,26 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
       }
     }
 
-#ifdef PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
-    if (field.options().has_ctype()) {
+    if (unresolved_features.has_string_type()) {
+      if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
+        status = absl::FailedPreconditionError(absl::StrCat(
+            "Field ", field.full_name(),
+            " specifies string_type, but is not a string nor bytes field."));
+      } else if (unresolved_features.string_type() == pb::CppFeatures::CORD &&
+                 field.is_extension()) {
+        status = absl::FailedPreconditionError(
+            absl::StrCat("Extension ", field.full_name(),
+                         " specifies string_type=CORD which is not supported "
+                         "for extensions."));
+      } else if (field.options().has_ctype()) {
+        status = absl::FailedPreconditionError(absl::StrCat(
+            field.full_name(),
+            " specifies both string_type and ctype which is not supported."));
+      }
+    }
+
+    // 'ctype' check has moved to DescriptorBuilder for Edition 2023 and above.
+    if (edition < Edition::EDITION_2023 && field.options().has_ctype()) {
       if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
         status = absl::FailedPreconditionError(absl::StrCat(
             "Field ", field.full_name(),
@@ -391,7 +418,6 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
         }
       }
     }
-#endif  // !PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
   });
   return status;
 }

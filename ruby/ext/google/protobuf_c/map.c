@@ -38,9 +38,11 @@ static void Map_mark(void* _self) {
   rb_gc_mark(self->arena);
 }
 
+static size_t Map_memsize(const void* _self) { return sizeof(Map); }
+
 const rb_data_type_t Map_type = {
     "Google::Protobuf::Map",
-    {Map_mark, RUBY_DEFAULT_FREE, NULL},
+    {Map_mark, RUBY_DEFAULT_FREE, Map_memsize},
     .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
 
@@ -212,7 +214,7 @@ static VALUE Map_merge_into_self(VALUE _self, VALUE hashmap) {
     Map* self = ruby_to_Map(_self);
     Map* other = ruby_to_Map(hashmap);
     upb_Arena* arena = Arena_get(self->arena);
-    upb_Message* self_msg = Map_GetMutable(_self);
+    upb_Map* self_map = Map_GetMutable(_self);
 
     Arena_fuse(other->arena, arena);
 
@@ -225,7 +227,7 @@ static VALUE Map_merge_into_self(VALUE _self, VALUE hashmap) {
     size_t iter = kUpb_Map_Begin;
     upb_MessageValue key, val;
     while (upb_Map_Next(other->map, &key, &val, &iter)) {
-      upb_Map_Set(self_msg, key, val, arena);
+      upb_Map_Set(self_map, key, val, arena);
     }
   } else {
     rb_raise(rb_eArgError, "Unknown type merging into Map");
@@ -444,7 +446,7 @@ static VALUE Map_delete(VALUE _self, VALUE key) {
       Convert_RubyToUpb(key, "", Map_keyinfo(self), NULL);
   upb_MessageValue val_upb;
 
-  if (upb_Map_Delete(self->map, key_upb, &val_upb)) {
+  if (upb_Map_Delete(Map_GetMutable(_self), key_upb, &val_upb)) {
     return Convert_UpbToRuby(val_upb, self->value_type_info, self->arena);
   } else {
     return Qnil;
@@ -563,22 +565,13 @@ VALUE Map_eq(VALUE _self, VALUE _other) {
  * Freezes the message object. We have to intercept this so we can pin the
  * Ruby object into memory so we don't forget it's frozen.
  */
-static VALUE Map_freeze(VALUE _self) {
+VALUE Map_freeze(VALUE _self) {
   Map* self = ruby_to_Map(_self);
-  if (!RB_OBJ_FROZEN(_self)) {
-    Arena_Pin(self->arena, _self);
-    RB_OBJ_FREEZE(_self);
-  }
-  return _self;
-}
 
-/*
- * Deep freezes the map and values recursively.
- * Internal use only.
- */
-VALUE Map_internal_deep_freeze(VALUE _self) {
-  Map* self = ruby_to_Map(_self);
-  Map_freeze(_self);
+  if (RB_OBJ_FROZEN(_self)) return _self;
+  Arena_Pin(self->arena, _self);
+  RB_OBJ_FREEZE(_self);
+
   if (self->value_type_info.type == kUpb_CType_Message) {
     size_t iter = kUpb_Map_Begin;
     upb_MessageValue key, val;
@@ -586,7 +579,7 @@ VALUE Map_internal_deep_freeze(VALUE _self) {
     while (upb_Map_Next(self->map, &key, &val, &iter)) {
       VALUE val_val =
           Convert_UpbToRuby(val, self->value_type_info, self->arena);
-      Message_internal_deep_freeze(val_val);
+      Message_freeze(val_val);
     }
   }
   return _self;

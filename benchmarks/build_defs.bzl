@@ -5,23 +5,16 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
+
 # begin:google_only
-# load("@rules_cc//cc:defs.bzl", _cc_proto_library = "cc_proto_library")
-#
 # _is_google3 = True
 # end:google_only
 
 # begin:github_only
-_cc_proto_library = native.cc_proto_library
 _is_google3 = False
 # end:github_only
-
-def proto_library(**kwargs):
-    if _is_google3:
-        kwargs["cc_api_version"] = 2
-    native.proto_library(
-        **kwargs
-    )
 
 def tmpl_cc_binary(name, gen, args, replacements = [], **kwargs):
     srcs = [name + ".cc"]
@@ -57,7 +50,7 @@ def cc_optimizefor_proto_library(name, srcs, outs, optimize_for):
         srcs = outs,
     )
 
-    _cc_proto_library(
+    cc_proto_library(
         name = name,
         deps = [":" + name + "_proto"],
     )

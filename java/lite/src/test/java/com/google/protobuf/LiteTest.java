@@ -2424,6 +2424,12 @@ public class LiteTest {
   }
 
   @Test
+  public void testParseFromEmptyBytes() throws Exception {
+    assertThat(TestAllTypesLite.parseFrom(new byte[] {}))
+        .isSameInstanceAs(TestAllTypesLite.getDefaultInstance());
+  }
+
+  @Test
   public void testParseFromByteBuffer() throws Exception {
     TestAllTypesLite message =
         TestAllTypesLite.newBuilder()
@@ -2718,7 +2724,7 @@ public class LiteTest {
   @Test
   public void testNullExtensionRegistry() throws Exception {
     try {
-      TestAllTypesLite.parseFrom(new byte[] {}, null);
+      TestAllTypesLite.parseFrom(TestUtilLite.getAllLiteSetBuilder().build().toByteArray(), null);
       assertWithMessage("expected exception").fail();
     } catch (NullPointerException expected) {
     }

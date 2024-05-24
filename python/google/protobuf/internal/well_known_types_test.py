@@ -569,6 +569,36 @@ class StructTest(unittest.TestCase):
     self.assertEqual([6, True, False, None, inner_struct],
                      list(struct['key5'].items()))
 
+  def testInOperator(self):
+    # in operator for Struct
+    struct = struct_pb2.Struct()
+    struct['key'] = 5
+
+    self.assertIn('key', struct)
+    self.assertNotIn('fields', struct)
+    with self.assertRaises(TypeError) as e:
+      1 in struct
+
+    # in operator for ListValue
+    struct_list = struct.get_or_create_list('key2')
+    self.assertIsInstance(struct_list, collections_abc.Sequence)
+    struct_list.extend([6, 'seven', True, False, None])
+    struct_list.add_struct()['subkey'] = 9
+    inner_struct = struct.__class__()
+    inner_struct['subkey'] = 9
+
+    self.assertIn(6, struct_list)
+    self.assertIn('seven', struct_list)
+    self.assertIn(True, struct_list)
+    self.assertIn(False, struct_list)
+    self.assertIn(None, struct_list)
+    self.assertIn(inner_struct, struct_list)
+    self.assertNotIn('values', struct_list)
+    self.assertNotIn(10, struct_list)
+
+    for item in struct_list:
+      self.assertIn(item, struct_list)
+
   def testStructAssignment(self):
     # Tests struct assignment from another struct
     s1 = struct_pb2.Struct()

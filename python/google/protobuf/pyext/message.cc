@@ -10,6 +10,7 @@
 
 #include "google/protobuf/pyext/message.h"
 
+#include <Python.h>
 #include <structmember.h>  // A Python header file.
 
 #include <cstdint>
@@ -30,10 +31,17 @@
 #endif
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/strtod.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unknown_field_set.h"
+#include "google/protobuf/util/message_differencer.h"
 #include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
 #include "google/protobuf/pyext/extension_dict.h"
@@ -45,12 +53,6 @@
 #include "google/protobuf/pyext/safe_numerics.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 #include "google/protobuf/pyext/unknown_field_set.h"
-#include "google/protobuf/pyext/unknown_fields.h"
-#include "google/protobuf/util/message_differencer.h"
-#include "absl/strings/string_view.h"
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/strtod.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 // clang-format off
 #include "google/protobuf/port_def.inc"
@@ -84,6 +86,12 @@ class MessageReflectionFriend {
                           const FieldDescriptor* field) {
     return reflection->IsLazyField(field) ||
            reflection->IsLazyExtension(message, field);
+  }
+  static bool ContainsMapKey(const Reflection* reflection,
+                             const Message& message,
+                             const FieldDescriptor* field,
+                             const MapKey& map_key) {
+    return reflection->ContainsMapKey(message, field, map_key);
   }
 };
 
@@ -532,10 +540,10 @@ bool CheckAndGetInteger(PyObject* arg, T* value) {
 
 // These are referenced by repeated_scalar_container, and must
 // be explicitly instantiated.
-template bool CheckAndGetInteger<int32>(PyObject*, int32*);
-template bool CheckAndGetInteger<int64>(PyObject*, int64*);
-template bool CheckAndGetInteger<uint32>(PyObject*, uint32*);
-template bool CheckAndGetInteger<uint64>(PyObject*, uint64*);
+template bool CheckAndGetInteger<int32_t>(PyObject*, int32_t*);
+template bool CheckAndGetInteger<int64_t>(PyObject*, int64_t*);
+template bool CheckAndGetInteger<uint32_t>(PyObject*, uint32_t*);
+template bool CheckAndGetInteger<uint64_t>(PyObject*, uint64_t*);
 
 bool CheckAndGetDouble(PyObject* arg, double* value) {
   *value = PyFloat_AsDouble(arg);
@@ -1123,8 +1131,6 @@ CMessage* NewEmptyMessage(CMessageClass* type) {
   self->composite_fields = nullptr;
   self->child_submessages = nullptr;
 
-  self->unknown_field_set = nullptr;
-
   return self;
 }
 
@@ -1185,10 +1191,6 @@ static void Dealloc(CMessage* self) {
   ABSL_DCHECK(!self->composite_fields || self->composite_fields->empty());
   delete self->child_submessages;
   delete self->composite_fields;
-  if (self->unknown_field_set) {
-    unknown_fields::Clear(
-        reinterpret_cast<PyUnknownFields*>(self->unknown_field_set));
-  }
 
   CMessage* parent = self->parent;
   if (!parent) {
@@ -1299,11 +1301,16 @@ PyObject* HasField(CMessage* self, PyObject* arg) {
   char* field_name;
   Py_ssize_t size;
   field_name = const_cast<char*>(PyUnicode_AsUTF8AndSize(arg, &size));
+  Message* message = self->message;
+
   if (!field_name) {
+    PyErr_Format(PyExc_ValueError,
+                 "The field name passed to message %s"
+                 " is not a str.",
+                 message->GetDescriptor()->name().c_str());
     return nullptr;
   }
 
-  Message* message = self->message;
   bool is_in_oneof;
   const FieldDescriptor* field_descriptor = FindFieldWithOneofs(
       message, absl::string_view(field_name, size), &is_in_oneof);
@@ -1527,11 +1534,6 @@ PyObject* Clear(CMessage* self) {
       0) {
     return nullptr;
   }
-  if (self->unknown_field_set) {
-    unknown_fields::Clear(
-        reinterpret_cast<PyUnknownFields*>(self->unknown_field_set));
-    self->unknown_field_set = nullptr;
-  }
   self->message->Clear();
   Py_RETURN_NONE;
 }
@@ -1682,6 +1684,18 @@ class PythonFieldValuePrinter : public TextFormat::FastFieldValuePrinter {
     }
 
     generator->PrintString(PyString_AsString(py_str.get()));
+  }
+  void PrintString(const std::string& val,
+                   TextFormat::BaseTextGenerator* generator) const override {
+    TextFormat::Printer::HardenedPrintString(val, generator);
+  }
+  void PrintBytes(const std::string& val,
+                  TextFormat::BaseTextGenerator* generator) const override {
+    generator->PrintLiteral("\"");
+    if (!val.empty()) {
+      generator->PrintString(absl::CEscape(val));
+    }
+    generator->PrintLiteral("\"");
   }
 };
 
@@ -1853,32 +1867,6 @@ static PyObject* ParseFromString(CMessage* self, PyObject* arg) {
 
 static PyObject* ByteSize(CMessage* self, PyObject* args) {
   return PyLong_FromLong(self->message->ByteSizeLong());
-}
-
-PyObject* RegisterExtension(PyObject* cls, PyObject* extension_handle) {
-  const FieldDescriptor* descriptor =
-      GetExtensionDescriptor(extension_handle);
-  if (descriptor == nullptr) {
-    return nullptr;
-  }
-  if (!PyObject_TypeCheck(cls, CMessageClass_Type)) {
-    PyErr_Format(PyExc_TypeError, "Expected a message class, got %s",
-                 cls->ob_type->tp_name);
-    return nullptr;
-  }
-  CMessageClass *message_class = reinterpret_cast<CMessageClass*>(cls);
-  if (message_class == nullptr) {
-    return nullptr;
-  }
-  // If the extension was already registered, check that it is the same.
-  const FieldDescriptor* existing_extension =
-      message_class->py_message_factory->pool->pool->FindExtensionByNumber(
-          descriptor->containing_type(), descriptor->number());
-  if (existing_extension != nullptr && existing_extension != descriptor) {
-    PyErr_SetString(PyExc_ValueError, "Double registration of Extensions");
-    return nullptr;
-  }
-  Py_RETURN_NONE;
 }
 
 static PyObject* SetInParent(CMessage* self, PyObject* args) {
@@ -2315,6 +2303,48 @@ PyObject* ToUnicode(CMessage* self) {
   return decoded;
 }
 
+PyObject* Contains(CMessage* self, PyObject* arg) {
+  Message* message = self->message;
+  const Descriptor* descriptor = message->GetDescriptor();
+  switch (descriptor->well_known_type()) {
+    case Descriptor::WELLKNOWNTYPE_STRUCT: {
+      // For WKT Struct, check if the key is in the fields.
+      const Reflection* reflection = message->GetReflection();
+      const FieldDescriptor* map_field = descriptor->FindFieldByName("fields");
+      const FieldDescriptor* key_field = map_field->message_type()->map_key();
+      PyObject* py_string = CheckString(arg, key_field);
+      if (!py_string) {
+        PyErr_SetString(PyExc_TypeError,
+                        "The key passed to Struct message must be a str.");
+        return nullptr;
+      }
+      char* value;
+      Py_ssize_t value_len;
+      if (PyBytes_AsStringAndSize(py_string, &value, &value_len) < 0) {
+        Py_DECREF(py_string);
+        Py_RETURN_FALSE;
+      }
+      std::string key_str;
+      key_str.assign(value, value_len);
+      Py_DECREF(py_string);
+
+      MapKey map_key;
+      map_key.SetStringValue(key_str);
+      return PyBool_FromLong(MessageReflectionFriend::ContainsMapKey(
+          reflection, *message, map_field, map_key));
+    }
+    case Descriptor::WELLKNOWNTYPE_LISTVALUE: {
+      // For WKT ListValue, check if the key is in the items.
+      PyObject* items = PyObject_CallMethod(reinterpret_cast<PyObject*>(self),
+                                            "items", nullptr);
+      return PyBool_FromLong(PySequence_Contains(items, arg));
+    }
+    default:
+      // For other messages, check with HasField.
+      return HasField(self, arg);
+  }
+}
+
 // CMessage static methods:
 PyObject* _CheckCalledFromGeneratedFile(PyObject* unused,
                                         PyObject* unused_arg) {
@@ -2363,6 +2393,8 @@ static PyMethodDef Methods[] = {
      "Makes a deep copy of the class."},
     {"__unicode__", (PyCFunction)ToUnicode, METH_NOARGS,
      "Outputs a unicode representation of the message."},
+    {"__contains__", (PyCFunction)Contains, METH_O,
+     "Checks if a message field is set."},
     {"ByteSize", (PyCFunction)ByteSize, METH_NOARGS,
      "Returns the size of the message in bytes."},
     {"Clear", (PyCFunction)Clear, METH_NOARGS, "Clears the message."},
@@ -2391,8 +2423,6 @@ static PyMethodDef Methods[] = {
      "Merges a serialized message into the current message."},
     {"ParseFromString", (PyCFunction)ParseFromString, METH_O,
      "Parses a serialized message into the current message."},
-    {"RegisterExtension", (PyCFunction)RegisterExtension, METH_O | METH_CLASS,
-     "Registers an extension with the current message."},
     {"SerializePartialToString", (PyCFunction)SerializePartialToString,
      METH_VARARGS | METH_KEYWORDS,
      "Serializes the message to a string, even if it isn't initialized."},
@@ -2873,20 +2903,12 @@ bool InitProto2MessageModule(PyObject *m) {
     }
   }
 
-  if (PyType_Ready(&PyUnknownFields_Type) < 0) {
-    return false;
-  }
-
   if (PyType_Ready(&PyUnknownFieldSet_Type) < 0) {
     return false;
   }
 
   PyModule_AddObject(m, "UnknownFieldSet",
                      reinterpret_cast<PyObject*>(&PyUnknownFieldSet_Type));
-
-  if (PyType_Ready(&PyUnknownFieldRef_Type) < 0) {
-    return false;
-  }
 
   if (PyType_Ready(&PyUnknownField_Type) < 0) {
     return false;

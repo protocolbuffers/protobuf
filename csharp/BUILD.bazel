@@ -2,7 +2,7 @@
 #
 # See also code generation logic under /src/google/protobuf/compiler/csharp.
 
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:internal_shell.bzl", "inline_sh_test")
 load("//conformance:defs.bzl", "conformance_test")
 
@@ -13,8 +13,8 @@ load("//conformance:defs.bzl", "conformance_test")
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_csharp.txt",
+    maximum_edition = "2023",
     testee = "//conformance:conformance_csharp",
-    text_format_failure_list = "//conformance:text_format_failure_list_csharp.txt",
 )
 
 ################################################################################

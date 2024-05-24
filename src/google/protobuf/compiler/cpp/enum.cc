@@ -221,10 +221,6 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
               static_cast<int>(value));
         }
       )cc");
-    } else {
-      p->Emit(R"cc(
-        const std::string& $Msg_Enum$_Name($Msg_Enum$ value);
-      )cc");
     }
   } else {
     p->Emit({{"static_assert", write_assert}}, R"cc(

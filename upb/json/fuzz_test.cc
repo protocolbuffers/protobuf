@@ -12,6 +12,7 @@
 #include <gtest/gtest.h>
 #include "testing/fuzzing/fuzztest.h"
 #include "upb/base/status.hpp"
+#include "upb/base/upcast.h"
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
 #include "upb/json/test.upb.h"
@@ -37,17 +38,17 @@ void DecodeEncodeArbitraryJson(std::string_view json) {
 
   upb_test_Box* box = upb_test_Box_new(arena.ptr());
   int options = 0;
-  bool ok = upb_JsonDecode(json_heap, json.size(), box, m.ptr(), defpool.ptr(),
-                           options, arena.ptr(), status.ptr());
+  bool ok = upb_JsonDecode(json_heap, json.size(), UPB_UPCAST(box), m.ptr(),
+                           defpool.ptr(), options, arena.ptr(), status.ptr());
   delete[] json_heap;
   if (!ok) return;
 
-  size_t size = upb_JsonEncode(box, m.ptr(), defpool.ptr(), options, nullptr, 0,
-                               status.ptr());
+  size_t size = upb_JsonEncode(UPB_UPCAST(box), m.ptr(), defpool.ptr(), options,
+                               nullptr, 0, status.ptr());
   char* json_buf = (char*)upb_Arena_Malloc(arena.ptr(), size + 1);
 
-  size_t written = upb_JsonEncode(box, m.ptr(), defpool.ptr(), options,
-                                  json_buf, size + 1, status.ptr());
+  size_t written = upb_JsonEncode(UPB_UPCAST(box), m.ptr(), defpool.ptr(),
+                                  options, json_buf, size + 1, status.ptr());
   EXPECT_EQ(written, size);
 }
 FUZZ_TEST(FuzzTest, DecodeEncodeArbitraryJson);

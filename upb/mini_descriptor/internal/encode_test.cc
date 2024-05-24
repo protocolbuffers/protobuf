@@ -45,7 +45,7 @@ TEST_P(MiniTableTest, Empty) {
   upb_MiniTable* table =
       _upb_MiniTable_Build(nullptr, 0, GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
-  EXPECT_EQ(0, table->UPB_PRIVATE(field_count));
+  EXPECT_EQ(0, upb_MiniTable_FieldCount(table));
   EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
 }
 
@@ -156,7 +156,7 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
     EXPECT_EQ(table->UPB_PRIVATE(fields)[0].UPB_PRIVATE(offset),
               f->UPB_PRIVATE(offset));
     // All presence fields should point to the same oneof case offset.
-    size_t case_ofs = _upb_MiniTableField_OneofOffset(f);
+    size_t case_ofs = UPB_PRIVATE(_upb_MiniTableField_OneofOffset)(f);
     EXPECT_EQ(table->UPB_PRIVATE(fields)[0].presence, f->presence);
     EXPECT_TRUE(f->UPB_PRIVATE(offset) < table->UPB_PRIVATE(size));
     EXPECT_TRUE(case_ofs < table->UPB_PRIVATE(size));
@@ -242,11 +242,11 @@ TEST_P(MiniTableTest, SubsInitializedToEmpty) {
   upb_MiniTable* table = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
-  EXPECT_EQ(table->UPB_PRIVATE(field_count), 2);
-  EXPECT_TRUE(UPB_PRIVATE(_upb_MiniTable_IsEmpty)(
-      upb_MiniTableSub_Message(table->UPB_PRIVATE(subs)[0])));
-  EXPECT_TRUE(UPB_PRIVATE(_upb_MiniTable_IsEmpty)(
-      upb_MiniTableSub_Message(table->UPB_PRIVATE(subs)[1])));
+  EXPECT_EQ(upb_MiniTable_FieldCount(table), 2);
+  EXPECT_FALSE(upb_MiniTable_FieldIsLinked(
+      table, upb_MiniTable_GetFieldByIndex(table, 0)));
+  EXPECT_FALSE(upb_MiniTable_FieldIsLinked(
+      table, upb_MiniTable_GetFieldByIndex(table, 1)));
 }
 
 TEST(MiniTableEnumTest, PositiveAndNegative) {

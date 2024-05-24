@@ -55,6 +55,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 

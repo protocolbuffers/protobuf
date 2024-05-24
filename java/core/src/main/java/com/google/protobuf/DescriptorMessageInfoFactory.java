@@ -20,7 +20,6 @@ import static com.google.protobuf.FieldInfo.forRepeatedMessageField;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
-import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -34,7 +33,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** A factory for message info based on protobuf descriptors for a {@link GeneratedMessageV3}. */
+/** A factory for message info based on protobuf descriptors for a {@link GeneratedMessage}. */
 @ExperimentalApi
 final class DescriptorMessageInfoFactory implements MessageInfoFactory {
   private static final String GET_DEFAULT_INSTANCE_METHOD_NAME = "getDefaultInstance";
@@ -74,12 +73,12 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
 
   @Override
   public boolean isSupported(Class<?> messageType) {
-    return GeneratedMessageV3.class.isAssignableFrom(messageType);
+    return GeneratedMessage.class.isAssignableFrom(messageType);
   }
 
   @Override
   public MessageInfo messageInfoFor(Class<?> messageType) {
-    if (!GeneratedMessageV3.class.isAssignableFrom(messageType)) {
+    if (!GeneratedMessage.class.isAssignableFrom(messageType)) {
       throw new IllegalArgumentException("Unsupported message type: " + messageType.getName());
     }
 
@@ -100,16 +99,14 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
     return getDefaultInstance(messageType).getDescriptorForType();
   }
 
-  private static ProtoSyntax convertSyntax(FileDescriptor.Syntax syntax) {
-    switch (syntax) {
-      case PROTO2:
+  private static ProtoSyntax convertSyntax(DescriptorProtos.Edition edition) {
+    switch (edition) {
+      case EDITION_PROTO2:
         return ProtoSyntax.PROTO2;
-      case PROTO3:
+      case EDITION_PROTO3:
         return ProtoSyntax.PROTO3;
-      case EDITIONS:
-        return ProtoSyntax.EDITIONS;
       default:
-        throw new IllegalArgumentException("Unsupported syntax: " + syntax);
+        return ProtoSyntax.EDITIONS;
     }
   }
 
@@ -118,7 +115,7 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
     StructuralMessageInfo.Builder builder =
         StructuralMessageInfo.newBuilder(fieldDescriptors.size());
     builder.withDefaultInstance(getDefaultInstance(messageType));
-    builder.withSyntax(convertSyntax(messageDescriptor.getFile().getSyntax()));
+    builder.withSyntax(convertSyntax(messageDescriptor.getFile().getEdition()));
     builder.withMessageSetWireFormat(messageDescriptor.getOptions().getMessageSetWireFormat());
 
     OneofState oneofState = new OneofState();

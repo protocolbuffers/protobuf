@@ -164,11 +164,23 @@ static void Arena_free(void *data) {
   xfree(arena);
 }
 
+static size_t Arena_memsize(const void *data) {
+  const Arena *arena = data;
+  size_t fused_count;
+  size_t memsize = upb_Arena_SpaceAllocated(arena->arena, &fused_count);
+  if (fused_count > 1) {
+    // If other arena were fused we attribute an equal
+    // share of memory usage to each one.
+    memsize /= fused_count;
+  }
+  return memsize + sizeof(Arena);
+}
+
 static VALUE cArena;
 
 const rb_data_type_t Arena_type = {
     "Google::Protobuf::Internal::Arena",
-    {Arena_mark, Arena_free, NULL},
+    {Arena_mark, Arena_free, Arena_memsize},
     .flags = RUBY_TYPED_FREE_IMMEDIATELY | RUBY_TYPED_WB_PROTECTED,
 };
 
@@ -241,16 +253,17 @@ static void ObjectCache_Init(VALUE protobuf) {
   item_try_add = rb_intern("try_add");
 
   rb_gc_register_address(&weak_obj_cache);
+  VALUE internal = rb_const_get(protobuf, rb_intern("Internal"));
 #if SIZEOF_LONG >= SIZEOF_VALUE
-  VALUE cache_class = rb_const_get(protobuf, rb_intern("ObjectCache"));
+  VALUE cache_class = rb_const_get(internal, rb_intern("ObjectCache"));
 #else
-  VALUE cache_class = rb_const_get(protobuf, rb_intern("LegacyObjectCache"));
+  VALUE cache_class = rb_const_get(internal, rb_intern("LegacyObjectCache"));
 #endif
 
   weak_obj_cache = rb_class_new_instance(0, NULL, cache_class);
-  rb_const_set(protobuf, rb_intern("OBJECT_CACHE"), weak_obj_cache);
-  rb_const_set(protobuf, rb_intern("SIZEOF_LONG"), INT2NUM(SIZEOF_LONG));
-  rb_const_set(protobuf, rb_intern("SIZEOF_VALUE"), INT2NUM(SIZEOF_VALUE));
+  rb_const_set(internal, rb_intern("OBJECT_CACHE"), weak_obj_cache);
+  rb_const_set(internal, rb_intern("SIZEOF_LONG"), INT2NUM(SIZEOF_LONG));
+  rb_const_set(internal, rb_intern("SIZEOF_VALUE"), INT2NUM(SIZEOF_VALUE));
 }
 
 static VALUE ObjectCache_GetKey(const void *key) {

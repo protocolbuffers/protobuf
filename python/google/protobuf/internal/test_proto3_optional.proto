@@ -44,4 +44,7 @@ message TestProto3Optional {
 
   optional NestedMessage optional_nested_message = 18;
   optional NestedEnum optional_nested_enum = 21;
+
+  repeated int32 repeated_int32 = 22;
+  repeated NestedMessage repeated_nested_message = 23;
 }

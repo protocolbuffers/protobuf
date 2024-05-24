@@ -307,15 +307,13 @@ class UnknownFieldParserHelper {
     return ctx->ReadString(ptr, size, s);
   }
   const char* ParseGroup(uint32_t num, const char* ptr, ParseContext* ctx) {
-    UnknownFieldParserHelper child(unknown_->AddGroup(num));
-    return ctx->ParseGroup(&child, ptr, num * 8 + 3);
+    return ctx->ParseGroupInlined(ptr, num * 8 + 3, [&](const char* ptr) {
+      UnknownFieldParserHelper child(unknown_->AddGroup(num));
+      return WireFormatParser(child, ptr, ctx);
+    });
   }
   void AddFixed32(uint32_t num, uint32_t value) {
     unknown_->AddFixed32(num, value);
-  }
-
-  const char* _InternalParse(const char* ptr, ParseContext* ctx) {
-    return WireFormatParser(*this, ptr, ctx);
   }
 
  private:

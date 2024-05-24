@@ -113,12 +113,6 @@ public abstract class AbstractMessageLite<
     }
   }
 
-  // For binary compatibility
-  @Deprecated
-  protected static <T> void addAll(final Iterable<T> values, final Collection<? super T> list) {
-    Builder.addAll(values, (List) list);
-  }
-
   protected static <T> void addAll(final Iterable<T> values, final List<? super T> list) {
     Builder.addAll(values, list);
   }
@@ -403,6 +397,8 @@ public abstract class AbstractMessageLite<
           }
           if (value instanceof ByteString) {
             lazyList.add((ByteString) value);
+          } else if (value instanceof byte[]) {
+            lazyList.add(ByteString.copyFrom((byte[]) value));
           } else {
             lazyList.add((String) value);
           }

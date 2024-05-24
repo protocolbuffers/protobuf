@@ -5,9 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <cstdint>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -18,14 +21,19 @@
 #include "protos/protos.h"
 #include "protos/repeated_field.h"
 #include "protos/repeated_field_iterator.h"
+#include "protos/requires.h"
 #include "protos_generator/tests/child_model.upb.proto.h"
 #include "protos_generator/tests/no_package.upb.proto.h"
 #include "protos_generator/tests/test_model.upb.proto.h"
 #include "upb/mem/arena.h"
+#include "upb/mem/arena.hpp"
 
 namespace {
 
+using ::protos::internal::Requires;
 using ::protos_generator::test::protos::ChildModel1;
+using ::protos_generator::test::protos::container_ext;
+using ::protos_generator::test::protos::ContainerExtension;
 using ::protos_generator::test::protos::other_ext;
 using ::protos_generator::test::protos::RED;
 using ::protos_generator::test::protos::TestEnum;
@@ -37,13 +45,6 @@ using ::protos_generator::test::protos::TestModel_Category_VIDEO;
 using ::protos_generator::test::protos::theme;
 using ::protos_generator::test::protos::ThemeExtension;
 using ::testing::ElementsAre;
-using ::testing::HasSubstr;
-
-// C++17 port of C++20 `requires`
-template <typename... T, typename F>
-constexpr bool Requires(F) {
-  return std::is_invocable_v<F, T...>;
-}
 
 TEST(CppGeneratedCode, Constructor) { TestModel test_model; }
 
@@ -440,7 +441,7 @@ TEST(CppGeneratedCode, RepeatedScalarIterator) {
   EXPECT_EQ(sum, 5 + 16 + 27);
   // Access by const reference.
   sum = 0;
-  for (const int& i : *test_model.mutable_value_array()) {
+  for (const auto& i : *test_model.mutable_value_array()) {
     sum += i;
   }
   EXPECT_EQ(sum, 5 + 16 + 27);
@@ -549,7 +550,7 @@ TEST(CppGeneratedCode, RepeatedFieldProxyForMessages) {
   }
 
   i = 0;
-  for (auto child : *test_model.mutable_child_models()) {
+  for (const auto& child : *test_model.mutable_child_models()) {
     if (i++ == 0) {
       EXPECT_EQ(child.child_str1(), kTestStr1);
     } else {
@@ -569,6 +570,19 @@ TEST(CppGeneratedCode, RepeatedFieldProxyForMessages) {
   EXPECT_EQ((*test_model.mutable_child_models())[0].child_str1(), "change1");
   test_model.mutable_child_models()->clear();
   EXPECT_EQ(test_model.mutable_child_models()->size(), 0);
+}
+
+TEST(CppGeneratedCode, EmptyRepeatedFieldProxyForMessages) {
+  ::protos::Arena arena;
+  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  EXPECT_EQ(0, test_model.child_models().size());
+  ChildModel1 child1;
+  child1.set_child_str1(kTestStr1);
+
+  EXPECT_EQ(test_model.child_models().size(), 0);
+  EXPECT_EQ(std::distance(test_model.child_models().begin(),
+                          test_model.child_models().end()),
+            0);
 }
 
 TEST(CppGeneratedCode, RepeatedFieldProxyForMessagesIndexOperator) {
@@ -708,6 +722,70 @@ TEST(CppGeneratedCode, SetExtension) {
   auto ext = ::protos::GetExtension(&model, theme);
   EXPECT_TRUE(ext.ok());
   EXPECT_EQ(::protos::internal::GetInternalMsg(*ext), prior_message);
+}
+
+TEST(CppGeneratedCode, SetExtensionWithPtr) {
+  ::protos::Arena arena_model;
+  ::protos::Ptr<TestModel> model =
+      ::protos::CreateMessage<TestModel>(arena_model);
+  void* prior_message;
+  {
+    // Use a nested scope to make sure the arenas are fused correctly.
+    ::protos::Arena arena;
+    ::protos::Ptr<ThemeExtension> extension1 =
+        ::protos::CreateMessage<ThemeExtension>(arena);
+    extension1->set_ext_name("Hello World");
+    prior_message = ::protos::internal::GetInternalMsg(extension1);
+    EXPECT_EQ(false, ::protos::HasExtension(model, theme));
+    auto res = ::protos::SetExtension(model, theme, extension1);
+    EXPECT_EQ(true, res.ok());
+  }
+  EXPECT_EQ(true, ::protos::HasExtension(model, theme));
+  auto ext = ::protos::GetExtension(model, theme);
+  EXPECT_TRUE(ext.ok());
+  EXPECT_NE(::protos::internal::GetInternalMsg(*ext), prior_message);
+}
+
+#ifndef _MSC_VER
+TEST(CppGeneratedCode, SetExtensionShouldNotCompileForWrongType) {
+  ::protos::Arena arena;
+  ::protos::Ptr<TestModel> model = ::protos::CreateMessage<TestModel>(arena);
+  ThemeExtension extension1;
+  ContainerExtension extension2;
+
+  const auto canSetExtension = [&](auto l) {
+    return Requires<decltype(model)>(l);
+  };
+  EXPECT_TRUE(canSetExtension(
+      [](auto p) -> decltype(::protos::SetExtension(p, theme, extension1)) {}));
+  // Wrong extension value type should fail to compile.
+  EXPECT_TRUE(!canSetExtension(
+      [](auto p) -> decltype(::protos::SetExtension(p, theme, extension2)) {}));
+  // Wrong extension id with correct extension type should fail to compile.
+  EXPECT_TRUE(
+      !canSetExtension([](auto p) -> decltype(::protos::SetExtension(
+                                      p, container_ext, extension1)) {}));
+}
+#endif
+
+TEST(CppGeneratedCode, SetExtensionWithPtrSameArena) {
+  ::protos::Arena arena;
+  ::protos::Ptr<TestModel> model = ::protos::CreateMessage<TestModel>(arena);
+  void* prior_message;
+  {
+    // Use a nested scope to make sure the arenas are fused correctly.
+    ::protos::Ptr<ThemeExtension> extension1 =
+        ::protos::CreateMessage<ThemeExtension>(arena);
+    extension1->set_ext_name("Hello World");
+    prior_message = ::protos::internal::GetInternalMsg(extension1);
+    EXPECT_EQ(false, ::protos::HasExtension(model, theme));
+    auto res = ::protos::SetExtension(model, theme, extension1);
+    EXPECT_EQ(true, res.ok());
+  }
+  EXPECT_EQ(true, ::protos::HasExtension(model, theme));
+  auto ext = ::protos::GetExtension(model, theme);
+  EXPECT_TRUE(ext.ok());
+  EXPECT_NE(::protos::internal::GetInternalMsg(*ext), prior_message);
 }
 
 TEST(CppGeneratedCode, SetExtensionFusingFailureShouldCopy) {
@@ -1118,6 +1196,11 @@ TEST(CppGeneratedCode, HasExtensionAndRegistry) {
   ::protos::ExtensionRegistry extensions({&theme}, arena);
   TestModel parsed_model = ::protos::Parse<TestModel>(data, extensions).value();
   EXPECT_TRUE(::protos::HasExtension(&parsed_model, theme));
+}
+
+TEST(CppGeneratedCode, FieldNumberConstants) {
+  static_assert(TestModel::kChildMapFieldNumber == 225);
+  EXPECT_EQ(225, TestModel::kChildMapFieldNumber);
 }
 
 // TODO : Add BUILD rule to test failures below.

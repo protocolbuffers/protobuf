@@ -7,23 +7,33 @@
 
 #include <benchmark/benchmark.h>
 
+#include <math.h>
+#include <stdint.h>
 #include <string.h>
 
+#include <string>
 #include <vector>
 
-#include "google/ads/googleads/v13/services/google_ads_service.upbdefs.h"
+#include "google/ads/googleads/v16/services/google_ads_service.upbdefs.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/json/json.h"
 #include "benchmarks/descriptor.pb.h"
 #include "benchmarks/descriptor.upb.h"
 #include "benchmarks/descriptor.upbdefs.h"
 #include "benchmarks/descriptor_sv.pb.h"
-#include "upb/base/internal/log2.h"
+#include "upb/base/string_view.h"
+#include "upb/base/upcast.h"
+#include "upb/json/decode.h"
+#include "upb/json/encode.h"
 #include "upb/mem/arena.h"
 #include "upb/reflection/def.hpp"
+#include "upb/wire/decode.h"
 
-upb_StringView descriptor = benchmarks_descriptor_proto_upbdefinit.descriptor;
+upb_StringView descriptor =
+    benchmarks_descriptor_proto_upbdefinit.descriptor;
 namespace protobuf = ::google::protobuf;
 
 // A buffer big enough to parse descriptor.proto without going to heap.
@@ -88,7 +98,7 @@ static void BM_ArenaFuseBalanced(benchmark::State& state) {
     }
 
     // Perform a series of fuses that keeps the halves balanced.
-    size_t max = upb_Log2Ceiling(arenas.size());
+    const size_t max = ceil(log2(double(arenas.size())));
     for (size_t n = 0; n <= max; n++) {
       size_t step = 1 << n;
       for (size_t i = 0; i + step < arenas.size(); i += (step * 2)) {
@@ -171,14 +181,14 @@ static void BM_LoadAdsDescriptor_Upb(benchmark::State& state) {
   for (auto _ : state) {
     upb::DefPool defpool;
     if (Mode == NoLayout) {
-      google_ads_googleads_v13_services_SearchGoogleAdsRequest_getmsgdef(
+      google_ads_googleads_v16_services_SearchGoogleAdsRequest_getmsgdef(
           defpool.ptr());
       bytes_per_iter = _upb_DefPool_BytesLoaded(defpool.ptr());
     } else {
       bytes_per_iter = 0;
       LoadDefInit_BuildLayout(
           defpool.ptr(),
-          &google_ads_googleads_v13_services_google_ads_service_proto_upbdefinit,
+          &google_ads_googleads_v16_services_google_ads_service_proto_upbdefinit,
           &bytes_per_iter);
     }
   }
@@ -190,11 +200,11 @@ BENCHMARK_TEMPLATE(BM_LoadAdsDescriptor_Upb, WithLayout);
 template <LoadDescriptorMode Mode>
 static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
   extern _upb_DefPool_Init
-      google_ads_googleads_v13_services_google_ads_service_proto_upbdefinit;
+      google_ads_googleads_v16_services_google_ads_service_proto_upbdefinit;
   std::vector<upb_StringView> serialized_files;
   absl::flat_hash_set<const _upb_DefPool_Init*> seen_files;
   CollectFileDescriptors(
-      &google_ads_googleads_v13_services_google_ads_service_proto_upbdefinit,
+      &google_ads_googleads_v16_services_google_ads_service_proto_upbdefinit,
       serialized_files, seen_files);
   size_t bytes_per_iter = 0;
   for (auto _ : state) {
@@ -204,7 +214,7 @@ static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
     for (auto file : serialized_files) {
       absl::string_view input(file.data, file.size);
       auto proto =
-          protobuf::Arena::CreateMessage<protobuf::FileDescriptorProto>(&arena);
+          protobuf::Arena::Create<protobuf::FileDescriptorProto>(&arena);
       bool ok = proto->ParseFrom<protobuf::MessageLite::kMergePartial>(input) &&
                 pool.BuildFile(*proto) != nullptr;
       if (!ok) {
@@ -217,7 +227,7 @@ static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
     if (Mode == WithLayout) {
       protobuf::DynamicMessageFactory factory;
       const protobuf::Descriptor* d = pool.FindMessageTypeByName(
-          "google.ads.googleads.v13.services.SearchGoogleAdsResponse");
+          "google.ads.googleads.v16.services.SearchGoogleAdsResponse");
       if (!d) {
         printf("Failed to find descriptor.\n");
         exit(1);
@@ -282,7 +292,7 @@ struct Proto2Factory<NoArena, P> {
 template <class P>
 struct Proto2Factory<UseArena, P> {
  public:
-  P* GetProto() { return protobuf::Arena::CreateMessage<P>(&arena); }
+  P* GetProto() { return protobuf::Arena::Create<P>(&arena); }
 
  private:
   protobuf::Arena arena;
@@ -292,7 +302,7 @@ template <class P>
 struct Proto2Factory<InitBlock, P> {
  public:
   Proto2Factory() : arena(GetOptions()) {}
-  P* GetProto() { return protobuf::Arena::CreateMessage<P>(&arena); }
+  P* GetProto() { return protobuf::Arena::Create<P>(&arena); }
 
  private:
   protobuf::ArenaOptions GetOptions() {
@@ -341,9 +351,7 @@ static void BM_SerializeDescriptor_Proto2(benchmark::State& state) {
 }
 BENCHMARK(BM_SerializeDescriptor_Proto2);
 
-static void BM_SerializeDescriptor_Upb(benchmark::State& state) {
-  int64_t total = 0;
-  upb_Arena* arena = upb_Arena_New();
+static upb_benchmark_FileDescriptorProto* UpbParseDescriptor(upb_Arena* arena) {
   upb_benchmark_FileDescriptorProto* set =
       upb_benchmark_FileDescriptorProto_parse(descriptor.data, descriptor.size,
                                               arena);
@@ -351,6 +359,13 @@ static void BM_SerializeDescriptor_Upb(benchmark::State& state) {
     printf("Failed to parse.\n");
     exit(1);
   }
+  return set;
+}
+
+static void BM_SerializeDescriptor_Upb(benchmark::State& state) {
+  int64_t total = 0;
+  upb_Arena* arena = upb_Arena_New();
+  upb_benchmark_FileDescriptorProto* set = UpbParseDescriptor(arena);
   for (auto _ : state) {
     upb_Arena* enc_arena = upb_Arena_Init(buf, sizeof(buf), nullptr);
     size_t size;
@@ -365,3 +380,92 @@ static void BM_SerializeDescriptor_Upb(benchmark::State& state) {
   state.SetBytesProcessed(total);
 }
 BENCHMARK(BM_SerializeDescriptor_Upb);
+
+static absl::string_view UpbJsonEncode(upb_benchmark_FileDescriptorProto* proto,
+                                       const upb_MessageDef* md,
+                                       upb_Arena* arena) {
+  size_t size =
+      upb_JsonEncode(UPB_UPCAST(proto), md, nullptr, 0, nullptr, 0, nullptr);
+  char* buf = reinterpret_cast<char*>(upb_Arena_Malloc(arena, size + 1));
+  upb_JsonEncode(UPB_UPCAST(proto), md, nullptr, 0, buf, size, nullptr);
+  return absl::string_view(buf, size);
+}
+
+static void BM_JsonParse_Upb(benchmark::State& state) {
+  upb_Arena* arena = upb_Arena_New();
+  upb_benchmark_FileDescriptorProto* set =
+      upb_benchmark_FileDescriptorProto_parse(descriptor.data, descriptor.size,
+                                              arena);
+  if (!set) {
+    printf("Failed to parse.\n");
+    exit(1);
+  }
+
+  upb::DefPool defpool;
+  const upb_MessageDef* md =
+      upb_benchmark_FileDescriptorProto_getmsgdef(defpool.ptr());
+  auto json = UpbJsonEncode(set, md, arena);
+
+  for (auto _ : state) {
+    upb_Arena* arena = upb_Arena_New();
+    upb_benchmark_FileDescriptorProto* proto =
+        upb_benchmark_FileDescriptorProto_new(arena);
+    upb_JsonDecode(json.data(), json.size(), UPB_UPCAST(proto), md,
+                   defpool.ptr(), 0, arena, nullptr);
+    upb_Arena_Free(arena);
+  }
+  state.SetBytesProcessed(state.iterations() * json.size());
+}
+BENCHMARK(BM_JsonParse_Upb);
+
+static void BM_JsonParse_Proto2(benchmark::State& state) {
+  protobuf::FileDescriptorProto proto;
+  absl::string_view input(descriptor.data, descriptor.size);
+  proto.ParseFromString(input);
+  std::string json;
+  ABSL_CHECK_OK(google::protobuf::json::MessageToJsonString(proto, &json));
+  for (auto _ : state) {
+    protobuf::FileDescriptorProto proto;
+    ABSL_CHECK_OK(google::protobuf::json::JsonStringToMessage(json, &proto));
+  }
+  state.SetBytesProcessed(state.iterations() * json.size());
+}
+BENCHMARK(BM_JsonParse_Proto2);
+
+static void BM_JsonSerialize_Upb(benchmark::State& state) {
+  upb_Arena* arena = upb_Arena_New();
+  upb_benchmark_FileDescriptorProto* set =
+      upb_benchmark_FileDescriptorProto_parse(descriptor.data, descriptor.size,
+                                              arena);
+  ABSL_CHECK(set != nullptr);
+
+  upb::DefPool defpool;
+  const upb_MessageDef* md =
+      upb_benchmark_FileDescriptorProto_getmsgdef(defpool.ptr());
+  auto json = UpbJsonEncode(set, md, arena);
+  std::string json_str;
+  json_str.resize(json.size());
+
+  for (auto _ : state) {
+    // This isn't a fully fair comparison, as it assumes we already know the
+    // correct size of the buffer.  In practice, we usually need to run the
+    // encoder twice, once to discover the size of the buffer.
+    upb_JsonEncode(UPB_UPCAST(set), md, nullptr, 0, json_str.data(),
+                   json_str.size(), nullptr);
+  }
+  state.SetBytesProcessed(state.iterations() * json.size());
+}
+BENCHMARK(BM_JsonSerialize_Upb);
+
+static void BM_JsonSerialize_Proto2(benchmark::State& state) {
+  protobuf::FileDescriptorProto proto;
+  absl::string_view input(descriptor.data, descriptor.size);
+  proto.ParseFromString(input);
+  std::string json;
+  for (auto _ : state) {
+    json.clear();
+    ABSL_CHECK_OK(google::protobuf::json::MessageToJsonString(proto, &json));
+  }
+  state.SetBytesProcessed(state.iterations() * json.size());
+}
+BENCHMARK(BM_JsonSerialize_Proto2);

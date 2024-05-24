@@ -610,6 +610,35 @@ TEST_F(PrinterTest, EmitConsumeAfter) {
             "};\n");
 }
 
+TEST_F(PrinterTest, EmitWithSubstituionListener) {
+  std::vector<std::string> seen;
+  Printer printer(output());
+  const auto emit = [&] {
+    printer.Emit(
+        {
+            {"class", "Foo"},
+            Printer::Sub{"var", "int x;"}.WithSuffix(";"),
+        },
+        R"cc(
+          void $class$::foo() { $var$; }
+          void $class$::set_foo() { $var$; }
+        )cc");
+  };
+  emit();
+  EXPECT_THAT(seen, ElementsAre());
+  {
+    auto listener = printer.WithSubstitutionListener(
+        [&](auto label, auto loc) { seen.emplace_back(label); });
+    emit();
+  }
+  EXPECT_THAT(seen, ElementsAre("class", "var", "class", "var"));
+
+  // Still works after the listener is disconnected.
+  seen.clear();
+  emit();
+  EXPECT_THAT(seen, ElementsAre());
+}
+
 TEST_F(PrinterTest, EmitConditionalFunctionCall) {
   {
     Printer printer(output());
@@ -682,6 +711,44 @@ TEST_F(PrinterTest, EmitWithIndent) {
             "  class Foo {\n"
             "    int x, y, z;\n"
             "  };\n");
+}
+
+TEST_F(PrinterTest, EmitWithPreprocessor) {
+  {
+    Printer printer(output());
+    auto v = printer.WithIndent();
+    printer.Emit({{"value",
+                   [&] {
+                     printer.Emit(R"cc(
+#if FOO
+                       0,
+#else
+                       1,
+#endif
+                     )cc");
+                   }},
+                  {"on_new_line",
+                   [&] {
+                     printer.Emit(R"cc(
+#pragma foo
+                     )cc");
+                   }}},
+                 R"cc(
+                   int val = ($value$, 0);
+                   $on_new_line$;
+                 )cc");
+  }
+
+  EXPECT_EQ(written(),
+            R"(  int val = (
+  #if FOO
+                         0,
+  #else
+                         1,
+  #endif
+   0);
+  #pragma foo
+)");
 }
 
 
