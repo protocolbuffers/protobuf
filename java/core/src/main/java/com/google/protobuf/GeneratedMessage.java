@@ -2265,7 +2265,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         private final Method caseMethodBuilder;
 
         ReflectionInvoker(
-            final FieldDescriptor descriptor,
             final String camelCaseName,
             final Class<? extends GeneratedMessage> messageClass,
             final Class<? extends Builder<?>> builderClass,
@@ -2344,7 +2343,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         hasHasMethod = descriptor.hasPresence();
         ReflectionInvoker reflectionInvoker =
             new ReflectionInvoker(
-                descriptor,
                 camelCaseName,
                 messageClass,
                 builderClass,
