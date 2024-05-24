@@ -2501,7 +2501,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         private final Method clearMethod;
 
         ReflectionInvoker(
-            final FieldDescriptor descriptor,
             final String camelCaseName,
             final Class<? extends GeneratedMessage> messageClass,
             final Class<? extends Builder<?>> builderClass) {
@@ -2578,7 +2577,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder<?>> builderClass) {
         ReflectionInvoker reflectionInvoker =
-            new ReflectionInvoker(descriptor, camelCaseName, messageClass, builderClass);
+            new ReflectionInvoker(camelCaseName, messageClass, builderClass);
         type = reflectionInvoker.getRepeatedMethod.getReturnType();
         invoker = getMethodInvoker(reflectionInvoker);
       }
