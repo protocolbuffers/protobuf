@@ -382,12 +382,22 @@ class MessageTest(unittest.TestCase):
     message.optional_float = 2.0
     self.assertEqual(str(message), 'optional_float: 2.0\n')
 
+  def testFloatNanPrinting(self, message_module):
+    message = message_module.TestAllTypes()
+    message.optional_float = float('nan')
+    self.assertEqual(str(message), 'optional_float: nan\n')
+
   def testHighPrecisionFloatPrinting(self, message_module):
     msg = message_module.TestAllTypes()
     msg.optional_float = 0.12345678912345678
     old_float = msg.optional_float
     msg.ParseFromString(msg.SerializeToString())
     self.assertEqual(old_float, msg.optional_float)
+
+  def testDoubleNanPrinting(self, message_module):
+    message = message_module.TestAllTypes()
+    message.optional_double = float('nan')
+    self.assertEqual(str(message), 'optional_double: nan\n')
 
   def testHighPrecisionDoublePrinting(self, message_module):
     msg = message_module.TestAllTypes()

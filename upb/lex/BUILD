@@ -41,6 +41,16 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "round_trip_test",
+    srcs = ["round_trip_test.cc"],
+    deps = [
+        ":lex",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
 # begin:github_only
 filegroup(
     name = "source_files",
