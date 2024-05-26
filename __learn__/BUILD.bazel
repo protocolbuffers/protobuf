@@ -442,5 +442,21 @@ internal_php_proto_library(
     "Protobuf_test_messages/Proto3/EnumOnlyProto3.php",
     "Protobuf_test_messages/Proto3/EnumOnlyProto3/PBBool.php",
     "Protobuf_test_messages/Proto3/ForeignEnum.php",
-  ]
+    "Protobuf_test_messages/Proto3/ForeignMessage.php",
+    "Protobuf_test_messages/Proto3/NullHypothesisProto3.php",
+    "Protobuf_test_messages/Proto3/TestAllTypesProto3.php",
+    "Protobuf_test_messages/Proto3/TestAllTypesProto3/AliasedEnum.php",
+    "Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedEnum.php",
+    "Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedMessage.php",
+  ],
+  includes = [
+    "src/google/protobuf",
+    # sequence is critical
+    "src",
+  ],
+  proto_deps = [":well_known_protos"],
+  visibility = [
+    "//conformance:__pkg__",
+    "//php:__subpackages__",
+  ],
 )
