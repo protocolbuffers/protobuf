@@ -131,6 +131,7 @@ cc_test(
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "//protos",
+        "//protos:requires",
         "//upb:mem",
         "//protos:repeated_field",
     ],

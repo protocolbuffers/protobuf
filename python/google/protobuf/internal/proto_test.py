@@ -23,12 +23,13 @@ from google.protobuf import unittest_proto3_arena_pb2
 @testing_refleaks.TestCase
 class ProtoTest(unittest.TestCase):
 
-  def testSerializeParse(self, message_module):
+  def test_simple_serialize_parse(self, message_module):
     msg = message_module.TestAllTypes()
     test_util.SetAllFields(msg)
     serialized_data = proto.serialize(msg)
     parsed_msg = proto.parse(message_module.TestAllTypes, serialized_data)
     self.assertEqual(msg, parsed_msg)
+
 
 if __name__ == '__main__':
   unittest.main()

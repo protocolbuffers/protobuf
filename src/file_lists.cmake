@@ -332,20 +332,20 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/doc_comment.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/field_common.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/file.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/enum.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/enum_field.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/extension.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/generator_factory.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/make_field_gens.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/map_field.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message_builder.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message_field.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/primitive_field.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/service.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/string_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/helpers.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/enum.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/enum_field.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/extension.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/generator_factory.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/make_field_generators.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/map_field.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/message.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/message_builder.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/message_field.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/primitive_field.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/service.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/string_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/internal_helpers.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/kotlin_generator.cc
@@ -353,7 +353,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/enum_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/extension.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/generator_factory.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/make_field_generators.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/make_field_gens.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/map_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/message_builder.cc
@@ -379,7 +379,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/oneof.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/primitive_field.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/text_format_decode_data.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/tf_decode_data.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/php_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.cc
@@ -391,7 +391,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessor_case.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessors.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/helpers.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/default_value.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/map.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/repeated_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/singular_message.cc
@@ -458,23 +458,23 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/doc_comment.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/field_common.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/file.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/enum.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/enum_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/extension.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/field_generator.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/generator_factory.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/make_field_gens.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/map_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message_builder.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/primitive_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/service.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/string_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator_common.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator_factory.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/helpers.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/enum.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/enum_field.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/extension.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/field_generator.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/generator_factory.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/make_field_generators.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/map_field.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/message.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/message_builder.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/message_field.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/primitive_field.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/service.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/immutable/string_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/internal_helpers.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/kotlin_generator.h
@@ -483,7 +483,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/extension.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/field_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/generator_factory.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/make_field_generators.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/make_field_gens.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/map_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/message_builder.h
@@ -512,7 +512,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/oneof.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/options.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/primitive_field.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/text_format_decode_data.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/tf_decode_data.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/php_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.h
@@ -523,9 +523,9 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessor_case.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessor_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessors.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/helpers.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/default_value.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/context.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/crate_mapping.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/enum.h

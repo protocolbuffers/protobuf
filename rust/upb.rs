@@ -182,6 +182,7 @@ impl<'msg> InnerRepeatedMut<'msg> {
 macro_rules! impl_repeated_base {
     ($t:ty, $elem_t:ty, $ufield:ident, $upb_tag:expr) => {
         #[allow(dead_code)]
+        #[inline]
         fn repeated_new(_: Private) -> Repeated<$t> {
             let arena = Arena::new();
             Repeated::from_inner(InnerRepeated {
@@ -193,9 +194,11 @@ macro_rules! impl_repeated_base {
         unsafe fn repeated_free(_: Private, _f: &mut Repeated<$t>) {
             // No-op: the memory will be dropped by the arena.
         }
+        #[inline]
         fn repeated_len(f: View<Repeated<$t>>) -> usize {
             unsafe { upb_Array_Size(f.as_raw(Private)) }
         }
+        #[inline]
         fn repeated_push(mut f: Mut<Repeated<$t>>, v: View<$t>) {
             let arena = f.raw_arena(Private);
             unsafe {
@@ -206,16 +209,19 @@ macro_rules! impl_repeated_base {
                 ));
             }
         }
+        #[inline]
         fn repeated_clear(mut f: Mut<Repeated<$t>>) {
             unsafe {
                 upb_Array_Resize(f.as_raw(Private), 0, f.raw_arena(Private));
             }
         }
+        #[inline]
         unsafe fn repeated_get_unchecked(f: View<Repeated<$t>>, i: usize) -> View<$t> {
             unsafe {
                 <$t as UpbTypeConversions>::from_message_value(upb_Array_Get(f.as_raw(Private), i))
             }
         }
+        #[inline]
         unsafe fn repeated_set_unchecked(mut f: Mut<Repeated<$t>>, i: usize, v: View<$t>) {
             let arena = f.raw_arena(Private);
             unsafe {
@@ -224,6 +230,17 @@ macro_rules! impl_repeated_base {
                     i,
                     <$t as UpbTypeConversions>::to_message_value_copy_if_required(arena, v.into()),
                 )
+            }
+        }
+        #[inline]
+        fn repeated_reserve(mut f: Mut<Repeated<$t>>, additional: usize) {
+            // SAFETY:
+            // - `upb_Array_Reserve` is unsafe but assumed to be sound when called on a
+            //   valid array.
+            unsafe {
+                let arena = f.raw_arena(Private);
+                let size = upb_Array_Size(f.as_raw(Private));
+                assert!(upb_Array_Reserve(f.as_raw(Private), size + additional, arena));
             }
         }
     };
@@ -262,6 +279,7 @@ macro_rules! impl_repeated_bytes {
             unsafe impl ProxiedInRepeated for $t {
                 impl_repeated_base!($t, PtrAndLen, str_val, $upb_tag);
 
+                #[inline]
                 fn repeated_copy_from(src: View<Repeated<$t>>, mut dest: Mut<Repeated<$t>>) {
                     let len = src.len();
                     // SAFETY:
@@ -371,6 +389,17 @@ pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
         let InnerRepeatedMut { arena, raw, .. } = repeated.inner;
         RepeatedMut::from_inner(private, InnerRepeatedMut { arena, raw })
     }
+}
+
+/// Cast a `RepeatedMut<SomeEnum>` to `RepeatedMut<i32>` and call
+/// repeated_reserve.
+pub fn reserve_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
+    private: Private,
+    repeated: RepeatedMut<E>,
+    additional: usize,
+) {
+    let int_repeated = cast_enum_repeated_mut(private, repeated);
+    ProxiedInRepeated::repeated_reserve(int_repeated, additional);
 }
 
 /// Returns a static empty RepeatedView.

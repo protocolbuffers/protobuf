@@ -21,6 +21,9 @@ final class MapFieldSchemas {
   }
 
   private static MapFieldSchema loadSchemaForFullRuntime() {
+    if (Protobuf.assumeLiteRuntime) {
+      return null;
+    }
     try {
       Class<?> clazz = Class.forName("com.google.protobuf.MapFieldSchemaFull");
       return (MapFieldSchema) clazz.getDeclaredConstructor().newInstance();

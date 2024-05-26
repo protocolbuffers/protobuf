@@ -222,10 +222,10 @@ Struct_FieldsEntry_DoNotUse::GetClassData() const {
               nullptr,  // tc_table
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &Struct_FieldsEntry_DoNotUse::MergeImpl,
               PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _cached_size_),
               false,
           },
-          &Struct_FieldsEntry_DoNotUse::MergeImpl,
           &Struct_FieldsEntry_DoNotUse::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fstruct_2eproto,
           nullptr,  // tracker
@@ -290,10 +290,10 @@ Struct::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &Struct::MergeImpl,
               PROTOBUF_FIELD_OFFSET(Struct, _impl_._cached_size_),
               false,
           },
-          &Struct::MergeImpl,
           &Struct::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fstruct_2eproto,
           nullptr,  // tracker
@@ -418,7 +418,6 @@ PROTOBUF_NOINLINE void Struct::Clear() {
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
-
 
 void Struct::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Struct*>(&to_msg);
@@ -604,10 +603,10 @@ Value::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &Value::MergeImpl,
               PROTOBUF_FIELD_OFFSET(Value, _impl_._cached_size_),
               false,
           },
-          &Value::MergeImpl,
           &Value::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fstruct_2eproto,
           nullptr,  // tracker
@@ -783,7 +782,6 @@ PROTOBUF_NOINLINE void Value::Clear() {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-
 void Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Value*>(&to_msg);
   auto& from = static_cast<const Value&>(from_msg);
@@ -922,10 +920,10 @@ ListValue::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &ListValue::MergeImpl,
               PROTOBUF_FIELD_OFFSET(ListValue, _impl_._cached_size_),
               false,
           },
-          &ListValue::MergeImpl,
           &ListValue::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fstruct_2eproto,
           nullptr,  // tracker
@@ -1027,7 +1025,6 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
-
 
 void ListValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<ListValue*>(&to_msg);

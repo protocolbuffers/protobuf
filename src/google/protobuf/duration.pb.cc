@@ -149,10 +149,10 @@ Duration::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &Duration::MergeImpl,
               PROTOBUF_FIELD_OFFSET(Duration, _impl_._cached_size_),
               false,
           },
-          &Duration::MergeImpl,
           &Duration::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fduration_2eproto,
           nullptr,  // tracker
@@ -268,7 +268,6 @@ PROTOBUF_NOINLINE void Duration::Clear() {
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
-
 
 void Duration::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Duration*>(&to_msg);

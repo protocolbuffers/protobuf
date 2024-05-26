@@ -1,0 +1,38 @@
+syntax = "proto2";
+
+package protobuf_unittest;
+
+option java_multiple_files = true;
+
+message SimpleMessage {
+  optional int32 c = 1;
+  optional int32 d = 2;
+}
+
+message ComplexMessage {
+  optional int32 d = 1;
+}
+
+message TestExtensionsWithMetadata {
+  extensions 1 [metadata = {
+    type: "int32",
+    name: "optional_primitive_extension",
+  }];
+  extensions 2 [metadata = {
+    type: "protobuf_unittest.SimpleMessage",
+    name: "optional_message_extension",
+  }];
+  extensions 3 [metadata = {
+    type: "protobuf_unittest.ComplexMessage",
+    name: "optional_complex_message_extension",
+  }];
+  extensions 4 [metadata = {
+    type: "protobuf_unittest.AtomicExtensionMessage",
+    name: "optional_atomic_extension",
+  }];
+}
+
+extend TestExtensionsWithMetadata {
+  optional int32 optional_primitive_extension = 1;
+  optional protobuf_unittest.SimpleMessage optional_message_extension = 2;
+}

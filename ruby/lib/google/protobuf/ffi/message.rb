@@ -551,7 +551,7 @@ module Google
           #   one if omitted or nil.
           def initialize(initial_value = nil, arena = nil, msg = nil)
             @arena = arena || Google::Protobuf::FFI.create_arena
-            @msg = msg || Google::Protobuf::FFI.new_message_from_def(self.class.descriptor, @arena)
+            @msg = msg || Google::Protobuf::FFI.new_message_from_def(Google::Protobuf::FFI.get_mini_table(self.class.descriptor), @arena)
 
             unless initial_value.nil?
               raise ArgumentError.new "Expected hash arguments or message, not #{initial_value.class}" unless initial_value.respond_to? :each

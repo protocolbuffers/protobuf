@@ -158,10 +158,10 @@ SourceContext::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &SourceContext::MergeImpl,
               PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
               false,
           },
-          &SourceContext::MergeImpl,
           &SourceContext::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
           nullptr,  // tracker
@@ -259,7 +259,6 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
-
 
 void SourceContext::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<SourceContext*>(&to_msg);

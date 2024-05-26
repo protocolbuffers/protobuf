@@ -64,14 +64,6 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
 
   void Clear() override { data_->clear(); }
 
-  void CheckTypeAndMergeFrom(const MessageLite& other) override {
-    const std::string* other_data =
-        static_cast<const ImplicitWeakMessage&>(other).data_;
-    if (other_data != nullptr) {
-      data_->append(*other_data);
-    }
-  }
-
   size_t ByteSizeLong() const override {
     size_t size = data_ == nullptr ? 0 : data_->size();
     cached_size_.Set(internal::ToCachedSize(size));
@@ -92,6 +84,7 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
  private:
   static const char* ParseImpl(ImplicitWeakMessage* msg, const char* ptr,
                                ParseContext* ctx);
+  static void MergeImpl(MessageLite&, const MessageLite&);
 
   // This std::string is allocated on the heap, but we use a raw pointer so that
   // the default instance can be constant-initialized. In the const methods, we

@@ -406,7 +406,7 @@ size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
         if (is_lazy) {
           total_size += lazymessage_value->SpaceUsedLong();
         } else {
-          total_size += DownCast<Message*>(message_value)->SpaceUsedLong();
+          total_size += DownCastToMessage(message_value)->SpaceUsedLong();
         }
         break;
       default:

@@ -7,10 +7,10 @@
 
 //! Tests covering enum type generation.
 
-use enums_proto::*;
+use enums_rust_proto::*;
 use googletest::prelude::*;
 use protobuf::Enum;
-use unittest_proto::*;
+use unittest_rust_proto::*;
 
 #[test]
 fn test_nested_enum_values() {

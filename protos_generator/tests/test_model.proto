@@ -14,6 +14,8 @@ import "protos_generator/tests/child_model.proto";
 message TestModelContainer {
   repeated TestModel models = 1;
   optional ChildModel3 proto_3_child = 2;
+  extensions 10000 to max
+  [verification = UNVERIFIED];
 }
 
 message TestModel {
@@ -136,6 +138,17 @@ message ThemeExtension {
 
 extend TestModel {
   optional ThemeExtension theme = 12001;
+}
+
+message ContainerExtension {
+  extend TestModelContainer {
+    optional ContainerExtension container_extension = 12004;
+  }
+  optional string ext_container_name = 1;
+}
+
+extend TestModelContainer {
+  optional ContainerExtension container_ext = 12005;
 }
 
 message OtherExtension {

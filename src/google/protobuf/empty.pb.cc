@@ -120,10 +120,10 @@ Empty::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &Empty::MergeImpl,
               PROTOBUF_FIELD_OFFSET(Empty, _impl_._cached_size_),
               false,
           },
-          &Empty::MergeImpl,
           &Empty::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fempty_2eproto,
           nullptr,  // tracker
@@ -159,7 +159,6 @@ const ::_pbi::TcParseTable<0, 0, 0, 0, 2> Empty::_table_ = {
   {{
   }},
 };
-
 
 
 

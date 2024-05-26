@@ -143,6 +143,9 @@ UPB_API upb_DecodeStatus upb_DecodeLengthPrefixed(
     const upb_MiniTable* mt, const upb_ExtensionRegistry* extreg, int options,
     upb_Arena* arena);
 
+// Utility function for wrapper languages to get an error string from a
+// upb_DecodeStatus.
+UPB_API const char* upb_DecodeStatus_String(upb_DecodeStatus status);
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

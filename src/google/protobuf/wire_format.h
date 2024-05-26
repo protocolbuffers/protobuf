@@ -242,7 +242,7 @@ class PROTOBUF_EXPORT WireFormat {
 
   // Computes the byte size of a field, excluding tags. For packed fields, it
   // only includes the size of the raw data, and not the size of the total
-  // length, but for other length-delimited types, the size of the length is
+  // length, but for other length-prefixed types, the size of the length is
   // included.
   static size_t FieldDataOnlyByteSize(
       const FieldDescriptor* field,  // Cannot be nullptr

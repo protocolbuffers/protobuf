@@ -42,6 +42,10 @@ extern "C" {
   void __pb_rust_RepeatedField_##rust_ty##_clear(                             \
       google::protobuf::RepeatedField<ty>* r) {                                         \
     r->Clear();                                                               \
+  }                                                                           \
+  void __pb_rust_RepeatedField_##rust_ty##_reserve(                           \
+      google::protobuf::RepeatedField<ty>* r, size_t additional) {                      \
+    r->Reserve(r->size() + additional);                                       \
   }
 
 expose_repeated_field_methods(int32_t, i32);
@@ -89,6 +93,10 @@ expose_repeated_field_methods(int64_t, i64);
   void __pb_rust_RepeatedField_##ty##_clear(                           \
       google::protobuf::RepeatedPtrField<std::string>* r) {                      \
     r->Clear();                                                        \
+  }                                                                    \
+  void __pb_rust_RepeatedField_##ty##_reserve(                         \
+      google::protobuf::RepeatedPtrField<std::string>* r, size_t additional) {   \
+    r->Reserve(r->size() + additional);                                \
   }
 
 expose_repeated_ptr_field_methods(ProtoStr);

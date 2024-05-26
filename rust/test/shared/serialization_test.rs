@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use googletest::prelude::*;
-use unittest_proto::TestAllTypes;
+use unittest_rust_proto::TestAllTypes;
 
 #[test]
 fn serialize_zero_length() {

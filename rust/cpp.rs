@@ -374,7 +374,8 @@ macro_rules! impl_repeated_primitives {
         $get_thunk:ident,
         $set_thunk:ident,
         $clear_thunk:ident,
-        $copy_from_thunk:ident $(,)?
+        $copy_from_thunk:ident,
+        $reserve_thunk:ident $(,)?
     ]),* $(,)?) => {
         $(
             extern "C" {
@@ -391,37 +392,52 @@ macro_rules! impl_repeated_primitives {
                     v: <$t as CppTypeConversions>::ElemType);
                 fn $clear_thunk(f: RawRepeatedField);
                 fn $copy_from_thunk(src: RawRepeatedField, dst: RawRepeatedField);
+                fn $reserve_thunk(
+                    f: RawRepeatedField,
+                    additional: usize);
             }
 
             unsafe impl ProxiedInRepeated for $t {
                 #[allow(dead_code)]
+                #[inline]
                 fn repeated_new(_: Private) -> Repeated<$t> {
                     Repeated::from_inner(InnerRepeated {
                         raw: unsafe { $new_thunk() }
                     })
                 }
                 #[allow(dead_code)]
+                #[inline]
                 unsafe fn repeated_free(_: Private, f: &mut Repeated<$t>) {
                     unsafe { $free_thunk(f.as_mut().as_raw(Private)) }
                 }
+                #[inline]
                 fn repeated_len(f: View<Repeated<$t>>) -> usize {
                     unsafe { $size_thunk(f.as_raw(Private)) }
                 }
+                #[inline]
                 fn repeated_push(mut f: Mut<Repeated<$t>>, v: View<$t>) {
                     unsafe { $add_thunk(f.as_raw(Private), v.into()) }
                 }
+                #[inline]
                 fn repeated_clear(mut f: Mut<Repeated<$t>>) {
                     unsafe { $clear_thunk(f.as_raw(Private)) }
                 }
+                #[inline]
                 unsafe fn repeated_get_unchecked(f: View<Repeated<$t>>, i: usize) -> View<$t> {
                     <$t as CppTypeConversions>::elem_to_view(
                         unsafe { $get_thunk(f.as_raw(Private), i) })
                 }
+                #[inline]
                 unsafe fn repeated_set_unchecked(mut f: Mut<Repeated<$t>>, i: usize, v: View<$t>) {
                     unsafe { $set_thunk(f.as_raw(Private), i, v.into()) }
                 }
+                #[inline]
                 fn repeated_copy_from(src: View<Repeated<$t>>, mut dest: Mut<Repeated<$t>>) {
                     unsafe { $copy_from_thunk(src.as_raw(Private), dest.as_raw(Private)) }
+                }
+                #[inline]
+                fn repeated_reserve(mut f: Mut<Repeated<$t>>, additional: usize) {
+                    unsafe { $reserve_thunk(f.as_raw(Private), additional) }
                 }
             }
         )*
@@ -438,6 +454,7 @@ macro_rules! impl_repeated_primitives {
                     [< __pb_rust_RepeatedField_ $t _set >],
                     [< __pb_rust_RepeatedField_ $t _clear >],
                     [< __pb_rust_RepeatedField_ $t _copy_from >],
+                    [< __pb_rust_RepeatedField_ $t _reserve >],
                 ],
             )*);
         }
@@ -472,6 +489,17 @@ pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
             InnerRepeatedMut { raw: repeated.as_raw(Private), _phantom: PhantomData },
         )
     }
+}
+
+/// Cast a `RepeatedMut<SomeEnum>` to `RepeatedMut<c_int>` and call
+/// repeated_reserve.
+pub fn reserve_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
+    private: Private,
+    repeated: RepeatedMut<E>,
+    additional: usize,
+) {
+    let int_repeated = cast_enum_repeated_mut(private, repeated);
+    ProxiedInRepeated::repeated_reserve(int_repeated, additional);
 }
 
 #[derive(Debug)]

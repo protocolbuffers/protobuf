@@ -4,7 +4,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use conformance_proto::{ConformanceRequest, ConformanceResponse, WireFormat};
+use conformance_rust_proto::{ConformanceRequest, ConformanceResponse, WireFormat};
 
 #[cfg(cpp_kernel)]
 use protobuf_cpp as kernel;
@@ -15,11 +15,11 @@ use protobuf_upb as kernel;
 use kernel::Optional::{Set, Unset};
 
 use std::io::{self, ErrorKind, Read, Write};
-use test_messages_edition2023_proto::TestAllTypesEdition2023;
-use test_messages_proto2::TestAllTypesProto2;
-use test_messages_proto2_editions_proto::TestAllTypesProto2 as EditionsTestAllTypesProto2;
-use test_messages_proto3::TestAllTypesProto3;
-use test_messages_proto3_editions_proto::TestAllTypesProto3 as EditionsTestAllTypesProto3;
+use test_messages_edition2023_rust_proto::TestAllTypesEdition2023;
+use test_messages_proto2_editions_rust_proto::TestAllTypesProto2 as EditionsTestAllTypesProto2;
+use test_messages_proto2_rust_proto::TestAllTypesProto2;
+use test_messages_proto3_editions_rust_proto::TestAllTypesProto3 as EditionsTestAllTypesProto3;
+use test_messages_proto3_rust_proto::TestAllTypesProto3;
 
 /// Returns Some(i32) if a binary read can succeed from stdin.
 /// Returns None if we have reached an EOF.

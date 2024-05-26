@@ -38,9 +38,6 @@ std::string RawMapThunk(Context& ctx, const Descriptor& msg,
 std::string RawMapThunk(Context& ctx, const EnumDescriptor& desc,
                         absl::string_view key_t, absl::string_view op);
 
-// Returns the local constant that defines the vtable for mutating `field`.
-std::string VTableName(const FieldDescriptor& field);
-
 // Returns an absolute path to the Proxied Rust type of the given field.
 // The absolute path is guaranteed to work in the crate that defines the field.
 // It may be crate-relative, or directly reference the owning crate of the type.

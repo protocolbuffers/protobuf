@@ -9,7 +9,7 @@
 
 use googletest::prelude::*;
 use protobuf::Optional;
-use unittest_proto::{test_all_types, TestAllTypes};
+use unittest_rust_proto::{test_all_types, TestAllTypes};
 
 #[test]
 fn test_default_accessors() {
@@ -515,8 +515,8 @@ fn test_singular_msg_field() {
 fn test_message_opt() {
     let msg = TestAllTypes::new();
     let opt: Optional<
-        unittest_proto::test_all_types::NestedMessageView<'_>,
-        unittest_proto::test_all_types::NestedMessageView<'_>,
+        unittest_rust_proto::test_all_types::NestedMessageView<'_>,
+        unittest_rust_proto::test_all_types::NestedMessageView<'_>,
     > = msg.optional_nested_message_opt();
     assert_that!(opt.is_set(), eq(false));
     assert_that!(opt.into_inner().bb(), eq(0));
@@ -604,7 +604,7 @@ fn test_default_nested_enum_accessors() {
 
 #[test]
 fn test_optional_foreign_enum_accessors() {
-    use unittest_proto::ForeignEnum;
+    use unittest_rust_proto::ForeignEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_foreign_enum_opt(), eq(Optional::Unset(ForeignEnum::ForeignFoo)));
@@ -621,7 +621,7 @@ fn test_optional_foreign_enum_accessors() {
 
 #[test]
 fn test_default_foreign_enum_accessors() {
-    use unittest_proto::ForeignEnum;
+    use unittest_rust_proto::ForeignEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.default_foreign_enum(), eq(ForeignEnum::ForeignBar));
@@ -638,7 +638,7 @@ fn test_default_foreign_enum_accessors() {
 
 #[test]
 fn test_optional_import_enum_accessors() {
-    use unittest_proto::ImportEnum;
+    use unittest_rust_proto::ImportEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_import_enum_opt(), eq(Optional::Unset(ImportEnum::ImportFoo)));
@@ -655,7 +655,7 @@ fn test_optional_import_enum_accessors() {
 
 #[test]
 fn test_default_import_enum_accessors() {
-    use unittest_proto::ImportEnum;
+    use unittest_rust_proto::ImportEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.default_import_enum(), eq(ImportEnum::ImportBar));
@@ -672,8 +672,8 @@ fn test_default_import_enum_accessors() {
 
 #[test]
 fn test_oneof_accessors() {
-    use unittest_proto::test_oneof2::{Foo::*, FooCase, NestedEnum};
-    use unittest_proto::TestOneof2;
+    use unittest_rust_proto::test_oneof2::{Foo::*, FooCase, NestedEnum};
+    use unittest_rust_proto::TestOneof2;
 
     let mut msg = TestOneof2::new();
     assert_that!(msg.foo(), matches_pattern!(not_set(_)));
@@ -723,9 +723,9 @@ fn test_oneof_accessors() {
 
 #[test]
 fn test_msg_oneof_default_accessors() {
-    use unittest_proto::test_oneof2::{Bar::*, BarCase, NestedEnum};
+    use unittest_rust_proto::test_oneof2::{Bar::*, BarCase, NestedEnum};
 
-    let mut msg = unittest_proto::TestOneof2::new();
+    let mut msg = unittest_rust_proto::TestOneof2::new();
     assert_that!(msg.bar(), matches_pattern!(not_set(_)));
 
     msg.set_bar_int(7);
@@ -777,6 +777,18 @@ fn test_submsg_setter() {
     parent.set_optional_nested_message(nested);
 
     assert_that!(parent.optional_nested_message().bb(), eq(7));
+}
+
+#[test]
+fn test_clone() {
+    let mut m = TestAllTypes::new();
+    m.set_optional_int32(42);
+    let clone = m.clone();
+    assert_that!(clone.optional_int32(), eq(42));
+    m.clear_optional_int32();
+    assert_that!(m.has_optional_int32(), eq(false));
+    assert_that!(clone.has_optional_int32(), eq(true));
+    assert_that!(clone.optional_int32(), eq(42));
 }
 
 #[test]

@@ -1155,22 +1155,24 @@ const upb_MiniTable google__protobuf__EnumOptions_msg_init = {
   })
 };
 
-static const upb_MiniTableSub google_protobuf_EnumValueOptions_submsgs[2] = {
+static const upb_MiniTableSub google_protobuf_EnumValueOptions_submsgs[3] = {
   {.UPB_PRIVATE(submsg) = &google__protobuf__FeatureSet_msg_init},
+  {.UPB_PRIVATE(submsg) = &google__protobuf__FieldOptions__FeatureSupport_msg_init},
   {.UPB_PRIVATE(submsg) = &google__protobuf__UninterpretedOption_msg_init},
 };
 
-static const upb_MiniTableField google_protobuf_EnumValueOptions__fields[4] = {
+static const upb_MiniTableField google_protobuf_EnumValueOptions__fields[5] = {
   {1, 9, 64, kUpb_NoSub, 8, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
   {2, UPB_SIZE(12, 16), 65, 0, 11, (int)kUpb_FieldMode_Scalar | ((int)UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
   {3, UPB_SIZE(16, 10), 66, kUpb_NoSub, 8, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {999, UPB_SIZE(20, 24), 0, 1, 11, (int)kUpb_FieldMode_Array | ((int)UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {4, UPB_SIZE(20, 24), 67, 1, 11, (int)kUpb_FieldMode_Scalar | ((int)UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(24, 32), 0, 2, 11, (int)kUpb_FieldMode_Array | ((int)UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google__protobuf__EnumValueOptions_msg_init = {
   &google_protobuf_EnumValueOptions_submsgs[0],
   &google_protobuf_EnumValueOptions__fields[0],
-  UPB_SIZE(24, 32), 4, kUpb_ExtMode_Extendable, 3, UPB_FASTTABLE_MASK(248), 0,
+  UPB_SIZE(32, 40), 5, kUpb_ExtMode_Extendable, 4, UPB_FASTTABLE_MASK(248), 0,
 #ifdef UPB_TRACING_ENABLED
   "google.protobuf.EnumValueOptions",
 #endif
@@ -1198,7 +1200,7 @@ const upb_MiniTable google__protobuf__EnumValueOptions_msg_init = {
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x001800003f013eba, &upb_prm_2bt_max128b},
+    {0x002000003f023eba, &upb_prm_2bt_max128b},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
@@ -8507,6 +8509,27 @@ upb_DecodeStatus upb_DecodeLengthPrefixed(const char* buf, size_t size,
   return upb_Decode(buf, msg_len, msg, mt, extreg, options, arena);
 }
 
+const char* upb_DecodeStatus_String(upb_DecodeStatus status) {
+  switch (status) {
+    case kUpb_DecodeStatus_Ok:
+      return "Ok";
+    case kUpb_DecodeStatus_Malformed:
+      return "Wire format was corrupt";
+    case kUpb_DecodeStatus_OutOfMemory:
+      return "Arena alloc failed";
+    case kUpb_DecodeStatus_BadUtf8:
+      return "String field had bad UTF-8";
+    case kUpb_DecodeStatus_MaxDepthExceeded:
+      return "Exceeded upb_DecodeOptions_MaxDepth";
+    case kUpb_DecodeStatus_MissingRequired:
+      return "Missing required field";
+    case kUpb_DecodeStatus_UnlinkedSubMessage:
+      return "Unlinked sub-message field was present";
+    default:
+      return "Unknown decode status";
+  }
+}
+
 #undef OP_FIXPCK_LG2
 #undef OP_VARPCK_LG2
 
@@ -9147,6 +9170,20 @@ upb_EncodeStatus upb_EncodeLengthPrefixed(const upb_Message* msg,
   return _upb_Encode(msg, l, options, arena, buf, size, true);
 }
 
+const char* upb_EncodeStatus_String(upb_EncodeStatus status) {
+  switch (status) {
+    case kUpb_EncodeStatus_Ok:
+      return "Ok";
+    case kUpb_EncodeStatus_MissingRequired:
+      return "Missing required field";
+    case kUpb_EncodeStatus_MaxDepthExceeded:
+      return "Max depth exceeded";
+    case kUpb_EncodeStatus_OutOfMemory:
+      return "Arena alloc failed";
+    default:
+      return "Unknown encode status";
+  }
+}
 // Fast decoder: ~3x the speed of decode.c, but requires x86-64/ARM64.
 // Also the table size grows by 2x.
 //
@@ -11042,6 +11079,8 @@ const char* upb_BufToInt64(const char* ptr, const char* end, int64_t* val,
 
 
 #include <float.h>
+#include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 // Must be last.
@@ -11061,6 +11100,10 @@ static void upb_FixLocale(char* p) {
 
 void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size) {
   assert(size >= kUpb_RoundTripBufferSize);
+  if (isnan(val)) {
+    snprintf(buf, size, "%s", "nan");
+    return;
+  }
   snprintf(buf, size, "%.*g", DBL_DIG, val);
   if (strtod(buf, NULL) != val) {
     snprintf(buf, size, "%.*g", DBL_DIG + 2, val);
@@ -11071,6 +11114,10 @@ void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size) {
 
 void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size) {
   assert(size >= kUpb_RoundTripBufferSize);
+  if (isnan(val)) {
+    snprintf(buf, size, "%s", "nan");
+    return;
+  }
   snprintf(buf, size, "%.*g", FLT_DIG, val);
   if (strtof(buf, NULL) != val) {
     snprintf(buf, size, "%.*g", FLT_DIG + 3, val);

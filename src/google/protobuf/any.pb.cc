@@ -182,10 +182,10 @@ Any::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &Any::MergeImpl,
               PROTOBUF_FIELD_OFFSET(Any, _impl_._cached_size_),
               false,
           },
-          &Any::MergeImpl,
           &Any::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fany_2eproto,
           nullptr,  // tracker
@@ -303,7 +303,6 @@ PROTOBUF_NOINLINE void Any::Clear() {
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
-
 
 void Any::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Any*>(&to_msg);

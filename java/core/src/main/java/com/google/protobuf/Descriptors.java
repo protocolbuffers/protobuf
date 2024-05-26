@@ -94,7 +94,7 @@ public final class Descriptors {
         if (javaEditionDefaults == null) {
           try {
             ExtensionRegistry registry = ExtensionRegistry.newInstance();
-            registry.add(JavaFeaturesProto.java);
+            registry.add(JavaFeaturesProto.java_);
             setTestJavaEditionDefaults(
                 FeatureSetDefaults.parseFrom(
                     JavaEditionDefaults.PROTOBUF_INTERNAL_JAVA_EDITION_DEFAULTS.getBytes(
@@ -679,7 +679,7 @@ public final class Descriptors {
       if (getEdition() == Edition.EDITION_PROTO2) {
         if (proto.getOptions().getJavaStringCheckUtf8()) {
           features.setExtension(
-              JavaFeaturesProto.java,
+              JavaFeaturesProto.java_,
               JavaFeatures.newBuilder()
                   .setUtf8Validation(JavaFeatures.Utf8Validation.VERIFY)
                   .build());
@@ -1298,7 +1298,7 @@ public final class Descriptors {
       // (custom options) into unknown fields.
       if (type == Type.MESSAGE
           && this.features != null
-          && this.features.getMessageEncoding() == FeatureSet.MessageEncoding.DELIMITED) {
+          && getFeatures().getMessageEncoding() == FeatureSet.MessageEncoding.DELIMITED) {
         return Type.GROUP;
       }
       return type;
@@ -1319,13 +1319,13 @@ public final class Descriptors {
         // Always enforce strict UTF-8 checking for map fields.
         return true;
       }
-      if (this.features
-          .getExtension(JavaFeaturesProto.java)
+      if (getFeatures()
+          .getExtension(JavaFeaturesProto.java_)
           .getUtf8Validation()
           .equals(JavaFeatures.Utf8Validation.VERIFY)) {
         return true;
       }
-      return this.features.getUtf8Validation().equals(FeatureSet.Utf8Validation.VERIFY);
+      return getFeatures().getUtf8Validation().equals(FeatureSet.Utf8Validation.VERIFY);
     }
 
     public boolean isMapField() {
@@ -1341,14 +1341,14 @@ public final class Descriptors {
 
     /** Is this field declared required? */
     public boolean isRequired() {
-      return this.features.getFieldPresence()
+      return getFeatures().getFieldPresence()
           == DescriptorProtos.FeatureSet.FieldPresence.LEGACY_REQUIRED;
     }
 
     /** Is this field declared optional? */
     public boolean isOptional() {
       return proto.getLabel() == FieldDescriptorProto.Label.LABEL_OPTIONAL
-          && this.features.getFieldPresence()
+          && getFeatures().getFieldPresence()
               != DescriptorProtos.FeatureSet.FieldPresence.LEGACY_REQUIRED;
     }
 
@@ -1367,7 +1367,7 @@ public final class Descriptors {
       if (!isPackable()) {
         return false;
       }
-      return this.features
+      return getFeatures()
           .getRepeatedFieldEncoding()
           .equals(FeatureSet.RepeatedFieldEncoding.PACKED);
     }
@@ -1467,7 +1467,7 @@ public final class Descriptors {
           || getType() == Type.GROUP
           || isExtension()
           || getContainingOneof() != null
-          || this.features.getFieldPresence() != DescriptorProtos.FeatureSet.FieldPresence.IMPLICIT;
+          || getFeatures().getFieldPresence() != DescriptorProtos.FeatureSet.FieldPresence.IMPLICIT;
     }
 
     /**
@@ -1476,7 +1476,8 @@ public final class Descriptors {
      * been upgraded to editions.
      */
     boolean isGroupLike() {
-      if (features.getMessageEncoding() != DescriptorProtos.FeatureSet.MessageEncoding.DELIMITED) {
+      if (getFeatures().getMessageEncoding()
+          != DescriptorProtos.FeatureSet.MessageEncoding.DELIMITED) {
         // Groups are always tag-delimited.
         return false;
       }
@@ -1577,7 +1578,7 @@ public final class Descriptors {
       }
 
       return getType() == Type.ENUM
-          && (this.features.getExtension(JavaFeaturesProto.java).getLegacyClosedEnum()
+          && (getFeatures().getExtension(JavaFeaturesProto.java_).getLegacyClosedEnum()
               || enumType.isClosed());
     }
 
@@ -2115,7 +2116,7 @@ public final class Descriptors {
      * handling quirks.
      */
     public boolean isClosed() {
-      return this.features.getEnumType() == DescriptorProtos.FeatureSet.EnumType.CLOSED;
+      return getFeatures().getEnumType() == DescriptorProtos.FeatureSet.EnumType.CLOSED;
     }
 
     /** If this is a nested type, get the outer descriptor, otherwise null. */
@@ -2810,6 +2811,17 @@ public final class Descriptors {
     }
 
     void validateFeatures() throws DescriptorValidationException {}
+
+    FeatureSet getFeatures() {
+      // TODO: Remove lazy resolution of unresolved features for legacy syntax for
+      // compatibility with older <4.26.x gencode in the next breaking release.
+      if (this.features == null
+          && (getFile().getEdition() == Edition.EDITION_PROTO2
+              || getFile().getEdition() == Edition.EDITION_PROTO3)) {
+        getFile().resolveAllFeaturesImmutable();
+      }
+      return this.features;
+    }
 
     GenericDescriptor parent;
     volatile FeatureSet features;

@@ -149,10 +149,10 @@ Timestamp::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &Timestamp::MergeImpl,
               PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._cached_size_),
               false,
           },
-          &Timestamp::MergeImpl,
           &Timestamp::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto,
           nullptr,  // tracker
@@ -268,7 +268,6 @@ PROTOBUF_NOINLINE void Timestamp::Clear() {
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
-
 
 void Timestamp::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Timestamp*>(&to_msg);

@@ -316,10 +316,10 @@ Api::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &Api::MergeImpl,
               PROTOBUF_FIELD_OFFSET(Api, _impl_._cached_size_),
               false,
           },
-          &Api::MergeImpl,
           &Api::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fapi_2eproto,
           nullptr,  // tracker
@@ -570,7 +570,6 @@ PROTOBUF_NOINLINE void Api::Clear() {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-
 void Api::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Api*>(&to_msg);
   auto& from = static_cast<const Api&>(from_msg);
@@ -721,10 +720,10 @@ Method::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &Method::MergeImpl,
               PROTOBUF_FIELD_OFFSET(Method, _impl_._cached_size_),
               false,
           },
-          &Method::MergeImpl,
           &Method::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fapi_2eproto,
           nullptr,  // tracker
@@ -950,7 +949,6 @@ PROTOBUF_NOINLINE void Method::Clear() {
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
-
 void Method::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Method*>(&to_msg);
   auto& from = static_cast<const Method&>(from_msg);
@@ -1070,10 +1068,10 @@ Mixin::GetClassData() const {
               &_table_.header,
               nullptr,  // OnDemandRegisterArenaDtor
               nullptr,  // IsInitialized
+              &Mixin::MergeImpl,
               PROTOBUF_FIELD_OFFSET(Mixin, _impl_._cached_size_),
               false,
           },
-          &Mixin::MergeImpl,
           &Mixin::kDescriptorMethods,
           &descriptor_table_google_2fprotobuf_2fapi_2eproto,
           nullptr,  // tracker
@@ -1194,7 +1192,6 @@ PROTOBUF_NOINLINE void Mixin::Clear() {
   }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
-
 
 void Mixin::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Mixin*>(&to_msg);

@@ -1578,7 +1578,7 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
           message_int32_message.GetReflection()->GetInt32(
               message_int32_message, fd_map_int32_foreign_message_key);
       const ForeignMessage& value_int32_message =
-          DownCast<const ForeignMessage&>(
+          DownCastToGenerated<ForeignMessage>(
               message_int32_message.GetReflection()->GetMessage(
                   message_int32_message, fd_map_int32_foreign_message_value));
       EXPECT_EQ(value_int32_message.c(), Func(key_int32_message, 6));
@@ -1615,7 +1615,7 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
           message_int32_message.GetReflection()->GetInt32(
               message_int32_message, fd_map_int32_foreign_message_key);
       const ForeignMessage& value_int32_message =
-          DownCast<const ForeignMessage&>(
+          DownCastToGenerated<ForeignMessage>(
               message_int32_message.GetReflection()->GetMessage(
                   message_int32_message, fd_map_int32_foreign_message_value));
       EXPECT_EQ(value_int32_message.c(), Func(key_int32_message, 6));
@@ -1652,7 +1652,7 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
       int32_t key_int32_message =
           message_int32_message->GetReflection()->GetInt32(
               *message_int32_message, fd_map_int32_foreign_message_key);
-      ForeignMessage* value_int32_message = DownCast<ForeignMessage*>(
+      ForeignMessage* value_int32_message = DownCastToGenerated<ForeignMessage>(
           message_int32_message->GetReflection()->MutableMessage(
               message_int32_message, fd_map_int32_foreign_message_value));
       value_int32_message->set_c(Func(key_int32_message, -6));
@@ -1808,7 +1808,7 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
           message_int32_message.GetReflection()->GetInt32(
               message_int32_message, fd_map_int32_foreign_message_key);
       const ForeignMessage& value_int32_message =
-          DownCast<const ForeignMessage&>(
+          DownCastToGenerated<ForeignMessage>(
               message_int32_message.GetReflection()->GetMessage(
                   message_int32_message, fd_map_int32_foreign_message_value));
       EXPECT_EQ(value_int32_message.c(), Func(key_int32_message, 6));
@@ -1849,7 +1849,7 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
           message_int32_message.GetReflection()->GetInt32(
               message_int32_message, fd_map_int32_foreign_message_key);
       const ForeignMessage& value_int32_message =
-          DownCast<const ForeignMessage&>(
+          DownCastToGenerated<ForeignMessage>(
               message_int32_message.GetReflection()->GetMessage(
                   message_int32_message, fd_map_int32_foreign_message_value));
       EXPECT_EQ(value_int32_message.c(), Func(key_int32_message, 6));
@@ -1966,8 +1966,8 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
       const Message& message = *it;
       int32_t key = message.GetReflection()->GetInt32(
           message, fd_map_int32_foreign_message_key);
-      const ForeignMessage& sub_message =
-          DownCast<const ForeignMessage&>(message.GetReflection()->GetMessage(
+      const ForeignMessage& sub_message = DownCastToGenerated<ForeignMessage>(
+          message.GetReflection()->GetMessage(
               message, fd_map_int32_foreign_message_value));
       result[key].MergeFrom(sub_message);
       ++index;
@@ -2120,14 +2120,14 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
   {
     const Message& message0a =
         mmf_int32_foreign_message.Get(0, entry_int32_foreign_message.get());
-    const ForeignMessage& sub_message0a =
-        DownCast<const ForeignMessage&>(message0a.GetReflection()->GetMessage(
+    const ForeignMessage& sub_message0a = DownCastToGenerated<ForeignMessage>(
+        message0a.GetReflection()->GetMessage(
             message0a, fd_map_int32_foreign_message_value));
     int32_t int32_value0a = sub_message0a.c();
     const Message& message9a =
         mmf_int32_foreign_message.Get(9, entry_int32_foreign_message.get());
-    const ForeignMessage& sub_message9a =
-        DownCast<const ForeignMessage&>(message9a.GetReflection()->GetMessage(
+    const ForeignMessage& sub_message9a = DownCastToGenerated<ForeignMessage>(
+        message9a.GetReflection()->GetMessage(
             message9a, fd_map_int32_foreign_message_value));
     int32_t int32_value9a = sub_message9a.c();
 
@@ -2135,14 +2135,14 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
 
     const Message& message0b =
         mmf_int32_foreign_message.Get(0, entry_int32_foreign_message.get());
-    const ForeignMessage& sub_message0b =
-        DownCast<const ForeignMessage&>(message0b.GetReflection()->GetMessage(
+    const ForeignMessage& sub_message0b = DownCastToGenerated<ForeignMessage>(
+        message0b.GetReflection()->GetMessage(
             message0b, fd_map_int32_foreign_message_value));
     int32_t int32_value0b = sub_message0b.c();
     const Message& message9b =
         mmf_int32_foreign_message.Get(9, entry_int32_foreign_message.get());
-    const ForeignMessage& sub_message9b =
-        DownCast<const ForeignMessage&>(message9b.GetReflection()->GetMessage(
+    const ForeignMessage& sub_message9b = DownCastToGenerated<ForeignMessage>(
+        message9b.GetReflection()->GetMessage(
             message9b, fd_map_int32_foreign_message_value));
     int32_t int32_value9b = sub_message9b.c();
 

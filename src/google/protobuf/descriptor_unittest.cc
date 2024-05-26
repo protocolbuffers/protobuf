@@ -4059,8 +4059,8 @@ class ValidationErrorTest : public testing::Test {
     return ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
   }
 
-  const FileDescriptor* ParseAndBuildFile(absl::string_view file_name,
-                                          absl::string_view file_text) {
+  FileDescriptorProto ParseFile(absl::string_view file_name,
+                                absl::string_view file_text) {
     io::ArrayInputStream input_stream(file_text.data(), file_text.size());
     SimpleErrorCollector error_collector;
     io::Tokenizer tokenizer(&input_stream, &error_collector);
@@ -4072,7 +4072,12 @@ class ValidationErrorTest : public testing::Test {
         << file_text;
     ABSL_CHECK_EQ("", error_collector.last_error());
     proto.set_name(file_name);
-    return pool_.BuildFile(proto);
+    return proto;
+  }
+
+  const FileDescriptor* ParseAndBuildFile(absl::string_view file_name,
+                                          absl::string_view file_text) {
+    return pool_.BuildFile(ParseFile(file_name, file_text));
   }
 
 
@@ -4094,6 +4099,17 @@ class ValidationErrorTest : public testing::Test {
     FileDescriptorProto file_proto;
     ASSERT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
     BuildFileWithErrors(file_proto, expected_errors);
+  }
+
+  // Parse a proto file and build it.  Expect errors to be produced which match
+  // the given error text.
+  void ParseAndBuildFileWithErrors(absl::string_view file_name,
+                                   absl::string_view file_text,
+                                   absl::string_view expected_errors) {
+    MockErrorCollector error_collector;
+    EXPECT_TRUE(pool_.BuildFileCollectingErrors(ParseFile(file_name, file_text),
+                                                &error_collector) == nullptr);
+    EXPECT_EQ(expected_errors, error_collector.text_);
   }
 
   // Parse file_text as a FileDescriptorProto in text format and add it
@@ -10354,6 +10370,44 @@ TEST_F(FeaturesTest, InvalidOpenEnumNonZeroFirstValue) {
       "enums.\n");
 }
 
+TEST_F(FeaturesTest, InvalidUseFeaturesInSameFile) {
+  BuildDescriptorMessagesInTestPool();
+  ParseAndBuildFileWithErrors("foo.proto", R"schema(
+    edition = "2023";
+
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    message Foo {
+      string bar = 1 [
+        features.(test.custom).foo = "xyz",
+        features.(test.another) = {foo: -321}
+      ];
+    }
+
+    message Custom {
+      string foo = 1 [features = { [test.custom]: {foo: "abc"} }];
+    }
+    message Another {
+      Enum foo = 1;
+    }
+
+    enum Enum {
+      option features.enum_type = CLOSED;
+      ZERO = 0;
+      ONE = 1;
+    }
+
+    extend google.protobuf.FeatureSet {
+      Custom custom = 1002 [features.message_encoding=DELIMITED];
+      Another another = 1001;
+    }
+  )schema",
+                              "foo.proto: test.Foo.bar: OPTION_NAME: Feature "
+                              "\"features.(test.custom)\" can't be used in the "
+                              "same file it's defined in.\n");
+}
+
 TEST_F(FeaturesTest, ClosedEnumNonZeroFirstValue) {
   BuildDescriptorMessagesInTestPool();
   const FileDescriptor* file = BuildFile(
@@ -12209,6 +12263,70 @@ TEST_F(DatabaseBackedPoolTest, FeatureLifetimeError) {
       error_collector.text_,
       "features.proto: FooFeatures: NAME: Feature "
       "pb.TestFeatures.future_feature wasn't introduced until edition 2024\n");
+}
+
+TEST_F(DatabaseBackedPoolTest, FeatureLifetimeErrorUnknownDependencies) {
+  FileDescriptorProto proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
+  std::string text_proto;
+  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+  AddToDatabase(&database_, text_proto);
+  pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
+  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+  AddToDatabase(&database_, text_proto);
+  AddToDatabase(&database_, R"pb(
+    name: "option.proto"
+    syntax: "editions"
+    edition: EDITION_2023
+    dependency: "google/protobuf/descriptor.proto"
+    dependency: "google/protobuf/unittest_features.proto"
+    extension {
+      name: "foo_extension"
+      number: 1000
+      type: TYPE_STRING
+      extendee: ".google.protobuf.MessageOptions"
+      options {
+        features {
+          [pb.test] { legacy_feature: VALUE9 }
+        }
+      }
+    }
+  )pb");
+
+  // Note, we very carefully don't put a dependency here, otherwise option.proto
+  // will be built eagerly beforehand.  This triggers a rare condition where
+  // DeferredValidation is filled with descriptors that are then rolled back.
+  AddToDatabase(&database_, R"pb(
+    name: "use_option.proto"
+    syntax: "editions"
+    edition: EDITION_2023
+    message_type {
+      name: "FooMessage"
+      options {
+        uninterpreted_option {
+          name { name_part: "foo_extension" is_extension: true }
+          string_value: "test"
+        }
+      }
+      field { name: "bar" number: 1 type: TYPE_INT64 }
+    }
+  )pb");
+  MockErrorCollector error_collector;
+  DescriptorPool pool(&database_, &error_collector);
+
+  ASSERT_EQ(pool.FindMessageTypeByName("FooMessage"), nullptr);
+  EXPECT_EQ(error_collector.text_,
+            "use_option.proto: FooMessage: OPTION_NAME: Option "
+            "\"(foo_extension)\" unknown. Ensure that your proto definition "
+            "file imports the proto which defines the option.\n");
+
+  // Verify that the extension does trigger a lifetime error.
+  error_collector.text_.clear();
+  ASSERT_EQ(pool.FindExtensionByName("foo_extension"), nullptr);
+  EXPECT_EQ(
+      error_collector.text_,
+      "option.proto: foo_extension: NAME: Feature "
+      "pb.TestFeatures.legacy_feature has been removed in edition 2023\n");
 }
 
 TEST_F(DatabaseBackedPoolTest, DoesntRetryDbUnnecessarily) {

@@ -483,6 +483,11 @@ public final class UnknownFieldSet implements MessageLite {
      * changes may or may not be reflected in this map.
      */
     public Map<Integer, Field> asMap() {
+      // Avoid an allocation for the common case of an empty map.
+      if (fieldBuilders.isEmpty()) {
+        return Collections.emptyMap();
+      }
+
       TreeMap<Integer, Field> fields = new TreeMap<>();
       for (Map.Entry<Integer, Field.Builder> entry : fieldBuilders.entrySet()) {
         fields.put(entry.getKey(), entry.getValue().build());

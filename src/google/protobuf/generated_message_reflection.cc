@@ -1265,10 +1265,9 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
     int fields_with_has_bits = 0;
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* field = descriptor_->field(i);
-      if (field->is_repeated() || schema_.InRealOneof(field)) {
-        continue;
+      if (internal::cpp::HasHasbit(field)) {
+        ++fields_with_has_bits;
       }
-      fields_with_has_bits++;
     }
 
     int has_bits_size = (fields_with_has_bits + 31) / 32;

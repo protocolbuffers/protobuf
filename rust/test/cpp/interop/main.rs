@@ -7,7 +7,7 @@
 
 use googletest::prelude::*;
 use protobuf_cpp::__runtime::{PtrAndLen, RawMessage};
-use unittest_proto::{TestAllExtensions, TestAllTypes, TestAllTypesMut, TestAllTypesView};
+use unittest_rust_proto::{TestAllExtensions, TestAllTypes, TestAllTypesMut, TestAllTypesView};
 
 macro_rules! proto_assert_eq {
     ($lhs:expr, $rhs:expr) => {{

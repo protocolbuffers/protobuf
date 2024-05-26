@@ -2893,7 +2893,7 @@ typename FieldOpts::CType EffectiveStringCType(const FieldDesc* field) {
 }
 
 #ifndef SWIG
-enum class Utf8CheckMode {
+enum class Utf8CheckMode : uint8_t {
   kStrict = 0,  // Parsing will fail if non UTF-8 data is in string fields.
   kVerify = 1,  // Only log an error but parsing will succeed.
   kNone = 2,    // No UTF-8 check.

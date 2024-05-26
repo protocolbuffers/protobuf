@@ -126,7 +126,6 @@ class MessageGenerator {
   void GenerateMapEntryClassDefinition(io::Printer* p);
   void GenerateAnyMethodDefinition(io::Printer* p);
   void GenerateImplDefinition(io::Printer* p);
-  void GenerateMergeFrom(io::Printer* p);
   void GenerateClassSpecificMergeImpl(io::Printer* p);
   void GenerateCopyFrom(io::Printer* p);
   void GenerateSwap(io::Printer* p);

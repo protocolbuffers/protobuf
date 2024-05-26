@@ -43,6 +43,13 @@ enum EnumFeature {
   VALUE13 = 13;
   VALUE14 = 14;
   VALUE15 = 15;
+  VALUE_EMPTY_SUPPORT = 98 [feature_support = {}];
+  VALUE_FUTURE = 99 [feature_support = {
+    edition_introduced: EDITION_99997_TEST_ONLY
+    edition_deprecated: EDITION_99998_TEST_ONLY
+    deprecation_warning: "Custom feature deprecation warning"
+    edition_removed: EDITION_99999_TEST_ONLY
+  }];
 }
 
 message TestFeatures {

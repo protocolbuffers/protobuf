@@ -273,12 +273,13 @@ const upb_MiniTable* google__protobuf__EnumOptions_msg_init() {
 
 const upb_MiniTable* google__protobuf__EnumValueOptions_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$P/3/c~G";
+  static const char* mini_descriptor = "$P/3/3b~G";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
                           upb_BootstrapArena(), NULL);
   upb_MiniTable_SetSubMessage(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 2), google__protobuf__FeatureSet_msg_init());
+  upb_MiniTable_SetSubMessage(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 4), google__protobuf__FieldOptions__FeatureSupport_msg_init());
   upb_MiniTable_SetSubMessage(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 999), google__protobuf__UninterpretedOption_msg_init());
   return mini_table;
 }

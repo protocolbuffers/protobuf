@@ -9,8 +9,8 @@
 /// on proto3.
 use googletest::prelude::*;
 use protobuf::Optional;
-use unittest_proto3::{test_all_types, TestAllTypes};
-use unittest_proto3_optional::{test_proto3_optional, TestProto3Optional};
+use unittest_proto3_optional_rust_proto::{test_proto3_optional, TestProto3Optional};
+use unittest_proto3_rust_proto::{test_all_types, TestAllTypes};
 
 #[test]
 fn test_fixed32_accessors() {
@@ -156,7 +156,7 @@ fn test_optional_nested_enum_accessors() {
 
 #[test]
 fn test_foreign_enum_accessors() {
-    use unittest_proto3::ForeignEnum;
+    use unittest_proto3_rust_proto::ForeignEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_foreign_enum(), eq(ForeignEnum::ForeignZero));
@@ -215,7 +215,7 @@ fn test_oneof_accessors_view_long_lifetime() {
 
 #[test]
 fn test_oneof_enum_accessors() {
-    use unittest_proto3::{
+    use unittest_proto3_rust_proto::{
         test_oneof2::{Foo, FooCase, NestedEnum},
         TestOneof2,
     };

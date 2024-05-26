@@ -128,7 +128,7 @@ cc_library(
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:retention",
         "//src/google/protobuf/compiler:versions",
-        "//src/google/protobuf/compiler/java/immutable",
+        "//src/google/protobuf/compiler/java/full",
         "//src/google/protobuf/compiler/java/lite",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",

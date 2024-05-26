@@ -5,12 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use enums_proto::{test_map_with_nested_enum, TestMapWithNestedEnum};
+use enums_rust_proto::{test_map_with_nested_enum, TestMapWithNestedEnum};
 use googletest::prelude::*;
-use map_unittest_proto::{MapEnum, TestMap, TestMapWithMessages};
+use map_unittest_rust_proto::{MapEnum, TestMap, TestMapWithMessages};
 use paste::paste;
 use std::collections::HashMap;
-use unittest_proto::TestAllTypes;
+use unittest_rust_proto::TestAllTypes;
 
 macro_rules! generate_map_primitives_tests {
     (

@@ -336,6 +336,7 @@ proto_library(
     deps = [
         "//:any_proto",
         "//:descriptor_proto",
+        "//:java_features_proto",
         "//:lite_test_protos",
         "//:wrappers_proto",
         "//src/google/protobuf:generic_test_protos",
@@ -522,6 +523,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/AnyTest.java",
     "src/test/java/com/google/protobuf/CodedInputStreamTest.java",
     "src/test/java/com/google/protobuf/DeprecatedFieldTest.java",
+    "src/test/java/com/google/protobuf/DebugFormatTest.java",
     "src/test/java/com/google/protobuf/DescriptorsTest.java",
     "src/test/java/com/google/protobuf/DiscardUnknownFieldsTest.java",
     "src/test/java/com/google/protobuf/DynamicMessageTest.java",
@@ -532,6 +534,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/LazilyParsedMessageSetTest.java",
     "src/test/java/com/google/protobuf/LazyFieldTest.java",
     "src/test/java/com/google/protobuf/LazyStringEndToEndTest.java",
+    "src/test/java/com/google/protobuf/LegacyUnredactedTextFormatTest.java",
     "src/test/java/com/google/protobuf/MapForProto2Test.java",
     "src/test/java/com/google/protobuf/MapTest.java",
     "src/test/java/com/google/protobuf/MessageTest.java",

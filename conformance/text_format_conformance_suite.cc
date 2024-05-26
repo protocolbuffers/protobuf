@@ -261,6 +261,7 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunDelimitedTests() {
       "DelimitedFieldExtension", REQUIRED,
       "[protobuf_test_messages.editions.delimited_ext] { c: 1 }");
 
+
   // Test that lower-cased group name (i.e. implicit field name) are accepted.
   RunValidTextFormatTest("DelimitedFieldLowercased", REQUIRED,
                          "groupliketype { group_int32: 1 }");

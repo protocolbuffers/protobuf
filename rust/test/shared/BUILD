@@ -30,8 +30,8 @@ rust_test(
     name = "child_parent_cpp_test",
     srcs = ["child_parent_test.rs"],
     deps = [
-        "//rust/test:child_cc_rust_proto",
-        "//rust/test:parent_cc_rust_proto",
+        "//rust/test:child_cpp_rust_proto",
+        "//rust/test:parent_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -40,7 +40,7 @@ rust_test(
     name = "edition2023_cpp_test",
     srcs = ["edition2023_test.rs"],
     deps = [
-        "//rust/test:edition2023_cc_rust_proto",
+        "//rust/test:edition2023_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -62,8 +62,8 @@ rust_test(
     },
     deps = [
         "//rust:protobuf_cpp_export",
-        "//rust/test:enums_cc_rust_proto",
-        "//rust/test:unittest_cc_rust_proto",
+        "//rust/test:enums_cpp_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -86,7 +86,7 @@ rust_test(
     name = "import_public_cpp_test",
     srcs = ["import_public_test.rs"],
     deps = [
-        "//rust/test:import_public_cc_rust_proto",
+        "//rust/test:import_public_cpp_rust_proto",
     ],
 )
 
@@ -102,9 +102,9 @@ rust_test(
     name = "package_cpp_test",
     srcs = ["package_test.rs"],
     deps = [
-        "//rust/test:dots_in_package_cc_rust_proto",
-        "//rust/test:no_package_cc_rust_proto",
-        "//rust/test:package_cc_rust_proto",
+        "//rust/test:dots_in_package_cpp_rust_proto",
+        "//rust/test:no_package_cpp_rust_proto",
+        "//rust/test:package_cpp_rust_proto",
     ],
 )
 
@@ -121,7 +121,7 @@ rust_test(
 rust_test(
     name = "package_disambiguation_cpp_test",
     srcs = ["package_disambiguation_test.rs"],
-    deps = ["//rust/test:package_disabiguation_cc_rust_proto"],
+    deps = ["//rust/test:package_disabiguation_cpp_rust_proto"],
 )
 
 rust_test(
@@ -134,8 +134,8 @@ rust_test(
     name = "bad_names_cpp_test",
     srcs = ["bad_names_test.rs"],
     deps = [
-        "//rust/test:bad_names_cc_rust_proto",
-        "//rust/test:unittest_cc_rust_proto",
+        "//rust/test:bad_names_cpp_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -155,7 +155,7 @@ rust_test(
 rust_test(
     name = "nested_types_cpp_test",
     srcs = ["nested_types_test.rs"],
-    deps = ["//rust/test:unittest_cc_rust_proto"],
+    deps = ["//rust/test:unittest_cpp_rust_proto"],
 )
 
 rust_test(
@@ -175,7 +175,7 @@ rust_test(
     ],
     deps = [
         "//rust:protobuf_cpp_export",
-        "//rust/test:unittest_cc_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -204,8 +204,8 @@ rust_test(
     },
     deps = [
         "//rust:protobuf_cpp_export",
-        "//rust/test:unittest_proto3_cc_rust_proto",
-        "//rust/test:unittest_proto3_optional_cc_rust_proto",
+        "//rust/test:unittest_proto3_cpp_rust_proto",
+        "//rust/test:unittest_proto3_optional_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -237,7 +237,7 @@ rust_test(
     name = "serialization_cpp_test",
     srcs = ["serialization_test.rs"],
     deps = [
-        "//rust/test:unittest_cc_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -250,7 +250,7 @@ rust_test(
     },
     deps = [
         "//rust:protobuf_cpp_export",
-        "//rust/test:nested_cc_rust_proto",
+        "//rust/test:nested_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -279,7 +279,7 @@ rust_test(
     ],
     deps = [
         "//rust:protobuf_cpp_export",
-        "//rust/test:unittest_cc_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -307,9 +307,9 @@ rust_test(
         "@crate_index//:paste",
     ],
     deps = [
-        "//rust/test:enums_cc_rust_proto",
-        "//rust/test:map_unittest_cc_rust_proto",
-        "//rust/test:unittest_cc_rust_proto",
+        "//rust/test:enums_cpp_rust_proto",
+        "//rust/test:map_unittest_cpp_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -329,28 +329,12 @@ rust_test(
 )
 
 rust_test(
-    name = "reserved_crate_name_cc_test",
-    srcs = ["reserved_crate_name_test.rs"],
-    deps = [
-        "//rust/test:struct_cc_rust_proto",
-    ],
-)
-
-rust_test(
-    name = "reserved_crate_name_upb_test",
-    srcs = ["reserved_crate_name_test.rs"],
-    deps = [
-        "//rust/test:struct_upb_rust_proto",
-    ],
-)
-
-rust_test(
     name = "fields_with_imported_types_cpp_test",
     srcs = ["fields_with_imported_types_test.rs"],
     deps = [
         "//rust:protobuf_cpp_export",
-        "//rust/test:fields_with_imported_types_cc_rust_proto",
-        "//rust/test:imported_types_cc_rust_proto",
+        "//rust/test:fields_with_imported_types_cpp_rust_proto",
+        "//rust/test:imported_types_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -374,7 +358,7 @@ rust_test(
     },
     deps = [
         "//rust:protobuf_cpp",
-        "//rust/test:unittest_cc_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )

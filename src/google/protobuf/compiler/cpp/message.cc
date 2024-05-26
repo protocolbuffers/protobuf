@@ -1713,10 +1713,14 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             }
           } else {
             p->Emit(R"cc(
-              void CheckTypeAndMergeFrom(
-                  const ::$proto_ns$::MessageLite& from) final;
               void CopyFrom(const $classname$& from);
-              void MergeFrom(const $classname$& from);
+              void MergeFrom(const $classname$& from) { $classname$::MergeImpl(*this, from); }
+
+              private:
+              static void MergeImpl(::$proto_ns$::MessageLite& to_msg,
+                                    const ::$proto_ns$::MessageLite& from_msg);
+
+              public:
             )cc");
           }
 
@@ -2238,9 +2242,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     p->Emit("\n");
 
     GenerateByteSize(p);
-    p->Emit("\n");
-
-    GenerateMergeFrom(p);
     p->Emit("\n");
 
     GenerateClassSpecificMergeImpl(p);
@@ -3698,10 +3699,10 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                         $table$,
                         $on_demand_register_arena_dtor$,
                         $is_initialized$,
+                        &$classname$::MergeImpl,
                         PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                         false,
                     },
-                    &$classname$::MergeImpl,
                     &$classname$::kDescriptorMethods,
                     &$desc_table$,
                     $tracker_on_get_metadata$,
@@ -3727,6 +3728,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                         &_table_.header,
                         $on_demand_register_arena_dtor$,
                         $is_initialized$,
+                        &$classname$::MergeImpl,
                         PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                         true,
                     },
@@ -3736,20 +3738,6 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             return _data_.base();
           }
         )cc");
-  }
-}
-
-void MessageGenerator::GenerateMergeFrom(io::Printer* p) {
-  Formatter format(p);
-
-  if (!HasDescriptorMethods(descriptor_->file(), options_)) {
-    // Generate CheckTypeAndMergeFrom().
-    format(
-        "void $classname$::CheckTypeAndMergeFrom(\n"
-        "    const ::$proto_ns$::MessageLite& from) {\n"
-        "  MergeFrom(*::_pbi::DownCast<const $classname$*>(\n"
-        "      &from));\n"
-        "}\n");
   }
 }
 
@@ -3767,20 +3755,12 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
   // Generate the class-specific MergeFrom, which avoids the ABSL_CHECK and
   // cast.
   Formatter format(p);
-  if (!HasDescriptorMethods(descriptor_->file(), options_)) {
-    // For messages that don't inherit from Message, just implement MergeFrom
-    // directly.
-    format(
-        "void $classname$::MergeFrom(const $classname$& from) {\n"
-        "  $classname$* const _this = this;\n");
-  } else {
-    format(
-        "void $classname$::MergeImpl(::$proto_ns$::MessageLite& to_msg, const "
-        "::$proto_ns$::MessageLite& from_msg) {\n"
-        "$WeakDescriptorSelfPin$"
-        "  auto* const _this = static_cast<$classname$*>(&to_msg);\n"
-        "  auto& from = static_cast<const $classname$&>(from_msg);\n");
-  }
+  format(
+      "void $classname$::MergeImpl(::$proto_ns$::MessageLite& to_msg, const "
+      "::$proto_ns$::MessageLite& from_msg) {\n"
+      "$WeakDescriptorSelfPin$"
+      "  auto* const _this = static_cast<$classname$*>(&to_msg);\n"
+      "  auto& from = static_cast<const $classname$&>(from_msg);\n");
   format.Indent();
   if (RequiresArena(GeneratorFunction::kMergeFrom)) {
     p->Emit(R"cc(

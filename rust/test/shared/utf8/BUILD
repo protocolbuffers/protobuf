@@ -11,9 +11,9 @@ rust_test(
         "//rust:protobuf_cpp": "protobuf",
     },
     deps = [
-        ":feature_verify_cc_rust_proto",
-        ":no_features_proto2_cc_rust_proto",
-        ":no_features_proto3_cc_rust_proto",
+        ":feature_verify_cpp_rust_proto",
+        ":no_features_proto2_cpp_rust_proto",
+        ":no_features_proto3_cpp_rust_proto",
         "//rust:protobuf_cpp",
         "@crate_index//:googletest",
     ],
@@ -93,16 +93,16 @@ rust_upb_proto_library(
 )
 
 rust_cc_proto_library(
-    name = "no_features_proto2_cc_rust_proto",
+    name = "no_features_proto2_cpp_rust_proto",
     deps = [":no_features_proto2_proto"],
 )
 
 rust_cc_proto_library(
-    name = "no_features_proto3_cc_rust_proto",
+    name = "no_features_proto3_cpp_rust_proto",
     deps = [":no_features_proto3_proto"],
 )
 
 rust_cc_proto_library(
-    name = "feature_verify_cc_rust_proto",
+    name = "feature_verify_cpp_rust_proto",
     deps = [":feature_verify_proto"],
 )

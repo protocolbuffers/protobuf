@@ -293,6 +293,22 @@ void CollectLifetimeResults(Edition edition, const Message& message,
       continue;
     }
 
+    if (field->enum_type() != nullptr) {
+      int number = message.GetReflection()->GetEnumValue(message, field);
+      auto value = field->enum_type()->FindValueByNumber(number);
+      if (value != nullptr) {
+        const FieldOptions::FeatureSupport& support =
+            value->options().feature_support();
+        if (value->options().has_feature_support() &&
+            support.edition_introduced() > edition) {
+          results.errors.emplace_back(
+              absl::StrCat("Feature ", value->full_name(),
+                           " wasn't introduced until edition ",
+                           support.edition_introduced()));
+        }
+      }
+    }
+
     // Skip fields that don't have feature support specified.
     if (!field->options().has_feature_support()) continue;
 

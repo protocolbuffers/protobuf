@@ -668,3 +668,18 @@ upb_EncodeStatus upb_EncodeLengthPrefixed(const upb_Message* msg,
                                           size_t* size) {
   return _upb_Encode(msg, l, options, arena, buf, size, true);
 }
+
+const char* upb_EncodeStatus_String(upb_EncodeStatus status) {
+  switch (status) {
+    case kUpb_EncodeStatus_Ok:
+      return "Ok";
+    case kUpb_EncodeStatus_MissingRequired:
+      return "Missing required field";
+    case kUpb_EncodeStatus_MaxDepthExceeded:
+      return "Max depth exceeded";
+    case kUpb_EncodeStatus_OutOfMemory:
+      return "Arena alloc failed";
+    default:
+      return "Unknown encode status";
+  }
+}
