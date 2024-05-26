@@ -19,6 +19,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -337,9 +338,13 @@ std::string GetSub(upb::FieldDefPtr field, bool is_extension) {
   return std::string("{.UPB_PRIVATE(submsg) = NULL}");
 }
 
+bool IsCrossFile(upb::FieldDefPtr field) {
+  return field.message_type() != field.containing_type();
+}
+
 // Writes a single message into a .upb.c source file.
 void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
-                  Output& output) {
+                  const MiniTableOptions& options, Output& output) {
   std::string msg_name = ToCIdent(message.full_name());
   std::string fields_array_ref = "NULL";
   std::string submsgs_array_ref = "NULL";
@@ -347,6 +352,7 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
   const upb_MiniTable* mt_32 = pools.GetMiniTable32(message);
   const upb_MiniTable* mt_64 = pools.GetMiniTable64(message);
   std::map<int, std::string> subs;
+  absl::flat_hash_set<const upb_MiniTable*> seen;
 
   // Construct map of sub messages by field number.
   for (int i = 0; i < mt_64->UPB_PRIVATE(field_count); i++) {
@@ -357,6 +363,15 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
       upb::FieldDefPtr field = message.FindFieldByNumber(f_number);
       auto pair = subs.emplace(index, GetSub(field, false));
       ABSL_CHECK(pair.second);
+      if (options.one_output_per_message && field.IsSubMessage() &&
+          IsCrossFile(field)) {
+        if (seen.insert(pools.GetMiniTable64(field.message_type())).second) {
+          output(
+              "__attribute__((weak)) const upb_MiniTable* $0 = "
+              "&UPB_PRIVATE(_kUpb_MiniTable_Empty);\n",
+              MessagePtrName(field.message_type()));
+        }
+      }
     }
   }
   // Write upb_MiniTableSubInternal table for sub messages referenced from
@@ -552,6 +567,10 @@ void WriteMiniTableSourceIncludes(upb::FileDefPtr file, Output& output) {
       "// Must be last.\n"
       "#include \"upb/port/def.inc\"\n"
       "\n");
+
+  output(
+      "extern const struct upb_MiniTable "
+      "UPB_PRIVATE(_kUpb_MiniTable_Empty);\n");
 }
 
 void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
@@ -574,7 +593,7 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
     }
   } else {
     for (auto message : messages) {
-      WriteMessage(message, pools, output);
+      WriteMessage(message, pools, options, output);
     }
     for (const auto e : enums) {
       WriteEnum(e, output);
@@ -608,11 +627,12 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
 
   if (!extensions.empty()) {
     // Extensions.
-    output(
-        "\n"
-        "UPB_LINKARR_APPEND(upb_AllExts)\n"
-        "static const upb_MiniTableExtension *$0[$1] = {\n",
-        kExtensionsInit, extensions.size());
+    output("\n");
+    if (!options.one_output_per_message) {
+      output("UPB_LINKARR_APPEND(upb_AllExts)\n");
+    }
+    output("static const upb_MiniTableExtension *$0[$1] = {\n", kExtensionsInit,
+           extensions.size());
 
     for (auto ext : extensions) {
       output("  &$0,\n", ExtensionLayout(ext));
@@ -653,7 +673,7 @@ void WriteMiniTableMultipleSources(const DefPoolPair& pools,
   for (auto message : messages) {
     Output output;
     WriteMiniTableSourceIncludes(file, output);
-    WriteMessage(message, pools, output);
+    WriteMessage(message, pools, options, output);
     plugin->AddOutputFile(MultipleSourceFilename(file, message.full_name()),
                           output.output());
   }
@@ -668,6 +688,10 @@ void WriteMiniTableMultipleSources(const DefPoolPair& pools,
     Output output;
     WriteMiniTableSourceIncludes(file, output);
     WriteExtension(pools, ext, output);
+    output(
+        "UPB_LINKARR_APPEND(upb_AllExts) static const upb_MiniTableExtension* "
+        "ext = &$0;\n",
+        ExtensionLayout(ext));
     plugin->AddOutputFile(MultipleSourceFilename(file, ext.full_name()),
                           output.output());
   }
