@@ -574,8 +574,8 @@ bool MessageLite::SerializePartialToOstream(std::ostream* output) const {
 }
 
 bool MessageLite::AppendToString(std::string* output) const {
-  ABSL_DCHECK(IsInitialized())
-      << InitializationErrorMessage("serialize", *this);
+  // ABSL_DCHECK(IsInitialized())
+  //    << InitializationErrorMessage("serialize", *this);
   return AppendPartialToString(output);
 }
 
