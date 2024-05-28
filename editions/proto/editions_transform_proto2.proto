@@ -16,6 +16,7 @@ import "google/protobuf/editions/proto/editions_transform_proto3.proto";
 
 package protobuf_editions_test;
 
+option java_api_version = 1;
 option java_multiple_files = true;
 option cc_enable_arenas = true;
 

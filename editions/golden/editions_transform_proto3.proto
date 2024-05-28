@@ -12,6 +12,7 @@ package protobuf_editions_test;
 import "net/proto/proto1_features.proto";
 
 option features.field_presence = IMPLICIT;
+option java_api_version = 1;
 
 enum TestEnumProto3 {
   TEST_ENUM_PROTO3_UNKNOWN = 0;

@@ -21,6 +21,7 @@ import "google/protobuf/editions/proto/editions_transform_proto3.proto";
 
 option features.repeated_field_encoding = EXPANDED;
 option features.utf8_validation = NONE;
+option java_api_version = 1;
 option java_multiple_files = true;
 
 message EmptyMessage {
