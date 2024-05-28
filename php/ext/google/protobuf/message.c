@@ -913,7 +913,7 @@ PHP_METHOD(Message, whichOneof) {
     return;
   }
 
-  field = upb_Message_WhichOneof(intern->msg, oneof);
+  field = upb_Message_WhichOneofByDef(intern->msg, oneof);
   RETURN_STRING(field ? upb_FieldDef_Name(field) : "");
 }
 

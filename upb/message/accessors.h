@@ -247,6 +247,12 @@ UPB_API_INLINE void* upb_Message_ResizeArrayUninitialized(
 UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
     const upb_Message* message, const upb_MiniTableField* oneof_field);
 
+// For a field `f` which is in a oneof, return the field of that
+// oneof that is actually set (or NULL if none).
+UPB_API_INLINE const upb_MiniTableField* upb_Message_WhichOneof(
+    const upb_Message* msg, const upb_MiniTable* m,
+    const upb_MiniTableField* f);
+
 // Updates a map entry given an entry message.
 bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* mini_table,
                              const upb_MiniTableField* field,

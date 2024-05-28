@@ -1039,9 +1039,9 @@ static PyObject* PyUpb_Message_HasField(PyObject* _self, PyObject* arg) {
 
   if (PyUpb_Message_IsStub(self)) Py_RETURN_FALSE;
 
-  return PyBool_FromLong(field ? upb_Message_HasFieldByDef(self->ptr.msg, field)
-                               : upb_Message_WhichOneof(self->ptr.msg, oneof) !=
-                                     NULL);
+  return PyBool_FromLong(
+      field ? upb_Message_HasFieldByDef(self->ptr.msg, field)
+            : upb_Message_WhichOneofByDef(self->ptr.msg, oneof) != NULL);
 }
 
 static PyObject* PyUpb_Message_Contains(PyObject* _self, PyObject* arg) {
@@ -1421,7 +1421,7 @@ static PyObject* PyUpb_Message_ClearField(PyObject* _self, PyObject* arg) {
     return NULL;
   }
 
-  if (o) f = upb_Message_WhichOneof(self->ptr.msg, o);
+  if (o) f = upb_Message_WhichOneofByDef(self->ptr.msg, o);
   if (f) PyUpb_Message_DoClearField(_self, f);
   Py_RETURN_NONE;
 }
@@ -1616,7 +1616,7 @@ static PyObject* PyUpb_Message_WhichOneof(PyObject* _self, PyObject* name) {
   }
   upb_Message* msg = PyUpb_Message_GetIfReified(_self);
   if (!msg) Py_RETURN_NONE;
-  const upb_FieldDef* f = upb_Message_WhichOneof(msg, o);
+  const upb_FieldDef* f = upb_Message_WhichOneofByDef(msg, o);
   if (!f) Py_RETURN_NONE;
   return PyUnicode_FromString(upb_FieldDef_Name(f));
 }

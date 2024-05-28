@@ -122,6 +122,17 @@ UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
   return UPB_PRIVATE(_upb_Message_GetOneofCase)(message, oneof_field);
 }
 
+UPB_API_INLINE const upb_MiniTableField* upb_Message_WhichOneof(
+    const struct upb_Message* msg, const upb_MiniTable* m,
+    const upb_MiniTableField* f) {
+  uint32_t field_number = upb_Message_WhichOneofFieldNumber(msg, f);
+  if (field_number == 0) {
+    // No field in the oneof is set.
+    return NULL;
+  }
+  return upb_MiniTable_FindFieldByNumber(m, field_number);
+}
+
 // LINT.ThenChange(GoogleInternalName2)
 
 // Returns false if the message is missing any of its required fields.
