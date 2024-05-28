@@ -1,5 +1,5 @@
 matrix:
-  platform: ["debian10", "macos", "ubuntu2004", "windows"]
+  platform: ["debian11", "macos", "ubuntu2004", "windows"]
   bazel: [6.x, 7.x]
 
 tasks:
@@ -22,7 +22,7 @@ tasks:
 bcr_test_module:
   module_path: "examples"
   matrix:
-    platform: ["debian10", "macos", "ubuntu2004", "windows"]
+    platform: ["debian11", "macos", "ubuntu2004", "windows"]
     bazel: [6.x, 7.x]
   tasks:
     run_test_module:
