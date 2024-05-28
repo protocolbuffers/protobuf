@@ -5437,6 +5437,14 @@ static void InferLegacyProtoFeatures(const ProtoT& proto,
                                      const OptionsT& options, Edition edition,
                                      FeatureSet& features) {}
 
+static void InferLegacyProtoFeatures(const FileDescriptorProto& proto,
+                                     const FileOptions& options,
+                                     Edition edition, FeatureSet& features) {
+  if (absl::StartsWith(proto.name(), "superroot/")) {
+    features.set_message_encoding(FeatureSet::DELIMITED);
+  }
+}
+
 static void InferLegacyProtoFeatures(const FieldDescriptorProto& proto,
                                      const FieldOptions& options,
                                      Edition edition, FeatureSet& features) {
