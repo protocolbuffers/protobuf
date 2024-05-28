@@ -21,6 +21,10 @@ load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
 
 protobuf_deps()
 
+load("//:protobuf_setup.bzl", "protobuf_setup")
+
+protobuf_setup()
+
 load("@rules_python//python:repositories.bzl", "py_repositories")
 
 py_repositories()

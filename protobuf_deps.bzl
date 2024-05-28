@@ -1,4 +1,25 @@
-"""Load dependencies needed to compile the protobuf library as a 3rd-party consumer."""
+"""Load dependencies needed to compile the protobuf library as a 3rd-party consumer.
+
+The consumers should use the following WORKSPACE snippet, which loads dependencies
+and sets up the repositories protobuf needs:
+
+```
+http_archive(
+    name = "protobuf",
+    strip_prefix = "protobuf-VERSION",
+    sha256 = ...,
+    url = ...,
+)
+
+load("@protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
+
+load("@protobuf//:protobuf_setup.bzl", "protobuf_setup")
+
+protobuf_setup()
+```
+"""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//python/dist:python_downloads.bzl", "python_nuget_package", "python_source_archive")
@@ -33,11 +54,11 @@ def protobuf_deps():
     if not native.existing_rule("bazel_skylib"):
         http_archive(
             name = "bazel_skylib",
+            sha256 = "d00f1389ee20b60018e92644e0948e16e350a7707219e7a390fb0a99b6ec9262",
             urls = [
-                "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
-                "https://github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
+                "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.7.0/bazel-skylib-1.7.0.tar.gz",
+                "https://github.com/bazelbuild/bazel-skylib/releases/download/1.7.0/bazel-skylib-1.7.0.tar.gz",
             ],
-            sha256 = "74d544d96f4a5bb630d465ca8bbcfe231e3594e5aae57e1edbf17a6eb3ca2506",
         )
 
     if not native.existing_rule("com_google_absl"):
@@ -95,6 +116,14 @@ def protobuf_deps():
             urls = [
                 "https://github.com/bazelbuild/rules_proto/archive/refs/tags/5.3.0-21.7.tar.gz",
             ],
+        )
+
+    if not native.existing_rule("bazel_features"):
+        http_archive(
+            name = "bazel_features",
+            sha256 = "5d7e4eb0bb17aee392143cd667b67d9044c270a9345776a5e5a3cccbc44aa4b3",
+            strip_prefix = "bazel_features-1.13.0",
+            url = "https://github.com/bazel-contrib/bazel_features/releases/download/v1.13.0/bazel_features-v1.13.0.tar.gz",
         )
 
     if not native.existing_rule("rules_python"):
