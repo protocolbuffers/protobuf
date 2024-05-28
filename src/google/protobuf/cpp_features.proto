@@ -24,7 +24,6 @@ message CppFeatures {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    // TODO Enable this in google3 once protoc rolls out.
     feature_support = {
       edition_introduced: EDITION_2023,
       edition_deprecated: EDITION_2023,
@@ -33,7 +32,7 @@ message CppFeatures {
                            "edition 2025.  Mark enum type on the enum "
                            "definitions themselves rather than on fields.",
     },
-    edition_defaults = { edition: EDITION_PROTO2, value: "true" },
+    edition_defaults = { edition: EDITION_LEGACY, value: "true" },
     edition_defaults = { edition: EDITION_PROTO3, value: "false" }
   ];
 
@@ -48,11 +47,10 @@ message CppFeatures {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    // TODO Enable this in google3 once protoc rolls out.
     feature_support = {
       edition_introduced: EDITION_2023,
     },
-    edition_defaults = { edition: EDITION_PROTO2, value: "STRING" },
+    edition_defaults = { edition: EDITION_LEGACY, value: "STRING" },
     edition_defaults = { edition: EDITION_2024, value: "VIEW" }
   ];
 }

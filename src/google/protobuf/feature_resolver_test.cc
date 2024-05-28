@@ -1342,7 +1342,6 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
   auto defaults = FeatureResolver::CompileDefaults(
       feature_set_, {ext}, EDITION_99997_TEST_ONLY, EDITION_99999_TEST_ONLY);
   ASSERT_OK(defaults);
-
   EXPECT_THAT(*defaults, EqualsProto(R"pb(
     minimum_edition: EDITION_99997_TEST_ONLY
     maximum_edition: EDITION_99999_TEST_ONLY

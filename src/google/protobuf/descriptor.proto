@@ -974,11 +974,10 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    // TODO Enable this in google3 once protoc rolls out.
     feature_support = {
       edition_introduced: EDITION_2023,
     },
-    edition_defaults = { edition: EDITION_PROTO2, value: "EXPLICIT" },
+    edition_defaults = { edition: EDITION_LEGACY, value: "EXPLICIT" },
     edition_defaults = { edition: EDITION_PROTO3, value: "IMPLICIT" },
     edition_defaults = { edition: EDITION_2023, value: "EXPLICIT" }
   ];
@@ -992,11 +991,10 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM,
     targets = TARGET_TYPE_FILE,
-    // TODO Enable this in google3 once protoc rolls out.
     feature_support = {
       edition_introduced: EDITION_2023,
     },
-    edition_defaults = { edition: EDITION_PROTO2, value: "CLOSED" },
+    edition_defaults = { edition: EDITION_LEGACY, value: "CLOSED" },
     edition_defaults = { edition: EDITION_PROTO3, value: "OPEN" }
   ];
 
@@ -1009,11 +1007,10 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    // TODO Enable this in google3 once protoc rolls out.
     feature_support = {
       edition_introduced: EDITION_2023,
     },
-    edition_defaults = { edition: EDITION_PROTO2, value: "EXPANDED" },
+    edition_defaults = { edition: EDITION_LEGACY, value: "EXPANDED" },
     edition_defaults = { edition: EDITION_PROTO3, value: "PACKED" }
   ];
 
@@ -1027,11 +1024,10 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    // TODO Enable this in google3 once protoc rolls out.
     feature_support = {
       edition_introduced: EDITION_2023,
     },
-    edition_defaults = { edition: EDITION_PROTO2, value: "NONE" },
+    edition_defaults = { edition: EDITION_LEGACY, value: "NONE" },
     edition_defaults = { edition: EDITION_PROTO3, value: "VERIFY" }
   ];
 
@@ -1044,11 +1040,10 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    // TODO Enable this in google3 once protoc rolls out.
     feature_support = {
       edition_introduced: EDITION_2023,
     },
-    edition_defaults = { edition: EDITION_PROTO2, value: "LENGTH_PREFIXED" }
+    edition_defaults = { edition: EDITION_LEGACY, value: "LENGTH_PREFIXED" }
   ];
 
   enum JsonFormat {
@@ -1061,11 +1056,10 @@ message FeatureSet {
     targets = TARGET_TYPE_MESSAGE,
     targets = TARGET_TYPE_ENUM,
     targets = TARGET_TYPE_FILE,
-    // TODO Enable this in google3 once protoc rolls out.
     feature_support = {
       edition_introduced: EDITION_2023,
     },
-    edition_defaults = { edition: EDITION_PROTO2, value: "LEGACY_BEST_EFFORT" },
+    edition_defaults = { edition: EDITION_LEGACY, value: "LEGACY_BEST_EFFORT" },
     edition_defaults = { edition: EDITION_PROTO3, value: "ALLOW" }
   ];
 
