@@ -2711,7 +2711,7 @@ static void jsondec_field(jsondec* d, upb_Message* msg,
   }
 
   if (upb_FieldDef_RealContainingOneof(f) &&
-      upb_Message_WhichOneof(msg, upb_FieldDef_ContainingOneof(f))) {
+      upb_Message_WhichOneofByDef(msg, upb_FieldDef_ContainingOneof(f))) {
     jsondec_err(d, "More than one field for this oneof.");
   }
 
@@ -14943,8 +14943,8 @@ bool upb_Message_HasFieldByDef(const upb_Message* msg, const upb_FieldDef* f) {
   }
 }
 
-const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
-                                           const upb_OneofDef* o) {
+const upb_FieldDef* upb_Message_WhichOneofByDef(const upb_Message* msg,
+                                                const upb_OneofDef* o) {
   const upb_FieldDef* f = upb_OneofDef_Field(o, 0);
   if (upb_OneofDef_IsSynthetic(o)) {
     UPB_ASSERT(upb_OneofDef_FieldCount(o) == 1);

@@ -2705,6 +2705,17 @@ UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
   return UPB_PRIVATE(_upb_Message_GetOneofCase)(message, oneof_field);
 }
 
+UPB_API_INLINE const upb_MiniTableField* upb_Message_WhichOneof(
+    const struct upb_Message* msg, const upb_MiniTable* m,
+    const upb_MiniTableField* f) {
+  uint32_t field_number = upb_Message_WhichOneofFieldNumber(msg, f);
+  if (field_number == 0) {
+    // No field in the oneof is set.
+    return NULL;
+  }
+  return upb_MiniTable_FindFieldByNumber(m, field_number);
+}
+
 // LINT.ThenChange(GoogleInternalName2)
 
 // Returns false if the message is missing any of its required fields.
@@ -3915,6 +3926,12 @@ UPB_API_INLINE void* upb_Message_ResizeArrayUninitialized(
 
 UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
     const upb_Message* message, const upb_MiniTableField* oneof_field);
+
+// For a field `f` which is in a oneof, return the field of that
+// oneof that is actually set (or NULL if none).
+UPB_API_INLINE const upb_MiniTableField* upb_Message_WhichOneof(
+    const upb_Message* msg, const upb_MiniTable* m,
+    const upb_MiniTableField* f);
 
 // Updates a map entry given an entry message.
 bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* mini_table,
@@ -12702,8 +12719,8 @@ UPB_API upb_MutableMessageValue upb_Message_Mutable(upb_Message* msg,
                                                     upb_Arena* a);
 
 // Returns the field that is set in the oneof, or NULL if none are set.
-UPB_API const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
-                                                   const upb_OneofDef* o);
+UPB_API const upb_FieldDef* upb_Message_WhichOneofByDef(const upb_Message* msg,
+                                                        const upb_OneofDef* o);
 
 // Clear all data and unknown fields.
 void upb_Message_ClearByDef(upb_Message* msg, const upb_MessageDef* m);
