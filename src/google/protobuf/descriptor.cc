@@ -7340,7 +7340,8 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
       // from other extendees (< 2^29). If unknown deps are allowed, we may not
       // have that information, and wrongly deem the extension as invalid.
       auto skip_check = get_allow_unknown(pool_) &&
-                        proto.extendee() == "google.protobuf.bridge.MessageSet";
+                        absl::StripPrefix(proto.extendee(), ".") ==
+                            "google.protobuf.bridge.MessageSet";
       if (!skip_check) {
         AddError(field->full_name(), proto,
                  DescriptorPool::ErrorCollector::NUMBER, [&] {
