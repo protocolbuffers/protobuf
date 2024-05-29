@@ -61,7 +61,8 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
       ctx.Emit({{"serialize_thunk", ThunkName(ctx, msg, "serialize")}}, R"rs(
-        unsafe { $serialize_thunk$(self.raw_msg()) }
+        //~ TODO: This should be fallible.
+        Ok(unsafe { $serialize_thunk$(self.raw_msg()) })
       )rs");
       return;
 
@@ -74,11 +75,9 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
         let encoded = unsafe {
           $pbr$::wire::encode(self.raw_msg(), mini_table)
         };
-
-        //~ TODO: Currently serialize() on the Rust API is an
-        //~ infallible fn, so if upb signals an error here we can only panic.
-        let serialized = encoded.expect("serialize is not allowed to fail");
-        serialized
+        //~ TODO: This discards the info we have about the reason
+        //~ of the failure, we should try to keep it instead.
+        encoded.map_err(|_| $pb$::SerializeError)
       )rs");
       return;
   }
@@ -933,7 +932,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             self.msg
           }
 
-          pub fn serialize(&self) -> $pbr$::SerializedData {
+          pub fn serialize(&self) -> Result<$pbr$::SerializedData, $pb$::SerializeError> {
             $Msg::serialize$
           }
 
@@ -1009,7 +1008,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             self.inner
           }
 
-          pub fn serialize(&self) -> $pbr$::SerializedData {
+          pub fn serialize(&self) -> Result<$pbr$::SerializedData, $pb$::SerializeError> {
             $pb$::ViewProxy::as_view(self).serialize()
           }
 
@@ -1063,7 +1062,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
           $raw_arena_getter_for_message$
 
-          pub fn serialize(&self) -> $pbr$::SerializedData {
+          pub fn serialize(&self) -> Result<$pbr$::SerializedData, $pb$::SerializeError> {
             self.as_view().serialize()
           }
           #[deprecated = "Prefer Msg::parse(), or use the new name 'clear_and_parse' to parse into a pre-existing message."]

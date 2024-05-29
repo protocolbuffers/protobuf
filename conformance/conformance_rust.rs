@@ -48,7 +48,7 @@ fn read_request_from_stdin() -> Option<ConformanceRequest> {
 }
 
 fn write_response_to_stdout(resp: &ConformanceResponse) {
-    let bytes = resp.serialize();
+    let bytes = resp.serialize().unwrap();
     let len = bytes.len() as u32;
     let mut handle = io::stdout();
     handle.write_all(&len.to_le_bytes()).unwrap();
@@ -76,7 +76,7 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
     let serialized = match message_type.as_bytes() {
         b"protobuf_test_messages.proto2.TestAllTypesProto2" => {
             if let Ok(msg) = TestAllTypesProto2::parse(bytes) {
-                msg.serialize()
+                msg.serialize().unwrap()
             } else {
                 resp.set_parse_error("failed to parse bytes");
                 return resp;
@@ -84,7 +84,7 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
         }
         b"protobuf_test_messages.proto3.TestAllTypesProto3" => {
             if let Ok(msg) = TestAllTypesProto3::parse(bytes) {
-                msg.serialize()
+                msg.serialize().unwrap()
             } else {
                 resp.set_parse_error("failed to parse bytes");
                 return resp;
@@ -92,7 +92,7 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
         }
         b"protobuf_test_messages.editions.TestAllTypesEdition2023" => {
             if let Ok(msg) = TestAllTypesEdition2023::parse(bytes) {
-                msg.serialize()
+                msg.serialize().unwrap()
             } else {
                 resp.set_parse_error("failed to parse bytes");
                 return resp;
@@ -100,7 +100,7 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
         }
         b"protobuf_test_messages.editions.proto2.TestAllTypesProto2" => {
             if let Ok(msg) = EditionsTestAllTypesProto2::parse(bytes) {
-                msg.serialize()
+                msg.serialize().unwrap()
             } else {
                 resp.set_parse_error("failed to parse bytes");
                 return resp;
@@ -108,7 +108,7 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
         }
         b"protobuf_test_messages.editions.proto3.TestAllTypesProto3" => {
             if let Ok(msg) = EditionsTestAllTypesProto3::parse(bytes) {
-                msg.serialize()
+                msg.serialize().unwrap()
             } else {
                 resp.set_parse_error("failed to parse bytes");
                 return resp;

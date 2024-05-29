@@ -45,8 +45,7 @@ fn test_proto2() {
     assert_that!(msg.my_field().as_bytes(), eq(NON_UTF8_BYTES));
 
     // No error on serialization
-    // TODO: Add test assertion once serialize becomes fallible.
-    let serialized_nonutf8 = msg.serialize();
+    let serialized_nonutf8 = msg.serialize().expect("serialization should not fail");
 
     // No error on parsing.
     let parsed_result = NoFeaturesProto2::parse(&serialized_nonutf8);
@@ -64,8 +63,7 @@ fn test_proto3() {
     assert_that!(msg.my_field().as_bytes(), eq(NON_UTF8_BYTES));
 
     // No error on serialization
-    // TODO: Add test assertion once serialize becomes fallible.
-    let serialized_nonutf8 = msg.serialize();
+    let serialized_nonutf8 = msg.serialize().expect("serialization should not fail");
 
     // Error on parsing.
     let parsed_result = NoFeaturesProto3::parse(&serialized_nonutf8);
@@ -83,8 +81,7 @@ fn test_verify() {
     assert_that!(msg.my_field().as_bytes(), eq(NON_UTF8_BYTES));
 
     // No error on serialization
-    // TODO: Add test assertion once serialize becomes fallible.
-    let serialized_nonutf8 = msg.serialize();
+    let serialized_nonutf8 = msg.serialize().expect("serialization should not fail");
 
     // Error on parsing.
     let parsed_result = Verify::parse(&serialized_nonutf8);

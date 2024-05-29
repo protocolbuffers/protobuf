@@ -31,7 +31,7 @@ pub mod __public {
         ProxiedInRepeated, Repeated, RepeatedIter, RepeatedMut, RepeatedView,
     };
     pub use crate::string::ProtoStr;
-    pub use crate::ParseError;
+    pub use crate::{ParseError, SerializeError};
 }
 pub use __public::*;
 
@@ -61,7 +61,7 @@ mod proxied;
 mod repeated;
 mod string;
 
-/// An error that happened during deserialization.
+/// An error that happened during parsing.
 #[derive(Debug, Clone)]
 pub struct ParseError;
 
@@ -70,5 +70,17 @@ impl std::error::Error for ParseError {}
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Couldn't deserialize given bytes into a proto")
+    }
+}
+
+/// An error that happened during serialization.
+#[derive(Debug, Clone)]
+pub struct SerializeError;
+
+impl std::error::Error for SerializeError {}
+
+impl fmt::Display for SerializeError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Couldn't serialize proto into bytes (depth too deep or missing required fields)")
     }
 }

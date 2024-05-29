@@ -76,7 +76,7 @@ fn deserialize_in_cpp() {
     let mut msg1 = TestAllTypes::new();
     msg1.set_optional_int64(-1);
     msg1.set_optional_bytes(b"some cool data I guess");
-    let data = msg1.serialize();
+    let data = msg1.serialize().unwrap();
 
     let msg2 = unsafe {
         TestAllTypes::__unstable_wrap_cpp_grant_permission_to_break(DeserializeTestAllTypes(
@@ -93,7 +93,7 @@ fn deserialize_in_cpp_into_mut() {
     let mut msg1 = TestAllTypes::new();
     msg1.set_optional_int64(-1);
     msg1.set_optional_bytes(b"some cool data I guess");
-    let data = msg1.serialize();
+    let data = msg1.serialize().unwrap();
 
     let mut raw_msg = unsafe { DeserializeTestAllTypes((*data).as_ptr(), data.len()) };
     let msg2 = TestAllTypesMut::__unstable_wrap_cpp_grant_permission_to_break(&mut raw_msg);
@@ -111,7 +111,7 @@ fn deserialize_in_cpp_into_view() {
     let mut msg1 = TestAllTypes::new();
     msg1.set_optional_int64(-1);
     msg1.set_optional_bytes(b"some cool data I guess");
-    let data = msg1.serialize();
+    let data = msg1.serialize().unwrap();
 
     let raw_msg = unsafe { DeserializeTestAllTypes((*data).as_ptr(), data.len()) };
     let msg2 = TestAllTypesView::__unstable_wrap_cpp_grant_permission_to_break(&raw_msg);
@@ -131,7 +131,7 @@ fn smuggle_extension() {
     let msg1 = unsafe {
         TestAllExtensions::__unstable_wrap_cpp_grant_permission_to_break(NewWithExtension())
     };
-    let data = msg1.serialize();
+    let data = msg1.serialize().unwrap();
 
     let mut msg2 = TestAllExtensions::parse(&data).unwrap();
     let bytes = unsafe {

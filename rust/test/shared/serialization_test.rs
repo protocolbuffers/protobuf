@@ -12,13 +12,13 @@ use unittest_rust_proto::TestAllTypes;
 fn serialize_zero_length() {
     let mut msg = TestAllTypes::new();
 
-    let serialized = msg.serialize();
+    let serialized = msg.serialize().unwrap();
     assert_that!(serialized.len(), eq(0));
 
-    let serialized = msg.as_view().serialize();
+    let serialized = msg.as_view().serialize().unwrap();
     assert_that!(serialized.len(), eq(0));
 
-    let serialized = msg.as_mut().serialize();
+    let serialized = msg.as_mut().serialize().unwrap();
     assert_that!(serialized.len(), eq(0));
 }
 
@@ -29,7 +29,7 @@ fn serialize_deserialize_message() {
     msg.set_optional_bool(true);
     msg.set_optional_bytes(b"serialize deserialize test");
 
-    let serialized = msg.serialize();
+    let serialized = msg.serialize().unwrap();
 
     let msg2 = TestAllTypes::parse(&serialized).unwrap();
     assert_that!(msg.optional_int64(), eq(msg2.optional_int64()));
@@ -53,8 +53,8 @@ fn set_bytes_with_serialized_data() {
     msg.set_optional_int64(42);
     msg.set_optional_bool(true);
     let mut msg2 = TestAllTypes::new();
-    msg2.set_optional_bytes(msg.serialize());
-    assert_that!(msg2.optional_bytes(), eq(msg.serialize().as_ref()));
+    msg2.set_optional_bytes(msg.serialize().unwrap());
+    assert_that!(msg2.optional_bytes(), eq(msg.serialize().unwrap().as_ref()));
 }
 
 #[test]
@@ -64,7 +64,7 @@ fn deserialize_on_previously_allocated_message() {
     msg.set_optional_bool(true);
     msg.set_optional_bytes(b"serialize deserialize test");
 
-    let serialized = msg.serialize();
+    let serialized = msg.serialize().unwrap();
 
     let mut msg2 = Box::new(TestAllTypes::new());
     assert!(msg2.clear_and_parse(&serialized).is_ok());
