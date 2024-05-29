@@ -587,13 +587,15 @@ void ImmutableMessageGenerator::GenerateMessageSerializationMethods(
     if (descriptor_->options().message_set_wire_format()) {
       printer->Print(
           "com.google.protobuf.GeneratedMessage\n"
-          "  .ExtendableMessage.ExtensionWriter\n"
-          "    extensionWriter = newMessageSetExtensionWriter();\n");
+          "  .ExtendableMessage<$classname$>.ExtensionWriter\n"
+          "    extensionWriter = newMessageSetExtensionWriter();\n",
+          "classname", name_resolver_->GetImmutableClassName(descriptor_));
     } else {
       printer->Print(
           "com.google.protobuf.GeneratedMessage\n"
-          "  .ExtendableMessage.ExtensionWriter\n"
-          "    extensionWriter = newExtensionWriter();\n");
+          "  .ExtendableMessage<$classname$>.ExtensionWriter\n"
+          "    extensionWriter = newExtensionWriter();\n",
+          "classname", name_resolver_->GetImmutableClassName(descriptor_));
     }
   }
 
