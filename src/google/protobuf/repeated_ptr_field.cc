@@ -200,11 +200,8 @@ int RepeatedPtrFieldBase::MergeIntoClearedMessages(
   int count = std::min(ClearedCount(), from.current_size_);
   for (int i = 0; i < count; ++i) {
     ABSL_DCHECK(src[i] != nullptr);
-#if PROTOBUF_RTTI
-    // TODO: remove or replace with a cleaner check.
-    ABSL_DCHECK(typeid(*src[i]) == typeid(*src[0]))
-        << typeid(*src[i]).name() << " vs " << typeid(*src[0]).name();
-#endif
+    ABSL_DCHECK(TypeId::Get(*src[i]) == TypeId::Get(*src[0]))
+        << src[i]->GetTypeName() << " vs " << src[0]->GetTypeName();
     dst[i]->CheckTypeAndMergeFrom(*src[i]);
   }
   return count;
@@ -251,11 +248,8 @@ void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
   Arena* arena = GetArena();
   for (; src < end; ++src, ++dst) {
     ABSL_DCHECK(*src != nullptr);
-#if PROTOBUF_RTTI
-    // TODO: remove or replace with a cleaner check.
-    ABSL_DCHECK(typeid(**src) == typeid(*prototype))
-        << typeid(**src).name() << " vs " << typeid(*prototype).name();
-#endif
+    ABSL_DCHECK(TypeId::Get(**src) == TypeId::Get(*prototype))
+        << (**src).GetTypeName() << " vs " << prototype->GetTypeName();
     *dst = prototype->New(arena);
     (*dst)->CheckTypeAndMergeFrom(**src);
   }

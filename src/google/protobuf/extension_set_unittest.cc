@@ -1323,11 +1323,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
     const Message& sub_message =
         message.GetReflection()->GetMessage(message, message_extension);
     const unittest::ForeignMessage* typed_sub_message =
-#if PROTOBUF_RTTI
-        dynamic_cast<const unittest::ForeignMessage*>(&sub_message);
-#else
-        static_cast<const unittest::ForeignMessage*>(&sub_message);
-#endif
+        google::protobuf::DynamicCastMessage<unittest::ForeignMessage>(&sub_message);
     ASSERT_TRUE(typed_sub_message != nullptr);
     EXPECT_EQ(456, typed_sub_message->c());
   }

@@ -879,7 +879,7 @@ TEST(ArenaTest, ReleaseFromArenaMessageUsingReflectionMakesCopy) {
     const Reflection* r = arena_message->GetReflection();
     const FieldDescriptor* f = arena_message->GetDescriptor()->FindFieldByName(
         "optional_nested_message");
-    nested_msg = DownCastToGenerated<TestAllTypes::NestedMessage>(
+    nested_msg = DownCastMessage<TestAllTypes::NestedMessage>(
         r->ReleaseMessage(arena_message, f));
   }
   EXPECT_EQ(42, nested_msg->bb());
@@ -1491,7 +1491,7 @@ TEST(ArenaTest, MutableMessageReflection) {
   const Descriptor* d = message->GetDescriptor();
   const FieldDescriptor* field = d->FindFieldByName("optional_nested_message");
   TestAllTypes::NestedMessage* submessage =
-      DownCastToGenerated<TestAllTypes::NestedMessage>(
+      DownCastMessage<TestAllTypes::NestedMessage>(
           r->MutableMessage(message, field));
   TestAllTypes::NestedMessage* submessage_expected =
       message->mutable_optional_nested_message();
@@ -1501,7 +1501,7 @@ TEST(ArenaTest, MutableMessageReflection) {
 
   const FieldDescriptor* oneof_field =
       d->FindFieldByName("oneof_nested_message");
-  submessage = DownCastToGenerated<TestAllTypes::NestedMessage>(
+  submessage = DownCastMessage<TestAllTypes::NestedMessage>(
       r->MutableMessage(message, oneof_field));
   submessage_expected = message->mutable_oneof_nested_message();
 

@@ -750,86 +750,85 @@ TEST(MESSAGE_TEST_NAME, InitializationErrorString) {
   EXPECT_EQ("a, b, c", message.InitializationErrorString());
 }
 
-TEST(MESSAGE_TEST_NAME, DynamicCastToGenerated) {
+TEST(MESSAGE_TEST_NAME, DynamicCastMessage) {
   UNITTEST::TestAllTypes test_all_types;
 
   MessageLite* test_all_types_pointer = &test_all_types;
-  EXPECT_EQ(&test_all_types, DynamicCastToGenerated<UNITTEST::TestAllTypes>(
-                                 test_all_types_pointer));
-  EXPECT_EQ(nullptr, DynamicCastToGenerated<UNITTEST::TestRequired>(
-                         test_all_types_pointer));
+  EXPECT_EQ(&test_all_types,
+            DynamicCastMessage<UNITTEST::TestAllTypes>(test_all_types_pointer));
+  EXPECT_EQ(nullptr,
+            DynamicCastMessage<UNITTEST::TestRequired>(test_all_types_pointer));
 
   const MessageLite* test_all_types_pointer_const = &test_all_types;
-  EXPECT_EQ(&test_all_types,
-            DynamicCastToGenerated<const UNITTEST::TestAllTypes>(
-                test_all_types_pointer_const));
-  EXPECT_EQ(nullptr, DynamicCastToGenerated<const UNITTEST::TestRequired>(
+  EXPECT_EQ(&test_all_types, DynamicCastMessage<const UNITTEST::TestAllTypes>(
+                                 test_all_types_pointer_const));
+  EXPECT_EQ(nullptr, DynamicCastMessage<const UNITTEST::TestRequired>(
                          test_all_types_pointer_const));
 
   MessageLite* test_all_types_pointer_nullptr = nullptr;
-  EXPECT_EQ(nullptr, DynamicCastToGenerated<UNITTEST::TestAllTypes>(
+  EXPECT_EQ(nullptr, DynamicCastMessage<UNITTEST::TestAllTypes>(
                          test_all_types_pointer_nullptr));
 
   MessageLite& test_all_types_pointer_ref = test_all_types;
-  EXPECT_EQ(&test_all_types, &DynamicCastToGenerated<UNITTEST::TestAllTypes>(
+  EXPECT_EQ(&test_all_types, &DynamicCastMessage<UNITTEST::TestAllTypes>(
                                  test_all_types_pointer_ref));
 
   const MessageLite& test_all_types_pointer_const_ref = test_all_types;
-  EXPECT_EQ(&test_all_types, &DynamicCastToGenerated<UNITTEST::TestAllTypes>(
+  EXPECT_EQ(&test_all_types, &DynamicCastMessage<UNITTEST::TestAllTypes>(
                                  test_all_types_pointer_const_ref));
 }
 
-TEST(MESSAGE_TEST_NAME, DynamicCastToGeneratedInvalidReferenceType) {
+TEST(MESSAGE_TEST_NAME, DynamicCastMessageInvalidReferenceType) {
   UNITTEST::TestAllTypes test_all_types;
   const MessageLite& test_all_types_pointer_const_ref = test_all_types;
-  ASSERT_DEATH(DynamicCastToGenerated<UNITTEST::TestRequired>(
+  ASSERT_DEATH(DynamicCastMessage<UNITTEST::TestRequired>(
                    test_all_types_pointer_const_ref),
                "Cannot downcast " + test_all_types.GetTypeName() + " to " +
                    UNITTEST::TestRequired::default_instance().GetTypeName());
 }
 
-TEST(MESSAGE_TEST_NAME, DownCastToGeneratedValidType) {
+TEST(MESSAGE_TEST_NAME, DownCastMessageValidType) {
   UNITTEST::TestAllTypes test_all_types;
 
   MessageLite* test_all_types_pointer = &test_all_types;
-  EXPECT_EQ(&test_all_types, DownCastToGenerated<UNITTEST::TestAllTypes>(
-                                 test_all_types_pointer));
+  EXPECT_EQ(&test_all_types,
+            DownCastMessage<UNITTEST::TestAllTypes>(test_all_types_pointer));
 
   const MessageLite* test_all_types_pointer_const = &test_all_types;
-  EXPECT_EQ(&test_all_types, DownCastToGenerated<const UNITTEST::TestAllTypes>(
+  EXPECT_EQ(&test_all_types, DownCastMessage<const UNITTEST::TestAllTypes>(
                                  test_all_types_pointer_const));
 
   MessageLite* test_all_types_pointer_nullptr = nullptr;
-  EXPECT_EQ(nullptr, DownCastToGenerated<UNITTEST::TestAllTypes>(
+  EXPECT_EQ(nullptr, DownCastMessage<UNITTEST::TestAllTypes>(
                          test_all_types_pointer_nullptr));
 
   MessageLite& test_all_types_pointer_ref = test_all_types;
-  EXPECT_EQ(&test_all_types, &DownCastToGenerated<UNITTEST::TestAllTypes>(
+  EXPECT_EQ(&test_all_types, &DownCastMessage<UNITTEST::TestAllTypes>(
                                  test_all_types_pointer_ref));
 
   const MessageLite& test_all_types_pointer_const_ref = test_all_types;
-  EXPECT_EQ(&test_all_types, &DownCastToGenerated<UNITTEST::TestAllTypes>(
+  EXPECT_EQ(&test_all_types, &DownCastMessage<UNITTEST::TestAllTypes>(
                                  test_all_types_pointer_const_ref));
 }
 
-TEST(MESSAGE_TEST_NAME, DownCastToGeneratedInvalidPointerType) {
+TEST(MESSAGE_TEST_NAME, DownCastMessageInvalidPointerType) {
   UNITTEST::TestAllTypes test_all_types;
 
   MessageLite* test_all_types_pointer = &test_all_types;
 
   ASSERT_DEBUG_DEATH(
-      DownCastToGenerated<UNITTEST::TestRequired>(test_all_types_pointer),
+      DownCastMessage<UNITTEST::TestRequired>(test_all_types_pointer),
       "Cannot downcast " + test_all_types.GetTypeName() + " to " +
           UNITTEST::TestRequired::default_instance().GetTypeName());
 }
 
-TEST(MESSAGE_TEST_NAME, DownCastToGeneratedInvalidReferenceType) {
+TEST(MESSAGE_TEST_NAME, DownCastMessageInvalidReferenceType) {
   UNITTEST::TestAllTypes test_all_types;
 
   MessageLite& test_all_types_pointer = test_all_types;
 
   ASSERT_DEBUG_DEATH(
-      DownCastToGenerated<UNITTEST::TestRequired>(test_all_types_pointer),
+      DownCastMessage<UNITTEST::TestRequired>(test_all_types_pointer),
       "Cannot downcast " + test_all_types.GetTypeName() + " to " +
           UNITTEST::TestRequired::default_instance().GetTypeName());
 }

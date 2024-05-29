@@ -63,7 +63,7 @@ const char* TcParser::ReflectionFallback(PROTOBUF_TC_PARAM_DECL) {
     return ptr;
   }
 
-  auto* full_msg = DownCastToMessage(msg);
+  auto* full_msg = DownCastMessage<Message>(msg);
   auto* descriptor = full_msg->GetDescriptor();
   auto* reflection = full_msg->GetReflection();
   int field_number = WireFormatLite::GetTagFieldNumber(tag);
@@ -87,7 +87,7 @@ const char* TcParser::ReflectionParseLoop(PROTOBUF_TC_PARAM_DECL) {
   (void)table;
   (void)hasbits;
   // Call into the wire format reflective parse loop.
-  return WireFormat::_InternalParse(DownCastToMessage(msg), ptr, ctx);
+  return WireFormat::_InternalParse(DownCastMessage<Message>(msg), ptr, ctx);
 }
 
 const char* TcParser::MessageSetWireFormatParseLoop(

@@ -1310,17 +1310,17 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethod) {
 TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethodTypeFailure) {
   // Verify death if we call Foo() with Bar's message types.
 
-#if PROTOBUF_RTTI && GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
   EXPECT_DEBUG_DEATH(
-    mock_service_.CallMethod(foo_, &mock_controller_,
-                             &foo_request_, &bar_response_, done_.get()),
-    "DynamicCastToGenerated");
+      mock_service_.CallMethod(foo_, &mock_controller_, &foo_request_,
+                               &bar_response_, done_.get()),
+      "DynamicCastMessage");
 
   mock_service_.Reset();
   EXPECT_DEBUG_DEATH(
-    mock_service_.CallMethod(foo_, &mock_controller_,
-                             &bar_request_, &foo_response_, done_.get()),
-    "DynamicCastToGenerated");
+      mock_service_.CallMethod(foo_, &mock_controller_, &bar_request_,
+                               &foo_response_, done_.get()),
+      "DynamicCastMessage");
 #endif  // GTEST_HAS_DEATH_TEST
 }
 

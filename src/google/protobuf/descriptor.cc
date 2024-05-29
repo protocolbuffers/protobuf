@@ -8584,7 +8584,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptionsImpl(
           *original_options, original_uninterpreted_options_field);
   for (int i = 0; i < num_uninterpreted_options; ++i) {
     src_path.push_back(i);
-    uninterpreted_option_ = DownCastToGenerated<UninterpretedOption>(
+    uninterpreted_option_ = DownCastMessage<UninterpretedOption>(
         &original_options->GetReflection()->GetRepeatedMessage(
             *original_options, original_uninterpreted_options_field, i));
     if (!InterpretSingleOption(options, src_path,

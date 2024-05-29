@@ -28,7 +28,7 @@ using type_info = ::type_info;
 #endif
 
 #include "absl/base/attributes.h"
-#include "google/protobuf/stubs/common.h"
+#include "absl/base/macros.h"
 #include "absl/log/absl_check.h"
 #include "absl/utility/internal/if_constexpr.h"
 #include "google/protobuf/arena_align.h"

@@ -727,7 +727,7 @@ class PROTOBUF_EXPORT MessageLite {
 namespace internal {
 
 // A typeinfo equivalent for protobuf message types. Used for
-// DynamicCastToGenerated.
+// DynamicCastMessage.
 // We might make this class public later on to have an alternative to
 // `std::type_info` that works when RTTI is disabled.
 class TypeId {
@@ -862,18 +862,26 @@ inline void AssertDownCast(const MessageLite& from, const MessageLite& to) {
 std::string ShortFormat(const MessageLite& message_lite);
 std::string Utf8Format(const MessageLite& message_lite);
 
-// Tries to downcast this message to a generated message type.  Returns nullptr
-// if this class is not an instance of T.  This works even if RTTI is disabled.
+// Cast functions for message pointer/references.
+// This is the supported API to cast from a Message/MessageLite to derived
+// types. These work even when RTTI is disabled on message types.
 //
-// This also has the effect of creating a strong reference to T that will
-// prevent the linker from stripping it out at link time.  This can be important
-// if you are using a DynamicMessageFactory that delegates to the generated
-// factory.
+// The template parameter is simplified and the return type is inferred from the
+// input. Eg just `DynamicCastMessage<Foo>(x)` instead of
+// `DynamicCastMessage<const Foo*>(x)`.
+//
+// `DynamicCastMessage` is similar to `dynamic_cast`, returns `nullptr` when the
+// input is not an instance of `T`. The overloads that take a reference will
+// terminate on mismatch.
+//
+// `DownCastMessage` is a lightweight function for downcasting base
+// `MessageLite` pointer to derived type, where it only does type checking if
+// !NDEBUG. It should only be used when the caller is certain that the input
+// message is of instance `T`.
 template <typename T>
-const T* DynamicCastToGenerated(const MessageLite* from) {
+const T* DynamicCastMessage(const MessageLite* from) {
   static_assert(std::is_base_of<MessageLite, T>::value, "");
 
-  internal::StrongReferenceToType<T>();
   // We might avoid the call to T::GetClassData() altogether if T were to
   // expose the class data pointer.
   if (from == nullptr ||
@@ -885,20 +893,14 @@ const T* DynamicCastToGenerated(const MessageLite* from) {
 }
 
 template <typename T>
-const T* DynamicCastToGenerated(const MessageLite* from);
-
-template <typename T>
-T* DynamicCastToGenerated(MessageLite* from) {
+T* DynamicCastMessage(MessageLite* from) {
   return const_cast<T*>(
-      DynamicCastToGenerated<T>(static_cast<const MessageLite*>(from)));
+      DynamicCastMessage<T>(static_cast<const MessageLite*>(from)));
 }
 
-// An overloaded version of DynamicCastToGenerated for downcasting references to
-// base Message class. If the argument is not an instance of T, it terminates
-// with an error.
 template <typename T>
-const T& DynamicCastToGenerated(const MessageLite& from) {
-  const T* destination_message = DynamicCastToGenerated<T>(&from);
+const T& DynamicCastMessage(const MessageLite& from) {
+  const T* destination_message = DynamicCastMessage<T>(&from);
   ABSL_CHECK(destination_message != nullptr)
       << "Cannot downcast " << from.GetTypeName() << " to "
       << T::default_instance().GetTypeName();
@@ -906,37 +908,93 @@ const T& DynamicCastToGenerated(const MessageLite& from) {
 }
 
 template <typename T>
-T& DynamicCastToGenerated(MessageLite& from) {
+T& DynamicCastMessage(MessageLite& from) {
   return const_cast<T&>(
-      DynamicCastToGenerated<T>(static_cast<const MessageLite&>(from)));
+      DynamicCastMessage<T>(static_cast<const MessageLite&>(from)));
 }
 
-// A lightweight function for downcasting base MessageLite pointer to derived
-// type. It should only be used when the caller is certain that the argument is
-// of instance T and T is a generated message type.
 template <typename T>
-const T* DownCastToGenerated(const MessageLite* from) {
+const T* DownCastMessage(const MessageLite* from) {
   internal::StrongReferenceToType<T>();
-  ABSL_DCHECK(DynamicCastToGenerated<T>(from) == from)
+  ABSL_DCHECK(DynamicCastMessage<T>(from) == from)
       << "Cannot downcast " << from->GetTypeName() << " to "
       << T::default_instance().GetTypeName();
   return static_cast<const T*>(from);
 }
 
 template <typename T>
-T* DownCastToGenerated(MessageLite* from) {
+T* DownCastMessage(MessageLite* from) {
   return const_cast<T*>(
-      DownCastToGenerated<T>(static_cast<const MessageLite*>(from)));
+      DownCastMessage<T>(static_cast<const MessageLite*>(from)));
 }
 
 template <typename T>
+const T& DownCastMessage(const MessageLite& from) {
+  return *DownCastMessage<T>(&from);
+}
+
+template <typename T>
+T& DownCastMessage(MessageLite& from) {
+  return *DownCastMessage<T>(&from);
+}
+
+template <>
+inline const MessageLite* DynamicCastMessage(const MessageLite* from) {
+  return from;
+}
+template <>
+inline const MessageLite* DownCastMessage(const MessageLite* from) {
+  return from;
+}
+
+// Deprecated names for the cast functions.
+// Prefer the ones above.
+template <typename T>
+PROTOBUF_DEPRECATE_AND_INLINE()
+const T* DynamicCastToGenerated(const MessageLite* from) {
+  return DynamicCastMessage<T>(from);
+}
+
+template <typename T>
+PROTOBUF_DEPRECATE_AND_INLINE()
+T* DynamicCastToGenerated(MessageLite* from) {
+  return DynamicCastMessage<T>(from);
+}
+
+template <typename T>
+PROTOBUF_DEPRECATE_AND_INLINE()
+const T& DynamicCastToGenerated(const MessageLite& from) {
+  return DynamicCastMessage<T>(from);
+}
+
+template <typename T>
+PROTOBUF_DEPRECATE_AND_INLINE()
+T& DynamicCastToGenerated(MessageLite& from) {
+  return DynamicCastMessage<T>(from);
+}
+
+template <typename T>
+PROTOBUF_DEPRECATE_AND_INLINE()
+const T* DownCastToGenerated(const MessageLite* from) {
+  return DownCastMessage<T>(from);
+}
+
+template <typename T>
+PROTOBUF_DEPRECATE_AND_INLINE()
+T* DownCastToGenerated(MessageLite* from) {
+  return DownCastMessage<T>(from);
+}
+
+template <typename T>
+PROTOBUF_DEPRECATE_AND_INLINE()
 const T& DownCastToGenerated(const MessageLite& from) {
-  return *DownCastToGenerated<T>(&from);
+  return DownCastMessage<T>(from);
 }
 
 template <typename T>
+PROTOBUF_DEPRECATE_AND_INLINE()
 T& DownCastToGenerated(MessageLite& from) {
-  return *DownCastToGenerated<T>(&from);
+  return DownCastMessage<T>(from);
 }
 
 }  // namespace protobuf

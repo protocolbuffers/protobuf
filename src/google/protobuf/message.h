@@ -96,7 +96,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
-#include "google/protobuf/stubs/common.h"
+#include "absl/base/macros.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/cord.h"
@@ -1448,45 +1448,19 @@ void LinkMessageReflection() {
   internal::StrongReferenceToType<T>();
 }
 
-// Tries to downcast this message from MessageLite to Message.  Returns nullptr
-// if this class is not an instance of Message. eg if the message was defined
-// with optimized_for=LITE_RUNTIME. This works even if RTTI is disabled.
-inline const Message* DynamicCastToMessage(const MessageLite* lite) {
-  return lite == nullptr || internal::GetClassData(*lite)->is_lite
+// Specializations to handle cast to `Message`. We can check the `is_lite` bit
+// in the class data.
+template <>
+inline const Message* DynamicCastMessage(const MessageLite* from) {
+  return from == nullptr || internal::GetClassData(*from)->is_lite
              ? nullptr
-             : static_cast<const Message*>(lite);
+             : static_cast<const Message*>(from);
 }
-inline Message* DynamicCastToMessage(MessageLite* lite) {
-  return const_cast<Message*>(
-      DynamicCastToMessage(static_cast<const MessageLite*>(lite)));
-}
-inline const Message& DynamicCastToMessage(const MessageLite& lite) {
-  auto* res = DynamicCastToMessage(&lite);
-  ABSL_CHECK(res != nullptr)
-      << "Cannot to `Message` type " << lite.GetTypeName();
-  return *res;
-}
-inline Message& DynamicCastToMessage(MessageLite& lite) {
-  return const_cast<Message&>(
-      DynamicCastToMessage(static_cast<const MessageLite&>(lite)));
-}
-
-// A lightweight function for downcasting a MessageLite to Message. It should
-// only be used when the caller is certain that the argument is a Message
-// object.
-inline const Message* DownCastToMessage(const MessageLite* lite) {
-  ABSL_CHECK(lite == nullptr || DynamicCastToMessage(lite) != nullptr);
-  return static_cast<const Message*>(lite);
-}
-inline Message* DownCastToMessage(MessageLite* lite) {
-  return const_cast<Message*>(
-      DownCastToMessage(static_cast<const MessageLite*>(lite)));
-}
-inline const Message& DownCastToMessage(const MessageLite& lite) {
-  return *DownCastToMessage(&lite);
-}
-inline Message& DownCastToMessage(MessageLite& lite) {
-  return *DownCastToMessage(&lite);
+template <>
+inline const Message* DownCastMessage(const MessageLite* from) {
+  ABSL_DCHECK(DynamicCastMessage<Message>(from) == from)
+      << "Cannot downcast " << from->GetTypeName() << " to Message";
+  return static_cast<const Message*>(from);
 }
 
 // =============================================================================

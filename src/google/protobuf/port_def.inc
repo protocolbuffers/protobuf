@@ -32,6 +32,7 @@
 #define PROTOBUF_PORT_
 #include "absl/base/attributes.h"
 #include "absl/base/config.h"
+#include "absl/base/macros.h"
 
 // The definitions in this file are intended to be portable across Clang,
 // GCC, and MSVC. Function-like macros are usable without an #ifdef guard.
@@ -958,4 +959,13 @@ namespace internal {
 #define PROTOBUF_ASSUME(pred)
 #endif  // !NDEBUG
 #endif  // has_builtin(__builtin_assume)
+
+#ifdef PROTOBUF_DEPRECATE_AND_INLINE
+#error PROTOBUF_DEPRECATE_AND_INLINE was previously defined
+#endif
+#if defined(ABSL_DEPRECATE_AND_INLINE)
+#define PROTOBUF_DEPRECATE_AND_INLINE() ABSL_DEPRECATE_AND_INLINE()
+#else
+#define PROTOBUF_DEPRECATE_AND_INLINE() [[deprecated]]
+#endif
 

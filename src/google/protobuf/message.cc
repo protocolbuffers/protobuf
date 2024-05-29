@@ -67,7 +67,8 @@ using internal::ReflectionOps;
 using internal::WireFormat;
 
 void Message::MergeImpl(MessageLite& to, const MessageLite& from) {
-  ReflectionOps::Merge(DownCastToMessage(from), DownCastToMessage(&to));
+  ReflectionOps::Merge(DownCastMessage<Message>(from),
+                       DownCastMessage<Message>(&to));
 }
 
 void Message::MergeFrom(const Message& from) {
@@ -108,7 +109,7 @@ void Message::CopyFrom(const Message& from) {
 void Message::Clear() { ReflectionOps::Clear(this); }
 
 bool Message::IsInitializedImpl(const MessageLite& msg) {
-  return ReflectionOps::IsInitialized(DownCastToMessage(msg));
+  return ReflectionOps::IsInitialized(DownCastMessage<Message>(msg));
 }
 
 void Message::FindInitializationErrors(std::vector<std::string>* errors) const {
@@ -184,20 +185,20 @@ size_t Message::SpaceUsedLong() const {
 }
 
 static std::string GetTypeNameImpl(const MessageLite& msg) {
-  return DownCastToMessage(msg).GetDescriptor()->full_name();
+  return DownCastMessage<Message>(msg).GetDescriptor()->full_name();
 }
 
 static std::string InitializationErrorStringImpl(const MessageLite& msg) {
-  return DownCastToMessage(msg).InitializationErrorString();
+  return DownCastMessage<Message>(msg).InitializationErrorString();
 }
 
 const internal::TcParseTableBase* Message::GetTcParseTableImpl(
     const MessageLite& msg) {
-  return DownCastToMessage(msg).GetReflection()->GetTcParseTable();
+  return DownCastMessage<Message>(msg).GetReflection()->GetTcParseTable();
 }
 
 size_t Message::SpaceUsedLongImpl(const MessageLite& msg_lite) {
-  auto& msg = DownCastToMessage(msg_lite);
+  auto& msg = DownCastMessage<Message>(msg_lite);
   return msg.GetReflection()->SpaceUsedLong(msg);
 }
 

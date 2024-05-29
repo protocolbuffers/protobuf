@@ -18,6 +18,7 @@
 #include "google/protobuf/inlined_string_field.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -200,10 +201,10 @@ struct DynamicExtensionInfoHelper {
   }
 
   static const Message& GetMessage(const Extension& ext) {
-    return DownCastToMessage(*ext.message_value);
+    return DownCastMessage<Message>(*ext.message_value);
   }
   static Message& MutableMessage(Extension& ext) {
-    return DownCastToMessage(*ext.message_value);
+    return DownCastMessage<Message>(*ext.message_value);
   }
   static void ClearMessage(Extension& ext) {
     ext.is_cleared = true;
@@ -212,18 +213,18 @@ struct DynamicExtensionInfoHelper {
 
   static const Message& GetLazyMessage(const Extension& ext,
                                        const Message& prototype, Arena* arena) {
-    return DownCastToMessage(
+    return DownCastMessage<Message>(
         ext.lazymessage_value->GetMessage(prototype, arena));
   }
   static const Message& GetLazyMessageIgnoreUnparsed(const Extension& ext,
                                                      const Message& prototype,
                                                      Arena* arena) {
-    return DownCastToMessage(
+    return DownCastMessage<Message>(
         ext.lazymessage_value->GetMessageIgnoreUnparsed(prototype, arena));
   }
   static Message& MutableLazyMessage(Extension& ext, const Message& prototype,
                                      Arena* arena) {
-    return DownCastToMessage(
+    return DownCastMessage<Message>(
         *ext.lazymessage_value->MutableMessage(prototype, arena));
   }
   static void ClearLazyMessage(Extension& ext) {
