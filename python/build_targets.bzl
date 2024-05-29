@@ -412,6 +412,11 @@ def build_targets(name):
     )
 
     internal_py_test(
+        name = "decoder_test",
+        srcs = ["google/protobuf/internal/decoder_test.py"],
+    )
+
+    internal_py_test(
         name = "wire_format_test",
         srcs = ["google/protobuf/internal/wire_format_test.py"],
     )
