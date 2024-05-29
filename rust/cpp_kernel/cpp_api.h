@@ -41,7 +41,7 @@ extern "C" struct SerializedData {
 // This function is defined in `rust_alloc_for_cpp_api.rs`.
 extern "C" void* __pb_rust_alloc(size_t size, size_t align);
 
-inline SerializedData SerializeMsg(const google::protobuf::Message* msg) {
+inline SerializedData SerializeMsg(const google::protobuf::MessageLite* msg) {
   size_t len = msg->ByteSizeLong();
   void* bytes = __pb_rust_alloc(len, alignof(char));
   if (bytes == nullptr) {
