@@ -412,7 +412,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     // our arena pointer, and we can add to array without resizing it (at
     // least one slot that is not allocated).
     void** elems = elements();
-    if (current_size_ < allocated_size()) {
+    if ((current_size_ > 0) && (current_size_ < allocated_size())) {
       // Make space at [current] by moving first allocated element to end of
       // allocated list.
       elems[allocated_size()] = elems[current_size_];
@@ -436,7 +436,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       // Clear() would leak memory.
       using H = CommonHandler<TypeHandler>;
       Delete<H>(element_at(current_size_), arena_);
-    } else if (current_size_ < allocated_size()) {
+    } else if ((current_size_ > 0) && (current_size_ < allocated_size())) {
       // We have some cleared objects.  We don't care about their order, so we
       // can just move the first one to the end to make space.
       element_at(allocated_size()) = element_at(current_size_);
