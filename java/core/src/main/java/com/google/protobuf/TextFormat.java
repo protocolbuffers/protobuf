@@ -1289,6 +1289,7 @@ public final class TextFormat {
       }
 
       if (currentToken.length() < 2 || currentToken.charAt(currentToken.length() - 1) != quote) {
+        System.out.println("currentToken: " + currentToken);
         throw parseException("String missing ending quote.");
       }
 
