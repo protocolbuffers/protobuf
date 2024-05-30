@@ -85,7 +85,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_
     "nitions themselves rather than on fields"
     ".\022\237\002\n\017utf8_validation\030\002 \001(\0162\037.pb.JavaFea"
     "tures.Utf8ValidationB\344\001\210\001\001\230\001\004\230\001\001\242\001\014\022\007DEF"
-    "AULT\030\346\007\262\001\310\001\010\350\007\020\350\007\032\277\001The Java-specific ut"
+    "AULT\030\346\007\262\001\310\001\010\350\007\020\351\007\032\277\001The Java-specific ut"
     "f8 validation feature is deprecated and "
     "is scheduled to be removed in edition 20"
     "25.  Utf8 validation behavior should use"
