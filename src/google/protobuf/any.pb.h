@@ -230,6 +230,7 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;

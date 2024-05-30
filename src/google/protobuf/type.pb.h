@@ -316,6 +316,7 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -511,6 +512,7 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -878,6 +880,7 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -1086,6 +1089,7 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -1379,6 +1383,7 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;

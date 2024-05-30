@@ -170,6 +170,7 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ZeroFieldsBase::ClassData* GetClassData() const final;
+  static const ::google::protobuf::internal::ZeroFieldsBase::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;

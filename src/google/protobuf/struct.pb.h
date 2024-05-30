@@ -227,6 +227,7 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -405,6 +406,7 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -487,6 +489,7 @@ class Struct_FieldsEntry_DoNotUse final
         &_Struct_FieldsEntry_DoNotUse_default_instance_);
   }
 const ::google::protobuf::Message::ClassData* GetClassData() const final;
+static const ::google::protobuf::Message::ClassDataFull _class_data_;
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
 };
 // -------------------------------------------------------------------
@@ -617,6 +620,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;

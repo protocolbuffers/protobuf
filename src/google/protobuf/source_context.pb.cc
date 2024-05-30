@@ -150,25 +150,26 @@ inline void SourceContext::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-SourceContext::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              nullptr,  // IsInitialized
-              &SourceContext::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
-              false,
-          },
-          &SourceContext::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    SourceContext::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            nullptr,  // IsInitialized
+            &SourceContext::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
+            false,
+        },
+        &SourceContext::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* SourceContext::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<0, 1, 0, 47, 2> SourceContext::_table_ = {

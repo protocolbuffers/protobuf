@@ -147,25 +147,26 @@ inline void FieldMask::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-FieldMask::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              nullptr,  // IsInitialized
-              &FieldMask::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._cached_size_),
-              false,
-          },
-          &FieldMask::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    FieldMask::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            nullptr,  // IsInitialized
+            &FieldMask::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._cached_size_),
+            false,
+        },
+        &FieldMask::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* FieldMask::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<0, 1, 0, 39, 2> FieldMask::_table_ = {
