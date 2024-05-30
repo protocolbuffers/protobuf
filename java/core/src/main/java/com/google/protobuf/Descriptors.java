@@ -2782,6 +2782,21 @@ public final class Descriptors {
     public abstract FileDescriptor getFile();
 
     void resolveFeatures(FeatureSet unresolvedFeatures) throws DescriptorValidationException {
+      // Unknown java features may be passed by users via public buildFrom but should not occur from
+      // generated code.
+      if (!unresolvedFeatures.getUnknownFields().isEmpty()
+          && unresolvedFeatures.getUnknownFields().hasField(JavaFeaturesProto.java_.getNumber())) {
+        ExtensionRegistry registry = ExtensionRegistry.newInstance();
+        registry.add(JavaFeaturesProto.java_);
+        ByteString bytes = unresolvedFeatures.toByteString();
+        try {
+          unresolvedFeatures = FeatureSet.parseFrom(bytes, registry);
+        } catch (InvalidProtocolBufferException e) {
+          throw new DescriptorValidationException(
+              this, "Failed to parse features with Java feature extension registry.", e);
+        }
+      }
+
       if (this.parent != null
           && unresolvedFeatures.equals(FeatureSet.getDefaultInstance())
           && !hasInferredLegacyProtoFeatures()) {

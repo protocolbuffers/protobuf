@@ -352,7 +352,7 @@ public class DescriptorsTest {
     }
 
     @Test
-    public void testFieldDescriptorLegacyEnumFieldTreatedAsClosed() throws Exception {
+    public void testProto2FieldDescriptorLegacyEnumFieldTreatedAsClosed() throws Exception {
       // Make an open enum definition.
       FileDescriptorProto openEnumFile =
           FileDescriptorProto.newBuilder()
@@ -427,6 +427,111 @@ public class DescriptorsTest {
       assertThat(closedMessage.findFieldByName("closed_enum").legacyEnumFieldTreatedAsClosed())
           .isTrue();
       assertThat(closedMessage.findFieldByName("open_enum").legacyEnumFieldTreatedAsClosed())
+          .isTrue();
+    }
+
+    @Test
+    public void testEditionFieldDescriptorLegacyEnumFieldTreatedAsClosed() throws Exception {
+      // Make an open enum definition.
+      FileDescriptorProto openEnumFile =
+          FileDescriptorProto.newBuilder()
+              .setName("open_enum.proto")
+              .setSyntax("editions")
+              .setEdition(Edition.EDITION_2023)
+              .addEnumType(
+                  EnumDescriptorProto.newBuilder()
+                      .setName("TestEnumOpen")
+                      .addValue(
+                          EnumValueDescriptorProto.newBuilder()
+                              .setName("TestEnumOpen_VALUE0")
+                              .setNumber(0)
+                              .build())
+                      .build())
+              .build();
+      FileDescriptor openFileDescriptor =
+          Descriptors.FileDescriptor.buildFrom(openEnumFile, new FileDescriptor[0]);
+      EnumDescriptor openEnum = openFileDescriptor.getEnumTypes().get(0);
+      assertThat(openEnum.isClosed()).isFalse();
+
+      // Create a message that treats enum fields as closed.
+      FileDescriptorProto editionsClosedEnumFile =
+          FileDescriptorProto.newBuilder()
+              .setName("editions_closed_enum_field.proto")
+              .addDependency("open_enum.proto")
+              .setSyntax("editions")
+              .setEdition(Edition.EDITION_2023)
+              .setOptions(
+                  FileOptions.newBuilder()
+                      .setFeatures(
+                          DescriptorProtos.FeatureSet.newBuilder()
+                              .setEnumType(DescriptorProtos.FeatureSet.EnumType.CLOSED)
+                              .build())
+                      .build())
+              .addEnumType(
+                  EnumDescriptorProto.newBuilder()
+                      .setName("TestEnum")
+                      .addValue(
+                          EnumValueDescriptorProto.newBuilder()
+                              .setName("TestEnum_VALUE0")
+                              .setNumber(0)
+                              .build())
+                      .build())
+              .addMessageType(
+                  DescriptorProto.newBuilder()
+                      .setName("TestClosedEnumField")
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setName("int_field")
+                              .setNumber(1)
+                              .setType(FieldDescriptorProto.Type.TYPE_INT32)
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .build())
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setName("open_enum")
+                              .setNumber(2)
+                              .setType(FieldDescriptorProto.Type.TYPE_ENUM)
+                              .setTypeName("TestEnumOpen")
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setOptions(
+                                  DescriptorProtos.FieldOptions.newBuilder()
+                                      .setFeatures(
+                                          DescriptorProtos.FeatureSet.newBuilder()
+                                              .setExtension(
+                                                  JavaFeaturesProto.java_,
+                                                  JavaFeaturesProto.JavaFeatures.newBuilder()
+                                                      .setLegacyClosedEnum(true)
+                                                      .build())
+                                              .build())
+                                      .build())
+                              .build())
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setName("closed_enum")
+                              .setNumber(3)
+                              .setType(FieldDescriptorProto.Type.TYPE_ENUM)
+                              .setTypeName("TestEnum")
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .build())
+                      .build())
+              .build();
+      // Ensure Java features are in unknown fields.
+      editionsClosedEnumFile =
+          FileDescriptorProto.parseFrom(
+              editionsClosedEnumFile.toByteString(), ExtensionRegistry.getEmptyRegistry());
+      Descriptor editionsClosedMessage =
+          Descriptors.FileDescriptor.buildFrom(
+                  editionsClosedEnumFile, new FileDescriptor[] {openFileDescriptor})
+              .getMessageTypes()
+              .get(0);
+      assertThat(
+              editionsClosedMessage.findFieldByName("int_field").legacyEnumFieldTreatedAsClosed())
+          .isFalse();
+      assertThat(
+              editionsClosedMessage.findFieldByName("closed_enum").legacyEnumFieldTreatedAsClosed())
+          .isTrue();
+      assertThat(
+              editionsClosedMessage.findFieldByName("open_enum").legacyEnumFieldTreatedAsClosed())
           .isTrue();
     }
 
