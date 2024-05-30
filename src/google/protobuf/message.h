@@ -1575,7 +1575,7 @@ inline void MaybePoisonAfterClear(Message* root) {
 template <typename Type>
 const Type& Reflection::GetRawSplit(const Message& message,
                                     const FieldDescriptor* field) const {
-  ABSL_DCHECK(!schema_.InRealOneof(field)) << "Field = " << field->full_name();
+  ABSL_DCHECK(!field->in_real_oneof()) << "Field = " << field->full_name();
 
   const void* split = GetSplitField(&message);
   const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
@@ -1598,10 +1598,10 @@ const Type& Reflection::GetRawNonOneof(const Message& message,
 template <typename Type>
 const Type& Reflection::GetRaw(const Message& message,
                                const FieldDescriptor* field) const {
-  ABSL_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
+  ABSL_DCHECK(!field->in_real_oneof() || HasOneofField(message, field))
       << "Field = " << field->full_name();
 
-  if (PROTOBUF_PREDICT_TRUE(!schema_.InRealOneof(field))) {
+  if (PROTOBUF_PREDICT_TRUE(!field->in_real_oneof())) {
     return GetRawNonOneof<Type>(message, field);
   }
 

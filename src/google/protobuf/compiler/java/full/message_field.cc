@@ -406,8 +406,7 @@ void ImmutableMessageFieldGenerator::GenerateKotlinDslMembers(
 }
 
 void ImmutableMessageFieldGenerator::GenerateKotlinOrNull(io::Printer* printer) const {
-  if (descriptor_->has_presence() &&
-      descriptor_->real_containing_oneof() == nullptr) {
+  if (descriptor_->has_presence() && !descriptor_->in_real_oneof()) {
     printer->Print(variables_,
                    "public val $classname$Kt.Dsl.$name$OrNull: $kt_type$?\n"
                    "  get() = $kt_dsl_builder$.$name$OrNull\n");

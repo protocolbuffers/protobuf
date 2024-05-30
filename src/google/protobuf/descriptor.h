@@ -957,8 +957,10 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // nullptr.
   const OneofDescriptor* containing_oneof() const;
 
-  // If the field is a member of a non-synthetic oneof, returns the descriptor
-  // for the oneof, otherwise returns nullptr.
+  // If the field is a member of a non-synthetic oneof, returns true.
+  bool in_real_oneof() const;
+  // If `in_real_oneof()` returns the descriptor for the oneof, otherwise
+  // returns nullptr.
   const OneofDescriptor* real_containing_oneof() const;
 
   // If the field is a member of a oneof, returns the index in that oneof.
@@ -1102,6 +1104,11 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   uint8_t lowercase_name_index_ : 2;
   uint8_t camelcase_name_index_ : 2;
   uint8_t json_name_index_ : 3;
+
+  // Redundant with is_oneof_, but queried a lot.
+  // Located here for bitpacking.
+  bool in_real_oneof_ : 1;
+
   // Sadly, `number_` located here to reduce padding. Unrelated to all_names_
   // and its indices above.
   int number_;
@@ -2696,9 +2703,14 @@ inline bool FieldDescriptor::is_map() const {
   return type() == TYPE_MESSAGE && is_map_message_type();
 }
 
+inline bool FieldDescriptor::in_real_oneof() const {
+  ABSL_DCHECK_EQ(in_real_oneof_,
+                 is_oneof_ ? !containing_oneof()->is_synthetic() : false);
+  return in_real_oneof_;
+}
+
 inline const OneofDescriptor* FieldDescriptor::real_containing_oneof() const {
-  auto* oneof = containing_oneof();
-  return oneof && !oneof->is_synthetic() ? oneof : nullptr;
+  return in_real_oneof() ? containing_oneof() : nullptr;
 }
 
 // To save space, index() is computed by looking at the descriptor's position

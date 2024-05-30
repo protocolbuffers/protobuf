@@ -187,7 +187,7 @@ void EmitNonDefaultCheck(io::Printer* p, const std::string& prefix,
                          const FieldDescriptor* field) {
   ABSL_CHECK(!HasHasbit(field));
   ABSL_CHECK(!field->is_repeated());
-  ABSL_CHECK(!field->containing_oneof() || field->real_containing_oneof());
+  ABSL_CHECK(!field->containing_oneof() || field->in_real_oneof());
 
   auto v = p->WithVars({{
       {"prefix", prefix},
@@ -208,14 +208,14 @@ void EmitNonDefaultCheck(io::Printer* p, const std::string& prefix,
     } else {
       p->Emit("$prefix$_internal_$name$() != 0");
     }
-  } else if (field->real_containing_oneof()) {
+  } else if (field->in_real_oneof()) {
     p->Emit("$has_field$");
   }
 }
 
 bool ShouldEmitNonDefaultCheck(const FieldDescriptor* field) {
   return (!field->is_repeated() && !field->containing_oneof()) ||
-         field->real_containing_oneof();
+         field->in_real_oneof();
 }
 
 // Emits an if-statement with a condition that evaluates to true if |field| is
@@ -297,8 +297,8 @@ bool IsCrossFileMaybeMap(const FieldDescriptor* field) {
 
 bool HasNonSplitOptionalString(const Descriptor* desc, const Options& options) {
   for (const auto* field : FieldRange(desc)) {
-    if (IsString(field) && !field->is_repeated() &&
-        !field->real_containing_oneof() && !ShouldSplit(field, options)) {
+    if (IsString(field) && !field->is_repeated() && !field->in_real_oneof() &&
+        !ShouldSplit(field, options)) {
       return true;
     }
   }
@@ -526,7 +526,7 @@ MessageGenerator::MessageGenerator(
       continue;
     }
 
-    if (!field->real_containing_oneof()) {
+    if (!field->in_real_oneof()) {
       optimized_order_.push_back(field);
     }
   }
@@ -622,7 +622,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
   auto v = p->WithVars(MessageVars(descriptor_));
 
   // optimized_fields_ does not contain fields where
-  //    field->real_containing_oneof()
+  //    field->in_real_oneof()
   // so we need to iterate over those as well.
   //
   // We place the non-oneof fields in optimized_order_, as that controls the
@@ -634,7 +634,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                         optimized_order_.end());
 
   for (auto field : FieldRange(descriptor_)) {
-    if (!field->real_containing_oneof() && !field->options().weak()) {
+    if (!field->in_real_oneof() && !field->options().weak()) {
       continue;
     }
     ordered_fields.push_back(field);
@@ -1110,7 +1110,7 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
   p->Emit({{"inline", is_inline ? "inline" : ""},
            {"body",
             [&] {
-              if (field->real_containing_oneof()) {
+              if (field->in_real_oneof()) {
                 // Clear this field only if it is the active field in this
                 // oneof, otherwise ignore
                 p->Emit(
@@ -1239,7 +1239,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
           return _internal_$name_internal$_size();
         }
       )cc");
-    } else if (field->real_containing_oneof()) {
+    } else if (field->in_real_oneof()) {
       GenerateOneofMemberHasBits(field, p);
     } else {
       GenerateSingularFieldHasBits(field, p);
@@ -1876,7 +1876,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           for (auto field : FieldRange(descriptor_)) {
             // set_has_***() generated in all oneofs.
             if (!field->is_repeated() && !field->options().weak() &&
-                field->real_containing_oneof()) {
+                field->in_real_oneof()) {
               p->Emit({{"field_name", FieldName(field)}}, R"cc(
                 void set_has_$field_name$();
               )cc");
@@ -2383,7 +2383,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(io::Printer* p) {
   for (auto field : FieldRange(descriptor_)) {
     // TODO: We should not have an entry in the offset table for fields
     // that do not use them.
-    if (field->options().weak() || field->real_containing_oneof()) {
+    if (field->options().weak() || field->in_real_oneof()) {
       // Mark the field to prevent unintentional access through reflection.
       // Don't use the top bit because that is for unused fields.
       format("::_pbi::kInvalidFieldOffsetTag");
@@ -4215,7 +4215,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
       if (!field->has_presence() || MustFlush(field)) {
         Flush();
       }
-      if (field->real_containing_oneof()) {
+      if (field->in_real_oneof()) {
         v_.push_back(field);
       } else {
         // TODO: Defer non-oneof fields similarly to oneof fields.

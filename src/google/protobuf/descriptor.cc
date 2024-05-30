@@ -3494,7 +3494,7 @@ void Descriptor::DebugString(int depth, std::string* contents,
     enum_type(i)->DebugString(depth, contents, debug_string_options);
   }
   for (int i = 0; i < field_count(); i++) {
-    if (field(i)->real_containing_oneof() == nullptr) {
+    if (!field(i)->in_real_oneof()) {
       field(i)->DebugString(depth, contents, debug_string_options);
     } else if (field(i)->containing_oneof()->field(0) == field(i)) {
       // This is the first field in this oneof, so print the whole oneof.
@@ -3620,7 +3620,7 @@ void FieldDescriptor::DebugString(
   std::string label = absl::StrCat(kLabelToName[this->label()], " ");
 
   // Label is omitted for maps, oneof, and plain proto3 fields.
-  if (is_map() || real_containing_oneof() ||
+  if (is_map() || in_real_oneof() ||
       (is_optional() && !has_optional_keyword())) {
     label.clear();
   }
@@ -6493,6 +6493,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   result->number_ = proto.number();
   result->is_extension_ = is_extension;
   result->is_oneof_ = false;
+  result->in_real_oneof_ = false;
   result->proto3_optional_ = proto.proto3_optional();
 
   if (proto.proto3_optional() && file_->edition() != Edition::EDITION_PROTO3) {
@@ -6744,6 +6745,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
         result->is_oneof_ = true;
         result->scope_.containing_oneof =
             parent->oneof_decl(proto.oneof_index());
+        result->in_real_oneof_ = !result->proto3_optional_;
       }
     }
   }
@@ -9724,7 +9726,7 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
 }
 
 bool HasHasbit(const FieldDescriptor* field) {
-  return field->has_presence() && !field->real_containing_oneof() &&
+  return field->has_presence() && !field->in_real_oneof() &&
          !field->options().weak();
 }
 

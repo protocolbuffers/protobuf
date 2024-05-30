@@ -303,11 +303,11 @@ TEST(Proto3OptionalTest, OptionalFieldDescriptor) {
     if (absl::StartsWith(f->name(), "singular")) {
       EXPECT_FALSE(f->has_presence()) << f->full_name();
       EXPECT_FALSE(f->containing_oneof()) << f->full_name();
-      EXPECT_FALSE(f->real_containing_oneof()) << f->full_name();
+      EXPECT_FALSE(f->in_real_oneof()) << f->full_name();
     } else {
       EXPECT_TRUE(f->has_presence()) << f->full_name();
       EXPECT_TRUE(f->containing_oneof()) << f->full_name();
-      EXPECT_FALSE(f->real_containing_oneof()) << f->full_name();
+      EXPECT_FALSE(f->in_real_oneof()) << f->full_name();
     }
   }
 }

@@ -573,7 +573,6 @@ void ParseFunctionGenerator::GenerateFieldEntries(Formatter& format) {
       // (These are handled by legacy Google-internal logic.)
       format("/* weak */ 0, 0, 0, 0");
     } else {
-      const OneofDescriptor* oneof = field->real_containing_oneof();
       bool split = ShouldSplit(field, options_);
       if (split) {
         format("PROTOBUF_FIELD_OFFSET($classname$::Impl_::Split, $1$), ",
@@ -582,7 +581,8 @@ void ParseFunctionGenerator::GenerateFieldEntries(Formatter& format) {
         format("PROTOBUF_FIELD_OFFSET($classname$, $1$), ",
                FieldMemberName(field, /*cold=*/false));
       }
-      if (oneof) {
+      if (field->in_real_oneof()) {
+        const OneofDescriptor* oneof = field->real_containing_oneof();
         format("_Internal::kOneofCaseOffset + $1$, ", 4 * oneof->index());
       } else if (num_hasbits_ > 0 || IsMapEntryMessage(descriptor_)) {
         if (entry.hasbit_idx >= 0) {

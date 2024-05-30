@@ -427,7 +427,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
           break;
       }
     } else {
-      if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
+      if (field->in_real_oneof() && !HasOneofField(message, field)) {
         continue;
       }
       switch (field->cpp_type()) {
@@ -445,7 +445,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
         case FieldDescriptor::CPPTYPE_STRING: {
           switch (internal::cpp::EffectiveStringCType(field)) {
             case FieldOptions::CORD:
-              if (schema_.InRealOneof(field)) {
+              if (field->in_real_oneof()) {
                 total_size += GetField<absl::Cord*>(message, field)
                                   ->EstimatedMemoryUsage();
 
@@ -469,7 +469,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
                 // Except oneof fields, those never point to a default instance,
                 // and there is no default instance to point to.
                 const auto& str = GetField<ArenaStringPtr>(message, field);
-                if (!str.IsDefault() || schema_.InRealOneof(field)) {
+                if (!str.IsDefault() || field->in_real_oneof()) {
                   // string fields are represented by just a pointer, so also
                   // include sizeof(string) as well.
                   total_size += sizeof(std::string) +
@@ -1149,7 +1149,7 @@ void Reflection::SwapFieldsImpl(
             prototype, MutableExtensionSet(message2), field->number());
       }
     } else {
-      if (schema_.InRealOneof(field)) {
+      if (field->in_real_oneof()) {
         int oneof_index = field->containing_oneof()->index();
         // Only swap the oneof field once.
         if (!swapped_oneof.insert(oneof_index).second) {
@@ -1221,7 +1221,7 @@ bool Reflection::HasField(const Message& message,
   if (field->is_extension()) {
     return GetExtensionSet(message).Has(field->number());
   } else {
-    if (schema_.InRealOneof(field)) {
+    if (field->in_real_oneof()) {
       return HasOneofField(message, field);
     } else {
       return HasBit(message, field);
@@ -1241,7 +1241,7 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
 
   for (int i = 0; i <= last_non_weak_field_index_; i++) {
     const FieldDescriptor* field = descriptor_->field(i);
-    if (schema_.InRealOneof(field)) continue;
+    if (field->in_real_oneof()) continue;
     if (schema_.IsSplit(field)) {
       continue;
     }
@@ -1284,7 +1284,7 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* field = descriptor_->field(i);
       if (field->is_extension() || field->is_repeated() ||
-          schema_.InRealOneof(field) ||
+          field->in_real_oneof() ||
           field->options().ctype() != FieldOptions::STRING ||
           !IsInlined(field)) {
         continue;
@@ -1366,7 +1366,7 @@ void Reflection::ClearField(Message* message,
   if (field->is_extension()) {
     MutableExtensionSet(message)->ClearExtension(field->number());
   } else if (!field->is_repeated()) {
-    if (schema_.InRealOneof(field)) {
+    if (field->in_real_oneof()) {
       ClearOneofField(message, field);
       return;
     }
@@ -1672,7 +1672,7 @@ void Reflection::ListFields(const Message& message,
       }
     } else {
       const OneofDescriptor* containing_oneof = field->containing_oneof();
-      if (schema_.InRealOneof(field)) {
+      if (field->in_real_oneof()) {
         const uint32_t* const oneof_case_array =
             GetConstPointerAtOffset<uint32_t>(&message,
                                               schema_.oneof_case_offset_);
@@ -1728,7 +1728,7 @@ void Reflection::ListFields(const Message& message,
     if (field->is_extension()) {                                               \
       return GetExtensionSet(message).Get##TYPENAME(                           \
           field->number(), field->default_value_##PASSTYPE());                 \
-    } else if (schema_.InRealOneof(field) && !HasOneofField(message, field)) { \
+    } else if (field->in_real_oneof() && !HasOneofField(message, field)) {     \
       return field->default_value_##PASSTYPE();                                \
     } else {                                                                   \
       return GetField<TYPE>(message, field);                                   \
@@ -1799,12 +1799,12 @@ std::string Reflection::GetString(const Message& message,
     return GetExtensionSet(message).GetString(field->number(),
                                               field->default_value_string());
   } else {
-    if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
+    if (field->in_real_oneof() && !HasOneofField(message, field)) {
       return field->default_value_string();
     }
     switch (internal::cpp::EffectiveStringCType(field)) {
       case FieldOptions::CORD:
-        if (schema_.InRealOneof(field)) {
+        if (field->in_real_oneof()) {
           return std::string(*GetField<absl::Cord*>(message, field));
         } else {
           return std::string(GetField<absl::Cord>(message, field));
@@ -1830,12 +1830,12 @@ const std::string& Reflection::GetStringReference(const Message& message,
     return GetExtensionSet(message).GetString(field->number(),
                                               field->default_value_string());
   } else {
-    if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
+    if (field->in_real_oneof() && !HasOneofField(message, field)) {
       return field->default_value_string();
     }
     switch (internal::cpp::EffectiveStringCType(field)) {
       case FieldOptions::CORD:
-        if (schema_.InRealOneof(field)) {
+        if (field->in_real_oneof()) {
           absl::CopyCordToString(*GetField<absl::Cord*>(message, field),
                                  scratch);
         } else {
@@ -1861,12 +1861,12 @@ absl::Cord Reflection::GetCord(const Message& message,
     return absl::Cord(GetExtensionSet(message).GetString(
         field->number(), field->default_value_string()));
   } else {
-    if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
+    if (field->in_real_oneof() && !HasOneofField(message, field)) {
       return absl::Cord(field->default_value_string());
     }
     switch (internal::cpp::EffectiveStringCType(field)) {
       case FieldOptions::CORD:
-        if (schema_.InRealOneof(field)) {
+        if (field->in_real_oneof()) {
           return *GetField<absl::Cord*>(message, field);
         } else {
           return GetField<absl::Cord>(message, field);
@@ -1897,13 +1897,13 @@ absl::string_view Reflection::GetStringView(const Message& message,
     return GetExtensionSet(message).GetString(field->number(),
                                               field->default_value_string());
   }
-  if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
+  if (field->in_real_oneof() && !HasOneofField(message, field)) {
     return field->default_value_string();
   }
 
   switch (internal::cpp::EffectiveStringCType(field)) {
     case FieldOptions::CORD: {
-      const auto& cord = schema_.InRealOneof(field)
+      const auto& cord = field->in_real_oneof()
                              ? *GetField<absl::Cord*>(message, field)
                              : GetField<absl::Cord>(message, field);
       return scratch.CopyFromCord(cord);
@@ -1924,7 +1924,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
   } else {
     switch (internal::cpp::EffectiveStringCType(field)) {
       case FieldOptions::CORD:
-        if (schema_.InRealOneof(field)) {
+        if (field->in_real_oneof()) {
           if (!HasOneofField(*message, field)) {
             ClearOneof(message, field->containing_oneof());
             *MutableField<absl::Cord*>(message, field) =
@@ -1954,7 +1954,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
         // We just need to pass some arbitrary default string to make it work.
         // This allows us to not have the real default accessible from
         // reflection.
-        if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
+        if (field->in_real_oneof() && !HasOneofField(*message, field)) {
           ClearOneof(message, field->containing_oneof());
           MutableField<ArenaStringPtr>(message, field)->InitDefault();
         }
@@ -1976,7 +1976,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
   } else {
     switch (internal::cpp::EffectiveStringCType(field)) {
       case FieldOptions::CORD:
-        if (schema_.InRealOneof(field)) {
+        if (field->in_real_oneof()) {
           if (!HasOneofField(*message, field)) {
             ClearOneof(message, field->containing_oneof());
             *MutableField<absl::Cord*>(message, field) =
@@ -1993,7 +1993,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
         // We just need to pass some arbitrary default string to make it work.
         // This allows us to not have the real default accessible from
         // reflection.
-        if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
+        if (field->in_real_oneof() && !HasOneofField(*message, field)) {
           ClearOneof(message, field->containing_oneof());
           MutableField<ArenaStringPtr>(message, field)->InitDefault();
         }
@@ -2120,7 +2120,7 @@ int Reflection::GetEnumValue(const Message& message,
   if (field->is_extension()) {
     value = GetExtensionSet(message).GetEnum(
         field->number(), field->default_value_enum()->number());
-  } else if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
+  } else if (field->in_real_oneof() && !HasOneofField(message, field)) {
     value = field->default_value_enum()->number();
   } else {
     value = GetField<int>(message, field);
@@ -2279,7 +2279,7 @@ const Message* Reflection::GetDefaultMessageInstance(
   // This is an optimization to avoid going to GetPrototype() below, as that
   // requires a lock and a map lookup.
   if (!field->is_extension() && !field->options().weak() &&
-      !IsLazyField(field) && !schema_.InRealOneof(field)) {
+      !IsLazyField(field) && !field->in_real_oneof()) {
     auto* res = DefaultRaw<const Message*>(field);
     if (res != nullptr) {
       return res;
@@ -2300,7 +2300,7 @@ const Message& Reflection::GetMessage(const Message& message,
     return static_cast<const Message&>(GetExtensionSet(message).GetMessage(
         field->number(), field->message_type(), factory));
   } else {
-    if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
+    if (field->in_real_oneof() && !HasOneofField(message, field)) {
       return *GetDefaultMessageInstance(field);
     }
     const Message* result = GetRaw<const Message*>(message, field);
@@ -2326,7 +2326,7 @@ Message* Reflection::MutableMessage(Message* message,
 
     Message** result_holder = MutableRaw<Message*>(message, field);
 
-    if (schema_.InRealOneof(field)) {
+    if (field->in_real_oneof()) {
       if (!HasOneofField(*message, field)) {
         ClearOneof(message, field->containing_oneof());
         result_holder = MutableField<Message*>(message, field);
@@ -2356,7 +2356,7 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
     MutableExtensionSet(message)->UnsafeArenaSetAllocatedMessage(
         field->number(), field->type(), field, sub_message);
   } else {
-    if (schema_.InRealOneof(field)) {
+    if (field->in_real_oneof()) {
       if (sub_message == nullptr) {
         ClearOneof(message, field->containing_oneof());
         return;
@@ -2428,10 +2428,10 @@ Message* Reflection::UnsafeArenaReleaseMessage(Message* message,
         MutableExtensionSet(message)->UnsafeArenaReleaseMessage(field,
                                                                 factory));
   } else {
-    if (!(field->is_repeated() || schema_.InRealOneof(field))) {
+    if (!(field->is_repeated() || field->in_real_oneof())) {
       ClearBit(message, field);
     }
-    if (schema_.InRealOneof(field)) {
+    if (field->in_real_oneof()) {
       if (HasOneofField(*message, field)) {
         *MutableOneofCase(message, field->containing_oneof()) = 0;
       } else {
@@ -2759,7 +2759,7 @@ static Type* AllocIfDefault(const FieldDescriptor* field, Type*& ptr,
 
 void* Reflection::MutableRawSplitImpl(Message* message,
                                       const FieldDescriptor* field) const {
-  ABSL_DCHECK(!schema_.InRealOneof(field)) << "Field = " << field->full_name();
+  ABSL_DCHECK(!field->in_real_oneof()) << "Field = " << field->full_name();
 
   const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
   PrepareSplitMessageForWrite(message);
@@ -2784,7 +2784,7 @@ void* Reflection::MutableRawNonOneofImpl(Message* message,
 
 void* Reflection::MutableRawImpl(Message* message,
                                  const FieldDescriptor* field) const {
-  if (PROTOBUF_PREDICT_TRUE(!schema_.InRealOneof(field))) {
+  if (PROTOBUF_PREDICT_TRUE(!field->in_real_oneof())) {
     return MutableRawNonOneofImpl(message, field);
   }
 
@@ -3125,7 +3125,7 @@ const Type& Reflection::GetField(const Message& message,
 template <typename Type>
 void Reflection::SetField(Message* message, const FieldDescriptor* field,
                           const Type& value) const {
-  bool real_oneof = schema_.InRealOneof(field);
+  bool real_oneof = field->in_real_oneof();
   if (real_oneof && !HasOneofField(*message, field)) {
     ClearOneof(message, field->containing_oneof());
   }
@@ -3136,8 +3136,8 @@ void Reflection::SetField(Message* message, const FieldDescriptor* field,
 template <typename Type>
 Type* Reflection::MutableField(Message* message,
                                const FieldDescriptor* field) const {
-  schema_.InRealOneof(field) ? SetOneofCase(message, field)
-                             : SetBit(message, field);
+  field->in_real_oneof() ? SetOneofCase(message, field)
+                         : SetBit(message, field);
   return MutableRaw<Type>(message, field);
 }
 
@@ -3316,10 +3316,10 @@ void Reflection::PopulateTcParseEntries(
       *entries = {};
       table_info.aux_entries[entry.aux_idx] = {};
     } else {
-      const OneofDescriptor* oneof = field->real_containing_oneof();
       entries->offset = schema_.GetFieldOffset(field);
-      if (oneof != nullptr) {
-        entries->has_idx = schema_.oneof_case_offset_ + 4 * oneof->index();
+      if (field->in_real_oneof()) {
+        entries->has_idx =
+            schema_.oneof_case_offset_ + 4 * field->containing_oneof()->index();
       } else if (schema_.HasHasbits()) {
         entries->has_idx =
             static_cast<int>(8 * schema_.HasBitsOffset() + entry.hasbit_idx);

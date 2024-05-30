@@ -251,7 +251,7 @@ bool FieldHasPresence(const google::protobuf::FieldDescriptor* field) {
   return field->has_presence();
   // Note, the above will return true for fields in a oneof.
   // If you want to filter out oneof fields, write this instead:
-  //   return field->has_presence && !field->real_containing_oneof()
+  //   return field->has_presence && !field->in_real_oneof()
 }
 ```
 
@@ -269,8 +269,7 @@ New:
 
 ```c++
 bool FieldIsInOneof(const google::protobuf::FieldDescriptor* field) {
-  // real_containing_oneof() returns nullptr for synthetic oneofs.
-  return field->real_containing_oneof() != nullptr;
+  return field->in_real_oneof();
 }
 ```
 

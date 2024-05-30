@@ -364,7 +364,7 @@ void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
   // Clone non-oneof fields first (treating optional proto3 fields as non-oneof)
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
-    if (field->real_containing_oneof()) {
+    if (field->in_real_oneof()) {
       continue;
     }
     std::unique_ptr<FieldGeneratorBase> generator(
@@ -594,7 +594,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   // Merge non-oneof fields, treating optional proto3 fields as normal fields
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
-    if (field->real_containing_oneof()) {
+    if (field->in_real_oneof()) {
       continue;
     }
     std::unique_ptr<FieldGeneratorBase> generator(

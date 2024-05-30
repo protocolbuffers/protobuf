@@ -542,7 +542,7 @@ bool GenerateField(const FieldDescriptor* field, io::Printer* printer,
   if (field->is_repeated()) {
     GenerateFieldDocComment(printer, field, options, kFieldProperty);
     printer->Print("private $^name^;\n", "name", field->name());
-  } else if (field->real_containing_oneof()) {
+  } else if (field->in_real_oneof()) {
     // Oneof fields are handled by GenerateOneofField.
     return true;
   } else {
@@ -791,7 +791,7 @@ void GenerateMessageToPool(absl::string_view name_prefix,
           absl::AsciiStrToUpper(val->type_name()), "number",
           absl::StrCat(field->number()), "other",
           EnumOrMessageSuffix(val, true));
-    } else if (!field->real_containing_oneof()) {
+    } else if (!field->in_real_oneof()) {
       printer->Print(
           "->^label^('^field^', "
           "\\Google\\Protobuf\\Internal\\GPBType::^type^, ^number^^other^)\n",

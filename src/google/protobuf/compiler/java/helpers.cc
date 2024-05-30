@@ -831,7 +831,7 @@ bool HasRequiredFields(const Descriptor* type) {
 }
 
 bool IsRealOneof(const FieldDescriptor* descriptor) {
-  return descriptor->real_containing_oneof();
+  return descriptor->in_real_oneof();
 }
 
 bool HasRepeatedFields(const Descriptor* descriptor) {

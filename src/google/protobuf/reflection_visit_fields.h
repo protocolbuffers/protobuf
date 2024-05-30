@@ -188,7 +188,7 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
 #undef PROTOBUF_HANDLE_REPEATED_CASE
 #undef PROTOBUF_HANDLE_REPEATED_PTR_CASE
 #undef PROTOBUF_IMPL_STRING_CASE
-    } else if (schema.InRealOneof(field)) {
+    } else if (field->in_real_oneof()) {
       const OneofDescriptor* containing_oneof = field->containing_oneof();
       const uint32_t* const oneof_case_array =
           internal::GetConstPointerAtOffset<uint32_t>(

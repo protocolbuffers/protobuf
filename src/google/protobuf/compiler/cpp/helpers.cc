@@ -543,7 +543,7 @@ std::string FieldMemberName(const FieldDescriptor* field, bool split) {
   absl::string_view prefix =
       IsMapEntryMessage(field->containing_type()) ? "" : "_impl_.";
   absl::string_view split_prefix = split ? "_split_->" : "";
-  if (field->real_containing_oneof() == nullptr) {
+  if (!field->in_real_oneof()) {
     return absl::StrCat(prefix, split_prefix, FieldName(field), "_");
   }
   // Oneof fields are never split.

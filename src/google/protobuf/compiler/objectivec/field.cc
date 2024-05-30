@@ -275,7 +275,7 @@ void FieldGenerator::SetOneofIndexBase(int index_base) {
 }
 
 bool FieldGenerator::WantsHasProperty() const {
-  return descriptor_->has_presence() && !descriptor_->real_containing_oneof();
+  return descriptor_->has_presence() && !descriptor_->in_real_oneof();
 }
 
 SingleFieldGenerator::SingleFieldGenerator(
@@ -322,7 +322,7 @@ void SingleFieldGenerator::GeneratePropertyImplementation(
 }
 
 bool SingleFieldGenerator::RuntimeUsesHasBit() const {
-  if (descriptor_->real_containing_oneof()) {
+  if (descriptor_->in_real_oneof()) {
     // The oneof tracks what is set instead.
     return false;
   }

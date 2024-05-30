@@ -67,7 +67,7 @@ struct ParseProto2Descriptor : Proto2Descriptor {
 
   static bool HasParsed(Field f, const Msg& msg,
                         bool allow_repeated_non_oneof) {
-    if (f->real_containing_oneof()) {
+    if (f->in_real_oneof()) {
       return msg.parsed_oneofs_indices_.contains(
           f->real_containing_oneof()->index());
     }
@@ -91,7 +91,7 @@ struct ParseProto2Descriptor : Proto2Descriptor {
       msg.msg_->GetReflection()->ClearField(msg.msg_, f);
     }
 
-    if (f->real_containing_oneof() != nullptr) {
+    if (f->in_real_oneof()) {
       msg.parsed_oneofs_indices_.insert(f->real_containing_oneof()->index());
     }
   }

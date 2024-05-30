@@ -127,10 +127,8 @@ inline bool SupportsPresenceApi(const FieldDescriptor* descriptor) {
 }
 
 inline bool RequiresPresenceBit(const FieldDescriptor* descriptor) {
-  return SupportsPresenceApi(descriptor) &&
-    !IsNullable(descriptor) &&
-    !descriptor->is_extension() &&
-    !descriptor->real_containing_oneof();
+  return SupportsPresenceApi(descriptor) && !IsNullable(descriptor) &&
+         !descriptor->is_extension() && !descriptor->in_real_oneof();
 }
 
 }  // namespace csharp

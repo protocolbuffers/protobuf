@@ -281,9 +281,8 @@ bool IsFieldEligibleForFastParsing(
     const TailCallTableInfo::MessageOptions& message_options) {
   const auto* field = entry.field;
   // Map, oneof, weak, and split fields are not handled on the fast path.
-  if (field->is_map() || field->real_containing_oneof() ||
-      field->options().weak() || options.is_implicitly_weak ||
-      options.should_split) {
+  if (field->is_map() || field->in_real_oneof() || field->options().weak() ||
+      options.is_implicitly_weak || options.should_split) {
     return false;
   }
 
@@ -615,7 +614,7 @@ uint16_t MakeTypeCardForField(
     type_card = fl::kFcOptional;
   } else if (field->is_repeated()) {
     type_card = fl::kFcRepeated;
-  } else if (field->real_containing_oneof()) {
+  } else if (field->in_real_oneof()) {
     type_card = fl::kFcOneof;
   } else {
     type_card = fl::kFcSingular;

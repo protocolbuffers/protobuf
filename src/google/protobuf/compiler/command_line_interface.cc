@@ -993,7 +993,7 @@ namespace {
 
 bool ContainsProto3Optional(const Descriptor* desc) {
   for (int i = 0; i < desc->field_count(); ++i) {
-    if (desc->field(i)->real_containing_oneof() == nullptr &&
+    if (!desc->field(i)->in_real_oneof() &&
         desc->field(i)->containing_oneof() != nullptr) {
       return true;
     }

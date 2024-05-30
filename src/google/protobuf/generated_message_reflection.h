@@ -114,20 +114,16 @@ struct ReflectionSchema {
   // Size of a google::protobuf::Message object of this type.
   uint32_t GetObjectSize() const { return static_cast<uint32_t>(object_size_); }
 
-  bool InRealOneof(const FieldDescriptor* field) const {
-    return field->real_containing_oneof();
-  }
-
   // Offset of a non-oneof field.  Getting a field offset is slightly more
   // efficient when we know statically that it is not a oneof field.
   uint32_t GetFieldOffsetNonOneof(const FieldDescriptor* field) const {
-    ABSL_DCHECK(!InRealOneof(field));
+    ABSL_DCHECK(!field->in_real_oneof());
     return OffsetValue(offsets_[field->index()], field->type());
   }
 
   // Offset of any field.
   uint32_t GetFieldOffset(const FieldDescriptor* field) const {
-    if (InRealOneof(field)) {
+    if (field->in_real_oneof()) {
       size_t offset =
           static_cast<size_t>(field->containing_type()->field_count()) +
           field->containing_oneof()->index();

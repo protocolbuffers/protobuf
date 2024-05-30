@@ -84,10 +84,6 @@ namespace {
 bool IsMapFieldInApi(const FieldDescriptor* field) { return field->is_map(); }
 
 
-inline bool InRealOneof(const FieldDescriptor* field) {
-  return field->real_containing_oneof() != nullptr;
-}
-
 // Compute the byte size of the in-memory representation of the field.
 int FieldSpaceUsed(const FieldDescriptor* field) {
   typedef FieldDescriptor FD;  // avoid line wrapping
@@ -370,7 +366,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
     void* field_ptr = MutableRaw(i);
-    if (InRealOneof(field)) {
+    if (field->in_real_oneof()) {
       continue;
     }
     switch (field->cpp_type()) {
@@ -488,7 +484,7 @@ DynamicMessage::~DynamicMessage() {
   // be touched.
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
-    if (InRealOneof(field)) {
+    if (field->in_real_oneof()) {
       void* field_ptr = MutableOneofCaseRaw(field->containing_oneof()->index());
       if (*(reinterpret_cast<const int32_t*>(field_ptr)) == field->number()) {
         field_ptr = MutableOneofFieldRaw(field);
@@ -576,7 +572,7 @@ void DynamicMessage::CrossLinkPrototypes() {
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-        !field->options().weak() && !InRealOneof(field) &&
+        !field->options().weak() && !field->in_real_oneof() &&
         !field->is_repeated()) {
       void* field_ptr = MutableRaw(i);
       // For fields with message types, we need to cross-link with the
@@ -715,7 +711,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   for (int i = 0; i < type->field_count(); i++) {
     // Make sure field is aligned to avoid bus errors.
     // Oneof fields do not use any space.
-    if (!InRealOneof(type->field(i))) {
+    if (!type->field(i)->in_real_oneof()) {
       int field_size = FieldSpaceUsed(type->field(i));
       size = AlignTo(size, std::min(kSafeAlignment, field_size));
       offsets[i] = size;

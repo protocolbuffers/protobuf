@@ -115,7 +115,7 @@ FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* field,
     : field_(field), options_(options) {
   bool is_repeated_or_map = field->is_repeated();
   should_split_ = ShouldSplit(field, options);
-  is_oneof_ = field->real_containing_oneof() != nullptr;
+  is_oneof_ = field->in_real_oneof();
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_ENUM:
     case FieldDescriptor::CPPTYPE_INT32:
@@ -291,7 +291,7 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
     }
   }
 
-  if (field->real_containing_oneof() &&
+  if (field->in_real_oneof() &&
       field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     return MakeOneofMessageGenerator(field, options, scc);
   }
@@ -307,7 +307,7 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
           return MakeSingularStringViewGenerator(field, options, scc);
         case StringType::kCord:
           if (field->type() == FieldDescriptor::TYPE_BYTES) {
-            if (field->real_containing_oneof()) {
+            if (field->in_real_oneof()) {
               return MakeOneofCordGenerator(field, options, scc);
             } else {
               return MakeSingularCordGenerator(field, options, scc);
