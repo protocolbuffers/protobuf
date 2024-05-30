@@ -823,6 +823,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -1015,6 +1016,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -1285,6 +1287,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -1544,6 +1547,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -1762,6 +1766,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -1959,6 +1964,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -2498,6 +2504,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -2735,6 +2742,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -2921,6 +2929,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -3112,6 +3121,7 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -3388,6 +3398,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -3567,6 +3578,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -3751,6 +3763,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -3963,6 +3976,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -4357,6 +4371,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -4738,6 +4753,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -5165,6 +5181,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -5611,6 +5628,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -6319,6 +6337,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -6963,6 +6982,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -7174,6 +7194,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -7607,6 +7628,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -8031,6 +8053,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -8451,6 +8474,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -8652,6 +8676,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -8917,6 +8942,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -9314,6 +9340,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -9528,6 +9555,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -9736,6 +9764,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -9956,6 +9985,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -10226,6 +10256,7 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -10592,6 +10623,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -11007,6 +11039,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;

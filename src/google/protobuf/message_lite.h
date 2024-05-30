@@ -214,7 +214,6 @@ PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
 // the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT MessageLite {
  public:
-  constexpr MessageLite() = default;
   MessageLite(const MessageLite&) = delete;
   MessageLite& operator=(const MessageLite&) = delete;
   virtual ~MessageLite() = default;
@@ -536,8 +535,6 @@ class PROTOBUF_EXPORT MessageLite {
     return tc_table;
   }
 
-  inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
-
   // We use a secondary vtable for descriptor based methods. This way ClassData
   // does not grow with the number of descriptor methods. This avoids extra
   // costs in MessageLite.
@@ -548,6 +545,7 @@ class PROTOBUF_EXPORT MessageLite {
     size_t (*space_used_long)(const MessageLite&);
   };
   struct ClassDataFull;
+
   // Note: The order of arguments in the functions is chosen so that it has
   // the same ABI as the member function that calls them. Eg the `this`
   // pointer becomes the first argument in the free function.
@@ -626,6 +624,9 @@ class PROTOBUF_EXPORT MessageLite {
     void (*get_metadata_tracker)();
   };
 
+  explicit constexpr MessageLite() {}
+  explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
+
   // GetClassData() returns a pointer to a ClassData struct which
   // exists in global memory and is unique to each subclass.  This uniqueness
   // property is used in order to quickly determine whether two messages are
@@ -689,6 +690,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::SwapFieldHelper;
   friend class internal::TcParser;
   friend class internal::TypeId;
+  friend class internal::UntypedMapBase;
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
 
@@ -702,6 +704,10 @@ class PROTOBUF_EXPORT MessageLite {
   void LogInitializationErrorMessage() const;
 
   bool MergeFromImpl(io::CodedInputStream* input, ParseFlags parse_flags);
+
+  // Runs the destructor for this instance, and if `free_memory` is true,
+  // also frees the memory.
+  void DestroyInstance(bool free_memory);
 
   template <typename T, const void* ptr = T::_raw_default_instance_>
   static constexpr auto GetStrongPointerForTypeImpl(int) {

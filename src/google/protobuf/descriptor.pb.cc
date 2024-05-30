@@ -2449,25 +2449,26 @@ inline void FileDescriptorSet::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-FileDescriptorSet::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              FileDescriptorSet::IsInitializedImpl,
-              &FileDescriptorSet::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_._cached_size_),
-              false,
-          },
-          &FileDescriptorSet::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    FileDescriptorSet::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            FileDescriptorSet::IsInitializedImpl,
+            &FileDescriptorSet::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_._cached_size_),
+            false,
+        },
+        &FileDescriptorSet::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* FileDescriptorSet::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> FileDescriptorSet::_table_ = {
   {
@@ -2689,25 +2690,26 @@ inline void FileDescriptorProto::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-FileDescriptorProto::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              FileDescriptorProto::IsInitializedImpl,
-              &FileDescriptorProto::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._cached_size_),
-              false,
-          },
-          &FileDescriptorProto::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    FileDescriptorProto::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            FileDescriptorProto::IsInitializedImpl,
+            &FileDescriptorProto::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._cached_size_),
+            false,
+        },
+        &FileDescriptorProto::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* FileDescriptorProto::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<4, 13, 7, 79, 2> FileDescriptorProto::_table_ = {
   {
@@ -3275,25 +3277,26 @@ inline void DescriptorProto_ExtensionRange::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-DescriptorProto_ExtensionRange::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              DescriptorProto_ExtensionRange::IsInitializedImpl,
-              &DescriptorProto_ExtensionRange::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._cached_size_),
-              false,
-          },
-          &DescriptorProto_ExtensionRange::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    DescriptorProto_ExtensionRange::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            DescriptorProto_ExtensionRange::IsInitializedImpl,
+            &DescriptorProto_ExtensionRange::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._cached_size_),
+            false,
+        },
+        &DescriptorProto_ExtensionRange::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* DescriptorProto_ExtensionRange::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 2> DescriptorProto_ExtensionRange::_table_ = {
   {
@@ -3536,25 +3539,26 @@ inline void DescriptorProto_ReservedRange::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-DescriptorProto_ReservedRange::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              nullptr,  // IsInitialized
-              &DescriptorProto_ReservedRange::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._cached_size_),
-              false,
-          },
-          &DescriptorProto_ReservedRange::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    DescriptorProto_ReservedRange::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            nullptr,  // IsInitialized
+            &DescriptorProto_ReservedRange::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._cached_size_),
+            false,
+        },
+        &DescriptorProto_ReservedRange::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* DescriptorProto_ReservedRange::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> DescriptorProto_ReservedRange::_table_ = {
   {
@@ -3789,25 +3793,26 @@ inline void DescriptorProto::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-DescriptorProto::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              DescriptorProto::IsInitializedImpl,
-              &DescriptorProto::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._cached_size_),
-              false,
-          },
-          &DescriptorProto::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    DescriptorProto::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            DescriptorProto::IsInitializedImpl,
+            &DescriptorProto::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._cached_size_),
+            false,
+        },
+        &DescriptorProto::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* DescriptorProto::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
   {
@@ -4305,25 +4310,26 @@ inline void ExtensionRangeOptions_Declaration::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-ExtensionRangeOptions_Declaration::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              nullptr,  // IsInitialized
-              &ExtensionRangeOptions_Declaration::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._cached_size_),
-              false,
-          },
-          &ExtensionRangeOptions_Declaration::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    ExtensionRangeOptions_Declaration::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            nullptr,  // IsInitialized
+            &ExtensionRangeOptions_Declaration::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._cached_size_),
+            false,
+        },
+        &ExtensionRangeOptions_Declaration::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* ExtensionRangeOptions_Declaration::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<3, 5, 0, 71, 2> ExtensionRangeOptions_Declaration::_table_ = {
   {
@@ -4630,25 +4636,26 @@ inline void ExtensionRangeOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-ExtensionRangeOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              ExtensionRangeOptions::IsInitializedImpl,
-              &ExtensionRangeOptions::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._cached_size_),
-              false,
-          },
-          &ExtensionRangeOptions::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    ExtensionRangeOptions::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            ExtensionRangeOptions::IsInitializedImpl,
+            &ExtensionRangeOptions::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._cached_size_),
+            false,
+        },
+        &ExtensionRangeOptions::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* ExtensionRangeOptions::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<3, 4, 4, 0, 12> ExtensionRangeOptions::_table_ = {
   {
@@ -4988,25 +4995,26 @@ inline void FieldDescriptorProto::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-FieldDescriptorProto::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              FieldDescriptorProto::IsInitializedImpl,
-              &FieldDescriptorProto::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._cached_size_),
-              false,
-          },
-          &FieldDescriptorProto::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    FieldDescriptorProto::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            FieldDescriptorProto::IsInitializedImpl,
+            &FieldDescriptorProto::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._cached_size_),
+            false,
+        },
+        &FieldDescriptorProto::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* FieldDescriptorProto::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = {
   {
@@ -5481,25 +5489,26 @@ inline void OneofDescriptorProto::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-OneofDescriptorProto::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              OneofDescriptorProto::IsInitializedImpl,
-              &OneofDescriptorProto::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._cached_size_),
-              false,
-          },
-          &OneofDescriptorProto::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    OneofDescriptorProto::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            OneofDescriptorProto::IsInitializedImpl,
+            &OneofDescriptorProto::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._cached_size_),
+            false,
+        },
+        &OneofDescriptorProto::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* OneofDescriptorProto::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<1, 2, 1, 49, 2> OneofDescriptorProto::_table_ = {
   {
@@ -5722,25 +5731,26 @@ inline void EnumDescriptorProto_EnumReservedRange::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-EnumDescriptorProto_EnumReservedRange::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              nullptr,  // IsInitialized
-              &EnumDescriptorProto_EnumReservedRange::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._cached_size_),
-              false,
-          },
-          &EnumDescriptorProto_EnumReservedRange::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    EnumDescriptorProto_EnumReservedRange::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            nullptr,  // IsInitialized
+            &EnumDescriptorProto_EnumReservedRange::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._cached_size_),
+            false,
+        },
+        &EnumDescriptorProto_EnumReservedRange::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* EnumDescriptorProto_EnumReservedRange::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> EnumDescriptorProto_EnumReservedRange::_table_ = {
   {
@@ -5965,25 +5975,26 @@ inline void EnumDescriptorProto::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-EnumDescriptorProto::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              EnumDescriptorProto::IsInitializedImpl,
-              &EnumDescriptorProto::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._cached_size_),
-              false,
-          },
-          &EnumDescriptorProto::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    EnumDescriptorProto::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            EnumDescriptorProto::IsInitializedImpl,
+            &EnumDescriptorProto::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._cached_size_),
+            false,
+        },
+        &EnumDescriptorProto::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* EnumDescriptorProto::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
   {
@@ -6319,25 +6330,26 @@ inline void EnumValueDescriptorProto::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-EnumValueDescriptorProto::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              EnumValueDescriptorProto::IsInitializedImpl,
-              &EnumValueDescriptorProto::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._cached_size_),
-              false,
-          },
-          &EnumValueDescriptorProto::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    EnumValueDescriptorProto::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            EnumValueDescriptorProto::IsInitializedImpl,
+            &EnumValueDescriptorProto::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._cached_size_),
+            false,
+        },
+        &EnumValueDescriptorProto::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* EnumValueDescriptorProto::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<2, 3, 1, 53, 2> EnumValueDescriptorProto::_table_ = {
   {
@@ -6606,25 +6618,26 @@ inline void ServiceDescriptorProto::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-ServiceDescriptorProto::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              ServiceDescriptorProto::IsInitializedImpl,
-              &ServiceDescriptorProto::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._cached_size_),
-              false,
-          },
-          &ServiceDescriptorProto::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    ServiceDescriptorProto::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            ServiceDescriptorProto::IsInitializedImpl,
+            &ServiceDescriptorProto::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._cached_size_),
+            false,
+        },
+        &ServiceDescriptorProto::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* ServiceDescriptorProto::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2> ServiceDescriptorProto::_table_ = {
   {
@@ -6915,25 +6928,26 @@ inline void MethodDescriptorProto::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-MethodDescriptorProto::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              MethodDescriptorProto::IsInitializedImpl,
-              &MethodDescriptorProto::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._cached_size_),
-              false,
-          },
-          &MethodDescriptorProto::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    MethodDescriptorProto::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            MethodDescriptorProto::IsInitializedImpl,
+            &MethodDescriptorProto::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._cached_size_),
+            false,
+        },
+        &MethodDescriptorProto::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* MethodDescriptorProto::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<3, 6, 1, 71, 2> MethodDescriptorProto::_table_ = {
   {
@@ -7322,25 +7336,26 @@ inline void FileOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-FileOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              FileOptions::IsInitializedImpl,
-              &FileOptions::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._cached_size_),
-              false,
-          },
-          &FileOptions::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    FileOptions::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            FileOptions::IsInitializedImpl,
+            &FileOptions::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._cached_size_),
+            false,
+        },
+        &FileOptions::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* FileOptions::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<5, 21, 3, 202, 12> FileOptions::_table_ = {
   {
@@ -8095,25 +8110,26 @@ inline void MessageOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-MessageOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              MessageOptions::IsInitializedImpl,
-              &MessageOptions::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._cached_size_),
-              false,
-          },
-          &MessageOptions::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    MessageOptions::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            MessageOptions::IsInitializedImpl,
+            &MessageOptions::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._cached_size_),
+            false,
+        },
+        &MessageOptions::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* MessageOptions::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<3, 7, 2, 0, 7> MessageOptions::_table_ = {
   {
@@ -8468,25 +8484,26 @@ inline void FieldOptions_EditionDefault::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-FieldOptions_EditionDefault::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              nullptr,  // IsInitialized
-              &FieldOptions_EditionDefault::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._cached_size_),
-              false,
-          },
-          &FieldOptions_EditionDefault::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    FieldOptions_EditionDefault::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            nullptr,  // IsInitialized
+            &FieldOptions_EditionDefault::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._cached_size_),
+            false,
+        },
+        &FieldOptions_EditionDefault::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* FieldOptions_EditionDefault::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<1, 2, 1, 57, 2> FieldOptions_EditionDefault::_table_ = {
   {
@@ -8713,25 +8730,26 @@ inline void FieldOptions_FeatureSupport::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-FieldOptions_FeatureSupport::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              nullptr,  // IsInitialized
-              &FieldOptions_FeatureSupport::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._cached_size_),
-              false,
-          },
-          &FieldOptions_FeatureSupport::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    FieldOptions_FeatureSupport::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            nullptr,  // IsInitialized
+            &FieldOptions_FeatureSupport::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._cached_size_),
+            false,
+        },
+        &FieldOptions_FeatureSupport::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* FieldOptions_FeatureSupport::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<2, 4, 3, 71, 2> FieldOptions_FeatureSupport::_table_ = {
   {
@@ -9026,25 +9044,26 @@ inline void FieldOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-FieldOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              FieldOptions::IsInitializedImpl,
-              &FieldOptions::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._cached_size_),
-              false,
-          },
-          &FieldOptions::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    FieldOptions::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            FieldOptions::IsInitializedImpl,
+            &FieldOptions::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._cached_size_),
+            false,
+        },
+        &FieldOptions::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* FieldOptions::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<4, 14, 8, 0, 7> FieldOptions::_table_ = {
   {
@@ -9589,25 +9608,26 @@ inline void OneofOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-OneofOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              OneofOptions::IsInitializedImpl,
-              &OneofOptions::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._cached_size_),
-              false,
-          },
-          &OneofOptions::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    OneofOptions::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            OneofOptions::IsInitializedImpl,
+            &OneofOptions::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._cached_size_),
+            false,
+        },
+        &OneofOptions::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* OneofOptions::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<2, 2, 2, 0, 7> OneofOptions::_table_ = {
   {
@@ -9873,25 +9893,26 @@ inline void EnumOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-EnumOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              EnumOptions::IsInitializedImpl,
-              &EnumOptions::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._cached_size_),
-              false,
-          },
-          &EnumOptions::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    EnumOptions::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            EnumOptions::IsInitializedImpl,
+            &EnumOptions::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._cached_size_),
+            false,
+        },
+        &EnumOptions::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* EnumOptions::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<3, 5, 2, 0, 7> EnumOptions::_table_ = {
   {
@@ -10230,25 +10251,26 @@ inline void EnumValueOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-EnumValueOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              EnumValueOptions::IsInitializedImpl,
-              &EnumValueOptions::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._cached_size_),
-              false,
-          },
-          &EnumValueOptions::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    EnumValueOptions::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            EnumValueOptions::IsInitializedImpl,
+            &EnumValueOptions::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._cached_size_),
+            false,
+        },
+        &EnumValueOptions::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* EnumValueOptions::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<3, 5, 3, 0, 7> EnumValueOptions::_table_ = {
   {
@@ -10592,25 +10614,26 @@ inline void ServiceOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-ServiceOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              ServiceOptions::IsInitializedImpl,
-              &ServiceOptions::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._cached_size_),
-              false,
-          },
-          &ServiceOptions::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    ServiceOptions::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            ServiceOptions::IsInitializedImpl,
+            &ServiceOptions::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._cached_size_),
+            false,
+        },
+        &ServiceOptions::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* ServiceOptions::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> ServiceOptions::_table_ = {
   {
@@ -10904,25 +10927,26 @@ inline void MethodOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-MethodOptions::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              MethodOptions::IsInitializedImpl,
-              &MethodOptions::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._cached_size_),
-              false,
-          },
-          &MethodOptions::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    MethodOptions::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            MethodOptions::IsInitializedImpl,
+            &MethodOptions::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._cached_size_),
+            false,
+        },
+        &MethodOptions::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* MethodOptions::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<3, 4, 3, 0, 12> MethodOptions::_table_ = {
   {
@@ -11230,25 +11254,26 @@ inline void UninterpretedOption_NamePart::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-UninterpretedOption_NamePart::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              UninterpretedOption_NamePart::IsInitializedImpl,
-              &UninterpretedOption_NamePart::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._cached_size_),
-              false,
-          },
-          &UninterpretedOption_NamePart::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    UninterpretedOption_NamePart::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            UninterpretedOption_NamePart::IsInitializedImpl,
+            &UninterpretedOption_NamePart::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._cached_size_),
+            false,
+        },
+        &UninterpretedOption_NamePart::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* UninterpretedOption_NamePart::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<1, 2, 0, 62, 2> UninterpretedOption_NamePart::_table_ = {
   {
@@ -11490,25 +11515,26 @@ inline void UninterpretedOption::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-UninterpretedOption::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              UninterpretedOption::IsInitializedImpl,
-              &UninterpretedOption::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._cached_size_),
-              false,
-          },
-          &UninterpretedOption::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    UninterpretedOption::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            UninterpretedOption::IsInitializedImpl,
+            &UninterpretedOption::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._cached_size_),
+            false,
+        },
+        &UninterpretedOption::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* UninterpretedOption::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<3, 7, 1, 75, 2> UninterpretedOption::_table_ = {
   {
@@ -11876,25 +11902,26 @@ inline void FeatureSet::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-FeatureSet::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              FeatureSet::IsInitializedImpl,
-              &FeatureSet::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._cached_size_),
-              false,
-          },
-          &FeatureSet::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    FeatureSet::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            FeatureSet::IsInitializedImpl,
+            &FeatureSet::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._cached_size_),
+            false,
+        },
+        &FeatureSet::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* FeatureSet::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<3, 6, 6, 0, 2> FeatureSet::_table_ = {
   {
@@ -12227,25 +12254,26 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-FeatureSetDefaults_FeatureSetEditionDefault::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              FeatureSetDefaults_FeatureSetEditionDefault::IsInitializedImpl,
-              &FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._cached_size_),
-              false,
-          },
-          &FeatureSetDefaults_FeatureSetEditionDefault::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    FeatureSetDefaults_FeatureSetEditionDefault::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            FeatureSetDefaults_FeatureSetEditionDefault::IsInitializedImpl,
+            &FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._cached_size_),
+            false,
+        },
+        &FeatureSetDefaults_FeatureSetEditionDefault::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* FeatureSetDefaults_FeatureSetEditionDefault::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<2, 3, 3, 0, 2> FeatureSetDefaults_FeatureSetEditionDefault::_table_ = {
   {
@@ -12522,25 +12550,26 @@ inline void FeatureSetDefaults::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-FeatureSetDefaults::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              FeatureSetDefaults::IsInitializedImpl,
-              &FeatureSetDefaults::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._cached_size_),
-              false,
-          },
-          &FeatureSetDefaults::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    FeatureSetDefaults::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            FeatureSetDefaults::IsInitializedImpl,
+            &FeatureSetDefaults::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._cached_size_),
+            false,
+        },
+        &FeatureSetDefaults::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* FeatureSetDefaults::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<1, 3, 3, 0, 2> FeatureSetDefaults::_table_ = {
   {
@@ -12802,25 +12831,26 @@ inline void SourceCodeInfo_Location::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-SourceCodeInfo_Location::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              nullptr,  // IsInitialized
-              &SourceCodeInfo_Location::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._cached_size_),
-              false,
-          },
-          &SourceCodeInfo_Location::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    SourceCodeInfo_Location::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            nullptr,  // IsInitialized
+            &SourceCodeInfo_Location::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._cached_size_),
+            false,
+        },
+        &SourceCodeInfo_Location::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* SourceCodeInfo_Location::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_ = {
   {
@@ -13127,25 +13157,26 @@ inline void SourceCodeInfo::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-SourceCodeInfo::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              nullptr,  // IsInitialized
-              &SourceCodeInfo::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_._cached_size_),
-              false,
-          },
-          &SourceCodeInfo::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    SourceCodeInfo::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            nullptr,  // IsInitialized
+            &SourceCodeInfo::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_._cached_size_),
+            false,
+        },
+        &SourceCodeInfo::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* SourceCodeInfo::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> SourceCodeInfo::_table_ = {
   {
@@ -13341,25 +13372,26 @@ inline void GeneratedCodeInfo_Annotation::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-GeneratedCodeInfo_Annotation::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              nullptr,  // IsInitialized
-              &GeneratedCodeInfo_Annotation::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._cached_size_),
-              false,
-          },
-          &GeneratedCodeInfo_Annotation::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    GeneratedCodeInfo_Annotation::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            nullptr,  // IsInitialized
+            &GeneratedCodeInfo_Annotation::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._cached_size_),
+            false,
+        },
+        &GeneratedCodeInfo_Annotation::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* GeneratedCodeInfo_Annotation::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<3, 5, 1, 64, 2> GeneratedCodeInfo_Annotation::_table_ = {
   {
@@ -13654,25 +13686,26 @@ inline void GeneratedCodeInfo::SharedDtor() {
   _impl_.~Impl_();
 }
 
-const ::google::protobuf::MessageLite::ClassData*
-GeneratedCodeInfo::GetClassData() const {
-  PROTOBUF_CONSTINIT static const ::google::protobuf::MessageLite::
-      ClassDataFull _data_ = {
-          {
-              &_table_.header,
-              nullptr,  // OnDemandRegisterArenaDtor
-              nullptr,  // IsInitialized
-              &GeneratedCodeInfo::MergeImpl,
-              PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _impl_._cached_size_),
-              false,
-          },
-          &GeneratedCodeInfo::kDescriptorMethods,
-          &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
-          nullptr,  // tracker
-      };
-  ::google::protobuf::internal::PrefetchToLocalCache(&_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_data_.tc_table);
-  return _data_.base();
+PROTOBUF_CONSTINIT
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::google::protobuf::MessageLite::ClassDataFull
+    GeneratedCodeInfo::_class_data_ = {
+        ::google::protobuf::Message::ClassData{
+            &_table_.header,
+            nullptr,  // OnDemandRegisterArenaDtor
+            nullptr,  // IsInitialized
+            &GeneratedCodeInfo::MergeImpl,
+            PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _impl_._cached_size_),
+            false,
+        },
+        &GeneratedCodeInfo::kDescriptorMethods,
+        &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
+        nullptr,  // tracker
+};
+const ::google::protobuf::MessageLite::ClassData* GeneratedCodeInfo::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+  return _class_data_.base();
 }
 constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> GeneratedCodeInfo::_table_ = {
   {

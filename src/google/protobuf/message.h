@@ -246,7 +246,6 @@ inline void MaybePoisonAfterClear(Message* root);
 // the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT Message : public MessageLite {
  public:
-  constexpr Message() = default;
   Message(const Message&) = delete;
   Message& operator=(const Message&) = delete;
 
@@ -364,6 +363,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   const Reflection* GetReflection() const { return GetMetadata().reflection; }
 
  protected:
+  constexpr Message() {}
+  using MessageLite::MessageLite;
+
   // Get a struct containing the metadata for the Message, which is used in turn
   // to implement GetDescriptor() and GetReflection() above.
   Metadata GetMetadata() const;
@@ -372,7 +374,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // For CODE_SIZE types
   static bool IsInitializedImpl(const MessageLite&);
 
-  inline explicit Message(Arena* arena) : MessageLite(arena) {}
   size_t ComputeUnknownFieldsSize(size_t total_size,
                                   internal::CachedSize* cached_size) const;
   size_t MaybeComputeUnknownFieldsSize(size_t total_size,

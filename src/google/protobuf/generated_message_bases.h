@@ -37,9 +37,8 @@ class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
 
  protected:
   constexpr ZeroFieldsBase() {}
-  explicit ZeroFieldsBase(Arena* arena) : Message(arena) {}
-  ZeroFieldsBase(const ZeroFieldsBase&) = delete;
-  ZeroFieldsBase& operator=(const ZeroFieldsBase&) = delete;
+  using Message::Message;
+
   ~ZeroFieldsBase() override;
 
   static void MergeImpl(MessageLite& to, const MessageLite& from);
