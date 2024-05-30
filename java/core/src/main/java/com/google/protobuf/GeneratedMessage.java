@@ -2056,7 +2056,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           if (i < descriptor.getRealOneofs().size()) {
             oneofs[i] =
                 new RealOneofAccessor(
-                    descriptor, i, camelCaseNames[i + fieldsSize], messageClass, builderClass);
+                    descriptor, camelCaseNames[i + fieldsSize], messageClass, builderClass);
           } else {
             oneofs[i] = new SyntheticOneofAccessor(descriptor, i);
           }
@@ -2148,7 +2148,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     private static class RealOneofAccessor implements OneofAccessor {
       RealOneofAccessor(
           final Descriptor descriptor,
-          final int oneofIndex,
           final String camelCaseName,
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder<?>> builderClass) {
