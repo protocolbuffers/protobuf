@@ -114,7 +114,7 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.ListValue) */ {
  public:
   inline ListValue() : ListValue(nullptr) {}
-  ~ListValue() override;
+  ~ListValue() PROTOBUF_FINAL;
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR ListValue(
       ::google::protobuf::internal::ConstantInitialized);
@@ -187,7 +187,7 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  ListValue* New(::google::protobuf::Arena* arena = nullptr) const final {
+  ListValue* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<ListValue>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -204,11 +204,11 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  ::size_t ByteSizeLong() const PROTOBUF_FINAL;
+  ::uint8_t* _InternalSerialize(::uint8_t* target,
+                              ::google::protobuf::io::EpsCopyOutputStream*
+                                  stream) const PROTOBUF_FINAL;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -226,7 +226,7 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
       : ListValue(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -293,7 +293,7 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Struct) */ {
  public:
   inline Struct() : Struct(nullptr) {}
-  ~Struct() override;
+  ~Struct() PROTOBUF_FINAL;
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR Struct(
       ::google::protobuf::internal::ConstantInitialized);
@@ -366,7 +366,7 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Struct* New(::google::protobuf::Arena* arena = nullptr) const final {
+  Struct* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<Struct>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -383,11 +383,11 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  ::size_t ByteSizeLong() const PROTOBUF_FINAL;
+  ::uint8_t* _InternalSerialize(::uint8_t* target,
+                              ::google::protobuf::io::EpsCopyOutputStream*
+                                  stream) const PROTOBUF_FINAL;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -405,7 +405,7 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
       : Struct(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -488,7 +488,7 @@ class Struct_FieldsEntry_DoNotUse final
     return reinterpret_cast<const Struct_FieldsEntry_DoNotUse*>(
         &_Struct_FieldsEntry_DoNotUse_default_instance_);
   }
-const ::google::protobuf::Message::ClassData* GetClassData() const final;
+const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
 static const ::google::protobuf::Message::ClassDataFull _class_data_;
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
 };
@@ -498,7 +498,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Value) */ {
  public:
   inline Value() : Value(nullptr) {}
-  ~Value() override;
+  ~Value() PROTOBUF_FINAL;
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR Value(
       ::google::protobuf::internal::ConstantInitialized);
@@ -580,7 +580,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Value* New(::google::protobuf::Arena* arena = nullptr) const final {
+  Value* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<Value>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -597,11 +597,11 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  ::size_t ByteSizeLong() const PROTOBUF_FINAL;
+  ::uint8_t* _InternalSerialize(::uint8_t* target,
+                              ::google::protobuf::io::EpsCopyOutputStream*
+                                  stream) const PROTOBUF_FINAL;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -619,7 +619,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
       : Value(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:

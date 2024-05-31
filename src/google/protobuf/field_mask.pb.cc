@@ -33,7 +33,8 @@ inline constexpr FieldMask::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR FieldMask::FieldMask(::_pbi::ConstantInitialized)
-    : _impl_(::_pbi::ConstantInitialized()) {}
+    : ::google::protobuf::Message(_class_data_.base()),
+      _impl_(::_pbi::ConstantInitialized()) {}
 struct FieldMaskDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FieldMaskDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~FieldMaskDefaultTypeInternal() {}
@@ -106,7 +107,7 @@ class FieldMask::_Internal {
 };
 
 FieldMask::FieldMask(::google::protobuf::Arena* arena)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldMask)
 }
@@ -119,7 +120,7 @@ inline PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
 FieldMask::FieldMask(
     ::google::protobuf::Arena* arena,
     const FieldMask& from)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   FieldMask* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -156,6 +157,11 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &FieldMask::MergeImpl,
+            ::google::protobuf::Message::GetDeleteImpl<FieldMask>(),
+            ::google::protobuf::Message::GetNewImpl<FieldMask>(),
+            ::google::protobuf::Message::GetClearImpl<FieldMask>(),
+                ::google::protobuf::Message::GetByteSizeLongImpl<FieldMask>(),
+                ::google::protobuf::Message::GetSerializeImpl<FieldMask>(),
             PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._cached_size_),
             false,
         },

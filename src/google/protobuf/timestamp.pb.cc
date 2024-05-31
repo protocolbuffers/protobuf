@@ -34,7 +34,8 @@ inline constexpr Timestamp::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR Timestamp::Timestamp(::_pbi::ConstantInitialized)
-    : _impl_(::_pbi::ConstantInitialized()) {}
+    : ::google::protobuf::Message(_class_data_.base()),
+      _impl_(::_pbi::ConstantInitialized()) {}
 struct TimestampDefaultTypeInternal {
   PROTOBUF_CONSTEXPR TimestampDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~TimestampDefaultTypeInternal() {}
@@ -108,7 +109,7 @@ class Timestamp::_Internal {
 };
 
 Timestamp::Timestamp(::google::protobuf::Arena* arena)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Timestamp)
 }
@@ -150,6 +151,11 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Timestamp::MergeImpl,
+            ::google::protobuf::Message::GetDeleteImpl<Timestamp>(),
+            ::google::protobuf::Message::GetNewImpl<Timestamp>(),
+            ::google::protobuf::Message::GetClearImpl<Timestamp>(),
+                ::google::protobuf::Message::GetByteSizeLongImpl<Timestamp>(),
+                ::google::protobuf::Message::GetSerializeImpl<Timestamp>(),
             PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._cached_size_),
             false,
         },

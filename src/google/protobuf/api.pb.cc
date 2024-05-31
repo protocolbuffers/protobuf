@@ -38,7 +38,8 @@ inline constexpr Mixin::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR Mixin::Mixin(::_pbi::ConstantInitialized)
-    : _impl_(::_pbi::ConstantInitialized()) {}
+    : ::google::protobuf::Message(_class_data_.base()),
+      _impl_(::_pbi::ConstantInitialized()) {}
 struct MixinDefaultTypeInternal {
   PROTOBUF_CONSTEXPR MixinDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~MixinDefaultTypeInternal() {}
@@ -69,7 +70,8 @@ inline constexpr Method::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR Method::Method(::_pbi::ConstantInitialized)
-    : _impl_(::_pbi::ConstantInitialized()) {}
+    : ::google::protobuf::Message(_class_data_.base()),
+      _impl_(::_pbi::ConstantInitialized()) {}
 struct MethodDefaultTypeInternal {
   PROTOBUF_CONSTEXPR MethodDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~MethodDefaultTypeInternal() {}
@@ -98,7 +100,8 @@ inline constexpr Api::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR Api::Api(::_pbi::ConstantInitialized)
-    : _impl_(::_pbi::ConstantInitialized()) {}
+    : ::google::protobuf::Message(_class_data_.base()),
+      _impl_(::_pbi::ConstantInitialized()) {}
 struct ApiDefaultTypeInternal {
   PROTOBUF_CONSTEXPR ApiDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~ApiDefaultTypeInternal() {}
@@ -244,7 +247,7 @@ void Api::clear_source_context() {
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 Api::Api(::google::protobuf::Arena* arena)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Api)
 }
@@ -262,7 +265,7 @@ inline PROTOBUF_NDEBUG_INLINE Api::Impl_::Impl_(
 Api::Api(
     ::google::protobuf::Arena* arena,
     const Api& from)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   Api* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -317,6 +320,11 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Api::MergeImpl,
+            ::google::protobuf::Message::GetDeleteImpl<Api>(),
+            ::google::protobuf::Message::GetNewImpl<Api>(),
+            ::google::protobuf::Message::GetClearImpl<Api>(),
+                ::google::protobuf::Message::GetByteSizeLongImpl<Api>(),
+                ::google::protobuf::Message::GetSerializeImpl<Api>(),
             PROTOBUF_FIELD_OFFSET(Api, _impl_._cached_size_),
             false,
         },
@@ -650,7 +658,7 @@ void Method::clear_options() {
   _impl_.options_.Clear();
 }
 Method::Method(::google::protobuf::Arena* arena)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Method)
 }
@@ -666,7 +674,7 @@ inline PROTOBUF_NDEBUG_INLINE Method::Impl_::Impl_(
 Method::Method(
     ::google::protobuf::Arena* arena,
     const Method& from)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   Method* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -722,6 +730,11 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Method::MergeImpl,
+            ::google::protobuf::Message::GetDeleteImpl<Method>(),
+            ::google::protobuf::Message::GetNewImpl<Method>(),
+            ::google::protobuf::Message::GetClearImpl<Method>(),
+                ::google::protobuf::Message::GetByteSizeLongImpl<Method>(),
+                ::google::protobuf::Message::GetSerializeImpl<Method>(),
             PROTOBUF_FIELD_OFFSET(Method, _impl_._cached_size_),
             false,
         },
@@ -1017,7 +1030,7 @@ class Mixin::_Internal {
 };
 
 Mixin::Mixin(::google::protobuf::Arena* arena)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Mixin)
 }
@@ -1031,7 +1044,7 @@ inline PROTOBUF_NDEBUG_INLINE Mixin::Impl_::Impl_(
 Mixin::Mixin(
     ::google::protobuf::Arena* arena,
     const Mixin& from)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   Mixin* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -1071,6 +1084,11 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Mixin::MergeImpl,
+            ::google::protobuf::Message::GetDeleteImpl<Mixin>(),
+            ::google::protobuf::Message::GetNewImpl<Mixin>(),
+            ::google::protobuf::Message::GetClearImpl<Mixin>(),
+                ::google::protobuf::Message::GetByteSizeLongImpl<Mixin>(),
+                ::google::protobuf::Message::GetSerializeImpl<Mixin>(),
             PROTOBUF_FIELD_OFFSET(Mixin, _impl_._cached_size_),
             false,
         },

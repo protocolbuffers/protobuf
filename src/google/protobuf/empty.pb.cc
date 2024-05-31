@@ -25,8 +25,9 @@ namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
 namespace google {
 namespace protobuf {
-      template <typename>
-PROTOBUF_CONSTEXPR Empty::Empty(::_pbi::ConstantInitialized) {}
+              template <typename>
+PROTOBUF_CONSTEXPR Empty::Empty(::_pbi::ConstantInitialized)
+    : ::google::protobuf::internal::ZeroFieldsBase(_class_data_.base()) {}
 struct EmptyDefaultTypeInternal {
   PROTOBUF_CONSTEXPR EmptyDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~EmptyDefaultTypeInternal() {}
@@ -97,13 +98,13 @@ class Empty::_Internal {
 };
 
 Empty::Empty(::google::protobuf::Arena* arena)
-    : ::google::protobuf::internal::ZeroFieldsBase(arena) {
+    : ::google::protobuf::internal::ZeroFieldsBase(arena, _class_data_.base()) {
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Empty)
 }
 Empty::Empty(
     ::google::protobuf::Arena* arena,
     const Empty& from)
-    : ::google::protobuf::internal::ZeroFieldsBase(arena) {
+    : ::google::protobuf::internal::ZeroFieldsBase(arena, _class_data_.base()) {
   Empty* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -121,6 +122,11 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Empty::MergeImpl,
+            ::google::protobuf::internal::ZeroFieldsBase::GetDeleteImpl<Empty>(),
+            ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<Empty>(),
+            ::google::protobuf::internal::ZeroFieldsBase::GetClearImpl<Empty>(),
+                ::google::protobuf::internal::ZeroFieldsBase::GetByteSizeLongImpl<Empty>(),
+                ::google::protobuf::internal::ZeroFieldsBase::GetSerializeImpl<Empty>(),
             PROTOBUF_FIELD_OFFSET(Empty, _impl_._cached_size_),
             false,
         },

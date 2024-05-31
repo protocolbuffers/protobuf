@@ -35,7 +35,8 @@ inline constexpr SourceContext::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR SourceContext::SourceContext(::_pbi::ConstantInitialized)
-    : _impl_(::_pbi::ConstantInitialized()) {}
+    : ::google::protobuf::Message(_class_data_.base()),
+      _impl_(::_pbi::ConstantInitialized()) {}
 struct SourceContextDefaultTypeInternal {
   PROTOBUF_CONSTEXPR SourceContextDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~SourceContextDefaultTypeInternal() {}
@@ -108,7 +109,7 @@ class SourceContext::_Internal {
 };
 
 SourceContext::SourceContext(::google::protobuf::Arena* arena)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceContext)
 }
@@ -121,7 +122,7 @@ inline PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
 SourceContext::SourceContext(
     ::google::protobuf::Arena* arena,
     const SourceContext& from)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   SourceContext* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -159,6 +160,11 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &SourceContext::MergeImpl,
+            ::google::protobuf::Message::GetDeleteImpl<SourceContext>(),
+            ::google::protobuf::Message::GetNewImpl<SourceContext>(),
+            ::google::protobuf::Message::GetClearImpl<SourceContext>(),
+                ::google::protobuf::Message::GetByteSizeLongImpl<SourceContext>(),
+                ::google::protobuf::Message::GetSerializeImpl<SourceContext>(),
             PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
             false,
         },
