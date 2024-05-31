@@ -220,7 +220,7 @@ public abstract class GeneratedMessageLite<
 
   @Override
   public final boolean isInitialized() {
-    return isInitialized((MessageType) this, Boolean.TRUE);
+    return isInitialized((MessageType) this, /* shouldMemoize= */ true);
   }
 
   @Override
