@@ -53,7 +53,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.event_name }}-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  group: ${{ github.event_name }}-${{ github.workflow }}-${{ github.head_ref || github.ref }}-${github.event_name}
   cancel-in-progress: ${{ contains(fromJSON('["pull_request", "pull_request_target", "workflow_dispatch"]'), github.event_name) }}
 
 jobs:
