@@ -357,28 +357,19 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
   SyncHasbits(msg, hasbits, table);
   auto& field = RefAt<MessageLite*>(msg, data.offset());
 
-  if (aux_is_table) {
-    const auto* inner_table = table->field_aux(data.aux_idx())->table;
-    if (field == nullptr) {
-      field = inner_table->default_instance->New(msg->GetArena());
-    }
-    const auto inner_loop = [&](const char* ptr) {
-      return ParseLoop(field, ptr, ctx, inner_table);
-    };
-    return group_coding ? ctx->ParseGroupInlined(ptr, FastDecodeTag(saved_tag),
-                                                 inner_loop)
-                        : ctx->ParseLengthDelimitedInlined(ptr, inner_loop);
-  } else {
-    if (field == nullptr) {
-      const MessageLite* default_instance =
-          table->field_aux(data.aux_idx())->message_default();
-      field = default_instance->New(msg->GetArena());
-    }
-    if (group_coding) {
-      return ctx->ParseGroup(field, ptr, FastDecodeTag(saved_tag));
-    }
-    return ctx->ParseMessage(field, ptr);
+  const auto aux = *table->field_aux(data.aux_idx());
+  const auto* inner_table =
+      aux_is_table ? aux.table : aux.message_default()->GetTcParseTable();
+
+  if (field == nullptr) {
+    field = inner_table->default_instance->New(msg->GetArena());
   }
+  const auto inner_loop = [&](const char* ptr) {
+    return ParseLoop(field, ptr, ctx, inner_table);
+  };
+  return group_coding
+             ? ctx->ParseGroupInlined(ptr, FastDecodeTag(saved_tag), inner_loop)
+             : ctx->ParseLengthDelimitedInlined(ptr, inner_loop);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastMdS1(PROTOBUF_TC_PARAM_DECL) {
@@ -446,23 +437,17 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
   auto& field = RefAt<RepeatedPtrFieldBase>(msg, data.offset());
   const MessageLite* const default_instance =
       aux_is_table ? aux.table->default_instance : aux.message_default();
+  const auto* inner_table =
+      aux_is_table ? aux.table : default_instance->GetTcParseTable();
   do {
     ptr += sizeof(TagType);
     MessageLite* submsg = field.AddMessage(default_instance);
-    if (aux_is_table) {
-      const auto inner_loop = [&](const char* ptr) {
-        return ParseLoop(submsg, ptr, ctx, aux.table);
-      };
-      ptr = group_coding ? ctx->ParseGroupInlined(
-                               ptr, FastDecodeTag(expected_tag), inner_loop)
-                         : ctx->ParseLengthDelimitedInlined(ptr, inner_loop);
-    } else {
-      if (group_coding) {
-        ptr = ctx->ParseGroup(submsg, ptr, FastDecodeTag(expected_tag));
-      } else {
-        ptr = ctx->ParseMessage(submsg, ptr);
-      }
-    }
+    const auto inner_loop = [&](const char* ptr) {
+      return ParseLoop(submsg, ptr, ctx, inner_table);
+    };
+    ptr = group_coding ? ctx->ParseGroupInlined(
+                             ptr, FastDecodeTag(expected_tag), inner_loop)
+                       : ctx->ParseLengthDelimitedInlined(ptr, inner_loop);
     if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
       PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
@@ -2340,33 +2325,31 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
   void* const base = MaybeGetSplitBase(msg, is_split, table);
   SyncHasbits(msg, hasbits, table);
   MessageLite*& field = RefAt<MessageLite*>(base, entry.offset);
-  if ((type_card & field_layout::kTvMask) == field_layout::kTvTable) {
-    auto* inner_table = table->field_aux(&entry)->table;
-    if (need_init || field == nullptr) {
-      field = inner_table->default_instance->New(msg->GetArena());
-    }
-    const auto inner_loop = [&](const char* ptr) {
-      return ParseLoop(field, ptr, ctx, inner_table);
-    };
-    return is_group ? ctx->ParseGroupInlined(ptr, decoded_tag, inner_loop)
-                    : ctx->ParseLengthDelimitedInlined(ptr, inner_loop);
+  const auto aux = *table->field_aux(&entry);
+  const TcParseTableBase* inner_table;
+  const MessageLite* def;
+
+  if (uint16_t default_kind = type_card & field_layout::kTvMask;
+      ABSL_PREDICT_TRUE(default_kind == field_layout::kTvTable)) {
+    inner_table = aux.table;
+    def = inner_table->default_instance;
+  } else if (default_kind == field_layout::kTvDefault) {
+    def = aux.message_default();
+    inner_table = def->GetTcParseTable();
   } else {
-    if (need_init || field == nullptr) {
-      const MessageLite* def;
-      if ((type_card & field_layout::kTvMask) == field_layout::kTvDefault) {
-        def = table->field_aux(&entry)->message_default();
-      } else {
-        ABSL_DCHECK_EQ(type_card & field_layout::kTvMask,
-                       +field_layout::kTvWeakPtr);
-        def = table->field_aux(&entry)->message_default_weak();
-      }
-      field = def->New(msg->GetArena());
-    }
-    if (is_group) {
-      return ctx->ParseGroup(field, ptr, decoded_tag);
-    }
-    return ctx->ParseMessage(field, ptr);
+    ABSL_DCHECK_EQ(default_kind, +field_layout::kTvWeakPtr);
+    def = aux.message_default_weak();
+    inner_table = def->GetTcParseTable();
   }
+
+  if (need_init || field == nullptr) {
+    field = def->New(msg->GetArena());
+  }
+  const auto inner_loop = [&](const char* ptr) {
+    return ParseLoop(field, ptr, ctx, inner_table);
+  };
+  return is_group ? ctx->ParseGroupInlined(ptr, decoded_tag, inner_loop)
+                  : ctx->ParseLengthDelimitedInlined(ptr, inner_loop);
 }
 
 template <bool is_split, bool is_group>
@@ -2398,49 +2381,43 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
       MaybeCreateRepeatedRefAt<RepeatedPtrFieldBase, is_split>(
           base, entry.offset, msg);
   const auto aux = *table->field_aux(&entry);
-  if ((type_card & field_layout::kTvMask) == field_layout::kTvTable) {
-    auto* inner_table = aux.table;
-    const MessageLite* default_instance = inner_table->default_instance;
-    const char* ptr2 = ptr;
-    uint32_t next_tag;
-    do {
-      MessageLite* value = field.AddMessage(default_instance);
-      const auto inner_loop = [&](const char* ptr) {
-        return ParseLoop(value, ptr, ctx, inner_table);
-      };
-      ptr = is_group ? ctx->ParseGroupInlined(ptr2, decoded_tag, inner_loop)
-                     : ctx->ParseLengthDelimitedInlined(ptr2, inner_loop);
-      if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) goto error;
-      if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
-      ptr2 = ReadTag(ptr, &next_tag);
-      if (PROTOBUF_PREDICT_FALSE(ptr2 == nullptr)) goto error;
-    } while (next_tag == decoded_tag);
+  const TcParseTableBase* inner_table;
+  const MessageLite* def;
+  if (uint16_t default_kind = type_card & field_layout::kTvMask;
+      ABSL_PREDICT_TRUE(default_kind == field_layout::kTvTable)) {
+    inner_table = aux.table;
+    def = inner_table->default_instance;
+  } else if (default_kind == field_layout::kTvDefault) {
+    def = aux.message_default();
+    inner_table = def->GetTcParseTable();
   } else {
-    const MessageLite* default_instance;
-    if ((type_card & field_layout::kTvMask) == field_layout::kTvDefault) {
-      default_instance = aux.message_default();
-    } else {
-      ABSL_DCHECK_EQ(type_card & field_layout::kTvMask,
-                     +field_layout::kTvWeakPtr);
-      default_instance = aux.message_default_weak();
-    }
-    const char* ptr2 = ptr;
-    uint32_t next_tag;
-    do {
-      MessageLite* value = field.AddMessage(default_instance);
-      ptr = is_group ? ctx->ParseGroup(value, ptr2, decoded_tag)
-                     : ctx->ParseMessage(value, ptr2);
-      if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) goto error;
-      if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
-      ptr2 = ReadTag(ptr, &next_tag);
-      if (PROTOBUF_PREDICT_FALSE(ptr2 == nullptr)) goto error;
-    } while (next_tag == decoded_tag);
+    ABSL_DCHECK_EQ(default_kind, +field_layout::kTvWeakPtr);
+    def = aux.message_default_weak();
+    inner_table = def->GetTcParseTable();
   }
+
+  const char* ptr2 = ptr;
+  uint32_t next_tag;
+  do {
+    MessageLite* value = field.AddMessage(def);
+    const auto inner_loop = [&](const char* ptr) {
+      return ParseLoop(value, ptr, ctx, inner_table);
+    };
+    ptr = is_group ? ctx->ParseGroupInlined(ptr2, decoded_tag, inner_loop)
+                   : ctx->ParseLengthDelimitedInlined(ptr2, inner_loop);
+    if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
+      PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+    }
+    if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
+      PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+    }
+    ptr2 = ReadTag(ptr, &next_tag);
+    if (PROTOBUF_PREDICT_FALSE(ptr2 == nullptr)) {
+      PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+    }
+  } while (next_tag == decoded_tag);
+
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-parse_loop:
-  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-error:
-  PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 static void SerializeMapKey(const NodeBase* node, MapTypeCard type_card,
