@@ -182,21 +182,29 @@ void TestCtorAndDtorTraits(std::vector<absl::string_view> def,
       : std::conditional_t<arena_ctor, ArenaCtorBase, EmptyBase<0>>,
         std::conditional_t<arena_dtor, ArenaDtorBase, EmptyBase<1>>,
         Message {
-    TraitsProber() { actions.push_back("()"); }
-    TraitsProber(const TraitsProber&) { actions.push_back("(const T&)"); }
-    explicit TraitsProber(int) { actions.push_back("(int)"); }
-    explicit TraitsProber(Arena* arena) { actions.push_back("(Arena)"); }
-    TraitsProber(Arena* arena, const TraitsProber&) {
+    TraitsProber() : Message(nullptr) { actions.push_back("()"); }
+    TraitsProber(const TraitsProber&) : Message(nullptr) {
+      actions.push_back("(const T&)");
+    }
+    explicit TraitsProber(int) : Message(nullptr) {
+      actions.push_back("(int)");
+    }
+    explicit TraitsProber(Arena* arena) : Message(nullptr) {
+      actions.push_back("(Arena)");
+    }
+    TraitsProber(Arena* arena, const TraitsProber&) : Message(nullptr) {
       actions.push_back("(Arena, const T&)");
     }
-    TraitsProber(Arena* arena, int) { actions.push_back("(Arena, int)"); }
-    ~TraitsProber() override { actions.push_back("~()"); }
+    TraitsProber(Arena* arena, int) : Message(nullptr) {
+      actions.push_back("(Arena, int)");
+    }
+    ~TraitsProber() { actions.push_back("~()"); }
 
-    TraitsProber* New(Arena*) const final {
+    TraitsProber* New(Arena*) const {
       ABSL_LOG(FATAL);
       return nullptr;
     }
-    const ClassData* GetClassData() const final {
+    const ClassData* GetClassData() const PROTOBUF_FINAL {
       ABSL_LOG(FATAL);
       return nullptr;
     }
@@ -511,11 +519,13 @@ class DispatcherTestProto : public Message {
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   // For the test below to construct.
-  explicit DispatcherTestProto(absl::in_place_t) {}
-  explicit DispatcherTestProto(Arena*) { ABSL_LOG(FATAL); }
-  DispatcherTestProto(Arena*, const DispatcherTestProto&) { ABSL_LOG(FATAL); }
-  DispatcherTestProto* New(Arena*) const final { ABSL_LOG(FATAL); }
-  const ClassData* GetClassData() const final { ABSL_LOG(FATAL); }
+  explicit DispatcherTestProto(absl::in_place_t) : Message(nullptr) {}
+  explicit DispatcherTestProto(Arena*) : Message(nullptr) { ABSL_LOG(FATAL); }
+  DispatcherTestProto(Arena*, const DispatcherTestProto&) : Message(nullptr) {
+    ABSL_LOG(FATAL);
+  }
+  DispatcherTestProto* New(Arena*) const PROTOBUF_FINAL { ABSL_LOG(FATAL); }
+  const ClassData* GetClassData() const PROTOBUF_FINAL { ABSL_LOG(FATAL); }
 };
 // We use a specialization to inject behavior for the test.
 // This test is very intrusive and will have to be fixed if we change the

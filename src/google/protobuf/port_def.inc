@@ -654,6 +654,15 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_BUILTIN_CONSTANT_P(x) false
 #endif
 
+#ifdef PROTOBUF_CUSTOM_VTABLE
+#error PROTOBUF_CUSTOM_VTABLE was previously defined
+#endif
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+#define PROTOBUF_VIRTUAL virtual
+#define PROTOBUF_OVERRIDE override
+#define PROTOBUF_FINAL final
+#endif
+
 // Determines the platforms where descriptor weak messages can be used.
 #ifdef PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 #error PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED was previously defined

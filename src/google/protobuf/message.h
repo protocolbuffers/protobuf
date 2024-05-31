@@ -258,7 +258,13 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   // Construct a new instance on the arena. Ownership is passed to the caller
   // if arena is a nullptr.
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  Message* New(Arena* arena) const {
+    return static_cast<Message*>(MessageLite::New(arena));
+  }
+#else   // PROTOBUF_CUSTOM_VTABLE
   Message* New(Arena* arena) const override = 0;
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Make this message into a copy of the given message.  The given message
   // must have the same descriptor, but need not necessarily be the same class.
@@ -341,12 +347,13 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Reflection-based methods ----------------------------------------
   // These methods are pure-virtual in MessageLite, but Message provides
   // reflection-based default implementations.
-
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
   void Clear() override;
 
   size_t ByteSizeLong() const override;
   uint8_t* _InternalSerialize(uint8_t* target,
                               io::EpsCopyOutputStream* stream) const override;
+#endif  // !PROTOBUF_CUSTOM_VTABLE
 
   // Introspection ---------------------------------------------------
 
@@ -363,7 +370,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   const Reflection* GetReflection() const { return GetMetadata().reflection; }
 
  protected:
-  constexpr Message() {}
   using MessageLite::MessageLite;
 
   // Get a struct containing the metadata for the Message, which is used in turn
@@ -381,6 +387,11 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   // Reflection based version for reflection based types.
   static void MergeImpl(MessageLite& to, const MessageLite& from);
+  static void ClearImpl(MessageLite& msg);
+  static size_t ByteSizeLongImpl(const MessageLite& msg);
+  static uint8_t* _InternalSerializeImpl(const MessageLite& msg,
+                                         uint8_t* target,
+                                         io::EpsCopyOutputStream* stream);
 
   static const internal::TcParseTableBase* GetTcParseTableImpl(
       const MessageLite& msg);

@@ -44,7 +44,7 @@ struct ImplicitWeakMessageDefaultType {
 };
 
 constexpr ImplicitWeakMessage::ImplicitWeakMessage(ConstantInitialized)
-    : data_(nullptr) {}
+    : MessageLite(class_data_.base()), data_(nullptr) {}
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT ImplicitWeakMessageDefaultType
     implicit_weak_message_default_instance;
@@ -64,6 +64,11 @@ constexpr MessageLite::ClassDataLite<1> ImplicitWeakMessage::class_data_ = {
         nullptr,  // on_demand_register_arena_dtor
         nullptr,  // is_initialized (always true)
         MergeImpl,
+        GetDeleteImpl<ImplicitWeakMessage>(),
+        GetNewImpl<ImplicitWeakMessage>(),
+        GetClearImpl<ImplicitWeakMessage>(),
+        GetByteSizeLongImpl<ImplicitWeakMessage>(),
+        GetSerializeImpl<ImplicitWeakMessage>(),
         PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
         true,
     },

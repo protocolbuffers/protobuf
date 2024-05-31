@@ -46,8 +46,12 @@ namespace google {
 namespace protobuf {
 
 void MessageLite::DestroyInstance(bool free_memory) {
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  _class_data_->delete_message(this, free_memory);
+#else   // PROTOBUF_CUSTOM_VTABLE
   ABSL_DCHECK(!free_memory);
   this->~MessageLite();
+#endif  // PROTOBUF_CUSTOM_VTABLE
 }
 
 void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
@@ -59,6 +63,23 @@ void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
       << " and " << other.GetTypeName();
   data->merge_to_from(*this, other);
 }
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+uint8_t* MessageLite::_InternalSerialize(
+    uint8_t* ptr, io::EpsCopyOutputStream* stream) const {
+  return _class_data_->serialize(*this, ptr, stream);
+}
+
+MessageLite* MessageLite::New(Arena* arena) const {
+  return static_cast<MessageLite*>(_class_data_->new_message(this, arena));
+}
+
+void MessageLite::Clear() { _class_data_->clear(*this); }
+
+size_t MessageLite::ByteSizeLong() const {
+  return _class_data_->byte_size_long(*this);
+}
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
 bool MessageLite::IsInitialized() const {
   auto* data = GetClassData();

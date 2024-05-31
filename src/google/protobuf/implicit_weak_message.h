@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_IMPLICIT_WEAK_MESSAGE_H__
 #define GOOGLE_PROTOBUF_IMPLICIT_WEAK_MESSAGE_H__
 
+#include <cstddef>
 #include <string>
 
 #include "google/protobuf/arena.h"
@@ -45,9 +46,9 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 
   // TODO: make this constructor private
   explicit ImplicitWeakMessage(Arena* arena)
-      : MessageLite(arena), data_(new std::string) {}
+      : MessageLite(arena, class_data_.base()), data_(new std::string) {}
 
-  ~ImplicitWeakMessage() override {
+  ~ImplicitWeakMessage() PROTOBUF_FINAL {
     // data_ will be null in the default instance, but we can safely call delete
     // here because the default instance will never be destroyed.
     delete data_;
@@ -55,22 +56,22 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 
   static const ImplicitWeakMessage& default_instance();
 
-  const ClassData* GetClassData() const final;
+  const ClassData* GetClassData() const PROTOBUF_FINAL;
 
-  MessageLite* New(Arena* arena) const override {
+  MessageLite* New(Arena* arena) const PROTOBUF_FINAL {
     return Arena::Create<ImplicitWeakMessage>(arena);
   }
 
-  void Clear() override { data_->clear(); }
+  void Clear() PROTOBUF_FINAL { data_->clear(); }
 
-  size_t ByteSizeLong() const override {
+  size_t ByteSizeLong() const PROTOBUF_FINAL {
     size_t size = data_ == nullptr ? 0 : data_->size();
     cached_size_.Set(internal::ToCachedSize(size));
     return size;
   }
 
-  uint8_t* _InternalSerialize(uint8_t* target,
-                              io::EpsCopyOutputStream* stream) const final {
+  uint8_t* _InternalSerialize(
+      uint8_t* target, io::EpsCopyOutputStream* stream) const PROTOBUF_FINAL {
     if (data_ == nullptr) {
       return target;
     }

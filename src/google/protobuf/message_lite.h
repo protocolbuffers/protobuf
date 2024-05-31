@@ -216,7 +216,7 @@ class PROTOBUF_EXPORT MessageLite {
  public:
   MessageLite(const MessageLite&) = delete;
   MessageLite& operator=(const MessageLite&) = delete;
-  virtual ~MessageLite() = default;
+  PROTOBUF_VIRTUAL ~MessageLite() = default;
 
   // Basic Operations ------------------------------------------------
 
@@ -229,7 +229,11 @@ class PROTOBUF_EXPORT MessageLite {
 
   // Construct a new instance on the arena. Ownership is passed to the caller
   // if arena is a nullptr.
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  MessageLite* New(Arena* arena) const;
+#else
   virtual MessageLite* New(Arena* arena) const = 0;
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Returns the arena, if any, that directly owns this message and its internal
   // memory (Arena::Own is different in that the arena doesn't directly own the
@@ -242,7 +246,11 @@ class PROTOBUF_EXPORT MessageLite {
   // Clear() assumes that any memory allocated to hold parts of the message
   // will likely be needed again, so the memory used may not be freed.
   // To ensure that all memory used by a Message is freed, you must delete it.
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void Clear();
+#else
   virtual void Clear() = 0;
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Quickly check if all required fields have values set.
   bool IsInitialized() const;
@@ -462,7 +470,11 @@ class PROTOBUF_EXPORT MessageLite {
   //
   // ByteSizeLong() is generally linear in the number of fields defined for the
   // proto.
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  size_t ByteSizeLong() const;
+#else
   virtual size_t ByteSizeLong() const = 0;
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Legacy ByteSize() API.
   [[deprecated("Please use ByteSizeLong() instead")]] int ByteSize() const {
@@ -518,6 +530,68 @@ class PROTOBUF_EXPORT MessageLite {
     return static_cast<T*>(Arena::DefaultConstruct<T>(arena));
   }
 
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  template <typename T>
+  static void* NewImpl(const void* prototype, Arena* arena) {
+    return static_cast<const T*>(prototype)->New(arena);
+  }
+  template <typename T>
+  static constexpr auto GetNewImpl() {
+    return NewImpl<T>;
+  }
+
+  template <typename T>
+  static void DeleteImpl(void* msg, bool free_memory) {
+    static_cast<T*>(msg)->~T();
+    if (free_memory) internal::SizedDelete(msg, sizeof(T));
+  }
+  template <typename T>
+  static constexpr auto GetDeleteImpl() {
+    return DeleteImpl<T>;
+  }
+
+  template <typename T>
+  static void ClearImpl(MessageLite& msg) {
+    return static_cast<T&>(msg).Clear();
+  }
+  template <typename T>
+  static constexpr auto GetClearImpl() {
+    return ClearImpl<T>;
+  }
+
+  template <typename T>
+  static auto ByteSizeLongImpl(const MessageLite& msg) {
+    return static_cast<const T&>(msg).ByteSizeLong();
+  }
+  template <typename T>
+  static constexpr auto GetByteSizeLongImpl() {
+    return ByteSizeLongImpl<T>;
+  }
+
+  template <typename T>
+  static uint8_t* SerializeImpl(const MessageLite& msg, uint8_t* target,
+                                io::EpsCopyOutputStream* stream) {
+    return static_cast<const T&>(msg)._InternalSerialize(target, stream);
+  }
+  template <typename T>
+  static constexpr auto GetSerializeImpl() {
+    return SerializeImpl<T>;
+  }
+#else   // PROTOBUF_CUSTOM_VTABLE
+  // When custom vtables are off we avoid instantiating the functions because we
+  // will not use them anyway. Less work for the compiler.
+  template <typename T>
+  using GetNewImpl = std::nullptr_t;
+  template <typename T>
+  using GetDeleteImpl = std::nullptr_t;
+  template <typename T>
+  using GetClearImpl = std::nullptr_t;
+  template <typename T>
+  using GetByteSizeLongImpl = std::nullptr_t;
+  template <typename T>
+  using GetSerializeImpl = std::nullptr_t;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static T* CopyConstruct(Arena* arena, const T& from) {
     return static_cast<T*>(Arena::CopyConstruct<T>(arena, &from));
@@ -554,11 +628,21 @@ class PROTOBUF_EXPORT MessageLite {
   // We could save more data by omitting any optional pointer that would
   // otherwise be null. We can have some metadata in ClassData telling us if we
   // have them and their offset.
+  using NewMessageF = void* (*)(const void* prototype, Arena* arena);
+  using DeleteMessageF = void (*)(void* msg, bool free_memory);
   struct ClassData {
     const internal::TcParseTableBase* tc_table;
     void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
     bool (*is_initialized)(const MessageLite&);
     void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    DeleteMessageF delete_message;
+    NewMessageF new_message;
+    void (*clear)(MessageLite&);
+    size_t (*byte_size_long)(const MessageLite&);
+    uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
+                          io::EpsCopyOutputStream* stream);
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
     // Offset of the CachedSize member.
     uint32_t cached_size_offset;
@@ -566,19 +650,32 @@ class PROTOBUF_EXPORT MessageLite {
     // char[] just beyond the ClassData.
     bool is_lite;
 
-    constexpr ClassData(const internal::TcParseTableBase* tc_table,
-                        void (*on_demand_register_arena_dtor)(MessageLite&,
-                                                              Arena&),
-                        bool (*is_initialized)(const MessageLite&),
-                        void (*merge_to_from)(MessageLite& to,
-                                              const MessageLite& from_msg),
-                        uint32_t cached_size_offset, bool is_lite)
+    constexpr ClassData(
+        const internal::TcParseTableBase* tc_table,
+        void (*on_demand_register_arena_dtor)(MessageLite&, Arena&),
+        bool (*is_initialized)(const MessageLite&),
+        void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
+        DeleteMessageF delete_message,  //
+        NewMessageF new_message,        //
+        void (*clear)(MessageLite&),
+        size_t (*byte_size_long)(const MessageLite&),
+        uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
+                              io::EpsCopyOutputStream* stream),
+        uint32_t cached_size_offset, bool is_lite)
         : tc_table(tc_table),
           on_demand_register_arena_dtor(on_demand_register_arena_dtor),
           is_initialized(is_initialized),
           merge_to_from(merge_to_from),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          delete_message(delete_message),
+          new_message(new_message),
+          clear(clear),
+          byte_size_long(byte_size_long),
+          serialize(serialize),
+#endif  // PROTOBUF_CUSTOM_VTABLE
           cached_size_offset(cached_size_offset),
-          is_lite(is_lite) {}
+          is_lite(is_lite) {
+    }
 
     const ClassDataFull& full() const {
       ABSL_DCHECK(!is_lite);
@@ -624,8 +721,15 @@ class PROTOBUF_EXPORT MessageLite {
     void (*get_metadata_tracker)();
   };
 
-  explicit constexpr MessageLite() {}
-  explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  explicit constexpr MessageLite(const ClassData* data) : _class_data_(data) {}
+  explicit MessageLite(Arena* arena, const ClassData* data)
+      : _internal_metadata_(arena), _class_data_(data) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+  explicit constexpr MessageLite(const ClassData*) {}
+  explicit MessageLite(Arena* arena, const ClassData*)
+      : _internal_metadata_(arena) {}
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
   // GetClassData() returns a pointer to a ClassData struct which
   // exists in global memory and is unique to each subclass.  This uniqueness
@@ -634,7 +738,14 @@ class PROTOBUF_EXPORT MessageLite {
   //
   // This is a work in progress. There are still some types (eg MapEntry) that
   // return a default table instead of a unique one.
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  const ClassData* GetClassData() const {
+    ::absl::PrefetchToLocalCache(_class_data_);
+    return _class_data_;
+  }
+#else   // PROTOBUF_CUSTOM_VTABLE
   virtual const ClassData* GetClassData() const = 0;
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
   template <typename T>
   static auto GetClassDataGenerated() {
@@ -646,6 +757,9 @@ class PROTOBUF_EXPORT MessageLite {
   }
 
   internal::InternalMetadata _internal_metadata_;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  const ClassData* _class_data_;
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Return the cached size object as described by
   // ClassData::cached_size_offset.
@@ -668,8 +782,13 @@ class PROTOBUF_EXPORT MessageLite {
 
   // Fast path when conditions match (ie. non-deterministic)
   //  uint8_t* _InternalSerialize(uint8_t* ptr) const;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  uint8_t* _InternalSerialize(uint8_t* ptr,
+                              io::EpsCopyOutputStream* stream) const;
+#else   // PROTOBUF_CUSTOM_VTABLE
   virtual uint8_t* _InternalSerialize(
       uint8_t* ptr, io::EpsCopyOutputStream* stream) const = 0;
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Identical to IsInitialized() except that it logs an error message.
   bool IsInitializedWithErrors() const {
@@ -677,6 +796,12 @@ class PROTOBUF_EXPORT MessageLite {
     LogInitializationErrorMessage();
     return false;
   }
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(MessageLite* msg, std::destroying_delete_t) {
+    msg->DestroyInstance(true);
+  }
+#endif
 
  private:
   friend class FastReflectionMessageMutator;

@@ -1287,7 +1287,7 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
       }
   )cc");
   p->Emit(R"cc(
-    const $superclass$::ClassData* GetClassData() const final;
+    const $superclass$::ClassData* GetClassData() const PROTOBUF_FINAL;
     static const $superclass$::ClassDataFull _class_data_;
   )cc");
   format(
@@ -1593,7 +1593,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           if (HasSimpleBaseClass(descriptor_, options_)) return;
 
           p->Emit(R"cc(
-            ~$classname$() override;
+            ~$classname$() PROTOBUF_FINAL;
           )cc");
         }},
        {"decl_annotate",
@@ -1748,11 +1748,11 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           if (!HasSimpleBaseClass(descriptor_, options_)) {
             p->Emit(R"cc(
-              ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-              ::size_t ByteSizeLong() const final;
-              $uint8$* _InternalSerialize(
-                  $uint8$* target,
-                  ::$proto_ns$::io::EpsCopyOutputStream* stream) const final;
+              ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+              ::size_t ByteSizeLong() const PROTOBUF_FINAL;
+              $uint8$* _InternalSerialize($uint8$* target,
+                                          ::$proto_ns$::io::EpsCopyOutputStream*
+                                              stream) const PROTOBUF_FINAL;
             )cc");
           }
         }},
@@ -2001,7 +2001,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           // implements Message ----------------------------------------------
 
-          $classname$* New(::$proto_ns$::Arena* arena = nullptr) const final {
+          $classname$* New(::$proto_ns$::Arena* arena = nullptr) const PROTOBUF_FINAL {
             return $superclass$::DefaultConstruct<$classname$>(arena);
           }
           $generated_methods$;
@@ -2024,7 +2024,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             *this = ::std::move(from);
           }
           $arena_dtor$;
-          const $superclass$::ClassData* GetClassData() const final;
+          const $superclass$::ClassData* GetClassData() const PROTOBUF_FINAL;
           static const $superclass$::$classdata_type$ _class_data_;
 
          public:
@@ -2143,8 +2143,9 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
               }},
              {"class_data", [&] { GenerateClassData(p); }}},
             R"cc(
-              $classname$::$classname$() {}
-              $classname$::$classname$(::$proto_ns$::Arena* arena) : SuperType(arena) {}
+              $classname$::$classname$() : SuperType(_class_data_.base()) {}
+              $classname$::$classname$(::$proto_ns$::Arena* arena)
+                  : SuperType(arena, _class_data_.base()) {}
               $annotate_accessors$;
               $verify$;
               $class_data$;
@@ -2845,12 +2846,21 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
   Formatter format(p);
 
   if (IsMapEntryMessage(descriptor_) || !HasImplData(descriptor_, options_)) {
-    p->Emit(R"cc(
-      //~ Templatize constexpr constructor as a workaround for a bug in gcc 12
-      //~ (warning in gcc 13).
-      template <typename>
-      $constexpr$ $classname$::$classname$(::_pbi::ConstantInitialized) {}
-    )cc");
+    p->Emit({{"base",
+              [&] {
+                if (IsMapEntryMessage(descriptor_)) {
+                  p->Emit("$classname$::MapEntry");
+                } else {
+                  p->Emit("$superclass$");
+                }
+              }}},
+            R"cc(
+              //~ Templatize constexpr constructor as a workaround for a bug in
+              //~ gcc 12 (warning in gcc 13).
+              template <typename>
+              $constexpr$ $classname$::$classname$(::_pbi::ConstantInitialized)
+                  : $base$(_class_data_.base()) {}
+            )cc");
     return;
   }
 
@@ -2871,7 +2881,8 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
       R"cc(
         template <typename>
         $constexpr$ $classname$::$classname$(::_pbi::ConstantInitialized)
-            : _impl_(::_pbi::ConstantInitialized()) {}
+            : $superclass$(_class_data_.base()),
+              _impl_(::_pbi::ConstantInitialized()) {}
       )cc");
 }
 
@@ -3134,7 +3145,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
                 ::$proto_ns$::Arena* arena,
                 //~ force alignment
                 const $classname$& from)
-                : $superclass$(arena) {
+                : $superclass$(arena, _class_data_.base()) {
               $classname$* const _this = this;
               (void)_this;
               _internal_metadata_.MergeFrom<$unknown_fields_type$>(
@@ -3180,7 +3191,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
       },
       R"cc(
         $classname$::$classname$(::$proto_ns$::Arena* arena)
-            : $superclass$(arena) {
+            : $superclass$(arena, _class_data_.base()) {
           $ctor_body$;
           // @@protoc_insertion_point(arena_constructor:$full_name$)
         }
@@ -3642,6 +3653,21 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
       )cc");
     }
   };
+  const auto custom_vtable_methods = [&] {
+    if (HasGeneratedMethods(descriptor_->file(), options_) &&
+        !IsMapEntryMessage(descriptor_)) {
+      p->Emit(R"cc(
+        $superclass$::GetClearImpl<$classname$>(),
+            $superclass$::GetByteSizeLongImpl<$classname$>(),
+            $superclass$::GetSerializeImpl<$classname$>(),
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        $superclass$::ClearImpl, $superclass$::ByteSizeLongImpl,
+            $superclass$::_InternalSerializeImpl,
+      )cc");
+    }
+  };
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     const auto pin_weak_descriptor = [&] {
@@ -3670,6 +3696,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
             {"is_initialized", is_initialized},
             {"pin_weak_descriptor", pin_weak_descriptor},
+            {"custom_vtable_methods", custom_vtable_methods},
             {"table",
              [&] {
                // Map entries use the dynamic parser.
@@ -3706,6 +3733,9 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                       $on_demand_register_arena_dtor$,
                       $is_initialized$,
                       &$classname$::MergeImpl,
+                      $superclass$::GetDeleteImpl<$classname$>(),
+                      $superclass$::GetNewImpl<$classname$>(),
+                      $custom_vtable_methods$,
                       PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                       false,
                   },
@@ -3726,6 +3756,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             {"type_size", descriptor_->full_name().size() + 1},
             {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
             {"is_initialized", is_initialized},
+            {"custom_vtable_methods", custom_vtable_methods},
         },
         R"cc(
           PROTOBUF_CONSTINIT
@@ -3737,6 +3768,9 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                       $on_demand_register_arena_dtor$,
                       $is_initialized$,
                       &$classname$::MergeImpl,
+                      $superclass$::GetDeleteImpl<$classname$>(),
+                      $superclass$::GetNewImpl<$classname$>(),
+                      $custom_vtable_methods$,
                       PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                       true,
                   },

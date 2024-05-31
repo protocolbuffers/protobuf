@@ -1458,6 +1458,7 @@ cc_test(
     srcs = ["inlined_string_field_unittest.cc"],
     deps = [
         ":cc_test_protos",
+        ":port",
         ":protobuf",
         ":protobuf_lite",
         "//src/google/protobuf/io",

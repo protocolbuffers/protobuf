@@ -119,7 +119,7 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.Version) */ {
  public:
   inline Version() : Version(nullptr) {}
-  ~Version() override;
+  ~Version() PROTOBUF_FINAL;
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR Version(
       ::google::protobuf::internal::ConstantInitialized);
@@ -192,7 +192,7 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Version* New(::google::protobuf::Arena* arena = nullptr) const final {
+  Version* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<Version>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -209,11 +209,11 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  ::size_t ByteSizeLong() const PROTOBUF_FINAL;
+  ::uint8_t* _InternalSerialize(::uint8_t* target,
+                              ::google::protobuf::io::EpsCopyOutputStream*
+                                  stream) const PROTOBUF_FINAL;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -231,7 +231,7 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
       : Version(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -338,7 +338,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse.File) */ {
  public:
   inline CodeGeneratorResponse_File() : CodeGeneratorResponse_File(nullptr) {}
-  ~CodeGeneratorResponse_File() override;
+  ~CodeGeneratorResponse_File() PROTOBUF_FINAL;
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR CodeGeneratorResponse_File(
       ::google::protobuf::internal::ConstantInitialized);
@@ -411,7 +411,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorResponse_File* New(::google::protobuf::Arena* arena = nullptr) const final {
+  CodeGeneratorResponse_File* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorResponse_File>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -428,11 +428,11 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   bool IsInitialized() const {
     return true;
   }
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  ::size_t ByteSizeLong() const PROTOBUF_FINAL;
+  ::uint8_t* _InternalSerialize(::uint8_t* target,
+                              ::google::protobuf::io::EpsCopyOutputStream*
+                                  stream) const PROTOBUF_FINAL;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -450,7 +450,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
       : CodeGeneratorResponse_File(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -573,7 +573,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse) */ {
  public:
   inline CodeGeneratorResponse() : CodeGeneratorResponse(nullptr) {}
-  ~CodeGeneratorResponse() override;
+  ~CodeGeneratorResponse() PROTOBUF_FINAL;
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR CodeGeneratorResponse(
       ::google::protobuf::internal::ConstantInitialized);
@@ -646,7 +646,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorResponse* New(::google::protobuf::Arena* arena = nullptr) const final {
+  CodeGeneratorResponse* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorResponse>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -663,11 +663,11 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   bool IsInitialized() const {
     return true;
   }
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  ::size_t ByteSizeLong() const PROTOBUF_FINAL;
+  ::uint8_t* _InternalSerialize(::uint8_t* target,
+                              ::google::protobuf::io::EpsCopyOutputStream*
+                                  stream) const PROTOBUF_FINAL;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -685,7 +685,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
       : CodeGeneratorResponse(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -832,7 +832,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorRequest) */ {
  public:
   inline CodeGeneratorRequest() : CodeGeneratorRequest(nullptr) {}
-  ~CodeGeneratorRequest() override;
+  ~CodeGeneratorRequest() PROTOBUF_FINAL;
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR CodeGeneratorRequest(
       ::google::protobuf::internal::ConstantInitialized);
@@ -905,7 +905,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorRequest* New(::google::protobuf::Arena* arena = nullptr) const final {
+  CodeGeneratorRequest* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorRequest>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -927,11 +927,11 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   static bool IsInitializedImpl(const MessageLite& msg);
 
   public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  ::size_t ByteSizeLong() const PROTOBUF_FINAL;
+  ::uint8_t* _InternalSerialize(::uint8_t* target,
+                              ::google::protobuf::io::EpsCopyOutputStream*
+                                  stream) const PROTOBUF_FINAL;
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -949,7 +949,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
       : CodeGeneratorRequest(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const final;
+  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:

@@ -33,7 +33,8 @@ inline constexpr CppFeatures::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR CppFeatures::CppFeatures(::_pbi::ConstantInitialized)
-    : _impl_(::_pbi::ConstantInitialized()) {}
+    : ::google::protobuf::Message(_class_data_.base()),
+      _impl_(::_pbi::ConstantInitialized()) {}
 struct CppFeaturesDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CppFeaturesDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CppFeaturesDefaultTypeInternal() {}
@@ -145,7 +146,7 @@ class CppFeatures::_Internal {
 };
 
 CppFeatures::CppFeatures(::google::protobuf::Arena* arena)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:pb.CppFeatures)
 }
@@ -187,6 +188,11 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &CppFeatures::MergeImpl,
+            ::google::protobuf::Message::GetDeleteImpl<CppFeatures>(),
+            ::google::protobuf::Message::GetNewImpl<CppFeatures>(),
+            ::google::protobuf::Message::GetClearImpl<CppFeatures>(),
+                ::google::protobuf::Message::GetByteSizeLongImpl<CppFeatures>(),
+                ::google::protobuf::Message::GetSerializeImpl<CppFeatures>(),
             PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
             false,
         },

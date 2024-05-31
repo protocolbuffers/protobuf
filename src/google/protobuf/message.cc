@@ -71,6 +71,24 @@ void Message::MergeImpl(MessageLite& to, const MessageLite& from) {
                        DownCastMessage<Message>(&to));
 }
 
+void Message::ClearImpl(MessageLite& msg) {
+  ReflectionOps::Clear(&DownCastMessage<Message>(msg));
+}
+
+size_t Message::ByteSizeLongImpl(const MessageLite& msg) {
+  auto& _this = DownCastMessage<Message>(msg);
+  size_t size = WireFormat::ByteSize(_this);
+  _this.AccessCachedSize().Set(internal::ToCachedSize(size));
+  return size;
+}
+
+uint8_t* Message::_InternalSerializeImpl(const MessageLite& msg,
+                                         uint8_t* target,
+                                         io::EpsCopyOutputStream* stream) {
+  return WireFormat::_InternalSerialize(DownCastMessage<Message>(msg), target,
+                                        stream);
+}
+
 void Message::MergeFrom(const Message& from) {
   auto* class_to = GetClassData();
   auto* class_from = from.GetClassData();
@@ -106,7 +124,9 @@ void Message::CopyFrom(const Message& from) {
   }
 }
 
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
 void Message::Clear() { ReflectionOps::Clear(this); }
+#endif  // !PROTOBUF_CUSTOM_VTABLE
 
 bool Message::IsInitializedImpl(const MessageLite& msg) {
   return ReflectionOps::IsInitialized(DownCastMessage<Message>(msg));
@@ -151,6 +171,7 @@ Metadata Message::GetMetadataImpl(const ClassDataFull& data) {
   return {data.descriptor, data.reflection};
 }
 
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
 uint8_t* Message::_InternalSerialize(uint8_t* target,
                                      io::EpsCopyOutputStream* stream) const {
   return WireFormat::_InternalSerialize(*this, target, stream);
@@ -161,6 +182,7 @@ size_t Message::ByteSizeLong() const {
   AccessCachedSize().Set(internal::ToCachedSize(size));
   return size;
 }
+#endif  // !PROTOBUF_CUSTOM_VTABLE
 
 size_t Message::ComputeUnknownFieldsSize(
     size_t total_size, internal::CachedSize* cached_size) const {

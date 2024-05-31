@@ -33,7 +33,8 @@ inline constexpr JavaFeatures::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR JavaFeatures::JavaFeatures(::_pbi::ConstantInitialized)
-    : _impl_(::_pbi::ConstantInitialized()) {}
+    : ::google::protobuf::Message(_class_data_.base()),
+      _impl_(::_pbi::ConstantInitialized()) {}
 struct JavaFeaturesDefaultTypeInternal {
   PROTOBUF_CONSTEXPR JavaFeaturesDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~JavaFeaturesDefaultTypeInternal() {}
@@ -150,7 +151,7 @@ class JavaFeatures::_Internal {
 };
 
 JavaFeatures::JavaFeatures(::google::protobuf::Arena* arena)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:pb.JavaFeatures)
 }
@@ -192,6 +193,11 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &JavaFeatures::MergeImpl,
+            ::google::protobuf::Message::GetDeleteImpl<JavaFeatures>(),
+            ::google::protobuf::Message::GetNewImpl<JavaFeatures>(),
+            ::google::protobuf::Message::GetClearImpl<JavaFeatures>(),
+                ::google::protobuf::Message::GetByteSizeLongImpl<JavaFeatures>(),
+                ::google::protobuf::Message::GetSerializeImpl<JavaFeatures>(),
             PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
             false,
         },

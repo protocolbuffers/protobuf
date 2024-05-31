@@ -39,7 +39,8 @@ inline constexpr Version::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR Version::Version(::_pbi::ConstantInitialized)
-    : _impl_(::_pbi::ConstantInitialized()) {}
+    : ::google::protobuf::Message(_class_data_.base()),
+      _impl_(::_pbi::ConstantInitialized()) {}
 struct VersionDefaultTypeInternal {
   PROTOBUF_CONSTEXPR VersionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~VersionDefaultTypeInternal() {}
@@ -67,7 +68,8 @@ inline constexpr CodeGeneratorResponse_File::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR CodeGeneratorResponse_File::CodeGeneratorResponse_File(::_pbi::ConstantInitialized)
-    : _impl_(::_pbi::ConstantInitialized()) {}
+    : ::google::protobuf::Message(_class_data_.base()),
+      _impl_(::_pbi::ConstantInitialized()) {}
 struct CodeGeneratorResponse_FileDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CodeGeneratorResponse_FileDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorResponse_FileDefaultTypeInternal() {}
@@ -92,7 +94,8 @@ inline constexpr CodeGeneratorResponse::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR CodeGeneratorResponse::CodeGeneratorResponse(::_pbi::ConstantInitialized)
-    : _impl_(::_pbi::ConstantInitialized()) {}
+    : ::google::protobuf::Message(_class_data_.base()),
+      _impl_(::_pbi::ConstantInitialized()) {}
 struct CodeGeneratorResponseDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CodeGeneratorResponseDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorResponseDefaultTypeInternal() {}
@@ -117,7 +120,8 @@ inline constexpr CodeGeneratorRequest::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR CodeGeneratorRequest::CodeGeneratorRequest(::_pbi::ConstantInitialized)
-    : _impl_(::_pbi::ConstantInitialized()) {}
+    : ::google::protobuf::Message(_class_data_.base()),
+      _impl_(::_pbi::ConstantInitialized()) {}
 struct CodeGeneratorRequestDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CodeGeneratorRequestDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~CodeGeneratorRequestDefaultTypeInternal() {}
@@ -303,7 +307,7 @@ class Version::_Internal {
 };
 
 Version::Version(::google::protobuf::Arena* arena)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.Version)
 }
@@ -317,7 +321,7 @@ inline PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
 Version::Version(
     ::google::protobuf::Arena* arena,
     const Version& from)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   Version* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -368,6 +372,11 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Version::MergeImpl,
+            ::google::protobuf::Message::GetDeleteImpl<Version>(),
+            ::google::protobuf::Message::GetNewImpl<Version>(),
+            ::google::protobuf::Message::GetClearImpl<Version>(),
+                ::google::protobuf::Message::GetByteSizeLongImpl<Version>(),
+                ::google::protobuf::Message::GetSerializeImpl<Version>(),
             PROTOBUF_FIELD_OFFSET(Version, _impl_._cached_size_),
             false,
         },
@@ -609,7 +618,7 @@ void CodeGeneratorRequest::clear_source_file_descriptors() {
   _impl_.source_file_descriptors_.Clear();
 }
 CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* arena)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
@@ -626,7 +635,7 @@ inline PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
 CodeGeneratorRequest::CodeGeneratorRequest(
     ::google::protobuf::Arena* arena,
     const CodeGeneratorRequest& from)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   CodeGeneratorRequest* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -673,6 +682,11 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             CodeGeneratorRequest::IsInitializedImpl,
             &CodeGeneratorRequest::MergeImpl,
+            ::google::protobuf::Message::GetDeleteImpl<CodeGeneratorRequest>(),
+            ::google::protobuf::Message::GetNewImpl<CodeGeneratorRequest>(),
+            ::google::protobuf::Message::GetClearImpl<CodeGeneratorRequest>(),
+                ::google::protobuf::Message::GetByteSizeLongImpl<CodeGeneratorRequest>(),
+                ::google::protobuf::Message::GetSerializeImpl<CodeGeneratorRequest>(),
             PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._cached_size_),
             false,
         },
@@ -967,7 +981,7 @@ void CodeGeneratorResponse_File::clear_generated_code_info() {
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
 CodeGeneratorResponse_File::CodeGeneratorResponse_File(::google::protobuf::Arena* arena)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
@@ -983,7 +997,7 @@ inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
 CodeGeneratorResponse_File::CodeGeneratorResponse_File(
     ::google::protobuf::Arena* arena,
     const CodeGeneratorResponse_File& from)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   CodeGeneratorResponse_File* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -1031,6 +1045,11 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &CodeGeneratorResponse_File::MergeImpl,
+            ::google::protobuf::Message::GetDeleteImpl<CodeGeneratorResponse_File>(),
+            ::google::protobuf::Message::GetNewImpl<CodeGeneratorResponse_File>(),
+            ::google::protobuf::Message::GetClearImpl<CodeGeneratorResponse_File>(),
+                ::google::protobuf::Message::GetByteSizeLongImpl<CodeGeneratorResponse_File>(),
+                ::google::protobuf::Message::GetSerializeImpl<CodeGeneratorResponse_File>(),
             PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._cached_size_),
             false,
         },
@@ -1278,7 +1297,7 @@ class CodeGeneratorResponse::_Internal {
 };
 
 CodeGeneratorResponse::CodeGeneratorResponse(::google::protobuf::Arena* arena)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse)
 }
@@ -1293,7 +1312,7 @@ inline PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
 CodeGeneratorResponse::CodeGeneratorResponse(
     ::google::protobuf::Arena* arena,
     const CodeGeneratorResponse& from)
-    : ::google::protobuf::Message(arena) {
+    : ::google::protobuf::Message(arena, _class_data_.base()) {
   CodeGeneratorResponse* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -1345,6 +1364,11 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &CodeGeneratorResponse::MergeImpl,
+            ::google::protobuf::Message::GetDeleteImpl<CodeGeneratorResponse>(),
+            ::google::protobuf::Message::GetNewImpl<CodeGeneratorResponse>(),
+            ::google::protobuf::Message::GetClearImpl<CodeGeneratorResponse>(),
+                ::google::protobuf::Message::GetByteSizeLongImpl<CodeGeneratorResponse>(),
+                ::google::protobuf::Message::GetSerializeImpl<CodeGeneratorResponse>(),
             PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._cached_size_),
             false,
         },

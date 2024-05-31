@@ -188,7 +188,7 @@ class DynamicMessage final : public Message {
   DynamicMessage(const DynamicMessage&) = delete;
   DynamicMessage& operator=(const DynamicMessage&) = delete;
 
-  ~DynamicMessage() override;
+  ~DynamicMessage() PROTOBUF_FINAL;
 
   // Called on the prototype after construction to initialize message fields.
   // Cross linking the default instances allows for fast reflection access of
@@ -202,9 +202,9 @@ class DynamicMessage final : public Message {
 
   // implements Message ----------------------------------------------
 
-  Message* New(Arena* arena) const override;
+  Message* New(Arena* arena) const PROTOBUF_FINAL;
 
-  const ClassData* GetClassData() const final;
+  const ClassData* GetClassData() const PROTOBUF_FINAL;
 
 #if defined(__cpp_lib_destroying_delete) && defined(__cpp_sized_deallocation)
   static void operator delete(DynamicMessage* msg, std::destroying_delete_t);
@@ -236,6 +236,8 @@ class DynamicMessage final : public Message {
   inline const void* OffsetToPointer(int offset) const {
     return reinterpret_cast<const uint8_t*>(this) + offset;
   }
+
+  static void DeleteImpl(void* ptr, bool free_memory);
 
   void* MutableRaw(int i);
   void* MutableExtensionsRaw();
@@ -269,11 +271,16 @@ struct DynamicMessageFactory::TypeInfo {
   int weak_field_map_offset;  // The offset for the weak_field_map;
 
   DynamicMessage::ClassDataFull class_data = {
-      {
+      DynamicMessage::ClassData{
           nullptr,  // tc_table
           nullptr,  // on_demand_register_arena_dtor
-          DynamicMessage::IsInitializedImpl,
+          &DynamicMessage::IsInitializedImpl,
           &DynamicMessage::MergeImpl,
+          &DynamicMessage::DeleteImpl,
+          DynamicMessage::GetNewImpl<DynamicMessage>(),
+          DynamicMessage::ClearImpl,
+          DynamicMessage::ByteSizeLongImpl,
+          DynamicMessage::_InternalSerializeImpl,
           PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),
           false,
       },
@@ -305,19 +312,25 @@ struct DynamicMessageFactory::TypeInfo {
 };
 
 DynamicMessage::DynamicMessage(const DynamicMessageFactory::TypeInfo* type_info)
-    : type_info_(type_info), cached_byte_size_(0) {
+    : Message(type_info->class_data.base()),
+      type_info_(type_info),
+      cached_byte_size_(0) {
   SharedCtor(true);
 }
 
 DynamicMessage::DynamicMessage(const DynamicMessageFactory::TypeInfo* type_info,
                                Arena* arena)
-    : Message(arena), type_info_(type_info), cached_byte_size_(0) {
+    : Message(arena, type_info->class_data.base()),
+      type_info_(type_info),
+      cached_byte_size_(0) {
   SharedCtor(true);
 }
 
 DynamicMessage::DynamicMessage(DynamicMessageFactory::TypeInfo* type_info,
                                bool lock_factory)
-    : type_info_(type_info), cached_byte_size_(0) {
+    : Message(type_info->class_data.base()),
+      type_info_(type_info),
+      cached_byte_size_(0) {
   // The prototype in type_info has to be set before creating the prototype
   // instance on memory. e.g., message Foo { map<int32_t, Foo> a = 1; }. When
   // creating prototype for Foo, prototype of the map entry will also be
@@ -562,6 +575,15 @@ DynamicMessage::~DynamicMessage() {
         }
       }
     }
+  }
+}
+
+void DynamicMessage::DeleteImpl(void* ptr, bool free_memory) {
+  auto* msg = static_cast<DynamicMessage*>(ptr);
+  const size_t size = msg->type_info_->size;
+  msg->~DynamicMessage();
+  if (free_memory) {
+    internal::SizedDelete(ptr, size);
   }
 }
 
