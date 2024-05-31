@@ -326,7 +326,6 @@ TEST(FeatureResolverTest, CompileDefaultsFixedRemovedFeature) {
                    .has_removed_feature());
 }
 
-
 TEST(FeatureResolverTest, CompileDefaultsOverridable) {
   absl::StatusOr<FeatureSetDefaults> defaults =
       FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
