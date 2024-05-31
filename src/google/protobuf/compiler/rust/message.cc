@@ -61,8 +61,15 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
       ctx.Emit({{"serialize_thunk", ThunkName(ctx, msg, "serialize")}}, R"rs(
-        //~ TODO: This should be fallible.
-        Ok(unsafe { $serialize_thunk$(self.raw_msg()) })
+        let mut serialized_data = $pbr$::SerializedData::new();
+        let success = unsafe {
+          $serialize_thunk$(self.raw_msg(), &mut serialized_data)
+        };
+        if success {
+          Ok(serialized_data)
+        } else {
+          Err($pb$::SerializeError)
+        }
       )rs");
       return;
 
@@ -185,7 +192,7 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
           R"rs(
           fn $new_thunk$() -> $pbr$::RawMessage;
           fn $delete_thunk$(raw_msg: $pbr$::RawMessage);
-          fn $serialize_thunk$(raw_msg: $pbr$::RawMessage) -> $pbr$::SerializedData;
+          fn $serialize_thunk$(raw_msg: $pbr$::RawMessage, out: &mut $pbr$::SerializedData) -> bool;
           fn $parse_thunk$(raw_msg: $pbr$::RawMessage, data: $pbr$::SerializedData) -> bool;
           fn $copy_from_thunk$(dst: $pbr$::RawMessage, src: $pbr$::RawMessage);
           fn $repeated_len_thunk$(raw: $pbr$::RawRepeatedField) -> usize;
@@ -1210,8 +1217,8 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
         extern $abi$ {
         void* $new_thunk$() { return new $QualifiedMsg$(); }
         void $delete_thunk$(void* ptr) { delete static_cast<$QualifiedMsg$*>(ptr); }
-        google::protobuf::rust_internal::SerializedData $serialize_thunk$($QualifiedMsg$* msg) {
-          return google::protobuf::rust_internal::SerializeMsg(msg);
+        bool $serialize_thunk$($QualifiedMsg$* msg, google::protobuf::rust_internal::SerializedData* out) {
+          return google::protobuf::rust_internal::SerializeMsg(msg, out);
         }
         bool $parse_thunk$($QualifiedMsg$* msg,
                                  google::protobuf::rust_internal::SerializedData data) {

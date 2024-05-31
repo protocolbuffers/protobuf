@@ -8,9 +8,13 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "rust/cpp_kernel/cpp_api.h"
 #include "google/protobuf/unittest.pb.h"
+
+using google::protobuf::rust_internal::SerializedData;
+using google::protobuf::rust_internal::SerializeMsg;
 
 extern "C" void MutateTestAllTypes(protobuf_unittest::TestAllTypes* msg) {
   msg->set_optional_int64(42);
@@ -18,9 +22,11 @@ extern "C" void MutateTestAllTypes(protobuf_unittest::TestAllTypes* msg) {
   msg->set_optional_bool(false);
 }
 
-extern "C" google::protobuf::rust_internal::SerializedData SerializeTestAllTypes(
+extern "C" SerializedData SerializeTestAllTypes(
     const protobuf_unittest::TestAllTypes* msg) {
-  return google::protobuf::rust_internal::SerializeMsg(msg);
+  SerializedData data(nullptr, 0);
+  ABSL_CHECK(SerializeMsg(msg, &data));
+  return data;
 }
 
 extern "C" void DeleteTestAllTypes(protobuf_unittest::TestAllTypes* msg) {

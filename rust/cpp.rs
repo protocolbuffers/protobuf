@@ -140,6 +140,10 @@ pub struct SerializedData {
 }
 
 impl SerializedData {
+    pub fn new() -> Self {
+        Self { data: NonNull::dangling(), len: 0 }
+    }
+
     /// Constructs owned serialized data from raw components.
     ///
     /// # Safety

@@ -14,7 +14,9 @@
 #include <cstring>
 #include <string>
 
+#include "absl/log/absl_log.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 
 namespace google {
 namespace protobuf {
@@ -41,16 +43,17 @@ extern "C" struct SerializedData {
 // This function is defined in `rust_alloc_for_cpp_api.rs`.
 extern "C" void* __pb_rust_alloc(size_t size, size_t align);
 
-inline SerializedData SerializeMsg(const google::protobuf::MessageLite* msg) {
+inline bool SerializeMsg(const google::protobuf::MessageLite* msg, SerializedData* out) {
   size_t len = msg->ByteSizeLong();
   void* bytes = __pb_rust_alloc(len, alignof(char));
   if (bytes == nullptr) {
     ABSL_LOG(FATAL) << "Rust allocator failed to allocate memory.";
   }
   if (!msg->SerializeToArray(bytes, static_cast<int>(len))) {
-    ABSL_LOG(FATAL) << "Couldn't serialize the message.";
+    return false;
   }
-  return SerializedData(static_cast<char*>(bytes), len);
+  *out = SerializedData(static_cast<char*>(bytes), len);
+  return true;
 }
 
 // Represents an ABI-stable version of &[u8]/string_view (borrowed slice of
