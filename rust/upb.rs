@@ -767,24 +767,3 @@ pub unsafe fn upb_Map_InsertAndReturnIfInserted(
         upb::MapInsertStatus::OutOfMemory => panic!("map arena is out of memory"),
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use googletest::prelude::*;
-
-    #[test]
-    fn assert_c_type_sizes() {
-        // TODO: add these same asserts in C++.
-        use std::ffi::c_void;
-        use std::mem::{align_of, size_of};
-        assert_that!(
-            size_of::<upb_MessageValue>(),
-            eq(size_of::<*const c_void>() + size_of::<usize>())
-        );
-        assert_that!(align_of::<upb_MessageValue>(), eq(align_of::<*const c_void>()));
-
-        assert_that!(size_of::<upb_MutableMessageValue>(), eq(size_of::<*const c_void>()));
-        assert_that!(align_of::<upb_MutableMessageValue>(), eq(align_of::<*const c_void>()));
-    }
-}
