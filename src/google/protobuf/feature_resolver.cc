@@ -81,9 +81,7 @@ absl::Status ValidateDescriptor(const Descriptor& descriptor) {
 
     bool has_legacy_default = false;
     for (const auto& d : field.options().edition_defaults()) {
-      if (d.edition() == Edition::EDITION_LEGACY ||
-          // TODO Remove this once all features use EDITION_LEGACY.
-          d.edition() == Edition::EDITION_PROTO2) {
+      if (d.edition() == Edition::EDITION_LEGACY) {
         has_legacy_default = true;
         continue;
       }
@@ -194,11 +192,6 @@ void CollectEditions(const Descriptor& descriptor, Edition maximum_edition,
   for (int i = 0; i < descriptor.field_count(); ++i) {
     for (const auto& def : descriptor.field(i)->options().edition_defaults()) {
       if (maximum_edition < def.edition()) continue;
-      // TODO Remove this once all features use EDITION_LEGACY.
-      if (def.edition() == Edition::EDITION_LEGACY) {
-        editions.insert(Edition::EDITION_PROTO2);
-        continue;
-      }
       editions.insert(def.edition());
     }
   }
@@ -363,8 +356,10 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
   }
   // Sanity check validation conditions above.
   ABSL_CHECK(!editions.empty());
-  // TODO Check that this is always EDITION_LEGACY.
-  ABSL_CHECK_LE(*editions.begin(), EDITION_PROTO2);
+  if (*editions.begin() != EDITION_LEGACY) {
+    return Error("Minimum edition ", *editions.begin(),
+                 " is not EDITION_LEGACY");
+  }
 
   if (*editions.begin() > minimum_edition) {
     return Error("Minimum edition ", minimum_edition,

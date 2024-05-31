@@ -1872,7 +1872,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_THAT(defaults, EqualsProto(R"pb(
                 defaults {
-                  edition: EDITION_PROTO2
+                  edition: EDITION_LEGACY
                   overridable_features {}
                   fixed_features {
                     field_presence: EXPLICIT
@@ -1924,7 +1924,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_THAT(defaults, EqualsProto(R"pb(
                 defaults {
-                  edition: EDITION_PROTO2
+                  edition: EDITION_LEGACY
                   overridable_features {}
                   fixed_features {
                     field_presence: EXPLICIT
@@ -1977,7 +1977,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_THAT(defaults, EqualsProto(R"pb(
                 defaults {
-                  edition: EDITION_PROTO2
+                  edition: EDITION_LEGACY
                   overridable_features {}
                   fixed_features {
                     field_presence: EXPLICIT
@@ -2032,7 +2032,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
   EXPECT_EQ(defaults.minimum_edition(), EDITION_PROTO2);
   EXPECT_EQ(defaults.maximum_edition(), EDITION_99999_TEST_ONLY);
   ASSERT_EQ(defaults.defaults_size(), 6);
-  EXPECT_EQ(defaults.defaults(0).edition(), EDITION_PROTO2);
+  EXPECT_EQ(defaults.defaults(0).edition(), EDITION_LEGACY);
   EXPECT_EQ(defaults.defaults(2).edition(), EDITION_2023);
   EXPECT_EQ(defaults.defaults(3).edition(), EDITION_2024);
   EXPECT_EQ(defaults.defaults(4).edition(), EDITION_99997_TEST_ONLY);

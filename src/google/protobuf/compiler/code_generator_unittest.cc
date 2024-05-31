@@ -271,7 +271,7 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
   EXPECT_THAT(generator.BuildFeatureSetDefaults(),
               IsOkAndHolds(EqualsProto(R"pb(
                 defaults {
-                  edition: EDITION_PROTO2
+                  edition: EDITION_LEGACY
                   overridable_features {}
                   fixed_features {
                     field_presence: EXPLICIT

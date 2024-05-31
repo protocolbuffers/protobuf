@@ -53,7 +53,7 @@ TEST(DefaultsTest, Check2023) {
   ASSERT_EQ(defaults->minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults->maximum_edition(), EDITION_2023);
 
-  EXPECT_EQ(defaults->defaults()[0].edition(), EDITION_PROTO2);
+  EXPECT_EQ(defaults->defaults()[0].edition(), EDITION_LEGACY);
   EXPECT_EQ(defaults->defaults()[1].edition(), EDITION_PROTO3);
   EXPECT_EQ(defaults->defaults()[2].edition(), EDITION_2023);
   EXPECT_EQ(defaults->defaults()[2].overridable_features().field_presence(),
@@ -72,7 +72,7 @@ TEST(DefaultsTest, CheckFuture) {
   ASSERT_EQ(defaults->minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults->maximum_edition(), EDITION_99997_TEST_ONLY);
 
-  EXPECT_EQ(defaults->defaults()[0].edition(), EDITION_PROTO2);
+  EXPECT_EQ(defaults->defaults()[0].edition(), EDITION_LEGACY);
   EXPECT_EQ(defaults->defaults()[1].edition(), EDITION_PROTO3);
   EXPECT_EQ(defaults->defaults()[2].edition(), EDITION_2023);
   EXPECT_EQ(defaults->defaults()[2].overridable_features().field_presence(),
@@ -107,7 +107,7 @@ TEST(DefaultsTest, CheckFarFuture) {
   ASSERT_EQ(defaults->minimum_edition(), EDITION_99997_TEST_ONLY);
   ASSERT_EQ(defaults->maximum_edition(), EDITION_99999_TEST_ONLY);
 
-  EXPECT_EQ(defaults->defaults()[0].edition(), EDITION_PROTO2);
+  EXPECT_EQ(defaults->defaults()[0].edition(), EDITION_LEGACY);
   EXPECT_EQ(defaults->defaults()[1].edition(), EDITION_PROTO3);
   EXPECT_EQ(defaults->defaults()[2].edition(), EDITION_2023);
   EXPECT_EQ(defaults->defaults()[2].overridable_features().field_presence(),
@@ -152,7 +152,7 @@ TEST(DefaultsTest, Embedded) {
   ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults.maximum_edition(), EDITION_2023);
 
-  EXPECT_EQ(defaults.defaults()[0].edition(), EDITION_PROTO2);
+  EXPECT_EQ(defaults.defaults()[0].edition(), EDITION_LEGACY);
   EXPECT_EQ(defaults.defaults()[1].edition(), EDITION_PROTO3);
   EXPECT_EQ(defaults.defaults()[2].edition(), EDITION_2023);
   EXPECT_EQ(defaults.defaults()[2].overridable_features().field_presence(),
@@ -176,7 +176,7 @@ TEST(DefaultsTest, EmbeddedBase64) {
   ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults.maximum_edition(), EDITION_2023);
 
-  EXPECT_EQ(defaults.defaults()[0].edition(), EDITION_PROTO2);
+  EXPECT_EQ(defaults.defaults()[0].edition(), EDITION_LEGACY);
   EXPECT_EQ(defaults.defaults()[1].edition(), EDITION_PROTO3);
   EXPECT_EQ(defaults.defaults()[2].edition(), EDITION_2023);
   EXPECT_EQ(defaults.defaults()[2].overridable_features().field_presence(),
@@ -206,7 +206,7 @@ TEST_F(OverridableDefaultsTest, Proto2) {
   ASSERT_OK(feature_defaults);
   ASSERT_GE(feature_defaults->defaults().size(), 1);
   auto defaults = feature_defaults->defaults(0);
-  ASSERT_EQ(defaults.edition(), EDITION_PROTO2);
+  ASSERT_EQ(defaults.edition(), EDITION_LEGACY);
 
 
   EXPECT_THAT(defaults.overridable_features(), EqualsProto(R"pb([pb.cpp] {}
