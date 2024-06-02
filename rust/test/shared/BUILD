@@ -14,7 +14,7 @@
 # Once we have a couple of these tests we will investigate ways to remove boilerplate (for example
 # by introducing a build macro that registers 2 rust_test targets).
 
-load("@rules_rust//rust:defs.bzl", "rust_test")
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
 rust_test(
     name = "child_parent_upb_test",
@@ -372,6 +372,29 @@ rust_test(
     deps = [
         "//rust:protobuf_upb",
         "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_library(
+    name = "wire_format",
+    srcs = ["wire_format.rs"],
+    deps = [
+        ":errors",
+    ],
+)
+
+rust_library(
+    name = "errors",
+    srcs = ["errors.rs"],
+)
+
+rust_test(
+    name = "wire_format_test",
+    srcs = ["wire_format_test.rs"],
+    deps = [
+        ":errors",
+        ":wire_format",
         "@crate_index//:googletest",
     ],
 )
