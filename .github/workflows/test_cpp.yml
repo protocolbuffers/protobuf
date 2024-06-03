@@ -31,7 +31,7 @@ jobs:
 
           # Override cases with custom images
           - config: { name: "Bazel7" }
-            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel@sha256:717852eae6a841e9768fa55c0062e6771255a75d1bfdeded822222b1503131e2"
+            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38"
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "TCMalloc" }
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:1c5133455481f4d1bb8afa477029604f41f1a3c46cebe4d9958cf1af95b5c87c"
