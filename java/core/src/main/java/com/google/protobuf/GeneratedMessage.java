@@ -1028,7 +1028,23 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
      * numbers, but we must write them in canonical (sorted by field number) order. ExtensionWriter
      * helps us write individual ranges of extensions at once.
      */
-    protected class ExtensionWriter {
+    protected interface ExtensionWriter {
+      public void writeUntil(final int end, final CodedOutputStream output) throws IOException;
+    }
+
+    // Singleton instance so we can avoid allocating a new one for each message serialization.
+    private static final NoOpExtensionWriter NO_OP_EXTENSION_WRITER = new NoOpExtensionWriter();
+
+    /** No-op implementation that writes nothing, for messages with no extensions. */
+    private static final class NoOpExtensionWriter implements ExtensionWriter {
+      @Override
+      public void writeUntil(final int end, final CodedOutputStream output) {
+        // no-op
+      }
+    }
+
+    /** Implementation that writes extensions from the FieldSet, for messages with extensions. */
+    private final class FieldSetExtensionWriter implements ExtensionWriter {
       // Imagine how much simpler this code would be if Java iterators had
       // a way to get the next element without advancing the iterator.
 
@@ -1036,13 +1052,14 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       private Map.Entry<FieldDescriptor, Object> next;
       private final boolean messageSetWireFormat;
 
-      private ExtensionWriter(final boolean messageSetWireFormat) {
+      private FieldSetExtensionWriter(final boolean messageSetWireFormat) {
         if (iter.hasNext()) {
           next = iter.next();
         }
         this.messageSetWireFormat = messageSetWireFormat;
       }
 
+      @Override
       public void writeUntil(final int end, final CodedOutputStream output) throws IOException {
         while (next != null && next.getKey().getNumber() < end) {
           FieldDescriptor descriptor = next.getKey();
@@ -1076,11 +1093,19 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     }
 
     protected ExtensionWriter newExtensionWriter() {
-      return new ExtensionWriter(false);
+      // Avoid allocation in the common case of no extensions.
+      if (extensions.isEmpty()) {
+        return NO_OP_EXTENSION_WRITER;
+      }
+      return new FieldSetExtensionWriter(false);
     }
 
     protected ExtensionWriter newMessageSetExtensionWriter() {
-      return new ExtensionWriter(true);
+      // Avoid allocation in the common case of no extensions.
+      if (extensions.isEmpty()) {
+        return NO_OP_EXTENSION_WRITER;
+      }
+      return new FieldSetExtensionWriter(true);
     }
 
     /** Called by subclasses to compute the size of extensions. */
