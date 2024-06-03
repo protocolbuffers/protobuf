@@ -492,6 +492,7 @@ filegroup(
 #         "upb_WireType",
 #     ],
 #     visibility = [
+#         "//third_party/bazel_rules/rules_kotlin/kotlin/native:__subpackages__",
 #         "//third_party/kotlin/protobuf:__subpackages__",
 #         "//upb:__subpackages__",
 #     ],
