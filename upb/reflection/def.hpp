@@ -26,7 +26,6 @@
 #include "upb/reflection/def.h"
 #include "upb/reflection/internal/def_pool.h"
 #include "upb/reflection/internal/enum_def.h"
-#include "upb/reflection/message.h"
 
 // Must be last
 #include "upb/port/def.inc"
@@ -39,6 +38,7 @@ class EnumDefPtr;
 class FileDefPtr;
 class MessageDefPtr;
 class OneofDefPtr;
+class ServiceDefPtr;
 
 // A upb::FieldDefPtr describes a single field in a message.  It is most often
 // found as a part of a upb_MessageDef, but can also stand alone to represent
@@ -523,6 +523,9 @@ class FileDefPtr {
     return FieldDefPtr(upb_FileDef_TopLevelExtension(ptr_, index));
   }
 
+  int service_count() const { return upb_FileDef_ServiceCount(ptr_); }
+  ServiceDefPtr service(int index) const;
+
   bool resolves(const char* path) const {
     return upb_FileDef_Resolves(ptr_, path);
   }
@@ -539,6 +542,70 @@ class FileDefPtr {
 
  private:
   const upb_FileDef* ptr_;
+};
+
+class MethodDefPtr {
+ public:
+  explicit MethodDefPtr(const upb_MethodDef* ptr) : ptr_(ptr) {}
+
+  const upb_MethodDef* ptr() const { return ptr_; }
+
+  const char* full_name() const { return upb_MethodDef_FullName(ptr_); }
+  const char* name() const { return upb_MethodDef_Name(ptr_); }
+
+  bool client_streaming() const { return upb_MethodDef_ClientStreaming(ptr_); }
+  bool server_streaming() const { return upb_MethodDef_ServerStreaming(ptr_); }
+
+  ServiceDefPtr service() const;
+
+  MessageDefPtr input_type() const {
+    return MessageDefPtr(upb_MethodDef_InputType(ptr_));
+  }
+  MessageDefPtr output_type() const {
+    return MessageDefPtr(upb_MethodDef_OutputType(ptr_));
+  }
+
+  explicit operator bool() const { return ptr_ != nullptr; }
+
+  friend bool operator==(MethodDefPtr lhs, MethodDefPtr rhs) {
+    return lhs.ptr_ == rhs.ptr_;
+  }
+
+  friend bool operator!=(MethodDefPtr lhs, MethodDefPtr rhs) {
+    return !(lhs == rhs);
+  }
+
+ private:
+  const upb_MethodDef* ptr_;
+};
+
+class ServiceDefPtr {
+ public:
+  explicit ServiceDefPtr(const upb_ServiceDef* ptr) : ptr_(ptr) {}
+
+  const upb_ServiceDef* ptr() const { return ptr_; }
+
+  FileDefPtr file() const;
+  const char* full_name() const { return upb_ServiceDef_FullName(ptr_); }
+  const char* name() const { return upb_ServiceDef_Name(ptr_); }
+
+  int method_count() const { return upb_ServiceDef_MethodCount(ptr_); }
+  MethodDefPtr method(int index) const {
+    return MethodDefPtr(upb_ServiceDef_Method(ptr_, index));
+  }
+
+  explicit operator bool() const { return ptr_ != nullptr; }
+
+  friend bool operator==(ServiceDefPtr lhs, ServiceDefPtr rhs) {
+    return lhs.ptr_ == rhs.ptr_;
+  }
+
+  friend bool operator!=(ServiceDefPtr lhs, ServiceDefPtr rhs) {
+    return !(lhs == rhs);
+  }
+
+ private:
+  const upb_ServiceDef* ptr_;
 };
 
 // Non-const methods in upb::DefPool are NOT thread-safe.
@@ -597,6 +664,10 @@ inline FileDefPtr MessageDefPtr::file() const {
   return FileDefPtr(upb_MessageDef_File(ptr_));
 }
 
+inline FileDefPtr ServiceDefPtr::file() const {
+  return FileDefPtr(upb_ServiceDef_File(ptr_));
+}
+
 inline MessageDefPtr MessageDefPtr::containing_type() const {
   return MessageDefPtr(upb_MessageDef_ContainingType(ptr_));
 }
@@ -635,6 +706,14 @@ inline OneofDefPtr FieldDefPtr::real_containing_oneof() const {
 
 inline EnumDefPtr FieldDefPtr::enum_subdef() const {
   return EnumDefPtr(upb_FieldDef_EnumSubDef(ptr_));
+}
+
+inline ServiceDefPtr FileDefPtr::service(int index) const {
+  return ServiceDefPtr(upb_FileDef_Service(ptr_, index));
+}
+
+inline ServiceDefPtr MethodDefPtr::service() const {
+  return ServiceDefPtr(upb_MethodDef_Service(ptr_));
 }
 
 }  // namespace upb
