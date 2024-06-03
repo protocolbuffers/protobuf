@@ -26,7 +26,7 @@ jobs:
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
         include:
           # Set defaults
-          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:1621e544d5547e0e0b9b4a11ac03170ca830914bcb81d415670b77d48818f44e
+          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:7aa207fc5381226377960a3244b3711bc8f55c7eb03a50614b36a94ee3bbcd32
           - targets: //pkg/... //src/... @com_google_protobuf_examples//... //third_party/utf8_range/...
 
           # Override cases with custom images
@@ -34,11 +34,11 @@ jobs:
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel@sha256:717852eae6a841e9768fa55c0062e6771255a75d1bfdeded822222b1503131e2"
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "TCMalloc" }
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:9f830a13dd850618be760bcf4871ac95bb87068c35714f1164e053e7f77d3fa8"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:1c5133455481f4d1bb8afa477029604f41f1a3c46cebe4d9958cf1af95b5c87c"
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "aarch64" }
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation@sha256:ff10fddd14db3e8f8389ddf1af0d4599bb094dfba9a22064a350f4481d9ed939"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation@sha256:4d1a029e5aced544e04711eb790eb22b9e1bf5e7557e431a640b88f0114bf04b"
     name: Linux ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
@@ -102,7 +102,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:${{ matrix.arch }}-64-3126d14a5abf676bd07682ed7d40349a54b51bc2
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:${{ matrix.arch }}-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >
@@ -148,7 +148,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-d3062dc357d94fe2e615237164448bc90c78a446
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /test.sh ${{ matrix.flags}} ${{ env.SCCACHE_CMAKE_FLAGS }}
@@ -174,7 +174,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/3.13.3-d3062dc357d94fe2e615237164448bc90c78a446
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.SCCACHE_CMAKE_FLAGS }}
@@ -206,7 +206,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/3.13.3-d3062dc357d94fe2e615237164448bc90c78a446
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.SCCACHE_CMAKE_FLAGS }}
@@ -247,7 +247,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-3126d14a5abf676bd07682ed7d40349a54b51bc2
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-7.1.2-3126d14a5abf676bd07682ed7d40349a54b51bc2
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >-
@@ -278,7 +278,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/3.13.3-d3062dc357d94fe2e615237164448bc90c78a446
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /test.sh ${{ env.SCCACHE_CMAKE_FLAGS }}

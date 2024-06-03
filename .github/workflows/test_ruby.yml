@@ -40,7 +40,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-6.3.0-a6940b1421a71325ef4c7828ec72d404f56bbf30', matrix.ruby) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-7.1.2-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
@@ -58,7 +58,7 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
@@ -89,7 +89,7 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
@@ -172,7 +172,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-6.3.0-a6940b1421a71325ef4c7828ec72d404f56bbf30
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-7.1.2-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_install/${{ matrix.ruby }}_${{ matrix.bazel }}
           bash: >
