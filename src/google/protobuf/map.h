@@ -29,7 +29,6 @@
 #include <time.h>
 #endif
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
 #include "absl/container/btree_map.h"
 #include "absl/hash/hash.h"
@@ -41,8 +40,8 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/map_type_handler.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/wire_format_lite.h"
-
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -560,7 +559,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
  protected:
   // 16 bytes is the minimum useful size for the array cache in the arena.
-  enum { kMinTableSize = 16 / sizeof(void*) };
+  constexpr static map_index_t kMinTableSize = 16 / sizeof(void*);
 
  public:
   Arena* arena() const { return this->alloc_.arena(); }
@@ -645,9 +644,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   // Return a power of two no less than max(kMinTableSize, n).
   // Assumes either n < kMinTableSize or n is a power of two.
   map_index_t TableSize(map_index_t n) {
-    return n < static_cast<map_index_t>(kMinTableSize)
-               ? static_cast<map_index_t>(kMinTableSize)
-               : n;
+    return n < kMinTableSize ? kMinTableSize : n;
   }
 
   template <typename T>
@@ -697,7 +694,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   }
 
   TableEntryPtr* CreateEmptyTable(map_index_t n) {
-    ABSL_DCHECK_GE(n, map_index_t{kMinTableSize});
+    ABSL_DCHECK_GE(n, kMinTableSize);
     ABSL_DCHECK_EQ(n & (n - 1), 0u);
     TableEntryPtr* result = AllocFor<TableEntryPtr>(alloc_).allocate(n);
     memset(result, 0, n * sizeof(result[0]));
@@ -1139,7 +1136,6 @@ template <typename T, typename K>
 bool InitializeMapKey(T*, K&&, Arena*) {
   return false;
 }
-
 
 }  // namespace internal
 
