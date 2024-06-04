@@ -3590,7 +3590,7 @@ std::string FieldDescriptor::FieldTypeNameDebugString() const {
   switch (type()) {
     case TYPE_MESSAGE:
     case TYPE_GROUP:
-      if (IsGroupSyntax(file()->edition(), this)) {
+      if (internal::cpp::IsGroupLike(*this)) {
         return kTypeToName[type()];
       }
       return absl::StrCat(".", message_type()->full_name());
@@ -3670,7 +3670,7 @@ void FieldDescriptor::DebugString(
     contents->append("]");
   }
 
-  if (IsGroupSyntax(file()->edition(), this)) {
+  if (internal::cpp::IsGroupLike(*this)) {
     if (debug_string_options.elide_group_body) {
       contents->append(" { ... };\n");
     } else {

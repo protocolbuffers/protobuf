@@ -72,6 +72,7 @@
 #include "google/protobuf/unittest_lazy_dependencies.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies_custom_option.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies_enum.pb.h"
+#include "google/protobuf/unittest_overflow.pb.h"
 #include "google/protobuf/unittest_proto3_arena.pb.h"
 
 
@@ -7430,6 +7431,11 @@ TEST(IsGroupLike, GroupLikeMismatchedFile) {
   EXPECT_EQ(file.FindExtensionByName("messageimport")->type(),
             FieldDescriptor::TYPE_GROUP);
   EXPECT_FALSE(IsGroupLike(*file.FindExtensionByName("messageimport")));
+}
+
+TEST(IsGroupLike, GroupLikeStackOverflow) {
+  auto msg = overflow_unittest::Stack{};
+  (void)msg.DebugString();  // should not overflow
 }
 
 using FeaturesBaseTest = ValidationErrorTest;

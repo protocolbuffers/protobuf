@@ -1,0 +1,7 @@
+syntax = "proto2";
+
+package overflow_unittest;
+
+message Stack {
+  optional Stack overflow = 1;
+}
