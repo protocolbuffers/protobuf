@@ -193,7 +193,7 @@ message TestFeatures {
     targets = TARGET_TYPE_FILE,
     targets = TARGET_TYPE_FIELD,
     feature_support = {
-      edition_introduced: EDITION_PROTO2
+      edition_introduced: EDITION_PROTO3
       edition_removed: EDITION_2023
     },
     edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
