@@ -10,10 +10,13 @@
 #ifndef GOOGLE_PROTOBUF_RUST_CPP_KERNEL_CPP_H__
 #define GOOGLE_PROTOBUF_RUST_CPP_KERNEL_CPP_H__
 
+#include <climits>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <string>
 
+#include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
@@ -31,11 +34,11 @@ namespace rust_internal {
 // * The data were allocated using the Rust allocator.
 //
 extern "C" struct SerializedData {
-  // Owns the memory.
-  const char* data;
+  // Owns the memory, must be freed by Rust.
+  const uint8_t* data;
   size_t len;
 
-  SerializedData(const char* data, size_t len) : data(data), len(len) {}
+  SerializedData(const uint8_t* data, size_t len) : data(data), len(len) {}
 };
 
 // Allocates memory using the current Rust global allocator.
@@ -44,15 +47,21 @@ extern "C" struct SerializedData {
 extern "C" void* __pb_rust_alloc(size_t size, size_t align);
 
 inline bool SerializeMsg(const google::protobuf::MessageLite* msg, SerializedData* out) {
+  ABSL_DCHECK(msg->IsInitialized());
   size_t len = msg->ByteSizeLong();
-  void* bytes = __pb_rust_alloc(len, alignof(char));
+  if (len > INT_MAX) {
+    ABSL_LOG(ERROR) << msg->GetTypeName()
+                    << " exceeded maximum protobuf size of 2GB: " << len;
+    return false;
+  }
+  uint8_t* bytes = static_cast<uint8_t*>(__pb_rust_alloc(len, alignof(char)));
   if (bytes == nullptr) {
     ABSL_LOG(FATAL) << "Rust allocator failed to allocate memory.";
   }
-  if (!msg->SerializeToArray(bytes, static_cast<int>(len))) {
+  if (!msg->SerializeWithCachedSizesToArray(bytes)) {
     return false;
   }
-  *out = SerializedData(static_cast<char*>(bytes), len);
+  *out = SerializedData(bytes, len);
   return true;
 }
 
