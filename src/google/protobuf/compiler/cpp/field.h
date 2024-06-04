@@ -127,10 +127,11 @@ class FieldGeneratorBase {
 
   virtual void GenerateNonInlineAccessorDefinitions(io::Printer* p) const {}
 
-  virtual void GenerateClearingCode(io::Printer* p) const = 0;
+  virtual void GenerateClearingCode(io::Printer* p,
+                                    absl::string_view instance) const = 0;
 
   virtual void GenerateMessageClearingCode(io::Printer* p) const {
-    GenerateClearingCode(p);
+    GenerateClearingCode(p, "this_.");
   }
 
   virtual void GenerateMergingCode(io::Printer* p) const = 0;
@@ -348,7 +349,7 @@ class FieldGenerator {
   // This is used to define the clear_$name$() method.
   void GenerateClearingCode(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
-    impl_->GenerateClearingCode(p);
+    impl_->GenerateClearingCode(p, "");
   }
 
   // Generates statements which clear the field as part of the Clear() method

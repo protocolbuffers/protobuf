@@ -61,7 +61,8 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GeneratePrivateMembers(io::Printer* printer) const override;
   void GenerateAccessorDeclarations(io::Printer* printer) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
-  void GenerateClearingCode(io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer,
+                            absl::string_view instance) const override;
   void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override;
@@ -120,7 +121,8 @@ class CordOneofFieldGenerator : public CordFieldGenerator {
   void GenerateNonInlineAccessorDefinitions(
       io::Printer* printer) const override;
   bool RequiresArena(GeneratorFunction func) const override;
-  void GenerateClearingCode(io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer,
+                            absl::string_view instance) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override {}
@@ -221,12 +223,15 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
   )cc");
 }
 
-void CordFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
+void CordFieldGenerator::GenerateClearingCode(
+    io::Printer* printer, absl::string_view instance) const {
+  auto vars = printer->WithVars({{"this", instance}});
   Formatter format(printer, variables_);
   if (field_->default_value_string().empty()) {
-    format("$field$.Clear();\n");
+    format("$this$$field$.Clear();\n");
   } else {
-    format("$field$ = ::absl::string_view($default$, $default_length$);\n");
+    format(
+        "$this$$field$ = ::absl::string_view($default$, $default_length$);\n");
   }
 }
 
@@ -424,7 +429,9 @@ bool CordOneofFieldGenerator::RequiresArena(GeneratorFunction func) const {
   return false;
 }
 
-void CordOneofFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
+void CordOneofFieldGenerator::GenerateClearingCode(
+    io::Printer* printer, absl::string_view instance) const {
+  ABSL_CHECK_EQ(instance, "");
   Formatter format(printer, variables_);
   format(
       "if (GetArena() == nullptr) {\n"

@@ -107,7 +107,8 @@ class SingularMessage : public FieldGeneratorBase {
 
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
-  void GenerateClearingCode(io::Printer* p) const override;
+  void GenerateClearingCode(io::Printer* p,
+                            absl::string_view instance) const override;
   void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateMergingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
@@ -310,8 +311,10 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       )cc");
 }
 
-void SingularMessage::GenerateClearingCode(io::Printer* p) const {
+void SingularMessage::GenerateClearingCode(io::Printer* p,
+                                           absl::string_view instance) const {
   ABSL_CHECK(has_hasbit_);
+  ABSL_CHECK_EQ(instance, "");
   p->Emit(
       R"cc(
         if ($field_$ != nullptr) $field_$->Clear();
@@ -322,8 +325,8 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
   p->Emit(
       R"cc(
-        $DCHK$($field_$ != nullptr);
-        $field_$->Clear();
+        $DCHK$(this_.$field_$ != nullptr);
+        this_.$field_$->Clear();
       )cc");
 }
 
@@ -473,7 +476,7 @@ class OneofMessage : public SingularMessage {
 
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateNonInlineAccessorDefinitions(io::Printer* p) const override;
-  void GenerateClearingCode(io::Printer* p) const override;
+  void GenerateClearingCode(io::Printer* p, absl::string_view) const override;
   void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
@@ -596,7 +599,8 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   )cc");
 }
 
-void OneofMessage::GenerateClearingCode(io::Printer* p) const {
+void OneofMessage::GenerateClearingCode(io::Printer* p,
+                                        absl::string_view) const {
   p->Emit({{"poison_or_clear",
             [&] {
               if (HasDescriptorMethods(field_->file(), options_)) {
@@ -621,7 +625,7 @@ void OneofMessage::GenerateClearingCode(io::Printer* p) const {
 }
 
 void OneofMessage::GenerateMessageClearingCode(io::Printer* p) const {
-  GenerateClearingCode(p);
+  GenerateClearingCode(p, "this_.");
 }
 
 void OneofMessage::GenerateSwappingCode(io::Printer* p) const {
@@ -704,7 +708,8 @@ class RepeatedMessage : public FieldGeneratorBase {
   void GeneratePrivateMembers(io::Printer* p) const override;
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
-  void GenerateClearingCode(io::Printer* p) const override;
+  void GenerateClearingCode(io::Printer* p,
+                            absl::string_view instance) const override;
   void GenerateMergingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateConstructorCode(io::Printer* p) const override;
@@ -870,11 +875,13 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   }
 }
 
-void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
+void RepeatedMessage::GenerateClearingCode(io::Printer* p,
+                                           absl::string_view instance) const {
+  auto vars = p->WithVars({{"this", instance}});
   if (should_split()) {
-    p->Emit("$field_$.ClearIfNotDefault();\n");
+    p->Emit("$this$$field_$.ClearIfNotDefault();\n");
   } else {
-    p->Emit("$field_$.Clear();\n");
+    p->Emit("$this$$field_$.Clear();\n");
   }
 }
 

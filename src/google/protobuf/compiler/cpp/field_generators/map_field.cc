@@ -87,9 +87,10 @@ class Map : public FieldGeneratorBase {
     return Vars(field_, *opts_, lite_);
   }
 
-  void GenerateClearingCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      $field_$.Clear();
+  void GenerateClearingCode(io::Printer* p,
+                            absl::string_view instance) const override {
+    p->Emit({{"this", instance}}, R"cc(
+      $this$$field_$.Clear();
     )cc");
   }
 

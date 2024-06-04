@@ -66,9 +66,10 @@ class SingularEnum : public FieldGeneratorBase {
     )cc");
   }
 
-  void GenerateClearingCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      $field_$ = $kDefault$;
+  void GenerateClearingCode(io::Printer* p,
+                            absl::string_view instance) const override {
+    p->Emit({{"this", instance}}, R"cc(
+      $this$$field_$ = $kDefault$;
     )cc");
   }
 
@@ -246,11 +247,13 @@ class RepeatedEnum : public FieldGeneratorBase {
     }
   }
 
-  void GenerateClearingCode(io::Printer* p) const override {
+  void GenerateClearingCode(io::Printer* p,
+                            absl::string_view instance) const override {
+    auto vars = p->WithVars({{"this", instance}});
     if (should_split()) {
-      p->Emit("$field_$.ClearIfNotDefault();\n");
+      p->Emit("$this$$field_$.ClearIfNotDefault();\n");
     } else {
-      p->Emit("$field_$.Clear();\n");
+      p->Emit("$this$$field_$.Clear();\n");
     }
   }
 
