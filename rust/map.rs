@@ -64,6 +64,13 @@ pub struct Map<K: ?Sized + Proxied, V: ?Sized + ProxiedInMapValue<K>> {
     _phantom: PhantomData<(PhantomData<K>, PhantomData<V>)>,
 }
 
+// SAFETY: `Map` is Sync because it does not implement interior mutability.
+unsafe impl<K: ?Sized + Proxied, V: ?Sized + ProxiedInMapValue<K>> Sync for Map<K, V> {}
+
+// SAFETY: `Map` is Send because it's not bound to a specific thread e.g.
+// it does not use thread-local data or similar.
+unsafe impl<K: ?Sized + Proxied, V: ?Sized + ProxiedInMapValue<K>> Send for Map<K, V> {}
+
 impl<K: ?Sized + Proxied, V: ?Sized + ProxiedInMapValue<K>> Drop for Map<K, V> {
     fn drop(&mut self) {
         // SAFETY:
