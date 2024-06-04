@@ -44,9 +44,15 @@ public final class TextFormat {
    * Generates a human readable form of this message, useful for debugging and other purposes, with
    * no newline characters. This is just a trivial wrapper around {@link
    * TextFormat.Printer#shortDebugString(MessageOrBuilder)}.
+   *
+   * @deprecated Use {@code printer().emittingSingleLine(true).printToString(MessageOrBuilder)}
    */
+  @Deprecated
+  @InlineMe(
+      replacement = "TextFormat.printer().emittingSingleLine(true).printToString(message)",
+      imports = "com.google.protobuf.TextFormat")
   public static String shortDebugString(final MessageOrBuilder message) {
-    return printer().shortDebugString(message);
+    return printer().emittingSingleLine(true).printToString(message);
   }
 
   /**
@@ -567,43 +573,39 @@ public final class TextFormat {
     /**
      * Generates a human readable form of this message, useful for debugging and other purposes,
      * with no newline characters.
+     *
+     * @deprecated Use {@code
+     *     this.printer().emittingSingleLine(true).printToString(MessageOrBuilder)}
      */
+    @Deprecated
+    @InlineMe(replacement = "this.emittingSingleLine(true).printToString(message)")
     public String shortDebugString(final MessageOrBuilder message) {
-      try {
-        final StringBuilder text = new StringBuilder();
-        print(message, setSingleLineOutput(text, true));
-        return text.toString();
-      } catch (IOException e) {
-        throw new IllegalStateException(e);
-      }
+      return this.emittingSingleLine(true).printToString(message);
     }
 
     /**
      * Generates a human readable form of the field, useful for debugging and other purposes, with
      * no newline characters.
+     *
+     * @deprecated Use {@code this.emittingSingleLine(true).printFieldToString(FieldDescriptor,
+     *     Object)}
      */
+    @Deprecated
+    @InlineMe(replacement = "this.emittingSingleLine(true).printFieldToString(field, value)")
     public String shortDebugString(final FieldDescriptor field, final Object value) {
-      try {
-        final StringBuilder text = new StringBuilder();
-        printField(field, value, setSingleLineOutput(text, true));
-        return text.toString();
-      } catch (IOException e) {
-        throw new IllegalStateException(e);
-      }
+      return this.emittingSingleLine(true).printFieldToString(field, value);
     }
 
     /**
      * Generates a human readable form of the unknown fields, useful for debugging and other
      * purposes, with no newline characters.
+     *
+     * @deprecated Use {@code this.emittingSingleLine(true).printToString(UnknownFieldSet)}
      */
+    @Deprecated
+    @InlineMe(replacement = "this.emittingSingleLine(true).printToString(fields)")
     public String shortDebugString(final UnknownFieldSet fields) {
-      try {
-        final StringBuilder text = new StringBuilder();
-        printUnknownFields(fields, setSingleLineOutput(text, true), this.enablingSafeDebugFormat);
-        return text.toString();
-      } catch (IOException e) {
-        throw new IllegalStateException(e);
-      }
+      return this.emittingSingleLine(true).printToString(fields);
     }
 
     private static void printUnknownFieldValue(
