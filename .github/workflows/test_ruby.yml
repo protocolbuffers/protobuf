@@ -20,13 +20,11 @@ jobs:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby, but only on Bazel 5.x.
           - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: NATIVE }
-          # TODO Re-enable these once flakes are fixed
-          #- { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI }
           - { name: Ruby 3.1, ruby: ruby-3.1.0 }
           - { name: Ruby 3.2, ruby: ruby-3.2.0 }
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }
-          # TODO Re-enable these once flakes are fixed
-          #- { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
+          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
           - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI }
 
@@ -44,6 +42,11 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
+      - name: Archive log artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-${{ matrix.ruby }}_${{ matrix.ffi || 'NATIVE' }}
+          path: logs
 
   linux-32bit:
     name: Linux 32-bit
@@ -116,13 +119,11 @@ jobs:
         # Ruby versions for CRuby, but only on Bazel 5.x.
         # Quote versions numbers otherwise 3.0 will render as 3
         - { version: "3.0", ffi: NATIVE }
-        # TODO Re-enable these once flakes are fixed
-        #- { version: "3.0", ffi: FFI }
+        - { version: "3.0", ffi: FFI }
         - { version: "3.1" }
         - { version: "3.2" }
         - { version: "3.3", ffi: NATIVE }
-        # TODO Re-enable these once flakes are fixed
-        #- { version: "3.3", ffi: FFI }
+        - { version: "3.3", ffi: FFI }
 
     name: MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: macos-12
