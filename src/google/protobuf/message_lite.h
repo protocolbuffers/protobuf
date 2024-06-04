@@ -554,7 +554,6 @@ class PROTOBUF_EXPORT MessageLite {
     return static_cast<T*>(Arena::DefaultConstruct<T>(arena));
   }
 
-#if defined(PROTOBUF_CUSTOM_VTABLE)
   template <typename T>
   static void* NewImpl(const void* prototype, Arena* arena) {
     return static_cast<const T*>(prototype)->New(arena);
@@ -573,25 +572,6 @@ class PROTOBUF_EXPORT MessageLite {
   static constexpr auto GetDeleteImpl() {
     return DeleteImpl<T>;
   }
-
-  template <typename T>
-  static void ClearImpl(MessageLite& msg) {
-    return static_cast<T&>(msg).Clear();
-  }
-  template <typename T>
-  static constexpr auto GetClearImpl() {
-    return ClearImpl<T>;
-  }
-#else   // PROTOBUF_CUSTOM_VTABLE
-  // When custom vtables are off we avoid instantiating the functions because we
-  // will not use them anyway. Less work for the compiler.
-  template <typename T>
-  using GetNewImpl = std::nullptr_t;
-  template <typename T>
-  using GetDeleteImpl = std::nullptr_t;
-  template <typename T>
-  using GetClearImpl = std::nullptr_t;
-#endif  // PROTOBUF_CUSTOM_VTABLE
 
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static T* CopyConstruct(Arena* arena, const T& from) {

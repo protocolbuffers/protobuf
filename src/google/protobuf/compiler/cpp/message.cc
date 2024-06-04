@@ -90,16 +90,16 @@ std::string ConditionalToCheckBitmasks(
   return result + (return_success ? " == 0" : " != 0");
 }
 
-void PrintPresenceCheck(const FieldDescriptor* field,
+void PrintPresenceCheck(const FieldDescriptor* field, absl::string_view prefix,
                         const std::vector<int>& has_bit_indices, io::Printer* p,
                         int* cached_has_word_index) {
   if (!field->options().weak()) {
     int has_bit_index = has_bit_indices[field->index()];
     if (*cached_has_word_index != (has_bit_index / 32)) {
       *cached_has_word_index = (has_bit_index / 32);
-      p->Emit({{"index", *cached_has_word_index}},
+      p->Emit({{"prefix", prefix}, {"index", *cached_has_word_index}},
               R"cc(
-                cached_has_bits = $has_bits$[$index$];
+                cached_has_bits = $prefix$$has_bits$[$index$];
               )cc");
     }
     p->Emit({{"mask", absl::StrFormat("0x%08xu", 1u << (has_bit_index % 32))}},
@@ -1114,6 +1114,7 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
                                           bool is_inline, io::Printer* p) {
   auto t = p->WithVars(MakeTrackerCalls(field, options_));
   p->Emit({{"inline", is_inline ? "inline" : ""},
+           {"this", ""},
            {"body",
             [&] {
               if (field->real_containing_oneof()) {
@@ -1822,15 +1823,16 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             // virtual overrides. This reduces the number of functions in the
             // binary in both modes.
             p->Emit(R"cc(
-              ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
               private:
+              static void Clear(MessageLite& msg);
               static ::size_t ByteSizeLong(const ::$proto_ns$::MessageLite& msg);
               static $uint8$* _InternalSerialize(
                   const MessageLite& msg, $uint8$* target,
                   ::$proto_ns$::io::EpsCopyOutputStream* stream);
 
               public:
+              ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
               ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
               $uint8$* _InternalSerialize(
                   $uint8$* target,
@@ -1838,6 +1840,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                 return _InternalSerialize(*this, target, stream);
               }
 #else   // PROTOBUF_CUSTOM_VTABLE
+              ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
               ::size_t ByteSizeLong() const final;
               $uint8$* _InternalSerialize(
                   $uint8$* target,
@@ -3401,16 +3404,25 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
   Formatter format(p);
 
+  auto vars = p->WithVars({{"this", "this_."}});
+
   // The maximum number of bytes we will memset to zero without checking their
   // hasbit to see if a zero-init is necessary.
   const int kMaxUnconditionalPrimitiveBytesClear = 4;
 
-  format(
-      "PROTOBUF_NOINLINE void $classname$::Clear() {\n"
-      "// @@protoc_insertion_point(message_clear_start:$full_name$)\n");
+  p->Emit(R"cc(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    void $classname$::Clear(MessageLite& base) {
+      $classname$& this_ = static_cast<$classname$&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+    void $classname$::Clear() {
+      $classname$& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+            // @@protoc_insertion_point(message_clear_start:$full_name$)
+  )cc");
   format.Indent();
 
-  format("$pbi$::TSanWrite(&_impl_);\n");
+  format("$pbi$::TSanWrite(&this_._impl_);\n");
 
   format(
       // TODO: It would be better to avoid emitting this if it is not used,
@@ -3420,7 +3432,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
       "(void) cached_has_bits;\n\n");
 
   if (descriptor_->extension_range_count() > 0) {
-    format("$extensions$.Clear();\n");
+    format("this_.$extensions$.Clear();\n");
   }
 
   // Collect fields into chunks. Each chunk may have an if() condition that
@@ -3456,13 +3468,14 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
   int cached_has_word_index = -1;
   while (it != end) {
     auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
-    bool has_haswords_check = MaybeEmitHaswordsCheck(
-        it, next, options_, has_bit_indices_, cached_has_word_index, "", p);
+    bool has_haswords_check =
+        MaybeEmitHaswordsCheck(it, next, options_, has_bit_indices_,
+                               cached_has_word_index, "this_.", p);
     bool has_default_split_check = !it->fields.empty() && it->should_split;
     if (has_default_split_check) {
       // Some fields are cleared without checking has_bit. So we add the
       // condition here to avoid writing to the default split instance.
-      format("if (!IsSplitMessageDefault()) {\n");
+      format("if (!this_.IsSplitMessageDefault()) {\n");
       format.Indent();
     }
     while (it != next) {
@@ -3508,7 +3521,8 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
 
         if (cached_has_word_index != HasWordIndex(fields.front())) {
           cached_has_word_index = HasWordIndex(fields.front());
-          format("cached_has_bits = $has_bits$[$1$];\n", cached_has_word_index);
+          format("cached_has_bits = this_.$has_bits$[$1$];\n",
+                 cached_has_word_index);
         }
         format("if (cached_has_bits & 0x$1$u) {\n", chunk_mask_str);
         format.Indent();
@@ -3522,9 +3536,10 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
           ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_start, options_));
           ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_end, options_));
           format(
-              "::memset(&$1$, 0, static_cast<::size_t>(\n"
-              "    reinterpret_cast<char*>(&$2$) -\n"
-              "    reinterpret_cast<char*>(&$1$)) + sizeof($2$));\n",
+              "::memset(&this_.$1$, 0, static_cast<::size_t>(\n"
+              "    reinterpret_cast<char*>(&this_.$2$) -\n"
+              "    reinterpret_cast<char*>(&this_.$1$)) + "
+              "sizeof(this_.$2$));\n",
               FieldMemberName(memset_start, chunk_is_split),
               FieldMemberName(memset_end, chunk_is_split));
         }
@@ -3543,7 +3558,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
              field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
 
         if (have_enclosing_if) {
-          PrintPresenceCheck(field, has_bit_indices_, p,
+          PrintPresenceCheck(field, "this_.", has_bit_indices_, p,
                              &cached_has_word_index);
           format.Indent();
         }
@@ -3581,21 +3596,21 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
   }
   // Step 4: Unions.
   for (auto oneof : OneOfRange(descriptor_)) {
-    format("clear_$1$();\n", oneof->name());
+    format("this_.clear_$1$();\n", oneof->name());
   }
 
   if (num_weak_fields_) {
-    format("$weak_field_map$.ClearAll();\n");
+    format("this_.$weak_field_map$.ClearAll();\n");
   }
 
   // We don't clear donated status.
 
   if (!has_bit_indices_.empty()) {
     // Step 5: Everything else.
-    format("$has_bits$.Clear();\n");
+    format("this_.$has_bits$.Clear();\n");
   }
 
-  format("_internal_metadata_.Clear<$unknown_fields_type$>();\n");
+  format("this_._internal_metadata_.Clear<$unknown_fields_type$>();\n");
 
   format.Outdent();
   format("}\n");
@@ -3788,7 +3803,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
     if (HasGeneratedMethods(descriptor_->file(), options_) &&
         !IsMapEntryMessage(descriptor_)) {
       p->Emit(R"cc(
-        $superclass$::GetClearImpl<$classname$>(), &$classname$::ByteSizeLong,
+        &$classname$::Clear, &$classname$::ByteSizeLong,
             &$classname$::_InternalSerialize,
       )cc");
     } else {
