@@ -614,6 +614,7 @@ namespace Google.Protobuf.Collections
             }
         }
 
+        [SecuritySafeCritical]
         internal Span<T> AsSpan() => array.AsSpan(0, count);
 
         internal void SetCount(int targetCount)

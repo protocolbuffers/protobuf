@@ -167,7 +167,14 @@ public class UnsafeCollectionOperationsTest
         // make sure that size increase preserves content and doesn't clear
         UnsafeCollectionOperations.SetCount(field, 5);
         span = UnsafeCollectionOperations.AsSpan(field);
-        SequenceEqual(span, new[] { 1, 2, 3, 4, 5 });
+        // .NET Framework always clears values. .NET 6+ only clears references.
+        var expected =
+#if NET462_OR_GREATER
+            new[] { 1, 2, 3, 0, 0 };
+#else
+            new[] { 1, 2, 3, 4, 5 };
+#endif
+        SequenceEqual(span, expected);
         Assert.True(Unsafe.AreSame(ref intRef, ref MemoryMarshal.GetReference(span)));
 
         // make sure that reallocations preserve content
