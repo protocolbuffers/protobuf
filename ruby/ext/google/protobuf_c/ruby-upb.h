@@ -348,6 +348,82 @@ error UPB_TRACING_ENABLED Tracing should be disabled in production builds
 #endif
 #endif
 
+// Linker arrays combine elements from multiple translation units into a single
+// array that can be iterated over at runtime.
+//
+// It is an alternative to pre-main "registration" functions.
+//
+// Usage:
+//
+//   // In N translation units.
+//   UPB_LINKARR_APPEND(foo_array) static int elems[3] = {1, 2, 3};
+//
+//   // At runtime:
+//   UPB_LINKARR_DECLARE(foo_array, int);
+//
+//   void f() {
+//     const int* start = UPB_LINKARR_START(foo_array);
+//     const int* stop = UPB_LINKARR_STOP(foo_array);
+//     for (const int* p = start; p < stop; p++) {
+//       // Windows can introduce zero padding, so we have to skip zeroes.
+//       if (*p != 0) {
+//         vec.push_back(*p);
+//       }
+//     }
+//   }
+
+#if defined(__ELF__) || defined(__wasm__)
+
+#define UPB_LINKARR_APPEND(name) \
+  __attribute__((retain, used, section("linkarr_" #name)))
+#define UPB_LINKARR_DECLARE(name, type)     \
+  extern type const __start_linkarr_##name; \
+  extern type const __stop_linkarr_##name;  \
+  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1] = {0}
+#define UPB_LINKARR_START(name) (&__start_linkarr_##name)
+#define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
+
+#elif defined(__MACH__)
+
+/* As described in: https://stackoverflow.com/a/22366882 */
+#define UPB_LINKARR_APPEND(name) \
+  __attribute__((retain, used, section("__DATA,la_" #name)))
+#define UPB_LINKARR_DECLARE(name, type)           \
+  extern type const __start_linkarr_##name __asm( \
+      "section$start$__DATA$la_" #name);          \
+  extern type const __stop_linkarr_##name __asm(  \
+      "section$end$__DATA$"                       \
+      "la_" #name);                               \
+  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1] = {0}
+#define UPB_LINKARR_START(name) (&__start_linkarr_##name)
+#define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
+
+#elif defined(_MSC_VER) && defined(__clang__)
+
+/* See:
+ *   https://devblogs.microsoft.com/oldnewthing/20181107-00/?p=100155
+ *   https://devblogs.microsoft.com/oldnewthing/20181108-00/?p=100165
+ *   https://devblogs.microsoft.com/oldnewthing/20181109-00/?p=100175 */
+
+// Usage of __attribute__ here probably means this is Clang-specific, and would
+// not work on MSVC.
+#define UPB_LINKARR_APPEND(name) \
+  __declspec(allocate("la_" #name "$j")) __attribute__((retain, used))
+#define UPB_LINKARR_DECLARE(name, type)                               \
+  __declspec(allocate("la_" #name "$a")) type __start_linkarr_##name; \
+  __declspec(allocate("la_" #name "$z")) type __stop_linkarr_##name;  \
+  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1] = {0}
+#define UPB_LINKARR_START(name) (&__start_linkarr_##name)
+#define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
+
+#else
+
+// Linker arrays are not supported on this platform.  Make appends a no-op but
+// don't define the other macros.
+#define UPB_LINKARR_APPEND(name)
+
+#endif
+
 #ifndef UPB_BASE_STATUS_H_
 #define UPB_BASE_STATUS_H_
 
@@ -4284,6 +4360,23 @@ UPB_API bool upb_ExtensionRegistry_Add(upb_ExtensionRegistry* r,
 bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
                                     const upb_MiniTableExtension** e,
                                     size_t count);
+
+#ifdef UPB_LINKARR_DECLARE
+
+// Adds all extensions linked into the binary into the registry.  The set of
+// linked extensions is assembled by the linker using linker arrays.  This
+// will likely not work properly if the extensions are split across multiple
+// shared libraries.
+//
+// Returns true if all extensions were added successfully, false on out of
+// memory or if any extensions were already present.
+//
+// This API is currently not available on MSVC (though it *is* available on
+// Windows using clang-cl).
+UPB_API bool upb_ExtensionRegistry_AddAllLinkedExtensions(
+    upb_ExtensionRegistry* r);
+
+#endif  // UPB_LINKARR_DECLARE
 
 // Looks up the extension (if any) defined for message type |t| and field
 // number |num|. Returns the extension if found, otherwise NULL.
@@ -14713,3 +14806,7 @@ upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
 #undef UPB_USE_C11_ATOMICS
 #undef UPB_PRIVATE
 #undef UPB_ONLYBITS
+#undef UPB_LINKARR_DECLARE
+#undef UPB_LINKARR_APPEND
+#undef UPB_LINKARR_START
+#undef UPB_LINKARR_STOP
