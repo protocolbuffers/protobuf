@@ -418,6 +418,7 @@ proto_lang_toolchain(
     name = "cc_toolchain",
     blacklisted_protos = [
         "//:compiler_plugin_proto",
+        "//:cpp_features_proto",
         "//:descriptor_proto",
     ],
     command_line = "--cpp_out=$(OUT)",
