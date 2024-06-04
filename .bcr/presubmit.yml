@@ -12,6 +12,9 @@ tasks:
     - '--cxxopt=-std=c++14'
     build_targets:
     - '@protobuf//:protobuf'
+    - '@protobuf//:protobuf_java'
+    - '@protobuf//:protobuf_java_util'
+    - '@protobuf//:protobuf_javalite'
     - '@protobuf//:protobuf_lite'
     - '@protobuf//:protoc'
     - '@protobuf//:test_messages_proto2_cc_proto'
