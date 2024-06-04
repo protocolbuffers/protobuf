@@ -89,7 +89,7 @@ class Map : public FieldGeneratorBase {
 
   void GenerateClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field_$.Clear();
+      this_.$field_$.Clear();
     )cc");
   }
 
@@ -276,10 +276,10 @@ void Map::GenerateSerializeWithCachedSizesToArray(io::Printer* p) const {
            }},
       },
       R"cc(
-        if (!_internal_$name$().empty()) {
+        if (!this_._internal_$name$().empty()) {
           using MapType = $Map$;
           using WireHelper = $Funcs$;
-          const auto& field = _internal_$name$();
+          const auto& field = this_._internal_$name$();
 
           if (stream->IsSerializationDeterministic() && field.size() > 1) {
             for (const auto& entry : $pbi$::$Sorter$<MapType>(field)) {
@@ -304,8 +304,9 @@ void Map::GenerateByteSize(io::Printer* p) const {
           {"Funcs", [&] { EmitFuncs(field_, p); }},
       },
       R"cc(
-        total_size += $kTagBytes$ * $pbi$::FromIntSize(_internal_$name$_size());
-        for (const auto& entry : _internal_$name$()) {
+        total_size +=
+            $kTagBytes$ * $pbi$::FromIntSize(this_._internal_$name$_size());
+        for (const auto& entry : this_._internal_$name$()) {
           total_size += $Funcs$::ByteSizeLong(entry.first, entry.second);
         }
       )cc");
