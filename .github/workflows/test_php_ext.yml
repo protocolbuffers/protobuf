@@ -52,7 +52,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-extension:${{ matrix.version }}-a48f26c08d9a803dd0177dda63563f6ea6f7b2d4
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-extension:${{ matrix.version }}-2ed76f9b00078de52892178e56307164ef69b7b8
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           skip-staleness-check: true
           command: protobuf-*.tgz

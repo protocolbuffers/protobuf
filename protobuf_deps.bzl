@@ -82,8 +82,8 @@ def protobuf_deps():
     if not native.existing_rule("rules_java"):
         http_archive(
             name = "rules_java",
-            url = "https://github.com/bazelbuild/rules_java/releases/download/6.0.0/rules_java-6.0.0.tar.gz",
-            sha256 = "469b7f3b580b4fcf8112f4d6d0d5a4ce8e1ad5e21fee67d8e8335d5f8b3debab",
+            url = "https://github.com/bazelbuild/rules_java/releases/download/6.5.2/rules_java-6.5.2.tar.gz",
+            sha256 = "16bc94b1a3c64f2c36ceecddc9e09a643e80937076b97e934b96a8f715ed1eaa",
         )
 
     # TODO: remove after toolchain types are moved to protobuf
@@ -112,11 +112,14 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_jvm_external"):
-        _github_archive(
+        RULES_JVM_EXTERNAL_TAG = "6.1"
+        RULES_JVM_EXTERNAL_SHA = "08ea921df02ffe9924123b0686dc04fd0ff875710bfadb7ad42badb931b0fd50"
+
+        http_archive(
             name = "rules_jvm_external",
-            repo = "https://github.com/bazelbuild/rules_jvm_external",
-            commit = "906875b0d5eaaf61a8ca2c9c3835bde6f435d011",
-            sha256 = "744bd7436f63af7e9872948773b8b106016dc164acb3960b4963f86754532ee7",
+            strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
+            sha256 = RULES_JVM_EXTERNAL_SHA,
+            url = "https://github.com/bazelbuild/rules_jvm_external/releases/download/%s/rules_jvm_external-%s.tar.gz" % (RULES_JVM_EXTERNAL_TAG, RULES_JVM_EXTERNAL_TAG),
         )
 
     if not native.existing_rule("rules_pkg"):
@@ -143,11 +146,11 @@ def protobuf_deps():
             url = "https://github.com/bazelbuild/apple_support/releases/download/1.12.0/apple_support.1.12.0.tar.gz",
         )
 
-    if not native.existing_rule("io_bazel_rules_kotlin"):
+    if not native.existing_rule("rules_kotlin"):
         http_archive(
-            name = "io_bazel_rules_kotlin",
-            urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v1.8.1/rules_kotlin_release.tgz"],
-            sha256 = "a630cda9fdb4f56cf2dc20a4bf873765c41cf00e9379e8d59cd07b24730f4fde",
+            name = "rules_kotlin",
+            urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v1.9.5/rules_kotlin-v1.9.5.tar.gz"],
+            sha256 = "34e8c0351764b71d78f76c8746e98063979ce08dcf1a91666f3f3bc2949a533d",
         )
 
     # Python Downloads
