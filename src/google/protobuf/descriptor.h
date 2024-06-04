@@ -1102,6 +1102,11 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   uint8_t lowercase_name_index_ : 2;
   uint8_t camelcase_name_index_ : 2;
   uint8_t json_name_index_ : 3;
+
+  // Can be calculated from containing_oneof(), but we cache it for performance.
+  // Located here for bitpacking.
+  bool in_real_oneof_ : 1;
+
   // Sadly, `number_` located here to reduce padding. Unrelated to all_names_
   // and its indices above.
   int number_;
@@ -2658,7 +2663,12 @@ inline const std::string& FieldDescriptor::json_name() const {
 }
 
 inline const OneofDescriptor* FieldDescriptor::containing_oneof() const {
-  return is_oneof_ ? scope_.containing_oneof : nullptr;
+  if (is_oneof_) {
+    auto* res = scope_.containing_oneof;
+    PROTOBUF_ASSUME(res != nullptr);
+    return res;
+  }
+  return nullptr;
 }
 
 inline int FieldDescriptor::index_in_oneof() const {
@@ -2697,8 +2707,13 @@ inline bool FieldDescriptor::is_map() const {
 }
 
 inline const OneofDescriptor* FieldDescriptor::real_containing_oneof() const {
-  auto* oneof = containing_oneof();
-  return oneof && !oneof->is_synthetic() ? oneof : nullptr;
+  if (in_real_oneof_) {
+    auto* res = containing_oneof();
+    PROTOBUF_ASSUME(res != nullptr);
+    ABSL_DCHECK(!res->is_synthetic());
+    return res;
+  }
+  return nullptr;
 }
 
 // To save space, index() is computed by looking at the descriptor's position

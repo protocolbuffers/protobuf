@@ -6493,6 +6493,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   result->number_ = proto.number();
   result->is_extension_ = is_extension;
   result->is_oneof_ = false;
+  result->in_real_oneof_ = false;
   result->proto3_optional_ = proto.proto3_optional();
 
   if (proto.proto3_optional() && file_->edition() != Edition::EDITION_PROTO3) {
@@ -6744,6 +6745,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
         result->is_oneof_ = true;
         result->scope_.containing_oneof =
             parent->oneof_decl(proto.oneof_index());
+        result->in_real_oneof_ = !result->proto3_optional_;
       }
     }
   }
