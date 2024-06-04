@@ -519,6 +519,7 @@ int WriteExtensions(const DefPoolPair& pools, upb::FileDefPtr file,
 
   output(
       "\n"
+      "UPB_LINKARR_APPEND(upb_AllExts)\n"
       "static const upb_MiniTableExtension *$0[$1] = {\n",
       kExtensionsInit, exts.size());
 
