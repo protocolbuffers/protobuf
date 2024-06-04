@@ -133,7 +133,7 @@ class SingularString : public FieldGeneratorBase {
   void GenerateByteSize(io::Printer* p) const override {
     p->Emit(R"cc(
       total_size += $kTagBytes$ + $pbi$::WireFormatLite::$DeclaredType$Size(
-                                      this->_internal_$name$());
+                                      this_._internal_$name$());
     )cc");
   }
 
@@ -539,7 +539,7 @@ void SingularString::GenerateClearingCode(io::Printer* p) const {
 void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
   if (is_oneof()) {
     p->Emit(R"cc(
-      $field_$.Destroy();
+      this_.$field_$.Destroy();
     )cc");
     return;
   }
@@ -563,7 +563,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
     // For non-inlined strings, we distinguish from non-default by comparing
     // instances, rather than contents.
     p->Emit(R"cc(
-      $DCHK$(!$field_$.IsDefault());
+      $DCHK$(!this_.$field_$.IsDefault());
     )cc");
   }
 
@@ -571,7 +571,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
     // Clear to a non-empty default is more involved, as we try to use the
     // Arena if one is present and may need to reallocate the string.
     p->Emit(R"cc(
-      $field_$.ClearToDefault($lazy_var$, GetArena());
+      this_.$field_$.ClearToDefault($lazy_var$, this_.GetArena());
     )cc");
     return;
   }
@@ -579,7 +579,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
   p->Emit({{"Clear",
             HasHasbit(field_) ? "ClearNonDefaultToEmpty" : "ClearToEmpty"}},
           R"cc(
-            $field_$.$Clear$();
+            this_.$field_$.$Clear$();
           )cc");
 }
 
@@ -688,7 +688,7 @@ void SingularString::GenerateSerializeWithCachedSizesToArray(
                                              "static_cast<int>(_s.length()),");
             }}},
           R"cc(
-            const std::string& _s = this->_internal_$name$();
+            const std::string& _s = this_._internal_$name$();
             $utf8_check$;
             target = stream->Write$DeclaredType$MaybeAliased($number$, _s, target);
           )cc");
@@ -750,9 +750,9 @@ class RepeatedString : public FieldGeneratorBase {
 
   void GenerateClearingCode(io::Printer* p) const override {
     if (should_split()) {
-      p->Emit("$field_$.ClearIfNotDefault();\n");
+      p->Emit("this_.$field_$.ClearIfNotDefault();\n");
     } else {
-      p->Emit("$field_$.Clear();\n");
+      p->Emit("this_.$field_$.Clear();\n");
     }
   }
 
@@ -804,10 +804,11 @@ class RepeatedString : public FieldGeneratorBase {
 
   void GenerateByteSize(io::Printer* p) const override {
     p->Emit(R"cc(
-      total_size += $kTagBytes$ * $pbi$::FromIntSize(_internal_$name$().size());
-      for (int i = 0, n = _internal_$name$().size(); i < n; ++i) {
+      total_size +=
+          $kTagBytes$ * $pbi$::FromIntSize(this_._internal_$name$().size());
+      for (int i = 0, n = this_._internal_$name$().size(); i < n; ++i) {
         total_size += $pbi$::WireFormatLite::$DeclaredType$Size(
-            _internal_$name$().Get(i));
+            this_._internal_$name$().Get(i));
       }
     )cc");
   }
@@ -974,8 +975,8 @@ void RepeatedString::GenerateSerializeWithCachedSizesToArray(
                   "s.data(), static_cast<int>(s.length()),");
             }}},
           R"cc(
-            for (int i = 0, n = this->_internal_$name$_size(); i < n; ++i) {
-              const auto& s = this->_internal_$name$().Get(i);
+            for (int i = 0, n = this_._internal_$name$_size(); i < n; ++i) {
+              const auto& s = this_._internal_$name$().Get(i);
               $utf8_check$;
               target = stream->Write$DeclaredType$($number$, s, target);
             }

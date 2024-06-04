@@ -224,9 +224,10 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
 void CordFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (field_->default_value_string().empty()) {
-    format("$field$.Clear();\n");
+    format("this_.$field$.Clear();\n");
   } else {
-    format("$field$ = ::absl::string_view($default$, $default_length$);\n");
+    format(
+        "this_.$field$ = ::absl::string_view($default$, $default_length$);\n");
   }
 }
 
@@ -262,12 +263,12 @@ void CordFieldGenerator::GenerateSerializeWithCachedSizesToArray(
   if (field_->type() == FieldDescriptor::TYPE_STRING) {
     GenerateUtf8CheckCodeForCord(
         field_, options_, false,
-        absl::Substitute("this->_internal_$0(), ", printer->LookupVar("name")),
+        absl::Substitute("this_._internal_$0(), ", printer->LookupVar("name")),
         format);
   }
   format(
       "target = stream->Write$declared_type$($number$, "
-      "this->_internal_$name$(), "
+      "this_._internal_$name$(), "
       "target);\n");
 }
 
@@ -276,7 +277,7 @@ void CordFieldGenerator::GenerateByteSize(io::Printer* printer) const {
   format(
       "total_size += $tag_size$ +\n"
       "  ::$proto_ns$::internal::WireFormatLite::$declared_type$Size(\n"
-      "    this->_internal_$name$());\n");
+      "    this_._internal_$name$());\n");
 }
 
 void CordFieldGenerator::GenerateConstexprAggregateInitializer(
@@ -428,7 +429,7 @@ void CordOneofFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
       "if (GetArena() == nullptr) {\n"
-      "  delete $field$;\n"
+      "  delete this_.$field$;\n"
       "}\n");
 }
 

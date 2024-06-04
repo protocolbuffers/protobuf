@@ -192,11 +192,30 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
-  ::size_t ByteSizeLong() const PROTOBUF_FINAL;
-  ::uint8_t* _InternalSerialize(::uint8_t* target,
-                              ::google::protobuf::io::EpsCopyOutputStream*
-                                  stream) const PROTOBUF_FINAL;
+
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+                private:
+                static void Clear(MessageLite& msg);
+                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+                static ::uint8_t* _InternalSerialize(
+                    const MessageLite& msg, ::uint8_t* target,
+                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+
+                public:
+                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
+                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+                ::uint8_t* _InternalSerialize(
+                    ::uint8_t* target,
+                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+                  return _InternalSerialize(*this, target, stream);
+                }
+  #else   // PROTOBUF_CUSTOM_VTABLE
+                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+                ::size_t ByteSizeLong() const final;
+                ::uint8_t* _InternalSerialize(
+                    ::uint8_t* target,
+                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -331,8 +350,9 @@ inline bool JavaFeatures::has_legacy_closed_enum() const {
   return value;
 }
 inline void JavaFeatures::clear_legacy_closed_enum() {
+  JavaFeatures& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.legacy_closed_enum_ = false;
+  this_._impl_.legacy_closed_enum_ = false;
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline bool JavaFeatures::legacy_closed_enum() const {
@@ -359,8 +379,9 @@ inline bool JavaFeatures::has_utf8_validation() const {
   return value;
 }
 inline void JavaFeatures::clear_utf8_validation() {
+  JavaFeatures& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.utf8_validation_ = 0;
+  this_._impl_.utf8_validation_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline ::pb::JavaFeatures_Utf8Validation JavaFeatures::utf8_validation() const {

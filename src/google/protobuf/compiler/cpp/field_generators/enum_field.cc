@@ -68,7 +68,7 @@ class SingularEnum : public FieldGeneratorBase {
 
   void GenerateClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field_$ = $kDefault$;
+      this_.$field_$ = $kDefault$;
     )cc");
   }
 
@@ -103,14 +103,14 @@ class SingularEnum : public FieldGeneratorBase {
     p->Emit(R"cc(
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteEnumToArray(
-          $number$, this->_internal_$name$(), target);
+          $number$, this_._internal_$name$(), target);
     )cc");
   }
 
   void GenerateByteSize(io::Printer* p) const override {
     p->Emit(R"cc(
       total_size += $kTagBytes$ +
-                    ::_pbi::WireFormatLite::EnumSize(this->_internal_$name$());
+                    ::_pbi::WireFormatLite::EnumSize(this_._internal_$name$());
     )cc");
   }
 
@@ -248,9 +248,9 @@ class RepeatedEnum : public FieldGeneratorBase {
 
   void GenerateClearingCode(io::Printer* p) const override {
     if (should_split()) {
-      p->Emit("$field_$.ClearIfNotDefault();\n");
+      p->Emit("this_.$field_$.ClearIfNotDefault();\n");
     } else {
-      p->Emit("$field_$.Clear();\n");
+      p->Emit("this_.$field_$.Clear();\n");
     }
   }
 
@@ -481,16 +481,16 @@ void RepeatedEnum::GenerateSerializeWithCachedSizesToArray(
             {"byte_size",
              [&] {
                if (has_cached_size_) {
-                 p->Emit(
-                     R"cc(std::size_t byte_size = $cached_size_$.Get();)cc");
+                 p->Emit(R"cc(std::size_t byte_size =
+                                  this_.$cached_size_$.Get();)cc");
                } else {
                  p->Emit(R"cc(
                    std::size_t byte_size = 0;
-                   auto count = static_cast<std::size_t>(this->_internal_$name$_size());
+                   auto count = static_cast<std::size_t>(this_._internal_$name$_size());
 
                    for (std::size_t i = 0; i < count; ++i) {
                      byte_size += ::_pbi::WireFormatLite::EnumSize(
-                         this->_internal_$name$().Get(static_cast<int>(i)));
+                         this_._internal_$name$().Get(static_cast<int>(i)));
                    }
                  )cc");
                }
@@ -500,18 +500,18 @@ void RepeatedEnum::GenerateSerializeWithCachedSizesToArray(
           {
             $byte_size$;
             if (byte_size > 0) {
-              target = stream->WriteEnumPacked($number$, _internal_$name$(),
-                                               byte_size, target);
+              target = stream->WriteEnumPacked(
+                  $number$, this_._internal_$name$(), byte_size, target);
             }
           }
         )cc");
     return;
   }
   p->Emit(R"cc(
-    for (int i = 0, n = this->_internal_$name$_size(); i < n; ++i) {
+    for (int i = 0, n = this_._internal_$name$_size(); i < n; ++i) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteEnumToArray(
-          $number$, static_cast<$Enum$>(this->_internal_$name$().Get(i)),
+          $number$, static_cast<$Enum$>(this_._internal_$name$().Get(i)),
           target);
     }
   )cc");
@@ -538,18 +538,18 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
              )cc");
              if (has_cached_size_) {
                p->Emit(R"cc(
-                 $cached_size_$.Set(::_pbi::ToCachedSize(data_size));
+                 this_.$cached_size_$.Set(::_pbi::ToCachedSize(data_size));
                )cc");
              }
            }},
       },
       R"cc(
         std::size_t data_size = 0;
-        auto count = static_cast<std::size_t>(this->_internal_$name$_size());
+        auto count = static_cast<std::size_t>(this_._internal_$name$_size());
 
         for (std::size_t i = 0; i < count; ++i) {
           data_size += ::_pbi::WireFormatLite::EnumSize(
-              this->_internal_$name$().Get(static_cast<int>(i)));
+              this_._internal_$name$().Get(static_cast<int>(i)));
         }
         total_size += data_size;
         $add_to_size$;
