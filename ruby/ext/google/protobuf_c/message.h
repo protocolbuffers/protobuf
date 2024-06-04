@@ -36,7 +36,7 @@ const upb_Message* Message_GetUpbMessage(VALUE value, const upb_MessageDef* m,
 
 // Gets or constructs a Ruby wrapper object for the given message. The wrapper
 // object will reference |arena| and ensure that it outlives this object.
-VALUE Message_GetRubyWrapper(upb_Message* msg, const upb_MessageDef* m,
+VALUE Message_GetRubyWrapper(const upb_Message* msg, const upb_MessageDef* m,
                              VALUE arena);
 
 // Gets the given field from this message.

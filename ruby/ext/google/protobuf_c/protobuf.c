@@ -221,15 +221,6 @@ void Arena_fuse(VALUE _arena, upb_Arena *other) {
 
 VALUE Arena_new() { return Arena_alloc(cArena); }
 
-void Arena_Pin(VALUE _arena, VALUE obj) {
-  Arena *arena;
-  TypedData_Get_Struct(_arena, Arena, &Arena_type, arena);
-  if (arena->pinned_objs == Qnil) {
-    RB_OBJ_WRITE(_arena, &arena->pinned_objs, rb_ary_new());
-  }
-  rb_ary_push(arena->pinned_objs, obj);
-}
-
 void Arena_register(VALUE module) {
   VALUE internal = rb_define_module_under(module, "Internal");
   VALUE klass = rb_define_class_under(internal, "Arena", rb_cObject);
@@ -353,4 +344,15 @@ __attribute__((visibility("default"))) void Init_protobuf_c() {
                              Google_Protobuf_discard_unknown, 1);
   rb_define_singleton_method(protobuf, "deep_copy", Google_Protobuf_deep_copy,
                              1);
+}
+
+// -----------------------------------------------------------------------------
+// Utilities
+// -----------------------------------------------------------------------------
+
+// Raises a Ruby error if val is frozen in Ruby or UPB.
+void Protobuf_CheckNotFrozen(VALUE val, bool upb_frozen) {
+  if (RB_UNLIKELY(rb_obj_frozen_p(val)||upb_frozen)) {
+    rb_error_frozen_object(val);
+  }
 }

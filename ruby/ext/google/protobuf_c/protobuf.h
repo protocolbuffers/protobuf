@@ -50,13 +50,6 @@ upb_Arena* Arena_get(VALUE arena);
 // possible.
 void Arena_fuse(VALUE arena, upb_Arena* other);
 
-// Pins this Ruby object to the lifetime of this arena, so that as long as the
-// arena is alive this object will not be collected.
-//
-// We use this to guarantee that the "frozen" bit on the object will be
-// remembered, even if the user drops their reference to this precise object.
-void Arena_Pin(VALUE arena, VALUE obj);
-
 // -----------------------------------------------------------------------------
 // ObjectCache
 // -----------------------------------------------------------------------------
@@ -104,6 +97,9 @@ extern VALUE cTypeError;
   if (!(expr))              \
   rb_bug("Assertion failed at %s:%d, expr: %s", __FILE__, __LINE__, #expr)
 #endif
+
+// Raises a Ruby error if val is frozen in Ruby or upb_frozen is true.
+void Protobuf_CheckNotFrozen(VALUE val, bool upb_frozen);
 
 #define PBRUBY_MAX(x, y) (((x) > (y)) ? (x) : (y))
 
