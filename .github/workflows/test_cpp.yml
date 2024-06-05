@@ -38,7 +38,7 @@ jobs:
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "aarch64" }
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation@sha256:4d1a029e5aced544e04711eb790eb22b9e1bf5e7557e431a640b88f0114bf04b"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38"
     name: Linux ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
