@@ -153,7 +153,7 @@ GRPC (http://www.grpc.io/) is Google's RPC implementation for Protocol Buffers. 
 *   https://github.com/ppissias/xsrpcj (Java)
 *   https://github.com/twitchtv/twirp (Multiple languages)
 *   https://github.com/icerpc/icerpc-csharp (C#)
-*   https://philips-software.github.io/amp-embedded-infra-lib/embedded_infrastructure_library/6.1.0/Echo.html (C++, C#, Java)
+*   https://philips-software.github.io/amp-embedded-infra-lib/embedded_infrastructure_library (C++, C#, Java)
 
 Inactive:
 
