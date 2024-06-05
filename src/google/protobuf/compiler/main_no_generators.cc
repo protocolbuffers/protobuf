@@ -9,6 +9,9 @@
 
 #include "absl/log/initialize.h"
 
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
+
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
@@ -19,11 +22,14 @@ namespace compiler {
 // This is a version of protoc that has no built-in code generators.
 // See go/protobuf-toolchain-protoc
 int ProtocMain(int argc, char* argv[]) {
+  ABSL_LOG(ERROR) << "InitializeLog";
   absl::InitializeLog();
+  ABSL_LOG(ERROR) << "InitializeLog done";
 
   CommandLineInterface cli;
   cli.AllowPlugins("protoc-");
 
+  ABSL_LOG(ERROR) << "Running CLI";
   return cli.Run(argc, argv);
 }
 
@@ -32,5 +38,8 @@ int ProtocMain(int argc, char* argv[]) {
 }  // namespace google
 
 int main(int argc, char* argv[]) {
-  return google::protobuf::compiler::ProtocMain(argc, argv);
+  ABSL_LOG(ERROR) << "Starting protoc_minimal";
+  int ret = google::protobuf::compiler::ProtocMain(argc, argv);
+  ABSL_CHECK(false);
+  return ret;
 }

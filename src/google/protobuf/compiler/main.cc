@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/log/initialize.h"
 #include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/compiler/cpp/generator.h"
@@ -138,6 +140,9 @@ int main(int argc, char* argv[]) {
 }
 #else
 int main(int argc, char* argv[]) {
-  return google::protobuf::compiler::ProtobufMain(argc, argv);
+  ABSL_LOG(ERROR) << "Starting protoc";
+  int ret = google::protobuf::compiler::ProtobufMain(argc, argv);
+  ABSL_CHECK(false);
+  return ret;
 }
 #endif

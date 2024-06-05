@@ -1176,8 +1176,10 @@ FieldOptions::OptionTargetType GetTargetType(const MethodDescriptor*) {
 }  // namespace
 
 int CommandLineInterface::Run(int argc, const char* const argv[]) {
+  ABSL_LOG(ERROR) << "Clearing CLI flags";
   Clear();
 
+  ABSL_LOG(ERROR) << "Parsing arguments";
   switch (ParseArguments(argc, argv)) {
     case PARSE_ARGUMENT_DONE_AND_EXIT:
       return 0;
@@ -1201,6 +1203,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
 
   std::unique_ptr<SourceTreeDescriptorDatabase> source_tree_database;
 
+  ABSL_LOG(ERROR) << "Creating descriptor set in database";
   // Any --descriptor_set_in FileDescriptorSet objects will be used as a
   // fallback to input_files on command line, so create that db first.
   if (!descriptor_set_in_names_.empty()) {
@@ -1226,6 +1229,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   if (proto_path_.empty()) {
+    ABSL_LOG(ERROR) << "Creating descriptor pool";
     // If there are no --proto_path flags, then just look in the specified
     // --descriptor_set_in files.  But first, verify that the input files are
     // there.
@@ -1237,6 +1241,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     descriptor_pool = std::make_unique<DescriptorPool>(
         descriptor_set_in_database.get(), error_collector.get());
   } else {
+    ABSL_LOG(ERROR) << "Creating descriptor pool";
     disk_source_tree = std::make_unique<DiskSourceTree>();
     if (!InitializeDiskSourceTree(disk_source_tree.get(),
                                   descriptor_set_in_database.get())) {
@@ -1257,10 +1262,12 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
 
   descriptor_pool->EnforceWeakDependencies(true);
 
+  ABSL_LOG(ERROR) << "Setting up feature resolution";
   if (!SetupFeatureResolution(*descriptor_pool)) {
     return EXIT_FAILURE;
   }
 
+  ABSL_LOG(ERROR) << "Setting up extension declaration enforcement";
   // Enforce extension declarations only when compiling. We want to skip
   // this enforcement when protoc is just being invoked to encode or decode
   // protos.
@@ -1268,6 +1275,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   ) {
     descriptor_pool->EnforceExtensionDeclarations(true);
   }
+  ABSL_LOG(ERROR) << "Parsing input files";
   if (!ParseInputFiles(descriptor_pool.get(), disk_source_tree.get(),
                        &parsed_files)) {
     return 1;
@@ -1275,6 +1283,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
 
   bool validation_error = false;  // Defer exiting so we log more warnings.
 
+  ABSL_LOG(ERROR) << "Validating input files";
   for (auto& file : parsed_files) {
     google::protobuf::internal::VisitDescriptors(
         *file, [&](const FieldDescriptor& field) {
@@ -1330,6 +1339,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   // that two code generators may output to the same location, in which case
   // they should share a single GeneratorContext so that OpenForInsert() works.
   GeneratorContextMap output_directories;
+
+  ABSL_LOG(ERROR) << "Generating output";
 
   // Generate output.
   if (mode_ == MODE_COMPILE) {
@@ -1608,6 +1619,7 @@ bool CommandLineInterface::ParseInputFiles(
   // Parse each file.
   for (const auto& input_file : input_files_) {
     // Import the file.
+    ABSL_LOG(ERROR) << "Building " << input_file;
     const FileDescriptor* parsed_file =
         descriptor_pool->FindFileByName(input_file);
     if (parsed_file == nullptr) {
@@ -1800,6 +1812,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
     int argc, const char* const argv[]) {
   executable_name_ = argv[0];
 
+  ABSL_LOG(ERROR) << "Gathering arguments";
   std::vector<std::string> arguments;
   for (int i = 1; i < argc; ++i) {
     if (argv[i][0] == '@') {
@@ -1819,8 +1832,10 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
     return PARSE_ARGUMENT_DONE_AND_EXIT;  // Exit without running compiler.
   }
 
+  ABSL_LOG(ERROR) << "Iterating through arguments";
   // Iterate through all arguments and parse them.
   for (size_t i = 0; i < arguments.size(); ++i) {
+    ABSL_LOG(ERROR) << "Parsing argument: " << arguments[i];
     std::string name, value;
 
     if (ParseArgument(arguments[i].c_str(), &name, &value)) {
@@ -1842,6 +1857,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
     if (status != PARSE_ARGUMENT_DONE_AND_CONTINUE) return status;
   }
 
+  ABSL_LOG(ERROR) << "Setting up plugin arguments";
   // Make sure each plugin option has a matching plugin output.
   bool foundUnknownPluginOption = false;
   for (const auto& kv : plugin_parameters_) {
@@ -2669,6 +2685,8 @@ bool CommandLineInterface::GenerateOutput(
       return false;
     }
 
+    ABSL_LOG(ERROR) << "Generating " << output_directive.name
+                    << " with parameters " << parameters;
     if (!output_directive.generator->GenerateAll(parsed_files, parameters,
                                                  generator_context, &error)) {
       // Generator returned an error.
@@ -3025,12 +3043,14 @@ bool CommandLineInterface::WriteDescriptorSet(
 }
 
 bool CommandLineInterface::WriteEditionDefaults(const DescriptorPool& pool) {
+  ABSL_LOG(ERROR) << "WriteEditionDefaults";
   const Descriptor* feature_set;
   if (opensource_runtime_) {
     feature_set = pool.FindMessageTypeByName("google.protobuf.FeatureSet");
   } else {
     feature_set = pool.FindMessageTypeByName("google.protobuf.FeatureSet");
   }
+  ABSL_LOG(ERROR) << "feature_set: " << feature_set->DebugString();
   if (feature_set == nullptr) {
     std::cerr << edition_defaults_out_name_
               << ": Could not find FeatureSet in descriptor pool.  Please make "
@@ -3040,6 +3060,7 @@ bool CommandLineInterface::WriteEditionDefaults(const DescriptorPool& pool) {
   }
   std::vector<const FieldDescriptor*> extensions;
   pool.FindAllExtensions(feature_set, &extensions);
+  ABSL_LOG(ERROR) << "found extensions";
 
   Edition minimum = PROTOBUF_MINIMUM_EDITION;
   if (edition_defaults_minimum_ != EDITION_UNKNOWN) {
@@ -3050,6 +3071,7 @@ bool CommandLineInterface::WriteEditionDefaults(const DescriptorPool& pool) {
     maximum = edition_defaults_maximum_;
   }
 
+  ABSL_LOG(ERROR) << "compiling defaults";
   absl::StatusOr<FeatureSetDefaults> defaults =
       FeatureResolver::CompileDefaults(feature_set, extensions, minimum,
                                        maximum);
@@ -3058,6 +3080,7 @@ bool CommandLineInterface::WriteEditionDefaults(const DescriptorPool& pool) {
               << defaults.status().message() << std::endl;
     return false;
   }
+  ABSL_LOG(ERROR) << "defaults: " << defaults->DebugString();
 
   int fd;
   do {

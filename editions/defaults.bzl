@@ -19,20 +19,22 @@ def _compile_edition_defaults_impl(ctx):
         sources.extend(src[ProtoInfo].transitive_sources.to_list())
         paths.extend(src[ProtoInfo].transitive_proto_path.to_list())
 
-    args = ctx.actions.args()
-    args.add("--edition_defaults_out", out_file)
+    args = ""
+    args += " --edition_defaults_out=" + out_file.path
 
-    args.add("--edition_defaults_minimum", ctx.attr.minimum_edition)
-    args.add("--edition_defaults_maximum", ctx.attr.maximum_edition)
+    args += " --edition_defaults_minimum=" + ctx.attr.minimum_edition
+    args += " --edition_defaults_maximum=" + ctx.attr.maximum_edition
     for p in paths:
-        args.add("--proto_path", p)
+        args += " --proto_path=" + p
     for source in sources:
-        args.add(source)
-    ctx.actions.run(
+        args += " " + source.path
+    binary = ctx.executable.protoc or ctx.executable._protoc_minimal
+    ctx.actions.run_shell(
         outputs = [out_file],
-        inputs = sources,
-        executable = ctx.executable.protoc or ctx.executable._protoc_minimal,
-        arguments = [args],
+        inputs = sources + [binary],
+        command = """
+        %s %s || exit 1
+        """ % (binary.path, args),
         progress_message = "Generating edition defaults",
     )
 

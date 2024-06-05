@@ -19,6 +19,7 @@
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -361,20 +362,25 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
     return Error(
         "Unable to find definition of google.protobuf.FeatureSet in descriptor pool.");
   }
+  ABSL_LOG(ERROR) << "Validating FeatureSet";
   RETURN_IF_ERROR(ValidateDescriptor(*feature_set));
 
   // Collect and validate all the FeatureSet extensions.
   for (const auto* extension : extensions) {
+    ABSL_LOG(ERROR) << "Validating extension " << extension->full_name();
     RETURN_IF_ERROR(ValidateExtension(*feature_set, extension));
     RETURN_IF_ERROR(ValidateDescriptor(*extension->message_type()));
   }
 
   // Collect all the editions with unique defaults.
+  ABSL_LOG(ERROR) << "Collecting editions";
   absl::btree_set<Edition> editions;
   CollectEditions(*feature_set, maximum_edition, editions);
   for (const auto* extension : extensions) {
     CollectEditions(*extension->message_type(), maximum_edition, editions);
   }
+  ABSL_LOG(ERROR) << "Done collecting editions: "
+                  << absl::StrJoin(editions, ", ");
   // Sanity check validation conditions above.
   ABSL_CHECK(!editions.empty());
   if (*editions.begin() != EDITION_LEGACY) {
@@ -389,6 +395,7 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
   }
 
   // Fill the default spec.
+  ABSL_LOG(ERROR) << "Filling defaults";
   FeatureSetDefaults defaults;
   defaults.set_minimum_edition(minimum_edition);
   defaults.set_maximum_edition(maximum_edition);
@@ -414,6 +421,8 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
         fixed_defaults_dynamic->SerializeAsString());
     edition_defaults->mutable_overridable_features()->MergeFromString(
         overridable_defaults_dynamic->SerializeAsString());
+    ABSL_LOG(ERROR) << "Done filling defaults for edition " << edition << ": "
+                    << edition_defaults->DebugString();
   }
   return defaults;
 }

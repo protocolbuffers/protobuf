@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner: [ ubuntu, windows, macos ]
+        runner: [ ubuntu, windows, windows, windows, windows, windows, windows, windows, windows, windows, windows, windows, windows, windows, windows, windows, windows, windows, windows, macos ]
         bazelversion: [ '7.1.1' ]
         bzlmod: [true, false ]
         include:
@@ -29,6 +29,10 @@ jobs:
     runs-on: ${{ matrix.runner }}-latest
     name: Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }}
     steps:
+      # Workaround llvm issues.
+      - run: choco upgrade llvm
+        if: ${{ runner.os == 'Windows' }}
+
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
@@ -49,6 +53,6 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: examples
+          bazel-cache: examples2
           version: ${{ matrix.bazelversion }}
-          bash: cd examples && bazel build //... $BAZEL_FLAGS --enable_bzlmod=${{ matrix.bzlmod }}
+          bash: cd examples && bazel build //... $BAZEL_FLAGS -c dbg --verbose_failures --enable_bzlmod=${{ matrix.bzlmod }}

@@ -67,6 +67,9 @@ jobs:
     name: Windows
     runs-on: windows-2022
     steps:
+      # Workaround llvm issues.
+      - run: choco upgrade llvm
+
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
@@ -79,7 +82,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: "upb-bazel-windows"
+          bazel-cache: "upb-bazel-windows2"
           bazel: test --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 //upb/... //upb_generator/... //python/... //protos/... //protos_generator/...
           version: 6.3.0
           exclude-targets: -//python:conformance_test -//upb/reflection:def_builder_test

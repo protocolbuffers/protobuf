@@ -4695,6 +4695,7 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
 const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
     const FileDescriptorProto& proto,
     DeferredValidation& deferred_validation) const {
+  ABSL_LOG(ERROR) << "Building file from database: " << proto.name();
   mutex_->AssertHeld();
   build_started_ = true;
   if (tables_->known_bad_files_.contains(proto.name())) {
