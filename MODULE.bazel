@@ -8,6 +8,7 @@ module(
     repo_name = "com_google_protobuf",
 )
 
+
 # LOWER BOUND dependency versions.
 # Bzlmod follows MVS:
 # https://bazel.build/versions/6.0.0/build/bzlmod#version-resolution
