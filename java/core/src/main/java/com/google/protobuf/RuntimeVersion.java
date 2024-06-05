@@ -28,8 +28,8 @@ public final class RuntimeVersion {
   public static final RuntimeDomain DOMAIN = RuntimeDomain.PUBLIC;
   public static final int MAJOR = 4;
   public static final int MINOR = 27;
-  public static final int PATCH = 1;
-  public static final String SUFFIX = "";
+  public static final int PATCH = 2;
+  public static final String SUFFIX = "-dev";
 
   private static final String VERSION_STRING = versionString(MAJOR, MINOR, PATCH, SUFFIX);
   private static final Logger logger = Logger.getLogger(RuntimeVersion.class.getName());
