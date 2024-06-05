@@ -32,7 +32,7 @@ DOMAIN = Domain.PUBLIC
 MAJOR = 5
 MINOR = 27
 PATCH = 1
-SUFFIX = '-dev'
+SUFFIX = ''
 
 
 def ValidateProtobufRuntimeVersion(
