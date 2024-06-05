@@ -1492,6 +1492,11 @@ UPB_API_INLINE bool upb_MiniTableEnum_CheckValue(const upb_MiniTableEnum* e,
 
 // Must be last.
 
+typedef union {
+  const struct upb_MiniTable* const* UPB_PRIVATE(submsg);
+  const struct upb_MiniTableEnum* UPB_PRIVATE(subenum);
+} upb_MiniTableSubInternal;
+
 union upb_MiniTableSub {
   const struct upb_MiniTable* UPB_PRIVATE(submsg);
   const struct upb_MiniTableEnum* UPB_PRIVATE(subenum);
@@ -1562,7 +1567,7 @@ typedef enum {
 
 // LINT.IfChange(minitable_struct_definition)
 struct upb_MiniTable {
-  const union upb_MiniTableSub* UPB_PRIVATE(subs);
+  const upb_MiniTableSubInternal* UPB_PRIVATE(subs);
   const struct upb_MiniTableField* UPB_ONLYBITS(fields);
 
   // Must be aligned to sizeof(void*). Doesn't include internal members like
@@ -1615,9 +1620,10 @@ UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
   return &m->UPB_ONLYBITS(fields)[i];
 }
 
-UPB_INLINE const union upb_MiniTableSub UPB_PRIVATE(
-    _upb_MiniTable_GetSubByIndex)(const struct upb_MiniTable* m, uint32_t i) {
-  return m->UPB_PRIVATE(subs)[i];
+UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
+    _upb_MiniTable_GetSubTableByIndex)(const struct upb_MiniTable* m,
+                                       uint32_t i) {
+  return *m->UPB_PRIVATE(subs)[i].UPB_PRIVATE(submsg);
 }
 
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_SubMessage(
@@ -1625,7 +1631,8 @@ UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_SubMessage(
   if (upb_MiniTableField_CType(f) != kUpb_CType_Message) {
     return NULL;
   }
-  return m->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)].UPB_PRIVATE(submsg);
+  return UPB_PRIVATE(_upb_MiniTable_GetSubTableByIndex)(
+      m, f->UPB_PRIVATE(submsg_index));
 }
 
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_GetSubMessageTable(
@@ -4862,38 +4869,71 @@ extern "C" {
 #endif
 
 extern const upb_MiniTable google__protobuf__FileDescriptorSet_msg_init;
+extern const upb_MiniTable* google__protobuf__FileDescriptorSet_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__FileDescriptorProto_msg_init;
+extern const upb_MiniTable* google__protobuf__FileDescriptorProto_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__DescriptorProto_msg_init;
+extern const upb_MiniTable* google__protobuf__DescriptorProto_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__DescriptorProto__ExtensionRange_msg_init;
+extern const upb_MiniTable* google__protobuf__DescriptorProto__ExtensionRange_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__DescriptorProto__ReservedRange_msg_init;
+extern const upb_MiniTable* google__protobuf__DescriptorProto__ReservedRange_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__ExtensionRangeOptions_msg_init;
+extern const upb_MiniTable* google__protobuf__ExtensionRangeOptions_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__ExtensionRangeOptions__Declaration_msg_init;
+extern const upb_MiniTable* google__protobuf__ExtensionRangeOptions__Declaration_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__FieldDescriptorProto_msg_init;
+extern const upb_MiniTable* google__protobuf__FieldDescriptorProto_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__OneofDescriptorProto_msg_init;
+extern const upb_MiniTable* google__protobuf__OneofDescriptorProto_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__EnumDescriptorProto_msg_init;
+extern const upb_MiniTable* google__protobuf__EnumDescriptorProto_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__EnumDescriptorProto__EnumReservedRange_msg_init;
+extern const upb_MiniTable* google__protobuf__EnumDescriptorProto__EnumReservedRange_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__EnumValueDescriptorProto_msg_init;
+extern const upb_MiniTable* google__protobuf__EnumValueDescriptorProto_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__ServiceDescriptorProto_msg_init;
+extern const upb_MiniTable* google__protobuf__ServiceDescriptorProto_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__MethodDescriptorProto_msg_init;
+extern const upb_MiniTable* google__protobuf__MethodDescriptorProto_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__FileOptions_msg_init;
+extern const upb_MiniTable* google__protobuf__FileOptions_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__MessageOptions_msg_init;
+extern const upb_MiniTable* google__protobuf__MessageOptions_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__FieldOptions_msg_init;
+extern const upb_MiniTable* google__protobuf__FieldOptions_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__FieldOptions__EditionDefault_msg_init;
+extern const upb_MiniTable* google__protobuf__FieldOptions__EditionDefault_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__FieldOptions__FeatureSupport_msg_init;
+extern const upb_MiniTable* google__protobuf__FieldOptions__FeatureSupport_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__OneofOptions_msg_init;
+extern const upb_MiniTable* google__protobuf__OneofOptions_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__EnumOptions_msg_init;
+extern const upb_MiniTable* google__protobuf__EnumOptions_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__EnumValueOptions_msg_init;
+extern const upb_MiniTable* google__protobuf__EnumValueOptions_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__ServiceOptions_msg_init;
+extern const upb_MiniTable* google__protobuf__ServiceOptions_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__MethodOptions_msg_init;
+extern const upb_MiniTable* google__protobuf__MethodOptions_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__UninterpretedOption_msg_init;
+extern const upb_MiniTable* google__protobuf__UninterpretedOption_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__UninterpretedOption__NamePart_msg_init;
+extern const upb_MiniTable* google__protobuf__UninterpretedOption__NamePart_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__FeatureSet_msg_init;
+extern const upb_MiniTable* google__protobuf__FeatureSet_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__FeatureSetDefaults_msg_init;
+extern const upb_MiniTable* google__protobuf__FeatureSetDefaults_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__FeatureSetDefaults__FeatureSetEditionDefault_msg_init;
+extern const upb_MiniTable* google__protobuf__FeatureSetDefaults__FeatureSetEditionDefault_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__SourceCodeInfo_msg_init;
+extern const upb_MiniTable* google__protobuf__SourceCodeInfo_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__SourceCodeInfo__Location_msg_init;
+extern const upb_MiniTable* google__protobuf__SourceCodeInfo__Location_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__GeneratedCodeInfo_msg_init;
+extern const upb_MiniTable* google__protobuf__GeneratedCodeInfo_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__GeneratedCodeInfo__Annotation_msg_init;
+extern const upb_MiniTable* google__protobuf__GeneratedCodeInfo__Annotation_msg_init_ptr;
 
 extern const upb_MiniTableEnum google_protobuf_Edition_enum_init;
 extern const upb_MiniTableEnum google_protobuf_ExtensionRangeOptions_VerificationState_enum_init;
