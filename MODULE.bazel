@@ -19,7 +19,7 @@ bazel_dep(name = "rules_cc", version = "0.0.9")
 bazel_dep(name = "rules_java", version = "5.3.5")
 bazel_dep(name = "rules_jvm_external", version = "5.1")
 bazel_dep(name = "rules_pkg", version = "0.7.0")
-bazel_dep(name = "rules_python", version = "0.10.2")
+bazel_dep(name = "rules_python", version = "0.28.0")
 bazel_dep(name = "platforms", version = "0.0.8")
 bazel_dep(name = "zlib", version = "1.2.11")
 

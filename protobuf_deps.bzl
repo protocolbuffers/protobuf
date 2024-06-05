@@ -100,15 +100,15 @@ def protobuf_deps():
     if not native.existing_rule("rules_python"):
         http_archive(
             name = "rules_python",
-            sha256 = "9d04041ac92a0985e344235f5d946f71ac543f1b1565f2cdbc9a2aaee8adf55b",
-            strip_prefix = "rules_python-0.26.0",
-            url = "https://github.com/bazelbuild/rules_python/releases/download/0.26.0/rules_python-0.26.0.tar.gz",
+            sha256 = "d70cd72a7a4880f0000a6346253414825c19cdd40a28289bdf67b8e6480edff8",
+            strip_prefix = "rules_python-0.28.0",
+            url = "https://github.com/bazelbuild/rules_python/releases/download/0.28.0/rules_python-0.28.0.tar.gz",
         )
 
     if not native.existing_rule("system_python"):
         system_python(
             name = "system_python",
-            minimum_python_version = "3.7",
+            minimum_python_version = "3.8",
         )
 
     if not native.existing_rule("rules_jvm_external"):
