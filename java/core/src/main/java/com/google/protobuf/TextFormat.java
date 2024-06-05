@@ -1537,6 +1537,7 @@ public final class TextFormat {
     private final SingularOverwritePolicy singularOverwritePolicy;
     private TextFormatParseInfoTree.Builder parseInfoTreeBuilder;
     private final int recursionLimit;
+    private Descriptor rootType;
 
     private Parser(
         TypeRegistry typeRegistry,
@@ -1553,6 +1554,7 @@ public final class TextFormat {
       this.singularOverwritePolicy = singularOverwritePolicy;
       this.parseInfoTreeBuilder = parseInfoTreeBuilder;
       this.recursionLimit = recursionLimit;
+      this.rootType = null;
     }
 
     /** Returns a new instance of {@link Builder}. */
@@ -1754,6 +1756,7 @@ public final class TextFormat {
         throws ParseException {
       final Tokenizer tokenizer = new Tokenizer(input);
       MessageReflection.BuilderAdapter target = new MessageReflection.BuilderAdapter(builder);
+      rootType = target.getDescriptorForType();
       List<UnknownField> unknownFields = new ArrayList<UnknownField>();
 
       while (!tokenizer.atEnd()) {
