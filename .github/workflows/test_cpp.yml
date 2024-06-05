@@ -26,19 +26,19 @@ jobs:
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
         include:
           # Set defaults
-          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:04cd765285bc52cbbf51d66c8c66d8603579cf0f19cc42df26b09d2c270541fb
+          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:3d959f731dc5c54af4865c31ee2bd581ec40028adcdf4c038f3122581f595191
           - targets: //pkg/... //src/... @com_google_protobuf_examples//... //third_party/utf8_range/...
 
           # Override cases with custom images
           - config: { name: "Bazel7" }
-            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.1-75f2a85ece6526cc3d54087018c0f1097d78d42b"
+            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e"
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "TCMalloc" }
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:bd39119d74b8a3fad4ae335d4cf5294e70384676331b7e19949459fc7a8d8328"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:1c5133455481f4d1bb8afa477029604f41f1a3c46cebe4d9958cf1af95b5c87c"
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "aarch64" }
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:6.3.0-aarch64-68e662b3a56b881804dc4e9d45f949791cbc4b94"
     name: Linux ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
@@ -102,7 +102,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:${{ matrix.arch }}-63dd26c0c7a808d92673a3e52e848189d4ab0f17
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:${{ matrix.arch }}-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >
@@ -328,7 +328,7 @@ jobs:
             os: macos-12
             cache_key: macos-12-bazel7
             bazel: test //src/... //third_party/utf8_range/...
-            bazel_version: '7.1.1'
+            bazel_version: '7.1.2'
           - name: MacOS Apple Silicon (build only) Bazel
             os: macos-12
             cache_key: macos-12-arm
@@ -343,7 +343,7 @@ jobs:
             os: windows-2022
             cache_key: windows-2022-bazel7
             bazel: test //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
-            bazel_version: '7.1.1'
+            bazel_version: '7.1.2'
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     steps:
