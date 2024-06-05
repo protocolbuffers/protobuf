@@ -31,7 +31,7 @@ class VersionError(Exception):
 DOMAIN = Domain.PUBLIC
 MAJOR = 5
 MINOR = 27
-PATCH = 1
+PATCH = 2
 SUFFIX = '-dev'
 
 
