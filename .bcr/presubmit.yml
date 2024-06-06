@@ -13,6 +13,7 @@ tasks:
     build_targets:
     - '@protobuf//:protobuf'
     - '@protobuf//:protobuf_lite'
+    - '@protobuf//:protobuf_rust'
     - '@protobuf//:protoc'
     - '@protobuf//:test_messages_proto2_cc_proto'
     - '@protobuf//:test_messages_proto3_cc_proto'
