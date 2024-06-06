@@ -150,6 +150,13 @@ const upb_MiniTable google__protobuf__compiler__CodeGeneratorResponse__File_msg_
 };
 
 const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse__File_msg_init_ptr = &google__protobuf__compiler__CodeGeneratorResponse__File_msg_init;
+static const upb_MiniTable *messages_layout[4] = {
+  &google__protobuf__compiler__Version_msg_init,
+  &google__protobuf__compiler__CodeGeneratorRequest_msg_init,
+  &google__protobuf__compiler__CodeGeneratorResponse_msg_init,
+  &google__protobuf__compiler__CodeGeneratorResponse__File_msg_init,
+};
+
 const upb_MiniTableEnum google_protobuf_compiler_CodeGeneratorResponse_Feature_enum_init = {
     64,
     0,
@@ -157,13 +164,6 @@ const upb_MiniTableEnum google_protobuf_compiler_CodeGeneratorResponse_Feature_e
         0x7,
         0x0,
     },
-};
-
-static const upb_MiniTable *messages_layout[4] = {
-  &google__protobuf__compiler__Version_msg_init,
-  &google__protobuf__compiler__CodeGeneratorRequest_msg_init,
-  &google__protobuf__compiler__CodeGeneratorResponse_msg_init,
-  &google__protobuf__compiler__CodeGeneratorResponse__File_msg_init,
 };
 
 static const upb_MiniTableEnum *enums_layout[1] = {
