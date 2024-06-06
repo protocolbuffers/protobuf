@@ -1809,7 +1809,7 @@ def ParseFloat(text):
       try:
         return float(text.rstrip('f'))
       except ValueError:
-        raise ValueError('Couldn\'t parse float: %s' % text)
+        raise ValueError("Couldn't parse float: %s" % text)
 
 
 def ParseBool(text):

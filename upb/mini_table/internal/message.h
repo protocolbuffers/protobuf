@@ -46,7 +46,7 @@ typedef enum {
 
 // LINT.IfChange(minitable_struct_definition)
 struct upb_MiniTable {
-  const union upb_MiniTableSub* UPB_PRIVATE(subs);
+  const upb_MiniTableSubInternal* UPB_PRIVATE(subs);
   const struct upb_MiniTableField* UPB_ONLYBITS(fields);
 
   // Must be aligned to sizeof(void*). Doesn't include internal members like
@@ -99,9 +99,10 @@ UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
   return &m->UPB_ONLYBITS(fields)[i];
 }
 
-UPB_INLINE const union upb_MiniTableSub UPB_PRIVATE(
-    _upb_MiniTable_GetSubByIndex)(const struct upb_MiniTable* m, uint32_t i) {
-  return m->UPB_PRIVATE(subs)[i];
+UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
+    _upb_MiniTable_GetSubTableByIndex)(const struct upb_MiniTable* m,
+                                       uint32_t i) {
+  return *m->UPB_PRIVATE(subs)[i].UPB_PRIVATE(submsg);
 }
 
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_SubMessage(
@@ -109,7 +110,8 @@ UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_SubMessage(
   if (upb_MiniTableField_CType(f) != kUpb_CType_Message) {
     return NULL;
   }
-  return m->UPB_PRIVATE(subs)[f->UPB_PRIVATE(submsg_index)].UPB_PRIVATE(submsg);
+  return UPB_PRIVATE(_upb_MiniTable_GetSubTableByIndex)(
+      m, f->UPB_PRIVATE(submsg_index));
 }
 
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_GetSubMessageTable(

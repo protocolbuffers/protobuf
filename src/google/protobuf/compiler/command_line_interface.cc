@@ -2872,23 +2872,24 @@ bool CommandLineInterface::GeneratePluginOutput(
   }
 
   // Check for errors.
-  if (!response.error().empty()) {
-    // Generator returned an error.
-    *error = response.error();
-    return false;
-  }
+  bool success = true;
   if (!EnforceProto3OptionalSupport(plugin_name, response.supported_features(),
                                     parsed_files)) {
-    return false;
+    success = false;
   }
   if (!EnforceEditionsSupport(plugin_name, response.supported_features(),
                               static_cast<Edition>(response.minimum_edition()),
                               static_cast<Edition>(response.maximum_edition()),
                               parsed_files)) {
-    return false;
+    success = false;
+  }
+  if (!response.error().empty()) {
+    // Generator returned an error.
+    *error = response.error();
+    success = false;
   }
 
-  return true;
+  return success;
 }
 
 bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {

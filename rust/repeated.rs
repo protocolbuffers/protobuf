@@ -341,6 +341,13 @@ pub struct Repeated<T: ?Sized + ProxiedInRepeated> {
     _phantom: PhantomData<T>,
 }
 
+// SAFETY: `Repeated` is Sync because it does not implement interior mutability.
+unsafe impl<T: ?Sized + ProxiedInRepeated> Sync for Repeated<T> {}
+
+// SAFETY: `Repeated` is Send because it's not bound to a specific thread e.g.
+// it does not use thread-local data or similar.
+unsafe impl<T: ?Sized + ProxiedInRepeated> Send for Repeated<T> {}
+
 impl<T: ?Sized + ProxiedInRepeated> Repeated<T> {
     pub fn new() -> Self {
         T::repeated_new(Private)
@@ -367,9 +374,6 @@ impl<T: ?Sized + ProxiedInRepeated> Drop for Repeated<T> {
         unsafe { T::repeated_free(Private, self) }
     }
 }
-
-// SAFETY: `Repeated` does not allow for shared mutability.
-unsafe impl<T: ProxiedInRepeated> Sync for Repeated<T> {}
 
 impl<T> Proxied for Repeated<T>
 where

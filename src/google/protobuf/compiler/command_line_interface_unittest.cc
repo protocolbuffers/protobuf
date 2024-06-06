@@ -1861,6 +1861,22 @@ TEST_F(CommandLineInterfaceTest, PluginNoEditionsSupport) {
       "code generator prefix-gen-plug hasn't been updated to support editions");
 }
 
+TEST_F(CommandLineInterfaceTest, PluginErrorAndNoEditionsSupport) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message MockCodeGenerator_Error { }
+  )schema");
+
+  SetMockGeneratorTestCase("no_editions");
+  Run("protocol_compiler "
+      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
+  ExpectErrorSubstring(
+      "code generator prefix-gen-plug hasn't been updated to support editions");
+  ExpectErrorSubstring(
+      "--plug_out: foo.proto: Saw message type MockCodeGenerator_Error.");
+}
+
 TEST_F(CommandLineInterfaceTest, EditionDefaults) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());

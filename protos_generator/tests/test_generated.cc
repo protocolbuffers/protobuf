@@ -1157,6 +1157,44 @@ TEST(CppGeneratedCode, ClearMessage) {
   EXPECT_FALSE(::protos::HasExtension(&model, theme));
 }
 
+TEST(CppGeneratedCode, CanInvokeClearMessageWithPtr) {
+  // Fill model.
+  TestModel model;
+  model.set_int64(5);
+  auto new_child = model.add_child_models();
+  // Clear using Ptr<T>
+  auto ptr = ::protos::Ptr<TestModel>(&model);
+  ::protos::ClearMessage(ptr);
+  // Successful clear
+  EXPECT_FALSE(model.has_int64());
+}
+
+TEST(CppGeneratedCode, CanInvokeClearMessageWithRawPtr) {
+  // Fill model.
+  TestModel model;
+  model.set_int64(5);
+  auto new_child = model.add_child_models();
+  // Clear using T*
+  ::protos::ClearMessage(&model);
+  // Successful clear
+  EXPECT_FALSE(model.has_int64());
+}
+
+template <typename T>
+bool CanCallClearMessage() {
+  return Requires<T>([](auto x) -> decltype(::protos::ClearMessage(x)) {});
+}
+
+TEST(CppGeneratedCode, CannotInvokeClearMessageWithConstPtr) {
+  EXPECT_TRUE(CanCallClearMessage<::protos::Ptr<TestModel>>());
+  EXPECT_FALSE(CanCallClearMessage<::protos::Ptr<const TestModel>>());
+}
+
+TEST(CppGeneratedCode, CannotInvokeClearMessageWithConstRawPtr) {
+  EXPECT_TRUE(CanCallClearMessage<TestModel*>());
+  EXPECT_FALSE(CanCallClearMessage<const TestModel*>());
+}
+
 TEST(CppGeneratedCode, DeepCopy) {
   // Fill model.
   TestModel model;
@@ -1203,16 +1241,10 @@ TEST(CppGeneratedCode, FieldNumberConstants) {
   EXPECT_EQ(225, TestModel::kChildMapFieldNumber);
 }
 
-// TODO : Add BUILD rule to test failures below.
-#ifdef TEST_CLEAR_MESSAGE_FAILURE
-TEST(CppGeneratedCode, ClearConstMessageShouldFail) {
-  // Fill model.
+TEST(CppGeneratedCode, ClearConstMessageShouldFailForConstChild) {
   TestModel model;
-  model.set_int64(5);
-  model.set_str2("Hello");
-  // Only mutable_ can be cleared not Ptr<const T>.
-  ::protos::ClearMessage(model.child_model_1());
+  EXPECT_FALSE(CanCallClearMessage<decltype(model.child_model_1())>());
+  EXPECT_TRUE(CanCallClearMessage<decltype(model.mutable_child_model_1())>());
 }
-#endif
 
 }  // namespace

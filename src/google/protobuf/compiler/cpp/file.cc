@@ -799,10 +799,10 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
   }
 
   CrossFileReferences refs;
-  ForEachField(message_generators_[idx]->descriptor(),
-               [this, &refs](const FieldDescriptor* field) {
-                 GetCrossFileReferencesForField(field, &refs);
-               });
+  ForEachField<false>(message_generators_[idx]->descriptor(),
+                      [this, &refs](const FieldDescriptor* field) {
+                        GetCrossFileReferencesForField(field, &refs);
+                      });
 
   GenerateInternalForwardDeclarations(refs, p);
 

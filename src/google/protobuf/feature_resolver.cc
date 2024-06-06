@@ -187,12 +187,33 @@ absl::Status ValidateExtension(const Descriptor& feature_set,
   return absl::OkStatus();
 }
 
+void MaybeInsertEdition(Edition edition, Edition maximum_edition,
+                        absl::btree_set<Edition>& editions) {
+  if (edition <= maximum_edition) {
+    editions.insert(edition);
+  }
+}
+
+// This collects all of the editions that are relevant to any features defined
+// in a message descriptor.  We only need to consider editions where something
+// has changed.
 void CollectEditions(const Descriptor& descriptor, Edition maximum_edition,
                      absl::btree_set<Edition>& editions) {
   for (int i = 0; i < descriptor.field_count(); ++i) {
-    for (const auto& def : descriptor.field(i)->options().edition_defaults()) {
-      if (maximum_edition < def.edition()) continue;
-      editions.insert(def.edition());
+    const FieldOptions& options = descriptor.field(i)->options();
+    // Editions where a new feature is introduced should be captured.
+    MaybeInsertEdition(options.feature_support().edition_introduced(),
+                       maximum_edition, editions);
+
+    // Editions where a feature is removed should be captured.
+    if (options.feature_support().has_edition_removed()) {
+      MaybeInsertEdition(options.feature_support().edition_removed(),
+                         maximum_edition, editions);
+    }
+
+    // Any edition where a default value changes should be captured.
+    for (const auto& def : options.edition_defaults()) {
+      MaybeInsertEdition(def.edition(), maximum_edition, editions);
     }
   }
 }

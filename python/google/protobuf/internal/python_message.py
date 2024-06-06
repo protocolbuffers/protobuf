@@ -27,6 +27,7 @@ this file*.
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
+import datetime
 from io import BytesIO
 import struct
 import sys
@@ -536,13 +537,30 @@ def _AddInitMethod(message_descriptor, cls):
         self._fields[field] = copy
       elif field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
         copy = field._default_constructor(self)
-        new_val = field_value
-        if isinstance(field_value, dict):
+        new_val = None
+        if isinstance(field_value, message_mod.Message):
+          new_val = field_value
+        elif isinstance(field_value, dict):
           new_val = field.message_type._concrete_class(**field_value)
-        try:
-          copy.MergeFrom(new_val)
-        except TypeError:
-          _ReraiseTypeErrorWithFieldName(message_descriptor.name, field_name)
+        elif field.message_type.full_name == 'google.protobuf.Timestamp':
+          copy.FromDatetime(field_value)
+        elif field.message_type.full_name == 'google.protobuf.Duration':
+          copy.FromTimedelta(field_value)
+        else:
+          raise TypeError(
+              'Message field {0}.{1} must be initialized with a '
+              'dict or instance of same class, got {2}.'.format(
+                  message_descriptor.name,
+                  field_name,
+                  type(field_value).__name__,
+              )
+          )
+
+        if new_val:
+          try:
+            copy.MergeFrom(new_val)
+          except TypeError:
+            _ReraiseTypeErrorWithFieldName(message_descriptor.name, field_name)
         self._fields[field] = copy
       else:
         if field.cpp_type == _FieldDescriptor.CPPTYPE_ENUM:
@@ -753,8 +771,17 @@ def _AddPropertiesForNonRepeatedCompositeField(field, cls):
   # We define a setter just so we can throw an exception with a more
   # helpful error message.
   def setter(self, new_value):
-    raise AttributeError('Assignment not allowed to composite field '
-                         '"%s" in protocol message object.' % proto_field_name)
+    if field.message_type.full_name == 'google.protobuf.Timestamp':
+      getter(self)
+      self._fields[field].FromDatetime(new_value)
+    elif field.message_type.full_name == 'google.protobuf.Duration':
+      getter(self)
+      self._fields[field].FromTimedelta(new_value)
+    else:
+      raise AttributeError(
+          'Assignment not allowed to composite field '
+          '"%s" in protocol message object.' % proto_field_name
+      )
 
   # Add a property to encapsulate the getter.
   doc = 'Magic attribute generated for "%s" proto field.' % proto_field_name

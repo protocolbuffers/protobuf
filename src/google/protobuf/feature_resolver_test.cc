@@ -1310,6 +1310,81 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumTooEarly) {
       HasError(HasSubstr("edition 1_TEST_ONLY is earlier than the oldest")));
 }
 
+TEST_F(FeatureResolverPoolTest, CompileDefaultsRemovedOnly) {
+  const FileDescriptor* file = ParseSchema(R"schema(
+    syntax = "proto2";
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FeatureSet {
+      optional Foo bar = 9999;
+    }
+    enum Bar {
+      TEST_ENUM_FEATURE_UNKNOWN = 0;
+      VALUE1 = 1;
+      VALUE2 = 2;
+    }
+    message Foo {
+      optional Bar file_feature = 1 [
+        targets = TARGET_TYPE_FIELD,
+        feature_support.edition_introduced = EDITION_2023,
+        feature_support.edition_removed = EDITION_99998_TEST_ONLY,
+        edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
+      ];
+    }
+  )schema");
+  ASSERT_NE(file, nullptr);
+
+  const FieldDescriptor* ext = file->extension(0);
+  auto compiled_defaults = FeatureResolver::CompileDefaults(
+      feature_set_, {ext}, EDITION_99997_TEST_ONLY, EDITION_99999_TEST_ONLY);
+  ASSERT_OK(compiled_defaults);
+  const auto& defaults = *compiled_defaults->defaults().rbegin();
+  EXPECT_THAT(defaults.edition(), EDITION_99998_TEST_ONLY);
+  EXPECT_THAT(defaults.fixed_features().GetExtension(pb::test).file_feature(),
+              pb::VALUE1);
+  EXPECT_FALSE(defaults.overridable_features()
+                   .GetExtension(pb::test)
+                   .has_file_feature());
+}
+
+TEST_F(FeatureResolverPoolTest, CompileDefaultsIntroducedOnly) {
+  const FileDescriptor* file = ParseSchema(R"schema(
+    syntax = "proto2";
+    package test;
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FeatureSet {
+      optional Foo bar = 9999;
+    }
+    enum Bar {
+      TEST_ENUM_FEATURE_UNKNOWN = 0;
+      VALUE1 = 1;
+      VALUE2 = 2;
+    }
+    message Foo {
+      optional Bar file_feature = 1 [
+        targets = TARGET_TYPE_FIELD,
+        feature_support.edition_introduced = EDITION_99998_TEST_ONLY,
+        edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
+      ];
+    }
+  )schema");
+  ASSERT_NE(file, nullptr);
+
+  const FieldDescriptor* ext = file->extension(0);
+  auto compiled_defaults = FeatureResolver::CompileDefaults(
+      feature_set_, {ext}, EDITION_99997_TEST_ONLY, EDITION_99999_TEST_ONLY);
+  ASSERT_OK(compiled_defaults);
+  const auto& defaults = *compiled_defaults->defaults().rbegin();
+  EXPECT_THAT(defaults.edition(), EDITION_99998_TEST_ONLY);
+  EXPECT_THAT(
+      defaults.overridable_features().GetExtension(pb::test).file_feature(),
+      pb::VALUE1);
+  EXPECT_FALSE(
+      defaults.fixed_features().GetExtension(pb::test).has_file_feature());
+}
+
 TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
   const FileDescriptor* file = ParseSchema(R"schema(
     syntax = "proto2";

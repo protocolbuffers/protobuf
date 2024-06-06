@@ -433,6 +433,7 @@ err:
 }
 
 static bool PyUpb_Message_InitMessageAttribute(PyObject* _self, PyObject* name,
+                                               const upb_FieldDef* field,
                                                PyObject* value) {
   PyObject* submsg = PyUpb_Message_GetAttr(_self, name);
   if (!submsg) return -1;
@@ -446,10 +447,24 @@ static bool PyUpb_Message_InitMessageAttribute(PyObject* _self, PyObject* name,
     assert(!PyErr_Occurred());
     ok = PyUpb_Message_InitAttributes(submsg, NULL, value) >= 0;
   } else {
-    const upb_MessageDef* m = PyUpb_Message_GetMsgdef(_self);
-    PyErr_Format(PyExc_TypeError, "Message must be initialized with a dict: %s",
-                 upb_MessageDef_FullName(m));
-    ok = false;
+    const upb_MessageDef* msgdef = upb_FieldDef_MessageSubDef(field);
+    switch (upb_MessageDef_WellKnownType(msgdef)) {
+      case kUpb_WellKnown_Timestamp: {
+        ok = PyObject_CallMethod(submsg, "FromDatetime", "O", value);
+        break;
+      }
+      case kUpb_WellKnown_Duration: {
+        ok = PyObject_CallMethod(submsg, "FromTimedelta", "O", value);
+        break;
+      }
+      default: {
+        const upb_MessageDef* m = PyUpb_Message_GetMsgdef(_self);
+        PyErr_Format(PyExc_TypeError,
+                     "Message must be initialized with a dict: %s",
+                     upb_MessageDef_FullName(m));
+        ok = false;
+      }
+    }
   }
   Py_DECREF(submsg);
   return ok;
@@ -502,7 +517,7 @@ int PyUpb_Message_InitAttributes(PyObject* _self, PyObject* args,
     } else if (upb_FieldDef_IsRepeated(f)) {
       if (!PyUpb_Message_InitRepeatedAttribute(_self, name, value)) return -1;
     } else if (upb_FieldDef_IsSubMessage(f)) {
-      if (!PyUpb_Message_InitMessageAttribute(_self, name, value)) return -1;
+      if (!PyUpb_Message_InitMessageAttribute(_self, name, f, value)) return -1;
     } else {
       if (!PyUpb_Message_InitScalarAttribute(msg, f, value, arena)) return -1;
     }
@@ -935,15 +950,43 @@ int PyUpb_Message_SetFieldValue(PyObject* _self, const upb_FieldDef* field,
   PyUpb_Message* self = (void*)_self;
   assert(value);
 
-  if (upb_FieldDef_IsSubMessage(field) || upb_FieldDef_IsRepeated(field)) {
+  if (upb_FieldDef_IsRepeated(field)) {
     PyErr_Format(exc,
-                 "Assignment not allowed to message, map, or repeated "
+                 "Assignment not allowed to map, or repeated "
                  "field \"%s\" in protocol message object.",
                  upb_FieldDef_Name(field));
     return -1;
   }
 
   PyUpb_Message_EnsureReified(self);
+
+  if (upb_FieldDef_IsSubMessage(field)) {
+    const upb_MessageDef* msgdef = upb_FieldDef_MessageSubDef(field);
+    switch (upb_MessageDef_WellKnownType(msgdef)) {
+      case kUpb_WellKnown_Timestamp: {
+        PyObject* sub_message = PyUpb_Message_GetFieldValue(_self, field);
+        PyObject* ok =
+            PyObject_CallMethod(sub_message, "FromDatetime", "O", value);
+        if (!ok) return -1;
+        Py_DECREF(ok);
+        return 0;
+      }
+      case kUpb_WellKnown_Duration: {
+        PyObject* sub_message = PyUpb_Message_GetFieldValue(_self, field);
+        PyObject* ok =
+            PyObject_CallMethod(sub_message, "FromTimedelta", "O", value);
+        if (!ok) return -1;
+        Py_DECREF(ok);
+        return 0;
+      }
+      default:
+        PyErr_Format(exc,
+                     "Assignment not allowed to message "
+                     "field \"%s\" in protocol message object.",
+                     upb_FieldDef_Name(field));
+        return -1;
+    }
+  }
 
   upb_MessageValue val;
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);

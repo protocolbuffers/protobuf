@@ -16,12 +16,30 @@ bazel_dep(name = "abseil-cpp", version = "20230802.0.bcr.1", repo_name = "com_go
 bazel_dep(name = "bazel_skylib", version = "1.4.1")
 bazel_dep(name = "jsoncpp", version = "1.9.5")
 bazel_dep(name = "rules_cc", version = "0.0.9")
+bazel_dep(name = "rules_fuzzing", version = "0.5.2")
 bazel_dep(name = "rules_java", version = "5.3.5")
 bazel_dep(name = "rules_jvm_external", version = "5.1")
 bazel_dep(name = "rules_pkg", version = "0.7.0")
 bazel_dep(name = "rules_python", version = "0.10.2")
+bazel_dep(name = "rules_rust", version = "0.45.1")
 bazel_dep(name = "platforms", version = "0.0.8")
 bazel_dep(name = "zlib", version = "1.2.11")
 
 # TODO: remove after toolchain types are moved to protobuf
 bazel_dep(name = "rules_proto", version = "4.0.0")
+
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.toolchain(edition = "2021")
+use_repo(rust, "rust_toolchains")
+register_toolchains("@rust_toolchains//:all")
+crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+crate.spec(
+    package = "googletest",
+    version = ">0.0.0",
+)
+crate.spec(
+    package = "paste",
+    version = ">=1",
+)
+crate.from_specs()
+use_repo(crate, crate_index = "crates")
