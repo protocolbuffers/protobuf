@@ -227,7 +227,13 @@ rust_test(
 rust_test(
     name = "serialization_upb_test",
     srcs = ["serialization_test.rs"],
+    proc_macro_deps = [
+        "@crate_index//:paste",
+    ],
     deps = [
+        "//rust/test:unittest_edition_upb_rust_proto",
+        "//rust/test:unittest_proto3_optional_upb_rust_proto",
+        "//rust/test:unittest_proto3_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
@@ -236,8 +242,14 @@ rust_test(
 rust_test(
     name = "serialization_cpp_test",
     srcs = ["serialization_test.rs"],
+    proc_macro_deps = [
+        "@crate_index//:paste",
+    ],
     deps = [
         "//rust/test:unittest_cpp_rust_proto",
+        "//rust/test:unittest_edition_upb_rust_proto",
+        "//rust/test:unittest_proto3_cpp_rust_proto",
+        "//rust/test:unittest_proto3_optional_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
