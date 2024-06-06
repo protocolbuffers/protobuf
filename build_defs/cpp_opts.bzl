@@ -16,6 +16,8 @@ COPTS = select({
         "/wd4800",  # 'type' : forcing value to bool 'true' or 'false' (performance warning)
         "/wd4996",  # The compiler encountered a deprecated declaration.
         "/utf-8",  # Set source and execution character sets to UTF-8
+        # TODO Remove this once github runner issue is resolved.
+        "/D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR=1",
     ],
     "//conditions:default": [
         "-DHAVE_ZLIB",

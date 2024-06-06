@@ -29,7 +29,8 @@ _DEFAULT_COPTS.extend([
 # end:github_only
 
 UPB_DEFAULT_CPPOPTS = select({
-    "//upb:windows": [],
+    # TODO Remove this once github runner issue is resolved.
+    "//upb:windows": ["/D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR=1"],
     # begin:google_only
     #     # Override default -Oz for release builds on Android.
     #     "//upb/bazel:android_opt": _DEFAULT_CPPOPTS + ["-O2"],

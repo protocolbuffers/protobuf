@@ -156,6 +156,7 @@ cc_test(
 cc_test(
     name = "protos_extension_lock_test",
     srcs = ["protos_extension_lock_test.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         "//protos",
         "//protos:protos_extension_lock",
