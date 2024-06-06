@@ -24,16 +24,8 @@
 namespace upb {
 namespace generator {
 
-struct MiniTableOptions {
-  bool one_output_per_message = false;
-};
-
 void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
-                          const MiniTableOptions& options, Output& output);
-void WriteMiniTableMultipleSources(const DefPoolPair& pools,
-                                   upb::FileDefPtr file,
-                                   const MiniTableOptions& options,
-                                   Plugin* plugin);
+                          Output& output);
 void WriteMiniTableHeader(const DefPoolPair& pools, upb::FileDefPtr file,
                           Output& output);
 
