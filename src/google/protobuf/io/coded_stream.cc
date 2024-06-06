@@ -494,7 +494,7 @@ int64_t CodedInputStream::ReadVarint32Fallback(uint32_t first_byte_or_zero) {
       (buffer_end_ > buffer_ && !(buffer_end_[-1] & 0x80))) {
     ABSL_DCHECK_NE(first_byte_or_zero, 0)
         << "Caller should provide us with *buffer_ when buffer is non-empty";
-    uint32_t temp;
+    uint32_t temp=0;
     ::std::pair<bool, const uint8_t*> p =
         ReadVarint32FromArray(first_byte_or_zero, buffer_, &temp);
     if (!p.first) return -1;
@@ -572,7 +572,7 @@ uint32_t CodedInputStream::ReadTagFallback(uint32_t first_byte_or_zero) {
       ++buffer_;
       return 0;
     }
-    uint32_t tag;
+    uint32_t tag=0;
     ::std::pair<bool, const uint8_t*> p =
         ReadVarint32FromArray(first_byte_or_zero, buffer_, &tag);
     if (!p.first) {
@@ -632,7 +632,7 @@ std::pair<uint64_t, bool> CodedInputStream::ReadVarint64Fallback() {
       // Optimization:  We're also safe if the buffer is non-empty and it ends
       // with a byte that would terminate a varint.
       (buffer_end_ > buffer_ && !(buffer_end_[-1] & 0x80))) {
-    uint64_t temp;
+    uint64_t temp=0;
     ::std::pair<bool, const uint8_t*> p = ReadVarint64FromArray(buffer_, &temp);
     if (!p.first) {
       return std::make_pair(0, false);
