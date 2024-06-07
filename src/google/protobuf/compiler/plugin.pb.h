@@ -973,17 +973,11 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   void clear_file_to_generate() ;
   const std::string& file_to_generate(int index) const;
   std::string* mutable_file_to_generate(int index);
-  void set_file_to_generate(int index, const std::string& value);
-  void set_file_to_generate(int index, std::string&& value);
-  void set_file_to_generate(int index, const char* value);
-  void set_file_to_generate(int index, const char* value, std::size_t size);
-  void set_file_to_generate(int index, absl::string_view value);
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_file_to_generate(int index, Arg_&& value, Args_... args);
   std::string* add_file_to_generate();
-  void add_file_to_generate(const std::string& value);
-  void add_file_to_generate(std::string&& value);
-  void add_file_to_generate(const char* value);
-  void add_file_to_generate(const char* value, std::size_t size);
-  void add_file_to_generate(absl::string_view value);
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void add_file_to_generate(Arg_&& value, Args_... args);
   const ::google::protobuf::RepeatedPtrField<std::string>& file_to_generate() const;
   ::google::protobuf::RepeatedPtrField<std::string>* mutable_file_to_generate();
 
@@ -1283,8 +1277,7 @@ inline void CodeGeneratorRequest::clear_file_to_generate() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.file_to_generate_.Clear();
 }
-inline std::string* CodeGeneratorRequest::add_file_to_generate()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* CodeGeneratorRequest::add_file_to_generate() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   std::string* _s = _internal_mutable_file_to_generate()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
@@ -1300,57 +1293,20 @@ inline std::string* CodeGeneratorRequest::mutable_file_to_generate(int index)
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return _internal_mutable_file_to_generate()->Mutable(index);
 }
-inline void CodeGeneratorRequest::set_file_to_generate(int index, const std::string& value) {
-  _internal_mutable_file_to_generate()->Mutable(index)->assign(value);
+template <typename Arg_, typename... Args_>
+inline void CodeGeneratorRequest::set_file_to_generate(int index, Arg_&& value, Args_... args) {
+  ::google::protobuf::internal::AssignToString(
+      *_internal_mutable_file_to_generate()->Mutable(index),
+      std::forward<Arg_>(value), args... );
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
-inline void CodeGeneratorRequest::set_file_to_generate(int index, std::string&& value) {
-  _internal_mutable_file_to_generate()->Mutable(index)->assign(std::move(value));
-  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
-}
-inline void CodeGeneratorRequest::set_file_to_generate(int index, const char* value) {
-  ABSL_DCHECK(value != nullptr);
-  _internal_mutable_file_to_generate()->Mutable(index)->assign(value);
-  // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
-}
-inline void CodeGeneratorRequest::set_file_to_generate(int index, const char* value,
-                              std::size_t size) {
-  _internal_mutable_file_to_generate()->Mutable(index)->assign(
-      reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
-}
-inline void CodeGeneratorRequest::set_file_to_generate(int index, absl::string_view value) {
-  _internal_mutable_file_to_generate()->Mutable(index)->assign(
-      value.data(), value.size());
-  // @@protoc_insertion_point(field_set_string_piece:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
-}
-inline void CodeGeneratorRequest::add_file_to_generate(const std::string& value) {
+template <typename Arg_, typename... Args_>
+inline void CodeGeneratorRequest::add_file_to_generate(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _internal_mutable_file_to_generate()->Add()->assign(value);
+  ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_file_to_generate(),
+                               std::forward<Arg_>(value),
+                               args... );
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
-}
-inline void CodeGeneratorRequest::add_file_to_generate(std::string&& value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _internal_mutable_file_to_generate()->Add(std::move(value));
-  // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
-}
-inline void CodeGeneratorRequest::add_file_to_generate(const char* value) {
-  ABSL_DCHECK(value != nullptr);
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _internal_mutable_file_to_generate()->Add()->assign(value);
-  // @@protoc_insertion_point(field_add_char:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
-}
-inline void CodeGeneratorRequest::add_file_to_generate(const char* value, std::size_t size) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _internal_mutable_file_to_generate()->Add()->assign(
-      reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_add_pointer:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
-}
-inline void CodeGeneratorRequest::add_file_to_generate(absl::string_view value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _internal_mutable_file_to_generate()->Add()->assign(value.data(),
-                                                     value.size());
-  // @@protoc_insertion_point(field_add_string_piece:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 CodeGeneratorRequest::file_to_generate() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
