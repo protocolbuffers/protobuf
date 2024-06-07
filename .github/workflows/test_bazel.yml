@@ -30,7 +30,7 @@ jobs:
     name: Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }}
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@version-test
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -46,7 +46,7 @@ jobs:
         run: echo "${{ matrix.bazelversion }}" > .bazelversion
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v3
+        uses: protocolbuffers/protobuf-ci/bazel@version-test
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: examples
