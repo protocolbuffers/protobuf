@@ -2408,6 +2408,7 @@ class TokenizerTest(unittest.TestCase):
     with self.assertRaises(text_format.ParseError):
       text_format.Parse('NotGroupLikeScope { b:1 }', msg)
 
+
 # Tests for pretty printer functionality.
 @_parameterized.parameters((unittest_pb2), (unittest_proto3_arena_pb2))
 class PrettyPrinterTest(TextFormatBase):
