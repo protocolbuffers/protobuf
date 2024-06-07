@@ -910,7 +910,7 @@ class TextFormat::Parser::ParserImpl {
       case FieldDescriptor::CPPTYPE_STRING: {
         std::string value;
         DO(ConsumeString(&value));
-        SET_FIELD(String, string, value);
+        SET_FIELD(String, string, std::move(value));
         break;
       }
 
