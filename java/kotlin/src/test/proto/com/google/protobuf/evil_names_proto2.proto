@@ -43,6 +43,15 @@ message EvilNamesProto2 {
   optional string cached_size = 23;
   optional bool serialized_size = 24;
   optional string by = 25;
+
+  optional string DEPRECATED_foo = 26;
+  optional group DEPRECATED_NavigationImageRequested = 27 {
+    optional int32 DEPRECATED_FooBar = 28;
+  }
+  optional string __DEPRECATED_Bar = 29;
+  optional string ID = 30;
+  optional string a_b_notification = 31;
+  optional string not_DEPRECATED_foo = 32;
 }
 
 message List {}

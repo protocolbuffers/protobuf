@@ -1,11 +1,11 @@
 # TODO: describe this package.
 
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 # begin:google_only
 # package(default_applicable_licenses = ["//upb:license"])
@@ -119,17 +119,18 @@ filegroup(
         [
             "**/*test.cc",
         ],
+        exclude = ["fuzz_test.cc"],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 
 filegroup(
-    name = "test_utils",
+    name = "test_protos",
     srcs = glob(
         [
             "**/*test.proto",
         ],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 # end:github_only

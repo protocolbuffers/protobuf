@@ -88,8 +88,8 @@ class FileGenerator {
 
   std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
   std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
-  std::unique_ptr<GeneratorFactory> generator_factory_;
   std::unique_ptr<Context> context_;
+  std::unique_ptr<GeneratorFactory> generator_factory_;
   ClassNameResolver* name_resolver_;
   const Options options_;
   bool immutable_api_;

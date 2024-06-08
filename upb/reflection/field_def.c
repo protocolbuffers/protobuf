@@ -110,26 +110,15 @@ upb_CType upb_FieldDef_CType(const upb_FieldDef* f) {
   return upb_FieldType_CType(f->type_);
 }
 
-upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f) {
-  // TODO: remove once we can deprecate kUpb_FieldType_Group.
-  if (f->type_ == kUpb_FieldType_Message &&
-      UPB_DESC(FeatureSet_message_encoding)(f->resolved_features) ==
-          UPB_DESC(FeatureSet_DELIMITED)) {
-    return kUpb_FieldType_Group;
-  }
-  return f->type_;
-}
+upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f) { return f->type_; }
 
 uint32_t upb_FieldDef_Index(const upb_FieldDef* f) { return f->index_; }
 
-upb_Label upb_FieldDef_Label(const upb_FieldDef* f) {
-  // TODO: remove once we can deprecate kUpb_Label_Required.
-  if (UPB_DESC(FeatureSet_field_presence)(f->resolved_features) ==
-      UPB_DESC(FeatureSet_LEGACY_REQUIRED)) {
-    return kUpb_Label_Required;
-  }
-  return f->label_;
+uint32_t upb_FieldDef_LayoutIndex(const upb_FieldDef* f) {
+  return f->layout_index;
 }
+
+upb_Label upb_FieldDef_Label(const upb_FieldDef* f) { return f->label_; }
 
 uint32_t upb_FieldDef_Number(const upb_FieldDef* f) { return f->number_; }
 
@@ -219,11 +208,11 @@ upb_MessageValue upb_FieldDef_Default(const upb_FieldDef* f) {
 }
 
 const upb_MessageDef* upb_FieldDef_MessageSubDef(const upb_FieldDef* f) {
-  return upb_FieldDef_CType(f) == kUpb_CType_Message ? f->sub.msgdef : NULL;
+  return upb_FieldDef_IsSubMessage(f) ? f->sub.msgdef : NULL;
 }
 
 const upb_EnumDef* upb_FieldDef_EnumSubDef(const upb_FieldDef* f) {
-  return upb_FieldDef_CType(f) == kUpb_CType_Enum ? f->sub.enumdef : NULL;
+  return upb_FieldDef_IsEnum(f) ? f->sub.enumdef : NULL;
 }
 
 const upb_MiniTableField* upb_FieldDef_MiniTable(const upb_FieldDef* f) {
@@ -261,6 +250,40 @@ bool _upb_FieldDef_ValidateUtf8(const upb_FieldDef* f) {
          UPB_DESC(FeatureSet_VERIFY);
 }
 
+bool _upb_FieldDef_IsGroupLike(const upb_FieldDef* f) {
+  // Groups are always tag-delimited.
+  if (UPB_DESC(FeatureSet_message_encoding)(upb_FieldDef_ResolvedFeatures(f)) !=
+      UPB_DESC(FeatureSet_DELIMITED)) {
+    return false;
+  }
+
+  const upb_MessageDef* msg = upb_FieldDef_MessageSubDef(f);
+
+  // Group fields always are always the lowercase type name.
+  const char* mname = upb_MessageDef_Name(msg);
+  const char* fname = upb_FieldDef_Name(f);
+  size_t name_size = strlen(fname);
+  if (name_size != strlen(mname)) return false;
+  for (size_t i = 0; i < name_size; ++i) {
+    if ((mname[i] | 0x20) != fname[i]) {
+      // Case-insensitive ascii comparison.
+      return false;
+    }
+  }
+
+  if (upb_MessageDef_File(msg) != upb_FieldDef_File(f)) {
+    return false;
+  }
+
+  // Group messages are always defined in the same scope as the field.  File
+  // level extensions will compare NULL == NULL here, which is why the file
+  // comparison above is necessary to ensure both come from the same file.
+  return upb_FieldDef_IsExtension(f) ? upb_FieldDef_ExtensionScope(f) ==
+                                           upb_MessageDef_ContainingType(msg)
+                                     : upb_FieldDef_ContainingType(f) ==
+                                           upb_MessageDef_ContainingType(msg);
+}
+
 uint64_t _upb_FieldDef_Modifiers(const upb_FieldDef* f) {
   uint64_t out = upb_FieldDef_IsPacked(f) ? kUpb_FieldModifier_IsPacked : 0;
 
@@ -287,8 +310,11 @@ bool upb_FieldDef_HasDefault(const upb_FieldDef* f) { return f->has_default; }
 bool upb_FieldDef_HasPresence(const upb_FieldDef* f) { return f->has_presence; }
 
 bool upb_FieldDef_HasSubDef(const upb_FieldDef* f) {
-  return upb_FieldDef_IsSubMessage(f) ||
-         upb_FieldDef_CType(f) == kUpb_CType_Enum;
+  return upb_FieldDef_IsSubMessage(f) || upb_FieldDef_IsEnum(f);
+}
+
+bool upb_FieldDef_IsEnum(const upb_FieldDef* f) {
+  return upb_FieldDef_CType(f) == kUpb_CType_Enum;
 }
 
 bool upb_FieldDef_IsMap(const upb_FieldDef* f) {
@@ -592,7 +618,6 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
 
   const upb_StringView name = UPB_DESC(FieldDescriptorProto_name)(field_proto);
   f->full_name = _upb_DefBuilder_MakeFullName(ctx, prefix, name);
-  f->label_ = (int)UPB_DESC(FieldDescriptorProto_label)(field_proto);
   f->number_ = UPB_DESC(FieldDescriptorProto_number)(field_proto);
   f->is_proto3_optional =
       UPB_DESC(FieldDescriptorProto_proto3_optional)(field_proto);
@@ -638,6 +663,14 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
   f->resolved_features = _upb_DefBuilder_DoResolveFeatures(
       ctx, parent_features, unresolved_features, implicit);
 
+  f->label_ = (int)UPB_DESC(FieldDescriptorProto_label)(field_proto);
+  if (f->label_ == kUpb_Label_Optional &&
+      // TODO: remove once we can deprecate kUpb_Label_Required.
+      UPB_DESC(FeatureSet_field_presence)(f->resolved_features) ==
+          UPB_DESC(FeatureSet_LEGACY_REQUIRED)) {
+    f->label_ = kUpb_Label_Required;
+  }
+
   if (!UPB_DESC(FieldDescriptorProto_has_name)(field_proto)) {
     _upb_DefBuilder_Errf(ctx, "field has no name");
   }
@@ -657,6 +690,12 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
       UPB_DESC(FieldDescriptorProto_has_type_name)(field_proto);
 
   f->type_ = (int)UPB_DESC(FieldDescriptorProto_type)(field_proto);
+  if (f->type_ == kUpb_FieldType_Message &&
+      // TODO: remove once we can deprecate kUpb_FieldType_Group.
+      UPB_DESC(FeatureSet_message_encoding)(f->resolved_features) ==
+          UPB_DESC(FeatureSet_DELIMITED)) {
+    f->type_ = kUpb_FieldType_Group;
+  }
 
   if (has_type) {
     switch (f->type_) {
@@ -706,10 +745,11 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
 
   f->has_presence =
       (!upb_FieldDef_IsRepeated(f)) &&
-      (f->type_ == kUpb_FieldType_Message || f->type_ == kUpb_FieldType_Group ||
-       upb_FieldDef_ContainingOneof(f) ||
-       UPB_DESC(FeatureSet_field_presence)(f->resolved_features) !=
-           UPB_DESC(FeatureSet_IMPLICIT));
+      (f->is_extension ||
+       (f->type_ == kUpb_FieldType_Message ||
+        f->type_ == kUpb_FieldType_Group || upb_FieldDef_ContainingOneof(f) ||
+        UPB_DESC(FeatureSet_field_presence)(f->resolved_features) !=
+            UPB_DESC(FeatureSet_IMPLICIT)));
 }
 
 static void _upb_FieldDef_CreateExt(upb_DefBuilder* ctx, const char* prefix,

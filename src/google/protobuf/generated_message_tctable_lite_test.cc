@@ -96,6 +96,7 @@ TEST(FastVarints, NameHere) {
           0,                                             // num_aux_entries
           offsetof(decltype(parse_table), field_names),  // no aux_entries
           nullptr,                                       // default instance
+          nullptr,                                       // post_loop_handler
           FastParserGaveUp,                              // fallback
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
           nullptr,  // to_prefetch
@@ -290,6 +291,7 @@ TEST(IsEntryForFieldNumTest, Matcher) {
           0,           // num_field_entries
           0, 0,        // num_aux_entries, aux_offset,
           nullptr,     // default instance
+          nullptr,     // post_loop_handler
           nullptr,     // fallback function
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
           nullptr,     // to_prefetch
@@ -361,6 +363,7 @@ TEST_F(FindFieldEntryTest, SequentialFieldRange) {
           5,           // num_field_entries
           0, 0,        // num_aux_entries, aux_offset,
           nullptr,     // default instance
+          nullptr,     // post_loop_handler
           {},          // fallback function
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
           nullptr,     // to_prefetch
@@ -404,6 +407,7 @@ TEST_F(FindFieldEntryTest, SmallScanRange) {
           6,           // num_field_entries
           0, 0,        // num_aux_entries, aux_offset,
           nullptr,     // default instance
+          nullptr,     // post_loop_handler
           {},          // fallback function
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
           nullptr,     // to_prefetch
@@ -455,6 +459,7 @@ TEST_F(FindFieldEntryTest, BinarySearchRange) {
           10,          // num_field_entries
           0, 0,        // num_aux_entries, aux_offset,
           nullptr,     // default instance
+          nullptr,     // post_loop_handler
           {},          // fallback function
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
           nullptr,     // to_prefetch
@@ -503,6 +508,7 @@ TEST_F(FindFieldEntryTest, OutOfRange) {
           0,           // num_aux_entries
           offsetof(decltype(table), field_names),  // no aux_entries
           nullptr,     // default instance
+          nullptr,     // post_loop_handler
           {},          // fallback function
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
           nullptr,     // to_prefetch
@@ -556,6 +562,7 @@ TEST_F(FindFieldEntryTest, EmptyMessage) {
           0,           // num_aux_entries
           offsetof(TableType, field_names),
           nullptr,     // default instance
+          nullptr,     // post_loop_handler
           nullptr,     // fallback function
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
           nullptr,     // to_prefetch
@@ -609,6 +616,7 @@ const TcParseTable<5, 134, 5, 2176, 55> test_all_types_table = {
         5,           // num_aux_entries
         offsetof(decltype(test_all_types_table), aux_entries),
         nullptr,     // default instance
+        nullptr,     // post_loop_handler
         nullptr,     // fallback function
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
         nullptr,     // to_prefetch

@@ -124,7 +124,7 @@ message TestAllTypes {
   repeated string repeated_string_piece = 54 [ctype=STRING_PIECE];
   repeated string repeated_cord = 55 [ctype=CORD];
 
-  repeated NestedMessage repeated_lazy_message = 57 [lazy=true];
+  repeated NestedMessage repeated_lazy_message = 57 ;
 
   // Singular with defaults
   optional    int32 default_int32    = 61 [default =  41    ];
@@ -198,6 +198,7 @@ enum ForeignEnum {
   FOREIGN_BAR = 5;
   FOREIGN_BAZ = 6;
   FOREIGN_BAX = 32;  // (1 << 32) to generate a 64b bitmask would be incorrect.
+  FOREIGN_LARGE = 123456;  // Large enough to escape the Boxed Integer cache.
 }
 
 message TestReservedFields {
@@ -932,6 +933,7 @@ message TestOneof2 {
   message NestedMessage {
     optional int64 moo_int = 1;
     repeated int32 corge_int = 2;
+    optional NestedMessage child = 3;
   }
 
   enum NestedEnum {
@@ -1224,11 +1226,11 @@ message TestNestedGroupExtensionOuter {
     repeated group Layer2RepeatedGroup = 2 {
       extensions 3
         // NOTE: extension metadata is not supported due to targets such as
-        // `//third_party/protobuf_legacy_opensource/src:shell_scripts_test`,
+        // `//google/protobuf_legacy_opensource/src:shell_scripts_test`,
         // eee https://screenshot.googleplex.com/Axz2QD8nxjdpyFF
         //[metadata = {
         // NOTE: can't write type there due to some clever build gen code at
-        // http://google3/net/proto2/internal/BUILD;l=1247;rcl=411090862
+        // http://google3/google/protobuf/BUILD;l=1247;rcl=411090862
         // type: "protobuf_unittest.TestNestedGroupExtensionInnerExtension",
         // name: "inner",
         // }]
@@ -1736,6 +1738,12 @@ message RedactedFields {
   repeated TestNestedMessageRedaction repeated_unredacted_message = 8;
   map<string, string> map_redacted_string = 9 [debug_redact = true];
   map<string, string> map_unredacted_string = 10;
+  optional string optional_redacted_false_string = 11 [debug_redact = false];
+  extensions 20 to 30;
+}
+
+extend RedactedFields {
+  optional string redacted_extension = 20 [debug_redact = true];
 }
 
 message TestCord{

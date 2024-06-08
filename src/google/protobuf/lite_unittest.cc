@@ -27,6 +27,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_lite_test_util.h"
 #include "google/protobuf/map_lite_unittest.pb.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/test_util_lite.h"
 #include "google/protobuf/unittest_lite.pb.h"
@@ -1095,7 +1096,7 @@ TYPED_TEST(LiteTest, AllLite47) {
 TYPED_TEST(LiteTest, MapCrash) {
   // See b/113635730
   Arena arena;
-  auto msg = Arena::CreateMessage<protobuf_unittest::TestMapLite>(&arena);
+  auto msg = Arena::Create<protobuf_unittest::TestMapLite>(&arena);
   // Payload for the map<string, Enum> with a enum varint that's longer >
   // 10 bytes. This causes a parse fail and a subsequent delete. field 16
   // (map<int32, MapEnumLite>) tag = 128+2 = \202 \1
@@ -1324,6 +1325,89 @@ TEST(LiteBasicTest, CodedInputStreamRollback) {
     EXPECT_EQ(memcmp(data, "   ", 3), 0);
   }
 }
+
+// Two arbitary types
+using CastType1 = protobuf_unittest::TestAllTypesLite;
+using CastType2 = protobuf_unittest::TestPackedTypesLite;
+
+TEST(LiteTest, DynamicCastMessage) {
+  CastType1 test_type_1;
+
+  MessageLite* test_type_1_pointer = &test_type_1;
+  EXPECT_EQ(&test_type_1, DynamicCastMessage<CastType1>(test_type_1_pointer));
+  EXPECT_EQ(nullptr, DynamicCastMessage<CastType2>(test_type_1_pointer));
+
+  const MessageLite* test_type_1_pointer_const = &test_type_1;
+  EXPECT_EQ(&test_type_1,
+            DynamicCastMessage<const CastType1>(test_type_1_pointer_const));
+  EXPECT_EQ(nullptr,
+            DynamicCastMessage<const CastType2>(test_type_1_pointer_const));
+
+  MessageLite* test_type_1_pointer_nullptr = nullptr;
+  EXPECT_EQ(nullptr,
+            DynamicCastMessage<CastType1>(test_type_1_pointer_nullptr));
+
+  MessageLite& test_type_1_pointer_ref = test_type_1;
+  EXPECT_EQ(&test_type_1,
+            &DynamicCastMessage<CastType1>(test_type_1_pointer_ref));
+
+  const MessageLite& test_type_1_pointer_const_ref = test_type_1;
+  EXPECT_EQ(&test_type_1,
+            &DynamicCastMessage<CastType1>(test_type_1_pointer_const_ref));
+}
+
+#if GTEST_HAS_DEATH_TEST
+TEST(LiteTest, DynamicCastMessageInvalidReferenceType) {
+  CastType1 test_type_1;
+  const MessageLite& test_type_1_pointer_const_ref = test_type_1;
+  ASSERT_DEATH(DynamicCastMessage<CastType2>(test_type_1_pointer_const_ref),
+               "Cannot downcast " + test_type_1.GetTypeName() + " to " +
+                   CastType2::default_instance().GetTypeName());
+}
+#endif  // GTEST_HAS_DEATH_TEST
+
+TEST(LiteTest, DownCastMessageValidType) {
+  CastType1 test_type_1;
+
+  MessageLite* test_type_1_pointer = &test_type_1;
+  EXPECT_EQ(&test_type_1, DownCastMessage<CastType1>(test_type_1_pointer));
+
+  const MessageLite* test_type_1_pointer_const = &test_type_1;
+  EXPECT_EQ(&test_type_1,
+            DownCastMessage<const CastType1>(test_type_1_pointer_const));
+
+  MessageLite* test_type_1_pointer_nullptr = nullptr;
+  EXPECT_EQ(nullptr, DownCastMessage<CastType1>(test_type_1_pointer_nullptr));
+
+  MessageLite& test_type_1_pointer_ref = test_type_1;
+  EXPECT_EQ(&test_type_1, &DownCastMessage<CastType1>(test_type_1_pointer_ref));
+
+  const MessageLite& test_type_1_pointer_const_ref = test_type_1;
+  EXPECT_EQ(&test_type_1,
+            &DownCastMessage<CastType1>(test_type_1_pointer_const_ref));
+}
+
+#if GTEST_HAS_DEATH_TEST
+TEST(LiteTest, DownCastMessageInvalidPointerType) {
+  CastType1 test_type_1;
+
+  MessageLite* test_type_1_pointer = &test_type_1;
+
+  ASSERT_DEBUG_DEATH(DownCastMessage<CastType2>(test_type_1_pointer),
+                     "Cannot downcast " + test_type_1.GetTypeName() + " to " +
+                         CastType2::default_instance().GetTypeName());
+}
+
+TEST(LiteTest, DownCastMessageInvalidReferenceType) {
+  CastType1 test_type_1;
+
+  MessageLite& test_type_1_pointer = test_type_1;
+
+  ASSERT_DEBUG_DEATH(DownCastMessage<CastType2>(test_type_1_pointer),
+                     "Cannot downcast " + test_type_1.GetTypeName() + " to " +
+                         CastType2::default_instance().GetTypeName());
+}
+#endif  // GTEST_HAS_DEATH_TEST
 
 }  // namespace
 }  // namespace protobuf

@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1384,6 +1385,7 @@ public class GeneratedMessageTest {
   // =================================================================
   // oneof generated code test
   @Test
+  @SuppressWarnings("RedundantSetterCall")
   public void testOneofEnumCase() throws Exception {
     TestOneof2 message =
         TestOneof2.newBuilder().setFooInt(123).setFooString("foo").setFooCord("bar").build();
@@ -1399,6 +1401,7 @@ public class GeneratedMessageTest {
   }
 
   @Test
+  @SuppressWarnings("RedundantSetterCall")
   public void testSetOneofClearsOthers() throws Exception {
     TestOneof2.Builder builder = TestOneof2.newBuilder();
     TestOneof2 message = builder.setFooInt(123).setFooString("foo").buildPartial();
@@ -1933,5 +1936,41 @@ public class GeneratedMessageTest {
 
     assertThat(builder.getRepeatedField(REPEATED_NESTED_MESSAGE_EXTENSION, 0))
         .isEqualTo(NestedMessage.newBuilder().setBb(100).build());
+  }
+
+  @Test
+  public void getAllFields_repeatedFieldsAreNotMutable() {
+    TestAllTypes testMsg =
+        TestAllTypes.newBuilder()
+            .addRepeatedInt32(1)
+            .addRepeatedInt32(2)
+            .addRepeatedNestedMessage(NestedMessage.newBuilder().setBb(111).build())
+            .build();
+
+    FieldDescriptor repeatedInt32Field =
+        TestAllTypes.getDescriptor().findFieldByNumber(TestAllTypes.REPEATED_INT32_FIELD_NUMBER);
+    FieldDescriptor repeatedMsgField =
+        TestAllTypes.getDescriptor()
+            .findFieldByNumber(TestAllTypes.REPEATED_NESTED_MESSAGE_FIELD_NUMBER);
+    Map<FieldDescriptor, Object> allFields = testMsg.getAllFields();
+    List<?> list = (List<?>) allFields.get(repeatedInt32Field);
+    assertThat(list).hasSize(2);
+    assertThrows(UnsupportedOperationException.class, list::clear);
+    list = (List<?>) allFields.get(repeatedMsgField);
+    assertThat(list).hasSize(1);
+    assertThrows(UnsupportedOperationException.class, list::clear);
+
+    TestAllTypes.Builder builder = testMsg.toBuilder();
+    allFields = builder.getAllFields();
+    list = (List<?>) allFields.get(repeatedInt32Field);
+    assertThat(list).hasSize(2);
+    assertThrows(UnsupportedOperationException.class, list::clear);
+    builder.clearField(repeatedInt32Field);
+    assertThat(list).hasSize(2);
+    list = (List<?>) allFields.get(repeatedMsgField);
+    assertThat(list).hasSize(1);
+    assertThrows(UnsupportedOperationException.class, list::clear);
+    builder.clearField(repeatedMsgField);
+    assertThat(list).hasSize(1);
   }
 }

@@ -8,10 +8,11 @@
 #import <Foundation/Foundation.h>
 
 #import "Conformance.pbobjc.h"
+#import "editions/golden/TestMessagesProto2Editions.pbobjc.h"
+#import "editions/golden/TestMessagesProto3Editions.pbobjc.h"
 #import "google/protobuf/TestMessagesProto2.pbobjc.h"
 #import "google/protobuf/TestMessagesProto3.pbobjc.h"
-#import "google/protobuf/editions/golden/TestMessagesProto2Editions.pbobjc.h"
-#import "google/protobuf/editions/golden/TestMessagesProto3Editions.pbobjc.h"
+#import "test_protos/TestMessagesEdition2023.pbobjc.h"
 
 static void Die(NSString *format, ...) __dead2;
 
@@ -54,6 +55,8 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
       NSDictionary *mappings = @{
         @"protobuf_test_messages.proto2.TestAllTypesProto2" : [Proto2TestAllTypesProto2 class],
         @"protobuf_test_messages.proto3.TestAllTypesProto3" : [Proto3TestAllTypesProto3 class],
+        @"protobuf_test_messages.editions.TestAllTypesEdition2023" :
+            [EditionsTestAllTypesEdition2023 class],
         @"protobuf_test_messages.editions.proto2.TestAllTypesProto2" :
             [EditionsProto2TestAllTypesProto2 class],
         @"protobuf_test_messages.editions.proto3.TestAllTypesProto3" :

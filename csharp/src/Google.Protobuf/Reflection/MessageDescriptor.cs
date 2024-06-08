@@ -13,7 +13,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 
 namespace Google.Protobuf.Reflection
 {
@@ -42,7 +41,7 @@ namespace Google.Protobuf.Reflection
         private Func<IMessage, bool> extensionSetIsInitialized;
 
         internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex, GeneratedClrTypeInfo generatedCodeInfo)
-            : base(file, file.ComputeFullName(parent, proto.Name), typeIndex)
+            : base(file, file.ComputeFullName(parent, proto.Name), typeIndex, (parent?.Features ?? file.Features).MergedWith(proto.Options?.Features))
         {
             Proto = proto;
             Parser = generatedCodeInfo?.Parser;
@@ -120,6 +119,7 @@ namespace Google.Protobuf.Reflection
                 DescriptorProto.FieldFieldNumber => (IReadOnlyList<DescriptorBase>)fieldsInDeclarationOrder,
                 DescriptorProto.NestedTypeFieldNumber => (IReadOnlyList<DescriptorBase>)NestedTypes,
                 DescriptorProto.EnumTypeFieldNumber => (IReadOnlyList<DescriptorBase>)EnumTypes,
+                DescriptorProto.OneofDeclFieldNumber => (IReadOnlyList<DescriptorBase>)Oneofs,
                 _ => null,
             };
 
@@ -202,6 +202,12 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         internal bool IsWrapperType => File.Package == "google.protobuf" && File.Name == "google/protobuf/wrappers.proto";
 
+        /// <summary>
+        /// Returns whether this message was synthetically-created to store key/value pairs in a
+        /// map field.
+        /// </summary>
+        public bool IsMapEntry => Proto.Options?.MapEntry == true;
+
         /// <value>
         /// If this is a nested type, get the outer descriptor, otherwise null.
         /// </value>
@@ -280,7 +286,18 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public MessageOptions GetOptions() => Proto.Options?.Clone();
+        public MessageOptions GetOptions()
+        {
+            var clone = Proto.Options?.Clone();
+            if (clone is null)
+            {
+                return null;
+            }
+            // Clients should be using feature accessor methods, not accessing features on the
+            // options proto.
+            clone.Features = null;
+            return clone;
+        }
 
         /// <summary>
         /// Gets a single value message option for this descriptor

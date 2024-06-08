@@ -1,5 +1,5 @@
-load(":cc_toolchain_config.bzl", "cc_toolchain_config")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load(":cc_toolchain_config.bzl", "cc_toolchain_config")
 
 package(default_visibility = ["//visibility:public"])
 

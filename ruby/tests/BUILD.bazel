@@ -1,4 +1,4 @@
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_ruby//ruby:defs.bzl", "ruby_library", "ruby_test")
 load("//ruby:defs.bzl", "internal_ruby_proto_library")
 

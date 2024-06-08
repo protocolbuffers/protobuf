@@ -27,6 +27,7 @@
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
+#include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 
@@ -48,7 +49,7 @@ typedef enum {
   kUpb_LayoutItemType_Max = kUpb_LayoutItemType_Field,
 } upb_LayoutItemType;
 
-#define kUpb_LayoutItem_IndexSentinel ((uint16_t)-1)
+#define kUpb_LayoutItem_IndexSentinel ((uint16_t) - 1)
 
 typedef struct {
   // Index of the corresponding field.  When this is a oneof field, the field's
@@ -245,6 +246,12 @@ static void upb_MtDecoder_ModifyField(upb_MtDecoder* d,
         upb_MiniTableField_Number(field));
   }
 
+  if (singular && upb_MiniTableField_IsSubMessage(field)) {
+    upb_MdDecoder_ErrorJmp(&d->base,
+                           "Field %" PRIu32 " cannot be a singular submessage",
+                           upb_MiniTableField_Number(field));
+  }
+
   if (singular) field->UPB_PRIVATE(offset) = kNoPresence;
   if (required) {
     field->UPB_PRIVATE(offset) = kRequiredPresence;
@@ -401,11 +408,15 @@ static void upb_MtDecoder_AllocateSubs(upb_MtDecoder* d,
                                        upb_SubCounts sub_counts) {
   uint32_t total_count = sub_counts.submsg_count + sub_counts.subenum_count;
   size_t subs_bytes = sizeof(*d->table->UPB_PRIVATE(subs)) * total_count;
-  upb_MiniTableSub* subs = upb_Arena_Malloc(d->arena, subs_bytes);
+  size_t ptrs_bytes = sizeof(upb_MiniTable*) * sub_counts.submsg_count;
+  upb_MiniTableSubInternal* subs = upb_Arena_Malloc(d->arena, subs_bytes);
+  const upb_MiniTable** subs_ptrs = upb_Arena_Malloc(d->arena, ptrs_bytes);
   upb_MdDecoder_CheckOutOfMemory(&d->base, subs);
+  upb_MdDecoder_CheckOutOfMemory(&d->base, subs_ptrs);
   uint32_t i = 0;
   for (; i < sub_counts.submsg_count; i++) {
-    subs[i].UPB_PRIVATE(submsg) = UPB_PRIVATE(_upb_MiniTable_Empty)();
+    subs_ptrs[i] = UPB_PRIVATE(_upb_MiniTable_Empty)();
+    subs[i].UPB_PRIVATE(submsg) = &subs_ptrs[i];
   }
   if (sub_counts.subenum_count) {
     upb_MiniTableField* f = d->fields;
@@ -731,6 +742,11 @@ static upb_MiniTable* upb_MtDecoder_DoBuildMiniTableWithBuf(
   decoder->table->UPB_PRIVATE(dense_below) = 0;
   decoder->table->UPB_PRIVATE(table_mask) = -1;
   decoder->table->UPB_PRIVATE(required_count) = 0;
+#if UPB_TRACING_ENABLED
+  // MiniTables built from MiniDescriptors will not be able to vend the message
+  // name unless it is explicitly set with upb_MiniTable_SetFullName().
+  decoder->table->UPB_PRIVATE(full_name) = 0;
+#endif
 
   // Strip off and verify the version tag.
   if (!len--) goto done;

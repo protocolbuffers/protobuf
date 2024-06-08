@@ -18,6 +18,8 @@ cc_library(
     hdrs = ["def_to_proto.h"],
     visibility = ["//visibility:public"],
     deps = [
+        "//upb:base",
+        "//upb:descriptor_upb_proto",
         "//upb:port",
         "//upb:reflection",
         "//upb/reflection:internal",
@@ -64,11 +66,15 @@ cc_test(
     srcs = ["def_to_proto_test.cc"],
     deps = [
         ":def_to_proto",
+        ":def_to_proto_editions_test_upb_proto",
+        ":def_to_proto_editions_test_upb_proto_reflection",
         ":def_to_proto_test_lib",
         ":def_to_proto_test_upb_proto",
         ":def_to_proto_test_upb_proto_reflection",
         "//:protobuf",
         "//src/google/protobuf/util:differencer",
+        "//upb:base",
+        "//upb:descriptor_upb_proto",
         "//upb:descriptor_upb_proto_reflection",
         "//upb:mem",
         "//upb:reflection",
@@ -109,6 +115,21 @@ cc_library(
 )
 
 proto_library(
+    name = "def_to_proto_editions_test_proto",
+    srcs = ["def_to_proto_editions_test.proto"],
+)
+
+upb_c_proto_library(
+    name = "def_to_proto_editions_test_upb_proto",
+    deps = ["def_to_proto_editions_test_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "def_to_proto_editions_test_upb_proto_reflection",
+    deps = ["def_to_proto_editions_test_proto"],
+)
+
+proto_library(
     name = "required_fields_test_proto",
     srcs = [
         "required_fields_editions_test.proto",
@@ -144,42 +165,10 @@ cc_test(
     ],
 )
 
-# Compare
-
-cc_library(
-    name = "compare",
-    srcs = ["compare.c"],
-    hdrs = ["compare.h"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "//upb:base",
-        "//upb:eps_copy_input_stream",
-        "//upb:mem",
-        "//upb:port",
-        "//upb:wire_reader",
-    ],
-)
-
-cc_test(
-    name = "compare_test",
-    srcs = ["compare_test.cc"],
-    deps = [
-        ":compare",
-        "//upb:port",
-        "//upb:wire_reader",
-        "//upb/base:internal",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
 # begin:github_only
 filegroup(
     name = "source_files",
     srcs = [
-        "compare.c",
-        "compare.h",
         "def_to_proto.c",
         "def_to_proto.h",
         "required_fields.c",
@@ -196,17 +185,28 @@ filegroup(
         [
             "**/*test.cc",
         ],
+        exclude = ["def_to_proto_fuzz_test.cc"],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 
 filegroup(
-    name = "test_utils",
+    name = "test_util",
+    srcs = glob(
+        [
+            "**/*test.h",
+        ],
+    ),
+    visibility = ["//upb:__pkg__"],
+)
+
+filegroup(
+    name = "test_protos",
     srcs = glob(
         [
             "**/*test.proto",
         ],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )
 # end:github_only

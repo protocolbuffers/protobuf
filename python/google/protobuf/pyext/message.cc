@@ -10,6 +10,7 @@
 
 #include "google/protobuf/pyext/message.h"
 
+#include <Python.h>
 #include <structmember.h>  // A Python header file.
 
 #include <cstdint>
@@ -36,6 +37,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unknown_field_set.h"
@@ -51,7 +53,6 @@
 #include "google/protobuf/pyext/safe_numerics.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 #include "google/protobuf/pyext/unknown_field_set.h"
-#include "google/protobuf/pyext/unknown_fields.h"
 
 // clang-format off
 #include "google/protobuf/port_def.inc"
@@ -85,6 +86,12 @@ class MessageReflectionFriend {
                           const FieldDescriptor* field) {
     return reflection->IsLazyField(field) ||
            reflection->IsLazyExtension(message, field);
+  }
+  static bool ContainsMapKey(const Reflection* reflection,
+                             const Message& message,
+                             const FieldDescriptor* field,
+                             const MapKey& map_key) {
+    return reflection->ContainsMapKey(message, field, map_key);
   }
 };
 
@@ -1085,9 +1092,41 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
           return -1;
         }
       } else {
-        ScopedPyObjectPtr merged(MergeFrom(cmessage, value));
-        if (merged == nullptr) {
-          return -1;
+        if (PyObject_TypeCheck(value, CMessage_Type)) {
+          ScopedPyObjectPtr merged(MergeFrom(cmessage, value));
+          if (merged == nullptr) {
+            return -1;
+          }
+        } else {
+          switch (descriptor->message_type()->well_known_type()) {
+            case Descriptor::WELLKNOWNTYPE_TIMESTAMP: {
+              AssureWritable(cmessage);
+              ScopedPyObjectPtr ok(
+                  PyObject_CallMethod(reinterpret_cast<PyObject*>(cmessage),
+                                      "FromDatetime", "O", value));
+              if (ok.get() == nullptr) {
+                return -1;
+              }
+              break;
+            }
+            case Descriptor::WELLKNOWNTYPE_DURATION: {
+              AssureWritable(cmessage);
+              ScopedPyObjectPtr ok(
+                  PyObject_CallMethod(reinterpret_cast<PyObject*>(cmessage),
+                                      "FromTimedelta", "O", value));
+              if (ok.get() == nullptr) {
+                return -1;
+              }
+              break;
+            }
+            default:
+              PyErr_Format(
+                  PyExc_TypeError,
+                  "Parameter to initialize message field must be "
+                  "dict or instance of same class: expected %s got %s.",
+                  descriptor->full_name().c_str(), Py_TYPE(value)->tp_name);
+              return -1;
+          }
         }
       }
     } else {
@@ -1123,8 +1162,6 @@ CMessage* NewEmptyMessage(CMessageClass* type) {
 
   self->composite_fields = nullptr;
   self->child_submessages = nullptr;
-
-  self->unknown_field_set = nullptr;
 
   return self;
 }
@@ -1186,10 +1223,6 @@ static void Dealloc(CMessage* self) {
   ABSL_DCHECK(!self->composite_fields || self->composite_fields->empty());
   delete self->child_submessages;
   delete self->composite_fields;
-  if (self->unknown_field_set) {
-    unknown_fields::Clear(
-        reinterpret_cast<PyUnknownFields*>(self->unknown_field_set));
-  }
 
   CMessage* parent = self->parent;
   if (!parent) {
@@ -1300,11 +1333,16 @@ PyObject* HasField(CMessage* self, PyObject* arg) {
   char* field_name;
   Py_ssize_t size;
   field_name = const_cast<char*>(PyUnicode_AsUTF8AndSize(arg, &size));
+  Message* message = self->message;
+
   if (!field_name) {
+    PyErr_Format(PyExc_ValueError,
+                 "The field name passed to message %s"
+                 " is not a str.",
+                 message->GetDescriptor()->name().c_str());
     return nullptr;
   }
 
-  Message* message = self->message;
   bool is_in_oneof;
   const FieldDescriptor* field_descriptor = FindFieldWithOneofs(
       message, absl::string_view(field_name, size), &is_in_oneof);
@@ -1527,11 +1565,6 @@ PyObject* Clear(CMessage* self) {
   if (InternalReparentFields(self, messages_to_release, containers_to_release) <
       0) {
     return nullptr;
-  }
-  if (self->unknown_field_set) {
-    unknown_fields::Clear(
-        reinterpret_cast<PyUnknownFields*>(self->unknown_field_set));
-    self->unknown_field_set = nullptr;
   }
   self->message->Clear();
   Py_RETURN_NONE;
@@ -2302,6 +2335,48 @@ PyObject* ToUnicode(CMessage* self) {
   return decoded;
 }
 
+PyObject* Contains(CMessage* self, PyObject* arg) {
+  Message* message = self->message;
+  const Descriptor* descriptor = message->GetDescriptor();
+  switch (descriptor->well_known_type()) {
+    case Descriptor::WELLKNOWNTYPE_STRUCT: {
+      // For WKT Struct, check if the key is in the fields.
+      const Reflection* reflection = message->GetReflection();
+      const FieldDescriptor* map_field = descriptor->FindFieldByName("fields");
+      const FieldDescriptor* key_field = map_field->message_type()->map_key();
+      PyObject* py_string = CheckString(arg, key_field);
+      if (!py_string) {
+        PyErr_SetString(PyExc_TypeError,
+                        "The key passed to Struct message must be a str.");
+        return nullptr;
+      }
+      char* value;
+      Py_ssize_t value_len;
+      if (PyBytes_AsStringAndSize(py_string, &value, &value_len) < 0) {
+        Py_DECREF(py_string);
+        Py_RETURN_FALSE;
+      }
+      std::string key_str;
+      key_str.assign(value, value_len);
+      Py_DECREF(py_string);
+
+      MapKey map_key;
+      map_key.SetStringValue(key_str);
+      return PyBool_FromLong(MessageReflectionFriend::ContainsMapKey(
+          reflection, *message, map_field, map_key));
+    }
+    case Descriptor::WELLKNOWNTYPE_LISTVALUE: {
+      // For WKT ListValue, check if the key is in the items.
+      PyObject* items = PyObject_CallMethod(reinterpret_cast<PyObject*>(self),
+                                            "items", nullptr);
+      return PyBool_FromLong(PySequence_Contains(items, arg));
+    }
+    default:
+      // For other messages, check with HasField.
+      return HasField(self, arg);
+  }
+}
+
 // CMessage static methods:
 PyObject* _CheckCalledFromGeneratedFile(PyObject* unused,
                                         PyObject* unused_arg) {
@@ -2350,6 +2425,8 @@ static PyMethodDef Methods[] = {
      "Makes a deep copy of the class."},
     {"__unicode__", (PyCFunction)ToUnicode, METH_NOARGS,
      "Outputs a unicode representation of the message."},
+    {"__contains__", (PyCFunction)Contains, METH_O,
+     "Checks if a message field is set."},
     {"ByteSize", (PyCFunction)ByteSize, METH_NOARGS,
      "Returns the size of the message in bytes."},
     {"Clear", (PyCFunction)Clear, METH_NOARGS, "Clears the message."},
@@ -2516,11 +2593,34 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
                  field_descriptor->name().c_str());
     return -1;
   } else if (field_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-    PyErr_Format(PyExc_AttributeError,
-                 "Assignment not allowed to "
-                 "field \"%s\" in protocol message object.",
-                 field_descriptor->name().c_str());
-    return -1;
+    switch (field_descriptor->message_type()->well_known_type()) {
+      case Descriptor::WELLKNOWNTYPE_TIMESTAMP: {
+        AssureWritable(self);
+        PyObject* sub_message = GetFieldValue(self, field_descriptor);
+        ScopedPyObjectPtr ok(
+            PyObject_CallMethod(sub_message, "FromDatetime", "O", value));
+        if (ok.get() == nullptr) {
+          return -1;
+        }
+        return 0;
+      }
+      case Descriptor::WELLKNOWNTYPE_DURATION: {
+        AssureWritable(self);
+        PyObject* sub_message = GetFieldValue(self, field_descriptor);
+        ScopedPyObjectPtr ok(
+            PyObject_CallMethod(sub_message, "FromTimedelta", "O", value));
+        if (ok.get() == nullptr) {
+          return -1;
+        }
+        return 0;
+      }
+      default:
+        PyErr_Format(PyExc_AttributeError,
+                     "Assignment not allowed to "
+                     "field \"%s\" in protocol message object.",
+                     field_descriptor->name().c_str());
+        return -1;
+    }
   } else {
     AssureWritable(self);
     return InternalSetScalar(self, field_descriptor, value);
@@ -2858,20 +2958,12 @@ bool InitProto2MessageModule(PyObject *m) {
     }
   }
 
-  if (PyType_Ready(&PyUnknownFields_Type) < 0) {
-    return false;
-  }
-
   if (PyType_Ready(&PyUnknownFieldSet_Type) < 0) {
     return false;
   }
 
   PyModule_AddObject(m, "UnknownFieldSet",
                      reinterpret_cast<PyObject*>(&PyUnknownFieldSet_Type));
-
-  if (PyType_Ready(&PyUnknownFieldRef_Type) < 0) {
-    return false;
-  }
 
   if (PyType_Ready(&PyUnknownField_Type) < 0) {
     return false;

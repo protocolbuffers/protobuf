@@ -220,7 +220,7 @@ public abstract class GeneratedMessageLite<
 
   @Override
   public final boolean isInitialized() {
-    return isInitialized((MessageType) this, Boolean.TRUE);
+    return isInitialized((MessageType) this, /* shouldMemoize= */ true);
   }
 
   @Override
@@ -1621,10 +1621,17 @@ public abstract class GeneratedMessageLite<
 
   /** A static helper method for parsing a partial from byte array. */
   private static <T extends GeneratedMessageLite<T, ?>> T parsePartialFrom(
-      T instance, byte[] input, int offset, int length, ExtensionRegistryLite extensionRegistry)
+      T defaultInstance,
+      byte[] input,
+      int offset,
+      int length,
+      ExtensionRegistryLite extensionRegistry)
       throws InvalidProtocolBufferException {
+    if (length == 0) {
+      return defaultInstance;
+    }
     @SuppressWarnings("unchecked") // Guaranteed by protoc
-    T result = instance.newMutableInstance();
+    T result = defaultInstance.newMutableInstance();
     try {
       Schema<T> schema = Protobuf.getInstance().schemaFor(result);
       schema.mergeFrom(

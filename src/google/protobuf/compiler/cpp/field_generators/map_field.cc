@@ -76,7 +76,6 @@ class Map : public FieldGeneratorBase {
   Map(const FieldDescriptor* field, const Options& opts,
       MessageSCCAnalyzer* scc)
       : FieldGeneratorBase(field, opts, scc),
-        field_(field),
         key_(field->message_type()->map_key()),
         val_(field->message_type()->map_value()),
         opts_(&opts),
@@ -112,14 +111,16 @@ class Map : public FieldGeneratorBase {
   }
 
   void GenerateIsInitialized(io::Printer* p) const override {
-    if (!has_required_) return;
+    if (!NeedsIsInitialized()) return;
 
     p->Emit(R"cc(
-      if (!$pbi$::AllAreInitialized($field_$)) {
+      if (!$pbi$::AllAreInitialized(this_.$field_$)) {
         return false;
       }
     )cc");
   }
+
+  bool NeedsIsInitialized() const override { return has_required_; }
 
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
@@ -168,7 +169,6 @@ class Map : public FieldGeneratorBase {
   void GenerateByteSize(io::Printer* p) const override;
 
  private:
-  const FieldDescriptor* field_;
   const FieldDescriptor* key_;
   const FieldDescriptor* val_;
   const Options* opts_;

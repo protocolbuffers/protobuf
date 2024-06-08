@@ -11,9 +11,13 @@
 #include "protobuf.h"
 #include "ruby-upb.h"
 
+// Returns a frozen sentinel Ruby wrapper object for an empty upb_Array of the
+// type specified by the field. Creates one if it doesn't exist.
+VALUE RepeatedField_EmptyFrozen(const upb_FieldDef* f);
+
 // Returns a Ruby wrapper object for the given upb_Array, which will be created
 // if one does not exist already.
-VALUE RepeatedField_GetRubyWrapper(upb_Array* msg, TypeInfo type_info,
+VALUE RepeatedField_GetRubyWrapper(const upb_Array* msg, TypeInfo type_info,
                                    VALUE arena);
 
 // Gets the underlying upb_Array for this Ruby RepeatedField object, which must

@@ -12,6 +12,7 @@
 #include "google/protobuf/compiler/cpp/generator.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <utility>
@@ -86,6 +87,7 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
        "K"},
   };
 }
+
 
 }  // namespace
 
@@ -223,6 +225,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     return false;
   }
 
+
   FileGenerator file_generator(file, file_options);
 
   // Generate header(s).
@@ -352,6 +355,8 @@ static bool IsEnumMapType(const FieldDescriptor& field) {
 
 absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
   absl::Status status = absl::OkStatus();
+  auto edition = GetEdition(*file);
+
   google::protobuf::internal::VisitDescriptors(*file, [&](const FieldDescriptor& field) {
     const FeatureSet& resolved_features = GetResolvedSourceFeatures(field);
     const pb::CppFeatures& unresolved_features =
@@ -380,7 +385,26 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
       }
     }
 
-    if (field.options().has_ctype()) {
+    if (unresolved_features.has_string_type()) {
+      if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
+        status = absl::FailedPreconditionError(absl::StrCat(
+            "Field ", field.full_name(),
+            " specifies string_type, but is not a string nor bytes field."));
+      } else if (unresolved_features.string_type() == pb::CppFeatures::CORD &&
+                 field.is_extension()) {
+        status = absl::FailedPreconditionError(
+            absl::StrCat("Extension ", field.full_name(),
+                         " specifies string_type=CORD which is not supported "
+                         "for extensions."));
+      } else if (field.options().has_ctype()) {
+        status = absl::FailedPreconditionError(absl::StrCat(
+            field.full_name(),
+            " specifies both string_type and ctype which is not supported."));
+      }
+    }
+
+    // 'ctype' check has moved to DescriptorBuilder for Edition 2023 and above.
+    if (edition < Edition::EDITION_2023 && field.options().has_ctype()) {
       if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
         status = absl::FailedPreconditionError(absl::StrCat(
             "Field ", field.full_name(),

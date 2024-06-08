@@ -119,9 +119,9 @@ static upb_MiniTableEnum* upb_MtDecoder_BuildMiniTableEnum(
   return upb_MtDecoder_DoBuildMiniTableEnum(decoder, data, len);
 }
 
-upb_MiniTableEnum* upb_MiniDescriptor_BuildEnum(const char* data, size_t len,
-                                                upb_Arena* arena,
-                                                upb_Status* status) {
+upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
+                                           upb_Arena* arena,
+                                           upb_Status* status) {
   upb_MdEnumDecoder decoder = {
       .base =
           {

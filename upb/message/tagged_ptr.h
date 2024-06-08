@@ -34,14 +34,10 @@ extern "C" {
 // Users who enable unlinked sub-messages must use this to test whether a
 // message is empty before accessing it. If a message is empty, it must be
 // first promoted using the interfaces in message/promote.h.
-UPB_INLINE bool upb_TaggedMessagePtr_IsEmpty(upb_TaggedMessagePtr ptr) {
-  return UPB_PRIVATE(_upb_TaggedMessagePtr_IsEmpty)(ptr);
-}
+UPB_API_INLINE bool upb_TaggedMessagePtr_IsEmpty(upb_TaggedMessagePtr ptr);
 
-UPB_INLINE upb_Message* upb_TaggedMessagePtr_GetNonEmptyMessage(
-    upb_TaggedMessagePtr ptr) {
-  return UPB_PRIVATE(_upb_TaggedMessagePtr_GetNonEmptyMessage)(ptr);
-}
+UPB_API_INLINE upb_Message* upb_TaggedMessagePtr_GetNonEmptyMessage(
+    upb_TaggedMessagePtr ptr);
 
 #ifdef __cplusplus
 } /* extern "C" */

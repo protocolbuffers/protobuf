@@ -34,7 +34,6 @@ class ExtensionGenerator {
 
   void GenerateMembersHeader(io::Printer* printer) const;
   void GenerateStaticVariablesInitialization(io::Printer* printer) const;
-  void GenerateRegistrationSource(io::Printer* printer) const;
   void DetermineObjectiveCClassDefinitions(
       absl::btree_set<std::string>* fwd_decls) const;
   void DetermineNeededFiles(
@@ -44,6 +43,7 @@ class ExtensionGenerator {
   std::string method_name_;
   std::string full_method_name_;
   const FieldDescriptor* descriptor_;
+  const GenerationOptions& generation_options_;
 };
 
 }  // namespace objectivec

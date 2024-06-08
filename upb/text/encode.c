@@ -230,12 +230,19 @@ static void txtenc_bytes(txtenc* e, upb_StringView data) {
 static void txtenc_field(txtenc* e, upb_MessageValue val,
                          const upb_FieldDef* f) {
   txtenc_indent(e);
-  const upb_CType type = upb_FieldDef_CType(f);
+  const upb_CType ctype = upb_FieldDef_CType(f);
   const bool is_ext = upb_FieldDef_IsExtension(f);
   const char* full = upb_FieldDef_FullName(f);
   const char* name = upb_FieldDef_Name(f);
 
-  if (type == kUpb_CType_Message) {
+  if (ctype == kUpb_CType_Message) {
+// begin:google_only
+//     // TODO: Turn this into a feature check and opensource it.
+//     if (_upb_FieldDef_IsGroupLike(f)) {
+//       const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
+//       name = upb_MessageDef_Name(m);
+//     }
+// end:google_only
     if (is_ext) {
       txtenc_printf(e, "[%s] {", full);
     } else {
@@ -257,7 +264,7 @@ static void txtenc_field(txtenc* e, upb_MessageValue val,
     txtenc_printf(e, "%s: ", name);
   }
 
-  switch (type) {
+  switch (ctype) {
     case kUpb_CType_Bool:
       txtenc_putstr(e, val.bool_val ? "true" : "false");
       break;

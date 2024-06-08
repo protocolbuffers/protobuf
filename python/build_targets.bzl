@@ -6,13 +6,14 @@
 #   //:protobuf_python
 #   //:well_known_types_py_pb2
 
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
 load("//:protobuf.bzl", "internal_py_proto_library")
+load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 load("//conformance:defs.bzl", "conformance_test")
-load("//src/google/protobuf/editions:defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
+load("//editions:defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
 load(":internal.bzl", "internal_copy_files", "internal_py_test")
 
 def build_targets(name):
@@ -54,6 +55,7 @@ def build_targets(name):
         srcs_version = "PY2AND3",
         visibility = [
             "//:__pkg__",
+            "//editions:__pkg__",
             "//upb:__subpackages__",
         ],
     )
@@ -233,10 +235,30 @@ def build_targets(name):
         srcs = [
             "//src/google/protobuf:test_messages_proto2.proto",
             "//src/google/protobuf:test_messages_proto3.proto",
-            "//src/google/protobuf/editions:golden/test_messages_proto2_editions.proto",
-            "//src/google/protobuf/editions:golden/test_messages_proto3_editions.proto",
         ],
         strip_prefix = "src",
+    )
+
+    internal_copy_files(
+        name = "copied_test_dependency_proto_files",
+        srcs = [
+            "//src/google/protobuf:cpp_features_proto_srcs",
+        ],
+        strip_prefix = "src",
+    )
+
+    internal_py_proto_library(
+        name = "test_dependency_proto_py_pb2",
+        srcs = [":copied_test_dependency_proto_files"],
+        include = ".",
+        default_runtime = "",
+        protoc = "//:protoc",
+        srcs_version = "PY2AND3",
+        visibility = [
+            "//:__pkg__",
+            "//upb:__subpackages__",
+        ],
+        deps = [":well_known_types_py_pb2"],
     )
 
     internal_py_proto_library(
@@ -248,7 +270,7 @@ def build_targets(name):
         protoc = "//:protoc",
         srcs_version = "PY2AND3",
         visibility = ["//:__pkg__"],
-        deps = [":well_known_types_py_pb2"],
+        deps = [":well_known_types_py_pb2", ":test_dependency_proto_py_pb2"],
     )
 
     internal_py_proto_library(
@@ -390,8 +412,23 @@ def build_targets(name):
     )
 
     internal_py_test(
+        name = "decoder_test",
+        srcs = ["google/protobuf/internal/decoder_test.py"],
+    )
+
+    internal_py_test(
         name = "wire_format_test",
         srcs = ["google/protobuf/internal/wire_format_test.py"],
+    )
+
+    internal_py_test(
+        name = "proto_test",
+        srcs = ["google/protobuf/internal/proto_test.py"],
+    )
+
+    internal_py_test(
+        name = "proto_json_test",
+        srcs = ["google/protobuf/internal/proto_json_test.py"],
     )
 
     native.cc_library(
@@ -461,7 +498,6 @@ def build_targets(name):
             ":python_src_files",
             "README.md",
             "google/__init__.py",
-            "setup.cfg",
         ],
         strip_prefix = "",
         visibility = ["//python/dist:__pkg__"],
@@ -485,9 +521,17 @@ def build_targets(name):
             "google/protobuf/python_protobuf.h",
             "internal.bzl",
             "python_version_test.py",
-            "setup.cfg",
-            "setup.py",
         ],
         strip_prefix = strip_prefix.from_root(""),
         visibility = ["//pkg:__pkg__"],
+    )
+
+    proto_lang_toolchain(
+        name = "python_toolchain",
+        command_line = "--python_out=%s",
+        progress_message = "Generating Python proto_library %{label}",
+        runtime = ":protobuf_python",
+        # NOTE: This isn't *actually* public. It's an implicit dependency of py_proto_library,
+        # so must be public so user usages of the rule can reference it.
+        visibility = ["//visibility:public"],
     )

@@ -42,7 +42,7 @@ final class IsValidUtf8TestUtil {
       new ByteStringFactory() {
         @Override
         public ByteString newByteString(byte[] bytes) {
-          return new NioByteString(ByteBuffer.wrap(bytes));
+          return ByteString.nioByteString(ByteBuffer.wrap(bytes));
         }
       };
 
@@ -67,7 +67,7 @@ final class IsValidUtf8TestUtil {
           buffer.clear();
           buffer.put(bytes);
           buffer.flip();
-          return new NioByteString(buffer);
+          return ByteString.nioByteString(buffer);
         }
       };
 

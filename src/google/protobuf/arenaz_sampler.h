@@ -122,14 +122,14 @@ class ThreadSafeArenaStatsHandle {
   }
 
   ThreadSafeArenaStatsHandle(ThreadSafeArenaStatsHandle&& other) noexcept
-      : info_(absl::exchange(other.info_, nullptr)) {}
+      : info_(std::exchange(other.info_, nullptr)) {}
 
   ThreadSafeArenaStatsHandle& operator=(
       ThreadSafeArenaStatsHandle&& other) noexcept {
     if (PROTOBUF_PREDICT_FALSE(info_ != nullptr)) {
       UnsampleSlow(info_);
     }
-    info_ = absl::exchange(other.info_, nullptr);
+    info_ = std::exchange(other.info_, nullptr);
     return *this;
   }
 

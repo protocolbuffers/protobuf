@@ -8,9 +8,10 @@
 #ifndef UPB_MESSAGE_INTERNAL_EXTENSION_H_
 #define UPB_MESSAGE_INTERNAL_EXTENSION_H_
 
-#include "upb/base/string_view.h"
+#include <stddef.h>
+
 #include "upb/mem/arena.h"
-#include "upb/message/internal/message.h"
+#include "upb/message/value.h"
 #include "upb/mini_table/extension.h"
 
 // Must be last.
@@ -26,11 +27,7 @@
 // the most common extension type.
 typedef struct {
   const upb_MiniTableExtension* ext;
-  union {
-    upb_StringView str;
-    void* ptr;
-    char scalar_data[8];
-  } data;
+  upb_MessageValue data;
 } upb_Extension;
 
 #ifdef __cplusplus

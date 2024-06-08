@@ -100,7 +100,9 @@ module Google
           size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
           temporary_arena = Google::Protobuf::FFI.create_arena
           buffer = Google::Protobuf::FFI.message_options(self, size_ptr, temporary_arena)
-          Google::Protobuf::MessageOptions.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze).freeze
+          opts = Google::Protobuf::MessageOptions.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze)
+          opts.clear_features()
+          opts.freeze
         end
       end
 
@@ -138,7 +140,6 @@ module Google
         message = OBJECT_CACHE.get(msg.address)
         if message.nil?
           message = descriptor.msgclass.send(:private_constructor, arena, msg: msg)
-          message.freeze if frozen?
         end
         message
       end
@@ -150,7 +151,7 @@ module Google
 
     class FFI
       # MessageDef
-      attach_function :new_message_from_def, :upb_Message_New,                        [Descriptor, Internal::Arena], :Message
+      attach_function :new_message_from_def, :upb_Message_New,                        [MiniTable.by_ref, Internal::Arena], :Message
       attach_function :field_count,          :upb_MessageDef_FieldCount,              [Descriptor], :int
       attach_function :get_message_file_def, :upb_MessageDef_File,                    [:pointer], :FileDef
       attach_function :get_message_fullname, :upb_MessageDef_FullName,                [Descriptor], :string

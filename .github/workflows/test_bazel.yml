@@ -1,0 +1,54 @@
+name: Bazel Tests
+
+on:
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  examples:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ ubuntu, windows, macos ]
+        bazelversion: [ '7.1.1' ]
+        bzlmod: [true, false ]
+        include:
+          - runner: ubuntu
+            bazelversion: '6.4.0'
+            bzlmod: true
+          - runner: ubuntu
+            bazelversion: '6.4.0'
+            bzlmod: false
+    runs-on: ${{ matrix.runner }}-latest
+    name: Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }}
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v3
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Windows startup flags
+        if: runner.os == 'Windows'
+        working-directory: examples
+        shell: bash
+        run: echo "startup --output_user_root=C:/ --windows_enable_symlinks" >> .bazelrc
+
+      - name: Configure Bazel version
+        working-directory: examples
+        shell: bash
+        run: echo "${{ matrix.bazelversion }}" > .bazelversion
+
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel@v3
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: examples
+          version: ${{ matrix.bazelversion }}
+          bash: cd examples && bazel build //... $BAZEL_FLAGS --enable_bzlmod=${{ matrix.bzlmod }}

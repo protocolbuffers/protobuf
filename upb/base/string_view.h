@@ -46,7 +46,7 @@ UPB_INLINE bool upb_StringView_IsEqual(upb_StringView a, upb_StringView b) {
 }
 
 // LINT.ThenChange(
-//  GoogleInternalName0,
+//  GoogleInternalName1,
 //  //depot/google3/third_party/upb/bits/golang/accessor.go:map_go_string,
 //  //depot/google3/third_party/upb/bits/typescript/string_view.ts
 // )

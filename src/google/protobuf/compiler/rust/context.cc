@@ -41,7 +41,7 @@ absl::StatusOr<Options> Options::Parse(absl::string_view param) {
     return absl::InvalidArgumentError(
         "The Rust codegen is highly experimental. Future versions will break "
         "existing code. Use at your own risk. You can opt-in by passing "
-        "'experimental-codegen=enabled' to '--rust_out'.");
+        "'experimental-codegen=enabled' to '--rust_opt'.");
   }
 
   Options opts;

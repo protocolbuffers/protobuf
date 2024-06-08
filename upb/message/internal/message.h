@@ -59,9 +59,20 @@ typedef struct upb_Message_Internal {
   //   char data[size - sizeof(upb_Message_Internal)];
 } upb_Message_Internal;
 
+#ifdef UPB_TRACING_ENABLED
+UPB_API void upb_Message_LogNewMessage(const upb_MiniTable* m,
+                                       const upb_Arena* arena);
+UPB_API void upb_Message_SetNewMessageTraceHandler(
+    void (*handler)(const upb_MiniTable*, const upb_Arena*));
+#endif  // UPB_TRACING_ENABLED
+
 // Inline version upb_Message_New(), for internal use.
 UPB_INLINE struct upb_Message* _upb_Message_New(const upb_MiniTable* m,
                                                 upb_Arena* a) {
+#ifdef UPB_TRACING_ENABLED
+  upb_Message_LogNewMessage(m, a);
+#endif  // UPB_TRACING_ENABLED
+
   const int size = m->UPB_PRIVATE(size);
   struct upb_Message* msg = (struct upb_Message*)upb_Arena_Malloc(a, size);
   if (UPB_UNLIKELY(!msg)) return NULL;

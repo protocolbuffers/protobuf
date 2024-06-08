@@ -6,8 +6,8 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    "//bazel:build_defs.bzl",
-    "UPB_DEFAULT_CPPOPTS",
+    "//bazel:cc_proto_library.bzl",
+    "cc_proto_library",
 )
 load(
     "//bazel:upb_proto_library.bzl",
@@ -18,8 +18,8 @@ load(
     "upb_cc_proto_library",
 )
 load(
-    "@rules_cc//cc:defs.bzl",
-    "cc_proto_library",
+    "//upb/bazel:build_defs.bzl",
+    "UPB_DEFAULT_CPPOPTS",
 )
 
 # begin:google_only
@@ -76,9 +76,7 @@ upb_cc_proto_library(
 
 upb_cc_proto_library(
     name = "naming_conflict_upb_cc_proto",
-    visibility = [
-        "//visibility:private",  # Only private by automation, not intent. Owner may accept CLs adding visibility. See go/scheuklappen#explicit-private.
-    ],
+    visibility = ["//visibility:private"],
     deps = [":naming_conflict_proto"],
 )
 
@@ -111,9 +109,7 @@ cc_proto_library(
 #
 # upb_cc_proto_library(
 #     name = "legacy_name_test_proto",
-#     visibility = [
-#         "//visibility:private",  # Only private by automation, not intent. Owner may accept CLs adding visibility. See go/scheuklappen#explicit-private.
-#     ],
+#     visibility = ["//visibility:private"],
 #     deps = [":legacy_name_proto"],
 # )
 # end:google_only
@@ -135,6 +131,7 @@ cc_test(
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "//protos",
+        "//protos:requires",
         "//upb:mem",
         "//protos:repeated_field",
     ],

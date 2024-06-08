@@ -73,37 +73,6 @@ const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
 // Core fast parsing implementation:
 //////////////////////////////////////////////////////////////////////////////
 
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoopInlined(
-    MessageLite* msg, const char* ptr, ParseContext* ctx,
-    const TcParseTableBase* table) {
-  // Note: TagDispatch uses a dispatch table at "&table->fast_entries".
-  // For fast dispatch, we'd like to have a pointer to that, but if we use
-  // that expression, there's no easy way to get back to "table", which we also
-  // need during dispatch.  It turns out that "table + 1" points exactly to
-  // fast_entries, so we just increment table by 1 here, to get the register
-  // holding the value we want.
-  table += 1;
-  while (!ctx->Done(&ptr)) {
-#if defined(__GNUC__)
-    // Note: this asm prevents the compiler (clang, specifically) from
-    // believing (thanks to CSE) that it needs to dedicate a registeer both
-    // to "table" and "&table->fast_entries".
-    // TODO: remove this asm
-    asm("" : "+r"(table));
-#endif
-    ptr = TagDispatch(msg, ptr, ctx, TcFieldData::DefaultInit(), table - 1, 0);
-    if (ptr == nullptr) break;
-    if (ctx->LastTag() != 1) break;  // Ended on terminating tag
-  }
-  return ptr;
-}
-
-PROTOBUF_NOINLINE const char* TcParser::ParseLoop(
-    MessageLite* msg, const char* ptr, ParseContext* ctx,
-    const TcParseTableBase* table) {
-  return ParseLoopInlined(msg, ptr, ctx, table);
-}
-
 // On the fast path, a (matching) 1-byte tag already has the decoded value.
 static uint32_t FastDecodeTag(uint8_t coded_tag) {
   return coded_tag;
@@ -394,7 +363,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
       field = inner_table->default_instance->New(msg->GetArena());
     }
     const auto inner_loop = [&](const char* ptr) {
-      return ParseLoopInlined(field, ptr, ctx, inner_table);
+      return ParseLoop(field, ptr, ctx, inner_table);
     };
     return group_coding ? ctx->ParseGroupInlined(ptr, FastDecodeTag(saved_tag),
                                                  inner_loop)
@@ -482,7 +451,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
     MessageLite* submsg = field.AddMessage(default_instance);
     if (aux_is_table) {
       const auto inner_loop = [&](const char* ptr) {
-        return ParseLoopInlined(submsg, ptr, ctx, aux.table);
+        return ParseLoop(submsg, ptr, ctx, aux.table);
       };
       ptr = group_coding ? ctx->ParseGroupInlined(
                                ptr, FastDecodeTag(expected_tag), inner_loop)
@@ -1632,7 +1601,7 @@ namespace {
 inline void SetHas(const FieldEntry& entry, MessageLite* msg) {
   auto has_idx = static_cast<uint32_t>(entry.has_idx);
 #if defined(__x86_64__) && defined(__GNUC__)
-  asm("bts %1, %0\n" : "+m"(*msg) : "r"(has_idx));
+  asm("bts %1, %0\n" : "+m"(*reinterpret_cast<char*>(msg)) : "r"(has_idx));
 #else
   auto& hasblock = TcParser::RefAt<uint32_t>(msg, has_idx / 32 * 4);
   hasblock |= uint32_t{1} << (has_idx % 32);
@@ -2593,7 +2562,7 @@ PROTOBUF_NOINLINE void TcParser::DestroyMapNode(NodeBase* node,
         ->~basic_string();
   } else if (map_info.value_type_card.cpp_type() == MapTypeCard::kMessage) {
     static_cast<MessageLite*>(node->GetVoidValue(map_info.node_size_info))
-        ->~MessageLite();
+        ->DestroyInstance(false);
   }
   map.DeallocNode(node, map_info.node_size_info);
 }
@@ -2812,6 +2781,12 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
+const char* TcParser::MessageSetWireFormatParseLoopLite(
+    PROTOBUF_TC_PARAM_NO_DATA_DECL) {
+  PROTOBUF_MUSTTAIL return MessageSetWireFormatParseLoopImpl<MessageLite>(
+      PROTOBUF_TC_PARAM_NO_DATA_PASS);
+}
+
 std::string TypeCardToString(uint16_t type_card) {
   // In here we convert the runtime value of entry.type_card back into a
   // sequence of literal enum labels. We use the mnenonic labels for nicer
@@ -2942,6 +2917,16 @@ std::string TypeCardToString(uint16_t type_card) {
 #undef PROTOBUF_INTERNAL_TYPE_CARD_CASE
 
   return out;
+}
+
+const char* TcParser::DiscardEverythingFallback(PROTOBUF_TC_PARAM_DECL) {
+  SyncHasbits(msg, hasbits, table);
+  uint32_t tag = data.tag();
+  if ((tag & 7) == WireFormatLite::WIRETYPE_END_GROUP || tag == 0) {
+    ctx->SetLastTag(tag);
+    return ptr;
+  }
+  return UnknownFieldParse(tag, nullptr, ptr, ctx);
 }
 
 }  // namespace internal

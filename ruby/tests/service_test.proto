@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package service_test_protos;
+
+import "google/protobuf/descriptor.proto";
+
+message UnaryRequestType {
+  string ping = 1;
+}
+
+message UnaryResponseType {
+  string pong = 1;
+}
+
+message StreamRequestType {
+  string ping = 1;
+  uint32 sequence = 2;
+}
+
+message StreamResponseType {
+  string pong = 1;
+  uint32 sequence = 2;
+}
+
+message TestOptionsType {
+  uint32 int_option_value = 1;
+}
+
+extend google.protobuf.ServiceOptions {
+  optional TestOptionsType test_options = 50000;
+}
+
+service TestService {
+  option (test_options).int_option_value = 8325;
+
+  rpc UnaryOne(UnaryRequestType) returns (UnaryResponseType);
+  rpc UnaryTwo(UnaryRequestType) returns (UnaryResponseType);
+
+  rpc IdempotentMethod(UnaryRequestType) returns (UnaryResponseType) {
+    option idempotency_level = IDEMPOTENT;
+  }
+  rpc PureMethod(UnaryRequestType) returns (UnaryResponseType) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+
+  rpc StreamingMethod(stream StreamRequestType)
+      returns (stream StreamResponseType);
+}
+
+service DeprecatedService {
+  option deprecated = true;
+}

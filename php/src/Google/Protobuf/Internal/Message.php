@@ -394,7 +394,8 @@ class Message
                 }
                 break;
             case GPBType::STRING:
-                // TODO: Add utf-8 check.
+                // We don't check UTF-8 here; that will be validated by the
+                // setter later.
                 if (!GPBWire::readString($input, $value)) {
                     throw new GPBDecodeException(
                         "Unexpected EOF inside string field.");
@@ -1314,7 +1315,7 @@ class Message
         try {
             $this->mergeFromJsonArray($array, $ignore_unknown);
         } catch (\Exception $e) {
-            throw new GPBDecodeException($e->getMessage());
+            throw new GPBDecodeException($e->getMessage(), $e->getCode(), $e);
         }
     }
 

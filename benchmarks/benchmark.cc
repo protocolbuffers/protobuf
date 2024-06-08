@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "google/ads/googleads/v13/services/google_ads_service.upbdefs.h"
+#include "google/ads/googleads/v16/services/google_ads_service.upbdefs.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
@@ -181,14 +181,14 @@ static void BM_LoadAdsDescriptor_Upb(benchmark::State& state) {
   for (auto _ : state) {
     upb::DefPool defpool;
     if (Mode == NoLayout) {
-      google_ads_googleads_v13_services_SearchGoogleAdsRequest_getmsgdef(
+      google_ads_googleads_v16_services_SearchGoogleAdsRequest_getmsgdef(
           defpool.ptr());
       bytes_per_iter = _upb_DefPool_BytesLoaded(defpool.ptr());
     } else {
       bytes_per_iter = 0;
       LoadDefInit_BuildLayout(
           defpool.ptr(),
-          &google_ads_googleads_v13_services_google_ads_service_proto_upbdefinit,
+          &google_ads_googleads_v16_services_google_ads_service_proto_upbdefinit,
           &bytes_per_iter);
     }
   }
@@ -200,11 +200,11 @@ BENCHMARK_TEMPLATE(BM_LoadAdsDescriptor_Upb, WithLayout);
 template <LoadDescriptorMode Mode>
 static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
   extern _upb_DefPool_Init
-      google_ads_googleads_v13_services_google_ads_service_proto_upbdefinit;
+      google_ads_googleads_v16_services_google_ads_service_proto_upbdefinit;
   std::vector<upb_StringView> serialized_files;
   absl::flat_hash_set<const _upb_DefPool_Init*> seen_files;
   CollectFileDescriptors(
-      &google_ads_googleads_v13_services_google_ads_service_proto_upbdefinit,
+      &google_ads_googleads_v16_services_google_ads_service_proto_upbdefinit,
       serialized_files, seen_files);
   size_t bytes_per_iter = 0;
   for (auto _ : state) {
@@ -214,7 +214,7 @@ static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
     for (auto file : serialized_files) {
       absl::string_view input(file.data, file.size);
       auto proto =
-          protobuf::Arena::CreateMessage<protobuf::FileDescriptorProto>(&arena);
+          protobuf::Arena::Create<protobuf::FileDescriptorProto>(&arena);
       bool ok = proto->ParseFrom<protobuf::MessageLite::kMergePartial>(input) &&
                 pool.BuildFile(*proto) != nullptr;
       if (!ok) {
@@ -227,7 +227,7 @@ static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
     if (Mode == WithLayout) {
       protobuf::DynamicMessageFactory factory;
       const protobuf::Descriptor* d = pool.FindMessageTypeByName(
-          "google.ads.googleads.v13.services.SearchGoogleAdsResponse");
+          "google.ads.googleads.v16.services.SearchGoogleAdsResponse");
       if (!d) {
         printf("Failed to find descriptor.\n");
         exit(1);
@@ -292,7 +292,7 @@ struct Proto2Factory<NoArena, P> {
 template <class P>
 struct Proto2Factory<UseArena, P> {
  public:
-  P* GetProto() { return protobuf::Arena::CreateMessage<P>(&arena); }
+  P* GetProto() { return protobuf::Arena::Create<P>(&arena); }
 
  private:
   protobuf::Arena arena;
@@ -302,7 +302,7 @@ template <class P>
 struct Proto2Factory<InitBlock, P> {
  public:
   Proto2Factory() : arena(GetOptions()) {}
-  P* GetProto() { return protobuf::Arena::CreateMessage<P>(&arena); }
+  P* GetProto() { return protobuf::Arena::Create<P>(&arena); }
 
  private:
   protobuf::ArenaOptions GetOptions() {

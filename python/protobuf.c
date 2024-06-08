@@ -323,6 +323,31 @@ PyTypeObject* PyUpb_AddClassWithBases(PyObject* m, PyType_Spec* spec,
   return (PyTypeObject*)type;
 }
 
+PyTypeObject* PyUpb_AddClassWithRegister(PyObject* m, PyType_Spec* spec,
+                                         PyObject* virtual_base,
+                                         const char** methods) {
+  PyObject* type = PyType_FromSpec(spec);
+  PyObject* ret1 = PyObject_CallMethod(virtual_base, "register", "O", type);
+  if (!ret1) {
+    Py_XDECREF(type);
+    return NULL;
+  }
+  for (size_t i = 0; methods[i] != NULL; i++) {
+    PyObject* method = PyObject_GetAttrString(virtual_base, methods[i]);
+    if (!method) {
+      Py_XDECREF(type);
+      return NULL;
+    }
+    int ret2 = PyObject_SetAttrString(type, methods[i], method);
+    if (ret2 < 0) {
+      Py_XDECREF(type);
+      return NULL;
+    }
+  }
+
+  return (PyTypeObject*)type;
+}
+
 const char* PyUpb_GetStrData(PyObject* obj) {
   if (PyUnicode_Check(obj)) {
     return PyUnicode_AsUTF8AndSize(obj, NULL);

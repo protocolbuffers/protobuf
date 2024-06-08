@@ -107,6 +107,13 @@ TEST(MessageTest, Extensions) {
                              defpool.ptr(), 0, arena.ptr(), status.ptr()))
       << status.error_message();
   VerifyMessage(ext_msg3);
+
+  // Test setters and mutable accessors
+  upb_test_TestExtensions* ext_msg4 = upb_test_TestExtensions_new(arena.ptr());
+  upb_test_TestExtensions_set_optional_int32_ext(ext_msg4, 123, arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(
+      upb_test_mutable_optional_msg_ext(ext_msg4, arena.ptr()), 456);
+  VerifyMessage(ext_msg4);
 }
 
 void VerifyMessageSet(const upb_test_TestMessageSet* mset_msg) {
@@ -581,7 +588,7 @@ TEST(MessageTest, Freeze) {
 //
 // static void DecodeEncodeArbitrarySchemaAndPayload(
 //     const upb::fuzz::MiniTableFuzzInput& input, std::string_view proto_payload,
-//     int decode_options, int encode_options) {
+//     int decode_options, int encode_options, bool length_prefixed = false) {
 // // Lexan does not have setenv
 // #ifndef _MSC_VER
 //   setenv("FUZZTEST_STACK_LIMIT", "262144", 1);
@@ -598,11 +605,25 @@ TEST(MessageTest, Freeze) {
 //       upb::fuzz::BuildMiniTable(input, &exts, arena.ptr());
 //   if (!mini_table) return;
 //   upb_Message* msg = upb_Message_New(mini_table, arena.ptr());
-//   upb_Decode(proto_payload.data(), proto_payload.size(), msg, mini_table, exts,
-//              decode_options, arena.ptr());
+//   if (length_prefixed) {
+//     size_t num_bytes_read = 0;
+//     upb_DecodeStatus status = upb_DecodeLengthPrefixed(
+//         proto_payload.data(), proto_payload.size(), msg, &num_bytes_read,
+//         mini_table, exts, decode_options, arena.ptr());
+//     ASSERT_TRUE(status != kUpb_DecodeStatus_Ok ||
+//                 num_bytes_read <= proto_payload.size());
+//   } else {
+//     upb_Decode(proto_payload.data(), proto_payload.size(), msg, mini_table,
+//                exts, decode_options, arena.ptr());
+//   }
 //   char* ptr;
 //   size_t size;
-//   upb_Encode(msg, mini_table, encode_options, arena.ptr(), &ptr, &size);
+//   if (length_prefixed) {
+//     upb_EncodeLengthPrefixed(msg, mini_table, encode_options, arena.ptr(), &ptr,
+//                              &size);
+//   } else {
+//     upb_Encode(msg, mini_table, encode_options, arena.ptr(), &ptr, &size);
+//   }
 // }
 // FUZZ_TEST(FuzzTest, DecodeEncodeArbitrarySchemaAndPayload);
 //

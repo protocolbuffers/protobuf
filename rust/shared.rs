@@ -22,15 +22,16 @@ use std::fmt;
 /// These are the items protobuf users can access directly.
 #[doc(hidden)]
 pub mod __public {
-    pub use crate::r#enum::UnknownEnumValue;
-    pub use crate::map::{Map, MapMut, MapView, ProxiedInMapValue};
-    pub use crate::optional::{AbsentField, FieldEntry, Optional, PresentField};
-    pub use crate::primitive::PrimitiveMut;
-    pub use crate::proxied::{
-        Mut, MutProxy, Proxied, ProxiedWithPresence, SettableValue, View, ViewProxy,
+    pub use crate::r#enum::{Enum, UnknownEnumValue};
+    pub use crate::map::{Map, MapIter, MapMut, MapView, ProxiedInMapValue};
+    pub use crate::optional::Optional;
+    pub use crate::proto;
+    pub use crate::proxied::{IntoProxied, Mut, MutProxied, MutProxy, Proxied, View, ViewProxy};
+    pub use crate::repeated::{
+        ProxiedInRepeated, Repeated, RepeatedIter, RepeatedMut, RepeatedView,
     };
-    pub use crate::repeated::{ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView};
-    pub use crate::string::{BytesMut, ProtoStr, ProtoStrMut};
+    pub use crate::string::ProtoStr;
+    pub use crate::{ParseError, SerializeError};
 }
 pub use __public::*;
 
@@ -52,21 +53,34 @@ pub mod __runtime;
 
 #[path = "enum.rs"]
 mod r#enum;
-mod macros;
 mod map;
 mod optional;
 mod primitive;
+mod proto_macro;
 mod proxied;
 mod repeated;
 mod string;
-mod vtable;
 
-/// An error that happened during deserialization.
+/// An error that happened during parsing.
 #[derive(Debug, Clone)]
 pub struct ParseError;
+
+impl std::error::Error for ParseError {}
 
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Couldn't deserialize given bytes into a proto")
+    }
+}
+
+/// An error that happened during serialization.
+#[derive(Debug, Clone)]
+pub struct SerializeError;
+
+impl std::error::Error for SerializeError {}
+
+impl fmt::Display for SerializeError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Couldn't serialize proto into bytes (depth too deep or missing required fields)")
     }
 }

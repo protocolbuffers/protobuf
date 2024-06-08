@@ -55,7 +55,6 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
 
   file_options.opensource_runtime = opensource_runtime_;
 
-  bool enforce_editions = true;
   for (auto& option : options) {
     if (option.first == "output_list_file") {
       file_options.output_list_file = option.second;
@@ -75,8 +74,6 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
       file_options.annotation_list_file = option.second;
     } else if (option.first == "experimental_strip_nonfunctional_codegen") {
       file_options.strip_nonfunctional_codegen = true;
-    } else if (option.first == "experimental_editions") {
-      enforce_editions = false;
     } else {
       *error = absl::StrCat("Unknown generator option: ", option.first);
       return false;
@@ -85,13 +82,6 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
 
   if (file_options.enforce_lite && file_options.generate_mutable_code) {
     *error = "lite runtime generator option cannot be used with mutable API.";
-    return false;
-  }
-
-  // TODO: Remove once Java lite supports editions
-  if (enforce_editions && file_options.enforce_lite &&
-      GetEdition(*file) > google::protobuf::Edition::EDITION_PROTO3) {
-    *error = "lite runtime generator option cannot be used with editions yet.";
     return false;
   }
 
@@ -147,7 +137,7 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
         &annotations);
     io::Printer printer(
         output.get(), '$',
-        file_options.annotate_code ? &annotation_collector : NULL);
+        file_options.annotate_code ? &annotation_collector : nullptr);
 
     file_generator->Generate(&printer);
 

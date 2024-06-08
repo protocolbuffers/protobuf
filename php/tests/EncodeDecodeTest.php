@@ -683,6 +683,21 @@ class EncodeDecodeTest extends TestBase
         $m->mergeFromString(hex2bin('7201'));
     }
 
+    public function testDecodeInvalidStringDataBadUtf8()
+    {
+        $this->expectException(Exception::class);
+
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('720180'));
+    }
+
+    public function testDecodeValidStringData()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('720161'));
+        $this->assertSame('a', $m->getOptionalString());
+    }
+
     public function testDecodeInvalidBytesLengthMiss()
     {
         $this->expectException(Exception::class);
@@ -990,6 +1005,16 @@ class EncodeDecodeTest extends TestBase
         $m->setNanos(123456789);
         $this->assertEquals("\"2000-01-01T00:00:00.123456789Z\"",
                             $m->serializeToJsonString());
+    }
+
+    public function testEncodeDecodeTimestampConsistency()
+    {
+        $m = new Google\Protobuf\Timestamp();
+        $m->setSeconds(946684800);
+        $m->setNanos(123000000);
+        $m->mergeFromJsonString($m->serializeToJsonString());
+        $this->assertEquals(946684800, $m->getSeconds());
+        $this->assertEquals(123000000, $m->getNanos());
     }
 
     public function testDecodeTopLevelValue()

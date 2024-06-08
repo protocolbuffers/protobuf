@@ -4,21 +4,26 @@
 # the WORKSPACE file in the same directory with this BUILD file for an
 # example.
 
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_proto_library")
-load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@protobuf//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("@protobuf//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
+load("@protobuf//bazel:java_proto_library.bzl", "java_proto_library")
+load("@protobuf//bazel:proto_library.bzl", "proto_library")
+load("@protobuf//bazel:py_proto_library.bzl", "py_proto_library")
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_python//python:py_binary.bzl", "py_binary")
 
 # For each .proto file, a proto_library target should be defined. This target
 # is not bound to any particular language. Instead, it defines the dependency
 # graph of the .proto files (i.e., proto imports) and serves as the provider
 # of .proto source files to the protocol compiler.
 #
-# Remote repository "com_google_protobuf" must be defined to use this rule.
+# Remote repository "protobuf" must be defined to use this rule.
 proto_library(
     name = "addressbook_proto",
     srcs = ["addressbook.proto"],
-    deps = ["@com_google_protobuf//:timestamp_proto"],
+    deps = ["@protobuf//:timestamp_proto"],
 )
 
 # The cc_proto_library rule generates C++ code for a proto_library rule. It
@@ -38,8 +43,8 @@ cc_binary(
     srcs = ["add_person.cc"],
     deps = [
         ":addressbook_cc_proto",
-        "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//src/google/protobuf/util:time_util",
+        "@protobuf",
+        "@protobuf//src/google/protobuf/util:time_util",
     ],
 )
 
@@ -48,8 +53,8 @@ cc_binary(
     srcs = ["list_people.cc"],
     deps = [
         ":addressbook_cc_proto",
-        "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//src/google/protobuf/util:time_util",
+        "@protobuf",
+        "@protobuf//src/google/protobuf/util:time_util",
     ],
 )
 
@@ -111,6 +116,41 @@ java_binary(
     srcs = ["ListPeople.java"],
     main_class = "ListPeople",
     deps = [":addressbook_java_lite_proto"],
+)
+
+# Python
+
+py_proto_library(
+    name = "addressbook_py_pb2",
+    visibility = ["//visibility:public"],
+    deps = [":addressbook_proto"],
+)
+
+py_binary(
+    name = "add_person",
+    srcs = ["add_person.py"],
+    python_version = "PY3",
+    deps = [
+        ":addressbook_py_pb2",
+    ],
+)
+
+py_binary(
+    name = "list_people",
+    srcs = ["list_people.py"],
+    python_version = "PY3",
+    deps = [
+        ":addressbook_py_pb2",
+    ],
+)
+
+build_test(
+    name = "test",
+    targets = [
+        ":add_person_cpp",
+        ":add_person_java",
+        ":add_person",  # Python
+    ],
 )
 
 # Files included in all source distributions

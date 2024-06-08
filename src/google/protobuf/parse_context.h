@@ -24,7 +24,6 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/endian.h"
-#include "google/protobuf/implicit_weak_message.h"
 #include "google/protobuf/inlined_string_field.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -507,9 +506,26 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
                                                    uint32_t start_tag,
                                                    const Func& func);
 
-  template <typename T>
+  // Use a template to avoid the strong dep into TcParser. All callers will have
+  // the dep.
+  template <typename Parser = TcParser>
+  PROTOBUF_ALWAYS_INLINE const char* ParseMessage(
+      MessageLite* msg, const TcParseTableBase* tc_table, const char* ptr) {
+    return ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {
+      return Parser::ParseLoop(msg, ptr, this, tc_table);
+    });
+  }
+  template <typename Parser = TcParser>
+  PROTOBUF_ALWAYS_INLINE const char* ParseGroup(
+      MessageLite* msg, const TcParseTableBase* tc_table, const char* ptr,
+      uint32_t start_tag) {
+    return ParseGroupInlined(ptr, start_tag, [&](const char* ptr) {
+      return Parser::ParseLoop(msg, ptr, this, tc_table);
+    });
+  }
+
   PROTOBUF_NODISCARD PROTOBUF_NDEBUG_INLINE const char* ParseGroup(
-      T* msg, const char* ptr, uint32_t tag) {
+      MessageLite* msg, const char* ptr, uint32_t tag) {
     if (--depth_ < 0) return nullptr;
     group_depth_++;
     auto old_depth = depth_;
@@ -1073,7 +1089,7 @@ inline int32_t ReadVarintZigZag32(const char** p) {
 }
 
 template <typename Func>
-PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char*
+PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE const char*
 ParseContext::ParseLengthDelimitedInlined(const char* ptr, const Func& func) {
   LimitToken old;
   ptr = ReadSizeAndPushLimitAndDepthInlined(ptr, &old);
@@ -1087,7 +1103,7 @@ ParseContext::ParseLengthDelimitedInlined(const char* ptr, const Func& func) {
 }
 
 template <typename Func>
-PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char*
+PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE const char*
 ParseContext::ParseGroupInlined(const char* ptr, uint32_t start_tag,
                                 const Func& func) {
   if (--depth_ < 0) return nullptr;

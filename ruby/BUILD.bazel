@@ -4,12 +4,12 @@
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_ruby//ruby:defs.bzl", "ruby_library")
-load("//python:internal.bzl", "internal_copy_files")
-load("//ruby:defs.bzl", "internal_ruby_proto_library")
 load("//:protobuf_version.bzl", "PROTOBUF_RUBY_VERSION")
 load("//conformance:defs.bzl", "conformance_test")
+load("//python:internal.bzl", "internal_copy_files")
+load("//ruby:defs.bzl", "internal_ruby_proto_library")
 
 ################################################################################
 # Ruby Runtime
@@ -129,6 +129,25 @@ internal_ruby_proto_library(
     deps = [":well_known_ruby_protos"],
 )
 
+internal_copy_files(
+    name = "copied_conformance_editions_test_files",
+    testonly = 1,
+    srcs = [
+        "//editions:golden/test_messages_proto2_editions.proto",
+        "//editions:golden/test_messages_proto3_editions.proto",
+    ],
+    strip_prefix = "editions/golden/",
+)
+
+internal_ruby_proto_library(
+    name = "conformance_editions_test_ruby_proto",
+    testonly = 1,
+    srcs = [":copied_conformance_editions_test_files"],
+    includes = ["."],
+    visibility = ["//conformance:__pkg__"],
+    deps = [":well_known_ruby_protos"],
+)
+
 ruby_library(
     name = "protobuf",
     visibility = [
@@ -232,12 +251,12 @@ filegroup(
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_ruby.txt",
+    maximum_edition = "2023",
     target_compatible_with = select({
         ":ruby_native": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     testee = "//conformance:conformance_ruby",
-    text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
 )
 
 conformance_test(
@@ -246,23 +265,23 @@ conformance_test(
         "PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION": "ffi",
     },
     failure_list = "//conformance:failure_list_ruby.txt",
+    maximum_edition = "2023",
     target_compatible_with = select({
         ":ruby_ffi": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     testee = "//conformance:conformance_ruby",
-    text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
 )
 
 conformance_test(
     name = "conformance_test_jruby",
     failure_list = "//conformance:failure_list_jruby.txt",
+    maximum_edition = "2023",
     target_compatible_with = select({
         ":jruby_native": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     testee = "//conformance:conformance_ruby",
-    text_format_failure_list = "//conformance:text_format_failure_list_jruby.txt",
 )
 
 conformance_test(
@@ -271,12 +290,12 @@ conformance_test(
         "PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION": "ffi",
     },
     failure_list = "//conformance:failure_list_jruby_ffi.txt",
+    maximum_edition = "2023",
     target_compatible_with = select({
         ":jruby_ffi": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     testee = "//conformance:conformance_ruby",
-    text_format_failure_list = "//conformance:text_format_failure_list_jruby.txt",
 )
 
 ################################################################################

@@ -44,23 +44,10 @@ namespace {
 void EmitPubUseOfOwnTypes(Context& ctx, const FileDescriptor& primary_file,
                           const FileDescriptor& non_primary_src) {
   auto mod = RustInternalModuleName(ctx, non_primary_src);
-  for (int i = 0; i < non_primary_src.message_type_count(); ++i) {
-    auto& msg = *non_primary_src.message_type(i);
-    ctx.Emit({{"mod", mod}, {"Msg", RsSafeName(msg.name())}},
-             R"rs(
-                        pub use crate::$mod$::$Msg$;
-                        // TODO Address use for imported crates
-                        pub use crate::$mod$::$Msg$View;
-                        pub use crate::$mod$::$Msg$Mut;
-                      )rs");
-  }
-  for (int i = 0; i < non_primary_src.enum_type_count(); ++i) {
-    auto& enum_ = *non_primary_src.enum_type(i);
-    ctx.Emit({{"mod", mod}, {"Enum", EnumRsName(enum_)}},
-             R"rs(
-                        pub use crate::$mod$::$Enum$;
-                      )rs");
-  }
+  ctx.Emit({{"mod", mod}}, R"rs(
+    #[allow(unused_imports)]
+    pub use crate::$mod$::*;
+  )rs");
 }
 
 // Emits `pub use <crate_name>::<modules for parent types>::Type` for all
@@ -215,11 +202,23 @@ bool RustGenerator::Generate(const FileDescriptor* file,
     thunks_cc.reset(generator_context->Open(GetThunkCcFile(ctx, *file)));
     thunks_printer = std::make_unique<io::Printer>(thunks_cc.get());
 
-    thunks_printer->Emit({{"proto_h", GetHeaderFile(ctx, *file)}},
-                         R"cc(
+    thunks_printer->Emit(
+        {{"proto_h", GetHeaderFile(ctx, *file)},
+         {"proto_deps_h",
+          [&] {
+            for (int i = 0; i < file->dependency_count(); i++) {
+              thunks_printer->Emit(
+                  {{"proto_dep_h", GetHeaderFile(ctx, *file->dependency(i))}},
+                  R"cc(
+#include "$proto_dep_h$"
+                  )cc");
+            }
+          }}},
+        R"cc(
 #include "$proto_h$"
+          $proto_deps_h$
 #include "google/protobuf/rust/cpp_kernel/cpp_api.h"
-                         )cc");
+        )cc");
   }
 
   for (int i = 0; i < file->message_type_count(); ++i) {
@@ -240,8 +239,19 @@ bool RustGenerator::Generate(const FileDescriptor* file,
   }
 
   for (int i = 0; i < file->enum_type_count(); ++i) {
-    GenerateEnumDefinition(ctx, *file->enum_type(i));
+    auto& enum_ = *file->enum_type(i);
+    GenerateEnumDefinition(ctx, enum_);
     ctx.printer().PrintRaw("\n");
+
+    if (ctx.is_cpp()) {
+      auto thunks_ctx = ctx.WithPrinter(thunks_printer.get());
+
+      thunks_ctx.Emit({{"enum", enum_.full_name()}}, R"cc(
+        // $enum$
+      )cc");
+      GenerateEnumThunksCc(thunks_ctx, enum_);
+      thunks_ctx.printer().PrintRaw("\n");
+    }
   }
 
   return true;

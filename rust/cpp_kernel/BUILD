@@ -12,9 +12,10 @@ cc_library(
     ],
     deps = [
         ":rust_alloc_for_cpp_api",  # buildcleaner: keep
-        "//:protobuf",
-        "//:protobuf_lite",
-        "@com_google_absl//absl/strings:string_view",
+        "//src/google/protobuf",
+        "//src/google/protobuf:protobuf_lite",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
     ],
 )
 

@@ -60,10 +60,10 @@ __author__ = 'kenton@google.com (Kenton Varda)'
 import math
 import struct
 
+from google.protobuf import message
 from google.protobuf.internal import containers
 from google.protobuf.internal import encoder
 from google.protobuf.internal import wire_format
-from google.protobuf import message
 
 
 # This is not for optimization, but rather to avoid conflicts with local
@@ -81,20 +81,32 @@ def _VarintDecoder(mask, result_type):
   decoder returns a (value, new_pos) pair.
   """
 
-  def DecodeVarint(buffer, pos):
+  def DecodeVarint(buffer, pos: int=None):
     result = 0
     shift = 0
     while 1:
-      b = buffer[pos]
+      if pos is None:
+        # Read from BytesIO
+        try:
+          b = buffer.read(1)[0]
+        except IndexError as e:
+          if shift == 0:
+            # End of BytesIO.
+            return None
+          else:
+            raise ValueError('Fail to read varint %s' % str(e))
+      else:
+        b = buffer[pos]
+        pos += 1
       result |= ((b & 0x7f) << shift)
-      pos += 1
       if not (b & 0x80):
         result &= mask
         result = result_type(result)
-        return (result, pos)
+        return result if pos is None else (result, pos)
       shift += 7
       if shift >= 64:
         raise _DecodeError('Too many bytes when decoding varint.')
+
   return DecodeVarint
 
 
@@ -386,18 +398,12 @@ def EnumDecoder(field_number, is_repeated, is_packed, key, new_default,
 
           message._unknown_fields.append(
               (tag_bytes, buffer[value_start_pos:pos].tobytes()))
-          if message._unknown_field_set is None:
-            message._unknown_field_set = containers.UnknownFieldSet()
-          message._unknown_field_set._add(
-              field_number, wire_format.WIRETYPE_VARINT, element)
           # pylint: enable=protected-access
       if pos > endpoint:
         if element in enum_type.values_by_number:
           del value[-1]   # Discard corrupt value.
         else:
           del message._unknown_fields[-1]
-          # pylint: disable=protected-access
-          del message._unknown_field_set._values[-1]
           # pylint: enable=protected-access
         raise _DecodeError('Packed element was truncated.')
       return pos
@@ -431,10 +437,6 @@ def EnumDecoder(field_number, is_repeated, is_packed, key, new_default,
             message._unknown_fields = []
           message._unknown_fields.append(
               (tag_bytes, buffer[pos:new_pos].tobytes()))
-          if message._unknown_field_set is None:
-            message._unknown_field_set = containers.UnknownFieldSet()
-          message._unknown_field_set._add(
-              field_number, wire_format.WIRETYPE_VARINT, element)
         # pylint: enable=protected-access
         # Predict that the next tag is another copy of the same repeated
         # field.
@@ -476,10 +478,6 @@ def EnumDecoder(field_number, is_repeated, is_packed, key, new_default,
                                      wire_format.WIRETYPE_VARINT)
         message._unknown_fields.append(
             (tag_bytes, buffer[value_start_pos:pos].tobytes()))
-        if message._unknown_field_set is None:
-          message._unknown_field_set = containers.UnknownFieldSet()
-        message._unknown_field_set._add(
-            field_number, wire_format.WIRETYPE_VARINT, enum_value)
         # pylint: enable=protected-access
       return pos
     return DecodeField
@@ -795,12 +793,6 @@ def MessageSetItemDecoder(descriptor):
         message._unknown_fields = []
       message._unknown_fields.append(
           (MESSAGE_SET_ITEM_TAG, buffer[message_set_item_start:pos].tobytes()))
-      if message._unknown_field_set is None:
-        message._unknown_field_set = containers.UnknownFieldSet()
-      message._unknown_field_set._add(
-          type_id,
-          wire_format.WIRETYPE_LENGTH_DELIMITED,
-          buffer[message_start:message_end].tobytes())
       # pylint: enable=protected-access
 
     return pos

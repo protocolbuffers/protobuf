@@ -1,9 +1,12 @@
 # Bazel (https://bazel.build/) BUILD file for Protobuf.
 
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library")
-load("@rules_java//java:defs.bzl", "java_lite_proto_library", "java_proto_library")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
+load("//bazel:java_proto_library.bzl", "java_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
+load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 load(":protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library")
 
@@ -21,7 +24,7 @@ exports_files(["LICENSE"])
 #
 # java_proto_library(
 #   name = "any_java_proto",
-#   deps = ["@com_google_protobuf//:any_proto"],
+#   deps = ["@protobuf//:any_proto"],
 # )
 ################################################################################
 
@@ -166,12 +169,6 @@ alias(
 # implementation, but are not Well-Known Types.
 
 alias(
-    name = "cpp_features_proto",
-    actual = "//src/google/protobuf:cpp_features_proto",  # proto_library
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "descriptor_proto",
     actual = "//src/google/protobuf:descriptor_proto",  # proto_library
     visibility = ["//visibility:public"],
@@ -253,13 +250,13 @@ cc_binary(
 # a user-defined proto_lang_toolchain.
 alias(
     name = "protobuf",
-    actual = "//src/google/protobuf",
+    actual = "//src/google/protobuf:protobuf_layering_check_legacy",
     visibility = ["//visibility:public"],
 )
 
 alias(
     name = "protobuf_nowkt",
-    actual = "//src/google/protobuf:protobuf_nowkt",
+    actual = "//src/google/protobuf:protobuf_layering_check_legacy",
     deprecation = "Use //:protobuf instead",
     visibility = ["//visibility:public"],
 )
@@ -295,6 +292,48 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+alias(
+    name = "delimited_message_util",
+    actual = "//src/google/protobuf/util:delimited_message_util",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "differencer",
+    actual = "//src/google/protobuf/util:differencer",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "field_mask_util",
+    actual = "//src/google/protobuf/util:field_mask_util",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "json_util",
+    actual = "//src/google/protobuf/util:json_util",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "time_util",
+    actual = "//src/google/protobuf/util:time_util",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "type_resolver",
+    actual = "//src/google/protobuf/util:type_resolver",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "cpp_features_proto",
+    actual = "//src/google/protobuf:cpp_features_proto",  # proto_library
+    visibility = ["//visibility:public"],
+)
+
 ################################################################################
 # Java support
 ################################################################################
@@ -326,6 +365,12 @@ alias(
 alias(
     name = "javalite_toolchain",
     actual = "//java/lite:toolchain",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "java_features_proto",
+    actual = "//java/core:java_features_proto",  # proto_library
     visibility = ["//visibility:public"],
 )
 
@@ -373,6 +418,7 @@ proto_lang_toolchain(
     name = "cc_toolchain",
     blacklisted_protos = [
         "//:compiler_plugin_proto",
+        "//:cpp_features_proto",
         "//:descriptor_proto",
     ],
     command_line = "--cpp_out=$(OUT)",
@@ -395,6 +441,16 @@ alias(
     name = "protobuf_objc",
     actual = "//objectivec",
     tags = ["manual"],
+    visibility = ["//visibility:public"],
+)
+
+################################################################################
+# Rust support
+################################################################################
+
+alias(
+    name = "protobuf_rust",
+    actual = "//rust:protobuf",
     visibility = ["//visibility:public"],
 )
 

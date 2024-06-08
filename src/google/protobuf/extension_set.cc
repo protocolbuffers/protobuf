@@ -154,7 +154,13 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
              type == WireFormatLite::TYPE_GROUP);
   ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
                      verify_func, is_lazy);
-  info.message_info = {prototype};
+  info.message_info = {prototype,
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+                       prototype->GetTcParseTable()
+#else
+                       nullptr
+#endif
+  };
   Register(info);
 }
 
@@ -331,7 +337,7 @@ enum { REPEATED_FIELD, OPTIONAL_FIELD };
       extension->is_repeated = true;                                          \
       extension->is_packed = packed;                                          \
       extension->repeated_##LOWERCASE##_value =                               \
-          Arena::CreateMessage<RepeatedField<LOWERCASE>>(arena_);             \
+          Arena::Create<RepeatedField<LOWERCASE>>(arena_);                    \
     } else {                                                                  \
       ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, UPPERCASE);                \
       ABSL_DCHECK_EQ(extension->is_packed, packed);                           \
@@ -376,43 +382,43 @@ void* ExtensionSet::MutableRawRepeatedField(int number, FieldType field_type,
         static_cast<WireFormatLite::FieldType>(field_type))) {
       case WireFormatLite::CPPTYPE_INT32:
         extension->repeated_int32_t_value =
-            Arena::CreateMessage<RepeatedField<int32_t>>(arena_);
+            Arena::Create<RepeatedField<int32_t>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_INT64:
         extension->repeated_int64_t_value =
-            Arena::CreateMessage<RepeatedField<int64_t>>(arena_);
+            Arena::Create<RepeatedField<int64_t>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_UINT32:
         extension->repeated_uint32_t_value =
-            Arena::CreateMessage<RepeatedField<uint32_t>>(arena_);
+            Arena::Create<RepeatedField<uint32_t>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_UINT64:
         extension->repeated_uint64_t_value =
-            Arena::CreateMessage<RepeatedField<uint64_t>>(arena_);
+            Arena::Create<RepeatedField<uint64_t>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_DOUBLE:
         extension->repeated_double_value =
-            Arena::CreateMessage<RepeatedField<double>>(arena_);
+            Arena::Create<RepeatedField<double>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_FLOAT:
         extension->repeated_float_value =
-            Arena::CreateMessage<RepeatedField<float>>(arena_);
+            Arena::Create<RepeatedField<float>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_BOOL:
         extension->repeated_bool_value =
-            Arena::CreateMessage<RepeatedField<bool>>(arena_);
+            Arena::Create<RepeatedField<bool>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_ENUM:
         extension->repeated_enum_value =
-            Arena::CreateMessage<RepeatedField<int>>(arena_);
+            Arena::Create<RepeatedField<int>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_STRING:
         extension->repeated_string_value =
-            Arena::CreateMessage<RepeatedPtrField<std::string>>(arena_);
+            Arena::Create<RepeatedPtrField<std::string>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_MESSAGE:
         extension->repeated_message_value =
-            Arena::CreateMessage<RepeatedPtrField<MessageLite>>(arena_);
+            Arena::Create<RepeatedPtrField<MessageLite>>(arena_);
         break;
     }
   }
@@ -501,8 +507,7 @@ void ExtensionSet::AddEnum(int number, FieldType type, bool packed, int value,
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_ENUM);
     extension->is_repeated = true;
     extension->is_packed = packed;
-    extension->repeated_enum_value =
-        Arena::CreateMessage<RepeatedField<int>>(arena_);
+    extension->repeated_enum_value = Arena::Create<RepeatedField<int>>(arena_);
   } else {
     ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, ENUM);
     ABSL_DCHECK_EQ(extension->is_packed, packed);
@@ -564,7 +569,7 @@ std::string* ExtensionSet::AddString(int number, FieldType type,
     extension->is_repeated = true;
     extension->is_packed = false;
     extension->repeated_string_value =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(arena_);
+        Arena::Create<RepeatedPtrField<std::string>>(arena_);
   } else {
     ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, STRING);
   }
@@ -782,21 +787,14 @@ MessageLite* ExtensionSet::AddMessage(int number, FieldType type,
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
     extension->is_repeated = true;
     extension->repeated_message_value =
-        Arena::CreateMessage<RepeatedPtrField<MessageLite>>(arena_);
+        Arena::Create<RepeatedPtrField<MessageLite>>(arena_);
   } else {
     ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, MESSAGE);
   }
 
-  // RepeatedPtrField<MessageLite> does not know how to Add() since it cannot
-  // allocate an abstract object, so we have to be tricky.
-  MessageLite* result = reinterpret_cast<internal::RepeatedPtrFieldBase*>(
-                            extension->repeated_message_value)
-                            ->AddFromCleared<GenericTypeHandler<MessageLite>>();
-  if (result == nullptr) {
-    result = prototype.New(arena_);
-    extension->repeated_message_value->AddAllocated(result);
-  }
-  return result;
+  return reinterpret_cast<internal::RepeatedPtrFieldBase*>(
+             extension->repeated_message_value)
+      ->AddMessage(&prototype);
 }
 
 // Defined in extension_set_heavy.cc.
@@ -981,7 +979,7 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
   case WireFormatLite::CPPTYPE_##UPPERCASE:              \
     if (is_new) {                                        \
       extension->repeated_##LOWERCASE##_value =          \
-          Arena::CreateMessage<REPEATED_TYPE>(arena_);   \
+          Arena::Create<REPEATED_TYPE>(arena_);          \
     }                                                    \
     extension->repeated_##LOWERCASE##_value->MergeFrom(  \
         *other_extension.repeated_##LOWERCASE##_value);  \
@@ -996,32 +994,8 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
       HANDLE_TYPE(BOOL, bool, RepeatedField<bool>);
       HANDLE_TYPE(ENUM, enum, RepeatedField<int>);
       HANDLE_TYPE(STRING, string, RepeatedPtrField<std::string>);
+      HANDLE_TYPE(MESSAGE, message, RepeatedPtrField<MessageLite>);
 #undef HANDLE_TYPE
-
-      case WireFormatLite::CPPTYPE_MESSAGE: {
-        Arena* const arena = arena_;
-        if (is_new) {
-          extension->repeated_message_value =
-              Arena::CreateMessage<RepeatedPtrField<MessageLite>>(arena);
-        }
-        // We can't call RepeatedPtrField<MessageLite>::MergeFrom() because
-        // it would attempt to allocate new objects.
-        RepeatedPtrField<MessageLite>* other_repeated_message =
-            other_extension.repeated_message_value;
-        for (int i = 0; i < other_repeated_message->size(); i++) {
-          const MessageLite& other_message = other_repeated_message->Get(i);
-          MessageLite* target =
-              reinterpret_cast<internal::RepeatedPtrFieldBase*>(
-                  extension->repeated_message_value)
-                  ->AddFromCleared<GenericTypeHandler<MessageLite>>();
-          if (target == nullptr) {
-            target = other_message.New(arena);
-            extension->repeated_message_value->AddAllocated(target);
-          }
-          target->CheckTypeAndMergeFrom(other_message);
-        }
-        break;
-      }
     }
   } else {
     if (!other_extension.is_cleared) {
@@ -1061,7 +1035,7 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
                   other_extension.lazymessage_value->New(arena);
               extension->lazymessage_value->MergeFrom(
                   GetPrototypeForLazyMessage(extendee, number),
-                  *other_extension.lazymessage_value, arena);
+                  *other_extension.lazymessage_value, arena, other_arena);
             } else {
               extension->is_lazy = false;
               extension->message_value =
@@ -1077,7 +1051,7 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
               if (extension->is_lazy) {
                 extension->lazymessage_value->MergeFrom(
                     GetPrototypeForLazyMessage(extendee, number),
-                    *other_extension.lazymessage_value, arena);
+                    *other_extension.lazymessage_value, arena, other_arena);
               } else {
                 extension->message_value->CheckTypeAndMergeFrom(
                     other_extension.lazymessage_value->GetMessage(

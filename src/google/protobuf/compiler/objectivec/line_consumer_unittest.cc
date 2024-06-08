@@ -13,7 +13,7 @@
 #include <vector>
 
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/common.h"
+#include "absl/base/macros.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"

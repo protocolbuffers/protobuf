@@ -2,9 +2,10 @@
 # Protocol Buffers Compiler - C++ code generator
 ################################################################################
 
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
@@ -66,9 +67,12 @@ cc_library(
         "field_generators/message_field.cc",
         "field_generators/primitive_field.cc",
         "field_generators/string_field.cc",
+        "field_generators/string_view_field.cc",
         "file.cc",
         "generator.cc",
+        "ifndef_guard.cc",
         "message.cc",
+        "namespace_printer.cc",
         "padding_optimizer.cc",
         "parse_function_generator.cc",
         "service.cc",
@@ -81,8 +85,10 @@ cc_library(
         "field_generators/generators.h",
         "file.h",
         "generator.h",
+        "ifndef_guard.h",
         "message.h",
         "message_layout_helper.h",
+        "namespace_printer.h",
         "padding_optimizer.h",
         "parse_function_generator.h",
         "service.h",
@@ -114,12 +120,14 @@ cc_library(
         "@com_google_absl//absl/functional:any_invocable",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/log:die_if_null",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/synchronization",
         "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/types:span",
     ],
 )
 
@@ -333,6 +341,38 @@ cc_test(
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "@com_google_absl//absl/log:absl_check",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "ifndef_guard_unittest",
+    srcs = ["ifndef_guard_unittest.cc"],
+    deps = [
+        ":cpp",
+        "//:protobuf",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "namespace_printer_unittest",
+    srcs = ["namespace_printer_unittest.cc"],
+    deps = [
+        ":cpp",
+        "//:protobuf",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_absl//absl/types:optional",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

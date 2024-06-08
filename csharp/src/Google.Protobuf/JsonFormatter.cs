@@ -481,6 +481,7 @@ namespace Google.Protobuf {
       }
       IMessage message = descriptor.Parser.ParseFrom(data);
       WriteBracketOpen(writer, ObjectOpenBracket);
+      MaybeWriteValueWhitespace(writer, indentationLevel + 1);
       WriteString(writer, AnyTypeUrlField);
       writer.Write(NameValueSeparator);
       WriteString(writer, typeUrl);
@@ -489,9 +490,9 @@ namespace Google.Protobuf {
         writer.Write(ValueSeparator);
         WriteString(writer, AnyWellKnownTypeValueField);
         writer.Write(NameValueSeparator);
-        WriteWellKnownTypeValue(writer, descriptor, message, indentationLevel);
+        WriteWellKnownTypeValue(writer, descriptor, message, indentationLevel + 1);
       } else {
-        WriteMessageFields(writer, message, true, indentationLevel);
+        WriteMessageFields(writer, message, true, indentationLevel + 1);
       }
       WriteBracketClose(writer, ObjectCloseBracket, true, indentationLevel);
     }
@@ -608,7 +609,7 @@ namespace Google.Protobuf {
         MaybeWriteValueWhitespace(writer, indentationLevel + 1);
         WriteString(writer, keyText);
         writer.Write(NameValueSeparator);
-        WriteValue(writer, pair.Value);
+        WriteValue(writer, pair.Value, indentationLevel + 1);
         first = false;
       }
 

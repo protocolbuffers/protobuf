@@ -31,6 +31,8 @@ from google.protobuf import any_test_pb2
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_custom_options_pb2
+from google.protobuf import unittest_delimited_pb2
+from google.protobuf import unittest_delimited_import_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 # pylint: enable=g-import-not-at-top
@@ -2298,6 +2300,113 @@ class TokenizerTest(unittest.TestCase):
     text = '"' + 'a' * (10 * 1024 * 1024) + '"'
     tokenizer = text_format.Tokenizer(text.splitlines(), skip_comments=False)
     tokenizer.ConsumeString()
+
+  def testGroupName(self):
+    grp = unittest_pb2.TestGroupExtension()
+    grp.Extensions[unittest_pb2.TestNestedExtension.optionalgroup_extension].a = 6
+    self.assertEqual('[protobuf_unittest.TestNestedExtension.optionalgroup_extension] {\n  a: 6\n}\n', str(grp))
+
+    msg = unittest_pb2.TestAllTypes(
+        repeatedgroup=[unittest_pb2.TestAllTypes.RepeatedGroup(a=1)])
+    if api_implementation.Type() == 'upb':
+      self.assertEqual('repeatedgroup {\n  a: 1\n}\n', str(msg))
+    else:
+      self.assertEqual('RepeatedGroup {\n  a: 1\n}\n', str(msg))
+
+  def testPrintGroupLikeDelimited(self):
+    msg = unittest_delimited_pb2.TestDelimited(
+        grouplike=unittest_delimited_pb2.TestDelimited.GroupLike(a=1)
+    )
+    if api_implementation.Type() == 'upb':
+      self.assertEqual(str(msg), 'grouplike {\n  a: 1\n}\n')
+    else:
+      self.assertEqual(str(msg), 'GroupLike {\n  a: 1\n}\n')
+
+  def testPrintGroupLikeDelimitedExtension(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    msg.Extensions[unittest_delimited_pb2.grouplikefilescope].b = 5
+    self.assertEqual(
+        str(msg), '[editions_unittest.grouplikefilescope] {\n  b: 5\n}\n'
+    )
+
+  def testPrintGroupLikeNotDelimited(self):
+    msg = unittest_delimited_pb2.TestDelimited(
+        lengthprefixed=unittest_delimited_pb2.TestDelimited.LengthPrefixed(b=9)
+    )
+    self.assertEqual(str(msg), 'lengthprefixed {\n  b: 9\n}\n')
+
+  def testPrintGroupLikeMismatchedName(self):
+    msg = unittest_delimited_pb2.TestDelimited(
+        notgrouplike=unittest_delimited_pb2.TestDelimited.GroupLike(b=2)
+    )
+    self.assertEqual(str(msg), 'notgrouplike {\n  b: 2\n}\n')
+
+  def testPrintGroupLikeExtensionMismatchedName(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    msg.Extensions[unittest_delimited_pb2.not_group_like_scope].b = 5
+    self.assertEqual(
+        str(msg), '[editions_unittest.not_group_like_scope] {\n  b: 5\n}\n'
+    )
+
+  def testPrintGroupLikeMismatchedScope(self):
+    msg = unittest_delimited_pb2.TestDelimited(
+        notgrouplikescope=unittest_delimited_pb2.NotGroupLikeScope(b=9)
+    )
+    self.assertEqual(str(msg), 'notgrouplikescope {\n  b: 9\n}\n')
+
+  def testPrintGroupLikeExtensionMismatchedScope(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    msg.Extensions[unittest_delimited_pb2.grouplike].b = 1
+    self.assertEqual(str(msg), '[editions_unittest.grouplike] {\n  b: 1\n}\n')
+
+  def testPrintGroupLikeMismatchedFile(self):
+    msg = unittest_delimited_pb2.TestDelimited(
+        messageimport=unittest_delimited_import_pb2.MessageImport(b=9)
+    )
+    self.assertEqual(str(msg), 'messageimport {\n  b: 9\n}\n')
+
+  def testParseDelimitedGroupLikeType(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    text_format.Parse('GroupLike { a: 1 }', msg)
+    self.assertEqual(msg.grouplike.a, 1)
+    self.assertFalse(msg.HasField('notgrouplike'))
+
+  def testParseDelimitedGroupLikeField(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    text_format.Parse('grouplike { a: 2 }', msg)
+    self.assertEqual(msg.grouplike.a, 2)
+    self.assertFalse(msg.HasField('notgrouplike'))
+
+  def testParseDelimitedGroupLikeExtension(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    text_format.Parse('[editions_unittest.grouplike] { a: 2 }', msg)
+    self.assertEqual(msg.Extensions[unittest_delimited_pb2.grouplike].a, 2)
+
+  def testParseDelimitedGroupLikeInvalid(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    with self.assertRaises(text_format.ParseError):
+      text_format.Parse('GROUPlike { b:1 }', msg)
+
+  def testParseDelimitedGroupLikeInvalidExtension(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    with self.assertRaises(text_format.ParseError):
+      text_format.Parse('[editions_unittest.GroupLike] { a: 2 }', msg)
+
+  def testParseDelimited(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    text_format.Parse('notgrouplike { b: 1 }', msg)
+    self.assertEqual(msg.notgrouplike.b, 1)
+    self.assertFalse(msg.HasField('grouplike'))
+
+  def testParseDelimitedInvalid(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    with self.assertRaises(text_format.ParseError):
+      text_format.Parse('NotGroupLike { b:1 }', msg)
+
+  def testParseDelimitedInvalidScope(self):
+    msg = unittest_delimited_pb2.TestDelimited()
+    with self.assertRaises(text_format.ParseError):
+      text_format.Parse('NotGroupLikeScope { b:1 }', msg)
 
 
 # Tests for pretty printer functionality.

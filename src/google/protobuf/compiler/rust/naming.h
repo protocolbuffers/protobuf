@@ -33,9 +33,10 @@ std::string ThunkName(Context& ctx, const OneofDescriptor& field,
 
 std::string ThunkName(Context& ctx, const Descriptor& msg,
                       absl::string_view op);
-
-// Returns the local constant that defines the vtable for mutating `field`.
-std::string VTableName(const FieldDescriptor& field);
+std::string RawMapThunk(Context& ctx, const Descriptor& msg,
+                        absl::string_view key_t, absl::string_view op);
+std::string RawMapThunk(Context& ctx, const EnumDescriptor& desc,
+                        absl::string_view key_t, absl::string_view op);
 
 // Returns an absolute path to the Proxied Rust type of the given field.
 // The absolute path is guaranteed to work in the crate that defines the field.
@@ -46,11 +47,29 @@ std::string EnumRsName(const EnumDescriptor& desc);
 std::string EnumValueRsName(const EnumValueDescriptor& value);
 
 std::string OneofViewEnumRsName(const OneofDescriptor& oneof);
-std::string OneofMutEnumRsName(const OneofDescriptor& oneof);
 std::string OneofCaseEnumRsName(const OneofDescriptor& oneof);
 std::string OneofCaseRsName(const FieldDescriptor& oneof_field);
 
 std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field);
+
+// Return how to name a field with 'collision avoidance'. This adds a suffix
+// of the field number to the field name if it appears that it will collide with
+// another field's non-getter accessor.
+//
+// For example, for the message:
+// message M { bool set_x = 1; int32 x = 2; string x_mut = 8; }
+// All accessors for the field `set_x` will be constructed as though the field
+// was instead named `set_x_1`, and all accessors for `x_mut` will be as though
+// the field was instead named `x_mut_8`.
+//
+// This is a best-effort heuristic to avoid realistic accidental
+// collisions. It is still possible to create a message definition that will
+// have a collision, and it may rename a field even if there's no collision (as
+// in the case of x_mut in the example).
+//
+// Note the returned name may still be a rust keyword: RsSafeName() should
+// additionally be used if there is no prefix/suffix being appended to the name.
+std::string FieldNameWithCollisionAvoidance(const FieldDescriptor& field);
 
 // Returns how to 'spell' the provided name in Rust, which is the provided name
 // verbatim unless it is a Rust keyword that isn't a legal symbol name.
@@ -65,13 +84,24 @@ std::string RsSafeName(absl::string_view name);
 //
 // If the message has no package and no containing messages then this returns
 // empty string.
+std::string RustModuleForContainingType(Context& ctx,
+                                        const Descriptor* containing_type);
 std::string RustModule(Context& ctx, const Descriptor& msg);
 std::string RustModule(Context& ctx, const EnumDescriptor& enum_);
+std::string RustModule(Context& ctx, const OneofDescriptor& oneof);
 std::string RustInternalModuleName(Context& ctx, const FileDescriptor& file);
 
 std::string GetCrateRelativeQualifiedPath(Context& ctx, const Descriptor& msg);
 std::string GetCrateRelativeQualifiedPath(Context& ctx,
                                           const EnumDescriptor& enum_);
+std::string GetCrateRelativeQualifiedPath(Context& ctx,
+                                          const OneofDescriptor& oneof);
+
+template <typename Desc>
+std::string GetUnderscoreDelimitedFullName(Context& ctx, const Desc& desc);
+
+std::string UnderscoreDelimitFullName(Context& ctx,
+                                      absl::string_view full_name);
 
 // TODO: Unify these with other case-conversion functions.
 
@@ -103,6 +133,41 @@ class MultiCasePrefixStripper final {
 // More efficient overload if a stripper is already constructed.
 std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
                             absl::string_view value_name);
+
+// Describes the names and conversions for a supported map key type.
+struct MapKeyType {
+  // Identifier used in thunk name.
+  absl::string_view thunk_ident;
+
+  // Rust key typename (K in Map<K, V>, so e.g. `[u8]` for bytes).
+  // This field may have an unexpanded `$pb$` variable.
+  absl::string_view rs_key_t;
+
+  // Rust key typename used by thunks for FFI (e.g. `PtrAndLen` for bytes).
+  // This field may have an unexpanded `$pbi$` variable.
+  absl::string_view rs_ffi_key_t;
+
+  // Rust expression converting `key: rs_key_t` into an `rs_ffi_key_t`.
+  absl::string_view rs_to_ffi_key_expr;
+
+  // Rust expression converting `ffi_key: rs_ffi_key_t` into an `rs_key_t`.
+  // This field may have an unexpanded `$pb$` variable.
+  absl::string_view rs_from_ffi_key_expr;
+
+  // C++ key typename (K in Map<K, V>, so e.g. `std::string` for bytes).
+  absl::string_view cc_key_t;
+
+  // C++ key typename used by thunks for FFI (e.g. `PtrAndLen` for bytes).
+  absl::string_view cc_ffi_key_t;
+
+  // C++ expression converting `cc_ffi_key_t key` into a `cc_key_t`.
+  absl::string_view cc_from_ffi_key_expr;
+
+  // C++ expression converting `cc_key_t cpp_key` into a `cc_ffi_key_t`.
+  absl::string_view cc_to_ffi_key_expr;
+};
+
+extern const MapKeyType kMapKeyTypes[6];
 
 }  // namespace rust
 }  // namespace compiler

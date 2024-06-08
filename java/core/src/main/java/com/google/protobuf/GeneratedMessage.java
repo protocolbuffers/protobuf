@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
@@ -135,7 +136,9 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    */
   private Map<FieldDescriptor, Object> getAllFieldsMutable(boolean getBytesForString) {
     final TreeMap<FieldDescriptor, Object> result = new TreeMap<>();
-    final Descriptor descriptor = internalGetFieldAccessorTable().descriptor;
+    final FieldAccessorTable fieldAccessorTable = internalGetFieldAccessorTable();
+
+    final Descriptor descriptor = fieldAccessorTable.descriptor;
     final List<FieldDescriptor> fields = descriptor.getFields();
 
     for (int i = 0; i < fields.size(); i++) {
@@ -561,7 +564,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     /** Internal helper which returns a mutable map. */
     private Map<FieldDescriptor, Object> getAllFieldsMutable() {
       final TreeMap<FieldDescriptor, Object> result = new TreeMap<>();
-      final Descriptor descriptor = internalGetFieldAccessorTable().descriptor;
+      final FieldAccessorTable fieldAccessorTable = internalGetFieldAccessorTable();
+      final Descriptor descriptor = fieldAccessorTable.descriptor;
       final List<FieldDescriptor> fields = descriptor.getFields();
 
       for (int i = 0; i < fields.size(); i++) {
@@ -2052,12 +2056,11 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           if (i < descriptor.getRealOneofs().size()) {
             oneofs[i] =
                 new RealOneofAccessor(
-                    descriptor, i, camelCaseNames[i + fieldsSize], messageClass, builderClass);
+                    descriptor, camelCaseNames[i + fieldsSize], messageClass, builderClass);
           } else {
             oneofs[i] = new SyntheticOneofAccessor(descriptor, i);
           }
         }
-
         initialized = true;
         camelCaseNames = null;
         return this;
@@ -2145,7 +2148,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     private static class RealOneofAccessor implements OneofAccessor {
       RealOneofAccessor(
           final Descriptor descriptor,
-          final int oneofIndex,
           final String camelCaseName,
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder<?>> builderClass) {
@@ -2262,7 +2264,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         private final Method caseMethodBuilder;
 
         ReflectionInvoker(
-            final FieldDescriptor descriptor,
             final String camelCaseName,
             final Class<? extends GeneratedMessage> messageClass,
             final Class<? extends Builder<?>> builderClass,
@@ -2341,7 +2342,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         hasHasMethod = descriptor.hasPresence();
         ReflectionInvoker reflectionInvoker =
             new ReflectionInvoker(
-                descriptor,
                 camelCaseName,
                 messageClass,
                 builderClass,
@@ -2498,7 +2498,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         private final Method clearMethod;
 
         ReflectionInvoker(
-            final FieldDescriptor descriptor,
             final String camelCaseName,
             final Class<? extends GeneratedMessage> messageClass,
             final Class<? extends Builder<?>> builderClass) {
@@ -2575,7 +2574,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder<?>> builderClass) {
         ReflectionInvoker reflectionInvoker =
-            new ReflectionInvoker(descriptor, camelCaseName, messageClass, builderClass);
+            new ReflectionInvoker(camelCaseName, messageClass, builderClass);
         type = reflectionInvoker.getRepeatedMethod.getReturnType();
         invoker = getMethodInvoker(reflectionInvoker);
       }

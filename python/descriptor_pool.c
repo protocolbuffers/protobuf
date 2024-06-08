@@ -13,6 +13,7 @@
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/base/upcast.h"
+#include "upb/message/compare.h"
 #include "upb/reflection/def.h"
 #include "upb/util/def_to_proto.h"
 
@@ -197,7 +198,9 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
       goto done;
     }
     const upb_MessageDef* m = PyUpb_DescriptorPool_GetFileProtoDef();
-    if (upb_Message_IsEqual(UPB_UPCAST(proto), UPB_UPCAST(existing), m)) {
+    const int options = kUpb_CompareOption_IncludeUnknownFields;
+    if (upb_Message_IsEqualByDef(UPB_UPCAST(proto), UPB_UPCAST(existing), m,
+                                 options)) {
       result = PyUpb_FileDescriptor_Get(file);
       goto done;
     }

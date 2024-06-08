@@ -42,10 +42,13 @@ void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
 }
 
 bool ParseOptions(Plugin* plugin) {
-  const auto param = ParseGeneratorParameter(plugin->parameter());
-  if (!param.empty()) {
-    plugin->SetError(absl::Substitute("Unknown parameter: $0", param[0].first));
-    return false;
+  for (const auto& pair : ParseGeneratorParameter(plugin->parameter())) {
+    if (pair.first == "experimental_strip_nonfunctional_codegen") {
+      continue;
+    } else {
+      plugin->SetError(absl::Substitute("Unknown parameter: $0", pair.first));
+      return false;
+    }
   }
 
   return true;

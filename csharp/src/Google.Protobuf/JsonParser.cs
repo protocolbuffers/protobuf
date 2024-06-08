@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
 //
@@ -219,8 +219,10 @@ namespace Google.Protobuf
             }
             else
             {
-                var value = ParseSingleValue(field, tokenizer);
-                field.Accessor.SetValue(message, value);
+                if (TryParseSingleValue(field, tokenizer, out var value))
+                {
+                    field.Accessor.SetValue(message, value);
+                }
             }
         }
 
@@ -241,12 +243,14 @@ namespace Google.Protobuf
                     return;
                 }
                 tokenizer.PushBack(token);
-                object value = ParseSingleValue(field, tokenizer);
-                if (value == null)
+                if (TryParseSingleValue(field, tokenizer, out object value))
                 {
-                    throw new InvalidProtocolBufferException("Repeated field elements cannot be null");
+                    if (value == null)
+                    {
+                        throw new InvalidProtocolBufferException("Repeated field elements cannot be null");
+                    }
+                    list.Add(value);
                 }
-                list.Add(value);
             }
         }
 
@@ -276,8 +280,10 @@ namespace Google.Protobuf
                     return;
                 }
                 object key = ParseMapKey(keyField, token.StringValue);
-                object value = ParseSingleValue(valueField, tokenizer);
-                dictionary[key] = value ?? throw new InvalidProtocolBufferException("Map values must not be null");
+                if (TryParseSingleValue(valueField, tokenizer, out object value))
+                {
+                    dictionary[key] = value ?? throw new InvalidProtocolBufferException("Map values must not be null");
+                }
             }
         }
 
@@ -293,7 +299,15 @@ namespace Google.Protobuf
                 field.EnumType.FullName == NullValueDescriptor.FullName;
         }
 
-        private object ParseSingleValue(FieldDescriptor field, JsonTokenizer tokenizer)
+        /// <summary>
+        /// Attempts to parse a single value from the JSON. When the value is completely invalid,
+        /// this will still throw an exception; when it's "conditionally invalid" (currently meaning
+        /// "when there's an unknown enum string value") the method returns false instead.
+        /// </summary>
+        /// <returns>
+        /// true if the value was parsed successfully; false for an ignorable parse failure.
+        /// </returns>
+        private bool TryParseSingleValue(FieldDescriptor field, JsonTokenizer tokenizer, out object value)
         {
             var token = tokenizer.Next();
             if (token.Type == JsonToken.TokenType.Null)
@@ -302,17 +316,21 @@ namespace Google.Protobuf
                 // dynamically.
                 if (IsGoogleProtobufValueField(field))
                 {
-                    return Value.ForNull();
+                    value = Value.ForNull();
                 }
-                if (IsGoogleProtobufNullValueField(field))
+                else if (IsGoogleProtobufNullValueField(field))
                 {
-                    return NullValue.NullValue;
+                    value = NullValue.NullValue;
                 }
-                return null;
+                else
+                {
+                    value = null;
+                }
+                return true;
             }
 
             var fieldType = field.FieldType;
-            if (fieldType == FieldType.Message)
+            if (fieldType == FieldType.Message || fieldType == FieldType.Group)
             {
                 // Parse wrapper types as their constituent types.
                 // TODO: What does this mean for null?
@@ -327,7 +345,8 @@ namespace Google.Protobuf
                     tokenizer.PushBack(token);
                     IMessage subMessage = NewMessageForField(field);
                     Merge(subMessage, tokenizer);
-                    return subMessage;
+                    value = subMessage;
+                    return true;
                 }
             }
 
@@ -337,18 +356,26 @@ namespace Google.Protobuf
                 case JsonToken.TokenType.False:
                     if (fieldType == FieldType.Bool)
                     {
-                        return token.Type == JsonToken.TokenType.True;
+                        value = token.Type == JsonToken.TokenType.True;
+                        return true;
                     }
                     // Fall through to "we don't support this type for this case"; could duplicate the behaviour of the default
                     // case instead, but this way we'd only need to change one place.
                     goto default;
                 case JsonToken.TokenType.StringValue:
-                    return ParseSingleStringValue(field, token.StringValue);
+                    if (field.FieldType != FieldType.Enum)
+                    {
+                        value = ParseSingleStringValue(field, token.StringValue);
+                        return true;
+                    }
+                    else
+                    {
+                        return TryParseEnumStringValue(field, token.StringValue, out value);
+                    }
                 // Note: not passing the number value itself here, as we may end up storing the string value in the token too.
                 case JsonToken.TokenType.Number:
-                    return ParseSingleNumberValue(field, token);
-                case JsonToken.TokenType.Null:
-                    throw new NotImplementedException("Haven't worked out what to do for null yet");
+                    value = ParseSingleNumberValue(field, token);
+                    return true;
                 default:
                     throw new InvalidProtocolBufferException("Unsupported JSON token type " + token.Type + " for field type " + fieldType);
             }
@@ -694,16 +721,30 @@ namespace Google.Protobuf
                     ValidateInfinityAndNan(text, float.IsPositiveInfinity(f), float.IsNegativeInfinity(f), float.IsNaN(f));
                     return f;
                 case FieldType.Enum:
-                    var enumValue = field.EnumType.FindValueByName(text);
-                    if (enumValue == null)
-                    {
-                        throw new InvalidProtocolBufferException($"Invalid enum value: {text} for enum type: {field.EnumType.FullName}");
-                    }
-                    // Just return it as an int, and let the CLR convert it.
-                    return enumValue.Number;
+                    throw new InvalidOperationException($"Use TryParseEnumStringValue for enums");
                 default:
                     throw new InvalidProtocolBufferException($"Unsupported conversion from JSON string for field type {field.FieldType}");
             }
+        }
+
+        private bool TryParseEnumStringValue(FieldDescriptor field, string text, out object value)
+        {
+            var enumValue = field.EnumType.FindValueByName(text);
+            if (enumValue == null)
+            {
+                if (settings.IgnoreUnknownFields)
+                {
+                    value = null;
+                    return false;
+                }
+                else
+                {
+                    throw new InvalidProtocolBufferException($"Invalid enum value: {text} for enum type: {field.EnumType.FullName}");
+                }
+            }
+            // Just return it as an int, and let the CLR convert it.
+            value = enumValue.Number;
+            return true;
         }
 
         /// <summary>

@@ -70,6 +70,10 @@ std::string ExtensionLayout(upb::FieldDefPtr ext) {
   return absl::StrCat(ExtensionIdentBase(ext), "_", ext.name(), "_ext");
 }
 
+std::string MessagePtrName(upb::MessageDefPtr message) {
+  return MessageInitName(message) + "_ptr";
+}
+
 const char* kEnumsInit = "enums_layout";
 const char* kExtensionsInit = "extensions_layout";
 const char* kMessagesInit = "messages_layout";
@@ -312,10 +316,11 @@ void WriteMessageField(upb::FieldDefPtr field,
   output("  $0,\n", upb::generator::FieldInitializer(field, field64, field32));
 }
 
-std::string GetSub(upb::FieldDefPtr field) {
+std::string GetSub(upb::FieldDefPtr field, bool is_extension) {
   if (auto message_def = field.message_type()) {
     return absl::Substitute("{.UPB_PRIVATE(submsg) = &$0}",
-                            MessageInitName(message_def));
+                            is_extension ? MessageInitName(message_def)
+                                         : MessagePtrName(message_def));
   }
 
   if (auto enum_def = field.enum_subdef()) {
@@ -339,22 +344,24 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
   const upb_MiniTable* mt_64 = pools.GetMiniTable64(message);
   std::map<int, std::string> subs;
 
+  // Construct map of sub messages by field number.
   for (int i = 0; i < mt_64->UPB_PRIVATE(field_count); i++) {
     const upb_MiniTableField* f = &mt_64->UPB_PRIVATE(fields)[i];
     uint32_t index = f->UPB_PRIVATE(submsg_index);
     if (index != kUpb_NoSub) {
       const int f_number = upb_MiniTableField_Number(f);
-      auto pair =
-          subs.emplace(index, GetSub(message.FindFieldByNumber(f_number)));
+      upb::FieldDefPtr field = message.FindFieldByNumber(f_number);
+      auto pair = subs.emplace(index, GetSub(field, false));
       ABSL_CHECK(pair.second);
     }
   }
-
+  // Write upb_MiniTableSubInternal table for sub messages referenced from
+  // fields.
   if (!subs.empty()) {
     std::string submsgs_array_name = msg_name + "_submsgs";
     submsgs_array_ref = "&" + submsgs_array_name + "[0]";
-    output("static const upb_MiniTableSub $0[$1] = {\n", submsgs_array_name,
-           subs.size());
+    output("static const upb_MiniTableSubInternal $0[$1] = {\n",
+           submsgs_array_name, subs.size());
 
     int i = 0;
     for (const auto& pair : subs) {
@@ -365,6 +372,7 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
     output("};\n\n");
   }
 
+  // Write upb_MiniTableField table.
   if (mt_64->UPB_PRIVATE(field_count) > 0) {
     std::string fields_array_name = msg_name + "__fields";
     fields_array_ref = "&" + fields_array_name + "[0]";
@@ -407,6 +415,9 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
          mt_64->UPB_PRIVATE(field_count), msgext,
          mt_64->UPB_PRIVATE(dense_below), table_mask,
          mt_64->UPB_PRIVATE(required_count));
+  output("#ifdef UPB_TRACING_ENABLED\n");
+  output("  \"$0\",\n", message.full_name());
+  output("#endif\n");
   if (!table.empty()) {
     output("  UPB_FASTTABLE_INIT({\n");
     for (const auto& ent : table) {
@@ -416,6 +427,8 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
     output("  })\n");
   }
   output("};\n\n");
+  output("const upb_MiniTable* $0 = &$1;\n", MessagePtrName(message),
+         MessageInitName(message));
 }
 
 void WriteEnum(upb::EnumDefPtr e, Output& output) {
@@ -487,7 +500,7 @@ void WriteExtension(upb::FieldDefPtr ext, const DefPoolPair& pools,
                     Output& output) {
   output("$0,\n", FieldInitializer(pools, ext));
   output("  &$0,\n", MessageInitName(ext.containing_type()));
-  output("  $0,\n", GetSub(ext));
+  output("  $0,\n", GetSub(ext, true));
 }
 
 int WriteExtensions(const DefPoolPair& pools, upb::FileDefPtr file,
@@ -514,6 +527,7 @@ int WriteExtensions(const DefPoolPair& pools, upb::FileDefPtr file,
 
   output(
       "\n"
+      "UPB_LINKARR_APPEND(upb_AllExts)\n"
       "static const upb_MiniTableExtension *$0[$1] = {\n",
       kExtensionsInit, exts.size());
 
@@ -565,6 +579,7 @@ void WriteMiniTableHeader(const DefPoolPair& pools, upb::FileDefPtr file,
 
   for (auto message : this_file_messages) {
     output("extern const upb_MiniTable $0;\n", MessageInitName(message));
+    output("extern const upb_MiniTable* $0;\n", MessagePtrName(message));
   }
   for (auto ext : this_file_exts) {
     output("extern const upb_MiniTableExtension $0;\n", ExtensionLayout(ext));

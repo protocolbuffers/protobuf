@@ -108,10 +108,8 @@ TEST(GeneratedCode, DeepCloneMessageSubMessage) {
           source_arena);
   protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_set_a(
       nested, kTestNestedInt32);
-  upb_Message_SetMessage(
-      UPB_UPCAST(msg),
-      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
-      nested_message_field, UPB_UPCAST(nested));
+  upb_Message_SetMessage(UPB_UPCAST(msg), nested_message_field,
+                         UPB_UPCAST(nested));
   upb_Arena* arena = upb_Arena_New();
   protobuf_test_messages_proto2_TestAllTypesProto2* clone =
       (protobuf_test_messages_proto2_TestAllTypesProto2*)upb_Message_DeepClone(
@@ -127,8 +125,7 @@ TEST(GeneratedCode, DeepCloneMessageSubMessage) {
   protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage*
       cloned_nested =
           (protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage*)
-              upb_Message_GetMessage(UPB_UPCAST(clone), nested_message_field,
-                                     nullptr);
+              upb_Message_GetMessage(UPB_UPCAST(clone), nested_message_field);
   EXPECT_EQ(protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_a(
                 cloned_nested),
             kTestNestedInt32);

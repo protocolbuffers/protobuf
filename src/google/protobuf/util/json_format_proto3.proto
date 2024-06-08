@@ -253,6 +253,10 @@ message MapOfObjects {
   map<string, M> map = 1;
 }
 
+message MapOfEnums {
+  map<string, EnumType> map = 1;
+}
+
 message MapIn {
   string other = 1;
   repeated string things = 2;

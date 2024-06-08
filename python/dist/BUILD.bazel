@@ -5,15 +5,16 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@pip_deps//:requirements.bzl", "requirement")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_python//python:packaging.bzl", "py_wheel")
 load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
 load("//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
-load("//bazel:py_proto_library.bzl", "py_proto_library")
-load("@bazel_skylib//lib:selects.bzl", "selects")
 load(":dist.bzl", "py_dist", "py_dist_module")
+load(":py_proto_library.bzl", "py_proto_library")
 
 licenses(["notice"])
 
@@ -332,12 +333,17 @@ py_wheel(
         "//conditions:default": "any",
     }),
     python_requires = ">=3.8",
+    # LINT.IfChange(python_tag)
     python_tag = selects.with_or({
-        "//python:full_api_3.8": "cp38",
+        ("//python:limited_api_3.8", "//python:full_api_3.8"): "cp38",
         "//python:full_api_3.9": "cp39",
         "//python:limited_api_3.10": "cp310",
         "//conditions:default": "cp" + SYSTEM_PYTHON_VERSION,
     }),
+    # LINT.ThenChange(
+    #    :full_api_version,
+    #    :limited_api_wheels,
+    # )
     strip_path_prefixes = [
         "python/dist/",
         "python/",
@@ -427,29 +433,42 @@ py_dist(
     name = "dist",
     binary_wheel = ":binary_wheel",
     full_api_cpus = [
-        # TODO: fix win32 build
         "win32",
         "win64",
     ],
     # Windows needs version-specific wheels until 3.10.
+    # LINT.IfChange(full_api_version)
     full_api_versions = [
         "38",
         "39",
     ],
+    # LINT.ThenChange(:python_tag)
     # Limited API: these wheels will satisfy any Python version >= the
     # given version.
     #
     # Technically the limited API doesn't have the functions we need until
-    # 3.10, but on Linux we can get away with using 3.7 (see ../python_api.h for
+    # 3.10, but on Linux we can get away with using 3.1+ (see ../python_api.h for
     # details).
+    # LINT.IfChange(limited_api_wheels)
     limited_api_wheels = {
-        # TODO: fix win32 build
         "win32": "310",
         "win64": "310",
         "linux-x86_64": "38",
         "linux-aarch_64": "38",
         "osx-universal2": "38",
     },
+    # LINT.ThenChange(:python_tag)
     pure_python_wheel = ":pure_python_wheel",
     tags = ["manual"],
+)
+
+# py_proto_library() is private rule, only intended for internal use by upb.
+# Hopefully py_proto_library() will eventually be available in rules_proto or
+# another upstream package.
+bzl_library(
+    name = "py_proto_library_bzl",
+    srcs = ["py_proto_library.bzl"],
+    deps = [
+        "@rules_python//python:py_info_bzl",
+    ],
 )

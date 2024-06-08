@@ -11,6 +11,11 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+typedef union {
+  const struct upb_MiniTable* const* UPB_PRIVATE(submsg);
+  const struct upb_MiniTableEnum* UPB_PRIVATE(subenum);
+} upb_MiniTableSubInternal;
+
 union upb_MiniTableSub {
   const struct upb_MiniTable* UPB_PRIVATE(submsg);
   const struct upb_MiniTableEnum* UPB_PRIVATE(subenum);
@@ -20,26 +25,26 @@ union upb_MiniTableSub {
 extern "C" {
 #endif
 
-UPB_INLINE union upb_MiniTableSub UPB_PRIVATE(_upb_MiniTableSub_FromEnum)(
+UPB_API_INLINE union upb_MiniTableSub upb_MiniTableSub_FromEnum(
     const struct upb_MiniTableEnum* subenum) {
   union upb_MiniTableSub out;
   out.UPB_PRIVATE(subenum) = subenum;
   return out;
 }
 
-UPB_INLINE union upb_MiniTableSub UPB_PRIVATE(_upb_MiniTableSub_FromMessage)(
+UPB_API_INLINE union upb_MiniTableSub upb_MiniTableSub_FromMessage(
     const struct upb_MiniTable* submsg) {
   union upb_MiniTableSub out;
   out.UPB_PRIVATE(submsg) = submsg;
   return out;
 }
 
-UPB_INLINE const struct upb_MiniTableEnum* UPB_PRIVATE(_upb_MiniTableSub_Enum)(
+UPB_API_INLINE const struct upb_MiniTableEnum* upb_MiniTableSub_Enum(
     const union upb_MiniTableSub sub) {
   return sub.UPB_PRIVATE(subenum);
 }
 
-UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(_upb_MiniTableSub_Message)(
+UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableSub_Message(
     const union upb_MiniTableSub sub) {
   return sub.UPB_PRIVATE(submsg);
 }

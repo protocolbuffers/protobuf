@@ -21,9 +21,12 @@ module Google
       attach_function :json_encode_message,     :upb_JsonEncode,              [:Message, Descriptor, :DefPool, :int, :binary_string, :size_t, Status.by_ref], :size_t
       attach_function :decode_message,          :upb_Decode,                  [:binary_string, :size_t, :Message, MiniTable.by_ref, :ExtensionRegistry, :int, Internal::Arena], DecodeStatus
       attach_function :get_mutable_message,     :upb_Message_Mutable,         [:Message, FieldDescriptor, Internal::Arena], MutableMessageValue.by_value
-      attach_function :get_message_which_oneof, :upb_Message_WhichOneof,      [:Message, OneofDescriptor], FieldDescriptor
+      attach_function :get_message_which_oneof, :upb_Message_WhichOneofByDef, [:Message, OneofDescriptor], FieldDescriptor
       attach_function :message_discard_unknown, :upb_Message_DiscardUnknown,  [:Message, Descriptor, :int], :bool
       attach_function :message_next,            :upb_Message_Next,            [:Message, Descriptor, :DefPool, :FieldDefPointer, MessageValue.by_ref, :pointer], :bool
+      attach_function :message_freeze,          :upb_Message_Freeze,          [:Message, MiniTable.by_ref], :void
+      attach_function :message_frozen?,         :upb_Message_IsFrozen,        [:Message], :bool
+
       # MessageValue
       attach_function :message_value_equal,     :shared_Msgval_IsEqual,       [MessageValue.by_value, MessageValue.by_value, CType, Descriptor], :bool
       attach_function :message_value_hash,      :shared_Msgval_GetHash,       [MessageValue.by_value, CType, Descriptor, :uint64_t], :uint64_t
@@ -58,18 +61,35 @@ module Google
             instance
           end
 
-          def freeze
-            return self if frozen?
-            super
-            @arena.pin self
-            self.class.descriptor.each do |field_descriptor|
-              next if field_descriptor.has_presence? && !Google::Protobuf::FFI.get_message_has(@msg, field_descriptor)
-              if field_descriptor.map? or field_descriptor.repeated? or field_descriptor.sub_message?
-                get_field(field_descriptor).freeze
-              end
+          ##
+          # Is this object frozen?
+          # Returns true if either this Ruby wrapper or the underlying
+          # representation are frozen. Freezes the wrapper if the underlying
+          # representation is already frozen but this wrapper isn't.
+          def frozen?
+            unless Google::Protobuf::FFI.message_frozen? @msg
+              raise RuntimeError.new "Ruby frozen Message with mutable representation" if super
+              return false
             end
-            self
+            method(:freeze).super_method.call unless super
+            true
           end
+
+          ##
+          # Freezes the map object. We have to intercept this so we can freeze the
+          # underlying representation, not just the Ruby wrapper. Returns self.
+          def freeze
+            if method(:frozen?).super_method.call
+              unless Google::Protobuf::FFI.message_frozen? @msg
+                raise RuntimeError.new "Underlying representation of message still mutable despite frozen wrapper"
+              end
+              return self
+            end
+            unless Google::Protobuf::FFI.message_frozen? @msg
+              Google::Protobuf::FFI.message_freeze(@msg, Google::Protobuf::FFI.get_mini_table(self.class.descriptor))
+            end
+            super
+         end
 
           def dup
             duplicate = self.class.private_constructor(@arena)
@@ -309,42 +329,136 @@ module Google
 
           include Google::Protobuf::Internal::Convert
 
+          ##
+          # Checks ObjectCache for a sentinel empty frozen Map of the key and
+          # value types matching the field descriptor's MessageDef and returns
+          # the cache entry. If an entry is not found, one is created and added
+          # to the cache keyed by the MessageDef pointer first.
+          # @param field_descriptor [FieldDescriptor] Field to retrieve.
+          def empty_frozen_map(field_descriptor)
+            sub_message_def = Google::Protobuf::FFI.get_subtype_as_message field_descriptor
+            frozen_map = OBJECT_CACHE.get sub_message_def
+            if frozen_map.nil?
+              frozen_map = Google::Protobuf::Map.send(:construct_for_field, field_descriptor)
+              OBJECT_CACHE.try_add(sub_message_def, frozen_map.freeze)
+            end
+            raise "Empty Frozen Map is not frozen" unless frozen_map.frozen?
+            frozen_map
+          end
+
+          ##
+          # Returns a frozen Map instance for the given field. If the message
+          # already has a value for that field, it is used. If not, a sentinel
+          # (per FieldDescriptor) empty frozen Map is returned instead.
+          # @param field_descriptor [FieldDescriptor] Field to retrieve.
+          def frozen_map_from_field_descriptor(field_descriptor)
+            message_value = Google::Protobuf::FFI.get_message_value @msg, field_descriptor
+            return empty_frozen_map field_descriptor if message_value[:map_val].null?
+            get_map_field(message_value[:map_val], field_descriptor).freeze
+          end
+
+          ##
+          # Returns a Map instance for the given field. If the message is frozen
+          # the return value is also frozen. If not, a mutable instance is
+          # returned instead.
+          # @param field_descriptor [FieldDescriptor] Field to retrieve.
+          def map_from_field_descriptor(field_descriptor)
+            return frozen_map_from_field_descriptor field_descriptor if frozen?
+            mutable_message_value = Google::Protobuf::FFI.get_mutable_message @msg, field_descriptor, @arena
+            get_map_field(mutable_message_value[:map], field_descriptor)
+          end
+
+          ##
+          # Checks ObjectCache for a sentinel empty frozen RepeatedField of the
+          # value type matching the field descriptor's MessageDef and returns
+          # the cache entry. If an entry is not found, one is created and added
+          # to the cache keyed by the MessageDef pointer first.
+          # @param field_descriptor [FieldDescriptor] Field to retrieve.
+          def empty_frozen_repeated_field(field_descriptor)
+            sub_message_def = Google::Protobuf::FFI.get_subtype_as_message field_descriptor
+            frozen_repeated_field = OBJECT_CACHE.get sub_message_def
+            if frozen_repeated_field.nil?
+              frozen_repeated_field = Google::Protobuf::RepeatedField.send(:construct_for_field, field_descriptor)
+              OBJECT_CACHE.try_add(sub_message_def, frozen_repeated_field.freeze)
+            end
+            raise "Empty frozen RepeatedField is not frozen" unless frozen_repeated_field.frozen?
+            frozen_repeated_field
+          end
+
+          ##
+          # Returns a frozen RepeatedField instance for the given field. If the
+          # message already has a value for that field, it is used. If not, a
+          # sentinel (per FieldDescriptor) empty frozen RepeatedField is
+          # returned instead.
+          # @param field_descriptor [FieldDescriptor] Field to retrieve.
+          def frozen_repeated_field_from_field_descriptor(field_descriptor)
+            message_value = Google::Protobuf::FFI.get_message_value @msg, field_descriptor
+            return empty_frozen_repeated_field field_descriptor if message_value[:array_val].null?
+            get_repeated_field(message_value[:array_val], field_descriptor).freeze
+          end
+
+          ##
+          # Returns a RepeatedField instance for the given field. If the message
+          # is frozen the return value is also frozen. If not, a mutable
+          # instance is returned instead.
+          # @param field_descriptor [FieldDescriptor] Field to retrieve.
+          def repeated_field_from_field_descriptor(field_descriptor)
+            return frozen_repeated_field_from_field_descriptor field_descriptor if frozen?
+            mutable_message_value = Google::Protobuf::FFI.get_mutable_message @msg, field_descriptor, @arena
+            get_repeated_field(mutable_message_value[:array], field_descriptor)
+          end
+
+          ##
+          # Returns a Message instance for the given field. If the message
+          # is frozen nil is always returned. Otherwise, a mutable instance is
+          # returned instead.
+          # @param field_descriptor [FieldDescriptor] Field to retrieve.
+          def message_from_field_descriptor(field_descriptor)
+            return nil if frozen?
+            return nil unless Google::Protobuf::FFI.get_message_has @msg, field_descriptor
+            mutable_message = Google::Protobuf::FFI.get_mutable_message @msg, field_descriptor, @arena
+            sub_message = mutable_message[:msg]
+            sub_message_def = Google::Protobuf::FFI.get_subtype_as_message field_descriptor
+            Descriptor.send(:get_message, sub_message, sub_message_def, @arena)
+          end
+
+          ##
+          # Returns a scalar value for the given field. If the message
+          # is frozen the return value is also frozen.
+          # @param field_descriptor [FieldDescriptor] Field to retrieve.
+          def scalar_from_field_descriptor(field_descriptor)
+            c_type = field_descriptor.send(:c_type)
+            message_value = Google::Protobuf::FFI.get_message_value @msg, field_descriptor
+            msg_or_enum_def = c_type == :enum ? Google::Protobuf::FFI.get_subtype_as_enum(field_descriptor) : nil
+            return_value = convert_upb_to_ruby message_value, c_type, msg_or_enum_def
+            frozen? ? return_value.freeze : return_value
+          end
+
+          ##
+          # Dynamically define accessors methods for every field of @descriptor.
+          # Methods with names that conflict with existing methods are skipped.
           def self.setup_accessors!
             @descriptor.each do |field_descriptor|
               field_name = field_descriptor.name
               unless instance_methods(true).include?(field_name.to_sym)
-                #TODO - at a high level, dispatching to either
-                # index_internal or get_field would be logically correct, but slightly slower.
+                # Dispatching to either index_internal or get_field is logically
+                # correct, but slightly slower due to having to perform extra
+                # lookups on each invocation rather than doing it once here.
                 if field_descriptor.map?
                   define_method(field_name) do
-                    mutable_message_value = Google::Protobuf::FFI.get_mutable_message @msg, field_descriptor, @arena
-                    get_map_field(mutable_message_value[:map], field_descriptor)
+                    map_from_field_descriptor field_descriptor
                   end
                 elsif field_descriptor.repeated?
                   define_method(field_name) do
-                    mutable_message_value = Google::Protobuf::FFI.get_mutable_message @msg, field_descriptor, @arena
-                    get_repeated_field(mutable_message_value[:array], field_descriptor)
+                    repeated_field_from_field_descriptor field_descriptor
                   end
                 elsif field_descriptor.sub_message?
                   define_method(field_name) do
-                    return nil unless Google::Protobuf::FFI.get_message_has @msg, field_descriptor
-                    mutable_message = Google::Protobuf::FFI.get_mutable_message @msg, field_descriptor, @arena
-                    sub_message = mutable_message[:msg]
-                    sub_message_def = Google::Protobuf::FFI.get_subtype_as_message(field_descriptor)
-                    Descriptor.send(:get_message, sub_message, sub_message_def, @arena)
+                    message_from_field_descriptor field_descriptor
                   end
                 else
-                  c_type = field_descriptor.send(:c_type)
-                  if c_type == :enum
-                    define_method(field_name) do
-                      message_value = Google::Protobuf::FFI.get_message_value @msg, field_descriptor
-                      convert_upb_to_ruby message_value, c_type, Google::Protobuf::FFI.get_subtype_as_enum(field_descriptor)
-                    end
-                  else
-                    define_method(field_name) do
-                      message_value = Google::Protobuf::FFI.get_message_value @msg, field_descriptor
-                      convert_upb_to_ruby message_value, c_type
-                    end
+                  define_method(field_name) do
+                    scalar_from_field_descriptor field_descriptor
                   end
                 end
                 define_method("#{field_name}=") do |value|
@@ -354,14 +468,16 @@ module Google
                   clear_internal(field_descriptor)
                 end
                 if field_descriptor.type == :enum
-                  define_method("#{field_name}_const") do
-                    if field_descriptor.repeated?
+                  if field_descriptor.repeated?
+                    define_method("#{field_name}_const") do
                       return_value = []
-                      get_field(field_descriptor).send(:each_msg_val) do |msg_val|
+                      repeated_field_from_field_descriptor(field_descriptor).send(:each_msg_val) do |msg_val|
                         return_value << msg_val[:int32_val]
                       end
                       return_value
-                    else
+                    end
+                  else
+                    define_method("#{field_name}_const") do
                       message_value = Google::Protobuf::FFI.get_message_value @msg, field_descriptor
                       message_value[:int32_val]
                     end
@@ -388,12 +504,21 @@ module Google
             end
           end
 
+          ##
+          # Dynamically define accessors methods for every OneOf field of
+          # @descriptor.
           def self.setup_oneof_accessors!
             @oneof_field_names = []
             @descriptor.each_oneof do |oneof_descriptor|
               self.add_oneof_accessors_for! oneof_descriptor
             end
           end
+
+          ##
+          # Dynamically define accessors methods for the given OneOf field.
+          # Methods with names that conflict with existing methods are skipped.
+          # @param oneof_descriptor [OneofDescriptor] Field to create accessors
+          # for.
           def self.add_oneof_accessors_for!(oneof_descriptor)
             field_name = oneof_descriptor.name.to_sym
             @oneof_field_names << field_name
@@ -524,6 +649,10 @@ module Google
             Google::Protobuf::FFI.clear_message_field(@msg, field_def)
           end
 
+          # Accessor for field by name. Does not delegate to methods setup by
+          # self.setup_accessors! in order to avoid conflicts with bad field
+          # names e.g. `dup` or `class` which are perfectly valid for proto
+          # fields.
           def index_internal(name)
             field_descriptor = self.class.descriptor.lookup(name)
             get_field field_descriptor unless field_descriptor.nil?
@@ -551,7 +680,7 @@ module Google
           #   one if omitted or nil.
           def initialize(initial_value = nil, arena = nil, msg = nil)
             @arena = arena || Google::Protobuf::FFI.create_arena
-            @msg = msg || Google::Protobuf::FFI.new_message_from_def(self.class.descriptor, @arena)
+            @msg = msg || Google::Protobuf::FFI.new_message_from_def(Google::Protobuf::FFI.get_mini_table(self.class.descriptor), @arena)
 
             unless initial_value.nil?
               raise ArgumentError.new "Expected hash arguments or message, not #{initial_value.class}" unless initial_value.respond_to? :each
@@ -572,9 +701,9 @@ module Google
 
                 next if value.nil?
                 if field_descriptor.map?
-                  index_assign_internal(Google::Protobuf::Map.send(:construct_for_field, field_descriptor, @arena, value: value), name: key.to_s)
+                  index_assign_internal(Google::Protobuf::Map.send(:construct_for_field, field_descriptor, arena: @arena, value: value), name: key.to_s)
                 elsif field_descriptor.repeated?
-                  index_assign_internal(RepeatedField.send(:construct_for_field, field_descriptor, @arena, values: value), name: key.to_s)
+                  index_assign_internal(RepeatedField.send(:construct_for_field, field_descriptor, arena: @arena, values: value), name: key.to_s)
                 else
                   index_assign_internal(value, name: key.to_s)
                 end
@@ -587,21 +716,20 @@ module Google
           end
 
           ##
-          # Gets a field of this message identified by the argument definition.
+          # Gets a field of this message identified by FieldDescriptor.
           #
-          # @param field [FieldDescriptor] Descriptor of the field to get
+          # @param field [FieldDescriptor] Field to retrieve.
+          # @param unwrap [Boolean](false) If true, unwraps wrappers.
           def get_field(field, unwrap: false)
             if field.map?
-              mutable_message_value = Google::Protobuf::FFI.get_mutable_message @msg, field, @arena
-              get_map_field(mutable_message_value[:map], field)
+              map_from_field_descriptor field
             elsif field.repeated?
-              mutable_message_value = Google::Protobuf::FFI.get_mutable_message @msg, field, @arena
-              get_repeated_field(mutable_message_value[:array], field)
+              repeated_field_from_field_descriptor field
             elsif field.sub_message?
               return nil unless Google::Protobuf::FFI.get_message_has @msg, field
-              sub_message_def = Google::Protobuf::FFI.get_subtype_as_message(field)
               if unwrap
                 if field.has?(self)
+                  sub_message_def = Google::Protobuf::FFI.get_subtype_as_message field
                   wrapper_message_value = Google::Protobuf::FFI.get_message_value @msg, field
                   fields = Google::Protobuf::FFI.field_count(sub_message_def)
                   raise "Sub message has #{fields} fields! Expected exactly 1." unless fields == 1
@@ -612,42 +740,36 @@ module Google
                   nil
                 end
               else
-                mutable_message = Google::Protobuf::FFI.get_mutable_message @msg, field, @arena
-                sub_message = mutable_message[:msg]
-                Descriptor.send(:get_message, sub_message, sub_message_def, @arena)
+                message_from_field_descriptor field
               end
             else
-              c_type = field.send(:c_type)
-              message_value = Google::Protobuf::FFI.get_message_value @msg, field
-              if c_type == :enum
-                convert_upb_to_ruby message_value, c_type, Google::Protobuf::FFI.get_subtype_as_enum(field)
-              else
-                convert_upb_to_ruby message_value, c_type
-              end
+              scalar_from_field_descriptor field
             end
           end
 
           ##
-          # @param array [::FFI::Pointer] Pointer to the Array
+          # Gets a RepeatedField from the ObjectCache or creates a new one.
+          # @param array [::FFI::Pointer] Pointer to the upb_Array
           # @param field [Google::Protobuf::FieldDescriptor] Type of the repeated field
           def get_repeated_field(array, field)
             return nil if array.nil? or array.null?
             repeated_field = OBJECT_CACHE.get(array.address)
             if repeated_field.nil?
-              repeated_field = RepeatedField.send(:construct_for_field, field, @arena, array: array)
+              repeated_field = RepeatedField.send(:construct_for_field, field, arena: @arena, array: array)
               repeated_field.freeze if frozen?
             end
             repeated_field
           end
 
           ##
-          # @param map [::FFI::Pointer] Pointer to the Map
+          # Gets a Map from the ObjectCache or creates a new one.
+          # @param map [::FFI::Pointer] Pointer to the upb_Map
           # @param field [Google::Protobuf::FieldDescriptor] Type of the map field
           def get_map_field(map, field)
             return nil if map.nil? or map.null?
             map_field = OBJECT_CACHE.get(map.address)
             if map_field.nil?
-              map_field = Google::Protobuf::Map.send(:construct_for_field, field, @arena, map: map)
+              map_field = Google::Protobuf::Map.send(:construct_for_field, field, arena: @arena, map: map)
               map_field.freeze if frozen?
             end
             map_field

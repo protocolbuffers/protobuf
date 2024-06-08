@@ -2,9 +2,10 @@
 # Protocol Buffers C++ Utilities
 ################################################################################
 
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
@@ -54,6 +55,7 @@ cc_library(
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
         "//src/google/protobuf/stubs",
+        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/container:fixed_array",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
@@ -162,8 +164,8 @@ cc_library(
     hdrs = ["time_util.h"],
     strip_include_prefix = "/src",
     visibility = [
-        "//:__subpackages__",
-        "@com_google_protobuf_examples//:__subpackages__",
+        # Needed when building from within the /examples repository
+        "//visibility:public",
     ],
     deps = [
         "//src/google/protobuf",
@@ -195,7 +197,7 @@ cc_test(
 )
 
 cc_library(
-    name = "type_resolver_util",
+    name = "type_resolver",
     srcs = ["type_resolver_util.cc"],
     hdrs = [
         "type_resolver.h",
@@ -228,7 +230,7 @@ cc_test(
         ":json_format_cc_proto",
         ":json_format_proto3_cc_proto",
         ":json_util",
-        ":type_resolver_util",
+        ":type_resolver",
         "//src/google/protobuf",
         "//src/google/protobuf:any_cc_proto",
         "//src/google/protobuf:cc_test_protos",

@@ -983,10 +983,23 @@ static PyObject* PyUpb_FieldDescriptor_GetName(PyUpb_DescriptorBase* self,
   return PyUnicode_FromString(upb_FieldDef_Name(self->def));
 }
 
+static char PyUpb_AsciiIsUpper(char ch) { return ch >= 'A' && ch <= 'Z'; }
+
+static char PyUpb_AsciiToLower(char ch) {
+  assert(PyUpb_AsciiIsUpper(ch));
+  return ch + ('a' - 'A');
+}
+
 static PyObject* PyUpb_FieldDescriptor_GetCamelCaseName(
     PyUpb_DescriptorBase* self, void* closure) {
-  // TODO: Ok to use jsonname here?
-  return PyUnicode_FromString(upb_FieldDef_JsonName(self->def));
+  // Camelcase is equivalent to JSON name except for potentially the first
+  // character.
+  const char* name = upb_FieldDef_JsonName(self->def);
+  size_t size = strlen(name);
+  return size > 0 && PyUpb_AsciiIsUpper(name[0])
+             ? PyUnicode_FromFormat("%c%s", PyUpb_AsciiToLower(name[0]),
+                                    name + 1)
+             : PyUnicode_FromStringAndSize(name, size);
 }
 
 static PyObject* PyUpb_FieldDescriptor_GetJsonName(PyUpb_DescriptorBase* self,

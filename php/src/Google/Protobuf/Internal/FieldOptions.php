@@ -28,7 +28,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * The packed option can be enabled for repeated primitive fields to enable
      * a more efficient representation on the wire. Rather than repeatedly
      * writing the tag and type for each element, the entire array is encoded as
-     * a single length-delimited blob. In proto3, only explicit setting it to
+     * a single length-prefixed blob. In proto3, only explicit setting it to
      * false will avoid using packed encoding.
      *
      * Generated from protobuf field <code>optional bool packed = 2;</code>
@@ -125,7 +125,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      *           The packed option can be enabled for repeated primitive fields to enable
      *           a more efficient representation on the wire. Rather than repeatedly
      *           writing the tag and type for each element, the entire array is encoded as
-     *           a single length-delimited blob. In proto3, only explicit setting it to
+     *           a single length-prefixed blob. In proto3, only explicit setting it to
      *           false will avoid using packed encoding.
      *     @type int $jstype
      *           The jstype option determines the JavaScript type used for values of the
@@ -231,7 +231,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * The packed option can be enabled for repeated primitive fields to enable
      * a more efficient representation on the wire. Rather than repeatedly
      * writing the tag and type for each element, the entire array is encoded as
-     * a single length-delimited blob. In proto3, only explicit setting it to
+     * a single length-prefixed blob. In proto3, only explicit setting it to
      * false will avoid using packed encoding.
      *
      * Generated from protobuf field <code>optional bool packed = 2;</code>

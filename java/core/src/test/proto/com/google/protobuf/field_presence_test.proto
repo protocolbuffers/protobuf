@@ -5,12 +5,13 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-syntax = "proto3";
+edition = "2023";
 
 package field_presence_test;
 
 import "google/protobuf/unittest.proto";
 
+option features.field_presence = IMPLICIT;
 option java_package = "com.google.protobuf";
 option java_outer_classname = "FieldPresenceTestProto";
 
@@ -20,6 +21,7 @@ message TestAllTypes {
     BAR = 1;
     BAZ = 2;
   }
+
   message NestedMessage {
     int32 value = 1;
   }
@@ -48,7 +50,7 @@ message TestAllTypes {
   repeated NestedEnum repeated_nested_enum = 24;
   repeated NestedMessage repeated_nested_message = 25;
   repeated protobuf_unittest.TestRequired repeated_proto2_message = 26;
-  repeated NestedEnum packed_nested_enum = 27 [packed = true];
+  repeated NestedEnum packed_nested_enum = 27;
 }
 
 message TestOptionalFieldsOnly {

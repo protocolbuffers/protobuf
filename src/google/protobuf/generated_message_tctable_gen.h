@@ -41,7 +41,9 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     // TODO: remove this after A/B test is done.
     bool should_profile_driven_cluster_aux_subtable;
   };
-  struct PerFieldOptions {
+  struct FieldOptions {
+    const FieldDescriptor* field;
+    int has_bit_index;
     // For presence awareness (e.g. PDProto).
     float presence_probability;
     // kTvEager, kTvLazy, or 0
@@ -50,31 +52,27 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     bool is_implicitly_weak;
     bool use_direct_tcparser_table;
     bool should_split;
-  };
-  class OptionProvider {
-   public:
-    virtual PerFieldOptions GetForField(const FieldDescriptor*) const = 0;
-
-   protected:
-    ~OptionProvider() = default;
+    int inlined_string_index;
   };
 
   TailCallTableInfo(const Descriptor* descriptor,
-                    const std::vector<const FieldDescriptor*>& ordered_fields,
                     const MessageOptions& message_options,
-                    const OptionProvider& option_provider,
-                    const std::vector<int>& has_bit_indices,
-                    const std::vector<int>& inlined_string_indices);
+                    absl::Span<const FieldOptions> ordered_fields);
+
+  TcParseFunction fallback_function;
 
   // Fields parsed by the table fast-path.
   struct FastFieldInfo {
     struct Empty {};
     struct Field {
       TcParseFunction func;
-      uint16_t coded_tag;
       const FieldDescriptor* field;
+      uint16_t coded_tag;
       uint8_t hasbit_idx;
       uint8_t aux_idx;
+
+      // For internal caching.
+      float presence_probability;
     };
     struct NonField {
       TcParseFunction func;
@@ -96,6 +94,9 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     int inlined_string_idx;
     uint16_t aux_idx;
     uint16_t type_card;
+
+    // For internal caching.
+    cpp::Utf8CheckMode utf8_check_mode;
   };
   std::vector<FieldEntryInfo> field_entries;
 
@@ -108,6 +109,7 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     kSubTable,
     kSubMessageWeak,
     kMessageVerifyFunc,
+    kSelfVerifyFunc,
     kEnumRange,
     kEnumValidator,
     kNumericOffset,

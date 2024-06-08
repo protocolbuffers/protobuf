@@ -39,12 +39,12 @@ set(_protobuf_FIND_ABSL "if(NOT TARGET absl::strings)\n  find_package(absl CONFI
 
 if (BUILD_SHARED_LIBS AND MSVC)
   # On MSVC Abseil is bundled into a single DLL.
-  # This condition is necessary as of abseil 20230125.3 when abseil is consumed via add_subdirectory,
-  # the abseil_dll target  is named abseil_dll, while if abseil is consumed via find_package, the target
-  # is called absl::abseil_dll
-  # Once https://github.com/abseil/abseil-cpp/pull/1466 is merged and released in the minimum version of 
-  # abseil required by protobuf, it is possible to always link absl::abseil_dll and absl::abseil_test_dll
-  # and remove the if
+  # This condition is necessary as of abseil 20230125.3 when abseil is consumed
+  # via add_subdirectory, the abseil_dll target is named abseil_dll, while if
+  # abseil is consumed via find_package, the target is called absl::abseil_dll
+  # Once https://github.com/abseil/abseil-cpp/pull/1466 is merged and released
+  # in the minimum version of abseil required by protobuf, it is possible to
+  # always link absl::abseil_dll and absl::abseil_test_dll and remove the if
   if(protobuf_ABSL_PROVIDER STREQUAL "package")
     set(protobuf_ABSL_USED_TARGETS absl::abseil_dll)
     set(protobuf_ABSL_USED_TEST_TARGETS absl::abseil_test_dll)
@@ -75,11 +75,14 @@ else()
     absl::if_constexpr
     absl::layout
     absl::log_initialize
+    absl::log_globals
     absl::log_severity
     absl::memory
     absl::node_hash_map
     absl::node_hash_set
     absl::optional
+    absl::random_distributions
+    absl::random_random
     absl::span
     absl::status
     absl::statusor

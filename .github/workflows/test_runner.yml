@@ -52,6 +52,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.event_name }}-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ contains(fromJSON('["pull_request", "pull_request_target", "workflow_dispatch"]'), github.event_name) }}
+
 jobs:
   check-tag:
     name: Check for Safety
@@ -79,7 +83,9 @@ jobs:
         # unless this is specifically an event for adding the safe label.
         run: >
           ${{ github.event_name != 'pull_request_target' || github.event.label.name == ':a: safe for tests' }} ||
-          (echo "This pull request is from an unsafe fork and hasn't been approved to run tests!" && exit 1)
+          (echo "This pull request is from an unsafe fork and hasn't been approved to run tests." &&
+           echo "A protobuf team member will need to review the PR and add the 'safe for tests' tag." &&
+           exit 1)
 
       - name: Cache safe commit
         id: safe-checkout
@@ -103,6 +109,14 @@ jobs:
   # Note: this pattern of passing the head sha is vulnerable to PWN requests for
   # pull_request_target events. We carefully limit those workflows to require a
   # human stamp before continuing.
+  bazel:
+    name: Bazel
+    needs: [check-tag]
+    uses: ./.github/workflows/test_bazel.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
   cpp:
     name: C++
     needs: [check-tag]

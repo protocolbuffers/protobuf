@@ -53,6 +53,10 @@ message TestMessage {
   optional TestSingularFields optional_msg2 = 23;
 }
 
+message TestUnpackedMessage {
+  repeated int32 repeated_int32 = 25 [packed = false];
+}
+
 message TestSingularFields {
   int32 singular_int32 = 1;
   int64 singular_int64 = 2;

@@ -104,7 +104,7 @@ message TestAllTypes {
   repeated string repeated_string_piece = 54 [ctype=STRING_PIECE];
   repeated string repeated_cord = 55 [ctype=CORD];
 
-  repeated NestedMessage repeated_lazy_message = 57 [lazy=true];
+  repeated NestedMessage repeated_lazy_message = 57 ;
 
   // Singular with defaults
   optional    int32 default_int32    = 61 [default =  41    ];
@@ -1109,11 +1109,11 @@ message TestNestedGroupExtensionOuter {
     repeated group Layer2RepeatedGroup = 2 {
       extensions 3
         // NOTE: extension metadata is not supported due to targets such as
-        // `//third_party/protobuf_legacy_opensource/src:shell_scripts_test`,
+        // `//google/protobuf_legacy_opensource/src:shell_scripts_test`,
         // eee https://screenshot.googleplex.com/Axz2QD8nxjdpyFF
         //[metadata = {
         // NOTE: can't write type there due to some clever build gen code at
-        // http://google3/net/proto2/internal/BUILD;l=1247;rcl=411090862
+        // http://google3/google/protobuf/BUILD;l=1247;rcl=411090862
         // type: "objc.protobuf.tests.TestNestedGroupExtensionInnerExtension",
         // name: "inner",
         // }]

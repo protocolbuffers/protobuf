@@ -3,7 +3,7 @@
 ################################################################################
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
@@ -73,7 +73,7 @@ cc_library(
         "message_field.cc",
         "oneof.cc",
         "primitive_field.cc",
-        "text_format_decode_data.cc",
+        "tf_decode_data.cc",
     ],
     hdrs = [
         "enum.h",
@@ -90,7 +90,7 @@ cc_library(
         "oneof.h",
         "options.h",
         "primitive_field.h",
-        "text_format_decode_data.h",
+        "tf_decode_data.h",
     ],
     copts = COPTS,
     strip_include_prefix = "/src",
@@ -125,6 +125,7 @@ cc_test(
         ":line_consumer",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
+        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",

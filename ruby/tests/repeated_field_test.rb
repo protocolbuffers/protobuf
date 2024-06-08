@@ -22,9 +22,9 @@ class RepeatedFieldTest < Test::Unit::TestCase
     arr_methods -= [ :indices, :iter_for_each, :iter_for_each_index,
       :iter_for_each_with_index, :dimensions, :copy_data, :copy_data_simple,
       :nitems, :iter_for_reverse_each, :indexes, :append, :prepend]
-    arr_methods -= [:union, :difference, :filter!]
+    arr_methods -= [:filter!]
     # ruby 2.7 methods we can ignore
-    arr_methods -= [:intersection, :deconstruct, :resolve_feature_path]
+    arr_methods -= [:deconstruct, :resolve_feature_path]
     # ruby 3.1 methods we can ignore
     arr_methods -= [:intersect?]
     arr_methods.each do |method_name|
@@ -37,7 +37,6 @@ class RepeatedFieldTest < Test::Unit::TestCase
     repeated_field_names(TestMessage).each do |field_name|
       assert_nil m.send(field_name).first
       assert_empty m.send(field_name).first(0)
-      assert_empty m.send(field_name).first(1)
     end
 
     fill_test_msg(m)

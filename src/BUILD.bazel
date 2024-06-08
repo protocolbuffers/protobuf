@@ -3,7 +3,7 @@
 ################################################################################
 
 # Most rules are under google/protobuf. This package exists for convenience.
-load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("//conformance:defs.bzl", "conformance_test")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
 
@@ -63,4 +63,9 @@ staleness_test(
     # GitHub action, so developers should not worry about failures from this
     # test.
     tags = ["manual"],
+)
+
+test_suite(
+    name = "editions_tests",
+    tests = ["//editions:all_tests"],
 )

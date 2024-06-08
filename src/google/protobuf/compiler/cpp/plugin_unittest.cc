@@ -17,7 +17,6 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/command_line_interface.h"
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "google/protobuf/io/printer.h"
@@ -64,11 +63,7 @@ class TestGenerator : public CodeGenerator {
     // Check field accessors for a repeated string:
     TryInsert("test.pb.h", "field_get:foo.Bar.repeatedString", context);
     TryInsert("test.pb.h", "field_set:foo.Bar.repeatedString", context);
-    TryInsert("test.pb.h", "field_set_char:foo.Bar.repeatedString", context);
-    TryInsert("test.pb.h", "field_set_pointer:foo.Bar.repeatedString", context);
     TryInsert("test.pb.h", "field_mutable:foo.Bar.repeatedString", context);
-    TryInsert("test.pb.h", "field_set_char:foo.Bar.repeatedString", context);
-    TryInsert("test.pb.h", "field_set_pointer:foo.Bar.repeatedString", context);
 
     // Check field accessors for an int inside oneof{}:
     TryInsert("test.pb.h", "field_get:foo.Bar.oneOfInt", context);
@@ -150,7 +145,7 @@ class TestGenerator : public CodeGenerator {
 // compiling the output which is a bit more than I care to do for this test.
 TEST(CppPluginTest, PluginTest) {
   ABSL_CHECK_OK(
-      File::SetContents(absl::StrCat(TestTempDir(), "/test.proto"),
+      File::SetContents(absl::StrCat(::testing::TempDir(), "/test.proto"),
                         "syntax = \"proto2\";\n"
                         "package foo;\n"
                         "\n"
@@ -197,9 +192,9 @@ TEST(CppPluginTest, PluginTest) {
   cli.RegisterGenerator("--cpp_out", &cpp_generator, "");
   cli.RegisterGenerator("--test_out", &test_generator, "");
 
-  std::string proto_path = absl::StrCat("-I", TestTempDir());
-  std::string cpp_out = absl::StrCat("--cpp_out=", TestTempDir());
-  std::string test_out = absl::StrCat("--test_out=", TestTempDir());
+  std::string proto_path = absl::StrCat("-I", ::testing::TempDir());
+  std::string cpp_out = absl::StrCat("--cpp_out=", ::testing::TempDir());
+  std::string test_out = absl::StrCat("--test_out=", ::testing::TempDir());
 
   const char* argv[] = {"protoc", proto_path.c_str(), cpp_out.c_str(),
                         test_out.c_str(), "test.proto"};

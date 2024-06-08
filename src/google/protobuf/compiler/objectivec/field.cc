@@ -40,7 +40,7 @@ void SetCommonFieldVariables(
     absl::flat_hash_map<absl::string_view, std::string>* variables) {
   std::string camel_case_name = FieldName(descriptor);
   std::string raw_field_name;
-  if (descriptor->type() == FieldDescriptor::TYPE_GROUP) {
+  if (internal::cpp::IsGroupLike(*descriptor)) {
     raw_field_name = descriptor->message_type()->name();
   } else {
     raw_field_name = descriptor->name();
@@ -192,7 +192,7 @@ FieldGenerator* FieldGenerator::Make(
 
 FieldGenerator::FieldGenerator(const FieldDescriptor* descriptor,
                                const GenerationOptions& generation_options)
-    : descriptor_(descriptor) {
+    : descriptor_(descriptor), generation_options_(generation_options) {
   SetCommonFieldVariables(descriptor, &variables_);
 }
 
@@ -294,12 +294,15 @@ void SingleFieldGenerator::GenerateFieldStorageDeclaration(
 void SingleFieldGenerator::GeneratePropertyDeclaration(
     io::Printer* printer) const {
   auto vars = printer->WithVars(variables_);
-  printer->Emit(
-      {{"comments", [&] { EmitCommentsString(printer, descriptor_); }}},
-      R"objc(
-        $comments$
-        @property(nonatomic, readwrite) $property_type$$name$$ deprecated_attribute$;
-      )objc");
+  printer->Emit({{"comments",
+                  [&] {
+                    EmitCommentsString(printer, generation_options_,
+                                       descriptor_);
+                  }}},
+                R"objc(
+                  $comments$
+                  @property(nonatomic, readwrite) $property_type$$name$$ deprecated_attribute$;
+                )objc");
   if (WantsHasProperty()) {
     printer->Emit(R"objc(
       @property(nonatomic, readwrite) BOOL has$capitalized_name$$ deprecated_attribute$;
@@ -349,12 +352,15 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
   // conventions (init*, new*, etc.)
 
   auto vars = printer->WithVars(variables_);
-  printer->Emit(
-      {{"comments", [&] { EmitCommentsString(printer, descriptor_); }}},
-      R"objc(
-        $comments$
-        @property(nonatomic, readwrite, $property_storage_attribute$, null_resettable) $property_type$$name$$storage_attribute$$ deprecated_attribute$;
-      )objc");
+  printer->Emit({{"comments",
+                  [&] {
+                    EmitCommentsString(printer, generation_options_,
+                                       descriptor_);
+                  }}},
+                R"objc(
+                  $comments$
+                  @property(nonatomic, readwrite, $property_storage_attribute$, null_resettable) $property_type$$name$$storage_attribute$$ deprecated_attribute$;
+                )objc");
   if (WantsHasProperty()) {
     printer->Emit(R"objc(
         /** Test to see if @c $name$ has been set. */
@@ -398,7 +404,8 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
 
   auto vars = printer->WithVars(variables_);
   printer->Emit(
-      {{"comments", [&] { EmitCommentsString(printer, descriptor_); }},
+      {{"comments",
+        [&] { EmitCommentsString(printer, generation_options_, descriptor_); }},
        {"array_comment", [&] { EmitArrayComment(printer); }}},
       R"objc(
         $comments$

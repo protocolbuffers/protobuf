@@ -54,3 +54,19 @@ char* FieldDescriptor_serialized_options(const upb_FieldDef* fielddef,
   char* serialized = google_protobuf_FieldOptions_serialize(opts, arena, size);
   return serialized;
 }
+
+char* ServiceDescriptor_serialized_options(const upb_ServiceDef* servicedef,
+                                           size_t* size, upb_Arena* arena) {
+  const google_protobuf_ServiceOptions* opts =
+      upb_ServiceDef_Options(servicedef);
+  char* serialized =
+      google_protobuf_ServiceOptions_serialize(opts, arena, size);
+  return serialized;
+}
+
+char* MethodDescriptor_serialized_options(const upb_MethodDef* methoddef,
+                                          size_t* size, upb_Arena* arena) {
+  const google_protobuf_MethodOptions* opts = upb_MethodDef_Options(methoddef);
+  char* serialized = google_protobuf_MethodOptions_serialize(opts, arena, size);
+  return serialized;
+}

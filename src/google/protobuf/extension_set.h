@@ -20,6 +20,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <initializer_list>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -60,6 +61,7 @@ class Reflection;       // message.h
 class UnknownFieldSet;  // unknown_field_set.h
 class FeatureSet;
 namespace internal {
+struct DescriptorTable;
 class FieldSkipper;     // wire_format_lite.h
 class ReflectionVisit;  // message_reflection_util.h
 class WireFormat;
@@ -138,6 +140,10 @@ struct ExtensionInfo {
 
   struct MessageInfo {
     const MessageLite* prototype;
+    // The TcParse table used for this object.
+    // Never null. (except in platforms that don't constant initialize default
+    // instances)
+    const internal::TcParseTableBase* tc_table;
   };
 
   union {
@@ -224,6 +230,19 @@ class PROTOBUF_EXPORT ExtensionSet {
                                        const MessageLite* prototype,
                                        LazyEagerVerifyFnType verify_func,
                                        LazyAnnotation is_lazy);
+
+  // In weak descriptor mode we register extensions in two phases.
+  // This function determines if it is the right time to register a particular
+  // extension.
+  // During "preregistration" we only register extensions that have all their
+  // types linked in.
+  struct WeakPrototypeRef {
+    const internal::DescriptorTable* table;
+    int index;
+  };
+  static bool ShouldRegisterAtThisTime(
+      std::initializer_list<WeakPrototypeRef> messages,
+      bool is_preregistration);
 
   // =================================================================
 
@@ -420,20 +439,14 @@ class PROTOBUF_EXPORT ExtensionSet {
   const char* ParseMessageSet(const char* ptr, const Msg* extendee,
                               InternalMetadata* metadata,
                               internal::ParseContext* ctx) {
-    struct MessageSetItem {
-      const char* _InternalParse(const char* ptr, ParseContext* ctx) {
-        return me->ParseMessageSetItem(ptr, extendee, metadata, ctx);
-      }
-      ExtensionSet* me;
-      const Msg* extendee;
-      InternalMetadata* metadata;
-    } item{this, extendee, metadata};
     while (!ctx->Done(&ptr)) {
       uint32_t tag;
       ptr = ReadTag(ptr, &tag);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       if (tag == WireFormatLite::kMessageSetItemStartTag) {
-        ptr = ctx->ParseGroup(&item, ptr, tag);
+        ptr = ctx->ParseGroupInlined(ptr, tag, [&](const char* ptr) {
+          return ParseMessageSetItem(ptr, extendee, metadata, ctx);
+        });
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       } else {
         if (tag == 0 || (tag & 7) == 4) {
@@ -571,6 +584,8 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual LazyMessageExtension* New(Arena* arena) const = 0;
     virtual const MessageLite& GetMessage(const MessageLite& prototype,
                                           Arena* arena) const = 0;
+    virtual const MessageLite& GetMessageIgnoreUnparsed(
+        const MessageLite& prototype, Arena* arena) const = 0;
     virtual MessageLite* MutableMessage(const MessageLite& prototype,
                                         Arena* arena) = 0;
     virtual void SetAllocatedMessage(MessageLite* message, Arena* arena) = 0;
@@ -594,7 +609,8 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual size_t SpaceUsedLong() const = 0;
 
     virtual void MergeFrom(const MessageLite* prototype,
-                           const LazyMessageExtension& other, Arena* arena) = 0;
+                           const LazyMessageExtension& other, Arena* arena,
+                           Arena* other_arena) = 0;
     virtual void MergeFromMessage(const MessageLite& msg, Arena* arena) = 0;
     virtual void Clear() = 0;
 

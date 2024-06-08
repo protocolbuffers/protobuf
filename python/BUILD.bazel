@@ -5,14 +5,14 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("//python:py_extension.bzl", "py_extension")
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 # begin:github_only
-load("@rules_pkg//:mappings.bzl", "pkg_files")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//python:build_targets.bzl", "build_targets")
+load("//python:py_extension.bzl", "py_extension")
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 build_targets(name = "python")
 # end:github_only
@@ -196,13 +196,13 @@ py_extension(
         "//upb:descriptor_upb_proto_reflection",
         "//upb:eps_copy_input_stream",
         "//upb:message",
+        "//upb:message_compare",
         "//upb:message_copy",
         "//upb:port",
         "//upb:reflection",
         "//upb:text",
         "//upb:wire_reader",
         "//upb/hash",
-        "//upb/util:compare",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
     ],

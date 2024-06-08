@@ -225,7 +225,7 @@ class Proto2Test {
             TestAllTypesKt.repeatedGroup { a = 1 },
             TestAllTypesKt.repeatedGroup { a = 2 },
             TestAllTypesKt.repeatedGroup { a = 3 },
-            TestAllTypesKt.repeatedGroup { a = 4 }
+            TestAllTypesKt.repeatedGroup { a = 4 },
           )
         )
       repeatedGroup[0] = TestAllTypesKt.repeatedGroup { a = 5 }
@@ -235,7 +235,7 @@ class Proto2Test {
             TestAllTypesKt.repeatedGroup { a = 5 },
             TestAllTypesKt.repeatedGroup { a = 2 },
             TestAllTypesKt.repeatedGroup { a = 3 },
-            TestAllTypesKt.repeatedGroup { a = 4 }
+            TestAllTypesKt.repeatedGroup { a = 4 },
           )
         )
 
@@ -249,7 +249,7 @@ class Proto2Test {
             nestedMessage { bb = 1 },
             nestedMessage { bb = 2 },
             nestedMessage { bb = 3 },
-            nestedMessage { bb = 4 }
+            nestedMessage { bb = 4 },
           )
         )
       repeatedNestedMessage[0] = nestedMessage { bb = 5 }
@@ -259,7 +259,7 @@ class Proto2Test {
             nestedMessage { bb = 5 },
             nestedMessage { bb = 2 },
             nestedMessage { bb = 3 },
-            nestedMessage { bb = 4 }
+            nestedMessage { bb = 4 },
           )
         )
 
@@ -548,7 +548,7 @@ class Proto2Test {
             repeatedGroupExtension { a = 1 },
             repeatedGroupExtension { a = 2 },
             repeatedGroupExtension { a = 3 },
-            repeatedGroupExtension { a = 4 }
+            repeatedGroupExtension { a = 4 },
           )
         )
       this[UnittestProto.repeatedGroupExtension][0] = repeatedGroupExtension { a = 5 }
@@ -558,7 +558,7 @@ class Proto2Test {
             repeatedGroupExtension { a = 5 },
             repeatedGroupExtension { a = 2 },
             repeatedGroupExtension { a = 3 },
-            repeatedGroupExtension { a = 4 }
+            repeatedGroupExtension { a = 4 },
           )
         )
 
@@ -575,7 +575,7 @@ class Proto2Test {
             nestedMessage { bb = 1 },
             nestedMessage { bb = 2 },
             nestedMessage { bb = 3 },
-            nestedMessage { bb = 4 }
+            nestedMessage { bb = 4 },
           )
         )
       this[UnittestProto.repeatedNestedMessageExtension][0] = nestedMessage { bb = 5 }
@@ -585,7 +585,7 @@ class Proto2Test {
             nestedMessage { bb = 5 },
             nestedMessage { bb = 2 },
             nestedMessage { bb = 3 },
-            nestedMessage { bb = 4 }
+            nestedMessage { bb = 4 },
           )
         )
 
@@ -757,7 +757,7 @@ class Proto2Test {
             1 to Proto2MapEnum.PROTO2_MAP_ENUM_FOO,
             2 to Proto2MapEnum.PROTO2_MAP_ENUM_BAR,
             3 to Proto2MapEnum.PROTO2_MAP_ENUM_BAZ,
-            4 to Proto2MapEnum.PROTO2_MAP_ENUM_FOO
+            4 to Proto2MapEnum.PROTO2_MAP_ENUM_FOO,
           )
         )
     }
@@ -844,6 +844,11 @@ class Proto2Test {
           cachedSize_ = "foo"
           serializedSize_ = true
           by = "foo"
+          dEPRECATEDFoo = "foo"
+          DEPRECATEDBar = "foo"
+          iD = "foo"
+          aBNotification = "foo"
+          notDEPRECATEDFoo = "foo"
         }
       )
       .isEqualTo(
@@ -869,6 +874,11 @@ class Proto2Test {
           .setCachedSize_("foo")
           .setSerializedSize_(true)
           .setBy("foo")
+          .setDEPRECATEDFoo("foo")
+          .setDEPRECATEDBar("foo")
+          .setID("foo")
+          .setABNotification("foo")
+          .setNotDEPRECATEDFoo("foo")
           .build()
       )
 

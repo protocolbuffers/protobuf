@@ -26,7 +26,7 @@
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/oneof.h"
 #include "google/protobuf/compiler/objectivec/options.h"
-#include "google/protobuf/compiler/objectivec/text_format_decode_data.h"
+#include "google/protobuf/compiler/objectivec/tf_decode_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -292,7 +292,7 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
            .WithSuffix(";"),
        {"message_comments",
         [&] {
-          EmitCommentsString(printer, descriptor_,
+          EmitCommentsString(printer, generation_options_, descriptor_,
                              kCommentStringFlags_ForceMultiline);
         }},
        {"message_fieldnum_enum",

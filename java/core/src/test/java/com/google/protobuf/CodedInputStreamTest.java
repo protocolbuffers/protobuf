@@ -10,6 +10,7 @@ package com.google.protobuf;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertThrows;
 import protobuf_unittest.UnittestProto.BoolMessage;
 import protobuf_unittest.UnittestProto.Int32Message;
 import protobuf_unittest.UnittestProto.Int64Message;
@@ -531,6 +532,86 @@ public class CodedInputStreamTest {
       } catch (InvalidProtocolBufferException e) {
         // success.
       }
+    }
+  }
+
+  @Test
+  public void testReadStringWithSizeOverflow_throwsInvalidProtocolBufferException()
+      throws Exception {
+    ByteString.Output rawOutput = ByteString.newOutput();
+    CodedOutputStream output = CodedOutputStream.newInstance(rawOutput);
+
+    output.writeUInt32NoTag(0xFFFFFFFF); // Larger than Integer.MAX_VALUE.
+    output.writeRawBytes(new byte[32]); // Pad with a few random bytes.
+    output.flush();
+    byte[] data = rawOutput.toByteString().toByteArray();
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream input = inputType.newDecoder(data);
+      assertThrows(InvalidProtocolBufferException.class, input::readString);
+    }
+  }
+
+  @Test
+  public void testReadStringRequireUtf8WithSizeOverflow_throwsInvalidProtocolBufferException()
+      throws Exception {
+    ByteString.Output rawOutput = ByteString.newOutput();
+    CodedOutputStream output = CodedOutputStream.newInstance(rawOutput);
+
+    output.writeUInt32NoTag(0xFFFFFFFF); // Larger than Integer.MAX_VALUE.
+    output.writeRawBytes(new byte[32]); // Pad with a few random bytes.
+    output.flush();
+    byte[] data = rawOutput.toByteString().toByteArray();
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream input = inputType.newDecoder(data);
+      assertThrows(InvalidProtocolBufferException.class, input::readStringRequireUtf8);
+    }
+  }
+
+  @Test
+  public void testReadBytesWithHugeSizeOverflow_throwsInvalidProtocolBufferException()
+      throws Exception {
+    ByteString.Output rawOutput = ByteString.newOutput();
+    CodedOutputStream output = CodedOutputStream.newInstance(rawOutput);
+
+    output.writeUInt32NoTag(0xFFFFFFFF); // Larger than Integer.MAX_VALUE.
+    output.writeRawBytes(new byte[32]); // Pad with a few random bytes.
+    output.flush();
+    byte[] data = rawOutput.toByteString().toByteArray();
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream input = inputType.newDecoder(data);
+      assertThrows(InvalidProtocolBufferException.class, input::readBytes);
+    }
+  }
+
+  @Test
+  public void testReadByteArrayWithHugeSizeOverflow_throwsInvalidProtocolBufferException()
+      throws Exception {
+    ByteString.Output rawOutput = ByteString.newOutput();
+    CodedOutputStream output = CodedOutputStream.newInstance(rawOutput);
+
+    output.writeUInt32NoTag(0xFFFFFFFF); // Larger than Integer.MAX_VALUE.
+    output.writeRawBytes(new byte[32]); // Pad with a few random bytes.
+    output.flush();
+    byte[] data = rawOutput.toByteString().toByteArray();
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream input = inputType.newDecoder(data);
+      assertThrows(InvalidProtocolBufferException.class, input::readByteArray);
+    }
+  }
+
+  @Test
+  public void testReadByteBufferWithSizeOverflow_throwsInvalidProtocolBufferException()
+      throws Exception {
+    ByteString.Output rawOutput = ByteString.newOutput();
+    CodedOutputStream output = CodedOutputStream.newInstance(rawOutput);
+
+    output.writeUInt32NoTag(0xFFFFFFFF); // Larger than Integer.MAX_VALUE.
+    output.writeRawBytes(new byte[32]); // Pad with a few random bytes.
+    output.flush();
+    byte[] data = rawOutput.toByteString().toByteArray();
+    for (InputType inputType : InputType.values()) {
+      CodedInputStream input = inputType.newDecoder(data);
+      assertThrows(InvalidProtocolBufferException.class, input::readByteBuffer);
     }
   }
 

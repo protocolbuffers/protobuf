@@ -114,7 +114,7 @@ message TestAllTypes {
   repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
   repeated string repeated_cord = 55 [ctype = CORD];
 
-  repeated NestedMessage repeated_lazy_message = 57 [lazy = true];
+  repeated NestedMessage repeated_lazy_message = 57;
 
   oneof oneof_field {
     uint32 oneof_uint32 = 111;
@@ -178,6 +178,7 @@ enum ForeignEnum {
   FOREIGN_FOO = 4;
   FOREIGN_BAR = 5;
   FOREIGN_BAZ = 6;
+  FOREIGN_LARGE = 123456;  // Large enough to escape the Boxed Integer cache.
 }
 
 // TestEmptyMessage is used to test behavior of unknown fields.
@@ -203,4 +204,80 @@ message TestOneof2 {
     BAR = 2;
     BAZ = 3;
   }
+}
+
+// If bool fields are incorrectly assumed to have hasbits, InternalSwap would
+// result in swapping N more 32bit hasbits incorrectly. Considering padding, we
+// need many bool fields to stress this.
+message TestHasbits {
+  bool b1 = 1;
+  bool b2 = 2;
+  bool b3 = 3;
+  bool b4 = 4;
+  bool b5 = 5;
+  bool b6 = 6;
+  bool b7 = 7;
+  bool b8 = 8;
+  bool b9 = 9;
+  bool b10 = 10;
+  bool b11 = 11;
+  bool b12 = 12;
+  bool b13 = 13;
+  bool b14 = 14;
+  bool b15 = 15;
+  bool b16 = 16;
+  bool b17 = 17;
+  bool b18 = 18;
+  bool b19 = 19;
+  bool b20 = 20;
+  bool b21 = 21;
+  bool b22 = 22;
+  bool b23 = 23;
+  bool b24 = 24;
+  bool b25 = 25;
+  bool b26 = 26;
+  bool b27 = 27;
+  bool b28 = 28;
+  bool b29 = 29;
+  bool b30 = 30;
+  bool b31 = 31;
+  bool b32 = 32;
+  bool b33 = 33;
+  bool b34 = 34;
+  bool b35 = 35;
+  bool b36 = 36;
+  bool b37 = 37;
+  bool b38 = 38;
+  bool b39 = 39;
+  bool b40 = 40;
+  bool b41 = 41;
+  bool b42 = 42;
+  bool b43 = 43;
+  bool b44 = 44;
+  bool b45 = 45;
+  bool b46 = 46;
+  bool b47 = 47;
+  bool b48 = 48;
+  bool b49 = 49;
+  bool b50 = 50;
+  bool b51 = 51;
+  bool b52 = 52;
+  bool b53 = 53;
+  bool b54 = 54;
+  bool b55 = 55;
+  bool b56 = 56;
+  bool b57 = 57;
+  bool b58 = 58;
+  bool b59 = 59;
+  bool b60 = 60;
+  bool b61 = 61;
+  bool b62 = 62;
+  bool b63 = 63;
+  bool b64 = 64;
+  bool b65 = 65;
+  bool b66 = 66;
+  bool b67 = 67;
+  bool b68 = 68;
+  bool b69 = 69;
+  TestAllTypes child = 100;
 }

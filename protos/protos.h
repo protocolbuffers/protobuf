@@ -137,6 +137,10 @@ struct PrivateAccess {
   static auto CProxy(const upb_Message* p, upb_Arena* arena) {
     return typename T::CProxy(p, arena);
   }
+  template <typename T>
+  static auto CreateMessage(upb_Arena* arena) {
+    return typename T::Proxy(upb_Message_New(T::minitable(), arena), arena);
+  }
 };
 
 template <typename T>
@@ -238,6 +242,26 @@ absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
                           const upb_MiniTableExtension* ext,
                           const upb_Message* extension);
 
+template <typename T>
+struct RemovePtr;
+
+template <typename T>
+struct RemovePtr<Ptr<T>> {
+  using type = T;
+};
+
+template <typename T>
+struct RemovePtr<T*> {
+  using type = T;
+};
+
+template <typename T>
+using RemovePtrT = typename RemovePtr<T>::type;
+
+template <typename T, typename U = RemovePtrT<T>,
+          typename = std::enable_if_t<!std::is_const_v<U>>>
+using PtrOrRaw = T;
+
 }  // namespace internal
 
 template <typename T>
@@ -276,14 +300,10 @@ void DeepCopy(const T* source_message, T* target_message) {
 }
 
 template <typename T>
-void ClearMessage(Ptr<T> message) {
-  static_assert(!std::is_const_v<T>, "");
-  upb_Message_Clear(internal::GetInternalMsg(message), T::minitable());
-}
-
-template <typename T>
-void ClearMessage(T* message) {
-  ClearMessage(protos::Ptr(message));
+void ClearMessage(internal::PtrOrRaw<T> message) {
+  auto ptr = Ptr(message);
+  auto minitable = internal::GetMiniTable(ptr);
+  upb_Message_Clear(internal::GetInternalMsg(ptr), minitable);
 }
 
 class ExtensionRegistry {
@@ -336,29 +356,28 @@ ABSL_MUST_USE_RESULT bool HasExtension(
   return HasExtension(protos::Ptr(message), id);
 }
 
-template <typename T, typename Extendee, typename Extension,
-          typename = EnableIfProtosClass<T>, typename = EnableIfMutableProto<T>>
+template <typename T, typename Extension, typename = EnableIfProtosClass<T>,
+          typename = EnableIfMutableProto<T>>
 void ClearExtension(
     Ptr<T> message,
-    const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
+    const ::protos::internal::ExtensionIdentifier<T, Extension>& id) {
   static_assert(!std::is_const_v<T>, "");
   upb_Message_ClearExtension(internal::GetInternalMsg(message),
                              id.mini_table_ext());
 }
 
-template <typename T, typename Extendee, typename Extension,
-          typename = EnableIfProtosClass<T>>
+template <typename T, typename Extension, typename = EnableIfProtosClass<T>>
 void ClearExtension(
     T* message,
-    const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
+    const ::protos::internal::ExtensionIdentifier<T, Extension>& id) {
   ClearExtension(::protos::Ptr(message), id);
 }
 
-template <typename T, typename Extendee, typename Extension,
-          typename = EnableIfProtosClass<T>, typename = EnableIfMutableProto<T>>
+template <typename T, typename Extension, typename = EnableIfProtosClass<T>,
+          typename = EnableIfMutableProto<T>>
 absl::Status SetExtension(
     Ptr<T> message,
-    const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id,
+    const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
     const Extension& value) {
   static_assert(!std::is_const_v<T>);
   auto* message_arena = static_cast<upb_Arena*>(message->GetInternalArena());
@@ -367,11 +386,24 @@ absl::Status SetExtension(
                                           internal::GetInternalMsg(&value));
 }
 
-template <typename T, typename Extendee, typename Extension,
-          typename = EnableIfProtosClass<T>, typename = EnableIfMutableProto<T>>
+template <typename T, typename Extension, typename = EnableIfProtosClass<T>,
+          typename = EnableIfMutableProto<T>>
 absl::Status SetExtension(
     Ptr<T> message,
-    const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id,
+    const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
+    Ptr<Extension> value) {
+  static_assert(!std::is_const_v<T>);
+  auto* message_arena = static_cast<upb_Arena*>(message->GetInternalArena());
+  return ::protos::internal::SetExtension(internal::GetInternalMsg(message),
+                                          message_arena, id.mini_table_ext(),
+                                          internal::GetInternalMsg(value));
+}
+
+template <typename T, typename Extension, typename = EnableIfProtosClass<T>,
+          typename = EnableIfMutableProto<T>>
+absl::Status SetExtension(
+    Ptr<T> message,
+    const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
     Extension&& value) {
   Extension ext = std::move(value);
   static_assert(!std::is_const_v<T>);
@@ -382,23 +414,26 @@ absl::Status SetExtension(
       internal::GetInternalMsg(&ext), extension_arena);
 }
 
-template <typename T, typename Extendee, typename Extension,
-          typename = EnableIfProtosClass<T>>
+template <typename T, typename Extension, typename = EnableIfProtosClass<T>>
 absl::Status SetExtension(
-    T* message,
-    const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id,
+    T* message, const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
     const Extension& value) {
   return ::protos::SetExtension(::protos::Ptr(message), id, value);
 }
 
-template <typename T, typename Extendee, typename Extension,
-          typename = EnableIfProtosClass<T>>
+template <typename T, typename Extension, typename = EnableIfProtosClass<T>>
 absl::Status SetExtension(
-    T* message,
-    const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id,
+    T* message, const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
     Extension&& value) {
   return ::protos::SetExtension(::protos::Ptr(message), id,
                                 std::forward<Extension>(value));
+}
+
+template <typename T, typename Extension, typename = EnableIfProtosClass<T>>
+absl::Status SetExtension(
+    T* message, const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
+    Ptr<Extension> value) {
+  return ::protos::SetExtension(::protos::Ptr(message), id, value);
 }
 
 template <typename T, typename Extendee, typename Extension,

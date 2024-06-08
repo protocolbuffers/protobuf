@@ -2,14 +2,14 @@ workspace(name = "com_google_protobuf_examples")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# This com_google_protobuf repository is required for proto_library rule.
+# This protobuf repository is required for proto_library rule.
 # It provides the protocol compiler binary (i.e., protoc).
 #
 # We declare it as local_repository so we can test changes
 # before they get merged. You'll want to use the following instead:
 #
 # http_archive(
-#     name = "com_google_protobuf",
+#     name = "protobuf",
 #     sha256 = "c29d8b4b79389463c546f98b15aa4391d4ed7ec459340c47bffe15db63eb9126",
 #     strip_prefix = "protobuf-3.21.3",
 #     urls = ["https://github.com/protocolbuffers/protobuf/archive/v3.21.3.tar.gz"],
@@ -17,6 +17,11 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 local_repository(
     name = "com_google_protobuf",
+    path = "..",
+)
+
+local_repository(
+    name = "protobuf",
     path = "..",
 )
 
@@ -28,6 +33,15 @@ local_repository(
     path = "..",
 )
 
-load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+# Needed because protobuf_deps brings rules_python 0.26.0 which is broken:
+# https://github.com/bazelbuild/rules_python/issues/1543
+http_archive(
+    name = "rules_python",
+    sha256 = "5868e73107a8e85d8f323806e60cad7283f34b32163ea6ff1020cf27abef6036",
+    strip_prefix = "rules_python-0.25.0",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.25.0/rules_python-0.25.0.tar.gz",
+)
+
+load("@protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
 protobuf_deps()
