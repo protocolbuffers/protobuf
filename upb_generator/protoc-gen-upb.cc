@@ -910,16 +910,13 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
 
   if (options.bootstrap) {
     for (auto message : this_file_messages) {
-      output("extern const$1 upb_MiniTable* $0();\n", MessageInitName(message),
-             PadPrefix(options.dllexport_decl));
+      output("extern const upb_MiniTable* $0();\n", MessageInitName(message));
     }
     for (auto message : forward_messages) {
-      output("extern const$1 upb_MiniTable* $0();\n", MessageInitName(message),
-             PadPrefix(options.dllexport_decl));
+      output("extern const upb_MiniTable* $0();\n", MessageInitName(message));
     }
     for (auto enumdesc : this_file_enums) {
-      output("extern const$1 upb_MiniTableEnum* $0();\n", EnumInit(enumdesc),
-             PadPrefix(options.dllexport_decl));
+      output("extern const upb_MiniTableEnum* $0();\n", EnumInit(enumdesc));
     }
     output("\n");
   }
