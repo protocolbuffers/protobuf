@@ -17,8 +17,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         type: [ Pure, C++]
-        # TODO: b/309627662 - Add coverage for Python 3.12.
-        version: ["3.8", "3.9", "3.10", "3.11"]
+        version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -31,7 +30,7 @@ jobs:
             targets: //python/... //python:aarch64_test
             # TODO Enable this once conformance tests are fixed.
             flags: --define=use_fast_cpp_protos=true --test_tag_filters=-conformance
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38
 
     name: Linux ${{ matrix.type }} ${{ matrix.version }}
     runs-on: ubuntu-latest
@@ -43,7 +42,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:{0}-63dd26c0c7a808d92673a3e52e848189d4ab0f17', matrix.version) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:{0}-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38', matrix.version) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_linux/${{ matrix.type }}_${{ matrix.version }}
           bazel: test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION
