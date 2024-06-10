@@ -400,6 +400,11 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
         status = absl::FailedPreconditionError(absl::StrCat(
             field.full_name(),
             " specifies both string_type and ctype which is not supported."));
+      } else if (unresolved_features.string_type() ==
+                     pb::CppFeatures::STRING_PIECE &&
+                 !IsStringPieceFieldFile(field.file()->name())) {
+        status = absl::FailedPreconditionError(absl::StrCat(
+            field.full_name(), " is not allowed to use STRING_PIECE"));
       }
     }
 
