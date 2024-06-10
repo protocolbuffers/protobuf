@@ -972,13 +972,13 @@ class KeyMapBase : public UntypedMapBase {
   KeyNode* InsertOrReplaceNode(KeyNode* node) {
     KeyNode* to_erase = nullptr;
     auto p = this->FindHelper(node->key());
+    map_index_t b = p.bucket;
     if (p.node != nullptr) {
       erase_no_destroy(p.bucket, static_cast<KeyNode*>(p.node));
       to_erase = static_cast<KeyNode*>(p.node);
     } else if (ResizeIfLoadIsOutOfRange(num_elements_ + 1)) {
-      p = FindHelper(node->key());
+      b = BucketNumber(node->key());  // bucket_number
     }
-    const map_index_t b = p.bucket;  // bucket number
     InsertUnique(b, node);
     ++num_elements_;
     return to_erase;
@@ -1617,15 +1617,15 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   template <typename K, typename... Args>
   std::pair<iterator, bool> TryEmplaceInternal(K&& k, Args&&... args) {
     auto p = this->FindHelper(TS::ToView(k));
+    internal::map_index_t b = p.bucket;
     // Case 1: key was already present.
     if (p.node != nullptr)
       return std::make_pair(
           iterator(static_cast<Node*>(p.node), this, p.bucket), false);
     // Case 2: insert.
     if (this->ResizeIfLoadIsOutOfRange(this->num_elements_ + 1)) {
-      p = this->FindHelper(TS::ToView(k));
+      b = this->BucketNumber(TS::ToView(k));
     }
-    const auto b = p.bucket;  // bucket number
     // If K is not key_type, make the conversion to key_type explicit.
     using TypeToInit = typename std::conditional<
         std::is_same<typename std::decay<K>::type, key_type>::value, K&&,
