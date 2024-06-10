@@ -63,11 +63,7 @@ def _generate_output_file(ctx, src, extension):
     return ret
 
 def _filter_none(elems):
-    out = []
-    for elem in elems:
-        if elem:
-            out.append(elem)
-    return out
+    return [e for e in elems if e]
 
 def _cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos):
     """Like cc_library(), but callable from rules.
