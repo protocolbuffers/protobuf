@@ -144,7 +144,7 @@ jobs:
       - name: Build Wheels
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple@sha256:b3dc9b75d8e599b0e95ed245d89f44b5a4231112f975da89dd02006a484a58df
+          image: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple:6.3.0-53225851b051e66f8543e972c143f35be757a181
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel-python
           bazel: build --crosstool_top=//toolchain:clang_suite --//toolchain:release=true --symlink_prefix=/ -c dbg //python/dist //python/dist:test_wheel //python/dist:source_wheel
