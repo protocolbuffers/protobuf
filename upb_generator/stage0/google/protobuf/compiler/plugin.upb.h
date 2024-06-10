@@ -142,21 +142,21 @@ UPB_INLINE bool google_protobuf_compiler_Version_has_suffix(const google_protobu
   return upb_Message_HasBaseField(UPB_UPCAST(msg), &field);
 }
 
-UPB_INLINE void google_protobuf_compiler_Version_set_major(google_protobuf_compiler_Version *msg, int32_t value) {
+UPB_INLINE void google_protobuf_compiler_Version_set_major(google_protobuf_compiler_Version* msg, int32_t value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__Version_msg_init(), 1);
-  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+  upb_Message_SetBaseField((upb_Message*)msg, &field, &value);
 }
-UPB_INLINE void google_protobuf_compiler_Version_set_minor(google_protobuf_compiler_Version *msg, int32_t value) {
+UPB_INLINE void google_protobuf_compiler_Version_set_minor(google_protobuf_compiler_Version* msg, int32_t value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__Version_msg_init(), 2);
-  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+  upb_Message_SetBaseField((upb_Message*)msg, &field, &value);
 }
-UPB_INLINE void google_protobuf_compiler_Version_set_patch(google_protobuf_compiler_Version *msg, int32_t value) {
+UPB_INLINE void google_protobuf_compiler_Version_set_patch(google_protobuf_compiler_Version* msg, int32_t value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__Version_msg_init(), 3);
-  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+  upb_Message_SetBaseField((upb_Message*)msg, &field, &value);
 }
-UPB_INLINE void google_protobuf_compiler_Version_set_suffix(google_protobuf_compiler_Version *msg, upb_StringView value) {
+UPB_INLINE void google_protobuf_compiler_Version_set_suffix(google_protobuf_compiler_Version* msg, upb_StringView value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__Version_msg_init(), 4);
-  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+  upb_Message_SetBaseField((upb_Message*)msg, &field, &value);
 }
 
 /* google.protobuf.compiler.CodeGeneratorRequest */
@@ -352,13 +352,13 @@ UPB_INLINE bool google_protobuf_compiler_CodeGeneratorRequest_add_file_to_genera
   (arr, arr->UPB_PRIVATE(size) - 1, &val, sizeof(val));
   return true;
 }
-UPB_INLINE void google_protobuf_compiler_CodeGeneratorRequest_set_parameter(google_protobuf_compiler_CodeGeneratorRequest *msg, upb_StringView value) {
+UPB_INLINE void google_protobuf_compiler_CodeGeneratorRequest_set_parameter(google_protobuf_compiler_CodeGeneratorRequest* msg, upb_StringView value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorRequest_msg_init(), 2);
-  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+  upb_Message_SetBaseField((upb_Message*)msg, &field, &value);
 }
-UPB_INLINE void google_protobuf_compiler_CodeGeneratorRequest_set_compiler_version(google_protobuf_compiler_CodeGeneratorRequest *msg, google_protobuf_compiler_Version* value) {
+UPB_INLINE void google_protobuf_compiler_CodeGeneratorRequest_set_compiler_version(google_protobuf_compiler_CodeGeneratorRequest* msg, google_protobuf_compiler_Version* value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorRequest_msg_init(), 3);
-  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+  upb_Message_SetBaseField((upb_Message*)msg, &field, &value);
 }
 UPB_INLINE struct google_protobuf_compiler_Version* google_protobuf_compiler_CodeGeneratorRequest_mutable_compiler_version(google_protobuf_compiler_CodeGeneratorRequest* msg, upb_Arena* arena) {
   struct google_protobuf_compiler_Version* sub = (struct google_protobuf_compiler_Version*)google_protobuf_compiler_CodeGeneratorRequest_compiler_version(msg);
@@ -562,21 +562,21 @@ UPB_INLINE upb_Array* _google_protobuf_compiler_CodeGeneratorResponse_file_mutab
   return arr;
 }
 
-UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_set_error(google_protobuf_compiler_CodeGeneratorResponse *msg, upb_StringView value) {
+UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_set_error(google_protobuf_compiler_CodeGeneratorResponse* msg, upb_StringView value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 1);
-  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+  upb_Message_SetBaseField((upb_Message*)msg, &field, &value);
 }
-UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_set_supported_features(google_protobuf_compiler_CodeGeneratorResponse *msg, uint64_t value) {
+UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_set_supported_features(google_protobuf_compiler_CodeGeneratorResponse* msg, uint64_t value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 2);
-  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+  upb_Message_SetBaseField((upb_Message*)msg, &field, &value);
 }
-UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_set_minimum_edition(google_protobuf_compiler_CodeGeneratorResponse *msg, int32_t value) {
+UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_set_minimum_edition(google_protobuf_compiler_CodeGeneratorResponse* msg, int32_t value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 3);
-  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+  upb_Message_SetBaseField((upb_Message*)msg, &field, &value);
 }
-UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_set_maximum_edition(google_protobuf_compiler_CodeGeneratorResponse *msg, int32_t value) {
+UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_set_maximum_edition(google_protobuf_compiler_CodeGeneratorResponse* msg, int32_t value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 4);
-  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+  upb_Message_SetBaseField((upb_Message*)msg, &field, &value);
 }
 UPB_INLINE google_protobuf_compiler_CodeGeneratorResponse_File** google_protobuf_compiler_CodeGeneratorResponse_mutable_file(google_protobuf_compiler_CodeGeneratorResponse* msg, size_t* size) {
   upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse_msg_init(), 15);
@@ -710,21 +710,21 @@ UPB_INLINE bool google_protobuf_compiler_CodeGeneratorResponse_File_has_generate
   return upb_Message_HasBaseField(UPB_UPCAST(msg), &field);
 }
 
-UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_File_set_name(google_protobuf_compiler_CodeGeneratorResponse_File *msg, upb_StringView value) {
+UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_File_set_name(google_protobuf_compiler_CodeGeneratorResponse_File* msg, upb_StringView value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse__File_msg_init(), 1);
-  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+  upb_Message_SetBaseField((upb_Message*)msg, &field, &value);
 }
-UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_File_set_insertion_point(google_protobuf_compiler_CodeGeneratorResponse_File *msg, upb_StringView value) {
+UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_File_set_insertion_point(google_protobuf_compiler_CodeGeneratorResponse_File* msg, upb_StringView value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse__File_msg_init(), 2);
-  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+  upb_Message_SetBaseField((upb_Message*)msg, &field, &value);
 }
-UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_File_set_content(google_protobuf_compiler_CodeGeneratorResponse_File *msg, upb_StringView value) {
+UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_File_set_content(google_protobuf_compiler_CodeGeneratorResponse_File* msg, upb_StringView value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse__File_msg_init(), 15);
-  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+  upb_Message_SetBaseField((upb_Message*)msg, &field, &value);
 }
-UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_File_set_generated_code_info(google_protobuf_compiler_CodeGeneratorResponse_File *msg, struct google_protobuf_GeneratedCodeInfo* value) {
+UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_File_set_generated_code_info(google_protobuf_compiler_CodeGeneratorResponse_File* msg, struct google_protobuf_GeneratedCodeInfo* value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__compiler__CodeGeneratorResponse__File_msg_init(), 16);
-  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+  upb_Message_SetBaseField((upb_Message*)msg, &field, &value);
 }
 UPB_INLINE struct google_protobuf_GeneratedCodeInfo* google_protobuf_compiler_CodeGeneratorResponse_File_mutable_generated_code_info(google_protobuf_compiler_CodeGeneratorResponse_File* msg, upb_Arena* arena) {
   struct google_protobuf_GeneratedCodeInfo* sub = (struct google_protobuf_GeneratedCodeInfo*)google_protobuf_compiler_CodeGeneratorResponse_File_generated_code_info(msg);

@@ -8,6 +8,7 @@
 #ifndef UPB_GENERATOR_COMMON_H
 #define UPB_GENERATOR_COMMON_H
 
+#include <string>
 #include <vector>
 
 #include "absl/strings/str_replace.h"
@@ -64,6 +65,7 @@ std::string MessageName(upb::MessageDefPtr descriptor);
 std::string FileLayoutName(upb::FileDefPtr file);
 std::string MiniTableHeaderFilename(upb::FileDefPtr file);
 std::string CApiHeaderFilename(upb::FileDefPtr file);
+std::string PadPrefix(absl::string_view tag);
 
 std::string EnumInit(upb::EnumDefPtr descriptor);
 
