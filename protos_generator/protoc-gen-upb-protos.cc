@@ -5,7 +5,11 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <cstdint>
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
@@ -17,7 +21,6 @@
 #include "protos_generator/gen_utils.h"
 #include "protos_generator/names.h"
 #include "protos_generator/output.h"
-#include "upb_generator/file_layout.h"
 
 namespace protos_generator {
 namespace {
@@ -25,6 +28,7 @@ namespace {
 namespace protoc = ::google::protobuf::compiler;
 namespace protobuf = ::google::protobuf;
 using FileDescriptor = ::google::protobuf::FileDescriptor;
+using google::protobuf::Edition;
 
 void WriteSource(const protobuf::FileDescriptor* file, Output& output,
                  bool fasttable_enabled);
@@ -42,13 +46,16 @@ void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
 
 class Generator : public protoc::CodeGenerator {
  public:
-  ~Generator() override {}
+  ~Generator() override = default;
   bool Generate(const protobuf::FileDescriptor* file,
                 const std::string& parameter, protoc::GeneratorContext* context,
                 std::string* error) const override;
   uint64_t GetSupportedFeatures() const override {
-    return FEATURE_PROTO3_OPTIONAL;
+    return Feature::FEATURE_PROTO3_OPTIONAL |
+           Feature::FEATURE_SUPPORTS_EDITIONS;
   }
+  Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
+  Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
 };
 
 bool Generator::Generate(const protobuf::FileDescriptor* file,
@@ -71,14 +78,21 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
   }
 
   // Write model.upb.fwd.h
-  Output forwarding_header_output(
+  std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> output_stream(
       context->Open(ForwardingHeaderFilename(file)));
+  Output forwarding_header_output(output_stream.get());
   WriteForwardingHeader(file, forwarding_header_output);
+
   // Write model.upb.proto.h
-  Output header_output(context->Open(CppHeaderFilename(file)));
+  std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> header_output_stream(
+      context->Open(CppHeaderFilename(file)));
+  Output header_output(header_output_stream.get());
   WriteHeader(file, header_output);
+
   // Write model.upb.proto.cc
-  Output cc_output(context->Open(CppSourceFilename(file)));
+  std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> cc_output_stream(
+      context->Open(CppSourceFilename(file)));
+  Output cc_output(cc_output_stream.get());
   WriteSource(file, cc_output, fasttable_enabled);
   return true;
 }

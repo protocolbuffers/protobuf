@@ -112,6 +112,20 @@ cc_proto_library(
 #     visibility = ["//visibility:private"],
 #     deps = [":legacy_name_proto"],
 # )
+#
+# proto_library(
+#     name = "basic_editions_proto",
+#     srcs = [
+#         "basic_test_editions.proto",
+#     ],
+#     deps = [":imported_proto"],
+# )
+#
+# upb_cc_proto_library(
+#     name = "basic_test_editions_proto",
+#     visibility = ["//visibility:private"],
+#     deps = [":basic_editions_proto"],
+# )
 # end:google_only
 
 cc_test(
