@@ -388,13 +388,16 @@ class PROTOBUF_EXPORT MessageDifferencer {
               // repeated fields have different numbers of elements, the
               // unpaired elements are reported using ReportAdded() or
               // ReportDeleted().
-    AS_SET,   // Treat all the repeated fields as sets.
-              // See TreatAsSet(), as below.
+    AS_SET,   // Treat all the repeated fields as sets.  See TreatAsSet(), as
+              // below.  CAUTION: AS_SET has a cost of O(2^k) where k is the
+              // number of recursively embedded repeated fields.
     AS_SMART_LIST,  // Similar to AS_SET, but preserve the order and find the
                     // longest matching sequence from the first matching
                     // element. To use an optimal solution, call
                     // SetMatchIndicesForSmartListCallback() to pass it in.
     AS_SMART_SET,   // Similar to AS_SET, but match elements with fewest diffs.
+                    // CAUTION: AS_SMART_SET has a cost of O(2^k) where k is the
+                    // number of recursively embedded repeated fields.
   };
 
   // The elements of the given repeated field will be treated as a set for
