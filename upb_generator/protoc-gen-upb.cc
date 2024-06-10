@@ -45,7 +45,6 @@ namespace {
 
 struct Options {
   bool bootstrap = false;
-  std::string dllexport_decl;
 };
 
 std::string SourceFilename(upb::FileDefPtr file) {
@@ -754,7 +753,7 @@ void GenerateNonRepeatedSetters(upb::FieldDefPtr field,
 
   if (field == field.containing_type().map_value()) {
     output(R"cc(
-             UPB_INLINE void $0_set_$1($0* msg, $2 value) {
+             UPB_INLINE void $0_set_$1($0 *msg, $2 value) {
                _upb_msg_map_set_value(msg, &value, $3);
              }
            )cc",
@@ -763,7 +762,7 @@ void GenerateNonRepeatedSetters(upb::FieldDefPtr field,
                                               : "sizeof(" + CType(field) + ")");
   } else {
     output(R"cc(
-             UPB_INLINE void $0_set_$1($0* msg, $2 value) {
+             UPB_INLINE void $0_set_$1($0 *msg, $2 value) {
                const upb_MiniTableField field = $3;
                upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
              }
@@ -1061,9 +1060,9 @@ void WriteEnumMiniDescriptorInitializer(upb::EnumDefPtr enum_def,
           static const upb_MiniTableEnum* mini_table = NULL;
           static const char* mini_descriptor = "$1";
           if (mini_table) return mini_table;
-          mini_table = upb_MiniTableEnum_Build(mini_descriptor,
-                                               strlen(mini_descriptor),
-                                               upb_BootstrapArena(), NULL);
+          mini_table =
+              upb_MiniTableEnum_Build(mini_descriptor, strlen(mini_descriptor),
+                                      upb_BootstrapArena(), NULL);
           return mini_table;
         }
       )cc",
@@ -1129,8 +1128,6 @@ bool ParseOptions(Plugin* plugin, Options* options) {
       options->bootstrap = true;
     } else if (pair.first == "experimental_strip_nonfunctional_codegen") {
       continue;
-    } else if (pair.first == "dllexport_decl") {
-      options->dllexport_decl = pair.second;
     } else {
       plugin->SetError(absl::Substitute("Unknown parameter: $0", pair.first));
       return false;
