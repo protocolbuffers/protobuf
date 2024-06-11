@@ -6,11 +6,13 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <string>
-#include <vector>
 
 #include "absl/log/absl_log.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/substitute.h"
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
+#include "upb/reflection/def.hpp"
 #include "upb_generator/common.h"
 #include "upb_generator/file_layout.h"
 #include "upb_generator/plugin.h"
@@ -31,20 +33,26 @@ absl::string_view ToStringView(upb_StringView str) {
 }
 
 void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
-                  Plugin* plugin) {
+                  const MiniTableOptions& options, Plugin* plugin) {
   Output h_output;
   WriteMiniTableHeader(pools, file, h_output);
   plugin->AddOutputFile(MiniTableHeaderFilename(file), h_output.output());
 
   Output c_output;
-  WriteMiniTableSource(pools, file, c_output);
+  WriteMiniTableSource(pools, file, options, c_output);
   plugin->AddOutputFile(SourceFilename(file), c_output.output());
+
+  if (options.one_output_per_message) {
+    WriteMiniTableMultipleSources(pools, file, options, plugin);
+  }
 }
 
-bool ParseOptions(Plugin* plugin) {
+bool ParseOptions(MiniTableOptions* options, Plugin* plugin) {
   for (const auto& pair : ParseGeneratorParameter(plugin->parameter())) {
     if (pair.first == "experimental_strip_nonfunctional_codegen") {
       continue;
+    } else if (pair.first == "one_output_per_message") {
+      options->one_output_per_message = true;
     } else {
       plugin->SetError(absl::Substitute("Unknown parameter: $0", pair.first));
       return false;
@@ -56,8 +64,9 @@ bool ParseOptions(Plugin* plugin) {
 
 int PluginMain(int argc, char** argv) {
   DefPoolPair pools;
+  MiniTableOptions options;
   Plugin plugin;
-  if (!ParseOptions(&plugin)) return 0;
+  if (!ParseOptions(&options, &plugin)) return 0;
   plugin.GenerateFilesRaw(
       [&](const UPB_DESC(FileDescriptorProto) * file_proto, bool generate) {
         upb::Status status;
@@ -68,7 +77,7 @@ int PluginMain(int argc, char** argv) {
           ABSL_LOG(FATAL) << "Couldn't add file " << name
                           << " to DefPool: " << status.error_message();
         }
-        if (generate) GenerateFile(pools, file, &plugin);
+        if (generate) GenerateFile(pools, file, options, &plugin);
       });
   return 0;
 }

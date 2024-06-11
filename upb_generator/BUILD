@@ -318,6 +318,7 @@ bootstrap_cc_library(
         "//upb:mini_table",
         "//upb:port",
         "//upb:wire_reader",
+        "//upb/mini_table:internal",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
@@ -345,6 +346,7 @@ bootstrap_cc_library(
         ":common",
         ":plugin",
         ":protoc-gen-upb_minitable_lib",
+        "//upb/reflection:reflection",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//pkg:__pkg__"],
@@ -353,6 +355,7 @@ bootstrap_cc_library(
         "//upb:port",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
     ],
 )
 

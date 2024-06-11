@@ -1,5 +1,6 @@
 """Implementation of the aspect that powers the upb_*_proto_library() rules."""
 
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load(":upb_proto_library_internal/cc_library_func.bzl", "cc_library_func")
 load(":upb_proto_library_internal/copts.bzl", "UpbProtoLibraryCoptsInfo")
@@ -54,7 +55,51 @@ def _merge_generated_srcs(srcs):
         thunks = _concat_lists([s.thunks for s in srcs]),
     )
 
-def _generate_upb_protos(ctx, generator, proto_info):
+def _get_implicit_weak_field_sources(ctx, proto_info):
+    # Creating one .cc file for each Message in a proto allows the linker to be more aggressive
+    # about removing unused classes. However, since the number of outputs won't be known at Blaze
+    # analysis time, all of the generated source files are put in a directory and a TreeArtifact is
+    # used to represent them.
+    proto_artifacts = []
+    for proto_source in proto_info.direct_sources:
+        # We can have slashes in the target name. For example, proto_source can be:
+        # dir/a.proto. However proto_source.basename will return a.proto, when in reality
+        # the BUILD file declares it as dir/a.proto, because target name contains a slash.
+        # There is no good workaround for this.
+        # I am using ctx.label.package to check if the name of the target contains slash or not.
+        # This is similar to what declare_directory does.
+        if not proto_source.short_path.startswith(ctx.label.package):
+            fail("This should never happen, proto source {} path does not start with {}.".format(
+                proto_source.short_path,
+                ctx.label.package,
+            ))
+        proto_source_name = proto_source.short_path[len(ctx.label.package) + 1:]
+        last_dot = proto_source_name.rfind(".")
+        if last_dot != -1:
+            proto_source_name = proto_source_name[:last_dot]
+        proto_artifacts.append(ctx.actions.declare_directory(proto_source_name + ".upb_weak_minitables"))
+
+    return proto_artifacts
+
+def _get_feature_configuration(ctx, cc_toolchain, proto_info):
+    requested_features = list(ctx.features)
+
+    # Disable the whole-archive behavior for protobuf generated code when the
+    # proto_one_output_per_message feature is enabled.
+    requested_features.append("disable_whole_archive_for_static_lib_if_proto_one_output_per_message")
+    unsupported_features = list(ctx.disabled_features)
+    if len(proto_info.direct_sources) != 0:
+        requested_features.append("header_modules")
+    else:
+        unsupported_features.append("header_modules")
+    return cc_common.configure_features(
+        ctx = ctx,
+        cc_toolchain = cc_toolchain,
+        requested_features = requested_features,
+        unsupported_features = unsupported_features,
+    )
+
+def _generate_srcs_list(ctx, generator, proto_info):
     if len(proto_info.direct_sources) == 0:
         return GeneratedSrcsInfo(srcs = [], hdrs = [], thunks = [], includes = [])
 
@@ -92,19 +137,35 @@ def _generate_upb_protos(ctx, generator, proto_info):
             mnemonic = "GenUpbProtosThunks",
         )
 
-    proto_common.compile(
-        actions = ctx.actions,
-        proto_info = proto_info,
-        proto_lang_toolchain_info = _get_lang_toolchain(ctx, generator),
-        generated_files = srcs + hdrs,
-        experimental_exec_group = "proto_compiler",
-    )
-
     return GeneratedSrcsInfo(
         srcs = srcs,
         hdrs = hdrs,
         thunks = thunks,
     )
+
+def _generate_upb_protos(ctx, generator, proto_info, feature_configuration):
+    implicit_weak = generator == "upb_minitable" and cc_common.is_enabled(
+        feature_configuration = feature_configuration,
+        feature_name = "proto_one_output_per_message",
+    )
+
+    srcs = _generate_srcs_list(ctx, generator, proto_info)
+    additional_args = ctx.actions.args()
+
+    if implicit_weak:
+        srcs.srcs.extend(_get_implicit_weak_field_sources(ctx, proto_info))
+        additional_args.add("--upb_minitable_opt=one_output_per_message")
+
+    proto_common.compile(
+        actions = ctx.actions,
+        proto_info = proto_info,
+        proto_lang_toolchain_info = _get_lang_toolchain(ctx, generator),
+        generated_files = srcs.srcs + srcs.hdrs,
+        experimental_exec_group = "proto_compiler",
+        additional_args = additional_args,
+    )
+
+    return srcs
 
 def _generate_name(ctx, generator, thunks = False):
     if thunks:
@@ -217,10 +278,13 @@ def upb_proto_aspect_impl(
         )
     else:
         proto_info = target[ProtoInfo]
+        cc_toolchain = find_cpp_toolchain(ctx)
+        feature_configuration = _get_feature_configuration(ctx, cc_toolchain, proto_info)
         files = _generate_upb_protos(
             ctx,
             generator,
             proto_info,
+            feature_configuration,
         )
         wrapped_cc_info = _compile_upb_protos(
             ctx,
