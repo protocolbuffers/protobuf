@@ -82,6 +82,7 @@ VALUE RepeatedField_EmptyFrozen(const upb_FieldDef* f) {
 VALUE RepeatedField_GetRubyWrapper(const upb_Array* array, TypeInfo type_info,
                                    VALUE arena) {
   PBRUBY_ASSERT(array);
+  PBRUBY_ASSERT(arena != Qnil);
   VALUE val = ObjectCache_Get(array);
 
   if (val == Qnil) {

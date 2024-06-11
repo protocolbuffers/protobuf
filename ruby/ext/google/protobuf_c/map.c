@@ -66,6 +66,7 @@ static VALUE Map_alloc(VALUE klass) {
 VALUE Map_GetRubyWrapper(const upb_Map* map, upb_CType key_type,
                          TypeInfo value_type, VALUE arena) {
   PBRUBY_ASSERT(map);
+  PBRUBY_ASSERT(arena != Qnil);
 
   VALUE val = ObjectCache_Get(map);
 
