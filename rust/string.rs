@@ -10,8 +10,8 @@
 #![allow(unused)]
 
 use crate::__internal::Private;
-use crate::__runtime::{PtrAndLen, RawMessage};
-use crate::{Mut, MutProxied, MutProxy, Optional, Proxied, View, ViewProxy};
+use crate::__runtime::{InnerProtoString, PtrAndLen, RawMessage};
+use crate::{IntoProxied, Mut, MutProxied, MutProxy, Optional, Proxied, View, ViewProxy};
 use std::borrow::Cow;
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use std::convert::{AsMut, AsRef};
@@ -19,14 +19,43 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::iter;
 use std::ops::{Deref, DerefMut};
+use std::ptr;
 use utf8::Utf8Chunks;
 
-impl Proxied for [u8] {
+pub struct Bytes {
+    pub(crate) inner: InnerProtoString,
+}
+
+impl AsRef<[u8]> for Bytes {
+    fn as_ref(&self) -> &[u8] {
+        self.inner.as_bytes_ref()
+    }
+}
+
+impl From<&[u8]> for Bytes {
+    fn from(v: &[u8]) -> Bytes {
+        Bytes { inner: InnerProtoString::from(v) }
+    }
+}
+
+impl Proxied for Bytes {
     type View<'msg> = &'msg [u8];
 }
 
+impl IntoProxied<Bytes> for &[u8] {
+    fn into(self, _private: Private) -> Bytes {
+        Bytes::from(self)
+    }
+}
+
+impl<const N: usize> IntoProxied<Bytes> for &[u8; N] {
+    fn into(self, _private: Private) -> Bytes {
+        Bytes::from(self.as_ref())
+    }
+}
+
 impl<'msg> ViewProxy<'msg> for &'msg [u8] {
-    type Proxied = [u8];
+    type Proxied = Bytes;
 
     fn as_view(&self) -> &[u8] {
         self
@@ -47,6 +76,64 @@ pub struct Utf8Error(pub(crate) ());
 impl From<std::str::Utf8Error> for Utf8Error {
     fn from(_: std::str::Utf8Error) -> Utf8Error {
         Utf8Error(())
+    }
+}
+
+/// An owned type representing protobuf `string` field's contents.
+///
+/// # UTF-8
+///
+/// Protobuf [docs] state that a `string` field contains UTF-8 encoded text.
+/// However, not every runtime enforces this, and the Rust runtime is designed
+/// to integrate with other runtimes with FFI, like C++.
+///
+/// `ProtoString` represents a string type that is expected to contain valid
+/// UTF-8. However, `ProtoString` is not validated, so users must
+/// call [`ProtoString::to_string`] to perform a (possibly runtime-elided) UTF-8
+/// validation check. This validation should rarely fail in pure Rust programs,
+/// but is necessary to prevent UB when interacting with C++, or other languages
+/// with looser restrictions.
+///
+///
+/// # `Display` and `ToString`
+/// `ProtoString` is ordinarily UTF-8 and so implements `Display`. If there are
+/// any invalid UTF-8 sequences, they are replaced with [`U+FFFD REPLACEMENT
+/// CHARACTER`]. Because anything implementing `Display` also implements
+/// `ToString`, `ProtoString::to_string()` is equivalent to
+/// `String::from_utf8_lossy(proto_string.as_bytes()).into_owned()`.
+///
+/// [`U+FFFD REPLACEMENT CHARACTER`]: std::char::REPLACEMENT_CHARACTER
+pub struct ProtoString {
+    pub(crate) inner: InnerProtoString,
+}
+
+impl ProtoString {
+    pub fn as_bytes(&self) -> &[u8] {
+        self.inner.as_bytes_ref()
+    }
+}
+
+impl From<&str> for ProtoString {
+    fn from(v: &str) -> Self {
+        Self::from(v.as_bytes())
+    }
+}
+
+impl From<&[u8]> for ProtoString {
+    fn from(v: &[u8]) -> Self {
+        Self { inner: InnerProtoString::from(v) }
+    }
+}
+
+impl IntoProxied<ProtoString> for &str {
+    fn into(self, _private: Private) -> ProtoString {
+        ProtoString::from(self)
+    }
+}
+
+impl IntoProxied<ProtoString> for &ProtoStr {
+    fn into(self, _private: Private) -> ProtoString {
+        ProtoString::from(self.as_bytes())
     }
 }
 
@@ -261,12 +348,12 @@ impl Ord for ProtoStr {
     }
 }
 
-impl Proxied for ProtoStr {
+impl Proxied for ProtoString {
     type View<'msg> = &'msg ProtoStr;
 }
 
 impl<'msg> ViewProxy<'msg> for &'msg ProtoStr {
-    type Proxied = ProtoStr;
+    type Proxied = ProtoString;
 
     fn as_view(&self) -> &ProtoStr {
         self
@@ -276,30 +363,6 @@ impl<'msg> ViewProxy<'msg> for &'msg ProtoStr {
     where
         'msg: 'shorter,
     {
-        self
-    }
-}
-
-// TODO: remove after IntoProxied has been implemented for
-// ProtoStr.
-impl AsRef<ProtoStr> for String {
-    fn as_ref(&self) -> &ProtoStr {
-        ProtoStr::from_str(self.as_str())
-    }
-}
-
-// TODO: remove after IntoProxied has been implemented for
-// ProtoStr.
-impl AsRef<ProtoStr> for &str {
-    fn as_ref(&self) -> &ProtoStr {
-        ProtoStr::from_str(self)
-    }
-}
-
-// TODO: remove after IntoProxied has been implemented for
-// ProtoStr.
-impl AsRef<ProtoStr> for &ProtoStr {
-    fn as_ref(&self) -> &ProtoStr {
         self
     }
 }

@@ -9,8 +9,8 @@
 
 use crate::__internal::{Enum, Private};
 use crate::{
-    Map, MapIter, Mut, ProtoStr, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
-    RepeatedMut, RepeatedView, View,
+    Bytes, IntoProxied, Map, MapIter, Mut, ProtoStr, ProtoString, Proxied, ProxiedInMapValue,
+    ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -74,6 +74,39 @@ pub type RawRepeatedField = NonNull<_opaque_pointees::RawRepeatedFieldData>;
 
 /// A raw pointer to the underlying arena for this runtime.
 pub type RawMap = NonNull<_opaque_pointees::RawMapData>;
+
+/// Kernel-specific owned `string` and `bytes` field type.
+#[derive(Debug)]
+pub struct InnerProtoString {
+    ptr: NonNull<u8>,
+    len: usize,
+}
+
+impl InnerProtoString {
+    pub(crate) fn as_bytes_ref(&self) -> &[u8] {
+        let raw = ptr::slice_from_raw_parts(self.ptr.as_ptr(), self.len);
+        // SAFETY:
+        // - `self.ptr` is non-null; enforced by the type invariant.
+        // - `self.ptr` is valid for `self.len` bytes; enforced by encapsulated
+        //   construction.
+        unsafe { &*raw }
+    }
+}
+
+impl From<&[u8]> for InnerProtoString {
+    fn from(val: &[u8]) -> Self {
+        let owned_copy: Box<[_]> = Into::into(val);
+        let len = val.len();
+        let leaked_ref: &mut [u8] = Box::leak(owned_copy);
+        InnerProtoString {
+            // SAFETY:
+            // - `leaked_ref.as_mut_ptr()` is non-null; it cannot be null since we just allocated
+            //   the box.
+            ptr: unsafe { NonNull::new_unchecked(leaked_ref.as_mut_ptr()) },
+            len,
+        }
+    }
+}
 
 /// Represents an ABI-stable version of `NonNull<[u8]>`/`string_view` (a
 /// borrowed slice of bytes) for FFI use only.
@@ -166,19 +199,22 @@ impl SerializedData {
     }
 }
 
+impl IntoProxied<Bytes> for SerializedData {
+    fn into(mut self, _private: Private) -> Bytes {
+        let mut len = 0;
+        let mut ptr = NonNull::dangling();
+        std::mem::swap(&mut self.data, &mut ptr);
+        std::mem::swap(&mut self.len, &mut len);
+        Bytes { inner: InnerProtoString { ptr, len } }
+    }
+}
+
 impl Deref for SerializedData {
     type Target = [u8];
     fn deref(&self) -> &Self::Target {
         // SAFETY: `data` is valid for `len` bytes until deallocated as promised by
         // `from_raw_parts`.
         unsafe { &*self.as_ptr() }
-    }
-}
-
-// TODO: remove after IntoProxied has been implemented for bytes.
-impl AsRef<[u8]> for SerializedData {
-    fn as_ref(&self) -> &[u8] {
-        self
     }
 }
 
@@ -235,9 +271,9 @@ pub fn debug_string(_private: Private, msg: RawMessage, f: &mut fmt::Formatter<'
     // SAFETY:
     // - `msg` is a valid protobuf message.
     #[cfg(not(lite_runtime))]
-    let dbg_str: String = unsafe { utf8_debug_string(msg) }.into();
+    let dbg_str: String = Into::into(unsafe { utf8_debug_string(msg) });
     #[cfg(lite_runtime)]
-    let dbg_str: String = unsafe { utf8_debug_string_lite(msg) }.into();
+    let dbg_str: String = Into::into(unsafe { utf8_debug_string_lite(msg) });
 
     write!(f, "{dbg_str}")
 }
@@ -354,25 +390,21 @@ macro_rules! impl_cpp_type_conversions_for_scalars {
 
 impl_cpp_type_conversions_for_scalars!(i32, u32, i64, u64, f32, f64, bool);
 
-impl CppTypeConversions for ProtoStr {
+impl CppTypeConversions for ProtoString {
     type ElemType = PtrAndLen;
 
-    fn elem_to_view<'msg>(v: PtrAndLen) -> View<'msg, ProtoStr> {
+    fn elem_to_view<'msg>(v: PtrAndLen) -> View<'msg, ProtoString> {
         ptrlen_to_str(v)
     }
 }
 
-impl CppTypeConversions for [u8] {
+impl CppTypeConversions for Bytes {
     type ElemType = PtrAndLen;
 
     fn elem_to_view<'msg>(v: Self::ElemType) -> View<'msg, Self> {
         ptrlen_to_bytes(v)
     }
 }
-
-// This type alias is used so macros can generate valid extern "C" symbol names
-// for functions working with [u8] types.
-type Bytes = [u8];
 
 macro_rules! impl_repeated_primitives {
     (@impl $($t:ty => [
@@ -425,7 +457,7 @@ macro_rules! impl_repeated_primitives {
                 }
                 #[inline]
                 fn repeated_push(mut f: Mut<Repeated<$t>>, v: View<$t>) {
-                    unsafe { $add_thunk(f.as_raw(Private), v.into()) }
+                    unsafe { $add_thunk(f.as_raw(Private), Into::into(v)) }
                 }
                 #[inline]
                 fn repeated_clear(mut f: Mut<Repeated<$t>>) {
@@ -438,7 +470,7 @@ macro_rules! impl_repeated_primitives {
                 }
                 #[inline]
                 unsafe fn repeated_set_unchecked(mut f: Mut<Repeated<$t>>, i: usize, v: View<$t>) {
-                    unsafe { $set_thunk(f.as_raw(Private), i, v.into()) }
+                    unsafe { $set_thunk(f.as_raw(Private), i, Into::into(v)) }
                 }
                 #[inline]
                 fn repeated_copy_from(src: View<Repeated<$t>>, mut dest: Mut<Repeated<$t>>) {
@@ -470,7 +502,7 @@ macro_rules! impl_repeated_primitives {
     };
 }
 
-impl_repeated_primitives!(i32, u32, i64, u64, f32, f64, bool, ProtoStr, Bytes);
+impl_repeated_primitives!(i32, u32, i64, u64, f32, f64, bool, ProtoString, Bytes);
 
 /// Cast a `RepeatedView<SomeEnum>` to `RepeatedView<c_int>`.
 pub fn cast_enum_repeated_view<E: Enum + ProxiedInRepeated>(
@@ -732,7 +764,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
 }
 
 fn str_to_ptrlen<'msg>(val: impl Into<&'msg ProtoStr>) -> PtrAndLen {
-    val.into().as_bytes().into()
+    Into::into(Into::into(val).as_bytes())
 }
 
 // Warning: this function is unsound on its own! `val.as_ref()` must be safe to
@@ -742,7 +774,7 @@ fn ptrlen_to_str<'msg>(val: PtrAndLen) -> &'msg ProtoStr {
 }
 
 fn bytes_to_ptrlen(val: &[u8]) -> PtrAndLen {
-    val.into()
+    Into::into(val)
 }
 
 // Warning: this function is unsound on its own! `val.as_ref()` must be safe to
@@ -764,7 +796,7 @@ macro_rules! impl_ProxiedInMapValue_for_key_types {
                     i64, i64, identity, identity;
                     u64, u64, identity, identity;
                     bool, bool, identity, identity;
-                    ProtoStr, PtrAndLen, str_to_ptrlen, ptrlen_to_str;
+                    ProtoString, PtrAndLen, str_to_ptrlen, ptrlen_to_str;
                     Bytes, PtrAndLen, bytes_to_ptrlen, ptrlen_to_bytes;
                 );
             )*
@@ -778,7 +810,7 @@ impl_ProxiedInMapValue_for_key_types!(
     i64, i64, identity, identity;
     u64, u64, identity, identity;
     bool, bool, identity, identity;
-    ProtoStr, PtrAndLen, str_to_ptrlen, ptrlen_to_str;
+    ProtoString, PtrAndLen, str_to_ptrlen, ptrlen_to_str;
 );
 
 #[cfg(test)]
@@ -790,7 +822,7 @@ mod tests {
     // deallocate it in its drop. This function makes it easier to do so for our
     // tests.
     fn allocate_byte_array(content: &'static [u8]) -> (*mut u8, usize) {
-        let content: &mut [u8] = Box::leak(content.into());
+        let content: &mut [u8] = Box::leak(Into::into(content));
         (content.as_mut_ptr(), content.len())
     }
 
@@ -803,7 +835,7 @@ mod tests {
 
     #[test]
     fn test_empty_string() {
-        let empty_str: String = RustStringRawParts { data: std::ptr::null(), len: 0 }.into();
+        let empty_str: String = Into::into(RustStringRawParts { data: std::ptr::null(), len: 0 });
         assert_that!(empty_str, eq(""));
     }
 }

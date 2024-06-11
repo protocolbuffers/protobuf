@@ -9,8 +9,8 @@
 
 use crate::__internal::{Enum, Private};
 use crate::{
-    Map, MapIter, MapMut, MapView, Mut, ProtoStr, Proxied, ProxiedInMapValue, ProxiedInRepeated,
-    Repeated, RepeatedMut, RepeatedView, View, ViewProxy,
+    Bytes, IntoProxied, Map, MapIter, MapMut, MapView, Mut, ProtoStr, ProtoString, Proxied,
+    ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View, ViewProxy,
 };
 use core::fmt::Debug;
 use std::alloc::Layout;
@@ -59,6 +59,12 @@ impl ScratchSpace {
 }
 
 pub type SerializedData = upb::OwnedArenaBox<[u8]>;
+
+impl IntoProxied<Bytes> for SerializedData {
+    fn into(self, _private: Private) -> Bytes {
+        Bytes { inner: InnerProtoString(self) }
+    }
+}
 
 /// The raw contents of every generated message.
 #[derive(Debug)]
@@ -141,6 +147,28 @@ fn copy_bytes_in_arena<'msg>(arena: &'msg Arena, val: &'msg [u8]) -> &'msg [u8] 
     unsafe {
         val.as_ptr().copy_to_nonoverlapping(start, val.len());
         &*(new_alloc as *mut _ as *mut [u8])
+    }
+}
+
+/// Kernel-specific owned `string` and `bytes` field type.
+pub struct InnerProtoString(OwnedArenaBox<[u8]>);
+
+impl InnerProtoString {
+    pub(crate) fn as_bytes_ref(&self) -> &[u8] {
+        &self.0
+    }
+}
+
+impl From<&[u8]> for InnerProtoString {
+    fn from(val: &[u8]) -> InnerProtoString {
+        let arena = Arena::new();
+        let slice = copy_bytes_in_arena(&arena, val);
+        // SAFETY:
+        // - `slice` is a valid slice of `arena`'s memory.
+        // - `arena` is live for at least `'static`.
+        InnerProtoString(unsafe {
+            OwnedArenaBox::new(NonNull::new_unchecked(slice as *const _ as *mut _), arena)
+        })
     }
 }
 
@@ -228,7 +256,10 @@ macro_rules! impl_repeated_base {
                 upb_Array_Set(
                     f.as_raw(Private),
                     i,
-                    <$t as UpbTypeConversions>::to_message_value_copy_if_required(arena, v.into()),
+                    <$t as UpbTypeConversions>::to_message_value_copy_if_required(
+                        arena,
+                        Into::into(v),
+                    ),
                 )
             }
         }
@@ -304,7 +335,7 @@ macro_rules! impl_repeated_bytes {
                             len
                         );
                         for (src_ptr, dest_ptr) in src_ptrs.iter().zip(dest_ptrs) {
-                            *dest_ptr = copy_bytes_in_arena(&arena, src_ptr.as_ref()).into();
+                            *dest_ptr = Into::into(copy_bytes_in_arena(&arena, src_ptr.as_ref()));
                         }
                     }
                 }
@@ -332,7 +363,7 @@ impl_repeated_primitives!(
     (u64, u64, uint64_val, upb::CType::UInt64),
 );
 
-impl_repeated_bytes!((ProtoStr, upb::CType::String), ([u8], upb::CType::Bytes),);
+impl_repeated_bytes!((ProtoString, upb::CType::String), (Bytes, upb::CType::Bytes),);
 
 /// Copy the contents of `src` into `dest`.
 ///
@@ -564,18 +595,18 @@ impl_upb_type_conversions_for_scalars!(
     bool, bool_val, upb::CType::Bool, false;
 );
 
-impl UpbTypeConversions for [u8] {
+impl UpbTypeConversions for Bytes {
     fn upb_type() -> upb::CType {
         upb::CType::Bytes
     }
 
-    fn to_message_value(val: View<'_, [u8]>) -> upb_MessageValue {
-        upb_MessageValue { str_val: val.into() }
+    fn to_message_value(val: View<'_, Bytes>) -> upb_MessageValue {
+        upb_MessageValue { str_val: Into::into(val) }
     }
 
     unsafe fn to_message_value_copy_if_required(
         raw_arena: RawArena,
-        val: View<'_, [u8]>,
+        val: View<'_, Bytes>,
     ) -> upb_MessageValue {
         // SAFETY: The arena memory is not freed due to `ManuallyDrop`.
         let arena = ManuallyDrop::new(unsafe { Arena::from_raw(raw_arena) });
@@ -584,34 +615,34 @@ impl UpbTypeConversions for [u8] {
         msg_val
     }
 
-    unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, [u8]> {
+    unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, Bytes> {
         unsafe { msg.str_val.as_ref() }
     }
 }
 
-impl UpbTypeConversions for ProtoStr {
+impl UpbTypeConversions for ProtoString {
     fn upb_type() -> upb::CType {
         upb::CType::String
     }
 
-    fn to_message_value(val: View<'_, ProtoStr>) -> upb_MessageValue {
-        upb_MessageValue { str_val: val.as_bytes().into() }
+    fn to_message_value(val: View<'_, ProtoString>) -> upb_MessageValue {
+        upb_MessageValue { str_val: Into::into(val.as_bytes()) }
     }
 
     unsafe fn to_message_value_copy_if_required(
         raw_arena: RawArena,
-        val: View<'_, ProtoStr>,
+        val: View<'_, ProtoString>,
     ) -> upb_MessageValue {
         // SAFETY: `raw_arena` is valid as promised by the caller
         unsafe {
-            <[u8] as UpbTypeConversions>::to_message_value_copy_if_required(
+            <Bytes as UpbTypeConversions>::to_message_value_copy_if_required(
                 raw_arena,
                 val.as_bytes(),
             )
         }
     }
 
-    unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, ProtoStr> {
+    unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, ProtoString> {
         unsafe { ProtoStr::from_utf8_unchecked(msg.str_val.as_ref()) }
     }
 }
@@ -734,13 +765,13 @@ macro_rules! impl_ProxiedInMapValue_for_key_types {
     ($($t:ty),*) => {
         $(
             impl_ProxiedInMapValue_for_non_generated_value_types!(
-                $t ; f32, f64, i32, u32, i64, u64, bool, ProtoStr, [u8]
+                $t ; f32, f64, i32, u32, i64, u64, bool, ProtoString, Bytes
             );
         )*
     }
 }
 
-impl_ProxiedInMapValue_for_key_types!(i32, u32, i64, u64, bool, ProtoStr);
+impl_ProxiedInMapValue_for_key_types!(i32, u32, i64, u64, bool, ProtoString);
 
 /// `upb_Map_Insert`, but returns a `bool` for whether insert occurred.
 ///

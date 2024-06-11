@@ -100,7 +100,7 @@ expose_repeated_field_methods(int64_t, i64);
     r->Reserve(r->size() + additional);                                \
   }
 
-expose_repeated_ptr_field_methods(ProtoStr);
+expose_repeated_ptr_field_methods(ProtoString);
 expose_repeated_ptr_field_methods(Bytes);
 #undef expose_repeated_field_methods
 
@@ -130,7 +130,7 @@ __PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(
     std::string(value.ptr, value.len),
     google::protobuf::rust_internal::PtrAndLen(cpp_value.data(), cpp_value.size()));
 __PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(
-    std::string, ProtoStr, google::protobuf::rust_internal::PtrAndLen,
+    std::string, ProtoString, google::protobuf::rust_internal::PtrAndLen,
     std::string(value.ptr, value.len),
     google::protobuf::rust_internal::PtrAndLen(cpp_value.data(), cpp_value.size()));
 
