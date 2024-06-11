@@ -386,13 +386,13 @@ error UPB_TRACING_ENABLED Tracing should be disabled in production builds
 
 /* As described in: https://stackoverflow.com/a/22366882 */
 #define UPB_LINKARR_APPEND(name) \
-  __attribute__((retain, used, section("__DATA,la_" #name)))
+  __attribute__((retain, used, section("__DATA,__la_" #name)))
 #define UPB_LINKARR_DECLARE(name, type)           \
   extern type const __start_linkarr_##name __asm( \
-      "section$start$__DATA$la_" #name);          \
+      "section$start$__DATA$__la_" #name);        \
   extern type const __stop_linkarr_##name __asm(  \
       "section$end$__DATA$"                       \
-      "la_" #name);                               \
+      "__la_" #name);                             \
   UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1]
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
