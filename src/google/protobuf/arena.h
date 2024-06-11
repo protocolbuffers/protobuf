@@ -84,6 +84,7 @@ template <typename T>
 void arena_delete_object(void* object) {
   delete reinterpret_cast<T*>(object);
 }
+
 }  // namespace internal
 
 // ArenaOptions provides optional additional parameters to arena construction

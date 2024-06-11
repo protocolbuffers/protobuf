@@ -2655,6 +2655,21 @@ inline void FileDescriptorSet::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* FileDescriptorSet::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) FileDescriptorSet(arena);
+}
+constexpr auto FileDescriptorSet::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_.file_) +
+              decltype(FileDescriptorSet::_impl_.file_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::ZeroInit(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&FileDescriptorSet::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -2664,13 +2679,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             FileDescriptorSet::IsInitializedImpl,
             &FileDescriptorSet::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<FileDescriptorSet>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<FileDescriptorSet>(),
-            ::google::protobuf::Message::GetNewImpl<FileDescriptorSet>(),
             ::google::protobuf::Message::GetClearImpl<FileDescriptorSet>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<FileDescriptorSet>(),
                 ::google::protobuf::Message::GetSerializeImpl<FileDescriptorSet>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(FileDescriptorSet),
             PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_._cached_size_),
             false,
         },
@@ -2911,6 +2927,39 @@ inline void FileDescriptorProto::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* FileDescriptorProto::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) FileDescriptorProto(arena);
+}
+constexpr auto FileDescriptorProto::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_.dependency_) +
+              decltype(FileDescriptorProto::_impl_.dependency_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_.public_dependency_) +
+              decltype(FileDescriptorProto::_impl_.public_dependency_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_.weak_dependency_) +
+              decltype(FileDescriptorProto::_impl_.weak_dependency_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_.message_type_) +
+              decltype(FileDescriptorProto::_impl_.message_type_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_.enum_type_) +
+              decltype(FileDescriptorProto::_impl_.enum_type_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_.service_) +
+              decltype(FileDescriptorProto::_impl_.service_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_.extension_) +
+              decltype(FileDescriptorProto::_impl_.extension_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::Memcpy(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&FileDescriptorProto::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -2920,13 +2969,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             FileDescriptorProto::IsInitializedImpl,
             &FileDescriptorProto::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<FileDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<FileDescriptorProto>(),
-            ::google::protobuf::Message::GetNewImpl<FileDescriptorProto>(),
             ::google::protobuf::Message::GetClearImpl<FileDescriptorProto>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<FileDescriptorProto>(),
                 ::google::protobuf::Message::GetSerializeImpl<FileDescriptorProto>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(FileDescriptorProto),
             PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._cached_size_),
             false,
         },
@@ -3513,6 +3563,14 @@ inline void DescriptorProto_ExtensionRange::SharedDtor() {
   _impl_.~Impl_();
 }
 
+constexpr auto DescriptorProto_ExtensionRange::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      })) {
+    return ::google::protobuf::internal::PlacementNew::ZeroInit(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&DescriptorProto_ExtensionRange::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -3522,13 +3580,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             DescriptorProto_ExtensionRange::IsInitializedImpl,
             &DescriptorProto_ExtensionRange::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<DescriptorProto_ExtensionRange>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<DescriptorProto_ExtensionRange>(),
-            ::google::protobuf::Message::GetNewImpl<DescriptorProto_ExtensionRange>(),
             ::google::protobuf::Message::GetClearImpl<DescriptorProto_ExtensionRange>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<DescriptorProto_ExtensionRange>(),
                 ::google::protobuf::Message::GetSerializeImpl<DescriptorProto_ExtensionRange>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(DescriptorProto_ExtensionRange),
             PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._cached_size_),
             false,
         },
@@ -3786,6 +3845,14 @@ inline void DescriptorProto_ReservedRange::SharedDtor() {
   _impl_.~Impl_();
 }
 
+constexpr auto DescriptorProto_ReservedRange::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      })) {
+    return ::google::protobuf::internal::PlacementNew::ZeroInit(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&DescriptorProto_ReservedRange::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -3795,13 +3862,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &DescriptorProto_ReservedRange::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<DescriptorProto_ReservedRange>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<DescriptorProto_ReservedRange>(),
-            ::google::protobuf::Message::GetNewImpl<DescriptorProto_ReservedRange>(),
             ::google::protobuf::Message::GetClearImpl<DescriptorProto_ReservedRange>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<DescriptorProto_ReservedRange>(),
                 ::google::protobuf::Message::GetSerializeImpl<DescriptorProto_ReservedRange>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(DescriptorProto_ReservedRange),
             PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._cached_size_),
             false,
         },
@@ -4055,6 +4123,42 @@ inline void DescriptorProto::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* DescriptorProto::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) DescriptorProto(arena);
+}
+constexpr auto DescriptorProto::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_.field_) +
+              decltype(DescriptorProto::_impl_.field_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_.extension_) +
+              decltype(DescriptorProto::_impl_.extension_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_.nested_type_) +
+              decltype(DescriptorProto::_impl_.nested_type_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_.enum_type_) +
+              decltype(DescriptorProto::_impl_.enum_type_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_.extension_range_) +
+              decltype(DescriptorProto::_impl_.extension_range_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_.oneof_decl_) +
+              decltype(DescriptorProto::_impl_.oneof_decl_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_.reserved_range_) +
+              decltype(DescriptorProto::_impl_.reserved_range_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_.reserved_name_) +
+              decltype(DescriptorProto::_impl_.reserved_name_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::Memcpy(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&DescriptorProto::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -4064,13 +4168,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             DescriptorProto::IsInitializedImpl,
             &DescriptorProto::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<DescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<DescriptorProto>(),
-            ::google::protobuf::Message::GetNewImpl<DescriptorProto>(),
             ::google::protobuf::Message::GetClearImpl<DescriptorProto>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<DescriptorProto>(),
                 ::google::protobuf::Message::GetSerializeImpl<DescriptorProto>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(DescriptorProto),
             PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._cached_size_),
             false,
         },
@@ -4587,6 +4692,14 @@ inline void ExtensionRangeOptions_Declaration::SharedDtor() {
   _impl_.~Impl_();
 }
 
+constexpr auto ExtensionRangeOptions_Declaration::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      })) {
+    return ::google::protobuf::internal::PlacementNew::Memcpy(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&ExtensionRangeOptions_Declaration::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -4596,13 +4709,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &ExtensionRangeOptions_Declaration::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<ExtensionRangeOptions_Declaration>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<ExtensionRangeOptions_Declaration>(),
-            ::google::protobuf::Message::GetNewImpl<ExtensionRangeOptions_Declaration>(),
             ::google::protobuf::Message::GetClearImpl<ExtensionRangeOptions_Declaration>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<ExtensionRangeOptions_Declaration>(),
                 ::google::protobuf::Message::GetSerializeImpl<ExtensionRangeOptions_Declaration>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(ExtensionRangeOptions_Declaration),
             PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_._cached_size_),
             false,
         },
@@ -4928,6 +5042,27 @@ inline void ExtensionRangeOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* ExtensionRangeOptions::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) ExtensionRangeOptions(arena);
+}
+constexpr auto ExtensionRangeOptions::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._extensions_) +
+              decltype(ExtensionRangeOptions::_impl_._extensions_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_.uninterpreted_option_) +
+              decltype(ExtensionRangeOptions::_impl_.uninterpreted_option_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_.declaration_) +
+              decltype(ExtensionRangeOptions::_impl_.declaration_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::Memcpy(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&ExtensionRangeOptions::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -4937,13 +5072,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             ExtensionRangeOptions::IsInitializedImpl,
             &ExtensionRangeOptions::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<ExtensionRangeOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<ExtensionRangeOptions>(),
-            ::google::protobuf::Message::GetNewImpl<ExtensionRangeOptions>(),
             ::google::protobuf::Message::GetClearImpl<ExtensionRangeOptions>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<ExtensionRangeOptions>(),
                 ::google::protobuf::Message::GetSerializeImpl<ExtensionRangeOptions>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(ExtensionRangeOptions),
             PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_._cached_size_),
             false,
         },
@@ -5302,6 +5438,14 @@ inline void FieldDescriptorProto::SharedDtor() {
   _impl_.~Impl_();
 }
 
+constexpr auto FieldDescriptorProto::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      })) {
+    return ::google::protobuf::internal::PlacementNew::Memcpy(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&FieldDescriptorProto::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -5311,13 +5455,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             FieldDescriptorProto::IsInitializedImpl,
             &FieldDescriptorProto::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<FieldDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<FieldDescriptorProto>(),
-            ::google::protobuf::Message::GetNewImpl<FieldDescriptorProto>(),
             ::google::protobuf::Message::GetClearImpl<FieldDescriptorProto>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<FieldDescriptorProto>(),
                 ::google::protobuf::Message::GetSerializeImpl<FieldDescriptorProto>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(FieldDescriptorProto),
             PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._cached_size_),
             false,
         },
@@ -5811,6 +5956,14 @@ inline void OneofDescriptorProto::SharedDtor() {
   _impl_.~Impl_();
 }
 
+constexpr auto OneofDescriptorProto::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      })) {
+    return ::google::protobuf::internal::PlacementNew::Memcpy(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&OneofDescriptorProto::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -5820,13 +5973,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             OneofDescriptorProto::IsInitializedImpl,
             &OneofDescriptorProto::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<OneofDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<OneofDescriptorProto>(),
-            ::google::protobuf::Message::GetNewImpl<OneofDescriptorProto>(),
             ::google::protobuf::Message::GetClearImpl<OneofDescriptorProto>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<OneofDescriptorProto>(),
                 ::google::protobuf::Message::GetSerializeImpl<OneofDescriptorProto>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(OneofDescriptorProto),
             PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._cached_size_),
             false,
         },
@@ -6064,6 +6218,14 @@ inline void EnumDescriptorProto_EnumReservedRange::SharedDtor() {
   _impl_.~Impl_();
 }
 
+constexpr auto EnumDescriptorProto_EnumReservedRange::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      })) {
+    return ::google::protobuf::internal::PlacementNew::ZeroInit(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&EnumDescriptorProto_EnumReservedRange::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -6073,13 +6235,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &EnumDescriptorProto_EnumReservedRange::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<EnumDescriptorProto_EnumReservedRange>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<EnumDescriptorProto_EnumReservedRange>(),
-            ::google::protobuf::Message::GetNewImpl<EnumDescriptorProto_EnumReservedRange>(),
             ::google::protobuf::Message::GetClearImpl<EnumDescriptorProto_EnumReservedRange>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<EnumDescriptorProto_EnumReservedRange>(),
                 ::google::protobuf::Message::GetSerializeImpl<EnumDescriptorProto_EnumReservedRange>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(EnumDescriptorProto_EnumReservedRange),
             PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._cached_size_),
             false,
         },
@@ -6323,6 +6486,27 @@ inline void EnumDescriptorProto::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* EnumDescriptorProto::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) EnumDescriptorProto(arena);
+}
+constexpr auto EnumDescriptorProto::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_.value_) +
+              decltype(EnumDescriptorProto::_impl_.value_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_.reserved_range_) +
+              decltype(EnumDescriptorProto::_impl_.reserved_range_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_.reserved_name_) +
+              decltype(EnumDescriptorProto::_impl_.reserved_name_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::Memcpy(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&EnumDescriptorProto::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -6332,13 +6516,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             EnumDescriptorProto::IsInitializedImpl,
             &EnumDescriptorProto::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<EnumDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<EnumDescriptorProto>(),
-            ::google::protobuf::Message::GetNewImpl<EnumDescriptorProto>(),
             ::google::protobuf::Message::GetClearImpl<EnumDescriptorProto>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<EnumDescriptorProto>(),
                 ::google::protobuf::Message::GetSerializeImpl<EnumDescriptorProto>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(EnumDescriptorProto),
             PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._cached_size_),
             false,
         },
@@ -6693,6 +6878,14 @@ inline void EnumValueDescriptorProto::SharedDtor() {
   _impl_.~Impl_();
 }
 
+constexpr auto EnumValueDescriptorProto::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      })) {
+    return ::google::protobuf::internal::PlacementNew::Memcpy(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&EnumValueDescriptorProto::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -6702,13 +6895,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             EnumValueDescriptorProto::IsInitializedImpl,
             &EnumValueDescriptorProto::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<EnumValueDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<EnumValueDescriptorProto>(),
-            ::google::protobuf::Message::GetNewImpl<EnumValueDescriptorProto>(),
             ::google::protobuf::Message::GetClearImpl<EnumValueDescriptorProto>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<EnumValueDescriptorProto>(),
                 ::google::protobuf::Message::GetSerializeImpl<EnumValueDescriptorProto>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(EnumValueDescriptorProto),
             PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._cached_size_),
             false,
         },
@@ -6996,6 +7190,21 @@ inline void ServiceDescriptorProto::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* ServiceDescriptorProto::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) ServiceDescriptorProto(arena);
+}
+constexpr auto ServiceDescriptorProto::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_.method_) +
+              decltype(ServiceDescriptorProto::_impl_.method_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::Memcpy(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&ServiceDescriptorProto::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -7005,13 +7214,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             ServiceDescriptorProto::IsInitializedImpl,
             &ServiceDescriptorProto::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<ServiceDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<ServiceDescriptorProto>(),
-            ::google::protobuf::Message::GetNewImpl<ServiceDescriptorProto>(),
             ::google::protobuf::Message::GetClearImpl<ServiceDescriptorProto>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<ServiceDescriptorProto>(),
                 ::google::protobuf::Message::GetSerializeImpl<ServiceDescriptorProto>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(ServiceDescriptorProto),
             PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._cached_size_),
             false,
         },
@@ -7321,6 +7531,14 @@ inline void MethodDescriptorProto::SharedDtor() {
   _impl_.~Impl_();
 }
 
+constexpr auto MethodDescriptorProto::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      })) {
+    return ::google::protobuf::internal::PlacementNew::Memcpy(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&MethodDescriptorProto::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -7330,13 +7548,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             MethodDescriptorProto::IsInitializedImpl,
             &MethodDescriptorProto::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<MethodDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<MethodDescriptorProto>(),
-            ::google::protobuf::Message::GetNewImpl<MethodDescriptorProto>(),
             ::google::protobuf::Message::GetClearImpl<MethodDescriptorProto>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<MethodDescriptorProto>(),
                 ::google::protobuf::Message::GetSerializeImpl<MethodDescriptorProto>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(MethodDescriptorProto),
             PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._cached_size_),
             false,
         },
@@ -7744,6 +7963,24 @@ inline void FileOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* FileOptions::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) FileOptions(arena);
+}
+constexpr auto FileOptions::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._extensions_) +
+              decltype(FileOptions::_impl_._extensions_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.uninterpreted_option_) +
+              decltype(FileOptions::_impl_.uninterpreted_option_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::Memcpy(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&FileOptions::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -7753,13 +7990,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             FileOptions::IsInitializedImpl,
             &FileOptions::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<FileOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<FileOptions>(),
-            ::google::protobuf::Message::GetNewImpl<FileOptions>(),
             ::google::protobuf::Message::GetClearImpl<FileOptions>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<FileOptions>(),
                 ::google::protobuf::Message::GetSerializeImpl<FileOptions>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(FileOptions),
             PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._cached_size_),
             false,
         },
@@ -8533,6 +8771,24 @@ inline void MessageOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* MessageOptions::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) MessageOptions(arena);
+}
+constexpr auto MessageOptions::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._extensions_) +
+              decltype(MessageOptions::_impl_._extensions_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_.uninterpreted_option_) +
+              decltype(MessageOptions::_impl_.uninterpreted_option_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::ZeroInit(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&MessageOptions::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -8542,13 +8798,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             MessageOptions::IsInitializedImpl,
             &MessageOptions::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<MessageOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<MessageOptions>(),
-            ::google::protobuf::Message::GetNewImpl<MessageOptions>(),
             ::google::protobuf::Message::GetClearImpl<MessageOptions>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<MessageOptions>(),
                 ::google::protobuf::Message::GetSerializeImpl<MessageOptions>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(MessageOptions),
             PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._cached_size_),
             false,
         },
@@ -8922,6 +9179,14 @@ inline void FieldOptions_EditionDefault::SharedDtor() {
   _impl_.~Impl_();
 }
 
+constexpr auto FieldOptions_EditionDefault::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      })) {
+    return ::google::protobuf::internal::PlacementNew::Memcpy(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&FieldOptions_EditionDefault::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -8931,13 +9196,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &FieldOptions_EditionDefault::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<FieldOptions_EditionDefault>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<FieldOptions_EditionDefault>(),
-            ::google::protobuf::Message::GetNewImpl<FieldOptions_EditionDefault>(),
             ::google::protobuf::Message::GetClearImpl<FieldOptions_EditionDefault>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<FieldOptions_EditionDefault>(),
                 ::google::protobuf::Message::GetSerializeImpl<FieldOptions_EditionDefault>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(FieldOptions_EditionDefault),
             PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_._cached_size_),
             false,
         },
@@ -9183,6 +9449,14 @@ inline void FieldOptions_FeatureSupport::SharedDtor() {
   _impl_.~Impl_();
 }
 
+constexpr auto FieldOptions_FeatureSupport::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      })) {
+    return ::google::protobuf::internal::PlacementNew::Memcpy(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&FieldOptions_FeatureSupport::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -9192,13 +9466,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &FieldOptions_FeatureSupport::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<FieldOptions_FeatureSupport>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<FieldOptions_FeatureSupport>(),
-            ::google::protobuf::Message::GetNewImpl<FieldOptions_FeatureSupport>(),
             ::google::protobuf::Message::GetClearImpl<FieldOptions_FeatureSupport>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<FieldOptions_FeatureSupport>(),
                 ::google::protobuf::Message::GetSerializeImpl<FieldOptions_FeatureSupport>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(FieldOptions_FeatureSupport),
             PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_._cached_size_),
             false,
         },
@@ -9512,6 +9787,30 @@ inline void FieldOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* FieldOptions::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) FieldOptions(arena);
+}
+constexpr auto FieldOptions::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._extensions_) +
+              decltype(FieldOptions::_impl_._extensions_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.targets_) +
+              decltype(FieldOptions::_impl_.targets_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.edition_defaults_) +
+              decltype(FieldOptions::_impl_.edition_defaults_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.uninterpreted_option_) +
+              decltype(FieldOptions::_impl_.uninterpreted_option_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::ZeroInit(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&FieldOptions::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -9521,13 +9820,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             FieldOptions::IsInitializedImpl,
             &FieldOptions::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<FieldOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<FieldOptions>(),
-            ::google::protobuf::Message::GetNewImpl<FieldOptions>(),
             ::google::protobuf::Message::GetClearImpl<FieldOptions>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<FieldOptions>(),
                 ::google::protobuf::Message::GetSerializeImpl<FieldOptions>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(FieldOptions),
             PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._cached_size_),
             false,
         },
@@ -10091,6 +10391,24 @@ inline void OneofOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* OneofOptions::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) OneofOptions(arena);
+}
+constexpr auto OneofOptions::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._extensions_) +
+              decltype(OneofOptions::_impl_._extensions_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_.uninterpreted_option_) +
+              decltype(OneofOptions::_impl_.uninterpreted_option_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::ZeroInit(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&OneofOptions::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -10100,13 +10418,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             OneofOptions::IsInitializedImpl,
             &OneofOptions::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<OneofOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<OneofOptions>(),
-            ::google::protobuf::Message::GetNewImpl<OneofOptions>(),
             ::google::protobuf::Message::GetClearImpl<OneofOptions>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<OneofOptions>(),
                 ::google::protobuf::Message::GetSerializeImpl<OneofOptions>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(OneofOptions),
             PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_._cached_size_),
             false,
         },
@@ -10391,6 +10710,24 @@ inline void EnumOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* EnumOptions::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) EnumOptions(arena);
+}
+constexpr auto EnumOptions::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._extensions_) +
+              decltype(EnumOptions::_impl_._extensions_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_.uninterpreted_option_) +
+              decltype(EnumOptions::_impl_.uninterpreted_option_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::ZeroInit(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&EnumOptions::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -10400,13 +10737,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             EnumOptions::IsInitializedImpl,
             &EnumOptions::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<EnumOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<EnumOptions>(),
-            ::google::protobuf::Message::GetNewImpl<EnumOptions>(),
             ::google::protobuf::Message::GetClearImpl<EnumOptions>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<EnumOptions>(),
                 ::google::protobuf::Message::GetSerializeImpl<EnumOptions>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(EnumOptions),
             PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._cached_size_),
             false,
         },
@@ -10764,6 +11102,24 @@ inline void EnumValueOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* EnumValueOptions::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) EnumValueOptions(arena);
+}
+constexpr auto EnumValueOptions::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._extensions_) +
+              decltype(EnumValueOptions::_impl_._extensions_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_.uninterpreted_option_) +
+              decltype(EnumValueOptions::_impl_.uninterpreted_option_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::ZeroInit(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&EnumValueOptions::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -10773,13 +11129,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             EnumValueOptions::IsInitializedImpl,
             &EnumValueOptions::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<EnumValueOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<EnumValueOptions>(),
-            ::google::protobuf::Message::GetNewImpl<EnumValueOptions>(),
             ::google::protobuf::Message::GetClearImpl<EnumValueOptions>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<EnumValueOptions>(),
                 ::google::protobuf::Message::GetSerializeImpl<EnumValueOptions>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(EnumValueOptions),
             PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._cached_size_),
             false,
         },
@@ -11142,6 +11499,24 @@ inline void ServiceOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* ServiceOptions::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) ServiceOptions(arena);
+}
+constexpr auto ServiceOptions::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._extensions_) +
+              decltype(ServiceOptions::_impl_._extensions_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_.uninterpreted_option_) +
+              decltype(ServiceOptions::_impl_.uninterpreted_option_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::ZeroInit(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&ServiceOptions::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -11151,13 +11526,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             ServiceOptions::IsInitializedImpl,
             &ServiceOptions::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<ServiceOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<ServiceOptions>(),
-            ::google::protobuf::Message::GetNewImpl<ServiceOptions>(),
             ::google::protobuf::Message::GetClearImpl<ServiceOptions>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<ServiceOptions>(),
                 ::google::protobuf::Message::GetSerializeImpl<ServiceOptions>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(ServiceOptions),
             PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._cached_size_),
             false,
         },
@@ -11470,6 +11846,24 @@ inline void MethodOptions::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* MethodOptions::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) MethodOptions(arena);
+}
+constexpr auto MethodOptions::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._extensions_) +
+              decltype(MethodOptions::_impl_._extensions_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.uninterpreted_option_) +
+              decltype(MethodOptions::_impl_.uninterpreted_option_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::ZeroInit(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&MethodOptions::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -11479,13 +11873,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             MethodOptions::IsInitializedImpl,
             &MethodOptions::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<MethodOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<MethodOptions>(),
-            ::google::protobuf::Message::GetNewImpl<MethodOptions>(),
             ::google::protobuf::Message::GetClearImpl<MethodOptions>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<MethodOptions>(),
                 ::google::protobuf::Message::GetSerializeImpl<MethodOptions>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(MethodOptions),
             PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._cached_size_),
             false,
         },
@@ -11812,6 +12207,14 @@ inline void UninterpretedOption_NamePart::SharedDtor() {
   _impl_.~Impl_();
 }
 
+constexpr auto UninterpretedOption_NamePart::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      })) {
+    return ::google::protobuf::internal::PlacementNew::Memcpy(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&UninterpretedOption_NamePart::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -11821,13 +12224,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             UninterpretedOption_NamePart::IsInitializedImpl,
             &UninterpretedOption_NamePart::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<UninterpretedOption_NamePart>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<UninterpretedOption_NamePart>(),
-            ::google::protobuf::Message::GetNewImpl<UninterpretedOption_NamePart>(),
             ::google::protobuf::Message::GetClearImpl<UninterpretedOption_NamePart>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<UninterpretedOption_NamePart>(),
                 ::google::protobuf::Message::GetSerializeImpl<UninterpretedOption_NamePart>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(UninterpretedOption_NamePart),
             PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._cached_size_),
             false,
         },
@@ -12088,6 +12492,21 @@ inline void UninterpretedOption::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* UninterpretedOption::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) UninterpretedOption(arena);
+}
+constexpr auto UninterpretedOption::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_.name_) +
+              decltype(UninterpretedOption::_impl_.name_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::Memcpy(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&UninterpretedOption::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -12097,13 +12516,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             UninterpretedOption::IsInitializedImpl,
             &UninterpretedOption::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<UninterpretedOption>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<UninterpretedOption>(),
-            ::google::protobuf::Message::GetNewImpl<UninterpretedOption>(),
             ::google::protobuf::Message::GetClearImpl<UninterpretedOption>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<UninterpretedOption>(),
                 ::google::protobuf::Message::GetSerializeImpl<UninterpretedOption>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(UninterpretedOption),
             PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._cached_size_),
             false,
         },
@@ -12490,6 +12910,21 @@ inline void FeatureSet::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* FeatureSet::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) FeatureSet(arena);
+}
+constexpr auto FeatureSet::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._extensions_) +
+              decltype(FeatureSet::_impl_._extensions_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::ZeroInit(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&FeatureSet::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -12499,13 +12934,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             FeatureSet::IsInitializedImpl,
             &FeatureSet::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<FeatureSet>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<FeatureSet>(),
-            ::google::protobuf::Message::GetNewImpl<FeatureSet>(),
             ::google::protobuf::Message::GetClearImpl<FeatureSet>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<FeatureSet>(),
                 ::google::protobuf::Message::GetSerializeImpl<FeatureSet>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(FeatureSet),
             PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_._cached_size_),
             false,
         },
@@ -12857,6 +13293,14 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor() {
   _impl_.~Impl_();
 }
 
+constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      })) {
+    return ::google::protobuf::internal::PlacementNew::ZeroInit(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&FeatureSetDefaults_FeatureSetEditionDefault::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -12866,13 +13310,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             FeatureSetDefaults_FeatureSetEditionDefault::IsInitializedImpl,
             &FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<FeatureSetDefaults_FeatureSetEditionDefault>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<FeatureSetDefaults_FeatureSetEditionDefault>(),
-            ::google::protobuf::Message::GetNewImpl<FeatureSetDefaults_FeatureSetEditionDefault>(),
             ::google::protobuf::Message::GetClearImpl<FeatureSetDefaults_FeatureSetEditionDefault>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<FeatureSetDefaults_FeatureSetEditionDefault>(),
                 ::google::protobuf::Message::GetSerializeImpl<FeatureSetDefaults_FeatureSetEditionDefault>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(FeatureSetDefaults_FeatureSetEditionDefault),
             PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_._cached_size_),
             false,
         },
@@ -13168,6 +13613,21 @@ inline void FeatureSetDefaults::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* FeatureSetDefaults::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) FeatureSetDefaults(arena);
+}
+constexpr auto FeatureSetDefaults::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_.defaults_) +
+              decltype(FeatureSetDefaults::_impl_.defaults_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::ZeroInit(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&FeatureSetDefaults::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -13177,13 +13637,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             FeatureSetDefaults::IsInitializedImpl,
             &FeatureSetDefaults::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<FeatureSetDefaults>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<FeatureSetDefaults>(),
-            ::google::protobuf::Message::GetNewImpl<FeatureSetDefaults>(),
             ::google::protobuf::Message::GetClearImpl<FeatureSetDefaults>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<FeatureSetDefaults>(),
                 ::google::protobuf::Message::GetSerializeImpl<FeatureSetDefaults>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(FeatureSetDefaults),
             PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_._cached_size_),
             false,
         },
@@ -13464,6 +13925,27 @@ inline void SourceCodeInfo_Location::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* SourceCodeInfo_Location::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) SourceCodeInfo_Location(arena);
+}
+constexpr auto SourceCodeInfo_Location::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_.path_) +
+              decltype(SourceCodeInfo_Location::_impl_.path_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_.span_) +
+              decltype(SourceCodeInfo_Location::_impl_.span_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+          PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_.leading_detached_comments_) +
+              decltype(SourceCodeInfo_Location::_impl_.leading_detached_comments_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::Memcpy(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&SourceCodeInfo_Location::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -13473,13 +13955,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &SourceCodeInfo_Location::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<SourceCodeInfo_Location>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<SourceCodeInfo_Location>(),
-            ::google::protobuf::Message::GetNewImpl<SourceCodeInfo_Location>(),
             ::google::protobuf::Message::GetClearImpl<SourceCodeInfo_Location>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<SourceCodeInfo_Location>(),
                 ::google::protobuf::Message::GetSerializeImpl<SourceCodeInfo_Location>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(SourceCodeInfo_Location),
             PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._cached_size_),
             false,
         },
@@ -13805,6 +14288,21 @@ inline void SourceCodeInfo::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* SourceCodeInfo::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) SourceCodeInfo(arena);
+}
+constexpr auto SourceCodeInfo::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_.location_) +
+              decltype(SourceCodeInfo::_impl_.location_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::ZeroInit(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&SourceCodeInfo::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -13814,13 +14312,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &SourceCodeInfo::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<SourceCodeInfo>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<SourceCodeInfo>(),
-            ::google::protobuf::Message::GetNewImpl<SourceCodeInfo>(),
             ::google::protobuf::Message::GetClearImpl<SourceCodeInfo>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<SourceCodeInfo>(),
                 ::google::protobuf::Message::GetSerializeImpl<SourceCodeInfo>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(SourceCodeInfo),
             PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_._cached_size_),
             false,
         },
@@ -14035,6 +14534,21 @@ inline void GeneratedCodeInfo_Annotation::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* GeneratedCodeInfo_Annotation::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) GeneratedCodeInfo_Annotation(arena);
+}
+constexpr auto GeneratedCodeInfo_Annotation::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_.path_) +
+              decltype(GeneratedCodeInfo_Annotation::_impl_.path_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::Memcpy(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&GeneratedCodeInfo_Annotation::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -14044,13 +14558,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &GeneratedCodeInfo_Annotation::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<GeneratedCodeInfo_Annotation>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<GeneratedCodeInfo_Annotation>(),
-            ::google::protobuf::Message::GetNewImpl<GeneratedCodeInfo_Annotation>(),
             ::google::protobuf::Message::GetClearImpl<GeneratedCodeInfo_Annotation>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<GeneratedCodeInfo_Annotation>(),
                 ::google::protobuf::Message::GetSerializeImpl<GeneratedCodeInfo_Annotation>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(GeneratedCodeInfo_Annotation),
             PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._cached_size_),
             false,
         },
@@ -14364,6 +14879,21 @@ inline void GeneratedCodeInfo::SharedDtor() {
   _impl_.~Impl_();
 }
 
+void* GeneratedCodeInfo::PlacementNew(const void*, void* mem,
+                                ::google::protobuf::Arena* arena) {
+  return ::new (mem) GeneratedCodeInfo(arena);
+}
+constexpr auto GeneratedCodeInfo::InternalNewImpl_() {
+  if (auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+          PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _impl_.annotation_) +
+              decltype(GeneratedCodeInfo::_impl_.annotation_)::InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      })) {
+    return ::google::protobuf::internal::PlacementNew::ZeroInit(*arena_bits);
+  } else {
+    return ::google::protobuf::internal::PlacementNew(&GeneratedCodeInfo::PlacementNew);
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -14373,13 +14903,14 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &GeneratedCodeInfo::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<GeneratedCodeInfo>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<GeneratedCodeInfo>(),
-            ::google::protobuf::Message::GetNewImpl<GeneratedCodeInfo>(),
             ::google::protobuf::Message::GetClearImpl<GeneratedCodeInfo>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<GeneratedCodeInfo>(),
                 ::google::protobuf::Message::GetSerializeImpl<GeneratedCodeInfo>(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
+            sizeof(GeneratedCodeInfo),
             PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _impl_._cached_size_),
             false,
         },

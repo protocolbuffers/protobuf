@@ -69,18 +69,32 @@ message TestConflictingSymbolNames {
   optional int32 controller = 14;
   optional int32 already_here = 15;
 
+  // Integral types
+  optional uint32 uint8 = 47;
+  optional uint32 uint8_t = 48;
+  optional uint32 uint16 = 49;
+  optional uint32 uint16_t = 50;
   optional uint32 uint32 = 16;
   optional uint32 uint32_t = 41;
   optional uint64 uint64 = 17;
   optional uint32 uint64_t = 42;
-  optional string string = 18;
-  optional int32 memset = 19;
+  optional uint32 int8 = 51;
+  optional uint32 int8_t = 52;
+  optional uint32 int16 = 53;
+  optional uint32 int16_t = 54;
   optional int32 int32 = 20;
   optional int32 int32_t = 43;
   optional int64 int64 = 21;
   optional int64 int64_t = 44;
   optional int64 size_t = 45;
+  optional int64 ssize_t = 55;
+  optional int64 intptr_t = 46;
+  optional int64 uintptr_t = 56;
 
+  optional string string = 18;
+  optional int32 memset = 19;
+
+  // Internal identifier
   optional uint32 cached_size = 22;
   optional uint32 extensions = 23;
   optional uint32 bit = 24;

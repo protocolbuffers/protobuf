@@ -16,6 +16,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <map>
 #include <new>
 #include <string>
 #include <type_traits>
@@ -324,7 +325,80 @@ inline void PrefetchToLocalCache(const void* ptr) {
   absl::PrefetchToLocalCache(ptr);
 }
 
+template <typename T>
+constexpr T* Launder(T* p) {
+#if defined(__cpp_lib_launder) && __cpp_lib_launder >= 201606L
+  return std::launder(p);
+#elif ABSL_HAVE_BUILTIN(__builtin_launder)
+  return __builtin_launder(p);
+#else
+  return p;
+#endif
+}
+
+#if ABSL_HAVE_BUILTIN(__is_bitwise_cloneable)
+constexpr bool EnableCustomNew() { return true; }
+template <typename T>
+constexpr bool EnableCustomNewFor() {
+  return __is_bitwise_cloneable(T);
+}
+#else
+constexpr bool EnableCustomNew() { return false; }
+template <typename T>
+constexpr bool EnableCustomNewFor() {
+  return false;
+}
+#endif
+
 constexpr bool IsOss() { return true; }
+
+// Counter library for debugging internal protobuf logic.
+// It allows instrumenting code that has different options (eg fast vs slow
+// path) to get visibility into how much we are hitting each path.
+// When compiled with -DPROTOBUF_ENABLE_DEBUG_COUNTERS, the counters register an
+// atexit handler to dump the table. Otherwise, they are a noop and have not
+// runtime cost.
+//
+// Usage:
+//
+// (at function scope)
+//
+// static DebugCounter counter_foo_fast("Foo.Fast");
+// static DebugCounter counter_foo_slow("Foo.Slow");
+//
+// if (do_fast) {
+//   counter_foo_fast.Inc();
+//   ...
+// } else {
+//   counter_foo_slow.Inc();
+//   ...
+// }
+class DebugCounter {
+ public:
+#if defined(PROTOBUF_ENABLE_DEBUG_COUNTERS)
+  DebugCounter(absl::string_view name);
+  void Inc() { counter_.store(value() + 1, std::memory_order_relaxed); }
+  size_t value() const { return counter_.load(std::memory_order_relaxed); }
+
+#else   // PROTOBUF_ENABLE_DEBUG_COUNTERS
+  // When the feature is not enabled, the type is a noop.
+  constexpr DebugCounter(absl::string_view) {}
+
+  constexpr void Inc() {}
+  constexpr size_t value() const { return 0; }
+#endif  // PROTOBUF_ENABLE_DEBUG_COUNTERS
+
+ private:
+  using Map = std::map<absl::string_view,
+                       std::map<absl::string_view, const DebugCounter*>>;
+
+  static Map& CounterMap();
+  static void PrintAllCounters();
+
+#if defined(PROTOBUF_ENABLE_DEBUG_COUNTERS)
+  std::atomic<size_t> counter_{};
+#endif  // PROTOBUF_ENABLE_DEBUG_COUNTERS
+};
 
 }  // namespace internal
 }  // namespace protobuf

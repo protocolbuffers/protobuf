@@ -1853,3 +1853,27 @@ message TestMessageWithManyRepeatedPtrFields {
   repeated string repeated_string_31 = 31;
   repeated string repeated_string_32 = 32;
 }
+
+message PlacementNewZeroInit {
+  optional int32 i = 1;
+  optional double d = 2;
+  optional PlacementNewZeroInit m = 3;
+  oneof one {
+    string os = 10;
+    string oc = 11 [ctype=CORD];
+    fixed64 of = 12;
+    PlacementNewZeroInit ol = 13 [lazy=true];
+  }
+}
+
+message PlacementNewMemcpy {
+  optional string s = 1;
+}
+
+message PlacementNewFunc {
+  // These are kMemcpyWithArena, but falls back to kConstructor now.
+  repeated int32 i = 1;
+  optional PlacementNewFunc m = 2 [lazy=true];
+  // This one is ArenaDtorNeeds::kRequired so we must run the constructor.
+  optional string c = 3 [ctype=CORD];
+}

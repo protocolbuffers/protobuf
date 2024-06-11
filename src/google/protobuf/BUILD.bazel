@@ -257,7 +257,11 @@ cc_library(
     deps = [
         "@com_google_absl//absl/base:config",
         "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/base:prefetch",
         "@com_google_absl//absl/meta:type_traits",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_absl//absl/types:optional",
     ],
 )
 

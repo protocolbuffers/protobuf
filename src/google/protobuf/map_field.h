@@ -507,6 +507,10 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   static const UntypedMapBase& GetMapImpl(const MapFieldBaseForParse& map,
                                           bool is_mutable);
 
+  static constexpr size_t InternalGetArenaOffset(internal::InternalVisibility) {
+    return PROTOBUF_FIELD_OFFSET(MapFieldBase, payload_);
+  }
+
  private:
   friend class ContendedMapCleanTest;
   friend class GeneratedMessageReflection;
@@ -607,6 +611,13 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
   }
 
   void InternalSwap(TypeDefinedMapFieldBase* other);
+
+  using MapFieldBase::InternalGetArenaOffset;
+  static constexpr size_t InternalGetArenaOffsetExtra(
+      internal::InternalVisibility visibility) {
+    return PROTOBUF_FIELD_OFFSET(TypeDefinedMapFieldBase, map_) +
+           decltype(map_)::InternalGetArenaOffset(visibility);
+  }
 
  protected:
   friend struct MapFieldTestPeer;

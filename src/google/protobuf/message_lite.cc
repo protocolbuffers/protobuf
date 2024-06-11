@@ -47,7 +47,13 @@ namespace protobuf {
 
 void MessageLite::DestroyInstance(bool free_memory) {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  _class_data_->delete_message(this, free_memory);
+  // Read first, because we can't after calling `delete_message`.
+  size_t allocation_size = _class_data_->allocation_size;
+  void* ptr = this;
+  _class_data_->delete_message(ptr);
+  if (free_memory) {
+    internal::SizedDelete(ptr, allocation_size);
+  }
 #else   // PROTOBUF_CUSTOM_VTABLE
   ABSL_DCHECK(!free_memory);
   this->~MessageLite();
@@ -64,14 +70,17 @@ void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
   data->merge_to_from(*this, other);
 }
 
+MessageLite* MessageLite::New(Arena* arena) const {
+  auto* data = GetClassData();
+  void* mem = arena != nullptr ? arena->AllocateAligned(data->allocation_size)
+                               : ::operator new(data->allocation_size);
+  return data->placement_new.Run(this, data, mem, arena);
+}
+
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 uint8_t* MessageLite::_InternalSerialize(
     uint8_t* ptr, io::EpsCopyOutputStream* stream) const {
   return _class_data_->serialize(*this, ptr, stream);
-}
-
-MessageLite* MessageLite::New(Arena* arena) const {
-  return static_cast<MessageLite*>(_class_data_->new_message(this, arena));
 }
 
 void MessageLite::Clear() { _class_data_->clear(*this); }

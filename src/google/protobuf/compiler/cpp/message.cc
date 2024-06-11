@@ -1289,6 +1289,8 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
   parse_function_generator_->GenerateDataDecls(p);
   p->Emit(R"cc(
     const $superclass$::ClassData* GetClassData() const PROTOBUF_FINAL;
+    static void* PlacementNew(const void*, void* mem, ::$proto_ns$::Arena* arena);
+    static constexpr auto InternalNewImpl_();
     static const $superclass$::ClassDataFull _class_data_;
   )cc");
   format(
@@ -2002,7 +2004,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           // implements Message ----------------------------------------------
 
-          $classname$* New(::$proto_ns$::Arena* arena = nullptr) const PROTOBUF_FINAL {
+          $classname$* New(::$proto_ns$::Arena* arena = nullptr) const {
             return $superclass$::DefaultConstruct<$classname$>(arena);
           }
           $generated_methods$;
@@ -2026,6 +2028,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           }
           $arena_dtor$;
           const $superclass$::ClassData* GetClassData() const PROTOBUF_FINAL;
+          static void* PlacementNew(const void*, void* mem, ::$proto_ns$::Arena* arena);
+          static constexpr auto InternalNewImpl_();
           static const $superclass$::$classdata_type$ _class_data_;
 
          public:
@@ -3655,7 +3659,142 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
   format("}\n");
 }
 
+MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp(
+    io::Printer* arena_emitter) const {
+  NewOpRequirements op;
+  if (IsBootstrapProto(options_, descriptor_->file())) {
+    // To simplify bootstrapping we always use a function for these types.
+    // It makes it easier to change the ABI of the `PlacementNew` class.
+    op.needs_to_run_constructor = true;
+    return op;
+  }
+
+  if (NeedsArenaDestructor() == ArenaDtorNeeds::kRequired) {
+    // We can't skip the ArenaDtor for these messages.
+    op.needs_to_run_constructor = true;
+  }
+
+  if (descriptor_->extension_range_count() > 0) {
+    op.needs_arena_seeding = true;
+    if (arena_emitter) {
+      arena_emitter->Emit(R"cc(
+        PROTOBUF_FIELD_OFFSET($classname$, $extensions$) +
+            decltype($classname$::$extensions$)::InternalGetArenaOffset(
+                $superclass$::internal_visibility()),
+      )cc");
+    }
+  }
+
+  if (num_weak_fields_ != 0) {
+    op.needs_to_run_constructor = true;
+  }
+
+  for (const FieldDescriptor* field : FieldRange(descriptor_)) {
+    const auto print_arena_offset = [&] {
+      if (arena_emitter) {
+        arena_emitter->Emit(
+            {{"field", FieldMemberName(field, false)}},
+            R"cc(
+              PROTOBUF_FIELD_OFFSET($classname$, $field$) +
+                  decltype($classname$::$field$)::InternalGetArenaOffset(
+                      $superclass$::internal_visibility()),
+            )cc");
+      }
+    };
+    if (ShouldSplit(field, options_)) {
+      op.needs_memcpy = true;
+    } else if (field->real_containing_oneof() != nullptr) {
+      /* nothing to do */
+    } else if (field->is_map()) {
+      // Maps currently have more than one arena pointer in them. Avoid them for
+      // now.
+      op.needs_to_run_constructor = true;
+    } else if (field->is_repeated()) {
+      op.needs_arena_seeding = true;
+      print_arena_offset();
+    } else {
+      const auto& generator = field_generators_.get(field);
+      if (generator.has_trivial_zero_default()) {
+        /* nothing to do */
+      } else {
+        switch (field->cpp_type()) {
+          case FieldDescriptor::CPPTYPE_INT32:
+          case FieldDescriptor::CPPTYPE_INT64:
+          case FieldDescriptor::CPPTYPE_UINT32:
+          case FieldDescriptor::CPPTYPE_UINT64:
+          case FieldDescriptor::CPPTYPE_DOUBLE:
+          case FieldDescriptor::CPPTYPE_FLOAT:
+          case FieldDescriptor::CPPTYPE_BOOL:
+          case FieldDescriptor::CPPTYPE_ENUM:
+            op.needs_memcpy = true;
+            break;
+
+          case FieldDescriptor::CPPTYPE_STRING:
+            switch (internal::cpp::EffectiveStringCType(field)) {
+              case FieldOptions::STRING_PIECE:
+                op.needs_arena_seeding = true;
+                print_arena_offset();
+                break;
+              case FieldOptions::CORD:
+                // Cord fields are currently rejected above because of ArenaDtor
+                // requirements.
+                break;
+              case FieldOptions::STRING:
+                op.needs_memcpy = true;
+                break;
+              default:
+                ABSL_LOG(FATAL);
+            }
+            break;
+          case FieldDescriptor::CPPTYPE_MESSAGE:
+            // FIXME: Lazy fields should return true on
+            // `has_trivial_zero_default()`
+            ABSL_DCHECK(IsLazy(field, options_, scc_analyzer_));
+            /* nothing to do */
+            break;
+        }
+      }
+    }
+  }
+
+  return op;
+}
+
 void MessageGenerator::GenerateClassData(io::Printer* p) {
+  const auto new_op = GetNewOp(nullptr);
+  // Arena seeding is limited to messages up to 64*sizeof(Arena*) bytes long.
+  // We don't calculate the size here, so we generate the fallback in case the
+  // code decides to use it.
+  if (new_op.needs_to_run_constructor || new_op.needs_arena_seeding) {
+    p->Emit(R"cc(
+      void* $classname$::PlacementNew(const void*, void* mem,
+                                      ::$proto_ns$::Arena* arena) {
+        return ::new (mem) $classname$(arena);
+      }
+    )cc");
+  }
+  if (new_op.needs_to_run_constructor) {
+    p->Emit(R"cc(
+      constexpr auto $classname$::InternalNewImpl_() {
+        return $pbi$::PlacementNew(&$classname$::PlacementNew);
+      }
+    )cc");
+  } else {
+    p->Emit({{"copy_type", new_op.needs_memcpy ? "Memcpy" : "ZeroInit"},
+             {"arena_offsets", [&] { GetNewOp(p); }}},
+            R"cc(
+              constexpr auto $classname$::InternalNewImpl_() {
+                if (auto arena_bits = $pbi$::EncodePlacementArenaOffsets({
+                        $arena_offsets$,
+                    })) {
+                  return $pbi$::PlacementNew::$copy_type$(*arena_bits);
+                } else {
+                  return $pbi$::PlacementNew(&$classname$::PlacementNew);
+                }
+              }
+            )cc");
+  }
+
   const auto on_demand_register_arena_dtor = [&] {
     if (NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand) {
       p->Emit(R"cc(
@@ -3745,11 +3884,12 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                       $on_demand_register_arena_dtor$,
                       $is_initialized$,
                       &$classname$::MergeImpl,
+                      $superclass$::GetNewImpl<$classname$>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
                       $superclass$::GetDeleteImpl<$classname$>(),
-                      $superclass$::GetNewImpl<$classname$>(),
                       $custom_vtable_methods$,
 #endif  // PROTOBUF_CUSTOM_VTABLE
+                      sizeof($classname$),
                       PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                       false,
                   },
@@ -3782,11 +3922,12 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                       $on_demand_register_arena_dtor$,
                       $is_initialized$,
                       &$classname$::MergeImpl,
+                      $superclass$::GetNewImpl<$classname$>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
                       $superclass$::GetDeleteImpl<$classname$>(),
-                      $superclass$::GetNewImpl<$classname$>(),
                       $custom_vtable_methods$,
 #endif  // PROTOBUF_CUSTOM_VTABLE
+                      sizeof($classname$),
                       PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                       true,
                   },

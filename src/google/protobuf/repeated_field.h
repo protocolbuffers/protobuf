@@ -304,6 +304,10 @@ class RepeatedField final
   // This is public due to it being called by generated code.
   inline void InternalSwap(RepeatedField* other);
 
+  static constexpr size_t InternalGetArenaOffset(internal::InternalVisibility) {
+    return PROTOBUF_FIELD_OFFSET(RepeatedField, arena_or_elements_);
+  }
+
  private:
   using InternalArenaConstructable_ = void;
 

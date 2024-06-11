@@ -58,10 +58,6 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 
   const ClassData* GetClassData() const PROTOBUF_FINAL;
 
-  MessageLite* New(Arena* arena) const PROTOBUF_FINAL {
-    return Arena::Create<ImplicitWeakMessage>(arena);
-  }
-
   void Clear() PROTOBUF_FINAL { data_->clear(); }
 
   size_t ByteSizeLong() const PROTOBUF_FINAL {
@@ -200,6 +196,11 @@ struct WeakRepeatedPtrField {
   union {
     RepeatedPtrField<T> weak;
   };
+
+  static constexpr size_t InternalGetArenaOffset(
+      internal::InternalVisibility visibility) {
+    return decltype(weak)::InternalGetArenaOffset(visibility);
+  }
 
  private:
   WeakRepeatedPtrField(Arena* arena, const WeakRepeatedPtrField& rhs)

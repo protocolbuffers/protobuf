@@ -15,6 +15,7 @@
 #include "google/protobuf/explicitly_constructed.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/internal_visibility.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
 
