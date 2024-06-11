@@ -16,7 +16,7 @@
 // This wrapper is enabled by passing the linker flags -Wl,-wrap,memcpy in
 // extconf.rb.
 #ifdef __linux__
-#if defined(__x86_64__) && defined(__GNU_LIBRARY__)
+#if defined(__x86_64__) && defined(__GNU_LIBRARY__) && !defined(__ILP32__)
 __asm__(".symver memcpy,memcpy@GLIBC_2.2.5");
 void *__wrap_memcpy(void *dest, const void *src, size_t n) {
   return memcpy(dest, src, n);
