@@ -378,7 +378,7 @@ error UPB_TRACING_ENABLED Tracing should be disabled in production builds
 #define UPB_LINKARR_DECLARE(name, type)     \
   extern type const __start_linkarr_##name; \
   extern type const __stop_linkarr_##name;  \
-  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1] = {0}
+  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1]
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
@@ -393,7 +393,7 @@ error UPB_TRACING_ENABLED Tracing should be disabled in production builds
   extern type const __stop_linkarr_##name __asm(  \
       "section$end$__DATA$"                       \
       "la_" #name);                               \
-  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1] = {0}
+  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1]
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
@@ -1641,42 +1641,6 @@ const upb_MiniTable google__protobuf__GeneratedCodeInfo__Annotation_msg_init = {
 };
 
 const upb_MiniTable* google__protobuf__GeneratedCodeInfo__Annotation_msg_init_ptr = &google__protobuf__GeneratedCodeInfo__Annotation_msg_init;
-static const upb_MiniTable *messages_layout[33] = {
-  &google__protobuf__FileDescriptorSet_msg_init,
-  &google__protobuf__FileDescriptorProto_msg_init,
-  &google__protobuf__DescriptorProto_msg_init,
-  &google__protobuf__DescriptorProto__ExtensionRange_msg_init,
-  &google__protobuf__DescriptorProto__ReservedRange_msg_init,
-  &google__protobuf__ExtensionRangeOptions_msg_init,
-  &google__protobuf__ExtensionRangeOptions__Declaration_msg_init,
-  &google__protobuf__FieldDescriptorProto_msg_init,
-  &google__protobuf__OneofDescriptorProto_msg_init,
-  &google__protobuf__EnumDescriptorProto_msg_init,
-  &google__protobuf__EnumDescriptorProto__EnumReservedRange_msg_init,
-  &google__protobuf__EnumValueDescriptorProto_msg_init,
-  &google__protobuf__ServiceDescriptorProto_msg_init,
-  &google__protobuf__MethodDescriptorProto_msg_init,
-  &google__protobuf__FileOptions_msg_init,
-  &google__protobuf__MessageOptions_msg_init,
-  &google__protobuf__FieldOptions_msg_init,
-  &google__protobuf__FieldOptions__EditionDefault_msg_init,
-  &google__protobuf__FieldOptions__FeatureSupport_msg_init,
-  &google__protobuf__OneofOptions_msg_init,
-  &google__protobuf__EnumOptions_msg_init,
-  &google__protobuf__EnumValueOptions_msg_init,
-  &google__protobuf__ServiceOptions_msg_init,
-  &google__protobuf__MethodOptions_msg_init,
-  &google__protobuf__UninterpretedOption_msg_init,
-  &google__protobuf__UninterpretedOption__NamePart_msg_init,
-  &google__protobuf__FeatureSet_msg_init,
-  &google__protobuf__FeatureSetDefaults_msg_init,
-  &google__protobuf__FeatureSetDefaults__FeatureSetEditionDefault_msg_init,
-  &google__protobuf__SourceCodeInfo_msg_init,
-  &google__protobuf__SourceCodeInfo__Location_msg_init,
-  &google__protobuf__GeneratedCodeInfo_msg_init,
-  &google__protobuf__GeneratedCodeInfo__Annotation_msg_init,
-};
-
 const upb_MiniTableEnum google_protobuf_Edition_enum_init = {
     64,
     9,
@@ -1837,6 +1801,42 @@ const upb_MiniTableEnum google_protobuf_MethodOptions_IdempotencyLevel_enum_init
         0x7,
         0x0,
     },
+};
+
+static const upb_MiniTable *messages_layout[33] = {
+  &google__protobuf__FileDescriptorSet_msg_init,
+  &google__protobuf__FileDescriptorProto_msg_init,
+  &google__protobuf__DescriptorProto_msg_init,
+  &google__protobuf__DescriptorProto__ExtensionRange_msg_init,
+  &google__protobuf__DescriptorProto__ReservedRange_msg_init,
+  &google__protobuf__ExtensionRangeOptions_msg_init,
+  &google__protobuf__ExtensionRangeOptions__Declaration_msg_init,
+  &google__protobuf__FieldDescriptorProto_msg_init,
+  &google__protobuf__OneofDescriptorProto_msg_init,
+  &google__protobuf__EnumDescriptorProto_msg_init,
+  &google__protobuf__EnumDescriptorProto__EnumReservedRange_msg_init,
+  &google__protobuf__EnumValueDescriptorProto_msg_init,
+  &google__protobuf__ServiceDescriptorProto_msg_init,
+  &google__protobuf__MethodDescriptorProto_msg_init,
+  &google__protobuf__FileOptions_msg_init,
+  &google__protobuf__MessageOptions_msg_init,
+  &google__protobuf__FieldOptions_msg_init,
+  &google__protobuf__FieldOptions__EditionDefault_msg_init,
+  &google__protobuf__FieldOptions__FeatureSupport_msg_init,
+  &google__protobuf__OneofOptions_msg_init,
+  &google__protobuf__EnumOptions_msg_init,
+  &google__protobuf__EnumValueOptions_msg_init,
+  &google__protobuf__ServiceOptions_msg_init,
+  &google__protobuf__MethodOptions_msg_init,
+  &google__protobuf__UninterpretedOption_msg_init,
+  &google__protobuf__UninterpretedOption__NamePart_msg_init,
+  &google__protobuf__FeatureSet_msg_init,
+  &google__protobuf__FeatureSetDefaults_msg_init,
+  &google__protobuf__FeatureSetDefaults__FeatureSetEditionDefault_msg_init,
+  &google__protobuf__SourceCodeInfo_msg_init,
+  &google__protobuf__SourceCodeInfo__Location_msg_init,
+  &google__protobuf__GeneratedCodeInfo_msg_init,
+  &google__protobuf__GeneratedCodeInfo__Annotation_msg_init,
 };
 
 static const upb_MiniTableEnum *enums_layout[17] = {
@@ -7055,15 +7055,15 @@ failure:
 
 #ifdef UPB_LINKARR_DECLARE
 
-UPB_LINKARR_DECLARE(upb_AllExts, const upb_MiniTableExtension*);
+UPB_LINKARR_DECLARE(upb_AllExts, upb_MiniTableExtension);
 
 bool upb_ExtensionRegistry_AddAllLinkedExtensions(upb_ExtensionRegistry* r) {
-  const upb_MiniTableExtension* const* start = UPB_LINKARR_START(upb_AllExts);
-  const upb_MiniTableExtension* const* stop = UPB_LINKARR_STOP(upb_AllExts);
-  for (const upb_MiniTableExtension* const* p = start; p < stop; p++) {
+  const upb_MiniTableExtension* start = UPB_LINKARR_START(upb_AllExts);
+  const upb_MiniTableExtension* stop = UPB_LINKARR_STOP(upb_AllExts);
+  for (const upb_MiniTableExtension* p = start; p < stop; p++) {
     // Windows can introduce zero padding, so we have to skip zeroes.
-    if (*p != 0) {
-      if (!upb_ExtensionRegistry_Add(r, *p)) return false;
+    if (upb_MiniTableExtension_Number(p) != 0) {
+      if (!upb_ExtensionRegistry_Add(r, p)) return false;
     }
   }
   return true;
