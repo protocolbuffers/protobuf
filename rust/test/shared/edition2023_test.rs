@@ -17,3 +17,22 @@ fn check_edition2023_works() {
     assert_that!(msg.plain_field_opt().into_inner(), eq(0));
     assert_that!(msg.implicit_presence_field(), eq(0));
 }
+
+#[test]
+fn string_view_works() {
+    let mut msg = edition2023_rust_proto::EditionsMessage::new();
+    assert_that!(msg.str_view(), eq(""));
+    assert_that!(msg.has_str_view(), eq(false));
+    msg.set_str_view("hello");
+    assert_that!(msg.str_view(), eq("hello"));
+    assert_that!(msg.has_str_view(), eq(true));
+}
+
+#[test]
+fn repeated_string_view_works() {
+    let mut msg = edition2023_rust_proto::EditionsMessage::new();
+    assert_that!(msg.repeated_str_view().len(), eq(0));
+    msg.repeated_str_view_mut().push("first".into());
+    assert_that!(msg.repeated_str_view().len(), eq(1));
+    assert_that!(msg.repeated_str_view().get(0), some(eq("first")));
+}

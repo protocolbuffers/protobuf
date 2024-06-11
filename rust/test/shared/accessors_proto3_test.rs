@@ -243,3 +243,11 @@ fn test_submsg_setter() {
 
     assert_that!(parent.optional_nested_message().bb(), eq(7));
 }
+
+#[test]
+fn test_ctype_stringpiece() {
+    let mut msg = TestAllTypes::new();
+    assert_that!(msg.optional_string_piece(), eq(""));
+    msg.set_optional_string_piece("hello");
+    assert_that!(msg.optional_string_piece(), eq("hello"));
+}

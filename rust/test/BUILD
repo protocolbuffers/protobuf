@@ -136,6 +136,7 @@ proto_library(
     name = "edition2023_proto",
     testonly = True,
     srcs = ["edition2023.proto"],
+    deps = ["//src/google/protobuf:cpp_features_proto"],
 )
 
 rust_cc_proto_library(

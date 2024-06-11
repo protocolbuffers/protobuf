@@ -814,3 +814,13 @@ fn test_to_owned() {
     assert_that!(submsg_clone.bb(), eq(7));
     assert_that!(submsg_mut.bb(), eq(8));
 }
+
+#[test]
+fn test_ctype_stringpiece() {
+    let mut msg = TestAllTypes::new();
+    assert_that!(msg.optional_string_piece(), eq(""));
+    assert_that!(msg.has_optional_string_piece(), eq(false));
+    msg.set_optional_string_piece("hello");
+    assert_that!(msg.optional_string_piece(), eq("hello"));
+    assert_that!(msg.has_optional_string_piece(), eq(true));
+}
