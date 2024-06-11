@@ -1665,7 +1665,6 @@ static PyObject* PyUpb_Message_WhichOneof(PyObject* _self, PyObject* name) {
 }
 
 PyObject* DeepCopy(PyObject* _self, PyObject* arg) {
-  PyUpb_Message* self = (void*)_self;
   const upb_MessageDef* def = PyUpb_Message_GetMsgdef(_self);
   const upb_MiniTable* mini_table = upb_MessageDef_MiniTable(def);
   upb_Message* msg = PyUpb_Message_GetIfReified(_self);
