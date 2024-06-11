@@ -247,7 +247,7 @@ rust_test(
     ],
     deps = [
         "//rust/test:unittest_cpp_rust_proto",
-        "//rust/test:unittest_edition_upb_rust_proto",
+        "//rust/test:unittest_edition_cpp_rust_proto",
         "//rust/test:unittest_proto3_cpp_rust_proto",
         "//rust/test:unittest_proto3_optional_cpp_rust_proto",
         "@crate_index//:googletest",
