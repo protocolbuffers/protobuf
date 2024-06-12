@@ -1330,8 +1330,8 @@ PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
     (void)err;
     assert(err >= 0);
   } else if (PyByteArray_Check(arg)) {
-    buf = PyByteArray_AS_STRING(arg);
-    size = PyByteArray_GET_SIZE(arg);
+    buf = PyByteArray_AsString(arg);
+    size = PyByteArray_Size(arg);
   } else if (PyBytes_AsStringAndSize(arg, &buf, &size) < 0) {
     return NULL;
   }
