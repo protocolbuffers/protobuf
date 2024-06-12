@@ -277,7 +277,7 @@ jobs:
         run: pip install -vvv --no-index --find-links wheels protobuf protobuftests
       - name: Run the unit tests
         run: |
-          TESTS=$(pip show -f protobuftests | grep _test.py | sed 's,/,.,g' | sed -E 's,.py$,,g')
+          TESTS=$(pip show -f protobuftests | grep _test.py | grep --invert-match _pybind11_test.py | sed 's,/,.,g' | sed -E 's,.py$,,g')
           for test in $TESTS; do
             python -m unittest -v $test
           done
