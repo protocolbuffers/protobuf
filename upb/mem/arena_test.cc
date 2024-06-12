@@ -81,8 +81,8 @@ class Environment {
   void RandomIncRefCount(absl::BitGen& gen) {
     auto* a = SwapRandomly(gen, nullptr);
     if (a != nullptr) {
-      upb_Arena_IncRefFor(a, nullptr);
-      upb_Arena_DecRefFor(a, nullptr);
+      upb_Arena_IncRef(a, &gen);
+      upb_Arena_DecRef(a, &gen);
       upb_Arena_Free(a);
     }
   }
@@ -222,9 +222,9 @@ TEST(ArenaTest, FuzzFuseFuseRace) {
 TEST(ArenaTest, ArenaIncRef) {
   upb_Arena* arena1 = upb_Arena_New();
   EXPECT_EQ(upb_Arena_DebugRefCount(arena1), 1);
-  upb_Arena_IncRefFor(arena1, nullptr);
+  upb_Arena_IncRef(arena1, arena1);
   EXPECT_EQ(upb_Arena_DebugRefCount(arena1), 2);
-  upb_Arena_DecRefFor(arena1, nullptr);
+  upb_Arena_DecRef(arena1, arena1);
   EXPECT_EQ(upb_Arena_DebugRefCount(arena1), 1);
   upb_Arena_Free(arena1);
 }
@@ -255,8 +255,8 @@ TEST(ArenaTest, FuzzFuseIncRefCountRace) {
 
 TEST(ArenaTest, IncRefCountShouldFailForInitialBlock) {
   char buf1[1024];
-  upb_Arena* arena = upb_Arena_Init(buf1, 1024, &upb_alloc_global);
-  EXPECT_FALSE(upb_Arena_IncRefFor(arena, nullptr));
+  upb_Arena* arena = upb_Arena_Init(buf1, sizeof buf1, &upb_alloc_global);
+  EXPECT_FALSE(upb_Arena_IncRef(arena, buf1));
 }
 
 #endif

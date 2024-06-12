@@ -18,6 +18,10 @@
 #include "upb/mem/internal/arena.h"
 #include "upb/port/atomic.h"
 
+#ifdef UPB_DEBUG_REFS
+#include "upb/mem/debug/ref.h"
+#endif
+
 // Must be last.
 #include "upb/port/def.inc"
 
@@ -316,13 +320,14 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   n = UPB_ALIGN_DOWN(n, UPB_ALIGN_OF(upb_ArenaState));
 
   if (UPB_UNLIKELY(n < sizeof(upb_ArenaState))) {
-#ifdef UPB_TRACING_ENABLED
     upb_Arena* ret = _upb_Arena_InitSlow(alloc);
+#ifdef UPB_TRACING_ENABLED
     upb_Arena_LogInit(ret, n);
-    return ret;
-#else
-    return _upb_Arena_InitSlow(alloc);
 #endif
+#ifdef UPB_DEBUG_REFS
+    upb_Debug_IncRef(ret, 0);
+#endif
+    return ret;
   }
 
   a = UPB_PTR_AT(mem, n - sizeof(upb_ArenaState), upb_ArenaState);
@@ -337,6 +342,9 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   a->head.UPB_PRIVATE(end) = UPB_PTR_AT(mem, n - sizeof(upb_ArenaState), char);
 #ifdef UPB_TRACING_ENABLED
   upb_Arena_LogInit(&a->head, n);
+#endif
+#ifdef UPB_DEBUG_REFS
+  upb_Debug_IncRef(&a->head, 0);
 #endif
   return &a->head;
 }
@@ -360,7 +368,11 @@ static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
   }
 }
 
-void upb_Arena_Free(upb_Arena* a) {
+void upb_Arena_DecRef(upb_Arena* a, const void* owner) {
+#ifdef UPB_DEBUG_REFS
+  upb_Debug_DecRef(a, owner);
+#endif
+
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   uintptr_t poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
 retry:
@@ -519,11 +531,15 @@ bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
   }
 }
 
-bool upb_Arena_IncRefFor(upb_Arena* a, const void* owner) {
+bool upb_Arena_IncRef(upb_Arena* a, const void* owner) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   if (_upb_ArenaInternal_HasInitialBlock(ai)) return false;
-  upb_ArenaRoot r;
 
+#ifdef UPB_DEBUG_REFS
+  upb_Debug_IncRef(a, owner);
+#endif
+
+  upb_ArenaRoot r;
 retry:
   r = _upb_Arena_FindRoot(a);
   if (upb_Atomic_CompareExchangeWeak(
@@ -538,7 +554,7 @@ retry:
   goto retry;
 }
 
-void upb_Arena_DecRefFor(upb_Arena* a, const void* owner) { upb_Arena_Free(a); }
+void upb_Arena_Free(upb_Arena* a) { upb_Arena_DecRef(a, NULL); }
 
 void UPB_PRIVATE(_upb_Arena_SwapIn)(upb_Arena* des, const upb_Arena* src) {
   upb_ArenaInternal* desi = upb_Arena_Internal(des);

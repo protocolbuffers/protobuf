@@ -40,11 +40,15 @@ extern "C" {
 // is a fixed-size arena and cannot grow.
 UPB_API upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc);
 
-UPB_API void upb_Arena_Free(upb_Arena* a);
 UPB_API bool upb_Arena_Fuse(upb_Arena* a, upb_Arena* b);
 
-bool upb_Arena_IncRefFor(upb_Arena* a, const void* owner);
-void upb_Arena_DecRefFor(upb_Arena* a, const void* owner);
+// upb_Arena_Free(a) is now equivalent to calling upb_Arena_DecRef(a, NULL);
+// TODO: inline this
+UPB_API void upb_Arena_Free(upb_Arena* a);
+
+// The |owner| args below must be unique and may never be NULL.
+UPB_API bool upb_Arena_IncRef(upb_Arena* a, const void* owner);
+UPB_API void upb_Arena_DecRef(upb_Arena* a, const void* owner);
 
 size_t upb_Arena_SpaceAllocated(upb_Arena* a, size_t* fused_count);
 uint32_t upb_Arena_DebugRefCount(upb_Arena* a);

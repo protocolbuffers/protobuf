@@ -334,6 +334,11 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 // #define UPB_IS_GOOGLE3
 // end:google_only
 
+// Enable arena refcounting for non-wasm debug builds.
+#if !defined(__wasm__) && !defined(NDEBUG)
+#define UPB_ARENA_DEBUG
+#endif
+
 #if defined(UPB_IS_GOOGLE3) && !defined(UPB_BOOTSTRAP_STAGE0)
 #define UPB_DESC(sym) proto2_##sym
 #define UPB_DESC_MINITABLE(sym) &proto2__##sym##_msg_init
