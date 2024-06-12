@@ -241,7 +241,7 @@ impl<T> IntoProxied<Repeated<T>> for Repeated<T>
 where
     T: ?Sized + ProxiedInRepeated,
 {
-    fn into(self, _private: Private) -> Repeated<T> {
+    fn into_proxied(self, _private: Private) -> Repeated<T> {
         self
     }
 }
@@ -250,7 +250,7 @@ impl<'msg, T> IntoProxied<Repeated<T>> for RepeatedView<'msg, T>
 where
     T: 'msg + ?Sized + ProxiedInRepeated,
 {
-    fn into(self, _private: Private) -> Repeated<T> {
+    fn into_proxied(self, _private: Private) -> Repeated<T> {
         let mut repeated: Repeated<T> = Repeated::new();
         T::repeated_copy_from(self, repeated.as_mut());
         repeated
@@ -261,8 +261,8 @@ impl<'msg, T> IntoProxied<Repeated<T>> for RepeatedMut<'msg, T>
 where
     T: 'msg + ?Sized + ProxiedInRepeated,
 {
-    fn into(self, _private: Private) -> Repeated<T> {
-        IntoProxied::into(self.as_view(), _private)
+    fn into_proxied(self, _private: Private) -> Repeated<T> {
+        IntoProxied::into_proxied(self.as_view(), _private)
     }
 }
 

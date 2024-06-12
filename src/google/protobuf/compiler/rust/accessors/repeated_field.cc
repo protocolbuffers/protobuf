@@ -119,7 +119,7 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                           $field_number$
                         )
                       };
-                      let val = src.into($pbi$::Private);
+                      let val = src.into_proxied($pbi$::Private);
                       let inner = val.inner($pbi$::Private);
 
                       self.arena().fuse(inner.arena());
@@ -137,7 +137,7 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                       pub fn set_$raw_field_name$(&mut self, src: impl $pb$::IntoProxied<$pb$::Repeated<$RsType$>>) {
                         // Prevent the memory from being deallocated. The setter
                         // transfers ownership of the memory to the parent message.
-                        let val = std::mem::ManuallyDrop::new(src.into($pbi$::Private));
+                        let val = std::mem::ManuallyDrop::new(src.into_proxied($pbi$::Private));
                         unsafe {
                           $move_setter_thunk$(self.raw_msg(),
                             val.inner($pbi$::Private).raw());

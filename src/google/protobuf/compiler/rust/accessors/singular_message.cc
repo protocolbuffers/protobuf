@@ -116,7 +116,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   // The message and arena are dropped after the setter. The
                   // memory remains allocated as we fuse the arena with the
                   // parent message's arena.
-                  let mut msg = val.into($pbi$::Private);
+                  let mut msg = val.into_proxied($pbi$::Private);
                   self.as_mutator_message_ref($pbi$::Private)
                     .arena($pbi$::Private)
                     .fuse(msg.as_mutator_message_ref($pbi$::Private).arena($pbi$::Private));
@@ -130,7 +130,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                  ctx.Emit({}, R"rs(
                   // Prevent the memory from being deallocated. The setter
                   // transfers ownership of the memory to the parent message.
-                  let mut msg = std::mem::ManuallyDrop::new(val.into($pbi$::Private));
+                  let mut msg = std::mem::ManuallyDrop::new(val.into_proxied($pbi$::Private));
                   unsafe {
                     $set_allocated_thunk$(self.as_mutator_message_ref($pbi$::Private).msg(),
                       msg.as_mutator_message_ref($pbi$::Private).msg());

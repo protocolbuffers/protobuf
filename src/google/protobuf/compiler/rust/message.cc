@@ -240,7 +240,7 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
     case Kernel::kCpp:
       ctx.Emit({{"copy_from_thunk", ThunkName(ctx, msg, "copy_from")}}, R"rs(
         impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$View<'msg> {
-          fn into(self, _private: $pbi$::Private) -> $Msg$ {
+          fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
             let dst = $Msg$::new();
             unsafe { $copy_from_thunk$(dst.inner.msg, self.msg) };
             dst
@@ -248,13 +248,13 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
         }
 
         impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$Mut<'msg> {
-          fn into(self, _private: $pbi$::Private) -> $Msg$ {
-            $pb$::IntoProxied::into($pb$::ViewProxy::into_view(self), _private)
+          fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
+            $pb$::IntoProxied::into_proxied($pb$::ViewProxy::into_view(self), _private)
           }
         }
 
         impl $pb$::IntoProxied<$Msg$> for $Msg$ {
-          fn into(self, _private: $pbi$::Private) -> $Msg$ {
+          fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
             self
           }
         }
@@ -264,7 +264,7 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       ctx.Emit({{"minitable", UpbMinitableName(msg)}}, R"rs(
         impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$View<'msg> {
-          fn into(self, _private: $pbi$::Private) -> $Msg$ {
+          fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
             let dst = $Msg$::new();
             unsafe { $pbr$::upb_Message_DeepCopy(
               dst.inner.msg,
@@ -277,13 +277,13 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
         }
 
         impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$Mut<'msg> {
-          fn into(self, _private: $pbi$::Private) -> $Msg$ {
-            $pb$::IntoProxied::into($pb$::ViewProxy::into_view(self), _private)
+          fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
+            $pb$::IntoProxied::into_proxied($pb$::ViewProxy::into_view(self), _private)
           }
         }
 
         impl $pb$::IntoProxied<$Msg$> for $Msg$ {
-          fn into(self, _private: $pbi$::Private) -> $Msg$ {
+          fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
             self
           }
         }
@@ -944,7 +944,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
 
           pub fn to_owned(&self) -> $Msg$ {
-            $pb$::IntoProxied::into(*self, $pbi$::Private)
+            $pb$::IntoProxied::into_proxied(*self, $pbi$::Private)
           }
 
           $accessor_fns_for_views$
