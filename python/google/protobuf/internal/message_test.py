@@ -82,6 +82,19 @@ class MessageTest(unittest.TestCase):
     golden_copy = copy.deepcopy(golden_message)
     self.assertEqual(golden_data, golden_copy.SerializeToString())
 
+  def testGoldenMessageBytearray(self, message_module):
+    # bytearray was broken, test that it works again
+    if message_module is unittest_pb2:
+      golden_data = test_util.GoldenFileData('golden_message_oneof_implemented')
+    else:
+      golden_data = test_util.GoldenFileData('golden_message_proto3')
+
+    golden_message = message_module.TestAllTypes()
+    golden_message.ParseFromString(bytearray(golden_data))
+    if message_module is unittest_pb2:
+      test_util.ExpectAllFieldsSet(self, golden_message)
+    self.assertEqual(golden_data, golden_message.SerializeToString())
+
   def testGoldenPackedMessage(self, message_module):
     golden_data = test_util.GoldenFileData('golden_packed_fields_message')
     golden_message = message_module.TestPackedTypes()
