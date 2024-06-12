@@ -397,9 +397,21 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
                          " specifies string_type=CORD which is not supported "
                          "for extensions."));
       } else if (field.options().has_ctype()) {
-        status = absl::FailedPreconditionError(absl::StrCat(
-            field.full_name(),
-            " specifies both string_type and ctype which is not supported."));
+        // TODO: we should update proto code to not need ctype to
+        // be set when string_type is set and disallow setting both again.
+        const FieldOptions::CType ctype = field.options().ctype();
+        const pb::CppFeatures::StringType string_type =
+            unresolved_features.string_type();
+        if ((ctype == FieldOptions::STRING &&
+             string_type != pb::CppFeatures::STRING) ||
+            (ctype == FieldOptions::CORD &&
+             string_type != pb::CppFeatures::CORD) ||
+            (ctype == FieldOptions::STRING_PIECE &&
+             string_type != pb::CppFeatures::STRING_PIECE)) {
+          status = absl::FailedPreconditionError(
+              absl::StrCat(field.full_name(),
+                           " specifies inconsistent string_type and ctype."));
+        }
       }
     }
 

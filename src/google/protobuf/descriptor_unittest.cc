@@ -57,6 +57,7 @@
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/descriptor_unittest.pb.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/feature_resolver.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -9685,7 +9686,7 @@ TEST_F(FeaturesTest, EnumFeatureHelpers) {
         type_name: "FooOpen"
         options {
           features {
-            [pb.cpp] { legacy_closed_enum: true string_type: STRING }
+            [pb.cpp] { legacy_closed_enum: true }
           }
         }
       }
@@ -9817,7 +9818,7 @@ TEST_F(FeaturesTest, NoCtypeFromEdition2024) {
           }
         }
       )pb",
-      "foo.proto: Foo.bar: NAME: ctype option is not allowed under edition "
+      "foo.proto: bar: NAME: ctype option is not allowed under edition "
       "2024 and beyond. Use the feature string_type = VIEW|CORD|STRING|... "
       "instead.\n");
 }

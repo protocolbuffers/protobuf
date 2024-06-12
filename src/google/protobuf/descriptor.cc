@@ -5432,18 +5432,42 @@ const typename DescriptorT::OptionsType* DescriptorBuilder::AllocateOptionsImpl(
   return options;
 }
 
-template <class ProtoT, class OptionsT>
-static void InferLegacyProtoFeatures(const ProtoT& proto,
-                                     const OptionsT& options, Edition edition,
+template <class ProtoT, class OptionsT, class AddErrorFunc>
+static void InferLegacyProtoFeatures(const ProtoT& proto, Edition edition,
+                                     AddErrorFunc add_error, OptionsT& options,
                                      FeatureSet& features) {}
 
+template <class AddErrorFunc>
 static void InferLegacyProtoFeatures(const FieldDescriptorProto& proto,
-                                     const FieldOptions& options,
-                                     Edition edition, FeatureSet& features) {
-  if (!features.MutableExtension(pb::cpp)->has_string_type()) {
+                                     Edition edition, AddErrorFunc add_error,
+                                     FieldOptions& options,
+                                     FeatureSet& features) {
+  pb::CppFeatures* cpp_features = features.MutableExtension(pb::cpp);
+
+  // Validate string_type/ctype before mutating them.
+  if (options.has_ctype() && edition >= Edition::EDITION_2024) {
+    add_error(
+        "ctype option is not allowed under edition 2024 and beyond. Use "
+        "the feature string_type = VIEW|CORD|STRING|... instead.");
+  }
+
+  if (!cpp_features->has_string_type()) {
     if (options.ctype() == FieldOptions::CORD) {
-      features.MutableExtension(pb::cpp)->set_string_type(
-          pb::CppFeatures::CORD);
+      cpp_features->set_string_type(pb::CppFeatures::CORD);
+    }
+  } else {
+    // TODO: we should update proto code to not need ctype to be
+    // set when string_type is set.
+    switch (features.GetExtension(pb::cpp).string_type()) {
+      case pb::CppFeatures::CORD:
+        options.set_ctype(FieldOptions::CORD);
+        break;
+      case pb::CppFeatures::STRING:
+        options.set_ctype(FieldOptions::STRING);
+        break;
+      default:
+        options.clear_ctype();
+        break;
     }
   }
 
@@ -5496,7 +5520,13 @@ void DescriptorBuilder::ResolveFeaturesImpl(
                "Features are only valid under editions.");
     }
   }
-  InferLegacyProtoFeatures(proto, *options, edition, base_features);
+  InferLegacyProtoFeatures(
+      proto, edition,
+      [&](const char* error_message) {
+        AddError(descriptor->name(), proto,
+                 DescriptorPool::ErrorCollector::NAME, error_message);
+      },
+      *options, base_features);
 
   if (base_features.ByteSizeLong() == 0 && !force_merge) {
     // Nothing to merge, and we aren't forcing it.
@@ -7863,12 +7893,7 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
   auto& field_options = field->options();
 
   if (field_options.has_ctype()) {
-    if (edition >= Edition::EDITION_2024) {
-      // "ctype" is no longer supported in edition 2024 and beyond.
-      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-               "ctype option is not allowed under edition 2024 and beyond. Use "
-               "the feature string_type = VIEW|CORD|STRING|... instead.");
-    } else if (edition == Edition::EDITION_2023) {
+    if (edition == Edition::EDITION_2023) {
       if (field->cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
         AddError(field->full_name(), proto,
                  DescriptorPool::ErrorCollector::TYPE,
