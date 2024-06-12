@@ -487,6 +487,7 @@ void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
 
 // Must be last.
 
+extern const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty);
 static const upb_MiniTableSubInternal google_protobuf_FileDescriptorSet_submsgs[1] = {
   {.UPB_PRIVATE(submsg) = &google__protobuf__FileDescriptorProto_msg_init_ptr},
 };
