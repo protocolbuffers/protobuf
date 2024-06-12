@@ -77,6 +77,17 @@ struct upb_MiniTable {
 extern "C" {
 #endif
 
+UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
+    _upb_MiniTable_StrongReference)(const struct upb_MiniTable* mt) {
+#if defined(__GNUC__)
+  __asm__("" : : "r"(mt));
+#else
+  const struct upb_MiniTable* volatile unused = mt;
+  (void)&unused;  // Use address to avoid an extra load of "unused".
+#endif
+  return mt;
+}
+
 UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(_upb_MiniTable_Empty)(void) {
   extern const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty);
 
