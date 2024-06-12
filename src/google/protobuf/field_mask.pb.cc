@@ -33,8 +33,13 @@ inline constexpr FieldMask::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR FieldMask::FieldMask(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
-      _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
 struct FieldMaskDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FieldMaskDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~FieldMaskDefaultTypeInternal() {}
@@ -107,7 +112,11 @@ class FieldMask::_Internal {
 };
 
 FieldMask::FieldMask(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldMask)
 }
@@ -120,7 +129,11 @@ inline PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
 FieldMask::FieldMask(
     ::google::protobuf::Arena* arena,
     const FieldMask& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   FieldMask* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -157,11 +170,13 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &FieldMask::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<FieldMask>(),
             ::google::protobuf::Message::GetNewImpl<FieldMask>(),
             ::google::protobuf::Message::GetClearImpl<FieldMask>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<FieldMask>(),
                 ::google::protobuf::Message::GetSerializeImpl<FieldMask>(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._cached_size_),
             false,
         },

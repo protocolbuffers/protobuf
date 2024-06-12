@@ -33,8 +33,13 @@ inline constexpr ListValue::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR ListValue::ListValue(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
-      _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
 struct ListValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR ListValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~ListValueDefaultTypeInternal() {}
@@ -53,8 +58,13 @@ inline constexpr Struct::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR Struct::Struct(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
-      _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
 struct StructDefaultTypeInternal {
   PROTOBUF_CONSTEXPR StructDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~StructDefaultTypeInternal() {}
@@ -67,7 +77,12 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 StructDefaultTypeInternal _Struct_default_instance_;
               template <typename>
 PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::_pbi::ConstantInitialized)
-    : Struct_FieldsEntry_DoNotUse::MapEntry(_class_data_.base()) {}
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : Struct_FieldsEntry_DoNotUse::MapEntry(_class_data_.base()){}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : Struct_FieldsEntry_DoNotUse::MapEntry() {
+}
+#endif  // PROTOBUF_CUSTOM_VTABLE
 struct Struct_FieldsEntry_DoNotUseDefaultTypeInternal {
   PROTOBUF_CONSTEXPR Struct_FieldsEntry_DoNotUseDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~Struct_FieldsEntry_DoNotUseDefaultTypeInternal() {}
@@ -87,8 +102,13 @@ inline constexpr Value::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR Value::Value(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
-      _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
 struct ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~ValueDefaultTypeInternal() {}
@@ -216,34 +236,41 @@ bool NullValue_IsValid(int value) {
 }
 // ===================================================================
 
-Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse() : SuperType(_class_data_.base()) {}
-Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* arena)
-    : SuperType(arena, _class_data_.base()) {}
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::google::protobuf::MessageLite::ClassDataFull
-    Struct_FieldsEntry_DoNotUse::_class_data_ = {
-        ::google::protobuf::Message::ClassData{
-            nullptr,  // tc_table
-            nullptr,  // OnDemandRegisterArenaDtor
-            nullptr,  // IsInitialized
-            &Struct_FieldsEntry_DoNotUse::MergeImpl,
-            ::google::protobuf::Message::GetDeleteImpl<Struct_FieldsEntry_DoNotUse>(),
-            ::google::protobuf::Message::GetNewImpl<Struct_FieldsEntry_DoNotUse>(),
-            ::google::protobuf::Message::ClearImpl, ::google::protobuf::Message::ByteSizeLongImpl,
-                ::google::protobuf::Message::_InternalSerializeImpl,
-            PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _cached_size_),
-            false,
-        },
-        &Struct_FieldsEntry_DoNotUse::kDescriptorMethods,
-        &descriptor_table_google_2fprotobuf_2fstruct_2eproto,
-        nullptr,  // tracker
-};
-const ::google::protobuf::MessageLite::ClassData* Struct_FieldsEntry_DoNotUse::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
-  return _class_data_.base();
-}
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+              Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse() : SuperType(_class_data_.base()) {}
+              Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* arena)
+                  : SuperType(arena, _class_data_.base()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+              Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse() : SuperType() {}
+              Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* arena) : SuperType(arena) {}
+#endif  // PROTOBUF_CUSTOM_VTABLE
+              PROTOBUF_CONSTINIT
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+              const ::google::protobuf::MessageLite::ClassDataFull
+                  Struct_FieldsEntry_DoNotUse::_class_data_ = {
+                      ::google::protobuf::Message::ClassData{
+                          nullptr,  // tc_table
+                          nullptr,  // OnDemandRegisterArenaDtor
+                          nullptr,  // IsInitialized
+                          &Struct_FieldsEntry_DoNotUse::MergeImpl,
+              #if defined(PROTOBUF_CUSTOM_VTABLE)
+                          ::google::protobuf::Message::GetDeleteImpl<Struct_FieldsEntry_DoNotUse>(),
+                          ::google::protobuf::Message::GetNewImpl<Struct_FieldsEntry_DoNotUse>(),
+                          ::google::protobuf::Message::ClearImpl, ::google::protobuf::Message::ByteSizeLongImpl,
+                              ::google::protobuf::Message::_InternalSerializeImpl,
+              #endif  // PROTOBUF_CUSTOM_VTABLE
+                          PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _cached_size_),
+                          false,
+                      },
+                      &Struct_FieldsEntry_DoNotUse::kDescriptorMethods,
+                      &descriptor_table_google_2fprotobuf_2fstruct_2eproto,
+                      nullptr,  // tracker
+              };
+              const ::google::protobuf::MessageLite::ClassData* Struct_FieldsEntry_DoNotUse::GetClassData() const {
+                ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
+                ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
+                return _class_data_.base();
+              }
 // ===================================================================
 
 class Struct::_Internal {
@@ -251,7 +278,11 @@ class Struct::_Internal {
 };
 
 Struct::Struct(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Struct)
 }
@@ -264,7 +295,11 @@ inline PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
 Struct::Struct(
     ::google::protobuf::Arena* arena,
     const Struct& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   Struct* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -301,11 +336,13 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Struct::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Struct>(),
             ::google::protobuf::Message::GetNewImpl<Struct>(),
             ::google::protobuf::Message::GetClearImpl<Struct>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<Struct>(),
                 ::google::protobuf::Message::GetSerializeImpl<Struct>(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Struct, _impl_._cached_size_),
             false,
         },
@@ -499,7 +536,11 @@ void Value::set_allocated_list_value(::google::protobuf::ListValue* list_value) 
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.list_value)
 }
 Value::Value(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Value)
 }
@@ -513,7 +554,11 @@ inline PROTOBUF_NDEBUG_INLINE Value::Impl_::Impl_(
 Value::Value(
     ::google::protobuf::Arena* arena,
     const Value& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   Value* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -620,11 +665,13 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Value::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Value>(),
             ::google::protobuf::Message::GetNewImpl<Value>(),
             ::google::protobuf::Message::GetClearImpl<Value>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<Value>(),
                 ::google::protobuf::Message::GetSerializeImpl<Value>(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Value, _impl_._cached_size_),
             false,
         },
@@ -893,7 +940,11 @@ class ListValue::_Internal {
 };
 
 ListValue::ListValue(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ListValue)
 }
@@ -906,7 +957,11 @@ inline PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
 ListValue::ListValue(
     ::google::protobuf::Arena* arena,
     const ListValue& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   ListValue* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -943,11 +998,13 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &ListValue::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<ListValue>(),
             ::google::protobuf::Message::GetNewImpl<ListValue>(),
             ::google::protobuf::Message::GetClearImpl<ListValue>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<ListValue>(),
                 ::google::protobuf::Message::GetSerializeImpl<ListValue>(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(ListValue, _impl_._cached_size_),
             false,
         },

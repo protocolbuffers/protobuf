@@ -34,8 +34,13 @@ inline constexpr Duration::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR Duration::Duration(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
-      _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
 struct DurationDefaultTypeInternal {
   PROTOBUF_CONSTEXPR DurationDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~DurationDefaultTypeInternal() {}
@@ -109,7 +114,11 @@ class Duration::_Internal {
 };
 
 Duration::Duration(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Duration)
 }
@@ -151,11 +160,13 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Duration::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Duration>(),
             ::google::protobuf::Message::GetNewImpl<Duration>(),
             ::google::protobuf::Message::GetClearImpl<Duration>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<Duration>(),
                 ::google::protobuf::Message::GetSerializeImpl<Duration>(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Duration, _impl_._cached_size_),
             false,
         },

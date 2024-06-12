@@ -35,8 +35,13 @@ inline constexpr SourceContext::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR SourceContext::SourceContext(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
-      _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
 struct SourceContextDefaultTypeInternal {
   PROTOBUF_CONSTEXPR SourceContextDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~SourceContextDefaultTypeInternal() {}
@@ -109,7 +114,11 @@ class SourceContext::_Internal {
 };
 
 SourceContext::SourceContext(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceContext)
 }
@@ -122,7 +131,11 @@ inline PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
 SourceContext::SourceContext(
     ::google::protobuf::Arena* arena,
     const SourceContext& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SourceContext* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -160,11 +173,13 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &SourceContext::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<SourceContext>(),
             ::google::protobuf::Message::GetNewImpl<SourceContext>(),
             ::google::protobuf::Message::GetClearImpl<SourceContext>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<SourceContext>(),
                 ::google::protobuf::Message::GetSerializeImpl<SourceContext>(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
             false,
         },

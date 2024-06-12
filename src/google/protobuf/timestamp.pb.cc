@@ -34,8 +34,13 @@ inline constexpr Timestamp::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR Timestamp::Timestamp(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
-      _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
 struct TimestampDefaultTypeInternal {
   PROTOBUF_CONSTEXPR TimestampDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~TimestampDefaultTypeInternal() {}
@@ -109,7 +114,11 @@ class Timestamp::_Internal {
 };
 
 Timestamp::Timestamp(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Timestamp)
 }
@@ -151,11 +160,13 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Timestamp::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Timestamp>(),
             ::google::protobuf::Message::GetNewImpl<Timestamp>(),
             ::google::protobuf::Message::GetClearImpl<Timestamp>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<Timestamp>(),
                 ::google::protobuf::Message::GetSerializeImpl<Timestamp>(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._cached_size_),
             false,
         },
