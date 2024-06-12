@@ -12,6 +12,12 @@
 
 using benchmarks::BenchData;
 
+#ifdef BENCHMARK_UPB
+#define PROTO_BENCHMARK(NAME) EXTERN_BENCHMARK(NAME##_upb);
+#else
+#define PROTO_BENCHMARK(NAME) EXTERN_BENCHMARK(NAME##_cpp);
+#endif
+
 #define EXTERN_BENCHMARK(NAME)              \
   extern "C" {                              \
   void NAME##_bench();                      \
@@ -22,10 +28,6 @@ using benchmarks::BenchData;
     }                                       \
   }                                         \
   BENCHMARK(BM_##NAME);
-
-#define PROTO_BENCHMARK(NAME)   \
-  EXTERN_BENCHMARK(NAME##_cpp); \
-  EXTERN_BENCHMARK(NAME##_upb);
 
 void BM_set_string_cpp(benchmark::State& state) {
   for (auto s : state) {

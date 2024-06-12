@@ -40,7 +40,7 @@ upb_cc_proto_library(
 )
 
 cc_test(
-    name = "rust_protobuf_benchmarks",
+    name = "rust_protobuf_benchmarks_cpp",
     testonly = True,
     srcs = ["rust_protobuf_benchmarks.cc"],
     deps = [
@@ -48,6 +48,26 @@ cc_test(
         ":bench_data_upb_cc_proto",
         ":benchmarks",
         ":proto_benchmarks_cpp",  # build_cleaner: keep
+        "//protos",
+        "//protos:repeated_field",
+        "//src/google/protobuf:protobuf_lite",
+        "//testing/base/public:gunit",
+        "//third_party/benchmark",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "rust_protobuf_benchmarks_upb",
+    testonly = True,
+    srcs = ["rust_protobuf_benchmarks.cc"],
+    defines = ["BENCHMARK_UPB"],
+    deps = [
+        ":bench_data_cc_proto",
+        ":bench_data_upb_cc_proto",
+        ":benchmarks",
         ":proto_benchmarks_upb",  # build_cleaner: keep
         "//protos",
         "//protos:repeated_field",
