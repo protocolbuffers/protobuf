@@ -2143,9 +2143,14 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
               }},
              {"class_data", [&] { GenerateClassData(p); }}},
             R"cc(
+#if defined(PROTOBUF_CUSTOM_VTABLE)
               $classname$::$classname$() : SuperType(_class_data_.base()) {}
               $classname$::$classname$(::$proto_ns$::Arena* arena)
                   : SuperType(arena, _class_data_.base()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+              $classname$::$classname$() : SuperType() {}
+              $classname$::$classname$(::$proto_ns$::Arena* arena) : SuperType(arena) {}
+#endif  // PROTOBUF_CUSTOM_VTABLE
               $annotate_accessors$;
               $verify$;
               $class_data$;
@@ -2859,7 +2864,12 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
               //~ gcc 12 (warning in gcc 13).
               template <typename>
               $constexpr$ $classname$::$classname$(::_pbi::ConstantInitialized)
-                  : $base$(_class_data_.base()) {}
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                  : $base$(_class_data_.base()){}
+#else   // PROTOBUF_CUSTOM_VTABLE
+                  : $base$() {
+              }
+#endif  // PROTOBUF_CUSTOM_VTABLE
             )cc");
     return;
   }
@@ -2881,8 +2891,13 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
       R"cc(
         template <typename>
         $constexpr$ $classname$::$classname$(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             : $superclass$(_class_data_.base()),
-              _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+            : $superclass$(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+              _impl_(::_pbi::ConstantInitialized()) {
+        }
       )cc");
 }
 
@@ -3145,7 +3160,11 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
                 ::$proto_ns$::Arena* arena,
                 //~ force alignment
                 const $classname$& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
                 : $superclass$(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+                : $superclass$(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
               $classname$* const _this = this;
               (void)_this;
               _internal_metadata_.MergeFrom<$unknown_fields_type$>(
@@ -3191,7 +3210,11 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
       },
       R"cc(
         $classname$::$classname$(::$proto_ns$::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             : $superclass$(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+            : $superclass$(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
           $ctor_body$;
           // @@protoc_insertion_point(arena_constructor:$full_name$)
         }
@@ -3733,9 +3756,11 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                       $on_demand_register_arena_dtor$,
                       $is_initialized$,
                       &$classname$::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
                       $superclass$::GetDeleteImpl<$classname$>(),
                       $superclass$::GetNewImpl<$classname$>(),
                       $custom_vtable_methods$,
+#endif  // PROTOBUF_CUSTOM_VTABLE
                       PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                       false,
                   },
@@ -3768,9 +3793,11 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                       $on_demand_register_arena_dtor$,
                       $is_initialized$,
                       &$classname$::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
                       $superclass$::GetDeleteImpl<$classname$>(),
                       $superclass$::GetNewImpl<$classname$>(),
                       $custom_vtable_methods$,
+#endif  // PROTOBUF_CUSTOM_VTABLE
                       PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                       true,
                   },

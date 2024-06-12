@@ -33,8 +33,13 @@ inline constexpr JavaFeatures::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR JavaFeatures::JavaFeatures(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
-      _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
 struct JavaFeaturesDefaultTypeInternal {
   PROTOBUF_CONSTEXPR JavaFeaturesDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~JavaFeaturesDefaultTypeInternal() {}
@@ -151,7 +156,11 @@ class JavaFeatures::_Internal {
 };
 
 JavaFeatures::JavaFeatures(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:pb.JavaFeatures)
 }
@@ -193,11 +202,13 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &JavaFeatures::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<JavaFeatures>(),
             ::google::protobuf::Message::GetNewImpl<JavaFeatures>(),
             ::google::protobuf::Message::GetClearImpl<JavaFeatures>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<JavaFeatures>(),
                 ::google::protobuf::Message::GetSerializeImpl<JavaFeatures>(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
             false,
         },

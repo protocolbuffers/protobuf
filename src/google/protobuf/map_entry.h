@@ -85,6 +85,9 @@ class MapEntry : public Message {
   using ValueOnMemory = typename ValueTypeHandler::TypeOnMemory;
 
  public:
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+  constexpr MapEntry() {}
+#endif  // PROTOBUF_CUSTOM_VTABLE
   using Message::Message;
 
   MapEntry(const MapEntry&) = delete;

@@ -2324,7 +2324,8 @@ class MyMapEntry
                                 internal::WireFormatLite::TYPE_INT32,
                                 internal::WireFormatLite::TYPE_INT32> {
  public:
-  constexpr MyMapEntry() : MyMapEntry::MapEntry(nullptr) {}
+  constexpr MyMapEntry()
+      : MyMapEntry::MapEntry(static_cast<ClassData*>(nullptr)) {}
   MyMapEntry(Arena* arena) : MyMapEntry::MapEntry(arena, nullptr) {}
   const ClassData* GetClassData() const { ABSL_CHECK(false); }
   static bool ValidateKey(void*) { return true; }
