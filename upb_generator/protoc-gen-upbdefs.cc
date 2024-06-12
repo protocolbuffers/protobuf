@@ -18,6 +18,10 @@ namespace upb {
 namespace generator {
 namespace {
 
+struct Options {
+  std::string dllexport_decl;
+};
+
 std::string DefInitSymbol(upb::FileDefPtr file) {
   return ToCIdent(file.name()) + "_upbdefinit";
 }
@@ -39,7 +43,8 @@ void GenerateMessageDefAccessor(upb::MessageDefPtr d, Output& output) {
   output("\n");
 }
 
-void WriteDefHeader(upb::FileDefPtr file, Output& output) {
+void WriteDefHeader(upb::FileDefPtr file, const Options& options,
+                    Output& output) {
   EmitFileWarning(file.name(), output);
 
   output(
@@ -54,7 +59,8 @@ void WriteDefHeader(upb::FileDefPtr file, Output& output) {
       "#endif\n\n",
       ToPreproc(file.name()));
 
-  output("extern _upb_DefPool_Init $0;\n", DefInitSymbol(file));
+  output("extern$1 _upb_DefPool_Init $0;\n", DefInitSymbol(file),
+         PadPrefix(options.dllexport_decl));
   output("\n");
 
   for (auto msg : SortedMessages(file)) {
@@ -72,7 +78,8 @@ void WriteDefHeader(upb::FileDefPtr file, Output& output) {
       ToPreproc(file.name()));
 }
 
-void WriteDefSource(upb::FileDefPtr file, Output& output) {
+void WriteDefSource(upb::FileDefPtr file, const Options& options,
+                    Output& output) {
   EmitFileWarning(file.name(), output);
 
   output("#include \"upb/reflection/def.h\"\n");
@@ -81,7 +88,9 @@ void WriteDefSource(upb::FileDefPtr file, Output& output) {
   output("\n");
 
   for (int i = 0; i < file.dependency_count(); i++) {
-    output("extern _upb_DefPool_Init $0;\n", DefInitSymbol(file.dependency(i)));
+    output("extern$1 _upb_DefPool_Init $0;\n",
+           DefInitSymbol(file.dependency(i)),
+           PadPrefix(options.dllexport_decl));
   }
 
   upb::Arena arena;
@@ -123,14 +132,28 @@ void WriteDefSource(upb::FileDefPtr file, Output& output) {
   output("};\n");
 }
 
-void GenerateFile(upb::FileDefPtr file, Plugin* plugin) {
+void GenerateFile(upb::FileDefPtr file, const Options& options,
+                  Plugin* plugin) {
   Output h_def_output;
-  WriteDefHeader(file, h_def_output);
+  WriteDefHeader(file, options, h_def_output);
   plugin->AddOutputFile(DefHeaderFilename(file), h_def_output.output());
 
   Output c_def_output;
-  WriteDefSource(file, c_def_output);
+  WriteDefSource(file, options, c_def_output);
   plugin->AddOutputFile(DefSourceFilename(file), c_def_output.output());
+}
+
+bool ParseOptions(Plugin* plugin, Options* options) {
+  for (const auto& pair : ParseGeneratorParameter(plugin->parameter())) {
+    if (pair.first == "dllexport_decl") {
+      options->dllexport_decl = pair.second;
+    } else {
+      plugin->SetError(absl::Substitute("Unknown parameter: $0", pair.first));
+      return false;
+    }
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -139,13 +162,10 @@ void GenerateFile(upb::FileDefPtr file, Plugin* plugin) {
 
 int main(int argc, char** argv) {
   upb::generator::Plugin plugin;
-  if (!plugin.parameter().empty()) {
-    plugin.SetError(
-        absl::StrCat("Expected no parameters, got: ", plugin.parameter()));
-    return 0;
-  }
+  upb::generator::Options options;
+  if (!ParseOptions(&plugin, &options)) return 0;
   plugin.GenerateFiles([&](upb::FileDefPtr file) {
-    upb::generator::GenerateFile(file, &plugin);
+    upb::generator::GenerateFile(file, options, &plugin);
   });
   return 0;
 }
