@@ -118,7 +118,6 @@ cc_proto_library(
 #     srcs = [
 #         "basic_test_editions.proto",
 #     ],
-#     deps = [":imported_proto"],
 # )
 #
 # upb_cc_proto_library(
