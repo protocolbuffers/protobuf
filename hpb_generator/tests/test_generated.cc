@@ -18,13 +18,13 @@
 #include <gtest/gtest.h>
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
+#include "hpb_generator/tests/child_model.upb.proto.h"
+#include "hpb_generator/tests/no_package.upb.proto.h"
+#include "hpb_generator/tests/test_model.upb.proto.h"
 #include "protos/protos.h"
 #include "protos/repeated_field.h"
 #include "protos/repeated_field_iterator.h"
 #include "protos/requires.h"
-#include "protos_generator/tests/child_model.upb.proto.h"
-#include "protos_generator/tests/no_package.upb.proto.h"
-#include "protos_generator/tests/test_model.upb.proto.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 

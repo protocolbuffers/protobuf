@@ -5,11 +5,11 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "protos_generator/gen_extensions.h"
+#include "hpb_generator/gen_extensions.h"
 
 #include "absl/strings/str_cat.h"
-#include "protos_generator/gen_utils.h"
-#include "protos_generator/names.h"
+#include "hpb_generator/gen_utils.h"
+#include "hpb_generator/names.h"
 
 namespace protos_generator {
 

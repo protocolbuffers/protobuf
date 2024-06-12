@@ -143,7 +143,7 @@ cc_library(
         "keywords.h",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//protos_generator:__pkg__"],
+    visibility = ["//hpb_generator:__pkg__"],
 )
 
 bootstrap_cc_library(

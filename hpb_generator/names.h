@@ -11,7 +11,7 @@
 #include <string>
 
 #include "google/protobuf/descriptor.pb.h"
-#include "protos_generator/output.h"
+#include "hpb_generator/output.h"
 
 namespace protos_generator {
 

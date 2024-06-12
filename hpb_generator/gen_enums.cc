@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "protos_generator/gen_enums.h"
+#include "hpb_generator/gen_enums.h"
 
 #include <algorithm>
 #include <limits>
@@ -14,8 +14,8 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.h"
-#include "protos_generator/gen_utils.h"
-#include "protos_generator/names.h"
+#include "hpb_generator/gen_utils.h"
+#include "hpb_generator/names.h"
 
 namespace protos_generator {
 

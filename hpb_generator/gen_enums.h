@@ -9,7 +9,7 @@
 #define UPB_PROTOS_GENERATOR_ENUMS_H_
 
 #include "google/protobuf/descriptor.h"
-#include "protos_generator/output.h"
+#include "hpb_generator/output.h"
 
 namespace protos_generator {
 

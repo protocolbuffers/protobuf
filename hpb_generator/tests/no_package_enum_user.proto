@@ -7,13 +7,12 @@
 
 syntax = "proto2";
 
-package protos_generator.test.someotherpackage;
+package protos_generator.tests;
 
-import "protos_generator/tests/test_model.proto";
+import "hpb_generator/tests/no_package.proto";
 
-// Define extension that is extending proto outside this package with a type
-// defined in different file.
+// option java_multiple_files = true;
 
-extend TestModel {
-  optional ThemeExtension styling = 13001;
+message MyMessage {
+  optional MessageWithEnumUpbTest my_type = 1;
 }
