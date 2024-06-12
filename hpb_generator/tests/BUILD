@@ -14,7 +14,7 @@ load(
     "upb_c_proto_library",
 )
 load(
-    "//protos/bazel:upb_cc_proto_library.bzl",
+    "//hpb/bazel:upb_cc_proto_library.bzl",
     "upb_cc_proto_library",
 )
 load(
@@ -62,15 +62,13 @@ proto_library(
 
 upb_c_proto_library(
     name = "test_model_upb_proto",
-    visibility = [
-        "//protos:__pkg__",
-    ],
+    visibility = ["//hpb:__pkg__"],
     deps = [":test_model_proto"],
 )
 
 upb_cc_proto_library(
     name = "test_model_upb_cc_proto",
-    visibility = ["//protos:__pkg__"],
+    visibility = ["//hpb:__pkg__"],
     deps = [":test_model_proto"],
 )
 
@@ -143,9 +141,9 @@ cc_test(
         "@com_google_googletest//:gtest_main",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
-        "//protos",
-        "//protos:requires",
+        "//hpb",
+        "//hpb:requires",
         "//upb:mem",
-        "//protos:repeated_field",
+        "//hpb:repeated_field",
     ],
 )

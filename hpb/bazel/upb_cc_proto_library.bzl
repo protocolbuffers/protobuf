@@ -5,7 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-"""Public rules for using upb protos:
+"""Public rules for using hpb:
   - upb_cc_proto_library()
 """
 
@@ -235,7 +235,7 @@ def _upb_cc_proto_library_aspect_impl(target, ctx):
 _upb_cc_proto_library_aspect = aspect(
     attrs = {
         "_ccopts": attr.label(
-            default = "//protos:upb_cc_proto_library_copts__for_generated_code_only_do_not_use",
+            default = "//hpb:upb_cc_proto_library_copts__for_generated_code_only_do_not_use",
         ),
         "_gen_upbprotos": attr.label(
             executable = True,
@@ -254,11 +254,11 @@ _upb_cc_proto_library_aspect = aspect(
             default = [
                 # TODO: Add dependencies for cc runtime (absl/string etc..)
                 "//upb:generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-                "//protos:generated_protos_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+                "//hpb:generated_protos_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
                 "@com_google_absl//absl/strings",
                 "@com_google_absl//absl/status:statusor",
-                "//protos",
-                "//protos:repeated_field",
+                "//hpb",
+                "//hpb:repeated_field",
             ],
         ),
     },
@@ -287,7 +287,7 @@ upb_cc_proto_library = rule(
             providers = [ProtoInfo],
         ),
         "_ccopts": attr.label(
-            default = "//protos:upb_cc_proto_library_copts__for_generated_code_only_do_not_use",
+            default = "//hpb:upb_cc_proto_library_copts__for_generated_code_only_do_not_use",
         ),
     },
 )

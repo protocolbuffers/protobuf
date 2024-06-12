@@ -14,7 +14,7 @@
 #include <type_traits>
 
 #include "absl/strings/string_view.h"
-#include "protos/protos.h"
+#include "hpb/protos.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"

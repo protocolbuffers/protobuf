@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "protos/protos.h"
+#include "hpb/protos.h"
 
 #include <atomic>
 #include <cstddef>
@@ -14,7 +14,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "protos/protos_extension_lock.h"
+#include "hpb/protos_extension_lock.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/copy.h"

@@ -8,7 +8,7 @@
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/rust/test/benchmarks/bench_data.pb.h"
 #include "google/protobuf/rust/test/benchmarks/bench_data.upb.proto.h"
-#include "protos/protos.h"
+#include "hpb/protos.h"
 
 using benchmarks::BenchData;
 

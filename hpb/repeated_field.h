@@ -15,9 +15,9 @@
 #include <type_traits>
 
 #include "absl/strings/string_view.h"
-#include "protos/protos.h"
-#include "protos/protos_traits.h"
-#include "protos/repeated_field_iterator.h"
+#include "hpb/protos.h"
+#include "hpb/protos_traits.h"
+#include "hpb/repeated_field_iterator.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"

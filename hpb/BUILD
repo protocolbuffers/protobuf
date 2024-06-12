@@ -6,7 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    "//protos/bazel:upb_cc_proto_library.bzl",
+    "//hpb/bazel:upb_cc_proto_library.bzl",
     "upb_cc_proto_library_copts",
 )
 load(
@@ -29,7 +29,7 @@ cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":protos",
+        ":hpb",
         ":protos_traits",
         "//upb:base",
         "//upb:mem",
@@ -41,7 +41,7 @@ cc_library(
 )
 
 cc_library(
-    name = "protos",
+    name = "hpb",
     srcs = [
         "protos.cc",
     ],
@@ -83,7 +83,7 @@ cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":protos",
+        ":hpb",
         "//upb:mem",
         "//upb:message",
         "//upb:mini_table",
@@ -115,7 +115,7 @@ cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":protos",
+        ":hpb",
         ":protos_internal",
         ":repeated_field",
         "//upb:mem",
@@ -157,9 +157,9 @@ cc_test(
     name = "protos_extension_lock_test",
     srcs = ["protos_extension_lock_test.cc"],
     deps = [
+        "//hpb",
+        "//hpb:protos_extension_lock",
         "//hpb_generator/tests:test_model_upb_cc_proto",
-        "//protos",
-        "//protos:protos_extension_lock",
         "//upb:mem",
         "@com_google_absl//absl/hash",
         "@com_google_absl//absl/log:absl_check",
