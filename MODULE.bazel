@@ -28,6 +28,33 @@ bazel_dep(name = "zlib", version = "1.2.11")
 # TODO: remove after toolchain types are moved to protobuf
 bazel_dep(name = "rules_proto", version = "4.0.0")
 
+SUPPORTED_PYTHON_VERSIONS = [
+    "3.8",
+    "3.9",
+    "3.10",
+    "3.11",
+    "3.12",
+]
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+[
+    python.toolchain(
+        is_default = python_version == SUPPORTED_PYTHON_VERSIONS[-1],
+        python_version = python_version,
+    )
+    for python_version in SUPPORTED_PYTHON_VERSIONS
+]
+use_repo(python, system_python = "python_{}".format(SUPPORTED_PYTHON_VERSIONS[-1].replace(".", "_")))
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+[
+    pip.parse(
+        hub_name = "pip_deps",
+        python_version = python_version,
+        requirements_lock = "//python:requirements.txt",
+    )
+    for python_version in SUPPORTED_PYTHON_VERSIONS
+]
+use_repo(pip, "pip_deps")
+
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
 rust.toolchain(edition = "2021")
 use_repo(rust, "rust_toolchains")

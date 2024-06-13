@@ -13,6 +13,7 @@ tasks:
     build_targets:
     - '@protobuf//:protobuf'
     - '@protobuf//:protobuf_lite'
+    - '@protobuf//:protobuf_python'
     - '@protobuf//:protobuf_rust'
     - '@protobuf//:protoc'
     - '@protobuf//:test_messages_proto2_cc_proto'
@@ -21,7 +22,6 @@ tasks:
 bcr_test_module:
   module_path: "examples"
   matrix:
-
     platform: ["debian10", "macos", "ubuntu2004", "windows"]
     bazel: [6.x, 7.x]
   tasks:
