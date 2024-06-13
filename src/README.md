@@ -126,7 +126,6 @@ by specifying:
 Usage
 -----
 
-The complete documentation for Protocol Buffers is available via the
-web at:
+The c
 
 https://protobuf.dev/
