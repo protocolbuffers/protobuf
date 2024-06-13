@@ -122,11 +122,3 @@ using static linkage.  You can configure this in your `cc_binary` Bazel rules
 by specifying:
 
     linkstatic=True
-
-Usage
------
-
-The complete documentation for Protocol Buffers is available via the
-web at:
-
-https://protobuf.dev/
