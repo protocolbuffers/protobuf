@@ -231,6 +231,12 @@ proto_library(
     deps = [":descriptor_proto"],
 )
 
+cc_proto_library(
+    name = "cpp_features_cc_proto",
+    visibility = ["//editions:__pkg__"],
+    deps = [":cpp_features_proto"],
+)
+
 ################################################################################
 # C++ Runtime Library
 ################################################################################

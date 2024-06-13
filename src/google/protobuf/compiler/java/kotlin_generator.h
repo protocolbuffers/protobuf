@@ -12,8 +12,8 @@
 
 #include <string>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/java_features.pb.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.pb.h"
 
 // Must be included last.
