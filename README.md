@@ -88,8 +88,7 @@ If you want to learn from code examples, take a look at the examples in the
 
 Documentation
 -------------
-
-The complete documentation is available at the [Protocol Buffers doc site](https://protobuf.dev).
+ documentation is available at the [Protocol Buffers doc site](https://protobuf.dev).
 
 Support Policy
 --------------
