@@ -21,14 +21,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: OpenJDK 8 (Continuous)
+          - name: OpenJDK 8
             version: '8'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
             # TODO: b/318555165 - enable the layering check. Currently it does
             # not work correctly with the toolchain in this Docker image.
             targets: //java/... //java/internal:java_version --features=-layering_check
             run-on-presubmit: false
-          - name: OpenJDK 11 (Continuous)
+          - name: OpenJDK 11
             version: '11'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
             targets: //java/... //java/internal:java_version
@@ -46,13 +46,13 @@ jobs:
 
     name: Linux ${{ matrix.name }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: ubuntu-latest
+    if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
           image: ${{ matrix.image }}
