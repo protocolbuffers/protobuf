@@ -12,14 +12,16 @@ name: Tests
 on:
   # continuous
   schedule:
-    # Run daily at 10 AM UTC (2 AM PDT)
-    - cron: 0 10 * * *
+    # Run every hour
+    - cron: "0 * * * *"
 
   # postsubmit
   push:
     branches:
       - main
       - '[0-9]+.x'
+      # The 21.x and 22.x branches still use Kokoro
+      - '!2[12].x'
       # For testing purposes so we can stage this on the `gha` branch.
       - gha
 
@@ -28,6 +30,8 @@ on:
     branches:
       - main
       - '[0-9]+.x'
+      # The 21.x and 22.x branches still use Kokoro
+      - '!2[12].x'
       # For testing purposes so we can stage this on the `gha` branch.
       - gha
 
@@ -36,12 +40,21 @@ on:
     branches:
       - main
       - '[0-9]+.x'
+      # The 21.x branch still use Kokoro
+      - '!21.x'
       # For testing purposes so we can stage this on the `gha` branch.
       - gha
     types: [labeled, opened, reopened, synchronize]
 
   # manual
   workflow_dispatch:
+  
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.event_name }}-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ contains(fromJSON('["pull_request", "pull_request_target", "workflow_dispatch"]'), github.event_name) }}
 
 jobs:
   check-tag:
@@ -51,11 +64,13 @@ jobs:
     # repository, it's safe and we can use `pull_request`.  Otherwise, we should
     # use `pull_request_target`.
     if: |
-      github.event_name == 'push' ||
-        (github.event_name == 'pull_request' &&
-         github.event.pull_request.head.repo.full_name == 'protocolbuffers/protobuf') ||
-        (github.event_name == 'pull_request_target' &&
-         github.event.pull_request.head.repo.full_name != 'protocolbuffers/protobuf')
+      (github.event_name != 'pull_request' &&
+       github.event_name != 'pull_request_target' &&
+       github.event.repository.full_name == 'protocolbuffers/protobuf') ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == 'protocolbuffers/protobuf') ||
+      (github.event_name == 'pull_request_target' &&
+       github.event.pull_request.head.repo.full_name != 'protocolbuffers/protobuf')
 
     runs-on: ubuntu-latest
     outputs:
@@ -67,8 +82,10 @@ jobs:
         # Trivially pass for safe PRs, and explicitly error for unsafe ones
         # unless this is specifically an event for adding the safe label.
         run: >
-          ${{ github.event_name != 'pull_request_target' || github.event.label.name == 'safe for tests' }} ||
-          (echo "This pull request is from an unsafe fork and hasn't been approved to run tests!" && exit 1)
+          ${{ github.event_name != 'pull_request_target' || github.event.label.name == ':a: safe for tests' }} ||
+          (echo "This pull request is from an unsafe fork and hasn't been approved to run tests." &&
+           echo "A protobuf team member will need to review the PR and add the 'safe for tests' tag." &&
+           exit 1)
 
       - name: Cache safe commit
         id: safe-checkout
@@ -77,18 +94,30 @@ jobs:
           echo "sha=${{ github.event.pull_request.head.sha  }}"  >> $GITHUB_OUTPUT
 
   remove-tag:
+    name: Remove safety tag
     needs: [check-tag]
     if: github.event.action == 'labeled'
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
-      - uses: actions-ecosystem/action-remove-labels@v1
+      - uses: actions-ecosystem/action-remove-labels@2ce5d41b4b6aa8503e285553f75ed56e0a40bae0 # v1.3.0
         with:
-          labels: safe for tests
+          fail_on_error: true
+          labels: ':a: safe for tests'
 
   # Note: this pattern of passing the head sha is vulnerable to PWN requests for
   # pull_request_target events. We carefully limit those workflows to require a
   # human stamp before continuing.
-  cpp-bazel:
+  bazel:
+    name: Bazel
+    needs: [check-tag]
+    uses: ./.github/workflows/test_bazel.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  cpp:
     name: C++
     needs: [check-tag]
     uses: ./.github/workflows/test_cpp.yml
@@ -96,7 +125,15 @@ jobs:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
-  python-bazel:
+  java:
+    name: Java
+    needs: [check-tag]
+    uses: ./.github/workflows/test_java.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  python:
     name: Python
     needs: [check-tag]
     uses: ./.github/workflows/test_python.yml
@@ -104,10 +141,18 @@ jobs:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
-  ruby-install:
-    name: Ruby Install
+  ruby:
+    name: Ruby
     needs: [check-tag]
-    uses: ./.github/workflows/test_ruby_install.yml
+    uses: ./.github/workflows/test_ruby.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  php:
+    name: PHP
+    needs: [check-tag]
+    uses: ./.github/workflows/test_php.yml
     with:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
@@ -116,6 +161,48 @@ jobs:
     name: PHP Extension
     needs: [check-tag]
     uses: ./.github/workflows/test_php_ext.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  csharp:
+    name: C#
+    needs: [check-tag]
+    uses: ./.github/workflows/test_csharp.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  objectivec:
+    name: Objective-C
+    needs: [check-tag]
+    uses: ./.github/workflows/test_objectivec.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  rust:
+    name: Rust
+    needs: [check-tag]
+    uses: ./.github/workflows/test_rust.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  upb:
+    name: μpb
+    needs: [check-tag]
+    uses: ./.github/workflows/test_upb.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
+  staleness:
+    name: Staleness
+    needs: [check-tag]
+    uses: ./.github/workflows/staleness_check.yml
+    # Staleness tests have scheduled runs during off-hours to avoid race conditions.
+    if: ${{ github.event_name != 'schedule' }}
     with:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit

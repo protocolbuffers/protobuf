@@ -1,46 +1,30 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 
 #include "google/protobuf/compiler/plugin.h"
 
 #include <iostream>
+#include <utility>
+#include <vector>
+
 #ifdef _WIN32
 #include <fcntl.h>
 #else
 #include <unistd.h>
 #endif
 
-#include "google/protobuf/compiler/plugin.pb.h"
+#include "absl/log/absl_check.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/io_win32.h"
@@ -112,6 +96,18 @@ bool GenerateCode(const CodeGeneratorRequest& request,
                   const CodeGenerator& generator,
                   CodeGeneratorResponse* response, std::string* error_msg) {
   DescriptorPool pool;
+
+  // Initialize feature set default mapping.
+  absl::StatusOr<FeatureSetDefaults> defaults =
+      generator.BuildFeatureSetDefaults();
+  if (!defaults.ok()) {
+    *error_msg = absl::StrCat("error generating feature defaults: ",
+                              defaults.status().message());
+    return false;
+  }
+  absl::Status status = pool.SetFeatureSetDefaults(std::move(defaults).value());
+  ABSL_CHECK(status.ok()) << status.message();
+
   for (int i = 0; i < request.proto_file_size(); i++) {
     const FileDescriptor* file = pool.BuildFile(request.proto_file(i));
     if (file == nullptr) {
@@ -141,6 +137,10 @@ bool GenerateCode(const CodeGeneratorRequest& request,
                                          &context, &error);
 
   response->set_supported_features(generator.GetSupportedFeatures());
+  response->set_minimum_edition(
+      static_cast<int>(generator.GetMinimumEdition()));
+  response->set_maximum_edition(
+      static_cast<int>(generator.GetMaximumEdition()));
 
   if (!succeeded && error.empty()) {
     error =

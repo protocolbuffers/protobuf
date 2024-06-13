@@ -1,0 +1,5 @@
+import common.bazelrc
+
+build --cxxopt=-std=c++14 --host_cxxopt=-std=c++14
+common --repo_env=BAZEL_NO_APPLE_CPP_TOOLCHAIN=1
+common --xcode_version_config=@com_google_protobuf//.github:host_xcodes

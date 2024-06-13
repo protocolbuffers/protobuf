@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/json/internal/lexer.h"
 
@@ -52,6 +29,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "utf8_validity.h"
 #include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
@@ -358,7 +336,7 @@ absl::StatusOr<size_t> JsonLexer::ParseUnicodeEscape(char out_utf8[4]) {
     out_utf8[1] = ((rune >> 6) & 0x3f) | 0x80;
     out_utf8[2] = ((rune >> 0) & 0x3f) | 0x80;
     return 3;
-  } else if (rune < 0x10ffff) {
+  } else if (rune <= 0x10ffff) {
     out_utf8[0] = ((rune >> 18) & 0x07) | 0xF0;
     out_utf8[1] = ((rune >> 12) & 0x3f) | 0x80;
     out_utf8[2] = ((rune >> 6) & 0x3f) | 0x80;
@@ -424,12 +402,14 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
           goto normal_character;
         }
 
-        if (!on_heap.empty()) {
-          return LocationWith<MaybeOwnedString>{
-              MaybeOwnedString(std::move(on_heap)), loc};
-        }
         // NOTE: the 1 below clips off the " from the end of the string.
-        return LocationWith<MaybeOwnedString>{mark.value.UpToUnread(1), loc};
+        MaybeOwnedString result = on_heap.empty()
+                                      ? mark.value.UpToUnread(1)
+                                      : MaybeOwnedString{std::move(on_heap)};
+        if (utf8_range::IsStructurallyValid(result)) {
+          return LocationWith<MaybeOwnedString>{std::move(result), loc};
+        }
+        return Invalid("Invalid UTF-8 string");
       }
       case '\\': {
         if (on_heap.empty()) {
@@ -440,7 +420,7 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
           // destroyed only if we need to handle an escape when on_heap is
           // empty. Because this branch unconditionally pushes to on_heap, this
           // condition can never be reached in any iteration that follows it.
-          // This, at most one move every actually occurs.
+          // Thus, at most one move ever actually occurs.
           std::move(mark).value.Discard();
         }
         RETURN_IF_ERROR(stream_.BufferAtLeast(1).status());
@@ -473,15 +453,15 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
               "invalid control character 0x%02x in string", uc));
         }
 
-        // Verify this is valid UTF-8. UTF-8 is a varint encoding satisfying
-        // one of the following (big-endian) patterns:
+        // Process this UTF-8 code point. We do not need to fully validate it
+        // at this stage; we just need to interpret it enough to know how many
+        // bytes to read. UTF-8 is a varint encoding satisfying one of the
+        // following (big-endian) patterns:
         //
         // 0b0xxxxxxx
         // 0b110xxxxx'10xxxxxx
         // 0b1110xxxx'10xxxxxx'10xxxxxx
         // 0b11110xxx'10xxxxxx'10xxxxxx'10xxxxxx
-        //
-        // We don't need to decode it; just validate it.
         size_t lookahead = 0;
         switch (absl::countl_one(uc)) {
           case 0:
@@ -502,16 +482,11 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
         if (!on_heap.empty()) {
           on_heap.push_back(c);
         }
-        for (int i = 0; i < lookahead; ++i) {
-          RETURN_IF_ERROR(stream_.BufferAtLeast(1).status());
-          uint8_t uc = static_cast<uint8_t>(stream_.PeekChar());
-          if ((uc >> 6) != 2) {
-            return Invalid("invalid UTF-8 in string");
-          }
-          if (!on_heap.empty()) {
-            on_heap.push_back(stream_.PeekChar());
-          }
-          RETURN_IF_ERROR(Advance(1));
+        auto lookahead_bytes = stream_.Take(lookahead);
+        RETURN_IF_ERROR(lookahead_bytes.status());
+        if (!on_heap.empty()) {
+          absl::string_view view = lookahead_bytes->AsView();
+          on_heap.append(view.data(), view.size());
         }
         break;
       }

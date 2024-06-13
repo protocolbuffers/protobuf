@@ -2,7 +2,7 @@
 #   These are utilities that mirror the behavior of internal Google code.
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 
 package(
@@ -22,10 +22,10 @@ cc_library(
         "status_macros.h",
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/stubs",
     linkopts = LINK_OPTS,
+    strip_include_prefix = "/src",
     deps = [
-        "//src/google/protobuf:port_def",
+        "//src/google/protobuf:port",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
@@ -40,7 +40,7 @@ cc_library(
     hdrs = [
     ],
     copts = COPTS,
-    include_prefix = "google/protobuf/stubs",
+    strip_include_prefix = "/src",
     textual_hdrs = [
         "callback.h",
         "common.h",
@@ -50,7 +50,7 @@ cc_library(
     ],
     deps = [
         ":lite",
-        "//src/google/protobuf:port_def",
+        "//src/google/protobuf:port",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
@@ -73,7 +73,9 @@ cc_test(
         ":lite",
         ":stubs",
         "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
         "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -92,9 +94,12 @@ pkg_files(
 
 filegroup(
     name = "test_srcs",
-    srcs = glob([
-        "*_test.cc",
-        "*unittest.cc",
-    ]),
+    srcs = glob(
+        [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        allow_empty = True,
+    ),
     visibility = ["//pkg:__pkg__"],
 )

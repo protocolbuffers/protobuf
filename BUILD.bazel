@@ -1,11 +1,14 @@
 # Bazel (https://bazel.build/) BUILD file for Protobuf.
 
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
-load("@rules_java//java:defs.bzl", "java_lite_proto_library", "java_proto_library")
-load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS", "PROTOC_LINK_OPTS")
-load(":protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library", "internal_ruby_proto_library")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
+load("//bazel:java_proto_library.bzl", "java_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
+load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+load(":protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library")
 
 licenses(["notice"])
 
@@ -21,7 +24,7 @@ exports_files(["LICENSE"])
 #
 # java_proto_library(
 #   name = "any_java_proto",
-#   deps = ["@com_google_protobuf//:any_proto"],
+#   deps = ["@protobuf//:any_proto"],
 # )
 ################################################################################
 
@@ -85,6 +88,68 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+# C++ targets for the well-known types
+
+alias(
+    name = "any_cc_proto",
+    actual = "//src/google/protobuf:any_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "api_cc_proto",
+    actual = "//src/google/protobuf:api_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "duration_cc_proto",
+    actual = "//src/google/protobuf:duration_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "empty_cc_proto",
+    actual = "//src/google/protobuf:empty_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "field_mask_cc_proto",
+    actual = "//src/google/protobuf:field_mask_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "source_context_cc_proto",
+    actual = "//src/google/protobuf:source_context_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "struct_cc_proto",
+    actual = "//src/google/protobuf:struct_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "timestamp_cc_proto",
+    actual = "//src/google/protobuf:timestamp_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "type_cc_proto",
+    actual = "//src/google/protobuf:type_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "wrappers_cc_proto",
+    actual = "//src/google/protobuf:wrappers_cc_proto",
+    visibility = ["//visibility:public"],
+)
+
 # Source files: these are aliases to a filegroup, not a `proto_library`.
 #
 # (This is _probably_ not what you want.)
@@ -144,17 +209,6 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-internal_ruby_proto_library(
-    name = "well_known_ruby_protos",
-    srcs = [":well_known_protos"],
-    includes = ["src"],
-    default_runtime = "",
-    visibility = [
-        "//conformance:__pkg__",
-        "//ruby:__subpackages__",
-    ],
-)
-
 ################################################################################
 # Protocol Buffers Compiler
 ################################################################################
@@ -168,7 +222,22 @@ alias(
 cc_binary(
     name = "protoc",
     copts = COPTS,
-    linkopts = LINK_OPTS + PROTOC_LINK_OPTS,
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
+    deps = ["//src/google/protobuf/compiler:protoc_lib"],
+)
+
+cc_binary(
+    name = "protoc_static",
+    copts = COPTS,
+    features = select({
+        # This isn't possible on mac because there is no static library for lcrt0.o
+        "@platforms//os:osx": [],
+        "//build_defs:config_osx": [],
+        # When cross-compiling we need to statically link all C++ libraries.
+        "//conditions:default": ["fully_static_link"],
+    }),
+    linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
     deps = ["//src/google/protobuf/compiler:protoc_lib"],
 )
@@ -176,6 +245,21 @@ cc_binary(
 ################################################################################
 # C++ runtime
 ################################################################################
+
+# Expose the runtime for the proto_lang_toolchain so that it can also be used in
+# a user-defined proto_lang_toolchain.
+alias(
+    name = "protobuf",
+    actual = "//src/google/protobuf:protobuf_layering_check_legacy",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "protobuf_nowkt",
+    actual = "//src/google/protobuf:protobuf_layering_check_legacy",
+    deprecation = "Use //:protobuf instead",
+    visibility = ["//visibility:public"],
+)
 
 # The "lite" runtime works for .proto files that specify the option:
 #     optimize_for = LITE_RUNTIME;
@@ -192,32 +276,10 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-cc_library(
-    name = "protobuf",
-    hdrs = glob([
-        "src/**/*.h",
-        "src/**/*.inc",
-    ]),
-    copts = COPTS,
-    include_prefix = "google/protobuf/io",
-    linkopts = LINK_OPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        "//src/google/protobuf",
-        "//src/google/protobuf/compiler:importer",
-        "//src/google/protobuf/util:delimited_message_util",
-        "//src/google/protobuf/util:differencer",
-        "//src/google/protobuf/util:field_mask_util",
-        "//src/google/protobuf/util:json_util",
-        "//src/google/protobuf/util:time_util",
-        "//src/google/protobuf/util:type_resolver_util",
-    ],
-)
-
 # This provides just the header files for use in projects that need to build
 # shared libraries for dynamic loading. This target is available until Bazel
 # adds native support for such use cases.
-# TODO(keveman): Remove this target once the support gets added to Bazel.
+# TODO: Remove this target once the support gets added to Bazel.
 alias(
     name = "protobuf_headers",
     actual = "//src/google/protobuf:protobuf_headers",
@@ -227,6 +289,48 @@ alias(
 alias(
     name = "json",
     actual = "//src/google/protobuf/json",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "delimited_message_util",
+    actual = "//src/google/protobuf/util:delimited_message_util",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "differencer",
+    actual = "//src/google/protobuf/util:differencer",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "field_mask_util",
+    actual = "//src/google/protobuf/util:field_mask_util",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "json_util",
+    actual = "//src/google/protobuf/util:json_util",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "time_util",
+    actual = "//src/google/protobuf/util:time_util",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "type_resolver",
+    actual = "//src/google/protobuf/util:type_resolver",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "cpp_features_proto",
+    actual = "//src/google/protobuf:cpp_features_proto",  # proto_library
     visibility = ["//visibility:public"],
 )
 
@@ -264,6 +368,12 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+alias(
+    name = "java_features_proto",
+    actual = "//java/core:java_features_proto",  # proto_library
+    visibility = ["//visibility:public"],
+)
+
 ################################################################################
 # Python support
 ################################################################################
@@ -277,13 +387,13 @@ alias(
 alias(
     name = "python_srcs",
     actual = "//python:python_srcs",
-    visibility = ["@upb//:__subpackages__"],
+    visibility = ["//python:__subpackages__"],
 )
 
 alias(
     name = "python_test_srcs",
     actual = "//python:python_test_srcs",
-    visibility = ["@upb//:__subpackages__"],
+    visibility = ["//python:__subpackages__"],
 )
 
 alias(
@@ -308,10 +418,11 @@ proto_lang_toolchain(
     name = "cc_toolchain",
     blacklisted_protos = [
         "//:compiler_plugin_proto",
+        "//:cpp_features_proto",
         "//:descriptor_proto",
     ],
     command_line = "--cpp_out=$(OUT)",
-    runtime = ":protobuf",
+    runtime = "//src/google/protobuf",
     visibility = ["//visibility:public"],
 )
 
@@ -334,6 +445,16 @@ alias(
 )
 
 ################################################################################
+# Rust support
+################################################################################
+
+alias(
+    name = "protobuf_rust",
+    actual = "//rust:protobuf",
+    visibility = ["//visibility:public"],
+)
+
+################################################################################
 # Test protos
 ################################################################################
 
@@ -352,6 +473,12 @@ alias(
 alias(
     name = "test_proto_srcs",
     actual = "//src/google/protobuf:test_proto_srcs",  # filegroup
+    visibility = ["//:__subpackages__"],
+)
+
+alias(
+    name = "test_proto_editions_srcs",
+    actual = "//src/google/protobuf:test_proto_editions_srcs",  # filegroup
     visibility = ["//:__subpackages__"],
 )
 
@@ -500,33 +627,6 @@ internal_php_proto_library(
     ],
 )
 
-internal_ruby_proto_library(
-    name = "test_messages_proto2_ruby_proto",
-    testonly = 1,
-    srcs = ["//src/google/protobuf:test_messages_proto2.proto"],
-    includes = ["src/google/protobuf"],
-    visibility = [
-        "//conformance:__pkg__",
-        "//ruby:__subpackages__",
-    ],
-)
-
-internal_ruby_proto_library(
-    name = "test_messages_proto3_ruby_proto",
-    testonly = 1,
-    srcs = ["//src/google/protobuf:test_messages_proto3.proto"],
-    includes = [
-        "src/google/protobuf",
-        # The above must come first.
-        "src",
-    ],
-    deps = [":well_known_ruby_protos"],
-    visibility = [
-        "//conformance:__pkg__",
-        "//ruby:__subpackages__",
-    ],
-)
-
 filegroup(
     name = "bzl_srcs",
     srcs = glob(["**/*.bzl"]),
@@ -550,13 +650,11 @@ pkg_files(
         allow_empty = True,
     ) + [
         "BUILD.bazel",
-        "CHANGES.txt",
         "CMakeLists.txt",
         "CONTRIBUTORS.txt",
         "LICENSE",
         "README.md",
         "WORKSPACE",
-        "cmake/CMakeLists.txt",
         "cmake/README.md",
         "generate_descriptor_proto.sh",
         "maven_install.json",

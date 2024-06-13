@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -37,7 +14,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -82,6 +58,8 @@ import java.util.TreeMap;
 // a subclass to aid testability of the core logic.
 class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
 
+  static final int DEFAULT_FIELD_MAP_ARRAY_SIZE = 16;
+
   /**
    * Creates a new instance for mapping FieldDescriptors to their values. The {@link
    * #makeImmutable()} implementation will convert the List values of any repeated fields to
@@ -91,8 +69,8 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
    *     mappings.
    */
   static <FieldDescriptorType extends FieldSet.FieldDescriptorLite<FieldDescriptorType>>
-      SmallSortedMap<FieldDescriptorType, Object> newFieldMap(int arraySize) {
-    return new SmallSortedMap<FieldDescriptorType, Object>(arraySize) {
+      SmallSortedMap<FieldDescriptorType, Object> newFieldMap() {
+    return new SmallSortedMap<FieldDescriptorType, Object>() {
       @Override
       @SuppressWarnings("unchecked")
       public void makeImmutable() {
@@ -100,13 +78,13 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
           for (int i = 0; i < getNumArrayEntries(); i++) {
             final Map.Entry<FieldDescriptorType, Object> entry = getArrayEntryAt(i);
             if (entry.getKey().isRepeated()) {
-              final List value = (List) entry.getValue();
+              final List<?> value = (List) entry.getValue();
               entry.setValue(Collections.unmodifiableList(value));
             }
           }
           for (Map.Entry<FieldDescriptorType, Object> entry : getOverflowEntries()) {
             if (entry.getKey().isRepeated()) {
-              final List value = (List) entry.getValue();
+              final List<?> value = (List) entry.getValue();
               entry.setValue(Collections.unmodifiableList(value));
             }
           }
@@ -116,17 +94,11 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     };
   }
 
-  /**
-   * Creates a new instance for testing.
-   *
-   * @param arraySize The size of the entry array containing the lexicographically smallest
-   *     mappings.
-   */
-  static <K extends Comparable<K>, V> SmallSortedMap<K, V> newInstanceForTest(int arraySize) {
-    return new SmallSortedMap<K, V>(arraySize);
+  /** Creates a new instance for testing. */
+  static <K extends Comparable<K>, V> SmallSortedMap<K, V> newInstanceForTest() {
+    return new SmallSortedMap<>();
   }
 
-  private final int maxArraySize;
   // The "entry array" is actually a List because generic arrays are not
   // allowed. ArrayList also nicely handles the entry shifting on inserts and
   // removes.
@@ -143,8 +115,7 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
    * @code arraySize Size of the array in which the lexicographically smallest mappings are stored.
    *     (i.e. the {@code k} referred to in the class documentation).
    */
-  private SmallSortedMap(int arraySize) {
-    this.maxArraySize = arraySize;
+  private SmallSortedMap() {
     this.entryList = Collections.emptyList();
     this.overflowEntries = Collections.emptyMap();
     this.overflowEntriesDescending = Collections.emptyMap();
@@ -192,14 +163,8 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
   /** @return An iterable over the overflow entries. */
   public Iterable<Map.Entry<K, V>> getOverflowEntries() {
     return overflowEntries.isEmpty()
-        ? EmptySet.<Map.Entry<K, V>>iterable()
+        ? Collections.emptySet()
         : overflowEntries.entrySet();
-  }
-
-  Iterable<Map.Entry<K, V>> getOverflowEntriesDescending() {
-    return overflowEntriesDescending.isEmpty()
-        ? EmptySet.<Map.Entry<K, V>>iterable()
-        : overflowEntriesDescending.entrySet();
   }
 
   @Override
@@ -245,14 +210,14 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     }
     ensureEntryArrayMutable();
     final int insertionPoint = -(index + 1);
-    if (insertionPoint >= maxArraySize) {
+    if (insertionPoint >= DEFAULT_FIELD_MAP_ARRAY_SIZE) {
       // Put directly in overflow.
       return getOverflowEntriesMutable().put(key, value);
     }
     // Insert new Entry in array.
-    if (entryList.size() == maxArraySize) {
+    if (entryList.size() == DEFAULT_FIELD_MAP_ARRAY_SIZE) {
       // Shift the last array entry into overflow.
-      final Entry lastEntryInArray = entryList.remove(maxArraySize - 1);
+      final Entry lastEntryInArray = entryList.remove(DEFAULT_FIELD_MAP_ARRAY_SIZE - 1);
       getOverflowEntriesMutable().put(lastEntryInArray.getKey(), lastEntryInArray.getValue());
     }
     entryList.add(insertionPoint, new Entry(key, value));
@@ -387,7 +352,7 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
   private void ensureEntryArrayMutable() {
     checkMutable();
     if (entryList.isEmpty() && !(entryList instanceof ArrayList)) {
-      entryList = new ArrayList<Entry>(maxArraySize);
+      entryList = new ArrayList<>(DEFAULT_FIELD_MAP_ARRAY_SIZE);
     }
   }
 
@@ -617,45 +582,6 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
         lazyOverflowIterator = overflowEntriesDescending.entrySet().iterator();
       }
       return lazyOverflowIterator;
-    }
-  }
-
-  /**
-   * Helper class that holds immutable instances of an Iterable/Iterator that we return when the
-   * overflow entries is empty. This eliminates the creation of an Iterator object when there is
-   * nothing to iterate over.
-   */
-  private static class EmptySet {
-
-    private static final Iterator<Object> ITERATOR =
-        new Iterator<Object>() {
-          @Override
-          public boolean hasNext() {
-            return false;
-          }
-
-          @Override
-          public Object next() {
-            throw new NoSuchElementException();
-          }
-
-          @Override
-          public void remove() {
-            throw new UnsupportedOperationException();
-          }
-        };
-
-    private static final Iterable<Object> ITERABLE =
-        new Iterable<Object>() {
-          @Override
-          public Iterator<Object> iterator() {
-            return ITERATOR;
-          }
-        };
-
-    @SuppressWarnings("unchecked")
-    static <T> Iterable<T> iterable() {
-      return (Iterable<T>) ITERABLE;
     }
   }
 

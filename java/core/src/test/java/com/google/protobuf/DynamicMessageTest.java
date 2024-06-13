@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -38,12 +15,14 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
 import dynamicmessagetest.DynamicMessageTestProto.EmptyMessage;
 import dynamicmessagetest.DynamicMessageTestProto.MessageWithMapFields;
+import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
 import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
+import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import java.util.ArrayList;
 import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
@@ -400,5 +379,41 @@ public class DynamicMessageTest {
             builder.getFieldBuilder(mapField);
           }
         });
+  }
+
+  @Test
+  public void serialize_lazyFieldInMessageSet() throws Exception {
+    ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
+    extensionRegistry.add(TestMessageSetExtension2.messageSetExtension);
+    TestMessageSetExtension2 messageSetExtension =
+        TestMessageSetExtension2.newBuilder().setStr("foo").build();
+    // This is a valid serialization of the above message.
+    ByteString suboptimallySerializedMessageSetExtension =
+        messageSetExtension.toByteString().concat(messageSetExtension.toByteString());
+    DynamicMessage expectedMessage =
+        DynamicMessage.newBuilder(TestMessageSet.getDescriptor())
+            .setField(
+                TestMessageSetExtension2.messageSetExtension.getDescriptor(), messageSetExtension)
+            .build();
+    // Constructed with a LazyField, for whom roundtripping the serialized form will shorten the
+    // encoded form.
+    // In particular, this checks matching between lazy field encoding size.
+    DynamicMessage complicatedlyBuiltMessage =
+        DynamicMessage.newBuilder(TestMessageSet.getDescriptor())
+            .setField(
+                TestMessageSetExtension2.messageSetExtension.getDescriptor(),
+                new LazyField(
+                    DynamicMessage.getDefaultInstance(TestMessageSetExtension2.getDescriptor()),
+                    extensionRegistry,
+                    suboptimallySerializedMessageSetExtension))
+            .build();
+
+    DynamicMessage roundtrippedMessage =
+        DynamicMessage.newBuilder(TestMessageSet.getDescriptor())
+            .mergeFrom(complicatedlyBuiltMessage.toByteString(), extensionRegistry)
+            .build();
+
+    assertThat(complicatedlyBuiltMessage).isEqualTo(expectedMessage);
+    assertThat(roundtrippedMessage).isEqualTo(expectedMessage);
   }
 }

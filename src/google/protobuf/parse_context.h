@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #ifndef GOOGLE_PROTOBUF_PARSE_CONTEXT_H__
 #define GOOGLE_PROTOBUF_PARSE_CONTEXT_H__
@@ -35,16 +12,18 @@
 #include <cstring>
 #include <string>
 #include <type_traits>
+#include <utility>
 
+#include "absl/base/config.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/endian.h"
-#include "google/protobuf/implicit_weak_message.h"
 #include "google/protobuf/inlined_string_field.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -131,8 +110,44 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     if (count > 0) StreamBackUp(count);
   }
 
+  // In sanitizer mode we use memory poisoning to guarantee that:
+  //  - We do not read an uninitialized token.
+  //  - We would like to verify that this token was consumed, but unforuntately
+  //    __asan_address_is_poisoned is allowed to have false negatives.
+  class LimitToken {
+   public:
+    LimitToken() { PROTOBUF_POISON_MEMORY_REGION(&token_, sizeof(token_)); }
+
+    explicit LimitToken(int token) : token_(token) {
+      PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_));
+    }
+
+    LimitToken(const LimitToken&) = delete;
+    LimitToken& operator=(const LimitToken&) = delete;
+
+    LimitToken(LimitToken&& other) { *this = std::move(other); }
+
+    LimitToken& operator=(LimitToken&& other) {
+      PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_));
+      token_ = other.token_;
+      PROTOBUF_POISON_MEMORY_REGION(&other.token_, sizeof(token_));
+      return *this;
+    }
+
+    ~LimitToken() { PROTOBUF_UNPOISON_MEMORY_REGION(&token_, sizeof(token_)); }
+
+    int token() && {
+      int t = token_;
+      PROTOBUF_POISON_MEMORY_REGION(&token_, sizeof(token_));
+      return t;
+    }
+
+   private:
+    int token_;
+  };
+
   // If return value is negative it's an error
-  PROTOBUF_NODISCARD int PushLimit(const char* ptr, int limit) {
+  PROTOBUF_NODISCARD LimitToken PushLimit(const char* ptr, int limit) {
     ABSL_DCHECK(limit >= 0 && limit <= INT_MAX - kSlopBytes);
     // This add is safe due to the invariant above, because
     // ptr - buffer_end_ <= kSlopBytes.
@@ -140,13 +155,15 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     limit_end_ = buffer_end_ + (std::min)(0, limit);
     auto old_limit = limit_;
     limit_ = limit;
-    return old_limit - limit;
+    return LimitToken(old_limit - limit);
   }
 
-  PROTOBUF_NODISCARD bool PopLimit(int delta) {
+  PROTOBUF_NODISCARD bool PopLimit(LimitToken delta) {
+    // We must update the limit first before the early return. Otherwise, we can
+    // end up with an invalid limit and it can lead to integer overflows.
+    limit_ = limit_ + std::move(delta).token();
     if (PROTOBUF_PREDICT_FALSE(!EndedAtLimit())) return false;
-    limit_ = limit_ + delta;
-    // TODO(gerbens) We could remove this line and hoist the code to
+    // TODO We could remove this line and hoist the code to
     // DoneFallback. Study the perf/bin-size effects.
     limit_end_ = buffer_end_ + (std::min)(0, limit_);
     return true;
@@ -205,7 +222,12 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   PROTOBUF_NODISCARD const char* ReadPackedFixed(const char* ptr, int size,
                                                  RepeatedField<T>* out);
   template <typename Add>
-  PROTOBUF_NODISCARD const char* ReadPackedVarint(const char* ptr, Add add);
+  PROTOBUF_NODISCARD const char* ReadPackedVarint(const char* ptr, Add add) {
+    return ReadPackedVarint(ptr, add, [](int) {});
+  }
+  template <typename Add, typename SizeCb>
+  PROTOBUF_NODISCARD const char* ReadPackedVarint(const char* ptr, Add add,
+                                                  SizeCb size_callback);
 
   uint32_t LastTag() const { return last_tag_minus_1_ + 1; }
   bool ConsumeEndGroup(uint32_t start_tag) {
@@ -320,7 +342,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   uint32_t last_tag_minus_1_ = 0;
   int overall_limit_ = INT_MAX;  // Overall limit independent of pushed limits.
   // Pretty random large number that seems like a safe allocation on most
-  // systems. TODO(gerbens) do we need to set this as build flag?
+  // systems. TODO do we need to set this as build flag?
   enum { kSafeStringSize = 50000000 };
 
   // Advances to next buffer chunk returns a pointer to the same logical place
@@ -367,7 +389,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       append(ptr, chunk_size);
       ptr += chunk_size;
       size -= chunk_size;
-      // TODO(gerbens) Next calls NextBuffer which generates buffers with
+      // TODO Next calls NextBuffer which generates buffers with
       // overlap and thus incurs cost of copying the slop regions. This is not
       // necessary for reading strings. We should just call Next buffers.
       if (limit_ <= kSlopBytes) return nullptr;
@@ -383,8 +405,8 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // AppendUntilEnd appends data until a limit (either a PushLimit or end of
   // stream. Normal payloads are from length delimited fields which have an
   // explicit size. Reading until limit only comes when the string takes
-  // the place of a protobuf, ie RawMessage/StringRawMessage, lazy fields and
-  // implicit weak messages. We keep these methods private and friend them.
+  // the place of a protobuf, ie RawMessage, lazy fields and implicit weak
+  // messages. We keep these methods private and friend them.
   template <typename A>
   const char* AppendUntilEnd(const char* ptr, const A& append) {
     if (ptr - buffer_end_ > limit_) return nullptr;
@@ -434,6 +456,30 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
     *start = InitFrom(std::forward<T>(args)...);
   }
 
+  struct Spawn {};
+  static constexpr Spawn kSpawn = {};
+
+  // Creates a new context from a given "ctx" to inherit a few attributes to
+  // emulate continued parsing. For example, recursion depth or descriptor pools
+  // must be passed down to a new "spawned" context to maintain the same parse
+  // context. Note that the spawned context always disables aliasing (different
+  // input).
+  template <typename... T>
+  ParseContext(Spawn, const ParseContext& ctx, const char** start, T&&... args)
+      : EpsCopyInputStream(false),
+        depth_(ctx.depth_),
+        data_(ctx.data_)
+  {
+    *start = InitFrom(std::forward<T>(args)...);
+  }
+
+  // Move constructor and assignment operator are not supported because "ptr"
+  // for parsing may have pointed to an inlined buffer (patch_buffer_) which can
+  // be invalid afterwards.
+  ParseContext(ParseContext&&) = delete;
+  ParseContext& operator=(ParseContext&&) = delete;
+  ParseContext& operator=(const ParseContext&) = delete;
+
   void TrackCorrectEnding() { group_depth_ = 0; }
 
   // Done should only be called when the parsing pointer is pointing to the
@@ -447,42 +493,39 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
 
   const char* ParseMessage(MessageLite* msg, const char* ptr);
 
-  // Spawns a child parsing context that inherits key properties. New context
-  // inherits the following:
-  // --depth_, data_, check_required_fields_, lazy_parse_mode_
-  // The spawned context always disables aliasing (different input).
-  template <typename... T>
-  ParseContext Spawn(const char** start, T&&... args) {
-    ParseContext spawned(depth_, false, start, std::forward<T>(args)...);
-    // Transfer key context states.
-    spawned.data_ = data_;
-    return spawned;
+  // Read the length prefix, push the new limit, call the func(ptr), and then
+  // pop the limit. Useful for situations that don't have an actual message.
+  template <typename Func>
+  PROTOBUF_NODISCARD const char* ParseLengthDelimitedInlined(const char*,
+                                                             const Func& func);
+
+  // Push the recursion depth, call the func(ptr), and then pop depth. Useful
+  // for situations that don't have an actual message.
+  template <typename Func>
+  PROTOBUF_NODISCARD const char* ParseGroupInlined(const char* ptr,
+                                                   uint32_t start_tag,
+                                                   const Func& func);
+
+  // Use a template to avoid the strong dep into TcParser. All callers will have
+  // the dep.
+  template <typename Parser = TcParser>
+  PROTOBUF_ALWAYS_INLINE const char* ParseMessage(
+      MessageLite* msg, const TcParseTableBase* tc_table, const char* ptr) {
+    return ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {
+      return Parser::ParseLoop(msg, ptr, this, tc_table);
+    });
+  }
+  template <typename Parser = TcParser>
+  PROTOBUF_ALWAYS_INLINE const char* ParseGroup(
+      MessageLite* msg, const TcParseTableBase* tc_table, const char* ptr,
+      uint32_t start_tag) {
+    return ParseGroupInlined(ptr, start_tag, [&](const char* ptr) {
+      return Parser::ParseLoop(msg, ptr, this, tc_table);
+    });
   }
 
-  // This overload supports those few cases where ParseMessage is called
-  // on a class that is not actually a proto message.
-  // TODO(jorg): Eliminate this use case.
-  template <typename T,
-            typename std::enable_if<!std::is_base_of<MessageLite, T>::value,
-                                    bool>::type = true>
-  PROTOBUF_NODISCARD const char* ParseMessage(T* msg, const char* ptr);
-
-  template <typename TcParser, typename Table>
-  PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char* ParseMessage(
-      MessageLite* msg, const char* ptr, const Table* table) {
-    int old;
-    ptr = ReadSizeAndPushLimitAndDepthInlined(ptr, &old);
-    auto old_depth = depth_;
-    ptr = ptr ? TcParser::ParseLoop(msg, ptr, this, table) : nullptr;
-    if (ptr != nullptr) ABSL_DCHECK_EQ(old_depth, depth_);
-    depth_++;
-    if (!PopLimit(old)) return nullptr;
-    return ptr;
-  }
-
-  template <typename T>
   PROTOBUF_NODISCARD PROTOBUF_NDEBUG_INLINE const char* ParseGroup(
-      T* msg, const char* ptr, uint32_t tag) {
+      MessageLite* msg, const char* ptr, uint32_t tag) {
     if (--depth_ < 0) return nullptr;
     group_depth_++;
     auto old_depth = depth_;
@@ -498,40 +541,22 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
     return ptr;
   }
 
-  template <typename TcParser, typename Table>
-  PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char* ParseGroup(
-      MessageLite* msg, const char* ptr, uint32_t tag, const Table* table) {
-    if (--depth_ < 0) return nullptr;
-    group_depth_++;
-    auto old_depth = depth_;
-    auto old_group_depth = group_depth_;
-    ptr = TcParser::ParseLoop(msg, ptr, this, table);
-    if (ptr != nullptr) {
-      ABSL_DCHECK_EQ(old_depth, depth_);
-      ABSL_DCHECK_EQ(old_group_depth, group_depth_);
-    }
-    group_depth_--;
-    depth_++;
-    if (PROTOBUF_PREDICT_FALSE(!ConsumeEndGroup(tag))) return nullptr;
-    return ptr;
-  }
-
  private:
   // Out-of-line routine to save space in ParseContext::ParseMessage<T>
-  //   int old;
+  //   LimitToken old;
   //   ptr = ReadSizeAndPushLimitAndDepth(ptr, &old)
   // is equivalent to:
   //   int size = ReadSize(&ptr);
   //   if (!ptr) return nullptr;
-  //   int old = PushLimit(ptr, size);
+  //   LimitToken old = PushLimit(ptr, size);
   //   if (--depth_ < 0) return nullptr;
-  PROTOBUF_NODISCARD const char* ReadSizeAndPushLimitAndDepth(const char* ptr,
-                                                              int* old_limit);
+  PROTOBUF_NODISCARD const char* ReadSizeAndPushLimitAndDepth(
+      const char* ptr, LimitToken* old_limit);
 
   // As above, but fully inlined for the cases where we care about performance
   // more than size. eg TcParser.
   PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE const char*
-  ReadSizeAndPushLimitAndDepthInlined(const char* ptr, int* old_limit);
+  ReadSizeAndPushLimitAndDepthInlined(const char* ptr, LimitToken* old_limit);
 
   // The context keeps an internal stack to keep track of the recursive
   // part of the parse state.
@@ -544,17 +569,6 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   int group_depth_ = INT_MIN;
   Data data_;
 };
-
-template <uint32_t tag>
-bool ExpectTag(const char* ptr) {
-  if (tag < 128) {
-    return *ptr == static_cast<char>(tag);
-  } else {
-    static_assert(tag < 128 * 128, "We only expect tags for 1 or 2 bytes");
-    char buf[2] = {static_cast<char>(tag | 0x80), static_cast<char>(tag >> 7)};
-    return std::memcmp(ptr, buf, 2) == 0;
-  }
-}
 
 template <int>
 struct EndianHelper;
@@ -598,6 +612,11 @@ T UnalignedLoad(const char* p) {
   memcpy(&res, &tmp, sizeof(T));
   return res;
 }
+template <typename T, typename Void,
+          typename = std::enable_if_t<std::is_same<Void, void>::value>>
+T UnalignedLoad(const Void* p) {
+  return UnalignedLoad<T>(reinterpret_cast<const char*>(p));
+}
 
 PROTOBUF_EXPORT
 std::pair<const char*, uint32_t> VarintParseSlow32(const char* p, uint32_t res);
@@ -617,19 +636,84 @@ inline const char* VarintParseSlow(const char* p, uint32_t res, uint64_t* out) {
 }
 
 #ifdef __aarch64__
-const char* VarintParseSlowArm64(const char* p, uint64_t* out, uint64_t first8);
-const char* VarintParseSlowArm32(const char* p, uint32_t* out, uint64_t first8);
-
-inline const char* VarintParseSlowArm(const char* p, uint32_t* out,
-                                      uint64_t first8) {
-  return VarintParseSlowArm32(p, out, first8);
-}
-
-inline const char* VarintParseSlowArm(const char* p, uint64_t* out,
-                                      uint64_t first8) {
-  return VarintParseSlowArm64(p, out, first8);
-}
-
+// Generally, speaking, the ARM-optimized Varint decode algorithm is to extract
+// and concatenate all potentially valid data bits, compute the actual length
+// of the Varint, and mask off the data bits which are not actually part of the
+// result.  More detail on the two main parts is shown below.
+//
+// 1) Extract and concatenate all potentially valid data bits.
+//    Two ARM-specific features help significantly:
+//    a) Efficient and non-destructive bit extraction (UBFX)
+//    b) A single instruction can perform both an OR with a shifted
+//       second operand in one cycle.  E.g., the following two lines do the same
+//       thing
+//       ```result = operand_1 | (operand2 << 7);```
+//       ```ORR %[result], %[operand_1], %[operand_2], LSL #7```
+//    The figure below shows the implementation for handling four chunks.
+//
+// Bits   32    31-24    23   22-16    15    14-8      7     6-0
+//      +----+---------+----+---------+----+---------+----+---------+
+//      |CB 3| Chunk 3 |CB 2| Chunk 2 |CB 1| Chunk 1 |CB 0| Chunk 0 |
+//      +----+---------+----+---------+----+---------+----+---------+
+//                |              |              |              |
+//               UBFX           UBFX           UBFX           UBFX    -- cycle 1
+//                |              |              |              |
+//                V              V              V              V
+//               Combined LSL #7 and ORR     Combined LSL #7 and ORR  -- cycle 2
+//                                 |             |
+//                                 V             V
+//                            Combined LSL #14 and ORR                -- cycle 3
+//                                       |
+//                                       V
+//                                Parsed bits 0-27
+//
+//
+// 2) Calculate the index of the cleared continuation bit in order to determine
+//    where the encoded Varint ends and the size of the decoded value.  The
+//    easiest way to do this is mask off all data bits, leaving just the
+//    continuation bits.  We actually need to do the masking on an inverted
+//    copy of the data, which leaves a 1 in all continuation bits which were
+//    originally clear.  The number of trailing zeroes in this value indicates
+//    the size of the Varint.
+//
+//  AND  0x80    0x80    0x80    0x80    0x80    0x80    0x80    0x80
+//
+// Bits   63      55      47      39      31      23      15       7
+//      +----+--+----+--+----+--+----+--+----+--+----+--+----+--+----+--+
+// ~    |CB 7|  |CB 6|  |CB 5|  |CB 4|  |CB 3|  |CB 2|  |CB 1|  |CB 0|  |
+//      +----+--+----+--+----+--+----+--+----+--+----+--+----+--+----+--+
+//         |       |       |       |       |       |       |       |
+//         V       V       V       V       V       V       V       V
+// Bits   63      55      47      39      31      23      15       7
+//      +----+--+----+--+----+--+----+--+----+--+----+--+----+--+----+--+
+//      |~CB 7|0|~CB 6|0|~CB 5|0|~CB 4|0|~CB 3|0|~CB 2|0|~CB 1|0|~CB 0|0|
+//      +----+--+----+--+----+--+----+--+----+--+----+--+----+--+----+--+
+//                                      |
+//                                     CTZ
+//                                      V
+//                     Index of first cleared continuation bit
+//
+//
+// While this is implemented in C++ significant care has been taken to ensure
+// the compiler emits the best instruction sequence.  In some cases we use the
+// following two functions to manipulate the compiler's scheduling decisions.
+//
+// Controls compiler scheduling by telling it that the first value is modified
+// by the second value the callsite.  This is useful if non-critical path
+// instructions are too aggressively scheduled, resulting in a slowdown of the
+// actual critical path due to opportunity costs.  An example usage is shown
+// where a false dependence of num_bits on result is added to prevent checking
+// for a very unlikely error until all critical path instructions have been
+// fetched.
+//
+// ```
+// num_bits = <multiple operations to calculate new num_bits value>
+// result = <multiple operations to calculate result>
+// num_bits = ValueBarrier(num_bits, result);
+// if (num_bits == 63) {
+//   ABSL_LOG(FATAL) << "Invalid num_bits value";
+// }
+// ```
 // Falsely indicate that the specific value is modified at this location.  This
 // prevents code which depends on this value from being scheduled earlier.
 template <typename V1Type>
@@ -651,11 +735,138 @@ static PROTOBUF_ALWAYS_INLINE inline uint64_t Ubfx7(uint64_t data,
   return ValueBarrier((data >> start) & 0x7f);
 }
 
-#endif  // __aarch64__
+PROTOBUF_ALWAYS_INLINE inline uint64_t ExtractAndMergeTwoChunks(
+    uint64_t data, uint64_t first_byte) {
+  ABSL_DCHECK_LE(first_byte, 6U);
+  uint64_t first = Ubfx7(data, first_byte * 8);
+  uint64_t second = Ubfx7(data, (first_byte + 1) * 8);
+  return ValueBarrier(first | (second << 7));
+}
 
+struct SlowPathEncodedInfo {
+  const char* p;
+  uint64_t last8;
+  uint64_t valid_bits;
+  uint64_t valid_chunk_bits;
+  uint64_t masked_cont_bits;
+};
+
+// Performs multiple actions which are identical between 32 and 64 bit Varints
+// in order to compute the length of the encoded Varint and compute the new
+// of p.
+PROTOBUF_ALWAYS_INLINE inline SlowPathEncodedInfo ComputeLengthAndUpdateP(
+    const char* p) {
+  SlowPathEncodedInfo result;
+  // Load the last two bytes of the encoded Varint.
+  std::memcpy(&result.last8, p + 2, sizeof(result.last8));
+  uint64_t mask = ValueBarrier(0x8080808080808080);
+  // Only set continuation bits remain
+  result.masked_cont_bits = ValueBarrier(mask & ~result.last8);
+  // The first cleared continuation bit is the most significant 1 in the
+  // reversed value.  Result is undefined for an input of 0 and we handle that
+  // case below.
+  result.valid_bits = absl::countr_zero(result.masked_cont_bits);
+  // Calculates the number of chunks in the encoded Varint.  This value is low
+  // by three as neither the cleared continuation chunk nor the first two chunks
+  // are counted.
+  uint64_t set_continuation_bits = result.valid_bits >> 3;
+  // Update p to point past the encoded Varint.
+  result.p = p + set_continuation_bits + 3;
+  // Calculate number of valid data bits in the decoded value so invalid bits
+  // can be masked off.  Value is too low by 14 but we account for that when
+  // calculating the mask.
+  result.valid_chunk_bits = result.valid_bits - set_continuation_bits;
+  return result;
+}
+
+inline PROTOBUF_ALWAYS_INLINE std::pair<const char*, uint64_t>
+VarintParseSlowArm64(const char* p, uint64_t first8) {
+  constexpr uint64_t kResultMaskUnshifted = 0xffffffffffffc000ULL;
+  constexpr uint64_t kFirstResultBitChunk2 = 2 * 7;
+  constexpr uint64_t kFirstResultBitChunk4 = 4 * 7;
+  constexpr uint64_t kFirstResultBitChunk6 = 6 * 7;
+  constexpr uint64_t kFirstResultBitChunk8 = 8 * 7;
+
+  SlowPathEncodedInfo info = ComputeLengthAndUpdateP(p);
+  // Extract data bits from the low six chunks.  This includes chunks zero and
+  // one which we already know are valid.
+  uint64_t merged_01 = ExtractAndMergeTwoChunks(first8, /*first_chunk=*/0);
+  uint64_t merged_23 = ExtractAndMergeTwoChunks(first8, /*first_chunk=*/2);
+  uint64_t merged_45 = ExtractAndMergeTwoChunks(first8, /*first_chunk=*/4);
+  // Low 42 bits of decoded value.
+  uint64_t result = merged_01 | (merged_23 << kFirstResultBitChunk2) |
+                    (merged_45 << kFirstResultBitChunk4);
+  // This immediate ends in 14 zeroes since valid_chunk_bits is too low by 14.
+  uint64_t result_mask = kResultMaskUnshifted << info.valid_chunk_bits;
+  //  iff the Varint i invalid.
+  if (PROTOBUF_PREDICT_FALSE(info.masked_cont_bits == 0)) {
+    return {nullptr, 0};
+  }
+  // Test for early exit if Varint does not exceed 6 chunks.  Branching on one
+  // bit is faster on ARM than via a compare and branch.
+  if (PROTOBUF_PREDICT_FALSE((info.valid_bits & 0x20) != 0)) {
+    // Extract data bits from high four chunks.
+    uint64_t merged_67 = ExtractAndMergeTwoChunks(first8, /*first_chunk=*/6);
+    // Last two chunks come from last two bytes of info.last8.
+    uint64_t merged_89 =
+        ExtractAndMergeTwoChunks(info.last8, /*first_chunk=*/6);
+    result |= merged_67 << kFirstResultBitChunk6;
+    result |= merged_89 << kFirstResultBitChunk8;
+    // Handle an invalid Varint with all 10 continuation bits set.
+  }
+  // Mask off invalid data bytes.
+  result &= ~result_mask;
+  return {info.p, result};
+}
+
+// See comments in VarintParseSlowArm64 for a description of the algorithm.
+// Differences in the 32 bit version are noted below.
+inline PROTOBUF_ALWAYS_INLINE std::pair<const char*, uint32_t>
+VarintParseSlowArm32(const char* p, uint64_t first8) {
+  constexpr uint64_t kResultMaskUnshifted = 0xffffffffffffc000ULL;
+  constexpr uint64_t kFirstResultBitChunk1 = 1 * 7;
+  constexpr uint64_t kFirstResultBitChunk3 = 3 * 7;
+
+  // This also skips the slop bytes.
+  SlowPathEncodedInfo info = ComputeLengthAndUpdateP(p);
+  // Extract data bits from chunks 1-4.  Chunk zero is merged in below.
+  uint64_t merged_12 = ExtractAndMergeTwoChunks(first8, /*first_chunk=*/1);
+  uint64_t merged_34 = ExtractAndMergeTwoChunks(first8, /*first_chunk=*/3);
+  first8 = ValueBarrier(first8, p);
+  uint64_t result = Ubfx7(first8, /*start=*/0);
+  result = ValueBarrier(result | merged_12 << kFirstResultBitChunk1);
+  result = ValueBarrier(result | merged_34 << kFirstResultBitChunk3);
+  uint64_t result_mask = kResultMaskUnshifted << info.valid_chunk_bits;
+  result &= ~result_mask;
+  // It is extremely unlikely that a Varint is invalid so checking that
+  // condition isn't on the critical path. Here we make sure that we don't do so
+  // until result has been computed.
+  info.masked_cont_bits = ValueBarrier(info.masked_cont_bits, result);
+  if (PROTOBUF_PREDICT_FALSE(info.masked_cont_bits == 0)) {
+    return {nullptr, 0};
+  }
+  return {info.p, result};
+}
+
+static const char* VarintParseSlowArm(const char* p, uint32_t* out,
+                                      uint64_t first8) {
+  auto tmp = VarintParseSlowArm32(p, first8);
+  *out = tmp.second;
+  return tmp.first;
+}
+
+static const char* VarintParseSlowArm(const char* p, uint64_t* out,
+                                      uint64_t first8) {
+  auto tmp = VarintParseSlowArm64(p, first8);
+  *out = tmp.second;
+  return tmp.first;
+}
+#endif
+
+// The caller must ensure that p points to at least 10 valid bytes.
 template <typename T>
 PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
-#if defined(__aarch64__) && defined(PROTOBUF_LITTLE_ENDIAN)
+#if defined(__aarch64__) && defined(ABSL_IS_LITTLE_ENDIAN)
   // This optimization is not supported in big endian mode
   uint64_t first8;
   std::memcpy(&first8, p, sizeof(first8));
@@ -685,7 +896,7 @@ PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
 }
 
 // Used for tags, could read up to 5 bytes which must be available.
-// Caller must ensure its safe to call.
+// Caller must ensure it's safe to call.
 
 PROTOBUF_EXPORT
 std::pair<const char*, uint32_t> ReadTagFallback(const char* p, uint32_t res);
@@ -723,7 +934,7 @@ PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE constexpr T RotateLeft(
 
 PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE uint64_t
 RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
-  // TODO(b/239808098): remove the inline assembly
+  // TODO: remove the inline assembly
 #if defined(__x86_64__) && defined(__GNUC__)
   // This will only use one register for `res`.
   // `byte` comes as a reference to allow the compiler to generate code like:
@@ -742,10 +953,10 @@ RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
   res |= 0xFF & byte;
 #endif
   return res;
-};
+}
 
-inline PROTOBUF_ALWAYS_INLINE
-const char* ReadTagInlined(const char* ptr, uint32_t* out) {
+inline PROTOBUF_ALWAYS_INLINE const char* ReadTagInlined(const char* ptr,
+                                                         uint32_t* out) {
   uint64_t res = 0xFF & ptr[0];
   if (PROTOBUF_PREDICT_FALSE(res >= 128)) {
     res = RotRight7AndReplaceLowByte(res, ptr[1]);
@@ -877,31 +1088,47 @@ inline int32_t ReadVarintZigZag32(const char** p) {
   return WireFormatLite::ZigZagDecode32(static_cast<uint32_t>(tmp));
 }
 
-template <typename T, typename std::enable_if<
-                          !std::is_base_of<MessageLite, T>::value, bool>::type>
-PROTOBUF_NODISCARD const char* ParseContext::ParseMessage(T* msg,
-                                                          const char* ptr) {
-  int old;
-  ptr = ReadSizeAndPushLimitAndDepth(ptr, &old);
+template <typename Func>
+PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE const char*
+ParseContext::ParseLengthDelimitedInlined(const char* ptr, const Func& func) {
+  LimitToken old;
+  ptr = ReadSizeAndPushLimitAndDepthInlined(ptr, &old);
   if (ptr == nullptr) return ptr;
   auto old_depth = depth_;
-  ptr = msg->_InternalParse(ptr, this);
+  PROTOBUF_ALWAYS_INLINE_CALL ptr = func(ptr);
   if (ptr != nullptr) ABSL_DCHECK_EQ(old_depth, depth_);
   depth_++;
-  if (!PopLimit(old)) return nullptr;
+  if (!PopLimit(std::move(old))) return nullptr;
+  return ptr;
+}
+
+template <typename Func>
+PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE const char*
+ParseContext::ParseGroupInlined(const char* ptr, uint32_t start_tag,
+                                const Func& func) {
+  if (--depth_ < 0) return nullptr;
+  group_depth_++;
+  auto old_depth = depth_;
+  auto old_group_depth = group_depth_;
+  PROTOBUF_ALWAYS_INLINE_CALL ptr = func(ptr);
+  if (ptr != nullptr) {
+    ABSL_DCHECK_EQ(old_depth, depth_);
+    ABSL_DCHECK_EQ(old_group_depth, group_depth_);
+  }
+  group_depth_--;
+  depth_++;
+  if (PROTOBUF_PREDICT_FALSE(!ConsumeEndGroup(start_tag))) return nullptr;
   return ptr;
 }
 
 inline const char* ParseContext::ReadSizeAndPushLimitAndDepthInlined(
-    const char* ptr, int* old_limit) {
+    const char* ptr, LimitToken* old_limit) {
   int size = ReadSize(&ptr);
-  if (PROTOBUF_PREDICT_FALSE(!ptr)) {
-    // Make sure this isn't uninitialized even on error return
-    *old_limit = 0;
+  if (PROTOBUF_PREDICT_FALSE(!ptr) || depth_ <= 0) {
     return nullptr;
   }
   *old_limit = PushLimit(ptr, size);
-  if (--depth_ < 0) return nullptr;
+  --depth_;
   return ptr;
 }
 
@@ -940,7 +1167,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
     out->Reserve(old_entries + num);
     int block_size = num * sizeof(T);
     auto dst = out->AddNAlreadyReserved(num);
-#ifdef PROTOBUF_LITTLE_ENDIAN
+#ifdef ABSL_IS_LITTLE_ENDIAN
     std::memcpy(dst, ptr, block_size);
 #else
     for (int i = 0; i < num; i++)
@@ -959,7 +1186,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
   int old_entries = out->size();
   out->Reserve(old_entries + num);
   auto dst = out->AddNAlreadyReserved(num);
-#ifdef PROTOBUF_LITTLE_ENDIAN
+#ifdef ABSL_IS_LITTLE_ENDIAN
   ABSL_CHECK(dst != nullptr) << out << "," << num;
   std::memcpy(dst, ptr, block_size);
 #else
@@ -981,9 +1208,12 @@ const char* ReadPackedVarintArray(const char* ptr, const char* end, Add add) {
   return ptr;
 }
 
-template <typename Add>
-const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add) {
+template <typename Add, typename SizeCb>
+const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add,
+                                                 SizeCb size_callback) {
   int size = ReadSize(&ptr);
+  size_callback(size);
+
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
   int chunk_size = static_cast<int>(buffer_end_ - ptr);
   while (size > chunk_size) {
@@ -1028,6 +1258,14 @@ inline bool VerifyUTF8(const std::string* s, const char* field_name) {
 // All the string parsers with or without UTF checking and for all CTypes.
 PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* InlineGreedyStringParser(
     std::string* s, const char* ptr, ParseContext* ctx);
+
+PROTOBUF_NODISCARD inline const char* InlineCordParser(::absl::Cord* cord,
+                                                       const char* ptr,
+                                                       ParseContext* ctx) {
+  int size = ReadSize(&ptr);
+  if (!ptr) return nullptr;
+  return ctx->ReadCord(ptr, size, cord);
+}
 
 
 template <typename T>
@@ -1120,7 +1358,7 @@ PROTOBUF_NODISCARD const char* PackedEnumParser(void* object, const char* ptr,
                                                 InternalMetadata* metadata,
                                                 int field_num) {
   return ctx->ReadPackedVarint(
-      ptr, [object, is_valid, metadata, field_num](uint64_t val) {
+      ptr, [object, is_valid, metadata, field_num](int32_t val) {
         if (is_valid(val)) {
           static_cast<RepeatedField<int>*>(object)->Add(val);
         } else {
@@ -1135,7 +1373,7 @@ PROTOBUF_NODISCARD const char* PackedEnumParserArg(
     bool (*is_valid)(const void*, int), const void* data,
     InternalMetadata* metadata, int field_num) {
   return ctx->ReadPackedVarint(
-      ptr, [object, is_valid, data, metadata, field_num](uint64_t val) {
+      ptr, [object, is_valid, data, metadata, field_num](int32_t val) {
         if (is_valid(data, val)) {
           static_cast<RepeatedField<int>*>(object)->Add(val);
         } else {

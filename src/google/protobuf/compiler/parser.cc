@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -38,6 +15,7 @@
 
 #include <float.h>
 
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <string>
@@ -46,6 +24,7 @@
 #include <vector>
 
 #include "absl/base/casts.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
@@ -59,15 +38,17 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/wire_format.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace {
-
-using ::google::protobuf::internal::DownCast;
 
 using TypeNameMap =
     absl::flat_hash_map<absl::string_view, FieldDescriptorProto::Type>;
@@ -197,8 +178,7 @@ Parser::Parser()
       stop_after_syntax_identifier_(false) {
 }
 
-Parser::~Parser() {}
-
+Parser::~Parser() = default;
 // ===================================================================
 
 inline bool Parser::LookingAt(absl::string_view text) {
@@ -220,7 +200,7 @@ bool Parser::TryConsume(absl::string_view text) {
   }
 }
 
-bool Parser::Consume(absl::string_view text, absl::string_view error) {
+bool Parser::Consume(absl::string_view text, ErrorMaker error) {
   if (TryConsume(text)) {
     return true;
   } else {
@@ -230,10 +210,11 @@ bool Parser::Consume(absl::string_view text, absl::string_view error) {
 }
 
 bool Parser::Consume(absl::string_view text) {
-  return Consume(text, absl::StrCat("Expected \"", text, "\"."));
+  return Consume(text,
+                 [&] { return absl::StrCat("Expected \"", text, "\"."); });
 }
 
-bool Parser::ConsumeIdentifier(std::string* output, absl::string_view error) {
+bool Parser::ConsumeIdentifier(std::string* output, ErrorMaker error) {
   if (LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
     *output = input_->current().text;
     input_->Next();
@@ -244,7 +225,7 @@ bool Parser::ConsumeIdentifier(std::string* output, absl::string_view error) {
   }
 }
 
-bool Parser::ConsumeInteger(int* output, absl::string_view error) {
+bool Parser::ConsumeInteger(int* output, ErrorMaker error) {
   if (LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
     uint64_t value = 0;
     if (!io::Tokenizer::ParseInteger(input_->current().text,
@@ -262,7 +243,7 @@ bool Parser::ConsumeInteger(int* output, absl::string_view error) {
   }
 }
 
-bool Parser::ConsumeSignedInteger(int* output, absl::string_view error) {
+bool Parser::ConsumeSignedInteger(int* output, ErrorMaker error) {
   bool is_negative = false;
   uint64_t max_value = std::numeric_limits<int32_t>::max();
   if (TryConsume("-")) {
@@ -277,7 +258,7 @@ bool Parser::ConsumeSignedInteger(int* output, absl::string_view error) {
 }
 
 bool Parser::ConsumeInteger64(uint64_t max_value, uint64_t* output,
-                              absl::string_view error) {
+                              ErrorMaker error) {
   if (LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
     if (!io::Tokenizer::ParseInteger(input_->current().text, max_value,
                                      output)) {
@@ -302,7 +283,7 @@ bool Parser::TryConsumeInteger64(uint64_t max_value, uint64_t* output) {
   return false;
 }
 
-bool Parser::ConsumeNumber(double* output, absl::string_view error) {
+bool Parser::ConsumeNumber(double* output, ErrorMaker error) {
   if (LookingAtType(io::Tokenizer::TYPE_FLOAT)) {
     *output = io::Tokenizer::ParseFloat(input_->current().text);
     input_->Next();
@@ -339,7 +320,7 @@ bool Parser::ConsumeNumber(double* output, absl::string_view error) {
   }
 }
 
-bool Parser::ConsumeString(std::string* output, absl::string_view error) {
+bool Parser::ConsumeString(std::string* output, ErrorMaker error) {
   if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
     io::Tokenizer::ParseString(input_->current().text, output);
     input_->Next();
@@ -391,32 +372,34 @@ bool Parser::ConsumeEndOfDeclaration(absl::string_view text,
   if (TryConsumeEndOfDeclaration(text, location)) {
     return true;
   } else {
-    RecordError(absl::StrCat("Expected \"", text, "\"."));
+    RecordError([&] { return absl::StrCat("Expected \"", text, "\"."); });
     return false;
   }
 }
 
 // -------------------------------------------------------------------
 
-void Parser::RecordError(int line, int column, absl::string_view error) {
+void Parser::RecordError(int line, int column, ErrorMaker error) {
   if (error_collector_ != nullptr) {
-    error_collector_->RecordError(line, column, error);
+    error_collector_->RecordError(line, column, error.get());
   }
   had_errors_ = true;
 }
 
-void Parser::RecordError(absl::string_view error) {
+void Parser::RecordError(ErrorMaker error) {
   RecordError(input_->current().line, input_->current().column, error);
 }
 
-void Parser::RecordWarning(int line, int column, absl::string_view warning) {
+void Parser::RecordWarning(int line, int column, ErrorMaker error) {
   if (error_collector_ != nullptr) {
-    error_collector_->RecordWarning(line, column, warning);
+    error_collector_->RecordWarning(line, column, error.get());
   }
 }
 
-void Parser::RecordWarning(absl::string_view warning) {
-  RecordWarning(input_->current().line, input_->current().column, warning);
+// Invokes error_collector_->RecordWarning() with the line and column number
+// of the current token.
+void Parser::RecordWarning(ErrorMaker error) {
+  RecordWarning(input_->current().line, input_->current().column, error);
 }
 
 // -------------------------------------------------------------------
@@ -552,14 +535,15 @@ void Parser::SkipStatement() {
 }
 
 void Parser::SkipRestOfBlock() {
+  size_t block_count = 1;
   while (true) {
     if (AtEnd()) {
       return;
     } else if (LookingAtType(io::Tokenizer::TYPE_SYMBOL)) {
       if (TryConsumeEndOfDeclaration("}", nullptr)) {
-        return;
+        if (--block_count == 0) break;
       } else if (TryConsume("{")) {
-        SkipRestOfBlock();
+        ++block_count;
       }
     }
     input_->Next();
@@ -567,6 +551,26 @@ void Parser::SkipRestOfBlock() {
 }
 
 // ===================================================================
+
+bool Parser::ValidateMessage(const DescriptorProto* proto) {
+  for (int i = 0; i < proto->options().uninterpreted_option_size(); i++) {
+    const UninterpretedOption& option =
+        proto->options().uninterpreted_option(i);
+    if (option.name_size() > 0 && !option.name(0).is_extension() &&
+        option.name(0).name_part() == "map_entry") {
+      int line = -1, col = 0;  // indicates line and column not known
+      if (source_location_table_ != nullptr) {
+        source_location_table_->Find(
+            &option, DescriptorPool::ErrorCollector::OPTION_NAME, &line, &col);
+      }
+      RecordError(line, col,
+                  "map_entry should not be set explicitly. "
+                  "Use map<KeyType, ValueType> instead.");
+      return false;
+    }
+  }
+  return true;
+}
 
 bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
   bool has_allow_alias = false;
@@ -588,12 +592,13 @@ bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
   }
 
   if (has_allow_alias && !allow_alias) {
-    std::string error = absl::StrCat(
-        "\"", proto->name(),
-        "\" declares 'option allow_alias = false;' which has no effect. "
-        "Please remove the declaration.");
     // This needlessly clutters declarations with nops.
-    RecordError(error);
+    RecordError([=] {
+      return absl::StrCat(
+          "\"", proto->name(),
+          "\" declares 'option allow_alias = false;' which has no effect. "
+          "Please remove the declaration.");
+    });
     return false;
   }
 
@@ -609,14 +614,15 @@ bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
     }
   }
   if (allow_alias && !has_duplicates) {
-    std::string error = absl::StrCat(
-        "\"", proto->name(),
-        "\" declares support for enum aliases but no enum values share field "
-        "numbers. Please remove the unnecessary 'option allow_alias = true;' "
-        "declaration.");
     // Generate an error if an enum declares support for duplicate enum values
     // and does not use it protect future authors.
-    RecordError(error);
+    RecordError([=] {
+      return absl::StrCat(
+          "\"", proto->name(),
+          "\" declares support for enum aliases but no enum values share field "
+          "numbers. Please remove the unnecessary 'option allow_alias = true;' "
+          "declaration.");
+    });
     return false;
   }
 
@@ -625,9 +631,13 @@ bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
   if (!allow_alias) {
     for (const auto& enum_value : proto->value()) {
       if (!IsUpperUnderscore(enum_value.name())) {
-        RecordWarning(absl::StrCat(
-            "Enum constant should be in UPPER_CASE. Found: ", enum_value.name(),
-            ". See https://developers.google.com/protocol-buffers/docs/style"));
+        RecordWarning([&] {
+          return absl::StrCat(
+              "Enum constant should be in UPPER_CASE. Found: ",
+              enum_value.name(),
+              ". See "
+              "https://developers.google.com/protocol-buffers/docs/style");
+        });
       }
     }
   }
@@ -658,9 +668,9 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
     root_location.RecordLegacyLocation(file,
                                        DescriptorPool::ErrorCollector::OTHER);
 
-    if (require_syntax_identifier_ || LookingAt("syntax")
-    ) {
-      if (!ParseSyntaxIdentifier(root_location)) {
+    if (require_syntax_identifier_ || LookingAt("syntax") ||
+        LookingAt("edition")) {
+      if (!ParseSyntaxIdentifier(file, root_location)) {
         // Don't attempt to parse the file if we didn't recognize the syntax
         // identifier.
         return false;
@@ -668,6 +678,9 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
       // Store the syntax into the file.
       if (file != nullptr) {
         file->set_syntax(syntax_identifier_);
+        if (syntax_identifier_ == "editions") {
+          file->set_edition(edition_);
+        }
       }
     } else if (!stop_after_syntax_identifier_) {
       ABSL_LOG(WARNING) << "No syntax specified for the proto file: "
@@ -703,12 +716,20 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
   return !had_errors_;
 }
 
-bool Parser::ParseSyntaxIdentifier(const LocationRecorder& parent) {
+bool Parser::ParseSyntaxIdentifier(const FileDescriptorProto* file,
+                                   const LocationRecorder& parent) {
   LocationRecorder syntax_location(parent,
                                    FileDescriptorProto::kSyntaxFieldNumber);
+  syntax_location.RecordLegacyLocation(
+      file, DescriptorPool::ErrorCollector::EDITIONS);
+  bool has_edition = false;
+  if (TryConsume("edition")) {
+    has_edition = true;
+  } else {
     DO(Consume("syntax",
                "File must begin with a syntax statement, e.g. 'syntax = "
                "\"proto2\";'."));
+  }
 
   DO(Consume("="));
   io::Tokenizer::Token syntax_token = input_->current();
@@ -716,13 +737,28 @@ bool Parser::ParseSyntaxIdentifier(const LocationRecorder& parent) {
   DO(ConsumeString(&syntax, "Expected syntax identifier."));
   DO(ConsumeEndOfDeclaration(";", &syntax_location));
 
+  if (has_edition) {
+    if (!Edition_Parse(absl::StrCat("EDITION_", syntax), &edition_) ||
+        edition_ == Edition::EDITION_PROTO2 ||
+        edition_ == Edition::EDITION_PROTO3 ||
+        edition_ == Edition::EDITION_UNKNOWN) {
+      RecordError(syntax_token.line, syntax_token.column, [&] {
+        return absl::StrCat("Unknown edition \"", syntax, "\".");
+      });
+      return false;
+    }
+    syntax_identifier_ = "editions";
+    return true;
+  }
+
   syntax_identifier_ = syntax;
   if (syntax != "proto2" && syntax != "proto3" &&
       !stop_after_syntax_identifier_) {
-    RecordError(syntax_token.line, syntax_token.column,
-                absl::StrCat("Unrecognized syntax identifier \"", syntax,
-                             "\".  This parser "
-                             "only recognizes \"proto2\" and \"proto3\"."));
+    RecordError(syntax_token.line, syntax_token.column, [&] {
+      return absl::StrCat("Unrecognized syntax identifier \"", syntax,
+                          "\".  This parser "
+                          "only recognizes \"proto2\" and \"proto3\".");
+    });
     return false;
   }
 
@@ -738,6 +774,8 @@ bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
     LocationRecorder location(root_location,
                               FileDescriptorProto::kMessageTypeFieldNumber,
                               file->message_type_size());
+    // Maximum depth allowed by the DescriptorPool.
+    recursion_depth_ = internal::cpp::MaxMessageDeclarationNestingDepth();
     return ParseMessageDefinition(file->add_message_type(), location, file);
   } else if (LookingAt("enum")) {
     LocationRecorder location(root_location,
@@ -775,9 +813,52 @@ bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
 // -------------------------------------------------------------------
 // Messages
 
+PROTOBUF_NOINLINE static void GenerateSyntheticOneofs(
+    DescriptorProto* message) {
+  // Add synthetic one-field oneofs for optional fields, except messages which
+  // already have presence in proto3.
+  //
+  // We have to make sure the oneof names don't conflict with any other
+  // field or oneof.
+  absl::flat_hash_set<std::string> names;
+  for (const auto& field : message->field()) {
+    names.insert(field.name());
+  }
+  for (const auto& oneof : message->oneof_decl()) {
+    names.insert(oneof.name());
+  }
+
+  for (auto& field : *message->mutable_field()) {
+    if (field.proto3_optional()) {
+      std::string oneof_name = field.name();
+
+      // Prepend 'XXXXX_' until we are no longer conflicting.
+      // Avoid prepending a double-underscore because such names are
+      // reserved in C++.
+      if (oneof_name.empty() || oneof_name[0] != '_') {
+        oneof_name.insert(0, "_");
+      }
+      while (names.count(oneof_name) > 0) {
+        oneof_name.insert(0, "X");
+      }
+
+      names.insert(oneof_name);
+      field.set_oneof_index(message->oneof_decl_size());
+      OneofDescriptorProto* oneof = message->add_oneof_decl();
+      oneof->set_name(std::move(oneof_name));
+    }
+  }
+}
+
 bool Parser::ParseMessageDefinition(
     DescriptorProto* message, const LocationRecorder& message_location,
     const FileDescriptorProto* containing_file) {
+  const auto undo_depth = absl::MakeCleanup([&] { ++recursion_depth_; });
+  if (--recursion_depth_ <= 0) {
+    RecordError("Reached maximum recursion limit for nested messages.");
+    return false;
+  }
+
   DO(Consume("message"));
   {
     LocationRecorder location(message_location,
@@ -786,47 +867,18 @@ bool Parser::ParseMessageDefinition(
                                   DescriptorPool::ErrorCollector::NAME);
     DO(ConsumeIdentifier(message->mutable_name(), "Expected message name."));
     if (!IsUpperCamelCase(message->name())) {
-      RecordWarning(absl::StrCat(
-          "Message name should be in UpperCamelCase. Found: ", message->name(),
-          ". See https://developers.google.com/protocol-buffers/docs/style"));
+      RecordWarning([=] {
+        return absl::StrCat(
+            "Message name should be in UpperCamelCase. Found: ",
+            message->name(),
+            ". See https://developers.google.com/protocol-buffers/docs/style");
+      });
     }
   }
   DO(ParseMessageBlock(message, message_location, containing_file));
 
   if (syntax_identifier_ == "proto3") {
-    // Add synthetic one-field oneofs for optional fields, except messages which
-    // already have presence in proto3.
-    //
-    // We have to make sure the oneof names don't conflict with any other
-    // field or oneof.
-    absl::flat_hash_set<std::string> names;
-    for (const auto& field : message->field()) {
-      names.insert(field.name());
-    }
-    for (const auto& oneof : message->oneof_decl()) {
-      names.insert(oneof.name());
-    }
-
-    for (auto& field : *message->mutable_field()) {
-      if (field.proto3_optional()) {
-        std::string oneof_name = field.name();
-
-        // Prepend 'XXXXX_' until we are no longer conflicting.
-        // Avoid prepending a double-underscore because such names are
-        // reserved in C++.
-        if (oneof_name.empty() || oneof_name[0] != '_') {
-          oneof_name = '_' + oneof_name;
-        }
-        while (names.count(oneof_name) > 0) {
-          oneof_name = 'X' + oneof_name;
-        }
-
-        names.insert(oneof_name);
-        field.set_oneof_index(message->oneof_decl_size());
-        OneofDescriptorProto* oneof = message->add_oneof_decl();
-        oneof->set_name(std::move(oneof_name));
-      }
-    }
+    GenerateSyntheticOneofs(message);
   }
 
   return true;
@@ -841,6 +893,7 @@ bool IsMessageSetWireFormatMessage(const DescriptorProto& message) {
   for (int i = 0; i < options.uninterpreted_option_size(); ++i) {
     const UninterpretedOption& uninterpreted = options.uninterpreted_option(i);
     if (uninterpreted.name_size() == 1 &&
+        !uninterpreted.name(0).is_extension() &&
         uninterpreted.name(0).name_part() == "message_set_wire_format" &&
         uninterpreted.identifier_value() == "true") {
       return true;
@@ -905,6 +958,9 @@ bool Parser::ParseMessageBlock(DescriptorProto* message,
   if (message->reserved_range_size() > 0) {
     AdjustReservedRangesWithMaxEndNumber(message);
   }
+
+  DO(ValidateMessage(message));
+
   return true;
 }
 
@@ -1047,15 +1103,19 @@ bool Parser::ParseMessageFieldNoLabel(
     DO(ConsumeIdentifier(field->mutable_name(), "Expected field name."));
 
     if (!IsLowerUnderscore(field->name())) {
-      RecordWarning(absl::StrCat(
-          "Field name should be lowercase. Found: ", field->name(),
-          ". See: https://developers.google.com/protocol-buffers/docs/style"));
+      RecordWarning([=] {
+        return absl::StrCat(
+            "Field name should be lowercase. Found: ", field->name(),
+            ". See: https://developers.google.com/protocol-buffers/docs/style");
+      });
     }
     if (IsNumberFollowUnderscore(field->name())) {
-      RecordWarning(absl::StrCat(
-          "Number should not come right after an underscore. Found: ",
-          field->name(),
-          ". See: https://developers.google.com/protocol-buffers/docs/style"));
+      RecordWarning([=] {
+        return absl::StrCat(
+            "Number should not come right after an underscore. Found: ",
+            field->name(),
+            ". See: https://developers.google.com/protocol-buffers/docs/style");
+      });
     }
   }
   DO(Consume("=", "Missing field number."));
@@ -1186,40 +1246,44 @@ void Parser::GenerateMapEntry(const MapField& map_field,
   } else {
     value_field->set_type_name(map_field.value_type_name);
   }
-  // Propagate the "enforce_utf8" option to key and value fields if they
-  // are strings. This helps simplify the implementation of code generators
-  // and also reflection-based parsing code.
+  // Propagate all features to the generated key and value fields. This helps
+  // simplify the implementation of code generators and also reflection-based
+  // parsing code. Instead of having to implement complex inheritance rules
+  // special-casing maps, we can just copy them at generation time.
   //
   // The following definition:
   //   message Foo {
-  //     map<string, string> value = 1 [enforce_utf8 = false];
+  //     map<string, string> value = 1 [features.some_feature = VALUE];
   //   }
   // will be interpreted as:
   //   message Foo {
   //     message ValueEntry {
   //       option map_entry = true;
-  //       string key = 1 [enforce_utf8 = false];
-  //       string value = 2 [enforce_utf8 = false];
+  //       string key = 1 [features.some_feature = VALUE];
+  //       string value = 2 [features.some_feature = VALUE];
   //     }
-  //     repeated ValueEntry value = 1 [enforce_utf8 = false];
+  //     repeated ValueEntry value = 1 [features.some_feature = VALUE];
   //  }
-  //
-  // TODO(xiaofeng): Remove this when the "enforce_utf8" option is removed
-  // from protocol compiler.
   for (int i = 0; i < field->options().uninterpreted_option_size(); ++i) {
     const UninterpretedOption& option =
         field->options().uninterpreted_option(i);
+    // Legacy handling for the `enforce_utf8` option, which bears a striking
+    // similarity to features in many respects.
+    // TODO Delete this once proto2/proto3 have been turned down.
     if (option.name_size() == 1 &&
         option.name(0).name_part() == "enforce_utf8" &&
         !option.name(0).is_extension()) {
       if (key_field->type() == FieldDescriptorProto::TYPE_STRING) {
-        key_field->mutable_options()->add_uninterpreted_option()->CopyFrom(
-            option);
+        *key_field->mutable_options()->add_uninterpreted_option() = option;
       }
       if (value_field->type() == FieldDescriptorProto::TYPE_STRING) {
-        value_field->mutable_options()->add_uninterpreted_option()->CopyFrom(
-            option);
+        *value_field->mutable_options()->add_uninterpreted_option() = option;
       }
+    }
+    if (option.name(0).name_part() == "features" &&
+        !option.name(0).is_extension()) {
+      *key_field->mutable_options()->add_uninterpreted_option() = option;
+      *value_field->mutable_options()->add_uninterpreted_option() = option;
     }
   }
 }
@@ -1469,7 +1533,7 @@ bool Parser::ParseUninterpretedBlock(std::string* value) {
         return true;
       }
     }
-    // TODO(sanjay): Interpret line/column numbers to preserve formatting
+    // TODO: Interpret line/column numbers to preserve formatting
     if (!value->empty()) value->push_back(' ');
     value->append(input_->current().text);
     input_->Next();
@@ -1501,7 +1565,7 @@ bool Parser::ParseOption(Message* options,
   }
 
   UninterpretedOption* uninterpreted_option =
-      DownCast<UninterpretedOption*>(options->GetReflection()->AddMessage(
+      DownCastMessage<UninterpretedOption>(options->GetReflection()->AddMessage(
           options, uninterpreted_option_field));
 
   // Parse dot-separated name.
@@ -1558,12 +1622,21 @@ bool Parser::ParseOption(Message* options,
       case io::Tokenizer::TYPE_IDENTIFIER: {
         value_location.AddPath(
             UninterpretedOption::kIdentifierValueFieldNumber);
-        if (is_negative) {
-          RecordError("Invalid '-' symbol before identifier.");
-          return false;
-        }
         std::string value;
         DO(ConsumeIdentifier(&value, "Expected identifier."));
+        if (is_negative) {
+          if (value == "inf") {
+            uninterpreted_option->set_double_value(
+                -std::numeric_limits<double>::infinity());
+          } else if (value == "nan") {
+            uninterpreted_option->set_double_value(
+                std::numeric_limits<double>::quiet_NaN());
+          } else {
+            RecordError("Identifier after '-' symbol must be inf or nan.");
+            return false;
+          }
+          break;
+        }
         uninterpreted_option->set_identifier_value(value);
         break;
       }
@@ -1658,6 +1731,11 @@ bool Parser::ParseExtensions(DescriptorProto* message,
           location, DescriptorProto::ExtensionRange::kStartFieldNumber);
       start_token = input_->current();
       DO(ConsumeInteger(&start, "Expected field number range."));
+
+      if (start == std::numeric_limits<int>::max()) {
+        RecordError("Field number out of bounds.");
+        return false;
+      }
     }
 
     if (TryConsume("to")) {
@@ -1670,6 +1748,11 @@ bool Parser::ParseExtensions(DescriptorProto* message,
         end = kMaxRangeSentinel - 1;
       } else {
         DO(ConsumeInteger(&end, "Expected integer."));
+
+        if (end == std::numeric_limits<int>::max()) {
+          RecordError("Field number out of bounds.");
+          return false;
+        }
       }
     } else {
       LocationRecorder end_location(
@@ -1713,8 +1796,7 @@ bool Parser::ParseExtensions(DescriptorProto* message,
     // Then copy the extension range options to all of the other ranges we've
     // parsed.
     for (int i = old_range_size + 1; i < message->extension_range_size(); i++) {
-      message->mutable_extension_range(i)->mutable_options()->CopyFrom(
-          *options);
+      *message->mutable_extension_range(i)->mutable_options() = *options;
     }
     // and copy source locations to the other ranges, too
     for (int i = old_range_size; i < message->extension_range_size(); i++) {
@@ -1743,10 +1825,27 @@ bool Parser::ParseReserved(DescriptorProto* message,
   // Parse the declaration.
   DO(Consume("reserved"));
   if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
+    if (syntax_identifier_ == "editions") {
+      RecordError(
+          "Reserved names must be identifiers in editions, not string "
+          "literals.");
+      return false;
+    }
     LocationRecorder location(message_location,
                               DescriptorProto::kReservedNameFieldNumber);
     location.StartAt(start_token);
     return ParseReservedNames(message, location);
+  } else if (LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
+    if (syntax_identifier_ != "editions") {
+      RecordError(
+          "Reserved names must be string literals. (Only editions supports "
+          "identifiers.)");
+      return false;
+    }
+    LocationRecorder location(message_location,
+                              DescriptorProto::kReservedNameFieldNumber);
+    location.StartAt(start_token);
+    return ParseReservedIdentifiers(message, location);
   } else {
     LocationRecorder location(message_location,
                               DescriptorProto::kReservedRangeFieldNumber);
@@ -1755,18 +1854,17 @@ bool Parser::ParseReserved(DescriptorProto* message,
   }
 }
 
-bool Parser::ParseReservedName(std::string* name,
-                               absl::string_view error_message) {
+bool Parser::ParseReservedName(std::string* name, ErrorMaker error_message) {
   // Capture the position of the token, in case we have to report an
   // error after it is consumed.
   int line = input_->current().line;
   int col = input_->current().column;
   DO(ConsumeString(name, error_message));
   if (!io::Tokenizer::IsIdentifier(*name)) {
-    RecordWarning(
-        line, col,
-        absl::StrFormat("Reserved name \"%s\" is not a valid identifier.",
-                        *name));
+    RecordWarning(line, col, [=] {
+      return absl::StrFormat("Reserved name \"%s\" is not a valid identifier.",
+                             *name);
+    });
   }
   return true;
 }
@@ -1775,7 +1873,25 @@ bool Parser::ParseReservedNames(DescriptorProto* message,
                                 const LocationRecorder& parent_location) {
   do {
     LocationRecorder location(parent_location, message->reserved_name_size());
-    DO(ParseReservedName(message->add_reserved_name(), "Expected field name."));
+    DO(ParseReservedName(message->add_reserved_name(),
+                         "Expected field name string literal."));
+  } while (TryConsume(","));
+  DO(ConsumeEndOfDeclaration(";", &parent_location));
+  return true;
+}
+
+bool Parser::ParseReservedIdentifier(std::string* name,
+                                     ErrorMaker error_message) {
+  DO(ConsumeIdentifier(name, error_message));
+  return true;
+}
+
+bool Parser::ParseReservedIdentifiers(DescriptorProto* message,
+                                      const LocationRecorder& parent_location) {
+  do {
+    LocationRecorder location(parent_location, message->reserved_name_size());
+    DO(ParseReservedIdentifier(message->add_reserved_name(),
+                               "Expected field name identifier."));
   } while (TryConsume(","));
   DO(ConsumeEndOfDeclaration(";", &parent_location));
   return true;
@@ -1788,6 +1904,8 @@ bool Parser::ParseReservedNumbers(DescriptorProto* message,
     LocationRecorder location(parent_location, message->reserved_range_size());
 
     DescriptorProto::ReservedRange* range = message->add_reserved_range();
+    location.RecordLegacyLocation(range,
+                                  DescriptorPool::ErrorCollector::NUMBER);
     int start, end;
     io::Tokenizer::Token start_token;
     {
@@ -1836,10 +1954,27 @@ bool Parser::ParseReserved(EnumDescriptorProto* proto,
   // Parse the declaration.
   DO(Consume("reserved"));
   if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
+    if (syntax_identifier_ == "editions") {
+      RecordError(
+          "Reserved names must be identifiers in editions, not string "
+          "literals.");
+      return false;
+    }
     LocationRecorder location(enum_location,
                               EnumDescriptorProto::kReservedNameFieldNumber);
     location.StartAt(start_token);
     return ParseReservedNames(proto, location);
+  } else if (LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
+    if (syntax_identifier_ != "editions") {
+      RecordError(
+          "Reserved names must be string literals. (Only editions supports "
+          "identifiers.)");
+      return false;
+    }
+    LocationRecorder location(enum_location,
+                              EnumDescriptorProto::kReservedNameFieldNumber);
+    location.StartAt(start_token);
+    return ParseReservedIdentifiers(proto, location);
   } else {
     LocationRecorder location(enum_location,
                               EnumDescriptorProto::kReservedRangeFieldNumber);
@@ -1852,7 +1987,19 @@ bool Parser::ParseReservedNames(EnumDescriptorProto* proto,
                                 const LocationRecorder& parent_location) {
   do {
     LocationRecorder location(parent_location, proto->reserved_name_size());
-    DO(ParseReservedName(proto->add_reserved_name(), "Expected enum value."));
+    DO(ParseReservedName(proto->add_reserved_name(),
+                         "Expected enum value string literal."));
+  } while (TryConsume(","));
+  DO(ConsumeEndOfDeclaration(";", &parent_location));
+  return true;
+}
+
+bool Parser::ParseReservedIdentifiers(EnumDescriptorProto* proto,
+                                      const LocationRecorder& parent_location) {
+  do {
+    LocationRecorder location(parent_location, proto->reserved_name_size());
+    DO(ParseReservedIdentifier(proto->add_reserved_name(),
+                               "Expected enum value identifier."));
   } while (TryConsume(","));
   DO(ConsumeEndOfDeclaration(";", &parent_location));
   return true;
@@ -1865,6 +2012,8 @@ bool Parser::ParseReservedNumbers(EnumDescriptorProto* proto,
     LocationRecorder location(parent_location, proto->reserved_range_size());
 
     EnumDescriptorProto::EnumReservedRange* range = proto->add_reserved_range();
+    location.RecordLegacyLocation(range,
+                                  DescriptorPool::ErrorCollector::NUMBER);
     int start, end;
     io::Tokenizer::Token start_token;
     {
@@ -2303,6 +2452,17 @@ bool Parser::ParseLabel(FieldDescriptorProto::Label* label,
       !LookingAt("required")) {
     return false;
   }
+  if (LookingAt("optional") && syntax_identifier_ == "editions") {
+    RecordError(
+        "Label \"optional\" is not supported in editions. By default, all "
+        "singular fields have presence unless features.field_presence is set.");
+  }
+  if (LookingAt("required") && syntax_identifier_ == "editions") {
+    RecordError(
+        "Label \"required\" is not supported in editions, use "
+        "features.field_presence = LEGACY_REQUIRED.");
+  }
+
   LocationRecorder location(field_location,
                             FieldDescriptorProto::kLabelFieldNumber);
   if (TryConsume("optional")) {
@@ -2321,6 +2481,13 @@ bool Parser::ParseType(FieldDescriptorProto::Type* type,
   const auto& type_names_table = GetTypeNameTable();
   auto iter = type_names_table.find(input_->current().text);
   if (iter != type_names_table.end()) {
+    if (syntax_identifier_ == "editions" &&
+        iter->second == FieldDescriptorProto::TYPE_GROUP) {
+      RecordError(
+          "Group syntax is no longer supported in editions. To get group "
+          "behavior you can specify features.message_encoding = DELIMITED on a "
+          "message field.");
+    }
     *type = iter->second;
     input_->Next();
   } else {
@@ -2485,3 +2652,5 @@ void SourceLocationTable::Clear() { location_map_.clear(); }
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

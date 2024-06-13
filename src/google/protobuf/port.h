@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // A common header that is included across all protobuf headers.  We do our best
 // to avoid #defining any macros here; instead we generally put macros in
@@ -38,12 +15,18 @@
 
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <new>
 #include <string>
 #include <type_traits>
+#include <typeinfo>
 
 
+#include "absl/base/config.h"
+#include "absl/base/prefetch.h"
 #include "absl/meta/type_traits.h"
+#include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 
 // must be last
 #include "google/protobuf/port_def.inc"
@@ -55,6 +38,46 @@ namespace protobuf {
 class MessageLite;
 
 namespace internal {
+
+template <typename T>
+inline PROTOBUF_ALWAYS_INLINE void StrongPointer(T* var) {
+#if defined(__GNUC__)
+  asm("" : : "r"(var));
+#else
+  auto volatile unused = var;
+  (void)&unused;  // Use address to avoid an extra load of "unused".
+#endif
+}
+
+#if defined(__x86_64__) && defined(__linux__) && !defined(__APPLE__) && \
+    !defined(__ANDROID__) && defined(__clang__) && __clang_major__ >= 19
+// Optimized implementation for clang where we can generate a relocation without
+// adding runtime instructions.
+template <typename T, T ptr>
+inline PROTOBUF_ALWAYS_INLINE void StrongPointer() {
+  // This injects a relocation in the code path without having to run code, but
+  // we can only do it with a newer clang.
+  asm(".reloc ., BFD_RELOC_NONE, %p0" ::"Ws"(ptr));
+}
+
+template <typename T>
+inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
+  static constexpr auto ptr = T::template GetStrongPointerForType<T>();
+  return StrongPointer<decltype(ptr), ptr>();
+}
+#else   // .reloc
+// Portable fallback. It usually generates a single LEA instruction or
+// equivalent.
+template <typename T, T ptr>
+inline PROTOBUF_ALWAYS_INLINE void StrongPointer() {
+  StrongPointer(ptr);
+}
+
+template <typename T>
+inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
+  return StrongPointer(T::template GetStrongPointerForType<T>());
+}
+#endif  // .reloc
 
 
 // See comments on `AllocateAtLeast` for information on size returning new.
@@ -140,28 +163,44 @@ struct ArenaInitialized {
 };
 
 template <typename To, typename From>
-inline To DownCast(From* f) {
-  static_assert(
-      std::is_base_of<From, typename std::remove_pointer<To>::type>::value,
-      "illegal DownCast");
+void AssertDownCast(From* from) {
+  static_assert(std::is_base_of<From, To>::value, "illegal DownCast");
+
+#if defined(__cpp_concepts)
+  // Check that this function is not used to downcast message types.
+  // For those we should use {Down,Dynamic}CastTo{Message,Generated}.
+  static_assert(!requires {
+    std::derived_from<std::remove_pointer_t<To>,
+                      typename std::remove_pointer_t<To>::MessageLite>;
+  });
+#endif
 
 #if PROTOBUF_RTTI
   // RTTI: debug mode only!
-  assert(f == nullptr || dynamic_cast<To>(f) != nullptr);
+  assert(from == nullptr || dynamic_cast<To*>(from) != nullptr);
 #endif
+}
+
+template <typename To, typename From>
+inline To DownCast(From* f) {
+  AssertDownCast<std::remove_pointer_t<To>>(f);
   return static_cast<To>(f);
 }
 
 template <typename ToRef, typename From>
 inline ToRef DownCast(From& f) {
-  using To = typename std::remove_reference<ToRef>::type;
-  static_assert(std::is_base_of<From, To>::value, "illegal DownCast");
+  AssertDownCast<std::remove_reference_t<ToRef>>(&f);
+  return static_cast<ToRef>(f);
+}
 
+// Looks up the name of `T` via RTTI, if RTTI is available.
+template <typename T>
+inline absl::optional<absl::string_view> RttiTypeName() {
 #if PROTOBUF_RTTI
-  // RTTI: debug mode only!
-  assert(dynamic_cast<To*>(&f) != nullptr);
+  return typeid(T).name();
+#else
+  return absl::nullopt;
 #endif
-  return *static_cast<To*>(&f);
 }
 
 // Helpers for identifying our supported types.
@@ -200,6 +239,92 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 
 // The maximum byte alignment we support.
 enum { kMaxMessageAlignment = 8 };
+
+// Returns true if debug string hardening is required
+inline constexpr bool DebugHardenStringValues() {
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return true;
+#else
+  return false;
+#endif
+}
+
+// Returns true if debug hardening for clearing oneof message on arenas is
+// enabled.
+inline constexpr bool DebugHardenClearOneofMessageOnArena() {
+#ifdef NDEBUG
+  return false;
+#else
+  return true;
+#endif
+}
+
+// Returns true if pointers are 8B aligned, leaving least significant 3 bits
+// available.
+inline constexpr bool PtrIsAtLeast8BAligned() { return alignof(void*) >= 8; }
+
+// Prefetch 5 64-byte cache line starting from 7 cache-lines ahead.
+// Constants are somewhat arbitrary and pretty aggressive, but were
+// chosen to give a better benchmark results. E.g. this is ~20%
+// faster, single cache line prefetch is ~12% faster, increasing
+// decreasing distance makes results 2-4% worse. Important note,
+// prefetch doesn't require a valid address, so it is ok to prefetch
+// past the end of message/valid memory, however we are doing this
+// inside inline asm block, since computing the invalid pointer
+// is a potential UB. Only insert prefetch once per function,
+inline PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 448);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 512);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 576);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 640);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 704);
+}
+
+#if defined(NDEBUG) && ABSL_HAVE_BUILTIN(__builtin_unreachable)
+[[noreturn]] ABSL_ATTRIBUTE_COLD PROTOBUF_ALWAYS_INLINE inline void
+Unreachable() {
+  __builtin_unreachable();
+}
+#elif ABSL_HAVE_BUILTIN(__builtin_FILE) && ABSL_HAVE_BUILTIN(__builtin_LINE)
+[[noreturn]] ABSL_ATTRIBUTE_COLD inline void Unreachable(
+    const char* file = __builtin_FILE(), int line = __builtin_LINE()) {
+  protobuf_assumption_failed("Unreachable", file, line);
+}
+#else
+[[noreturn]] ABSL_ATTRIBUTE_COLD inline void Unreachable() {
+  protobuf_assumption_failed("Unreachable", "", 0);
+}
+#endif
+
+#ifdef PROTOBUF_TSAN
+// TODO: it would be preferable to use __tsan_external_read/
+// __tsan_external_write, but they can cause dlopen issues.
+template <typename T>
+inline PROTOBUF_ALWAYS_INLINE void TSanRead(const T* impl) {
+  char protobuf_tsan_dummy =
+      *reinterpret_cast<const char*>(&impl->_tsan_detect_race);
+  asm volatile("" : "+r"(protobuf_tsan_dummy));
+}
+
+// We currently use a dedicated member for TSan checking so the value of this
+// member is not important. We can unconditionally write to it without affecting
+// correctness of the rest of the class.
+template <typename T>
+inline PROTOBUF_ALWAYS_INLINE void TSanWrite(T* impl) {
+  *reinterpret_cast<char*>(&impl->_tsan_detect_race) = 0;
+}
+#else
+inline PROTOBUF_ALWAYS_INLINE void TSanRead(const void*) {}
+inline PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
+#endif
+
+// This trampoline allows calling from codegen without needing a #include to
+// absl. It simplifies IWYU and deps.
+inline void PrefetchToLocalCache(const void* ptr) {
+  absl::PrefetchToLocalCache(ptr);
+}
+
+constexpr bool IsOss() { return true; }
 
 }  // namespace internal
 }  // namespace protobuf

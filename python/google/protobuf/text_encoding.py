@@ -1,56 +1,49 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 """Encoding related utilities."""
 import re
 
-_cescape_chr_to_symbol_map = {}
-_cescape_chr_to_symbol_map[9] = r'\t'  # optional escape
-_cescape_chr_to_symbol_map[10] = r'\n'  # optional escape
-_cescape_chr_to_symbol_map[13] = r'\r'  # optional escape
-_cescape_chr_to_symbol_map[34] = r'\"'  # necessary escape
-_cescape_chr_to_symbol_map[39] = r"\'"  # optional escape
-_cescape_chr_to_symbol_map[92] = r'\\'  # necessary escape
+def _AsciiIsPrint(i):
+  return i >= 32 and i < 127
 
-# Lookup table for unicode
-_cescape_unicode_to_str = [chr(i) for i in range(0, 256)]
-for byte, string in _cescape_chr_to_symbol_map.items():
-  _cescape_unicode_to_str[byte] = string
+def _MakeStrEscapes():
+  ret = {}
+  for i in range(0, 128):
+    if not _AsciiIsPrint(i):
+      ret[i] = r'\%03o' % i
+  ret[ord('\t')] = r'\t'  # optional escape
+  ret[ord('\n')] = r'\n'  # optional escape
+  ret[ord('\r')] = r'\r'  # optional escape
+  ret[ord('"')] = r'\"'  # necessary escape
+  ret[ord('\'')] = r"\'"  # optional escape
+  ret[ord('\\')] = r'\\'  # necessary escape
+  return ret
 
-# Lookup table for non-utf8, with necessary escapes at (o >= 127 or o < 32)
-_cescape_byte_to_str = ([r'\%03o' % i for i in range(0, 32)] +
-                        [chr(i) for i in range(32, 127)] +
-                        [r'\%03o' % i for i in range(127, 256)])
-for byte, string in _cescape_chr_to_symbol_map.items():
-  _cescape_byte_to_str[byte] = string
-del byte, string
+# Maps int -> char, performing string escapes.
+_str_escapes = _MakeStrEscapes()
+
+# Maps int -> char, performing byte escaping and string escapes
+_byte_escapes = {i: chr(i) for i in range(0, 256)}
+_byte_escapes.update(_str_escapes)
+_byte_escapes.update({i: r'\%03o' % i for i in range(128, 256)})
+
+
+def _DecodeUtf8EscapeErrors(text_bytes):
+  ret = ''
+  while text_bytes:
+    try:
+      ret += text_bytes.decode('utf-8').translate(_str_escapes)
+      text_bytes = ''
+    except UnicodeDecodeError as e:
+      ret += text_bytes[:e.start].decode('utf-8').translate(_str_escapes)
+      ret += _byte_escapes[text_bytes[e.start]]
+      text_bytes = text_bytes[e.start+1:]
+  return ret
 
 
 def CEscape(text, as_utf8) -> str:
@@ -70,13 +63,15 @@ def CEscape(text, as_utf8) -> str:
   # length.  So, "\0011".encode('string_escape') ends up being "\\x011", which
   # will be decoded in C++ as a single-character string with char code 0x11.
   text_is_unicode = isinstance(text, str)
-  if as_utf8 and text_is_unicode:
-    # We're already unicode, no processing beyond control char escapes.
-    return text.translate(_cescape_chr_to_symbol_map)
-  ord_ = ord if text_is_unicode else lambda x: x  # bytes iterate as ints.
   if as_utf8:
-    return ''.join(_cescape_unicode_to_str[ord_(c)] for c in text)
-  return ''.join(_cescape_byte_to_str[ord_(c)] for c in text)
+    if text_is_unicode:
+      return text.translate(_str_escapes)
+    else:
+      return _DecodeUtf8EscapeErrors(text)
+  else:
+    if text_is_unicode:
+      text = text.encode('utf-8')
+    return ''.join([_byte_escapes[c] for c in text])
 
 
 _CUNESCAPE_HEX = re.compile(r'(\\+)x([0-9a-fA-F])(?![0-9a-fA-F])')
@@ -102,7 +97,10 @@ def CUnescape(text: str) -> bytes:
   # allow single-digit hex escapes (like '\xf').
   result = _CUNESCAPE_HEX.sub(ReplaceHex, text)
 
-  return (result.encode('utf-8')  # Make it bytes to allow decode.
-          .decode('unicode_escape')
-          # Make it bytes again to return the proper type.
-          .encode('raw_unicode_escape'))
+  # Replaces Unicode escape sequences with their character equivalents.
+  result = result.encode('raw_unicode_escape').decode('raw_unicode_escape')
+  # Encode Unicode characters as UTF-8, then decode to Latin-1 escaping
+  # unprintable characters.
+  result = result.encode('utf-8').decode('unicode_escape')
+  # Convert Latin-1 text back to a byte string (latin-1 codec also works here).
+  return result.encode('latin-1')

@@ -1,0 +1,203 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// LINT: ALLOW_GROUPS
+
+syntax = "proto2";
+
+package upb_test;
+
+import "google/protobuf/test_messages_proto3.proto";
+
+message TestExtensions {
+  extensions 1000 to max
+  [verification = UNVERIFIED];
+  extend TestExtensions {
+    optional int32 optional_int32_ext = 1000;
+  }
+  message Nested {
+    extend TestExtensions {
+      repeated int32 repeated_int32_ext = 1001;
+    }
+  }
+}
+
+extend TestExtensions {
+  optional protobuf_test_messages.proto3.TestAllTypesProto3 optional_msg_ext =
+      1002;
+}
+
+message TestMessageSet {
+  option message_set_wire_format = true;
+
+  extensions 4 to max
+  [verification = UNVERIFIED];
+}
+
+message MessageSetMember {
+  optional int32 optional_int32 = 1;
+  extend TestMessageSet {
+    optional MessageSetMember message_set_extension = 4;
+  }
+}
+
+message FakeMessageSet {
+  repeated group Item = 1 {
+    optional int32 type_id = 2;
+    optional bytes message = 3;
+    optional int32 unknown_varint = 4;
+    optional fixed32 unknown_fixed32 = 5;
+    optional fixed64 unknown_fixed64 = 6;
+    optional bytes unknown_bytes = 7;
+    optional group UnknownGroup = 8 {}
+  }
+}
+
+message Proto2EnumMessage {
+  enum Proto2TestEnum {
+    ZERO = 0;
+    NEGATIVE = -1;
+    SMALL = 15;
+    LARGE = 12345;
+  }
+
+  optional Proto2TestEnum optional_enum = 1;
+  repeated Proto2TestEnum repeated_enum = 2;
+  repeated Proto2TestEnum packed_enum = 3 [packed = true];
+}
+
+// The same fields as Proto2EnumMessage, but with int32 fields so we can fake
+// wire format.
+message Proto2FakeEnumMessage {
+  optional int32 optional_enum = 1;
+  repeated int32 repeated_enum = 2;
+  repeated int32 packed_enum = 3 [packed = true];
+}
+
+message EmptyMessage {}
+
+message TestRequiredFields {
+  required int32 required_int32 = 1;
+  optional int32 optional_int32 = 2;
+  required int64 required_int64 = 3;
+  optional TestRequiredFields optional_message = 4;
+  required EmptyMessage required_message = 5;
+}
+
+message SubMessageHasRequired {
+  optional TestRequiredFields optional_message = 1;
+}
+
+message TestMaxRequiredFields {
+  required int32 required_int32_1 = 1;
+  required int32 required_int32_2 = 2;
+  required int32 required_int32_3 = 3;
+  required int32 required_int32_4 = 4;
+  required int32 required_int32_5 = 5;
+  required int32 required_int32_6 = 6;
+  required int32 required_int32_7 = 7;
+  required int32 required_int32_8 = 8;
+  required int32 required_int32_9 = 9;
+  required int32 required_int32_10 = 10;
+  required int32 required_int32_11 = 11;
+  required int32 required_int32_12 = 12;
+  required int32 required_int32_13 = 13;
+  required int32 required_int32_14 = 14;
+  required int32 required_int32_15 = 15;
+  required int32 required_int32_16 = 16;
+  required int32 required_int32_17 = 17;
+  required int32 required_int32_18 = 18;
+  required int32 required_int32_19 = 19;
+  required int32 required_int32_20 = 20;
+  required int32 required_int32_21 = 21;
+  required int32 required_int32_22 = 22;
+  required int32 required_int32_23 = 23;
+  required int32 required_int32_24 = 24;
+  required int32 required_int32_25 = 25;
+  required int32 required_int32_26 = 26;
+  required int32 required_int32_27 = 27;
+  required int32 required_int32_28 = 28;
+  required int32 required_int32_29 = 29;
+  required int32 required_int32_30 = 30;
+  required int32 required_int32_31 = 31;
+  required int32 required_int32_32 = 32;
+  required int32 required_int32_33 = 33;
+  required int32 required_int32_34 = 34;
+  required int32 required_int32_35 = 35;
+  required int32 required_int32_36 = 36;
+  required int32 required_int32_37 = 37;
+  required int32 required_int32_38 = 38;
+  required int32 required_int32_39 = 39;
+  required int32 required_int32_40 = 40;
+  required int32 required_int32_41 = 41;
+  required int32 required_int32_42 = 42;
+  required int32 required_int32_43 = 43;
+  required int32 required_int32_44 = 44;
+  required int32 required_int32_45 = 45;
+  required int32 required_int32_46 = 46;
+  required int32 required_int32_47 = 47;
+  required int32 required_int32_48 = 48;
+  required int32 required_int32_49 = 49;
+  required int32 required_int32_50 = 50;
+  required int32 required_int32_51 = 51;
+  required int32 required_int32_52 = 52;
+  required int32 required_int32_53 = 53;
+  required int32 required_int32_54 = 54;
+  required int32 required_int32_55 = 55;
+  required int32 required_int32_56 = 56;
+  required int32 required_int32_57 = 57;
+  required int32 required_int32_58 = 58;
+  required int32 required_int32_59 = 59;
+  required int32 required_int32_60 = 60;
+  required int32 required_int32_61 = 61;
+  required int32 required_int32_62 = 62;
+}
+
+message TestMapField {
+  enum EnumMap {
+    ZERO = 0;
+    ONE = 1;
+    TWO = 2;
+  }
+  map<int32, EnumMap> map_field = 1;
+}
+
+message TestMapFieldExtra {
+  enum EnumMap {
+    ZERO = 0;
+    ONE = 1;
+    TWO = 2;
+    THREE = 3;
+  }
+  map<int32, EnumMap> map_field = 1;
+}
+
+message TestNameConflict {
+  map<string, string> map_field = 1;
+  optional bool clear_map_field = 2;
+}
+
+message TestFreeze {
+  extensions 99 to max;
+
+  optional string str = 1;
+  optional TestFreeze msg = 2;
+
+  map<int32, int32> map_int = 10;
+  map<int32, TestFreeze> map_msg = 11;
+
+  repeated int32 array_int = 20;
+  repeated TestFreeze array_msg = 21;
+}
+
+extend TestFreeze {
+  optional TestFreeze nest = 100;
+}
+
+extend TestFreeze {
+  repeated Proto2EnumMessage rep_msg = 101;
+}

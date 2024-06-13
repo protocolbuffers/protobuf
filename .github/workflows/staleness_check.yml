@@ -1,0 +1,63 @@
+name: Staleness tests
+
+on:
+  schedule:
+    # Run daily at 10 AM UTC (2 AM PDT)
+    - cron: 0 10 * * *
+  workflow_call:
+    inputs:
+      safe-checkout:
+        required: false
+        description: "The SHA key for the commit we want to run over"
+        type: string
+  workflow_dispatch:
+
+permissions: {}
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        branch: [main, 25.x, 27.x]
+        os: [{ name: Linux, value: ubuntu-latest}]
+
+    name: Test staleness ${{ matrix.os.name }} ${{ github.head_ref && 'PR' || matrix.branch }}
+    runs-on: ${{ matrix.os.value }}
+    if: ${{ github.event.repository.full_name == 'protocolbuffers/protobuf' }}
+    steps:
+      - name: Checkout ${{ github.head_ref && 'PR' || matrix.branch }}
+        uses: protocolbuffers/protobuf-ci/checkout@v3
+        with:
+          ref: ${{ inputs.safe-checkout || github.head_ref || matrix.branch }}
+
+      - name: Mark runs associated with commits
+        if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
+        run: echo "COMMIT_TRIGGERED_RUN=1" >> $GITHUB_ENV
+
+      - name: Mark runs from the main branch
+        if: ${{ github.base_ref == 'main' || github.ref == 'refs/heads/main' }}
+        run: echo "MAIN_RUN=1" >> $GITHUB_ENV
+
+      - name: Run all staleness tests
+        # Run all tests if either of the following is true, otherwise simply run the query to make
+        # sure it continues to work:
+        # 1) If this is not a commit-based run it means it's scheduled or manually dispatched. In
+        #    this case we want to make sure there are no stale files.
+        # 2) Release branches don't work with automated commits (see b/287117570).  Until this is
+        #    fixed, we want to run the tests to force manual regeneration when necessary.
+        #
+        # In branches where automatic updates work as post-submits, we don't want to run staleness
+        # tests along with user changes.  Any stale files will be automatically fixed in a follow-up
+        # commit.
+        uses: protocolbuffers/protobuf-ci/bazel@v3
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: staleness
+          bash: >
+            set -ex;
+            echo "Please run ./regenerate_stale_files.sh to regenerate stale files";
+            if [[ -z $COMMIT_TRIGGERED_RUN || -z $MAIN_RUN ]]; then
+            bazel query 'attr(tags, "staleness_test", //...)' | xargs bazel test $BAZEL_FLAGS;
+            else
+            bazel query 'attr(tags, "staleness_test", //...)';
+            fi

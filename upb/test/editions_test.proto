@@ -1,0 +1,26 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package upb.test_2023;
+
+message EditionsMessage {
+  int32 plain_field = 1;
+  int32 implicit_presence_field = 2 [features.field_presence = IMPLICIT];
+  int32 required_field = 3 [features.field_presence = LEGACY_REQUIRED];
+  EditionsMessage delimited_field = 4 [features.message_encoding = DELIMITED];
+  EditionsEnum enum_field = 5;
+  repeated int32 unpacked_field = 6
+      [features.repeated_field_encoding = EXPANDED];
+}
+
+enum EditionsEnum {
+  option features.enum_type = CLOSED;
+
+  ONE = 1;
+}

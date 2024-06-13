@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -51,7 +28,9 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/wire_format.h"
 
@@ -63,8 +42,8 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-using internal::WireFormat;
-using internal::WireFormatLite;
+using ::google::protobuf::internal::WireFormat;
+using ::google::protobuf::internal::WireFormatLite;
 
 const char kThickSeparator[] =
     "// ===================================================================\n";
@@ -104,6 +83,25 @@ void PrintEnumVerifierLogic(
                          "      }");
   printer->Print(variables,
                  absl::StrCat(enum_verifier_string, terminating_string));
+}
+
+void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime,
+                                  absl::string_view java_class_name) {
+  const auto& version = GetProtobufJavaVersion(oss_runtime);
+  printer->Print(
+      "com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(\n"
+      "  com.google.protobuf.RuntimeVersion.RuntimeDomain.$domain$,\n"
+      "  $major$,\n"
+      "  $minor$,\n"
+      "  $patch$,\n"
+      "  $suffix$,\n"
+      "  $location$);\n",
+      "domain", oss_runtime ? "PUBLIC" : "GOOGLE_INTERNAL", "major",
+      absl::StrCat("/* major= */ ", version.major()), "minor",
+      absl::StrCat("/* minor= */ ", version.minor()), "patch",
+      absl::StrCat("/* patch= */ ", version.patch()), "suffix",
+      absl::StrCat("/* suffix= */ \"", version.suffix(), "\""), "location",
+      absl::StrCat(java_class_name, ".class.getName()"));
 }
 
 std::string UnderscoresToCamelCase(absl::string_view input,
@@ -832,6 +830,10 @@ bool HasRequiredFields(const Descriptor* type) {
   return HasRequiredFields(type, &already_seen);
 }
 
+bool IsRealOneof(const FieldDescriptor* descriptor) {
+  return descriptor->real_containing_oneof();
+}
+
 bool HasRepeatedFields(const Descriptor* descriptor) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
     const FieldDescriptor* field = descriptor->field(i);
@@ -876,82 +878,6 @@ void WriteUInt32ToUtf16CharSequence(uint32_t number,
   output->push_back(static_cast<uint16_t>(number));
 }
 
-int GetExperimentalJavaFieldTypeForSingular(const FieldDescriptor* field) {
-  // j/c/g/protobuf/FieldType.java lists field types in a slightly different
-  // order from FieldDescriptor::Type so we can't do a simple cast.
-  //
-  // TODO(xiaofeng): Make j/c/g/protobuf/FieldType.java follow the same order.
-  int result = field->type();
-  if (result == FieldDescriptor::TYPE_GROUP) {
-    return 17;
-  } else if (result < FieldDescriptor::TYPE_GROUP) {
-    return result - 1;
-  } else {
-    return result - 2;
-  }
-}
-
-int GetExperimentalJavaFieldTypeForRepeated(const FieldDescriptor* field) {
-  if (field->type() == FieldDescriptor::TYPE_GROUP) {
-    return 49;
-  } else {
-    return GetExperimentalJavaFieldTypeForSingular(field) + 18;
-  }
-}
-
-int GetExperimentalJavaFieldTypeForPacked(const FieldDescriptor* field) {
-  int result = field->type();
-  if (result < FieldDescriptor::TYPE_STRING) {
-    return result + 34;
-  } else if (result > FieldDescriptor::TYPE_BYTES) {
-    return result + 30;
-  } else {
-    ABSL_LOG(FATAL) << field->full_name() << " can't be packed.";
-    return 0;
-  }
-}
-
-int GetExperimentalJavaFieldType(const FieldDescriptor* field) {
-  static const int kMapFieldType = 50;
-  static const int kOneofFieldTypeOffset = 51;
-  static const int kRequiredBit = 0x100;
-  static const int kUtf8CheckBit = 0x200;
-  static const int kCheckInitialized = 0x400;
-  static const int kMapWithProto2EnumValue = 0x800;
-  static const int kHasHasBit = 0x1000;
-  int extra_bits = field->is_required() ? kRequiredBit : 0;
-  if (field->type() == FieldDescriptor::TYPE_STRING && CheckUtf8(field)) {
-    extra_bits |= kUtf8CheckBit;
-  }
-  if (field->is_required() || (GetJavaType(field) == JAVATYPE_MESSAGE &&
-                               HasRequiredFields(field->message_type()))) {
-    extra_bits |= kCheckInitialized;
-  }
-  if (HasHasbit(field)) {
-    extra_bits |= kHasHasBit;
-  }
-
-  if (field->is_map()) {
-    if (!SupportUnknownEnumValue(field)) {
-      const FieldDescriptor* value = field->message_type()->map_value();
-      if (GetJavaType(value) == JAVATYPE_ENUM) {
-        extra_bits |= kMapWithProto2EnumValue;
-      }
-    }
-    return kMapFieldType | extra_bits;
-  } else if (field->is_packed()) {
-    return GetExperimentalJavaFieldTypeForPacked(field);
-  } else if (field->is_repeated()) {
-    return GetExperimentalJavaFieldTypeForRepeated(field) | extra_bits;
-  } else if (IsRealOneof(field)) {
-    return (GetExperimentalJavaFieldTypeForSingular(field) +
-            kOneofFieldTypeOffset) |
-           extra_bits;
-  } else {
-    return GetExperimentalJavaFieldTypeForSingular(field) | extra_bits;
-  }
-}
-
 // Escape a UTF-16 character to be embedded in a Java string.
 void EscapeUtf16ToString(uint16_t code, std::string* output) {
   if (code == '\t') {
@@ -976,6 +902,21 @@ void EscapeUtf16ToString(uint16_t code, std::string* output) {
     output->append(absl::StrFormat("\\u%04x", code));
   }
 }
+
+const FieldDescriptor* MapKeyField(const FieldDescriptor* descriptor) {
+  ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
+  const Descriptor* message = descriptor->message_type();
+  ABSL_CHECK(message->options().map_entry());
+  return message->map_key();
+}
+
+const FieldDescriptor* MapValueField(const FieldDescriptor* descriptor) {
+  ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, descriptor->type());
+  const Descriptor* message = descriptor->message_type();
+  ABSL_CHECK(message->options().map_entry());
+  return message->map_value();
+}
+
 
 }  // namespace java
 }  // namespace compiler

@@ -1,41 +1,23 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #ifndef GOOGLE_PROTOBUF_MAP_ENTRY_H__
 #define GOOGLE_PROTOBUF_MAP_ENTRY_H__
 
-#include "google/protobuf/port.h"
+#include <cstddef>
+#include <cstdint>
+#include <string>
+
 #include "google/protobuf/generated_message_reflection.h"
-#include "google/protobuf/map_entry_lite.h"
+#include "google/protobuf/has_bits.h"
 #include "google/protobuf/map_type_handler.h"
-#include "google/protobuf/reflection_ops.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/parse_context.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -91,38 +73,48 @@ namespace internal {
 template <typename Derived, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType>
-class MapEntry : public MapEntryImpl<Derived, Message, Key, Value,
-                                     kKeyFieldType, kValueFieldType> {
+class MapEntry : public Message {
+  // Provide utilities to parse/serialize key/value.  Provide utilities to
+  // manipulate internal stored type.
+  using KeyTypeHandler = MapTypeHandler<kKeyFieldType, Key>;
+  using ValueTypeHandler = MapTypeHandler<kValueFieldType, Value>;
+
+  // Define internal memory layout. Strings and messages are stored as
+  // pointers, while other types are stored as values.
+  using KeyOnMemory = typename KeyTypeHandler::TypeOnMemory;
+  using ValueOnMemory = typename ValueTypeHandler::TypeOnMemory;
+
  public:
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
   constexpr MapEntry() {}
-  explicit MapEntry(Arena* arena)
-      : MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
-                     kValueFieldType>(arena) {}
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  using Message::Message;
+
   MapEntry(const MapEntry&) = delete;
   MapEntry& operator=(const MapEntry&) = delete;
-  ~MapEntry() override {
+
+  ~MapEntry() PROTOBUF_OVERRIDE {
+    if (GetArena() != nullptr) return;
     Message::_internal_metadata_.template Delete<UnknownFieldSet>();
-  }
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
-
-  typedef typename MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
-                                kValueFieldType>::KeyTypeHandler KeyTypeHandler;
-  typedef
-      typename MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
-                            kValueFieldType>::ValueTypeHandler ValueTypeHandler;
-  size_t SpaceUsedLong() const override {
-    size_t size = sizeof(Derived);
-    size += KeyTypeHandler::SpaceUsedInMapEntryLong(this->key_);
-    size += ValueTypeHandler::SpaceUsedInMapEntryLong(this->value_);
-    return size;
+    KeyTypeHandler::DeleteNoArena(key_);
+    ValueTypeHandler::DeleteNoArena(value_);
   }
 
- private:
-  friend class ::PROTOBUF_NAMESPACE_ID::Arena;
-  template <typename C, typename K, typename V,
-            WireFormatLite::FieldType k_wire_type, WireFormatLite::FieldType>
-  friend class internal::MapField;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+
+  Message* New(Arena* arena) const PROTOBUF_FINAL {
+    return Arena::Create<Derived>(arena);
+  }
+
+ protected:
+  friend class google::protobuf::Arena;
+
+  HasBits<1> _has_bits_{};
+  mutable CachedSize _cached_size_{};
+
+  KeyOnMemory key_{KeyTypeHandler::Constinit()};
+  ValueOnMemory value_{ValueTypeHandler::Constinit()};
 };
 
 }  // namespace internal

@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBCodedInputStream_PackagePrivate.h"
 
@@ -65,9 +42,21 @@ static void RaiseException(NSInteger code, NSString *reason) {
                          userInfo:exceptionInfo] raise];
 }
 
-static void CheckRecursionLimit(GPBCodedInputStreamState *state) {
+GPB_INLINE void CheckRecursionLimit(GPBCodedInputStreamState *state) {
   if (state->recursionDepth >= kDefaultRecursionLimit) {
     RaiseException(GPBCodedInputStreamErrorRecursionDepthExceeded, nil);
+  }
+}
+
+GPB_INLINE void CheckFieldSize(uint64_t size) {
+  // Bytes and Strings have a max size of 2GB. And since messages are on the wire as bytes/length
+  // delimited, they also have a 2GB size limit. The C++ does the same sort of enforcement (see
+  // parse_context, delimited_message_util, message_lite, etc.).
+  // https://protobuf.dev/programming-guides/encoding/#cheat-sheet
+  if (size > 0x7fffffff) {
+    // TODO: Maybe a different error code for this, but adding one is a breaking
+    // change so reuse an existing one.
+    RaiseException(GPBCodedInputStreamErrorInvalidSize, nil);
   }
 }
 
@@ -223,14 +212,17 @@ int32_t GPBCodedInputStreamReadTag(GPBCodedInputStreamState *state) {
 }
 
 NSString *GPBCodedInputStreamReadRetainedString(GPBCodedInputStreamState *state) {
-  int32_t size = ReadRawVarint32(state);
+  uint64_t size = GPBCodedInputStreamReadUInt64(state);
+  CheckFieldSize(size);
+  NSUInteger ns_size = (NSUInteger)size;
   NSString *result;
   if (size == 0) {
     result = @"";
   } else {
-    CheckSize(state, size);
+    size_t size2 = (size_t)size;  // Cast safe on 32bit because of CheckFieldSize() above.
+    CheckSize(state, size2);
     result = [[NSString alloc] initWithBytes:&state->bytes[state->bufferPos]
-                                      length:size
+                                      length:ns_size
                                     encoding:NSUTF8StringEncoding];
     state->bufferPos += size;
     if (!result) {
@@ -246,21 +238,25 @@ NSString *GPBCodedInputStreamReadRetainedString(GPBCodedInputStreamState *state)
 }
 
 NSData *GPBCodedInputStreamReadRetainedBytes(GPBCodedInputStreamState *state) {
-  int32_t size = ReadRawVarint32(state);
-  if (size < 0) return nil;
-  CheckSize(state, size);
-  NSData *result = [[NSData alloc] initWithBytes:state->bytes + state->bufferPos length:size];
+  uint64_t size = GPBCodedInputStreamReadUInt64(state);
+  CheckFieldSize(size);
+  size_t size2 = (size_t)size;  // Cast safe on 32bit because of CheckFieldSize() above.
+  CheckSize(state, size2);
+  NSUInteger ns_size = (NSUInteger)size;
+  NSData *result = [[NSData alloc] initWithBytes:state->bytes + state->bufferPos length:ns_size];
   state->bufferPos += size;
   return result;
 }
 
 NSData *GPBCodedInputStreamReadRetainedBytesNoCopy(GPBCodedInputStreamState *state) {
-  int32_t size = ReadRawVarint32(state);
-  if (size < 0) return nil;
-  CheckSize(state, size);
+  uint64_t size = GPBCodedInputStreamReadUInt64(state);
+  CheckFieldSize(size);
+  size_t size2 = (size_t)size;  // Cast safe on 32bit because of CheckFieldSize() above.
+  CheckSize(state, size2);
+  NSUInteger ns_size = (NSUInteger)size;
   // Cast is safe because freeWhenDone is NO.
   NSData *result = [[NSData alloc] initWithBytesNoCopy:(void *)(state->bytes + state->bufferPos)
-                                                length:size
+                                                length:ns_size
                                           freeWhenDone:NO];
   state->bufferPos += size;
   return result;
@@ -342,9 +338,13 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state, int32_t
     case GPBWireFormatFixed64:
       SkipRawData(&state_, sizeof(int64_t));
       return YES;
-    case GPBWireFormatLengthDelimited:
-      SkipRawData(&state_, ReadRawVarint32(&state_));
+    case GPBWireFormatLengthDelimited: {
+      uint64_t size = GPBCodedInputStreamReadUInt64(&state_);
+      CheckFieldSize(size);
+      size_t size2 = (size_t)size;  // Cast safe on 32bit because of CheckFieldSize() above.
+      SkipRawData(&state_, size2);
       return YES;
+    }
     case GPBWireFormatStartGroup:
       [self skipMessage];
       GPBCodedInputStreamCheckLastTagWas(
@@ -382,6 +382,10 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state, int32_t
 
 - (void)popLimit:(size_t)oldLimit {
   GPBCodedInputStreamPopLimit(&state_, oldLimit);
+}
+
+- (size_t)bytesUntilLimit {
+  return GPBCodedInputStreamBytesUntilLimit(&state_);
 }
 
 - (double)readDouble {
@@ -443,8 +447,10 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state, int32_t
 - (void)readMessage:(GPBMessage *)message
     extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
   CheckRecursionLimit(&state_);
-  int32_t length = ReadRawVarint32(&state_);
-  size_t oldLimit = GPBCodedInputStreamPushLimit(&state_, length);
+  uint64_t length = GPBCodedInputStreamReadUInt64(&state_);
+  CheckFieldSize(length);
+  size_t length2 = (size_t)length;  // Cast safe on 32bit because of CheckFieldSize() above.
+  size_t oldLimit = GPBCodedInputStreamPushLimit(&state_, length2);
   ++state_.recursionDepth;
   [message mergeFromCodedInputStream:self extensionRegistry:extensionRegistry];
   GPBCodedInputStreamCheckLastTagWas(&state_, 0);
@@ -457,8 +463,10 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state, int32_t
                 field:(GPBFieldDescriptor *)field
         parentMessage:(GPBMessage *)parentMessage {
   CheckRecursionLimit(&state_);
-  int32_t length = ReadRawVarint32(&state_);
-  size_t oldLimit = GPBCodedInputStreamPushLimit(&state_, length);
+  uint64_t length = GPBCodedInputStreamReadUInt64(&state_);
+  CheckFieldSize(length);
+  size_t length2 = (size_t)length;  // Cast safe on 32bit because of CheckFieldSize() above.
+  size_t oldLimit = GPBCodedInputStreamPushLimit(&state_, length2);
   ++state_.recursionDepth;
   GPBDictionaryReadEntry(mapDictionary, self, extensionRegistry, field, parentMessage);
   GPBCodedInputStreamCheckLastTagWas(&state_, 0);

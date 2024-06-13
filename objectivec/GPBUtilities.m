@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBUtilities_PackagePrivate.h"
 
@@ -172,8 +149,8 @@ void GPBMessageDropUnknownFieldsRecursively(GPBMessage *initialMessage) {
           }
           break;
         }  // switch(field.mapKeyDataType)
-      }    // switch(field.fieldType)
-    }      // for(fields)
+      }  // switch(field.fieldType)
+    }  // for(fields)
 
     // Handle any extensions holding messages.
     for (GPBExtensionDescriptor *extension in [msg extensionsCurrentlySet]) {
@@ -228,11 +205,18 @@ void GPBCheckRuntimeVersionSupport(int32_t objcRuntimeVersion) {
   }
 }
 
+void GPBRuntimeMatchFailure(void) {
+  [NSException raise:NSInternalInconsistencyException
+              format:@"Proto generation source appears to have been from a"
+                     @" version newer that this runtime (%d).",
+                     GOOGLE_PROTOBUF_OBJC_VERSION];
+}
+
 // This api is no longer used for version checks. 30001 is the last version
 // using this old versioning model. When that support is removed, this function
 // can be removed (along with the declaration in GPBUtilities_PackagePrivate.h).
 void GPBCheckRuntimeVersionInternal(int32_t version) {
-  GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION == 30001,
+  GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30001,
                            time_to_remove_this_old_version_shim);
   if (version != GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION) {
     [NSException raise:NSInternalInconsistencyException
@@ -555,16 +539,17 @@ void GPBSetRetainedObjectIvarWithFieldPrivate(GPBMessage *self, GPBFieldDescript
     // field, and fall back on the default value. The warning below will only
     // appear in debug, but the could should be changed so the intention is
     // clear.
-    NSString *hasSel = NSStringFromSelector(field->hasOrCountSel_);
     NSString *propName = field.name;
     NSString *className = self.descriptor.name;
+    NSString *firstLetterCapitalizedName = [[[className substringToIndex:1] uppercaseString]
+        stringByAppendingString:[className substringFromIndex:1]];
     NSLog(@"warning: '%@.%@ = nil;' is not clearly defined for fields with "
           @"default values. Please use '%@.%@ = %@' if you want to set it to "
-          @"empty, or call '%@.%@ = NO' to reset it to it's default value of "
+          @"empty, or call '%@.has%@ = NO' to reset it to it's default value of "
           @"'%@'. Defaulting to resetting default value.",
           className, propName, className, propName,
-          (fieldType == GPBDataTypeString) ? @"@\"\"" : @"GPBEmptyNSData()", className, hasSel,
-          field.defaultValue.valueString);
+          (fieldType == GPBDataTypeString) ? @"@\"\"" : @"GPBEmptyNSData()", className,
+          firstLetterCapitalizedName, field.defaultValue.valueString);
     // Note: valueString, depending on the type, it could easily be
     // valueData/valueMessage.
   }

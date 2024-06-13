@@ -1,58 +1,49 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
-// TODO(kenton):  Improve this unittest to bring it up to the standards of
+// TODO:  Improve this unittest to bring it up to the standards of
 //   other proto2 unittests.
 
 #include "google/protobuf/repeated_field.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <cstdlib>
+#include <cstring>
+#include <functional>
 #include <iterator>
 #include <limits>
 #include <list>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
+#include "absl/random/random.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
+#include "absl/types/span.h"
+#include "google/protobuf/arena_test_util.h"
+#include "google/protobuf/internal_visibility_for_testing.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/parse_context.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unittest.pb.h"
 
 
@@ -64,10 +55,94 @@ namespace protobuf {
 namespace {
 
 using ::protobuf_unittest::TestAllTypes;
+using ::protobuf_unittest::TestMessageWithManyRepeatedPtrFields;
+using ::testing::A;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Ge;
 using ::testing::Le;
+
+TEST(RepeatedFieldIterator, Traits) {
+  using It = RepeatedField<absl::Cord>::iterator;
+  EXPECT_TRUE((std::is_same<It::value_type, absl::Cord>::value));
+  EXPECT_TRUE((std::is_same<It::reference, absl::Cord&>::value));
+  EXPECT_TRUE((std::is_same<It::pointer, absl::Cord*>::value));
+  EXPECT_TRUE((std::is_same<It::difference_type, std::ptrdiff_t>::value));
+  EXPECT_TRUE((std::is_same<It::iterator_category,
+                            std::random_access_iterator_tag>::value));
+#if __cplusplus >= 202002L
+  EXPECT_TRUE((
+      std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value));
+#else
+  EXPECT_TRUE((std::is_same<It::iterator_concept,
+                            std::random_access_iterator_tag>::value));
+#endif
+}
+
+TEST(ConstRepeatedFieldIterator, Traits) {
+  using It = RepeatedField<absl::Cord>::const_iterator;
+  EXPECT_TRUE((std::is_same<It::value_type, absl::Cord>::value));
+  EXPECT_TRUE((std::is_same<It::reference, const absl::Cord&>::value));
+  EXPECT_TRUE((std::is_same<It::pointer, const absl::Cord*>::value));
+  EXPECT_TRUE((std::is_same<It::difference_type, std::ptrdiff_t>::value));
+  EXPECT_TRUE((std::is_same<It::iterator_category,
+                            std::random_access_iterator_tag>::value));
+#if __cplusplus >= 202002L
+  EXPECT_TRUE((
+      std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value));
+#else
+  EXPECT_TRUE((std::is_same<It::iterator_concept,
+                            std::random_access_iterator_tag>::value));
+#endif
+}
+
+TEST(RepeatedPtrOverPtrsIterator, Traits) {
+  using It = RepeatedPtrField<std::string>::pointer_iterator;
+  EXPECT_TRUE((std::is_same<It::value_type, std::string*>::value));
+  EXPECT_TRUE((std::is_same<It::reference, std::string*&>::value));
+  EXPECT_TRUE((std::is_same<It::pointer, std::string**>::value));
+  EXPECT_TRUE((std::is_same<It::difference_type, std::ptrdiff_t>::value));
+  EXPECT_TRUE((std::is_same<It::iterator_category,
+                            std::random_access_iterator_tag>::value));
+#if __cplusplus >= 202002L
+  EXPECT_TRUE((
+      std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value));
+#else
+  EXPECT_TRUE((std::is_same<It::iterator_concept,
+                            std::random_access_iterator_tag>::value));
+#endif
+}
+
+#if __cplusplus >= 202002L
+TEST(RepeatedPtrOverPtrsIterator, ToAddress) {
+  // empty container
+  RepeatedPtrField<std::string> field;
+  EXPECT_THAT(std::to_address(field.pointer_begin()), A<std::string**>());
+  EXPECT_EQ(std::to_address(field.pointer_begin()),
+            std::to_address(field.pointer_end()));
+
+  // "null" iterator
+  using It = RepeatedPtrField<std::string>::pointer_iterator;
+  EXPECT_THAT(std::to_address(It()), A<std::string**>());
+}
+#endif
+
+TEST(ConstRepeatedPtrOverPtrsIterator, Traits) {
+  using It = RepeatedPtrField<std::string>::const_pointer_iterator;
+  EXPECT_TRUE((std::is_same<It::value_type, const std::string*>::value));
+  EXPECT_TRUE((std::is_same<It::reference, const std::string* const&>::value));
+  EXPECT_TRUE((std::is_same<It::pointer, const std::string* const*>::value));
+  EXPECT_TRUE((std::is_same<It::difference_type, std::ptrdiff_t>::value));
+  EXPECT_TRUE((std::is_same<It::iterator_category,
+                            std::random_access_iterator_tag>::value));
+#if __cplusplus >= 202002L
+  EXPECT_TRUE((
+      std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value));
+#else
+  EXPECT_TRUE((std::is_same<It::iterator_concept,
+                            std::random_access_iterator_tag>::value));
+#endif
+}
 
 TEST(RepeatedField, ConstInit) {
   PROTOBUF_CONSTINIT static RepeatedField<int> field{};  // NOLINT
@@ -162,7 +237,7 @@ void CheckAllocationSizes(bool is_ptr) {
   std::string buf(1 << 20, 0);
 
   Arena arena(&buf[0], buf.size());
-  auto* rep = Arena::CreateMessage<Rep>(&arena);
+  auto* rep = Arena::Create<Rep>(&arena);
   size_t prev = arena.SpaceUsed();
 
   for (int i = 0; i < 100; ++i) {
@@ -201,34 +276,24 @@ TEST(RepeatedField, ArenaAllocationSizesMatchExpectedValues) {
   CheckAllocationSizes<RepeatedField<uint64_t>>(false);
 }
 
-template <typename Rep>
-void CheckNaturalGrowthOnArenasReuseBlocks(bool is_ptr) {
+TEST(RepeatedField, NaturalGrowthOnArenasReuseBlocks) {
   Arena arena;
-  std::vector<Rep*> values;
-  using T = typename Rep::value_type;
+  std::vector<RepeatedField<int>*> values;
 
   static constexpr int kNumFields = 100;
   static constexpr int kNumElems = 1000;
   for (int i = 0; i < kNumFields; ++i) {
-    values.push_back(Arena::CreateMessage<Rep>(&arena));
+    values.push_back(Arena::Create<RepeatedField<int>>(&arena));
     auto& field = *values.back();
     for (int j = 0; j < kNumElems; ++j) {
-      field.Add(T{});
+      field.Add(j);
     }
   }
 
-  size_t used_bytes_if_reusing =
-      values.size() * values[0]->Capacity() * (is_ptr ? sizeof(T*) : sizeof(T));
-  // Use a 2% slack for other overhead.
-  // If we were not reusing the blocks, the actual value would be ~2x the
-  // expected.
-  EXPECT_THAT(
-      arena.SpaceUsed() - (is_ptr ? sizeof(T) * kNumElems * kNumFields : 0),
-      AllOf(Ge(used_bytes_if_reusing), Le(1.02 * used_bytes_if_reusing)));
-}
-
-TEST(RepeatedField, NaturalGrowthOnArenasReuseBlocks) {
-  CheckNaturalGrowthOnArenasReuseBlocks<RepeatedField<int>>(false);
+  size_t expected = values.size() * values[0]->Capacity() * sizeof(int);
+  // Use a 2% slack for other overhead. If we were not reusing the blocks, the
+  // actual value would be ~2x the expected.
+  EXPECT_THAT(arena.SpaceUsed(), AllOf(Ge(expected), Le(1.02 * expected)));
 }
 
 // Test swapping between various types of RepeatedFields.
@@ -470,7 +535,7 @@ TEST(RepeatedField, ReserveLarge) {
 }
 
 TEST(RepeatedField, ReserveHuge) {
-#if defined(ABSL_HAVE_ADDRESS_SANITIZER) || defined(ABSL_HAVE_MEMORY_SANITIZER)
+#if defined(PROTOBUF_ASAN) || defined(PROTOBUF_MSAN)
   GTEST_SKIP() << "Disabled because sanitizer is active";
 #endif
   // Largest value that does not clamp to the large limit:
@@ -711,16 +776,73 @@ TEST(RepeatedField, AddAndAssignRanges) {
   EXPECT_EQ(field.Get(7), 609250);
 }
 
-TEST(RepeatedField, CopyConstruct) {
-  RepeatedField<int> source;
-  source.Add(1);
-  source.Add(2);
+TEST(RepeatedField, CopyConstructIntegers) {
+  auto token = internal::InternalVisibilityForTesting{};
+  using RepeatedType = RepeatedField<int>;
+  RepeatedType original;
+  original.Add(1);
+  original.Add(2);
 
-  RepeatedField<int> destination(source);
+  RepeatedType fields1(original);
+  ASSERT_EQ(2, fields1.size());
+  EXPECT_EQ(1, fields1.Get(0));
+  EXPECT_EQ(2, fields1.Get(1));
 
-  ASSERT_EQ(2, destination.size());
-  EXPECT_EQ(1, destination.Get(0));
-  EXPECT_EQ(2, destination.Get(1));
+  RepeatedType fields2(token, nullptr, original);
+  ASSERT_EQ(2, fields2.size());
+  EXPECT_EQ(1, fields2.Get(0));
+  EXPECT_EQ(2, fields2.Get(1));
+}
+
+TEST(RepeatedField, CopyConstructCords) {
+  auto token = internal::InternalVisibilityForTesting{};
+  using RepeatedType = RepeatedField<absl::Cord>;
+  RepeatedType original;
+  original.Add(absl::Cord("hello"));
+  original.Add(absl::Cord("world and text to avoid SSO"));
+
+  RepeatedType fields1(original);
+  ASSERT_EQ(2, fields1.size());
+  EXPECT_EQ("hello", fields1.Get(0));
+  EXPECT_EQ("world and text to avoid SSO", fields1.Get(1));
+
+  RepeatedType fields2(token, nullptr, original);
+  ASSERT_EQ(2, fields1.size());
+  EXPECT_EQ("hello", fields1.Get(0));
+  EXPECT_EQ("world and text to avoid SSO", fields2.Get(1));
+}
+
+TEST(RepeatedField, CopyConstructIntegersWithArena) {
+  auto token = internal::InternalVisibilityForTesting{};
+  using RepeatedType = RepeatedField<int>;
+  RepeatedType original;
+  original.Add(1);
+  original.Add(2);
+
+  Arena arena;
+  alignas(RepeatedType) char mem[sizeof(RepeatedType)];
+  RepeatedType& fields1 = *new (mem) RepeatedType(token, &arena, original);
+  ASSERT_EQ(2, fields1.size());
+  EXPECT_EQ(1, fields1.Get(0));
+  EXPECT_EQ(2, fields1.Get(1));
+}
+
+TEST(RepeatedField, CopyConstructCordsWithArena) {
+  auto token = internal::InternalVisibilityForTesting{};
+  using RepeatedType = RepeatedField<absl::Cord>;
+  RepeatedType original;
+  original.Add(absl::Cord("hello"));
+  original.Add(absl::Cord("world and text to avoid SSO"));
+
+  Arena arena;
+  alignas(RepeatedType) char mem[sizeof(RepeatedType)];
+  RepeatedType& fields1 = *new (mem) RepeatedType(token, &arena, original);
+  ASSERT_EQ(2, fields1.size());
+  EXPECT_EQ("hello", fields1.Get(0));
+  EXPECT_EQ("world and text to avoid SSO", fields1.Get(1));
+
+  // Contract requires dtor to be invoked for absl::Cord
+  fields1.~RepeatedType();
 }
 
 TEST(RepeatedField, IteratorConstruct) {
@@ -786,8 +908,7 @@ TEST(RepeatedField, MoveConstruct) {
   }
   {
     Arena arena;
-    RepeatedField<int>* source =
-        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    RepeatedField<int>* source = Arena::Create<RepeatedField<int>>(&arena);
     source->Add(1);
     source->Add(2);
     RepeatedField<int> destination = std::move(*source);
@@ -818,32 +939,26 @@ TEST(RepeatedField, MoveAssign) {
   }
   {
     Arena arena;
-    RepeatedField<int>* source =
-        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    RepeatedField<int>* source = Arena::Create<RepeatedField<int>>(&arena);
     source->Add(1);
     source->Add(2);
-    RepeatedField<int>* destination =
-        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    RepeatedField<int>* destination = Arena::Create<RepeatedField<int>>(&arena);
     destination->Add(3);
     const int* source_data = source->data();
-    const int* destination_data = destination->data();
     *destination = std::move(*source);
     EXPECT_EQ(source_data, destination->data());
     EXPECT_THAT(*destination, ElementsAre(1, 2));
-    // This property isn't guaranteed but it's useful to have a test that would
-    // catch changes in this area.
-    EXPECT_EQ(destination_data, source->data());
     EXPECT_THAT(*source, ElementsAre(3));
   }
   {
     Arena source_arena;
     RepeatedField<int>* source =
-        Arena::CreateMessage<RepeatedField<int>>(&source_arena);
+        Arena::Create<RepeatedField<int>>(&source_arena);
     source->Add(1);
     source->Add(2);
     Arena destination_arena;
     RepeatedField<int>* destination =
-        Arena::CreateMessage<RepeatedField<int>>(&destination_arena);
+        Arena::Create<RepeatedField<int>>(&destination_arena);
     destination->Add(3);
     *destination = std::move(*source);
     EXPECT_THAT(*destination, ElementsAre(1, 2));
@@ -853,8 +968,7 @@ TEST(RepeatedField, MoveAssign) {
   }
   {
     Arena arena;
-    RepeatedField<int>* source =
-        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    RepeatedField<int>* source = Arena::Create<RepeatedField<int>>(&arena);
     source->Add(1);
     source->Add(2);
     RepeatedField<int> destination;
@@ -870,8 +984,7 @@ TEST(RepeatedField, MoveAssign) {
     source.Add(1);
     source.Add(2);
     Arena arena;
-    RepeatedField<int>* destination =
-        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    RepeatedField<int>* destination = Arena::Create<RepeatedField<int>>(&arena);
     destination->Add(3);
     *destination = std::move(source);
     EXPECT_THAT(*destination, ElementsAre(1, 2));
@@ -892,8 +1005,7 @@ TEST(RepeatedField, MoveAssign) {
   }
   {
     Arena arena;
-    RepeatedField<int>* field =
-        Arena::CreateMessage<RepeatedField<int>>(&arena);
+    RepeatedField<int>* field = Arena::Create<RepeatedField<int>>(&arena);
     field->Add(1);
     field->Add(2);
     const int* data = field->data();
@@ -933,7 +1045,7 @@ TEST(Movable, Works) {
   EXPECT_FALSE(internal::IsMovable<NonMovable>::value);
 }
 
-TEST(RepeatedField, MoveAdd) {
+TEST(RepeatedPtrField, MoveAdd) {
   RepeatedPtrField<TestAllTypes> field;
   TestAllTypes test_all_types;
   auto* optional_nested_message =
@@ -1139,17 +1251,17 @@ TEST(RepeatedField, HardenAgainstBadTruncate) {
   }
 }
 
-#if defined(GTEST_HAS_DEATH_TEST) && (defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
-                                      defined(ABSL_HAVE_MEMORY_SANITIZER))
+#if defined(GTEST_HAS_DEATH_TEST) && \
+    (defined(PROTOBUF_ASAN) || defined(PROTOBUF_MSAN))
 
 // This function verifies that the code dies under ASAN or MSAN trying to both
 // read and write the reserved element directly beyond the last element.
 void VerifyDeathOnWriteAndReadAccessBeyondEnd(RepeatedField<int64_t>& field) {
   auto* end = field.Mutable(field.size() - 1) + 1;
-#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+#if defined(PROTOBUF_ASAN)
   EXPECT_DEATH(*end = 1, "container-overflow");
   EXPECT_DEATH(EXPECT_NE(*end, 1), "container-overflow");
-#elif defined(ABSL_HAVE_MEMORY_SANITIZER)
+#elif defined(PROTOBUF_MSAN)
   EXPECT_DEATH(EXPECT_NE(*end, 1), "use-of-uninitialized-value");
 #endif
 
@@ -1220,6 +1332,18 @@ TEST(RepeatedField, PoisonsMemoryOnAssign) {
 }
 
 #endif
+
+TEST(RepeatedField, Cleanups) {
+  Arena arena;
+  auto growth = internal::CleanupGrowth(
+      arena, [&] { Arena::Create<RepeatedField<int>>(&arena); });
+  EXPECT_THAT(growth.cleanups, testing::IsEmpty());
+
+  void* ptr;
+  growth = internal::CleanupGrowth(
+      arena, [&] { ptr = Arena::Create<RepeatedField<absl::Cord>>(&arena); });
+  EXPECT_THAT(growth.cleanups, testing::UnorderedElementsAre(ptr));
+}
 
 // ===================================================================
 // RepeatedPtrField tests.  These pretty much just mirror the RepeatedField
@@ -1358,7 +1482,27 @@ TEST(RepeatedPtrField, ArenaAllocationSizesMatchExpectedValues) {
 }
 
 TEST(RepeatedPtrField, NaturalGrowthOnArenasReuseBlocks) {
-  CheckNaturalGrowthOnArenasReuseBlocks<RepeatedPtrField<std::string>>(true);
+  using Rep = RepeatedPtrField<std::string>;
+  Arena arena;
+  std::vector<Rep*> values;
+
+  static constexpr int kNumFields = 100;
+  static constexpr int kNumElems = 1000;
+  for (int i = 0; i < kNumFields; ++i) {
+    values.push_back(Arena::Create<Rep>(&arena));
+    auto& field = *values.back();
+    for (int j = 0; j < kNumElems; ++j) {
+      field.Add("");
+    }
+  }
+
+  size_t expected =
+      values.size() * values[0]->Capacity() * sizeof(std::string*) +
+      sizeof(std::string) * kNumElems * kNumFields;
+  // Use a 2% slack for other overhead.
+  // If we were not reusing the blocks, the actual value would be ~2x the
+  // expected.
+  EXPECT_THAT(arena.SpaceUsed(), AllOf(Ge(expected), Le(1.02 * expected)));
 }
 
 TEST(RepeatedPtrField, AddAndAssignRanges) {
@@ -1540,19 +1684,6 @@ TEST(RepeatedPtrField, ClearedElements) {
 
   field.Clear();
   EXPECT_EQ(field.ClearedCount(), 2);
-#ifndef PROTOBUF_FUTURE_REMOVE_CLEARED_API
-  EXPECT_EQ(field.ReleaseCleared(), original);  // Take ownership again.
-  EXPECT_EQ(field.ClearedCount(), 1);
-  EXPECT_NE(field.Add(), original);
-  EXPECT_EQ(field.ClearedCount(), 0);
-  EXPECT_NE(field.Add(), original);
-  EXPECT_EQ(field.ClearedCount(), 0);
-
-  field.AddCleared(original);  // Give ownership back, but as a cleared object.
-  EXPECT_EQ(field.ClearedCount(), 1);
-  EXPECT_EQ(field.Add(), original);
-  EXPECT_EQ(field.ClearedCount(), 0);
-#endif  // !PROTOBUF_FUTURE_REMOVE_CLEARED_API
   PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
@@ -1563,9 +1694,18 @@ TEST(RepeatedPtrField, AddAllocated) {
     field.Add()->assign("filler");
   }
 
+  const auto ensure_at_capacity = [&] {
+    while (field.size() < field.Capacity()) {
+      field.Add()->assign("filler");
+    }
+  };
+  const auto ensure_not_at_capacity = [&] { field.Reserve(field.size() + 1); };
+
+  ensure_at_capacity();
   int index = field.size();
 
   // First branch:  Field is at capacity with no cleared objects.
+  ASSERT_EQ(field.size(), field.Capacity());
   std::string* foo = new std::string("foo");
   field.AddAllocated(foo);
   EXPECT_EQ(index + 1, field.size());
@@ -1573,6 +1713,7 @@ TEST(RepeatedPtrField, AddAllocated) {
   EXPECT_EQ(foo, &field.Get(index));
 
   // Last branch:  Field is not at capacity and there are no cleared objects.
+  ensure_not_at_capacity();
   std::string* bar = new std::string("bar");
   field.AddAllocated(bar);
   ++index;
@@ -1581,6 +1722,7 @@ TEST(RepeatedPtrField, AddAllocated) {
   EXPECT_EQ(bar, &field.Get(index));
 
   // Third branch:  Field is not at capacity and there are no cleared objects.
+  ensure_not_at_capacity();
   field.RemoveLast();
   std::string* baz = new std::string("baz");
   field.AddAllocated(baz);
@@ -1589,9 +1731,7 @@ TEST(RepeatedPtrField, AddAllocated) {
   EXPECT_EQ(baz, &field.Get(index));
 
   // Second branch:  Field is at capacity but has some cleared objects.
-  while (field.size() < field.Capacity()) {
-    field.Add()->assign("filler2");
-  }
+  ensure_at_capacity();
   field.RemoveLast();
   index = field.size();
   std::string* moo = new std::string("moo");
@@ -1602,10 +1742,18 @@ TEST(RepeatedPtrField, AddAllocated) {
   EXPECT_EQ(moo, &field.Get(index));
 }
 
+TEST(RepeatedPtrField, AddMethodsDontAcceptNull) {
+#if !defined(NDEBUG)
+  RepeatedPtrField<std::string> field;
+  EXPECT_DEATH(field.AddAllocated(nullptr), "nullptr");
+  EXPECT_DEATH(field.UnsafeArenaAddAllocated(nullptr), "nullptr");
+#endif
+}
+
 TEST(RepeatedPtrField, AddAllocatedDifferentArena) {
   RepeatedPtrField<TestAllTypes> field;
   Arena arena;
-  auto* msg = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* msg = Arena::Create<TestAllTypes>(&arena);
   field.AddAllocated(msg);
 }
 
@@ -1685,12 +1833,30 @@ TEST(RepeatedPtrField, Erase) {
 }
 
 TEST(RepeatedPtrField, CopyConstruct) {
+  auto token = internal::InternalVisibilityForTesting{};
   RepeatedPtrField<std::string> source;
   source.Add()->assign("1");
   source.Add()->assign("2");
 
-  RepeatedPtrField<std::string> destination(source);
+  RepeatedPtrField<std::string> destination1(source);
+  ASSERT_EQ(2, destination1.size());
+  EXPECT_EQ("1", destination1.Get(0));
+  EXPECT_EQ("2", destination1.Get(1));
 
+  RepeatedPtrField<std::string> destination2(token, nullptr, source);
+  ASSERT_EQ(2, destination2.size());
+  EXPECT_EQ("1", destination2.Get(0));
+  EXPECT_EQ("2", destination2.Get(1));
+}
+
+TEST(RepeatedPtrField, CopyConstructWithArena) {
+  auto token = internal::InternalVisibilityForTesting{};
+  RepeatedPtrField<std::string> source;
+  source.Add()->assign("1");
+  source.Add()->assign("2");
+
+  Arena arena;
+  RepeatedPtrField<std::string> destination(token, &arena, source);
   ASSERT_EQ(2, destination.size());
   EXPECT_EQ("1", destination.Get(0));
   EXPECT_EQ("2", destination.Get(1));
@@ -1729,6 +1895,49 @@ TEST(RepeatedPtrField, IteratorConstruct_Proto) {
   ASSERT_EQ(values.size(), other.size());
   EXPECT_EQ(values[0].bb(), other.Get(0).bb());
   EXPECT_EQ(values[1].bb(), other.Get(1).bb());
+}
+
+TEST(RepeatedPtrField, SmallOptimization) {
+  // Properties checked here are not part of the contract of RepeatedPtrField,
+  // but we test them to verify that SSO is working as expected by the
+  // implementation.
+
+  // We use an arena to easily measure memory usage, but not needed.
+  Arena arena;
+  auto* array = Arena::Create<RepeatedPtrField<std::string>>(&arena);
+  EXPECT_EQ(array->Capacity(), 1);
+  EXPECT_EQ(array->SpaceUsedExcludingSelf(), 0);
+  std::string str;
+  auto usage_before = arena.SpaceUsed();
+  // We use UnsafeArenaAddAllocated just to grow the array without creating
+  // objects or causing extra cleanup costs in the arena to make the
+  // measurements simpler.
+  array->UnsafeArenaAddAllocated(&str);
+  // No backing array, just the string.
+  EXPECT_EQ(array->SpaceUsedExcludingSelf(), sizeof(str));
+  // We have not used any arena space.
+  EXPECT_EQ(usage_before, arena.SpaceUsed());
+  // Verify the string is where we think it is.
+  EXPECT_EQ(&*array->begin(), &str);
+  EXPECT_EQ(array->pointer_begin()[0], &str);
+  auto is_inlined = [array]() {
+    return std::less_equal<void*>{}(array, &*array->pointer_begin()) &&
+           std::less<void*>{}(&*array->pointer_begin(), array + 1);
+  };
+  // The T** in pointer_begin points into the sso in the object.
+  EXPECT_TRUE(is_inlined());
+
+  // Adding a second object stops sso.
+  std::string str2;
+  array->UnsafeArenaAddAllocated(&str2);
+  EXPECT_EQ(array->Capacity(), 3);
+  // Backing array and the strings.
+  EXPECT_EQ(array->SpaceUsedExcludingSelf(),
+            (1 + array->Capacity()) * sizeof(void*) + 2 * sizeof(str));
+  // We used some arena space now.
+  EXPECT_LT(usage_before, arena.SpaceUsed());
+  // And the pointer_begin is not in the sso anymore.
+  EXPECT_FALSE(is_inlined());
 }
 
 TEST(RepeatedPtrField, CopyAssign) {
@@ -1776,7 +1985,7 @@ TEST(RepeatedPtrField, MoveConstruct) {
   {
     Arena arena;
     RepeatedPtrField<std::string>* source =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+        Arena::Create<RepeatedPtrField<std::string>>(&arena);
     *source->Add() = "1";
     *source->Add() = "2";
     RepeatedPtrField<std::string> destination = std::move(*source);
@@ -1796,43 +2005,35 @@ TEST(RepeatedPtrField, MoveAssign) {
     RepeatedPtrField<std::string> destination;
     *destination.Add() = "3";
     const std::string* const* source_data = source.data();
-    const std::string* const* destination_data = destination.data();
     destination = std::move(source);
     EXPECT_EQ(source_data, destination.data());
     EXPECT_THAT(destination, ElementsAre("1", "2"));
-    // This property isn't guaranteed but it's useful to have a test that would
-    // catch changes in this area.
-    EXPECT_EQ(destination_data, source.data());
     EXPECT_THAT(source, ElementsAre("3"));
   }
   {
     Arena arena;
     RepeatedPtrField<std::string>* source =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+        Arena::Create<RepeatedPtrField<std::string>>(&arena);
     *source->Add() = "1";
     *source->Add() = "2";
     RepeatedPtrField<std::string>* destination =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+        Arena::Create<RepeatedPtrField<std::string>>(&arena);
     *destination->Add() = "3";
     const std::string* const* source_data = source->data();
-    const std::string* const* destination_data = destination->data();
     *destination = std::move(*source);
     EXPECT_EQ(source_data, destination->data());
     EXPECT_THAT(*destination, ElementsAre("1", "2"));
-    // This property isn't guaranteed but it's useful to have a test that would
-    // catch changes in this area.
-    EXPECT_EQ(destination_data, source->data());
     EXPECT_THAT(*source, ElementsAre("3"));
   }
   {
     Arena source_arena;
     RepeatedPtrField<std::string>* source =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(&source_arena);
+        Arena::Create<RepeatedPtrField<std::string>>(&source_arena);
     *source->Add() = "1";
     *source->Add() = "2";
     Arena destination_arena;
     RepeatedPtrField<std::string>* destination =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(&destination_arena);
+        Arena::Create<RepeatedPtrField<std::string>>(&destination_arena);
     *destination->Add() = "3";
     *destination = std::move(*source);
     EXPECT_THAT(*destination, ElementsAre("1", "2"));
@@ -1843,7 +2044,7 @@ TEST(RepeatedPtrField, MoveAssign) {
   {
     Arena arena;
     RepeatedPtrField<std::string>* source =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+        Arena::Create<RepeatedPtrField<std::string>>(&arena);
     *source->Add() = "1";
     *source->Add() = "2";
     RepeatedPtrField<std::string> destination;
@@ -1860,7 +2061,7 @@ TEST(RepeatedPtrField, MoveAssign) {
     *source.Add() = "2";
     Arena arena;
     RepeatedPtrField<std::string>* destination =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+        Arena::Create<RepeatedPtrField<std::string>>(&arena);
     *destination->Add() = "3";
     *destination = std::move(source);
     EXPECT_THAT(*destination, ElementsAre("1", "2"));
@@ -1882,7 +2083,7 @@ TEST(RepeatedPtrField, MoveAssign) {
   {
     Arena arena;
     RepeatedPtrField<std::string>* field =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+        Arena::Create<RepeatedPtrField<std::string>>(&arena);
     *field->Add() = "1";
     *field->Add() = "2";
     const std::string* const* data = field->data();
@@ -1925,8 +2126,7 @@ TEST(RepeatedPtrField, ExtractSubrange) {
           // Create an array with "sz" elements and "extra" cleared elements.
           // Use an arena to avoid copies from debug-build stability checks.
           Arena arena;
-          auto& field =
-              *Arena::CreateMessage<RepeatedPtrField<std::string>>(&arena);
+          auto& field = *Arena::Create<RepeatedPtrField<std::string>>(&arena);
           for (int i = 0; i < sz + extra; ++i) {
             subject.push_back(new std::string());
             field.AddAllocated(subject[i]);
@@ -1981,6 +2181,18 @@ TEST(RepeatedPtrField, ExtractSubrange) {
 TEST(RepeatedPtrField, DeleteSubrange) {
   // DeleteSubrange is a trivial extension of ExtendSubrange.
 }
+
+TEST(RepeatedPtrField, Cleanups) {
+  Arena arena;
+  auto growth = internal::CleanupGrowth(
+      arena, [&] { Arena::Create<RepeatedPtrField<std::string>>(&arena); });
+  EXPECT_THAT(growth.cleanups, testing::IsEmpty());
+
+  growth = internal::CleanupGrowth(
+      arena, [&] { Arena::Create<RepeatedPtrField<TestAllTypes>>(&arena); });
+  EXPECT_THAT(growth.cleanups, testing::IsEmpty());
+}
+
 
 // ===================================================================
 
@@ -2578,13 +2790,13 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
        UnsafeArenaAllocatedRepeatedPtrFieldWithStringIntData) {
   std::vector<Nested*> data;
   Arena arena;
-  auto* goldenproto = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* goldenproto = Arena::Create<TestAllTypes>(&arena);
   for (int i = 0; i < 10; ++i) {
     auto* new_data = goldenproto->add_repeated_nested_message();
     new_data->set_bb(i);
     data.push_back(new_data);
   }
-  auto* testproto = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* testproto = Arena::Create<TestAllTypes>(&arena);
   std::copy(data.begin(), data.end(),
             UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
                 testproto->mutable_repeated_nested_message()));
@@ -2595,13 +2807,13 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
        UnsafeArenaAllocatedRepeatedPtrFieldWithString) {
   std::vector<std::string*> data;
   Arena arena;
-  auto* goldenproto = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* goldenproto = Arena::Create<TestAllTypes>(&arena);
   for (int i = 0; i < 10; ++i) {
     auto* new_data = goldenproto->add_repeated_string();
     *new_data = absl::StrCat("name-", i);
     data.push_back(new_data);
   }
-  auto* testproto = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* testproto = Arena::Create<TestAllTypes>(&arena);
   std::copy(data.begin(), data.end(),
             UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
                 testproto->mutable_repeated_string()));

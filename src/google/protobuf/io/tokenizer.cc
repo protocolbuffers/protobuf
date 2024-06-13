@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -219,13 +196,13 @@ Tokenizer::Tokenizer(ZeroCopyInputStream* input,
                      ErrorCollector* error_collector)
     : input_(input),
       error_collector_(error_collector),
-      buffer_(NULL),
+      buffer_(nullptr),
       buffer_size_(0),
       buffer_pos_(0),
       read_error_(false),
       line_(0),
       column_(0),
-      record_target_(NULL),
+      record_target_(nullptr),
       record_start_(-1),
       allow_f_after_float_(false),
       comment_style_(CPP_COMMENT_STYLE),
@@ -235,6 +212,7 @@ Tokenizer::Tokenizer(ZeroCopyInputStream* input,
   current_.column = 0;
   current_.end_column = 0;
   current_.type = TYPE_START;
+  previous_ = current_;
 
   Refresh();
 }
@@ -293,7 +271,7 @@ void Tokenizer::Refresh() {
   }
 
   // If we're in a token, append the rest of the buffer to it.
-  if (record_target_ != NULL && record_start_ < buffer_size_) {
+  if (record_target_ != nullptr && record_start_ < buffer_size_) {
     record_target_->append(buffer_ + record_start_,
                            buffer_size_ - record_start_);
     record_start_ = 0;
@@ -942,7 +920,8 @@ bool Tokenizer::NextWithComments(std::string* prev_trailing_comments,
             // makes no sense to attach a comment to the following token.
             collector.Flush();
           }
-          if (prev_line == line_ || trailing_comment_end_line == line_) {
+          if (result &&
+              (prev_line == line_ || trailing_comment_end_line == line_)) {
             // When previous token and this one are on the same line, or
             // even if a multi-line trailing comment ends on the same line
             // as this token, it's unclear to what token the comment

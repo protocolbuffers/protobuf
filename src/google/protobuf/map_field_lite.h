@@ -1,43 +1,21 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #ifndef GOOGLE_PROTOBUF_MAP_FIELD_LITE_H__
 #define GOOGLE_PROTOBUF_MAP_FIELD_LITE_H__
 
 #include <type_traits>
 
-#include "google/protobuf/port.h"
+#include "absl/log/absl_check.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/map.h"
-#include "google/protobuf/map_entry_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/wire_format_lite.h"
 
 // Must be included last.
@@ -51,20 +29,11 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-#ifndef NDEBUG
-void MapFieldLiteNotDestructed(void* map_field_lite);
-#endif
-
 // This class provides access to map field using generated api. It is used for
 // internal generated message implementation only. Users should never use this
 // directly.
-template <typename Derived, typename Key, typename T,
-          WireFormatLite::FieldType key_wire_type,
-          WireFormatLite::FieldType value_wire_type>
+template <typename Key, typename T>
 class MapFieldLite {
-  // Define message type for internal repeated field.
-  typedef Derived EntryType;
-
  public:
   typedef Map<Key, T> MapType;
 
@@ -72,11 +41,17 @@ class MapFieldLite {
   explicit MapFieldLite(Arena* arena) : map_(arena) {}
   MapFieldLite(ArenaInitialized, Arena* arena) : MapFieldLite(arena) {}
 
+  MapFieldLite(InternalVisibility, Arena* arena) : map_(arena) {}
+  MapFieldLite(InternalVisibility, Arena* arena, const MapFieldLite& from)
+      : map_(arena) {
+    MergeFrom(from);
+  }
+
 #ifdef NDEBUG
-  void Destruct() { map_.~Map(); }
-  ~MapFieldLite() {}
+  ~MapFieldLite() { map_.~Map(); }
 #else
-  void Destruct() {
+  ~MapFieldLite() {
+    ABSL_DCHECK_EQ(map_.arena(), nullptr);
     // We want to destruct the map in such a way that we can verify
     // that we've done that, but also be sure that we've deallocated
     // everything (as opposed to leaving an allocation behind with no
@@ -84,11 +59,6 @@ class MapFieldLite {
     // Map::Swap with an empty map accomplishes that.
     decltype(map_) swapped_map(map_.arena());
     map_.InternalSwap(&swapped_map);
-  }
-  ~MapFieldLite() {
-    if (map_.arena() == nullptr && !map_.empty()) {
-      MapFieldLiteNotDestructed(this);
-    }
   }
 #endif
   // Accessors
@@ -104,26 +74,6 @@ class MapFieldLite {
   void Swap(MapFieldLite* other) { map_.swap(other->map_); }
   void InternalSwap(MapFieldLite* other) { map_.InternalSwap(&other->map_); }
 
-  // Used in the implementation of parsing. Caller should take the ownership iff
-  // arena_ is nullptr.
-  EntryType* NewEntry() const {
-    return Arena::CreateMessage<EntryType>(map_.arena());
-  }
-
-  const char* _InternalParse(const char* ptr, ParseContext* ctx) {
-    typename Derived::template Parser<MapFieldLite, Map<Key, T>> parser(this);
-    return parser._InternalParse(ptr, ctx);
-  }
-
-  template <typename UnknownType>
-  const char* ParseWithEnumValidation(const char* ptr, ParseContext* ctx,
-                                      bool (*is_valid)(int), uint32_t field_num,
-                                      InternalMetadata* metadata) {
-    typename Derived::template Parser<MapFieldLite, Map<Key, T>> parser(this);
-    return parser.template ParseWithEnumValidation<UnknownType>(
-        ptr, ctx, is_valid, field_num, metadata);
-  }
-
  private:
   typedef void DestructorSkippable_;
 
@@ -133,41 +83,15 @@ class MapFieldLite {
     Map<Key, T> map_;
   };
 
-  friend class ::PROTOBUF_NAMESPACE_ID::Arena;
+  friend class google::protobuf::Arena;
 };
-
-template <typename UnknownType, typename T>
-struct EnumParseWrapper {
-  const char* _InternalParse(const char* ptr, ParseContext* ctx) {
-    return map_field->template ParseWithEnumValidation<UnknownType>(
-        ptr, ctx, is_valid, field_num, metadata);
-  }
-  T* map_field;
-  bool (*is_valid)(int);
-  uint32_t field_num;
-  InternalMetadata* metadata;
-};
-
-// Helper function because the typenames of maps are horrendous to print. This
-// leverages compiler type deduction, to keep all type data out of the
-// generated code
-template <typename UnknownType, typename T>
-EnumParseWrapper<UnknownType, T> InitEnumParseWrapper(
-    T* map_field, bool (*is_valid)(int), uint32_t field_num,
-    InternalMetadata* metadata) {
-  return EnumParseWrapper<UnknownType, T>{map_field, is_valid, field_num,
-                                          metadata};
-}
 
 // True if IsInitialized() is true for value field in all elements of t. T is
 // expected to be message.  It's useful to have this helper here to keep the
 // protobuf compiler from ever having to emit loops in IsInitialized() methods.
 // We want the C++ compiler to inline this or not as it sees fit.
-template <typename Derived, typename Key, typename T,
-          WireFormatLite::FieldType key_wire_type,
-          WireFormatLite::FieldType value_wire_type>
-bool AllAreInitialized(const MapFieldLite<Derived, Key, T, key_wire_type,
-                                          value_wire_type>& field) {
+template <typename Key, typename T>
+bool AllAreInitialized(const MapFieldLite<Key, T>& field) {
   const auto& t = field.GetMap();
   for (typename Map<Key, T>::const_iterator it = t.begin(); it != t.end();
        ++it) {
@@ -178,24 +102,6 @@ bool AllAreInitialized(const MapFieldLite<Derived, Key, T, key_wire_type,
 
 template <typename MEntry>
 struct MapEntryToMapField : MapEntryToMapField<typename MEntry::SuperType> {};
-
-template <typename T, typename Key, typename Value,
-          WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType>
-struct MapEntryToMapField<
-    MapEntryLite<T, Key, Value, kKeyFieldType, kValueFieldType>> {
-  typedef MapFieldLite<
-      MapEntryLite<T, Key, Value, kKeyFieldType, kValueFieldType>, Key, Value,
-      kKeyFieldType, kValueFieldType>
-      MapFieldType;
-};
-
-#ifndef NDEBUG
-inline PROTOBUF_NOINLINE void MapFieldLiteNotDestructed(void* map_field_lite) {
-  bool proper_destruct = false;
-  ABSL_CHECK(proper_destruct) << map_field_lite;
-}
-#endif
 
 }  // namespace internal
 }  // namespace protobuf

@@ -1,39 +1,17 @@
 #region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using Google.Protobuf.Compatibility;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security;
@@ -66,6 +44,8 @@ namespace Google.Protobuf.Collections
     /// in future versions.
     /// </para>
     /// </remarks>
+    [DebuggerDisplay("Count = {Count}")]
+    [DebuggerTypeProxy(typeof(MapField<,>.MapFieldDebugView))]
     public sealed class MapField<TKey, TValue> : IDeepCloneable<MapField<TKey, TValue>>, IDictionary<TKey, TValue>, IEquatable<MapField<TKey, TValue>>, IDictionary, IReadOnlyDictionary<TKey, TValue>
     {
         private static readonly EqualityComparer<TValue> ValueEqualityComparer = ProtobufEqualityComparers.GetEqualityComparer<TValue>();
@@ -347,7 +327,7 @@ namespace Google.Protobuf.Collections
         /// Returns a hash code for this instance.
         /// </summary>
         /// <returns>
-        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.
         /// </returns>
         public override int GetHashCode()
         {
@@ -452,12 +432,35 @@ namespace Google.Protobuf.Collections
             WriteContext.Initialize(output, out WriteContext ctx);
             try
             {
-                WriteTo(ref ctx, codec);
+                IEnumerable<KeyValuePair<TKey, TValue>> listToWrite = list;
+
+                if (output.Deterministic)
+                {
+                    listToWrite = GetSortedListCopy(list);
+                }
+                WriteTo(ref ctx, codec, listToWrite);
             }
             finally
             {
                 ctx.CopyStateTo(output);
             }
+        }
+
+        internal IEnumerable<KeyValuePair<TKey, TValue>> GetSortedListCopy(IEnumerable<KeyValuePair<TKey, TValue>> listToSort)
+        {
+            // We can't sort the list in place, as that would invalidate the linked list.
+            // Instead, we create a new list, sort that, and then write it out.
+            var listToWrite = new List<KeyValuePair<TKey, TValue>>(listToSort);
+            listToWrite.Sort((pair1, pair2) =>
+            {
+                if (typeof(TKey) == typeof(string))
+                {
+                    // Use Ordinal, otherwise Comparer<string>.Default uses StringComparer.CurrentCulture
+                    return StringComparer.Ordinal.Compare(pair1.Key.ToString(), pair2.Key.ToString());
+                }
+                return Comparer<TKey>.Default.Compare(pair1.Key, pair2.Key);
+            });
+            return listToWrite;
         }
 
         /// <summary>
@@ -469,7 +472,18 @@ namespace Google.Protobuf.Collections
         [SecuritySafeCritical]
         public void WriteTo(ref WriteContext ctx, Codec codec)
         {
-            foreach (var entry in list)
+            IEnumerable<KeyValuePair<TKey, TValue>> listToWrite = list;
+            if (ctx.state.CodedOutputStream?.Deterministic ?? false)
+            {
+                listToWrite = GetSortedListCopy(list);
+            }
+            WriteTo(ref ctx, codec, listToWrite);
+        }
+
+        [SecuritySafeCritical]
+        private void WriteTo(ref WriteContext ctx, Codec codec, IEnumerable<KeyValuePair<TKey, TValue>> listKvp)
+        {
+            foreach (var entry in listKvp)
             {
                 ctx.WriteTag(codec.MapTag);
 
@@ -651,7 +665,7 @@ namespace Google.Protobuf.Collections
                 this.containsCheck = containsCheck;
             }
 
-            public int Count => parent.Count; 
+            public int Count => parent.Count;
 
             public bool IsReadOnly => true;
 
@@ -705,6 +719,19 @@ namespace Google.Protobuf.Collections
                     array.SetValue(item, index++);
                 }
             }
+        }
+
+        private sealed class MapFieldDebugView
+        {
+            private readonly MapField<TKey, TValue> map;
+
+            public MapFieldDebugView(MapField<TKey, TValue> map)
+            {
+                this.map = map;
+            }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public KeyValuePair<TKey, TValue>[] Items => map.list.ToArray();
         }
     }
 }

@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Authors: wink@google.com (Wink Saville),
 //          kenton@google.com (Kenton Varda)
@@ -43,8 +20,6 @@
 #include <string>
 #include <utility>
 
-#include "google/protobuf/arena.h"
-#include "absl/base/dynamic_annotations.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
@@ -52,12 +27,15 @@
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
 
 
@@ -67,12 +45,99 @@
 namespace google {
 namespace protobuf {
 
+void MessageLite::DestroyInstance(bool free_memory) {
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  _class_data_->delete_message(this, free_memory);
+#else   // PROTOBUF_CUSTOM_VTABLE
+  ABSL_DCHECK(!free_memory);
+  this->~MessageLite();
+#endif  // PROTOBUF_CUSTOM_VTABLE
+}
+
+void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
+  auto* data = GetClassData();
+  auto* other_data = other.GetClassData();
+
+  ABSL_CHECK_EQ(data, other_data)
+      << "Invalid call to CheckTypeAndMergeFrom between types " << GetTypeName()
+      << " and " << other.GetTypeName();
+  data->merge_to_from(*this, other);
+}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+uint8_t* MessageLite::_InternalSerialize(
+    uint8_t* ptr, io::EpsCopyOutputStream* stream) const {
+  return _class_data_->serialize(*this, ptr, stream);
+}
+
+MessageLite* MessageLite::New(Arena* arena) const {
+  return static_cast<MessageLite*>(_class_data_->new_message(this, arena));
+}
+
+void MessageLite::Clear() { _class_data_->clear(*this); }
+
+size_t MessageLite::ByteSizeLong() const {
+  return _class_data_->byte_size_long(*this);
+}
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
+bool MessageLite::IsInitialized() const {
+  auto* data = GetClassData();
+  return data->is_initialized != nullptr ? data->is_initialized(*this) : true;
+}
+
+const char* MessageLite::_InternalParse(const char* ptr,
+                                        internal::ParseContext* ctx) {
+  return internal::TcParser::ParseLoop(this, ptr, ctx, GetTcParseTable());
+}
+
+std::string MessageLite::GetTypeName() const {
+  auto* data = GetClassData();
+  ABSL_DCHECK(data != nullptr);
+
+  if (!data->is_lite) {
+    // For !LITE messages, we use the descriptor method function.
+    return data->full().descriptor_methods->get_type_name(*this);
+  }
+
+  // For LITE messages, the type name is a char[] just beyond ClassData.
+  return reinterpret_cast<const char*>(data) + sizeof(ClassData);
+}
+
+void MessageLite::OnDemandRegisterArenaDtor(Arena* arena) {
+  if (arena == nullptr) return;
+  auto* data = GetClassData();
+  ABSL_DCHECK(data != nullptr);
+
+  if (data->on_demand_register_arena_dtor != nullptr) {
+    data->on_demand_register_arena_dtor(*this, *arena);
+  }
+}
+
 std::string MessageLite::InitializationErrorString() const {
+  auto* data = GetClassData();
+  ABSL_DCHECK(data != nullptr);
+
+  if (!data->is_lite) {
+    // For !LITE messages, we use the descriptor method function.
+    return data->full().descriptor_methods->initialization_error_string(*this);
+  }
+
   return "(cannot determine missing fields for lite message)";
 }
 
 std::string MessageLite::DebugString() const {
   return absl::StrCat("MessageLite at 0x", absl::Hex(this));
+}
+
+int MessageLite::GetCachedSize() const { return AccessCachedSize().Get(); }
+
+internal::CachedSize& MessageLite::AccessCachedSize() const {
+  auto* data = GetClassData();
+  ABSL_DCHECK(data != nullptr);
+  ABSL_DCHECK(data->cached_size_offset != 0);
+  return *reinterpret_cast<internal::CachedSize*>(const_cast<char*>(
+      reinterpret_cast<const char*>(this) + data->cached_size_offset));
 }
 
 namespace {
@@ -131,11 +196,12 @@ namespace internal {
 
 template <bool aliasing>
 bool MergeFromImpl(absl::string_view input, MessageLite* msg,
+                   const internal::TcParseTableBase* tc_table,
                    MessageLite::ParseFlags parse_flags) {
   const char* ptr;
   internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
                              aliasing, &ptr, input);
-  ptr = msg->_InternalParse(ptr, &ctx);
+  ptr = internal::TcParser::ParseLoop(msg, ptr, &ctx, tc_table);
   // ctx has an explicit limit set (length of string_view).
   if (PROTOBUF_PREDICT_TRUE(ptr && ctx.EndedAtLimit())) {
     return CheckFieldPresence(ctx, *msg, parse_flags);
@@ -145,11 +211,12 @@ bool MergeFromImpl(absl::string_view input, MessageLite* msg,
 
 template <bool aliasing>
 bool MergeFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg,
+                   const internal::TcParseTableBase* tc_table,
                    MessageLite::ParseFlags parse_flags) {
   const char* ptr;
   internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
                              aliasing, &ptr, input);
-  ptr = msg->_InternalParse(ptr, &ctx);
+  ptr = internal::TcParser::ParseLoop(msg, ptr, &ctx, tc_table);
   // ctx has no explicit limit (hence we end on end of stream)
   if (PROTOBUF_PREDICT_TRUE(ptr && ctx.EndedAtEndOfStream())) {
     return CheckFieldPresence(ctx, *msg, parse_flags);
@@ -159,11 +226,12 @@ bool MergeFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg,
 
 template <bool aliasing>
 bool MergeFromImpl(BoundedZCIS input, MessageLite* msg,
+                   const internal::TcParseTableBase* tc_table,
                    MessageLite::ParseFlags parse_flags) {
   const char* ptr;
   internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
                              aliasing, &ptr, input.zcis, input.limit);
-  ptr = msg->_InternalParse(ptr, &ctx);
+  ptr = internal::TcParser::ParseLoop(msg, ptr, &ctx, tc_table);
   if (PROTOBUF_PREDICT_FALSE(!ptr)) return false;
   ctx.BackUp(ptr);
   if (PROTOBUF_PREDICT_TRUE(ctx.EndedAtLimit())) {
@@ -173,18 +241,24 @@ bool MergeFromImpl(BoundedZCIS input, MessageLite* msg,
 }
 
 template bool MergeFromImpl<false>(absl::string_view input, MessageLite* msg,
+                                   const internal::TcParseTableBase* tc_table,
                                    MessageLite::ParseFlags parse_flags);
 template bool MergeFromImpl<true>(absl::string_view input, MessageLite* msg,
+                                  const internal::TcParseTableBase* tc_table,
                                   MessageLite::ParseFlags parse_flags);
 template bool MergeFromImpl<false>(io::ZeroCopyInputStream* input,
                                    MessageLite* msg,
+                                   const internal::TcParseTableBase* tc_table,
                                    MessageLite::ParseFlags parse_flags);
 template bool MergeFromImpl<true>(io::ZeroCopyInputStream* input,
                                   MessageLite* msg,
+                                  const internal::TcParseTableBase* tc_table,
                                   MessageLite::ParseFlags parse_flags);
 template bool MergeFromImpl<false>(BoundedZCIS input, MessageLite* msg,
+                                   const internal::TcParseTableBase* tc_table,
                                    MessageLite::ParseFlags parse_flags);
 template bool MergeFromImpl<true>(BoundedZCIS input, MessageLite* msg,
+                                  const internal::TcParseTableBase* tc_table,
                                   MessageLite::ParseFlags parse_flags);
 
 }  // namespace internal
@@ -229,11 +303,11 @@ bool MessageLite::MergeFromImpl(io::CodedInputStream* input,
   ctx.TrackCorrectEnding();
   ctx.data().pool = input->GetExtensionPool();
   ctx.data().factory = input->GetExtensionFactory();
-  ptr = _InternalParse(ptr, &ctx);
+  ptr = internal::TcParser::ParseLoop(this, ptr, &ctx, GetTcParseTable());
   if (PROTOBUF_PREDICT_FALSE(!ptr)) return false;
   ctx.BackUp(ptr);
   if (!ctx.EndedAtEndOfStream()) {
-    ABSL_DCHECK_NE(ctx.LastTag(), 1);  // We can't end on a pushed limit.
+    ABSL_DCHECK_NE(ctx.LastTag(), 1u);  // We can't end on a pushed limit.
     if (ctx.IsExceedingLimit(ptr)) return false;
     input->SetLastTag(ctx.LastTag());
   } else {
@@ -336,13 +410,14 @@ template <>
 struct SourceWrapper<absl::Cord> {
   explicit SourceWrapper(const absl::Cord* c) : cord(c) {}
   template <bool alias>
-  bool MergeInto(MessageLite* msg, MessageLite::ParseFlags parse_flags) const {
+  bool MergeInto(MessageLite* msg, const internal::TcParseTableBase* tc_table,
+                 MessageLite::ParseFlags parse_flags) const {
     absl::optional<absl::string_view> flat = cord->TryFlat();
     if (flat && flat->size() <= ParseContext::kMaxCordBytesToCopy) {
-      return MergeFromImpl<alias>(*flat, msg, parse_flags);
+      return MergeFromImpl<alias>(*flat, msg, tc_table, parse_flags);
     } else {
       io::CordInputStream input(cord);
-      return MergeFromImpl<alias>(&input, msg, parse_flags);
+      return MergeFromImpl<alias>(&input, msg, tc_table, parse_flags);
     }
   }
 
@@ -576,7 +651,8 @@ bool MessageLite::AppendPartialToCord(absl::Cord* output) const {
         target, static_cast<int>(available.size()),
         io::CodedOutputStream::IsDefaultSerializationDeterministic());
     auto res = _InternalSerialize(target, &out);
-    ABSL_DCHECK_EQ(res, target + size);
+    ABSL_DCHECK_EQ(static_cast<const void*>(res),
+                   static_cast<const void*>(target + size));
     buffer.IncreaseLengthBy(size);
     output->Append(std::move(buffer));
     ABSL_DCHECK_EQ(output->size(), total_size);
@@ -632,11 +708,6 @@ void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
                                             MessageLite* to) {
   to->CheckTypeAndMergeFrom(from);
 }
-template <>
-void GenericTypeHandler<std::string>::Merge(const std::string& from,
-                                            std::string* to) {
-  *to = from;
-}
 
 // Non-inline variants of std::string specializations for
 // various InternalMetadata routines.
@@ -656,6 +727,14 @@ void InternalMetadata::DoSwap<std::string>(std::string* other) {
 }
 
 }  // namespace internal
+
+std::string ShortFormat(const MessageLite& message_lite) {
+  return message_lite.DebugString();
+}
+
+std::string Utf8Format(const MessageLite& message_lite) {
+  return message_lite.DebugString();
+}
 
 
 // ===================================================================

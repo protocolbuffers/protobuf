@@ -34,3 +34,4 @@
 /kokoro/ @protocolbuffers/protobuf-btr
 /third_party/ @protocolbuffers/protobuf-btr
 *.bazel @protocolbuffers/protobuf-btr
+/.github/ @protocolbuffers/protobuf-btr

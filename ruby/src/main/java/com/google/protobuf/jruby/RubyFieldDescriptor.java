@@ -32,11 +32,12 @@
 
 package com.google.protobuf.jruby;
 
+import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.Descriptors.FileDescriptor;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -92,6 +93,28 @@ public class RubyFieldDescriptor extends RubyObject {
 
   /*
    * call-seq:
+   *     FieldDescriptor.has_presence? => bool
+   *
+   * Returns whether this field tracks presence.
+   */
+  @JRubyMethod(name = "has_presence?")
+  public IRubyObject hasPresence(ThreadContext context) {
+    return this.descriptor.hasPresence() ? context.runtime.getTrue() : context.runtime.getFalse();
+  }
+
+  /*
+   * call-seq:
+   *     FieldDescriptor.is_packed? => bool
+   *
+   * Returns whether this is a repeated field that uses packed encoding.
+   */
+  @JRubyMethod(name = "is_packed?")
+  public IRubyObject isPacked(ThreadContext context) {
+    return this.descriptor.isPacked() ? context.runtime.getTrue() : context.runtime.getFalse();
+  }
+
+  /*
+   * call-seq:
    *     FieldDescriptor.name => name
    *
    * Returns the name of this field as a Ruby String, or nil if it is not set.
@@ -99,6 +122,10 @@ public class RubyFieldDescriptor extends RubyObject {
   @JRubyMethod(name = "name")
   public IRubyObject getName(ThreadContext context) {
     return this.name;
+  }
+
+  protected void setName(IRubyObject name) {
+    this.name = name;
   }
 
   /*
@@ -227,27 +254,41 @@ public class RubyFieldDescriptor extends RubyObject {
    */
   @JRubyMethod(name = "set")
   public IRubyObject setValue(ThreadContext context, IRubyObject message, IRubyObject value) {
-    ((RubyMessage) message).setField(context, descriptor, value);
+    ((RubyMessage) message).setField(context, this, value);
     return context.nil;
+  }
+
+  @JRubyMethod
+  public IRubyObject options(ThreadContext context) {
+    RubyDescriptor fieldOptionsDescriptor =
+        (RubyDescriptor)
+            pool.lookup(context, context.runtime.newString("google.protobuf.FieldOptions"));
+    RubyClass fieldOptionsClass = (RubyClass) fieldOptionsDescriptor.msgclass(context);
+    RubyMessage msg = (RubyMessage) fieldOptionsClass.newInstance(context, Block.NULL_BLOCK);
+    return msg.decodeBytes(
+        context,
+        msg,
+        CodedInputStream.newInstance(
+            descriptor.getOptions().toByteString().toByteArray()), /*freeze*/
+        true);
   }
 
   protected void setDescriptor(
       ThreadContext context, FieldDescriptor descriptor, RubyDescriptorPool pool) {
-    if (descriptor.isRequired()
-        && descriptor.getFile().getSyntax() == FileDescriptor.Syntax.PROTO3) {
-      throw Utils.createTypeError(
-          context,
-          descriptor.getName()
-              + " is labeled required but required fields are unsupported in proto3");
-    }
     this.descriptor = descriptor;
     this.name = context.runtime.newString(descriptor.getName());
     this.pool = pool;
   }
 
+  protected FieldDescriptor getDescriptor() {
+    return descriptor;
+  }
+
   private void calculateLabel(ThreadContext context) {
     if (descriptor.isRepeated()) {
       this.label = context.runtime.newSymbol("repeated");
+    } else if (descriptor.isRequired()) {
+      this.label = context.runtime.newSymbol("required");
     } else if (descriptor.isOptional()) {
       this.label = context.runtime.newSymbol("optional");
     } else {

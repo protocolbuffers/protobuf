@@ -1,5 +1,25 @@
 include(GNUInstallDirs)
 
+foreach(_target IN LISTS protobuf_ABSL_USED_TARGETS)
+  # shared abseil on windows breaks the absl::foo -> absl_foo replacement logic -
+  # preempt this by a more specific replace (harmless if it doesn't apply); see GH-15883
+  string(REPLACE "absl::abseil_dll" "abseil_dll" _modified_target ${_target})
+  string(REPLACE :: _ _modified_target ${_modified_target})
+  list(APPEND _pc_targets ${_modified_target})
+endforeach()
+list(APPEND _pc_targets "utf8_range")
+
+set(_protobuf_PC_REQUIRES "")
+set(_sep "")
+foreach (_target IN LISTS _pc_targets)
+  string(CONCAT _protobuf_PC_REQUIRES "${_protobuf_PC_REQUIRES}" "${_sep}" "${_target}")
+  set(_sep " ")
+endforeach ()
+set(_protobuf_PC_CFLAGS)
+if (protobuf_BUILD_SHARED_LIBS)
+  set(_protobuf_PC_CFLAGS -DPROTOBUF_USE_DLLS)
+endif ()
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf.pc.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf-lite.pc.cmake
@@ -9,12 +29,11 @@ set(_protobuf_libraries libprotobuf-lite libprotobuf)
 if (protobuf_BUILD_LIBPROTOC)
     list(APPEND _protobuf_libraries libprotoc)
 endif (protobuf_BUILD_LIBPROTOC)
+if (protobuf_BUILD_LIBUPB)
+  list(APPEND _protobuf_libraries libupb)
+endif ()
 
 foreach(_library ${_protobuf_libraries})
-  set_property(TARGET ${_library}
-    PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-    $<BUILD_INTERFACE:${protobuf_SOURCE_DIR}/src>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
   if (UNIX AND NOT APPLE)
     set_property(TARGET ${_library}
       PROPERTY INSTALL_RPATH "$ORIGIN")
@@ -29,16 +48,27 @@ foreach(_library ${_protobuf_libraries})
 endforeach()
 
 if (protobuf_BUILD_PROTOC_BINARIES)
+  set(_protobuf_binaries protoc)
   install(TARGETS protoc EXPORT protobuf-targets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT protoc
     BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT protoc)
-  if (UNIX AND NOT APPLE)
-    set_property(TARGET protoc
-      PROPERTY INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
-  elseif (APPLE)
-    set_property(TARGET protoc
-      PROPERTY INSTALL_RPATH "@loader_path/../lib")
-  endif()
+  if (protobuf_BUILD_LIBUPB)
+    foreach (generator upb upbdefs upb_minitable)
+      list(APPEND _protobuf_binaries protoc-gen-${generator})
+      install(TARGETS protoc-gen-${generator} EXPORT protobuf-targets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT upb-generators
+        BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT upb-generators)
+    endforeach ()
+  endif ()
+  foreach (binary IN LISTS _protobuf_binaries)
+    if (UNIX AND NOT APPLE)
+      set_property(TARGET ${binary}
+        PROPERTY INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
+    elseif (APPLE)
+      set_property(TARGET ${binary}
+        PROPERTY INSTALL_RPATH "@loader_path/../lib")
+    endif ()
+  endforeach ()
 endif (protobuf_BUILD_PROTOC_BINARIES)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
@@ -48,12 +78,37 @@ set(protobuf_HEADERS
   ${libprotobuf_hdrs}
   ${libprotoc_hdrs}
   ${wkt_protos_files}
+  ${cpp_features_proto_proto_srcs}
   ${descriptor_proto_proto_srcs}
   ${plugin_proto_proto_srcs}
+  ${java_features_proto_proto_srcs}
 )
+if (protobuf_BUILD_LIBUPB)
+  list(APPEND protobuf_HEADERS ${libupb_hdrs})
+  # Manually install the bootstrap headers
+  install(
+    FILES
+      ${protobuf_SOURCE_DIR}/upb/reflection/cmake/google/protobuf/descriptor.upb.h
+      ${protobuf_SOURCE_DIR}/upb/reflection/cmake/google/protobuf/descriptor.upb_minitable.h
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/google/protobuf
+    COMPONENT protobuf-headers
+  )
+endif ()
 foreach(_header ${protobuf_HEADERS})
-  string(REPLACE "${protobuf_SOURCE_DIR}/src" "" _header ${_header})
-  get_filename_component(_extract_from "${protobuf_SOURCE_DIR}/src/${_header}" ABSOLUTE)
+  string(FIND ${_header} "${protobuf_SOURCE_DIR}/src" _find_src)
+  string(FIND ${_header} "${protobuf_SOURCE_DIR}" _find_nosrc)
+  if (_find_src GREATER -1)
+    set(_from_dir "${protobuf_SOURCE_DIR}/src")
+  elseif (_find_nosrc GREATER -1)
+    set(_from_dir "${protobuf_SOURCE_DIR}")
+  endif()
+  # Escape _from_dir for regex special characters in the directory name.
+  string(REGEX REPLACE "([$^.[|*+?()]|])" "\\\\\\1" _from_dir_regexp "${_from_dir}")
+  # On some platforms `_form_dir` ends up being just "protobuf", which can
+  # easily match multiple times in our paths.  We force it to only replace
+  # prefixes to avoid this case.
+  string(REGEX REPLACE "^${_from_dir_regexp}" "" _header ${_header})
+  get_filename_component(_extract_from "${_from_dir}/${_header}" ABSOLUTE)
   get_filename_component(_extract_name ${_header} NAME)
   get_filename_component(_extract_to "${CMAKE_INSTALL_INCLUDEDIR}/${_header}" DIRECTORY)
   install(FILES "${_extract_from}"
@@ -112,4 +167,11 @@ if(protobuf_INSTALL_EXAMPLES)
   install(DIRECTORY examples/
     DESTINATION "${CMAKE_INSTALL_EXAMPLEDIR}"
     COMPONENT protobuf-examples)
+endif()
+
+if (protobuf_INSTALL_TESTS)
+  install(TARGETS gmock EXPORT protobuf-targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()

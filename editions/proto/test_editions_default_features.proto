@@ -1,0 +1,30 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package protobuf_editions_test;
+
+// This file tests the default features in the absence of any dependencies.
+
+enum EditionsDefaultEnum {
+  EDITIONS_DEFAULT_ENUM_UNKNOWN = 0;
+  EDITIONS_DEFAULT_ENUM_VALUE1 = 1;
+}
+
+message EditionsDefaultMessage {
+  int32 int32_field = 1;
+  string string_field = 2;
+  EditionsDefaultEnum enum_field = 3;
+
+  repeated int32 repeated_int32_field = 4;
+
+  message SubMessage {
+    int32 nested_int32_field = 1;
+  }
+  SubMessage sub_message_field = 6;
+}

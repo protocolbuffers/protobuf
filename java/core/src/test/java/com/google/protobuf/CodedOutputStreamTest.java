@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -350,6 +327,81 @@ public class CodedOutputStreamTest {
         .isEqualTo(-75123905439571256L);
   }
 
+  @Test
+  public void computeIntSize() {
+    assertThat(CodedOutputStream.computeUInt32SizeNoTag(0)).isEqualTo(1);
+    assertThat(CodedOutputStream.computeUInt64SizeNoTag(0)).isEqualTo(1);
+    int i;
+    for (i = 0; i < 7; i++) {
+      assertThat(CodedOutputStream.computeInt32SizeNoTag(1 << i)).isEqualTo(1);
+      assertThat(CodedOutputStream.computeUInt32SizeNoTag(1 << i)).isEqualTo(1);
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(1);
+    }
+    for (; i < 14; i++) {
+      assertThat(CodedOutputStream.computeInt32SizeNoTag(1 << i)).isEqualTo(2);
+      assertThat(CodedOutputStream.computeUInt32SizeNoTag(1 << i)).isEqualTo(2);
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(2);
+    }
+    for (; i < 21; i++) {
+      assertThat(CodedOutputStream.computeInt32SizeNoTag(1 << i)).isEqualTo(3);
+      assertThat(CodedOutputStream.computeUInt32SizeNoTag(1 << i)).isEqualTo(3);
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(3);
+    }
+    for (; i < 28; i++) {
+      assertThat(CodedOutputStream.computeInt32SizeNoTag(1 << i)).isEqualTo(4);
+      assertThat(CodedOutputStream.computeUInt32SizeNoTag(1 << i)).isEqualTo(4);
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(4);
+    }
+    for (; i < 31; i++) {
+      assertThat(CodedOutputStream.computeInt32SizeNoTag(1 << i)).isEqualTo(5);
+      assertThat(CodedOutputStream.computeUInt32SizeNoTag(1 << i)).isEqualTo(5);
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(5);
+    }
+    for (; i < 32; i++) {
+      assertThat(CodedOutputStream.computeInt32SizeNoTag(1 << i)).isEqualTo(10);
+      assertThat(CodedOutputStream.computeUInt32SizeNoTag(1 << i)).isEqualTo(5);
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(5);
+    }
+    for (; i < 35; i++) {
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(5);
+    }
+    for (; i < 42; i++) {
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(6);
+    }
+    for (; i < 49; i++) {
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(7);
+    }
+    for (; i < 56; i++) {
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(8);
+    }
+    for (; i < 63; i++) {
+      assertThat(CodedOutputStream.computeUInt64SizeNoTag(1L << i)).isEqualTo(9);
+    }
+  }
+
+  @Test
+  public void computeTagSize() {
+    assertThat(CodedOutputStream.computeTagSize(0)).isEqualTo(1);
+    int i;
+    for (i = 0; i < 4; i++) {
+      assertThat(CodedOutputStream.computeTagSize(1 << i)).isEqualTo(1);
+    }
+    for (; i < 11; i++) {
+      assertThat(CodedOutputStream.computeTagSize(1 << i)).isEqualTo(2);
+    }
+    for (; i < 18; i++) {
+      assertThat(CodedOutputStream.computeTagSize(1 << i)).isEqualTo(3);
+    }
+    for (; i < 25; i++) {
+      assertThat(CodedOutputStream.computeTagSize(1 << i)).isEqualTo(4);
+    }
+    for (; i < 29; i++) {
+      assertThat(CodedOutputStream.computeTagSize(1 << i)).isEqualTo(5);
+    }
+    // Invalid tags
+    assertThat(CodedOutputStream.computeTagSize((1 << 30) + 1)).isEqualTo(1);
+  }
+
   /** Tests writing a whole message with every field type. */
   @Test
   public void testWriteWholeMessage() throws Exception {
@@ -439,7 +491,7 @@ public class CodedOutputStreamTest {
     assertThat(coder.stream().getTotalBytesWritten()).isEqualTo((value.length * 1024) + stringSize);
   }
 
-  // TODO(dweis): Write a comprehensive test suite for CodedOutputStream that covers more than just
+  // TODO: Write a comprehensive test suite for CodedOutputStream that covers more than just
   //    this case.
   @Test
   public void testWriteStringNoTag_fastpath() throws Exception {
@@ -573,7 +625,7 @@ public class CodedOutputStreamTest {
     CodedOutputStream outputWithByteBuffer =
         CodedOutputStream.newInstance(ByteBuffer.allocate(10000));
     for (String s : invalidStrings) {
-      // TODO(dweis): These should all fail; instead they are corrupting data.
+      // TODO: These should all fail; instead they are corrupting data.
       CodedOutputStream.computeStringSizeNoTag(s);
       outputWithStream.writeStringNoTag(s);
       outputWithArray.writeStringNoTag(s);
@@ -581,7 +633,7 @@ public class CodedOutputStreamTest {
     }
   }
 
-  // TODO(nathanmittler): This test can be deleted once we properly throw IOException while
+  // TODO: This test can be deleted once we properly throw IOException while
   // encoding invalid UTF-8 strings.
   @Test
   public void testSerializeInvalidUtf8FollowedByOutOfSpace() throws Exception {

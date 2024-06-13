@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -34,16 +11,22 @@
 
 #include "google/protobuf/extension_set.h"
 
+#include <algorithm>
+#include <atomic>
+#include <cstddef>
+#include <cstdint>
+#include <string>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
-#include "google/protobuf/stubs/common.h"
-#include "google/protobuf/arena.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/hash/hash.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/extension_set_inl.h"
 #include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
@@ -128,13 +111,11 @@ bool GeneratedExtensionFinder::Find(int number, ExtensionInfo* output) {
 
 void ExtensionSet::RegisterExtension(const MessageLite* extendee, int number,
                                      FieldType type, bool is_repeated,
-                                     bool is_packed,
-                                     LazyEagerVerifyFnType verify_func) {
+                                     bool is_packed) {
   ABSL_CHECK_NE(type, WireFormatLite::TYPE_ENUM);
   ABSL_CHECK_NE(type, WireFormatLite::TYPE_MESSAGE);
   ABSL_CHECK_NE(type, WireFormatLite::TYPE_GROUP);
-  ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
-                     verify_func);
+  ExtensionInfo info(extendee, number, type, is_repeated, is_packed);
   Register(info);
 }
 
@@ -156,7 +137,7 @@ void ExtensionSet::RegisterEnumExtension(const MessageLite* extendee,
                                          bool is_repeated, bool is_packed,
                                          EnumValidityFunc* is_valid) {
   ABSL_CHECK_EQ(type, WireFormatLite::TYPE_ENUM);
-  ExtensionInfo info(extendee, number, type, is_repeated, is_packed, nullptr);
+  ExtensionInfo info(extendee, number, type, is_repeated, is_packed);
   info.enum_validity_check.func = CallNoArgValidityFunc;
   // See comment in CallNoArgValidityFunc() about why we use a c-style cast.
   info.enum_validity_check.arg = (void*)is_valid;
@@ -167,25 +148,24 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
                                             int number, FieldType type,
                                             bool is_repeated, bool is_packed,
                                             const MessageLite* prototype,
-                                            LazyEagerVerifyFnType verify_func) {
+                                            LazyEagerVerifyFnType verify_func,
+                                            LazyAnnotation is_lazy) {
   ABSL_CHECK(type == WireFormatLite::TYPE_MESSAGE ||
              type == WireFormatLite::TYPE_GROUP);
   ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
-                     verify_func);
-  info.message_info = {prototype};
+                     verify_func, is_lazy);
+  info.message_info = {prototype,
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+                       prototype->GetTcParseTable()
+#else
+                       nullptr
+#endif
+  };
   Register(info);
 }
 
 // ===================================================================
 // Constructors and basic methods.
-
-ExtensionSet::ExtensionSet(Arena* arena)
-    : arena_(arena),
-      flat_capacity_(0),
-      flat_size_(0),
-      map_{flat_capacity_ == 0
-               ? nullptr
-               : Arena::CreateArray<KeyValue>(arena_, flat_capacity_)} {}
 
 ExtensionSet::~ExtensionSet() {
   // Deletes all allocated extensions.
@@ -357,7 +337,7 @@ enum { REPEATED_FIELD, OPTIONAL_FIELD };
       extension->is_repeated = true;                                          \
       extension->is_packed = packed;                                          \
       extension->repeated_##LOWERCASE##_value =                               \
-          Arena::CreateMessage<RepeatedField<LOWERCASE>>(arena_);             \
+          Arena::Create<RepeatedField<LOWERCASE>>(arena_);                    \
     } else {                                                                  \
       ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, UPPERCASE);                \
       ABSL_DCHECK_EQ(extension->is_packed, packed);                           \
@@ -402,43 +382,43 @@ void* ExtensionSet::MutableRawRepeatedField(int number, FieldType field_type,
         static_cast<WireFormatLite::FieldType>(field_type))) {
       case WireFormatLite::CPPTYPE_INT32:
         extension->repeated_int32_t_value =
-            Arena::CreateMessage<RepeatedField<int32_t>>(arena_);
+            Arena::Create<RepeatedField<int32_t>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_INT64:
         extension->repeated_int64_t_value =
-            Arena::CreateMessage<RepeatedField<int64_t>>(arena_);
+            Arena::Create<RepeatedField<int64_t>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_UINT32:
         extension->repeated_uint32_t_value =
-            Arena::CreateMessage<RepeatedField<uint32_t>>(arena_);
+            Arena::Create<RepeatedField<uint32_t>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_UINT64:
         extension->repeated_uint64_t_value =
-            Arena::CreateMessage<RepeatedField<uint64_t>>(arena_);
+            Arena::Create<RepeatedField<uint64_t>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_DOUBLE:
         extension->repeated_double_value =
-            Arena::CreateMessage<RepeatedField<double>>(arena_);
+            Arena::Create<RepeatedField<double>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_FLOAT:
         extension->repeated_float_value =
-            Arena::CreateMessage<RepeatedField<float>>(arena_);
+            Arena::Create<RepeatedField<float>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_BOOL:
         extension->repeated_bool_value =
-            Arena::CreateMessage<RepeatedField<bool>>(arena_);
+            Arena::Create<RepeatedField<bool>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_ENUM:
         extension->repeated_enum_value =
-            Arena::CreateMessage<RepeatedField<int>>(arena_);
+            Arena::Create<RepeatedField<int>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_STRING:
         extension->repeated_string_value =
-            Arena::CreateMessage<RepeatedPtrField<std::string>>(arena_);
+            Arena::Create<RepeatedPtrField<std::string>>(arena_);
         break;
       case WireFormatLite::CPPTYPE_MESSAGE:
         extension->repeated_message_value =
-            Arena::CreateMessage<RepeatedPtrField<MessageLite>>(arena_);
+            Arena::Create<RepeatedPtrField<MessageLite>>(arena_);
         break;
     }
   }
@@ -527,8 +507,7 @@ void ExtensionSet::AddEnum(int number, FieldType type, bool packed, int value,
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_ENUM);
     extension->is_repeated = true;
     extension->is_packed = packed;
-    extension->repeated_enum_value =
-        Arena::CreateMessage<RepeatedField<int>>(arena_);
+    extension->repeated_enum_value = Arena::Create<RepeatedField<int>>(arena_);
   } else {
     ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, ENUM);
     ABSL_DCHECK_EQ(extension->is_packed, packed);
@@ -590,7 +569,7 @@ std::string* ExtensionSet::AddString(int number, FieldType type,
     extension->is_repeated = true;
     extension->is_packed = false;
     extension->repeated_string_value =
-        Arena::CreateMessage<RepeatedPtrField<std::string>>(arena_);
+        Arena::Create<RepeatedPtrField<std::string>>(arena_);
   } else {
     ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, STRING);
   }
@@ -656,39 +635,40 @@ void ExtensionSet::SetAllocatedMessage(int number, FieldType type,
     ClearExtension(number);
     return;
   }
-  ABSL_DCHECK(message->GetOwningArena() == nullptr ||
-              message->GetOwningArena() == arena_);
-  Arena* message_arena = message->GetOwningArena();
+  Arena* const arena = arena_;
+  Arena* const message_arena = message->GetArena();
+  ABSL_DCHECK(message_arena == nullptr || message_arena == arena);
+
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
     extension->type = type;
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
     extension->is_repeated = false;
     extension->is_lazy = false;
-    if (message_arena == arena_) {
+    if (message_arena == arena) {
       extension->message_value = message;
     } else if (message_arena == nullptr) {
       extension->message_value = message;
-      arena_->Own(message);  // not nullptr because not equal to message_arena
+      arena->Own(message);  // not nullptr because not equal to message_arena
     } else {
-      extension->message_value = message->New(arena_);
+      extension->message_value = message->New(arena);
       extension->message_value->CheckTypeAndMergeFrom(*message);
     }
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     if (extension->is_lazy) {
-      extension->lazymessage_value->SetAllocatedMessage(message, arena_);
+      extension->lazymessage_value->SetAllocatedMessage(message, arena);
     } else {
-      if (arena_ == nullptr) {
+      if (arena == nullptr) {
         delete extension->message_value;
       }
-      if (message_arena == arena_) {
+      if (message_arena == arena) {
         extension->message_value = message;
       } else if (message_arena == nullptr) {
         extension->message_value = message;
-        arena_->Own(message);  // not nullptr because not equal to message_arena
+        arena->Own(message);  // not nullptr because not equal to message_arena
       } else {
-        extension->message_value = message->New(arena_);
+        extension->message_value = message->New(arena);
         extension->message_value->CheckTypeAndMergeFrom(*message);
       }
     }
@@ -735,8 +715,9 @@ MessageLite* ExtensionSet::ReleaseMessage(int number,
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     MessageLite* ret = nullptr;
     if (extension->is_lazy) {
-      ret = extension->lazymessage_value->ReleaseMessage(prototype, arena_);
-      if (arena_ == nullptr) {
+      Arena* const arena = arena_;
+      ret = extension->lazymessage_value->ReleaseMessage(prototype, arena);
+      if (arena == nullptr) {
         delete extension->lazymessage_value;
       }
     } else {
@@ -764,9 +745,10 @@ MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     MessageLite* ret = nullptr;
     if (extension->is_lazy) {
+      Arena* const arena = arena_;
       ret = extension->lazymessage_value->UnsafeArenaReleaseMessage(prototype,
-                                                                    arena_);
-      if (arena_ == nullptr) {
+                                                                    arena);
+      if (arena == nullptr) {
         delete extension->lazymessage_value;
       }
     } else {
@@ -805,21 +787,14 @@ MessageLite* ExtensionSet::AddMessage(int number, FieldType type,
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
     extension->is_repeated = true;
     extension->repeated_message_value =
-        Arena::CreateMessage<RepeatedPtrField<MessageLite>>(arena_);
+        Arena::Create<RepeatedPtrField<MessageLite>>(arena_);
   } else {
     ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, MESSAGE);
   }
 
-  // RepeatedPtrField<MessageLite> does not know how to Add() since it cannot
-  // allocate an abstract object, so we have to be tricky.
-  MessageLite* result = reinterpret_cast<internal::RepeatedPtrFieldBase*>(
-                            extension->repeated_message_value)
-                            ->AddFromCleared<GenericTypeHandler<MessageLite>>();
-  if (result == nullptr) {
-    result = prototype.New(arena_);
-    extension->repeated_message_value->AddAllocated(result);
-  }
-  return result;
+  return reinterpret_cast<internal::RepeatedPtrFieldBase*>(
+             extension->repeated_message_value)
+      ->AddMessage(&prototype);
 }
 
 // Defined in extension_set_heavy.cc.
@@ -1004,7 +979,7 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
   case WireFormatLite::CPPTYPE_##UPPERCASE:              \
     if (is_new) {                                        \
       extension->repeated_##LOWERCASE##_value =          \
-          Arena::CreateMessage<REPEATED_TYPE>(arena_);   \
+          Arena::Create<REPEATED_TYPE>(arena_);          \
     }                                                    \
     extension->repeated_##LOWERCASE##_value->MergeFrom(  \
         *other_extension.repeated_##LOWERCASE##_value);  \
@@ -1019,30 +994,8 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
       HANDLE_TYPE(BOOL, bool, RepeatedField<bool>);
       HANDLE_TYPE(ENUM, enum, RepeatedField<int>);
       HANDLE_TYPE(STRING, string, RepeatedPtrField<std::string>);
+      HANDLE_TYPE(MESSAGE, message, RepeatedPtrField<MessageLite>);
 #undef HANDLE_TYPE
-
-      case WireFormatLite::CPPTYPE_MESSAGE:
-        if (is_new) {
-          extension->repeated_message_value =
-              Arena::CreateMessage<RepeatedPtrField<MessageLite>>(arena_);
-        }
-        // We can't call RepeatedPtrField<MessageLite>::MergeFrom() because
-        // it would attempt to allocate new objects.
-        RepeatedPtrField<MessageLite>* other_repeated_message =
-            other_extension.repeated_message_value;
-        for (int i = 0; i < other_repeated_message->size(); i++) {
-          const MessageLite& other_message = other_repeated_message->Get(i);
-          MessageLite* target =
-              reinterpret_cast<internal::RepeatedPtrFieldBase*>(
-                  extension->repeated_message_value)
-                  ->AddFromCleared<GenericTypeHandler<MessageLite>>();
-          if (target == nullptr) {
-            target = other_message.New(arena_);
-            extension->repeated_message_value->AddAllocated(target);
-          }
-          target->CheckTypeAndMergeFrom(other_message);
-        }
-        break;
     }
   } else {
     if (!other_extension.is_cleared) {
@@ -1068,6 +1021,7 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
                     other_extension.descriptor);
           break;
         case WireFormatLite::CPPTYPE_MESSAGE: {
+          Arena* const arena = arena_;
           Extension* extension;
           bool is_new =
               MaybeNewExtension(number, other_extension.descriptor, &extension);
@@ -1078,14 +1032,14 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
             if (other_extension.is_lazy) {
               extension->is_lazy = true;
               extension->lazymessage_value =
-                  other_extension.lazymessage_value->New(arena_);
+                  other_extension.lazymessage_value->New(arena);
               extension->lazymessage_value->MergeFrom(
                   GetPrototypeForLazyMessage(extendee, number),
-                  *other_extension.lazymessage_value, arena_);
+                  *other_extension.lazymessage_value, arena, other_arena);
             } else {
               extension->is_lazy = false;
               extension->message_value =
-                  other_extension.message_value->New(arena_);
+                  other_extension.message_value->New(arena);
               extension->message_value->CheckTypeAndMergeFrom(
                   *other_extension.message_value);
             }
@@ -1097,7 +1051,7 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
               if (extension->is_lazy) {
                 extension->lazymessage_value->MergeFrom(
                     GetPrototypeForLazyMessage(extendee, number),
-                    *other_extension.lazymessage_value, arena_);
+                    *other_extension.lazymessage_value, arena, other_arena);
               } else {
                 extension->message_value->CheckTypeAndMergeFrom(
                     other_extension.lazymessage_value->GetMessage(
@@ -1106,7 +1060,7 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
             } else {
               if (extension->is_lazy) {
                 extension->lazymessage_value
-                    ->MutableMessage(*other_extension.message_value, arena_)
+                    ->MutableMessage(*other_extension.message_value, arena)
                     ->CheckTypeAndMergeFrom(*other_extension.message_value);
               } else {
                 extension->message_value->CheckTypeAndMergeFrom(
@@ -1124,13 +1078,13 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
 
 void ExtensionSet::Swap(const MessageLite* extendee, ExtensionSet* other) {
 #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  if (GetArena() != nullptr && GetArena() == other->GetArena()) {
+  if (arena_ != nullptr && arena_ == other->arena_) {
 #else   // PROTOBUF_FORCE_COPY_IN_SWAP
-  if (GetArena() == other->GetArena()) {
+  if (arena_ == other->arena_) {
 #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
     InternalSwap(other);
   } else {
-    // TODO(cfallin, rohananil): We maybe able to optimize a case where we are
+    // TODO: We maybe able to optimize a case where we are
     // swapping from heap to arena-allocated extension set, by just Own()'ing
     // the extensions.
     ExtensionSet extension_set;
@@ -1154,7 +1108,9 @@ void ExtensionSet::SwapExtension(const MessageLite* extendee,
                                  ExtensionSet* other, int number) {
   if (this == other) return;
 
-  if (GetArena() == other->GetArena()) {
+  Arena* const arena = arena_;
+  Arena* const other_arena = other->arena_;
+  if (arena == other_arena) {
     UnsafeShallowSwapExtension(other, number);
     return;
   }
@@ -1165,29 +1121,26 @@ void ExtensionSet::SwapExtension(const MessageLite* extendee,
   if (this_ext == other_ext) return;
 
   if (this_ext != nullptr && other_ext != nullptr) {
-    // TODO(cfallin, rohananil): We could further optimize these cases,
+    // TODO: We could further optimize these cases,
     // especially avoid creation of ExtensionSet, and move MergeFrom logic
     // into Extensions itself (which takes arena as an argument).
     // We do it this way to reuse the copy-across-arenas logic already
     // implemented in ExtensionSet's MergeFrom.
     ExtensionSet temp;
-    temp.InternalExtensionMergeFrom(extendee, number, *other_ext,
-                                    other->GetArena());
+    temp.InternalExtensionMergeFrom(extendee, number, *other_ext, other_arena);
     Extension* temp_ext = temp.FindOrNull(number);
 
     other_ext->Clear();
-    other->InternalExtensionMergeFrom(extendee, number, *this_ext,
-                                      this->GetArena());
+    other->InternalExtensionMergeFrom(extendee, number, *this_ext, arena);
     this_ext->Clear();
     InternalExtensionMergeFrom(extendee, number, *temp_ext, temp.GetArena());
   } else if (this_ext == nullptr) {
-    InternalExtensionMergeFrom(extendee, number, *other_ext, other->GetArena());
-    if (other->GetArena() == nullptr) other_ext->Free();
+    InternalExtensionMergeFrom(extendee, number, *other_ext, other_arena);
+    if (other_arena == nullptr) other_ext->Free();
     other->Erase(number);
   } else {
-    other->InternalExtensionMergeFrom(extendee, number, *this_ext,
-                                      this->GetArena());
-    if (GetArena() == nullptr) this_ext->Free();
+    other->InternalExtensionMergeFrom(extendee, number, *this_ext, arena);
+    if (arena == nullptr) this_ext->Free();
     Erase(number);
   }
 }
@@ -1200,7 +1153,7 @@ void ExtensionSet::UnsafeShallowSwapExtension(ExtensionSet* other, int number) {
 
   if (this_ext == other_ext) return;
 
-  ABSL_DCHECK_EQ(GetArena(), other->GetArena());
+  ABSL_DCHECK_EQ(arena_, other->arena_);
 
   if (this_ext != nullptr && other_ext != nullptr) {
     std::swap(*this_ext, *other_ext);
@@ -1216,16 +1169,17 @@ void ExtensionSet::UnsafeShallowSwapExtension(ExtensionSet* other, int number) {
 bool ExtensionSet::IsInitialized(const MessageLite* extendee) const {
   // Extensions are never required.  However, we need to check that all
   // embedded messages are initialized.
+  Arena* const arena = arena_;
   if (PROTOBUF_PREDICT_FALSE(is_large())) {
     for (const auto& kv : *map_.large) {
-      if (!kv.second.IsInitialized(this, extendee, kv.first, arena_)) {
+      if (!kv.second.IsInitialized(this, extendee, kv.first, arena)) {
         return false;
       }
     }
     return true;
   }
   for (const KeyValue* it = flat_begin(); it != flat_end(); ++it) {
-    if (!it->second.IsInitialized(this, extendee, it->first, arena_)) {
+    if (!it->second.IsInitialized(this, extendee, it->first, arena)) {
       return false;
     }
   }
@@ -1472,12 +1426,9 @@ size_t ExtensionSet::Extension::ByteSize(int number) const {
       HANDLE_TYPE(GROUP, Group, *message_value);
 #undef HANDLE_TYPE
       case WireFormatLite::TYPE_MESSAGE: {
-        if (is_lazy) {
-          size_t size = lazymessage_value->ByteSizeLong();
-          result += io::CodedOutputStream::VarintSize32(size) + size;
-        } else {
-          result += WireFormatLite::MessageSize(*message_value);
-        }
+        result += WireFormatLite::LengthDelimitedSize(
+            is_lazy ? lazymessage_value->ByteSizeLong()
+                    : message_value->ByteSizeLong());
         break;
       }
 
@@ -1666,8 +1617,9 @@ void ExtensionSet::GrowCapacity(size_t minimum_new_capacity) {
   const KeyValue* begin = flat_begin();
   const KeyValue* end = flat_end();
   AllocatedData new_map;
+  Arena* const arena = arena_;
   if (new_flat_capacity > kMaximumFlatCapacity) {
-    new_map.large = Arena::Create<LargeMap>(arena_);
+    new_map.large = Arena::Create<LargeMap>(arena);
     LargeMap::iterator hint = new_map.large->begin();
     for (const KeyValue* it = begin; it != end; ++it) {
       hint = new_map.large->insert(hint, {it->first, it->second});
@@ -1675,11 +1627,11 @@ void ExtensionSet::GrowCapacity(size_t minimum_new_capacity) {
     flat_size_ = static_cast<uint16_t>(-1);
     ABSL_DCHECK(is_large());
   } else {
-    new_map.flat = Arena::CreateArray<KeyValue>(arena_, new_flat_capacity);
+    new_map.flat = Arena::CreateArray<KeyValue>(arena, new_flat_capacity);
     std::copy(begin, end, new_map.flat);
   }
 
-  if (arena_ == nullptr) {
+  if (arena == nullptr) {
     DeleteFlatMap(begin, flat_capacity_);
   }
   flat_capacity_ = new_flat_capacity;
@@ -1938,15 +1890,9 @@ size_t ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
   our_size += io::CodedOutputStream::VarintSize32(number);
 
   // message
-  size_t message_size = 0;
-  if (is_lazy) {
-    message_size = lazymessage_value->ByteSizeLong();
-  } else {
-    message_size = message_value->ByteSizeLong();
-  }
-
-  our_size += io::CodedOutputStream::VarintSize32(message_size);
-  our_size += message_size;
+  our_size += WireFormatLite::LengthDelimitedSize(
+      is_lazy ? lazymessage_value->ByteSizeLong()
+              : message_value->ByteSizeLong());
 
   return our_size;
 }
@@ -1968,6 +1914,8 @@ LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
   return nullptr;
 }
 
+std::atomic<ExtensionSet::LazyMessageExtension* (*)(Arena* arena)>
+    ExtensionSet::maybe_create_lazy_extension_;
 
 }  // namespace internal
 }  // namespace protobuf

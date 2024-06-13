@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // This file contains declarations needed in generated headers for messages
 // that use tail-call table parsing. Everything in this file is for internal
@@ -41,6 +18,7 @@
 #include <cstdint>
 #include <type_traits>
 
+#include "absl/types/span.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 
@@ -54,6 +32,7 @@ namespace internal {
 // Additional information about this field:
 struct TcFieldData {
   constexpr TcFieldData() : data(0) {}
+  explicit constexpr TcFieldData(uint64_t data) : data(data) {}
 
   // Fast table entry constructor:
   constexpr TcFieldData(uint16_t coded_tag, uint8_t hasbit_idx, uint8_t aux_idx,
@@ -62,6 +41,24 @@ struct TcFieldData {
              uint64_t{aux_idx} << 24 |     //
              uint64_t{hasbit_idx} << 16 |  //
              uint64_t{coded_tag}) {}
+
+  // Constructor to create an explicit 'uninitialized' instance.
+  // This constructor can be used to pass an uninitialized `data` value to a
+  // table driven parser function that does not use `data`. The purpose of this
+  // is that it allows the compiler to reallocate and re-purpose the register
+  // that is currently holding its value for other data. This reduces register
+  // allocations inside the highly optimized varint parsing functions.
+  //
+  // Applications not using `data` use the `PROTOBUF_TC_PARAM_NO_DATA_DECL`
+  // macro to declare the standard input arguments with no name for the `data`
+  // argument. Callers then use the `PROTOBUF_TC_PARAM_NO_DATA_PASS` macro.
+  //
+  // Example:
+  //   if (ptr == nullptr) {
+  //      PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  //   }
+  struct DefaultInit {};
+  TcFieldData(DefaultInit) {}  // NOLINT(google-explicit-constructor)
 
   // Fields used in fast table parsing:
   //
@@ -122,7 +119,9 @@ struct TcFieldData {
   uint32_t tag() const { return static_cast<uint32_t>(data); }
   uint32_t entry_offset() const { return static_cast<uint32_t>(data >> 32); }
 
-  uint64_t data;
+  union {
+    uint64_t data;
+  };
 };
 
 struct TcParseTableBase;
@@ -143,16 +142,140 @@ struct Offset {
 #endif
 
 struct FieldAuxDefaultMessage {};
+struct FieldAuxEnumData {};
+
+// Small type card used by mini parse to handle map entries.
+// Map key/values are very limited, so we can encode the whole thing in a single
+// byte.
+class MapTypeCard {
+ public:
+  enum CppType { kBool, k32, k64, kString, kMessage };
+  MapTypeCard() = default;
+  constexpr MapTypeCard(WireFormatLite::WireType wiretype, CppType cpp_type,
+                        bool is_zigzag_utf8, bool is_signed)
+      : data_(static_cast<uint8_t>((static_cast<uint8_t>(wiretype) << 0) |
+                                   (static_cast<uint8_t>(cpp_type) << 3) |
+                                   (static_cast<uint8_t>(is_zigzag_utf8) << 6) |
+                                   (static_cast<uint8_t>(is_signed) << 7))) {}
+
+  WireFormatLite::WireType wiretype() const {
+    return static_cast<WireFormatLite::WireType>((data_ >> 0) & 0x7);
+  }
+
+  CppType cpp_type() const { return static_cast<CppType>((data_ >> 3) & 0x7); }
+
+  bool is_signed() const {
+    ABSL_DCHECK(cpp_type() == CppType::k32 || cpp_type() == CppType::k64);
+    return static_cast<bool>(data_ >> 7);
+  }
+
+  bool is_zigzag() const {
+    ABSL_DCHECK(wiretype() == WireFormatLite::WIRETYPE_VARINT);
+    ABSL_DCHECK(cpp_type() == CppType::k32 || cpp_type() == CppType::k64);
+    return is_zigzag_utf8();
+  }
+  bool is_utf8() const {
+    ABSL_DCHECK(wiretype() == WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+    ABSL_DCHECK(cpp_type() == CppType::kString);
+    return is_zigzag_utf8();
+  }
+
+ private:
+  bool is_zigzag_utf8() const { return static_cast<bool>((data_ >> 6) & 0x1); }
+  uint8_t data_;
+};
+static_assert(sizeof(MapTypeCard) == sizeof(uint8_t), "");
+
+// Make the map entry type card for a specified field type.
+constexpr MapTypeCard MakeMapTypeCard(WireFormatLite::FieldType type) {
+  switch (type) {
+    case WireFormatLite::TYPE_FLOAT:
+      return {WireFormatLite::WIRETYPE_FIXED32, MapTypeCard::k32, false, true};
+    case WireFormatLite::TYPE_FIXED32:
+      return {WireFormatLite::WIRETYPE_FIXED32, MapTypeCard::k32, false, false};
+    case WireFormatLite::TYPE_SFIXED32:
+      return {WireFormatLite::WIRETYPE_FIXED32, MapTypeCard::k32, false, true};
+
+    case WireFormatLite::TYPE_DOUBLE:
+      return {WireFormatLite::WIRETYPE_FIXED64, MapTypeCard::k64, false, true};
+    case WireFormatLite::TYPE_FIXED64:
+      return {WireFormatLite::WIRETYPE_FIXED64, MapTypeCard::k64, false, false};
+    case WireFormatLite::TYPE_SFIXED64:
+      return {WireFormatLite::WIRETYPE_FIXED64, MapTypeCard::k64, false, true};
+
+    case WireFormatLite::TYPE_BOOL:
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::kBool, false,
+              false};
+
+    case WireFormatLite::TYPE_ENUM:
+      // Enum validation is handled via `value_is_validated_enum` below.
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k32, false, true};
+    case WireFormatLite::TYPE_INT32:
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k32, false, true};
+    case WireFormatLite::TYPE_UINT32:
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k32, false, false};
+
+    case WireFormatLite::TYPE_INT64:
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k64, false, true};
+    case WireFormatLite::TYPE_UINT64:
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k64, false, false};
+
+    case WireFormatLite::TYPE_SINT32:
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k32, true, true};
+    case WireFormatLite::TYPE_SINT64:
+      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k64, true, true};
+
+    case WireFormatLite::TYPE_STRING:
+      return {WireFormatLite::WIRETYPE_LENGTH_DELIMITED, MapTypeCard::kString,
+              true, false};
+    case WireFormatLite::TYPE_BYTES:
+      return {WireFormatLite::WIRETYPE_LENGTH_DELIMITED, MapTypeCard::kString,
+              false, false};
+
+    case WireFormatLite::TYPE_MESSAGE:
+      return {WireFormatLite::WIRETYPE_LENGTH_DELIMITED, MapTypeCard::kMessage,
+              false, false};
+
+    case WireFormatLite::TYPE_GROUP:
+    default:
+      Unreachable();
+  }
+}
+
+enum class MapNodeSizeInfoT : uint32_t;
+
+// Aux entry for map fields.
+struct MapAuxInfo {
+  MapTypeCard key_type_card;
+  MapTypeCard value_type_card;
+  // When off, we fall back to table->fallback to handle the parse. An example
+  // of this is for DynamicMessage.
+  uint8_t is_supported : 1;
+  // Determines if we are using LITE or the full runtime. When using the full
+  // runtime we have to synchronize with reflection before accessing the map.
+  uint8_t use_lite : 1;
+  // If true UTF8 errors cause the parsing to fail.
+  uint8_t fail_on_utf8_failure : 1;
+  // If true UTF8 errors are logged, but they are accepted.
+  uint8_t log_debug_utf8_failure : 1;
+  // If true the next aux contains the enum validator.
+  uint8_t value_is_validated_enum : 1;
+  // Size information derived from the actual node type.
+  MapNodeSizeInfoT node_size_info;
+};
+static_assert(sizeof(MapAuxInfo) <= 8, "");
 
 // Base class for message-level table with info for the tail-call parser.
 struct alignas(uint64_t) TcParseTableBase {
   // Common attributes for message layout:
   uint16_t has_bits_offset;
   uint16_t extension_offset;
-  uint32_t extension_range_low;
-  uint32_t extension_range_high;
   uint32_t max_field_number;
   uint8_t fast_idx_mask;
+  // Testing one bit is cheaper than testing whether post_loop_handler is null,
+  // and we expect it to be null most of the time so no reason to load the
+  // pointer.
+  uint8_t has_post_loop_handler : 1;
   uint16_t lookup_table_offset;
   uint32_t skipmap32;
   uint32_t field_entries_offset;
@@ -162,29 +285,43 @@ struct alignas(uint64_t) TcParseTableBase {
   uint32_t aux_offset;
 
   const MessageLite* default_instance;
+  using PostLoopHandler = const char* (*)(MessageLite* msg, const char* ptr,
+                                          ParseContext* ctx);
+  PostLoopHandler post_loop_handler;
 
   // Handler for fields which are not handled by table dispatch.
   TailCallParseFunc fallback;
+
+  // A sub message's table to be prefetched.
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+  const TcParseTableBase* to_prefetch;
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
 
   // This constructor exactly follows the field layout, so it's technically
   // not necessary.  However, it makes it much much easier to add or re-arrange
   // fields, because it can be overloaded with an additional constructor,
   // temporarily allowing both old and new protocol buffer headers to be
   // compiled.
-  constexpr TcParseTableBase(
-      uint16_t has_bits_offset, uint16_t extension_offset,
-      uint32_t extension_range_low, uint32_t extension_range_high,
-      uint32_t max_field_number, uint8_t fast_idx_mask,
-      uint16_t lookup_table_offset, uint32_t skipmap32,
-      uint32_t field_entries_offset, uint16_t num_field_entries,
-      uint16_t num_aux_entries, uint32_t aux_offset,
-      const MessageLite* default_instance, TailCallParseFunc fallback)
+  constexpr TcParseTableBase(uint16_t has_bits_offset,
+                             uint16_t extension_offset,
+                             uint32_t max_field_number, uint8_t fast_idx_mask,
+                             uint16_t lookup_table_offset, uint32_t skipmap32,
+                             uint32_t field_entries_offset,
+                             uint16_t num_field_entries,
+                             uint16_t num_aux_entries, uint32_t aux_offset,
+                             const MessageLite* default_instance,
+                             PostLoopHandler post_loop_handler,
+                             TailCallParseFunc fallback
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+                             ,
+                             const TcParseTableBase* to_prefetch
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+                             )
       : has_bits_offset(has_bits_offset),
         extension_offset(extension_offset),
-        extension_range_low(extension_range_low),
-        extension_range_high(extension_range_high),
         max_field_number(max_field_number),
         fast_idx_mask(fast_idx_mask),
+        has_post_loop_handler(post_loop_handler != nullptr),
         lookup_table_offset(lookup_table_offset),
         skipmap32(skipmap32),
         field_entries_offset(field_entries_offset),
@@ -192,7 +329,14 @@ struct alignas(uint64_t) TcParseTableBase {
         num_aux_entries(num_aux_entries),
         aux_offset(aux_offset),
         default_instance(default_instance),
-        fallback(fallback) {}
+        post_loop_handler(post_loop_handler),
+        fallback(fallback)
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+        ,
+        to_prefetch(to_prefetch)
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+  {
+  }
 
   // Table entry for fast-path tailcall dispatch handling.
   struct FastFieldEntry {
@@ -251,12 +395,17 @@ struct alignas(uint64_t) TcParseTableBase {
     int32_t has_idx;     // has-bit index, relative to the message object
     uint16_t aux_idx;    // index for `field_aux`.
     uint16_t type_card;  // `FieldType` and `Cardinality` (see _impl.h)
+
+    static constexpr uint16_t kNoAuxIdx = 0xFFFF;
   };
 
   // Returns a begin iterator (pointer) to the start of the field entries array.
   const FieldEntry* field_entries_begin() const {
     return reinterpret_cast<const FieldEntry*>(
         reinterpret_cast<uintptr_t>(this) + field_entries_offset);
+  }
+  absl::Span<const FieldEntry> field_entries() const {
+    return {field_entries_begin(), num_field_entries};
   }
   FieldEntry* field_entries_begin() {
     return reinterpret_cast<FieldEntry*>(reinterpret_cast<uintptr_t>(this) +
@@ -266,8 +415,8 @@ struct alignas(uint64_t) TcParseTableBase {
   // Auxiliary entries for field types that need extra information.
   union FieldAux {
     constexpr FieldAux() : message_default_p(nullptr) {}
-    constexpr FieldAux(bool (*enum_validator)(int))
-        : enum_validator(enum_validator) {}
+    constexpr FieldAux(FieldAuxEnumData, const uint32_t* enum_data)
+        : enum_data(enum_data) {}
     constexpr FieldAux(field_layout::Offset off) : offset(off.off) {}
     constexpr FieldAux(int16_t range_start, uint16_t range_length)
         : enum_range{range_start, range_length} {}
@@ -275,14 +424,22 @@ struct alignas(uint64_t) TcParseTableBase {
     constexpr FieldAux(FieldAuxDefaultMessage, const void* msg)
         : message_default_p(msg) {}
     constexpr FieldAux(const TcParseTableBase* table) : table(table) {}
-    bool (*enum_validator)(int);
+    constexpr FieldAux(MapAuxInfo map_info) : map_info(map_info) {}
+    constexpr FieldAux(void (*create_in_arena)(Arena*, void*))
+        : create_in_arena(create_in_arena) {}
+    constexpr FieldAux(LazyEagerVerifyFnType verify_func)
+        : verify_func(verify_func) {}
     struct {
       int16_t start;    // minimum enum number (if it fits)
       uint16_t length;  // length of range (i.e., max = start + length - 1)
     } enum_range;
     uint32_t offset;
     const void* message_default_p;
+    const uint32_t* enum_data;
     const TcParseTableBase* table;
+    MapAuxInfo map_info;
+    void (*create_in_arena)(Arena*, void*);
+    LazyEagerVerifyFnType verify_func;
 
     const MessageLite* message_default() const {
       return static_cast<const MessageLite*>(message_default_p);
@@ -384,6 +541,38 @@ static_assert(std::is_standard_layout<TcParseTable<1>>::value,
 static_assert(offsetof(TcParseTable<1>, fast_entries) ==
                   sizeof(TcParseTableBase),
               "Table entries must be laid out after TcParseTableBase.");
+
+template <typename T, const char* (*func)(T*, const char*, ParseContext*)>
+const char* StubParseImpl(PROTOBUF_TC_PARAM_DECL) {
+  return func(static_cast<T*>(msg), ptr, ctx);
+}
+
+template <typename T, const char* (*func)(T*, const char*, ParseContext*)>
+constexpr TcParseTable<0> CreateStubTcParseTable(
+    const MessageLite* default_instance,
+    TcParseTableBase::PostLoopHandler post_loop_handler = nullptr) {
+  return {
+      {
+          0,                  // has_bits_offset
+          0,                  // extension_offset
+          0,                  // max_field_number
+          0,                  // fast_idx_mask
+          0,                  // lookup_table_offset
+          0,                  // skipmap32
+          0,                  // field_entries_offset
+          0,                  // num_field_entries
+          0,                  // num_aux_entries
+          0,                  // aux_offset
+          default_instance,   //
+          post_loop_handler,  //
+          nullptr,            // fallback
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+          nullptr,  // to_prefetch
+#endif              // PROTOBUF_PREFETCH_PARSE_TABLE
+      },
+      {{{StubParseImpl<T, func>, {}}}},
+  };
+}
 
 }  // namespace internal
 }  // namespace protobuf

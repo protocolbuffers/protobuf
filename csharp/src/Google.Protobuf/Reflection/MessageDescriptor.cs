@@ -1,41 +1,18 @@
 #region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 
 namespace Google.Protobuf.Reflection
 {
@@ -64,7 +41,7 @@ namespace Google.Protobuf.Reflection
         private Func<IMessage, bool> extensionSetIsInitialized;
 
         internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex, GeneratedClrTypeInfo generatedCodeInfo)
-            : base(file, file.ComputeFullName(parent, proto.Name), typeIndex)
+            : base(file, file.ComputeFullName(parent, proto.Name), typeIndex, (parent?.Features ?? file.Features).MergedWith(proto.Options?.Features))
         {
             Proto = proto;
             Parser = generatedCodeInfo?.Parser;
@@ -117,9 +94,15 @@ namespace Google.Protobuf.Reflection
         private static ReadOnlyDictionary<string, FieldDescriptor> CreateJsonFieldMap(IList<FieldDescriptor> fields)
         {
             var map = new Dictionary<string, FieldDescriptor>();
+            // The ordering is important here: JsonName takes priority over Name,
+            // which means we need to put JsonName values in the map after *all*
+            // Name keys have been added. See https://github.com/protocolbuffers/protobuf/issues/11987
             foreach (var field in fields)
             {
                 map[field.Name] = field;
+            }
+            foreach (var field in fields)
+            {
                 map[field.JsonName] = field;
             }
             return new ReadOnlyDictionary<string, FieldDescriptor>(map);
@@ -136,6 +119,7 @@ namespace Google.Protobuf.Reflection
                 DescriptorProto.FieldFieldNumber => (IReadOnlyList<DescriptorBase>)fieldsInDeclarationOrder,
                 DescriptorProto.NestedTypeFieldNumber => (IReadOnlyList<DescriptorBase>)NestedTypes,
                 DescriptorProto.EnumTypeFieldNumber => (IReadOnlyList<DescriptorBase>)EnumTypes,
+                DescriptorProto.OneofDeclFieldNumber => (IReadOnlyList<DescriptorBase>)Oneofs,
                 _ => null,
             };
 
@@ -218,6 +202,12 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         internal bool IsWrapperType => File.Package == "google.protobuf" && File.Name == "google/protobuf/wrappers.proto";
 
+        /// <summary>
+        /// Returns whether this message was synthetically-created to store key/value pairs in a
+        /// map field.
+        /// </summary>
+        public bool IsMapEntry => Proto.Options?.MapEntry == true;
+
         /// <value>
         /// If this is a nested type, get the outer descriptor, otherwise null.
         /// </value>
@@ -296,7 +286,18 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public MessageOptions GetOptions() => Proto.Options?.Clone();
+        public MessageOptions GetOptions()
+        {
+            var clone = Proto.Options?.Clone();
+            if (clone is null)
+            {
+                return null;
+            }
+            // Clients should be using feature accessor methods, not accessing features on the
+            // options proto.
+            clone.Features = null;
+            return clone;
+        }
 
         /// <summary>
         /// Gets a single value message option for this descriptor
@@ -343,6 +344,8 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// A collection to simplify retrieving the field accessor for a particular field.
         /// </summary>
+        [DebuggerDisplay("Count = {InFieldNumberOrder().Count}")]
+        [DebuggerTypeProxy(typeof(FieldCollectionDebugView))]
         public sealed class FieldCollection
         {
             private readonly MessageDescriptor messageDescriptor;
@@ -414,6 +417,19 @@ namespace Google.Protobuf.Reflection
                     }
                     return fieldDescriptor;
                 }
+            }
+
+            private sealed class FieldCollectionDebugView
+            {
+                private readonly FieldCollection collection;
+
+                public FieldCollectionDebugView(FieldCollection collection)
+                {
+                    this.collection = collection;
+                }
+
+                [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+                public FieldDescriptor[] Items => collection.InFieldNumberOrder().ToArray();
             }
         }
     }

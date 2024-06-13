@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBCodedOutputStream_PackagePrivate.h"
 
@@ -35,6 +12,10 @@
 #import "GPBArray.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
+
+// TODO: Consider using on other functions to reduce bloat when
+// some compiler optimizations are enabled.
+#define GPB_NOINLINE __attribute__((noinline))
 
 // These values are the existing values so as not to break any code that might
 // have already been inspecting them when they weren't documented/exposed.
@@ -48,6 +29,7 @@ typedef struct GPBOutputBufferState {
   uint8_t *bytes;
   size_t size;
   size_t position;
+  size_t bytesFlushed;
   NSOutputStream *output;
 } GPBOutputBufferState;
 
@@ -59,6 +41,37 @@ typedef struct GPBOutputBufferState {
 static const int32_t LITTLE_ENDIAN_32_SIZE = sizeof(uint32_t);
 static const int32_t LITTLE_ENDIAN_64_SIZE = sizeof(uint64_t);
 
+// Helper to write bytes to an NSOutputStream looping in case a subset is written in
+// any of the attempts.
+GPB_NOINLINE
+static NSInteger WriteToOutputStream(NSOutputStream *output, uint8_t *bytes, size_t length) {
+  size_t total = 0;
+
+  while (length) {
+    NSInteger written = [output write:bytes maxLength:length];
+
+    // Fast path - done.
+    if (written == (NSInteger)length) {
+      return total + written;
+    }
+
+    if (written > 0) {
+      // Record the subset written and continue in case it was a partial write.
+      total += written;
+      length -= written;
+      bytes += written;
+    } else if (written == 0) {
+      // Stream refused to write more, return what was written.
+      return total;
+    } else {
+      // Return the error.
+      return written;
+    }
+  }
+
+  return total;
+}
+
 // Internal helper that writes the current buffer to the output. The
 // buffer position is reset to its initial value when this returns.
 static void GPBRefreshBuffer(GPBOutputBufferState *state) {
@@ -67,10 +80,11 @@ static void GPBRefreshBuffer(GPBOutputBufferState *state) {
     [NSException raise:GPBCodedOutputStreamException_OutOfSpace format:@""];
   }
   if (state->position != 0) {
-    NSInteger written = [state->output write:state->bytes maxLength:state->position];
+    NSInteger written = WriteToOutputStream(state->output, state->bytes, state->position);
     if (written != (NSInteger)state->position) {
       [NSException raise:GPBCodedOutputStreamException_WriteFailed format:@""];
     }
+    state->bytesFlushed += written;
     state->position = 0;
   }
 }
@@ -128,14 +142,14 @@ static void GPBWriteTagWithFormat(GPBOutputBufferState *state, uint32_t fieldNum
 }
 
 static void GPBWriteRawLittleEndian32(GPBOutputBufferState *state, int32_t value) {
-  GPBWriteRawByte(state, (value)&0xFF);
+  GPBWriteRawByte(state, (value) & 0xFF);
   GPBWriteRawByte(state, (value >> 8) & 0xFF);
   GPBWriteRawByte(state, (value >> 16) & 0xFF);
   GPBWriteRawByte(state, (value >> 24) & 0xFF);
 }
 
 static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value) {
-  GPBWriteRawByte(state, (int32_t)(value)&0xFF);
+  GPBWriteRawByte(state, (int32_t)(value) & 0xFF);
   GPBWriteRawByte(state, (int32_t)(value >> 8) & 0xFF);
   GPBWriteRawByte(state, (int32_t)(value >> 16) & 0xFF);
   GPBWriteRawByte(state, (int32_t)(value >> 24) & 0xFF);
@@ -146,7 +160,14 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value
 }
 
 - (void)dealloc {
-  [self flush];
+  @try {
+    [self flush];
+  } @catch (NSException *exception) {
+    // -dealloc methods cannot fail, so swallow any exceptions from flushing.
+#if defined(DEBUG) && DEBUG
+    NSLog(@"GPBCodedOutputStream: Exception while flushing in dealloc: %@", exception);
+#endif
+  }
   [state_.output close];
   [state_.output release];
   [buffer_ release];
@@ -191,6 +212,13 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value
 // protos can turn on -Wdirect-ivar-access without issues.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdirect-ivar-access"
+
+- (size_t)bytesWritten {
+  // Could use NSStreamFileCurrentOffsetKey on state_.output if there is a stream, that could be
+  // expensive, manually tracking what is flush keeps things faster so message serialization can
+  // check it.
+  return state_.bytesFlushed + state_.position;
+}
 
 - (void)writeDoubleNoTag:(double)value {
   GPBWriteRawLittleEndian64(&state_, GPBConvertDoubleToInt64(value));
@@ -882,10 +910,11 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value
       state_.position = length;
     } else {
       // Write is very big.  Let's do it all at once.
-      NSInteger written = [state_.output write:((uint8_t *)value) + offset maxLength:length];
+      NSInteger written = WriteToOutputStream(state_.output, ((uint8_t *)value) + offset, length);
       if (written != (NSInteger)length) {
         [NSException raise:GPBCodedOutputStreamException_WriteFailed format:@""];
       }
+      state_.bytesFlushed += written;
     }
   }
 }

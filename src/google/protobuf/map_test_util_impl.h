@@ -1,35 +1,14 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #ifndef GOOGLE_PROTOBUF_MAP_TEST_UTIL_IMPL_H__
 #define GOOGLE_PROTOBUF_MAP_TEST_UTIL_IMPL_H__
+
+#include <string>
 
 #include <gtest/gtest.h>
 
@@ -100,6 +79,13 @@ class MapTestUtilImpl {
   // // Get pointers of map entries from release.
   // static std::vector<const Message*> GetMapEntriesFromRelease(
   //     MapMessage* message);
+
+  static std::string long_string() {
+    return "This is a very long string that goes in the heap";
+  }
+  static std::string long_string_2() {
+    return "This is another very long string that goes in the heap";
+  }
 };
 
 template <typename EnumType, EnumType enum_value0, EnumType enum_value1,
@@ -119,8 +105,8 @@ void MapTestUtilImpl::SetMapFields(MapMessage* message) {
   (*message->mutable_map_int32_float())[0] = 0.0;
   (*message->mutable_map_int32_double())[0] = 0.0;
   (*message->mutable_map_bool_bool())[0] = false;
-  (*message->mutable_map_string_string())["0"] = "0";
-  (*message->mutable_map_int32_bytes())[0] = "0";
+  (*message->mutable_map_string_string())[long_string()] = long_string();
+  (*message->mutable_map_int32_bytes())[0] = long_string();
   (*message->mutable_map_int32_enum())[0] = enum_value0;
   (*message->mutable_map_int32_foreign_message())[0].set_c(0);
 
@@ -138,8 +124,8 @@ void MapTestUtilImpl::SetMapFields(MapMessage* message) {
   (*message->mutable_map_int32_float())[1] = 1.0;
   (*message->mutable_map_int32_double())[1] = 1.0;
   (*message->mutable_map_bool_bool())[1] = true;
-  (*message->mutable_map_string_string())["1"] = "1";
-  (*message->mutable_map_int32_bytes())[1] = "1";
+  (*message->mutable_map_string_string())[long_string_2()] = long_string_2();
+  (*message->mutable_map_int32_bytes())[1] = long_string_2();
   (*message->mutable_map_int32_enum())[1] = enum_value1;
   (*message->mutable_map_int32_foreign_message())[1].set_c(1);
 }
@@ -161,8 +147,8 @@ void MapTestUtilImpl::SetArenaMapFields(MapMessage* message) {
   (*message->mutable_map_int32_float())[0] = 0.0;
   (*message->mutable_map_int32_double())[0] = 0.0;
   (*message->mutable_map_bool_bool())[0] = false;
-  (*message->mutable_map_string_string())["0"] = "0";
-  (*message->mutable_map_int32_bytes())[0] = "0";
+  (*message->mutable_map_string_string())[long_string()] = long_string();
+  (*message->mutable_map_int32_bytes())[0] = long_string();
   (*message->mutable_map_int32_enum())[0] = enum_value0;
   (*message->mutable_map_int32_foreign_message())[0].set_c(0);
 
@@ -180,8 +166,8 @@ void MapTestUtilImpl::SetArenaMapFields(MapMessage* message) {
   (*message->mutable_map_int32_float())[1] = 1.0;
   (*message->mutable_map_int32_double())[1] = 1.0;
   (*message->mutable_map_bool_bool())[1] = true;
-  (*message->mutable_map_string_string())["1"] = "1";
-  (*message->mutable_map_int32_bytes())[1] = "1";
+  (*message->mutable_map_string_string())[long_string_2()] = long_string_2();
+  (*message->mutable_map_int32_bytes())[1] = long_string_2();
   (*message->mutable_map_int32_enum())[1] = enum_value1;
   (*message->mutable_map_int32_foreign_message())[1].set_c(1);
 }
@@ -203,7 +189,7 @@ void MapTestUtilImpl::SetMapFieldsInitialized(MapMessage* message) {
   (*message->mutable_map_int32_float())[0];
   (*message->mutable_map_int32_double())[0];
   (*message->mutable_map_bool_bool())[0];
-  (*message->mutable_map_string_string())["0"];
+  (*message->mutable_map_string_string())[long_string()];
   (*message->mutable_map_int32_bytes())[0];
   (*message->mutable_map_int32_enum())[0];
   (*message->mutable_map_int32_foreign_message())[0];
@@ -224,7 +210,7 @@ void MapTestUtilImpl::ModifyMapFields(MapMessage* message) {
   (*message->mutable_map_int32_float())[1] = 2.0;
   (*message->mutable_map_int32_double())[1] = 2.0;
   (*message->mutable_map_bool_bool())[1] = false;
-  (*message->mutable_map_string_string())["1"] = "2";
+  (*message->mutable_map_string_string())[long_string_2()] = "2";
   (*message->mutable_map_int32_bytes())[1] = "2";
   (*message->mutable_map_int32_enum())[1] = enum_value;
   (*message->mutable_map_int32_foreign_message())[1].set_c(2);
@@ -285,8 +271,8 @@ void MapTestUtilImpl::ExpectMapFieldsSet(const MapMessage& message) {
   EXPECT_EQ(0, message.map_int32_float().at(0));
   EXPECT_EQ(0, message.map_int32_double().at(0));
   EXPECT_EQ(false, message.map_bool_bool().at(0));
-  EXPECT_EQ("0", message.map_string_string().at("0"));
-  EXPECT_EQ("0", message.map_int32_bytes().at(0));
+  EXPECT_EQ(long_string(), message.map_string_string().at(long_string()));
+  EXPECT_EQ(long_string(), message.map_int32_bytes().at(0));
   EXPECT_EQ(enum_value0, message.map_int32_enum().at(0));
   EXPECT_EQ(0, message.map_int32_foreign_message().at(0).c());
 
@@ -303,8 +289,8 @@ void MapTestUtilImpl::ExpectMapFieldsSet(const MapMessage& message) {
   EXPECT_EQ(1, message.map_int32_float().at(1));
   EXPECT_EQ(1, message.map_int32_double().at(1));
   EXPECT_EQ(true, message.map_bool_bool().at(1));
-  EXPECT_EQ("1", message.map_string_string().at("1"));
-  EXPECT_EQ("1", message.map_int32_bytes().at(1));
+  EXPECT_EQ(long_string_2(), message.map_string_string().at(long_string_2()));
+  EXPECT_EQ(long_string_2(), message.map_int32_bytes().at(1));
   EXPECT_EQ(enum_value1, message.map_int32_enum().at(1));
   EXPECT_EQ(1, message.map_int32_foreign_message().at(1).c());
 }
@@ -343,8 +329,8 @@ void MapTestUtilImpl::ExpectArenaMapFieldsSet(const MapMessage& message) {
   EXPECT_EQ(0, message.map_int32_float().at(0));
   EXPECT_EQ(0, message.map_int32_double().at(0));
   EXPECT_EQ(false, message.map_bool_bool().at(0));
-  EXPECT_EQ("0", message.map_string_string().at("0"));
-  EXPECT_EQ("0", message.map_int32_bytes().at(0));
+  EXPECT_EQ(long_string(), message.map_string_string().at(long_string()));
+  EXPECT_EQ(long_string(), message.map_int32_bytes().at(0));
   EXPECT_EQ(enum_value0, message.map_int32_enum().at(0));
   EXPECT_EQ(0, message.map_int32_foreign_message().at(0).c());
 
@@ -361,8 +347,8 @@ void MapTestUtilImpl::ExpectArenaMapFieldsSet(const MapMessage& message) {
   EXPECT_EQ(1, message.map_int32_float().at(1));
   EXPECT_EQ(1, message.map_int32_double().at(1));
   EXPECT_EQ(true, message.map_bool_bool().at(1));
-  EXPECT_EQ("1", message.map_string_string().at("1"));
-  EXPECT_EQ("1", message.map_int32_bytes().at(1));
+  EXPECT_EQ(long_string_2(), message.map_string_string().at(long_string_2()));
+  EXPECT_EQ(long_string_2(), message.map_int32_bytes().at(1));
   EXPECT_EQ(enum_value1, message.map_int32_enum().at(1));
   EXPECT_EQ(1, message.map_int32_foreign_message().at(1).c());
 }
@@ -400,7 +386,7 @@ void MapTestUtilImpl::ExpectMapFieldsSetInitialized(const MapMessage& message) {
   EXPECT_EQ(0, message.map_int32_float().at(0));
   EXPECT_EQ(0, message.map_int32_double().at(0));
   EXPECT_EQ(false, message.map_bool_bool().at(0));
-  EXPECT_EQ("", message.map_string_string().at("0"));
+  EXPECT_EQ("", message.map_string_string().at(long_string()));
   EXPECT_EQ("", message.map_int32_bytes().at(0));
   EXPECT_EQ(enum_value, message.map_int32_enum().at(0));
   EXPECT_EQ(0, message.map_int32_foreign_message().at(0).ByteSizeLong());
@@ -443,8 +429,8 @@ void MapTestUtilImpl::ExpectMapFieldsModified(const MapMessage& message) {
   EXPECT_EQ(0, message.map_int32_float().at(0));
   EXPECT_EQ(0, message.map_int32_double().at(0));
   EXPECT_EQ(false, message.map_bool_bool().at(0));
-  EXPECT_EQ("0", message.map_string_string().at("0"));
-  EXPECT_EQ("0", message.map_int32_bytes().at(0));
+  EXPECT_EQ(long_string(), message.map_string_string().at(long_string()));
+  EXPECT_EQ(long_string(), message.map_int32_bytes().at(0));
   EXPECT_EQ(enum_value0, message.map_int32_enum().at(0));
   EXPECT_EQ(0, message.map_int32_foreign_message().at(0).c());
 
@@ -462,7 +448,7 @@ void MapTestUtilImpl::ExpectMapFieldsModified(const MapMessage& message) {
   EXPECT_EQ(2, message.map_int32_float().at(1));
   EXPECT_EQ(2, message.map_int32_double().at(1));
   EXPECT_EQ(false, message.map_bool_bool().at(1));
-  EXPECT_EQ("2", message.map_string_string().at("1"));
+  EXPECT_EQ("2", message.map_string_string().at(long_string_2()));
   EXPECT_EQ("2", message.map_int32_bytes().at(1));
   EXPECT_EQ(enum_value1, message.map_int32_enum().at(1));
   EXPECT_EQ(2, message.map_int32_foreign_message().at(1).c());

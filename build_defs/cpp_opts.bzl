@@ -15,6 +15,7 @@ COPTS = select({
         "/wd4506",  # no definition for inline function 'function'
         "/wd4800",  # 'type' : forcing value to bool 'true' or 'false' (performance warning)
         "/wd4996",  # The compiler encountered a deprecated declaration.
+        "/utf-8",  # Set source and execution character sets to UTF-8
     ],
     "//conditions:default": [
         "-DHAVE_ZLIB",
@@ -28,6 +29,7 @@ COPTS = select({
 # Android and MSVC builds do not need to link in a separate pthread library.
 LINK_OPTS = select({
     "//build_defs:config_android": [],
+    "//build_defs:config_android-legacy-default-crosstool": [],
     "//build_defs:config_android-stlport": [],
     "//build_defs:config_android-libcpp": [],
     "//build_defs:config_android-gnu-libstdcpp": [],
@@ -35,16 +37,15 @@ LINK_OPTS = select({
     "//build_defs:config_msvc": [
         # Suppress linker warnings about files with no symbols defined.
         "-ignore:4221",
+        "Shell32.lib",
+    ],
+    "@platforms//os:macos": [
+        "-lpthread",
+        "-lm",
+        "-framework CoreFoundation",
     ],
     "//conditions:default": [
         "-lpthread",
         "-lm",
     ],
-})
-
-# When cross-compiling for Windows we need to statically link pthread and the C++ library.
-PROTOC_LINK_OPTS = select({
-    "//build_defs:config_win32": ["-static"],
-    "//build_defs:config_win64": ["-static"],
-    "//conditions:default": [],
 })

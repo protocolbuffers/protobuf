@@ -50,13 +50,15 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
 # Note that this deliberately does *not* include old_extensions1.proto
 # and old_extensions2.proto, which are generated with an older version
 # of protoc.
-$PROTOC -Isrc -Icsharp/protos \
+$PROTOC -Isrc -I. \
     --experimental_allow_proto3_optional \
+    --experimental_editions \
     --csharp_out=csharp/src/Google.Protobuf.Test.TestProtos \
     --csharp_opt=file_extension=.pb.cs \
     --descriptor_set_out=csharp/src/Google.Protobuf.Test/testprotos.pb \
     --include_source_info \
     --include_imports \
+    conformance/test_protos/test_messages_edition2023.proto \
     csharp/protos/map_unittest_proto3.proto \
     csharp/protos/unittest_issues.proto \
     csharp/protos/unittest_custom_options_proto3.proto \
@@ -70,12 +72,22 @@ $PROTOC -Isrc -Icsharp/protos \
     csharp/protos/unittest_issue6936_b.proto \
     csharp/protos/unittest_issue6936_c.proto \
     csharp/protos/unittest_selfreferential_options.proto \
+    editions/golden/test_messages_proto3_editions.proto \
+    editions/golden/test_messages_proto2_editions.proto \
     src/google/protobuf/unittest_well_known_types.proto \
     src/google/protobuf/test_messages_proto3.proto \
     src/google/protobuf/test_messages_proto2.proto \
-    src/google/protobuf/unittest_proto3_optional.proto
+    src/google/protobuf/unittest_features.proto \
+    src/google/protobuf/unittest_legacy_features.proto \
+    src/google/protobuf/unittest_proto3_optional.proto \
+    src/google/protobuf/unittest_retention.proto
 
 # AddressBook sample protos
 $PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook \
     --csharp_opt=file_extension=.pb.cs \
     examples/addressbook.proto
+
+# Conformance tests
+$PROTOC -I. --csharp_out=csharp/src/Google.Protobuf.Conformance \
+    --csharp_opt=file_extension=.pb.cs \
+    conformance/conformance.proto

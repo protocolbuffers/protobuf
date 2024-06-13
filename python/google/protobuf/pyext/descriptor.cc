@@ -1,38 +1,13 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: petar@google.com (Petar Petrov)
 
 #include "google/protobuf/pyext/descriptor.h"
-
-#include "absl/log/absl_check.h"
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
@@ -43,14 +18,17 @@
 #include <unordered_map>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/pyext/descriptor_containers.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
-#include "absl/strings/string_view.h"
-#include "google/protobuf/io/coded_stream.h"
 
 #define PyString_AsStringAndSize(ob, charpp, sizep)              \
   (PyUnicode_Check(ob)                                           \
@@ -122,10 +100,12 @@ PyObject* PyString_FromCppString(const std::string& str) {
 //
 // From user code, descriptors still look immutable.
 //
-// TODO(amauryfa): Change the proto2 compiler to remove the assignments, and
+// TODO: Change the proto2 compiler to remove the assignments, and
 // remove this hack.
 bool _CalledFromGeneratedFile(int stacklevel) {
-#ifndef PYPY_VERSION
+#ifdef PYPY_VERSION
+  return true;
+#else
   // This check is not critical and is somewhat difficult to implement correctly
   // in PyPy.
   PyFrameObject* frame = PyEval_GetFrame();
@@ -181,7 +161,6 @@ bool _CalledFromGeneratedFile(int stacklevel) {
     // Not at global module scope
     goto exit;
   }
-#endif
   result = true;
 exit:
   Py_XDECREF(frame_globals);
@@ -189,6 +168,7 @@ exit:
   Py_XDECREF(frame_code);
   Py_XDECREF(frame);
   return result;
+#endif
 }
 
 // If the calling code is not a _pb2.py file, raise AttributeError.
@@ -250,28 +230,25 @@ bool Reparse(
   }
   return true;
 }
-// Converts options into a Python protobuf, and cache the result.
+
+// Converts descriptor messages into a Python protobuf, and cache the result.
 //
 // This is a bit tricky because options can contain extension fields defined in
 // the same proto file. In this case the options parsed from the serialized_pb
 // have unknown fields, and we need to parse them again.
 //
 // Always returns a new reference.
-template<class DescriptorClass>
-static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
-  // Options are cached in the pool that owns the descriptor.
+static PyObject* GetOrBuildMessageInDefaultPool(
+    absl::flat_hash_map<const void*, PyObject*>& cache, const void* key,
+    const Message& message) {
   // First search in the cache.
-  PyDescriptorPool* caching_pool = GetDescriptorPool_FromPool(
-      GetFileDescriptor(descriptor)->pool());
-  std::unordered_map<const void*, PyObject*>* descriptor_options =
-      caching_pool->descriptor_options;
-  if (descriptor_options->find(descriptor) != descriptor_options->end()) {
-    PyObject *value = (*descriptor_options)[descriptor];
+  if (cache.find(key) != cache.end()) {
+    PyObject* value = cache[key];
     Py_INCREF(value);
     return value;
   }
 
-  // Similar to the C++ implementation, we return an Options object from the
+  // Similar to the C++ implementation, we return a message object from the
   // default (generated) factory, so that client code know that they can use
   // extensions from generated files:
   //    d.GetOptions().Extensions[some_pb2.extension]
@@ -282,14 +259,13 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
   PyMessageFactory* message_factory =
       GetDefaultDescriptorPool()->py_message_factory;
 
-  // Build the Options object: get its Python class, and make a copy of the C++
+  // Build the message object: get its Python class, and make a copy of the C++
   // read-only instance.
-  const Message& options(descriptor->options());
-  const Descriptor *message_type = options.GetDescriptor();
-  CMessageClass* message_class = message_factory::GetOrCreateMessageClass(
-      message_factory, message_type);
+  const Descriptor* message_type = message.GetDescriptor();
+  CMessageClass* message_class =
+      message_factory::GetOrCreateMessageClass(message_factory, message_type);
   if (message_class == nullptr) {
-    PyErr_Format(PyExc_TypeError, "Could not retrieve class for Options: %s",
+    PyErr_Format(PyExc_TypeError, "Could not retrieve class for: %s",
                  message_type->full_name().c_str());
     return nullptr;
   }
@@ -301,20 +277,20 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
     return nullptr;
   }
   if (!PyObject_TypeCheck(value.get(), CMessage_Type)) {
-      PyErr_Format(PyExc_TypeError, "Invalid class for %s: %s",
-                   message_type->full_name().c_str(),
-                   Py_TYPE(value.get())->tp_name);
-      return nullptr;
+    PyErr_Format(PyExc_TypeError, "Invalid class for %s: %s",
+                 message_type->full_name().c_str(),
+                 Py_TYPE(value.get())->tp_name);
+    return nullptr;
   }
   CMessage* cmsg = reinterpret_cast<CMessage*>(value.get());
 
-  const Reflection* reflection = options.GetReflection();
-  const UnknownFieldSet& unknown_fields(reflection->GetUnknownFields(options));
+  const Reflection* reflection = message.GetReflection();
+  const UnknownFieldSet& unknown_fields(reflection->GetUnknownFields(message));
   if (unknown_fields.empty()) {
-    cmsg->message->CopyFrom(options);
+    cmsg->message->CopyFrom(message);
   } else {
     // Reparse options string!  XXX call cmessage::MergeFromString
-    if (!Reparse(message_factory, options, cmsg->message)) {
+    if (!Reparse(message_factory, message, cmsg->message)) {
       PyErr_Format(PyExc_ValueError, "Error reparsing Options message");
       return nullptr;
     }
@@ -322,9 +298,33 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
 
   // Cache the result.
   Py_INCREF(value.get());
-  (*descriptor_options)[descriptor] = value.get();
+  cache[key] = value.get();
 
   return value.release();
+}
+
+template <class DescriptorClass>
+static PyObject* GetOrBuildOptions(const DescriptorClass* descriptor) {
+  // Options are cached in the pool that owns the descriptor.
+  PyDescriptorPool* caching_pool =
+      GetDescriptorPool_FromPool(GetFileDescriptor(descriptor)->pool());
+  return GetOrBuildMessageInDefaultPool(*caching_pool->descriptor_options,
+                                        descriptor, descriptor->options());
+}
+
+template <class DescriptorClass>
+static PyObject* GetFeaturesImpl(const DescriptorClass* descriptor) {
+  if (descriptor == nullptr) {
+    return nullptr;
+  }
+  const FeatureSet& features =
+      internal::InternalFeatureHelper::GetFeatures(*descriptor);
+
+  // Features are cached in the pool that owns the descriptor.
+  PyDescriptorPool* caching_pool =
+      GetDescriptorPool_FromPool(GetFileDescriptor(descriptor)->pool());
+  return GetOrBuildMessageInDefaultPool(*caching_pool->descriptor_features,
+                                        descriptor, features);
 }
 
 // Copy the C++ descriptor to a Python message.
@@ -618,8 +618,8 @@ static PyObject* GetExtensionRanges(PyBaseDescriptor *self, void *closure) {
 
   for (int i = 0; i < descriptor->extension_range_count(); i++) {
     const Descriptor::ExtensionRange* range = descriptor->extension_range(i);
-    PyObject* start = PyLong_FromLong(range->start);
-    PyObject* end = PyLong_FromLong(range->end);
+    PyObject* start = PyLong_FromLong(range->start_number());
+    PyObject* end = PyLong_FromLong(range->end_number());
     PyList_SetItem(range_list, i, PyTuple_Pack(2, start, end));
   }
 
@@ -658,6 +658,10 @@ static PyObject* GetOptions(PyBaseDescriptor *self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
 
+static PyObject* GetFeatures(PyBaseDescriptor* self) {
+  return GetFeaturesImpl(_GetDescriptor(self));
+}
+
 static int SetOptions(PyBaseDescriptor *self, PyObject *value,
                       void *closure) {
   return CheckCalledFromGeneratedFile("_options");
@@ -689,11 +693,6 @@ static PyObject* EnumValueName(PyBaseDescriptor *self, PyObject *args) {
     return nullptr;
   }
   return PyString_FromCppString(enum_value->name());
-}
-
-static PyObject* GetSyntax(PyBaseDescriptor *self, void *closure) {
-  return PyUnicode_InternFromString(
-      FileDescriptor::SyntaxName(_GetDescriptor(self)->file()->syntax()));
 }
 
 static PyGetSetDef Getters[] = {
@@ -732,12 +731,12 @@ static PyGetSetDef Getters[] = {
     {"_options", (getter) nullptr, (setter)SetOptions, "Options"},
     {"_serialized_options", (getter) nullptr, (setter)SetSerializedOptions,
      "Serialized Options"},
-    {"syntax", (getter)GetSyntax, (setter) nullptr, "Syntax"},
     {nullptr},
 };
 
 static PyMethodDef Methods[] = {
     {"GetOptions", (PyCFunction)GetOptions, METH_NOARGS},
+    {"_GetFeatures", (PyCFunction)GetFeatures, METH_NOARGS},
     {"CopyToProto", (PyCFunction)CopyToProto, METH_O},
     {"EnumValueName", (PyCFunction)EnumValueName, METH_VARARGS},
     {nullptr},
@@ -1023,6 +1022,10 @@ static PyObject* GetOptions(PyBaseDescriptor *self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
 
+static PyObject* GetFeatures(PyBaseDescriptor* self) {
+  return GetFeaturesImpl(_GetDescriptor(self));
+}
+
 static int SetOptions(PyBaseDescriptor *self, PyObject *value,
                       void *closure) {
   return CheckCalledFromGeneratedFile("_options");
@@ -1070,6 +1073,7 @@ static PyGetSetDef Getters[] = {
 
 static PyMethodDef Methods[] = {
     {"GetOptions", (PyCFunction)GetOptions, METH_NOARGS},
+    {"_GetFeatures", (PyCFunction)GetFeatures, METH_NOARGS},
     {nullptr},
 };
 
@@ -1198,6 +1202,10 @@ static PyObject* GetOptions(PyBaseDescriptor *self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
 
+static PyObject* GetFeatures(PyBaseDescriptor* self) {
+  return GetFeaturesImpl(_GetDescriptor(self));
+}
+
 static int SetOptions(PyBaseDescriptor *self, PyObject *value,
                       void *closure) {
   return CheckCalledFromGeneratedFile("_options");
@@ -1214,6 +1222,7 @@ static PyObject* CopyToProto(PyBaseDescriptor *self, PyObject *target) {
 
 static PyMethodDef Methods[] = {
     {"GetOptions", (PyCFunction)GetOptions, METH_NOARGS},
+    {"_GetFeatures", (PyCFunction)GetFeatures, METH_NOARGS},
     {"CopyToProto", (PyCFunction)CopyToProto, METH_O},
     {nullptr},
 };
@@ -1335,6 +1344,10 @@ static PyObject* GetOptions(PyBaseDescriptor *self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
 
+static PyObject* GetFeatures(PyBaseDescriptor* self) {
+  return GetFeaturesImpl(_GetDescriptor(self));
+}
+
 static int SetOptions(PyBaseDescriptor *self, PyObject *value,
                       void *closure) {
   return CheckCalledFromGeneratedFile("_options");
@@ -1361,6 +1374,7 @@ static PyGetSetDef Getters[] = {
 
 static PyMethodDef Methods[] = {
     {"GetOptions", (PyCFunction)GetOptions, METH_NOARGS},
+    {"_GetFeatures", (PyCFunction)GetFeatures, METH_NOARGS},
     {nullptr},
 };
 
@@ -1501,6 +1515,10 @@ static PyObject* GetOptions(PyFileDescriptor *self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
 
+static PyObject* GetFeatures(PyFileDescriptor* self) {
+  return GetFeaturesImpl(_GetDescriptor(self));
+}
+
 static int SetOptions(PyFileDescriptor *self, PyObject *value,
                       void *closure) {
   return CheckCalledFromGeneratedFile("_options");
@@ -1509,11 +1527,6 @@ static int SetOptions(PyFileDescriptor *self, PyObject *value,
 static int SetSerializedOptions(PyFileDescriptor *self, PyObject *value,
                                 void *closure) {
   return CheckCalledFromGeneratedFile("_serialized_options");
-}
-
-static PyObject* GetSyntax(PyFileDescriptor *self, void *closure) {
-  return PyUnicode_InternFromString(
-      FileDescriptor::SyntaxName(_GetDescriptor(self)->syntax()));
 }
 
 static PyObject* CopyToProto(PyFileDescriptor *self, PyObject *target) {
@@ -1542,13 +1555,13 @@ static PyGetSetDef Getters[] = {
     {"_options", (getter) nullptr, (setter)SetOptions, "Options"},
     {"_serialized_options", (getter) nullptr, (setter)SetSerializedOptions,
      "Serialized Options"},
-    {"syntax", (getter)GetSyntax, (setter) nullptr, "Syntax"},
     {nullptr},
 };
 
 static PyMethodDef Methods[] = {
     {"GetDebugString", (PyCFunction)GetDebugString, METH_NOARGS},
     {"GetOptions", (PyCFunction)GetOptions, METH_NOARGS},
+    {"_GetFeatures", (PyCFunction)GetFeatures, METH_NOARGS},
     {"CopyToProto", (PyCFunction)CopyToProto, METH_O},
     {nullptr},
 };
@@ -1621,7 +1634,7 @@ PyObject* PyFileDescriptor_FromDescriptorWithSerializedPb(
     Py_XINCREF(serialized_pb);
     cfile_descriptor->serialized_pb = serialized_pb;
   }
-  // TODO(amauryfa): In the case of a cached object, check that serialized_pb
+  // TODO: In the case of a cached object, check that serialized_pb
   // is the same as before.
 
   return py_descriptor;
@@ -1688,6 +1701,10 @@ static PyObject* GetOptions(PyBaseDescriptor *self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
 
+static PyObject* GetFeatures(PyBaseDescriptor* self) {
+  return GetFeaturesImpl(_GetDescriptor(self));
+}
+
 static int SetOptions(PyBaseDescriptor *self, PyObject *value,
                       void *closure) {
   return CheckCalledFromGeneratedFile("_options");
@@ -1715,6 +1732,7 @@ static PyGetSetDef Getters[] = {
 
 static PyMethodDef Methods[] = {
     {"GetOptions", (PyCFunction)GetOptions, METH_NOARGS},
+    {"_GetFeatures", (PyCFunction)GetFeatures, METH_NOARGS},
     {nullptr},
 };
 
@@ -1818,6 +1836,10 @@ static PyObject* GetOptions(PyBaseDescriptor *self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
 
+static PyObject* GetFeatures(PyBaseDescriptor* self) {
+  return GetFeaturesImpl(_GetDescriptor(self));
+}
+
 static PyObject* CopyToProto(PyBaseDescriptor *self, PyObject *target) {
   return CopyToPythonProto<ServiceDescriptorProto>(_GetDescriptor(self),
                                                    target);
@@ -1836,6 +1858,7 @@ static PyGetSetDef Getters[] = {
 
 static PyMethodDef Methods[] = {
     {"GetOptions", (PyCFunction)GetOptions, METH_NOARGS},
+    {"_GetFeatures", (PyCFunction)GetFeatures, METH_NOARGS},
     {"CopyToProto", (PyCFunction)CopyToProto, METH_O},
     {"FindMethodByName", (PyCFunction)FindMethodByName, METH_O},
     {nullptr},
@@ -1944,6 +1967,10 @@ static PyObject* GetOptions(PyBaseDescriptor *self) {
   return GetOrBuildOptions(_GetDescriptor(self));
 }
 
+static PyObject* GetFeatures(PyBaseDescriptor* self) {
+  return GetFeaturesImpl(_GetDescriptor(self));
+}
+
 static PyObject* CopyToProto(PyBaseDescriptor *self, PyObject *target) {
   return CopyToPythonProto<MethodDescriptorProto>(_GetDescriptor(self), target);
 }
@@ -1965,6 +1992,7 @@ static PyGetSetDef Getters[] = {
 
 static PyMethodDef Methods[] = {
     {"GetOptions", (PyCFunction)GetOptions, METH_NOARGS},
+    {"_GetFeatures", (PyCFunction)GetFeatures, METH_NOARGS},
     {"CopyToProto", (PyCFunction)CopyToProto, METH_O},
     {nullptr},
 };

@@ -1,6 +1,7 @@
 # CMake definitions for libprotobuf_lite (the "lite" C++ protobuf runtime).
 
 include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
+include(${protobuf_SOURCE_DIR}/cmake/protobuf-configure-target.cmake)
 
 add_library(libprotobuf-lite ${protobuf_SHARED_OR_STATIC}
   ${libprotobuf_lite_srcs}
@@ -22,8 +23,12 @@ endif()
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
   target_link_libraries(libprotobuf-lite PRIVATE log)
 endif()
-target_include_directories(libprotobuf-lite PUBLIC ${protobuf_SOURCE_DIR}/src)
+target_include_directories(libprotobuf-lite PUBLIC
+  $<BUILD_INTERFACE:${protobuf_SOURCE_DIR}/src>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
 target_link_libraries(libprotobuf-lite PUBLIC ${protobuf_ABSL_USED_TARGETS})
+protobuf_configure_target(libprotobuf-lite)
 if(protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotobuf-lite
     PUBLIC  PROTOBUF_USE_DLLS
@@ -40,5 +45,4 @@ set_target_properties(libprotobuf-lite PROPERTIES
 )
 add_library(protobuf::libprotobuf-lite ALIAS libprotobuf-lite)
 
-target_include_directories(libprotobuf-lite PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/utf8_range)
 target_link_libraries(libprotobuf-lite PRIVATE utf8_validity)

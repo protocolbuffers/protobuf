@@ -1,0 +1,48 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto3";
+
+package upb_test;
+
+message TestUtf8Bytes {
+  optional bytes data = 1;
+}
+
+message TestUtf8Proto3String {
+  optional string data = 1;
+}
+
+message TestUtf8RepeatedProto3String {
+  repeated string data = 1;
+}
+
+// begin:google_only
+message TestUtf8Proto3StringMixed {
+  optional string data = 1;
+
+  // Add other fields with different enforce_utf8 values, to ensure we can
+  // handle the mix.
+  optional string other_data = 2;
+}
+
+message TestUtf8Proto3StringEnforceUtf8False {
+  optional string data = 1;
+}
+
+message TestUtf8RepeatedProto3StringEnforceUtf8False {
+  repeated string data = 1;
+}
+
+message TestUtf8Proto3StringEnforceUtf8FalseMixed {
+  optional string data = 1;
+
+  // Add other fields with different enforce_utf8 values, to ensure we can
+  // handle the mix.
+  optional string other_data = 2;
+}
+// end:google_only

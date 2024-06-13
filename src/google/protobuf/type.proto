@@ -57,6 +57,8 @@ message Type {
   SourceContext source_context = 5;
   // The source syntax.
   Syntax syntax = 6;
+  // The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+  string edition = 7;
 }
 
 // A single field of a message type.
@@ -151,6 +153,8 @@ message Enum {
   SourceContext source_context = 4;
   // The source syntax.
   Syntax syntax = 5;
+  // The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+  string edition = 6;
 }
 
 // Enum value definition.
@@ -184,4 +188,6 @@ enum Syntax {
   SYNTAX_PROTO2 = 0;
   // Syntax `proto3`.
   SYNTAX_PROTO3 = 1;
+  // Syntax `editions`.
+  SYNTAX_EDITIONS = 2;
 }

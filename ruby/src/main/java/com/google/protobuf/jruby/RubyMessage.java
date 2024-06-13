@@ -38,7 +38,6 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -73,7 +72,6 @@ public class RubyMessage extends RubyObject {
     this.builder = DynamicMessage.newBuilder(descriptor);
     this.fields = new HashMap<FieldDescriptor, IRubyObject>();
     this.oneofCases = new HashMap<OneofDescriptor, FieldDescriptor>();
-    this.proto3 = descriptor.getFile().getSyntax() == FileDescriptor.Syntax.PROTO3;
   }
 
   /*
@@ -201,7 +199,7 @@ public class RubyMessage extends RubyObject {
     sb.append(cname).append(colon);
 
     for (FieldDescriptor fd : descriptor.getFields()) {
-      if (fd.hasPresence() && !fields.containsKey(fd)) {
+      if (fd.hasPresence() && !(fields.containsKey(fd) || builder.hasField(fd))) {
         continue;
       }
       if (addComma) {
@@ -306,11 +304,7 @@ public class RubyMessage extends RubyObject {
     if (methodName.startsWith(HAS_PREFIX) && methodName.endsWith(QUESTION_MARK)) {
       String strippedMethodName = methodName.substring(4, methodName.length() - 1);
       FieldDescriptor fieldDescriptor = descriptor.findFieldByName(strippedMethodName);
-      if (fieldDescriptor != null
-          && (!proto3
-              || fieldDescriptor.getContainingOneof() == null
-              || fieldDescriptor.getContainingOneof().isSynthetic())
-          && fieldDescriptor.hasPresence()) {
+      if (fieldDescriptor != null && fieldDescriptor.hasPresence()) {
         return context.runtime.getTrue();
       }
       oneofDescriptor =
@@ -459,11 +453,7 @@ public class RubyMessage extends RubyObject {
 
         fieldDescriptor = descriptor.findFieldByName(methodName);
 
-        if (fieldDescriptor != null
-            && (!proto3
-                || fieldDescriptor.getContainingOneof() == null
-                || fieldDescriptor.getContainingOneof().isSynthetic())
-            && fieldDescriptor.hasPresence()) {
+        if (fieldDescriptor != null && fieldDescriptor.hasPresence()) {
           return fields.containsKey(fieldDescriptor) ? runtime.getTrue() : runtime.getFalse();
         }
 
@@ -557,7 +547,8 @@ public class RubyMessage extends RubyObject {
       } else if (fields.containsKey(fieldDescriptor)) {
         dup.setFieldInternal(context, fieldDescriptor, fields.get(fieldDescriptor));
       } else if (this.builder.hasField(fieldDescriptor)) {
-        dup.fields.put(
+        dup.setFieldInternal(
+            context,
             fieldDescriptor,
             wrapField(context, fieldDescriptor, this.builder.getField(fieldDescriptor)));
       }
@@ -635,9 +626,13 @@ public class RubyMessage extends RubyObject {
         input.setRecursionLimit(((RubyNumeric) recursionLimit).getIntValue());
       }
     }
+    return decodeBytes(context, ret, input, /*freeze*/ false);
+  }
 
+  public static IRubyObject decodeBytes(
+      ThreadContext context, RubyMessage ret, CodedInputStream input, boolean freeze) {
     try {
-      ret.builder.mergeFrom(input);
+      ret.builder.mergeFrom(input, RubyDescriptorPool.registry);
     } catch (Exception e) {
       throw RaiseException.from(
           context.runtime,
@@ -645,15 +640,15 @@ public class RubyMessage extends RubyObject {
           e.getMessage());
     }
 
-    if (!ret.proto3) {
-      // Need to reset unknown values in repeated enum fields
-      ret.builder
-          .getUnknownFields()
-          .asMap()
-          .forEach(
-              (i, values) -> {
-                FieldDescriptor fd = ret.builder.getDescriptorForType().findFieldByNumber(i);
-                if (fd != null && fd.isRepeated() && fd.getType() == FieldDescriptor.Type.ENUM) {
+    ret.builder
+        .getUnknownFields()
+        .asMap()
+        .forEach(
+            (i, values) -> {
+              FieldDescriptor fd = ret.builder.getDescriptorForType().findFieldByNumber(i);
+              if (fd != null && fd.isRepeated() && fd.getType() == FieldDescriptor.Type.ENUM) {
+                // Need to reset unknown values in repeated enum fields
+                if (fd.legacyEnumFieldTreatedAsClosed()) {
                   EnumDescriptor ed = fd.getEnumType();
                   values
                       .getVarintList()
@@ -663,9 +658,11 @@ public class RubyMessage extends RubyObject {
                                 fd, ed.findValueByNumberCreatingIfUnknown(value.intValue()));
                           });
                 }
-              });
+              }
+            });
+    if (freeze) {
+      ret.freeze(context);
     }
-
     return ret;
   }
 
@@ -677,6 +674,7 @@ public class RubyMessage extends RubyObject {
    * @param options [Hash] options for the decoder
    *  preserve_proto_fieldnames: set true to use original fieldnames (default is to camelCase)
    *  emit_defaults: set true to emit 0/false values (default is to omit them)
+   *  format_enums_as_integers: set true to emit enum values as integer (default is string)
    */
   @JRubyMethod(name = "encode_json", required = 1, optional = 1, meta = true)
   public static IRubyObject encodeJson(
@@ -698,13 +696,19 @@ public class RubyMessage extends RubyObject {
 
       IRubyObject emitDefaults = options.fastARef(runtime.newSymbol("emit_defaults"));
       IRubyObject preserveNames = options.fastARef(runtime.newSymbol("preserve_proto_fieldnames"));
+      IRubyObject printingEnumsAsInts =
+          options.fastARef(runtime.newSymbol("format_enums_as_integers"));
 
       if (emitDefaults != null && emitDefaults.isTrue()) {
-        printer = printer.includingDefaultValueFields();
+        printer = printer.alwaysPrintFieldsWithNoPresence();
       }
 
       if (preserveNames != null && preserveNames.isTrue()) {
         printer = printer.preservingProtoFieldNames();
+      }
+
+      if (printingEnumsAsInts != null && printingEnumsAsInts.isTrue()) {
+        printer = printer.printingEnumsAsInts();
       }
     }
     printer =
@@ -780,35 +784,51 @@ public class RubyMessage extends RubyObject {
   public IRubyObject toHash(ThreadContext context) {
     Ruby runtime = context.runtime;
     RubyHash ret = RubyHash.newHash(runtime);
-    for (FieldDescriptor fdef : this.descriptor.getFields()) {
-      IRubyObject value = getFieldInternal(context, fdef, proto3);
+    build(context, 0, SINK_MAXIMUM_NESTING); // Sync Ruby data to the Builder object.
+    for (Map.Entry<FieldDescriptor, Object> field : builder.getAllFields().entrySet()) {
+      FieldDescriptor fdef = field.getKey();
+      IRubyObject value = getFieldInternal(context, fdef, !fdef.hasPresence());
 
-      if (!value.isNil()) {
-        if (fdef.isRepeated() && !fdef.isMapField()) {
-          if (!proto3 && ((RubyRepeatedField) value).size() == 0)
-            continue; // Don't output empty repeated fields for proto2
-          if (fdef.getType() != FieldDescriptor.Type.MESSAGE) {
-            value = Helpers.invoke(context, value, "to_a");
-          } else {
-            RubyArray ary = value.convertToArray();
-            for (int i = 0; i < ary.size(); i++) {
-              IRubyObject submsg = Helpers.invoke(context, ary.eltInternal(i), "to_h");
-              ary.eltInternalSet(i, submsg);
-            }
-
-            value = ary.to_ary();
-          }
-        } else if (value.respondsTo("to_h")) {
-          value = Helpers.invoke(context, value, "to_h");
-        } else if (value.respondsTo("to_a")) {
+      if (fdef.isRepeated() && !fdef.isMapField()) {
+        if (fdef.getType() != FieldDescriptor.Type.MESSAGE) {
           value = Helpers.invoke(context, value, "to_a");
+        } else {
+          RubyArray ary = value.convertToArray();
+          for (int i = 0; i < ary.size(); i++) {
+            IRubyObject submsg = Helpers.invoke(context, ary.eltInternal(i), "to_h");
+            ary.eltInternalSet(i, submsg);
+          }
+
+          value = ary.to_ary();
         }
+      } else if (value.respondsTo("to_h")) {
+        value = Helpers.invoke(context, value, "to_h");
+      } else if (value.respondsTo("to_a")) {
+        value = Helpers.invoke(context, value, "to_a");
       }
-      if (proto3 || !value.isNil()) {
-        ret.fastASet(runtime.newSymbol(fdef.getName()), value);
-      }
+      ret.fastASet(runtime.newSymbol(fdef.getName()), value);
     }
     return ret;
+  }
+
+  @JRubyMethod
+  public IRubyObject freeze(ThreadContext context) {
+    if (isFrozen()) {
+      return this;
+    }
+    setFrozen(true);
+    for (FieldDescriptor fdef : descriptor.getFields()) {
+      if (fdef.isMapField()) {
+        ((RubyMap) fields.get(fdef)).freeze(context);
+      } else if (fdef.isRepeated()) {
+        this.getRepeatedField(context, fdef).freeze(context);
+      } else if (fields.containsKey(fdef)) {
+        if (fdef.getType() == FieldDescriptor.Type.MESSAGE) {
+          ((RubyMessage) fields.get(fdef)).freeze(context);
+        }
+      }
+    }
+    return this;
   }
 
   protected DynamicMessage build(ThreadContext context, int depth, int recursionLimit) {
@@ -901,7 +921,11 @@ public class RubyMessage extends RubyObject {
       if (fdef.isRepeated()) {
         copy.fields.put(fdef, this.getRepeatedField(context, fdef).deepCopy(context));
       } else if (fields.containsKey(fdef)) {
-        copy.setFieldInternal(context, fdef, fields.get(fdef));
+        if (fdef.getType() == FieldDescriptor.Type.MESSAGE) {
+          copy.setFieldInternal(context, fdef, ((RubyMessage) fields.get(fdef)).deepCopy(context));
+        } else {
+          copy.setFieldInternal(context, fdef, fields.get(fdef));
+        }
       } else if (builder.hasField(fdef)) {
         copy.fields.put(fdef, wrapField(context, fdef, builder.getField(fdef)));
       }
@@ -937,6 +961,12 @@ public class RubyMessage extends RubyObject {
       ThreadContext context, FieldDescriptor fieldDescriptor, IRubyObject value) {
     validateMessageType(context, fieldDescriptor, "set");
     return setFieldInternal(context, fieldDescriptor, value);
+  }
+
+  protected IRubyObject setField(
+      ThreadContext context, RubyFieldDescriptor fieldDescriptor, IRubyObject value) {
+    validateMessageType(context, fieldDescriptor.getDescriptor(), "set");
+    return setFieldInternal(context, fieldDescriptor.getDescriptor(), fieldDescriptor, value);
   }
 
   private RubyRepeatedField getRepeatedField(
@@ -1249,6 +1279,14 @@ public class RubyMessage extends RubyObject {
 
   private IRubyObject setFieldInternal(
       ThreadContext context, FieldDescriptor fieldDescriptor, IRubyObject value) {
+    return setFieldInternal(context, fieldDescriptor, null, value);
+  }
+
+  private IRubyObject setFieldInternal(
+      ThreadContext context,
+      FieldDescriptor fieldDescriptor,
+      RubyFieldDescriptor rubyFieldDescriptor,
+      IRubyObject value) {
     testFrozen("can't modify frozen " + getMetaClass());
 
     if (fieldDescriptor.isMapField()) {
@@ -1273,8 +1311,12 @@ public class RubyMessage extends RubyObject {
       // Determine the typeclass, if any
       IRubyObject typeClass = context.runtime.getObject();
       if (fieldType == FieldDescriptor.Type.MESSAGE) {
-        typeClass =
-            ((RubyDescriptor) getDescriptorForField(context, fieldDescriptor)).msgclass(context);
+        if (rubyFieldDescriptor != null) {
+          typeClass = ((RubyDescriptor) rubyFieldDescriptor.getSubtype(context)).msgclass(context);
+        } else {
+          typeClass =
+              ((RubyDescriptor) getDescriptorForField(context, fieldDescriptor)).msgclass(context);
+        }
         if (value.isNil()) {
           addValue = false;
         }
@@ -1296,7 +1338,7 @@ public class RubyMessage extends RubyObject {
         // Keep track of what Oneofs are set
         if (value.isNil()) {
           oneofCases.remove(oneofDescriptor);
-          if (!oneofDescriptor.isSynthetic()) {
+          if (fieldDescriptor.getRealContainingOneof() != null) {
             addValue = false;
           }
         } else {
@@ -1460,5 +1502,4 @@ public class RubyMessage extends RubyObject {
   private RubyClass cRepeatedField;
   private RubyClass cMap;
   private boolean ignoreUnknownFieldsOnInit = false;
-  private boolean proto3;
 }

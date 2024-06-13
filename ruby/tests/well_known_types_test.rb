@@ -65,18 +65,17 @@ class TestWellKnownTypes < Test::Unit::TestCase
     struct["sublist"] = sublist
 
     assert_equal 12345, struct["number"]
-    assert_equal true, struct["boolean-true"]
-    assert_equal false, struct["boolean-false"]
-    assert_equal nil, struct["null"]
+    assert struct["boolean-true"]
+    refute struct["boolean-false"]
+    assert_nil struct["null"]
     assert_equal "abcdef", struct["string"]
     assert_equal(Google::Protobuf::Struct.from_hash(substruct),
                  struct["substruct"])
     assert_equal(Google::Protobuf::ListValue.from_a(sublist),
                  struct["sublist"])
 
-    assert_equal true, struct.has_key?("null")
-    assert_equal false, struct.has_key?("missing_key")
-
+    assert struct.has_key? "null"
+    refute struct.has_key? "missing_key"
     should_equal = {
       "number" => 12345,
       "boolean-true" => true,
@@ -91,48 +90,48 @@ class TestWellKnownTypes < Test::Unit::TestCase
     }
 
     list = struct["sublist"]
-    list.is_a?(Google::Protobuf::ListValue)
+    assert_instance_of Google::Protobuf::ListValue, list
     assert_equal "abc", list[0]
     assert_equal 123, list[1]
     assert_equal({"deepkey" => "deepval"}, list[2].to_h)
 
     # to_h returns a fully-flattened Ruby structure (Hash and Array).
-    assert_equal(should_equal, struct.to_h)
+    assert_equal should_equal, struct.to_h
 
     # Test that we can safely access a missing key
-    assert_equal(nil, struct["missing_key"])
+    assert_nil struct["missing_key"]
 
     # Test that we can assign Struct and ListValue directly.
     struct["substruct"] = Google::Protobuf::Struct.from_hash(substruct)
     struct["sublist"] = Google::Protobuf::ListValue.from_a(sublist)
 
-    assert_equal(should_equal, struct.to_h)
+    assert_equal should_equal, struct.to_h
 
     struct["sublist"] << nil
     should_equal["sublist"] << nil
 
-    assert_equal(should_equal, struct.to_h)
-    assert_equal(should_equal["sublist"].length, struct["sublist"].length)
+    assert_equal should_equal, struct.to_h
+    assert_equal should_equal["sublist"].length, struct["sublist"].length
 
-    assert_raise Google::Protobuf::UnexpectedStructType do
+    assert_raises Google::Protobuf::UnexpectedStructType do
       struct[123] = 5
     end
 
-    assert_raise Google::Protobuf::UnexpectedStructType do
+    assert_raises Google::Protobuf::UnexpectedStructType do
       struct[5] = Time.new
     end
 
-    assert_raise Google::Protobuf::UnexpectedStructType do
+    assert_raises Google::Protobuf::UnexpectedStructType do
       struct[5] = [Time.new]
     end
 
-    assert_raise Google::Protobuf::UnexpectedStructType do
+    assert_raises Google::Protobuf::UnexpectedStructType do
       struct[5] = {123 => 456}
     end
 
-    assert_raise Google::Protobuf::UnexpectedStructType do
-      struct = Google::Protobuf::Struct.new
-      struct.fields["foo"] = Google::Protobuf::Value.new
+    struct = Google::Protobuf::Struct.new
+    struct.fields["foo"] = Google::Protobuf::Value.new
+    assert_raises Google::Protobuf::UnexpectedStructType do
       # Tries to return a Ruby value for a Value class whose type
       # hasn't been filled in.
       struct["foo"]
@@ -184,10 +183,10 @@ class TestWellKnownTypes < Test::Unit::TestCase
     assert_equal expected_b_x, s[:b][:x].values
     assert_equal expected_b_x, s['b'][:x].values
     assert_equal expected_b_x, s[:b]['x'].values
-    assert_equal true, s['b']['y']
-    assert_equal true, s[:b][:y]
-    assert_equal true, s[:b]['y']
-    assert_equal true, s['b'][:y]
+    assert s['b']['y']
+    assert s[:b][:y]
+    assert s[:b]['y']
+    assert s['b'][:y]
     assert_equal Google::Protobuf::Struct.new, s['c']
     assert_equal Google::Protobuf::Struct.new, s[:c]
 
@@ -202,10 +201,10 @@ class TestWellKnownTypes < Test::Unit::TestCase
     )
     assert_equal 'Eh', s['a']
     assert_equal 'Eh', s[:a]
-    assert_equal false, s['b']['y']
-    assert_equal false, s[:b][:y]
-    assert_equal false, s['b'][:y]
-    assert_equal false, s[:b]['y']
+    refute s['b']['y']
+    refute s[:b][:y]
+    refute s['b'][:y]
+    refute s[:b]['y']
   end
 
   def test_b8325
@@ -218,30 +217,26 @@ class TestWellKnownTypes < Test::Unit::TestCase
 
   def test_from_ruby
     pb = Google::Protobuf::Value.from_ruby(nil)
-    assert_equal pb.null_value, :NULL_VALUE
-
+    assert_equal :NULL_VALUE, pb.null_value
     pb = Google::Protobuf::Value.from_ruby(1.23)
-    assert_equal pb.number_value, 1.23
-
+    assert_equal 1.23, pb.number_value
     pb = Google::Protobuf::Value.from_ruby('1.23')
-    assert_equal pb.string_value, '1.23'
-
+    assert_equal '1.23', pb.string_value
     pb = Google::Protobuf::Value.from_ruby(true)
-    assert_equal pb.bool_value, true
+    assert pb.bool_value
 
     pb = Google::Protobuf::Value.from_ruby(false)
-    assert_equal pb.bool_value, false
-
+    refute pb.bool_value
     pb = Google::Protobuf::Value.from_ruby(Google::Protobuf::Struct.from_hash({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true }))
-    assert_equal pb.struct_value, Google::Protobuf::Struct.from_hash({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true })
+    assert_equal Google::Protobuf::Struct.from_hash({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true }), pb.struct_value
 
     pb = Google::Protobuf::Value.from_ruby({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true })
-    assert_equal pb.struct_value, Google::Protobuf::Struct.from_hash({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true })
+    assert_equal Google::Protobuf::Struct.from_hash({ 'a' => 1, 'b' => '2', 'c' => [1, 2, 3], 'd' => nil, 'e' => true }), pb.struct_value
 
     pb = Google::Protobuf::Value.from_ruby(Google::Protobuf::ListValue.from_a([1, 2, 3]))
-    assert_equal pb.list_value, Google::Protobuf::ListValue.from_a([1, 2, 3])
+    assert_equal Google::Protobuf::ListValue.from_a([1, 2, 3]), pb.list_value
 
     pb = Google::Protobuf::Value.from_ruby([1, 2, 3])
-    assert_equal pb.list_value, Google::Protobuf::ListValue.from_a([1, 2, 3])
+    assert_equal Google::Protobuf::ListValue.from_a([1, 2, 3]), pb.list_value
   end
 end

@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -73,7 +50,7 @@ import java.util.Arrays;
  *
  * @author martinrb@google.com (Martin Buchholz)
  */
-// TODO(nathanmittler): Copy changes in this class back to Guava
+// TODO: Copy changes in this class back to Guava
 final class Utf8 {
 
   /**
@@ -237,24 +214,24 @@ final class Utf8 {
    * @throws IllegalArgumentException if {@code sequence} contains ill-formed UTF-16 (unpaired
    *     surrogates)
    */
-  static int encodedLength(CharSequence sequence) {
+  static int encodedLength(String string) {
     // Warning to maintainers: this implementation is highly optimized.
-    int utf16Length = sequence.length();
+    int utf16Length = string.length();
     int utf8Length = utf16Length;
     int i = 0;
 
     // This loop optimizes for pure ASCII.
-    while (i < utf16Length && sequence.charAt(i) < 0x80) {
+    while (i < utf16Length && string.charAt(i) < 0x80) {
       i++;
     }
 
     // This loop optimizes for chars less than 0x800.
     for (; i < utf16Length; i++) {
-      char c = sequence.charAt(i);
+      char c = string.charAt(i);
       if (c < 0x800) {
         utf8Length += ((0x7f - c) >>> 31); // branch free!
       } else {
-        utf8Length += encodedLengthGeneral(sequence, i);
+        utf8Length += encodedLengthGeneral(string, i);
         break;
       }
     }
@@ -267,11 +244,11 @@ final class Utf8 {
     return utf8Length;
   }
 
-  private static int encodedLengthGeneral(CharSequence sequence, int start) {
-    int utf16Length = sequence.length();
+  private static int encodedLengthGeneral(String string, int start) {
+    int utf16Length = string.length();
     int utf8Length = 0;
     for (int i = start; i < utf16Length; i++) {
-      char c = sequence.charAt(i);
+      char c = string.charAt(i);
       if (c < 0x800) {
         utf8Length += (0x7f - c) >>> 31; // branch free!
       } else {
@@ -279,7 +256,7 @@ final class Utf8 {
         // jdk7+: if (Character.isSurrogate(c)) {
         if (Character.MIN_SURROGATE <= c && c <= Character.MAX_SURROGATE) {
           // Check that we have a well-formed surrogate pair.
-          int cp = Character.codePointAt(sequence, i);
+          int cp = Character.codePointAt(string, i);
           if (cp < MIN_SUPPLEMENTARY_CODE_POINT) {
             throw new UnpairedSurrogateException(i, utf16Length);
           }
@@ -290,7 +267,7 @@ final class Utf8 {
     return utf8Length;
   }
 
-  static int encode(CharSequence in, byte[] out, int offset, int length) {
+  static int encode(String in, byte[] out, int offset, int length) {
     return processor.encodeUtf8(in, out, offset, length);
   }
   // End Guava UTF-8 methods.
@@ -349,9 +326,9 @@ final class Utf8 {
    *
    * @param in the source string to be encoded
    * @param out the target buffer to receive the encoded string.
-   * @see Utf8#encode(CharSequence, byte[], int, int)
+   * @see Utf8#encode(String, byte[], int, int)
    */
-  static void encodeUtf8(CharSequence in, ByteBuffer out) {
+  static void encodeUtf8(String in, ByteBuffer out) {
     processor.encodeUtf8(in, out);
   }
 
@@ -377,7 +354,7 @@ final class Utf8 {
   }
 
   /** A processor of UTF-8 strings, providing methods for checking validity and encoding. */
-  // TODO(nathanmittler): Add support for Memory/MemoryBlock on Android.
+  // TODO: Add support for Memory/MemoryBlock on Android.
   abstract static class Processor {
     /**
      * Returns {@code true} if the given byte array slice is a well-formed UTF-8 byte sequence. The
@@ -543,7 +520,7 @@ final class Utf8 {
 
       for (; ; ) {
         // Optimize for interior runs of ASCII bytes.
-        // TODO(nathanmittler): Consider checking 8 bytes at a time after some threshold?
+        // TODO: Consider checking 8 bytes at a time after some threshold?
         // Maybe after seeing a few in a row that are ASCII, go back to fast mode?
         int byte1;
         do {
@@ -591,7 +568,7 @@ final class Utf8 {
             return incompleteStateFor(buffer, byte1, index, limit - index);
           }
 
-          // TODO(nathanmittler): Consider using getInt() to improve performance.
+          // TODO: Consider using getInt() to improve performance.
           int byte2 = buffer.get(index++);
           if (byte2 > (byte) 0xBF
               // Check that 1 <= plane <= 16.  Tricky optimized form of:
@@ -747,7 +724,7 @@ final class Utf8 {
      *     {@code bytes.length - offset}
      * @return the new offset, equivalent to {@code offset + Utf8.encodedLength(sequence)}
      */
-    abstract int encodeUtf8(CharSequence in, byte[] out, int offset, int length);
+    abstract int encodeUtf8(String in, byte[] out, int offset, int length);
 
     /**
      * Encodes an input character sequence ({@code in}) to UTF-8 in the target buffer ({@code out}).
@@ -766,11 +743,11 @@ final class Utf8 {
      * @throws ArrayIndexOutOfBoundsException if {@code in} encoded in UTF-8 is longer than {@code
      *     out.remaining()}
      */
-    final void encodeUtf8(CharSequence in, ByteBuffer out) {
+    final void encodeUtf8(String in, ByteBuffer out) {
       if (out.hasArray()) {
         final int offset = out.arrayOffset();
         int endIndex = Utf8.encode(in, out.array(), offset + out.position(), out.remaining());
-        out.position(endIndex - offset);
+        Java8Compatibility.position(out, endIndex - offset);
       } else if (out.isDirect()) {
         encodeUtf8Direct(in, out);
       } else {
@@ -779,13 +756,13 @@ final class Utf8 {
     }
 
     /** Encodes the input character sequence to a direct {@link ByteBuffer} instance. */
-    abstract void encodeUtf8Direct(CharSequence in, ByteBuffer out);
+    abstract void encodeUtf8Direct(String in, ByteBuffer out);
 
     /**
      * Encodes the input character sequence to a {@link ByteBuffer} instance using the {@link
      * ByteBuffer} API, rather than potentially faster approaches.
      */
-    final void encodeUtf8Default(CharSequence in, ByteBuffer out) {
+    final void encodeUtf8Default(String in, ByteBuffer out) {
       final int inLength = in.length();
       int outIx = out.position();
       int inIx = 0;
@@ -801,7 +778,7 @@ final class Utf8 {
         }
         if (inIx == inLength) {
           // Successfully encoded the entire string.
-          out.position(outIx + inIx);
+          Java8Compatibility.position(out, outIx + inIx);
           return;
         }
 
@@ -834,7 +811,7 @@ final class Utf8 {
             if (inIx + 1 == inLength || !isSurrogatePair(c, (low = in.charAt(++inIx)))) {
               throw new UnpairedSurrogateException(inIx, inLength);
             }
-            // TODO(nathanmittler): Consider using putInt() to improve performance.
+            // TODO: Consider using putInt() to improve performance.
             int codePoint = toCodePoint(c, low);
             out.put(outIx++, (byte) ((0xF << 4) | (codePoint >>> 18)));
             out.put(outIx++, (byte) (0x80 | (0x3F & (codePoint >>> 12))));
@@ -844,9 +821,9 @@ final class Utf8 {
         }
 
         // Successfully encoded the entire string.
-        out.position(outIx);
+        Java8Compatibility.position(out, outIx);
       } catch (IndexOutOfBoundsException e) {
-        // TODO(nathanmittler): Consider making the API throw IndexOutOfBoundsException instead.
+        // TODO: Consider making the API throw IndexOutOfBoundsException instead.
 
         // If we failed in the outer ASCII loop, outIx will not have been updated. In this case,
         // use inIx to determine the bad write index.
@@ -1036,7 +1013,7 @@ final class Utf8 {
     }
 
     @Override
-    int encodeUtf8(CharSequence in, byte[] out, int offset, int length) {
+    int encodeUtf8(String in, byte[] out, int offset, int length) {
       int utf16Length = in.length();
       int j = offset;
       int i = 0;
@@ -1088,7 +1065,7 @@ final class Utf8 {
     }
 
     @Override
-    void encodeUtf8Direct(CharSequence in, ByteBuffer out) {
+    void encodeUtf8Direct(String in, ByteBuffer out) {
       // For safe processing, we have to use the ByteBuffer API.
       encodeUtf8Default(in, out);
     }
@@ -1369,13 +1346,13 @@ final class Utf8 {
     String decodeUtf8(byte[] bytes, int index, int size) throws InvalidProtocolBufferException {
       String s = new String(bytes, index, size, Internal.UTF_8);
 
-      // "\uFFFD" is UTF-8 default replacement string, which illegal byte sequences get replaced
+      // '\uFFFD' is the UTF-8 default replacement char, which illegal byte sequences get replaced
       // with.
-      if (!s.contains("\uFFFD")) {
+      if (s.indexOf('\uFFFD') < 0) {
         return s;
       }
 
-      // Since s contains "\uFFFD" there are 2 options:
+      // Since s contains '\uFFFD' there are 2 options:
       // 1) The byte array slice is invalid UTF-8.
       // 2) The byte array slice is valid UTF-8 and contains encodings for "\uFFFD".
       // To rule out (1), we encode s and compare it to the byte array slice.
@@ -1465,7 +1442,7 @@ final class Utf8 {
     }
 
     @Override
-    int encodeUtf8(final CharSequence in, final byte[] out, final int offset, final int length) {
+    int encodeUtf8(final String in, final byte[] out, final int offset, final int length) {
       long outIx = offset;
       final long outLimit = outIx + length;
       final int inLimit = in.length();
@@ -1526,7 +1503,7 @@ final class Utf8 {
     }
 
     @Override
-    void encodeUtf8Direct(CharSequence in, ByteBuffer out) {
+    void encodeUtf8Direct(String in, ByteBuffer out) {
       final long address = addressOffset(out);
       long outIx = address + out.position();
       final long outLimit = address + out.limit();
@@ -1545,7 +1522,7 @@ final class Utf8 {
       }
       if (inIx == inLimit) {
         // We're done, it was ASCII encoded.
-        out.position((int) (outIx - address));
+        Java8Compatibility.position(out, (int) (outIx - address));
         return;
       }
 
@@ -1585,7 +1562,7 @@ final class Utf8 {
       }
 
       // All bytes have been encoded.
-      out.position((int) (outIx - address));
+      Java8Compatibility.position(out, (int) (outIx - address));
     }
 
     /**
@@ -1674,7 +1651,7 @@ final class Utf8 {
 
       for (; ; ) {
         // Optimize for interior runs of ASCII bytes.
-        // TODO(nathanmittler): Consider checking 8 bytes at a time after some threshold?
+        // TODO: Consider checking 8 bytes at a time after some threshold?
         // Maybe after seeing a few in a row that are ASCII, go back to fast mode?
         int byte1 = 0;
         for (; remaining > 0 && (byte1 = UnsafeUtil.getByte(bytes, offset++)) >= 0; --remaining) {}
@@ -1748,7 +1725,7 @@ final class Utf8 {
 
       for (; ; ) {
         // Optimize for interior runs of ASCII bytes.
-        // TODO(nathanmittler): Consider checking 8 bytes at a time after some threshold?
+        // TODO: Consider checking 8 bytes at a time after some threshold?
         // Maybe after seeing a few in a row that are ASCII, go back to fast mode?
         int byte1 = 0;
         for (; remaining > 0 && (byte1 = UnsafeUtil.getByte(address++)) >= 0; --remaining) {}

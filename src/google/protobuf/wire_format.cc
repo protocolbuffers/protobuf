@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -411,10 +388,6 @@ bool WireFormat::ParseAndMergeMessageSetField(uint32_t field_number,
   }
 }
 
-static bool StrictUtf8Check(const FieldDescriptor* field) {
-  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
-}
-
 bool WireFormat::ParseAndMergeField(
     uint32_t tag,
     const FieldDescriptor* field,  // May be nullptr for unknown
@@ -484,8 +457,7 @@ bool WireFormat::ParseAndMergeField(
           if (!WireFormatLite::ReadPrimitive<int, WireFormatLite::TYPE_ENUM>(
                   input, &value))
             return false;
-          if (message->GetDescriptor()->file()->syntax() ==
-              FileDescriptor::SYNTAX_PROTO3) {
+          if (!field->legacy_enum_field_treated_as_closed()) {
             message_reflection->AddEnumValue(message, field, value);
           } else {
             const EnumValueDescriptor* enum_value =
@@ -566,7 +538,7 @@ bool WireFormat::ParseAndMergeField(
 
       // Handle strings separately so that we can optimize the ctype=CORD case.
       case FieldDescriptor::TYPE_STRING: {
-        bool strict_utf8_check = StrictUtf8Check(field);
+        bool strict_utf8_check = field->requires_utf8_validation();
         std::string value;
         if (!WireFormatLite::ReadString(input, &value)) return false;
         if (strict_utf8_check) {
@@ -588,6 +560,12 @@ bool WireFormat::ParseAndMergeField(
       }
 
       case FieldDescriptor::TYPE_BYTES: {
+        if (internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD) {
+          absl::Cord value;
+          if (!WireFormatLite::ReadBytes(input, &value)) return false;
+          message_reflection->SetString(message, field, value);
+          break;
+        }
         std::string value;
         if (!WireFormatLite::ReadBytes(input, &value)) return false;
         if (field->is_repeated()) {
@@ -655,7 +633,7 @@ bool WireFormat::ParseAndMergeMessageSetItem(io::CodedInputStream* input,
 }
 
 struct WireFormat::MessageSetParser {
-  const char* _InternalParse(const char* ptr, internal::ParseContext* ctx) {
+  const char* ParseElement(const char* ptr, internal::ParseContext* ctx) {
     // Parse a MessageSetItem
     auto metadata = reflection->MutableInternalMetadata(msg);
     enum class State { kNoTag, kHasType, kHasPayload, kDone };
@@ -670,12 +648,14 @@ struct WireFormat::MessageSetParser {
       if (tag == WireFormatLite::kMessageSetTypeIdTag) {
         uint64_t tmp;
         ptr = ParseBigVarint(ptr, &tmp);
-        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+        // We should fail parsing if type id is 0 after cast to uint32.
+        GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr &&
+                                       static_cast<uint32_t>(tmp) != 0);
         if (state == State::kNoTag) {
-          type_id = tmp;
+          type_id = static_cast<uint32_t>(tmp);
           state = State::kHasType;
         } else if (state == State::kHasPayload) {
-          type_id = tmp;
+          type_id = static_cast<uint32_t>(tmp);
           const FieldDescriptor* field;
           if (ctx->data().pool == nullptr) {
             field = reflection->FindKnownExtensionByNumber(type_id);
@@ -695,10 +675,9 @@ struct WireFormat::MessageSetParser {
                                                  ctx->data().factory);
             const char* p;
             // We can't use regular parse from string as we have to track
-            // proper recursion depth and descriptor pools.
-            ParseContext tmp_ctx(ctx->depth(), false, &p, payload);
-            tmp_ctx.data().pool = ctx->data().pool;
-            tmp_ctx.data().factory = ctx->data().factory;
+            // proper recursion depth and descriptor pools. Spawn a new
+            // ParseContext inheriting those attributes.
+            ParseContext tmp_ctx(ParseContext::kSpawn, *ctx, &p, payload);
             GOOGLE_PROTOBUF_PARSER_ASSERT(value->_InternalParse(p, &tmp_ctx) &&
                                            tmp_ctx.EndedAtLimit());
           }
@@ -760,7 +739,8 @@ struct WireFormat::MessageSetParser {
       }
       if (tag == WireFormatLite::kMessageSetItemStartTag) {
         // A message set item starts
-        ptr = ctx->ParseGroup(this, ptr, tag);
+        ptr = ctx->ParseGroupInlined(
+            ptr, tag, [&](const char* ptr) { return ParseElement(ptr, ctx); });
       } else {
         // Parse other fields as normal extensions.
         int field_number = WireFormatLite::GetTagFieldNumber(tag);
@@ -785,6 +765,44 @@ struct WireFormat::MessageSetParser {
   const Descriptor* descriptor;
   const Reflection* reflection;
 };
+
+static const char* HandleMessage(Message* msg, const char* ptr,
+                                 internal::ParseContext* ctx, uint64_t tag,
+                                 const Reflection* reflection,
+                                 const FieldDescriptor* field) {
+  Message* sub_message;
+  if (field->is_repeated()) {
+    sub_message = reflection->AddMessage(msg, field, ctx->data().factory);
+  } else {
+    sub_message = reflection->MutableMessage(msg, field, ctx->data().factory);
+  }
+
+  if (WireFormatLite::GetTagWireType(tag) ==
+      WireFormatLite::WIRETYPE_START_GROUP) {
+    return ctx->ParseGroup(sub_message, ptr, tag);
+  } else {
+    ABSL_DCHECK(WireFormatLite::GetTagWireType(tag) ==
+                WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+  }
+
+  ptr = ctx->ParseMessage(sub_message, ptr);
+
+  // For map entries, if the value is an unknown enum we have to push it
+  // into the unknown field set and remove it from the list.
+  if (ptr != nullptr && field->is_map()) {
+    auto* value_field = field->message_type()->map_value();
+    auto* enum_type = value_field->enum_type();
+    if (enum_type != nullptr &&
+        !internal::cpp::HasPreservingUnknownEnumSemantics(value_field) &&
+        enum_type->FindValueByNumber(sub_message->GetReflection()->GetEnumValue(
+            *sub_message, value_field)) == nullptr) {
+      reflection->MutableUnknownFields(msg)->AddLengthDelimited(
+          field->number(), sub_message->SerializeAsString());
+      reflection->RemoveLast(msg, field);
+    }
+  }
+  return ptr;
+}
 
 const char* WireFormat::_InternalParse(Message* msg, const char* ptr,
                                        internal::ParseContext* ctx) {
@@ -868,13 +886,11 @@ const char* WireFormat::_InternalParseAndMergeField(
         case FieldDescriptor::TYPE_ENUM: {
           auto rep_enum =
               reflection->MutableRepeatedFieldInternal<int>(msg, field);
-          bool open_enum = false;
-          if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 ||
-              open_enum) {
+          if (!field->legacy_enum_field_treated_as_closed()) {
             ptr = internal::PackedEnumParser(rep_enum, ptr, ctx);
           } else {
             return ctx->ReadPackedVarint(
-                ptr, [rep_enum, field, reflection, msg](uint64_t val) {
+                ptr, [rep_enum, field, reflection, msg](int32_t val) {
                   if (field->enum_type()->FindValueByNumber(val) != nullptr) {
                     rep_enum->Add(val);
                   } else {
@@ -982,11 +998,18 @@ const char* WireFormat::_InternalParseAndMergeField(
     // Handle strings separately so that we can optimize the ctype=CORD case.
     case FieldDescriptor::TYPE_STRING:
       utf8_check = true;
-      strict_utf8_check = StrictUtf8Check(field);
-      PROTOBUF_FALLTHROUGH_INTENDED;
+      strict_utf8_check = field->requires_utf8_validation();
+      ABSL_FALLTHROUGH_INTENDED;
     case FieldDescriptor::TYPE_BYTES: {
       int size = ReadSize(&ptr);
       if (ptr == nullptr) return nullptr;
+      if (internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD) {
+        absl::Cord value;
+        ptr = ctx->ReadCord(ptr, size, &value);
+        if (ptr == nullptr) return nullptr;
+        reflection->SetString(msg, field, value);
+        return ptr;
+      }
       std::string value;
       ptr = ctx->ReadString(ptr, size, &value);
       if (ptr == nullptr) return nullptr;
@@ -1010,28 +1033,9 @@ const char* WireFormat::_InternalParseAndMergeField(
       return ptr;
     }
 
-    case FieldDescriptor::TYPE_GROUP: {
-      Message* sub_message;
-      if (field->is_repeated()) {
-        sub_message = reflection->AddMessage(msg, field, ctx->data().factory);
-      } else {
-        sub_message =
-            reflection->MutableMessage(msg, field, ctx->data().factory);
-      }
-
-      return ctx->ParseGroup(sub_message, ptr, tag);
-    }
-
-    case FieldDescriptor::TYPE_MESSAGE: {
-      Message* sub_message;
-      if (field->is_repeated()) {
-        sub_message = reflection->AddMessage(msg, field, ctx->data().factory);
-      } else {
-        sub_message =
-            reflection->MutableMessage(msg, field, ctx->data().factory);
-      }
-      return ctx->ParseMessage(sub_message, ptr);
-    }
+    case FieldDescriptor::TYPE_MESSAGE:
+    case FieldDescriptor::TYPE_GROUP:
+      return HandleMessage(msg, ptr, ctx, tag, reflection, field);
   }
 
   // GCC 8 complains about control reaching end of non-void function here.
@@ -1400,7 +1404,7 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
       // Handle strings separately so that we can get string references
       // instead of copying.
       case FieldDescriptor::TYPE_STRING: {
-        bool strict_utf8_check = StrictUtf8Check(field);
+        bool strict_utf8_check = field->requires_utf8_validation();
         std::string scratch;
         const std::string& value =
             field->is_repeated()
@@ -1421,6 +1425,11 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
       }
 
       case FieldDescriptor::TYPE_BYTES: {
+        if (internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD) {
+          absl::Cord value = message_reflection->GetCord(message, field);
+          target = stream->WriteString(field->number(), value, target);
+          break;
+        }
         std::string scratch;
         const std::string& value =
             field->is_repeated()
@@ -1448,11 +1457,11 @@ uint8_t* WireFormat::InternalSerializeMessageSetItem(
   // Write type ID.
   target = WireFormatLite::WriteUInt32ToArray(
       WireFormatLite::kMessageSetTypeIdNumber, field->number(), target);
-  // Write message.
-  auto& msg = message_reflection->GetMessage(message, field);
-  target = WireFormatLite::InternalWriteMessage(
-      WireFormatLite::kMessageSetMessageNumber, msg, msg.GetCachedSize(),
-      target, stream);
+    // Write message.
+    auto& msg = message_reflection->GetMessage(message, field);
+    target = WireFormatLite::InternalWriteMessage(
+        WireFormatLite::kMessageSetMessageNumber, msg, msg.GetCachedSize(),
+        target, stream);
   // End group.
   target = stream->EnsureSpace(target);
   target = io::CodedOutputStream::WriteTagToArray(
@@ -1717,6 +1726,13 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
     // instead of copying.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: {
+      if (internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD) {
+        for (size_t j = 0; j < count; j++) {
+          absl::Cord value = message_reflection->GetCord(message, field);
+          data_size += WireFormatLite::StringSize(value);
+        }
+        break;
+      }
       for (size_t j = 0; j < count; j++) {
         std::string scratch;
         const std::string& value =
@@ -1743,8 +1759,9 @@ size_t WireFormat::MessageSetItemByteSize(const FieldDescriptor* field,
   our_size += io::CodedOutputStream::VarintSize32(field->number());
 
   // message
-  const Message& sub_message = message_reflection->GetMessage(message, field);
-  size_t message_size = sub_message.ByteSizeLong();
+  size_t message_size;
+    const Message& sub_message = message_reflection->GetMessage(message, field);
+    message_size = sub_message.ByteSizeLong();
 
   our_size += io::CodedOutputStream::VarintSize32(message_size);
   our_size += message_size;

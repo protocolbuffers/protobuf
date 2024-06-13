@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #import <Foundation/Foundation.h>
 
@@ -47,6 +24,8 @@ typedef NS_ENUM(uint8_t, GPBFileSyntax) {
   GPBFileSyntaxProto2 = 2,
   /** Proto3 syntax. */
   GPBFileSyntaxProto3 = 3,
+  /** Editions syntax. */
+  GPBFileSyntaxProtoEditions = 99,
 };
 
 /** Type of proto field. */
@@ -62,7 +41,8 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 /**
  * Describes a proto message.
  **/
-@interface GPBDescriptor : NSObject <NSCopying>
+__attribute__((objc_subclassing_restricted))
+@interface GPBDescriptor : NSObject<NSCopying>
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -124,7 +104,8 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 /**
  * Describes a proto file.
  **/
-@interface GPBFileDescriptor : NSObject
+__attribute__((objc_subclassing_restricted))
+@interface GPBFileDescriptor : NSObject<NSCopying>
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -133,23 +114,17 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 @property(nonatomic, readonly, copy) NSString *package;
 /** The objc prefix declared in the proto file. */
 @property(nonatomic, readonly, copy, nullable) NSString *objcPrefix;
-/**
- * The syntax of the proto file.
- *
- * This should not be used for making decisions about support
- * features/behaviors, what proto2 vs. proto3 syntax has meant has evolved over
- * time, and not more specific methods on the descriptors should be used
- * instead.
- */
+/** The syntax of the proto file, this property will be removed in the future. */
 @property(nonatomic, readonly) GPBFileSyntax syntax
-    __attribute__((deprecated("Syntax is not a good way to decide things about behaviors.")));
+    __attribute__((deprecated("Syntax will be removed in the future.")));
 
 @end
 
 /**
  * Describes a oneof field.
  **/
-@interface GPBOneofDescriptor : NSObject
+__attribute__((objc_subclassing_restricted))
+@interface GPBOneofDescriptor : NSObject<NSCopying>
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -182,7 +157,8 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 /**
  * Describes a proto field.
  **/
-@interface GPBFieldDescriptor : NSObject
+__attribute__((objc_subclassing_restricted))
+@interface GPBFieldDescriptor : NSObject<NSCopying>
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -234,7 +210,8 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 /**
  * Describes a proto enum.
  **/
-@interface GPBEnumDescriptor : NSObject
+__attribute__((objc_subclassing_restricted))
+@interface GPBEnumDescriptor : NSObject<NSCopying>
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
@@ -329,7 +306,8 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 /**
  * Describes a proto extension.
  **/
-@interface GPBExtensionDescriptor : NSObject <NSCopying>
+__attribute__((objc_subclassing_restricted))
+@interface GPBExtensionDescriptor : NSObject<NSCopying>
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

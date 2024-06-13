@@ -68,7 +68,7 @@ C#:
         --action_env=DOTNET_CLI_TELEMETRY_OPTOUT=1 --test_env=DOTNET_CLI_HOME=~ \
         --action_env=DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 
-Objective-c (Mac only):
+Objective-C (Mac only):
 
     $ `bazel test //objectivec:conformance_test --macos_minimum_os=10.9
 

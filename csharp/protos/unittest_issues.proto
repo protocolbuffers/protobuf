@@ -1,56 +1,34 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 syntax = "proto3";
 
 // These proto descriptors have at one time been reported as an issue or defect.
 // They are kept here to replicate the issue, and continue to verify the fix.
 
-// Issue: Non-"Google.Protobuffers" namespace will ensure that protobuffer library types are qualified
-option csharp_namespace = "UnitTest.Issues.TestProtos";
-
+// Issue: Non-"Google.Protobuffers" namespace will ensure that protobuffer
+// library types are qualified
 package unittest_issues;
 
 import "google/protobuf/struct.proto";
+
+option csharp_namespace = "UnitTest.Issues.TestProtos";
 
 // Issue 307: when generating doubly-nested types, any references
 // should be of the form A.Types.B.Types.C.
 message Issue307 {
   message NestedOnce {
-    message NestedTwice {
-    }
+    message NestedTwice {}
   }
 }
 
-// Old issue 13: http://code.google.com/p/protobuf-csharp-port/issues/detail?id=13
-// New issue 309: https://github.com/protocolbuffers/protobuf/issues/309
+// Old issue 13:
+// http://code.google.com/p/protobuf-csharp-port/issues/detail?id=13 New issue
+// 309: https://github.com/protocolbuffers/protobuf/issues/309
 
 // message A {
 //    optional int32 _A = 1;
@@ -60,9 +38,9 @@ message Issue307 {
 //    optional int32 B_ = 1;
 // }
 
-//message AB {
-//    optional int32 a_b = 1;
-//}
+// message AB {
+//     optional int32 a_b = 1;
+// }
 
 // Similar issue with numeric names
 // Java code failed too, so probably best for this to be a restriction.
@@ -74,39 +52,40 @@ message Issue307 {
 // issue 19 - negative enum values
 
 enum NegativeEnum {
-    NEGATIVE_ENUM_ZERO = 0;
-    FiveBelow = -5;
-    MinusOne = -1;
+  NEGATIVE_ENUM_ZERO = 0;
+  FiveBelow = -5;
+  MinusOne = -1;
 }
 
 message NegativeEnumMessage {
-    NegativeEnum value = 1;
-    repeated NegativeEnum values = 2 [packed = false];
-    repeated NegativeEnum packed_values = 3 [packed=true];
+  NegativeEnum value = 1;
+  repeated NegativeEnum values = 2 [packed = false];
+  repeated NegativeEnum packed_values = 3 [packed = true];
 }
 
 // Issue 21: http://code.google.com/p/protobuf-csharp-port/issues/detail?id=21
 // Decorate fields with [deprecated=true] as [System.Obsolete]
 
 message DeprecatedChild {
-    option deprecated = true;
+  option deprecated = true;
 }
 
 enum DeprecatedEnum {
-    option deprecated = true;
-    DEPRECATED_ZERO = 0 [deprecated = true];
-    one = 1;
+  option deprecated = true;
+
+  DEPRECATED_ZERO = 0 [deprecated = true];
+  one = 1;
 }
 
 message DeprecatedFieldsMessage {
-    int32 PrimitiveValue = 1 [deprecated = true];
-    repeated int32 PrimitiveArray = 2 [deprecated = true];
+  int32 PrimitiveValue = 1 [deprecated = true];
+  repeated int32 PrimitiveArray = 2 [deprecated = true];
 
-    DeprecatedChild MessageValue = 3 [deprecated = true];
-    repeated DeprecatedChild MessageArray = 4 [deprecated = true];
+  DeprecatedChild MessageValue = 3 [deprecated = true];
+  repeated DeprecatedChild MessageArray = 4 [deprecated = true];
 
-    DeprecatedEnum EnumValue = 5 [deprecated = true];
-    repeated DeprecatedEnum EnumArray = 6 [deprecated = true];
+  DeprecatedEnum EnumValue = 5 [deprecated = true];
+  repeated DeprecatedEnum EnumArray = 6 [deprecated = true];
 }
 
 // Issue 45: http://code.google.com/p/protobuf-csharp-port/issues/detail?id=45
@@ -116,8 +95,7 @@ message ItemField {
 
 message ReservedNames {
   // Force a nested type called Types
-  message SomeNestedType {
-  }
+  message SomeNestedType {}
 
   int32 types = 1;
   int32 descriptor = 2;
@@ -148,7 +126,6 @@ message TestJsonFieldOrdering {
     int32 o2_int32 = 6;
     string o2_string = 3;
   }
-
 }
 
 message TestJsonName {
@@ -217,4 +194,10 @@ message DisambiguateCommonMembers {
   int32 merge_from = 10;
   int32 on_construction = 11;
   int32 parser = 12;
+}
+
+message Issue11987Message {
+  int32 a = 1 [json_name = 'b'];
+  int32 b = 2 [json_name = 'a'];
+  int32 c = 3 [json_name = 'd'];
 }

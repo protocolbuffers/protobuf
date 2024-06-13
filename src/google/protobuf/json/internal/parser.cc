@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/json/internal/parser.h"
 
@@ -40,11 +17,10 @@
 #include <utility>
 
 #include "google/protobuf/type.pb.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/dynamic_message.h"
-#include "google/protobuf/message.h"
 #include "absl/base/attributes.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
@@ -56,12 +32,15 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/zero_copy_sink.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/json/internal/descriptor_traits.h"
 #include "google/protobuf/json/internal/lexer.h"
 #include "google/protobuf/json/internal/parser_traits.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/stubs/status_macros.h"
 
@@ -720,13 +699,6 @@ absl::Status ParseMap(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
                   }
                   break;
                 }
-                case FieldDescriptor::TYPE_ENUM: {
-                  MaybeOwnedString key_str = key.value;
-                  auto e = ParseEnumFromStr<Traits>(lex, key_str, field);
-                  RETURN_IF_ERROR(e.status());
-                  Traits::SetEnum(key_field, entry, e->value_or(0));
-                  break;
-                }
                 case FieldDescriptor::TYPE_STRING: {
                   Traits::SetString(key_field, entry,
                                     std::move(key.value.ToString()));
@@ -1294,7 +1266,7 @@ absl::Status ParseMessage(JsonLexer& lex, const Desc<Traits>& desc,
           }
         }
 
-        return ParseField<Traits>(lex, desc, name.value.AsView(), msg);
+        return ParseField<Traits>(lex, desc, name.value.ToString(), msg);
       });
 }
 }  // namespace
@@ -1302,7 +1274,9 @@ absl::Status ParseMessage(JsonLexer& lex, const Desc<Traits>& desc,
 absl::Status JsonStringToMessage(absl::string_view input, Message* message,
                                  json_internal::ParseOptions options) {
   MessagePath path(message->GetDescriptor()->full_name());
-  PROTOBUF_DLOG(INFO) << "json2/input: " << absl::CHexEscape(input);
+  if (PROTOBUF_DEBUG) {
+    ABSL_DLOG(INFO) << "json2/input: " << absl::CHexEscape(input);
+  }
   io::ArrayInputStream in(input.data(), input.size());
   JsonLexer lex(&in, options, &path);
 
@@ -1315,9 +1289,10 @@ absl::Status JsonStringToMessage(absl::string_view input, Message* message,
         "extraneous characters after end of JSON object");
   }
 
-  PROTOBUF_DLOG(INFO) << "json2/status: " << s;
-  PROTOBUF_DLOG(INFO) << "json2/output: " << message->DebugString();
-
+  if (PROTOBUF_DEBUG) {
+    ABSL_DLOG(INFO) << "json2/status: " << s;
+    ABSL_DLOG(INFO) << "json2/output: " << message->DebugString();
+  }
   return s;
 }
 
@@ -1348,9 +1323,8 @@ absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
     }
     tee_input.emplace(copy.data(), copy.size());
     tee_output.emplace(&out);
+    ABSL_DLOG(INFO) << "json2/input: " << absl::CHexEscape(copy);
   }
-
-  PROTOBUF_DLOG(INFO) << "json2/input: " << absl::CHexEscape(copy);
 
   // This scope forces the CodedOutputStream inside of `msg` to flush before we
   // possibly handle logging the binary protobuf output.
@@ -1377,10 +1351,10 @@ absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
     tee_output.reset();  // Flush the output stream.
     io::zc_sink_internal::ZeroCopyStreamByteSink(binary_output)
         .Append(out.data(), out.size());
+    ABSL_DLOG(INFO) << "json2/status: " << s;
+    ABSL_DLOG(INFO) << "json2/output: " << absl::BytesToHexString(out);
   }
 
-  PROTOBUF_DLOG(INFO) << "json2/status: " << s;
-  PROTOBUF_DLOG(INFO) << "json2/output: " << absl::BytesToHexString(out);
   return s;
 }
 }  // namespace json_internal

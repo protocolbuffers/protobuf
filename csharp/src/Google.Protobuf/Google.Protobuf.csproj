@@ -5,7 +5,7 @@
     <Description>C# runtime library for Protocol Buffers - Google's data interchange format.</Description>
     <Copyright>Copyright 2015, Google Inc.</Copyright>
     <AssemblyTitle>Google Protocol Buffers</AssemblyTitle>
-    <VersionPrefix>3.21.12</VersionPrefix>
+    <VersionPrefix>3.28.0</VersionPrefix>
     <LangVersion>10.0</LangVersion>
     <Authors>Google Inc.</Authors>
     <TargetFrameworks>netstandard1.1;netstandard2.0;net45;net50</TargetFrameworks>
@@ -23,6 +23,9 @@
     <!-- Include PDB in the built .nupkg -->
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <IsTrimmable>true</IsTrimmable>
+    <!-- Disable warnings about AOT and trimming features on older targets, e.g. netstandard2.0.
+         For now, continue to apply these features to these targets because some packages don't have a target that supports them -->
+    <NoWarn>$(NoWarn);NETSDK1195;NETSDK1210</NoWarn>	  
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">

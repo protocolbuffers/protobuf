@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -49,6 +26,7 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
@@ -72,6 +50,12 @@ namespace compiler {
 class CodeGenerator;     // code_generator.h
 class GeneratorContext;  // code_generator.h
 class DiskSourceTree;    // importer.h
+
+struct TransitiveDependencyOptions {
+  bool include_json_name = false;
+  bool include_source_code_info = false;
+  bool retain_options = false;
+};
 
 // This class implements the command-line interface to the protocol compiler.
 // It is designed to make it very easy to create a custom protocol compiler
@@ -209,6 +193,11 @@ class PROTOC_EXPORT CommandLineInterface {
   void SetVersionInfo(const std::string& text) { version_info_ = text; }
 
 
+  // Configure protoc to act as if we're in opensource.
+  void set_opensource_runtime(bool opensource) {
+    opensource_runtime_ = opensource;
+  }
+
  private:
   // -----------------------------------------------------------------
 
@@ -238,6 +227,11 @@ class PROTOC_EXPORT CommandLineInterface {
       const std::string& codegen_name, uint64_t supported_features,
       const std::vector<const FileDescriptor*>& parsed_files) const;
 
+  bool EnforceEditionsSupport(
+      const std::string& codegen_name, uint64_t supported_features,
+      Edition minimum_edition, Edition maximum_edition,
+      const std::vector<const FileDescriptor*>& parsed_files) const;
+
 
   // Return status for ParseArguments() and InterpretArgument().
   enum ParseArgumentStatus {
@@ -251,7 +245,7 @@ class PROTOC_EXPORT CommandLineInterface {
 
   // Read an argument file and append the file's content to the list of
   // arguments. Return false if the file cannot be read.
-  bool ExpandArgumentFile(const std::string& file,
+  bool ExpandArgumentFile(const char* file,
                           std::vector<std::string>* arguments);
 
   // Parses a command-line argument into a name/value pair.  Returns
@@ -286,6 +280,8 @@ class PROTOC_EXPORT CommandLineInterface {
                        DiskSourceTree* source_tree,
                        std::vector<const FileDescriptor*>* parsed_files);
 
+  bool SetupFeatureResolution(DescriptorPool& pool);
+
   // Generate the given output file from the given input.
   struct OutputDirective;  // see below
   bool GenerateOutput(const std::vector<const FileDescriptor*>& parsed_files,
@@ -303,26 +299,14 @@ class PROTOC_EXPORT CommandLineInterface {
   bool WriteDescriptorSet(
       const std::vector<const FileDescriptor*>& parsed_files);
 
+  // Implements the --edition_defaults_out option.
+  bool WriteEditionDefaults(const DescriptorPool& pool);
+
   // Implements the --dependency_out option
   bool GenerateDependencyManifestFile(
       const std::vector<const FileDescriptor*>& parsed_files,
       const GeneratorContextMap& output_directories,
       DiskSourceTree* source_tree);
-
-  // Get all transitive dependencies of the given file (including the file
-  // itself), adding them to the given list of FileDescriptorProtos.  The
-  // protos will be ordered such that every file is listed before any file that
-  // depends on it, so that you can call DescriptorPool::BuildFile() on them
-  // in order.  Any files in *already_seen will not be added, and each file
-  // added will be inserted into *already_seen.  If include_source_code_info is
-  // true then include the source code information in the FileDescriptorProtos.
-  // If include_json_name is true, populate the json_name field of
-  // FieldDescriptorProto for all fields.
-  static void GetTransitiveDependencies(
-      const FileDescriptor* file, bool include_json_name,
-      bool include_source_code_info,
-      absl::flat_hash_set<const FileDescriptor*>* already_seen,
-      RepeatedPtrField<FileDescriptorProto>* output);
 
   // Implements the --print_free_field_numbers. This function prints free field
   // numbers into stdout for the message and it's nested message types in
@@ -339,6 +323,22 @@ class PROTOC_EXPORT CommandLineInterface {
   // Extension ranges are considered ocuppied field numbers and they will not be
   // listed as free numbers in the output.
   void PrintFreeFieldNumbers(const Descriptor* descriptor);
+
+  // Get all transitive dependencies of the given file (including the file
+  // itself), adding them to the given list of FileDescriptorProtos.  The
+  // protos will be ordered such that every file is listed before any file that
+  // depends on it, so that you can call DescriptorPool::BuildFile() on them
+  // in order.  Any files in *already_seen will not be added, and each file
+  // added will be inserted into *already_seen.  If include_source_code_info
+  // (from TransitiveDependencyOptions) is true then include the source code
+  // information in the FileDescriptorProtos. If include_json_name is true,
+  // populate the json_name field of FieldDescriptorProto for all fields.
+  void GetTransitiveDependencies(
+      const FileDescriptor* file,
+      absl::flat_hash_set<const FileDescriptor*>* already_seen,
+      RepeatedPtrField<FileDescriptorProto>* output,
+      const TransitiveDependencyOptions& options =
+          TransitiveDependencyOptions());
 
   // -----------------------------------------------------------------
 
@@ -366,7 +366,8 @@ class PROTOC_EXPORT CommandLineInterface {
   //   protoc --foo_out=outputdir --foo_opt=enable_bar ...
   // Then there will be an entry ("--foo_out", "enable_bar") in this map.
   absl::flat_hash_map<std::string, std::string> generator_parameters_;
-  // Similar to generator_parameters_, but stores the parameters for plugins.
+  // Similar to generator_parameters_, stores the parameters for plugins but the
+  // key is the actual plugin name e.g. "protoc-gen-foo".
   absl::flat_hash_map<std::string, std::string> plugin_parameters_;
 
   // See AllowPlugins().  If this is empty, plugins aren't allowed.
@@ -439,9 +440,15 @@ class PROTOC_EXPORT CommandLineInterface {
   // FileDescriptorSet should be written.  Otherwise, empty.
   std::string descriptor_set_out_name_;
 
+  std::string edition_defaults_out_name_;
+  Edition edition_defaults_minimum_;
+  Edition edition_defaults_maximum_;
+
   // If --dependency_out was given, this is the path to the file where the
   // dependency file will be written. Otherwise, empty.
   std::string dependency_out_name_;
+
+  bool experimental_editions_ = false;
 
   // True if --include_imports was given, meaning that we should
   // write all transitive dependencies to the DescriptorSet.  Otherwise, only
@@ -452,11 +459,19 @@ class PROTOC_EXPORT CommandLineInterface {
   // SourceCodeInfo from the DescriptorSet.
   bool source_info_in_descriptor_set_ = false;
 
+  // True if --retain_options was given, meaning that we shouldn't strip any
+  // options from the DescriptorSet, even if they have RETENTION_SOURCE
+  // specified.
+  bool retain_options_in_descriptor_set_ = false;
+
   // Was the --disallow_services flag used?
   bool disallow_services_ = false;
 
   // When using --encode, this will be passed to SetSerializationDeterministic.
   bool deterministic_output_ = false;
+
+  bool opensource_runtime_ = google::protobuf::internal::IsOss();
+
 };
 
 }  // namespace compiler

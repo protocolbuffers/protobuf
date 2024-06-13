@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -36,18 +13,14 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <functional>
 #include <limits>
 #include <memory>
 #include <queue>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
-#include "google/protobuf/compiler/scc.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/dynamic_message.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
@@ -55,14 +28,20 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
-#include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/compiler/scc.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -75,24 +54,19 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-
 namespace {
-
-static const char kAnyMessageName[] = "Any";
-static const char kAnyProtoFile[] = "google/protobuf/any.proto";
-
-std::string DotsToColons(absl::string_view name) {
-  return absl::StrReplaceAll(name, {{".", "::"}});
-}
+constexpr absl::string_view kAnyMessageName = "Any";
+constexpr absl::string_view kAnyProtoFile = "google/protobuf/any.proto";
 
 static const char* const kKeywordList[] = {
-    //
+    // clang-format off
     "NULL",
     "alignas",
     "alignof",
     "and",
     "and_eq",
     "asm",
+    "assert",
     "auto",
     "bitand",
     "bitor",
@@ -180,6 +154,7 @@ static const char* const kKeywordList[] = {
     "co_return",
     "co_yield",
     "requires",
+    // clang-format on
 };
 
 const absl::flat_hash_set<absl::string_view>& Keywords() {
@@ -210,9 +185,9 @@ bool IsLazy(const FieldDescriptor* field, const Options& options,
 
 // Returns true if "field" is a message field that is backed by LazyField per
 // profile (go/pdlazy).
-inline bool IsEagerlyVerifiedLazyByProfile(const FieldDescriptor* field,
-                                           const Options& options,
-                                           MessageSCCAnalyzer* scc_analyzer) {
+inline bool IsLazyByProfile(const FieldDescriptor* field,
+                            const Options& options,
+                            MessageSCCAnalyzer* scc_analyzer) {
   return false;
 }
 
@@ -224,6 +199,18 @@ bool IsEagerlyVerifiedLazy(const FieldDescriptor* field, const Options& options,
 bool IsLazilyVerifiedLazy(const FieldDescriptor* field,
                           const Options& options) {
   return false;
+}
+
+internal::field_layout::TransformValidation GetLazyStyle(
+    const FieldDescriptor* field, const Options& options,
+    MessageSCCAnalyzer* scc_analyzer) {
+  if (IsEagerlyVerifiedLazy(field, options, scc_analyzer)) {
+    return internal::field_layout::kTvEager;
+  }
+  if (IsLazilyVerifiedLazy(field, options)) {
+    return internal::field_layout::kTvLazy;
+  }
+  return {};
 }
 
 absl::flat_hash_map<absl::string_view, std::string> MessageVars(
@@ -254,18 +241,17 @@ void SetCommonMessageDataVariables(
 
 absl::flat_hash_map<absl::string_view, std::string> UnknownFieldsVars(
     const Descriptor* desc, const Options& opts) {
-  std::string proto_ns = ProtobufNamespace(opts);
-
   std::string unknown_fields_type;
   std::string default_instance;
   if (UseUnknownFieldSet(desc->file(), opts)) {
-    unknown_fields_type = absl::StrCat("::", proto_ns, "::UnknownFieldSet");
+    unknown_fields_type =
+        absl::StrCat("::", ProtobufNamespace(opts), "::UnknownFieldSet");
     default_instance = absl::StrCat(unknown_fields_type, "::default_instance");
   } else {
     unknown_fields_type =
         PrimitiveTypeName(opts, FieldDescriptor::CPPTYPE_STRING);
-    default_instance =
-        absl::StrCat("::", proto_ns, "::internal::GetEmptyString");
+    default_instance = absl::StrCat("::", ProtobufNamespace(opts),
+                                    "::internal::GetEmptyString");
   }
 
   return {
@@ -322,6 +308,11 @@ const char kThinSeparator[] =
 bool CanInitializeByZeroing(const FieldDescriptor* field,
                             const Options& options,
                             MessageSCCAnalyzer* scc_analyzer) {
+  static_assert(
+      std::numeric_limits<float>::is_iec559 &&
+          std::numeric_limits<double>::is_iec559,
+      "proto / abseil requires iec559, which has zero initialized floats.");
+
   if (field->is_repeated() || field->is_extension()) return false;
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_ENUM:
@@ -447,6 +438,21 @@ std::string QualifiedExtensionName(const FieldDescriptor* d) {
   return QualifiedExtensionName(d, Options());
 }
 
+std::string ResolveKeyword(absl::string_view name) {
+  if (Keywords().count(name) > 0) {
+    return absl::StrCat(name, "_");
+  }
+  return std::string(name);
+}
+
+std::string DotsToColons(absl::string_view name) {
+  std::vector<std::string> scope = absl::StrSplit(name, ".", absl::SkipEmpty());
+  for (auto& word : scope) {
+    word = ResolveKeyword(word);
+  }
+  return absl::StrJoin(scope, "::");
+}
+
 std::string Namespace(absl::string_view package) {
   if (package.empty()) return "";
   return absl::StrCat("::", DotsToColons(package));
@@ -454,18 +460,7 @@ std::string Namespace(absl::string_view package) {
 
 std::string Namespace(const FileDescriptor* d) { return Namespace(d, {}); }
 std::string Namespace(const FileDescriptor* d, const Options& options) {
-  std::string ns = Namespace(d->package());
-  if (IsWellKnownMessage(d) && options.opensource_runtime) {
-    // Written with string concatenation to prevent rewriting of
-    // ::google::protobuf.
-    constexpr absl::string_view prefix =
-        "::google::"  // prevent clang-format reflowing
-        "protobuf";
-    absl::string_view new_ns(ns);
-    absl::ConsumePrefix(&new_ns, prefix);
-    return absl::StrCat("::PROTOBUF_NAMESPACE_ID", new_ns);
-  }
-  return ns;
+  return Namespace(d->package());
 }
 
 std::string Namespace(const Descriptor* d) { return Namespace(d, {}); }
@@ -535,13 +530,6 @@ std::string SuperClassName(const Descriptor* descriptor,
                       "::internal::", simple_base);
 }
 
-std::string ResolveKeyword(absl::string_view name) {
-  if (Keywords().count(name) > 0) {
-    return absl::StrCat(name, "_");
-  }
-  return std::string(name);
-}
-
 std::string FieldName(const FieldDescriptor* field) {
   std::string result = field->name();
   absl::AsciiStrToLower(&result);
@@ -609,6 +597,40 @@ int EstimateAlignmentSize(const FieldDescriptor* field) {
   return -1;  // Make compiler happy.
 }
 
+int EstimateSize(const FieldDescriptor* field) {
+  if (field == nullptr) return 0;
+  if (field->is_repeated()) {
+    if (field->is_map()) {
+      return sizeof(google::protobuf::Map<int32_t, int32_t>);
+    }
+    return field->cpp_type() < FieldDescriptor::CPPTYPE_STRING || IsCord(field)
+               ? sizeof(RepeatedField<int32_t>)
+               : sizeof(internal::RepeatedPtrFieldBase);
+  }
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return 1;
+
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return 4;
+
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return 8;
+
+    case FieldDescriptor::CPPTYPE_STRING:
+      if (IsCord(field)) return sizeof(absl::Cord);
+      return sizeof(internal::ArenaStringPtr);
+  }
+  ABSL_LOG(FATAL) << "Can't get here.";
+  return -1;  // Make compiler happy.
+}
+
 std::string FieldConstantName(const FieldDescriptor* field) {
   std::string field_name = UnderscoresToCamelCase(field->name(), true);
   std::string result = absl::StrCat("k", field_name, "FieldNumber");
@@ -634,7 +656,7 @@ std::string FieldMessageTypeName(const FieldDescriptor* field,
 
 std::string StripProto(absl::string_view filename) {
   /*
-   * TODO(github/georgthegreat) remove this proxy method
+   * TODO remove this proxy method
    * once Google's internal codebase will become ready
    */
   return compiler::StripProto(filename);
@@ -899,11 +921,46 @@ std::string SafeFunctionName(const Descriptor* descriptor,
 }
 
 bool IsProfileDriven(const Options& options) {
-  return options.access_info_map != nullptr;
+  return !options.bootstrap && !options.opensource_runtime &&
+         options.access_info_map != nullptr;
 }
-bool IsStringInlined(const FieldDescriptor* descriptor,
-                     const Options& options) {
-  (void)descriptor;
+
+bool IsRarelyPresent(const FieldDescriptor* field, const Options& options) {
+  return false;
+}
+
+bool IsLikelyPresent(const FieldDescriptor* field, const Options& options) {
+  return false;
+}
+
+float GetPresenceProbability(const FieldDescriptor* field,
+                             const Options& options) {
+  return 1.f;
+}
+
+bool IsStringInliningEnabled(const Options& options) {
+  return options.force_inline_string || IsProfileDriven(options);
+}
+
+bool CanStringBeInlined(const FieldDescriptor* field) {
+  // TODO: Handle inlining for any.proto.
+  if (IsAnyMessage(field->containing_type())) return false;
+  if (field->containing_type()->options().map_entry()) return false;
+  if (field->is_repeated()) return false;
+
+  // We rely on has bits to distinguish field presence for release_$name$.  When
+  // there is no hasbit, we cannot use the address of the string instance when
+  // the field has been inlined.
+  if (!internal::cpp::HasHasbit(field)) return false;
+
+  if (!IsString(field)) return false;
+  if (!field->default_value_string().empty()) return false;
+
+  return true;
+}
+
+bool IsStringInlined(const FieldDescriptor* field, const Options& options) {
+  (void)field;
   (void)options;
   return false;
 }
@@ -945,6 +1002,32 @@ bool HasLazyFields(const FileDescriptor* file, const Options& options,
   return false;
 }
 
+bool ShouldVerify(const Descriptor* descriptor, const Options& options,
+                  MessageSCCAnalyzer* scc_analyzer) {
+  (void)descriptor;
+  (void)options;
+  (void)scc_analyzer;
+  return false;
+}
+
+bool ShouldVerify(const FileDescriptor* file, const Options& options,
+                  MessageSCCAnalyzer* scc_analyzer) {
+  (void)file;
+  (void)options;
+  (void)scc_analyzer;
+  return false;
+}
+
+bool ShouldVerifyRecursively(const FieldDescriptor* field) {
+  (void)field;
+  return false;
+}
+
+VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor) {
+  (void)descriptor;
+  return VerifySimpleType::kCustom;
+}
+
 bool ShouldSplit(const Descriptor*, const Options&) { return false; }
 bool ShouldSplit(const FieldDescriptor*, const Options&) { return false; }
 
@@ -953,6 +1036,20 @@ bool ShouldForceAllocationOnConstruction(const Descriptor* desc,
   (void)desc;
   (void)options;
   return false;
+}
+
+bool IsPresentMessage(const Descriptor* descriptor, const Options& options) {
+  (void)descriptor;
+  (void)options;
+  // Assume that the message is present if there is no profile.
+  return true;
+}
+
+const FieldDescriptor* FindHottestField(
+    const std::vector<const FieldDescriptor*>& fields, const Options& options) {
+  (void)fields;
+  (void)options;
+  return nullptr;
 }
 
 static bool HasRepeatedFields(const Descriptor* descriptor) {
@@ -977,7 +1074,8 @@ bool HasRepeatedFields(const FileDescriptor* file) {
 static bool IsStringPieceField(const FieldDescriptor* field,
                                const Options& options) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         EffectiveStringCType(field, options) == FieldOptions::STRING_PIECE;
+         internal::cpp::EffectiveStringCType(field) ==
+             FieldOptions::STRING_PIECE;
 }
 
 static bool HasStringPieceFields(const Descriptor* descriptor,
@@ -1000,7 +1098,7 @@ bool HasStringPieceFields(const FileDescriptor* file, const Options& options) {
 
 static bool IsCordField(const FieldDescriptor* field, const Options& options) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         EffectiveStringCType(field, options) == FieldOptions::CORD;
+         internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD;
 }
 
 static bool HasCordFields(const Descriptor* descriptor,
@@ -1075,32 +1173,6 @@ bool HasEnumDefinitions(const FileDescriptor* file) {
   return false;
 }
 
-bool ShouldVerify(const Descriptor* descriptor, const Options& options,
-                  MessageSCCAnalyzer* scc_analyzer) {
-  (void)descriptor;
-  (void)options;
-  (void)scc_analyzer;
-  return false;
-}
-
-bool ShouldVerify(const FileDescriptor* file, const Options& options,
-                  MessageSCCAnalyzer* scc_analyzer) {
-  (void)file;
-  (void)options;
-  (void)scc_analyzer;
-  return false;
-}
-
-bool IsUtf8String(const FieldDescriptor* field) {
-  return IsProto3(field->file()) &&
-         field->type() == FieldDescriptor::TYPE_STRING;
-}
-
-VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor) {
-  (void)descriptor;
-  return VerifySimpleType::kCustom;
-}
-
 bool IsStringOrMessage(const FieldDescriptor* field) {
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
@@ -1121,25 +1193,13 @@ bool IsStringOrMessage(const FieldDescriptor* field) {
   return false;
 }
 
-FieldOptions::CType EffectiveStringCType(const FieldDescriptor* field,
-                                         const Options& options) {
-  ABSL_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
-  if (options.opensource_runtime) {
-    // Open-source protobuf release only supports STRING ctype.
-    return FieldOptions::STRING;
-  } else {
-    // Google-internal supports all ctypes.
-    return field->options().ctype();
-  }
-}
-
-bool IsAnyMessage(const FileDescriptor* descriptor, const Options& options) {
+bool IsAnyMessage(const FileDescriptor* descriptor) {
   return descriptor->name() == kAnyProtoFile;
 }
 
-bool IsAnyMessage(const Descriptor* descriptor, const Options& options) {
+bool IsAnyMessage(const Descriptor* descriptor) {
   return descriptor->name() == kAnyMessageName &&
-         IsAnyMessage(descriptor->file(), options);
+         IsAnyMessage(descriptor->file());
 }
 
 bool IsWellKnownMessage(const FileDescriptor* file) {
@@ -1160,7 +1220,8 @@ bool IsWellKnownMessage(const FileDescriptor* file) {
   return well_known_files->find(file->name()) != well_known_files->end();
 }
 
-void NamespaceOpener::ChangeTo(absl::string_view name) {
+void NamespaceOpener::ChangeTo(absl::string_view name,
+                               io::Printer::SourceLocation loc) {
   std::vector<std::string> new_stack =
       absl::StrSplit(name, "::", absl::SkipEmpty());
   size_t len = std::min(name_stack_.size(), new_stack.size());
@@ -1173,75 +1234,65 @@ void NamespaceOpener::ChangeTo(absl::string_view name) {
   }
 
   for (size_t i = name_stack_.size(); i > common_idx; i--) {
-    const auto& ns = name_stack_[i - 1];
-    if (ns == "PROTOBUF_NAMESPACE_ID") {
-      p_->Emit(R"cc(
-        PROTOBUF_NAMESPACE_CLOSE
-      )cc");
-    } else {
-      p_->Emit({{"ns", ns}}, R"(
-          }  // namespace $ns$
-        )");
-    }
+    p_->Emit({{"ns", name_stack_[i - 1]}}, R"(
+      }  // namespace $ns$
+    )",
+             loc);
   }
   for (size_t i = common_idx; i < new_stack.size(); ++i) {
-    const auto& ns = new_stack[i];
-    if (ns == "PROTOBUF_NAMESPACE_ID") {
-      p_->Emit(R"cc(
-        PROTOBUF_NAMESPACE_OPEN
-      )cc");
-    } else {
-      p_->Emit({{"ns", ns}}, R"(
-        namespace $ns$ {
-      )");
-    }
+    p_->Emit({{"ns", new_stack[i]}}, R"(
+      namespace $ns$ {
+    )",
+             loc);
   }
 
   name_stack_ = std::move(new_stack);
 }
 
-static void GenerateUtf8CheckCode(const FieldDescriptor* field,
+static void GenerateUtf8CheckCode(io::Printer* p, const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
-                                  const char* parameters,
-                                  const char* strict_function,
-                                  const char* verify_function,
-                                  const Formatter& format) {
-  switch (internal::cpp::GetUtf8CheckMode(
-      field,
-      GetOptimizeFor(field->file(), options) == FileOptions::LITE_RUNTIME)) {
-    case internal::cpp::Utf8CheckMode::kStrict: {
+                                  absl::string_view params,
+                                  absl::string_view strict_function,
+                                  absl::string_view verify_function) {
+  if (field->type() != FieldDescriptor::TYPE_STRING) return;
+
+  auto v = p->WithVars({
+      {"params", params},
+      {"Strict", strict_function},
+      {"Verify", verify_function},
+  });
+
+  bool is_lite =
+      GetOptimizeFor(field->file(), options) == FileOptions::LITE_RUNTIME;
+  switch (internal::cpp::GetUtf8CheckMode(field, is_lite)) {
+    case internal::cpp::Utf8CheckMode::kStrict:
       if (for_parse) {
-        format("DO_(");
-      }
-      format("::$proto_ns$::internal::WireFormatLite::$1$(\n", strict_function);
-      format.Indent();
-      format(parameters);
-      if (for_parse) {
-        format("::$proto_ns$::internal::WireFormatLite::PARSE,\n");
+        p->Emit(R"cc(
+          DO_($pbi$::WireFormatLite::$Strict$(
+              $params$ $pbi$::WireFormatLite::PARSE, "$pkg.Msg.field$"));
+        )cc");
       } else {
-        format("::$proto_ns$::internal::WireFormatLite::SERIALIZE,\n");
+        p->Emit(R"cc(
+          $pbi$::WireFormatLite::$Strict$(
+              $params$ $pbi$::WireFormatLite::SERIALIZE, "$pkg.Msg.field$");
+        )cc");
       }
-      format("\"$1$\")", field->full_name());
-      if (for_parse) {
-        format(")");
-      }
-      format(";\n");
-      format.Outdent();
       break;
-    }
-    case internal::cpp::Utf8CheckMode::kVerify: {
-      format("::$proto_ns$::internal::WireFormat::$1$(\n", verify_function);
-      format.Indent();
-      format(parameters);
+
+    case internal::cpp::Utf8CheckMode::kVerify:
       if (for_parse) {
-        format("::$proto_ns$::internal::WireFormat::PARSE,\n");
+        p->Emit(R"cc(
+          $pbi$::WireFormat::$Verify$($params$ $pbi$::WireFormat::PARSE,
+                                      "$pkg.Msg.field$");
+        )cc");
       } else {
-        format("::$proto_ns$::internal::WireFormat::SERIALIZE,\n");
+        p->Emit(R"cc(
+          $pbi$::WireFormat::$Verify$($params$ $pbi$::WireFormat::SERIALIZE,
+                                      "$pkg.Msg.field$");
+        )cc");
       }
-      format("\"$1$\");\n", field->full_name());
-      format.Outdent();
       break;
-    }
+
     case internal::cpp::Utf8CheckMode::kNone:
       break;
   }
@@ -1249,28 +1300,190 @@ static void GenerateUtf8CheckCode(const FieldDescriptor* field,
 
 void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
                                     const Options& options, bool for_parse,
-                                    const char* parameters,
+                                    absl::string_view parameters,
                                     const Formatter& format) {
-  GenerateUtf8CheckCode(field, options, for_parse, parameters,
-                        "VerifyUtf8String", "VerifyUTF8StringNamedField",
-                        format);
+  GenerateUtf8CheckCode(format.printer(), field, options, for_parse, parameters,
+                        "VerifyUtf8String", "VerifyUTF8StringNamedField");
 }
 
 void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
-                                  const char* parameters,
+                                  absl::string_view parameters,
                                   const Formatter& format) {
-  GenerateUtf8CheckCode(field, options, for_parse, parameters, "VerifyUtf8Cord",
-                        "VerifyUTF8CordNamedField", format);
+  GenerateUtf8CheckCode(format.printer(), field, options, for_parse, parameters,
+                        "VerifyUtf8Cord", "VerifyUTF8CordNamedField");
+}
+
+void GenerateUtf8CheckCodeForString(io::Printer* p,
+                                    const FieldDescriptor* field,
+                                    const Options& options, bool for_parse,
+                                    absl::string_view parameters) {
+  GenerateUtf8CheckCode(p, field, options, for_parse, parameters,
+                        "VerifyUtf8String", "VerifyUTF8StringNamedField");
+}
+
+void GenerateUtf8CheckCodeForCord(io::Printer* p, const FieldDescriptor* field,
+                                  const Options& options, bool for_parse,
+                                  absl::string_view parameters) {
+  GenerateUtf8CheckCode(p, field, options, for_parse, parameters,
+                        "VerifyUtf8Cord", "VerifyUTF8CordNamedField");
 }
 
 void FlattenMessagesInFile(const FileDescriptor* file,
                            std::vector<const Descriptor*>* result) {
-  for (int i = 0; i < file->message_type_count(); i++) {
-    ForEachMessage(file->message_type(i), [&](const Descriptor* descriptor) {
-      result->push_back(descriptor);
-    });
+  internal::cpp::VisitDescriptorsInFileOrder(file,
+                                             [&](const Descriptor* descriptor) {
+                                               result->push_back(descriptor);
+                                               return std::false_type{};
+                                             });
+}
+
+// TopologicalSortMessagesInFile topologically sorts and returns a vector of
+// proto descriptors defined in the file provided as input.  The underlying
+// graph is defined using dependency relationship between protos.  For example,
+// if proto A contains proto B as a member, then proto B would be ordered before
+// proto A in a topological ordering, assuming there is no mutual dependence
+// between the two protos.  The topological order is used to emit proto
+// declarations so that a proto is declared after all the protos it is dependent
+// on have been declared (again assuming no mutual dependence).  This is needed
+// in cases where we may declare proto B as a member of proto A using an object,
+// instead of a pointer.
+//
+// The proto dependency graph can have cycles.  So instead of directly working
+// with protos, we compute strong connected components (SCCs) composed of protos
+// with mutual dependence.  The dependency graph on SCCs is a directed acyclic
+// graph (DAG) and therefore a topological order can be computed for it i.e. an
+// order where an SCC is ordered after all other SCCs it is dependent on have
+// been ordered.
+//
+// The function below first constructs the SCC graph and then computes a
+// deterministic topological order for the graph.
+//
+// For computing the SCC graph, we follow the following steps:
+// 1. Collect the descriptors for the messages in the file.
+// 2. Construct a map for descriptor to SCC mapping.
+// 3. Construct a map for dependence between SCCs, referred to as
+// child_to_parent_scc_map below.  This map constructed by running a BFS on the
+// SCCs.
+//
+// For computing a deterministic topological order on the graph computed in step
+// 3 above, we do the following:
+// 1. Since the graph on SCCs is a DAG, therefore there will be at least one SCC
+// that does not depend on other SCCs.  We first construct a list of all such
+// SCCs.
+// 2. Next we run a BFS starting with the list of SCCs computed in step 1.  For
+// each SCC, we track the number of the SCC it is dependent on and the number of
+// those SCC that have been ordered.  Once all the SCCs an SCC is dependent on
+// have been ordered, this SCC is added to list of SCCs that are to be ordered
+// next.
+// 3. Within an SCC, the descriptors are ordered on the basis of the full_name()
+// of the descriptors.
+std::vector<const Descriptor*> TopologicalSortMessagesInFile(
+    const FileDescriptor* file, MessageSCCAnalyzer& scc_analyzer) {
+  // Collect the messages defined in this file.
+  std::vector<const Descriptor*> messages_in_file = FlattenMessagesInFile(file);
+  if (messages_in_file.empty()) return {};
+  // Populate the map from the descriptor to the SCC to which the descriptor
+  // belongs.
+  absl::flat_hash_map<const Descriptor*, const SCC*> descriptor_to_scc_map;
+  descriptor_to_scc_map.reserve(messages_in_file.size());
+  for (const Descriptor* d : messages_in_file) {
+    descriptor_to_scc_map.emplace(d, scc_analyzer.GetSCC(d));
   }
+  ABSL_DCHECK(messages_in_file.size() == descriptor_to_scc_map.size())
+      << "messages_in_file has duplicate messages!";
+  // Each parent SCC has information about the child SCCs i.e. SCCs for fields
+  // that are contained in the protos that belong to the parent SCC.  Use this
+  // information to construct the inverse map from child SCC to parent SCC.
+  absl::flat_hash_map<const SCC*, absl::flat_hash_set<const SCC*>>
+      child_to_parent_scc_map;
+  // For recording the number of edges from each SCC to other SCCs in the
+  // forward map.
+  absl::flat_hash_map<const SCC*, int> scc_to_outgoing_edges_map;
+  std::queue<const SCC*> sccs_to_process;
+  for (const auto& p : descriptor_to_scc_map) {
+    sccs_to_process.push(p.second);
+  }
+  // Run a BFS to fill the two data structures: child_to_parent_scc_map and
+  // scc_to_outgoing_edges_map.
+  while (!sccs_to_process.empty()) {
+    const SCC* scc = sccs_to_process.front();
+    sccs_to_process.pop();
+    auto& count = scc_to_outgoing_edges_map[scc];
+    for (const auto& child : scc->children) {
+      // Test whether this child has been seen thus far.  We do not know if the
+      // children SCC vector contains unique children SCC.
+      auto& parent_set = child_to_parent_scc_map[child];
+      if (parent_set.empty()) {
+        // Just added.
+        sccs_to_process.push(child);
+      }
+      auto ret = parent_set.insert(scc);
+      if (ret.second) {
+        ++count;
+      }
+    }
+  }
+  std::vector<const SCC*> next_scc_q;
+  // Find out the SCCs that do not have an outgoing edge i.e. the protos in this
+  // SCC do not depend on protos other than the ones in this SCC.
+  for (const auto& p : scc_to_outgoing_edges_map) {
+    if (p.second == 0) {
+      next_scc_q.push_back(p.first);
+    }
+  }
+  ABSL_DCHECK(!next_scc_q.empty()) << "No independent components!";
+  // Topologically sort the SCCs.
+  // If an SCC no longer has an outgoing edge i.e. all the SCCs it depends on
+  // have been ordered, then this SCC is now a candidate for ordering.
+  std::vector<const Descriptor*> sorted_messages;
+  while (!next_scc_q.empty()) {
+    std::vector<const SCC*> current_scc_q;
+    current_scc_q.swap(next_scc_q);
+    // SCCs present in the current_scc_q are topologically equivalent to each
+    // other.  Therefore they can be added to the output in any order.  We sort
+    // these SCCs by the full_name() of the first descriptor that belongs to the
+    // SCC.  This works well since the descriptors in each SCC are sorted by
+    // full_name() and also that a descriptor can be part of only one SCC.
+    std::sort(current_scc_q.begin(), current_scc_q.end(),
+              [](const SCC* a, const SCC* b) {
+                ABSL_DCHECK(!a->descriptors.empty()) << "No descriptors!";
+                ABSL_DCHECK(!b->descriptors.empty()) << "No descriptors!";
+                const Descriptor* ad = a->descriptors[0];
+                const Descriptor* bd = b->descriptors[0];
+                return ad->full_name() < bd->full_name();
+              });
+    while (!current_scc_q.empty()) {
+      const SCC* scc = current_scc_q.back();
+      current_scc_q.pop_back();
+      // Messages in an SCC are already sorted on full_name().  So we can emit
+      // them right away.
+      for (const Descriptor* d : scc->descriptors) {
+        // Only push messages that are defined in the file.
+        if (descriptor_to_scc_map.contains(d)) {
+          sorted_messages.push_back(d);
+        }
+      }
+      // Find all the SCCs that are dependent on the current SCC.
+      const auto& parents = child_to_parent_scc_map.find(scc);
+      if (parents == child_to_parent_scc_map.end()) continue;
+      for (const SCC* parent : parents->second) {
+        auto it = scc_to_outgoing_edges_map.find(parent);
+        ABSL_CHECK(it != scc_to_outgoing_edges_map.end());
+        ABSL_CHECK(it->second > 0);
+        // Reduce the dependency count for the SCC.  In case the dependency
+        // count reaches 0, add the SCC to the list of SCCs to be ordered next.
+        it->second--;
+        if (it->second == 0) {
+          next_scc_q.push_back(parent);
+        }
+      }
+    }
+  }
+  for (const auto& p : scc_to_outgoing_edges_map) {
+    ABSL_DCHECK(p.second == 0) << "SCC left behind!";
+  }
+  return sorted_messages;
 }
 
 bool HasWeakFields(const Descriptor* descriptor, const Options& options) {
@@ -1285,6 +1498,36 @@ bool HasWeakFields(const FileDescriptor* file, const Options& options) {
     if (HasWeakFields(file->message_type(i), options)) return true;
   }
   return false;
+}
+
+bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
+                                 const Options& options) {
+  return HasDescriptorMethods(file, options) &&
+         !IsBootstrapProto(options, file) &&
+         options.descriptor_implicit_weak_messages &&
+         !options.opensource_runtime;
+}
+
+std::string StrongReferenceToType(const Descriptor* desc,
+                                  const Options& options) {
+  const auto name = QualifiedDefaultInstanceName(desc, options);
+  return absl::StrFormat("::%s::internal::StrongPointer<decltype(%s)*, &%s>()",
+                         ProtobufNamespace(options), name, name);
+}
+
+std::string WeakDescriptorDataSection(absl::string_view prefix,
+                                      const Descriptor* descriptor,
+                                      int index_in_file_messages,
+                                      const Options& options) {
+  const auto* file = descriptor->file();
+
+  // To make a compact name we use the index of the object in its file
+  // of its name.
+  // So the name could be `pb_def_3_HASH` instead of
+  // `pd_def_VeryLongClassName_WithNesting_AndMoreNames_HASH`
+  // We need a know common prefix to merge the sections later on.
+  return UniqueName(absl::StrCat("pb_", prefix, "_", index_in_file_messages),
+                    file, options);
 }
 
 bool UsingImplicitWeakFields(const FileDescriptor* file,
@@ -1415,13 +1658,15 @@ bool GetBootstrapBasename(const Options& options, absl::string_view basename,
   }
 
   static const auto* bootstrap_mapping =
-      // TODO(b/242858704) Replace these with string_view once we remove
+      // TODO Replace these with string_view once we remove
       // StringPiece.
       new absl::flat_hash_map<absl::string_view, std::string>{
           {"net/proto2/proto/descriptor",
            "third_party/protobuf/descriptor"},
-          {"net/proto2/compiler/proto/plugin",
-           "net/proto2/compiler/proto/plugin"},
+          {"third_party/protobuf/cpp_features",
+           "third_party/protobuf/cpp_features"},
+          {"third_party/protobuf/compiler/plugin",
+           "third_party/protobuf/compiler/plugin"},
           {"net/proto2/compiler/proto/profile",
            "net/proto2/compiler/proto/profile_bootstrap"},
       };
@@ -1556,13 +1801,13 @@ static bool HasExtensionFromFile(const Message& msg, const FileDescriptor* file,
 static bool HasBootstrapProblem(const FileDescriptor* file,
                                 const Options& options,
                                 bool* has_opt_codesize_extension) {
-  struct BoostrapGlobals {
+  struct BootstrapGlobals {
     absl::Mutex mutex;
     absl::flat_hash_set<const FileDescriptor*> cached ABSL_GUARDED_BY(mutex);
     absl::flat_hash_set<const FileDescriptor*> non_cached
         ABSL_GUARDED_BY(mutex);
   };
-  static auto& bootstrap_cache = *new BoostrapGlobals();
+  static auto& bootstrap_cache = *new BootstrapGlobals();
 
   absl::MutexLock lock(&bootstrap_cache.mutex);
   if (bootstrap_cache.cached.contains(file)) return true;
@@ -1653,6 +1898,53 @@ bool HasMessageFieldOrExtension(const Descriptor* desc) {
   if (desc->extension_range_count() > 0) return true;
   for (const auto* f : FieldRange(desc)) {
     if (f->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) return true;
+  }
+  return false;
+}
+
+std::vector<io::Printer::Sub> AnnotatedAccessors(
+    const FieldDescriptor* field, absl::Span<const absl::string_view> prefixes,
+    absl::optional<google::protobuf::io::AnnotationCollector::Semantic> semantic) {
+  auto field_name = FieldName(field);
+
+  std::vector<io::Printer::Sub> vars;
+  for (auto prefix : prefixes) {
+    vars.push_back(io::Printer::Sub(absl::StrCat(prefix, "name"),
+                                    absl::StrCat(prefix, field_name))
+                       .AnnotatedAs({field, semantic}));
+  }
+
+  return vars;
+}
+
+bool IsFileDescriptorProto(const FileDescriptor* file, const Options& options) {
+  if (Namespace(file, options) !=
+      absl::StrCat("::", ProtobufNamespace(options))) {
+    return false;
+  }
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    if (file->message_type(i)->name() == "FileDescriptorProto") return true;
+  }
+  return false;
+}
+
+bool ShouldGenerateClass(const Descriptor* descriptor, const Options& options) {
+  return !IsMapEntryMessage(descriptor) ||
+         HasDescriptorMethods(descriptor->file(), options);
+}
+
+bool HasOnDeserializeTracker(const Descriptor* descriptor,
+                             const Options& options) {
+  return HasTracker(descriptor, options) &&
+         !options.field_listener_options.forbidden_field_listener_events
+              .contains("deserialize");
+}
+
+
+bool NeedsPostLoopHandler(const Descriptor* descriptor,
+                          const Options& options) {
+  if (HasOnDeserializeTracker(descriptor, options)) {
+    return true;
   }
   return false;
 }

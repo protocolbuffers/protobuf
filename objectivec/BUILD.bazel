@@ -1,6 +1,61 @@
 load("@rules_cc//cc:defs.bzl", "objc_library")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//conformance:defs.bzl", "conformance_test")
+load("//upb/cmake:build_defs.bzl", "staleness_test")
+load(":defs.bzl", "objc_proto_camel_case_name")
+
+# The WKTs have to be checked in to support the CocoaPods and Xcode builds. This
+# generule and test ensure the source are current.
+#
+# TODO: Improve the bazel build so it uses these generated headers so it is
+# always current, and only the builds that can't easily build protoc and
+# generate the files rely on the checked in ones.
+
+_WELL_KNOWN_TYPES = [
+    "any",
+    "api",
+    "duration",
+    "empty",
+    "field_mask",
+    "source_context",
+    "struct",
+    "timestamp",
+    "type",
+    "wrappers",
+]
+
+_OBJC_WKT_NAMES = [objc_proto_camel_case_name(x) for x in _WELL_KNOWN_TYPES]
+
+_OBJC_EXTS = [
+    ".pbobjc.h",
+    ".pbobjc.m",
+]
+
+genrule(
+    name = "gen_wkt_sources",
+    srcs = ["//src/google/protobuf:well_known_type_protos"],
+    outs = ["wkt/GPB" + wkt + ext for wkt in _OBJC_WKT_NAMES for ext in _OBJC_EXTS],
+    cmd = " && ".join([
+        "$(execpath //:protoc) --objc_out=$(RULEDIR)/wkt --proto_path=src $(SRCS)",
+    ] + [
+        "mv $(RULEDIR)/wkt/google/protobuf/" + wkt + ext + " $(RULEDIR)/wkt/GPB" + wkt + ext
+        for wkt in _OBJC_WKT_NAMES
+        for ext in _OBJC_EXTS
+    ]),
+    tags = ["manual"],
+    tools = ["//:protoc"],
+)
+
+staleness_test(
+    name = "well_known_types_staleness_test",
+    outs = ["GPB" + wkt + ext for wkt in _OBJC_WKT_NAMES for ext in _OBJC_EXTS],
+    generated_pattern = "wkt/%s",
+    tags = ["manual"],
+)
+
+################################################################################
+# Objective-C Runtime Library
+################################################################################
 
 objc_library(
     name = "objectivec",
@@ -88,6 +143,13 @@ objc_library(
         "GPBWireFormat.m",
         "GPBWrappers.pbobjc.m",
     ],
+    target_compatible_with = select({
+        "@platforms//os:macos": [],
+        "@platforms//os:ios": [],
+        "@platforms//os:tvos": [],
+        "@platforms//os:watchos": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
     visibility = ["//visibility:public"],
 )
 
@@ -98,7 +160,49 @@ objc_library(
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_objc.txt",
+    maximum_edition = "2023",
+    target_compatible_with = ["@platforms//os:macos"],
     testee = "//conformance:conformance_objc",
+)
+
+# -------------------------------------------------------------------
+# Current Version Check between Generator and Runtime Sources
+sh_test(
+    name = "check_version_stamps",
+    size = "small",
+    srcs = ["DevTools/check_version_stamps.sh"],
+    data = [
+        "GPBBootstrap.h",
+        "//src/google/protobuf/compiler/objectivec:file.cc",
+    ],
+)
+
+# -------------------------------------------------------------------
+# Validation of pddm expansion.
+
+py_binary(
+    name = "pddm",
+    srcs = ["DevTools/pddm.py"],
+)
+
+py_test(
+    name = "pddm_tests",
+    size = "small",
+    srcs = [
+        "DevTools/pddm.py",
+        "DevTools/pddm_tests.py",
+    ],
+)
+
+sh_test(
+    name = "sources_pddm_expansion_test",
+    size = "small",
+    srcs = ["DevTools/sources_pddm_expansion_test.sh"],
+    data = [":pddm"] + glob([
+        "**/*.h",
+        "**/*.m",
+        "**/*.pddm",
+    ]),
 )
 
 ################################################################################
@@ -119,7 +223,6 @@ pkg_files(
         "ProtocolBuffers_iOS.xcodeproj/**/*",
         "ProtocolBuffers_OSX.xcodeproj/**/*",
         "ProtocolBuffers_tvOS.xcodeproj/**/*",
-        "Tests/CocoaPods/**/*",
         "Tests/*.pddm",
         "Tests/*.txt",
         "Tests/*.plist",

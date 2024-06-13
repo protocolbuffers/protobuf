@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -37,10 +14,12 @@
 #include <string>
 
 #include "absl/container/flat_hash_set.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
-#include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/compiler/java/options.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
 // Must be last.
@@ -60,16 +39,17 @@ const char* DefaultPackage(Options options) {
 bool IsReservedName(absl::string_view name) {
   static const auto& kReservedNames =
       *new absl::flat_hash_set<absl::string_view>({
-          "abstract",   "assert",       "boolean",   "break",      "byte",
-          "case",       "catch",        "char",      "class",      "const",
-          "continue",   "default",      "do",        "double",     "else",
-          "enum",       "extends",      "final",     "finally",    "float",
-          "for",        "goto",         "if",        "implements", "import",
-          "instanceof", "int",          "interface", "long",       "native",
-          "new",        "package",      "private",   "protected",  "public",
-          "return",     "short",        "static",    "strictfp",   "super",
-          "switch",     "synchronized", "this",      "throw",      "throws",
-          "transient",  "try",          "void",      "volatile",   "while",
+          "abstract", "assert",     "boolean",  "break",     "byte",
+          "case",     "catch",      "char",     "class",     "const",
+          "continue", "default",    "do",       "double",    "else",
+          "enum",     "extends",    "false",    "final",     "finally",
+          "float",    "for",        "goto",     "if",        "implements",
+          "import",   "instanceof", "int",      "interface", "java",
+          "long",     "native",     "new",      "null",      "package",
+          "private",  "protected",  "public",   "return",    "short",
+          "static",   "strictfp",   "super",    "switch",    "synchronized",
+          "this",     "throw",      "throws",   "transient", "true",
+          "try",      "void",       "volatile", "while",
       });
   return kReservedNames.contains(name);
 }
@@ -105,7 +85,7 @@ std::string FieldName(const FieldDescriptor* field) {
   // Groups are hacky:  The name of the field is just the lower-cased name
   // of the group type.  In Java, though, we would like to retain the original
   // capitalization of the type name.
-  if (GetType(field) == FieldDescriptor::TYPE_GROUP) {
+  if (internal::cpp::IsGroupLike(*field)) {
     field_name = field->message_type()->name();
   } else {
     field_name = field->name();
@@ -161,8 +141,20 @@ std::string FileJavaPackage(const FileDescriptor* file, Options options) {
   return FileJavaPackage(file, true /* immutable */, options);
 }
 
+std::string JavaPackageDirectory(const FileDescriptor* file) {
+  return JavaPackageToDir(FileJavaPackage(file));
+}
+
+std::string FileClassName(const FileDescriptor* file) {
+  return FileClassName(file, /*immutable=*/true);
+}
+
 std::string CapitalizedFieldName(const FieldDescriptor* field) {
   return UnderscoresToCamelCase(FieldName(field), true);
+}
+
+std::string CapitalizedOneofName(const OneofDescriptor* oneof) {
+  return UnderscoresToCamelCase(oneof->name(), true);
 }
 
 std::string UnderscoresToCamelCase(const FieldDescriptor* field) {
@@ -184,6 +176,7 @@ std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field) {
   }
   return name;
 }
+
 
 }  // namespace java
 }  // namespace compiler

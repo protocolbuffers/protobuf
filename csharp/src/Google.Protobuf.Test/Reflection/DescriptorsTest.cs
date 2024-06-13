@@ -1,42 +1,22 @@
 #region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using Google.Protobuf.TestProtos;
+using LegacyFeaturesUnittest;
 using NUnit.Framework;
 using ProtobufUnittest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnitTest.Issues.TestProtos;
+using static Google.Protobuf.Reflection.FeatureSet.Types;
+using proto2 = Google.Protobuf.TestProtos.Proto2;
 
 namespace Google.Protobuf.Reflection
 {
@@ -91,11 +71,11 @@ namespace Google.Protobuf.Reflection
 
         private void TestFileDescriptor(FileDescriptor file, FileDescriptor importedFile, FileDescriptor importedPublicFile)
         {
-            Assert.AreEqual("unittest_proto3.proto", file.Name);
+            Assert.AreEqual("csharp/protos/unittest_proto3.proto", file.Name);
             Assert.AreEqual("protobuf_unittest3", file.Package);
 
             Assert.AreEqual("UnittestProto", file.Proto.Options.JavaOuterClassname);
-            Assert.AreEqual("unittest_proto3.proto", file.Proto.Name);
+            Assert.AreEqual("csharp/protos/unittest_proto3.proto", file.Proto.Name);
 
             // unittest_proto3.proto doesn't have any public imports, but unittest_import_proto3.proto does.
             Assert.AreEqual(0, file.PublicDependencies.Count);
@@ -124,16 +104,6 @@ namespace Google.Protobuf.Reflection
 
             Assert.AreEqual(10, file.SerializedData[0]);
             TestDescriptorToProto(file.ToProto, file.Proto);
-        }
-
-        [Test]
-        public void FileDescriptor_NonRootPath()
-        {
-            // unittest_proto3.proto used to be in google/protobuf. Now it's in the C#-specific location,
-            // let's test something that's still in a directory.
-            FileDescriptor file = UnittestWellKnownTypesReflection.Descriptor;
-            Assert.AreEqual("google/protobuf/unittest_well_known_types.proto", file.Name);
-            Assert.AreEqual("protobuf_unittest", file.Package);
         }
 
         [Test]
@@ -232,6 +202,14 @@ namespace Google.Protobuf.Reflection
                 Assert.AreEqual(i, messageType.EnumTypes[i].Index);
             }
             TestDescriptorToProto(messageType.ToProto, messageType.Proto);
+        }
+
+        [Test]
+        public void MessageDescriptor_IsMapEntry()
+        {
+            var testMapMessage = TestMap.Descriptor;
+            Assert.False(testMapMessage.IsMapEntry);
+            Assert.True(testMapMessage.Fields[1].MessageType.IsMapEntry);
         }
 
         [Test]
@@ -407,6 +385,11 @@ namespace Google.Protobuf.Reflection
         [Test]
         public void DescriptorImportingExtensionsFromOldCodeGen()
         {
+            if (MethodOptions.Descriptor.FullName != "google.protobuf.MethodOptions")
+            {
+                Assert.Ignore("Embedded descriptor for OldExtensions expects google.protobuf reflection package.");
+            }
+
             // The extension collection includes a null extension. There's not a lot we can do about that
             // in itself, as the old generator didn't provide us the extension information.
             var extensions = TestProtos.OldGenerator.OldExtensions2Reflection.Descriptor.Extensions;
@@ -445,10 +428,12 @@ namespace Google.Protobuf.Reflection
             }
 
             // Expect no oneof in the original proto3 unit test file to be synthetic.
+            // (This excludes oneofs with "lazy" in the name, due to internal differences.)
             foreach (var descriptor in ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.Descriptor.MessageTypes)
             {
-                Assert.AreEqual(descriptor.Oneofs.Count, descriptor.RealOneofCount);
-                foreach (var oneof in descriptor.Oneofs)
+                var nonLazyOneofs = descriptor.Oneofs.Where(d => !d.Name.Contains("lazy")).ToList();
+                Assert.AreEqual(nonLazyOneofs.Count, descriptor.RealOneofCount);
+                foreach (var oneof in nonLazyOneofs)
                 {
                     Assert.False(oneof.IsSynthetic);
                 }
@@ -463,6 +448,80 @@ namespace Google.Protobuf.Reflection
                     Assert.False(oneof.IsSynthetic);
                 }
             }
+        }
+
+        [Test]
+        public void OptionRetention()
+        {
+          var proto = UnittestRetentionReflection.Descriptor.Proto;
+          Assert.AreEqual(1, proto.Options.GetExtension(
+              UnittestRetentionExtensions.PlainOption));
+          Assert.AreEqual(2, proto.Options.GetExtension(
+              UnittestRetentionExtensions.RuntimeRetentionOption));
+          // This option has a value of 3 in the .proto file, but we expect it
+          // to be zeroed out in the generated descriptor since it has source
+          // retention.
+          Assert.AreEqual(0, proto.Options.GetExtension(
+              UnittestRetentionExtensions.SourceRetentionOption));
+        }
+
+        [Test]
+        public void GetOptionsStripsFeatures()
+        {
+            var messageDescriptor = TestEditionsMessage.Descriptor;
+            var fieldDescriptor = messageDescriptor.FindFieldByName("required_field");
+            // Note: ideally we'd test GetOptions() for other descriptor types as well, but that requires
+            // non-fields with features applied.
+            Assert.Null(fieldDescriptor.GetOptions().Features);
+        }
+
+        [Test]
+        public void LegacyRequiredTransform()
+        {
+            var messageDescriptor = TestEditionsMessage.Descriptor;
+            var fieldDescriptor = messageDescriptor.FindFieldByName("required_field");
+            Assert.True(fieldDescriptor.IsRequired);
+        }
+
+        [Test]
+        public void LegacyGroupTransform()
+        {
+            var messageDescriptor = TestEditionsMessage.Descriptor;
+            var fieldDescriptor = messageDescriptor.FindFieldByName("delimited_field");
+            Assert.AreEqual(FieldType.Group, fieldDescriptor.FieldType);
+        }
+
+        [Test]
+        public void LegacyInferRequired()
+        {
+            var messageDescriptor = proto2::TestRequired.Descriptor;
+            var fieldDescriptor = messageDescriptor.FindFieldByName("a");
+            Assert.AreEqual(FieldPresence.LegacyRequired, fieldDescriptor.Features.FieldPresence);
+        }
+
+        [Test]
+        public void LegacyInferGroup()
+        {
+            var messageDescriptor = proto2::TestAllTypes.Descriptor;
+            var fieldDescriptor = messageDescriptor.FindFieldByName("optionalgroup");
+            Assert.AreEqual(MessageEncoding.Delimited, fieldDescriptor.Features.MessageEncoding);
+        }
+
+        [Test]
+        public void LegacyInferProto2Packed()
+        {
+            var messageDescriptor = proto2::TestPackedTypes.Descriptor;
+            var fieldDescriptor = messageDescriptor.FindFieldByName("packed_int32");
+            Assert.AreEqual(RepeatedFieldEncoding.Packed, fieldDescriptor.Features.RepeatedFieldEncoding);
+        }
+
+        [Test]
+        public void LegacyInferProto3Expanded()
+        {
+            var messageDescriptor = TestUnpackedTypes.Descriptor;
+            var fieldDescriptor = messageDescriptor.FindFieldByName("unpacked_int32");
+            Assert.NotNull(fieldDescriptor);
+            Assert.AreEqual(RepeatedFieldEncoding.Expanded, fieldDescriptor.Features.RepeatedFieldEncoding);
         }
 
         private static void TestDescriptorToProto(Func<IMessage> toProtoFunction, IMessage expectedProto)

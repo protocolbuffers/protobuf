@@ -1,37 +1,15 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
-syntax = "proto3";
+edition = "2023";
 
 package protobuf.experimental;
 
+option features.field_presence = IMPLICIT;
 option java_package = "com.google.protobuf.testing";
 option java_outer_classname = "Proto3Testing";
 
@@ -66,37 +44,72 @@ message Proto3Message {
   sfixed64 field_sfixed64_15 = 15;
   sint32 field_sint32_16 = 16;
   sint64 field_sint64_17 = 17;
-  repeated double field_double_list_18 = 18 [packed = false];
-  repeated float field_float_list_19 = 19 [packed = false];
-  repeated int64 field_int64_list_20 = 20 [packed = false];
-  repeated uint64 field_uint64_list_21 = 21 [packed = false];
-  repeated int32 field_int32_list_22 = 22 [packed = false];
-  repeated fixed64 field_fixed64_list_23 = 23 [packed = false];
-  repeated fixed32 field_fixed32_list_24 = 24 [packed = false];
-  repeated bool field_bool_list_25 = 25 [packed = false];
-  repeated string field_string_list_26 = 26 [packed = false];
-  repeated Proto3Message field_message_list_27 = 27 [packed = false];
-  repeated bytes field_bytes_list_28 = 28 [packed = false];
-  repeated uint32 field_uint32_list_29 = 29 [packed = false];
-  repeated TestEnum field_enum_list_30 = 30 [packed = false];
-  repeated sfixed32 field_sfixed32_list_31 = 31 [packed = false];
-  repeated sfixed64 field_sfixed64_list_32 = 32 [packed = false];
-  repeated sint32 field_sint32_list_33 = 33 [packed = false];
-  repeated sint64 field_sint64_list_34 = 34 [packed = false];
-  repeated double field_double_list_packed_35 = 35 [packed = true];
-  repeated float field_float_list_packed_36 = 36 [packed = true];
-  repeated int64 field_int64_list_packed_37 = 37 [packed = true];
-  repeated uint64 field_uint64_list_packed_38 = 38 [packed = true];
-  repeated int32 field_int32_list_packed_39 = 39 [packed = true];
-  repeated fixed64 field_fixed64_list_packed_40 = 40 [packed = true];
-  repeated fixed32 field_fixed32_list_packed_41 = 41 [packed = true];
-  repeated bool field_bool_list_packed_42 = 42 [packed = true];
-  repeated uint32 field_uint32_list_packed_43 = 43 [packed = true];
-  repeated TestEnum field_enum_list_packed_44 = 44 [packed = true];
-  repeated sfixed32 field_sfixed32_list_packed_45 = 45 [packed = true];
-  repeated sfixed64 field_sfixed64_list_packed_46 = 46 [packed = true];
-  repeated sint32 field_sint32_list_packed_47 = 47 [packed = true];
-  repeated sint64 field_sint64_list_packed_48 = 48 [packed = true];
+  repeated double field_double_list_18 = 18
+      [features.repeated_field_encoding = EXPANDED];
+
+  repeated float field_float_list_19 = 19
+      [features.repeated_field_encoding = EXPANDED];
+
+  repeated int64 field_int64_list_20 = 20
+      [features.repeated_field_encoding = EXPANDED];
+
+  repeated uint64 field_uint64_list_21 = 21
+      [features.repeated_field_encoding = EXPANDED];
+
+  repeated int32 field_int32_list_22 = 22
+      [features.repeated_field_encoding = EXPANDED];
+
+  repeated fixed64 field_fixed64_list_23 = 23
+      [features.repeated_field_encoding = EXPANDED];
+
+  repeated fixed32 field_fixed32_list_24 = 24
+      [features.repeated_field_encoding = EXPANDED];
+
+  repeated bool field_bool_list_25 = 25
+      [features.repeated_field_encoding = EXPANDED];
+
+  repeated string field_string_list_26 = 26
+      [features.repeated_field_encoding = EXPANDED];
+
+  repeated Proto3Message field_message_list_27 = 27
+      [features.repeated_field_encoding = EXPANDED];
+
+  repeated bytes field_bytes_list_28 = 28
+      [features.repeated_field_encoding = EXPANDED];
+
+  repeated uint32 field_uint32_list_29 = 29
+      [features.repeated_field_encoding = EXPANDED];
+
+  repeated TestEnum field_enum_list_30 = 30
+      [features.repeated_field_encoding = EXPANDED];
+
+  repeated sfixed32 field_sfixed32_list_31 = 31
+      [features.repeated_field_encoding = EXPANDED];
+
+  repeated sfixed64 field_sfixed64_list_32 = 32
+      [features.repeated_field_encoding = EXPANDED];
+
+  repeated sint32 field_sint32_list_33 = 33
+      [features.repeated_field_encoding = EXPANDED];
+
+  repeated sint64 field_sint64_list_34 = 34
+      [features.repeated_field_encoding = EXPANDED];
+
+  repeated double field_double_list_packed_35 = 35;
+  repeated float field_float_list_packed_36 = 36;
+  repeated int64 field_int64_list_packed_37 = 37;
+  repeated uint64 field_uint64_list_packed_38 = 38;
+  repeated int32 field_int32_list_packed_39 = 39;
+  repeated fixed64 field_fixed64_list_packed_40 = 40;
+  repeated fixed32 field_fixed32_list_packed_41 = 41;
+  repeated bool field_bool_list_packed_42 = 42;
+  repeated uint32 field_uint32_list_packed_43 = 43;
+  repeated TestEnum field_enum_list_packed_44 = 44;
+  repeated sfixed32 field_sfixed32_list_packed_45 = 45;
+  repeated sfixed64 field_sfixed64_list_packed_46 = 46;
+  repeated sint32 field_sint32_list_packed_47 = 47;
+  repeated sint64 field_sint64_list_packed_48 = 48;
+
   oneof test_oneof {
     double field_double_53 = 53;
     float field_float_54 = 54;
