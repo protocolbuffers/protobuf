@@ -46,14 +46,15 @@ jobs:
 
     name: Linux ${{ matrix.name }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: ubuntu-latest
-    if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
