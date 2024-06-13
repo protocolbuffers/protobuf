@@ -3,6 +3,9 @@ name: Java Tests
 on:
   workflow_call:
     inputs:
+      is-presubmit:
+        description: "True if we are in a presubmit run, false otherwise"
+        type: boolean
       safe-checkout:
         required: true
         description: "The SHA key for the commit we want to run over"
@@ -17,16 +20,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: OpenJDK 8
+          - name: OpenJDK 8 (Continuous)
             version: '8'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
             # TODO: b/318555165 - enable the layering check. Currently it does
             # not work correctly with the toolchain in this Docker image.
             targets: //java/... //java/internal:java_version --features=-layering_check
-          - name: OpenJDK 11
+            if: ${{ !inputs.presubmit }} 
+          - name: OpenJDK 11 (Continuous)
             version: '11'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
             targets: //java/... //java/internal:java_version
+            if: ${{ !inputs.presubmit }}
           - name: OpenJDK 17
             version: '17'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-1fdbb997433cb22c1e49ef75ad374a8d6bb88702

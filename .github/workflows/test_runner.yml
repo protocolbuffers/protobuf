@@ -77,6 +77,9 @@ jobs:
       # Store the sha for checkout so we can easily use it later.  For safe
       # events, this will be blank and use the defaults.
       checkout-sha: ${{ steps.safe-checkout.outputs.sha }}
+      # Stores a boolean value denoting whether this is a presubmit run. This
+      # helps us determine which tests to block on.
+      is-presubmit: ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }} 
     steps:
       - name: Check
         # Trivially pass for safe PRs, and explicitly error for unsafe ones
@@ -114,6 +117,7 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_bazel.yml
     with:
+      is-presubmit: ${{ needs.check-tag.outputs.is-presubmit }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
@@ -122,6 +126,7 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_cpp.yml
     with:
+      is-presubmit: ${{ needs.check-tag.outputs.is-presubmit }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
@@ -130,6 +135,7 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_java.yml
     with:
+      is-presubmit: ${{ needs.check-tag.outputs.is-presubmit }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
@@ -206,3 +212,15 @@ jobs:
     with:
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
+
+  # This test depends on all blocking tests and indicates whether they all suceeded.
+  all_blocking_tests:
+    name: All Blocking Tests
+    needs: [bazel, cpp, java, python, ruby, php, php-ext, csharp, objectivec, rust, upb, staleness]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check test results
+        run: "${{ !contains(join(needs.*.result, ' '), 'failure') && !contains(join(needs.*.result, ' '), 'cancelled') && !contains(join(needs.*.result, ' '), 'skipped') }}"
+    # This workflow must run even if one or more of the dependent workflows
+    # failed.
+    if: always()
