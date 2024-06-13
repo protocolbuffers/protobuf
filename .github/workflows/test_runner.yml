@@ -77,9 +77,9 @@ jobs:
       # Store the sha for checkout so we can easily use it later.  For safe
       # events, this will be blank and use the defaults.
       checkout-sha: ${{ steps.safe-checkout.outputs.sha }}
-      # Stores a boolean value denoting whether this is a presubmit run. This
-      # helps us determine which tests to block on.
-      run-as-presubmit: ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }} 
+      # Stores a string denoting whether this is a presubmit or continuous
+      # run. This helps us determine which tests to block on.
+      test-type: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && 'presubmit' || 'continuous' }} 
     steps:
       - name: Check
         # Trivially pass for safe PRs, and explicitly error for unsafe ones
@@ -117,7 +117,7 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_bazel.yml
     with:
-      is-presubmit: ${{ needs.check-tag.outputs.run-as-presubmit == 'true' }}
+      test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
@@ -126,7 +126,7 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_cpp.yml
     with:
-      is-presubmit: ${{ needs.check-tag.outputs.run-as-presubmit }}
+      test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
@@ -135,7 +135,7 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_java.yml
     with:
-      is-presubmit: ${{ needs.check-tag.outputs.run-as-presubmit }}
+      test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 

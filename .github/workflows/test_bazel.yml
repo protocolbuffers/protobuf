@@ -3,9 +3,10 @@ name: Bazel Tests
 on:
   workflow_call:
     inputs:
-      is-presubmit:
-        description: "True if we are in a presubmit run, false otherwise"
-        type: boolean
+      test-type:
+        required: true
+        description: "The type of test this is run from -- presubmit or continuous"
+        type: string
       safe-checkout:
         required: true
         description: "The SHA key for the commit we want to run over"
