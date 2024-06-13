@@ -252,8 +252,7 @@ bool _upb_FieldDef_ValidateUtf8(const upb_FieldDef* f) {
 
 bool _upb_FieldDef_IsGroupLike(const upb_FieldDef* f) {
   // Groups are always tag-delimited.
-  if (UPB_DESC(FeatureSet_message_encoding)(upb_FieldDef_ResolvedFeatures(f)) !=
-      UPB_DESC(FeatureSet_DELIMITED)) {
+  if (f->type_ != kUpb_FieldType_Group) {
     return false;
   }
 
@@ -690,12 +689,6 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
       UPB_DESC(FieldDescriptorProto_has_type_name)(field_proto);
 
   f->type_ = (int)UPB_DESC(FieldDescriptorProto_type)(field_proto);
-  if (f->type_ == kUpb_FieldType_Message &&
-      // TODO: remove once we can deprecate kUpb_FieldType_Group.
-      UPB_DESC(FeatureSet_message_encoding)(f->resolved_features) ==
-          UPB_DESC(FeatureSet_DELIMITED)) {
-    f->type_ = kUpb_FieldType_Group;
-  }
 
   if (has_type) {
     switch (f->type_) {
@@ -716,7 +709,7 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
     }
   }
 
-  if (!has_type && has_type_name) {
+  if ((!has_type && has_type_name) || f->type_ == kUpb_FieldType_Message) {
     f->type_ =
         UPB_FIELD_TYPE_UNSPECIFIED;  // We'll assign this in resolve_subdef()
   } else {
@@ -866,8 +859,15 @@ static void resolve_subdef(upb_DefBuilder* ctx, const char* prefix,
           break;
         case UPB_DEFTYPE_MSG:
           f->sub.msgdef = def;
-          f->type_ = kUpb_FieldType_Message;  // It appears there is no way of
-                                              // this being a group.
+          f->type_ = kUpb_FieldType_Message;
+          // TODO: remove once we can deprecate
+          // kUpb_FieldType_Group.
+          if (UPB_DESC(FeatureSet_message_encoding)(f->resolved_features) ==
+                  UPB_DESC(FeatureSet_DELIMITED) &&
+              !upb_MessageDef_IsMapEntry(def) &&
+              !(f->msgdef && upb_MessageDef_IsMapEntry(f->msgdef))) {
+            f->type_ = kUpb_FieldType_Group;
+          }
           f->has_presence = !upb_FieldDef_IsRepeated(f);
           break;
         default:

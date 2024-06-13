@@ -195,10 +195,7 @@ def _IsGroupLike(field):
     True if this field is group-like, false otherwise.
   """
   # Groups are always tag-delimited.
-  if (
-      field._GetFeatures().message_encoding
-      != descriptor._FEATURESET_MESSAGE_ENCODING_DELIMITED
-  ):
+  if field.type != descriptor.FieldDescriptor.TYPE_GROUP:
     return False
 
   # Group fields always are always the lowercase type name.

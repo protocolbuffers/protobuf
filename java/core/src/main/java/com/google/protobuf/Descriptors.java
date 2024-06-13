@@ -1297,6 +1297,8 @@ public final class Descriptors {
       // since these are used before feature resolution when parsing java feature set defaults
       // (custom options) into unknown fields.
       if (type == Type.MESSAGE
+          && !(messageType != null && messageType.toProto().getOptions().getMapEntry())
+          && !(containingType != null && containingType.toProto().getOptions().getMapEntry())
           && this.features != null
           && getFeatures().getMessageEncoding() == FeatureSet.MessageEncoding.DELIMITED) {
         return Type.GROUP;
@@ -1476,8 +1478,7 @@ public final class Descriptors {
      * been upgraded to editions.
      */
     boolean isGroupLike() {
-      if (getFeatures().getMessageEncoding()
-          != DescriptorProtos.FeatureSet.MessageEncoding.DELIMITED) {
+      if (getType() != Type.GROUP) {
         // Groups are always tag-delimited.
         return false;
       }
