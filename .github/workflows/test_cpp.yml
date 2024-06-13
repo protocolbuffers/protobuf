@@ -4,6 +4,7 @@ on:
   workflow_call:
     inputs:
       is-presubmit:
+        required: true
         description: "True if we are in a presubmit run, false otherwise"
         type: boolean
       safe-checkout:
