@@ -407,6 +407,11 @@ namespace Google.Protobuf.Reflection
                         throw new DescriptorValidationException(this, $"\"{Proto.TypeName}\" is not a message type.");
                     }
                     messageType = m;
+                    if (m.Proto.Options?.MapEntry == true || ContainingType?.Proto.Options?.MapEntry == true)
+                    {
+                        // Maps can't inherit delimited encoding.
+                        FieldType = FieldType.Message;
+                    }
 
                     if (Proto.HasDefaultValue)
                     {

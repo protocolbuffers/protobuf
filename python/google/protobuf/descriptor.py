@@ -708,6 +708,9 @@ class FieldDescriptor(DescriptorBase):
     if (
         self._GetFeatures().message_encoding
         == _FEATURESET_MESSAGE_ENCODING_DELIMITED
+        and self.message_type
+        and not self.message_type.GetOptions().map_entry
+        and not self.containing_type.GetOptions().map_entry
     ):
       return FieldDescriptor.TYPE_GROUP
     return self._type
