@@ -294,7 +294,7 @@ class RepeatedField final
   // Gets the Arena on which this RepeatedField stores its elements.
   // Note: this can be inaccurate for split default fields so we make this
   // function non-const.
-  inline Arena* GetArena() {
+  inline Arena* GetArena() const {
     return (total_size_ == 0) ? static_cast<Arena*>(arena_or_elements_)
                               : rep()->arena;
   }
@@ -331,7 +331,6 @@ class RepeatedField final
 
   RepeatedField(Arena* arena, const RepeatedField& rhs);
   RepeatedField(Arena* arena, RepeatedField&& rhs);
-
 
   // Swaps entire contents with "other". Should be called only if the caller can
   // guarantee that both repeated fields are on the same arena or are on the

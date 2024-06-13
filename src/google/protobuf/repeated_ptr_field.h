@@ -1173,7 +1173,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
                  const_iterator last) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Gets the arena on which this RepeatedPtrField stores its elements.
-  inline Arena* GetArena();
+  inline Arena* GetArena() const { return RepeatedPtrFieldBase::GetArena(); }
 
   // For internal use only.
   //
@@ -1199,7 +1199,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
   RepeatedPtrField(Arena* arena, const RepeatedPtrField& rhs);
   RepeatedPtrField(Arena* arena, RepeatedPtrField&& rhs);
-
 
   void AddAllocatedForParse(Element* p) {
     return RepeatedPtrFieldBase::AddAllocatedForParse(p);
@@ -1499,11 +1498,6 @@ inline void RepeatedPtrField<Element>::UnsafeArenaSwap(
 template <typename Element>
 inline void RepeatedPtrField<Element>::SwapElements(int index1, int index2) {
   RepeatedPtrFieldBase::SwapElements(index1, index2);
-}
-
-template <typename Element>
-inline Arena* RepeatedPtrField<Element>::GetArena() {
-  return RepeatedPtrFieldBase::GetArena();
 }
 
 template <typename Element>
