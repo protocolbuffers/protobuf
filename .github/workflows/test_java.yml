@@ -27,22 +27,24 @@ jobs:
             # TODO: b/318555165 - enable the layering check. Currently it does
             # not work correctly with the toolchain in this Docker image.
             targets: //java/... //java/internal:java_version --features=-layering_check
-            if: ${{ inputs.test-type == 'continuous' }} 
+            run-on-presubmit: false
           - name: OpenJDK 11 (Continuous)
             version: '11'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
             targets: //java/... //java/internal:java_version
-            if: ${{ inputs.test-type == 'continuous' }}
+            run-on-presubmit: false
           - name: OpenJDK 17
             version: '17'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
             targets: //java/... //java/internal:java_version
+            run-on-presubmit: true
           - name: aarch64
             version: 'aarch64'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17
             targets: //java/... //src/google/protobuf/compiler:protoc_aarch64_test
+            run-on-presubmit: true
 
-    name: Linux ${{ matrix.name }}
+    name: Linux ${{ matrix.name }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
@@ -50,6 +52,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
           image: ${{ matrix.image }}
