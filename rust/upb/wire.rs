@@ -26,6 +26,14 @@ pub enum DecodeStatus {
 }
 // LINT.ThenChange()
 
+#[repr(i32)]
+enum DecodeOption {
+    AliasString = 1,
+    CheckRequired = 2,
+    ExperimentalAllowUnlinked = 4,
+    AlwaysValidateUtf8 = 8,
+}
+
 /// If Err, then EncodeStatus != Ok.
 ///
 /// SAFETY:
@@ -67,11 +75,13 @@ pub unsafe fn decode(
 ) -> Result<(), DecodeStatus> {
     let len = buf.len();
     let buf = buf.as_ptr();
+    let options = DecodeOption::CheckRequired as i32;
+
     // SAFETY:
     // - `mini_table` is the one associated with `msg`
     // - `buf` is legally readable for at least `buf_size` bytes.
     // - `extreg` is null.
-    let status = upb_Decode(buf, len, msg, mini_table, std::ptr::null(), 0, arena.raw());
+    let status = upb_Decode(buf, len, msg, mini_table, std::ptr::null(), options, arena.raw());
     match status {
         DecodeStatus::Ok => Ok(()),
         _ => Err(status),
