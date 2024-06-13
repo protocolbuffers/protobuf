@@ -117,7 +117,7 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_bazel.yml
     with:
-      is-presubmit: ${{ needs.check-tag.outputs.run-as-presubmit }}
+      is-presubmit: ${{ needs.check-tag.outputs.run-as-presubmit == 'true' }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
