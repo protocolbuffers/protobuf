@@ -44,16 +44,17 @@ jobs:
             targets: //java/... //src/google/protobuf/compiler:protoc_aarch64_test
             run-on-presubmit: true
 
-    name: Linux ${{ matrix.name }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
-    if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }} 
+    name: Linux ${{ matrix.name }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }} ${{ (!marix.run-on-presubmit && inputs.test-type == 'continuous') && '[DID NOT RUN]' || '' }} 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
