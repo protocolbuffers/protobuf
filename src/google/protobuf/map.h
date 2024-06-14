@@ -559,7 +559,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
  protected:
   // 16 bytes is the minimum useful size for the array cache in the arena.
-  constexpr static map_index_t kMinTableSize = 16 / sizeof(void*);
+  enum : map_index_t { kMinTableSize = 16 / sizeof(void*) };
 
  public:
   Arena* arena() const { return this->alloc_.arena(); }
