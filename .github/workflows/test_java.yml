@@ -20,6 +20,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        is-presubmit:
+          - ${{ inputs.test-type == 'presubmit' }} 
         include:
           - name: OpenJDK 8
             version: '8'
@@ -43,6 +45,9 @@ jobs:
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17
             targets: //java/... //src/google/protobuf/compiler:protoc_aarch64_test
             run-on-presubmit: true
+        exclude:
+          - is-presubmit: true
+            run-on-presubmit: false
 
     name: Linux ${{ matrix.name }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
     if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }} 
