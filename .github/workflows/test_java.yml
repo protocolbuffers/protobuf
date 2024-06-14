@@ -20,6 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        is-presubmit: ${{ inputs.test-type == 'presubmit' }}
         include:
           - name: OpenJDK 8
             version: '8'
@@ -43,18 +44,19 @@ jobs:
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17
             targets: //java/... //src/google/protobuf/compiler:protoc_aarch64_test
             run-on-presubmit: true
+        exclude:
+          - is-presumbit: true
+            run-on-presubmit: false
 
     name: Linux ${{ matrix.name }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
