@@ -1,10 +1,11 @@
+load("//compatibility:runtime_conformance.bzl", "java_runtime_conformance")
+load("@rules_buf//buf:defs.bzl", "buf_breaking_test")
+
 # Simple build tests for compatibility of gencode from previous major versions
 # with the current runtime.
 #
 # To add more test cases in Java, use java_runtime_conformance as below, and add
 # the corresponding http_archive in the WORKSPACE file for the version.
-
-load("//compatibility:runtime_conformance.bzl", "java_runtime_conformance")
 
 # main gencode builds with main runtime as a proof of concept.
 java_runtime_conformance(
@@ -16,4 +17,99 @@ java_runtime_conformance(
 java_runtime_conformance(
     name = "java_conformance_v3.25.0",
     gencode_version = "3.25.0",
+)
+
+# Breaking change detection for well-known types and descriptor.proto.
+buf_breaking_test(
+    name = "any_proto_breaking",
+    targets = ["//:any_proto"],
+    config = ":buf.yaml",
+    against = "@com_google_protobuf_previous_release//:any_proto",
+)
+
+buf_breaking_test(
+    name = "api_proto_breaking",
+    targets = ["//:api_proto"],
+    config = ":buf.yaml",
+    against = "@com_google_protobuf_previous_release//:api_proto",
+)
+
+buf_breaking_test(
+    name = "descriptor_proto_breaking",
+    targets = ["//:descriptor_proto"],
+    config = ":buf.yaml",
+    against = "@com_google_protobuf_previous_release//:descriptor_proto",
+)
+
+buf_breaking_test(
+    name = "duration_proto_breaking",
+    targets = ["//:duration_proto"],
+    config = ":buf.yaml",
+    against = "@com_google_protobuf_previous_release//:duration_proto",
+)
+
+buf_breaking_test(
+    name = "empty_proto_breaking",
+    targets = ["//:empty_proto"],
+    config = ":buf.yaml",
+    against = "@com_google_protobuf_previous_release//:empty_proto",
+)
+
+buf_breaking_test(
+    name = "field_mask_proto_breaking",
+    targets = ["//:field_mask_proto"],
+    config = ":buf.yaml",
+    against = "@com_google_protobuf_previous_release//:field_mask_proto",
+)
+
+buf_breaking_test(
+    name = "source_context_proto_breaking",
+    targets = ["//:source_context_proto"],
+    config = ":buf.yaml",
+    against = "@com_google_protobuf_previous_release//:source_context_proto",
+)
+
+buf_breaking_test(
+    name = "struct_proto_breaking",
+    targets = ["//:struct_proto"],
+    config = ":buf.yaml",
+    against = "@com_google_protobuf_previous_release//:struct_proto",
+)
+
+buf_breaking_test(
+    name = "timestamp_proto_breaking",
+    targets = ["//:timestamp_proto"],
+    config = ":buf.yaml",
+    against = "@com_google_protobuf_previous_release//:timestamp_proto",
+)
+
+buf_breaking_test(
+    name = "type_proto_breaking",
+    targets = ["//:type_proto"],
+    config = ":buf.yaml",
+    against = "@com_google_protobuf_previous_release//:type_proto",
+)
+
+buf_breaking_test(
+    name = "wrappers_proto_breaking",
+    targets = ["//:wrappers_proto"],
+    config = ":buf.yaml",
+    against = "@com_google_protobuf_previous_release//:wrappers_proto",
+)
+
+test_suite(
+    name = "proto_breaking",
+    tests = [
+        "any_proto_breaking",
+        "api_proto_breaking",
+        "descriptor_proto_breaking",
+        "duration_proto_breaking",
+        "empty_proto_breaking",
+        "field_mask_proto_breaking",
+        "source_context_proto_breaking",
+        "struct_proto_breaking",
+        "timestamp_proto_breaking",
+        "type_proto_breaking",
+        "wrappers_proto_breaking",
+    ],
 )
