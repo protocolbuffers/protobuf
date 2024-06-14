@@ -34,7 +34,7 @@ jobs:
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e"
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "TCMalloc" }
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc7.1.2-32f99e4e642096935aa0e50862482f7ffe1b231b"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc:7.1.2-32f99e4e642096935aa0e50862482f7ffe1b231b"
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "aarch64" }
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
