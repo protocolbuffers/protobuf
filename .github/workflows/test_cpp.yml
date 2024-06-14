@@ -38,7 +38,7 @@ jobs:
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "aarch64" }
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.1.2-aarch64-5be0f4fde927ca702ed4cebe096bfb632d6d9a36"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:6.3.0-aarch64-68e662b3a56b881804dc4e9d45f949791cbc4b94"
     name: Linux ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
@@ -102,7 +102,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.1.2-${{ matrix.arch }}-5be0f4fde927ca702ed4cebe096bfb632d6d9a36
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:${{ matrix.arch }}-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >
