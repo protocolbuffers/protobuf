@@ -501,3 +501,8 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/solo-io/protoc-gen-openapi
     *   Extensions: 1188-1189
+
+1.  gRPC API Gateway
+
+    *   Website: https://github.com/meshapi/grpc-api-gateway
+    *   Extensions: 1190-1192
