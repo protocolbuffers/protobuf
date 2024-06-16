@@ -1929,12 +1929,6 @@ public final class Descriptors {
         }
       }
 
-      // Only repeated primitive fields may be packed.
-      if (proto.getOptions().getPacked() && !isPackable()) {
-        throw new DescriptorValidationException(
-            this, "[packed = true] can only be specified for repeated primitive fields.");
-      }
-
       // We don't attempt to parse the default value until here because for
       // enums we need the enum type's descriptor.
       if (proto.hasDefaultValue()) {
