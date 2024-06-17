@@ -2785,10 +2785,30 @@ public final class Descriptors {
     public abstract FileDescriptor getFile();
 
     void resolveFeatures(FeatureSet unresolvedFeatures) throws DescriptorValidationException {
-      // Unknown java features may be passed by users via public buildFrom but should not occur from
-      // generated code.
-      if (!unresolvedFeatures.getUnknownFields().isEmpty()
-          && unresolvedFeatures.getUnknownFields().hasField(JavaFeaturesProto.java_.getNumber())) {
+      if (this.parent != null
+          && unresolvedFeatures.equals(FeatureSet.getDefaultInstance())
+          && !hasInferredLegacyProtoFeatures()) {
+        this.features = this.parent.features;
+        validateFeatures();
+        return;
+      }
+
+      // Java features from a custom pool (i.e. buildFrom) may end up in unknown fields or
+      // use a different descriptor from the generated pool used by the Java runtime.
+      boolean hasPossibleCustomJavaFeature = false;
+      for (FieldDescriptor f : unresolvedFeatures.getExtensionFields().keySet()) {
+        if (f.getNumber() == JavaFeaturesProto.java_.getNumber()
+            && f != JavaFeaturesProto.java_.getDescriptor()) {
+          hasPossibleCustomJavaFeature = true;
+          continue;
+        }
+      }
+      boolean hasPossibleUnknownJavaFeature =
+          !unresolvedFeatures.getUnknownFields().isEmpty()
+              && unresolvedFeatures
+                  .getUnknownFields()
+                  .hasField(JavaFeaturesProto.java_.getNumber());
+      if (hasPossibleCustomJavaFeature || hasPossibleUnknownJavaFeature) {
         ExtensionRegistry registry = ExtensionRegistry.newInstance();
         registry.add(JavaFeaturesProto.java_);
         ByteString bytes = unresolvedFeatures.toByteString();
@@ -2799,14 +2819,7 @@ public final class Descriptors {
               this, "Failed to parse features with Java feature extension registry.", e);
         }
       }
-
-      if (this.parent != null
-          && unresolvedFeatures.equals(FeatureSet.getDefaultInstance())
-          && !hasInferredLegacyProtoFeatures()) {
-        this.features = this.parent.features;
-        validateFeatures();
-        return;
-      }
+      
       FeatureSet.Builder features;
       if (this.parent == null) {
         Edition edition = getFile().getEdition();
