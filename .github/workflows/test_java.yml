@@ -22,19 +22,19 @@ jobs:
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
             # TODO: b/318555165 - enable the layering check. Currently it does
             # not work correctly with the toolchain in this Docker image.
-            targets: //java/... //java/internal:java_version --features=-layering_check
+            targets: //java/... //java/internal:java_version //compatibility/... --features=-layering_check
           - name: OpenJDK 11
             version: '11'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
-            targets: //java/... //java/internal:java_version
+            targets: //java/... //java/internal:java_version //compatibility/...
           - name: OpenJDK 17
             version: '17'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
-            targets: //java/... //java/internal:java_version
+            targets: //java/... //java/internal:java_version //compatibility/...
           - name: aarch64
             version: 'aarch64'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17
-            targets: //java/... //src/google/protobuf/compiler:protoc_aarch64_test
+            targets: //java/... //compatibility/... //src/google/protobuf/compiler:protoc_aarch64_test
 
     name: Linux ${{ matrix.name }}
     runs-on: ubuntu-latest
