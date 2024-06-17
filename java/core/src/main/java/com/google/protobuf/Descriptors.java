@@ -2804,7 +2804,7 @@ public final class Descriptors {
         }
       }
       boolean hasPossibleUnknownJavaFeature =
-          !unresolvedFeatures.getUnknownFields().isEmpty()
+          !unresolvedFeatures.getUnknownFields().asMap().isEmpty()
               && unresolvedFeatures
                   .getUnknownFields()
                   .hasField(JavaFeaturesProto.java_.getNumber());
