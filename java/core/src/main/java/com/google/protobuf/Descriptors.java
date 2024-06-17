@@ -2792,6 +2792,34 @@ public final class Descriptors {
         validateFeatures();
         return;
       }
+
+      // Java features from a custom pool (i.e. buildFrom) may end up in unknown fields or
+      // use a different descriptor from the generated pool used by the Java runtime.
+      boolean hasPossibleCustomJavaFeature = false;
+      for (FieldDescriptor f : unresolvedFeatures.getExtensionFields().keySet()) {
+        if (f.getNumber() == JavaFeaturesProto.java_.getNumber()
+            && f != JavaFeaturesProto.java_.getDescriptor()) {
+          hasPossibleCustomJavaFeature = true;
+          continue;
+        }
+      }
+      boolean hasPossibleUnknownJavaFeature =
+          !unresolvedFeatures.getUnknownFields().asMap().isEmpty()
+              && unresolvedFeatures
+                  .getUnknownFields()
+                  .hasField(JavaFeaturesProto.java_.getNumber());
+      if (hasPossibleCustomJavaFeature || hasPossibleUnknownJavaFeature) {
+        ExtensionRegistry registry = ExtensionRegistry.newInstance();
+        registry.add(JavaFeaturesProto.java_);
+        ByteString bytes = unresolvedFeatures.toByteString();
+        try {
+          unresolvedFeatures = FeatureSet.parseFrom(bytes, registry);
+        } catch (InvalidProtocolBufferException e) {
+          throw new DescriptorValidationException(
+              this, "Failed to parse features with Java feature extension registry.", e);
+        }
+      }
+      
       FeatureSet.Builder features;
       if (this.parent == null) {
         Edition edition = getFile().getEdition();
