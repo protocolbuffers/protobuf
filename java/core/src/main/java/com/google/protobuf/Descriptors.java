@@ -1901,7 +1901,9 @@ public final class Descriptors {
           }
         }
 
-        if (getJavaType() == JavaType.MESSAGE) {
+        // Use raw type since inferred type considers messageType which may not be fully cross
+        // linked yet.
+        if (type.getJavaType() == JavaType.MESSAGE) {
           if (!(typeDescriptor instanceof Descriptor)) {
             throw new DescriptorValidationException(
                 this, '\"' + proto.getTypeName() + "\" is not a message type.");
@@ -1911,7 +1913,7 @@ public final class Descriptors {
           if (proto.hasDefaultValue()) {
             throw new DescriptorValidationException(this, "Messages can't have default values.");
           }
-        } else if (getJavaType() == JavaType.ENUM) {
+        } else if (type.getJavaType() == JavaType.ENUM) {
           if (!(typeDescriptor instanceof EnumDescriptor)) {
             throw new DescriptorValidationException(
                 this, '\"' + proto.getTypeName() + "\" is not an enum type.");
@@ -1921,7 +1923,7 @@ public final class Descriptors {
           throw new DescriptorValidationException(this, "Field with primitive type has type_name.");
         }
       } else {
-        if (getJavaType() == JavaType.MESSAGE || getJavaType() == JavaType.ENUM) {
+        if (type.getJavaType() == JavaType.MESSAGE || type.getJavaType() == JavaType.ENUM) {
           throw new DescriptorValidationException(
               this, "Field with message or enum type missing type_name.");
         }
@@ -1942,7 +1944,7 @@ public final class Descriptors {
         }
 
         try {
-          switch (getType()) {
+          switch (type) {
             case INT32:
             case SINT32:
             case SFIXED32:
@@ -2017,7 +2019,7 @@ public final class Descriptors {
         if (isRepeated()) {
           defaultValue = Collections.emptyList();
         } else {
-          switch (getJavaType()) {
+          switch (type.getJavaType()) {
             case ENUM:
               // We guarantee elsewhere that an enum type always has at least
               // one possible value.
@@ -2027,7 +2029,7 @@ public final class Descriptors {
               defaultValue = null;
               break;
             default:
-              defaultValue = getJavaType().defaultDefault;
+              defaultValue = type.getJavaType().defaultDefault;
               break;
           }
         }
@@ -2783,10 +2785,30 @@ public final class Descriptors {
     public abstract FileDescriptor getFile();
 
     void resolveFeatures(FeatureSet unresolvedFeatures) throws DescriptorValidationException {
-      // Unknown java features may be passed by users via public buildFrom but should not occur from
-      // generated code.
-      if (!unresolvedFeatures.getUnknownFields().isEmpty()
-          && unresolvedFeatures.getUnknownFields().hasField(JavaFeaturesProto.java_.getNumber())) {
+      if (this.parent != null
+          && unresolvedFeatures.equals(FeatureSet.getDefaultInstance())
+          && !hasInferredLegacyProtoFeatures()) {
+        this.features = this.parent.features;
+        validateFeatures();
+        return;
+      }
+
+      // Java features from a custom pool (i.e. buildFrom) may end up in unknown fields or
+      // use a different descriptor from the generated pool used by the Java runtime.
+      boolean hasPossibleCustomJavaFeature = false;
+      for (FieldDescriptor f : unresolvedFeatures.getExtensionFields().keySet()) {
+        if (f.getNumber() == JavaFeaturesProto.java_.getNumber()
+            && f != JavaFeaturesProto.java_.getDescriptor()) {
+          hasPossibleCustomJavaFeature = true;
+          continue;
+        }
+      }
+      boolean hasPossibleUnknownJavaFeature =
+          !unresolvedFeatures.getUnknownFields().isEmpty()
+              && unresolvedFeatures
+                  .getUnknownFields()
+                  .hasField(JavaFeaturesProto.java_.getNumber());
+      if (hasPossibleCustomJavaFeature || hasPossibleUnknownJavaFeature) {
         ExtensionRegistry registry = ExtensionRegistry.newInstance();
         registry.add(JavaFeaturesProto.java_);
         ByteString bytes = unresolvedFeatures.toByteString();
@@ -2797,14 +2819,7 @@ public final class Descriptors {
               this, "Failed to parse features with Java feature extension registry.", e);
         }
       }
-
-      if (this.parent != null
-          && unresolvedFeatures.equals(FeatureSet.getDefaultInstance())
-          && !hasInferredLegacyProtoFeatures()) {
-        this.features = this.parent.features;
-        validateFeatures();
-        return;
-      }
+      
       FeatureSet.Builder features;
       if (this.parent == null) {
         Edition edition = getFile().getEdition();

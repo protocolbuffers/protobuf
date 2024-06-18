@@ -27,6 +27,7 @@ pub enum DecodeStatus {
 // LINT.ThenChange()
 
 #[repr(i32)]
+#[allow(dead_code)]
 enum DecodeOption {
     AliasString = 1,
     CheckRequired = 2,

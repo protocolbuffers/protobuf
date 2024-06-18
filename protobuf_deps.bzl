@@ -54,11 +54,11 @@ def protobuf_deps():
         http_archive(
             name = "zlib",
             build_file = Label("//:third_party/zlib.BUILD"),
-            sha256 = "d14c38e313afc35a9a8760dadf26042f51ea0f5d154b0630a31da0540107fb98",
-            strip_prefix = "zlib-1.2.13",
+            sha256 = "38ef96b8dfe510d42707d9c781877914792541133e1870841463bfa73f883e32",
+            strip_prefix = "zlib-1.3.1",
             urls = [
-                "https://github.com/madler/zlib/releases/download/v1.2.13/zlib-1.2.13.tar.xz",
-                "https://zlib.net/zlib-1.2.13.tar.xz",
+                "https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.xz",
+                "https://zlib.net/zlib-1.3.1.tar.xz",
             ],
         )
 

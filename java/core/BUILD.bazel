@@ -196,6 +196,12 @@ proto_library(
     deps = ["//:descriptor_proto"],
 )
 
+cc_proto_library(
+    name = "java_features_cc_proto",
+    visibility = ["//editions:__pkg__"],
+    deps = [":java_features_proto"],
+)
+
 filegroup(
     name = "java_features_proto_srcs",
     srcs = ["src/main/resources/google/protobuf/java_features.proto"],

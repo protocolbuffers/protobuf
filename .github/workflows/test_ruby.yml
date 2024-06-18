@@ -42,11 +42,13 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
-      - name: Archive log artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-logs-${{ matrix.ruby }}_${{ matrix.ffi || 'NATIVE' }}
-          path: logs
+# Useful tool for troubleshooting, but the action introduces flakes as well,
+# e.g. https://github.com/actions/upload-artifact/issues/569
+#      - name: Archive log artifacts
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: test-logs-${{ matrix.ruby }}_${{ matrix.ffi || 'NATIVE' }}
+#          path: logs
 
   linux-32bit:
     name: Linux 32-bit
