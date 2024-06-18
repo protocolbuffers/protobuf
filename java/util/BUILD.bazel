@@ -48,6 +48,9 @@ protobuf_java_export(
     maven_coordinates = "com.google.protobuf:protobuf-java-util:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "pom_template.xml",
     tags = ["manual"],
+    toolchains = [
+        "@bazel_tools//tools/jdk:toolchain_type",
+    ],
     visibility = ["//java:__pkg__"],
     runtime_deps = [":util_bundle"],
 )

@@ -17,7 +17,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         config:
-          - { name: "Bazel 7", bazel_version: "7.1.1" }
+          - { name: "Bazel 7", bazel_version: "7.1.2" }
           - { name: "Fastbuild" }
           - { name: "Optimized", flags: "-c opt" }
           - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/...", runner: ubuntu-20-large }
@@ -35,9 +35,9 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+        uses: protocolbuffers/protobuf-ci/bazel-docker@b7-test
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:${{ matrix.config.bazel_version || '6.3.0' }}-75f2a85ece6526cc3d54087018c0f1097d78d42b
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:${{ matrix.config.bazel_version || '7.1.2' }}-32f99e4e642096935aa0e50862482f7ffe1b231b
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel
           bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //bazel/... //benchmarks/... //lua/... //hpb_generator/... //python/... //upb/... //upb_generator/... ${{ matrix.config.flags }}
@@ -54,9 +54,9 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+        uses: protocolbuffers/protobuf-ci/bazel-docker@b7-test
         with:
-          image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-63dd26c0c7a808d92673a3e52e848189d4ab0f17"
+          image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:7.1.2-12.2-2d59f978645853c5156710320db037095b6a39e5"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-gcc"
           bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt //bazel/... //benchmarks/... //lua/... //hpb_generator/... //python/... //upb/... //upb_generator/...
@@ -81,7 +81,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-windows"
           bazel: test --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 //upb/... //upb_generator/... //python/... //hpb_generator/...
-          version: 6.3.0
+          version: 7.1.2
           exclude-targets: -//python:conformance_test -//upb/reflection:def_builder_test
 
   macos:
@@ -121,9 +121,9 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+        uses: protocolbuffers/protobuf-ci/bazel-docker@b7-test
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-bec4e87effd62da1d4f9a13d377e37bcb80376c9
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-no-python"
           bash: >-
@@ -142,12 +142,12 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Build Wheels
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+        uses: protocolbuffers/protobuf-ci/bazel-docker@b7-test
         with:
-          image: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple:6.3.0-53225851b051e66f8543e972c143f35be757a181
+          image: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple:7.1.2-edc97941fac0ebf98b9e3de591708ff887fa15fa
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel-python
-          bazel: build --crosstool_top=//toolchain:clang_suite --//toolchain:release=true --symlink_prefix=/ -c dbg //python/dist //python/dist:test_wheel //python/dist:source_wheel
+          bazel: build --crosstool_top=//toolchain:clang_suite --//toolchain:release=true --symlink_prefix=/ -s --sandbox_debug -c dbg //python/dist //python/dist:test_wheel //python/dist:source_wheel
       - name: Move Wheels
         run: mkdir wheels && find _build/out \( -name 'protobuf*.whl' -o -name 'protobuf-*.tar.gz' \) -exec mv '{}' wheels ';'
       - uses: actions/upload-artifact@v3

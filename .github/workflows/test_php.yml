@@ -41,7 +41,7 @@ jobs:
             command: composer test \&\& composer test_c
 
     name: Linux ${{ matrix.name}}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20-large
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
@@ -53,9 +53,9 @@ jobs:
           cache-prefix: php-${{ matrix.version-short }}
           directory: php
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v3
+        uses: protocolbuffers/protobuf-ci/docker@b7-test
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:${{ matrix.version }}-66964dc8b07b6d1fc73a5cc14e59e84c1c534cea
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:7.1.2-${{ matrix.version }}-21efb73c613deddd6db6a0a86f262324a77de13f
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           extra-flags: -e COMPOSER_HOME=/workspace/composer-cache
           command: ${{ matrix.command }}
@@ -77,9 +77,9 @@ jobs:
             test_name: ' Extension'
 
     name: Linux 32-bit ${{ matrix.version}}${{ matrix.suffix_name }}${{ matrix.test_name }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20-large
     env:
-      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:836f2cedcfe351d9a30055076630408e61994fc7d783e8333a99570968990eeb
+      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:429f924aec315704b4233adcbe4b29006116f27769db98acd176b9eb69c31299
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
@@ -90,7 +90,7 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-bec4e87effd62da1d4f9a13d377e37bcb80376c9
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
@@ -101,7 +101,7 @@ jobs:
           directory: php
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v3
+        uses: protocolbuffers/protobuf-ci/docker@b7-test
         with:
           image: ${{ env.image }}
           platform: linux/386
@@ -116,7 +116,7 @@ jobs:
 
   linux-aarch64:
     name: Linux aarch64
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20-large
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
@@ -125,9 +125,9 @@ jobs:
 
       - name: Cross compile protoc for aarch64
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@b7-test
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-bec4e87effd62da1d4f9a13d377e37bcb80376c9
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
@@ -138,9 +138,9 @@ jobs:
           directory: php
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v3
+        uses: protocolbuffers/protobuf-ci/docker@b7-test
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64@sha256:77ff9fdec867bbfb290ee0b10d8b7a3e5e434155daa5ec93de7341c7592b858d
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64@sha256:d5ed193d2cfc855842781124d8f79490b6ddb53aea96b9ce8a0c6c2ef2ec4eb7
           platform: linux/arm64
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
