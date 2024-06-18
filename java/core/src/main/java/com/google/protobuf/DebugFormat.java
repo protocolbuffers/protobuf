@@ -26,6 +26,10 @@ public final class DebugFormat {
     return TextFormat.printer()
         .emittingSingleLine(this.isSingleLine)
         .enablingSafeDebugFormat(true)
+        .setFieldReporterLevel(
+            this.isSingleLine
+                ? TextFormat.Printer.FieldReporterLevel.DEBUG_SINGLE_LINE
+                : TextFormat.Printer.FieldReporterLevel.DEBUG_MULTILINE)
         .printToString(message);
   }
 
