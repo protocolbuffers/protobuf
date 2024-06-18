@@ -25,24 +25,15 @@ jobs:
             targets: //java/... //java/internal:java_version //compatibility/... --features=-layering_check
           - name: OpenJDK 11
             version: '11'
-<<<<<<< HEAD
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-21efb73c613deddd6db6a0a86f262324a77de13f
-            targets: //java/... //java/internal:java_version
+            targets: //java/... //java/internal:java_version //compatibility/...
           - name: OpenJDK 17
             version: '17'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-21efb73c613deddd6db6a0a86f262324a77de13f
-            targets: //java/... //java/internal:java_version
-=======
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
             targets: //java/... //java/internal:java_version //compatibility/...
-          - name: OpenJDK 17
-            version: '17'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
-            targets: //java/... //java/internal:java_version //compatibility/...
->>>>>>> main
           - name: aarch64
             version: 'aarch64'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.1.2-aarch64-5be0f4fde927ca702ed4cebe096bfb632d6d9a36
             targets: //java/... //compatibility/... //src/google/protobuf/compiler:protoc_aarch64_test
 
     name: Linux ${{ matrix.name }}
