@@ -1,0 +1,19 @@
+# Simple build tests for compatibility of gencode from previous major versions
+# with the current runtime.
+#
+# To add more test cases in Java, use java_runtime_conformance as below, and add
+# the corresponding http_archive in the WORKSPACE file for the version.
+
+load("//compatibility:runtime_conformance.bzl", "java_runtime_conformance")
+
+# main gencode builds with main runtime as a proof of concept.
+java_runtime_conformance(
+    name = "java_conformance_main",
+    gencode_version = "main",
+)
+
+# Generates a build_test named "conformance_v3.25.0"
+java_runtime_conformance(
+    name = "java_conformance_v3.25.0",
+    gencode_version = "3.25.0",
+)
