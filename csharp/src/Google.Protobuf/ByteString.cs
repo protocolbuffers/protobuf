@@ -33,9 +33,9 @@ namespace Google.Protobuf
         private readonly ReadOnlyMemory<byte> bytes;
 
         /// <summary>
-        /// Internal use only. Ensure that the provided memory is not mutated and belongs to this instance.
+        /// Attach provided memory to this instance, ensuring it is not mutated externally.
         /// </summary>
-        internal static ByteString AttachBytes(ReadOnlyMemory<byte> bytes)
+        public static ByteString AttachBytes(ReadOnlyMemory<byte> bytes)
         {
             return new ByteString(bytes);
         }
