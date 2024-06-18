@@ -27,24 +27,32 @@ jobs:
         - platform: "iOS"
           destination: "platform=iOS Simulator,name=iPhone 13,OS=latest"
           xc_project: "ProtocolBuffers_iOS.xcodeproj"
+        # We run presubmits on all "Debug" entries, but not on "Release" entries
+        - xc_config: "Debug"
+          run-on-presubmit: true
+        - xc_config: "Release"
+          run-on-presubmit: false
 
-    name: Xcode ${{ matrix.platform}} ${{ matrix.xc_config }}
+    name: ${{ (!matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} Xcode ${{ matrix.platform}} ${{ matrix.xc_config }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: macos-12
     env:
       DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
     steps:
       - name: Checkout pending changes
+        if: ${{ !matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/ccache@v3
         with:
           cache-prefix: objectivec_${{ matrix.platform }}_${{ matrix.xc_config }}
           support-modules: true
 
       - name: Run tests
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/bash@v3
         env:
           CC: ${{ github.workspace }}/ci/clang_wrapper
@@ -61,6 +69,7 @@ jobs:
               | xcpretty
 
       - name: Report ccache stats
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         shell: bash
         run: ccache -s -v
 
@@ -76,16 +85,24 @@ jobs:
           - OS: macos-14
             PLATFORM: "visionos"
             XCODE: "15.2"
-    name: CocoaPods ${{ matrix.PLATFORM }} ${{ matrix.CONFIGURATION }}
+          # We run presubmits on all "Debug" entries, but not on "Release" entries
+          - CONFIGURATION: "Debug"
+            run-on-presubmit: true
+          - CONFIGURATION: "Release"
+            run-on-presubmit: false
+    name: ${{ (!matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} CocoaPods ${{ matrix.PLATFORM }} ${{ matrix.CONFIGURATION }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: ${{ matrix.OS }}
     steps:
       - name: Checkout pending changes
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Xcode version
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         run: sudo xcode-select -switch /Applications/Xcode_${{ matrix.XCODE }}.app
       - name: Pod lib lint
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -105,30 +122,36 @@ jobs:
           - name: Optimized
             flags: --config=opt
             bazel_action: test
+            run-on-presubmit: false
           - name: Debug
             flags: --config=dbg
             bazel_action: test
+            run-on-presubmit: true
           # Current github runners are all Intel based, so just build/compile
           # for Apple Silicon to detect issues there.
           - name: Apple_Silicon_Optimized
             flags: --config=opt --cpu=darwin_arm64
             bazel_action: build
+            run-on-presubmit: false
           - name: Apple_Silicon_Debug
             flags: --config=dbg --cpu=darwin_arm64
             bazel_action: build
+            run-on-presubmit: true
         # TODO: Could add iOS to atleast build the objc_library targets for that.
         platform: ["macOS"]
         include:
         - platform: "macOS"
           bazel_targets: //objectivec/...
-    name: Bazel ${{ matrix.platform }} ${{ matrix.config.name }}
+    name: ${{ (!matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} Bazel ${{ matrix.platform }} ${{ matrix.config.name }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: macos-12
     steps:
       - name: Checkout pending changes
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: bazel ${{ matrix.config.bazel_action }}
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
