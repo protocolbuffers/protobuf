@@ -25,22 +25,22 @@ jobs:
           - { name: "Fastbuild", run-on-presubmit: true }
           - { name: "Optimized", flags: "-c opt", run-on-presubmit: false }
           - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/...", runner: ubuntu-20-large, run-on-presubmit: true }
-          - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/... -//lua/...", run-on-presubmit: true }
+          - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/... -//lua/...", run-on-presubmit: false }
           - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-//benchmarks:benchmark -//python/...", run-on-presubmit: true }
           # TODO: Add 32-bit ASAN test
           # TODO: Restore the FastTable tests
 
-    name: ${{ (!matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} ${{ matrix.config.name }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
+    name: ${{ (!matrix.config.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} ${{ matrix.config.name }} ${{ !matrix.config.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
 
     steps:
       - name: Checkout pending changes
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.config.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.config.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:${{ matrix.config.bazel_version || '6.3.0' }}-75f2a85ece6526cc3d54087018c0f1097d78d42b
@@ -195,7 +195,7 @@ jobs:
           - { os: windows-2019, python-version: "3.10", architecture: x64, type: 'binary', run-on-presubmit: false }
           - { os: windows-2019, python-version: "3.11", architecture: x64, type: 'binary', run-on-presubmit: false }
           - { os: windows-2019, python-version: "3.12", architecture: x64, type: 'binary', run-on-presubmit: true }
-    name: ${{ (!matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} Test Wheels ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
+    name: ${{ (!matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} Test Wheels Python ${{ matrix.python-version }} ${{ matrix.os }} ${{ matrix.architecture }} ${{ matrix.type }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
     needs: build_wheels
     runs-on: ${{ matrix.os }}
     if: ${{ github.event_name != 'pull_request_target' }}

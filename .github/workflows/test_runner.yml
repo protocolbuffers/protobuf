@@ -180,7 +180,6 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_csharp.yml
     with:
-      test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 

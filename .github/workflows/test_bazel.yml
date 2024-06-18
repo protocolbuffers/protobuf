@@ -43,7 +43,7 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Windows startup flags
-        if: runner.os == 'Windows' && ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ runner.os == 'Windows' && (matrix.run-on-presubmit || inputs.test-type == 'continuous') }}
         working-directory: examples
         shell: bash
         run: echo "startup --output_user_root=C:/ --windows_enable_symlinks" >> .bazelrc

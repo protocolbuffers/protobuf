@@ -21,13 +21,13 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         config:
-          - { name: Optimized, flags: --config=opt }
-          - { name: Debug, flags: --config=dbg }
-          - { name: ASAN, flags: --config=asan, runner: ubuntu-20-large }
-          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-20-large }
-          - { name: TSAN, flags: --config=tsan, runner: ubuntu-20-large }
-          - { name: UBSAN, flags: --config=ubsan }
-          - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
+          - { name: Optimized, flags: --config=opt, run-on-presubmit: true }
+          - { name: Debug, flags: --config=dbg, run-on-presubmit: false }
+          - { name: ASAN, flags: --config=asan, runner: ubuntu-20-large, run-on-presubmit: true }
+          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-20-large, run-on-presubmit: false }
+          - { name: TSAN, flags: --config=tsan, runner: ubuntu-20-large, run-on-presubmit: false }
+          - { name: UBSAN, flags: --config=ubsan, run-on-presubmit: false }
+          - { name: No-RTTI, flags: --cxxopt=-fno-rtti, run-on-presubmit: false }
         include:
           # Set defaults
           - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:3d959f731dc5c54af4865c31ee2bd581ec40028adcdf4c038f3122581f595191
@@ -43,14 +43,16 @@ jobs:
           - config: { name: "aarch64" }
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:6.3.0-aarch64-68e662b3a56b881804dc4e9d45f949791cbc4b94"
-    name: Linux ${{ matrix.config.name }}
+    name: ${{ (!matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} Linux ${{ matrix.config.name }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
       - name: Checkout pending changes
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
           image: ${{ matrix.image }}
@@ -125,31 +127,38 @@ jobs:
       matrix:
         include:
           - flags: -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
+            run-on-presubmit: true
           - name: Ninja
             flags: -G Ninja -DCMAKE_CXX_STANDARD=14
+            run-on-presubmit: false
           - name: Shared
             flags: -Dprotobuf_BUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
+            run-on-presubmit: false
           - name: C++17
             flags: -DCMAKE_CXX_STANDARD=17
+            run-on-presubmit: true
           # TODO Re-enable this.
           #- name: C++20
           #  flags: -DCMAKE_CXX_STANDARD=20
 
-    name: Linux CMake ${{ matrix.name}}
+    name: ${{ (!matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} Linux CMake ${{ matrix.name}} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup sccache
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: linux-cmake
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       - name: Run tests
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-63dd26c0c7a808d92673a3e52e848189d4ab0f17
@@ -194,6 +203,8 @@ jobs:
 
   linux-cmake-examples:
     name: Linux CMake Examples
+    # Skip this test on presubmit
+    if: ${{ inputs.test-type == 'continuous' }} 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
@@ -228,27 +239,33 @@ jobs:
         include:
           - name: C++14
             flags: -DCMAKE_CXX_STANDARD=14
+            run-on-presubmit: true
           - name: C++17
             flags: -DCMAKE_CXX_STANDARD=17
+            run-on-presubmit: false
           - name: C++20
             flags: -DCMAKE_CXX_STANDARD=20
+            run-on-presubmit: true
 
-    name: Linux CMake GCC ${{ matrix.name }}
+    name: ${{ (!matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} Linux CMake GCC ${{ matrix.name }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
           submodules: recursive
 
       - name: Setup sccache
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: linux-cmake-gcc
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       - name: Run tests
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-63dd26c0c7a808d92673a3e52e848189d4ab0f17

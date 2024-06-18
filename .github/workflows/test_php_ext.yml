@@ -17,9 +17,7 @@ permissions:
 
 jobs:
   package:
-    # Only run package test in continuous runs
-    name: Package (Continuous)
-    if: inputs.test-type == 'continuous'
+    name: Package
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
