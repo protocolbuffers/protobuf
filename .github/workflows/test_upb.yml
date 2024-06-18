@@ -37,7 +37,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:${{ matrix.config.bazel_version || '6.3.0' }}-32f99e4e642096935aa0e50862482f7ffe1b231b
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:${{ matrix.config.bazel_version || '7.1.2' }}-32f99e4e642096935aa0e50862482f7ffe1b231b
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel
           bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //bazel/... //benchmarks/... //lua/... //protos/... //hpb_generator/... //python/... //upb/... //upb_generator/... ${{ matrix.config.flags }}
