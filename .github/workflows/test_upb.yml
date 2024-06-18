@@ -236,17 +236,15 @@ jobs:
         if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         run: pip install -r requirements/requirements.txt
       - name: Install Protobuf Binary Wheel
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.type == 'binary' && (matrix.run-on-presubmit || inputs.test-type == 'continuous') }}
         run: pip install -vvv --no-index --find-links wheels protobuf
-        if: ${{ matrix.type == 'binary' }}
       - name: Install Protobuf Source Wheel
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.type == 'source' && (matrix.run-on-presubmit || inputs.test-type == 'continuous') }}
         run: |
           cd wheels
           tar -xzvf *.tar.gz
           cd protobuf-*/
           pip install .
-        if: ${{ matrix.type == 'source' }}
       - name: Test that module is importable
         if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         run: python -v -c 'from google._upb import _message; assert "google._upb._message.MessageMeta" in str(_message.MessageMeta)'
