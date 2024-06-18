@@ -3,6 +3,10 @@ name: Ruby Tests
 on:
   workflow_call:
     inputs:
+      test-type:
+        required: true
+        description: "The type of test this is run from -- presubmit or continuous"
+        type: string
       safe-checkout:
         required: true
         description: "The SHA key for the commit we want to run over"
