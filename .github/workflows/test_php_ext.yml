@@ -54,7 +54,7 @@ jobs:
             run-on-presubmit: false
           - version: "8.3"
             run-on-presubmit: true
-    name: ${{ !matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} Build ${{ matrix.version }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
+    name: ${{ (!matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} Build ${{ matrix.version }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
