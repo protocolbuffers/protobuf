@@ -25,6 +25,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -1094,7 +1097,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       }
     }
 
-    // TODO: Remove, replace with newExtensionSerializer().
+    /** @deprecated TODO: Remove, replace with newExtensionSerializer(). */
+    @Deprecated
     protected ExtensionWriter newExtensionWriter() {
       return new ExtensionWriter(false);
     }
