@@ -144,6 +144,7 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_python.yml
     with:
+      test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
@@ -152,6 +153,7 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_ruby.yml
     with:
+      test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
@@ -160,6 +162,7 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_php.yml
     with:
+      test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
@@ -168,6 +171,7 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_php_ext.yml
     with:
+      test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
@@ -176,6 +180,7 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_csharp.yml
     with:
+      test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
@@ -184,6 +189,7 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_objectivec.yml
     with:
+      test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
@@ -200,6 +206,7 @@ jobs:
     needs: [check-tag]
     uses: ./.github/workflows/test_upb.yml
     with:
+      test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
     secrets: inherit
 
