@@ -23,7 +23,7 @@ jobs:
         runner: [ ubuntu, windows, macos ]
         bazelversion: [ '7.1.2' ]
         bzlmod: [true, false ]
-        run-on-presubmit: true
+        run-on-presubmit: [ true ]
         include:
           - runner: ubuntu
             bazelversion: '6.4.0'
