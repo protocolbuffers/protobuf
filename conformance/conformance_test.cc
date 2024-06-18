@@ -282,6 +282,7 @@ void ConformanceTestSuite::ReportFailure(const std::string& test_name,
                                          const ConformanceRequest& request,
                                          const ConformanceResponse& response,
                                          absl::string_view message) {
+  ABSL_LOG(INFO) << "Failure for " << test_name << " # " << message;
   if (expected_to_fail_.erase(test_name) == 1) {
     expected_failures_++;
     if (!verbose_) return;
