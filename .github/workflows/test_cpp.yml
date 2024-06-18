@@ -303,7 +303,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:8275360dc5d676f3470872d79087901c0e4153453976bea908a92c82e8d209ea
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:429f924aec315704b4233adcbe4b29006116f27769db98acd176b9eb69c31299
           platform: linux/386
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
