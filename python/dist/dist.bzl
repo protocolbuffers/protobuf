@@ -18,7 +18,7 @@ def _get_suffix(limited_api, python_version, cpu):
 
     if python_version == "system":
         python_version = SYSTEM_PYTHON_VERSION
-        if int(python_version) < 38:
+        if int(python_version) < 39:
             python_version += "m"
         abis = {
             "darwin_arm64": "darwin",

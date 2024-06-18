@@ -13,8 +13,12 @@ permissions:
 
 jobs:
   linux:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        bazel-version: ['6.4.0']
     name: Linux
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
@@ -25,9 +29,11 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:3.1.415-6.0.100-66964dc8b07b6d1fc73a5cc14e59e84c1c534cea
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:${{ matrix.bazel-version }}-3.1.415-6.0.100-08714ed7a713068c8418003a2d95f423d4b1eac9
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: /bin/bash
+          bazel-version: ${{ matrix.bazel-version }}
+          staleness-image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
           command: >-
             -c "
             cd csharp &&
@@ -41,12 +47,16 @@ jobs:
       - name: Run conformance tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:3.1.415-6.0.100-66964dc8b07b6d1fc73a5cc14e59e84c1c534cea
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:${{ matrix.bazel-version }}-3.1.415-6.0.100-08714ed7a713068c8418003a2d95f423d4b1eac9
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: csharp_linux
           bazel: test //csharp:conformance_test --action_env=DOTNET_CLI_TELEMETRY_OPTOUT=1 --test_env=DOTNET_CLI_HOME=/home/bazel
 
   windows:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        bazel-version: ['6.4.0']
     name: Windows
     runs-on: windows-2019
     steps:
@@ -73,11 +83,16 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bash@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-version: ${{ matrix.bazel-version }}
           command: |
             dotnet build csharp/src/Google.Protobuf.sln
             dotnet test csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
 
   linux-aarch64:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        bazel-version: ['6.4.0']
     name: Linux aarch64
     runs-on: ubuntu-latest
     steps:
@@ -92,7 +107,9 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: mcr.microsoft.com/dotnet/sdk:6.0.100-bullseye-slim
+          staleness-image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-version: ${{ matrix.bazel-version }}
           command: >-
             /bin/bash -cex '
             DOTNET_CLI_TELEMETRY_OPTOUT=true
@@ -109,8 +126,10 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: mcr.microsoft.com/dotnet/sdk:6.0.100-bullseye-slim-arm64v8
+          staleness-image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
           skip-staleness-check: true
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-version: ${{ matrix.bazel-version }}
           command: >-
             /bin/bash -cex '
             DOTNET_CLI_TELEMETRY_OPTOUT=true

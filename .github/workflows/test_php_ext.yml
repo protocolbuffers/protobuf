@@ -26,6 +26,7 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_ext/${{ matrix.version }}
+          version: 7.1.2
           bash: >
             ./regenerate_stale_files.sh $BAZEL_FLAGS;
             bazel build //php:release $BAZEL_FLAGS;
@@ -41,6 +42,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
+        bazel-version: ['7.1.2']
         version: ["8.1", "8.2", "8.3"]
     name: Build ${{ matrix.version }}
     runs-on: ubuntu-latest
@@ -53,6 +55,8 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-extension:${{ matrix.version }}-a48f26c08d9a803dd0177dda63563f6ea6f7b2d4
+          staleness-image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-bec4e87effd62da1d4f9a13d377e37bcb80376c9
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-version: ${{ matrix.bazel-version }}
           skip-staleness-check: true
           command: protobuf-*.tgz

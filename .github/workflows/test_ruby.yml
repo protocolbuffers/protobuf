@@ -16,6 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        bazel-version: ['6.4.0']
         include:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby, but only on Bazel 5.x.
@@ -38,7 +39,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-6.3.0-9848710ff1370795ee7517570a20b81e140112ec', matrix.ruby) }}
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.bazel-version }}-${{ matrix.ruby }}-27cf7b86212020d7e552bc13b1e084abb971da75
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
@@ -51,8 +52,12 @@ jobs:
 #          path: logs
 
   linux-32bit:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        bazel-version: ['6.4.0']
     name: Linux 32-bit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20-4core
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
@@ -63,7 +68,8 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
+          staleness-image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
@@ -71,10 +77,12 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: i386/ruby:3.0.2-buster
+          staleness-image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
+          bazel-version: ${{ matrix.bazel-version }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /bin/bash -cex '
-            gem install bundler -v 2.5.6;
+            gem install bundler -v 2.5.13;
             cd /workspace/ruby;
             bundle;
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
@@ -82,8 +90,12 @@ jobs:
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake test'
 
   linux-aarch64:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        bazel-version: ['6.4.0']
     name: Linux aarch64
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20-4core
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
@@ -94,7 +106,7 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
@@ -102,10 +114,12 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: arm64v8/ruby:3.0.2-buster
+          staleness-image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
+          bazel-version: ${{ matrix.bazel-version }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /bin/bash -cex '
-            gem install bundler -v 2.5.6;
+            gem install bundler -v 2.5.13;
             cd /workspace/ruby;
             bundle;
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
@@ -116,6 +130,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
+        bazel-version: ['6.4.0']
         include:
         # Test both FFI and Native implementations on the highest and lowest
         # Ruby versions for CRuby, but only on Bazel 5.x.
@@ -148,16 +163,18 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_macos/${{ matrix.version }}
+          version: ${{ matrix.bazel-version }}
           bazel: test //ruby/... --test_env=KOKORO_RUBY_VERSION=${{ matrix.version }} --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
 
   test_ruby_gems:
     strategy:
       fail-fast: false
       matrix:
+        bazel-version: ['6.4.0']
         include:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby, but only on Bazel 5.x.
-          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: NATIVE}
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: NATIVE }
           - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI}
           - { name: Ruby 3.1, ruby: ruby-3.1.0}
           - { name: Ruby 3.2, ruby: ruby-3.2.0}
@@ -175,9 +192,9 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-6.3.0-9848710ff1370795ee7517570a20b81e140112ec
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.bazel-version }}-${{ matrix.ruby }}-27cf7b86212020d7e552bc13b1e084abb971da75
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: ruby_install/${{ matrix.ruby }}_${{ matrix.bazel }}
+          bazel-cache: ruby_install/${{ matrix.ruby }}_${{ matrix.bazel-version }}
           bash: >
             bazel --version;
             ruby --version;

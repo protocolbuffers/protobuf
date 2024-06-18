@@ -16,6 +16,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
+        bazel-version: ['6.4.0']
         config:
           - { name: Optimized, flags: --config=opt }
           - { name: Debug, flags: --config=dbg }
@@ -26,7 +27,7 @@ jobs:
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
         include:
           # Set defaults
-          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:3d959f731dc5c54af4865c31ee2bd581ec40028adcdf4c038f3122581f595191
+          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:6.4.0-27cf7b86212020d7e552bc13b1e084abb971da75
           - targets: //pkg/... //src/... @com_google_protobuf_examples//... //third_party/utf8_range/...
 
           # Override cases with custom images
@@ -39,13 +40,13 @@ jobs:
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e"
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "TCMalloc" }
-            cache_key: TcMalloc
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:1c5133455481f4d1bb8afa477029604f41f1a3c46cebe4d9958cf1af95b5c87c"
+            version: TcMalloc
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc:6.4.0-27cf7b86212020d7e552bc13b1e084abb971da75"
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "aarch64" }
             cache_key: TcMalloc
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:6.3.0-aarch64-68e662b3a56b881804dc4e9d45f949791cbc4b94"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:6.4.0-aarch64-08714ed7a713068c8418003a2d95f423d4b1eac9"
     name: Linux ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
@@ -66,6 +67,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
+        bazel-version: ['6.4.0']
         version: ['9.5', '13.1']
     name: Linux GCC ${{ matrix.version }}
     runs-on: ubuntu-latest
@@ -77,7 +79,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:${{ matrix.version }}-6.3.0-63dd26c0c7a808d92673a3e52e848189d4ab0f17
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:${{ matrix.bazel-version }}-${{ matrix.version }}-27cf7b86212020d7e552bc13b1e084abb971da75
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/gcc-${{ matrix.version }}
           bazel: test //pkg/... //src/... @com_google_protobuf_examples//... //third_party/utf8_range/...
@@ -87,6 +89,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         arch: [x86_64, aarch64]
+        bazel-version: ['6.4.0']
     name: Linux Release ${{ matrix.arch}}
     runs-on: ubuntu-20-4core
     steps:
@@ -99,7 +102,7 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-${{ matrix.arch }}
       - name: Setup sccache
@@ -110,7 +113,9 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:${{ matrix.arch }}-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:${{ matrix.bazel-version }}-${{ matrix.arch }}-08714ed7a713068c8418003a2d95f423d4b1eac9
+          staleness-image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
+          bazel-version: ${{ matrix.bazel-version }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >
@@ -127,6 +132,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
+        bazel-version: ['6.4.0']
         include:
           - flags: -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
           - name: Ninja
@@ -156,7 +162,9 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-63dd26c0c7a808d92673a3e52e848189d4ab0f17
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38
+          staleness-image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
+          bazel-version: ${{ matrix.bazel-version }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /test.sh ${{ matrix.flags}} ${{ env.SCCACHE_CMAKE_FLAGS }}
@@ -164,6 +172,10 @@ jobs:
             -Dprotobuf_ABSL_PROVIDER=package
 
   linux-cmake-install:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        bazel-version: ['6.4.0']
     name: Linux CMake Install
     runs-on: ubuntu-latest
     steps:
@@ -182,7 +194,9 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-63dd26c0c7a808d92673a3e52e848189d4ab0f17
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38
+          staleness-image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
+          bazel-version: ${{ matrix.bazel-version }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.SCCACHE_CMAKE_FLAGS }}
@@ -197,6 +211,10 @@ jobs:
             -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
 
   linux-cmake-examples:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        bazel-version: ['6.4.0']
     name: Linux CMake Examples
     runs-on: ubuntu-latest
     steps:
@@ -214,7 +232,9 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-63dd26c0c7a808d92673a3e52e848189d4ab0f17
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38
+          staleness-image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
+          bazel-version: ${{ matrix.bazel-version }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.SCCACHE_CMAKE_FLAGS }}
@@ -229,6 +249,8 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
+        bazel-version: ['6.4.0']
+        gcc-version: ['12.2']
         include:
           - name: C++14
             flags: -DCMAKE_CXX_STANDARD=14
@@ -255,7 +277,9 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-63dd26c0c7a808d92673a3e52e848189d4ab0f17
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:${{ matrix.bazel-version }}-${{ matrix.gcc-version }}-27cf7b86212020d7e552bc13b1e084abb971da75
+          staleness-image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
+          bazel-version: ${{ matrix.bazel-version }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >-
@@ -268,6 +292,10 @@ jobs:
               sccache -s'
 
   linux-cmake-submodules:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        bazel-version: ['6.4.0']
     name: Linux CMake Submodules
     runs-on: ubuntu-latest
     steps:
@@ -286,13 +314,19 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-63dd26c0c7a808d92673a3e52e848189d4ab0f17
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38
+          staleness-image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
+          bazel-version: ${{ matrix.bazel-version }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /test.sh ${{ env.SCCACHE_CMAKE_FLAGS }}
             -Dprotobuf_BUILD_CONFORMANCE=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
 
   linux-cmake-32-bit:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        bazel-version: ['6.4.0']
     name: Linux CMake 32-bit
     runs-on: ubuntu-latest
     steps:
@@ -311,7 +345,9 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:8275360dc5d676f3470872d79087901c0e4153453976bea908a92c82e8d209ea
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:429f924aec315704b4233adcbe4b29006116f27769db98acd176b9eb69c31299
+          staleness-image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
+          bazel-version: ${{ matrix.bazel-version }}
           platform: linux/386
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
@@ -330,29 +366,32 @@ jobs:
         include:
           - name: MacOS Bazel
             os: macos-12
-            cache_key: macos-12
+            cache_key: macos-12-bazel6
             bazel: test //src/... //third_party/utf8_range/...
-          - name: MacOS Bazel 7
+            bazel_version: '6.4.0'
+          - name: MacOS Bazel
             os: macos-12
             cache_key: macos-12-bazel7
             bazel: test //src/... //third_party/utf8_range/...
             bazel_version: '7.1.2'
           - name: MacOS Apple Silicon (build only) Bazel
             os: macos-12
-            cache_key: macos-12-arm
+            cache_key: macos-12-arm-bazel6
             # Current github runners are all Intel based, so just build/compile
             # for Apple Silicon to detect issues there.
             bazel: build --cpu=darwin_arm64 //src/... //third_party/utf8_range/...
+            bazel_version: '6.4.0'
           - name: Windows Bazel
             os: windows-2022
-            cache_key: windows-2022
+            cache_key: windows-2022-bazel6
             bazel: test //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
-          - name: Windows Bazel 7
+            bazel_version: '6.4.0'
+          - name: Windows Bazel 
             os: windows-2022
             cache_key: windows-2022-bazel7
             bazel: test //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
             bazel_version: '7.1.2'
-    name: ${{ matrix.name }}
+    name: ${{ matrix.name }} ${{ matrix.bazel_version }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout pending changes
@@ -365,12 +404,13 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.bazel }}
           bazel-cache: cpp_${{ matrix.cache_key }}
-          version: ${{ matrix.bazel_version || '6.3.0' }}
+          version: ${{ matrix.bazel_version }}
 
   non-linux-cmake:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
+        bazel-version: ['6.4.0']
         include:
           # TODO: investigate and fix
           # - name: MacOS CMake
@@ -463,6 +503,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bash@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-version: ${{ matrix.bazel-version || '6.4.0' }}
           command: cmake . ${{ matrix.install-flags }} ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON
       - name: Build for install
         if: matrix.install-flags
@@ -485,6 +526,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bash@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-version: ${{ matrix.bazel-version }}
           command: cmake . ${{ matrix.flags }} ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON 
 
       - name: Build

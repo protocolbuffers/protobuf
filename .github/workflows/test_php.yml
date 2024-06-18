@@ -17,6 +17,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
+        bazel-version: ['6.4.0']
         include:
           - name: 8.1 Optimized
             version: "8.1.14"
@@ -41,7 +42,7 @@ jobs:
             command: composer test \&\& composer test_c
 
     name: Linux ${{ matrix.name}}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
@@ -55,7 +56,9 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:${{ matrix.version }}-66964dc8b07b6d1fc73a5cc14e59e84c1c534cea
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:${{ matrix.bazel-version }}-${{ matrix.version }}-27cf7b86212020d7e552bc13b1e084abb971da75
+          staleness-image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
+          bazel-version: ${{ matrix.bazel-version }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           extra-flags: -e COMPOSER_HOME=/workspace/composer-cache
           command: ${{ matrix.command }}
@@ -65,6 +68,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         version: ['8.1']
+        bazel-version: ['6.4.0']
         suffix: [ '', '-zts']
         test: ['test', 'test_c']
         exclude:
@@ -77,9 +81,9 @@ jobs:
             test_name: ' Extension'
 
     name: Linux 32-bit ${{ matrix.version}}${{ matrix.suffix_name }}${{ matrix.test_name }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22-4core
     env:
-      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:836f2cedcfe351d9a30055076630408e61994fc7d783e8333a99570968990eeb
+      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:429f924aec315704b4233adcbe4b29006116f27769db98acd176b9eb69c31299
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
@@ -90,7 +94,7 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
@@ -104,6 +108,8 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: ${{ env.image }}
+          bazel-version: ${{ matrix.bazel-version }}
+          staleness-image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e 
           platform: linux/386
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
@@ -115,8 +121,12 @@ jobs:
             composer ${{ matrix.test }}'
 
   linux-aarch64:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        bazel-version: ['6.4.0']
     name: Linux aarch64
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
@@ -127,7 +137,7 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
@@ -140,8 +150,11 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
+          # TODO: b/ - Update to aarch64 image once it is available.
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-aarch64@sha256:77ff9fdec867bbfb290ee0b10d8b7a3e5e434155daa5ec93de7341c7592b858d
+          staleness-image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:${{ matrix.bazel-version }}-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
           platform: linux/arm64
+          bazel-version: ${{ matrix.bazel-version }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           extra-flags: -e COMPOSER_HOME=/workspace/composer-cache -e PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
           command: >-
@@ -156,6 +169,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         version: ['8.2', '8.3']
+        bazel-version: ['6.4.0']
 
     name: MacOS PHP ${{ matrix.version }}
     runs-on: macos-12
@@ -189,6 +203,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bash@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-version: ${{ matrix.bazel-version }}
           command: |
             pushd php
             php -v
@@ -202,4 +217,5 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_macos/${{ matrix.version }}
+          bazel-version: ${{ matrix.bazel-version }}
           bazel: test //php:conformance_test_c --action_env=PATH --test_env=PATH
