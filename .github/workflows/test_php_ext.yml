@@ -50,7 +50,7 @@ jobs:
           name: protobuf-php-release
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v3
+        uses: protocolbuffers/protobuf-ci/docker@b7-test
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-extension:${{ matrix.version }}-a48f26c08d9a803dd0177dda63563f6ea6f7b2d4
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}

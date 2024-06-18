@@ -175,6 +175,9 @@ protobuf_java_export(
         "//src/google/protobuf:descriptor_proto_srcs",
     ],
     tags = ["manual"],
+    toolchains = [
+        "@bazel_tools//tools/jdk:toolchain_type",
+    ],
     runtime_deps = [":lite_bundle"],
 )
 
@@ -294,6 +297,9 @@ protobuf_java_export(
         "//src/google/protobuf:descriptor_proto_srcs",
     ],
     tags = ["manual"],
+    toolchains = [
+        "@bazel_tools//tools/jdk:toolchain_type",
+    ],
     runtime_deps = [":core_bundle"],
 )
 

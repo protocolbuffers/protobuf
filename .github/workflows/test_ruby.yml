@@ -36,9 +36,9 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+        uses: protocolbuffers/protobuf-ci/bazel-docker@b7-test
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-6.3.0-9848710ff1370795ee7517570a20b81e140112ec', matrix.ruby) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:7.1.2-{0}-2d59f978645853c5156710320db037095b6a39e5', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_linux/${{ matrix.ruby }}_${{ matrix.bazel }}
           bazel: test //ruby/... //ruby/tests:ruby_version --test_env=KOKORO_RUBY_VERSION --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
@@ -63,18 +63,18 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-bec4e87effd62da1d4f9a13d377e37bcb80376c9
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v3
+        uses: protocolbuffers/protobuf-ci/docker@b7-test
         with:
           image: i386/ruby:3.0.2-buster
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /bin/bash -cex '
-            gem install bundler -v 2.5.6;
+            gem install bundler -v 2.5.13;
             cd /workspace/ruby;
             bundle;
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
@@ -94,7 +94,7 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-bec4e87effd62da1d4f9a13d377e37bcb80376c9
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
@@ -105,7 +105,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /bin/bash -cex '
-            gem install bundler -v 2.5.6;
+            gem install bundler -v 2.5.13;
             cd /workspace/ruby;
             bundle;
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake;
@@ -173,9 +173,9 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+        uses: protocolbuffers/protobuf-ci/bazel-docker@b7-test
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-6.3.0-9848710ff1370795ee7517570a20b81e140112ec
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:7.1.2-${{ matrix.ruby }}-2d59f978645853c5156710320db037095b6a39e5
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: ruby_install/${{ matrix.ruby }}_${{ matrix.bazel }}
           bash: >
