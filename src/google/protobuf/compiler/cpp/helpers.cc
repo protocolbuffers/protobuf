@@ -1538,7 +1538,6 @@ bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
   return UsingImplicitWeakFields(field->file(), options) &&
          field->type() == FieldDescriptor::TYPE_MESSAGE &&
          !field->is_required() && !field->is_map() && !field->is_extension() &&
-         !IsWellKnownMessage(field->message_type()->file()) &&
          field->message_type()->file()->name() !=
              "net/proto2/proto/descriptor.proto" &&
          // We do not support implicit weak fields between messages in the same
@@ -1952,3 +1951,5 @@ bool NeedsPostLoopHandler(const Descriptor* descriptor,
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
