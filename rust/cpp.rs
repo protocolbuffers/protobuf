@@ -164,6 +164,28 @@ impl SerializedData {
     fn as_mut_ptr(&mut self) -> *mut [u8] {
         ptr::slice_from_raw_parts_mut(self.data.as_ptr(), self.len)
     }
+
+    /// Converts into a Vec<u8>.
+    pub fn into_vec(self) -> Vec<u8> {
+        // We need to prevent self from being dropped, because we are going to transfer
+        // ownership of self.data to the Vec<u8>.
+        let s = std::mem::ManuallyDrop::new(self);
+
+        unsafe {
+            // SAFETY:
+            // - `data` was allocated by the Rust global allocator.
+            // - `data` was allocated with an alignment of 1 for u8.
+            // - The allocated size was `len`.
+            // - The length and capacity are equal.
+            // - All `len` bytes are initialized.
+            // - The capacity (`len` in this case) is the size the pointer was allocated
+            //   with.
+            // - The allocated size is no more than isize::MAX, because the protobuf
+            //   serializer will refuse to serialize a message if the output would exceed
+            //   2^31 - 1 bytes.
+            Vec::<u8>::from_raw_parts(s.data.as_ptr(), s.len, s.len)
+        }
+    }
 }
 
 impl Deref for SerializedData {
