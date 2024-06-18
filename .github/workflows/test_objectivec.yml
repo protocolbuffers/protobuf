@@ -146,16 +146,16 @@ jobs:
         include:
         - platform: "macOS"
           bazel_targets: //objectivec/...
-    name: ${{ (!matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} Bazel ${{ matrix.platform }} ${{ matrix.config.name }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
+    name: ${{ (!matrix.config.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} Bazel ${{ matrix.platform }} ${{ matrix.config.name }} ${{ !matrix.config.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: macos-12
     steps:
       - name: Checkout pending changes
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.config.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: bazel ${{ matrix.config.bazel_action }}
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.config.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
