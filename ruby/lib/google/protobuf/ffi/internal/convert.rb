@@ -69,7 +69,7 @@ module Google
               wkt = Google::Protobuf::FFI.get_well_known_type(msg_or_enum_def)
               case wkt
               when :Timestamp
-                raise TypeError.new "Invalid type #{value.class} to assign to submessage field '#{name}'." unless value.kind_of? Time
+                raise TypeError.new "Invalid type #{value.class} to assign to submessage field '#{name}'." unless value.is_a? Time
                 new_message = Google::Protobuf::FFI.new_message_from_def Google::Protobuf::FFI.get_mini_table(msg_or_enum_def), arena
                 sec = Google::Protobuf::FFI::MessageValue.new
                 sec[:int64_val] = value.tv_sec
@@ -81,7 +81,7 @@ module Google
                 raise "Should be impossible" unless Google::Protobuf::FFI.set_message_field new_message, nsec_field_def, nsec, arena
                 return_value[:msg_val] = new_message
               when :Duration
-                raise TypeError.new "Invalid type #{value.class} to assign to submessage field '#{name}'." unless value.kind_of? Numeric
+                raise TypeError.new "Invalid type #{value.class} to assign to submessage field '#{name}'." unless value.is_a? Numeric
                 new_message = Google::Protobuf::FFI.new_message_from_def Google::Protobuf::FFI.get_mini_table(msg_or_enum_def), arena
                 sec = Google::Protobuf::FFI::MessageValue.new
                 sec[:int64_val] = value
