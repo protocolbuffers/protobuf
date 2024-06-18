@@ -21,8 +21,8 @@ import calendar
 import collections.abc
 import datetime
 import warnings
-
 from google.protobuf.internal import field_mask
+from typing import Union
 
 FieldMask = field_mask.FieldMask
 
@@ -271,11 +271,34 @@ class Timestamp(object):
     # manipulated into a long value of seconds.  During the conversion from
     # struct_time to long, the source date in UTC, and so it follows that the
     # correct transformation is calendar.timegm()
-    seconds = calendar.timegm(dt.utctimetuple())
-    nanos = dt.microsecond * _NANOS_PER_MICROSECOND
+    try:
+      seconds = calendar.timegm(dt.utctimetuple())
+      nanos = dt.microsecond * _NANOS_PER_MICROSECOND
+    except AttributeError as e:
+      raise AttributeError(
+          'Fail to convert to Timestamp. Expected a datetime like '
+          'object got {0} : {1}'.format(type(dt).__name__, e)
+      ) from e
     _CheckTimestampValid(seconds, nanos)
     self.seconds = seconds
     self.nanos = nanos
+
+  def __add__(self, value) -> datetime.datetime:
+    if isinstance(value, Duration):
+      return self.ToDatetime() + value.ToTimedelta()
+    return self.ToDatetime() + value
+
+  __radd__ = __add__
+
+  def __sub__(self, value) -> Union[datetime.datetime, datetime.timedelta]:
+    if isinstance(value, Timestamp):
+      return self.ToDatetime() - value.ToDatetime()
+    elif isinstance(value, Duration):
+      return self.ToDatetime() - value.ToTimedelta()
+    return self.ToDatetime() - value
+
+  def __rsub__(self, dt) -> datetime.timedelta:
+    return dt - self.ToDatetime()
 
 
 def _CheckTimestampValid(seconds, nanos):
@@ -408,8 +431,16 @@ class Duration(object):
 
   def FromTimedelta(self, td):
     """Converts timedelta to Duration."""
-    self._NormalizeDuration(td.seconds + td.days * _SECONDS_PER_DAY,
-                            td.microseconds * _NANOS_PER_MICROSECOND)
+    try:
+      self._NormalizeDuration(
+          td.seconds + td.days * _SECONDS_PER_DAY,
+          td.microseconds * _NANOS_PER_MICROSECOND,
+      )
+    except AttributeError as e:
+      raise AttributeError(
+          'Fail to convert to Duration. Expected a timedelta like '
+          'object got {0}: {1}'.format(type(td).__name__, e)
+      ) from e
 
   def _NormalizeDuration(self, seconds, nanos):
     """Set Duration by seconds and nanos."""
@@ -419,6 +450,16 @@ class Duration(object):
       nanos -= _NANOS_PER_SECOND
     self.seconds = seconds
     self.nanos = nanos
+
+  def __add__(self, value) -> Union[datetime.datetime, datetime.timedelta]:
+    if isinstance(value, Timestamp):
+      return self.ToTimedelta() + value.ToDatetime()
+    return self.ToTimedelta() + value
+
+  __radd__ = __add__
+
+  def __rsub__(self, dt) -> Union[datetime.datetime, datetime.timedelta]:
+    return dt - self.ToTimedelta()
 
 
 def _CheckDurationValid(seconds, nanos):

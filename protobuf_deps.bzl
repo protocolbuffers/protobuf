@@ -54,11 +54,11 @@ def protobuf_deps():
         http_archive(
             name = "zlib",
             build_file = Label("//:third_party/zlib.BUILD"),
-            sha256 = "d14c38e313afc35a9a8760dadf26042f51ea0f5d154b0630a31da0540107fb98",
-            strip_prefix = "zlib-1.2.13",
+            sha256 = "38ef96b8dfe510d42707d9c781877914792541133e1870841463bfa73f883e32",
+            strip_prefix = "zlib-1.3.1",
             urls = [
-                "https://github.com/madler/zlib/releases/download/v1.2.13/zlib-1.2.13.tar.xz",
-                "https://zlib.net/zlib-1.2.13.tar.xz",
+                "https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.xz",
+                "https://zlib.net/zlib-1.3.1.tar.xz",
             ],
         )
 
@@ -100,15 +100,15 @@ def protobuf_deps():
     if not native.existing_rule("rules_python"):
         http_archive(
             name = "rules_python",
-            sha256 = "9d04041ac92a0985e344235f5d946f71ac543f1b1565f2cdbc9a2aaee8adf55b",
-            strip_prefix = "rules_python-0.26.0",
-            url = "https://github.com/bazelbuild/rules_python/releases/download/0.26.0/rules_python-0.26.0.tar.gz",
+            sha256 = "d70cd72a7a4880f0000a6346253414825c19cdd40a28289bdf67b8e6480edff8",
+            strip_prefix = "rules_python-0.28.0",
+            url = "https://github.com/bazelbuild/rules_python/releases/download/0.28.0/rules_python-0.28.0.tar.gz",
         )
 
     if not native.existing_rule("system_python"):
         system_python(
             name = "system_python",
-            minimum_python_version = "3.7",
+            minimum_python_version = "3.8",
         )
 
     if not native.existing_rule("rules_jvm_external"):

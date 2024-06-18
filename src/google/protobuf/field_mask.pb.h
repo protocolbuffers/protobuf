@@ -201,17 +201,11 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
   void clear_paths() ;
   const std::string& paths(int index) const;
   std::string* mutable_paths(int index);
-  void set_paths(int index, const std::string& value);
-  void set_paths(int index, std::string&& value);
-  void set_paths(int index, const char* value);
-  void set_paths(int index, const char* value, std::size_t size);
-  void set_paths(int index, absl::string_view value);
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_paths(int index, Arg_&& value, Args_... args);
   std::string* add_paths();
-  void add_paths(const std::string& value);
-  void add_paths(std::string&& value);
-  void add_paths(const char* value);
-  void add_paths(const char* value, std::size_t size);
-  void add_paths(absl::string_view value);
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void add_paths(Arg_&& value, Args_... args);
   const ::google::protobuf::RepeatedPtrField<std::string>& paths() const;
   ::google::protobuf::RepeatedPtrField<std::string>* mutable_paths();
 
@@ -281,8 +275,7 @@ inline void FieldMask::clear_paths() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.paths_.Clear();
 }
-inline std::string* FieldMask::add_paths()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+inline std::string* FieldMask::add_paths() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   std::string* _s = _internal_mutable_paths()->Add();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.FieldMask.paths)
@@ -298,57 +291,20 @@ inline std::string* FieldMask::mutable_paths(int index)
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldMask.paths)
   return _internal_mutable_paths()->Mutable(index);
 }
-inline void FieldMask::set_paths(int index, const std::string& value) {
-  _internal_mutable_paths()->Mutable(index)->assign(value);
+template <typename Arg_, typename... Args_>
+inline void FieldMask::set_paths(int index, Arg_&& value, Args_... args) {
+  ::google::protobuf::internal::AssignToString(
+      *_internal_mutable_paths()->Mutable(index),
+      std::forward<Arg_>(value), args... );
   // @@protoc_insertion_point(field_set:google.protobuf.FieldMask.paths)
 }
-inline void FieldMask::set_paths(int index, std::string&& value) {
-  _internal_mutable_paths()->Mutable(index)->assign(std::move(value));
-  // @@protoc_insertion_point(field_set:google.protobuf.FieldMask.paths)
-}
-inline void FieldMask::set_paths(int index, const char* value) {
-  ABSL_DCHECK(value != nullptr);
-  _internal_mutable_paths()->Mutable(index)->assign(value);
-  // @@protoc_insertion_point(field_set_char:google.protobuf.FieldMask.paths)
-}
-inline void FieldMask::set_paths(int index, const char* value,
-                              std::size_t size) {
-  _internal_mutable_paths()->Mutable(index)->assign(
-      reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldMask.paths)
-}
-inline void FieldMask::set_paths(int index, absl::string_view value) {
-  _internal_mutable_paths()->Mutable(index)->assign(
-      value.data(), value.size());
-  // @@protoc_insertion_point(field_set_string_piece:google.protobuf.FieldMask.paths)
-}
-inline void FieldMask::add_paths(const std::string& value) {
+template <typename Arg_, typename... Args_>
+inline void FieldMask::add_paths(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _internal_mutable_paths()->Add()->assign(value);
+  ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_paths(),
+                               std::forward<Arg_>(value),
+                               args... );
   // @@protoc_insertion_point(field_add:google.protobuf.FieldMask.paths)
-}
-inline void FieldMask::add_paths(std::string&& value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _internal_mutable_paths()->Add(std::move(value));
-  // @@protoc_insertion_point(field_add:google.protobuf.FieldMask.paths)
-}
-inline void FieldMask::add_paths(const char* value) {
-  ABSL_DCHECK(value != nullptr);
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _internal_mutable_paths()->Add()->assign(value);
-  // @@protoc_insertion_point(field_add_char:google.protobuf.FieldMask.paths)
-}
-inline void FieldMask::add_paths(const char* value, std::size_t size) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _internal_mutable_paths()->Add()->assign(
-      reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_add_pointer:google.protobuf.FieldMask.paths)
-}
-inline void FieldMask::add_paths(absl::string_view value) {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  _internal_mutable_paths()->Add()->assign(value.data(),
-                                                     value.size());
-  // @@protoc_insertion_point(field_add_string_piece:google.protobuf.FieldMask.paths)
 }
 inline const ::google::protobuf::RepeatedPtrField<std::string>&
 FieldMask::paths() const ABSL_ATTRIBUTE_LIFETIME_BOUND {

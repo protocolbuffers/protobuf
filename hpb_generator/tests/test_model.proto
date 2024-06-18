@@ -9,7 +9,7 @@ syntax = "proto2";
 
 package protos_generator.test;
 
-import "protos_generator/tests/child_model.proto";
+import "hpb_generator/tests/child_model.proto";
 
 message TestModelContainer {
   repeated TestModel models = 1;

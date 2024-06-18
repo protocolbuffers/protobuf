@@ -370,6 +370,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   const Reflection* GetReflection() const { return GetMetadata().reflection; }
 
  protected:
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+  constexpr Message() {}
+#endif  // PROTOBUF_CUSTOM_VTABLE
   using MessageLite::MessageLite;
 
   // Get a struct containing the metadata for the Message, which is used in turn

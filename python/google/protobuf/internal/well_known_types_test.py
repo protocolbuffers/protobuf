@@ -13,13 +13,15 @@ import collections.abc as collections_abc
 import datetime
 import unittest
 
-from google.protobuf import any_pb2
+from google.protobuf import text_format
 from google.protobuf.internal import any_test_pb2
+from google.protobuf.internal import more_messages_pb2
+from google.protobuf.internal import well_known_types
+
+from google.protobuf import any_pb2
 from google.protobuf import duration_pb2
 from google.protobuf import struct_pb2
 from google.protobuf import timestamp_pb2
-from google.protobuf.internal import well_known_types
-from google.protobuf import text_format
 from google.protobuf.internal import _parameterized
 from google.protobuf import unittest_pb2
 
@@ -351,6 +353,123 @@ class TimeUtilTest(TimeUtilTestBase):
         tz_aware_min_datetime, ts.ToDatetime(datetime.timezone.utc)
     )
 
+  # Two hours after the Unix Epoch, around the world.
+  @_parameterized.named_parameters(
+      ('London', [1970, 1, 1, 2], datetime.timezone.utc),
+      ('Tokyo', [1970, 1, 1, 11], _TZ_JAPAN),
+      ('LA', [1969, 12, 31, 18], _TZ_PACIFIC),
+  )
+  def testTimestampAssignment(self, date_parts, tzinfo):
+    original_datetime = datetime.datetime(*date_parts, tzinfo=tzinfo)  # pylint:disable=g-tzinfo-datetime
+    msg = more_messages_pb2.WKTMessage()
+    msg.optional_timestamp = original_datetime
+    self.assertEqual(7200, msg.optional_timestamp.seconds)
+    self.assertEqual(0, msg.optional_timestamp.nanos)
+
+  # Two hours after the Unix Epoch, around the world.
+  @_parameterized.named_parameters(
+      ('London', [1970, 1, 1, 2], datetime.timezone.utc),
+      ('Tokyo', [1970, 1, 1, 11], _TZ_JAPAN),
+      ('LA', [1969, 12, 31, 18], _TZ_PACIFIC),
+  )
+  def testTimestampCreation(self, date_parts, tzinfo):
+    original_datetime = datetime.datetime(*date_parts, tzinfo=tzinfo)  # pylint:disable=g-tzinfo-datetime
+    msg = more_messages_pb2.WKTMessage(optional_timestamp=original_datetime)
+    self.assertEqual(7200, msg.optional_timestamp.seconds)
+    self.assertEqual(0, msg.optional_timestamp.nanos)
+
+    msg2 = more_messages_pb2.WKTMessage(
+        optional_timestamp=msg.optional_timestamp
+    )
+    self.assertEqual(7200, msg2.optional_timestamp.seconds)
+    self.assertEqual(0, msg2.optional_timestamp.nanos)
+
+  @_parameterized.named_parameters(
+      (
+          'tz_aware_min_dt',
+          datetime.datetime(1, 1, 1, tzinfo=datetime.timezone.utc),
+          datetime.timedelta(hours=9),
+          -62135564400,
+          0,
+      ),
+      (
+          'no_change',
+          datetime.datetime(1970, 1, 1, 11, tzinfo=_TZ_JAPAN),
+          datetime.timedelta(hours=0),
+          7200,
+          0,
+      ),
+  )
+  def testTimestampAdd(self, old_time, time_delta, expected_sec, expected_nano):
+    msg = more_messages_pb2.WKTMessage()
+    msg.optional_timestamp = old_time
+
+    # Timestamp + timedelta
+    new_msg1 = more_messages_pb2.WKTMessage()
+    new_msg1.optional_timestamp = msg.optional_timestamp + time_delta
+    self.assertEqual(expected_sec, new_msg1.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, new_msg1.optional_timestamp.nanos)
+
+    # timedelta + Timestamp
+    new_msg2 = more_messages_pb2.WKTMessage()
+    new_msg2.optional_timestamp = time_delta + msg.optional_timestamp
+    self.assertEqual(expected_sec, new_msg2.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, new_msg2.optional_timestamp.nanos)
+
+    # Timestamp + Duration
+    msg.optional_duration.FromTimedelta(time_delta)
+    new_msg3 = more_messages_pb2.WKTMessage()
+    new_msg3.optional_timestamp = msg.optional_timestamp + msg.optional_duration
+    self.assertEqual(expected_sec, new_msg3.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, new_msg3.optional_timestamp.nanos)
+
+  @_parameterized.named_parameters(
+      (
+          'test1',
+          datetime.datetime(999, 1, 1, tzinfo=datetime.timezone.utc),
+          datetime.timedelta(hours=9),
+          -30641792400,
+          0,
+      ),
+      (
+          'no_change',
+          datetime.datetime(1970, 1, 1, 11, tzinfo=_TZ_JAPAN),
+          datetime.timedelta(hours=0),
+          7200,
+          0,
+      ),
+  )
+  def testTimestampSub(self, old_time, time_delta, expected_sec, expected_nano):
+    msg = more_messages_pb2.WKTMessage()
+    msg.optional_timestamp = old_time
+
+    # Timestamp - timedelta
+    new_msg1 = more_messages_pb2.WKTMessage()
+    new_msg1.optional_timestamp = msg.optional_timestamp - time_delta
+    self.assertEqual(expected_sec, new_msg1.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, new_msg1.optional_timestamp.nanos)
+
+    # Timestamp - Duration
+    msg.optional_duration = time_delta
+    new_msg2 = more_messages_pb2.WKTMessage()
+    new_msg2.optional_timestamp = msg.optional_timestamp - msg.optional_duration
+    self.assertEqual(expected_sec, new_msg2.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, new_msg2.optional_timestamp.nanos)
+
+    result_msg = more_messages_pb2.WKTMessage()
+    result_msg.optional_timestamp = old_time - time_delta
+    # Timestamp - Timestamp
+    td = msg.optional_timestamp - result_msg.optional_timestamp
+    self.assertEqual(time_delta, td)
+
+    # Timestamp - datetime
+    td1 = msg.optional_timestamp - result_msg.optional_timestamp.ToDatetime()
+    self.assertEqual(time_delta, td1)
+
+    # datetime - Timestamp
+    td2 = msg.optional_timestamp.ToDatetime() - result_msg.optional_timestamp
+    self.assertEqual(time_delta, td2)
+
   def testNanosOneSecond(self):
     tz = _TZ_PACIFIC
     ts = timestamp_pb2.Timestamp(nanos=1_000_000_000)
@@ -413,6 +532,18 @@ class TimeUtilTest(TimeUtilTestBase):
                            message.ToJsonString)
     self.assertRaisesRegex(ValueError, 'Timestamp is not valid',
                            message.FromSeconds, -62135596801)
+    msg = more_messages_pb2.WKTMessage()
+    with self.assertRaises(AttributeError):
+      msg.optional_timestamp = 1
+
+    with self.assertRaises(AttributeError):
+      msg2 = more_messages_pb2.WKTMessage(optional_timestamp=1)
+
+    with self.assertRaises(TypeError):
+      msg.optional_timestamp + ''
+
+    with self.assertRaises(TypeError):
+      msg.optional_timestamp - 123
 
   def testInvalidDuration(self):
     message = duration_pb2.Duration()
@@ -446,6 +577,105 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertRaisesRegex(ValueError,
                            r'Duration is not valid\: Sign mismatch.',
                            message.ToJsonString)
+    msg = more_messages_pb2.WKTMessage()
+    with self.assertRaises(AttributeError):
+      msg.optional_duration = 1
+
+    with self.assertRaises(AttributeError):
+      msg2 = more_messages_pb2.WKTMessage(optional_duration=1)
+
+    with self.assertRaises(TypeError):
+      msg.optional_duration + ''
+
+    with self.assertRaises(TypeError):
+      123 - msg.optional_duration
+
+  @_parameterized.named_parameters(
+      ('test1', -1999999, -1, -999999000), ('test2', 1999999, 1, 999999000)
+  )
+  def testDurationAssignment(self, microseconds, expected_sec, expected_nano):
+    message = more_messages_pb2.WKTMessage()
+    expected_td = datetime.timedelta(microseconds=microseconds)
+    message.optional_duration = expected_td
+    self.assertEqual(expected_td, message.optional_duration.ToTimedelta())
+    self.assertEqual(expected_sec, message.optional_duration.seconds)
+    self.assertEqual(expected_nano, message.optional_duration.nanos)
+
+  @_parameterized.named_parameters(
+      ('test1', -1999999, -1, -999999000), ('test2', 1999999, 1, 999999000)
+  )
+  def testDurationCreation(self, microseconds, expected_sec, expected_nano):
+    message = more_messages_pb2.WKTMessage(
+        optional_duration=datetime.timedelta(microseconds=microseconds)
+    )
+    expected_td = datetime.timedelta(microseconds=microseconds)
+    self.assertEqual(expected_td, message.optional_duration.ToTimedelta())
+    self.assertEqual(expected_sec, message.optional_duration.seconds)
+    self.assertEqual(expected_nano, message.optional_duration.nanos)
+
+  @_parameterized.named_parameters(
+      (
+          'tz_aware_min_dt',
+          datetime.datetime(1, 1, 1, tzinfo=datetime.timezone.utc),
+          datetime.timedelta(hours=9),
+          -62135564400,
+          0,
+      ),
+      (
+          'no_change',
+          datetime.datetime(1970, 1, 1, 11, tzinfo=_TZ_JAPAN),
+          datetime.timedelta(hours=0),
+          7200,
+          0,
+      ),
+  )
+  def testDurationAdd(self, old_time, time_delta, expected_sec, expected_nano):
+    msg = more_messages_pb2.WKTMessage()
+    msg.optional_duration = time_delta
+    msg.optional_timestamp = old_time
+
+    # Duration + datetime
+    msg1 = more_messages_pb2.WKTMessage()
+    msg1.optional_timestamp = msg.optional_duration + old_time
+    self.assertEqual(expected_sec, msg1.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, msg1.optional_timestamp.nanos)
+
+    # datetime + Duration
+    msg2 = more_messages_pb2.WKTMessage()
+    msg2.optional_timestamp = old_time + msg.optional_duration
+    self.assertEqual(expected_sec, msg2.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, msg2.optional_timestamp.nanos)
+
+    # Duration + Timestamp
+    msg3 = more_messages_pb2.WKTMessage()
+    msg3.optional_timestamp = msg.optional_duration + msg.optional_timestamp
+    self.assertEqual(expected_sec, msg3.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, msg3.optional_timestamp.nanos)
+
+  @_parameterized.named_parameters(
+      (
+          'test1',
+          datetime.datetime(999, 1, 1, tzinfo=datetime.timezone.utc),
+          datetime.timedelta(hours=9),
+          -30641792400,
+          0,
+      ),
+      (
+          'no_change',
+          datetime.datetime(1970, 1, 1, 11, tzinfo=_TZ_JAPAN),
+          datetime.timedelta(hours=0),
+          7200,
+          0,
+      ),
+  )
+  def testDurationSub(self, old_time, time_delta, expected_sec, expected_nano):
+    msg = more_messages_pb2.WKTMessage()
+    msg.optional_duration = time_delta
+
+    # datetime - Duration
+    msg.optional_timestamp = old_time - msg.optional_duration
+    self.assertEqual(expected_sec, msg.optional_timestamp.seconds)
+    self.assertEqual(expected_nano, msg.optional_timestamp.nanos)
 
 
 class StructTest(unittest.TestCase):

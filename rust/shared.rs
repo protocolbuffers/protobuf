@@ -61,6 +61,11 @@ mod proxied;
 mod repeated;
 mod string;
 
+// If the Upb and C++ kernels are both linked into the same binary, this symbol
+// will be defined twice and cause a link error.
+#[no_mangle]
+extern "C" fn __Disallow_Upb_And_Cpp_In_Same_Binary() {}
+
 /// An error that happened during parsing.
 #[derive(Debug, Clone)]
 pub struct ParseError;

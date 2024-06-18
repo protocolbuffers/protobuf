@@ -228,12 +228,17 @@ impl From<RustStringRawParts> for String {
 
 extern "C" {
     fn utf8_debug_string(msg: RawMessage) -> RustStringRawParts;
+    fn utf8_debug_string_lite(msg: RawMessage) -> RustStringRawParts;
 }
 
 pub fn debug_string(_private: Private, msg: RawMessage, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     // SAFETY:
     // - `msg` is a valid protobuf message.
+    #[cfg(not(lite_runtime))]
     let dbg_str: String = unsafe { utf8_debug_string(msg) }.into();
+    #[cfg(lite_runtime)]
+    let dbg_str: String = unsafe { utf8_debug_string_lite(msg) }.into();
+
     write!(f, "{dbg_str}")
 }
 

@@ -16,8 +16,8 @@
 #include <gtest/gtest.h>
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
+#include "hpb_generator/tests/test_model.upb.proto.h"
 #include "protos/protos.h"
-#include "protos_generator/tests/test_model.upb.proto.h"
 #include "upb/mem/arena.hpp"
 
 #ifndef ASSERT_OK
@@ -102,6 +102,8 @@ void TestConcurrentExtensionAccess(::protos::ExtensionRegistry registry) {
   test_theme();
   test_theme_extension();
 }
+#ifndef _MSC_VER
+// TODO Re-enable this once github runner issue is resolved.
 
 TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothLazy) {
   ::upb::Arena arena;
@@ -119,6 +121,8 @@ TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothEager) {
   TestConcurrentExtensionAccess(
       {{&theme, &ThemeExtension::theme_extension}, arena});
 }
+
+#endif  // _MSC_VER
 
 }  // namespace
 }  // namespace protos_generator::test::protos

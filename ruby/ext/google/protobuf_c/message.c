@@ -86,6 +86,7 @@ upb_Message* Message_GetMutable(VALUE msg_rb, const upb_MessageDef** m) {
 }
 
 void Message_InitPtr(VALUE self_, const upb_Message* msg, VALUE arena) {
+  PBRUBY_ASSERT(arena != Qnil);
   Message* self = ruby_to_Message(self_);
   self->msg = msg;
   RB_OBJ_WRITE(self_, &self->arena, arena);
@@ -299,14 +300,14 @@ VALUE Message_getfield_frozen(const upb_Message* msg, const upb_FieldDef* f,
     const upb_FieldDef* val_f = map_field_value(f);
     upb_CType key_type = upb_FieldDef_CType(key_f);
     TypeInfo value_type_info = TypeInfo_get(val_f);
-    return Map_GetRubyWrapper(msgval.map_val, key_type, value_type_info, Qnil);
+    return Map_GetRubyWrapper(msgval.map_val, key_type, value_type_info, arena);
   }
   if (upb_FieldDef_IsRepeated(f)) {
     if (msgval.array_val == NULL) {
       return RepeatedField_EmptyFrozen(f);
     }
     return RepeatedField_GetRubyWrapper(msgval.array_val, TypeInfo_get(f),
-                                        Qnil);
+                                        arena);
   }
   VALUE ret;
   if (upb_FieldDef_IsSubMessage(f)) {

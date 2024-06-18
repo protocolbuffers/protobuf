@@ -217,7 +217,7 @@ where
 /// runtime. We expect it to change in backwards incompatible ways in the
 /// future.
 pub trait IntoProxied<T: Proxied> {
-    fn into(self, _private: Private) -> T;
+    fn into_proxied(self, _private: Private) -> T;
 }
 
 #[cfg(test)]

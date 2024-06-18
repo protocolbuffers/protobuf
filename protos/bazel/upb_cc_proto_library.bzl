@@ -63,11 +63,7 @@ def _generate_output_file(ctx, src, extension):
     return ret
 
 def _filter_none(elems):
-    out = []
-    for elem in elems:
-        if elem:
-            out.append(elem)
-    return out
+    return [e for e in elems if e]
 
 def _cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos):
     """Like cc_library(), but callable from rules.
@@ -244,7 +240,7 @@ _upb_cc_proto_library_aspect = aspect(
         "_gen_upbprotos": attr.label(
             executable = True,
             cfg = "exec",
-            default = "//protos_generator:protoc-gen-upb-protos",
+            default = "//hpb_generator:protoc-gen-upb-protos",
         ),
         "_protoc": attr.label(
             executable = True,

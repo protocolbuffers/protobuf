@@ -5752,6 +5752,14 @@ static void PlanAllocationSize(const FileDescriptorProto& proto,
 
 const FileDescriptor* DescriptorBuilder::BuildFile(
     const FileDescriptorProto& proto) {
+  // Ensure the generated pool has been lazily initialized.  This is most
+  // important for protos that use C++-specific features, since that extension
+  // is only registered lazily and we always parse options into the generated
+  // pool.
+  if (pool_ != DescriptorPool::internal_generated_pool()) {
+    DescriptorPool::generated_pool();
+  }
+
   filename_ = proto.name();
 
   // Check if the file already exists and is identical to the one being built.

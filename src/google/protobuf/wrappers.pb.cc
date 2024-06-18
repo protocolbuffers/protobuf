@@ -33,8 +33,13 @@ inline constexpr UInt64Value::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR UInt64Value::UInt64Value(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
-      _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
 struct UInt64ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR UInt64ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~UInt64ValueDefaultTypeInternal() {}
@@ -53,8 +58,13 @@ inline constexpr UInt32Value::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR UInt32Value::UInt32Value(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
-      _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
 struct UInt32ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR UInt32ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~UInt32ValueDefaultTypeInternal() {}
@@ -75,8 +85,13 @@ inline constexpr StringValue::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR StringValue::StringValue(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
-      _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
 struct StringValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR StringValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~StringValueDefaultTypeInternal() {}
@@ -95,8 +110,13 @@ inline constexpr Int64Value::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR Int64Value::Int64Value(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
-      _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
 struct Int64ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR Int64ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~Int64ValueDefaultTypeInternal() {}
@@ -115,8 +135,13 @@ inline constexpr Int32Value::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR Int32Value::Int32Value(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
-      _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
 struct Int32ValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR Int32ValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~Int32ValueDefaultTypeInternal() {}
@@ -135,8 +160,13 @@ inline constexpr FloatValue::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR FloatValue::FloatValue(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
-      _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
 struct FloatValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR FloatValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~FloatValueDefaultTypeInternal() {}
@@ -155,8 +185,13 @@ inline constexpr DoubleValue::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR DoubleValue::DoubleValue(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
-      _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
 struct DoubleValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR DoubleValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~DoubleValueDefaultTypeInternal() {}
@@ -177,8 +212,13 @@ inline constexpr BytesValue::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR BytesValue::BytesValue(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
-      _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
 struct BytesValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR BytesValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~BytesValueDefaultTypeInternal() {}
@@ -197,8 +237,13 @@ inline constexpr BoolValue::Impl_::Impl_(
 
 template <typename>
 PROTOBUF_CONSTEXPR BoolValue::BoolValue(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(_class_data_.base()),
-      _impl_(::_pbi::ConstantInitialized()) {}
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
 struct BoolValueDefaultTypeInternal {
   PROTOBUF_CONSTEXPR BoolValueDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
   ~BoolValueDefaultTypeInternal() {}
@@ -365,7 +410,11 @@ class DoubleValue::_Internal {
 };
 
 DoubleValue::DoubleValue(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DoubleValue)
 }
@@ -402,11 +451,13 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &DoubleValue::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<DoubleValue>(),
             ::google::protobuf::Message::GetNewImpl<DoubleValue>(),
             ::google::protobuf::Message::GetClearImpl<DoubleValue>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<DoubleValue>(),
                 ::google::protobuf::Message::GetSerializeImpl<DoubleValue>(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_._cached_size_),
             false,
         },
@@ -542,7 +593,11 @@ class FloatValue::_Internal {
 };
 
 FloatValue::FloatValue(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FloatValue)
 }
@@ -579,11 +634,13 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &FloatValue::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<FloatValue>(),
             ::google::protobuf::Message::GetNewImpl<FloatValue>(),
             ::google::protobuf::Message::GetClearImpl<FloatValue>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<FloatValue>(),
                 ::google::protobuf::Message::GetSerializeImpl<FloatValue>(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(FloatValue, _impl_._cached_size_),
             false,
         },
@@ -719,7 +776,11 @@ class Int64Value::_Internal {
 };
 
 Int64Value::Int64Value(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Int64Value)
 }
@@ -756,11 +817,13 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Int64Value::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Int64Value>(),
             ::google::protobuf::Message::GetNewImpl<Int64Value>(),
             ::google::protobuf::Message::GetClearImpl<Int64Value>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<Int64Value>(),
                 ::google::protobuf::Message::GetSerializeImpl<Int64Value>(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Int64Value, _impl_._cached_size_),
             false,
         },
@@ -897,7 +960,11 @@ class UInt64Value::_Internal {
 };
 
 UInt64Value::UInt64Value(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UInt64Value)
 }
@@ -934,11 +1001,13 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &UInt64Value::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<UInt64Value>(),
             ::google::protobuf::Message::GetNewImpl<UInt64Value>(),
             ::google::protobuf::Message::GetClearImpl<UInt64Value>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<UInt64Value>(),
                 ::google::protobuf::Message::GetSerializeImpl<UInt64Value>(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_._cached_size_),
             false,
         },
@@ -1075,7 +1144,11 @@ class Int32Value::_Internal {
 };
 
 Int32Value::Int32Value(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Int32Value)
 }
@@ -1112,11 +1185,13 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Int32Value::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Int32Value>(),
             ::google::protobuf::Message::GetNewImpl<Int32Value>(),
             ::google::protobuf::Message::GetClearImpl<Int32Value>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<Int32Value>(),
                 ::google::protobuf::Message::GetSerializeImpl<Int32Value>(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Int32Value, _impl_._cached_size_),
             false,
         },
@@ -1253,7 +1328,11 @@ class UInt32Value::_Internal {
 };
 
 UInt32Value::UInt32Value(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UInt32Value)
 }
@@ -1290,11 +1369,13 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &UInt32Value::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<UInt32Value>(),
             ::google::protobuf::Message::GetNewImpl<UInt32Value>(),
             ::google::protobuf::Message::GetClearImpl<UInt32Value>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<UInt32Value>(),
                 ::google::protobuf::Message::GetSerializeImpl<UInt32Value>(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_._cached_size_),
             false,
         },
@@ -1431,7 +1512,11 @@ class BoolValue::_Internal {
 };
 
 BoolValue::BoolValue(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.BoolValue)
 }
@@ -1468,11 +1553,13 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &BoolValue::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<BoolValue>(),
             ::google::protobuf::Message::GetNewImpl<BoolValue>(),
             ::google::protobuf::Message::GetClearImpl<BoolValue>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<BoolValue>(),
                 ::google::protobuf::Message::GetSerializeImpl<BoolValue>(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(BoolValue, _impl_._cached_size_),
             false,
         },
@@ -1608,7 +1695,11 @@ class StringValue::_Internal {
 };
 
 StringValue::StringValue(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.StringValue)
 }
@@ -1621,7 +1712,11 @@ inline PROTOBUF_NDEBUG_INLINE StringValue::Impl_::Impl_(
 StringValue::StringValue(
     ::google::protobuf::Arena* arena,
     const StringValue& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   StringValue* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -1659,11 +1754,13 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &StringValue::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<StringValue>(),
             ::google::protobuf::Message::GetNewImpl<StringValue>(),
             ::google::protobuf::Message::GetClearImpl<StringValue>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<StringValue>(),
                 ::google::protobuf::Message::GetSerializeImpl<StringValue>(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(StringValue, _impl_._cached_size_),
             false,
         },
@@ -1806,7 +1903,11 @@ class BytesValue::_Internal {
 };
 
 BytesValue::BytesValue(::google::protobuf::Arena* arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.BytesValue)
 }
@@ -1819,7 +1920,11 @@ inline PROTOBUF_NDEBUG_INLINE BytesValue::Impl_::Impl_(
 BytesValue::BytesValue(
     ::google::protobuf::Arena* arena,
     const BytesValue& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, _class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
   BytesValue* const _this = this;
   (void)_this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -1857,11 +1962,13 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &BytesValue::MergeImpl,
+#if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<BytesValue>(),
             ::google::protobuf::Message::GetNewImpl<BytesValue>(),
             ::google::protobuf::Message::GetClearImpl<BytesValue>(),
                 ::google::protobuf::Message::GetByteSizeLongImpl<BytesValue>(),
                 ::google::protobuf::Message::GetSerializeImpl<BytesValue>(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(BytesValue, _impl_._cached_size_),
             false,
         },

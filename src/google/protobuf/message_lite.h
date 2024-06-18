@@ -650,6 +650,26 @@ class PROTOBUF_EXPORT MessageLite {
     // char[] just beyond the ClassData.
     bool is_lite;
 
+    // In normal mode we have the small constructor to avoid the cost in
+    // codegen.
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+    constexpr ClassData(const internal::TcParseTableBase* tc_table,
+                        void (*on_demand_register_arena_dtor)(MessageLite&,
+                                                              Arena&),
+                        bool (*is_initialized)(const MessageLite&),
+                        void (*merge_to_from)(MessageLite& to,
+                                              const MessageLite& from_msg),
+                        uint32_t cached_size_offset, bool is_lite)
+        : tc_table(tc_table),
+          on_demand_register_arena_dtor(on_demand_register_arena_dtor),
+          is_initialized(is_initialized),
+          merge_to_from(merge_to_from),
+          cached_size_offset(cached_size_offset),
+          is_lite(is_lite) {}
+#endif  // !PROTOBUF_CUSTOM_VTABLE
+
+    // But we always provide the full constructor even in normal mode to make
+    // helper code simpler.
     constexpr ClassData(
         const internal::TcParseTableBase* tc_table,
         void (*on_demand_register_arena_dtor)(MessageLite&, Arena&),
@@ -726,6 +746,8 @@ class PROTOBUF_EXPORT MessageLite {
   explicit MessageLite(Arena* arena, const ClassData* data)
       : _internal_metadata_(arena), _class_data_(data) {}
 #else   // PROTOBUF_CUSTOM_VTABLE
+  constexpr MessageLite() {}
+  explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
   explicit constexpr MessageLite(const ClassData*) {}
   explicit MessageLite(Arena* arena, const ClassData*)
       : _internal_metadata_(arena) {}

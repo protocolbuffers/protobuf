@@ -156,6 +156,11 @@ std::string group(uint32_t fieldnum, std::string content) {
                       tag(fieldnum, WireFormatLite::WIRETYPE_END_GROUP));
 }
 
+std::string len(uint32_t fieldnum, std::string content) {
+  return absl::StrCat(tag(fieldnum, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+                      delim(content));
+}
+
 std::string GetDefaultValue(FieldDescriptor::Type type) {
   switch (type) {
     case FieldDescriptor::TYPE_INT32:
@@ -363,6 +368,33 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
 void BinaryAndJsonConformanceSuite::RunDelimitedFieldTests() {
   TestAllTypesEdition2023 prototype;
   SetTypeUrl(GetTypeUrl(TestAllTypesEdition2023::GetDescriptor()));
+
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("ValidNonMessage"), REQUIRED,
+      field(1, WireFormatLite::WIRETYPE_VARINT, varint(99)),
+      R"pb(optional_int32: 99)pb");
+
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("ValidLengthPrefixedField"), REQUIRED,
+      len(18, field(1, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+      R"pb(optional_nested_message { a: 99 })pb");
+
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("ValidMap.Integer"), REQUIRED,
+      len(56,
+          absl::StrCat(field(1, WireFormatLite::WIRETYPE_VARINT, varint(99)),
+                       field(2, WireFormatLite::WIRETYPE_VARINT, varint(87)))),
+      R"pb(map_int32_int32 { key: 99 value: 87 })pb");
+
+  RunValidProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("ValidMap.LengthPrefixed"), REQUIRED,
+      len(71, absl::StrCat(len(1, "a"),
+                           len(2, field(1, WireFormatLite::WIRETYPE_VARINT,
+                                        varint(87))))),
+      R"pb(map_string_nested_message {
+             key: "a"
+             value: { a: 87 }
+           })pb");
 
   RunValidProtobufTest<TestAllTypesEdition2023>(
       absl::StrCat("ValidDelimitedField.GroupLike"), REQUIRED,

@@ -179,6 +179,8 @@ struct RustStringRawParts {
 };
 
 extern "C" RustStringRawParts utf8_debug_string(const google::protobuf::Message* msg);
+extern "C" RustStringRawParts utf8_debug_string_lite(
+    const google::protobuf::MessageLite* msg);
 }  // namespace rust_internal
 }  // namespace protobuf
 }  // namespace google

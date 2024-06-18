@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "protos_generator/gen_messages.h"
+#include "hpb_generator/gen_messages.h"
 
 #include <cstddef>
 #include <string>
@@ -16,12 +16,12 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
-#include "protos_generator/gen_accessors.h"
-#include "protos_generator/gen_enums.h"
-#include "protos_generator/gen_extensions.h"
-#include "protos_generator/gen_utils.h"
-#include "protos_generator/names.h"
-#include "protos_generator/output.h"
+#include "hpb_generator/gen_accessors.h"
+#include "hpb_generator/gen_enums.h"
+#include "hpb_generator/gen_extensions.h"
+#include "hpb_generator/gen_utils.h"
+#include "hpb_generator/names.h"
+#include "hpb_generator/output.h"
 #include "upb_generator/common.h"
 #include "upb_generator/file_layout.h"
 

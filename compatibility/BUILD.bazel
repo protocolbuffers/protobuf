@@ -16,5 +16,4 @@ java_runtime_conformance(
 java_runtime_conformance(
     name = "java_conformance_v3.25.0",
     gencode_version = "3.25.0",
-    tags = ["manual"],
 )

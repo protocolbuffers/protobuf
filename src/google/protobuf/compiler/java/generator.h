@@ -18,8 +18,8 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/java_features.pb.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/port.h"
 

@@ -36,7 +36,7 @@ pip_parse = pip_install
 
 # Alias rules_python's pip.bzl for cases where a system python is found.
 _alias_pip = """
-load("@rules_python//python:pip.bzl", _pip_install = "pip_install", _pip_parse = "pip_parse")
+load("@rules_python//python:pip.bzl", _pip_parse = "pip_parse")
 
 def _get_requirements(requirements, requirements_overrides):
     for version, override in requirements_overrides.items():
@@ -45,18 +45,14 @@ def _get_requirements(requirements, requirements_overrides):
             break
     return requirements
 
-def pip_install(requirements, requirements_overrides={{}}, **kwargs):
-    _pip_install(
-        python_interpreter_target = "@{repo}//:interpreter",
-        requirements = _get_requirements(requirements, requirements_overrides),
-        **kwargs,
-    )
 def pip_parse(requirements, requirements_overrides={{}}, **kwargs):
     _pip_parse(
         python_interpreter_target = "@{repo}//:interpreter",
-        requirements = _get_requirements(requirements, requirements_overrides),
+        requirements_lock = _get_requirements(requirements, requirements_overrides),
         **kwargs,
     )
+
+pip_install = pip_parse
 """
 
 _mock_fuzzing_py = """

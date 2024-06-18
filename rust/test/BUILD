@@ -10,6 +10,8 @@ UNITTEST_PROTO3_TARGET = "//src/google/protobuf:test_protos"
 
 UNITTEST_PROTO3_OPTIONAL_TARGET = "//src/google/protobuf:test_protos"
 
+UNITTEST_EDITION_TARGET = "//src/google/protobuf:test_protos"
+
 rust_upb_proto_library(
     name = "unittest_upb_rust_proto",
     testonly = True,
@@ -53,6 +55,20 @@ rust_upb_proto_library(
     testonly = True,
     visibility = ["//rust/test/shared:__subpackages__"],
     deps = [UNITTEST_PROTO3_OPTIONAL_TARGET],
+)
+
+rust_cc_proto_library(
+    name = "unittest_edition_cpp_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [UNITTEST_EDITION_TARGET],
+)
+
+rust_upb_proto_library(
+    name = "unittest_edition_upb_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [UNITTEST_EDITION_TARGET],
 )
 
 proto_library(
@@ -120,6 +136,7 @@ proto_library(
     name = "edition2023_proto",
     testonly = True,
     srcs = ["edition2023.proto"],
+    deps = ["//src/google/protobuf:cpp_features_proto"],
 )
 
 rust_cc_proto_library(

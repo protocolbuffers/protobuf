@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "protos_generator/output.h"
+#include "hpb_generator/output.h"
 
 #include <string>
 

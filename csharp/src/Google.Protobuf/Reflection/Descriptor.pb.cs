@@ -8027,12 +8027,13 @@ namespace Google.Protobuf.Reflection {
 
     private global::Google.Protobuf.Reflection.FieldOptions.Types.CType ctype_;
     /// <summary>
+    /// NOTE: ctype is deprecated. Use `features.(pb.cpp).string_type` instead.
     /// The ctype option instructs the C++ code generator to use a different
     /// representation of the field than it normally would.  See the specific
     /// options below.  This option is only implemented to support use of
     /// [ctype=CORD] and [ctype=STRING] (the default) on non-repeated fields of
-    /// type "bytes" in the open source release -- sorry, we'll try to include
-    /// other types in a future version!
+    /// type "bytes" in the open source release.
+    /// TODO: make ctype actually deprecated.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

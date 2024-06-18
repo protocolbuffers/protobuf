@@ -378,7 +378,7 @@ error UPB_TRACING_ENABLED Tracing should be disabled in production builds
 #define UPB_LINKARR_DECLARE(name, type)     \
   extern type const __start_linkarr_##name; \
   extern type const __stop_linkarr_##name;  \
-  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1] = {0}
+  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1]
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
@@ -386,14 +386,14 @@ error UPB_TRACING_ENABLED Tracing should be disabled in production builds
 
 /* As described in: https://stackoverflow.com/a/22366882 */
 #define UPB_LINKARR_APPEND(name) \
-  __attribute__((retain, used, section("__DATA,la_" #name)))
+  __attribute__((retain, used, section("__DATA,__la_" #name)))
 #define UPB_LINKARR_DECLARE(name, type)           \
   extern type const __start_linkarr_##name __asm( \
-      "section$start$__DATA$la_" #name);          \
+      "section$start$__DATA$__la_" #name);        \
   extern type const __stop_linkarr_##name __asm(  \
       "section$end$__DATA$"                       \
-      "la_" #name);                               \
-  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1] = {0}
+      "__la_" #name);                             \
+  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1]
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
@@ -487,6 +487,7 @@ void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
 
 // Must be last.
 
+extern const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_StaticallyTreeShaken);
 static const upb_MiniTableSubInternal google_protobuf_FileDescriptorSet_submsgs[1] = {
   {.UPB_PRIVATE(submsg) = &google__protobuf__FileDescriptorProto_msg_init_ptr},
 };
@@ -1641,42 +1642,6 @@ const upb_MiniTable google__protobuf__GeneratedCodeInfo__Annotation_msg_init = {
 };
 
 const upb_MiniTable* google__protobuf__GeneratedCodeInfo__Annotation_msg_init_ptr = &google__protobuf__GeneratedCodeInfo__Annotation_msg_init;
-static const upb_MiniTable *messages_layout[33] = {
-  &google__protobuf__FileDescriptorSet_msg_init,
-  &google__protobuf__FileDescriptorProto_msg_init,
-  &google__protobuf__DescriptorProto_msg_init,
-  &google__protobuf__DescriptorProto__ExtensionRange_msg_init,
-  &google__protobuf__DescriptorProto__ReservedRange_msg_init,
-  &google__protobuf__ExtensionRangeOptions_msg_init,
-  &google__protobuf__ExtensionRangeOptions__Declaration_msg_init,
-  &google__protobuf__FieldDescriptorProto_msg_init,
-  &google__protobuf__OneofDescriptorProto_msg_init,
-  &google__protobuf__EnumDescriptorProto_msg_init,
-  &google__protobuf__EnumDescriptorProto__EnumReservedRange_msg_init,
-  &google__protobuf__EnumValueDescriptorProto_msg_init,
-  &google__protobuf__ServiceDescriptorProto_msg_init,
-  &google__protobuf__MethodDescriptorProto_msg_init,
-  &google__protobuf__FileOptions_msg_init,
-  &google__protobuf__MessageOptions_msg_init,
-  &google__protobuf__FieldOptions_msg_init,
-  &google__protobuf__FieldOptions__EditionDefault_msg_init,
-  &google__protobuf__FieldOptions__FeatureSupport_msg_init,
-  &google__protobuf__OneofOptions_msg_init,
-  &google__protobuf__EnumOptions_msg_init,
-  &google__protobuf__EnumValueOptions_msg_init,
-  &google__protobuf__ServiceOptions_msg_init,
-  &google__protobuf__MethodOptions_msg_init,
-  &google__protobuf__UninterpretedOption_msg_init,
-  &google__protobuf__UninterpretedOption__NamePart_msg_init,
-  &google__protobuf__FeatureSet_msg_init,
-  &google__protobuf__FeatureSetDefaults_msg_init,
-  &google__protobuf__FeatureSetDefaults__FeatureSetEditionDefault_msg_init,
-  &google__protobuf__SourceCodeInfo_msg_init,
-  &google__protobuf__SourceCodeInfo__Location_msg_init,
-  &google__protobuf__GeneratedCodeInfo_msg_init,
-  &google__protobuf__GeneratedCodeInfo__Annotation_msg_init,
-};
-
 const upb_MiniTableEnum google_protobuf_Edition_enum_init = {
     64,
     9,
@@ -1837,6 +1802,42 @@ const upb_MiniTableEnum google_protobuf_MethodOptions_IdempotencyLevel_enum_init
         0x7,
         0x0,
     },
+};
+
+static const upb_MiniTable *messages_layout[33] = {
+  &google__protobuf__FileDescriptorSet_msg_init,
+  &google__protobuf__FileDescriptorProto_msg_init,
+  &google__protobuf__DescriptorProto_msg_init,
+  &google__protobuf__DescriptorProto__ExtensionRange_msg_init,
+  &google__protobuf__DescriptorProto__ReservedRange_msg_init,
+  &google__protobuf__ExtensionRangeOptions_msg_init,
+  &google__protobuf__ExtensionRangeOptions__Declaration_msg_init,
+  &google__protobuf__FieldDescriptorProto_msg_init,
+  &google__protobuf__OneofDescriptorProto_msg_init,
+  &google__protobuf__EnumDescriptorProto_msg_init,
+  &google__protobuf__EnumDescriptorProto__EnumReservedRange_msg_init,
+  &google__protobuf__EnumValueDescriptorProto_msg_init,
+  &google__protobuf__ServiceDescriptorProto_msg_init,
+  &google__protobuf__MethodDescriptorProto_msg_init,
+  &google__protobuf__FileOptions_msg_init,
+  &google__protobuf__MessageOptions_msg_init,
+  &google__protobuf__FieldOptions_msg_init,
+  &google__protobuf__FieldOptions__EditionDefault_msg_init,
+  &google__protobuf__FieldOptions__FeatureSupport_msg_init,
+  &google__protobuf__OneofOptions_msg_init,
+  &google__protobuf__EnumOptions_msg_init,
+  &google__protobuf__EnumValueOptions_msg_init,
+  &google__protobuf__ServiceOptions_msg_init,
+  &google__protobuf__MethodOptions_msg_init,
+  &google__protobuf__UninterpretedOption_msg_init,
+  &google__protobuf__UninterpretedOption__NamePart_msg_init,
+  &google__protobuf__FeatureSet_msg_init,
+  &google__protobuf__FeatureSetDefaults_msg_init,
+  &google__protobuf__FeatureSetDefaults__FeatureSetEditionDefault_msg_init,
+  &google__protobuf__SourceCodeInfo_msg_init,
+  &google__protobuf__SourceCodeInfo__Location_msg_init,
+  &google__protobuf__GeneratedCodeInfo_msg_init,
+  &google__protobuf__GeneratedCodeInfo__Annotation_msg_init,
 };
 
 static const upb_MiniTableEnum *enums_layout[17] = {
@@ -7567,15 +7568,15 @@ failure:
 
 #ifdef UPB_LINKARR_DECLARE
 
-UPB_LINKARR_DECLARE(upb_AllExts, const upb_MiniTableExtension*);
+UPB_LINKARR_DECLARE(upb_AllExts, upb_MiniTableExtension);
 
 bool upb_ExtensionRegistry_AddAllLinkedExtensions(upb_ExtensionRegistry* r) {
-  const upb_MiniTableExtension* const* start = UPB_LINKARR_START(upb_AllExts);
-  const upb_MiniTableExtension* const* stop = UPB_LINKARR_STOP(upb_AllExts);
-  for (const upb_MiniTableExtension* const* p = start; p < stop; p++) {
+  const upb_MiniTableExtension* start = UPB_LINKARR_START(upb_AllExts);
+  const upb_MiniTableExtension* stop = UPB_LINKARR_STOP(upb_AllExts);
+  for (const upb_MiniTableExtension* p = start; p < stop; p++) {
     // Windows can introduce zero padding, so we have to skip zeroes.
-    if (*p != 0) {
-      if (!upb_ExtensionRegistry_Add(r, *p)) return false;
+    if (upb_MiniTableExtension_Number(p) != 0) {
+      if (!upb_ExtensionRegistry_Add(r, p)) return false;
     }
   }
   return true;
@@ -12614,8 +12615,28 @@ char* upb_MtDataEncoder_EndEnum(upb_MtDataEncoder* e, char* ptr) {
 
 // Must be last.
 
-// A MiniTable for an empty message, used for unlinked sub-messages.
+// A MiniTable for an empty message, used for unlinked sub-messages that are
+// built via MiniDescriptors.  Messages that use this MiniTable may possibly
+// be linked later, in which case this MiniTable will be replaced with a real
+// one.  This pattern is known as "dynamic tree shaking", and it introduces
+// complication because sub-messages may either be the "empty" type or the
+// "real" type.  A tagged bit indicates the difference.
 const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty) = {
+    .UPB_PRIVATE(subs) = NULL,
+    .UPB_PRIVATE(fields) = NULL,
+    .UPB_PRIVATE(size) = sizeof(struct upb_Message),
+    .UPB_PRIVATE(field_count) = 0,
+    .UPB_PRIVATE(ext) = kUpb_ExtMode_NonExtendable,
+    .UPB_PRIVATE(dense_below) = 0,
+    .UPB_PRIVATE(table_mask) = -1,
+    .UPB_PRIVATE(required_count) = 0,
+};
+
+// A MiniTable for a statically tree shaken message.  Messages that use this
+// MiniTable are guaranteed to remain unlinked; unlike the empty message, this
+// MiniTable is never replaced, which greatly simplifies everything, because the
+// type of a sub-message is always known, without consulting a tagged bit.
+const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_StaticallyTreeShaken) = {
     .UPB_PRIVATE(subs) = NULL,
     .UPB_PRIVATE(fields) = NULL,
     .UPB_PRIVATE(size) = sizeof(struct upb_Message),
@@ -13944,8 +13965,7 @@ bool _upb_FieldDef_ValidateUtf8(const upb_FieldDef* f) {
 
 bool _upb_FieldDef_IsGroupLike(const upb_FieldDef* f) {
   // Groups are always tag-delimited.
-  if (UPB_DESC(FeatureSet_message_encoding)(upb_FieldDef_ResolvedFeatures(f)) !=
-      UPB_DESC(FeatureSet_DELIMITED)) {
+  if (f->type_ != kUpb_FieldType_Group) {
     return false;
   }
 
@@ -14382,12 +14402,6 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
       UPB_DESC(FieldDescriptorProto_has_type_name)(field_proto);
 
   f->type_ = (int)UPB_DESC(FieldDescriptorProto_type)(field_proto);
-  if (f->type_ == kUpb_FieldType_Message &&
-      // TODO: remove once we can deprecate kUpb_FieldType_Group.
-      UPB_DESC(FeatureSet_message_encoding)(f->resolved_features) ==
-          UPB_DESC(FeatureSet_DELIMITED)) {
-    f->type_ = kUpb_FieldType_Group;
-  }
 
   if (has_type) {
     switch (f->type_) {
@@ -14408,7 +14422,7 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
     }
   }
 
-  if (!has_type && has_type_name) {
+  if ((!has_type && has_type_name) || f->type_ == kUpb_FieldType_Message) {
     f->type_ =
         UPB_FIELD_TYPE_UNSPECIFIED;  // We'll assign this in resolve_subdef()
   } else {
@@ -14558,8 +14572,15 @@ static void resolve_subdef(upb_DefBuilder* ctx, const char* prefix,
           break;
         case UPB_DEFTYPE_MSG:
           f->sub.msgdef = def;
-          f->type_ = kUpb_FieldType_Message;  // It appears there is no way of
-                                              // this being a group.
+          f->type_ = kUpb_FieldType_Message;
+          // TODO: remove once we can deprecate
+          // kUpb_FieldType_Group.
+          if (UPB_DESC(FeatureSet_message_encoding)(f->resolved_features) ==
+                  UPB_DESC(FeatureSet_DELIMITED) &&
+              !upb_MessageDef_IsMapEntry(def) &&
+              !(f->msgdef && upb_MessageDef_IsMapEntry(f->msgdef))) {
+            f->type_ = kUpb_FieldType_Group;
+          }
           f->has_presence = !upb_FieldDef_IsRepeated(f);
           break;
         default:

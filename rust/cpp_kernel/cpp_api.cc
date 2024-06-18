@@ -7,6 +7,7 @@
 
 #include "google/protobuf/map.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 
@@ -138,6 +139,12 @@ __PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(
 
 google::protobuf::rust_internal::RustStringRawParts utf8_debug_string(
     const google::protobuf::Message* msg) {
+  std::string text = google::protobuf::Utf8Format(*msg);
+  return google::protobuf::rust_internal::RustStringRawParts(text);
+}
+
+google::protobuf::rust_internal::RustStringRawParts utf8_debug_string_lite(
+    const google::protobuf::MessageLite* msg) {
   std::string text = google::protobuf::Utf8Format(*msg);
   return google::protobuf::rust_internal::RustStringRawParts(text);
 }

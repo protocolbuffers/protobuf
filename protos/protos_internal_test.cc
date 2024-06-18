@@ -9,8 +9,8 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "protos_generator/tests/test_model.upb.h"
-#include "protos_generator/tests/test_model.upb.proto.h"
+#include "hpb_generator/tests/test_model.upb.h"
+#include "hpb_generator/tests/test_model.upb.proto.h"
 #include "upb/mem/arena.h"
 
 namespace protos::testing {
