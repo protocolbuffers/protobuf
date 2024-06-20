@@ -100,8 +100,8 @@ kt_jvm_library(
         "//java/kotlin:shared_runtime",
         "//java/lite",
         "@com_github_jetbrains_kotlin//:kotlin-test",
-        "@maven//:com_google_truth_truth",
-        "@maven//:junit_junit",
+        "@maven_protobuf//:com_google_truth_truth",
+        "@maven_protobuf//:junit_junit",
     ],
 )
 
@@ -195,8 +195,8 @@ kt_jvm_library(
     deps = [
         ":kotlin_unittest_lite",
         "//java/core:test_util_lite",
-        "@maven//:com_google_truth_truth",
-        "@maven//:junit_junit",
+        "@maven_protobuf//:com_google_truth_truth",
+        "@maven_protobuf//:junit_junit",
     ],
 )
 
@@ -212,8 +212,8 @@ kt_jvm_library(
     deps = [
         ":kotlin_proto3_unittest_lite",
         "//java/core:test_util_lite",
-        "@maven//:com_google_truth_truth",
-        "@maven//:junit_junit",
+        "@maven_protobuf//:com_google_truth_truth",
+        "@maven_protobuf//:junit_junit",
     ],
 )
 
