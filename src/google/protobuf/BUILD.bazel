@@ -1587,6 +1587,7 @@ cc_test(
     data = [":testdata"],
     deps = [
         ":arena",
+        ":cc_lite_test_protos",
         ":cc_test_protos",
         ":internal_visibility",
         ":port",
@@ -1600,6 +1601,7 @@ cc_test(
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "//src/google/protobuf/util:differencer",
+        "@com_google_absl//absl/hash:hash_testing",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:scoped_mock_log",
         "@com_google_absl//absl/strings",

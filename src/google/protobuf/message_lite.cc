@@ -92,16 +92,17 @@ const char* MessageLite::_InternalParse(const char* ptr,
 }
 
 std::string MessageLite::GetTypeName() const {
-  auto* data = GetClassData();
-  ABSL_DCHECK(data != nullptr);
+  return std::string(TypeId::Get(*this).name());
+}
 
-  if (!data->is_lite) {
+absl::string_view TypeId::name() const {
+  if (!data_->is_lite) {
     // For !LITE messages, we use the descriptor method function.
-    return data->full().descriptor_methods->get_type_name(*this);
+    return data_->full().descriptor_methods->get_type_name(data_);
   }
 
   // For LITE messages, the type name is a char[] just beyond ClassData.
-  return reinterpret_cast<const char*>(data) + sizeof(ClassData);
+  return reinterpret_cast<const char*>(data_) + sizeof(MessageLite::ClassData);
 }
 
 void MessageLite::OnDemandRegisterArenaDtor(Arena* arena) {

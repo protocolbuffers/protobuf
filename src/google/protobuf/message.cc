@@ -206,8 +206,8 @@ size_t Message::SpaceUsedLong() const {
   return GetClassData()->full().descriptor_methods->space_used_long(*this);
 }
 
-static std::string GetTypeNameImpl(const MessageLite& msg) {
-  return DownCastMessage<Message>(msg).GetDescriptor()->full_name();
+absl::string_view Message::GetTypeNameImpl(const ClassData* data) {
+  return GetMetadataImpl(data->full()).descriptor->full_name();
 }
 
 static std::string InitializationErrorStringImpl(const MessageLite& msg) {

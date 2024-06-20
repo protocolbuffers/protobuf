@@ -123,7 +123,6 @@ class PROTOBUF_EXPORT CachedSize {
 };
 
 // For MessageLite to friend.
-class TypeId;
 auto GetClassData(const MessageLite& msg);
 
 class SwapFieldHelper;
@@ -612,13 +611,14 @@ class PROTOBUF_EXPORT MessageLite {
   // We use a secondary vtable for descriptor based methods. This way ClassData
   // does not grow with the number of descriptor methods. This avoids extra
   // costs in MessageLite.
+  struct ClassData;
+  struct ClassDataFull;
   struct DescriptorMethods {
-    std::string (*get_type_name)(const MessageLite&);
+    absl::string_view (*get_type_name)(const ClassData* data);
     std::string (*initialization_error_string)(const MessageLite&);
     const internal::TcParseTableBase* (*get_tc_table)(const MessageLite&);
     size_t (*space_used_long)(const MessageLite&);
   };
-  struct ClassDataFull;
 
   // Note: The order of arguments in the functions is chosen so that it has
   // the same ABI as the member function that calls them. Eg the `this`
@@ -771,6 +771,7 @@ class PROTOBUF_EXPORT MessageLite {
 
   template <typename T>
   static auto GetClassDataGenerated() {
+    static_assert(std::is_base_of<MessageLite, T>::value, "");
     // We could speed this up if needed by avoiding the function call.
     // In LTO this is likely inlined, so it might not matter.
     static_assert(
@@ -831,12 +832,12 @@ class PROTOBUF_EXPORT MessageLite {
   friend class FastReflectionStringSetter;
   friend class Message;
   friend class Reflection;
+  friend class TypeId;
   friend class internal::DescriptorPoolExtensionFinder;
   friend class internal::ExtensionSet;
   friend class internal::LazyField;
   friend class internal::SwapFieldHelper;
   friend class internal::TcParser;
-  friend class internal::TypeId;
   friend class internal::UntypedMapBase;
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
@@ -877,21 +878,20 @@ class PROTOBUF_EXPORT MessageLite {
   friend void internal::StrongReferenceToType();
 };
 
-namespace internal {
-
-// A typeinfo equivalent for protobuf message types. Used for
-// DynamicCastMessage.
-// We might make this class public later on to have an alternative to
-// `std::type_info` that works when RTTI is disabled.
+// A `std::type_info` equivalent for protobuf message types.
+// This class is preferred over using `typeid` for a few reasons:
+//  - It works with RTTI disabled.
+//  - It works for `DynamicMessage` types.
+//  - It works in custom vtable mode.
+//
+// Usage:
+//  - Instead of `typeid(Type)` use `TypeId::Get<Type>()`
+//  - Instead of `typeid(expr)` use `TypeId::Get(expr)`
+//
+// Supports all relationals including <=>, and supports hashing via
+// `absl::Hash`.
 class TypeId {
  public:
-  constexpr explicit TypeId(const MessageLite::ClassData* data) : data_(data) {}
-
-  friend constexpr bool operator==(TypeId a, TypeId b) {
-    return a.data_ == b.data_;
-  }
-  friend constexpr bool operator!=(TypeId a, TypeId b) { return !(a == b); }
-
   static TypeId Get(const MessageLite& msg) {
     return TypeId(msg.GetClassData());
   }
@@ -901,9 +901,46 @@ class TypeId {
     return TypeId(MessageLite::GetClassDataGenerated<T>());
   }
 
+  // Name of the message type.
+  // Equivalent to `.GetTypeName()` on the message.
+  absl::string_view name() const;
+
+  friend constexpr bool operator==(TypeId a, TypeId b) {
+    return a.data_ == b.data_;
+  }
+  friend constexpr bool operator!=(TypeId a, TypeId b) { return !(a == b); }
+  friend constexpr bool operator<(TypeId a, TypeId b) {
+    return a.data_ < b.data_;
+  }
+  friend constexpr bool operator>(TypeId a, TypeId b) {
+    return a.data_ > b.data_;
+  }
+  friend constexpr bool operator<=(TypeId a, TypeId b) {
+    return a.data_ <= b.data_;
+  }
+  friend constexpr bool operator>=(TypeId a, TypeId b) {
+    return a.data_ >= b.data_;
+  }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+    __cpp_impl_three_way_comparison >= 201907L
+  friend constexpr auto operator<=>(TypeId a, TypeId b) {
+    return a.data_ <=> b.data_;
+  }
+#endif
+
+  template <typename H>
+  friend H AbslHashValue(H state, TypeId id) {
+    return H::combine(std::move(state), id.data_);
+  }
+
  private:
+  constexpr explicit TypeId(const MessageLite::ClassData* data) : data_(data) {}
+
   const MessageLite::ClassData* data_;
 };
+
+namespace internal {
 
 inline auto GetClassData(const MessageLite& msg) { return msg.GetClassData(); }
 
@@ -1006,7 +1043,7 @@ T* OnShutdownDelete(T* p) {
 }
 
 inline void AssertDownCast(const MessageLite& from, const MessageLite& to) {
-  ABSL_DCHECK(internal::TypeId::Get(from) == internal::TypeId::Get(to))
+  ABSL_DCHECK(TypeId::Get(from) == TypeId::Get(to))
       << "Cannot downcast " << from.GetTypeName() << " to " << to.GetTypeName();
 }
 
@@ -1037,8 +1074,7 @@ const T* DynamicCastMessage(const MessageLite* from) {
 
   // We might avoid the call to T::GetClassData() altogether if T were to
   // expose the class data pointer.
-  if (from == nullptr ||
-      internal::TypeId::Get<T>() != internal::TypeId::Get(*from)) {
+  if (from == nullptr || TypeId::Get<T>() != TypeId::Get(*from)) {
     return nullptr;
   }
 
