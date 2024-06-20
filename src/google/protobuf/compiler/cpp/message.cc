@@ -2470,7 +2470,8 @@ void MessageGenerator::GenerateZeroInitFields(io::Printer* p) const {
   auto emit_pending_zero_fields = [&](Iterator end) {
     if (first != nullptr) {
       const FieldDescriptor* last = end[-1];
-      if (first != last) {
+      if (first != last ||
+          !field_generators_.get(first).has_brace_default_assign()) {
         p->Emit({{"first", FieldName(first)},
                  {"last", FieldName(last)},
                  {"Impl", "Impl_"},

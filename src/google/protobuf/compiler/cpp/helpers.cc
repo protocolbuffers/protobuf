@@ -332,9 +332,7 @@ bool CanInitializeByZeroing(const FieldDescriptor* field,
     case FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool() == false;
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      // Non-repeated, non-lazy message fields are raw pointers initialized to
-      // null.
-      return !IsLazy(field, options, scc_analyzer);
+      return true;
     default:
       return false;
   }
@@ -446,7 +444,7 @@ std::string ResolveKeyword(absl::string_view name) {
 }
 
 std::string DotsToColons(absl::string_view name) {
-  std::vector<std::string> scope = absl::StrSplit(name, ".", absl::SkipEmpty());
+  std::vector<std::string> scope = absl::StrSplit(name, '.', absl::SkipEmpty());
   for (auto& word : scope) {
     word = ResolveKeyword(word);
   }
