@@ -9,8 +9,8 @@
 
 use crate::__internal::{Enum, Private};
 use crate::{
-    Map, MapIter, Mut, ProtoStr, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
-    RepeatedMut, RepeatedView, View,
+    Map, MapIter, Mut, ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue,
+    ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -74,6 +74,25 @@ pub type RawRepeatedField = NonNull<_opaque_pointees::RawRepeatedFieldData>;
 
 /// A raw pointer to the underlying arena for this runtime.
 pub type RawMap = NonNull<_opaque_pointees::RawMapData>;
+
+/// Kernel-specific owned `string` and `bytes` field type.
+// TODO - b/334788521: Allocate this on the C++ side (maybe as a std::string), and move the
+// std::string instead of copying the string_view (which we currently do).
+#[derive(Debug)]
+pub struct InnerProtoString(Box<[u8]>);
+
+impl InnerProtoString {
+    pub(crate) fn as_bytes(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+}
+
+impl From<&[u8]> for InnerProtoString {
+    fn from(val: &[u8]) -> Self {
+        let owned_copy: Box<[u8]> = val.into();
+        InnerProtoString(owned_copy)
+    }
+}
 
 /// Represents an ABI-stable version of `NonNull<[u8]>`/`string_view` (a
 /// borrowed slice of bytes) for FFI use only.
@@ -194,13 +213,6 @@ impl Deref for SerializedData {
         // SAFETY: `data` is valid for `len` bytes until deallocated as promised by
         // `from_raw_parts`.
         unsafe { &*self.as_ptr() }
-    }
-}
-
-// TODO: remove after IntoProxied has been implemented for bytes.
-impl AsRef<[u8]> for SerializedData {
-    fn as_ref(&self) -> &[u8] {
-        self
     }
 }
 
@@ -376,25 +388,21 @@ macro_rules! impl_cpp_type_conversions_for_scalars {
 
 impl_cpp_type_conversions_for_scalars!(i32, u32, i64, u64, f32, f64, bool);
 
-impl CppTypeConversions for ProtoStr {
+impl CppTypeConversions for ProtoString {
     type ElemType = PtrAndLen;
 
-    fn elem_to_view<'msg>(v: PtrAndLen) -> View<'msg, ProtoStr> {
+    fn elem_to_view<'msg>(v: PtrAndLen) -> View<'msg, ProtoString> {
         ptrlen_to_str(v)
     }
 }
 
-impl CppTypeConversions for [u8] {
+impl CppTypeConversions for ProtoBytes {
     type ElemType = PtrAndLen;
 
     fn elem_to_view<'msg>(v: Self::ElemType) -> View<'msg, Self> {
         ptrlen_to_bytes(v)
     }
 }
-
-// This type alias is used so macros can generate valid extern "C" symbol names
-// for functions working with [u8] types.
-type Bytes = [u8];
 
 macro_rules! impl_repeated_primitives {
     (@impl $($t:ty => [
@@ -492,7 +500,7 @@ macro_rules! impl_repeated_primitives {
     };
 }
 
-impl_repeated_primitives!(i32, u32, i64, u64, f32, f64, bool, ProtoStr, Bytes);
+impl_repeated_primitives!(i32, u32, i64, u64, f32, f64, bool, ProtoString, ProtoBytes);
 
 /// Cast a `RepeatedView<SomeEnum>` to `RepeatedView<c_int>`.
 pub fn cast_enum_repeated_view<E: Enum + ProxiedInRepeated>(
@@ -786,8 +794,8 @@ macro_rules! impl_ProxiedInMapValue_for_key_types {
                     i64, i64, identity, identity;
                     u64, u64, identity, identity;
                     bool, bool, identity, identity;
-                    ProtoStr, PtrAndLen, str_to_ptrlen, ptrlen_to_str;
-                    Bytes, PtrAndLen, bytes_to_ptrlen, ptrlen_to_bytes;
+                    ProtoString, PtrAndLen, str_to_ptrlen, ptrlen_to_str;
+                    ProtoBytes, PtrAndLen, bytes_to_ptrlen, ptrlen_to_bytes;
                 );
             )*
         }
@@ -800,7 +808,7 @@ impl_ProxiedInMapValue_for_key_types!(
     i64, i64, identity, identity;
     u64, u64, identity, identity;
     bool, bool, identity, identity;
-    ProtoStr, PtrAndLen, str_to_ptrlen, ptrlen_to_str;
+    ProtoString, PtrAndLen, str_to_ptrlen, ptrlen_to_str;
 );
 
 #[cfg(test)]

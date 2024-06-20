@@ -458,7 +458,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ProtoStr;
+    use crate::{ProtoBytes, ProtoStr, ProtoString};
     use googletest::prelude::*;
 
     #[test]
@@ -489,7 +489,7 @@ mod tests {
 
     #[test]
     fn test_proxied_str() {
-        let mut map: Map<ProtoStr, ProtoStr> = Map::new();
+        let mut map: Map<ProtoString, ProtoString> = Map::new();
         let mut map_mut = map.as_mut();
         map_mut.insert("a", "b");
 
@@ -514,7 +514,7 @@ mod tests {
 
     #[test]
     fn test_proxied_iter() {
-        let mut map: Map<i32, ProtoStr> = Map::new();
+        let mut map: Map<i32, ProtoString> = Map::new();
         let mut map_mut = map.as_mut();
         map_mut.insert(15, "fizzbuzz");
         map_mut.insert(5, "buzz");
@@ -561,7 +561,7 @@ mod tests {
 
     #[test]
     fn test_overwrite_insert() {
-        let mut map: Map<i32, ProtoStr> = Map::new();
+        let mut map: Map<i32, ProtoString> = Map::new();
         let mut map_mut = map.as_mut();
         assert!(map_mut.insert(0, "fizz"));
         // insert should return false when the key is already present
@@ -571,7 +571,7 @@ mod tests {
 
     #[test]
     fn test_extend() {
-        let mut map: Map<i32, ProtoStr> = Map::new();
+        let mut map: Map<i32, ProtoString> = Map::new();
         let mut map_mut = map.as_mut();
 
         map_mut.extend([(0, ""); 0]);
@@ -588,7 +588,7 @@ mod tests {
             ]
         );
 
-        let mut map_2: Map<i32, ProtoStr> = Map::new();
+        let mut map_2: Map<i32, ProtoString> = Map::new();
         let mut map_2_mut = map_2.as_mut();
         map_2_mut.extend([(2, "bing"), (3, "bong")]);
 
@@ -608,7 +608,7 @@ mod tests {
 
     #[test]
     fn test_copy_from() {
-        let mut map: Map<i32, ProtoStr> = Map::new();
+        let mut map: Map<i32, ProtoString> = Map::new();
         let mut map_mut = map.as_mut();
         map_mut.copy_from([(0, "fizz"), (1, "buzz"), (2, "fizzbuzz")]);
 
@@ -621,7 +621,7 @@ mod tests {
             ]
         );
 
-        let mut map_2: Map<i32, ProtoStr> = Map::new();
+        let mut map_2: Map<i32, ProtoString> = Map::new();
         let mut map_2_mut = map_2.as_mut();
         map_2_mut.copy_from([(2, "bing"), (3, "bong")]);
 
@@ -651,12 +651,12 @@ mod tests {
         macro_rules! gen_proto_keys {
             ($($key_t:ty),*) => {
                 $(
-                    gen_proto_values!($key_t, f32, f64, i32, u32, i64, bool, ProtoStr, [u8]);
+                    gen_proto_values!($key_t, f32, f64, i32, u32, i64, bool, ProtoString, ProtoBytes);
                 )*
             }
         }
 
-        gen_proto_keys!(i32, u32, i64, u64, bool, ProtoStr);
+        gen_proto_keys!(i32, u32, i64, u64, bool, ProtoString);
     }
 
     #[test]

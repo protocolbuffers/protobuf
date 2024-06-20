@@ -191,9 +191,9 @@ std::string RsTypePath(Context& ctx, const FieldDescriptor& field) {
     case RustFieldType::DOUBLE:
       return "f64";
     case RustFieldType::BYTES:
-      return "[u8]";
+      return "::__pb::ProtoBytes";
     case RustFieldType::STRING:
-      return "::__pb::ProtoStr";
+      return "::__pb::ProtoString";
     case RustFieldType::MESSAGE:
       return GetFullyQualifiedPath(ctx, *field.message_type());
     case RustFieldType::ENUM:
@@ -449,8 +449,8 @@ PROTOBUF_CONSTINIT const MapKeyType kMapKeyTypes[] = {
      /*cc_key_t=*/"bool", /*cc_ffi_key_t=*/"bool",
      /*cc_from_ffi_key_expr=*/"key",
      /*cc_to_ffi_key_expr=*/"cpp_key"},
-    {/*thunk_ident=*/"ProtoStr",
-     /*rs_key_t=*/"$pb$::ProtoStr",
+    {/*thunk_ident=*/"ProtoString",
+     /*rs_key_t=*/"$pb$::ProtoString",
      /*rs_ffi_key_t=*/"$pbr$::PtrAndLen",
      /*rs_to_ffi_key_expr=*/"key.as_bytes().into()",
      /*rs_from_ffi_key_expr=*/
