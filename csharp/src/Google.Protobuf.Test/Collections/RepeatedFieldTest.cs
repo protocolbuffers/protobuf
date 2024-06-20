@@ -305,6 +305,35 @@ namespace Google.Protobuf.Collections
         }
 
         [Test]
+        public void AddEntriesFrom_LargePackedFloat()
+        {
+            float[] floats = Enumerable.Range(0, 2000).Select(x => (float)x).ToArray();
+            uint packedTag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            var length = floats.Sum(CodedOutputStream.ComputeFloatSize);
+            output.WriteTag(packedTag);
+            output.WriteRawVarint32((uint) length);
+            foreach (float x in floats)
+            {
+                output.WriteFloat(x);
+            }
+
+            output.Flush();
+            stream.Position = 0;
+
+            // Deliberately "expecting" a non-packed tag, but we detect that the data is
+            // actually packed.
+            uint nonPackedTag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
+            var field = new RepeatedField<float>();
+            var input = new CodedInputStream(stream);
+            input.AssertNextTag(packedTag);
+            field.AddEntriesFrom(input, FieldCodec.ForFloat(nonPackedTag));
+            CollectionAssert.AreEqual(floats, field);
+            Assert.IsTrue(input.IsAtEnd);
+        }
+
+        [Test]
         public void AddEntriesFrom_NonPackedInt32()
         {
             uint nonPackedTag = WireFormat.MakeTag(10, WireFormat.WireType.Varint);

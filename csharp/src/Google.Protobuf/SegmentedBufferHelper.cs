@@ -22,7 +22,7 @@ namespace Google.Protobuf
     [SecuritySafeCritical]
     internal struct SegmentedBufferHelper
     {
-        private int? totalLength;
+        private long? totalLength;
         private ReadOnlySequence<byte>.Enumerator readOnlySequenceEnumerator;
         private CodedInputStream codedInputStream;
 
@@ -34,7 +34,7 @@ namespace Google.Protobuf
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Initialize(CodedInputStream codedInputStream, out SegmentedBufferHelper instance)
         {
-            instance.totalLength = codedInputStream.InternalInputStream == null ? (int?)codedInputStream.InternalBuffer.Length : null;
+            instance.totalLength = ResolveTotalLength(codedInputStream);
             instance.readOnlySequenceEnumerator = default;
             instance.codedInputStream = codedInputStream;
         }
@@ -57,14 +57,14 @@ namespace Google.Protobuf
             else
             {
                 instance.readOnlySequenceEnumerator = sequence.GetEnumerator();
-                instance.totalLength = (int) sequence.Length;
+                instance.totalLength = sequence.Length;
 
                 // set firstSpan to the first segment
                 instance.readOnlySequenceEnumerator.MoveNext();
                 firstSpan = instance.readOnlySequenceEnumerator.Current.Span;
             }
         }
-        
+
         public bool RefillBuffer(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, bool mustSucceed)
         {
             if (codedInputStream != null)
@@ -77,7 +77,7 @@ namespace Google.Protobuf
             }
         }
 
-        public int? TotalLength => totalLength;
+        public long? TotalLength => totalLength;
 
         public CodedInputStream CodedInputStream => codedInputStream;
 
@@ -269,5 +269,22 @@ namespace Google.Protobuf
                 throw new InvalidOperationException("RefillBuffer() called when buffer wasn't empty.");
             }
         }
+
+        private static long? ResolveTotalLength(CodedInputStream stream)
+        {
+            if (stream.InternalInputStream == null)
+            {
+                return stream.InternalBuffer.Length;
+            }
+
+            // By convention, if CanSeek is true, then the Length should be available.
+            if (stream.InternalInputStream.CanSeek)
+            {
+                return stream.InternalInputStream.Length;
+            }
+
+            return null;
+        }
+
     }
 }
