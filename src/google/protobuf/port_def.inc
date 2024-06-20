@@ -235,6 +235,11 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_TAILCALL false
 #endif
 
+#ifdef PROTOBUF_CC
+#error PROTOBUF_CC was previously defined
+#endif
+#define PROTOBUF_CC
+
 #if defined(__clang__)
 #define PROTOBUF_IGNORE_DEPRECATION_START                     \
   _Pragma("clang diagnostic push")                                  \

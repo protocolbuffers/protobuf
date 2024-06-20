@@ -81,8 +81,8 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 
   typedef void InternalArenaConstructable_;
 
-  static const char* ParseImpl(ImplicitWeakMessage* msg, const char* ptr,
-                               ParseContext* ctx);
+  static PROTOBUF_CC const char* ParseImpl(ImplicitWeakMessage* msg,
+                                           const char* ptr, ParseContext* ctx);
 
  private:
   static const ClassDataLite<1> class_data_;
