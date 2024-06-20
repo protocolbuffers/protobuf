@@ -3,6 +3,10 @@ name: C++ Tests
 on:
   workflow_call:
     inputs:
+      test-type:
+        required: true
+        description: "The type of test this is run from -- presubmit or continuous"
+        type: string
       safe-checkout:
         required: true
         description: "The SHA key for the commit we want to run over"
@@ -17,13 +21,13 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         config:
-          - { name: Optimized, flags: --config=opt }
-          - { name: Debug, flags: --config=dbg }
-          - { name: ASAN, flags: --config=asan, runner: ubuntu-20-large }
-          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-20-large }
-          - { name: TSAN, flags: --config=tsan, runner: ubuntu-20-large }
-          - { name: UBSAN, flags: --config=ubsan }
-          - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
+          - { name: Optimized, flags: --config=opt, run-on-presubmit: true }
+          - { name: Debug, flags: --config=dbg, run-on-presubmit: false }
+          - { name: ASAN, flags: --config=asan, runner: ubuntu-20-large, run-on-presubmit: true }
+          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-20-large, run-on-presubmit: false }
+          - { name: TSAN, flags: --config=tsan, runner: ubuntu-20-large, run-on-presubmit: false }
+          - { name: UBSAN, flags: --config=ubsan, run-on-presubmit: false }
+          - { name: No-RTTI, flags: --cxxopt=-fno-rtti, run-on-presubmit: false }
         include:
           # Set defaults
           - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:3d959f731dc5c54af4865c31ee2bd581ec40028adcdf4c038f3122581f595191
@@ -39,14 +43,16 @@ jobs:
           - config: { name: "aarch64" }
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:6.3.0-aarch64-68e662b3a56b881804dc4e9d45f949791cbc4b94"
-    name: Linux ${{ matrix.config.name }}
+    name: ${{ (!matrix.config.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} Linux ${{ matrix.config.name }} ${{ !matrix.config.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
       - name: Checkout pending changes
+        if: ${{ matrix.config.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
+        if: ${{ matrix.config.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
           image: ${{ matrix.image }}
@@ -121,31 +127,38 @@ jobs:
       matrix:
         include:
           - flags: -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
+            run-on-presubmit: true
           - name: Ninja
             flags: -G Ninja -DCMAKE_CXX_STANDARD=14
+            run-on-presubmit: false
           - name: Shared
             flags: -Dprotobuf_BUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
+            run-on-presubmit: false
           - name: C++17
             flags: -DCMAKE_CXX_STANDARD=17
+            run-on-presubmit: true
           # TODO Re-enable this.
           #- name: C++20
           #  flags: -DCMAKE_CXX_STANDARD=20
 
-    name: Linux CMake ${{ matrix.name}}
+    name: ${{ (!matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} Linux CMake ${{ matrix.name}} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup sccache
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: linux-cmake
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       - name: Run tests
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-63dd26c0c7a808d92673a3e52e848189d4ab0f17
@@ -190,6 +203,8 @@ jobs:
 
   linux-cmake-examples:
     name: Linux CMake Examples
+    # Skip this test on presubmit
+    if: ${{ inputs.test-type == 'continuous' }} 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
@@ -224,27 +239,33 @@ jobs:
         include:
           - name: C++14
             flags: -DCMAKE_CXX_STANDARD=14
+            run-on-presubmit: true
           - name: C++17
             flags: -DCMAKE_CXX_STANDARD=17
+            run-on-presubmit: false
           - name: C++20
             flags: -DCMAKE_CXX_STANDARD=20
+            run-on-presubmit: true
 
-    name: Linux CMake GCC ${{ matrix.name }}
+    name: ${{ (!matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} Linux CMake GCC ${{ matrix.name }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
           submodules: recursive
 
       - name: Setup sccache
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: linux-cmake-gcc
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       - name: Run tests
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-63dd26c0c7a808d92673a3e52e848189d4ab0f17
@@ -324,34 +345,41 @@ jobs:
             os: macos-12
             cache_key: macos-12
             bazel: test //src/... //third_party/utf8_range/...
+            run-on-presubmit: true
           - name: MacOS Bazel 7
             os: macos-12
             cache_key: macos-12-bazel7
             bazel: test //src/... //third_party/utf8_range/...
             bazel_version: '7.1.2'
+            run-on-presubmit: false
           - name: MacOS Apple Silicon (build only) Bazel
             os: macos-12
             cache_key: macos-12-arm
             # Current github runners are all Intel based, so just build/compile
             # for Apple Silicon to detect issues there.
             bazel: build --cpu=darwin_arm64 //src/... //third_party/utf8_range/...
+            run-on-presubmit: true
           - name: Windows Bazel
             os: windows-2022
             cache_key: windows-2022
             bazel: test //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
+            run-on-presubmit: true
           - name: Windows Bazel 7
             os: windows-2022
             cache_key: windows-2022-bazel7
             bazel: test //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
             bazel_version: '7.1.2'
-    name: ${{ matrix.name }}
+            run-on-presubmit: false
+    name: ${{ (!matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} ${{ matrix.name }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout pending changes
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -377,6 +405,7 @@ jobs:
               -Dprotobuf_BUILD_EXAMPLES=ON
             vsversion: '2022'
             cache-prefix: windows-2022-cmake
+            run-on-presubmit: false
           - name: Windows CMake 2019
             os: windows-2019
             flags: >-
@@ -387,6 +416,7 @@ jobs:
             cache-prefix: windows-2019-cmake
             # windows-2019 has python3.7 installed, which is incompatible with the latest gcloud
             python-version: '3.9'
+            run-on-presubmit: false
           - name: Windows CMake 32-bit
             os: windows-2022
             flags: >-
@@ -394,6 +424,7 @@ jobs:
             vsversion: '2022'
             windows-arch: 'win32'
             cache-prefix: windows-2022-win32-cmake
+            run-on-presubmit: false
           - name: Windows CMake Shared
             os: windows-2022
             flags: >-
@@ -401,6 +432,7 @@ jobs:
               -Dprotobuf_BUILD_SHARED_LIBS=ON
             vsversion: '2022'
             cache-prefix: windows-2022-cmake
+            run-on-presubmit: true
           - name: Windows CMake Install
             os: windows-2022
             install-flags: -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_BUILD_TESTS=OFF
@@ -410,17 +442,19 @@ jobs:
               -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
             vsversion: '2022'
             cache-prefix: windows-2022-cmake
-    name: ${{ matrix.name }}
+            run-on-presubmit: false
+    name: ${{ (!matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} ${{ matrix.name }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout pending changes
+        if: ${{ runner.os == 'Windows' && (matrix.run-on-presubmit || inputs.test-type == 'continuous') }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
           submodules: recursive
 
       - name: Setup MSVC
-        if: ${{ runner.os == 'Windows' }}
+        if: ${{ runner.os == 'Windows' && (matrix.run-on-presubmit || inputs.test-type == 'continuous') }}
         uses: ilammy/msvc-dev-cmd@cec98b9d092141f74527d0afa6feb2af698cfe89 # v1.12.1
         with:
           arch: ${{ matrix.windows-arch || 'x64' }}
@@ -428,16 +462,17 @@ jobs:
 
       # Workaround for incompatibility between gcloud and windows-2019 runners.
       - name: Install Python
-        if: ${{ matrix.python-version }}
+        if: ${{ matrix.python-version && (matrix.run-on-presubmit || inputs.test-type == 'continuous') }}
         uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Use custom python for gcloud
-        if: ${{ matrix.python-version }}
+        if: ${{ matrix.python-version  && (matrix.run-on-presubmit || inputs.test-type == 'continuous') }}
         run: echo "CLOUDSDK_PYTHON=${Python3_ROOT_DIR}\\python3" >> $GITHUB_ENV
         shell: bash
 
       - name: Setup sccache
+        if: ${{ runner.os == 'Windows' && (matrix.run-on-presubmit || inputs.test-type == 'continuous') }}
         uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: ${{ matrix.cache-prefix }}
@@ -445,42 +480,46 @@ jobs:
 
       # Install phase.
       - name: Configure CMake for install
-        if: matrix.install-flags
+        if: ${{ matrix.install-flags && (matrix.run-on-presubmit || inputs.test-type == 'continuous') }}
         uses: protocolbuffers/protobuf-ci/bash@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: cmake . ${{ matrix.install-flags }} ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON
       - name: Build for install
-        if: matrix.install-flags
+        if: ${{ matrix.install-flags && (matrix.run-on-presubmit || inputs.test-type == 'continuous') }}
         shell: bash
         run: VERBOSE=1 cmake --build . --parallel 20
       - name: Install
-        if: matrix.install-flags
+        if: ${{ matrix.install-flags && (matrix.run-on-presubmit || inputs.test-type == 'continuous') }}
         shell: bash
         run: cmake --build . --target install
       - name: Report and clear sccache stats
-        if: matrix.install-flags
+        if: ${{ matrix.install-flags && (matrix.run-on-presubmit || inputs.test-type == 'continuous') }}
         shell: bash
         run: sccache -s && sccache -z
       - name: Clear CMake cache
-        if: matrix.install-flags
+        if: ${{ matrix.install-flags && (matrix.run-on-presubmit || inputs.test-type == 'continuous') }}
         shell: bash
         run: cmake --build . --target clean && rm CMakeCache.txt
 
       - name: Configure CMake
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/bash@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: cmake . ${{ matrix.flags }} ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON 
 
       - name: Build
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         shell: bash
         run: VERBOSE=1 cmake --build . --parallel 20
 
       - name: Test
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         shell: bash
         run: ctest --verbose --parallel 20 -C Debug
 
       - name: Report sccache stats
+        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
         shell: bash
         run: sccache -s
