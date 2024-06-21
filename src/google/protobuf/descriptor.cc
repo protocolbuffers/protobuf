@@ -5457,11 +5457,12 @@ static void InferLegacyProtoFeatures(const FieldDescriptorProto& proto,
 // TODO: we should update proto code to not need ctype to be set
 // when string_type is set.
 static void EnforceCTypeStringTypeConsistency(
-    Edition edition, FieldDescriptor::CppType type,
+    Edition edition, uint8_t type,
     const pb::CppFeatures& cpp_features, FieldOptions& options) {
   if (&options == &FieldOptions::default_instance()) return;
   if (edition < Edition::EDITION_2024 &&
-      type == FieldDescriptor::CPPTYPE_STRING) {
+      (type == FieldDescriptor::TYPE_STRING ||
+        type == FieldDescriptor::TYPE_BYTES)) {
     switch (cpp_features.string_type()) {
       case pb::CppFeatures::CORD:
         options.set_ctype(FieldOptions::CORD);
@@ -6126,7 +6127,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
 
     internal::VisitDescriptors(*result, [&](const FieldDescriptor& field) {
       EnforceCTypeStringTypeConsistency(
-          field.file()->edition(), field.cpp_type(),
+          field.file()->edition(), field.type_,
           field.merged_features_->GetExtension(pb::cpp),
           const_cast<  // NOLINT(google3-runtime-proto-const-cast)
               FieldOptions&>(*field.options_));
