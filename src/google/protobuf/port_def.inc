@@ -749,6 +749,10 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #undef ERROR_INSTALL_FAILED
 #pragma push_macro("ERROR_NOT_FOUND")
 #undef ERROR_NOT_FOUND
+#pragma push_macro("ERROR_RETRY")
+#undef ERROR_RETRY
+#pragma push_macro("ERROR_TIMEOUT")
+#undef ERROR_TIMEOUT
 #pragma push_macro("GetClassName")
 #undef GetClassName
 #pragma push_macro("GetCurrentTime")
