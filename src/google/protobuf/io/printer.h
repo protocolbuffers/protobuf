@@ -124,8 +124,8 @@ class AnnotationProtoCollector : public AnnotationCollector {
                      const std::string& file_path, const std::vector<int>& path,
                      absl::optional<Semantic> semantic) override {
     auto* annotation = annotation_proto_->add_annotation();
-    for (int i = 0; i < path.size(); ++i) {
-      annotation->add_path(path[i]);
+    for (const auto segment : path) {
+      annotation->add_path(segment);
     }
     annotation->set_source_file(file_path);
     annotation->set_begin(begin_offset);
