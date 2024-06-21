@@ -1,2 +1,3 @@
 global-include *.h
 global-include *.inc
+include python/version_script.lds

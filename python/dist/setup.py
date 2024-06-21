@@ -33,7 +33,7 @@ def GetVersion():
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-extra_link_args = []
+extra_link_args = ["-Wl,--version-script=python/version_script.lds"]
 
 if sys.platform.startswith('win'):
   extra_link_args = ['-static']
