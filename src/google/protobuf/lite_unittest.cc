@@ -33,6 +33,7 @@
 #include "google/protobuf/unittest_lite.pb.h"
 #include "google/protobuf/wire_format_lite.h"
 
+
 // Must be included last
 #include "google/protobuf/port_def.inc"
 
@@ -1164,6 +1165,7 @@ TYPED_TEST(LiteTest, EnumValueToName) {
   EXPECT_EQ("", protobuf_unittest::ForeignEnumLite_Name(999));
 }
 
+
 TYPED_TEST(LiteTest, NestedEnumValueToName) {
   EXPECT_EQ("FOO", protobuf_unittest::TestAllTypesLite::NestedEnum_Name(
                        protobuf_unittest::TestAllTypesLite::FOO));
@@ -1412,3 +1414,5 @@ TEST(LiteTest, DownCastMessageInvalidReferenceType) {
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
