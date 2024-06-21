@@ -164,6 +164,8 @@ filegroup(
     ],
 )
 
+exports_files(["version_script.lds"])
+
 py_extension(
     name = "_message",
     srcs = [":message_srcs"],

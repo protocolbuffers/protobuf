@@ -239,6 +239,7 @@ pkg_files(
     srcs = [
         "//:LICENSE",
         "//python:message_srcs",
+        "//python:version_script.lds",
         "//upb:source_files",
         "//upb/base:source_files",
         "//upb/hash:source_files",
