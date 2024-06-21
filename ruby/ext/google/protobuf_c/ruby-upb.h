@@ -342,11 +342,6 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #define UPB_DESC_MINITABLE(sym) &google__protobuf__##sym##_msg_init
 #endif
 
-#ifdef UPB_TRACING_ENABLED
-#ifdef NDEBUG
-error UPB_TRACING_ENABLED Tracing should be disabled in production builds
-#endif
-#endif
 
 // Linker arrays combine elements from multiple translation units into a single
 // array that can be iterated over at runtime.
