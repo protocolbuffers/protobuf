@@ -14,6 +14,7 @@ syntax = "proto2";
 package google.protobuf.internal;
 
 import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 
 // A message where tag numbers are listed out of order, to allow us to test our
@@ -355,4 +356,6 @@ message ConflictJsonName {
 message WKTMessage {
   optional Timestamp optional_timestamp = 1;
   optional Duration optional_duration = 2;
+  optional Struct optional_struct = 3;
+  optional ListValue optional_list_value = 4;
 }
