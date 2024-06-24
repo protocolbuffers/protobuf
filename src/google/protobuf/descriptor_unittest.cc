@@ -73,6 +73,7 @@
 #include "google/protobuf/unittest_lazy_dependencies_custom_option.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies_enum.pb.h"
 #include "google/protobuf/unittest_proto3_arena.pb.h"
+#include "google/protobuf/unittest_string_type.pb.h"
 
 
 // Must be included last.
@@ -7513,6 +7514,20 @@ TEST_F(FeaturesTest, Proto2Features) {
       }
       field { name: "utf8" number: 6 label: LABEL_REPEATED type: TYPE_STRING }
       field { name: "req" number: 7 label: LABEL_REQUIRED type: TYPE_INT32 }
+      field {
+        name: "cord"
+        number: 8
+        label: LABEL_OPTIONAL
+        type: TYPE_STRING
+        options { ctype: CORD }
+      }
+      field {
+        name: "piece"
+        number: 9
+        label: LABEL_OPTIONAL
+        type: TYPE_STRING
+        options { ctype: STRING_PIECE }
+      }
     }
     enum_type {
       name: "Foo2"
@@ -7563,6 +7578,10 @@ TEST_F(FeaturesTest, Proto2Features) {
       Utf8CheckMode::kVerify);
   EXPECT_EQ(GetUtf8CheckMode(message->FindFieldByName("str"), /*is_lite=*/true),
             Utf8CheckMode::kNone);
+  EXPECT_EQ(GetCoreFeatures(message->FindFieldByName("cord"))
+                .GetExtension(pb::cpp)
+                .string_type(),
+            pb::CppFeatures::CORD);
   EXPECT_FALSE(field->is_packed());
   EXPECT_FALSE(field->legacy_enum_field_treated_as_closed());
   EXPECT_FALSE(HasPreservingUnknownEnumSemantics(field));
@@ -7813,6 +7832,58 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
   EXPECT_TRUE(GetFeatures(file).HasExtension(pb::test));
   EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).file_feature(),
             pb::VALUE3);
+}
+
+TEST_F(FeaturesTest, Edition2023InferredFeatures) {
+  FileDescriptorProto file_proto = ParseTextOrDie(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_2023
+    message_type {
+      name: "Foo"
+      field { name: "str" number: 1 label: LABEL_OPTIONAL type: TYPE_STRING }
+      field {
+        name: "cord"
+        number: 2
+        label: LABEL_OPTIONAL
+        type: TYPE_STRING
+        options { ctype: CORD }
+      }
+      field {
+        name: "piece"
+        number: 3
+        label: LABEL_OPTIONAL
+        type: TYPE_STRING
+        options { ctype: STRING_PIECE }
+      }
+      field {
+        name: "view"
+        number: 4
+        label: LABEL_OPTIONAL
+        type: TYPE_STRING
+        options {
+          features {
+            [pb.cpp] { string_type: VIEW }
+          }
+        }
+      }
+    }
+  )pb");
+
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::CppFeatures::GetDescriptor()->file());
+  const FileDescriptor* file = ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
+  const Descriptor* message = file->message_type(0);
+
+  EXPECT_EQ(
+      GetCoreFeatures(message->field(0)).GetExtension(pb::cpp).string_type(),
+      pb::CppFeatures::STRING);
+  EXPECT_EQ(
+      GetCoreFeatures(message->field(1)).GetExtension(pb::cpp).string_type(),
+      pb::CppFeatures::CORD);
+  EXPECT_EQ(
+      GetCoreFeatures(message->field(3)).GetExtension(pb::cpp).string_type(),
+      pb::CppFeatures::VIEW);
 }
 
 TEST_F(FeaturesTest, Edition2024Defaults) {
@@ -9614,7 +9685,7 @@ TEST_F(FeaturesTest, EnumFeatureHelpers) {
         type_name: "FooOpen"
         options {
           features {
-            [pb.cpp] { legacy_closed_enum: true string_type: STRING }
+            [pb.cpp] { legacy_closed_enum: true }
           }
         }
       }

@@ -3047,6 +3047,10 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
 
   if (&options() != &FieldOptions::default_instance()) {
     *proto->mutable_options() = options();
+    if (proto_features_->GetExtension(pb::cpp).has_string_type()) {
+      // ctype must have been set in InferLegacyProtoFeatures so avoid copying.
+      proto->mutable_options()->clear_ctype();
+    }
   }
 
   RestoreFeaturesToOptions(proto_features_, proto);
@@ -5434,6 +5438,16 @@ static void InferLegacyProtoFeatures(const ProtoT& proto,
 static void InferLegacyProtoFeatures(const FieldDescriptorProto& proto,
                                      const FieldOptions& options,
                                      Edition edition, FeatureSet& features) {
+  if (!features.MutableExtension(pb::cpp)->has_string_type()) {
+    if (options.ctype() == FieldOptions::CORD) {
+      features.MutableExtension(pb::cpp)->set_string_type(
+          pb::CppFeatures::CORD);
+    }
+  }
+
+  // Everything below is specifically for proto2/proto.
+  if (!IsLegacyEdition(edition)) return;
+
   if (proto.label() == FieldDescriptorProto::LABEL_REQUIRED) {
     features.set_field_presence(FeatureSet::LEGACY_REQUIRED);
   }
@@ -5446,6 +5460,25 @@ static void InferLegacyProtoFeatures(const FieldDescriptorProto& proto,
   if (edition == Edition::EDITION_PROTO3) {
     if (options.has_packed() && !options.packed()) {
       features.set_repeated_field_encoding(FeatureSet::EXPANDED);
+    }
+  }
+}
+
+// TODO: we should update proto code to not need ctype to be set
+// when string_type is set.
+static void EnforceCTypeStringTypeConsistency(
+    Edition edition, uint8_t type,
+    const pb::CppFeatures& cpp_features, FieldOptions& options) {
+  if (&options == &FieldOptions::default_instance()) return;
+  if (edition < Edition::EDITION_2024 &&
+      (type == FieldDescriptor::TYPE_STRING ||
+        type == FieldDescriptor::TYPE_BYTES)) {
+    switch (cpp_features.string_type()) {
+      case pb::CppFeatures::CORD:
+        options.set_ctype(FieldOptions::CORD);
+        break;
+      default:
+        break;
     }
   }
 }
@@ -5479,8 +5512,8 @@ void DescriptorBuilder::ResolveFeaturesImpl(
       AddError(descriptor->name(), proto, error_location,
                "Features are only valid under editions.");
     }
-    InferLegacyProtoFeatures(proto, *options, edition, base_features);
   }
+  InferLegacyProtoFeatures(proto, *options, edition, base_features);
 
   if (base_features.ByteSizeLong() == 0 && !force_merge) {
     // Nothing to merge, and we aren't forcing it.
@@ -6067,6 +6100,24 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
          iter != options_to_interpret_.end(); ++iter) {
       option_interpreter.InterpretNonExtensionOptions(&(*iter));
     }
+
+    // TODO: move this check back to generator.cc once we no longer
+    // need to set both ctype and string_type internally.
+    internal::VisitDescriptors(
+        *result, proto,
+        [&](const FieldDescriptor& field, const FieldDescriptorProto& proto) {
+          if (field.options_->has_ctype() && field.options_->features()
+                                                 .GetExtension(pb::cpp)
+                                                 .has_string_type()) {
+            AddError(
+                field.full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
+                absl::StrFormat("Field %s specifies both string_type and ctype "
+                                "which is not supported.",
+                                field.full_name())
+                    .c_str());
+          }
+        });
+
     // Handle feature resolution.  This must occur after option interpretation,
     // but before validation.
     internal::VisitDescriptors(
@@ -6083,6 +6134,14 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
                   OptionsT*>(descriptor.options_),
               alloc);
         });
+
+    internal::VisitDescriptors(*result, [&](const FieldDescriptor& field) {
+      EnforceCTypeStringTypeConsistency(
+          field.file()->edition(), field.type_,
+          field.merged_features_->GetExtension(pb::cpp),
+          const_cast<  // NOLINT(google3-runtime-proto-const-cast)
+              FieldOptions&>(*field.options_));
+    });
 
     // Post-process cleanup for field features.
     internal::VisitDescriptors(
