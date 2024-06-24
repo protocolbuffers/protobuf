@@ -22,17 +22,28 @@ class Domain(Enum):
   PUBLIC = 2
 
 
+# The versions of this Python Protobuf runtime to be changed automatically by
+# the Protobuf release process. Do not edit them manually.
+# These OSS versions are not stripped to avoid merging conflicts.
+OSS_DOMAIN = Domain.PUBLIC
+OSS_MAJOR = 5
+OSS_MINOR = 28
+OSS_PATCH = 0
+OSS_SUFFIX = '-dev'
+
+DOMAIN = OSS_DOMAIN
+MAJOR = OSS_MAJOR
+MINOR = OSS_MINOR
+PATCH = OSS_PATCH
+SUFFIX = OSS_SUFFIX
+
+
 class VersionError(Exception):
   """Exception class for version violation."""
 
 
-# The versions of this Python Protobuf runtime to be changed automatically by
-# the Protobuf release process. Do not edit them manually.
-DOMAIN = Domain.PUBLIC
-MAJOR = 5
-MINOR = 27
-PATCH = 0
-SUFFIX = '-dev'
+def _ReportVersionError(msg):
+  raise VersionError(msg)
 
 
 def ValidateProtobufRuntimeVersion(
@@ -69,28 +80,28 @@ def ValidateProtobufRuntimeVersion(
   )
 
   if gen_domain != DOMAIN:
-    raise VersionError(
+    _ReportVersionError(
         'Detected mismatched Protobuf Gencode/Runtime domains when loading'
         f' {location}: gencode {gen_domain.name} runtime {DOMAIN.name}.'
         ' Cross-domain usage of Protobuf is not supported.'
     )
 
   if gen_major != MAJOR:
-    raise VersionError(
+    _ReportVersionError(
         'Detected mismatched Protobuf Gencode/Runtime major versions when'
         f' loading {location}: gencode {gen_version} runtime {version}.'
         f' Same major version is required. {error_prompt}'
     )
 
   if MINOR < gen_minor or (MINOR == gen_minor and PATCH < gen_patch):
-    raise VersionError(
+    _ReportVersionError(
         'Detected incompatible Protobuf Gencode/Runtime versions when loading'
         f' {location}: gencode {gen_version} runtime {version}. Runtime version'
         f' cannot be older than the linked gencode version. {error_prompt}'
     )
 
-  if gen_suffix is not SUFFIX:
-    raise VersionError(
+  if gen_suffix != SUFFIX:
+    _ReportVersionError(
         'Detected mismatched Protobuf Gencode/Runtime version suffixes when'
         f' loading {location}: gencode {gen_version} runtime {version}.'
         f' Version suffixes must be the same. {error_prompt}'

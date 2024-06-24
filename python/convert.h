@@ -30,6 +30,6 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
 
 // Returns true if the given messages (of type `m`) are equal.
 bool upb_Message_IsEqualByDef(const upb_Message* msg1, const upb_Message* msg2,
-                              const upb_MessageDef* msgdef);
+                              const upb_MessageDef* msgdef, int options);
 
 #endif  // PYUPB_CONVERT_H__

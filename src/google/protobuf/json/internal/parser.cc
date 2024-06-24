@@ -699,13 +699,6 @@ absl::Status ParseMap(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
                   }
                   break;
                 }
-                case FieldDescriptor::TYPE_ENUM: {
-                  MaybeOwnedString key_str = key.value;
-                  auto e = ParseEnumFromStr<Traits>(lex, key_str, field);
-                  RETURN_IF_ERROR(e.status());
-                  Traits::SetEnum(key_field, entry, e->value_or(0));
-                  break;
-                }
                 case FieldDescriptor::TYPE_STRING: {
                   Traits::SetString(key_field, entry,
                                     std::move(key.value.ToString()));

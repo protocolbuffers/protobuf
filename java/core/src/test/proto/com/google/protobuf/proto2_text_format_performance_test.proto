@@ -5,15 +5,16 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-syntax = "proto2";
+edition = "2023";
 
 package protobuf.testing.textformat.performance.proto2;
 
+option features.repeated_field_encoding = EXPANDED;
 option java_package = "com.google.protobuf.testing.textformat.performance.proto2";
 option java_outer_classname = "Proto2TextFormatPerformanceProto";
 
 message ContainsSubMessageWithRepeatedInt32 {
-  optional RepeatedInt32 sub_msg = 1;
+  RepeatedInt32 sub_msg = 1;
 }
 
 message RepeatedInt32 {
@@ -25,5 +26,5 @@ message ContainsExtensionSubMessage {
 }
 
 extend ContainsExtensionSubMessage {
-  optional RepeatedInt32 sub_msg_ext = 1;
+  RepeatedInt32 sub_msg_ext = 1;
 }

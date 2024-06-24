@@ -1153,6 +1153,21 @@ TEST(MessageDifferencerTest, BasicFieldOrderingInequalityTest) {
   EXPECT_FALSE(util::MessageDifferencer::Equals(msg1, msg2));
 }
 
+TEST(MessageDifferencerTest, BasicRepeatedFieldOrderingInequalityTest) {
+  // Create the testing protos
+  unittest::MoreString msg1;
+  unittest::MoreString msg2;
+
+  msg1.add_data("a");
+  msg1.add_data("b");
+  msg2.add_data("b");
+  msg2.add_data("a");
+
+  // Compare
+  EXPECT_FALSE(util::MessageDifferencer::Equals(msg1, msg2));
+  EXPECT_FALSE(util::MessageDifferencer::Equivalent(msg1, msg2));
+}
+
 TEST(MessageDifferencerTest, BasicExtensionTest) {
   // Create the testing protos
   unittest::TestAllExtensions msg1;
@@ -1895,6 +1910,91 @@ TEST(MessageDifferencerTest, RepeatedFieldSetTest_Combination) {
   differencer2.set_repeated_field_comparison(util::MessageDifferencer::AS_SET);
   differencer2.TreatAsList(msg1.GetDescriptor()->FindFieldByName("rw"));
   EXPECT_TRUE(differencer2.Compare(msg1, msg2));
+}
+
+// This class is a comparator that uses the default comparator, but counts how
+// many times it was called.
+class CountingComparator : public util::SimpleFieldComparator {
+ public:
+  ComparisonResult Compare(const Message& message_1, const Message& message_2,
+                           const FieldDescriptor* field, int index_1,
+                           int index_2,
+                           const util::FieldContext* field_context) override {
+    ++compare_count_;
+    return SimpleCompare(message_1, message_2, field, index_1, index_2,
+                         field_context);
+  }
+
+  int compare_count() const { return compare_count_; }
+
+ private:
+  int compare_count_ = 0;
+};
+
+TEST(MessageDifferencerTest, RepeatedFieldSet_RecursivePerformance) {
+  constexpr int kDepth = 20;
+
+  protobuf_unittest::TestField left;
+  protobuf_unittest::TestField* p = &left;
+  for (int i = 0; i < kDepth; ++i) {
+    p = p->add_rm();
+  }
+
+  protobuf_unittest::TestField right = left;
+  util::MessageDifferencer differencer;
+  differencer.set_repeated_field_comparison(
+      util::MessageDifferencer::RepeatedFieldComparison::AS_SET);
+  CountingComparator comparator;
+  differencer.set_field_comparator(&comparator);
+  std::string report;
+  differencer.ReportDifferencesToString(&report);
+  differencer.Compare(left, right);
+
+  EXPECT_LE(comparator.compare_count(), kDepth * kDepth);
+}
+
+TEST(MessageDifferencerTest, RepeatedFieldSmartSet_RecursivePerformance) {
+  constexpr int kDepth = 20;
+
+  protobuf_unittest::TestField left;
+  protobuf_unittest::TestField* p = &left;
+  for (int i = 0; i < kDepth; ++i) {
+    p = p->add_rm();
+  }
+
+  protobuf_unittest::TestField right = left;
+  util::MessageDifferencer differencer;
+  differencer.set_repeated_field_comparison(
+      util::MessageDifferencer::RepeatedFieldComparison::AS_SMART_SET);
+  CountingComparator comparator;
+  differencer.set_field_comparator(&comparator);
+  std::string report;
+  differencer.ReportDifferencesToString(&report);
+  differencer.Compare(left, right);
+
+  EXPECT_LE(comparator.compare_count(), kDepth * kDepth);
+}
+
+TEST(MessageDifferencerTest, RepeatedFieldSmartList_RecursivePerformance) {
+  constexpr int kDepth = 20;
+
+  protobuf_unittest::TestField left;
+  protobuf_unittest::TestField* p = &left;
+  for (int i = 0; i < kDepth; ++i) {
+    p = p->add_rm();
+  }
+
+  protobuf_unittest::TestField right = left;
+  util::MessageDifferencer differencer;
+  differencer.set_repeated_field_comparison(
+      util::MessageDifferencer::RepeatedFieldComparison::AS_SMART_LIST);
+  CountingComparator comparator;
+  differencer.set_field_comparator(&comparator);
+  std::string report;
+  differencer.ReportDifferencesToString(&report);
+  differencer.Compare(left, right);
+
+  EXPECT_LE(comparator.compare_count(), kDepth * kDepth);
 }
 
 TEST(MessageDifferencerTest, RepeatedFieldMapTest_Partial) {

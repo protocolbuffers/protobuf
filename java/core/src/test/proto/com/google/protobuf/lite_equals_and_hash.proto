@@ -7,10 +7,11 @@
 
 // Author: pbogle@google.com (Phil Bogle)
 
-syntax = "proto2";
+edition = "2023";
 
 package protobuf_unittest.lite_equals_and_hash;
 
+option features.utf8_validation = NONE;
 
 message TestOneofEquals {
   oneof oneof_field {
@@ -20,15 +21,17 @@ message TestOneofEquals {
 }
 
 message Foo {
-  optional int32 value = 1;
+  int32 value = 1;
   repeated Bar bar = 2;
   map<string, string> my_map = 3;
+
   oneof Single {
     sint64 sint64 = 4;
-    // LINT: ALLOW_GROUPS
-    group MyGroup = 5 {
-      optional int32 value = 1;
-    }
+    MyGroup mygroup = 5 [features.message_encoding = DELIMITED];
+  }
+
+  message MyGroup {
+    int32 value = 1;
   }
 
   extensions 100 to max;
@@ -36,25 +39,27 @@ message Foo {
 
 message Bar {
   extend Foo {
-    optional Bar foo_ext = 100;
+    Bar foo_ext = 100;
   }
 
-  optional string name = 1;
+  string name = 1;
 }
 
 message BarPrime {
-  optional string name = 1;
+  string name = 1;
 }
 
 message Empty {}
 
 extend Foo {
-  optional int32 varint = 101;
-  optional fixed32 fixed32 = 102;
-  optional fixed64 fixed64 = 103;
-  optional group MyGroup = 104 {
-    optional string group_value = 1;
-  }
+  int32 varint = 101;
+  fixed32 fixed32 = 102;
+  fixed64 fixed64 = 103;
+  MyGroup mygroup = 104 [features.message_encoding = DELIMITED];
+}
+
+message MyGroup {
+  string group_value = 1;
 }
 
 message TestRecursiveOneof {

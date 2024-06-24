@@ -1,9 +1,9 @@
 """upb_c_proto_library() exposes upb's generated C API for protobuf (foo.upb.h)"""
 
 load("//bazel:upb_minitable_proto_library.bzl", "UpbMinitableCcInfo", "upb_minitable_proto_library_aspect")
-load("//bazel:upb_proto_library_internal/aspect.bzl", "upb_proto_aspect_impl")
-load("//bazel:upb_proto_library_internal/cc_library_func.bzl", "upb_use_cpp_toolchain")
-load("//bazel:upb_proto_library_internal/rule.bzl", "upb_proto_rule_impl")
+load("//bazel/private:upb_proto_library_internal/aspect.bzl", "upb_proto_aspect_impl")
+load("//bazel/private:upb_proto_library_internal/cc_library_func.bzl", "upb_use_cpp_toolchain")
+load("//bazel/private:upb_proto_library_internal/rule.bzl", "upb_proto_rule_impl")
 
 UpbWrappedCcInfo = provider(
     "Provider for cc_info for protos",
@@ -57,7 +57,6 @@ def _upb_c_proto_library_rule_impl(ctx):
     return upb_proto_rule_impl(ctx, UpbWrappedCcInfo, _UpbWrappedGeneratedSrcsInfo)
 
 upb_c_proto_library = rule(
-    output_to_genfiles = True,
     implementation = _upb_c_proto_library_rule_impl,
     attrs = {
         "deps": attr.label_list(

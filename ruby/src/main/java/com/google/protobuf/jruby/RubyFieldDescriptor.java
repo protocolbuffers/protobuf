@@ -287,6 +287,8 @@ public class RubyFieldDescriptor extends RubyObject {
   private void calculateLabel(ThreadContext context) {
     if (descriptor.isRepeated()) {
       this.label = context.runtime.newSymbol("repeated");
+    } else if (descriptor.isRequired()) {
+      this.label = context.runtime.newSymbol("required");
     } else if (descriptor.isOptional()) {
       this.label = context.runtime.newSymbol("optional");
     } else {

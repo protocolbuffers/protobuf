@@ -161,8 +161,14 @@ static bool Message_set(Message* intern, const upb_FieldDef* f, zval* val) {
   return true;
 }
 
+/**
+ * MessageEq()
+ */
 static bool MessageEq(const upb_Message* m1, const upb_Message* m2,
-                      const upb_MessageDef* m);
+                      const upb_MessageDef* m) {
+  const int options = 0;
+  return upb_Message_IsEqual(m1, m2, upb_MessageDef_MiniTable(m), options);
+}
 
 /**
  * ValueEq()
@@ -192,40 +198,6 @@ bool ValueEq(upb_MessageValue val1, upb_MessageValue val2, TypeInfo type) {
     default:
       return false;
   }
-}
-
-/**
- * MessageEq()
- */
-static bool MessageEq(const upb_Message* m1, const upb_Message* m2,
-                      const upb_MessageDef* m) {
-  int n = upb_MessageDef_FieldCount(m);
-
-  for (int i = 0; i < n; i++) {
-    const upb_FieldDef* f = upb_MessageDef_Field(m, i);
-
-    if (upb_FieldDef_HasPresence(f)) {
-      if (upb_Message_HasFieldByDef(m1, f) !=
-          upb_Message_HasFieldByDef(m2, f)) {
-        return false;
-      }
-      if (!upb_Message_HasFieldByDef(m1, f)) continue;
-    }
-
-    upb_MessageValue val1 = upb_Message_GetFieldByDef(m1, f);
-    upb_MessageValue val2 = upb_Message_GetFieldByDef(m2, f);
-
-    if (upb_FieldDef_IsMap(f)) {
-      if (!MapEq(val1.map_val, val2.map_val, MapType_Get(f))) return false;
-    } else if (upb_FieldDef_IsRepeated(f)) {
-      if (!ArrayEq(val1.array_val, val2.array_val, TypeInfo_Get(f)))
-        return false;
-    } else {
-      if (!ValueEq(val1, val2, TypeInfo_Get(f))) return false;
-    }
-  }
-
-  return true;
 }
 
 /**
@@ -941,7 +913,7 @@ PHP_METHOD(Message, whichOneof) {
     return;
   }
 
-  field = upb_Message_WhichOneof(intern->msg, oneof);
+  field = upb_Message_WhichOneofByDef(intern->msg, oneof);
   RETURN_STRING(field ? upb_FieldDef_Name(field) : "");
 }
 

@@ -94,8 +94,8 @@ UPB_INLINE struct upb_Array* UPB_PRIVATE(_upb_Array_New)(upb_Arena* arena,
 bool UPB_PRIVATE(_upb_Array_Realloc)(struct upb_Array* array, size_t min_size,
                                      upb_Arena* arena);
 
-UPB_INLINE bool UPB_PRIVATE(_upb_Array_Reserve)(struct upb_Array* array,
-                                                size_t size, upb_Arena* arena) {
+UPB_API_INLINE bool upb_Array_Reserve(struct upb_Array* array, size_t size,
+                                      upb_Arena* arena) {
   UPB_ASSERT(!upb_Array_IsFrozen(array));
   if (array->UPB_PRIVATE(capacity) < size)
     return UPB_PRIVATE(_upb_Array_Realloc)(array, size, arena);
@@ -108,7 +108,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
   UPB_ASSERT(!upb_Array_IsFrozen(array));
   UPB_ASSERT(size <= array->UPB_ONLYBITS(size) ||
              arena);  // Allow NULL arena when shrinking.
-  if (!UPB_PRIVATE(_upb_Array_Reserve)(array, size, arena)) return false;
+  if (!upb_Array_Reserve(array, size, arena)) return false;
   array->UPB_ONLYBITS(size) = size;
   return true;
 }

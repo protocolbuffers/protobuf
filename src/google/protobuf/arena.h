@@ -28,7 +28,7 @@ using type_info = ::type_info;
 #endif
 
 #include "absl/base/attributes.h"
-#include "google/protobuf/stubs/common.h"
+#include "absl/base/macros.h"
 #include "absl/log/absl_check.h"
 #include "absl/utility/internal/if_constexpr.h"
 #include "google/protobuf/arena_align.h"
@@ -195,15 +195,21 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
         [arena](auto&&... args) {
           using Type = std::remove_const_t<T>;
 #ifdef __cpp_if_constexpr
-          constexpr auto construct_type = GetConstructType<T, Args&&...>();
-          // We delegate to DefaultConstruct/CopyConstruct where appropriate
-          // because protobuf generated classes have external templates for
-          // these functions for code size reasons. When `if constexpr` is not
-          // available always use the fallback.
-          if constexpr (construct_type == ConstructType::kDefault) {
-            return static_cast<Type*>(DefaultConstruct<Type>(arena));
-          } else if constexpr (construct_type == ConstructType::kCopy) {
-            return static_cast<Type*>(CopyConstruct<Type>(arena, &args...));
+          // DefaultConstruct/CopyConstruct are optimized for messages, which
+          // are both arena constructible and destructor skippable and they
+          // assume much. Don't use these functions unless the invariants
+          // hold.
+          if constexpr (is_destructor_skippable<T>::value) {
+            constexpr auto construct_type = GetConstructType<T, Args&&...>();
+            // We delegate to DefaultConstruct/CopyConstruct where appropriate
+            // because protobuf generated classes have external templates for
+            // these functions for code size reasons. When `if constexpr` is not
+            // available always use the fallback.
+            if constexpr (construct_type == ConstructType::kDefault) {
+              return static_cast<Type*>(DefaultConstruct<Type>(arena));
+            } else if constexpr (construct_type == ConstructType::kCopy) {
+              return static_cast<Type*>(CopyConstruct<Type>(arena, &args...));
+            }
           }
 #endif
           return CreateArenaCompatible<Type>(arena,
@@ -260,7 +266,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     ABSL_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))
         << "Requested size is too large to fit into size_t.";
     if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
-      return static_cast<T*>(::operator new[](num_elements * sizeof(T)));
+      return new T[num_elements];
     } else {
       // We count on compiler to realize that if sizeof(T) is a multiple of
       // 8 AlignUpTo can be elided.
@@ -651,6 +657,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 // keyword to make sure the `extern template` suppresses instantiations.
 template <typename T>
 PROTOBUF_NOINLINE void* Arena::DefaultConstruct(Arena* arena) {
+  static_assert(is_destructor_skippable<T>::value, "");
   void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
                                : ::operator new(sizeof(T));
   return new (mem) T(arena);
@@ -658,6 +665,7 @@ PROTOBUF_NOINLINE void* Arena::DefaultConstruct(Arena* arena) {
 
 template <typename T>
 PROTOBUF_NOINLINE void* Arena::CopyConstruct(Arena* arena, const void* from) {
+  static_assert(is_destructor_skippable<T>::value, "");
   void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
                                : ::operator new(sizeof(T));
   return new (mem) T(arena, *static_cast<const T*>(from));

@@ -271,9 +271,9 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
 }
 
 bool upb_Message_IsEqualByDef(const upb_Message* msg1, const upb_Message* msg2,
-                              const upb_MessageDef* msgdef) {
+                              const upb_MessageDef* msgdef, int options) {
   const upb_MiniTable* m = upb_MessageDef_MiniTable(msgdef);
-  return upb_Message_IsEqual(msg1, msg2, m);
+  return upb_Message_IsEqual(msg1, msg2, m, options);
 }
 
 #include "upb/port/undef.inc"

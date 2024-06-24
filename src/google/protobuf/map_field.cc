@@ -21,7 +21,6 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-using ::google::protobuf::internal::DownCast;
 
 VariantKey RealKeyToVariantKey<MapKey>::operator()(const MapKey& value) const {
   switch (value.type()) {

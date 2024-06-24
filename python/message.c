@@ -12,6 +12,7 @@
 #include "python/extension_dict.h"
 #include "python/map.h"
 #include "python/repeated.h"
+#include "upb/message/compare.h"
 #include "upb/message/copy.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
@@ -432,6 +433,7 @@ err:
 }
 
 static bool PyUpb_Message_InitMessageAttribute(PyObject* _self, PyObject* name,
+                                               const upb_FieldDef* field,
                                                PyObject* value) {
   PyObject* submsg = PyUpb_Message_GetAttr(_self, name);
   if (!submsg) return -1;
@@ -445,10 +447,24 @@ static bool PyUpb_Message_InitMessageAttribute(PyObject* _self, PyObject* name,
     assert(!PyErr_Occurred());
     ok = PyUpb_Message_InitAttributes(submsg, NULL, value) >= 0;
   } else {
-    const upb_MessageDef* m = PyUpb_Message_GetMsgdef(_self);
-    PyErr_Format(PyExc_TypeError, "Message must be initialized with a dict: %s",
-                 upb_MessageDef_FullName(m));
-    ok = false;
+    const upb_MessageDef* msgdef = upb_FieldDef_MessageSubDef(field);
+    switch (upb_MessageDef_WellKnownType(msgdef)) {
+      case kUpb_WellKnown_Timestamp: {
+        ok = PyObject_CallMethod(submsg, "FromDatetime", "O", value);
+        break;
+      }
+      case kUpb_WellKnown_Duration: {
+        ok = PyObject_CallMethod(submsg, "FromTimedelta", "O", value);
+        break;
+      }
+      default: {
+        const upb_MessageDef* m = PyUpb_Message_GetMsgdef(_self);
+        PyErr_Format(PyExc_TypeError,
+                     "Message must be initialized with a dict: %s",
+                     upb_MessageDef_FullName(m));
+        ok = false;
+      }
+    }
   }
   Py_DECREF(submsg);
   return ok;
@@ -501,7 +517,7 @@ int PyUpb_Message_InitAttributes(PyObject* _self, PyObject* args,
     } else if (upb_FieldDef_IsRepeated(f)) {
       if (!PyUpb_Message_InitRepeatedAttribute(_self, name, value)) return -1;
     } else if (upb_FieldDef_IsSubMessage(f)) {
-      if (!PyUpb_Message_InitMessageAttribute(_self, name, value)) return -1;
+      if (!PyUpb_Message_InitMessageAttribute(_self, name, f, value)) return -1;
     } else {
       if (!PyUpb_Message_InitScalarAttribute(msg, f, value, arena)) return -1;
     }
@@ -575,7 +591,8 @@ static bool PyUpb_Message_IsEqual(PyUpb_Message* m1, PyObject* _m2) {
   const bool e2 = PyUpb_Message_IsEmpty(m2_msg, m1_msgdef, symtab);
   if (e1 || e2) return e1 && e2;
 
-  return upb_Message_IsEqualByDef(m1_msg, m2_msg, m1_msgdef);
+  const int options = kUpb_CompareOption_IncludeUnknownFields;
+  return upb_Message_IsEqualByDef(m1_msg, m2_msg, m1_msgdef, options);
 }
 
 static const upb_FieldDef* PyUpb_Message_InitAsMsg(PyUpb_Message* m,
@@ -933,15 +950,43 @@ int PyUpb_Message_SetFieldValue(PyObject* _self, const upb_FieldDef* field,
   PyUpb_Message* self = (void*)_self;
   assert(value);
 
-  if (upb_FieldDef_IsSubMessage(field) || upb_FieldDef_IsRepeated(field)) {
+  if (upb_FieldDef_IsRepeated(field)) {
     PyErr_Format(exc,
-                 "Assignment not allowed to message, map, or repeated "
+                 "Assignment not allowed to map, or repeated "
                  "field \"%s\" in protocol message object.",
                  upb_FieldDef_Name(field));
     return -1;
   }
 
   PyUpb_Message_EnsureReified(self);
+
+  if (upb_FieldDef_IsSubMessage(field)) {
+    const upb_MessageDef* msgdef = upb_FieldDef_MessageSubDef(field);
+    switch (upb_MessageDef_WellKnownType(msgdef)) {
+      case kUpb_WellKnown_Timestamp: {
+        PyObject* sub_message = PyUpb_Message_GetFieldValue(_self, field);
+        PyObject* ok =
+            PyObject_CallMethod(sub_message, "FromDatetime", "O", value);
+        if (!ok) return -1;
+        Py_DECREF(ok);
+        return 0;
+      }
+      case kUpb_WellKnown_Duration: {
+        PyObject* sub_message = PyUpb_Message_GetFieldValue(_self, field);
+        PyObject* ok =
+            PyObject_CallMethod(sub_message, "FromTimedelta", "O", value);
+        if (!ok) return -1;
+        Py_DECREF(ok);
+        return 0;
+      }
+      default:
+        PyErr_Format(exc,
+                     "Assignment not allowed to message "
+                     "field \"%s\" in protocol message object.",
+                     upb_FieldDef_Name(field));
+        return -1;
+    }
+  }
 
   upb_MessageValue val;
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);
@@ -1037,9 +1082,38 @@ static PyObject* PyUpb_Message_HasField(PyObject* _self, PyObject* arg) {
 
   if (PyUpb_Message_IsStub(self)) Py_RETURN_FALSE;
 
-  return PyBool_FromLong(field ? upb_Message_HasFieldByDef(self->ptr.msg, field)
-                               : upb_Message_WhichOneof(self->ptr.msg, oneof) !=
-                                     NULL);
+  return PyBool_FromLong(
+      field ? upb_Message_HasFieldByDef(self->ptr.msg, field)
+            : upb_Message_WhichOneofByDef(self->ptr.msg, oneof) != NULL);
+}
+
+static PyObject* PyUpb_Message_Contains(PyObject* _self, PyObject* arg) {
+  const upb_MessageDef* msgdef = PyUpb_Message_GetMsgdef(_self);
+  switch (upb_MessageDef_WellKnownType(msgdef)) {
+    case kUpb_WellKnown_Struct: {
+      // For WKT Struct, check if the key is in the fields.
+      PyUpb_Message* self = (void*)_self;
+      if (PyUpb_Message_IsStub(self)) Py_RETURN_FALSE;
+      upb_Message* msg = PyUpb_Message_GetMsg(self);
+      const upb_FieldDef* f = upb_MessageDef_FindFieldByName(msgdef, "fields");
+      const upb_Map* map = upb_Message_GetFieldByDef(msg, f).map_val;
+      const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
+      const upb_FieldDef* key_f = upb_MessageDef_Field(entry_m, 0);
+      upb_MessageValue u_key;
+      if (!PyUpb_PyToUpb(arg, key_f, &u_key, NULL)) return NULL;
+      return PyBool_FromLong(upb_Map_Get(map, u_key, NULL));
+    }
+    case kUpb_WellKnown_ListValue: {
+      // For WKT ListValue, check if the key is in the items.
+      PyUpb_Message* self = (void*)_self;
+      if (PyUpb_Message_IsStub(self)) Py_RETURN_FALSE;
+      PyObject* items = PyObject_CallMethod(_self, "items", NULL);
+      return PyBool_FromLong(PySequence_Contains(items, arg));
+    }
+    default:
+      // For other messages, check with HasField.
+      return PyUpb_Message_HasField(_self, arg);
+  }
 }
 
 static PyObject* PyUpb_Message_FindInitializationErrors(PyObject* _self,
@@ -1255,6 +1329,9 @@ PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
     int err = PyBytes_AsStringAndSize(bytes, &buf, &size);
     (void)err;
     assert(err >= 0);
+  } else if (PyByteArray_Check(arg)) {
+    buf = PyByteArray_AsString(arg);
+    size = PyByteArray_Size(arg);
   } else if (PyBytes_AsStringAndSize(arg, &buf, &size) < 0) {
     return NULL;
   }
@@ -1273,7 +1350,9 @@ PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
       upb_Decode(buf, size, self->ptr.msg, layout, extreg, options, arena);
   Py_XDECREF(bytes);
   if (status != kUpb_DecodeStatus_Ok) {
-    PyErr_Format(state->decode_error_class, "Error parsing message");
+    PyErr_Format(state->decode_error_class,
+                 "Error parsing message with type '%s'",
+                 upb_MessageDef_FullName(msgdef));
     return NULL;
   }
   PyUpb_Message_SyncSubobjs(self);
@@ -1390,7 +1469,7 @@ static PyObject* PyUpb_Message_ClearField(PyObject* _self, PyObject* arg) {
     return NULL;
   }
 
-  if (o) f = upb_Message_WhichOneof(self->ptr.msg, o);
+  if (o) f = upb_Message_WhichOneofByDef(self->ptr.msg, o);
   if (f) PyUpb_Message_DoClearField(_self, f);
   Py_RETURN_NONE;
 }
@@ -1585,13 +1664,12 @@ static PyObject* PyUpb_Message_WhichOneof(PyObject* _self, PyObject* name) {
   }
   upb_Message* msg = PyUpb_Message_GetIfReified(_self);
   if (!msg) Py_RETURN_NONE;
-  const upb_FieldDef* f = upb_Message_WhichOneof(msg, o);
+  const upb_FieldDef* f = upb_Message_WhichOneofByDef(msg, o);
   if (!f) Py_RETURN_NONE;
   return PyUnicode_FromString(upb_FieldDef_Name(f));
 }
 
 PyObject* DeepCopy(PyObject* _self, PyObject* arg) {
-  PyUpb_Message* self = (void*)_self;
   const upb_MessageDef* def = PyUpb_Message_GetMsgdef(_self);
   const upb_MiniTable* mini_table = upb_MessageDef_MiniTable(def);
   upb_Message* msg = PyUpb_Message_GetIfReified(_self);
@@ -1640,6 +1718,8 @@ static PyMethodDef PyUpb_Message_Methods[] = {
     // TODO
     //{ "__unicode__", (PyCFunction)ToUnicode, METH_NOARGS,
     //  "Outputs a unicode representation of the message." },
+    {"__contains__", PyUpb_Message_Contains, METH_O,
+     "Checks if a message field is set."},
     {"ByteSize", (PyCFunction)PyUpb_Message_ByteSize, METH_NOARGS,
      "Returns the size of the message in bytes."},
     {"Clear", (PyCFunction)PyUpb_Message_Clear, METH_NOARGS,

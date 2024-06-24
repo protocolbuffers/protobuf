@@ -38,6 +38,7 @@ final class SchemaUtil {
     // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     if (!GeneratedMessageLite.class.isAssignableFrom(messageType)
+        && !Protobuf.assumeLiteRuntime
         && GENERATED_MESSAGE_CLASS != null
         && !GENERATED_MESSAGE_CLASS.isAssignableFrom(messageType)) {
       throw new IllegalArgumentException(
@@ -781,6 +782,9 @@ final class SchemaUtil {
   }
 
   private static Class<?> getGeneratedMessageClass() {
+    if (Protobuf.assumeLiteRuntime) {
+      return null;
+    }
     try {
       // TODO decide if we're keeping support for Full in schema classes and handle
       // this better.
@@ -791,6 +795,9 @@ final class SchemaUtil {
   }
 
   private static Class<?> getUnknownFieldSetSchemaClass() {
+    if (Protobuf.assumeLiteRuntime) {
+      return null;
+    }
     try {
       return Class.forName("com.google.protobuf.UnknownFieldSetSchema");
     } catch (Throwable e) {

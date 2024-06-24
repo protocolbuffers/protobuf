@@ -63,11 +63,7 @@ class TestGenerator : public CodeGenerator {
     // Check field accessors for a repeated string:
     TryInsert("test.pb.h", "field_get:foo.Bar.repeatedString", context);
     TryInsert("test.pb.h", "field_set:foo.Bar.repeatedString", context);
-    TryInsert("test.pb.h", "field_set_char:foo.Bar.repeatedString", context);
-    TryInsert("test.pb.h", "field_set_pointer:foo.Bar.repeatedString", context);
     TryInsert("test.pb.h", "field_mutable:foo.Bar.repeatedString", context);
-    TryInsert("test.pb.h", "field_set_char:foo.Bar.repeatedString", context);
-    TryInsert("test.pb.h", "field_set_pointer:foo.Bar.repeatedString", context);
 
     // Check field accessors for an int inside oneof{}:
     TryInsert("test.pb.h", "field_get:foo.Bar.oneOfInt", context);

@@ -10,7 +10,10 @@
 #include <inttypes.h>
 #include <math.h>
 
+#include "google/protobuf/descriptor.upb.h"
+#include "upb/base/descriptor_constants.h"
 #include "upb/port/vsnprintf_compat.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/enum_reserved_range.h"
 #include "upb/reflection/extension_range.h"
 #include "upb/reflection/internal/field_def.h"
@@ -218,8 +221,20 @@ static google_protobuf_FieldDescriptorProto* fielddef_toproto(upb_ToProto_Contex
   google_protobuf_FieldDescriptorProto_set_name(proto,
                                        strviewdup(ctx, upb_FieldDef_Name(f)));
   google_protobuf_FieldDescriptorProto_set_number(proto, upb_FieldDef_Number(f));
-  google_protobuf_FieldDescriptorProto_set_label(proto, upb_FieldDef_Label(f));
-  google_protobuf_FieldDescriptorProto_set_type(proto, upb_FieldDef_Type(f));
+
+  if (upb_FieldDef_IsRequired(f) &&
+      upb_FileDef_Edition(upb_FieldDef_File(f)) >= UPB_DESC(EDITION_2023)) {
+    google_protobuf_FieldDescriptorProto_set_label(
+        proto, UPB_DESC(FieldDescriptorProto_LABEL_OPTIONAL));
+  } else {
+    google_protobuf_FieldDescriptorProto_set_label(proto, upb_FieldDef_Label(f));
+  }
+  if (upb_FieldDef_Type(f) == kUpb_FieldType_Group &&
+      upb_FileDef_Edition(upb_FieldDef_File(f)) >= UPB_DESC(EDITION_2023)) {
+    google_protobuf_FieldDescriptorProto_set_type(proto, kUpb_FieldType_Message);
+  } else {
+    google_protobuf_FieldDescriptorProto_set_type(proto, upb_FieldDef_Type(f));
+  }
 
   if (upb_FieldDef_HasJsonName(f)) {
     google_protobuf_FieldDescriptorProto_set_json_name(

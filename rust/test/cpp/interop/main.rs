@@ -6,8 +6,8 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use googletest::prelude::*;
-use protobuf_cpp::__internal::{PtrAndLen, RawMessage};
-use unittest_proto::{TestAllExtensions, TestAllTypes, TestAllTypesMut, TestAllTypesView};
+use protobuf_cpp::__runtime::{PtrAndLen, RawMessage};
+use unittest_rust_proto::{TestAllExtensions, TestAllTypes, TestAllTypesMut, TestAllTypesView};
 
 macro_rules! proto_assert_eq {
     ($lhs:expr, $rhs:expr) => {{
@@ -23,6 +23,7 @@ macro_rules! proto_assert_eq {
 // Helper functions invoking C++ Protobuf APIs directly in C++.
 // Defined in `test_utils.cc`.
 extern "C" {
+    fn TakeOwnershipAndGetOptionalInt32(msg: RawMessage) -> i32;
     fn DeserializeTestAllTypes(data: *const u8, len: usize) -> RawMessage;
     fn MutateTestAllTypes(msg: RawMessage);
     fn SerializeTestAllTypes(msg: RawMessage) -> protobuf_cpp::__runtime::SerializedData;
@@ -33,26 +34,20 @@ extern "C" {
 }
 
 #[test]
-fn mutate_message_in_cpp() {
+fn send_to_cpp() {
     let mut msg1 = TestAllTypes::new();
-    unsafe {
-        MutateTestAllTypes(msg1.__unstable_cpp_repr_grant_permission_to_break());
-    }
-
-    let mut msg2 = TestAllTypes::new();
-    msg2.set_optional_int64(42);
-    msg2.set_optional_bytes(b"something mysterious");
-    msg2.set_optional_bool(false);
-
-    proto_assert_eq!(msg1, msg2);
+    msg1.set_optional_int32(7);
+    let i = unsafe {
+        TakeOwnershipAndGetOptionalInt32(msg1.__unstable_leak_cpp_repr_grant_permission_to_break())
+    };
+    assert_eq!(i, 7);
 }
 
 #[test]
 fn mutate_message_mut_in_cpp() {
     let mut msg1 = TestAllTypes::new();
-    let mut msg_mut = msg1.as_mut();
     unsafe {
-        MutateTestAllTypes(msg_mut.__unstable_cpp_repr_grant_permission_to_break());
+        MutateTestAllTypes(msg1.as_mut().__unstable_cpp_repr_grant_permission_to_break());
     }
 
     let mut msg2 = TestAllTypes::new();
@@ -72,8 +67,7 @@ fn deserialize_in_rust() {
         SerializeTestAllTypes(msg1.as_view().__unstable_cpp_repr_grant_permission_to_break())
     };
 
-    let mut msg2 = TestAllTypes::new();
-    msg2.deserialize(&serialized).unwrap();
+    let msg2 = TestAllTypes::parse(&serialized).unwrap();
     proto_assert_eq!(msg1, msg2);
 }
 
@@ -82,7 +76,7 @@ fn deserialize_in_cpp() {
     let mut msg1 = TestAllTypes::new();
     msg1.set_optional_int64(-1);
     msg1.set_optional_bytes(b"some cool data I guess");
-    let data = msg1.serialize();
+    let data = msg1.serialize().unwrap();
 
     let msg2 = unsafe {
         TestAllTypes::__unstable_wrap_cpp_grant_permission_to_break(DeserializeTestAllTypes(
@@ -99,7 +93,7 @@ fn deserialize_in_cpp_into_mut() {
     let mut msg1 = TestAllTypes::new();
     msg1.set_optional_int64(-1);
     msg1.set_optional_bytes(b"some cool data I guess");
-    let data = msg1.serialize();
+    let data = msg1.serialize().unwrap();
 
     let mut raw_msg = unsafe { DeserializeTestAllTypes((*data).as_ptr(), data.len()) };
     let msg2 = TestAllTypesMut::__unstable_wrap_cpp_grant_permission_to_break(&mut raw_msg);
@@ -117,7 +111,7 @@ fn deserialize_in_cpp_into_view() {
     let mut msg1 = TestAllTypes::new();
     msg1.set_optional_int64(-1);
     msg1.set_optional_bytes(b"some cool data I guess");
-    let data = msg1.serialize();
+    let data = msg1.serialize().unwrap();
 
     let raw_msg = unsafe { DeserializeTestAllTypes((*data).as_ptr(), data.len()) };
     let msg2 = TestAllTypesView::__unstable_wrap_cpp_grant_permission_to_break(&raw_msg);
@@ -137,11 +131,11 @@ fn smuggle_extension() {
     let msg1 = unsafe {
         TestAllExtensions::__unstable_wrap_cpp_grant_permission_to_break(NewWithExtension())
     };
-    let data = msg1.serialize();
+    let data = msg1.serialize().unwrap();
 
-    let mut msg2 = TestAllExtensions::new();
-    msg2.deserialize(&data).unwrap();
-    let bytes =
-        unsafe { GetBytesExtension(msg2.__unstable_cpp_repr_grant_permission_to_break()).as_ref() };
-    assert_eq!(&*bytes, b"smuggled");
+    let mut msg2 = TestAllExtensions::parse(&data).unwrap();
+    let bytes = unsafe {
+        GetBytesExtension(msg2.as_mut().__unstable_cpp_repr_grant_permission_to_break()).as_ref()
+    };
+    assert_eq!(bytes, b"smuggled");
 }

@@ -1,7 +1,7 @@
 load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@rules_cc//cc:defs.bzl", "objc_library")
-load("@rules_proto//proto:defs.bzl", "ProtoInfo")
 load("@rules_python//python:defs.bzl", "py_library")
+load("//bazel/common:proto_info.bzl", "ProtoInfo")
 
 def _GetPath(ctx, path):
     if ctx.label.workspace_root:
@@ -234,6 +234,7 @@ Args:
   srcs: Protocol Buffers definition files (.proto) to run the protocol compiler
     against.
   deps: a list of dependency labels; must be other proto libraries.
+  enable_editions: if true, sets the --experimental_editions flag.
   includes: a list of include paths to .proto files.
   protoc: the label of the protocol compiler to generate the sources.
   plugin: the label of the protocol compiler plugin to be passed to the protocol
@@ -271,7 +272,6 @@ _proto_gen = rule(
             default = "all",
         ),
     },
-    output_to_genfiles = True,
     implementation = _proto_gen_impl,
 )
 
@@ -410,7 +410,6 @@ def internal_objc_proto_library(
         includes = ["."],
         default_runtime = Label("//:protobuf_objc"),
         protoc = Label("//:protoc"),
-        enable_editions = False,
         testonly = None,
         visibility = ["//visibility:public"],
         **kwargs):
@@ -430,7 +429,6 @@ def internal_objc_proto_library(
       includes: a string indicating the include path of the .proto files.
       default_runtime: the Objective-C Protobuf runtime
       protoc: the label of the protocol compiler to generate the sources.
-      enable_editions: if editions should be enabled while invoking the compiler.
       testonly: common rule attribute (see:
           https://bazel.build/reference/be/common-definitions#common-attributes)
       visibility: the visibility of the generated files.
@@ -445,7 +443,6 @@ def internal_objc_proto_library(
             testonly = testonly,
             srcs = proto_deps,
             protoc = protoc,
-            enable_editions = enable_editions,
             includes = includes,
         )
         full_deps.append(":%s_deps_genproto" % name)
@@ -460,7 +457,6 @@ def internal_objc_proto_library(
         out_type = "hdrs",
         includes = includes,
         protoc = protoc,
-        enable_editions = enable_editions,
         testonly = testonly,
         visibility = visibility,
         tags = ["manual"],
@@ -474,7 +470,6 @@ def internal_objc_proto_library(
         out_type = "srcs",
         includes = includes,
         protoc = protoc,
-        enable_editions = enable_editions,
         testonly = testonly,
         visibility = visibility,
         tags = ["manual"],
@@ -665,6 +660,7 @@ def _source_proto_library(
         protoc = Label("//:protoc"),
         testonly = None,
         visibility = ["//visibility:public"],
+        enable_editions = False,
         **kwargs):
     """Bazel rule to create generated protobuf code from proto source files for
     languages not well supported by Bazel yet.  This will output the generated
@@ -709,6 +705,7 @@ def _source_proto_library(
             srcs = proto_deps,
             protoc = protoc,
             includes = includes,
+            enable_editions = enable_editions,
         )
         full_deps.append(":%s_deps_genproto" % name)
 
@@ -722,6 +719,7 @@ def _source_proto_library(
         protoc = protoc,
         testonly = testonly,
         visibility = visibility,
+        enable_editions = enable_editions,
     )
 
     native.filegroup(

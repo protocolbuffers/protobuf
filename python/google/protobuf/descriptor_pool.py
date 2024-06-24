@@ -737,7 +737,7 @@ class DescriptorPool(object):
     for d in self._edition_defaults.defaults:
       if d.edition > edition:
         break
-      found = d.features
+      found = d
     if found is None:
       raise TypeError(
           'No valid default found for edition %s!'
@@ -745,7 +745,8 @@ class DescriptorPool(object):
       )
 
     defaults = descriptor_pb2.FeatureSet()
-    defaults.CopyFrom(found)
+    defaults.CopyFrom(found.fixed_features)
+    defaults.MergeFrom(found.overridable_features)
     return defaults
 
   def _InternFeatures(self, features):

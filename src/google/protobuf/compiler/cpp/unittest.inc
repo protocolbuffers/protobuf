@@ -552,6 +552,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, CopyConstructor) {
   }
 }
 
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
 TEST(GENERATED_MESSAGE_TEST_NAME, CopyConstructorWithArenas) {
   Arena arena;
   UNITTEST::TestAllTypes* message1 =
@@ -572,7 +573,6 @@ TEST(GENERATED_MESSAGE_TEST_NAME, CopyConstructorWithArenas) {
   TestUtil::ExpectAllFieldsSet(*message2_heap);
 }
 
-#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
 TEST(GENERATED_MESSAGE_TEST_NAME, UpcastCopyFrom) {
   // Test the CopyFrom method that takes in the generic const Message&
   // parameter.
@@ -1022,8 +1022,8 @@ TEST(GENERATED_ENUM_TEST_NAME, MinAndMax) {
   EXPECT_EQ(4, UNITTEST::TestAllTypes::NestedEnum_ARRAYSIZE);
 
   EXPECT_EQ(UNITTEST::FOREIGN_FOO, UNITTEST::ForeignEnum_MIN);
-  EXPECT_EQ(UNITTEST::FOREIGN_BAX, UNITTEST::ForeignEnum_MAX);
-  EXPECT_EQ(33, UNITTEST::ForeignEnum_ARRAYSIZE);
+  EXPECT_EQ(UNITTEST::FOREIGN_LARGE, UNITTEST::ForeignEnum_MAX);
+  EXPECT_EQ(123457, UNITTEST::ForeignEnum_ARRAYSIZE);
 
   EXPECT_EQ(1, UNITTEST::TestEnumWithDupValue_MIN);
   EXPECT_EQ(3, UNITTEST::TestEnumWithDupValue_MAX);
@@ -1310,17 +1310,17 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethod) {
 TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethodTypeFailure) {
   // Verify death if we call Foo() with Bar's message types.
 
-#if PROTOBUF_RTTI && GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
   EXPECT_DEBUG_DEATH(
-    mock_service_.CallMethod(foo_, &mock_controller_,
-                             &foo_request_, &bar_response_, done_.get()),
-    "dynamic_cast");
+      mock_service_.CallMethod(foo_, &mock_controller_, &foo_request_,
+                               &bar_response_, done_.get()),
+      "DynamicCastMessage");
 
   mock_service_.Reset();
   EXPECT_DEBUG_DEATH(
-    mock_service_.CallMethod(foo_, &mock_controller_,
-                             &bar_request_, &foo_response_, done_.get()),
-    "dynamic_cast");
+      mock_service_.CallMethod(foo_, &mock_controller_, &bar_request_,
+                               &foo_response_, done_.get()),
+      "DynamicCastMessage");
 #endif  // GTEST_HAS_DEATH_TEST
 }
 

@@ -3216,92 +3216,290 @@ static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
   }
 }
 
+// Highly optimized routines for determining selector types.
+// Meant to only be used by GPBMessage when resolving selectors in
+// `+ (BOOL)resolveInstanceMethod:(SEL)sel`.
+// These routines are intended to make negative decisions as fast as possible.
+GPB_INLINE char GPBFastToUpper(char c) { return (c >= 'a' && c <= 'z') ? (c - 'a' + 'A') : c; }
+
+GPB_INLINE BOOL GPBIsGetSelForField(const char *selName, GPBFieldDescriptor *descriptor) {
+  // Does 'selName' == '<name>'?
+  // selName and <name> have to be at least two characters long (i.e. ('a', '\0')" is the shortest
+  // selector you can have).
+  return (selName[0] == descriptor->description_->name[0]) &&
+         (selName[1] == descriptor->description_->name[1]) &&
+         (strcmp(selName + 1, descriptor->description_->name + 1) == 0);
+}
+
+GPB_INLINE BOOL GPBIsSetSelForField(const char *selName, size_t selNameLength,
+                                    GPBFieldDescriptor *descriptor) {
+  // Does 'selName' == 'set<Name>:'?
+  // Do fastest compares up front
+  const size_t kSetLength = strlen("set");
+  // kSetLength is 3 and one for the colon.
+  if (selNameLength <= kSetLength + 1) {
+    return NO;
+  }
+  if (selName[kSetLength] != GPBFastToUpper(descriptor->description_->name[0])) {
+    return NO;
+  }
+
+  // NB we check for "set" and the colon later in this routine because we have already checked for
+  // starting with "s" and ending with ":" in `+resolveInstanceMethod:` before we get here.
+  if (selName[0] != 's' || selName[1] != 'e' || selName[2] != 't') {
+    return NO;
+  }
+
+  if (selName[selNameLength - 1] != ':') {
+    return NO;
+  }
+
+  // Slow path.
+  size_t nameLength = strlen(descriptor->description_->name);
+  size_t setSelLength = nameLength + kSetLength + 1;
+  if (selNameLength != setSelLength) {
+    return NO;
+  }
+  if (strncmp(&selName[kSetLength + 1], descriptor->description_->name + 1, nameLength - 1) != 0) {
+    return NO;
+  }
+
+  return YES;
+}
+
+GPB_INLINE BOOL GPBFieldHasHas(GPBFieldDescriptor *descriptor) {
+  // It gets has/setHas selectors if...
+  //  - not in a oneof (negative has index)
+  //  - not clearing on zero
+  return (descriptor->description_->hasIndex >= 0) &&
+         ((descriptor->description_->flags & GPBFieldClearHasIvarOnZero) == 0);
+}
+
+GPB_INLINE BOOL GPBIsHasSelForField(const char *selName, size_t selNameLength,
+                                    GPBFieldDescriptor *descriptor) {
+  // Does 'selName' == 'has<Name>'?
+  // Do fastest compares up front.
+  const size_t kHasLength = strlen("has");
+  if (selNameLength <= kHasLength) {
+    return NO;
+  }
+  if (selName[0] != 'h' || selName[1] != 'a' || selName[2] != 's') {
+    return NO;
+  }
+  if (selName[kHasLength] != GPBFastToUpper(descriptor->description_->name[0])) {
+    return NO;
+  }
+  if (!GPBFieldHasHas(descriptor)) {
+    return NO;
+  }
+
+  // Slow path.
+  size_t nameLength = strlen(descriptor->description_->name);
+  size_t setSelLength = nameLength + kHasLength;
+  if (selNameLength != setSelLength) {
+    return NO;
+  }
+
+  if (strncmp(&selName[kHasLength + 1], descriptor->description_->name + 1, nameLength - 1) != 0) {
+    return NO;
+  }
+  return YES;
+}
+
+GPB_INLINE BOOL GPBIsCountSelForField(const char *selName, size_t selNameLength,
+                                      GPBFieldDescriptor *descriptor) {
+  // Does 'selName' == '<name>_Count'?
+  // Do fastest compares up front.
+  if (selName[0] != descriptor->description_->name[0]) {
+    return NO;
+  }
+  const size_t kCountLength = strlen("_Count");
+  if (selNameLength <= kCountLength) {
+    return NO;
+  }
+
+  if (selName[selNameLength - kCountLength] != '_') {
+    return NO;
+  }
+
+  // Slow path.
+  size_t nameLength = strlen(descriptor->description_->name);
+  size_t setSelLength = nameLength + kCountLength;
+  if (selNameLength != setSelLength) {
+    return NO;
+  }
+  if (strncmp(selName, descriptor->description_->name, nameLength) != 0) {
+    return NO;
+  }
+  if (strncmp(&selName[nameLength], "_Count", kCountLength) != 0) {
+    return NO;
+  }
+  return YES;
+}
+
+GPB_INLINE BOOL GPBIsSetHasSelForField(const char *selName, size_t selNameLength,
+                                       GPBFieldDescriptor *descriptor) {
+  // Does 'selName' == 'setHas<Name>:'?
+  // Do fastest compares up front.
+  const size_t kSetHasLength = strlen("setHas");
+  // kSetHasLength is 6 and one for the colon.
+  if (selNameLength <= kSetHasLength + 1) {
+    return NO;
+  }
+  if (selName[selNameLength - 1] != ':') {
+    return NO;
+  }
+  if (selName[kSetHasLength] != GPBFastToUpper(descriptor->description_->name[0])) {
+    return NO;
+  }
+  if (selName[0] != 's' || selName[1] != 'e' || selName[2] != 't' || selName[3] != 'H' ||
+      selName[4] != 'a' || selName[5] != 's') {
+    return NO;
+  }
+
+  if (!GPBFieldHasHas(descriptor)) {
+    return NO;
+  }
+  // Slow path.
+  size_t nameLength = strlen(descriptor->description_->name);
+  size_t setHasSelLength = nameLength + kSetHasLength + 1;
+  if (selNameLength != setHasSelLength) {
+    return NO;
+  }
+  if (strncmp(&selName[kSetHasLength + 1], descriptor->description_->name + 1, nameLength - 1) !=
+      0) {
+    return NO;
+  }
+
+  return YES;
+}
+
+GPB_INLINE BOOL GPBIsCaseOfSelForOneOf(const char *selName, size_t selNameLength,
+                                       GPBOneofDescriptor *descriptor) {
+  // Does 'selName' == '<name>OneOfCase'?
+  // Do fastest compares up front.
+  if (selName[0] != descriptor->name_[0]) {
+    return NO;
+  }
+  const size_t kOneOfCaseLength = strlen("OneOfCase");
+  if (selNameLength <= kOneOfCaseLength) {
+    return NO;
+  }
+  if (selName[selNameLength - kOneOfCaseLength] != 'O') {
+    return NO;
+  }
+
+  // Slow path.
+  size_t nameLength = strlen(descriptor->name_);
+  size_t setSelLength = nameLength + kOneOfCaseLength;
+  if (selNameLength != setSelLength) {
+    return NO;
+  }
+  if (strncmp(&selName[nameLength], "OneOfCase", kOneOfCaseLength) != 0) {
+    return NO;
+  }
+  if (strncmp(selName, descriptor->name_, nameLength) != 0) {
+    return NO;
+  }
+  return YES;
+}
+
 + (BOOL)resolveInstanceMethod:(SEL)sel {
   const GPBDescriptor *descriptor = [self descriptor];
   if (!descriptor) {
     return [super resolveInstanceMethod:sel];
   }
-
-  // NOTE: hasOrCountSel_/setHasSel_ will be NULL if the field for the given
-  // message should not have has support (done in GPBDescriptor.m), so there is
-  // no need for checks here to see if has*/setHas* are allowed.
   ResolveIvarAccessorMethodResult result = {NULL, NULL};
 
-  // See comment about __unsafe_unretained on ResolveIvarGet.
-  for (__unsafe_unretained GPBFieldDescriptor *field in descriptor->fields_) {
-    BOOL isMapOrArray = GPBFieldIsMapOrArray(field);
-    if (!isMapOrArray) {
-      // Single fields.
-      if (sel == field->getSel_) {
-        ResolveIvarGet(field, &result);
+  const char *selName = sel_getName(sel);
+  const size_t selNameLength = strlen(selName);
+  // A setter has a leading 's' and a trailing ':' (e.g. 'setFoo:' or 'setHasFoo:').
+  BOOL couldBeSetter = selName[0] == 's' && selName[selNameLength - 1] == ':';
+  if (couldBeSetter) {
+    // See comment about __unsafe_unretained on ResolveIvarGet.
+    for (__unsafe_unretained GPBFieldDescriptor *field in descriptor->fields_) {
+      BOOL isMapOrArray = GPBFieldIsMapOrArray(field);
+      if (GPBIsSetSelForField(selName, selNameLength, field)) {
+        if (isMapOrArray) {
+          // Local for syntax so the block can directly capture it and not the
+          // full lookup.
+          result.impToAdd = imp_implementationWithBlock(^(id obj, id value) {
+            GPBSetObjectIvarWithFieldPrivate(obj, field, value);
+          });
+          result.encodingSelector = @selector(setArray:);
+        } else {
+          ResolveIvarSet(field, &result);
+        }
         break;
-      } else if (sel == field->setSel_) {
-        ResolveIvarSet(field, &result);
-        break;
-      } else if (sel == field->hasOrCountSel_) {
-        int32_t index = GPBFieldHasIndex(field);
-        uint32_t fieldNum = GPBFieldNumber(field);
-        result.impToAdd = imp_implementationWithBlock(^(id obj) {
-          return GPBGetHasIvar(obj, index, fieldNum);
-        });
-        result.encodingSelector = @selector(getBool);
-        break;
-      } else if (sel == field->setHasSel_) {
+      } else if (!isMapOrArray && GPBIsSetHasSelForField(selName, selNameLength, field)) {
         result.impToAdd = imp_implementationWithBlock(^(id obj, BOOL value) {
           if (value) {
             [NSException raise:NSInvalidArgumentException
                         format:@"%@: %@ can only be set to NO (to clear field).", [obj class],
-                               NSStringFromSelector(field->setHasSel_)];
+                               NSStringFromSelector(sel)];
           }
           GPBClearMessageField(obj, field);
         });
         result.encodingSelector = @selector(setBool:);
         break;
-      } else {
-        GPBOneofDescriptor *oneof = field->containingOneof_;
-        if (oneof && (sel == oneof->caseSel_)) {
+      }
+    }
+  } else {
+    // See comment about __unsafe_unretained on ResolveIvarGet.
+    for (__unsafe_unretained GPBFieldDescriptor *field in descriptor->fields_) {
+      BOOL isMapOrArray = GPBFieldIsMapOrArray(field);
+      if (GPBIsGetSelForField(selName, field)) {
+        if (isMapOrArray) {
+          if (field.fieldType == GPBFieldTypeRepeated) {
+            result.impToAdd = imp_implementationWithBlock(^(id obj) {
+              return GetArrayIvarWithField(obj, field);
+            });
+          } else {
+            result.impToAdd = imp_implementationWithBlock(^(id obj) {
+              return GetMapIvarWithField(obj, field);
+            });
+          }
+          result.encodingSelector = @selector(getArray);
+        } else {
+          ResolveIvarGet(field, &result);
+        }
+        break;
+      }
+      if (!isMapOrArray) {
+        if (GPBIsHasSelForField(selName, selNameLength, field)) {
           int32_t index = GPBFieldHasIndex(field);
+          uint32_t fieldNum = GPBFieldNumber(field);
           result.impToAdd = imp_implementationWithBlock(^(id obj) {
-            return GPBGetHasOneof(obj, index);
+            return GPBGetHasIvar(obj, index, fieldNum);
           });
-          result.encodingSelector = @selector(getEnum);
+          result.encodingSelector = @selector(getBool);
+          break;
+        } else {
+          GPBOneofDescriptor *oneof = field->containingOneof_;
+          if (oneof && GPBIsCaseOfSelForOneOf(selName, selNameLength, oneof)) {
+            int32_t index = GPBFieldHasIndex(field);
+            result.impToAdd = imp_implementationWithBlock(^(id obj) {
+              return GPBGetHasOneof(obj, index);
+            });
+            result.encodingSelector = @selector(getEnum);
+            break;
+          }
+        }
+      } else {
+        if (GPBIsCountSelForField(selName, selNameLength, field)) {
+          result.impToAdd = imp_implementationWithBlock(^(id obj) {
+            // Type doesn't matter, all *Array and *Dictionary types support
+            // -count.
+            NSArray *arrayOrMap = GPBGetObjectIvarWithFieldNoAutocreate(obj, field);
+            return [arrayOrMap count];
+          });
+          result.encodingSelector = @selector(getArrayCount);
           break;
         }
       }
-    } else {
-      // map<>/repeated fields.
-      if (sel == field->getSel_) {
-        if (field.fieldType == GPBFieldTypeRepeated) {
-          result.impToAdd = imp_implementationWithBlock(^(id obj) {
-            return GetArrayIvarWithField(obj, field);
-          });
-        } else {
-          result.impToAdd = imp_implementationWithBlock(^(id obj) {
-            return GetMapIvarWithField(obj, field);
-          });
-        }
-        result.encodingSelector = @selector(getArray);
-        break;
-      } else if (sel == field->setSel_) {
-        // Local for syntax so the block can directly capture it and not the
-        // full lookup.
-        result.impToAdd = imp_implementationWithBlock(^(id obj, id value) {
-          GPBSetObjectIvarWithFieldPrivate(obj, field, value);
-        });
-        result.encodingSelector = @selector(setArray:);
-        break;
-      } else if (sel == field->hasOrCountSel_) {
-        result.impToAdd = imp_implementationWithBlock(^(id obj) {
-          // Type doesn't matter, all *Array and *Dictionary types support
-          // -count.
-          NSArray *arrayOrMap = GPBGetObjectIvarWithFieldNoAutocreate(obj, field);
-          return [arrayOrMap count];
-        });
-        result.encodingSelector = @selector(getArrayCount);
-        break;
-      }
     }
   }
+
   if (result.impToAdd) {
     const char *encoding = GPBMessageEncodingForSelector(result.encodingSelector, YES);
     Class msgClass = descriptor.messageClass;

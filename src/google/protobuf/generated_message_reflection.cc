@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <cstring>
 #include <new>  // IWYU pragma: keep for operator delete
+#include <queue>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -43,6 +44,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/raw_ptr.h"
+#include "google/protobuf/reflection_visit_fields.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unknown_field_set.h"
@@ -355,6 +357,17 @@ bool Reflection::IsEagerlyVerifiedLazyField(
     const FieldDescriptor* field) const {
   return (field->type() == FieldDescriptor::TYPE_MESSAGE &&
           schema_.IsEagerlyVerifiedLazyField(field));
+}
+
+internal::field_layout::TransformValidation Reflection::GetLazyStyle(
+    const FieldDescriptor* field) const {
+  if (IsEagerlyVerifiedLazyField(field)) {
+    return internal::field_layout::kTvEager;
+  }
+  if (IsLazilyVerifiedLazyField(field)) {
+    return internal::field_layout::kTvLazy;
+  }
+  return {};
 }
 
 size_t Reflection::SpaceUsedLong(const Message& message) const {
@@ -1168,6 +1181,14 @@ void Reflection::SwapFieldsImpl(
   }
 }
 
+template void Reflection::SwapFieldsImpl<true>(
+    Message* message1, Message* message2,
+    const std::vector<const FieldDescriptor*>& fields) const;
+
+template void Reflection::SwapFieldsImpl<false>(
+    Message* message1, Message* message2,
+    const std::vector<const FieldDescriptor*>& fields) const;
+
 void Reflection::SwapFields(
     Message* message1, Message* message2,
     const std::vector<const FieldDescriptor*>& fields) const {
@@ -1244,10 +1265,9 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
     int fields_with_has_bits = 0;
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* field = descriptor_->field(i);
-      if (field->is_repeated() || schema_.InRealOneof(field)) {
-        continue;
+      if (internal::cpp::HasHasbit(field)) {
+        ++fields_with_has_bits;
       }
-      fields_with_has_bits++;
     }
 
     int has_bits_size = (fields_with_has_bits + 31) / 32;
@@ -1286,6 +1306,10 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
   if (schema_.HasExtensionSet()) {
     MutableExtensionSet(lhs)->InternalSwap(MutableExtensionSet(rhs));
   }
+}
+
+void Reflection::MaybePoisonAfterClear(Message& root) const {
+  root.Clear();
 }
 
 int Reflection::FieldSize(const Message& message,
@@ -2223,8 +2247,7 @@ void Reflection::AddEnumValueInternal(Message* message,
                                       int value) const {
   if (field->is_extension()) {
     MutableExtensionSet(message)->AddEnum(field->number(), field->type(),
-                                          field->options().packed(), value,
-                                          field);
+                                          field->is_packed(), value, field);
   } else {
     AddField<int>(message, field, value);
   }
@@ -3041,7 +3064,6 @@ void Reflection::ClearOneof(Message* message,
         default:
           break;
       }
-    } else {
     }
 
     *MutableOneofCase(message, oneof_descriptor) = 0;
@@ -3286,6 +3308,8 @@ void Reflection::PopulateTcParseEntries(
   for (const auto& entry : table_info.field_entries) {
     const FieldDescriptor* field = entry.field;
     if (field->type() == field->TYPE_ENUM &&
+        (entry.type_card & internal::field_layout::kTvMask) ==
+            internal::field_layout::kTvEnum &&
         table_info.aux_entries[entry.aux_idx].type ==
             internal::TailCallTableInfo::kEnumValidator) {
       // Mini parse can't handle it. Fallback to reflection.
@@ -3364,67 +3388,40 @@ void Reflection::PopulateTcParseFieldAux(
 const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   using TcParseTableBase = internal::TcParseTableBase;
 
-  std::vector<const FieldDescriptor*> fields;
   constexpr int kNoHasbit = -1;
-  std::vector<int> has_bit_indices(
-      static_cast<size_t>(descriptor_->field_count()), kNoHasbit);
-  std::vector<int> inlined_string_indices = has_bit_indices;
+  std::vector<internal::TailCallTableInfo::FieldOptions> fields;
+  fields.reserve(descriptor_->field_count());
   for (int i = 0; i < descriptor_->field_count(); ++i) {
     auto* field = descriptor_->field(i);
-    fields.push_back(field);
-    has_bit_indices[static_cast<size_t>(field->index())] =
-        static_cast<int>(schema_.HasBitIndex(field));
-
-    if (IsInlined(field)) {
-      inlined_string_indices[static_cast<size_t>(field->index())] =
-          schema_.InlinedStringIndex(field);
-    }
+    const bool is_inlined = IsInlined(field);
+    fields.push_back({
+        field,  //
+        static_cast<int>(schema_.HasBitIndex(field)),
+        1.f,  // All fields are assumed present.
+        GetLazyStyle(field),
+        is_inlined,
+        // Only LITE can be implicitly weak.
+        /* is_implicitly_weak */ false,
+        // We could change this to use direct table.
+        // Might be easier to do when all messages support TDP.
+        /* use_direct_tcparser_table */ false,
+        schema_.IsSplit(field),
+        is_inlined ? static_cast<int>(schema_.InlinedStringIndex(field))
+                   : kNoHasbit,
+    });
   }
-  std::sort(fields.begin(), fields.end(),
-            [](const FieldDescriptor* a, const FieldDescriptor* b) {
-              return a->number() < b->number();
-            });
+  std::sort(fields.begin(), fields.end(), [](const auto& a, const auto& b) {
+    return a.field->number() < b.field->number();
+  });
 
-  class ReflectionOptionProvider final
-      : public internal::TailCallTableInfo::OptionProvider {
-   public:
-    explicit ReflectionOptionProvider(const Reflection& ref) : ref_(ref) {}
-    internal::TailCallTableInfo::PerFieldOptions GetForField(
-        const FieldDescriptor* field) const final {
-      const auto verify_flag = [&] {
-        if (ref_.IsEagerlyVerifiedLazyField(field))
-          return internal::field_layout::kTvEager;
-        if (ref_.IsLazilyVerifiedLazyField(field))
-          return internal::field_layout::kTvLazy;
-        return internal::field_layout::TransformValidation{};
-      };
-      return {
-          1.f,                    // All fields are assumed present.
-          verify_flag(),          //
-          ref_.IsInlined(field),  //
-
-          // Only LITE can be implicitly weak.
-          /* is_implicitly_weak */ false,
-
-          // We could change this to use direct table.
-          // Might be easier to do when all messages support TDP.
-          /* use_direct_tcparser_table */ false,
-
-          ref_.schema_.IsSplit(field),  //
-      };
-    }
-
-   private:
-    const Reflection& ref_;
-  };
   internal::TailCallTableInfo table_info(
-      descriptor_, fields,
+      descriptor_,
       {
           /* is_lite */ false,
           /* uses_codegen */ false,
           /* should_profile_driven_cluster_aux_table */ false,
       },
-      ReflectionOptionProvider(*this), has_bit_indices, inlined_string_indices);
+      fields);
 
   const size_t fast_entries_count = table_info.fast_path_fields.size();
   ABSL_CHECK_EQ(static_cast<int>(fast_entries_count),
@@ -3450,7 +3447,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       schema_.HasExtensionSet()
           ? static_cast<uint16_t>(schema_.GetExtensionSetOffset())
           : uint16_t{0},
-      static_cast<uint32_t>(fields.empty() ? 0 : fields.back()->number()),
+      static_cast<uint32_t>(fields.empty() ? 0 : fields.back().field->number()),
       static_cast<uint8_t>((fast_entries_count - 1) << 3),
       lookup_table_offset,
       table_info.num_to_entry_table.skipmap32,
@@ -3771,14 +3768,19 @@ bool SplitFieldHasExtraIndirection(const FieldDescriptor* field) {
   return field->is_repeated();
 }
 
+#if defined(PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED)
 const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
-                                             int index) {
+                                             int index, bool force_build) {
   // First, make sure we inject the surviving default instances.
   InitProtobufDefaults();
 
   // Now check if the table has it. If so, return it.
   if (const auto* msg = table->default_instances[index]) {
     return msg;
+  }
+
+  if (!force_build) {
+    return nullptr;
   }
 
   // Fallback to dynamic messages.
@@ -3798,6 +3800,7 @@ const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
 
   return MessageFactory::generated_factory()->GetPrototype(descriptor);
 }
+#endif  // PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 
 }  // namespace internal
 }  // namespace protobuf

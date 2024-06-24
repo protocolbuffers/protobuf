@@ -20,11 +20,13 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
 #include "upb/mini_table/field.h"
 #include "upb/reflection/def.hpp"
@@ -231,6 +233,9 @@ std::string MapValueSize(upb::FieldDefPtr map_field, absl::string_view expr) {
 
 std::string FieldInitializer(const DefPoolPair& pools, upb::FieldDefPtr field,
                              const Options& options);
+std::string FieldInitializerStrong(const DefPoolPair& pools,
+                                   upb::FieldDefPtr field,
+                                   const Options& options);
 
 void DumpEnumValues(upb::EnumDefPtr desc, Output& output) {
   std::vector<upb::EnumValDefPtr> values;
@@ -304,7 +309,7 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
             UPB_ASSUME(upb_MiniTableField_IsScalar(&ext->UPB_PRIVATE(field)));
             UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(
                            &ext->UPB_PRIVATE(field)) == $5);
-            bool ok = _upb_Message_SetExtensionField((upb_Message*)msg, ext, &val, arena);
+            bool ok = upb_Message_SetExtension((upb_Message*)msg, ext, &val, arena);
             UPB_ASSERT(ok);
           }
         )cc",
@@ -314,8 +319,7 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
 
     // Message extensions also have a Msg_mutable_foo() accessor that will
     // create the sub-message if it doesn't already exist.
-    if (ext.ctype() == kUpb_CType_Message &&
-        !UPB_DESC(MessageOptions_map_entry)(ext.containing_type().options())) {
+    if (ext.IsSubMessage()) {
       output(
           R"cc(
             UPB_INLINE struct $0* $1_mutable_$2(struct $3* msg,
@@ -465,7 +469,7 @@ void GenerateMapGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
         }
       )cc",
       msg_name, resolved_name, MapKeyCType(field), MapValueCType(field),
-      FieldInitializer(pools, field, options), MapKeySize(field, "key"),
+      FieldInitializerStrong(pools, field, options), MapKeySize(field, "key"),
       MapValueSize(field, "*val"));
   output(
       R"cc(
@@ -477,7 +481,7 @@ void GenerateMapGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
         }
       )cc",
       CTypeConst(field), msg_name, resolved_name,
-      FieldInitializer(pools, field, options));
+      FieldInitializerStrong(pools, field, options));
   // Generate private getter returning a upb_Map or NULL for immutable and
   // a upb_Map for mutable.
   //
@@ -496,7 +500,7 @@ void GenerateMapGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
         }
       )cc",
       msg_name, resolved_name, kMapGetterPostfix, kMutableMapGetterPostfix,
-      FieldInitializer(pools, field, options),
+      FieldInitializerStrong(pools, field, options),
       MapKeySize(field, MapKeyCType(field)),
       MapValueSize(field, MapValueCType(field)));
 }
@@ -537,10 +541,10 @@ void GenerateRepeatedGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
           }
         }
       )cc",
-      CTypeConst(field),                       // $0
-      msg_name,                                // $1
-      ResolveFieldName(field, field_names),    // $2
-      FieldInitializer(pools, field, options)  // #3
+      CTypeConst(field),                             // $0
+      msg_name,                                      // $1
+      ResolveFieldName(field, field_names),          // $2
+      FieldInitializerStrong(pools, field, options)  // #3
   );
   // Generate private getter returning array or NULL for immutable and upb_Array
   // for mutable.
@@ -568,12 +572,12 @@ void GenerateRepeatedGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
           return arr;
         }
       )cc",
-      CTypeConst(field),                        // $0
-      msg_name,                                 // $1
-      ResolveFieldName(field, field_names),     // $2
-      FieldInitializer(pools, field, options),  // $3
-      kRepeatedFieldArrayGetterPostfix,         // $4
-      kRepeatedFieldMutableArrayGetterPostfix   // $5
+      CTypeConst(field),                              // $0
+      msg_name,                                       // $1
+      ResolveFieldName(field, field_names),           // $2
+      FieldInitializerStrong(pools, field, options),  // $3
+      kRepeatedFieldArrayGetterPostfix,               // $4
+      kRepeatedFieldMutableArrayGetterPostfix         // $5
   );
 }
 
@@ -594,7 +598,7 @@ void GenerateScalarGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
         }
       )cc",
       CTypeConst(field), msg_name, field_name, FieldDefault(field),
-      FieldInitializer(pools, field, Options));
+      FieldInitializerStrong(pools, field, Options));
 }
 
 void GenerateGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
@@ -603,8 +607,7 @@ void GenerateGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
                      const Options& options, Output& output) {
   if (field.IsMap()) {
     GenerateMapGetters(field, pools, msg_name, field_names, options, output);
-  } else if (UPB_DESC(MessageOptions_map_entry)(
-                 field.containing_type().options())) {
+  } else if (field.containing_type().mapentry()) {
     GenerateMapEntryGetters(field, msg_name, output);
   } else if (field.IsSequence()) {
     GenerateRepeatedGetters(field, pools, msg_name, field_names, options,
@@ -640,7 +643,7 @@ void GenerateMapSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
         }
       )cc",
       msg_name, resolved_name, MapKeyCType(field), MapValueCType(field),
-      FieldInitializer(pools, field, options), MapKeySize(field, "key"),
+      FieldInitializerStrong(pools, field, options), MapKeySize(field, "key"),
       MapValueSize(field, "val"));
   output(
       R"cc(
@@ -663,7 +666,7 @@ void GenerateMapSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
         }
       )cc",
       CType(field), msg_name, resolved_name,
-      FieldInitializer(pools, field, options));
+      FieldInitializerStrong(pools, field, options));
 }
 
 void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
@@ -686,7 +689,7 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
         }
       )cc",
       CType(field), msg_name, resolved_name,
-      FieldInitializer(pools, field, options));
+      FieldInitializerStrong(pools, field, options));
   output(
       R"cc(
         UPB_INLINE $0* $1_resize_$2($1* msg, size_t size, upb_Arena* arena) {
@@ -717,7 +720,7 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
         )cc",
         MessageName(field.message_type()), msg_name, resolved_name,
         MessageMiniTableRef(field.message_type(), options),
-        FieldInitializer(pools, field, options));
+        FieldInitializerStrong(pools, field, options));
   } else {
     output(
         R"cc(
@@ -735,7 +738,7 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
           }
         )cc",
         CType(field), msg_name, resolved_name,
-        FieldInitializer(pools, field, options));
+        FieldInitializerStrong(pools, field, options));
   }
 }
 
@@ -764,17 +767,16 @@ void GenerateNonRepeatedSetters(upb::FieldDefPtr field,
     output(R"cc(
              UPB_INLINE void $0_set_$1($0 *msg, $2 value) {
                const upb_MiniTableField field = $3;
-               _upb_Message_SetNonExtensionField((upb_Message *)msg, &field, &value);
+               upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
              }
            )cc",
            msg_name, field_name, CType(field),
-           FieldInitializer(pools, field, options));
+           FieldInitializerStrong(pools, field, options));
   }
 
   // Message fields also have a Msg_mutable_foo() accessor that will create
   // the sub-message if it doesn't already exist.
-  if (field.ctype() == kUpb_CType_Message &&
-      !UPB_DESC(MessageOptions_map_entry)(field.containing_type().options())) {
+  if (field.IsSubMessage() && !field.containing_type().mapentry()) {
     output(
         R"cc(
           UPB_INLINE struct $0* $1_mutable_$2($1* msg, upb_Arena* arena) {
@@ -811,7 +813,7 @@ void GenerateMessageInHeader(upb::MessageDefPtr message,
                              Output& output) {
   output("/* $0 */\n\n", message.full_name());
   std::string msg_name = ToCIdent(message.full_name());
-  if (!UPB_DESC(MessageOptions_map_entry)(message.options())) {
+  if (!message.mapentry()) {
     GenerateMessageFunctionsInHeader(message, options, output);
   }
 
@@ -1006,6 +1008,31 @@ std::string FieldInitializer(upb::FieldDefPtr field,
   } else {
     return upb::generator::FieldInitializer(field, field64, field32);
   }
+}
+
+std::string StrongReferenceSingle(upb::FieldDefPtr field) {
+  if (!field.message_type()) return "";
+  return absl::Substitute("  UPB_PRIVATE(_upb_MiniTable_StrongReference)(&$0)",
+                          MessageInitName(field.message_type()));
+}
+
+std::string StrongReference(upb::FieldDefPtr field) {
+  if (field.IsMap() &&
+      field.message_type().FindFieldByNumber(2).IsSubMessage()) {
+    return StrongReferenceSingle(field) + ";\n" +
+           StrongReferenceSingle(field.message_type().FindFieldByNumber(2));
+  } else {
+    return StrongReferenceSingle(field);
+  }
+}
+std::string FieldInitializerStrong(const DefPoolPair& pools,
+                                   upb::FieldDefPtr field,
+                                   const Options& options) {
+  std::string ret = FieldInitializer(pools, field, options);
+  if (!options.bootstrap && field.IsSubMessage()) {
+    ret += ";\n" + StrongReference(field);
+  }
+  return ret;
 }
 
 std::string FieldInitializer(const DefPoolPair& pools, upb::FieldDefPtr field,

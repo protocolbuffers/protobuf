@@ -39,6 +39,20 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
   }
 
   template <typename MessageType>
+  void RunValidBinaryProtobufTest(const std::string& test_name,
+                                  ConformanceLevel level,
+                                  const std::string& input_protobuf,
+                                  const std::string& equivalent_text_format);
+
+  template <typename MessageType>
+  void RunValidProtobufTest(const std::string& test_name,
+                            ConformanceLevel level,
+                            const std::string& input_protobuf,
+                            const std::string& equivalent_text_format);
+
+  void RunDelimitedFieldTests();
+
+  template <typename MessageType>
   friend class BinaryAndJsonConformanceSuiteImpl;
 
   std::unique_ptr<google::protobuf::util::TypeResolver> type_resolver_;
@@ -129,8 +143,10 @@ class BinaryAndJsonConformanceSuiteImpl {
                                       ConformanceLevel level);
   void TestPrematureEOFForType(google::protobuf::FieldDescriptor::Type type);
   void TestIllegalTags();
+  void TestUnknownWireType();
   void TestOneofMessage();
   void TestUnknownMessage();
+  void TestUnknownOrdering();
   void TestValidDataForType(
       google::protobuf::FieldDescriptor::Type,
       std::vector<std::pair<std::string, std::string>> values);

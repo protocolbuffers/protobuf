@@ -83,8 +83,9 @@ upb_StringView upbdev_ProcessInput(const char* buf, size_t size,
   return upbc_JsonEncode(outer_request, arena, status);
 }
 
-upb_StringView upbdev_ProcessOutput(const char* buf, size_t size,
-                                    upb_Arena* arena, upb_Status* status) {
+static upb_StringView upbdev_ProcessOutput(const char* buf, size_t size,
+                                           upb_Arena* arena,
+                                           upb_Status* status) {
   upb_StringView out = {.data = NULL, .size = 0};
 
   const google_protobuf_compiler_CodeGeneratorResponse* response =

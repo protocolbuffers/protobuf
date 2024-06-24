@@ -81,7 +81,10 @@ ruby_library(
         "ruby/lib",
     ],
     visibility = ["//ruby:__pkg__"],
-    deps = ["//ruby:well_known_ruby_protos"] + select({
+    deps = [
+        "//ruby:well_known_ruby_protos",
+        "@protobuf_bundle//:bigdecimal",
+    ] + select({
         "//ruby:ffi_enabled": [
             "@protobuf_bundle//:ffi",
             "@protobuf_bundle//:ffi-compiler",

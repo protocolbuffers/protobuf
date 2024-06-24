@@ -302,7 +302,6 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
   auto& set = ExtensionSet(reflection, message);
   auto* extendee = reflection->descriptor_;
   auto* pool = reflection->descriptor_pool_;
-  auto* arena = message.GetArena();
 
   set.ForEach([&](int number, auto& ext) {
     ABSL_DCHECK_GT(ext.type, 0);
@@ -423,7 +422,7 @@ void ReflectionVisit::VisitMessageFields(const Message& message,
                              FieldDescriptor::CPPTYPE_MESSAGE) {
           if constexpr (info.is_repeated) {
             for (const auto& it : info.Get()) {
-              func(DownCast<const Message&>(it));
+              func(DownCastMessage<Message>(it));
             }
           } else {
             func(info.Get());
@@ -453,7 +452,7 @@ void ReflectionVisit::VisitMessageFields(Message& message, CallbackFn&& func) {
                              FieldDescriptor::CPPTYPE_MESSAGE) {
           if constexpr (info.is_repeated) {
             for (auto& it : info.Mutable()) {
-              func(DownCast<Message&>(it));
+              func(DownCastMessage<Message>(it));
             }
           } else {
             func(info.Mutable());

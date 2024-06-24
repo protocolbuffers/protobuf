@@ -1,7 +1,8 @@
 """Load dependencies needed to compile the protobuf library as a 3rd-party consumer."""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("//bazel:python_downloads.bzl", "python_nuget_package", "python_source_archive")
+load("//python/dist:python_downloads.bzl", "python_nuget_package", "python_source_archive")
+load("//python/dist:system_python.bzl", "system_python")
 
 PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.caliper:caliper:1.0-beta-3",
@@ -43,6 +44,8 @@ def protobuf_deps():
         _github_archive(
             name = "com_google_absl",
             repo = "https://github.com/abseil/abseil-cpp",
+            # TODO: use Layout::WithStaticSizes in SerialArenaChunk when we update
+            # abseil to new release.
             commit = "4a2c63365eff8823a5221db86ef490e828306f9d",  # Abseil LTS 20240116.0
             sha256 = "f49929d22751bf70dd61922fb1fd05eb7aec5e7a7f870beece79a6e28f0a06c1",
         )
@@ -51,11 +54,11 @@ def protobuf_deps():
         http_archive(
             name = "zlib",
             build_file = Label("//:third_party/zlib.BUILD"),
-            sha256 = "d14c38e313afc35a9a8760dadf26042f51ea0f5d154b0630a31da0540107fb98",
-            strip_prefix = "zlib-1.2.13",
+            sha256 = "38ef96b8dfe510d42707d9c781877914792541133e1870841463bfa73f883e32",
+            strip_prefix = "zlib-1.3.1",
             urls = [
-                "https://github.com/madler/zlib/releases/download/v1.2.13/zlib-1.2.13.tar.xz",
-                "https://zlib.net/zlib-1.2.13.tar.xz",
+                "https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.xz",
+                "https://zlib.net/zlib-1.3.1.tar.xz",
             ],
         )
 
@@ -83,6 +86,7 @@ def protobuf_deps():
             sha256 = "469b7f3b580b4fcf8112f4d6d0d5a4ce8e1ad5e21fee67d8e8335d5f8b3debab",
         )
 
+    # TODO: remove after toolchain types are moved to protobuf
     if not native.existing_rule("rules_proto"):
         http_archive(
             name = "rules_proto",
@@ -96,9 +100,15 @@ def protobuf_deps():
     if not native.existing_rule("rules_python"):
         http_archive(
             name = "rules_python",
-            sha256 = "9d04041ac92a0985e344235f5d946f71ac543f1b1565f2cdbc9a2aaee8adf55b",
-            strip_prefix = "rules_python-0.26.0",
-            url = "https://github.com/bazelbuild/rules_python/releases/download/0.26.0/rules_python-0.26.0.tar.gz",
+            sha256 = "d70cd72a7a4880f0000a6346253414825c19cdd40a28289bdf67b8e6480edff8",
+            strip_prefix = "rules_python-0.28.0",
+            url = "https://github.com/bazelbuild/rules_python/releases/download/0.28.0/rules_python-0.28.0.tar.gz",
+        )
+
+    if not native.existing_rule("system_python"):
+        system_python(
+            name = "system_python",
+            minimum_python_version = "3.8",
         )
 
     if not native.existing_rule("rules_jvm_external"):

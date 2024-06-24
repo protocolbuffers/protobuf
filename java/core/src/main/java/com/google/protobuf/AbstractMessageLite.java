@@ -397,6 +397,8 @@ public abstract class AbstractMessageLite<
           }
           if (value instanceof ByteString) {
             lazyList.add((ByteString) value);
+          } else if (value instanceof byte[]) {
+            lazyList.add(ByteString.copyFrom((byte[]) value));
           } else {
             lazyList.add((String) value);
           }

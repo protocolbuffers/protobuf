@@ -29,14 +29,14 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 load(
-    "@rules_proto//proto:defs.bzl",
+    "@protobuf//bazel:proto_library.bzl",
     "proto_library",
 )
 
 proto_library(
     name = "ads_proto",
     srcs = glob([
-        "google/ads/googleads/v13/**/*.proto",
+        "google/ads/googleads/v16/**/*.proto",
         "google/api/**/*.proto",
         "google/rpc/**/*.proto",
         "google/longrunning/**/*.proto",

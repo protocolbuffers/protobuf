@@ -22,6 +22,7 @@ import operator
 import pickle
 import pydoc
 import sys
+import types
 import unittest
 from unittest import mock
 import warnings
@@ -30,6 +31,7 @@ cmp = lambda x, y: (x > y) - (x < y)
 
 from google.protobuf.internal import api_implementation # pylint: disable=g-import-not-at-top
 from google.protobuf.internal import encoder
+from google.protobuf.internal import enum_type_wrapper
 from google.protobuf.internal import more_extensions_pb2
 from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import packed_field_test_pb2
@@ -79,6 +81,19 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(golden_data, golden_message.SerializeToString())
     golden_copy = copy.deepcopy(golden_message)
     self.assertEqual(golden_data, golden_copy.SerializeToString())
+
+  def testGoldenMessageBytearray(self, message_module):
+    # bytearray was broken, test that it works again
+    if message_module is unittest_pb2:
+      golden_data = test_util.GoldenFileData('golden_message_oneof_implemented')
+    else:
+      golden_data = test_util.GoldenFileData('golden_message_proto3')
+
+    golden_message = message_module.TestAllTypes()
+    golden_message.ParseFromString(bytearray(golden_data))
+    if message_module is unittest_pb2:
+      test_util.ExpectAllFieldsSet(self, golden_message)
+    self.assertEqual(golden_data, golden_message.SerializeToString())
 
   def testGoldenPackedMessage(self, message_module):
     golden_data = test_util.GoldenFileData('golden_packed_fields_message')
@@ -380,12 +395,22 @@ class MessageTest(unittest.TestCase):
     message.optional_float = 2.0
     self.assertEqual(str(message), 'optional_float: 2.0\n')
 
+  def testFloatNanPrinting(self, message_module):
+    message = message_module.TestAllTypes()
+    message.optional_float = float('nan')
+    self.assertEqual(str(message), 'optional_float: nan\n')
+
   def testHighPrecisionFloatPrinting(self, message_module):
     msg = message_module.TestAllTypes()
     msg.optional_float = 0.12345678912345678
     old_float = msg.optional_float
     msg.ParseFromString(msg.SerializeToString())
     self.assertEqual(old_float, msg.optional_float)
+
+  def testDoubleNanPrinting(self, message_module):
+    message = message_module.TestAllTypes()
+    message.optional_double = float('nan')
+    self.assertEqual(str(message), 'optional_double: nan\n')
 
   def testHighPrecisionDoublePrinting(self, message_module):
     msg = message_module.TestAllTypes()
@@ -548,6 +573,15 @@ class MessageTest(unittest.TestCase):
                      [m.bb for m in reversed(msg.repeated_nested_message)])
     self.assertEqual([4, 3, 2, 1],
                      [m.bb for m in msg.repeated_nested_message[::-1]])
+
+  def testSortEmptyRepeated(self, message_module):
+    message = message_module.NestedTestAllTypes()
+    self.assertFalse(message.HasField('child'))
+    self.assertFalse(message.HasField('payload'))
+    message.child.repeated_child.sort()
+    message.payload.repeated_int32.sort()
+    self.assertFalse(message.HasField('child'))
+    self.assertFalse(message.HasField('payload'))
 
   def testSortingRepeatedScalarFieldsDefaultComparator(self, message_module):
     """Check some different types with the default comparator."""
@@ -1305,6 +1339,44 @@ class MessageTest(unittest.TestCase):
     self.assertNotEqual(m, ComparesWithFoo())
     self.assertNotEqual(ComparesWithFoo(), m)
 
+  def testTypeUnion(self, message_module):
+    # Below python 3.10 you cannot create union types with the | operator, so we
+    # skip testing for unions with old versions.
+    if sys.version_info < (3, 10):
+      return
+    enum_type = enum_type_wrapper.EnumTypeWrapper(
+        message_module.TestAllTypes.NestedEnum.DESCRIPTOR
+    )
+    union_type = enum_type | int
+    self.assertIsInstance(union_type, types.UnionType)
+
+    def get_union() -> union_type:
+      return enum_type
+
+    union = get_union()
+    self.assertIsInstance(union, enum_type_wrapper.EnumTypeWrapper)
+    self.assertEqual(
+        union.DESCRIPTOR, message_module.TestAllTypes.NestedEnum.DESCRIPTOR
+    )
+
+  def testIn(self, message_module):
+    m = message_module.TestAllTypes()
+    self.assertNotIn('optional_nested_message', m)
+    self.assertNotIn('oneof_bytes', m)
+    self.assertNotIn('oneof_string', m)
+    with self.assertRaises(ValueError) as e:
+      'repeated_int32' in m
+    with self.assertRaises(ValueError) as e:
+      'repeated_nested_message' in m
+    with self.assertRaises(ValueError) as e:
+      1 in m
+    with self.assertRaises(ValueError) as e:
+      'not_a_field' in m
+    test_util.SetAllFields(m)
+    self.assertIn('optional_nested_message', m)
+    self.assertIn('oneof_bytes', m)
+    self.assertNotIn('oneof_string', m)
+
 
 # Class to test proto2-only features (required, extensions, etc.)
 @testing_refleaks.TestCase
@@ -1336,6 +1408,9 @@ class Proto2Test(unittest.TestCase):
     self.assertTrue(message.HasField('optional_int32'))
     self.assertTrue(message.HasField('optional_bool'))
     self.assertTrue(message.HasField('optional_nested_message'))
+    self.assertIn('optional_int32', message)
+    self.assertIn('optional_bool', message)
+    self.assertIn('optional_nested_message', message)
 
     # Set the fields to non-default values.
     message.optional_int32 = 5
@@ -1354,6 +1429,9 @@ class Proto2Test(unittest.TestCase):
     self.assertFalse(message.HasField('optional_int32'))
     self.assertFalse(message.HasField('optional_bool'))
     self.assertFalse(message.HasField('optional_nested_message'))
+    self.assertNotIn('optional_int32', message)
+    self.assertNotIn('optional_bool', message)
+    self.assertNotIn('optional_nested_message', message)
     self.assertEqual(0, message.optional_int32)
     self.assertEqual(False, message.optional_bool)
     self.assertEqual(0, message.optional_nested_message.bb)
@@ -1680,6 +1758,12 @@ class Proto3Test(unittest.TestCase):
     with self.assertRaises(ValueError):
       message.HasField('repeated_nested_message')
 
+    # Can not test "in" operator.
+    with self.assertRaises(ValueError):
+      'repeated_int32' in message
+    with self.assertRaises(ValueError):
+      'repeated_nested_message' in message
+
     # Fields should default to their type-specific default.
     self.assertEqual(0, message.optional_int32)
     self.assertEqual(0, message.optional_float)
@@ -1690,6 +1774,7 @@ class Proto3Test(unittest.TestCase):
     # Setting a submessage should still return proper presence information.
     message.optional_nested_message.bb = 0
     self.assertTrue(message.HasField('optional_nested_message'))
+    self.assertIn('optional_nested_message', message)
 
     # Set the fields to non-default values.
     message.optional_int32 = 5

@@ -5,11 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use enums_rust_proto::{test_map_with_nested_enum, TestMapWithNestedEnum};
 use googletest::prelude::*;
-use map_unittest_proto::{MapEnum, TestMap, TestMapWithMessages};
+use map_unittest_rust_proto::{MapEnum, TestMap, TestMapWithMessages};
 use paste::paste;
 use std::collections::HashMap;
-use unittest_proto::TestAllTypes;
+use unittest_rust_proto::TestAllTypes;
 
 macro_rules! generate_map_primitives_tests {
     (
@@ -23,7 +24,7 @@ macro_rules! generate_map_primitives_tests {
                 let mut msg = TestMap::new();
                 assert_that!(msg.[< map_ $k_field _ $v_field >]().len(), eq(0));
                 assert_that!(
-                    msg.[< map_ $k_field _ $v_field >]().iter().collect::<Vec<_>>(),
+                    msg.[< map_ $k_field _ $v_field >](),
                     elements_are![]
                 );
                 assert_that!(
@@ -40,24 +41,24 @@ macro_rules! generate_map_primitives_tests {
                 assert_that!(msg.[< map_ $k_field _ $v_field _mut>]().insert(k, v), eq(false));
                 assert_that!(msg.[< map_ $k_field _ $v_field >]().len(), eq(1));
                 assert_that!(
-                    msg.[< map_ $k_field _ $v_field >]().iter().collect::<Vec<_>>(),
+                    msg.[< map_ $k_field _ $v_field >](),
                     elements_are![eq((k, v))]
                 );
                 assert_that!(
                     msg.[< map_ $k_field _ $v_field >]().keys().collect::<Vec<_>>(),
-                    elements_are![eq(k)]
+                    elements_are![eq(&k)]
                 );
                 assert_that!(
                     msg.[< map_ $k_field _ $v_field >]().values().collect::<Vec<_>>(),
-                    elements_are![eq(v)]
+                    elements_are![eq(&v)]
                 );
 
                 let k2: $k_type = $k_nonzero;
                 let v2: $v_type = $v_nonzero;
                 assert_that!(msg.[< map_ $k_field _ $v_field _mut>]().insert(k2, v2), eq(true));
-                assert_that!(msg.[< map_ $k_field _ $v_field >]().len(), eq(2));
+                assert_that!(msg.[< map_ $k_field _ $v_field >](), len(eq(2)));
                 assert_that!(
-                    msg.[< map_ $k_field _ $v_field >]().iter().collect::<Vec<_>>(),
+                    msg.[< map_ $k_field _ $v_field >](),
                     unordered_elements_are![
                         eq((k, v)),
                         eq((k2, v2)),
@@ -65,11 +66,11 @@ macro_rules! generate_map_primitives_tests {
                 );
                 assert_that!(
                     msg.[< map_ $k_field _ $v_field >]().keys().collect::<Vec<_>>(),
-                    unordered_elements_are![eq(k), eq(k2)]
+                    unordered_elements_are![eq(&k), eq(&k2)]
                 );
                 assert_that!(
                     msg.[< map_ $k_field _ $v_field >]().values().collect::<Vec<_>>(),
-                    unordered_elements_are![eq(v), eq(v2)]
+                    unordered_elements_are![eq(&v), eq(&v2)]
                 );
             }
         )* }
@@ -104,11 +105,11 @@ fn collect_as_hashmap() {
     let hashmap: HashMap<String, String> =
         msg.map_string_string().iter().map(|(k, v)| (k.to_string(), v.to_string())).collect();
     assert_that!(
-        hashmap.into_iter().collect::<Vec<_>>(),
+        hashmap,
         unordered_elements_are![
-            eq(("hello".to_owned(), "world".to_owned())),
-            eq(("fizz".to_owned(), "buzz".to_owned())),
-            eq(("boo".to_owned(), "blah".to_owned())),
+            (eq("hello"), eq("world")),
+            (eq("fizz"), eq("buzz")),
+            (eq("boo"), eq("blah")),
         ]
     );
 }
@@ -123,6 +124,14 @@ fn test_string_maps() {
     assert_that!(msg.map_string_string().get("not found"), eq(None));
     msg.map_string_string_mut().clear();
     assert_that!(msg.map_string_string().len(), eq(0));
+}
+
+#[test]
+fn test_nested_enum_maps() {
+    // Verify that C++ thunks are generated and are with the right name for strings
+    TestMapWithNestedEnum::new()
+        .string_map_mut()
+        .insert("foo", test_map_with_nested_enum::inner_nested::NestedEnum::Foo);
 }
 
 #[test]
@@ -141,11 +150,25 @@ fn test_bytes_and_string_copied() {
     }
 
     assert_that!(msg.map_string_string_mut().get("hello").unwrap(), eq("world"));
-    assert_that!(
-        msg.map_string_string().iter().collect::<Vec<_>>(),
-        unordered_elements_are![eq(("hello".into(), "world".into()))]
-    );
+    assert_that!(msg.map_string_string(), unordered_elements_are![(eq("hello"), eq("world"))]);
     assert_that!(msg.map_int32_bytes_mut().get(1).unwrap(), eq(b"world"));
+}
+
+#[test]
+fn test_map_setter() {
+    let mut msg = TestMap::new();
+    msg.map_string_string_mut().insert("hello", "world");
+    msg.map_string_string_mut().insert("fizz", "buzz");
+
+    let mut msg2 = TestMap::new();
+    msg2.set_map_string_string(msg.map_string_string());
+    assert_that!(
+        msg2.map_string_string(),
+        unordered_elements_are![
+            eq(("hello".into(), "world".into())),
+            eq(("fizz".into(), "buzz".into()))
+        ]
+    );
 }
 
 macro_rules! generate_map_with_msg_values_tests {
@@ -167,7 +190,7 @@ macro_rules! generate_map_with_msg_values_tests {
                 // this block makes sure `insert` copies/moves, not borrows.
                 {
                     let mut msg_val = TestAllTypes::new();
-                    msg_val.optional_int32_mut().set(1001);
+                    msg_val.set_optional_int32(1001);
                     assert_that!(
                         msg
                             .[< map_ $k_field _all_types_mut >]()
@@ -216,7 +239,7 @@ macro_rules! generate_map_with_msg_values_tests {
                     msg.[< map_ $k_field _all_types_mut >]().remove($k_nonzero),
                     eq(true),
                     "`remove` should return true when key was present.");
-                assert_that!(msg.[< map_ $k_field _all_types >]().len(), eq(0));
+                assert_that!(msg.[< map_ $k_field _all_types >](), empty());
                 assert_that!(
                     msg.[< map_ $k_field _all_types_mut >]().remove($k_nonzero),
                     eq(false),
@@ -229,13 +252,13 @@ macro_rules! generate_map_with_msg_values_tests {
                 //     "`iter` should work when empty."
                 // );
                 assert_that!(
-                    msg.[< map_ $k_field _all_types_mut >]().keys().collect::<Vec<_>>(),
-                    elements_are![],
+                    msg.[< map_ $k_field _all_types_mut >]().keys().count(),
+                    eq(0),
                     "`iter` should work when empty."
                 );
                 assert_that!(
-                    msg.[< map_ $k_field _all_types_mut >]().values().collect::<Vec<_>>(),
-                    elements_are![],
+                    msg.[< map_ $k_field _all_types_mut >]().values().count(),
+                    eq(0),
                     "`iter` should work when empty."
                 );
 
@@ -251,10 +274,10 @@ macro_rules! generate_map_with_msg_values_tests {
                 // );
                 assert_that!(
                     msg.[< map_ $k_field _all_types >]().keys().collect::<Vec<_>>(),
-                    unordered_elements_are![eq($k_nonzero)]
+                    unordered_elements_are![eq(&$k_nonzero)]
                 );
                 assert_that!(
-                    msg.[< map_ $k_field _all_types >]().values().collect::<Vec<_>>().len(),
+                    msg.[< map_ $k_field _all_types >]().values().count(),
                     eq(1));
 
 
@@ -266,15 +289,15 @@ macro_rules! generate_map_with_msg_values_tests {
                     eq(true));
 
                 assert_that!(
-                    msg.[< map_ $k_field _all_types >]().iter().collect::<Vec<_>>().len(),
-                    eq(2)
+                    msg.[< map_ $k_field _all_types >](),
+                    len(eq(2))
                 );
                 assert_that!(
                     msg.[< map_ $k_field _all_types >]().keys().collect::<Vec<_>>(),
-                    unordered_elements_are![eq($k_nonzero), eq($k_other)]
+                    unordered_elements_are![eq(&$k_nonzero), eq(&$k_other)]
                 );
                 assert_that!(
-                    msg.[< map_ $k_field _all_types >]().values().collect::<Vec<_>>().len(),
+                    msg.[< map_ $k_field _all_types >]().values().count(),
                     eq(2)
                 );
             }

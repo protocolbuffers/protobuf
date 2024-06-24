@@ -32,13 +32,13 @@ import org.junit.runners.JUnit4;
 /** Tests for {@link NioByteString}. */
 @RunWith(JUnit4.class)
 public class NioByteStringTest {
-  private static final ByteString EMPTY = new NioByteString(ByteBuffer.wrap(new byte[0]));
-  private static final String CLASSNAME = NioByteString.class.getSimpleName();
+  private static final ByteString EMPTY = ByteString.nioByteString(ByteBuffer.wrap(new byte[0]));
+  private static final String CLASSNAME = "ByteString$NioByteString";
   private static final byte[] BYTES = ByteStringTest.getTestBytes(1234, 11337766L);
   private static final int EXPECTED_HASH = ByteString.wrap(BYTES).hashCode();
 
   private final ByteBuffer backingBuffer = ByteBuffer.wrap(BYTES.clone());
-  private final ByteString testString = new NioByteString(backingBuffer);
+  private final ByteString testString = ByteString.nioByteString(backingBuffer);
 
   @Test
   public void testExpectedType() {
@@ -487,7 +487,7 @@ public class NioByteStringTest {
   public void testToString_returnsCanonicalEmptyString() {
     assertWithMessage("%s must be the same string references", CLASSNAME)
         .that(EMPTY.toString(UTF_8))
-        .isSameInstanceAs(new NioByteString(ByteBuffer.wrap(new byte[0])).toString(UTF_8));
+        .isSameInstanceAs(ByteString.nioByteString(ByteBuffer.wrap(new byte[0])).toString(UTF_8));
   }
 
   @Test
@@ -520,11 +520,11 @@ public class NioByteStringTest {
         .isEqualTo(testString.substring(55, 55));
     assertWithMessage("%s must equal another string with the same value", CLASSNAME)
         .that(testString)
-        .isEqualTo(new NioByteString(backingBuffer));
+        .isEqualTo(ByteString.nioByteString(backingBuffer));
 
     byte[] mungedBytes = mungedBytes();
     assertWithMessage("%s must not equal every string with the same length", CLASSNAME)
-        .that(testString.equals(new NioByteString(ByteBuffer.wrap(mungedBytes))))
+        .that(testString.equals(ByteString.nioByteString(ByteBuffer.wrap(mungedBytes))))
         .isFalse();
   }
 
@@ -602,7 +602,7 @@ public class NioByteStringTest {
 
   @Test
   public void testPeekCachedHashCode() {
-    ByteString newString = new NioByteString(backingBuffer);
+    ByteString newString = ByteString.nioByteString(backingBuffer);
     assertWithMessage("%s.peekCachedHashCode() should return zero at first", CLASSNAME)
         .that(newString.peekCachedHashCode())
         .isEqualTo(0);
@@ -718,6 +718,6 @@ public class NioByteStringTest {
   }
 
   private static ByteString forString(String str) {
-    return new NioByteString(ByteBuffer.wrap(str.getBytes(UTF_8)));
+    return ByteString.nioByteString(ByteBuffer.wrap(str.getBytes(UTF_8)));
   }
 }

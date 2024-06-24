@@ -23,6 +23,7 @@
 
 
 #include "absl/base/config.h"
+#include "absl/base/prefetch.h"
 #include "absl/meta/type_traits.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -48,31 +49,35 @@ inline PROTOBUF_ALWAYS_INLINE void StrongPointer(T* var) {
 #endif
 }
 
-// Similar to the overload above, but optimized for constant inputs.
+#if defined(__x86_64__) && defined(__linux__) && !defined(__APPLE__) && \
+    !defined(__ANDROID__) && defined(__clang__) && __clang_major__ >= 19
+// Optimized implementation for clang where we can generate a relocation without
+// adding runtime instructions.
 template <typename T, T ptr>
 inline PROTOBUF_ALWAYS_INLINE void StrongPointer() {
-#if defined(__x86_64__) && defined(__linux__) && !defined(__APPLE__) &&     \
-    !defined(__ANDROID__) && defined(__clang__) && __clang_major__ >= 19 && \
-    !defined(PROTOBUF_INTERNAL_TEMPORARY_STRONG_POINTER_OPT_OUT)
   // This injects a relocation in the code path without having to run code, but
   // we can only do it with a newer clang.
   asm(".reloc ., BFD_RELOC_NONE, %p0" ::"Ws"(ptr));
-#else
-  StrongPointer(ptr);
-#endif
 }
 
 template <typename T>
 inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
-  constexpr auto ptr = T::template GetStrongPointerForType<T>();
-#if defined(__cpp_nontype_template_args) && \
-    __cpp_nontype_template_args >= 201411L
-  // We can only use `ptr` as a template parameter since C++17
+  static constexpr auto ptr = T::template GetStrongPointerForType<T>();
   return StrongPointer<decltype(ptr), ptr>();
-#else
-  return StrongPointer(ptr);
-#endif
 }
+#else   // .reloc
+// Portable fallback. It usually generates a single LEA instruction or
+// equivalent.
+template <typename T, T ptr>
+inline PROTOBUF_ALWAYS_INLINE void StrongPointer() {
+  StrongPointer(ptr);
+}
+
+template <typename T>
+inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
+  return StrongPointer(T::template GetStrongPointerForType<T>());
+}
+#endif  // .reloc
 
 
 // See comments on `AllocateAtLeast` for information on size returning new.
@@ -158,28 +163,34 @@ struct ArenaInitialized {
 };
 
 template <typename To, typename From>
-inline To DownCast(From* f) {
-  static_assert(
-      std::is_base_of<From, typename std::remove_pointer<To>::type>::value,
-      "illegal DownCast");
+void AssertDownCast(From* from) {
+  static_assert(std::is_base_of<From, To>::value, "illegal DownCast");
+
+#if defined(__cpp_concepts)
+  // Check that this function is not used to downcast message types.
+  // For those we should use {Down,Dynamic}CastTo{Message,Generated}.
+  static_assert(!requires {
+    std::derived_from<std::remove_pointer_t<To>,
+                      typename std::remove_pointer_t<To>::MessageLite>;
+  });
+#endif
 
 #if PROTOBUF_RTTI
   // RTTI: debug mode only!
-  assert(f == nullptr || dynamic_cast<To>(f) != nullptr);
+  assert(from == nullptr || dynamic_cast<To*>(from) != nullptr);
 #endif
+}
+
+template <typename To, typename From>
+inline To DownCast(From* f) {
+  AssertDownCast<std::remove_pointer_t<To>>(f);
   return static_cast<To>(f);
 }
 
 template <typename ToRef, typename From>
 inline ToRef DownCast(From& f) {
-  using To = typename std::remove_reference<ToRef>::type;
-  static_assert(std::is_base_of<From, To>::value, "illegal DownCast");
-
-#if PROTOBUF_RTTI
-  // RTTI: debug mode only!
-  assert(dynamic_cast<To*>(&f) != nullptr);
-#endif
-  return *static_cast<To*>(&f);
+  AssertDownCast<std::remove_reference_t<ToRef>>(&f);
+  return static_cast<ToRef>(f);
 }
 
 // Looks up the name of `T` via RTTI, if RTTI is available.
@@ -238,6 +249,20 @@ inline constexpr bool DebugHardenStringValues() {
 #endif
 }
 
+// Returns true if debug hardening for clearing oneof message on arenas is
+// enabled.
+inline constexpr bool DebugHardenClearOneofMessageOnArena() {
+#ifdef NDEBUG
+  return false;
+#else
+  return true;
+#endif
+}
+
+// Returns true if pointers are 8B aligned, leaving least significant 3 bits
+// available.
+inline constexpr bool PtrIsAtLeast8BAligned() { return alignof(void*) >= 8; }
+
 // Prefetch 5 64-byte cache line starting from 7 cache-lines ahead.
 // Constants are somewhat arbitrary and pretty aggressive, but were
 // chosen to give a better benchmark results. E.g. this is ~20%
@@ -292,6 +317,14 @@ inline PROTOBUF_ALWAYS_INLINE void TSanWrite(T* impl) {
 inline PROTOBUF_ALWAYS_INLINE void TSanRead(const void*) {}
 inline PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
 #endif
+
+// This trampoline allows calling from codegen without needing a #include to
+// absl. It simplifies IWYU and deps.
+inline void PrefetchToLocalCache(const void* ptr) {
+  absl::PrefetchToLocalCache(ptr);
+}
+
+constexpr bool IsOss() { return true; }
 
 }  // namespace internal
 }  // namespace protobuf

@@ -560,7 +560,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
  protected:
   // 16 bytes is the minimum useful size for the array cache in the arena.
-  enum { kMinTableSize = 16 / sizeof(void*) };
+  enum : map_index_t { kMinTableSize = 16 / sizeof(void*) };
 
  public:
   Arena* arena() const { return this->alloc_.arena(); }
@@ -645,9 +645,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   // Return a power of two no less than max(kMinTableSize, n).
   // Assumes either n < kMinTableSize or n is a power of two.
   map_index_t TableSize(map_index_t n) {
-    return n < static_cast<map_index_t>(kMinTableSize)
-               ? static_cast<map_index_t>(kMinTableSize)
-               : n;
+    return n < kMinTableSize ? kMinTableSize : n;
   }
 
   template <typename T>
@@ -697,7 +695,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   }
 
   TableEntryPtr* CreateEmptyTable(map_index_t n) {
-    ABSL_DCHECK_GE(n, map_index_t{kMinTableSize});
+    ABSL_DCHECK_GE(n, kMinTableSize);
     ABSL_DCHECK_EQ(n & (n - 1), 0u);
     TableEntryPtr* result = AllocFor<TableEntryPtr>(alloc_).allocate(n);
     memset(result, 0, n * sizeof(result[0]));
@@ -972,13 +970,13 @@ class KeyMapBase : public UntypedMapBase {
   KeyNode* InsertOrReplaceNode(KeyNode* node) {
     KeyNode* to_erase = nullptr;
     auto p = this->FindHelper(node->key());
+    map_index_t b = p.bucket;
     if (p.node != nullptr) {
       erase_no_destroy(p.bucket, static_cast<KeyNode*>(p.node));
       to_erase = static_cast<KeyNode*>(p.node);
     } else if (ResizeIfLoadIsOutOfRange(num_elements_ + 1)) {
-      p = FindHelper(node->key());
+      b = BucketNumber(node->key());  // bucket_number
     }
-    const map_index_t b = p.bucket;  // bucket number
     InsertUnique(b, node);
     ++num_elements_;
     return to_erase;
@@ -1617,15 +1615,15 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   template <typename K, typename... Args>
   std::pair<iterator, bool> TryEmplaceInternal(K&& k, Args&&... args) {
     auto p = this->FindHelper(TS::ToView(k));
+    internal::map_index_t b = p.bucket;
     // Case 1: key was already present.
     if (p.node != nullptr)
       return std::make_pair(
           iterator(static_cast<Node*>(p.node), this, p.bucket), false);
     // Case 2: insert.
     if (this->ResizeIfLoadIsOutOfRange(this->num_elements_ + 1)) {
-      p = this->FindHelper(TS::ToView(k));
+      b = this->BucketNumber(TS::ToView(k));
     }
-    const auto b = p.bucket;  // bucket number
     // If K is not key_type, make the conversion to key_type explicit.
     using TypeToInit = typename std::conditional<
         std::is_same<typename std::decay<K>::type, key_type>::value, K&&,

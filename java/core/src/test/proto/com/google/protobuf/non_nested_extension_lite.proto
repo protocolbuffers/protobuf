@@ -9,7 +9,9 @@
 //
 // A proto file with extensions for a MessageLite messages.
 
-syntax = "proto2";
+// LINT: LEGACY_NAMES
+
+edition = "2023";
 
 package protobuf_unittest;
 
@@ -22,6 +24,6 @@ message MessageLiteToBeExtended {
 message MyNonNestedExtensionLite {}
 
 extend MessageLiteToBeExtended {
-  optional MyNonNestedExtensionLite nonNestedExtensionLite = 1;
-  optional bool package = 2006;
+  MyNonNestedExtensionLite nonNestedExtensionLite = 1;
+  bool package = 2006;
 }

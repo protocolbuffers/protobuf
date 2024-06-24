@@ -85,40 +85,51 @@ class MapEntry : public Message {
   using ValueOnMemory = typename ValueTypeHandler::TypeOnMemory;
 
  public:
-  constexpr MapEntry()
-      : key_(KeyTypeHandler::Constinit()),
-        value_(ValueTypeHandler::Constinit()) {}
-
-  explicit MapEntry(Arena* arena)
-      : Message(arena),
-        key_(KeyTypeHandler::Constinit()),
-        value_(ValueTypeHandler::Constinit()) {}
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+  constexpr MapEntry() {}
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  using Message::Message;
 
   MapEntry(const MapEntry&) = delete;
   MapEntry& operator=(const MapEntry&) = delete;
 
-  ~MapEntry() override {
+  ~MapEntry() PROTOBUF_OVERRIDE {
     if (GetArena() != nullptr) return;
-    Message::_internal_metadata_.template Delete<UnknownFieldSet>();
-    KeyTypeHandler::DeleteNoArena(key_);
-    ValueTypeHandler::DeleteNoArena(value_);
+    this->_internal_metadata_.template Delete<UnknownFieldSet>();
+    KeyTypeHandler::DeleteNoArena(_impl_.key_);
+    ValueTypeHandler::DeleteNoArena(_impl_.value_);
   }
 
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
-  Message* New(Arena* arena) const final {
+  Message* New(Arena* arena) const PROTOBUF_FINAL {
     return Arena::Create<Derived>(arena);
   }
+
+  struct _Internal;
 
  protected:
   friend class google::protobuf::Arena;
 
-  HasBits<1> _has_bits_{};
-  mutable CachedSize _cached_size_{};
+  // Field naming follows the convention of generated messages to make code
+  // sharing easier.
+  struct {
+    HasBits<1> _has_bits_{};
+    mutable CachedSize _cached_size_{};
 
-  KeyOnMemory key_;
-  ValueOnMemory value_;
+    KeyOnMemory key_{KeyTypeHandler::Constinit()};
+    ValueOnMemory value_{ValueTypeHandler::Constinit()};
+  } _impl_;
+};
+
+template <typename Derived, typename Key, typename Value,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType>
+struct MapEntry<Derived, Key, Value, kKeyFieldType,
+                kValueFieldType>::_Internal {
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(MapEntry, _impl_._has_bits_);
 };
 
 }  // namespace internal

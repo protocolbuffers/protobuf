@@ -22,29 +22,29 @@ jobs:
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
             # TODO: b/318555165 - enable the layering check. Currently it does
             # not work correctly with the toolchain in this Docker image.
-            targets: //java/... //java/internal:java_version --features=-layering_check
+            targets: //java/... //java/internal:java_version //compatibility/... --features=-layering_check
           - name: OpenJDK 11
             version: '11'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
-            targets: //java/... //java/internal:java_version
+            targets: //java/... //java/internal:java_version //compatibility/...
           - name: OpenJDK 17
             version: '17'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
-            targets: //java/... //java/internal:java_version
+            targets: //java/... //java/internal:java_version //compatibility/...
           - name: aarch64
             version: 'aarch64'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17
-            targets: //java/... //src/google/protobuf/compiler:protoc_aarch64_test
+            targets: //java/... //compatibility/... //src/google/protobuf/compiler:protoc_aarch64_test
 
     name: Linux ${{ matrix.name }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -57,11 +57,11 @@ jobs:
   #   runs-on: ubuntu-latest
   #   steps:
   #     - name: Checkout pending changes
-  #       uses: protocolbuffers/protobuf-ci/checkout@v2
+  #       uses: protocolbuffers/protobuf-ci/checkout@v3
   #       with:
   #         ref: ${{ inputs.safe-checkout }}
   #     - name: Run Linkage Monitor test
-  #       uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+  #       uses: protocolbuffers/protobuf-ci/bazel-docker@v3
   #       with:
   #         image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
   #         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -75,12 +75,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout pending changes
-      uses: protocolbuffers/protobuf-ci/checkout@v2
+      uses: protocolbuffers/protobuf-ci/checkout@v3
       with:
         ref: ${{ inputs.safe-checkout }}
     - name: Build protoc
       id: build-protoc
-      uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v2
+      uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
       with:
         image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -94,7 +94,7 @@ jobs:
         mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
       working-directory: java
     - name: Generate pom.xml files from the template
-      uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+      uses: protocolbuffers/protobuf-ci/bazel-docker@v3
       with:
         image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}

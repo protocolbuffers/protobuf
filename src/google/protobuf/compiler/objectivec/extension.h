@@ -34,7 +34,6 @@ class ExtensionGenerator {
 
   void GenerateMembersHeader(io::Printer* printer) const;
   void GenerateStaticVariablesInitialization(io::Printer* printer) const;
-  void GenerateRegistrationSource(io::Printer* printer) const;
   void DetermineObjectiveCClassDefinitions(
       absl::btree_set<std::string>* fwd_decls) const;
   void DetermineNeededFiles(

@@ -11,7 +11,7 @@
 
 #include "absl/log/absl_log.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
-#include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
+#include "google/protobuf/compiler/rust/accessors/generator.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/rust_field_type.h"
 #include "google/protobuf/descriptor.h"
@@ -26,11 +26,13 @@ namespace {
 
 std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
     Context& ctx, const FieldDescriptor& field) {
-  // TODO: We do not support [ctype=FOO] (used to set the field
-  // type in C++ to cord or string_piece) in V0.6 API.
-  if (field.options().has_ctype()) {
+  // TODO: We do not support ctype=CORD fields or repeated
+  // ctype=STRING_PIECE fields.
+  auto ctype = field.options().ctype();
+  if (ctype == FieldOptions::CORD ||
+      (ctype == FieldOptions::STRING_PIECE && field.is_repeated())) {
     return std::make_unique<UnsupportedField>(
-        "fields with ctype not supported");
+        "fields has an unsupported ctype");
   }
 
   if (field.is_map()) {

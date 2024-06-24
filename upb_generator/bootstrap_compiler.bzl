@@ -1,20 +1,20 @@
 """Macros that implement bootstrapping for the upb code generator."""
 
-load(
-    "//upb/cmake:build_defs.bzl",
-    "staleness_test",
-)
-load(
-    "//bazel:upb_proto_library.bzl",
-    "upb_proto_library",
-)
-
 # begin:github_only
 load(
     "//bazel:upb_minitable_proto_library.bzl",
     "upb_minitable_proto_library",
 )
 # end:github_only
+
+load(
+    "//bazel:upb_proto_library.bzl",
+    "upb_proto_library",
+)
+load(
+    "//upb/cmake:build_defs.bzl",
+    "staleness_test",
+)
 
 _stages = ["_stage0", "_stage1", ""]
 _protoc = "//:protoc"
@@ -126,7 +126,14 @@ def _cmake_staleness_test(name, base_dir, src_files, proto_lib_deps, **kwargs):
             name = name + "_copy_gencode_%d" % genrule,
             outs = ["generated_sources/" + src],
             srcs = [name, name + "_minitable"],
-            cmd = "for src in $(SRCS); do cp -f $$src $(@D) || echo 'copy failed!'; done",
+            cmd = """
+                mkdir -p $(@D)
+                for src in $(SRCS); do
+                    if [[ $$src == *%s ]]; then
+                        cp -f $$src $(@D) || echo 'copy failed!'
+                    fi
+                done
+            """ % src[src.rfind("/"):],
         )
 
     # Keep bazel gencode in sync with our checked-in sources needed for cmake builds.

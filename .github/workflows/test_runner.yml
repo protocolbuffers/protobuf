@@ -52,6 +52,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.event_name }}-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ contains(fromJSON('["pull_request", "pull_request_target", "workflow_dispatch"]'), github.event_name) }}
+
 jobs:
   check-tag:
     name: Check for Safety
@@ -105,6 +109,14 @@ jobs:
   # Note: this pattern of passing the head sha is vulnerable to PWN requests for
   # pull_request_target events. We carefully limit those workflows to require a
   # human stamp before continuing.
+  bazel:
+    name: Bazel
+    needs: [check-tag]
+    uses: ./.github/workflows/test_bazel.yml
+    with:
+      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+    secrets: inherit
+
   cpp:
     name: C++
     needs: [check-tag]

@@ -18,6 +18,7 @@
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/value.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
@@ -60,6 +61,13 @@ class FieldDefPtr {
     return upb_FieldDef_MiniTable(ptr_);
   }
 
+  std::string MiniDescriptorEncode() const {
+    upb::Arena arena;
+    upb_StringView md;
+    upb_FieldDef_MiniDescriptorEncode(ptr_, arena.ptr(), &md);
+    return std::string(md.data, md.size);
+  }
+
   const UPB_DESC(FieldOptions) * options() const {
     return upb_FieldDef_Options(ptr_);
   }
@@ -87,6 +95,9 @@ class FieldDefPtr {
   // been finalized.
   uint32_t index() const { return upb_FieldDef_Index(ptr_); }
 
+  // Index into msgdef->layout->fields or file->exts
+  uint32_t layout_index() const { return upb_FieldDef_LayoutIndex(ptr_); }
+
   // The MessageDef to which this field belongs (for extensions, the extended
   // message).
   MessageDefPtr containing_type() const;
@@ -101,6 +112,7 @@ class FieldDefPtr {
   OneofDefPtr real_containing_oneof() const;
 
   // Convenient field type tests.
+  bool IsEnum() const { return upb_FieldDef_IsEnum(ptr_); }
   bool IsSubMessage() const { return upb_FieldDef_IsSubMessage(ptr_); }
   bool IsString() const { return upb_FieldDef_IsString(ptr_); }
   bool IsSequence() const { return upb_FieldDef_IsRepeated(ptr_); }
@@ -200,6 +212,9 @@ class MessageDefPtr {
 
   const char* full_name() const { return upb_MessageDef_FullName(ptr_); }
   const char* name() const { return upb_MessageDef_Name(ptr_); }
+
+  // Returns the MessageDef that contains this MessageDef (or null).
+  MessageDefPtr containing_type() const;
 
   const upb_MiniTable* mini_table() const {
     return upb_MessageDef_MiniTable(ptr_);
@@ -412,9 +427,13 @@ class EnumDefPtr {
   const upb_EnumDef* ptr() const { return ptr_; }
   explicit operator bool() const { return ptr_ != nullptr; }
 
+  FileDefPtr file() const;
   const char* full_name() const { return upb_EnumDef_FullName(ptr_); }
   const char* name() const { return upb_EnumDef_Name(ptr_); }
   bool is_closed() const { return upb_EnumDef_IsClosed(ptr_); }
+
+  // Returns the MessageDef that contains this EnumDef (or null).
+  MessageDefPtr containing_type() const;
 
   // The value that is used as the default when no field default is specified.
   // If not set explicitly, the first value that was added will be used.
@@ -504,6 +523,10 @@ class FileDefPtr {
     return FieldDefPtr(upb_FileDef_TopLevelExtension(ptr_, index));
   }
 
+  bool resolves(const char* path) const {
+    return upb_FileDef_Resolves(ptr_, path);
+  }
+
   explicit operator bool() const { return ptr_ != nullptr; }
 
   friend bool operator==(FileDefPtr lhs, FileDefPtr rhs) {
@@ -562,12 +585,24 @@ class DefPool {
   std::unique_ptr<upb_DefPool, decltype(&upb_DefPool_Free)> ptr_;
 };
 
+inline FileDefPtr EnumDefPtr::file() const {
+  return FileDefPtr(upb_EnumDef_File(ptr_));
+}
+
 inline FileDefPtr FieldDefPtr::file() const {
   return FileDefPtr(upb_FieldDef_File(ptr_));
 }
 
 inline FileDefPtr MessageDefPtr::file() const {
   return FileDefPtr(upb_MessageDef_File(ptr_));
+}
+
+inline MessageDefPtr MessageDefPtr::containing_type() const {
+  return MessageDefPtr(upb_MessageDef_ContainingType(ptr_));
+}
+
+inline MessageDefPtr EnumDefPtr::containing_type() const {
+  return MessageDefPtr(upb_EnumDef_ContainingType(ptr_));
 }
 
 inline EnumDefPtr MessageDefPtr::enum_type(int i) const {

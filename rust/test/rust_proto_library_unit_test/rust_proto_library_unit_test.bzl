@@ -3,7 +3,6 @@
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
 load("//rust:aspects.bzl", "RustProtoInfo")
 load("//rust:defs.bzl", "rust_cc_proto_library", "rust_upb_proto_library")
-load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load(":defs.bzl", "ActionsInfo", "attach_cc_aspect", "attach_upb_aspect")
 
 def _find_actions_with_mnemonic(actions, mnemonic):
@@ -160,7 +159,7 @@ def _rust_cc_aspect_test_impl(ctx):
 rust_cc_aspect_test = analysistest.make(_rust_cc_aspect_test_impl)
 
 def _test_cc_aspect():
-    attach_cc_aspect(name = "child_proto_with_cc_aspect", dep = ":child_cc_proto")
+    attach_cc_aspect(name = "child_proto_with_cc_aspect", dep = ":child_proto")
 
     rust_cc_aspect_test(
         name = "rust_cc_aspect_test",
@@ -174,8 +173,8 @@ def _rust_outputs_test_impl(ctx):
     target_under_test = analysistest.target_under_test(env)
 
     label_to_file = {
-        "child_rust_cc_proto": "child.c.pb.rs",
-        "child_rust_upb_proto": "child.u.pb.rs",
+        "child_cpp_rust_proto": "child.c.pb.rs",
+        "child_upb_rust_proto": "child.u.pb.rs",
     }
     expected_output = label_to_file[target_under_test.label.name]
     asserts.true(env, target_under_test.files.to_list()[0].path.endswith(expected_output))
@@ -186,24 +185,24 @@ rust_outputs_test = analysistest.make(_rust_outputs_test_impl)
 
 def _test_cc_outputs():
     rust_cc_proto_library(
-        name = "child_rust_cc_proto",
+        name = "child_cpp_rust_proto",
         deps = [":child_proto"],
     )
 
     rust_outputs_test(
         name = "rust_cc_outputs_test",
-        target_under_test = ":child_rust_cc_proto",
+        target_under_test = ":child_cpp_rust_proto",
     )
 
 def _test_upb_outputs():
     rust_upb_proto_library(
-        name = "child_rust_upb_proto",
+        name = "child_upb_rust_proto",
         deps = [":child_proto"],
     )
 
     rust_outputs_test(
         name = "rust_upb_outputs_test",
-        target_under_test = ":child_rust_upb_proto",
+        target_under_test = ":child_upb_rust_proto",
     )
 
 def rust_proto_library_unit_test(name):
@@ -230,7 +229,6 @@ def rust_proto_library_unit_test(name):
         srcs = ["child.proto"],
         deps = [":parent_proto", ":parent2_proto"],
     )
-    cc_proto_library(name = "child_cc_proto", deps = [":child_proto"])
 
     _test_upb_aspect()
     _test_cc_aspect()

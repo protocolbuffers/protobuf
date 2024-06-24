@@ -63,12 +63,30 @@ void RegisterFileLevelMetadata(const DescriptorTable* descriptor_table);
 
 }  // namespace internal
 
-using internal::DownCast;
 using internal::ReflectionOps;
 using internal::WireFormat;
 
 void Message::MergeImpl(MessageLite& to, const MessageLite& from) {
-  ReflectionOps::Merge(DownCast<const Message&>(from), DownCast<Message*>(&to));
+  ReflectionOps::Merge(DownCastMessage<Message>(from),
+                       DownCastMessage<Message>(&to));
+}
+
+void Message::ClearImpl(MessageLite& msg) {
+  ReflectionOps::Clear(&DownCastMessage<Message>(msg));
+}
+
+size_t Message::ByteSizeLongImpl(const MessageLite& msg) {
+  auto& _this = DownCastMessage<Message>(msg);
+  size_t size = WireFormat::ByteSize(_this);
+  _this.AccessCachedSize().Set(internal::ToCachedSize(size));
+  return size;
+}
+
+uint8_t* Message::_InternalSerializeImpl(const MessageLite& msg,
+                                         uint8_t* target,
+                                         io::EpsCopyOutputStream* stream) {
+  return WireFormat::_InternalSerialize(DownCastMessage<Message>(msg), target,
+                                        stream);
 }
 
 void Message::MergeFrom(const Message& from) {
@@ -79,10 +97,6 @@ void Message::MergeFrom(const Message& from) {
   } else {
     class_to->full().merge_to_from(*this, from);
   }
-}
-
-void Message::CheckTypeAndMergeFrom(const MessageLite& other) {
-  MergeFrom(*DownCast<const Message*>(&other));
 }
 
 void Message::CopyFrom(const Message& from) {
@@ -110,10 +124,12 @@ void Message::CopyFrom(const Message& from) {
   }
 }
 
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
 void Message::Clear() { ReflectionOps::Clear(this); }
+#endif  // !PROTOBUF_CUSTOM_VTABLE
 
-bool Message::IsInitialized() const {
-  return ReflectionOps::IsInitialized(*this);
+bool Message::IsInitializedImpl(const MessageLite& msg) {
+  return ReflectionOps::IsInitialized(DownCastMessage<Message>(msg));
 }
 
 void Message::FindInitializationErrors(std::vector<std::string>* errors) const {
@@ -155,6 +171,7 @@ Metadata Message::GetMetadataImpl(const ClassDataFull& data) {
   return {data.descriptor, data.reflection};
 }
 
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
 uint8_t* Message::_InternalSerialize(uint8_t* target,
                                      io::EpsCopyOutputStream* stream) const {
   return WireFormat::_InternalSerialize(*this, target, stream);
@@ -165,6 +182,7 @@ size_t Message::ByteSizeLong() const {
   AccessCachedSize().Set(internal::ToCachedSize(size));
   return size;
 }
+#endif  // !PROTOBUF_CUSTOM_VTABLE
 
 size_t Message::ComputeUnknownFieldsSize(
     size_t total_size, internal::CachedSize* cached_size) const {
@@ -185,26 +203,25 @@ size_t Message::MaybeComputeUnknownFieldsSize(
 }
 
 size_t Message::SpaceUsedLong() const {
-  auto* reflection = GetReflection();
-  if (PROTOBUF_PREDICT_TRUE(reflection != nullptr)) {
-    return reflection->SpaceUsedLong(*this);
-  }
-  // The only case that does not have reflection is RawMessage.
-  return internal::DownCast<const internal::RawMessageBase&>(*this)
-      .SpaceUsedLong();
+  return GetClassData()->full().descriptor_methods->space_used_long(*this);
 }
 
-static std::string GetTypeNameImpl(const MessageLite& msg) {
-  return DownCast<const Message&>(msg).GetDescriptor()->full_name();
+absl::string_view Message::GetTypeNameImpl(const ClassData* data) {
+  return GetMetadataImpl(data->full()).descriptor->full_name();
 }
 
 static std::string InitializationErrorStringImpl(const MessageLite& msg) {
-  return DownCast<const Message&>(msg).InitializationErrorString();
+  return DownCastMessage<Message>(msg).InitializationErrorString();
 }
 
 const internal::TcParseTableBase* Message::GetTcParseTableImpl(
     const MessageLite& msg) {
-  return DownCast<const Message&>(msg).GetReflection()->GetTcParseTable();
+  return DownCastMessage<Message>(msg).GetReflection()->GetTcParseTable();
+}
+
+size_t Message::SpaceUsedLongImpl(const MessageLite& msg_lite) {
+  auto& msg = DownCastMessage<Message>(msg_lite);
+  return msg.GetReflection()->SpaceUsedLong(msg);
 }
 
 PROTOBUF_CONSTINIT const MessageLite::DescriptorMethods
@@ -212,6 +229,7 @@ PROTOBUF_CONSTINIT const MessageLite::DescriptorMethods
         GetTypeNameImpl,
         InitializationErrorStringImpl,
         GetTcParseTableImpl,
+        SpaceUsedLongImpl,
 };
 
 namespace internal {

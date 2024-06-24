@@ -8,6 +8,7 @@
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -54,33 +55,6 @@ std::vector<const FieldDescriptor*> GetOrderedFields(
 
 }  // namespace
 
-class ParseFunctionGenerator::GeneratedOptionProvider final
-    : public internal::TailCallTableInfo::OptionProvider {
- public:
-  explicit GeneratedOptionProvider(ParseFunctionGenerator* gen) : gen_(gen) {}
-  TailCallTableInfo::PerFieldOptions GetForField(
-      const FieldDescriptor* field) const final {
-    const auto verify_flag = [&] {
-      if (IsEagerlyVerifiedLazy(field, gen_->options_, gen_->scc_analyzer_))
-        return internal::field_layout::kTvEager;
-      if (IsLazilyVerifiedLazy(field, gen_->options_))
-        return internal::field_layout::kTvLazy;
-      return internal::field_layout::TransformValidation{};
-    };
-    return {
-        GetPresenceProbability(field, gen_->options_),
-        verify_flag(),
-        IsStringInlined(field, gen_->options_),
-        IsImplicitWeakField(field, gen_->options_, gen_->scc_analyzer_),
-        /* use_direct_tcparser_table */ true,
-        ShouldSplit(field, gen_->options_),
-    };
-  }
-
- private:
-  ParseFunctionGenerator* gen_;
-};
-
 ParseFunctionGenerator::ParseFunctionGenerator(
     const Descriptor* descriptor, int max_has_bit_index,
     const std::vector<int>& has_bit_indices,
@@ -96,39 +70,35 @@ ParseFunctionGenerator::ParseFunctionGenerator(
       ordered_fields_(GetOrderedFields(descriptor_, options_)),
       num_hasbits_(max_has_bit_index),
       index_in_file_messages_(index_in_file_messages) {
+  std::vector<TailCallTableInfo::FieldOptions> fields;
+  fields.reserve(ordered_fields_.size());
+  for (size_t i = 0; i < ordered_fields_.size(); ++i) {
+    auto* field = ordered_fields_[i];
+    fields.push_back({
+        field,
+        field->index() < has_bit_indices.size()
+            ? has_bit_indices[field->index()]
+            : -1,
+        GetPresenceProbability(field, options_),
+        GetLazyStyle(field, options_, scc_analyzer_),
+        IsStringInlined(field, options_),
+        IsImplicitWeakField(field, options_, scc_analyzer_),
+        /* use_direct_tcparser_table */ true,
+        ShouldSplit(field, options_),
+        field->index() < inlined_string_indices.size()
+            ? inlined_string_indices[field->index()]
+            : -1,
+    });
+  }
   tc_table_info_.reset(new TailCallTableInfo(
-      descriptor_, ordered_fields_,
+      descriptor_,
       {/* is_lite */ GetOptimizeFor(descriptor->file(), options_) ==
            FileOptions::LITE_RUNTIME,
        /* uses_codegen */ true, options_.profile_driven_cluster_aux_subtable},
-      GeneratedOptionProvider(this), has_bit_indices, inlined_string_indices));
+      fields));
   SetCommonMessageDataVariables(descriptor_, &variables_);
   SetUnknownFieldsVariable(descriptor_, options_, &variables_);
   variables_["classname"] = ClassName(descriptor, false);
-}
-
-static bool ShouldGenerateInternalParse(const Descriptor* descriptor,
-                                        const Options& options) {
-  return HasGeneratedMethods(descriptor->file(), options) &&
-         HasDescriptorMethods(descriptor->file(), options);
-}
-
-void ParseFunctionGenerator::GenerateMethodDecls(io::Printer* printer) {
-  if (!ShouldGenerateInternalParse(descriptor_, options_)) return;
-  Formatter format(printer, variables_);
-  format(
-      "const char* _InternalParse(const char* ptr, "
-      "::$proto_ns$::internal::ParseContext* ctx) final;\n");
-}
-
-void ParseFunctionGenerator::GenerateMethodImpls(io::Printer* printer) {
-  if (!ShouldGenerateInternalParse(descriptor_, options_)) return;
-  printer->Emit(R"cc(
-    const char* $classname$::_InternalParse(const char* ptr,
-                                            ::_pbi::ParseContext* ctx) {
-      return ::_pbi::TcParser::ParseLoop(this, ptr, ctx, &_table_.header);
-    }
-  )cc");
 }
 
 struct SkipEntry16 {

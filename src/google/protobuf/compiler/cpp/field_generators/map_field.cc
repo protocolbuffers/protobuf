@@ -111,14 +111,16 @@ class Map : public FieldGeneratorBase {
   }
 
   void GenerateIsInitialized(io::Printer* p) const override {
-    if (!has_required_) return;
+    if (!NeedsIsInitialized()) return;
 
     p->Emit(R"cc(
-      if (!$pbi$::AllAreInitialized($field_$)) {
+      if (!$pbi$::AllAreInitialized(this_.$field_$)) {
         return false;
       }
     )cc");
   }
+
+  bool NeedsIsInitialized() const override { return has_required_; }
 
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(

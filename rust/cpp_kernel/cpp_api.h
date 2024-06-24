@@ -10,11 +10,16 @@
 #ifndef GOOGLE_PROTOBUF_RUST_CPP_KERNEL_CPP_H__
 #define GOOGLE_PROTOBUF_RUST_CPP_KERNEL_CPP_H__
 
+#include <climits>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <string>
 
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 
 namespace google {
 namespace protobuf {
@@ -29,11 +34,11 @@ namespace rust_internal {
 // * The data were allocated using the Rust allocator.
 //
 extern "C" struct SerializedData {
-  // Owns the memory.
-  const char* data;
+  // Owns the memory, must be freed by Rust.
+  const uint8_t* data;
   size_t len;
 
-  SerializedData(const char* data, size_t len) : data(data), len(len) {}
+  SerializedData(const uint8_t* data, size_t len) : data(data), len(len) {}
 };
 
 // Allocates memory using the current Rust global allocator.
@@ -41,16 +46,23 @@ extern "C" struct SerializedData {
 // This function is defined in `rust_alloc_for_cpp_api.rs`.
 extern "C" void* __pb_rust_alloc(size_t size, size_t align);
 
-inline SerializedData SerializeMsg(const google::protobuf::Message* msg) {
+inline bool SerializeMsg(const google::protobuf::MessageLite* msg, SerializedData* out) {
+  ABSL_DCHECK(msg->IsInitialized());
   size_t len = msg->ByteSizeLong();
-  void* bytes = __pb_rust_alloc(len, alignof(char));
+  if (len > INT_MAX) {
+    ABSL_LOG(ERROR) << msg->GetTypeName()
+                    << " exceeded maximum protobuf size of 2GB: " << len;
+    return false;
+  }
+  uint8_t* bytes = static_cast<uint8_t*>(__pb_rust_alloc(len, alignof(char)));
   if (bytes == nullptr) {
     ABSL_LOG(FATAL) << "Rust allocator failed to allocate memory.";
   }
-  if (!msg->SerializeToArray(bytes, static_cast<int>(len))) {
-    ABSL_LOG(FATAL) << "Couldn't serialize the message.";
+  if (!msg->SerializeWithCachedSizesToArray(bytes)) {
+    return false;
   }
-  return SerializedData(static_cast<char*>(bytes), len);
+  *out = SerializedData(bytes, len);
+  return true;
 }
 
 // Represents an ABI-stable version of &[u8]/string_view (borrowed slice of
@@ -86,6 +98,9 @@ struct PtrAndLen {
   bool __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_insert(       \
       google::protobuf::Map<key_ty, value_ty>* m, ffi_key_ty key, ffi_value_ty value) {  \
     auto iter_and_inserted = m->try_emplace(to_cpp_key, to_cpp_value);         \
+    if (!iter_and_inserted.second) {                                           \
+      iter_and_inserted.first->second = to_cpp_value;                          \
+    }                                                                          \
     return iter_and_inserted.second;                                           \
   }                                                                            \
   bool __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_get(          \
@@ -141,7 +156,7 @@ struct PtrAndLen {
                                       value_ty, rust_value_ty, ffi_value_ty, \
                                       to_cpp_value, to_ffi_value);           \
   __PB_RUST_EXPOSE_SCALAR_MAP_METHODS(                                       \
-      std::string, ProtoStr, google::protobuf::rust_internal::PtrAndLen,               \
+      std::string, ProtoString, google::protobuf::rust_internal::PtrAndLen,            \
       std::string(key.ptr, key.len),                                         \
       google::protobuf::rust_internal::PtrAndLen(cpp_key.data(), cpp_key.size()),      \
       value_ty, rust_value_ty, ffi_value_ty, to_cpp_value, to_ffi_value);
@@ -164,6 +179,8 @@ struct RustStringRawParts {
 };
 
 extern "C" RustStringRawParts utf8_debug_string(const google::protobuf::Message* msg);
+extern "C" RustStringRawParts utf8_debug_string_lite(
+    const google::protobuf::MessageLite* msg);
 }  // namespace rust_internal
 }  // namespace protobuf
 }  // namespace google

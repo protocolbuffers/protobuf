@@ -35,10 +35,16 @@ namespace protobuf {
 namespace compiler {
 
 int ProtobufMain(int argc, char* argv[]) {
+#ifndef _MSC_VER
+  // TODO Re-enable this once github runner issue is resolved.
   absl::InitializeLog();
+#endif  // !_MSC_VER
 
   CommandLineInterface cli;
   cli.AllowPlugins("protoc-");
+#ifdef GOOGLE_PROTOBUF_RUNTIME_INCLUDE_BASE
+  cli.set_opensource_runtime(true);
+#endif
 
   // Proto2 C++
   cpp::CppGenerator cpp_generator;
@@ -104,7 +110,7 @@ int ProtobufMain(int argc, char* argv[]) {
   cli.RegisterGenerator("--rust_out", "--rust_opt", &rust_generator,
                         "Generate Rust sources.");
 #ifdef DISABLE_PROTOC_CONFIG
-  internal::SetDisableAllowlistInternalOnly(true);
+  auto cleanup = internal::DisableAllowlistInternalOnly();
 #endif  // DISABLE_PROTOC_CONFIG
   return cli.Run(argc, argv);
 }

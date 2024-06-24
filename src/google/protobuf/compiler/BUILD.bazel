@@ -2,14 +2,15 @@
 # Protocol Buffers Compiler
 ################################################################################
 
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 load(
     "@rules_pkg//pkg:mappings.bzl",
     "pkg_attributes",
     "pkg_files",
     "strip_prefix",
 )
-load("@rules_proto//proto:defs.bzl", "proto_library")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 load("test_plugin_injection.bzl", "inject_plugin_paths")
@@ -194,6 +195,7 @@ cc_library(
         "//src/google/protobuf/compiler/cpp",
         "//src/google/protobuf/compiler/csharp",
         "//src/google/protobuf/compiler/java",
+        "//src/google/protobuf/compiler/java:kotlin",
         "//src/google/protobuf/compiler/objectivec",
         "//src/google/protobuf/compiler/php",
         "//src/google/protobuf/compiler/python",
@@ -346,6 +348,7 @@ cc_binary(
     srcs = ["fake_plugin.cc"],
     deps = [
         ":plugin_cc_proto",
+        "//src/google/protobuf",
         "//src/google/protobuf/io:io_win32",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/strings",

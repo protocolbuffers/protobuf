@@ -25,6 +25,15 @@ const char* ImplicitWeakMessage::ParseImpl(ImplicitWeakMessage* msg,
   return ctx->AppendString(ptr, msg->data_);
 }
 
+void ImplicitWeakMessage::MergeImpl(MessageLite& self,
+                                    const MessageLite& other) {
+  const std::string* other_data =
+      static_cast<const ImplicitWeakMessage&>(other).data_;
+  if (other_data != nullptr) {
+    static_cast<ImplicitWeakMessage&>(self).data_->append(*other_data);
+  }
+}
+
 struct ImplicitWeakMessageDefaultType {
   constexpr ImplicitWeakMessageDefaultType()
       : instance(ConstantInitialized{}) {}
@@ -34,31 +43,39 @@ struct ImplicitWeakMessageDefaultType {
   };
 };
 
+constexpr ImplicitWeakMessage::ImplicitWeakMessage(ConstantInitialized)
+    : MessageLite(class_data_.base()), data_(nullptr) {}
+
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT ImplicitWeakMessageDefaultType
     implicit_weak_message_default_instance;
 
-const ImplicitWeakMessage* ImplicitWeakMessage::default_instance() {
-  return reinterpret_cast<ImplicitWeakMessage*>(
-      &implicit_weak_message_default_instance);
+const ImplicitWeakMessage& ImplicitWeakMessage::default_instance() {
+  return implicit_weak_message_default_instance.instance;
 }
 
+static const auto table =
+    internal::CreateStubTcParseTable<ImplicitWeakMessage,
+                                     ImplicitWeakMessage::ParseImpl>(
+        &implicit_weak_message_default_instance.instance);
+
+constexpr MessageLite::ClassDataLite<1> ImplicitWeakMessage::class_data_ = {
+    {
+        &table.header,
+        nullptr,  // on_demand_register_arena_dtor
+        nullptr,  // is_initialized (always true)
+        MergeImpl,
+        GetDeleteImpl<ImplicitWeakMessage>(),
+        GetNewImpl<ImplicitWeakMessage>(),
+        GetClearImpl<ImplicitWeakMessage>(),
+        GetByteSizeLongImpl<ImplicitWeakMessage>(),
+        GetSerializeImpl<ImplicitWeakMessage>(),
+        PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
+        true,
+    },
+    ""};
+
 const MessageLite::ClassData* ImplicitWeakMessage::GetClassData() const {
-  struct Data {
-    ClassData header;
-    char name[1];
-  };
-  static const auto table =
-      internal::CreateStubTcParseTable<ImplicitWeakMessage, ParseImpl>(
-          &implicit_weak_message_default_instance.instance);
-  static constexpr Data data = {
-      {
-          &table.header,
-          nullptr,  // on_demand_register_arena_dtor
-          PROTOBUF_FIELD_OFFSET(ImplicitWeakMessage, cached_size_),
-          true,
-      },
-      ""};
-  return &data.header;
+  return class_data_.base();
 }
 
 }  // namespace internal

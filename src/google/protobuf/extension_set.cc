@@ -154,7 +154,13 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
              type == WireFormatLite::TYPE_GROUP);
   ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
                      verify_func, is_lazy);
-  info.message_info = {prototype};
+  info.message_info = {prototype,
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+                       prototype->GetTcParseTable()
+#else
+                       nullptr
+#endif
+  };
   Register(info);
 }
 
@@ -1029,7 +1035,7 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
                   other_extension.lazymessage_value->New(arena);
               extension->lazymessage_value->MergeFrom(
                   GetPrototypeForLazyMessage(extendee, number),
-                  *other_extension.lazymessage_value, arena);
+                  *other_extension.lazymessage_value, arena, other_arena);
             } else {
               extension->is_lazy = false;
               extension->message_value =
@@ -1045,7 +1051,7 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
               if (extension->is_lazy) {
                 extension->lazymessage_value->MergeFrom(
                     GetPrototypeForLazyMessage(extendee, number),
-                    *other_extension.lazymessage_value, arena);
+                    *other_extension.lazymessage_value, arena, other_arena);
               } else {
                 extension->message_value->CheckTypeAndMergeFrom(
                     other_extension.lazymessage_value->GetMessage(

@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include "upb_generator/protoc-gen-upb_minitable.h"
+
 #include <string.h>
 
 #include <algorithm>
@@ -17,6 +19,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -24,6 +27,7 @@
 #include "upb/base/descriptor_constants.h"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.hpp"
 #include "upb/wire/types.h"
@@ -32,6 +36,7 @@
 
 // Must be last.
 #include "upb/port/def.inc"
+#include "upb_generator/plugin.h"
 
 namespace upb {
 namespace generator {
@@ -68,6 +73,10 @@ std::string ExtensionIdentBase(upb::FieldDefPtr ext) {
 
 std::string ExtensionLayout(upb::FieldDefPtr ext) {
   return absl::StrCat(ExtensionIdentBase(ext), "_", ext.name(), "_ext");
+}
+
+std::string MessagePtrName(upb::MessageDefPtr message) {
+  return MessageInitName(message) + "_ptr";
 }
 
 const char* kEnumsInit = "enums_layout";
@@ -312,10 +321,11 @@ void WriteMessageField(upb::FieldDefPtr field,
   output("  $0,\n", upb::generator::FieldInitializer(field, field64, field32));
 }
 
-std::string GetSub(upb::FieldDefPtr field) {
+std::string GetSub(upb::FieldDefPtr field, bool is_extension) {
   if (auto message_def = field.message_type()) {
     return absl::Substitute("{.UPB_PRIVATE(submsg) = &$0}",
-                            MessageInitName(message_def));
+                            is_extension ? MessageInitName(message_def)
+                                         : MessagePtrName(message_def));
   }
 
   if (auto enum_def = field.enum_subdef()) {
@@ -328,9 +338,13 @@ std::string GetSub(upb::FieldDefPtr field) {
   return std::string("{.UPB_PRIVATE(submsg) = NULL}");
 }
 
+bool IsCrossFile(upb::FieldDefPtr field) {
+  return field.message_type() != field.containing_type();
+}
+
 // Writes a single message into a .upb.c source file.
 void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
-                  Output& output) {
+                  const MiniTableOptions& options, Output& output) {
   std::string msg_name = ToCIdent(message.full_name());
   std::string fields_array_ref = "NULL";
   std::string submsgs_array_ref = "NULL";
@@ -338,6 +352,7 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
   const upb_MiniTable* mt_32 = pools.GetMiniTable32(message);
   const upb_MiniTable* mt_64 = pools.GetMiniTable64(message);
   std::map<int, std::string> subs;
+  absl::flat_hash_set<const upb_MiniTable*> seen;
 
   // Construct map of sub messages by field number.
   for (int i = 0; i < mt_64->UPB_PRIVATE(field_count); i++) {
@@ -345,17 +360,27 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
     uint32_t index = f->UPB_PRIVATE(submsg_index);
     if (index != kUpb_NoSub) {
       const int f_number = upb_MiniTableField_Number(f);
-      auto pair =
-          subs.emplace(index, GetSub(message.FindFieldByNumber(f_number)));
+      upb::FieldDefPtr field = message.FindFieldByNumber(f_number);
+      auto pair = subs.emplace(index, GetSub(field, false));
       ABSL_CHECK(pair.second);
+      if (options.one_output_per_message && field.IsSubMessage() &&
+          IsCrossFile(field)) {
+        if (seen.insert(pools.GetMiniTable64(field.message_type())).second) {
+          output(
+              "__attribute__((weak)) const upb_MiniTable* $0 ="
+              " &UPB_PRIVATE(_kUpb_MiniTable_StaticallyTreeShaken);\n",
+              MessagePtrName(field.message_type()));
+        }
+      }
     }
   }
-  // Write upb_MiniTableSub table for sub messages referenced from fields.
+  // Write upb_MiniTableSubInternal table for sub messages referenced from
+  // fields.
   if (!subs.empty()) {
     std::string submsgs_array_name = msg_name + "_submsgs";
     submsgs_array_ref = "&" + submsgs_array_name + "[0]";
-    output("static const upb_MiniTableSub $0[$1] = {\n", submsgs_array_name,
-           subs.size());
+    output("static const upb_MiniTableSubInternal $0[$1] = {\n",
+           submsgs_array_name, subs.size());
 
     int i = 0;
     for (const auto& pair : subs) {
@@ -421,6 +446,8 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
     output("  })\n");
   }
   output("};\n\n");
+  output("const upb_MiniTable* $0 = &$1;\n", MessagePtrName(message),
+         MessageInitName(message));
 }
 
 void WriteEnum(upb::EnumDefPtr e, Output& output) {
@@ -447,89 +474,14 @@ void WriteEnum(upb::EnumDefPtr e, Output& output) {
   output("\n");
 }
 
-int WriteEnums(const DefPoolPair& pools, upb::FileDefPtr file, Output& output) {
-  std::vector<upb::EnumDefPtr> this_file_enums =
-      SortedEnums(file, kClosedEnums);
-
-  for (const auto e : this_file_enums) {
-    WriteEnum(e, output);
-  }
-
-  if (!this_file_enums.empty()) {
-    output("static const upb_MiniTableEnum *$0[$1] = {\n", kEnumsInit,
-           this_file_enums.size());
-    for (const auto e : this_file_enums) {
-      output("  &$0,\n", EnumInit(e));
-    }
-    output("};\n");
-    output("\n");
-  }
-
-  return this_file_enums.size();
-}
-
-int WriteMessages(const DefPoolPair& pools, upb::FileDefPtr file,
-                  Output& output) {
-  std::vector<upb::MessageDefPtr> file_messages = SortedMessages(file);
-
-  if (file_messages.empty()) return 0;
-
-  for (auto message : file_messages) {
-    WriteMessage(message, pools, output);
-  }
-
-  output("static const upb_MiniTable *$0[$1] = {\n", kMessagesInit,
-         file_messages.size());
-  for (auto message : file_messages) {
-    output("  &$0,\n", MessageInitName(message));
-  }
-  output("};\n");
-  output("\n");
-  return file_messages.size();
-}
-
-void WriteExtension(upb::FieldDefPtr ext, const DefPoolPair& pools,
+void WriteExtension(const DefPoolPair& pools, upb::FieldDefPtr ext,
                     Output& output) {
+  output("UPB_LINKARR_APPEND(upb_AllExts)\n");
+  output("const upb_MiniTableExtension $0 = {\n  ", ExtensionLayout(ext));
   output("$0,\n", FieldInitializer(pools, ext));
   output("  &$0,\n", MessageInitName(ext.containing_type()));
-  output("  $0,\n", GetSub(ext));
-}
-
-int WriteExtensions(const DefPoolPair& pools, upb::FileDefPtr file,
-                    Output& output) {
-  auto exts = SortedExtensions(file);
-
-  if (exts.empty()) return 0;
-
-  // Order by full name for consistent ordering.
-  std::map<std::string, upb::MessageDefPtr> forward_messages;
-
-  for (auto ext : exts) {
-    forward_messages[ext.containing_type().full_name()] = ext.containing_type();
-    if (ext.message_type()) {
-      forward_messages[ext.message_type().full_name()] = ext.message_type();
-    }
-  }
-
-  for (auto ext : exts) {
-    output("const upb_MiniTableExtension $0 = {\n  ", ExtensionLayout(ext));
-    WriteExtension(ext, pools, output);
-    output("\n};\n");
-  }
-
-  output(
-      "\n"
-      "static const upb_MiniTableExtension *$0[$1] = {\n",
-      kExtensionsInit, exts.size());
-
-  for (auto ext : exts) {
-    output("  &$0,\n", ExtensionLayout(ext));
-  }
-
-  output(
-      "};\n"
-      "\n");
-  return exts.size();
+  output("  $0,\n", GetSub(ext, true));
+  output("\n};\n");
 }
 
 }  // namespace
@@ -570,6 +522,7 @@ void WriteMiniTableHeader(const DefPoolPair& pools, upb::FileDefPtr file,
 
   for (auto message : this_file_messages) {
     output("extern const upb_MiniTable $0;\n", MessageInitName(message));
+    output("extern const upb_MiniTable* $0;\n", MessagePtrName(message));
   }
   for (auto ext : this_file_exts) {
     output("extern const upb_MiniTableExtension $0;\n", ExtensionLayout(ext));
@@ -597,8 +550,7 @@ void WriteMiniTableHeader(const DefPoolPair& pools, upb::FileDefPtr file,
       ToPreproc(file.name()));
 }
 
-void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
-                          Output& output) {
+void WriteMiniTableSourceIncludes(upb::FileDefPtr file, Output& output) {
   EmitFileWarning(file.name(), output);
 
   output(
@@ -617,21 +569,129 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
       "#include \"upb/port/def.inc\"\n"
       "\n");
 
-  int msg_count = WriteMessages(pools, file, output);
-  int ext_count = WriteExtensions(pools, file, output);
-  int enum_count = WriteEnums(pools, file, output);
+  output(
+      "extern const struct upb_MiniTable "
+      "UPB_PRIVATE(_kUpb_MiniTable_StaticallyTreeShaken);\n");
+}
+
+void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
+                          const MiniTableOptions& options, Output& output) {
+  WriteMiniTableSourceIncludes(file, output);
+
+  std::vector<upb::MessageDefPtr> messages = SortedMessages(file);
+  std::vector<upb::FieldDefPtr> extensions = SortedExtensions(file);
+  std::vector<upb::EnumDefPtr> enums = SortedEnums(file, kClosedEnums);
+
+  if (options.one_output_per_message) {
+    for (auto message : messages) {
+      output("extern const upb_MiniTable* $0;\n", MessagePtrName(message));
+    }
+    for (const auto e : enums) {
+      output("extern const upb_MiniTableEnum $0;\n", EnumInit(e));
+    }
+    for (const auto ext : extensions) {
+      output("extern const upb_MiniTableExtension $0;\n", ExtensionLayout(ext));
+    }
+  } else {
+    for (auto message : messages) {
+      WriteMessage(message, pools, options, output);
+    }
+    for (const auto e : enums) {
+      WriteEnum(e, output);
+    }
+    for (const auto ext : extensions) {
+      WriteExtension(pools, ext, output);
+    }
+  }
+
+  // Messages.
+  if (!messages.empty()) {
+    output("static const upb_MiniTable *$0[$1] = {\n", kMessagesInit,
+           messages.size());
+    for (auto message : messages) {
+      output("  &$0,\n", MessageInitName(message));
+    }
+    output("};\n");
+    output("\n");
+  }
+
+  // Enums.
+  if (!enums.empty()) {
+    output("static const upb_MiniTableEnum *$0[$1] = {\n", kEnumsInit,
+           enums.size());
+    for (const auto e : enums) {
+      output("  &$0,\n", EnumInit(e));
+    }
+    output("};\n");
+    output("\n");
+  }
+
+  if (!extensions.empty()) {
+    // Extensions.
+    output(
+        "\n"
+        "static const upb_MiniTableExtension *$0[$1] = {\n",
+        kExtensionsInit, extensions.size());
+
+    for (auto ext : extensions) {
+      output("  &$0,\n", ExtensionLayout(ext));
+    }
+
+    output(
+        "};\n"
+        "\n");
+  }
 
   output("const upb_MiniTableFile $0 = {\n", FileLayoutName(file));
-  output("  $0,\n", msg_count ? kMessagesInit : "NULL");
-  output("  $0,\n", enum_count ? kEnumsInit : "NULL");
-  output("  $0,\n", ext_count ? kExtensionsInit : "NULL");
-  output("  $0,\n", msg_count);
-  output("  $0,\n", enum_count);
-  output("  $0,\n", ext_count);
+  output("  $0,\n", messages.empty() ? "NULL" : kMessagesInit);
+  output("  $0,\n", enums.empty() ? "NULL" : kEnumsInit);
+  output("  $0,\n", extensions.empty() ? "NULL" : kExtensionsInit);
+  output("  $0,\n", messages.size());
+  output("  $0,\n", enums.size());
+  output("  $0,\n", extensions.size());
   output("};\n\n");
 
   output("#include \"upb/port/undef.inc\"\n");
   output("\n");
+}
+
+std::string MultipleSourceFilename(upb::FileDefPtr file,
+                                   absl::string_view full_name, int* i) {
+  *i += 1;
+  return absl::StrCat(StripExtension(file.name()), ".upb_weak_minitables/",
+                      *i, ".upb.c");
+}
+
+void WriteMiniTableMultipleSources(const DefPoolPair& pools,
+                                   upb::FileDefPtr file,
+                                   const MiniTableOptions& options,
+                                   Plugin* plugin) {
+  std::vector<upb::MessageDefPtr> messages = SortedMessages(file);
+  std::vector<upb::FieldDefPtr> extensions = SortedExtensions(file);
+  std::vector<upb::EnumDefPtr> enums = SortedEnums(file, kClosedEnums);
+  int i = 0;
+
+  for (auto message : messages) {
+    Output output;
+    WriteMiniTableSourceIncludes(file, output);
+    WriteMessage(message, pools, options, output);
+    plugin->AddOutputFile(MultipleSourceFilename(file, message.full_name(), &i),
+                          output.output());
+  }
+  for (const auto e : enums) {
+    Output output;
+    WriteMiniTableSourceIncludes(file, output);
+    WriteEnum(e, output);
+    plugin->AddOutputFile(MultipleSourceFilename(file, e.full_name(), &i),
+                          output.output());
+  }
+  for (const auto ext : extensions) {
+    Output output;
+    WriteMiniTableSourceIncludes(file, output);
+    WriteExtension(pools, ext, output);
+    plugin->AddOutputFile(MultipleSourceFilename(file, ext.full_name(), &i),
+                          output.output());
+  }
 }
 
 }  // namespace generator

@@ -8,7 +8,8 @@
 #
 # To do that use:
 # * `rust_cc_proto_library` instead of `rust_proto_library`.
-# * `//rust:protobuf_cpp` instead of `//rust:protobuf``.
+# * `//rust:protobuf_cpp_export` instead of
+#   `//rust:protobuf`.
 
 load("@rules_rust//rust:defs.bzl", "rust_test")
 load(
@@ -23,7 +24,7 @@ proto_library(
 )
 
 rust_cc_proto_library(
-    name = "debug_rust_proto",
+    name = "debug_cpp_rust_proto",
     testonly = True,
     deps = [":debug_proto"],
 )
@@ -32,7 +33,7 @@ rust_test(
     name = "debug_test",
     srcs = ["debug_test.rs"],
     deps = [
-        ":debug_rust_proto",
+        ":debug_cpp_rust_proto",
         "//rust:protobuf_cpp",
         "@crate_index//:googletest",
     ],

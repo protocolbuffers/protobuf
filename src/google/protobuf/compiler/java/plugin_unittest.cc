@@ -91,11 +91,10 @@ TEST(JavaPluginTest, PluginTest) {
   std::string java_out = absl::StrCat("--java_out=", ::testing::TempDir());
   std::string test_out = absl::StrCat("--test_out=", ::testing::TempDir());
 
-  const char* argv[] = {
-      "protoc",         proto_path.c_str(),        java_out.c_str(),
-      test_out.c_str(), "--experimental_editions", "test.proto"};
+  const char* argv[] = {"protoc", proto_path.c_str(), java_out.c_str(),
+                        test_out.c_str(), "test.proto"};
 
-  EXPECT_EQ(0, cli.Run(6, argv));
+  EXPECT_EQ(0, cli.Run(5, argv));
 
   // Loop over the lines of the generated code and verify that we find what we
   // expect

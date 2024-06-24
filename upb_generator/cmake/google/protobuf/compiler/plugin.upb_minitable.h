@@ -3,7 +3,8 @@
  *     google/protobuf/compiler/plugin.proto
  *
  * Do not edit -- your changes will be discarded when the file is
- * regenerated. */
+ * regenerated.
+ * NO CHECKED-IN PROTOBUF GENCODE */
 
 #ifndef GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_MINITABLE_H_
 #define GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_MINITABLE_H_
@@ -18,9 +19,13 @@ extern "C" {
 #endif
 
 extern const upb_MiniTable google__protobuf__compiler__Version_msg_init;
+extern const upb_MiniTable* google__protobuf__compiler__Version_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__compiler__CodeGeneratorRequest_msg_init;
+extern const upb_MiniTable* google__protobuf__compiler__CodeGeneratorRequest_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__compiler__CodeGeneratorResponse_msg_init;
+extern const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__compiler__CodeGeneratorResponse__File_msg_init;
+extern const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse__File_msg_init_ptr;
 
 extern const upb_MiniTableEnum google_protobuf_compiler_CodeGeneratorResponse_Feature_enum_init;
 extern const upb_MiniTableFile google_protobuf_compiler_plugin_proto_upb_file_layout;

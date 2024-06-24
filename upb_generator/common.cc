@@ -51,12 +51,20 @@ void EmitFileWarning(absl::string_view name, Output& output) {
       " *     $0\n"
       " *\n"
       " * Do not edit -- your changes will be discarded when the file is\n"
-      " * regenerated. */\n\n",
+      " * regenerated.\n"
+      " * NO CHECKED-IN "
+      // Intentional line break.
+      "PROTOBUF GENCODE */\n"
+      "\n",
       name);
 }
 
 std::string MessageInitName(upb::MessageDefPtr descriptor) {
   return MessageInit(descriptor.full_name());
+}
+
+std::string PadPrefix(absl::string_view tag) {
+  return tag.empty() ? "" : absl::StrCat(" ", tag);
 }
 
 std::string MessageName(upb::MessageDefPtr descriptor) {

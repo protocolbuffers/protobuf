@@ -9,15 +9,15 @@
 
 #[test]
 fn test_nested_messages_accessible() {
-    let _parent: unittest_proto::TestAllTypes;
-    let _child: unittest_proto::TestAllTypes_::NestedMessage;
-    unittest_proto::TestChildExtensionData_::
-    NestedTestAllExtensionsData_::NestedDynamicExtensions::new();
+    let _parent: unittest_rust_proto::TestAllTypes;
+    let _child: unittest_rust_proto::test_all_types::NestedMessage;
+    unittest_rust_proto::test_child_extension_data::
+    nested_test_all_extensions_data::NestedDynamicExtensions::new();
 }
 
 #[test]
 fn test_nested_enums_accessible() {
-    let _parent: unittest_proto::TestAllTypes;
-    let _child: unittest_proto::TestAllTypes_::NestedEnum;
-    unittest_proto::TestDynamicExtensions_::DynamicEnumType::default();
+    let _parent: unittest_rust_proto::TestAllTypes;
+    let _child: unittest_rust_proto::test_all_types::NestedEnum;
+    unittest_rust_proto::test_dynamic_extensions::DynamicEnumType::default();
 }

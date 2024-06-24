@@ -884,6 +884,10 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
         name: 'FOREIGN_BAX'
         number: 32
       >
+      value: <
+        name: 'FOREIGN_LARGE'
+        number: 123456
+      >
       """
 
     self._InternalTestCopyToProto(
@@ -1372,14 +1376,14 @@ def GetTestFeature(desc):
   return (
       desc._GetFeatures()
       .Extensions[unittest_features_pb2.test]
-      .int_multiple_feature
+      .multiple_feature
   )
 
 
 def SetTestFeature(proto, value):
   proto.options.features.Extensions[
       unittest_features_pb2.test
-  ].int_multiple_feature = value
+  ].multiple_feature = value
 
 
 @testing_refleaks.TestCase
@@ -1450,20 +1454,28 @@ class FeatureInheritanceTest(unittest.TestCase):
 
     ret = ReturnObject()
     ret.pool = descriptor_pool.DescriptorPool()
+
     defaults = descriptor_pb2.FeatureSetDefaults(
         defaults=[
             descriptor_pb2.FeatureSetDefaults.FeatureSetEditionDefault(
                 edition=descriptor_pb2.Edition.EDITION_PROTO2,
-                features=unittest_pb2.TestAllTypes.DESCRIPTOR._GetFeatures(),
+                overridable_features=unittest_pb2.TestAllTypes.DESCRIPTOR._GetFeatures(),
             )
         ],
         minimum_edition=descriptor_pb2.Edition.EDITION_PROTO2,
         maximum_edition=descriptor_pb2.Edition.EDITION_2023,
     )
-    defaults.defaults[0].features.Extensions[
+    defaults.defaults[0].overridable_features.Extensions[
         unittest_features_pb2.test
-    ].int_multiple_feature = 1
+    ].multiple_feature = 1
     ret.pool.SetFeatureSetDefaults(defaults)
+
+    # Add dependencies
+    file = descriptor_pb2.FileDescriptorProto()
+    descriptor_pb2.DESCRIPTOR.CopyToProto(file)
+    ret.pool.Add(file)
+    unittest_features_pb2.DESCRIPTOR.CopyToProto(file)
+    ret.pool.Add(file)
 
     ret.file = ret.pool.AddSerializedFile(self.file_proto.SerializeToString())
     ret.top_message = ret.pool.FindMessageTypeByName(

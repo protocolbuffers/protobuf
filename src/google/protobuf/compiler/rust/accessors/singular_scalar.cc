@@ -10,8 +10,8 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
-#include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
-#include "google/protobuf/compiler/rust/accessors/helpers.h"
+#include "google/protobuf/compiler/rust/accessors/default_value.h"
+#include "google/protobuf/compiler/rust/accessors/generator.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"
@@ -23,10 +23,11 @@ namespace rust {
 
 void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                                AccessorCase accessor_case) const {
+  std::string field_name = FieldNameWithCollisionAvoidance(field);
   ctx.Emit(
       {
-          {"field", RsSafeName(field.name())},
-          {"raw_field_name", field.name()},  // Never r# prefixed
+          {"field", RsSafeName(field_name)},
+          {"raw_field_name", field_name},  // Never r# prefixed
           {"view_self", ViewReceiver(accessor_case)},
           {"Scalar", RsTypePath(ctx, field)},
           {"hazzer_thunk", ThunkName(ctx, field, "has")},
@@ -41,15 +42,14 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
            }},
           {"getter_opt",
            [&] {
-             if (!field.is_optional()) return;
              if (!field.has_presence()) return;
              ctx.Emit(R"rs(
                   pub fn $raw_field_name$_opt($view_self$) -> $pb$::Optional<$Scalar$> {
-                    if !unsafe { $hazzer_thunk$(self.raw_msg()) } {
-                      return $pb$::Optional::Unset($default_value$);
+                    if self.has_$raw_field_name$() {
+                      $pb$::Optional::Set(self.$field$())
+                    } else {
+                      $pb$::Optional::Unset($default_value$)
                     }
-                    let value = unsafe { $getter_thunk$(self.raw_msg()) };
-                    $pb$::Optional::Set(value)
                   }
                   )rs");
            }},
@@ -61,6 +61,14 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                    unsafe { $setter_thunk$(self.raw_msg(), val) }
                  }
                )rs");
+           }},
+          {"hazzer",
+           [&] {
+             if (!field.has_presence()) return;
+             ctx.Emit({}, R"rs(
+                pub fn has_$raw_field_name$($view_self$) -> bool {
+                  unsafe { $hazzer_thunk$(self.raw_msg()) }
+                })rs");
            }},
           {"clearer",
            [&] {
@@ -74,83 +82,13 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"getter_thunk", ThunkName(ctx, field, "get")},
           {"setter_thunk", ThunkName(ctx, field, "set")},
           {"clearer_thunk", ThunkName(ctx, field, "clear")},
-          {"vtable_name", VTableName(field)},
-          {"vtable",
-           [&] {
-             if (accessor_case != AccessorCase::OWNED) {
-               return;
-             }
-             if (field.has_presence()) {
-               ctx.Emit(R"rs(
-                const $vtable_name$: &'static $pbi$::PrimitiveOptionalMutVTable<$Scalar$> =
-                  &$pbi$::PrimitiveOptionalMutVTable::new(
-                    $pbi$::Private,
-                    $getter_thunk$,
-                    $setter_thunk$,
-                    $clearer_thunk$,
-                    $default_value$,
-                  );
-              )rs");
-             } else {
-               ctx.Emit(R"rs(
-                const $vtable_name$: &'static $pbi$::PrimitiveVTable<$Scalar$> =
-                  &$pbi$::PrimitiveVTable::new(
-                    $pbi$::Private,
-                    $getter_thunk$,
-                    $setter_thunk$,
-                  );
-              )rs");
-             }
-           }},
-          {"getter_mut",
-           [&] {
-             if (accessor_case == AccessorCase::VIEW) {
-               return;
-             }
-             if (field.has_presence()) {
-               ctx.Emit(R"rs(
-                  pub fn $raw_field_name$_mut(&mut self) -> $pb$::FieldEntry<'_, $Scalar$> {
-                    unsafe {
-                      let has = $hazzer_thunk$(self.raw_msg());
-                      $pbi$::new_vtable_field_entry::<$Scalar$>(
-                        $pbi$::Private,
-                        self.as_mutator_message_ref(),
-                        $Msg$::$vtable_name$,
-                        has,
-                      )
-                    }
-                  }
-                )rs");
-             } else {
-               ctx.Emit(R"rs(
-                  pub fn $raw_field_name$_mut(&mut self) -> $pb$::Mut<'_, $Scalar$> {
-                    // SAFETY:
-                    // - The message is valid for the output lifetime.
-                    // - The vtable is valid for the field.
-                    // - There is no way to mutate the element for the output
-                    //   lifetime except through this mutator.
-                    unsafe {
-                      $pb$::PrimitiveMut::from_inner(
-                        $pbi$::Private,
-                        $pbi$::RawVTableMutator::new(
-                          $pbi$::Private,
-                          self.as_mutator_message_ref(),
-                          $Msg$::$vtable_name$,
-                        ),
-                      )
-                    }
-                  }
-                )rs");
-             }
-           }},
       },
       R"rs(
           $getter$
           $getter_opt$
           $setter$
+          $hazzer$
           $clearer$
-          $vtable$
-          $getter_mut$
         )rs");
 }
 
@@ -172,15 +110,15 @@ void SingularScalar::InExternC(Context& ctx,
              [&] {
                if (field.has_presence()) {
                  ctx.Emit(R"rs(
-                  fn $hazzer_thunk$(raw_msg: $pbi$::RawMessage) -> bool;
-                  fn $clearer_thunk$(raw_msg: $pbi$::RawMessage);
+                  fn $hazzer_thunk$(raw_msg: $pbr$::RawMessage) -> bool;
+                  fn $clearer_thunk$(raw_msg: $pbr$::RawMessage);
                 )rs");
                }
              }}},
            R"rs(
           $with_presence_fields_thunks$
-          fn $getter_thunk$(raw_msg: $pbi$::RawMessage) -> $Scalar$;
-          fn $setter_thunk$(raw_msg: $pbi$::RawMessage, val: $Scalar$);
+          fn $getter_thunk$(raw_msg: $pbr$::RawMessage) -> $Scalar$;
+          fn $setter_thunk$(raw_msg: $pbr$::RawMessage, val: $Scalar$);
         )rs");
 }
 

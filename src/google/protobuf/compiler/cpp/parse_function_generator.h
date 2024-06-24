@@ -36,12 +36,6 @@ class ParseFunctionGenerator {
       const absl::flat_hash_map<absl::string_view, std::string>& vars,
       int index_in_file_messages);
 
-  // Emits class-level method declarations to `printer`:
-  void GenerateMethodDecls(io::Printer* printer);
-
-  // Emits out-of-class method implementation definitions to `printer`:
-  void GenerateMethodImpls(io::Printer* printer);
-
   // Emits class-level data member declarations to `printer`:
   void GenerateDataDecls(io::Printer* printer);
 

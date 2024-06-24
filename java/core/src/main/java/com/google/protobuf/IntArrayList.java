@@ -47,7 +47,7 @@ final class IntArrayList extends AbstractProtobufList<Integer>
    */
   private IntArrayList(int[] other, int size, boolean isMutable) {
     super(isMutable);
-    array = other;
+    this.array = other;
     this.size = size;
   }
 

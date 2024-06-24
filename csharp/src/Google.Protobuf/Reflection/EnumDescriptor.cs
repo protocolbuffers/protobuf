@@ -90,10 +90,8 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         /// <param name="name">The unqualified name of the value (e.g. "FOO").</param>
         /// <returns>The value's descriptor, or null if not found.</returns>
-        public EnumValueDescriptor FindValueByName(string name)
-        {
-            return File.DescriptorPool.FindSymbol<EnumValueDescriptor>(FullName + "." + name);
-        }
+        public EnumValueDescriptor FindValueByName(string name) =>
+            File.DescriptorPool.FindEnumValueByName(this, name);
 
         /// <summary>
         /// The (possibly empty) set of custom options for this enum.
