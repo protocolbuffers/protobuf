@@ -7,7 +7,7 @@
 
 syntax = "proto2";
 
-package protos_generator.tests;
+package hpb_generator.tests;
 
 import "hpb_generator/tests/no_package.proto";
 
