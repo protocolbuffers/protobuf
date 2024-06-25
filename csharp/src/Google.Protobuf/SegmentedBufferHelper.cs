@@ -277,10 +277,10 @@ namespace Google.Protobuf
                 return stream.InternalBuffer.Length;
             }
 
-            // By convention, if CanSeek is true, then the Length should be available.
+            // By convention, if CanSeek is true, then the Length and Position should be available.
             if (stream.InternalInputStream.CanSeek)
             {
-                return stream.InternalInputStream.Length;
+                return stream.InternalInputStream.Length - stream.InternalInputStream.Position;
             }
 
             return null;

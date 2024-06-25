@@ -310,6 +310,9 @@ namespace Google.Protobuf.Collections
             float[] floats = Enumerable.Range(0, 2000).Select(x => (float)x).ToArray();
             uint packedTag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
             var stream = new MemoryStream();
+            // Offset the protobuf by 10 bytes in the stream to make sure the deserialization reads both Stream.Length
+            // and Stream.Position.
+            stream.Write(new byte[10], 0, 10);
             var output = new CodedOutputStream(stream);
             var length = floats.Sum(CodedOutputStream.ComputeFloatSize);
             output.WriteTag(packedTag);
@@ -320,7 +323,7 @@ namespace Google.Protobuf.Collections
             }
 
             output.Flush();
-            stream.Position = 0;
+            stream.Position = 10;
 
             // Deliberately "expecting" a non-packed tag, but we detect that the data is
             // actually packed.
