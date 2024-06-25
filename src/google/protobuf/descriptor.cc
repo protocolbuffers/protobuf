@@ -8027,6 +8027,9 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
     const Descriptor::ExtensionRange* extension_range =
         field->containing_type()->FindExtensionRangeContainingNumber(
             field->number());
+    if (extension_range == nullptr) {
+      return;
+    }
 
     if (extension_range->options_ == nullptr) {
       return;
