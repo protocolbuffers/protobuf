@@ -11,6 +11,11 @@ on:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
+      continuous-prefix:
+        required: true
+        description: "The prefix for tests that should only be run continuously"
+        type: string
+
 
 permissions:
   contents: read
@@ -21,26 +26,26 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         config:
-          - { name: "Bazel 7", bazel_version: "7.1.1", run-on-presubmit: false }
-          - { name: "Fastbuild", run-on-presubmit: true }
-          - { name: "Optimized", flags: "-c opt", run-on-presubmit: false }
-          - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/...", runner: ubuntu-20-large, run-on-presubmit: true }
-          - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/... -//lua/...", run-on-presubmit: false }
-          - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-//benchmarks:benchmark -//python/...", run-on-presubmit: true }
+          - { name: "Bazel 7", bazel_version: "7.1.1", presubmit: false }
+          - { name: "Fastbuild", presubmit: true }
+          - { name: "Optimized", flags: "-c opt", presubmit: false }
+          - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/...", runner: ubuntu-20-large, presubmit: true }
+          - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/... -//lua/...", presubmit: false }
+          - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-//benchmarks:benchmark -//python/...", presubmit: true }
           # TODO: Add 32-bit ASAN test
           # TODO: Restore the FastTable tests
 
-    name: ${{ (!matrix.config.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} ${{ matrix.config.name }} ${{ !matrix.config.run-on-presubmit && '(Continuous)' || '' }}
+    name: ${{ !matrix.config.presubmit && inputs.continuous-prefix || '' }} ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
 
     steps:
       - name: Checkout pending changes
-        if: ${{ matrix.config.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.config.presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        if: ${{ matrix.config.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.config.presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:${{ matrix.config.bazel_version || '6.3.0' }}-75f2a85ece6526cc3d54087018c0f1097d78d42b
@@ -175,27 +180,27 @@ jobs:
           # a single wheel. As a result we can just test the oldest and newest
           # supported Python versions and assume this gives us sufficient test
           # coverage.
-          - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'binary', run-on-presubmit: true }
-          - { os: macos-11, python-version: "3.8", architecture: x64, type: 'binary', run-on-presubmit: true }
-          - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'binary', run-on-presubmit: true }
-          - { os: macos-12, python-version: "3.12", architecture: x64, type: 'binary', run-on-presubmit: true }
-          - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'source', run-on-presubmit: false }
-          - { os: macos-11, python-version: "3.8", architecture: x64, type: 'source', run-on-presubmit: false }
-          - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'source', run-on-presubmit: false }
-          - { os: macos-12, python-version: "3.12", architecture: x64, type: 'source', run-on-presubmit: false }
+          - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'binary', presubmit: true }
+          - { os: macos-11, python-version: "3.8", architecture: x64, type: 'binary', presubmit: true }
+          - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'binary', presubmit: true }
+          - { os: macos-12, python-version: "3.12", architecture: x64, type: 'binary', presubmit: true }
+          - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'source' }
+          - { os: macos-11, python-version: "3.8", architecture: x64, type: 'source' }
+          - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'source' }
+          - { os: macos-12, python-version: "3.12", architecture: x64, type: 'source' }
 
           # Windows uses the full API up until Python 3.10.
-          - { os: windows-2019, python-version: "3.8", architecture: x86, type: 'binary', run-on-presubmit: false }
-          - { os: windows-2019, python-version: "3.9", architecture: x86, type: 'binary', run-on-presubmit: false }
-          - { os: windows-2019, python-version: "3.10", architecture: x86, type: 'binary', run-on-presubmit: false }
-          - { os: windows-2019, python-version: "3.11", architecture: x86, type: 'binary', run-on-presubmit: false }
-          - { os: windows-2019, python-version: "3.12", architecture: x86, type: 'binary', run-on-presubmit: false }
-          - { os: windows-2019, python-version: "3.8", architecture: x64, type: 'binary', run-on-presubmit: true }
-          - { os: windows-2019, python-version: "3.9", architecture: x64, type: 'binary', run-on-presubmit: false }
-          - { os: windows-2019, python-version: "3.10", architecture: x64, type: 'binary', run-on-presubmit: false }
-          - { os: windows-2019, python-version: "3.11", architecture: x64, type: 'binary', run-on-presubmit: false }
-          - { os: windows-2019, python-version: "3.12", architecture: x64, type: 'binary', run-on-presubmit: true }
-    name: ${{ (!matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} Test Wheels Python ${{ matrix.python-version }} ${{ matrix.os }} ${{ matrix.architecture }} ${{ matrix.type }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
+          - { os: windows-2019, python-version: "3.8", architecture: x86, type: 'binary' }
+          - { os: windows-2019, python-version: "3.9", architecture: x86, type: 'binary' }
+          - { os: windows-2019, python-version: "3.10", architecture: x86, type: 'binary' }
+          - { os: windows-2019, python-version: "3.11", architecture: x86, type: 'binary' }
+          - { os: windows-2019, python-version: "3.12", architecture: x86, type: 'binary' }
+          - { os: windows-2019, python-version: "3.8", architecture: x64, type: 'binary', presubmit: true }
+          - { os: windows-2019, python-version: "3.9", architecture: x64, type: 'binary' }
+          - { os: windows-2019, python-version: "3.10", architecture: x64, type: 'binary' }
+          - { os: windows-2019, python-version: "3.11", architecture: x64, type: 'binary' }
+          - { os: windows-2019, python-version: "3.12", architecture: x64, type: 'binary', presubmit: true }
+    name: ${{ !matrix.presubmit && inputs.continuous-prefix || '' }} Test Wheels Python ${{ matrix.python-version }} ${{ matrix.os }} ${{ matrix.architecture }} ${{ matrix.type }}
     needs: build_wheels
     runs-on: ${{ matrix.os }}
     if: ${{ github.event_name != 'pull_request_target' }}
@@ -204,24 +209,24 @@ jobs:
         shell: bash
     steps:
       - name: Download Wheels
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
         uses: actions/download-artifact@v3
         with:
           name: python-wheels
           path: wheels
       - name: Download Requirements
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
         uses: actions/download-artifact@v3
         with:
           name: requirements
           path: requirements
       - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
         with:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ matrix.architecture }}
       - name: Setup Python venv
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
         run: |
           python -m pip install --upgrade pip
           python -m venv env
@@ -231,28 +236,28 @@ jobs:
       - name: Install tzdata
         run: pip install tzdata
         # Only needed on Windows, Linux ships with tzdata.
-        if: ${{ contains(matrix.os, 'windows') && (matrix.run-on-presubmit || inputs.test-type == 'continuous') }}
+        if: ${{ contains(matrix.os, 'windows') && (matrix.presubmit || inputs.test-type == 'continuous') }}
       - name: Install requirements
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
         run: pip install -r requirements/requirements.txt
       - name: Install Protobuf Binary Wheel
-        if: ${{ matrix.type == 'binary' && (matrix.run-on-presubmit || inputs.test-type == 'continuous') }}
+        if: ${{ matrix.type == 'binary' && (matrix.presubmit || inputs.test-type == 'continuous') }}
         run: pip install -vvv --no-index --find-links wheels protobuf
       - name: Install Protobuf Source Wheel
-        if: ${{ matrix.type == 'source' && (matrix.run-on-presubmit || inputs.test-type == 'continuous') }}
+        if: ${{ matrix.type == 'source' && (matrix.presubmit || inputs.test-type == 'continuous') }}
         run: |
           cd wheels
           tar -xzvf *.tar.gz
           cd protobuf-*/
           pip install .
       - name: Test that module is importable
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
         run: python -v -c 'from google._upb import _message; assert "google._upb._message.MessageMeta" in str(_message.MessageMeta)'
       - name: Install Protobuf Test Wheel
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
         run: pip install -vvv --no-index --find-links wheels protobuftests
       - name: Run the unit tests
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
         run: |
           TESTS=$(pip show -f protobuftests | grep pb_unit_tests.*py$ | sed 's,/,.,g' | sed 's,\\,.,g' | sed -E 's,.py$,,g')
           for test in $TESTS; do
