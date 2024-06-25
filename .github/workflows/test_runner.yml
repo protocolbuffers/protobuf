@@ -83,9 +83,9 @@ jobs:
       # Stores a string that will serve as the prefix for all continuous tests.
       # Either way we prepend "(Continuous)" but in the case that we are in
       # a presubmit run, we should also mark them "[SKIPPED]"
-      continuous-prefix: ${{ inputs.test-type == 'presubmit' && '[SKIPPED](Continuous)' || '(Continuous)' }}
+      continuous-prefix: ${{ test-type == 'presubmit' && '[SKIPPED](Continuous)' || '(Continuous)' }}
     steps:
-      - name: Check
+     - name: Check
         # Trivially pass for safe PRs, and explicitly error for unsafe ones
         # unless this is specifically an event for adding the safe label.
         run: >
