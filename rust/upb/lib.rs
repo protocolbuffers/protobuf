@@ -22,8 +22,8 @@ pub use map::{
 
 mod message;
 pub use message::{
-    upb_Message, upb_Message_DeepClone, upb_Message_DeepCopy, upb_Message_IsEqual, upb_Message_New,
-    upb_Message_SetBaseField, RawMessage,
+    upb_Message, upb_Message_DeepClone, upb_Message_DeepCopy, upb_Message_IsEqual,
+    upb_Message_MergeFrom, upb_Message_New, upb_Message_SetBaseField, RawMessage,
 };
 
 mod message_value;

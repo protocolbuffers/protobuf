@@ -10,12 +10,15 @@
 
 #define UPB_BUILD_API
 
-#include "upb/message/accessors.h"  // IWYU pragma: keep
-#include "upb/mem/arena.h"          // IWYU pragma: keep
-#include "upb/message/array.h"      // IWYU pragma: keep
-#include "upb/message/compare.h"    // IWYU pragma: keep
-#include "upb/message/copy.h"       // IWYU pragma: keep
-#include "upb/message/map.h"        // IWYU pragma: keep
-#include "upb/mini_table/message.h" // IWYU pragma: keep
+// go/keep-sorted start
+#include "upb/mem/arena.h"           // IWYU pragma: keep
+#include "upb/message/accessors.h"   // IWYU pragma: keep
+#include "upb/message/array.h"       // IWYU pragma: keep
+#include "upb/message/compare.h"     // IWYU pragma: keep
+#include "upb/message/copy.h"        // IWYU pragma: keep
+#include "upb/message/map.h"         // IWYU pragma: keep
+#include "upb/message/merge.h"       // IWYU pragma: keep
+#include "upb/mini_table/message.h"  // IWYU pragma: keep
+// go/keep-sorted end
 
 const size_t __rust_proto_kUpb_Map_Begin = kUpb_Map_Begin;

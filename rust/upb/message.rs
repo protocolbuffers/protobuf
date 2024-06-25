@@ -1,5 +1,5 @@
 use crate::opaque_pointee::opaque_pointee;
-use crate::{upb_MiniTable, upb_MiniTableField, RawArena};
+use crate::{upb_ExtensionRegistry, upb_MiniTable, upb_MiniTableField, RawArena};
 use std::ptr::NonNull;
 
 opaque_pointee!(upb_Message);
@@ -34,5 +34,13 @@ extern "C" {
         m2: RawMessage,
         mini_table: *const upb_MiniTable,
         options: i32,
+    ) -> bool;
+
+    pub fn upb_Message_MergeFrom(
+        dst: RawMessage,
+        src: RawMessage,
+        mini_table: *const upb_MiniTable,
+        extreg: *const upb_ExtensionRegistry,
+        arena: RawArena,
     ) -> bool;
 }

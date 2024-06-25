@@ -1,5 +1,4 @@
 use crate::{upb_ExtensionRegistry, upb_MiniTable, Arena, RawArena, RawMessage};
-use std::ptr::NonNull;
 
 // LINT.IfChange(encode_status)
 #[repr(C)]
