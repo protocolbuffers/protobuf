@@ -20,6 +20,7 @@
                        fields:(NSArray *)fields
                   storageSize:(uint32_t)storage
                    wireFormat:(BOOL)wireFormat;
+
 @end
 
 @interface GPBFieldDescriptor ()
