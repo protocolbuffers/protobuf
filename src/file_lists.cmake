@@ -566,6 +566,7 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/message/internal/message.c
   ${protobuf_SOURCE_DIR}/upb/message/map.c
   ${protobuf_SOURCE_DIR}/upb/message/map_sorter.c
+  ${protobuf_SOURCE_DIR}/upb/message/merge.c
   ${protobuf_SOURCE_DIR}/upb/message/message.c
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/build_enum.c
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/decode.c
@@ -642,6 +643,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/message/internal/types.h
   ${protobuf_SOURCE_DIR}/upb/message/map.h
   ${protobuf_SOURCE_DIR}/upb/message/map_gencode_util.h
+  ${protobuf_SOURCE_DIR}/upb/message/merge.h
   ${protobuf_SOURCE_DIR}/upb/message/message.h
   ${protobuf_SOURCE_DIR}/upb/message/tagged_ptr.h
   ${protobuf_SOURCE_DIR}/upb/message/value.h
@@ -978,6 +980,7 @@ set(upb_test_files
   ${protobuf_SOURCE_DIR}/upb/message/copy_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/internal/compare_unknown_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/map_test.cc
+  ${protobuf_SOURCE_DIR}/upb/message/merge_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/test.cc
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test.cc
   ${protobuf_SOURCE_DIR}/upb/test/editions_test.cc
