@@ -2,7 +2,7 @@
 # https://github.com/protocolbuffers/protobuf/issues/14313
 module(
     name = "protobuf",
-    version = "27.2", # Automatically updated on release
+    version = "27.3-dev", # Automatically updated on release
     compatibility_level = 1,
     repo_name = "com_google_protobuf",
 )

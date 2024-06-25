@@ -53,9 +53,9 @@
 //
 // Please avoid changing them manually, as they should be updated automatically
 // by Protobuf release process.
-#define PROTOBUF_CPP_VERSION_STRING "5.27.2"
-#define PROTOBUF_JAVA_VERSION_STRING "4.27.2"
-#define PROTOBUF_PYTHON_VERSION_STRING "5.27.2"
+#define PROTOBUF_CPP_VERSION_STRING "5.27.3-dev"
+#define PROTOBUF_JAVA_VERSION_STRING "4.27.3-dev"
+#define PROTOBUF_PYTHON_VERSION_STRING "5.27.3-dev"
 
 
 namespace google {
