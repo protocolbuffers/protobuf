@@ -79,7 +79,7 @@ jobs:
       checkout-sha: ${{ steps.safe-checkout.outputs.sha }}
       # Stores a string denoting whether this is a presubmit or continuous
       # run. This helps us determine which tests to block on.
-      test-type: "presubmit"
+      test-type: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && 'presubmit' || 'continuous' }}
       # Stores a string that will serve as the prefix for all continuous tests.
       # Either way we prepend "(Continuous)" but in the case that we are in
       # a presubmit run, we should also mark them "[SKIPPED]"
