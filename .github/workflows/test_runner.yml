@@ -81,7 +81,6 @@ jobs:
       # run. This helps us determine which tests to block on.
       test-type: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && 'presubmit' || 'continuous' }}
     steps:
-    steps:
      - name: Check
         # Trivially pass for safe PRs, and explicitly error for unsafe ones
         # unless this is specifically an event for adding the safe label.
