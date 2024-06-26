@@ -111,8 +111,12 @@ jobs:
 
       - name: Set Continuous Prefix
         id: set-continuous-prefix
-        run: >
-          ${{ steps.test-type.outputs.test-type == 'presubmit' }} && (echo "continuous-prefix=[SKIPPED](Continuous)" >> "$GITHUB_OUTPUT") || (echo "continuous-prefix=(Continuous)" >> "$GITHUB_OUTPUT")
+        run: |
+          if [[ ${{ steps.test-type.outputs.test-type == 'presubmit' }} ]]; then
+            echo "continuous-prefix=[SKIPPED](Continuous)" >> "$GITHUB_OUTPUT"
+          else
+            echo "continuous-prefix=(Continuous)" >> "$GITHUB_OUTPUT"
+          fi
 
   remove-tag:
     name: Remove safety tag
