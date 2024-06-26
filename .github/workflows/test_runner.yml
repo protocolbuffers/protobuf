@@ -99,7 +99,7 @@ jobs:
       - name: Set Test Type
         id: set-test-type
         run: >
-          ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && (echo "test-type=presubmit" >> "$GITHUB_OUTPUT") || (echo "test-type=continuous" >> "$GITHUB_OUTPUT") }} 
+          ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }} && (echo "test-type=presubmit" >> "$GITHUB_OUTPUT") || (echo "test-type=continuous" >> "$GITHUB_OUTPUT") }}
 
   remove-tag:
     name: Remove safety tag
