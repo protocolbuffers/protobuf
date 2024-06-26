@@ -102,8 +102,11 @@ jobs:
 
       - name: Set Test Type
         id: set-test-type
-        run: >
-          ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }} && (echo "test-type=presubmit" >> "$GITHUB_OUTPUT") || (echo "test-type=continuous" >> "$GITHUB_OUTPUT") }}
+        run: |
+          if [[ ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }} ]]; then
+            echo "test-type=presubmit" >> "$GITHUB_OUTPUT"
+          else
+            echo "test-type=continuous" >> "$GITHUB_OUTPUT"
 
       - name: Set Continuous Prefix
         id: set-continuous-prefix
