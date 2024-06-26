@@ -96,16 +96,6 @@ jobs:
           ${{ github.event_name != 'pull_request_target' }} ||
           echo "sha=${{ github.event.pull_request.head.sha  }}"  >> $GITHUB_OUTPUT
 
-          #- name: Set Test Type
-          #id: set-test-type
-          #run: >
-          #${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && echo "test-type='presubmit'" || echo "test-type='continuous'" }} >> $GITHUB_OUTPUT
-
-          #- name: Set Continuous Prefix
-          #id: set-continuous-prefix
-          #run: >
-          #${{ steps.test-type.outputs.test-type == 'presubmit' && echo "continuous-prefix='[SKIPPED](Continuous)'" || echo "continuous-prefix='(Continuous)'" }} >> $GITHUB_OUTPUT
-
   remove-tag:
     name: Remove safety tag
     needs: [set-vars]
