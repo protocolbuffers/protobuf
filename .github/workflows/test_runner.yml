@@ -107,6 +107,7 @@ jobs:
             echo "test-type=presubmit" >> "$GITHUB_OUTPUT"
           else
             echo "test-type=continuous" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Set Continuous Prefix
         id: set-continuous-prefix
