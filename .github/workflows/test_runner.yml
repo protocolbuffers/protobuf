@@ -48,7 +48,7 @@ on:
 
   # manual
   workflow_dispatch:
-  
+ 
 permissions:
   contents: read
 
@@ -79,7 +79,7 @@ jobs:
       checkout-sha: ${{ steps.safe-checkout.outputs.sha }}
       # Stores a string denoting whether this is a presubmit or continuous
       # run. This helps us determine which tests to block on.
-      test-type: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && 'presubmit' || 'continuous' }} 
+      test-type: ${{ steps.set-test-type.outputs.test-type }}
     steps:
       - name: Check
         # Trivially pass for safe PRs, and explicitly error for unsafe ones
@@ -95,6 +95,11 @@ jobs:
         run: >
           ${{ github.event_name != 'pull_request_target' }} ||
           echo "sha=${{ github.event.pull_request.head.sha  }}"  >> $GITHUB_OUTPUT
+
+      - name: Set Test Type
+        id: set-test-type
+        run: >
+          ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && (echo "test-type=presubmit" >> "$GITHUB_OUTPUT") || (echo "test-type=continuous" >> "$GITHUB_OUTPUT") }} 
 
   remove-tag:
     name: Remove safety tag
