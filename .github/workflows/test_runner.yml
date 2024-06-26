@@ -83,7 +83,7 @@ jobs:
       # Stores a string that will serve as the prefix for all continuous tests.
       # Either way we prepend "(Continuous)" but in the case that we are in
       # a presubmit run, we should also mark them "[SKIPPED]"
-      #  continuous-prefix: ${{ steps.set-continuous-prefix.outputs.continuous-prefix }}
+      #continuous-prefix: ${{ steps.set-continuous-prefix.outputs.continuous-prefix }}
     steps:
      - name: Check
         # Trivially pass for safe PRs, and explicitly error for unsafe ones
@@ -108,7 +108,7 @@ jobs:
           #- name: Set Continuous Prefix
           #id: set-continuous-prefix
           #run: >
-          # ${{ steps.test-type.outputs.test-type == 'presubmit' && echo "continuous-prefix='[SKIPPED](Continuous)'" || echo "continuous-prefix='(Continuous)'" }} >> $GITHUB_OUTPUT
+          #${{ steps.test-type.outputs.test-type == 'presubmit' && echo "continuous-prefix='[SKIPPED](Continuous)'" || echo "continuous-prefix='(Continuous)'" }} >> $GITHUB_OUTPUT
 
   remove-tag:
     name: Remove safety tag
