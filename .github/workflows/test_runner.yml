@@ -133,6 +133,7 @@ jobs:
     with:
       test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
     secrets: inherit
 
   cpp:
@@ -142,6 +143,7 @@ jobs:
     with:
       test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
     secrets: inherit
 
   java:
@@ -151,6 +153,7 @@ jobs:
     with:
       test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
     secrets: inherit
 
   python:
@@ -160,6 +163,7 @@ jobs:
     with:
       test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
     secrets: inherit
 
   ruby:
@@ -169,6 +173,7 @@ jobs:
     with:
       test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
     secrets: inherit
 
   php:
@@ -178,6 +183,7 @@ jobs:
     with:
       test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
     secrets: inherit
 
   php-ext:
@@ -187,6 +193,7 @@ jobs:
     with:
       test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
     secrets: inherit
 
   csharp:
@@ -204,6 +211,7 @@ jobs:
     with:
       test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
     secrets: inherit
 
   rust:
@@ -221,6 +229,7 @@ jobs:
     with:
       test-type: ${{ needs.check-tag.outputs.test-type }}
       safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
     secrets: inherit
 
   staleness:
