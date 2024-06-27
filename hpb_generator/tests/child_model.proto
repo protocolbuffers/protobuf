@@ -7,7 +7,7 @@
 
 syntax = "proto3";
 
-package protos_generator.test;
+package hpb_generator.test;
 
 import public "hpb_generator/tests/test_enum.proto";
 
