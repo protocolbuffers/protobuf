@@ -1255,6 +1255,7 @@ cc_test(
     srcs = ["descriptor_database_unittest.cc"],
     deps = [
         ":protobuf",
+        ":test_textproto",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "@com_google_googletest//:gtest",

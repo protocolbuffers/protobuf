@@ -21,6 +21,7 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/test_textproto.h"
 #include "google/protobuf/text_format.h"
 
 
@@ -45,8 +46,6 @@ static void ExpectContainsType(const FileDescriptorProto& proto,
 }
 
 // ===================================================================
-
-#if GTEST_HAS_PARAM_TEST
 
 // SimpleDescriptorDatabase, EncodedDescriptorDatabase, and
 // DescriptorPoolDatabase call for very similar tests.  Instead of writing
@@ -456,8 +455,6 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(Pool, DescriptorDatabaseTest,
                         testing::Values(&DescriptorPoolDatabaseTestCase::New));
 
-#endif  // GTEST_HAS_PARAM_TEST
-
 TEST(EncodedDescriptorDatabaseExtraTest, FindNameOfFileContainingSymbol) {
   // Create two files, one of which is in two parts.
   FileDescriptorProto file1, file2a, file2b;
@@ -568,6 +565,77 @@ TEST(SimpleDescriptorDatabaseExtraTest, AddUnowned) {
   std::vector<std::string> messages;
   EXPECT_TRUE(db.FindAllMessageNames(&messages));
   EXPECT_THAT(messages, ::testing::UnorderedElementsAre("foo.Foo", "Bar"));
+}
+
+TEST(DescriptorPoolDatabaseTest, PreserveSourceCodeInfo) {
+  SimpleDescriptorDatabase original_db;
+  AddToDatabase(&original_db, R"pb(
+    name: "foo.proto"
+    package: "foo"
+    message_type {
+      name: "Foo"
+      extension_range { start: 1 end: 100 }
+    }
+    extension {
+      name: "foo_ext"
+      extendee: ".foo.Foo"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_INT32
+    }
+    source_code_info { location { leading_detached_comments: "comment" } }
+  )pb");
+  DescriptorPool pool(&original_db);
+  DescriptorPoolDatabase db(
+      pool, DescriptorPoolDatabaseOptions{/*preserve_source_code_info=*/true});
+
+  FileDescriptorProto file;
+  ASSERT_TRUE(db.FindFileByName("foo.proto", &file));
+  EXPECT_THAT(
+      file.source_code_info(),
+      EqualsProto(R"pb(location { leading_detached_comments: "comment" })pb"));
+
+  ASSERT_TRUE(db.FindFileContainingExtension("foo.Foo", 3, &file));
+  EXPECT_THAT(
+      file.source_code_info(),
+      EqualsProto(R"pb(location { leading_detached_comments: "comment" })pb"));
+
+  ASSERT_TRUE(db.FindFileContainingSymbol("foo.Foo", &file));
+  EXPECT_THAT(
+      file.source_code_info(),
+      EqualsProto(R"pb(location { leading_detached_comments: "comment" })pb"));
+}
+
+TEST(DescriptorPoolDatabaseTest, StripSourceCodeInfo) {
+  SimpleDescriptorDatabase original_db;
+  AddToDatabase(&original_db, R"pb(
+    name: "foo.proto"
+    package: "foo"
+    message_type {
+      name: "Foo"
+      extension_range { start: 1 end: 100 }
+    }
+    extension {
+      name: "foo_ext"
+      extendee: ".foo.Foo"
+      number: 3
+      label: LABEL_OPTIONAL
+      type: TYPE_INT32
+    }
+    source_code_info { location { leading_detached_comments: "comment" } }
+  )pb");
+  DescriptorPool pool(&original_db);
+  DescriptorPoolDatabase db(pool);
+
+  FileDescriptorProto file;
+  ASSERT_TRUE(db.FindFileByName("foo.proto", &file));
+  EXPECT_FALSE(file.has_source_code_info());
+
+  ASSERT_TRUE(db.FindFileContainingExtension("foo.Foo", 3, &file));
+  EXPECT_FALSE(file.has_source_code_info());
+
+  ASSERT_TRUE(db.FindFileContainingSymbol("foo.Foo", &file));
+  EXPECT_FALSE(file.has_source_code_info());
 }
 
 // ===================================================================
