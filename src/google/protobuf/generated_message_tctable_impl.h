@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_IMPL_H__
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_IMPL_H__
 
+#include <cassert>
 #include <cstdint>
 #include <cstdlib>
 #include <string>
@@ -741,6 +742,12 @@ class PROTOBUF_EXPORT TcParser final {
 #endif
     return *target;
   }
+
+  static const TcParseTableBase* GetTableFromAux(
+      uint16_t type_card, TcParseTableBase::FieldAux aux);
+  static MessageLite* NewMessage(const TcParseTableBase* table, Arena* arena);
+  static MessageLite* AddMessage(const TcParseTableBase* table,
+                                 RepeatedPtrFieldBase& field);
 
   template <typename T, bool is_split>
   static inline T& MaybeCreateRepeatedRefAt(void* x, size_t offset,
