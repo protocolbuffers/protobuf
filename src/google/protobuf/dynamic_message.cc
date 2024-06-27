@@ -666,6 +666,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   *target = type_info;
 
   type_info->class_data.descriptor = type;
+  type_info->class_data.is_dynamic = true;
   type_info->pool = (pool_ == nullptr) ? type->file()->pool() : pool_;
   type_info->factory = this;
 

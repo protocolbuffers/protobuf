@@ -649,6 +649,7 @@ class PROTOBUF_EXPORT MessageLite {
     // LITE objects (ie !descriptor_methods) collocate their name as a
     // char[] just beyond the ClassData.
     bool is_lite;
+    bool is_dynamic = false;
 
     // In normal mode we have the small constructor to avoid the cost in
     // codegen.
@@ -1087,12 +1088,19 @@ T* DynamicCastMessage(MessageLite* from) {
       DynamicCastMessage<T>(static_cast<const MessageLite*>(from)));
 }
 
+namespace internal {
+[[noreturn]] PROTOBUF_EXPORT void FailDynamicCast(const MessageLite& from,
+                                                  const MessageLite& to);
+}  // namespace internal
+
 template <typename T>
 const T& DynamicCastMessage(const MessageLite& from) {
   const T* destination_message = DynamicCastMessage<T>(&from);
-  ABSL_CHECK(destination_message != nullptr)
-      << "Cannot downcast " << from.GetTypeName() << " to "
-      << T::default_instance().GetTypeName();
+  if (ABSL_PREDICT_FALSE(destination_message == nullptr)) {
+    // Move the logging into an out-of-line function to reduce bloat in the
+    // caller.
+    internal::FailDynamicCast(from, T::default_instance());
+  }
   return *destination_message;
 }
 
