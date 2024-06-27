@@ -15,4 +15,12 @@ message Proto2Group {
   optional group Groupfield = 2 {
     optional int32 int32_field = 1;
   }
+
+  extensions 10 to 100;
+}
+
+extend Proto2Group {
+  optional group Groupextension = 10 {
+    optional int32 int32_field = 1;
+  }
 }
