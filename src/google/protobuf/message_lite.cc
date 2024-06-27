@@ -64,14 +64,14 @@ void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
   data->merge_to_from(*this, other);
 }
 
+MessageLite* MessageLite::New(Arena* arena) const {
+  return GetClassData()->New(arena);
+}
+
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 uint8_t* MessageLite::_InternalSerialize(
     uint8_t* ptr, io::EpsCopyOutputStream* stream) const {
   return _class_data_->serialize(*this, ptr, stream);
-}
-
-MessageLite* MessageLite::New(Arena* arena) const {
-  return static_cast<MessageLite*>(_class_data_->new_message(this, arena));
 }
 
 void MessageLite::Clear() { _class_data_->clear(*this); }

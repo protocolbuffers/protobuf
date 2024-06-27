@@ -258,13 +258,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   // Construct a new instance on the arena. Ownership is passed to the caller
   // if arena is a nullptr.
-#if defined(PROTOBUF_CUSTOM_VTABLE)
   Message* New(Arena* arena) const {
     return static_cast<Message*>(MessageLite::New(arena));
   }
-#else   // PROTOBUF_CUSTOM_VTABLE
-  Message* New(Arena* arena) const override = 0;
-#endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Make this message into a copy of the given message.  The given message
   // must have the same descriptor, but need not necessarily be the same class.

@@ -325,6 +325,31 @@ inline void PrefetchToLocalCache(const void* ptr) {
   absl::PrefetchToLocalCache(ptr);
 }
 
+template <typename T>
+constexpr T* Launder(T* p) {
+#if defined(__cpp_lib_launder) && __cpp_lib_launder >= 201606L
+  return std::launder(p);
+#elif ABSL_HAVE_BUILTIN(__builtin_launder)
+  return __builtin_launder(p);
+#else
+  return p;
+#endif
+}
+
+#if ABSL_HAVE_BUILTIN(__is_bitwise_cloneable)
+constexpr bool EnableCustomNew() { return true; }
+template <typename T>
+constexpr bool EnableCustomNewFor() {
+  return __is_bitwise_cloneable(T);
+}
+#else
+constexpr bool EnableCustomNew() { return false; }
+template <typename T>
+constexpr bool EnableCustomNewFor() {
+  return false;
+}
+#endif
+
 constexpr bool IsOss() { return true; }
 
 // Counter library for debugging internal protobuf logic.

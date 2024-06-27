@@ -134,6 +134,17 @@ class MessageGenerator {
   void GenerateIsInitialized(io::Printer* p);
   bool NeedsIsInitialized();
 
+  struct NewOpRequirements {
+    // Some field is initialized to non-zero values. Eg string fields pointing
+    // to default string.
+    bool needs_memcpy = false;
+    // Some field has a copy of the arena.
+    bool needs_arena_seeding = false;
+    // Some field has logic that needs to run.
+    bool needs_to_run_constructor = false;
+  };
+  NewOpRequirements GetNewOp(io::Printer* arena_emitter) const;
+
   // Helpers for GenerateSerializeWithCachedSizes().
   //
   // cached_has_bit_index maintains that:

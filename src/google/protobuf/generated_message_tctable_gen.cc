@@ -912,8 +912,7 @@ TailCallTableInfo::TailCallTableInfo(
           // If we don't use codegen we can't add these.
           auto* map_value = field->message_type()->map_value();
           if (auto* sub = map_value->message_type()) {
-            aux_entries.push_back({kCreateInArena});
-            aux_entries.back().desc = sub;
+            aux_entries.push_back({kSubTable, {map_value}});
           } else if (map_value->type() == FieldDescriptor::TYPE_ENUM &&
                      !cpp::HasPreservingUnknownEnumSemantics(map_value)) {
             aux_entries.push_back({kEnumValidator, {map_value}});
