@@ -327,6 +327,17 @@ PyTypeObject* PyUpb_AddClassWithRegister(PyObject* m, PyType_Spec* spec,
                                          PyObject* virtual_base,
                                          const char** methods) {
   PyObject* type = PyType_FromSpec(spec);
+
+  // begin:google_only
+//   // Internal-only: register the class name in the module.  This is needed for
+//   // compatibility with Proto Plus.
+//   const char* name = PyUpb_GetClassName(spec);
+//   if (PyModule_AddObject(m, name, type) < 0) {
+//     Py_XDECREF(type);
+//     return NULL;
+//   }
+  // end:google_only
+
   PyObject* ret1 = PyObject_CallMethod(virtual_base, "register", "O", type);
   if (!ret1) {
     Py_XDECREF(type);
