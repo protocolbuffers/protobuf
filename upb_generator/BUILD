@@ -123,6 +123,8 @@ bootstrap_cc_library(
         "//upb/reflection:descriptor_upb_proto",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
+    # TODO: Export 'net/proto2/proto/descriptor.upb.h' and remove "-layering_check".
+    features = ["-layering_check"],
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
