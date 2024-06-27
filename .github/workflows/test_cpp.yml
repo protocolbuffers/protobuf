@@ -80,7 +80,7 @@ jobs:
       matrix:
         arch: [x86_64, aarch64]
     name: Linux Release ${{ matrix.arch}}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20-large
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
