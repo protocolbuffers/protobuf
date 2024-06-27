@@ -4,9 +4,69 @@
 #include <memory>
 #include <type_traits>
 
+#include "google/protobuf/map.h"
+#include "google/protobuf/message_lite.h"
+
 namespace google {
 namespace protobuf {
 namespace rust {
+
+class MapVisibility {
+ public:
+  using NodeAndBucket = google::protobuf::internal::UntypedMapBase::NodeAndBucket;
+  using ClearInput = google::protobuf::internal::UntypedMapBase::ClearInput;
+
+  template <typename Key, typename Value>
+  static constexpr internal::MapNodeSizeInfoT SizeInfo() {
+    return google::protobuf::Map<Key, Value>::Node::size_info();
+  }
+
+  enum {
+    kKeyIsString = google::protobuf::internal::UntypedMapBase::kKeyIsString,
+    kValueIsProto = google::protobuf::internal::UntypedMapBase::kValueIsProto,
+  };
+
+  static internal::NodeBase* AllocNode(google::protobuf::internal::UntypedMapBase* m,
+                                       internal::MapNodeSizeInfoT size_info) {
+    return m->AllocNode(size_info);
+  }
+
+  static void DeallocNode(google::protobuf::internal::UntypedMapBase* m,
+                          internal::NodeBase* node,
+                          internal::MapNodeSizeInfoT size_info) {
+    return m->DeallocNode(node, size_info);
+  }
+
+  template <typename Map>
+  static NodeAndBucket FindHelper(Map* m, typename Map::TS::ViewType key) {
+    return m->FindHelper(key);
+  }
+
+  template <typename Map>
+  static typename Map::KeyNode* InsertOrReplaceNode(Map* m,
+                                                    internal::NodeBase* node) {
+    return m->InsertOrReplaceNode(static_cast<typename Map::KeyNode*>(node));
+  }
+
+  template <typename Map>
+  static void EraseNoDestroy(Map* m, internal::map_index_t bucket,
+                             google::protobuf::internal::NodeBase* node) {
+    m->erase_no_destroy(bucket, static_cast<typename Map::KeyNode*>(node));
+  }
+
+  static void DestroyMessage(::google::protobuf::MessageLite* m) {
+    m->DestroyInstance(false);
+  }
+
+  static void ClearTable(google::protobuf::internal::UntypedMapBase* m,
+                         ClearInput input) {
+    m->ClearTable(input);
+  }
+
+  static bool IsEmpty(const google::protobuf::internal::UntypedMapBase* m) {
+    return m->num_buckets_ == google::protobuf::internal::kGlobalEmptyTableSize;
+  }
+};
 
 // String and bytes values are passed across the FFI boundary as owned raw
 // pointers when we do map insertions. Unlike other types, they have to be
@@ -74,8 +134,8 @@ auto MakeCleanup(T value) {
     return google::protobuf::internal::UntypedMapIterator::FromTyped(m->cbegin());      \
   }                                                                           \
   void proto2_rust_thunk_Map_##rust_key_ty##_##rust_value_ty##_iter_get(      \
-      const google::protobuf::internal::UntypedMapIterator* iter, ffi_key_ty* key,      \
-      ffi_view_ty* value) {                                                   \
+      const google::protobuf::internal::UntypedMapIterator* iter, int32_t,              \
+      ffi_key_ty* key, ffi_view_ty* value) {                                  \
     auto typed_iter =                                                         \
         iter->ToTyped<google::protobuf::Map<key_ty, value_ty>::const_iterator>();       \
     const auto& cpp_key = typed_iter->first;                                  \

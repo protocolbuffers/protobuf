@@ -81,7 +81,7 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
         fn $map_get_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: *mut $name$) -> bool;
         fn $map_remove_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: *mut $name$) -> bool;
         fn $map_iter_thunk$(m: $pbr$::RawMap) -> $pbr$::UntypedMapIterator;
-        fn $map_iter_get_thunk$(iter: &mut $pbr$::UntypedMapIterator, key: *mut $ffi_key_t$, value: *mut $name$);
+        fn $map_iter_get_thunk$(iter: &mut $pbr$::UntypedMapIterator, size_info: $pbr$::MapNodeSizeInfo, key: *mut $ffi_key_t$, value: *mut $name$);
       }
       impl $pb$::ProxiedInMapValue<$key_t$> for $name$ {
         fn map_new(_private: $pbi$::Private) -> $pb$::Map<$key_t$, Self> {
@@ -149,6 +149,7 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
                 iter.as_raw_mut($pbi$::Private).next_unchecked::<$key_t$, Self, _, _>(
                     $pbi$::Private,
                     $map_iter_get_thunk$,
+                    $pbr$::MapNodeSizeInfo(0),
                     |ffi_key| $from_ffi_key_expr$,
                     $std$::convert::identity,
                 )

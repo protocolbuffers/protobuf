@@ -95,6 +95,10 @@ pub struct InnerProtoString {
     owned_ptr: CppStdString,
 }
 
+/// An opaque type matching MapNodeSizeInfoT from C++.
+#[repr(C)]
+pub struct MapNodeSizeInfo(pub i32);
+
 impl Drop for InnerProtoString {
     fn drop(&mut self) {
         // SAFETY: `self.owned_ptr` points to a valid std::string object.
@@ -683,9 +687,11 @@ impl UntypedMapIterator {
         _private: Private,
         iter_get_thunk: unsafe extern "C" fn(
             iter: &mut UntypedMapIterator,
+            size_info: MapNodeSizeInfo,
             key: *mut FfiKey,
             value: *mut FfiValue,
         ),
+        size_info: MapNodeSizeInfo,
         from_ffi_key: impl FnOnce(FfiKey) -> View<'a, K>,
         from_ffi_value: impl FnOnce(FfiValue) -> View<'a, V>,
     ) -> Option<(View<'a, K>, View<'a, V>)>
@@ -703,7 +709,7 @@ impl UntypedMapIterator {
         // - The iterator is not at the end (node is non-null).
         // - `ffi_key` and `ffi_value` are not read (as uninit) as promised by the
         //   caller.
-        unsafe { (iter_get_thunk)(self, ffi_key.as_mut_ptr(), ffi_value.as_mut_ptr()) }
+        unsafe { (iter_get_thunk)(self, size_info, ffi_key.as_mut_ptr(), ffi_value.as_mut_ptr()) }
 
         // SAFETY:
         // - The backing map is alive as promised by the caller.
@@ -726,8 +732,177 @@ impl UntypedMapIterator {
     }
 }
 
+#[repr(C)]
+pub struct MapNodeSizeInfoIndex(i32);
+
+pub trait SizeInfoIndex {
+    const SIZE_INFO_INDEX: MapNodeSizeInfoIndex;
+}
+
+impl SizeInfoIndex for i32 {
+    const SIZE_INFO_INDEX: MapNodeSizeInfoIndex = MapNodeSizeInfoIndex(0);
+}
+
+impl SizeInfoIndex for u32 {
+    const SIZE_INFO_INDEX: MapNodeSizeInfoIndex = MapNodeSizeInfoIndex(0);
+}
+
+impl SizeInfoIndex for i64 {
+    const SIZE_INFO_INDEX: MapNodeSizeInfoIndex = MapNodeSizeInfoIndex(1);
+}
+
+impl SizeInfoIndex for u64 {
+    const SIZE_INFO_INDEX: MapNodeSizeInfoIndex = MapNodeSizeInfoIndex(1);
+}
+
+impl SizeInfoIndex for bool {
+    const SIZE_INFO_INDEX: MapNodeSizeInfoIndex = MapNodeSizeInfoIndex(2);
+}
+
+impl SizeInfoIndex for ProtoString {
+    const SIZE_INFO_INDEX: MapNodeSizeInfoIndex = MapNodeSizeInfoIndex(3);
+}
+
 extern "C" {
     fn proto2_rust_thunk_UntypedMapIterator_increment(iter: &mut UntypedMapIterator);
+
+    pub fn proto2_rust_map_new() -> RawMap;
+    pub fn proto2_rust_map_free(m: RawMap);
+    pub fn proto2_rust_map_clear(m: RawMap, key_is_string: bool, size_info: MapNodeSizeInfo);
+    pub fn proto2_rust_map_size(m: RawMap) -> usize;
+    pub fn proto2_rust_map_iter(m: RawMap) -> UntypedMapIterator;
+
+    // Insert
+    pub fn proto2_rust_map_insert_i32(
+        m: RawMap,
+        size_info: MapNodeSizeInfo,
+        key: i32,
+        value: RawMessage,
+        placement_new: unsafe extern "C" fn(*mut c_void, m: RawMessage),
+    ) -> bool;
+    pub fn proto2_rust_map_insert_u32(
+        m: RawMap,
+        size_info: MapNodeSizeInfo,
+        key: u32,
+        value: RawMessage,
+        placement_new: unsafe extern "C" fn(*mut c_void, m: RawMessage),
+    ) -> bool;
+    pub fn proto2_rust_map_insert_i64(
+        m: RawMap,
+        size_info: MapNodeSizeInfo,
+        key: i64,
+        value: RawMessage,
+        placement_new: unsafe extern "C" fn(*mut c_void, m: RawMessage),
+    ) -> bool;
+    pub fn proto2_rust_map_insert_u64(
+        m: RawMap,
+        size_info: MapNodeSizeInfo,
+        key: u64,
+        value: RawMessage,
+        placement_new: unsafe extern "C" fn(*mut c_void, m: RawMessage),
+    ) -> bool;
+    pub fn proto2_rust_map_insert_bool(
+        m: RawMap,
+        size_info: MapNodeSizeInfo,
+        key: bool,
+        value: RawMessage,
+        placement_new: unsafe extern "C" fn(*mut c_void, m: RawMessage),
+    ) -> bool;
+    pub fn proto2_rust_map_insert_ProtoString(
+        m: RawMap,
+        size_info: MapNodeSizeInfo,
+        key: PtrAndLen,
+        value: RawMessage,
+        placement_new: unsafe extern "C" fn(*mut c_void, m: RawMessage),
+    ) -> bool;
+
+    // Get
+    pub fn proto2_rust_map_get_i32(
+        m: RawMap,
+        size_info: MapNodeSizeInfo,
+        key: i32,
+        value: *mut RawMessage,
+    ) -> bool;
+    pub fn proto2_rust_map_get_u32(
+        m: RawMap,
+        size_info: MapNodeSizeInfo,
+        key: u32,
+        value: *mut RawMessage,
+    ) -> bool;
+    pub fn proto2_rust_map_get_i64(
+        m: RawMap,
+        size_info: MapNodeSizeInfo,
+        key: i64,
+        value: *mut RawMessage,
+    ) -> bool;
+    pub fn proto2_rust_map_get_u64(
+        m: RawMap,
+        size_info: MapNodeSizeInfo,
+        key: u64,
+        value: *mut RawMessage,
+    ) -> bool;
+    pub fn proto2_rust_map_get_bool(
+        m: RawMap,
+        size_info: MapNodeSizeInfo,
+        key: bool,
+        value: *mut RawMessage,
+    ) -> bool;
+    pub fn proto2_rust_map_get_ProtoString(
+        m: RawMap,
+        size_info: MapNodeSizeInfo,
+        key: PtrAndLen,
+        value: *mut RawMessage,
+    ) -> bool;
+
+    // Remove
+    pub fn proto2_rust_map_remove_i32(m: RawMap, size_info: MapNodeSizeInfo, key: i32) -> bool;
+    pub fn proto2_rust_map_remove_u32(m: RawMap, size_info: MapNodeSizeInfo, key: u32) -> bool;
+    pub fn proto2_rust_map_remove_i64(m: RawMap, size_info: MapNodeSizeInfo, key: i64) -> bool;
+    pub fn proto2_rust_map_remove_u64(m: RawMap, size_info: MapNodeSizeInfo, key: u64) -> bool;
+    pub fn proto2_rust_map_remove_bool(m: RawMap, size_info: MapNodeSizeInfo, key: bool) -> bool;
+    pub fn proto2_rust_map_remove_ProtoString(
+        m: RawMap,
+        size_info: MapNodeSizeInfo,
+        key: PtrAndLen,
+    ) -> bool;
+
+    // Iter Get
+    pub fn proto2_rust_map_iter_get_i32(
+        iter: &mut UntypedMapIterator,
+        size_info: MapNodeSizeInfo,
+        key: *mut i32,
+        value: *mut RawMessage,
+    );
+    pub fn proto2_rust_map_iter_get_u32(
+        iter: &mut UntypedMapIterator,
+        size_info: MapNodeSizeInfo,
+        key: *mut u32,
+        value: *mut RawMessage,
+    );
+    pub fn proto2_rust_map_iter_get_i64(
+        iter: &mut UntypedMapIterator,
+        size_info: MapNodeSizeInfo,
+        key: *mut i64,
+        value: *mut RawMessage,
+    );
+    pub fn proto2_rust_map_iter_get_u64(
+        iter: &mut UntypedMapIterator,
+        size_info: MapNodeSizeInfo,
+        key: *mut u64,
+        value: *mut RawMessage,
+    );
+    pub fn proto2_rust_map_iter_get_bool(
+        iter: &mut UntypedMapIterator,
+        size_info: MapNodeSizeInfo,
+        key: *mut bool,
+        value: *mut RawMessage,
+    );
+    pub fn proto2_rust_map_iter_get_ProtoString(
+        iter: &mut UntypedMapIterator,
+        size_info: MapNodeSizeInfo,
+        key: *mut PtrAndLen,
+        value: *mut RawMessage,
+    );
 }
 
 macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
@@ -741,7 +916,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                 fn [< proto2_rust_thunk_Map_ $key_t _ $t _insert >](m: RawMap, key: $ffi_key_t, value: $ffi_value_t) -> bool;
                 fn [< proto2_rust_thunk_Map_ $key_t _ $t _get >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_view_t) -> bool;
                 fn [< proto2_rust_thunk_Map_ $key_t _ $t _iter >](m: RawMap) -> UntypedMapIterator;
-                fn [< proto2_rust_thunk_Map_ $key_t _ $t _iter_get >](iter: &mut UntypedMapIterator, key: *mut $ffi_key_t, value: *mut $ffi_view_t);
+                fn [< proto2_rust_thunk_Map_ $key_t _ $t _iter_get >](iter: &mut UntypedMapIterator, size_info: MapNodeSizeInfo, key: *mut $ffi_key_t, value: *mut $ffi_view_t);
                 fn [< proto2_rust_thunk_Map_ $key_t _ $t _remove >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_view_t) -> bool;
             }
 
@@ -822,6 +997,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                         iter.as_raw_mut(Private).next_unchecked::<$key_t, Self, _, _>(
                             Private,
                             [< proto2_rust_thunk_Map_ $key_t _ $t _iter_get >],
+                            MapNodeSizeInfo(0),
                             $from_ffi_key,
                             $from_ffi_value,
                         )

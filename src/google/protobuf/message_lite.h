@@ -64,6 +64,11 @@ class ZeroCopyInputStream;
 class ZeroCopyOutputStream;
 
 }  // namespace io
+
+namespace rust {
+class MapVisibility;
+}  // namespace rust
+
 namespace internal {
 
 // Allow easy change to regular int on platforms where the atomic might have a
@@ -826,6 +831,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::UntypedMapBase;
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
+  friend class rust::MapVisibility;
 
   template <typename Type>
   friend class Arena::InternalHelper;

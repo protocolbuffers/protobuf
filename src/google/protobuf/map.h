@@ -62,6 +62,10 @@ class MapIterator;
 template <typename Enum>
 struct is_proto_enum;
 
+namespace rust {
+class MapVisibility;
+}  // namespace rust
+
 namespace internal {
 template <typename Key, typename T>
 class MapFieldLite;
@@ -590,6 +594,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   friend struct MapTestPeer;
   friend struct MapBenchmarkPeer;
   friend class UntypedMapIterator;
+  friend class rust::MapVisibility;
 
   struct NodeAndBucket {
     NodeBase* node;
@@ -924,6 +929,7 @@ class KeyMapBase : public UntypedMapBase {
   friend class TcParser;
   friend struct MapTestPeer;
   friend struct MapBenchmarkPeer;
+  friend class rust::MapVisibility;
 
   PROTOBUF_NOINLINE void erase_no_destroy(map_index_t b, KeyNode* node) {
     TreeIterator tree_it;
@@ -1702,6 +1708,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   friend class internal::TcParser;
   friend struct internal::MapTestPeer;
   friend struct internal::MapBenchmarkPeer;
+  friend class rust::MapVisibility;
 };
 
 namespace internal {
