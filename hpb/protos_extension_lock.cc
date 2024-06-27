@@ -5,7 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_PROTOS_REPEATED_FIELD_ITERATOR_H_
-#define UPB_PROTOS_REPEATED_FIELD_ITERATOR_H_
-#include "google/protobuf/hpb/repeated_field_iterator.h"
-#endif
+#include "google/protobuf/hpb/protos_extension_lock.h"
+
+#include <atomic>
+
+namespace protos::internal {
+
+std::atomic<UpbExtensionLocker> upb_extension_locker_global;
+
+}  // namespace protos::internal
