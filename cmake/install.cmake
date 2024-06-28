@@ -7,7 +7,6 @@ foreach(_target IN LISTS protobuf_ABSL_USED_TARGETS)
   string(REPLACE :: _ _modified_target ${_modified_target})
   list(APPEND _pc_targets ${_modified_target})
 endforeach()
-list(APPEND _pc_targets "utf8_range")
 
 set(_protobuf_PC_REQUIRES "")
 set(_sep "")
