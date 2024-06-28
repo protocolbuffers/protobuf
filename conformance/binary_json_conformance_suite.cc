@@ -124,7 +124,7 @@ std::string fixed64(void* data) {
   return std::string(reinterpret_cast<char*>(&data_le), 8);
 }
 
-std::string delim(const std::string& buf) {
+std::string delim(absl::string_view buf) {
   return absl::StrCat(varint(buf.size()), buf);
 }
 std::string u32(uint32_t u32) { return fixed32(&u32); }
@@ -239,7 +239,7 @@ std::string UpperCase(std::string str) {
 }
 
 bool IsProto3Default(FieldDescriptor::Type type,
-                     const std::string& binary_data) {
+                     absl::string_view binary_data) {
   switch (type) {
     case FieldDescriptor::TYPE_DOUBLE:
       return binary_data == dbl(0);
@@ -299,7 +299,7 @@ bool BinaryAndJsonConformanceSuite::ParseResponse(
     const ConformanceRequestSetting& setting, Message* test_message) {
   const ConformanceRequest& request = setting.GetRequest();
   WireFormat requested_output = request.requested_output_format();
-  const std::string& test_name = setting.GetTestName();
+  const std::string test_name = setting.GetTestName();
   ConformanceLevel level = setting.GetLevel();
 
   switch (response.result_case()) {
@@ -421,8 +421,8 @@ void BinaryAndJsonConformanceSuite::RunDelimitedFieldTests() {
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::
-    ExpectParseFailureForProtoWithProtoVersion(const std::string& proto,
-                                               const std::string& test_name,
+    ExpectParseFailureForProtoWithProtoVersion(absl::string_view proto,
+                                               absl::string_view test_name,
                                                ConformanceLevel level) {
   MessageType prototype;
   // We don't expect output, but if the program erroneously accepts the protobuf
@@ -451,7 +451,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
 // Expect that this precise protobuf will cause a parse error.
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::ExpectParseFailureForProto(
-    const std::string& proto, const std::string& test_name,
+    absl::string_view proto, absl::string_view test_name,
     ConformanceLevel level) {
   ExpectParseFailureForProtoWithProtoVersion(proto, test_name, level);
 }
@@ -463,16 +463,16 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::ExpectParseFailureForProto(
 // TODO: implement the second of these.
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<
-    MessageType>::ExpectHardParseFailureForProto(const std::string& proto,
-                                                 const std::string& test_name,
+    MessageType>::ExpectHardParseFailureForProto(absl::string_view proto,
+                                                 absl::string_view test_name,
                                                  ConformanceLevel level) {
   return ExpectParseFailureForProto(proto, test_name, level);
 }
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunValidJsonTest(
-    const std::string& test_name, ConformanceLevel level,
-    const std::string& input_json, const std::string& equivalent_text_format) {
+    absl::string_view test_name, ConformanceLevel level,
+    absl::string_view input_json, absl::string_view equivalent_text_format) {
   MessageType prototype;
   RunValidJsonTestWithMessage(test_name, level, input_json,
                               equivalent_text_format, prototype);
@@ -480,10 +480,10 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunValidJsonTest(
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::
-    RunValidJsonTestWithMessage(const std::string& test_name,
+    RunValidJsonTestWithMessage(absl::string_view test_name,
                                 ConformanceLevel level,
-                                const std::string& input_json,
-                                const std::string& equivalent_text_format,
+                                absl::string_view input_json,
+                                absl::string_view equivalent_text_format,
                                 const Message& prototype) {
   ConformanceRequestSetting setting1(
       level, conformance::JSON, conformance::PROTOBUF, conformance::JSON_TEST,
@@ -498,8 +498,8 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::
     RunValidJsonTestWithProtobufInput(
-        const std::string& test_name, ConformanceLevel level,
-        const MessageType& input, const std::string& equivalent_text_format) {
+        absl::string_view test_name, ConformanceLevel level,
+        const MessageType& input, absl::string_view equivalent_text_format) {
   ConformanceRequestSetting setting(
       level, conformance::PROTOBUF, conformance::JSON, conformance::JSON_TEST,
       input, test_name, input.SerializeAsString());
@@ -508,10 +508,10 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::
-    RunValidJsonIgnoreUnknownTest(const std::string& test_name,
+    RunValidJsonIgnoreUnknownTest(absl::string_view test_name,
                                   ConformanceLevel level,
-                                  const std::string& input_json,
-                                  const std::string& equivalent_text_format) {
+                                  absl::string_view input_json,
+                                  absl::string_view equivalent_text_format) {
   MessageType prototype;
   ConformanceRequestSetting setting(
       level, conformance::JSON, conformance::PROTOBUF,
@@ -522,9 +522,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuite::RunValidBinaryProtobufTest(
-    const std::string& test_name, ConformanceLevel level,
-    const std::string& input_protobuf,
-    const std::string& equivalent_text_format) {
+    absl::string_view test_name, ConformanceLevel level,
+    absl::string_view input_protobuf,
+    absl::string_view equivalent_text_format) {
   MessageType prototype;
 
   ConformanceRequestSetting binary_to_binary(
@@ -535,9 +535,9 @@ void BinaryAndJsonConformanceSuite::RunValidBinaryProtobufTest(
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuite::RunValidProtobufTest(
-    const std::string& test_name, ConformanceLevel level,
-    const std::string& input_protobuf,
-    const std::string& equivalent_text_format) {
+    absl::string_view test_name, ConformanceLevel level,
+    absl::string_view input_protobuf,
+    absl::string_view equivalent_text_format) {
   MessageType prototype;
 
   ConformanceRequestSetting binary_to_binary(
@@ -553,24 +553,24 @@ void BinaryAndJsonConformanceSuite::RunValidProtobufTest(
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunValidProtobufTest(
-    const std::string& test_name, ConformanceLevel level,
-    const std::string& input_protobuf,
-    const std::string& equivalent_text_format) {
+    absl::string_view test_name, ConformanceLevel level,
+    absl::string_view input_protobuf,
+    absl::string_view equivalent_text_format) {
   suite_.RunValidProtobufTest<MessageType>(test_name, level, input_protobuf,
                                            equivalent_text_format);
 }
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunValidBinaryProtobufTest(
-    const std::string& test_name, ConformanceLevel level,
-    const std::string& input_protobuf) {
+    absl::string_view test_name, ConformanceLevel level,
+    absl::string_view input_protobuf) {
   RunValidBinaryProtobufTest(test_name, level, input_protobuf, input_protobuf);
 }
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunValidBinaryProtobufTest(
-    const std::string& test_name, ConformanceLevel level,
-    const std::string& input_protobuf, const std::string& expected_protobuf) {
+    absl::string_view test_name, ConformanceLevel level,
+    absl::string_view input_protobuf, absl::string_view expected_protobuf) {
   MessageType prototype;
   ConformanceRequestSetting setting(
       level, conformance::PROTOBUF, conformance::PROTOBUF,
@@ -580,8 +580,8 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunValidBinaryProtobufTest(
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::
-    RunBinaryPerformanceMergeMessageWithField(const std::string& test_name,
-                                              const std::string& field_proto) {
+    RunBinaryPerformanceMergeMessageWithField(absl::string_view test_name,
+                                              absl::string_view field_proto) {
   std::string message_tag = tag(27, WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
   std::string message_proto = absl::StrCat(message_tag, delim(field_proto));
 
@@ -592,7 +592,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
 
   std::string multiple_repeated_field_proto;
   for (size_t i = 0; i < kPerformanceRepeatCount; i++) {
-    multiple_repeated_field_proto.append(field_proto);
+    multiple_repeated_field_proto.append(std::string(field_proto));
   }
   std::string expected_proto =
       absl::StrCat(message_tag, delim(multiple_repeated_field_proto));
@@ -602,10 +602,10 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::
-    RunValidProtobufTestWithMessage(const std::string& test_name,
+    RunValidProtobufTestWithMessage(absl::string_view test_name,
                                     ConformanceLevel level,
                                     const Message* input,
-                                    const std::string& equivalent_text_format) {
+                                    absl::string_view equivalent_text_format) {
   RunValidProtobufTest(test_name, level, input->SerializeAsString(),
                        equivalent_text_format);
 }
@@ -617,9 +617,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
 
 template <typename MessageType>  // the JSON output directly.
 void BinaryAndJsonConformanceSuiteImpl<
-    MessageType>::RunValidJsonTestWithValidator(const std::string& test_name,
+    MessageType>::RunValidJsonTestWithValidator(absl::string_view test_name,
                                                 ConformanceLevel level,
-                                                const std::string& input_json,
+                                                absl::string_view input_json,
                                                 const Validator& validator) {
   MessageType prototype;
   ConformanceRequestSetting setting(level, conformance::JSON, conformance::JSON,
@@ -663,8 +663,8 @@ void BinaryAndJsonConformanceSuiteImpl<
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::ExpectParseFailureForJson(
-    const std::string& test_name, ConformanceLevel level,
-    const std::string& input_json) {
+    absl::string_view test_name, ConformanceLevel level,
+    absl::string_view input_json) {
   MessageType prototype;
   // We don't expect output, but if the program erroneously accepts the protobuf
   // we let it send its response as this.  We must not leave it unspecified.
@@ -689,10 +689,10 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::ExpectParseFailureForJson(
 }
 
 template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::
-    ExpectSerializeFailureForJson(const std::string& test_name,
-                                  ConformanceLevel level,
-                                  const std::string& text_format) {
+void BinaryAndJsonConformanceSuiteImpl<
+    MessageType>::ExpectSerializeFailureForJson(absl::string_view test_name,
+                                                ConformanceLevel level,
+                                                absl::string_view text_format) {
   MessageType payload_message;
   ABSL_CHECK(TextFormat::ParseFromString(text_format, &payload_message))
       << "Failed to parse: " << text_format;

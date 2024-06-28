@@ -51,19 +51,19 @@ class CommandLineInterfaceTester : public testing::Test {
   // Returns the temporary directory created for testing.
   std::string temp_directory() { return temp_directory_; }
 
-  void AllowPlugins(const std::string& prefix) { cli_.AllowPlugins(prefix); }
+  void AllowPlugins(absl::string_view prefix) { cli_.AllowPlugins(prefix); }
 
-  void RegisterGenerator(const std::string& flag_name,
+  void RegisterGenerator(absl::string_view flag_name,
                          std::unique_ptr<CodeGenerator> generator,
-                         const std::string& help_text) {
+                         absl::string_view help_text) {
     generators_.emplace_back(std::move(generator));
     cli_.RegisterGenerator(flag_name, generators_.back().get(), help_text);
   }
 
-  void RegisterGenerator(const std::string& flag_name,
-                         const std::string& option_flag_name,
+  void RegisterGenerator(absl::string_view flag_name,
+                         absl::string_view option_flag_name,
                          std::unique_ptr<CodeGenerator> generator,
-                         const std::string& help_text) {
+                         absl::string_view help_text) {
     generators_.emplace_back(std::move(generator));
     cli_.RegisterGenerator(flag_name, option_flag_name,
                            generators_.back().get(), help_text);
@@ -119,7 +119,7 @@ class CommandLineInterfaceTester : public testing::Test {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   // Returns true if ExpectErrorSubstring(expected_substring) would pass, but
   // does not fail otherwise.
-  bool HasAlternateErrorSubstring(const std::string& expected_substring);
+  bool HasAlternateErrorSubstring(absl::string_view expected_substring);
 #endif  // _WIN32 && !__CYGWIN__
 
   void ExpectFileContent(absl::string_view filename, absl::string_view content);

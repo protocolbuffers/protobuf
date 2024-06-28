@@ -1297,7 +1297,7 @@ absl::Status JsonStringToMessage(absl::string_view input, Message* message,
 }
 
 absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
-                                const std::string& type_url,
+                                absl::string_view type_url,
                                 io::ZeroCopyInputStream* json_input,
                                 io::ZeroCopyOutputStream* binary_output,
                                 json_internal::ParseOptions options) {
@@ -1360,3 +1360,5 @@ absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
 }  // namespace json_internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

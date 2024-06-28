@@ -75,8 +75,8 @@ class FieldGenerator {
   }
 
   bool needs_textformat_name_support() const {
-    const std::string& field_flags = variable("fieldflags");
-    return absl::StrContains(field_flags, "GPBFieldTextFormatNameCustom");
+    return absl::StrContains(variable("fieldflags"),
+                             "GPBFieldTextFormatNameCustom");
   }
   std::string generated_objc_name() const { return variable("name"); }
   std::string raw_field_name() const { return variable("raw_field_name"); }

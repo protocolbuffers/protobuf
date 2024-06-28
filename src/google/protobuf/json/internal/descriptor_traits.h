@@ -296,7 +296,7 @@ struct Proto2Descriptor {
   // Like WithFieldType, but using dynamic lookup by type URL.
   template <typename F>
   static absl::Status WithDynamicType(const Desc& desc,
-                                      const std::string& type_url, F body) {
+                                      absl::string_view type_url, F body) {
     size_t slash = type_url.rfind('/');
     if (slash == absl::string_view::npos || slash == 0) {
       return absl::InvalidArgumentError(absl::StrCat(
@@ -498,7 +498,7 @@ struct Proto3Type {
 
   template <typename F>
   static absl::Status WithDynamicType(const Desc& desc,
-                                      const std::string& type_url, F body) {
+                                      absl::string_view type_url, F body) {
     auto dyn_desc = desc.pool()->FindMessage(type_url);
     RETURN_IF_ERROR(dyn_desc.status());
     return body(**dyn_desc);

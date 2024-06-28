@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/port.h"
@@ -87,7 +88,7 @@ class Context {
 template <typename Descriptor>
 void MaybePrintGeneratedAnnotation(Context* context, io::Printer* printer,
                                    Descriptor* descriptor, bool immutable,
-                                   const std::string& suffix = "") {
+                                   absl::string_view suffix = "") {
   if (IsOwnFile(descriptor, immutable)) {
     PrintGeneratedAnnotation(printer, '$',
                              context->options().annotate_code
@@ -96,7 +97,6 @@ void MaybePrintGeneratedAnnotation(Context* context, io::Printer* printer,
                              context->options());
   }
 }
-
 
 }  // namespace java
 }  // namespace compiler

@@ -485,7 +485,7 @@ void Parser::LocationRecorder::RecordLegacyLocation(
 }
 
 void Parser::LocationRecorder::RecordLegacyImportLocation(
-    const Message* descriptor, const std::string& name) {
+    const Message* descriptor, absl::string_view name) {
   if (parser_->source_location_table_ != nullptr) {
     parser_->source_location_table_->AddImport(
         descriptor, name, location_->span(0), location_->span(1));
@@ -2641,9 +2641,9 @@ void SourceLocationTable::Add(
 }
 
 void SourceLocationTable::AddImport(const Message* descriptor,
-                                    const std::string& name, int line,
+                                    absl::string_view name, int line,
                                     int column) {
-  import_location_map_[std::make_pair(descriptor, name)] =
+  import_location_map_[std::make_pair(descriptor, std::string(name))] =
       std::make_pair(line, column);
 }
 

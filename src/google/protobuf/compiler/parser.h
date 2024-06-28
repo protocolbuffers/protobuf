@@ -286,7 +286,7 @@ class PROTOBUF_EXPORT Parser final {
         const Message* descriptor,
         DescriptorPool::ErrorCollector::ErrorLocation location);
     void RecordLegacyImportLocation(const Message* descriptor,
-                                    const std::string& name);
+                                    absl::string_view name);
 
     // Returns the number of path components in the recorder's current location.
     int CurrentPathSize() const;
@@ -605,7 +605,7 @@ class PROTOBUF_EXPORT SourceLocationTable {
   void Add(const Message* descriptor,
            DescriptorPool::ErrorCollector::ErrorLocation location, int line,
            int column);
-  void AddImport(const Message* descriptor, const std::string& name, int line,
+  void AddImport(const Message* descriptor, absl::string_view name, int line,
                  int column);
 
   // Clears the contents of the table.

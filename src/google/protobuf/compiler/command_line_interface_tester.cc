@@ -140,9 +140,10 @@ void CommandLineInterfaceTester::ExpectWarningSubstring(
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 bool CommandLineInterfaceTester::HasAlternateErrorSubstring(
-    const std::string& expected_substring) {
+    absl::string_view expected_substring) {
   EXPECT_NE(0, return_code_);
-  return error_text_.find(expected_substring) != std::string::npos;
+  return absl::string_view(error_text_).find(expected_substring) !=
+         absl::string_view::npos;
 }
 #endif  // _WIN32 && !__CYGWIN__
 

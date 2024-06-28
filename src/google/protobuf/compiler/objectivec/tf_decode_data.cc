@@ -16,6 +16,8 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 
@@ -136,19 +138,18 @@ bool DecodeDataBuilder::AddCharacter(char desired, char input) {
 
 // If decode data can't be generated, a directive for the raw string
 // is used instead.
-std::string DirectDecodeString(const std::string& str) {
-  std::string result;
-  result += (char)'\0';  // Marker for full string.
-  result += str;
-  result += (char)'\0';  // End of string.
-  return result;
+std::string DirectDecodeString(absl::string_view str) {
+  return absl::StrCat(absl::string_view("\0", 1),  // Marker for full string.
+                      str,                         //
+                      absl::string_view("\0", 1)   // End of string.
+  );
 }
 
 }  // namespace
 
 void TextFormatDecodeData::AddString(int32_t key,
-                                     const std::string& input_for_decode,
-                                     const std::string& desired_output) {
+                                     absl::string_view input_for_decode,
+                                     absl::string_view desired_output) {
   for (std::vector<DataEntry>::const_iterator i = entries_.begin();
        i != entries_.end(); ++i) {
     ABSL_CHECK(i->first != key)
@@ -157,8 +158,8 @@ void TextFormatDecodeData::AddString(int32_t key,
         << "\", desired: \"" << desired_output << "\".";
   }
 
-  const std::string& data = TextFormatDecodeData::DecodeDataForString(
-      input_for_decode, desired_output);
+  std::string data = TextFormatDecodeData::DecodeDataForString(input_for_decode,
+                                                               desired_output);
   entries_.push_back(DataEntry(key, data));
 }
 
@@ -183,7 +184,7 @@ std::string TextFormatDecodeData::Data() const {
 
 // static
 std::string TextFormatDecodeData::DecodeDataForString(
-    const std::string& input_for_decode, const std::string& desired_output) {
+    absl::string_view input_for_decode, absl::string_view desired_output) {
   ABSL_CHECK(!input_for_decode.empty() && !desired_output.empty())
       << "error: got empty string for making TextFormat data, input: \""
       << input_for_decode << "\", desired: \"" << desired_output << "\".";

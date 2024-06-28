@@ -183,7 +183,7 @@ RunMap FindRuns(const std::vector<const FieldDescriptor*>& fields,
   return runs;
 }
 
-void EmitNonDefaultCheck(io::Printer* p, const std::string& prefix,
+void EmitNonDefaultCheck(io::Printer* p, absl::string_view prefix,
                          const FieldDescriptor* field) {
   ABSL_CHECK(!HasHasbit(field));
   ABSL_CHECK(!field->is_repeated());
@@ -222,7 +222,7 @@ bool ShouldEmitNonDefaultCheck(const FieldDescriptor* field) {
 // considered non-default (will be sent over the wire), for message types
 // without true field presence. Should only be called if
 // !HasHasbit(field).
-bool MayEmitIfNonDefaultCheck(io::Printer* p, const std::string& prefix,
+bool MayEmitIfNonDefaultCheck(io::Printer* p, absl::string_view prefix,
                               const FieldDescriptor* field) {
   ABSL_CHECK(!HasHasbit(field));
   if (!ShouldEmitNonDefaultCheck(field)) return false;
@@ -410,7 +410,7 @@ static int popcnt(uint32_t n) {
 bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
                             const Options& options,
                             const std::vector<int>& has_bit_indices,
-                            int cached_has_word_index, const std::string& from,
+                            int cached_has_word_index, absl::string_view from,
                             io::Printer* p) {
   if (!it->has_hasbit || !IsProfileDriven(options) ||
       std::distance(it, end) < 2 || !it->is_rarely_present) {

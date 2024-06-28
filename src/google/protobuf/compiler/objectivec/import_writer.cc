@@ -97,9 +97,9 @@ bool ProtoFrameworkCollector::ConsumeLine(absl::string_view line,
 }  // namespace
 
 ImportWriter::ImportWriter(
-    const std::string& generate_for_named_framework,
-    const std::string& named_framework_to_proto_path_mappings_path,
-    const std::string& runtime_import_prefix, bool for_bundled_proto)
+    absl::string_view generate_for_named_framework,
+    absl::string_view named_framework_to_proto_path_mappings_path,
+    absl::string_view runtime_import_prefix, bool for_bundled_proto)
     : generate_for_named_framework_(generate_for_named_framework),
       named_framework_to_proto_path_mappings_path_(
           named_framework_to_proto_path_mappings_path),
@@ -108,7 +108,7 @@ ImportWriter::ImportWriter(
       need_to_parse_mapping_file_(true) {}
 
 void ImportWriter::AddFile(const FileDescriptor* file,
-                           const std::string& header_extension) {
+                           absl::string_view header_extension) {
   if (IsProtobufLibraryBundledProtoFile(file)) {
     // The imports of the WKTs are only needed within the library itself,
     // in other cases, they get skipped because the generated code already
@@ -135,11 +135,11 @@ void ImportWriter::AddFile(const FileDescriptor* file,
     return;
   }
 
-  other_imports_.push_back(FilePath(file) + header_extension);
+  other_imports_.push_back(absl::StrCat(FilePath(file), header_extension));
 }
 
-void ImportWriter::AddRuntimeImport(const std::string& header_name) {
-  protobuf_imports_.push_back(header_name);
+void ImportWriter::AddRuntimeImport(absl::string_view header_name) {
+  protobuf_imports_.push_back(std::string(header_name));
 }
 
 std::string ImportWriter::ModuleForFile(const FileDescriptor* file) {

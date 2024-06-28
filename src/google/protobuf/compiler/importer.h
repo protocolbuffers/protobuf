@@ -153,13 +153,13 @@ class PROTOBUF_EXPORT Importer {
   // you want to see errors for the same files repeatedly, you can use a
   // separate Importer object to import each one (but use the same
   // DescriptorPool so that they can be cross-linked).
-  const FileDescriptor* Import(const std::string& filename);
+  const FileDescriptor* Import(absl::string_view filename);
 
   // The DescriptorPool in which all imported FileDescriptors and their
   // contents are stored.
   inline const DescriptorPool* pool() const { return &pool_; }
 
-  void AddUnusedImportTrackFile(const std::string& file_name,
+  void AddUnusedImportTrackFile(absl::string_view file_name,
                                 bool is_error = false);
   void ClearUnusedImportTrackFiles();
 

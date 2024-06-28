@@ -108,7 +108,7 @@ bool CollectExtensions(const Message& message, FieldDescriptorSet* extensions) {
 void CollectExtensions(const FileDescriptorProto& file_proto,
                        const DescriptorPool& alternate_pool,
                        FieldDescriptorSet* extensions,
-                       const std::string& file_data) {
+                       absl::string_view file_data) {
   if (!CollectExtensions(file_proto, extensions)) {
     // There are unknown fields in the file_proto, which are probably
     // extensions. We need to parse the data into a dynamic message based on the
@@ -513,10 +513,10 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
 
 template <typename GeneratorClass, typename DescriptorClass>
 static void GenerateSibling(
-    const std::string& package_dir, const std::string& java_package,
+    absl::string_view package_dir, absl::string_view java_package,
     const DescriptorClass* descriptor, GeneratorContext* context,
     std::vector<std::string>* file_list, bool annotate_code,
-    std::vector<std::string>* annotation_list, const std::string& name_suffix,
+    std::vector<std::string>* annotation_list, absl::string_view name_suffix,
     GeneratorClass* generator, bool opensource_runtime,
     void (GeneratorClass::*pfn)(io::Printer* printer)) {
   std::string filename =
@@ -561,7 +561,7 @@ static void GenerateSibling(
 }
 
 void FileGenerator::GenerateSiblings(
-    const std::string& package_dir, GeneratorContext* context,
+    absl::string_view package_dir, GeneratorContext* context,
     std::vector<std::string>* file_list,
     std::vector<std::string>* annotation_list) {
   if (MultipleJavaFiles(file_, immutable_api_)) {
@@ -625,14 +625,15 @@ void FileGenerator::GenerateKotlin(io::Printer* printer) {
 }
 
 void FileGenerator::GenerateKotlinSiblings(
-    const std::string& package_dir, GeneratorContext* context,
+    absl::string_view package_dir, GeneratorContext* context,
     std::vector<std::string>* file_list,
     std::vector<std::string>* annotation_list) {
   for (int i = 0; i < file_->message_type_count(); i++) {
     const Descriptor* descriptor = file_->message_type(i);
     MessageGenerator* generator = message_generators_[i].get();
-    auto open_file = [context](const std::string& filename) {
-      return std::unique_ptr<io::ZeroCopyOutputStream>(context->Open(filename));
+    auto open_file = [context](absl::string_view filename) {
+      return std::unique_ptr<io::ZeroCopyOutputStream>(
+          context->Open(std::string(filename)));
     };
     std::string filename =
         absl::StrCat(package_dir, descriptor->name(), "Kt.kt");

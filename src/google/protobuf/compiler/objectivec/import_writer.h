@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -23,14 +24,13 @@ namespace objectivec {
 // import statements.
 class ImportWriter {
  public:
-  ImportWriter(const std::string& generate_for_named_framework,
-               const std::string& named_framework_to_proto_path_mappings_path,
-               const std::string& runtime_import_prefix,
-               bool for_bundled_proto);
+  ImportWriter(absl::string_view generate_for_named_framework,
+               absl::string_view named_framework_to_proto_path_mappings_path,
+               absl::string_view runtime_import_prefix, bool for_bundled_proto);
   ~ImportWriter() = default;
 
-  void AddFile(const FileDescriptor* file, const std::string& header_extension);
-  void AddRuntimeImport(const std::string& header_name);
+  void AddFile(const FileDescriptor* file, absl::string_view header_extension);
+  void AddRuntimeImport(absl::string_view header_name);
   // This can return an empty string if there is no module for the file. It also
   // does not handle bundled proto files.
   std::string ModuleForFile(const FileDescriptor* file);

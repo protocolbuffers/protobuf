@@ -15,6 +15,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/annotation_test_util.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 
@@ -33,7 +34,7 @@ class CppMetadataTest : public ::testing::Test {
   // code from the previously added file with name `filename`. Returns true on
   // success. If pb_h is non-null, expects a .pb.h and a .pb.h.meta (copied to
   // pb_h and pb_h_info respecfively); similarly for proto_h and proto_h_info.
-  bool CaptureMetadata(const std::string& filename, FileDescriptorProto* file,
+  bool CaptureMetadata(absl::string_view filename, FileDescriptorProto* file,
                        std::string* pb_h, GeneratedCodeInfo* pb_h_info,
                        std::string* proto_h, GeneratedCodeInfo* proto_h_info,
                        std::string* pb_cc) {
@@ -46,7 +47,8 @@ class CppMetadataTest : public ::testing::Test {
         "annotation_guard_name=guard_name:",
         ::testing::TempDir());
 
-    const bool result = atu::RunProtoCompiler(filename, cpp_out, &cli, file);
+    const bool result =
+        atu::RunProtoCompiler(std::string(filename), cpp_out, &cli, file);
 
     if (!result) {
       return result;

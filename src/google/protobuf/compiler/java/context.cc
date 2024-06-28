@@ -16,6 +16,7 @@
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -120,10 +121,10 @@ void Context::InitializeFieldGeneratorInfoForFields(
   std::vector<std::string> conflict_reason(fields.size());
   for (int i = 0; i < fields.size(); ++i) {
     const FieldDescriptor* field = fields[i];
-    const std::string& name = CapitalizedFieldName(field);
+    const std::string name = CapitalizedFieldName(field);
     for (int j = i + 1; j < fields.size(); ++j) {
       const FieldDescriptor* other = fields[j];
-      const std::string& other_name = CapitalizedFieldName(other);
+      const std::string other_name = CapitalizedFieldName(other);
       if (name == other_name) {
         is_conflict[i] = is_conflict[j] = true;
         conflict_reason[i] = conflict_reason[j] =

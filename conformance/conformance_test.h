@@ -67,7 +67,7 @@ class ForkPipeRunner : public ConformanceTestRunner {
   static int Run(int argc, char* argv[],
                  const std::vector<ConformanceTestSuite*>& suites);
 
-  ForkPipeRunner(const std::string& executable,
+  ForkPipeRunner(absl::string_view executable,
                  const std::vector<std::string>& executable_args,
                  bool performance)
       : child_pid_(-1),
@@ -75,7 +75,7 @@ class ForkPipeRunner : public ConformanceTestRunner {
         executable_args_(executable_args),
         performance_(performance) {}
 
-  explicit ForkPipeRunner(const std::string& executable)
+  explicit ForkPipeRunner(absl::string_view executable)
       : child_pid_(-1), executable_(executable) {}
 
   virtual ~ForkPipeRunner() {}
@@ -156,8 +156,8 @@ class ConformanceTestSuite {
   // By default, this would return --failure_list
   std::string GetFailureListFlagName() { return failure_list_flag_name_; }
 
-  void SetFailureListFlagName(const std::string& failure_list_flag_name) {
-    failure_list_flag_name_ = failure_list_flag_name;
+  void SetFailureListFlagName(absl::string_view failure_list_flag_name) {
+    failure_list_flag_name_ = std::string(failure_list_flag_name);
   }
 
   // Sets the path of the output directory.
@@ -171,7 +171,7 @@ class ConformanceTestSuite {
   // The filename here is *only* used to create/format useful error messages for
   // how to update the failure list.  We do NOT read this file at all.
   bool RunSuite(ConformanceTestRunner* runner, std::string* output,
-                const std::string& filename,
+                absl::string_view filename,
                 conformance::FailureSet* failure_list);
 
  protected:
@@ -199,8 +199,8 @@ class ConformanceTestSuite {
                               conformance::WireFormat output_format,
                               conformance::TestCategory test_category,
                               const Message& prototype_message,
-                              const std::string& test_name,
-                              const std::string& input);
+                              absl::string_view test_name,
+                              absl::string_view input);
     virtual ~ConformanceRequestSetting() {}
 
     std::unique_ptr<Message> NewTestMessage() const;
@@ -249,7 +249,7 @@ class ConformanceTestSuite {
                              Message* test_message) = 0;
 
   void VerifyResponse(const ConformanceRequestSetting& setting,
-                      const std::string& equivalent_wire_format,
+                      absl::string_view equivalent_wire_format,
                       const conformance::ConformanceResponse& response,
                       bool need_report_success, bool require_same_wire_format);
 
@@ -259,26 +259,26 @@ class ConformanceTestSuite {
   conformance::ConformanceResponse TruncateResponse(
       const conformance::ConformanceResponse& response);
 
-  void ReportSuccess(const std::string& test_name);
-  void ReportFailure(const std::string& test_name, ConformanceLevel level,
+  void ReportSuccess(absl::string_view test_name);
+  void ReportFailure(absl::string_view test_name, ConformanceLevel level,
                      const conformance::ConformanceRequest& request,
                      const conformance::ConformanceResponse& response,
                      absl::string_view message);
-  void ReportSkip(const std::string& test_name,
+  void ReportSkip(absl::string_view test_name,
                   const conformance::ConformanceRequest& request,
                   const conformance::ConformanceResponse& response);
 
   void RunValidInputTest(const ConformanceRequestSetting& setting,
-                         const std::string& equivalent_text_format);
+                         absl::string_view equivalent_text_format);
   void RunValidBinaryInputTest(const ConformanceRequestSetting& setting,
-                               const std::string& equivalent_wire_format,
+                               absl::string_view equivalent_wire_format,
                                bool require_same_wire_format = false);
 
-  void RunTest(const std::string& test_name,
+  void RunTest(absl::string_view test_name,
                const conformance::ConformanceRequest& request,
                conformance::ConformanceResponse* response);
 
-  void AddExpectedFailedTest(const std::string& test_name);
+  void AddExpectedFailedTest(absl::string_view test_name);
 
   virtual void RunSuiteImpl() = 0;
 

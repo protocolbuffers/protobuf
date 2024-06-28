@@ -962,17 +962,17 @@ uint8_t* EpsCopyOutputStream::WriteCord(const absl::Cord& cord, uint8_t* ptr) {
   }
 }
 
-uint8_t* EpsCopyOutputStream::WriteStringMaybeAliasedOutline(uint32_t num,
-                                                           const std::string& s,
-                                                           uint8_t* ptr) {
+uint8_t* EpsCopyOutputStream::WriteStringMaybeAliasedOutline(
+    uint32_t num, absl::string_view s, uint8_t* ptr) {
   ptr = EnsureSpace(ptr);
   uint32_t size = s.size();
   ptr = WriteLengthDelim(num, size, ptr);
   return WriteRawMaybeAliased(s.data(), size, ptr);
 }
 
-uint8_t* EpsCopyOutputStream::WriteStringOutline(uint32_t num, const std::string& s,
-                                               uint8_t* ptr) {
+uint8_t* EpsCopyOutputStream::WriteStringOutline(uint32_t num,
+                                                 const std::string& s,
+                                                 uint8_t* ptr) {
   ptr = EnsureSpace(ptr);
   uint32_t size = s.size();
   ptr = WriteLengthDelim(num, size, ptr);
@@ -1004,8 +1004,8 @@ uint8_t* CodedOutputStream::WriteCordToArray(const absl::Cord& cord,
 }
 
 
-uint8_t* CodedOutputStream::WriteStringWithSizeToArray(const std::string& str,
-                                                     uint8_t* target) {
+uint8_t* CodedOutputStream::WriteStringWithSizeToArray(absl::string_view str,
+                                                       uint8_t* target) {
   ABSL_DCHECK_LE(str.size(), std::numeric_limits<uint32_t>::max());
   target = WriteVarint32ToArray(str.size(), target);
   return WriteStringToArray(str, target);

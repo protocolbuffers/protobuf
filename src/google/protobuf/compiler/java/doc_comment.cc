@@ -29,7 +29,7 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-std::string EscapeJavadoc(const std::string& input) {
+std::string EscapeJavadoc(absl::string_view input) {
   std::string result;
   result.reserve(input.size() * 2);
 
@@ -87,7 +87,7 @@ std::string EscapeJavadoc(const std::string& input) {
   return result;
 }
 
-static std::string EscapeKdoc(const std::string& input) {
+static std::string EscapeKdoc(absl::string_view input) {
   std::string result;
   result.reserve(input.size() * 2);
 
@@ -189,8 +189,8 @@ static void WriteDocCommentBody(io::Printer* printer,
   }
 }
 
-static std::string FirstLineOf(const std::string& value) {
-  std::string result = value;
+static std::string FirstLineOf(absl::string_view value) {
+  std::string result = std::string(value);
 
   std::string::size_type pos = result.find_first_of('\n');
   if (pos != std::string::npos) {

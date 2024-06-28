@@ -39,16 +39,15 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
   }
 
   template <typename MessageType>
-  void RunValidBinaryProtobufTest(const std::string& test_name,
+  void RunValidBinaryProtobufTest(absl::string_view test_name,
                                   ConformanceLevel level,
-                                  const std::string& input_protobuf,
-                                  const std::string& equivalent_text_format);
+                                  absl::string_view input_protobuf,
+                                  absl::string_view equivalent_text_format);
 
   template <typename MessageType>
-  void RunValidProtobufTest(const std::string& test_name,
-                            ConformanceLevel level,
-                            const std::string& input_protobuf,
-                            const std::string& equivalent_text_format);
+  void RunValidProtobufTest(absl::string_view test_name, ConformanceLevel level,
+                            absl::string_view input_protobuf,
+                            absl::string_view equivalent_text_format);
 
   void RunDelimitedFieldTests();
 
@@ -88,58 +87,57 @@ class BinaryAndJsonConformanceSuiteImpl {
   void RunJsonTestsForValue();
   void RunJsonTestsForAny();
   void RunJsonTestsForUnknownEnumStringValues();
-  void RunValidJsonTest(const std::string& test_name, ConformanceLevel level,
-                        const std::string& input_json,
-                        const std::string& equivalent_text_format);
-  void RunValidJsonTestWithMessage(const std::string& test_name,
+  void RunValidJsonTest(absl::string_view test_name, ConformanceLevel level,
+                        absl::string_view input_json,
+                        absl::string_view equivalent_text_format);
+  void RunValidJsonTestWithMessage(absl::string_view test_name,
                                    ConformanceLevel level,
-                                   const std::string& input_json,
-                                   const std::string& equivalent_text_forma,
+                                   absl::string_view input_json,
+                                   absl::string_view equivalent_text_forma,
                                    const Message& prototype);
   void RunValidJsonTestWithProtobufInput(
-      const std::string& test_name, ConformanceLevel level,
-      const MessageType& input, const std::string& equivalent_text_format);
-  void RunValidJsonIgnoreUnknownTest(const std::string& test_name,
+      absl::string_view test_name, ConformanceLevel level,
+      const MessageType& input, absl::string_view equivalent_text_format);
+  void RunValidJsonIgnoreUnknownTest(absl::string_view test_name,
                                      ConformanceLevel level,
-                                     const std::string& input_json,
-                                     const std::string& equivalent_text_format);
-  void RunValidProtobufTest(const std::string& test_name,
-                            ConformanceLevel level,
-                            const std::string& input_protobuf,
-                            const std::string& equivalent_text_format);
-  void RunValidBinaryProtobufTest(const std::string& test_name,
+                                     absl::string_view input_json,
+                                     absl::string_view equivalent_text_format);
+  void RunValidProtobufTest(absl::string_view test_name, ConformanceLevel level,
+                            absl::string_view input_protobuf,
+                            absl::string_view equivalent_text_format);
+  void RunValidBinaryProtobufTest(absl::string_view test_name,
                                   ConformanceLevel level,
-                                  const std::string& input_protobuf);
-  void RunValidBinaryProtobufTest(const std::string& test_name,
+                                  absl::string_view input_protobuf);
+  void RunValidBinaryProtobufTest(absl::string_view test_name,
                                   ConformanceLevel level,
-                                  const std::string& input_protobuf,
-                                  const std::string& expected_protobuf);
-  void RunBinaryPerformanceMergeMessageWithField(
-      const std::string& test_name, const std::string& field_proto);
+                                  absl::string_view input_protobuf,
+                                  absl::string_view expected_protobuf);
+  void RunBinaryPerformanceMergeMessageWithField(absl::string_view test_name,
+                                                 absl::string_view field_proto);
 
   void RunValidProtobufTestWithMessage(
-      const std::string& test_name, ConformanceLevel level,
-      const Message* input, const std::string& equivalent_text_format);
+      absl::string_view test_name, ConformanceLevel level, const Message* input,
+      absl::string_view equivalent_text_format);
 
   typedef std::function<bool(const Json::Value&)> Validator;
-  void RunValidJsonTestWithValidator(const std::string& test_name,
+  void RunValidJsonTestWithValidator(absl::string_view test_name,
                                      ConformanceLevel level,
-                                     const std::string& input_json,
+                                     absl::string_view input_json,
                                      const Validator& validator);
-  void ExpectParseFailureForJson(const std::string& test_name,
+  void ExpectParseFailureForJson(absl::string_view test_name,
                                  ConformanceLevel level,
-                                 const std::string& input_json);
-  void ExpectSerializeFailureForJson(const std::string& test_name,
+                                 absl::string_view input_json);
+  void ExpectSerializeFailureForJson(absl::string_view test_name,
                                      ConformanceLevel level,
-                                     const std::string& text_format);
-  void ExpectParseFailureForProtoWithProtoVersion(const std::string& proto,
-                                                  const std::string& test_name,
+                                     absl::string_view text_format);
+  void ExpectParseFailureForProtoWithProtoVersion(absl::string_view proto,
+                                                  absl::string_view test_name,
                                                   ConformanceLevel level);
-  void ExpectParseFailureForProto(const std::string& proto,
-                                  const std::string& test_name,
+  void ExpectParseFailureForProto(absl::string_view proto,
+                                  absl::string_view test_name,
                                   ConformanceLevel level);
-  void ExpectHardParseFailureForProto(const std::string& proto,
-                                      const std::string& test_name,
+  void ExpectHardParseFailureForProto(absl::string_view proto,
+                                      absl::string_view test_name,
                                       ConformanceLevel level);
   void TestPrematureEOFForType(google::protobuf::FieldDescriptor::Type type);
   void TestIllegalTags();

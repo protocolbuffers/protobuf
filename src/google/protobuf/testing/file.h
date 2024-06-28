@@ -28,55 +28,55 @@ class File {
   File& operator=(const File&) = delete;
 
   // Check if the file exists.
-  static bool Exists(const std::string& name);
+  static bool Exists(absl::string_view name);
 
   // Read an entire file to a string.  Return true if successful, false
   // otherwise.
-  static absl::Status ReadFileToString(const std::string& name,
+  static absl::Status ReadFileToString(absl::string_view name,
                                        std::string* output,
                                        bool text_mode = false);
 
   // Same as above, but crash on failure.
-  static void ReadFileToStringOrDie(const std::string& name,
+  static void ReadFileToStringOrDie(absl::string_view name,
                                     std::string* output);
 
   // Create a file and write a string to it.
   static absl::Status WriteStringToFile(absl::string_view contents,
-                                        const std::string& name);
+                                        absl::string_view name);
 
   // Same as above, but crash on failure.
   static void WriteStringToFileOrDie(absl::string_view contents,
-                                     const std::string& name);
+                                     absl::string_view name);
 
   // Create a directory.
-  static absl::Status CreateDir(const std::string& name, int mode);
+  static absl::Status CreateDir(absl::string_view name, int mode);
 
   // Create a directory and all parent directories if necessary.
-  static absl::Status RecursivelyCreateDir(const std::string& path, int mode);
+  static absl::Status RecursivelyCreateDir(absl::string_view path, int mode);
 
   // If "name" is a file, we delete it.  If it is a directory, we
   // call DeleteRecursively() for each file or directory (other than
   // dot and double-dot) within it, and then delete the directory itself.
   // The "dummy" parameters have a meaning in the original version of this
   // method but they are not used anywhere in protocol buffers.
-  static void DeleteRecursively(const std::string& name, void* dummy1,
+  static void DeleteRecursively(absl::string_view name, void* dummy1,
                                 void* dummy2);
 
   // Change working directory to given directory.
-  static bool ChangeWorkingDirectory(const std::string& new_working_directory);
+  static bool ChangeWorkingDirectory(absl::string_view new_working_directory);
 
-  static absl::Status GetContents(const std::string& name, std::string* output,
+  static absl::Status GetContents(absl::string_view name, std::string* output,
                                   bool /*is_default*/) {
     return ReadFileToString(name, output);
   }
 
-  static absl::Status GetContentsAsText(const std::string& name,
+  static absl::Status GetContentsAsText(absl::string_view name,
                                         std::string* output,
                                         bool /*is_default*/) {
     return ReadFileToString(name, output, true);
   }
 
-  static absl::Status SetContents(const std::string& name,
+  static absl::Status SetContents(absl::string_view name,
                                   absl::string_view contents,
                                   bool /*is_default*/) {
     return WriteStringToFile(contents, name);

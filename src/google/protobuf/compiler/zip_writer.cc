@@ -14,6 +14,7 @@
 
 #include <cstdint>
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/io/coded_stream.h"
 
 namespace google {
@@ -69,7 +70,7 @@ static const uint32_t kCRC32Table[256] = {
     0x54de5729, 0x23d967bf, 0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94,
     0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d};
 
-static uint32_t ComputeCRC32(const std::string& buf) {
+static uint32_t ComputeCRC32(absl::string_view buf) {
   uint32_t x = ~0U;
   for (int i = 0; i < buf.size(); ++i) {
     unsigned char c = buf[i];
@@ -89,11 +90,10 @@ ZipWriter::ZipWriter(io::ZeroCopyOutputStream* raw_output)
     : raw_output_(raw_output) {}
 ZipWriter::~ZipWriter() {}
 
-bool ZipWriter::Write(const std::string& filename,
-                      const std::string& contents) {
+bool ZipWriter::Write(absl::string_view filename, absl::string_view contents) {
   FileInfo info;
 
-  info.name = filename;
+  info.name = std::string(filename);
   uint16_t filename_size = filename.size();
   info.offset = raw_output_->ByteCount();
   info.size = contents.size();
@@ -127,7 +127,7 @@ bool ZipWriter::WriteDirectory() {
   // write central directory
   io::CodedOutputStream output(raw_output_);
   for (int i = 0; i < num_entries; ++i) {
-    const std::string& filename = files_[i].name;
+    absl::string_view filename = files_[i].name;
     uint16_t filename_size = filename.size();
     uint32_t crc32 = files_[i].crc32;
     uint32_t size = files_[i].size;

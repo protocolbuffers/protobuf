@@ -15,6 +15,7 @@
 
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/oneof.h"
 #include "google/protobuf/compiler/objectivec/options.h"
@@ -30,7 +31,7 @@ class ExtensionGenerator;
 
 class MessageGenerator {
  public:
-  MessageGenerator(const std::string& file_description_name,
+  MessageGenerator(absl::string_view file_description_name,
                    const Descriptor* descriptor,
                    const GenerationOptions& generation_options);
   ~MessageGenerator() = default;

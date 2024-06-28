@@ -32,6 +32,7 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/parser.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -72,7 +73,7 @@ MultiFileErrorCollector::~MultiFileErrorCollector() {}
 class SourceTreeDescriptorDatabase::SingleFileErrorCollector
     : public io::ErrorCollector {
  public:
-  SingleFileErrorCollector(const std::string& filename,
+  SingleFileErrorCollector(absl::string_view filename,
                            MultiFileErrorCollector* multi_file_error_collector)
       : filename_(filename),
         multi_file_error_collector_(multi_file_error_collector),
@@ -212,11 +213,11 @@ Importer::Importer(SourceTree* source_tree,
 
 Importer::~Importer() {}
 
-const FileDescriptor* Importer::Import(const std::string& filename) {
+const FileDescriptor* Importer::Import(absl::string_view filename) {
   return pool_.FindFileByName(filename);
 }
 
-void Importer::AddUnusedImportTrackFile(const std::string& file_name,
+void Importer::AddUnusedImportTrackFile(absl::string_view file_name,
                                         bool is_error) {
   pool_.AddUnusedImportTrackFile(file_name, is_error);
 }

@@ -120,8 +120,8 @@ class PROTOC_EXPORT CommandLineInterface {
   //   protoc --foo_out=enable_bar:outdir
   // The text before the colon is passed to CodeGenerator::Generate() as the
   // "parameter".
-  void RegisterGenerator(const std::string& flag_name, CodeGenerator* generator,
-                         const std::string& help_text);
+  void RegisterGenerator(absl::string_view flag_name, CodeGenerator* generator,
+                         absl::string_view help_text);
 
   // Register a code generator for a language.
   // Besides flag_name you can specify another option_flag_name that could be
@@ -131,10 +131,9 @@ class PROTOC_EXPORT CommandLineInterface {
   // Then you could invoke the compiler with a command like:
   //   protoc --foo_out=enable_bar:outdir --foo_opt=enable_baz
   // This will pass "enable_bar,enable_baz" as the parameter to the generator.
-  void RegisterGenerator(const std::string& flag_name,
-                         const std::string& option_flag_name,
-                         CodeGenerator* generator,
-                         const std::string& help_text);
+  void RegisterGenerator(absl::string_view flag_name,
+                         absl::string_view option_flag_name,
+                         CodeGenerator* generator, absl::string_view help_text);
 
   // Enables "plugins".  In this mode, if a command-line flag ends with "_out"
   // but does not match any registered generator, the compiler will attempt to
@@ -172,7 +171,7 @@ class PROTOC_EXPORT CommandLineInterface {
   //   protoc --plug_out=enable_bar:outdir --plug_opt=enable_baz
   // This will pass "enable_bar,enable_baz" as the parameter to the plugin.
   //
-  void AllowPlugins(const std::string& exe_name_prefix);
+  void AllowPlugins(absl::string_view exe_name_prefix);
 
   // Run the Protocol Compiler with the given command-line parameters.
   // Returns the error code which should be returned by main().
@@ -190,7 +189,9 @@ class PROTOC_EXPORT CommandLineInterface {
   // Provides some text which will be printed when the --version flag is
   // used.  The version of libprotoc will also be printed on the next line
   // after this text.
-  void SetVersionInfo(const std::string& text) { version_info_ = text; }
+  void SetVersionInfo(absl::string_view text) {
+    version_info_ = std::string(text);
+  }
 
 
   // Configure protoc to act as if we're in opensource.
@@ -224,11 +225,11 @@ class PROTOC_EXPORT CommandLineInterface {
   // Fails if these files use proto3 optional and the code generator doesn't
   // support it. This is a permanent check.
   bool EnforceProto3OptionalSupport(
-      const std::string& codegen_name, uint64_t supported_features,
+      absl::string_view codegen_name, uint64_t supported_features,
       const std::vector<const FileDescriptor*>& parsed_files) const;
 
   bool EnforceEditionsSupport(
-      const std::string& codegen_name, uint64_t supported_features,
+      absl::string_view codegen_name, uint64_t supported_features,
       Edition minimum_edition, Edition maximum_edition,
       const std::vector<const FileDescriptor*>& parsed_files) const;
 
@@ -262,8 +263,8 @@ class PROTOC_EXPORT CommandLineInterface {
   bool ParseArgument(const char* arg, std::string* name, std::string* value);
 
   // Interprets arguments parsed with ParseArgument.
-  ParseArgumentStatus InterpretArgument(const std::string& name,
-                                        const std::string& value);
+  ParseArgumentStatus InterpretArgument(absl::string_view name,
+                                        absl::string_view value);
 
   // Print the --help text to stderr.
   void PrintHelpText();
@@ -289,7 +290,7 @@ class PROTOC_EXPORT CommandLineInterface {
                       GeneratorContext* generator_context);
   bool GeneratePluginOutput(
       const std::vector<const FileDescriptor*>& parsed_files,
-      const std::string& plugin_name, const std::string& parameter,
+      absl::string_view plugin_name, absl::string_view parameter,
       GeneratorContext* generator_context, std::string* error);
 
   // Implements --encode and --decode.
@@ -356,8 +357,8 @@ class PROTOC_EXPORT CommandLineInterface {
     std::string help_text;
   };
 
-  const GeneratorInfo* FindGeneratorByFlag(const std::string& name) const;
-  const GeneratorInfo* FindGeneratorByOption(const std::string& option) const;
+  const GeneratorInfo* FindGeneratorByFlag(absl::string_view name) const;
+  const GeneratorInfo* FindGeneratorByOption(absl::string_view option) const;
 
   absl::btree_map<std::string, GeneratorInfo> generators_by_flag_name_;
   absl::flat_hash_map<std::string, GeneratorInfo> generators_by_option_name_;

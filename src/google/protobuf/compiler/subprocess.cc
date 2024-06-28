@@ -24,6 +24,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/message.h"
@@ -56,7 +57,7 @@ Subprocess::~Subprocess() {
   }
 }
 
-void Subprocess::Start(const std::string& program, SearchMode search_mode) {
+void Subprocess::Start(absl::string_view program, SearchMode search_mode) {
   // Create the pipes.
   HANDLE stdin_pipe_read;
   HANDLE stdin_pipe_write;
@@ -97,7 +98,8 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
 
   // get wide string version of program as the path may contain non-ascii characters
   std::wstring wprogram;
-  if (!io::win32::strings::utf8_to_wcs(program.c_str(), &wprogram)) {
+  if (!io::win32::strings::utf8_to_wcs(std::string(program).c_str(),
+                                       &wprogram)) {
     ABSL_LOG(FATAL) << "utf8_to_wcs: " << Win32ErrorMessage(GetLastError());
   }
 
@@ -298,7 +300,7 @@ char* portable_strdup(const char* s) {
 }
 }  // namespace
 
-void Subprocess::Start(const std::string& program, SearchMode search_mode) {
+void Subprocess::Start(absl::string_view program, SearchMode search_mode) {
   // Note that we assume that there are no other threads, thus we don't have to
   // do crazy stuff like using socket pairs or avoiding libc locks.
 
@@ -309,7 +311,7 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   ABSL_CHECK(pipe(stdin_pipe) != -1);
   ABSL_CHECK(pipe(stdout_pipe) != -1);
 
-  char* argv[2] = {portable_strdup(program.c_str()), nullptr};
+  char* argv[2] = {portable_strdup(std::string(program).c_str()), nullptr};
 
   child_pid_ = fork();
   if (child_pid_ == -1) {

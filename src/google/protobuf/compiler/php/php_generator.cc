@@ -494,7 +494,7 @@ void Outdent(io::Printer* printer) {
   printer->Outdent();
 }
 
-std::string BinaryToPhpString(const std::string& src) {
+std::string BinaryToPhpString(absl::string_view src) {
   std::string dest;
   size_t i;
   unsigned char symbol[16] = {

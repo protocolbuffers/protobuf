@@ -85,10 +85,10 @@ std::string FileJavaPackage(const FileDescriptor* file, bool immutable,
                             Options options = {});
 
 // Returns output directory for the given package name.
-std::string JavaPackageToDir(std::string package_name);
+std::string JavaPackageToDir(absl::string_view package_name);
 
 // Returns the name with Kotlin keywords enclosed in backticks
-std::string EscapeKotlinKeywords(std::string name);
+std::string EscapeKotlinKeywords(absl::string_view name);
 
 // Comma-separate list of option-specified interfaces implemented by the
 // Message, to follow the "implements" declaration of the Message definition.

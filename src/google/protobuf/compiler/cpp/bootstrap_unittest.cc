@@ -43,9 +43,9 @@ namespace cpp {
 namespace {
 std::string FindWithDefault(
     const absl::flat_hash_map<absl::string_view, std::string>& m,
-    const std::string& k, const std::string& v) {
+    absl::string_view k, absl::string_view v) {
   auto it = m.find(k);
-  if (it == m.end()) return v;
+  if (it == m.end()) return std::string(v);
   return it->second;
 }
 
@@ -66,8 +66,8 @@ class MockErrorCollector : public MultiFileErrorCollector {
 
 class MockGeneratorContext : public GeneratorContext {
  public:
-  void ExpectFileMatches(const std::string& virtual_filename,
-                         const std::string& physical_filename) {
+  void ExpectFileMatches(absl::string_view virtual_filename,
+                         absl::string_view physical_filename) {
     auto it = files_.find(virtual_filename);
     ASSERT_TRUE(it != files_.end())
         << "Generator failed to generate file: " << virtual_filename;

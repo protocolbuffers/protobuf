@@ -30,6 +30,7 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"  // FieldDescriptor
 #include "google/protobuf/message.h"     // Message
 #include "google/protobuf/text_format.h"
@@ -728,7 +729,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
     virtual void PrintUnknownFieldValue(const UnknownField* unknown_field);
 
     // Just print a string
-    void Print(const std::string& str);
+    void Print(absl::string_view str);
 
    private:
     // helper function for PrintPath that contains logic for printing maps
