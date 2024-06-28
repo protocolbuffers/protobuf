@@ -22,7 +22,6 @@
 #include "absl/log/absl_check.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -33,7 +32,7 @@ namespace compiler {
 
 namespace {
 
-bool FileExists(absl::string_view path) {
+bool FileExists(const std::string& path) {
   return File::Exists(path);
 }
 
@@ -94,7 +93,7 @@ class ImporterTest : public testing::Test {
  protected:
   ImporterTest() : importer_(&source_tree_, &error_collector_) {}
 
-  void AddFile(absl::string_view filename, const char* text) {
+  void AddFile(const std::string& filename, const char* text) {
     source_tree_.AddFile(filename, text);
   }
 
@@ -259,15 +258,15 @@ class DiskSourceTreeTest : public testing::Test {
     }
   }
 
-  void AddFile(absl::string_view filename, const char* contents) {
+  void AddFile(const std::string& filename, const char* contents) {
     ABSL_CHECK_OK(File::SetContents(filename, contents, true));
   }
 
-  void AddSubdir(absl::string_view dirname) {
+  void AddSubdir(const std::string& dirname) {
     ABSL_CHECK_OK(File::CreateDir(dirname, 0777));
   }
 
-  void ExpectFileContents(absl::string_view filename,
+  void ExpectFileContents(const std::string& filename,
                           const char* expected_contents) {
     std::unique_ptr<io::ZeroCopyInputStream> input(source_tree_.Open(filename));
 
@@ -284,8 +283,8 @@ class DiskSourceTreeTest : public testing::Test {
     EXPECT_EQ(expected_contents, file_contents);
   }
 
-  void ExpectCannotOpenFile(absl::string_view filename,
-                            absl::string_view error_message) {
+  void ExpectCannotOpenFile(const std::string& filename,
+                            const std::string& error_message) {
     std::unique_ptr<io::ZeroCopyInputStream> input(source_tree_.Open(filename));
     EXPECT_TRUE(input == nullptr);
     EXPECT_EQ(error_message, source_tree_.GetLastErrorMessage());

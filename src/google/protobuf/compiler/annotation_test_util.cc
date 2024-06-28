@@ -71,7 +71,7 @@ bool RunProtoCompiler(const std::string& filename,
   return cli->Run(5, argv) == 0;
 }
 
-bool DecodeMetadata(absl::string_view path, GeneratedCodeInfo* info) {
+bool DecodeMetadata(const std::string& path, GeneratedCodeInfo* info) {
   std::string data;
   ABSL_CHECK_OK(File::GetContents(path, &data, true));
   io::ArrayInputStream input(data.data(), data.size());
@@ -79,7 +79,7 @@ bool DecodeMetadata(absl::string_view path, GeneratedCodeInfo* info) {
 }
 
 void FindAnnotationsOnPath(
-    const GeneratedCodeInfo& info, absl::string_view source_file,
+    const GeneratedCodeInfo& info, const std::string& source_file,
     const std::vector<int>& path,
     std::vector<const GeneratedCodeInfo::Annotation*>* annotations) {
   for (int i = 0; i < info.annotation_size(); ++i) {
@@ -101,7 +101,7 @@ void FindAnnotationsOnPath(
 }
 
 const GeneratedCodeInfo::Annotation* FindAnnotationOnPath(
-    const GeneratedCodeInfo& info, absl::string_view source_file,
+    const GeneratedCodeInfo& info, const std::string& source_file,
     const std::vector<int>& path) {
   std::vector<const GeneratedCodeInfo::Annotation*> annotations;
   FindAnnotationsOnPath(info, source_file, path, &annotations);
@@ -112,9 +112,9 @@ const GeneratedCodeInfo::Annotation* FindAnnotationOnPath(
 }
 
 bool AtLeastOneAnnotationMatchesSubstring(
-    absl::string_view file_content,
+    const std::string& file_content,
     const std::vector<const GeneratedCodeInfo::Annotation*>& annotations,
-    absl::string_view expected_text,
+    const std::string& expected_text,
     absl::optional<GeneratedCodeInfo::Annotation::Semantic> semantic) {
   for (std::vector<const GeneratedCodeInfo::Annotation*>::const_iterator
            i = annotations.begin(),
@@ -133,9 +133,9 @@ bool AtLeastOneAnnotationMatchesSubstring(
   return false;
 }
 
-bool AnnotationMatchesSubstring(absl::string_view file_content,
+bool AnnotationMatchesSubstring(const std::string& file_content,
                                 const GeneratedCodeInfo::Annotation* annotation,
-                                absl::string_view expected_text) {
+                                const std::string& expected_text) {
   std::vector<const GeneratedCodeInfo::Annotation*> annotations;
   annotations.push_back(annotation);
   return AtLeastOneAnnotationMatchesSubstring(file_content, annotations,

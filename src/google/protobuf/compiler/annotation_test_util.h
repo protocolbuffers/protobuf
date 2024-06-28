@@ -31,7 +31,8 @@ struct ExpectedOutput {
   std::string file_path;
   std::string file_content;
   GeneratedCodeInfo file_info;
-  explicit ExpectedOutput(absl::string_view file_path) : file_path(file_path) {}
+  explicit ExpectedOutput(const std::string& file_path)
+      : file_path(file_path) {}
 };
 
 // Creates a file with name `filename` and content `data` in temp test
@@ -53,13 +54,13 @@ bool RunProtoCompiler(const std::string& filename,
                       const std::string& plugin_specific_args,
                       CommandLineInterface* cli, FileDescriptorProto* file);
 
-bool DecodeMetadata(absl::string_view path, GeneratedCodeInfo* info);
+bool DecodeMetadata(const std::string& path, GeneratedCodeInfo* info);
 
 // Finds all of the Annotations for a given source file and path.
 // See Location.path in https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto for
 // explanation of what path vector is.
 void FindAnnotationsOnPath(
-    const GeneratedCodeInfo& info, absl::string_view source_file,
+    const GeneratedCodeInfo& info, const std::string& source_file,
     const std::vector<int>& path,
     std::vector<const GeneratedCodeInfo::Annotation*>* annotations);
 
@@ -69,23 +70,23 @@ void FindAnnotationsOnPath(
 // https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/descriptor.proto for explanation of what path
 // vector is.
 const GeneratedCodeInfo::Annotation* FindAnnotationOnPath(
-    const GeneratedCodeInfo& info, absl::string_view source_file,
+    const GeneratedCodeInfo& info, const std::string& source_file,
     const std::vector<int>& path);
 
 // Returns true if at least one of the provided annotations covers a given
 // substring with the given semantic in file_content.
 bool AtLeastOneAnnotationMatchesSubstring(
-    absl::string_view file_content,
+    const std::string& file_content,
     const std::vector<const GeneratedCodeInfo::Annotation*>& annotations,
-    absl::string_view expected_text,
+    const std::string& expected_text,
     absl::optional<GeneratedCodeInfo::Annotation::Semantic> expected_semantic =
         absl::nullopt);
 
 // Returns true if the provided annotation covers a given substring in
 // file_content.
-bool AnnotationMatchesSubstring(absl::string_view file_content,
+bool AnnotationMatchesSubstring(const std::string& file_content,
                                 const GeneratedCodeInfo::Annotation* annotation,
-                                absl::string_view expected_text);
+                                const std::string& expected_text);
 
 // Returns the text spanned by the annotation if the span is valid; otherwise
 // returns nullopt.

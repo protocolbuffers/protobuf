@@ -37,7 +37,7 @@ using std::string;
 
 namespace {
 
-static std::string ToOctString(absl::string_view binary_string) {
+static std::string ToOctString(const std::string& binary_string) {
   std::string oct_string;
   for (size_t i = 0; i < binary_string.size(); i++) {
     uint8_t c = binary_string.at(i);
@@ -98,7 +98,7 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
     ConformanceLevel level, conformance::WireFormat input_format,
     conformance::WireFormat output_format,
     conformance::TestCategory test_category, const Message& prototype_message,
-    absl::string_view test_name, absl::string_view input)
+    const std::string& test_name, const std::string& input)
     : level_(level),
       input_format_(input_format),
       output_format_(output_format),
@@ -265,19 +265,19 @@ ConformanceResponse ConformanceTestSuite::TruncateResponse(
   return debug_response;
 }
 
-void ConformanceTestSuite::ReportSuccess(absl::string_view test_name) {
+void ConformanceTestSuite::ReportSuccess(const std::string& test_name) {
   if (expected_to_fail_.erase(test_name) != 0) {
     absl::StrAppendFormat(
         &output_,
         "ERROR: test %s is in the failure list, but test succeeded.  "
         "Remove it from the failure list.\n",
         test_name);
-    unexpected_succeeding_tests_.insert(std::string(test_name));
+    unexpected_succeeding_tests_.insert(test_name);
   }
   successes_++;
 }
 
-void ConformanceTestSuite::ReportFailure(absl::string_view test_name,
+void ConformanceTestSuite::ReportFailure(const std::string& test_name,
                                          ConformanceLevel level,
                                          const ConformanceRequest& request,
                                          const ConformanceResponse& response,
@@ -289,7 +289,7 @@ void ConformanceTestSuite::ReportFailure(absl::string_view test_name,
     absl::StrAppendFormat(&output_, "WARNING, test=%s: ", test_name);
   } else {
     absl::StrAppendFormat(&output_, "ERROR, test=%s: ", test_name);
-    unexpected_failing_tests_.insert(std::string(test_name));
+    unexpected_failing_tests_.insert(test_name);
   }
 
   absl::StrAppendFormat(&output_, "%s, request=%s, response=%s\n", message,
@@ -297,7 +297,7 @@ void ConformanceTestSuite::ReportFailure(absl::string_view test_name,
                         TruncateResponse(response).ShortDebugString());
 }
 
-void ConformanceTestSuite::ReportSkip(absl::string_view test_name,
+void ConformanceTestSuite::ReportSkip(const std::string& test_name,
                                       const ConformanceRequest& request,
                                       const ConformanceResponse& response) {
   if (verbose_) {
@@ -305,12 +305,12 @@ void ConformanceTestSuite::ReportSkip(absl::string_view test_name,
         &output_, "SKIPPED, test=%s request=%s, response=%s\n", test_name,
         request.ShortDebugString(), response.ShortDebugString());
   }
-  skipped_.insert(std::string(test_name));
+  skipped_.insert(test_name);
 }
 
 void ConformanceTestSuite::RunValidInputTest(
     const ConformanceRequestSetting& setting,
-    absl::string_view equivalent_text_format) {
+    const std::string& equivalent_text_format) {
   std::unique_ptr<Message> reference_message(setting.NewTestMessage());
   ABSL_CHECK(TextFormat::ParseFromString(equivalent_text_format,
                                          reference_message.get()))
@@ -323,7 +323,7 @@ void ConformanceTestSuite::RunValidInputTest(
 
 void ConformanceTestSuite::RunValidBinaryInputTest(
     const ConformanceRequestSetting& setting,
-    absl::string_view equivalent_wire_format, bool require_same_wire_format) {
+    const std::string& equivalent_wire_format, bool require_same_wire_format) {
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
   RunTest(setting.GetTestName(), request, &response);
@@ -333,12 +333,12 @@ void ConformanceTestSuite::RunValidBinaryInputTest(
 
 void ConformanceTestSuite::VerifyResponse(
     const ConformanceRequestSetting& setting,
-    absl::string_view equivalent_wire_format,
+    const std::string& equivalent_wire_format,
     const ConformanceResponse& response, bool need_report_success,
     bool require_same_wire_format) {
   std::unique_ptr<Message> test_message(setting.NewTestMessage());
   const ConformanceRequest& request = setting.GetRequest();
-  const std::string test_name = setting.GetTestName();
+  const std::string& test_name = setting.GetTestName();
   ConformanceLevel level = setting.GetLevel();
   std::unique_ptr<Message> reference_message = setting.NewTestMessage();
 
@@ -379,7 +379,7 @@ void ConformanceTestSuite::VerifyResponse(
   if (require_same_wire_format) {
     ABSL_DCHECK_EQ(response.result_case(),
                    ConformanceResponse::kProtobufPayload);
-    absl::string_view protobuf_payload = response.protobuf_payload();
+    const std::string& protobuf_payload = response.protobuf_payload();
     check = equivalent_wire_format == protobuf_payload;
     differences = absl::StrCat("Expect: ", ToOctString(equivalent_wire_format),
                                ", but got: ", ToOctString(protobuf_payload));
@@ -399,10 +399,10 @@ void ConformanceTestSuite::VerifyResponse(
   }
 }
 
-void ConformanceTestSuite::RunTest(absl::string_view test_name,
+void ConformanceTestSuite::RunTest(const std::string& test_name,
                                    const ConformanceRequest& request,
                                    ConformanceResponse* response) {
-  if (test_names_.insert(std::string(test_name)).second == false) {
+  if (test_names_.insert(test_name).second == false) {
     ABSL_LOG(FATAL) << "Duplicated test name: " << test_name;
   }
 
@@ -410,8 +410,7 @@ void ConformanceTestSuite::RunTest(absl::string_view test_name,
   std::string serialized_response;
   request.SerializeToString(&serialized_request);
 
-  runner_->RunTest(std::string(test_name), serialized_request,
-                   &serialized_response);
+  runner_->RunTest(test_name, serialized_request, &serialized_response);
 
   if (!response->ParseFromString(serialized_response)) {
     response->Clear();
@@ -444,13 +443,13 @@ std::string ConformanceTestSuite::WireFormatToString(WireFormat wire_format) {
   return "";
 }
 
-void ConformanceTestSuite::AddExpectedFailedTest(absl::string_view test_name) {
-  expected_to_fail_.insert(std::string(test_name));
+void ConformanceTestSuite::AddExpectedFailedTest(const std::string& test_name) {
+  expected_to_fail_.insert(test_name);
 }
 
 bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
                                     std::string* output,
-                                    absl::string_view filename,
+                                    const std::string& filename,
                                     conformance::FailureSet* failure_list) {
   runner_ = runner;
   successes_ = 0;
@@ -462,9 +461,9 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   output_ = "\nCONFORMANCE TEST BEGIN ====================================\n\n";
 
-  failure_list_filename_ = std::string(filename);
+  failure_list_filename_ = filename;
   expected_to_fail_.clear();
-  for (absl::string_view failure : failure_list->failure()) {
+  for (const std::string& failure : failure_list->failure()) {
     AddExpectedFailedTest(failure);
   }
   RunSuiteImpl();

@@ -13,7 +13,6 @@
 
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
@@ -190,7 +189,7 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
         "    new com.google.protobuf.Descriptors.FileDescriptor[] {\n");
 
     for (int i = 0; i < dependencies.size(); i++) {
-      absl::string_view dependency = dependencies[i].second;
+      const std::string& dependency = dependencies[i].second;
       printer->Print("      $dependency$.getDescriptor(),\n", "dependency",
                      dependency);
     }

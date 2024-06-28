@@ -94,12 +94,12 @@ inline absl::Status JsonStringToMessage(absl::string_view input,
 // Please note that non-OK statuses are not a stable output of this API and
 // subject to change without notice.
 PROTOBUF_EXPORT absl::Status BinaryToJsonStream(
-    google::protobuf::util::TypeResolver* resolver, absl::string_view type_url,
+    google::protobuf::util::TypeResolver* resolver, const std::string& type_url,
     io::ZeroCopyInputStream* binary_input,
     io::ZeroCopyOutputStream* json_output, const PrintOptions& options);
 
 inline absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* resolver,
-                                       absl::string_view type_url,
+                                       const std::string& type_url,
                                        io::ZeroCopyInputStream* binary_input,
                                        io::ZeroCopyOutputStream* json_output) {
   return BinaryToJsonStream(resolver, type_url, binary_input, json_output,
@@ -107,13 +107,13 @@ inline absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* res
 }
 
 PROTOBUF_EXPORT absl::Status BinaryToJsonString(
-    google::protobuf::util::TypeResolver* resolver, absl::string_view type_url,
-    absl::string_view binary_input, std::string* json_output,
+    google::protobuf::util::TypeResolver* resolver, const std::string& type_url,
+    const std::string& binary_input, std::string* json_output,
     const PrintOptions& options);
 
 inline absl::Status BinaryToJsonString(google::protobuf::util::TypeResolver* resolver,
-                                       absl::string_view type_url,
-                                       absl::string_view binary_input,
+                                       const std::string& type_url,
+                                       const std::string& binary_input,
                                        std::string* json_output) {
   return BinaryToJsonString(resolver, type_url, binary_input, json_output,
                             PrintOptions());
@@ -128,12 +128,12 @@ inline absl::Status BinaryToJsonString(google::protobuf::util::TypeResolver* res
 // Please note that non-OK statuses are not a stable output of this API and
 // subject to change without notice.
 PROTOBUF_EXPORT absl::Status JsonToBinaryStream(
-    google::protobuf::util::TypeResolver* resolver, absl::string_view type_url,
+    google::protobuf::util::TypeResolver* resolver, const std::string& type_url,
     io::ZeroCopyInputStream* json_input,
     io::ZeroCopyOutputStream* binary_output, const ParseOptions& options);
 
 inline absl::Status JsonToBinaryStream(
-    google::protobuf::util::TypeResolver* resolver, absl::string_view type_url,
+    google::protobuf::util::TypeResolver* resolver, const std::string& type_url,
     io::ZeroCopyInputStream* json_input,
     io::ZeroCopyOutputStream* binary_output) {
   return JsonToBinaryStream(resolver, type_url, json_input, binary_output,
@@ -141,12 +141,12 @@ inline absl::Status JsonToBinaryStream(
 }
 
 PROTOBUF_EXPORT absl::Status JsonToBinaryString(
-    google::protobuf::util::TypeResolver* resolver, absl::string_view type_url,
+    google::protobuf::util::TypeResolver* resolver, const std::string& type_url,
     absl::string_view json_input, std::string* binary_output,
     const ParseOptions& options);
 
 inline absl::Status JsonToBinaryString(google::protobuf::util::TypeResolver* resolver,
-                                       absl::string_view type_url,
+                                       const std::string& type_url,
                                        absl::string_view json_input,
                                        std::string* binary_output) {
   return JsonToBinaryString(resolver, type_url, json_input, binary_output,

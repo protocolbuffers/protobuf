@@ -21,7 +21,6 @@
 #endif  // !_WIN32
 #include <string>
 
-#include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
@@ -47,7 +46,7 @@ class PROTOC_EXPORT Subprocess {
 
   // Start the subprocess.  Currently we don't provide a way to specify
   // arguments as protoc plugins don't have any.
-  void Start(absl::string_view program, SearchMode search_mode);
+  void Start(const std::string& program, SearchMode search_mode);
 
   // Serialize the input message and pipe it to the subprocess's stdin, then
   // close the pipe.  Meanwhile, read from the subprocess's stdout and parse

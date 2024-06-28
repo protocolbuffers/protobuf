@@ -25,7 +25,7 @@ absl::Status JsonStringToMessage(absl::string_view input, Message* message,
 // Internal version of google::protobuf::util::JsonToBinaryStream; see json_util.h for
 // details.
 absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
-                                absl::string_view type_url,
+                                const std::string& type_url,
                                 io::ZeroCopyInputStream* json_input,
                                 io::ZeroCopyOutputStream* binary_output,
                                 json_internal::ParseOptions options);

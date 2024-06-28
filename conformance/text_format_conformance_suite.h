@@ -10,7 +10,6 @@
 
 #include <string>
 
-#include "absl/strings/string_view.h"
 #include "conformance_test.h"
 #include "google/protobuf/message.h"
 
@@ -55,22 +54,22 @@ class TextFormatConformanceTestSuiteImpl {
   void RunAnyTests();
 
   void RunTextFormatPerformanceTests();
-  void RunValidTextFormatTest(absl::string_view test_name,
-                              ConformanceLevel level, absl::string_view input);
-  void RunValidTextFormatTestWithExpected(absl::string_view test_name,
+  void RunValidTextFormatTest(const std::string& test_name,
+                              ConformanceLevel level, const std::string& input);
+  void RunValidTextFormatTestWithExpected(const std::string& test_name,
                                           ConformanceLevel level,
-                                          absl::string_view input_text,
-                                          absl::string_view expected_text);
-  void RunValidUnknownTextFormatTest(absl::string_view test_name,
+                                          const std::string& input_text,
+                                          const std::string& expected_text);
+  void RunValidUnknownTextFormatTest(const std::string& test_name,
                                      const Message& message);
-  void RunValidTextFormatTestWithMessage(absl::string_view test_name,
+  void RunValidTextFormatTestWithMessage(const std::string& test_name,
                                          ConformanceLevel level,
-                                         absl::string_view input_text,
+                                         const std::string& input_text,
                                          const Message& message);
-  void ExpectParseFailure(absl::string_view test_name, ConformanceLevel level,
-                          absl::string_view input);
+  void ExpectParseFailure(const std::string& test_name, ConformanceLevel level,
+                          const std::string& input);
   void TestTextFormatPerformanceMergeMessageWithRepeatedField(
-      absl::string_view test_type_name, absl::string_view message_field);
+      const std::string& test_type_name, const std::string& message_field);
 
   TextFormatConformanceTestSuite& suite_;
 };

@@ -2234,8 +2234,8 @@ void MessageDifferencer::StreamReporter::PrintUnknownFieldValue(
   printer_->PrintRaw(output);
 }
 
-void MessageDifferencer::StreamReporter::Print(absl::string_view str) {
-  printer_->Print(str);
+void MessageDifferencer::StreamReporter::Print(const std::string& str) {
+  printer_->Print(str.c_str());
 }
 
 void MessageDifferencer::StreamReporter::PrintMapKey(
@@ -2382,5 +2382,3 @@ MessageDifferencer::CreateMultipleFieldsMapKeyComparator(
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
-
-#include "google/protobuf/port_undef.inc"

@@ -22,7 +22,6 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/csharp/csharp_generator.h"
 #include "google/protobuf/compiler/importer.h"
@@ -53,8 +52,8 @@ class MockErrorCollector : public MultiFileErrorCollector {
 
 class MockGeneratorContext : public GeneratorContext {
  public:
-  void ExpectFileMatches(absl::string_view virtual_filename,
-                         absl::string_view physical_filename) {
+  void ExpectFileMatches(const std::string& virtual_filename,
+                         const std::string& physical_filename) {
     auto it = files_.find(virtual_filename);
     ASSERT_TRUE(it != files_.end())
       << "Generator failed to generate file: " << virtual_filename;

@@ -17,7 +17,6 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/compiler/code_generator.h"
 
@@ -67,7 +66,7 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
                                 absl::flat_hash_set<std::string>* seen_aliases,
                                 bool* has_importlib) const;
   template <typename DescriptorT>
-  void Annotate(absl::string_view label, const DescriptorT* descriptor) const;
+  void Annotate(const std::string& label, const DescriptorT* descriptor) const;
   void PrintImports() const;
   void PrintTopLevelEnums() const;
   void PrintEnum(const EnumDescriptor& enum_descriptor) const;

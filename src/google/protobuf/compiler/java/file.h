@@ -16,7 +16,6 @@
 #include <string>
 #include <vector>
 
-#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/port.h"
 
@@ -61,7 +60,7 @@ class FileGenerator {
 
   std::string GetKotlinClassname();
   void GenerateKotlin(io::Printer* printer);
-  void GenerateKotlinSiblings(absl::string_view package_dir,
+  void GenerateKotlinSiblings(const std::string& package_dir,
                               GeneratorContext* generator_context,
                               std::vector<std::string>* file_list,
                               std::vector<std::string>* annotation_list);
@@ -69,7 +68,7 @@ class FileGenerator {
   // If we aren't putting everything into one file, this will write all the
   // files other than the outer file (i.e. one for each message, enum, and
   // service type).
-  void GenerateSiblings(absl::string_view package_dir,
+  void GenerateSiblings(const std::string& package_dir,
                         GeneratorContext* generator_context,
                         std::vector<std::string>* file_list,
                         std::vector<std::string>* annotation_list);

@@ -50,10 +50,10 @@ void SetCommonFieldVariables(
       UnCamelCaseFieldName(camel_case_name, descriptor));
   const bool needs_custom_name = (raw_field_name != un_camel_case_name);
 
-  const std::string classname = ClassName(descriptor->containing_type());
+  const std::string& classname = ClassName(descriptor->containing_type());
   (*variables)["classname"] = classname;
   (*variables)["name"] = camel_case_name;
-  const std::string capitalized_name = FieldNameCapitalized(descriptor);
+  const std::string& capitalized_name = FieldNameCapitalized(descriptor);
   (*variables)["capitalized_name"] = capitalized_name;
   (*variables)["raw_field_name"] = raw_field_name;
   (*variables)["field_number_name"] =
@@ -137,7 +137,8 @@ bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool();
     case FieldDescriptor::CPPTYPE_STRING: {
-      return !field->default_value_string().empty();
+      const std::string& default_string = field->default_value_string();
+      return !default_string.empty();
     }
     case FieldDescriptor::CPPTYPE_ENUM:
       // The default value for an enum field is the first enum value, so there

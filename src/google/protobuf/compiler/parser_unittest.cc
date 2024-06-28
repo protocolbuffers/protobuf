@@ -28,7 +28,6 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
-#include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/test_util2.h"
@@ -3178,19 +3177,19 @@ class SourceInfoTest : public ParserTest {
   }
 
   bool HasSpan(char start_marker, char end_marker,
-               const Message& descriptor_proto, absl::string_view field_name) {
+               const Message& descriptor_proto, const std::string& field_name) {
     return HasSpan(start_marker, end_marker, descriptor_proto, field_name, -1);
   }
 
   bool HasSpan(char start_marker, char end_marker,
-               const Message& descriptor_proto, absl::string_view field_name,
+               const Message& descriptor_proto, const std::string& field_name,
                int index) {
     return HasSpan(start_marker, end_marker, descriptor_proto, field_name,
                    index, nullptr, nullptr, nullptr);
   }
 
   bool HasSpan(char start_marker, char end_marker,
-               const Message& descriptor_proto, absl::string_view field_name,
+               const Message& descriptor_proto, const std::string& field_name,
                int index, const char* expected_leading_comments,
                const char* expected_trailing_comments,
                const char* expected_leading_detached_comments) {
@@ -3213,7 +3212,7 @@ class SourceInfoTest : public ParserTest {
                               nullptr, nullptr, nullptr);
   }
 
-  bool HasSpan(const Message& descriptor_proto, absl::string_view field_name) {
+  bool HasSpan(const Message& descriptor_proto, const std::string& field_name) {
     return HasSpan('\0', '\0', descriptor_proto, field_name, -1);
   }
 

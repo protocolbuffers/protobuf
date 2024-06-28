@@ -11,17 +11,32 @@
 
 #include "google/protobuf/compiler/command_line_interface.h"
 
-#include <sys/types.h>
-
-#include <algorithm>
 #include <cstdint>
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <fstream>
-#include <iostream>
-#include <ostream>
 
+#include "absl/algorithm/container.h"
+#include "absl/base/attributes.h"
+#include "absl/base/log_severity.h"
+#include "absl/container/btree_map.h"
+#include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/log/globals.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
+#include "absl/types/span.h"
+#include "google/protobuf/compiler/versions.h"
+#include "google/protobuf/descriptor_database.h"
+#include "google/protobuf/descriptor_visitor.h"
+#include "google/protobuf/feature_resolver.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+
+#include "google/protobuf/stubs/platform_macros.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
 #ifdef major
 #undef major
 #endif
@@ -34,6 +49,9 @@
 #include <unistd.h>
 #endif
 #include <errno.h>
+
+#include <fstream>
+#include <iostream>
 
 #include <limits.h>  // For PATH_MAX
 
@@ -48,47 +66,28 @@
 #include <sys/sysctl.h>
 #endif
 
-#include "absl/algorithm/container.h"
-#include "absl/base/attributes.h"
-#include "absl/base/log_severity.h"
-#include "absl/container/btree_map.h"
-#include "absl/container/btree_set.h"
-#include "absl/container/flat_hash_map.h"
-#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/log/globals.h"
-#include "absl/status/status.h"
-#include "absl/status/statusor.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/match.h"
-#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/importer.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/compiler/subprocess.h"
-#include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/compiler/zip_writer.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor_database.h"
-#include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/dynamic_message.h"
-#include "google/protobuf/feature_resolver.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/text_format.h"
-
-
-#include "google/protobuf/stubs/platform_macros.h"
 
 
 #ifdef _WIN32
@@ -132,7 +131,7 @@ static const char* kDefaultDirectDependenciesViolationMsg =
 // Returns true if the text looks like a Windows-style absolute path, starting
 // with a drive letter.  Example:  "C:\foo".  TODO:  Share this with
 // copy in importer.cc?
-static bool IsWindowsAbsolutePath(absl::string_view text) {
+static bool IsWindowsAbsolutePath(const std::string& text) {
 #if defined(_WIN32) || defined(__CYGWIN__)
   return text.size() >= 3 && text[1] == ':' && absl::ascii_isalpha(text[0]) &&
          (text[2] == '/' || text[2] == '\\') && text.find_last_of(':') == 1;
@@ -168,10 +167,10 @@ void AddTrailingSlash(std::string* path) {
   }
 }
 
-bool VerifyDirectoryExists(absl::string_view path) {
+bool VerifyDirectoryExists(const std::string& path) {
   if (path.empty()) return true;
 
-  if (access(std::string(path).c_str(), F_OK) == -1) {
+  if (access(path.c_str(), F_OK) == -1) {
     std::cerr << path << ": " << strerror(errno) << std::endl;
     return false;
   } else {
@@ -183,13 +182,13 @@ bool VerifyDirectoryExists(absl::string_view path) {
 // parent if necessary, and so on.  The full file name is actually
 // (prefix + filename), but we assume |prefix| already exists and only create
 // directories listed in |filename|.
-bool TryCreateParentDirectory(absl::string_view prefix,
-                              absl::string_view filename) {
+bool TryCreateParentDirectory(const std::string& prefix,
+                              const std::string& filename) {
   // Recursively create parent directories to the output file.
   // On Windows, both '/' and '\' are valid path separators.
   std::vector<std::string> parts =
       absl::StrSplit(filename, absl::ByAnyChar("/\\"), absl::SkipEmpty());
-  std::string path_so_far = std::string(prefix);
+  std::string path_so_far = prefix;
   for (size_t i = 0; i < parts.size() - 1; ++i) {
     path_so_far += parts[i];
     if (mkdir(path_so_far.c_str(), 0777) != 0) {
@@ -298,7 +297,7 @@ std::string PluginName(absl::string_view plugin_prefix,
                       directive.substr(2, directive.size() - 6));
 }
 
-bool GetBootstrapParam(absl::string_view parameter) {
+bool GetBootstrapParam(const std::string& parameter) {
   std::vector<std::string> parts = absl::StrSplit(parameter, ',');
   for (const auto& part : parts) {
     if (part == "bootstrap") {
@@ -448,11 +447,11 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
 
   // Write all files in the directory to disk at the given output location,
   // which must end in a '/'.
-  bool WriteAllToDisk(absl::string_view prefix);
+  bool WriteAllToDisk(const std::string& prefix);
 
   // Write the contents of this directory to a ZIP-format archive with the
   // given name.
-  bool WriteAllToZip(absl::string_view filename);
+  bool WriteAllToZip(const std::string& filename);
 
   // Add a boilerplate META-INF/MANIFEST.MF file as required by the Java JAR
   // format, unless one has already been written.
@@ -487,13 +486,13 @@ class CommandLineInterface::MemoryOutputStream
     : public io::ZeroCopyOutputStream {
  public:
   MemoryOutputStream(GeneratorContextImpl* directory,
-                     absl::string_view filename, bool append_mode);
+                     const std::string& filename, bool append_mode);
   MemoryOutputStream(GeneratorContextImpl* directory,
-                     absl::string_view filename,
-                     absl::string_view insertion_point);
+                     const std::string& filename,
+                     const std::string& insertion_point);
   MemoryOutputStream(GeneratorContextImpl* directory,
-                     absl::string_view filename,
-                     absl::string_view insertion_point,
+                     const std::string& filename,
+                     const std::string& insertion_point,
                      const google::protobuf::GeneratedCodeInfo& info);
   ~MemoryOutputStream() override;
 
@@ -512,14 +511,14 @@ class CommandLineInterface::MemoryOutputStream
   // insertion_offset and indent_length. We assume that insertions will not
   // occur within any given annotated span of text. insertion_content must end
   // with an endline.
-  void UpdateMetadata(absl::string_view insertion_content,
+  void UpdateMetadata(const std::string& insertion_content,
                       size_t insertion_offset, size_t insertion_length,
                       size_t indent_length);
 
   // Inserts info_to_insert_ into target_info, assuming that the relevant
   // insertion was made at insertion_offset in file_content with the given
   // indent_length. insertion_content must end with an endline.
-  void InsertShiftedInfo(absl::string_view insertion_content,
+  void InsertShiftedInfo(const std::string& insertion_content,
                          size_t insertion_offset, size_t indent_length,
                          google::protobuf::GeneratedCodeInfo& target_info);
 
@@ -548,7 +547,7 @@ CommandLineInterface::GeneratorContextImpl::GeneratorContextImpl(
     : parsed_files_(parsed_files), had_error_(false) {}
 
 bool CommandLineInterface::GeneratorContextImpl::WriteAllToDisk(
-    absl::string_view prefix) {
+    const std::string& prefix) {
   if (had_error_) {
     return false;
   }
@@ -558,14 +557,14 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToDisk(
   }
 
   for (const auto& pair : files_) {
-    absl::string_view relative_filename = pair.first;
+    const std::string& relative_filename = pair.first;
     const char* data = pair.second.data();
     int size = pair.second.size();
 
     if (!TryCreateParentDirectory(prefix, relative_filename)) {
       return false;
     }
-    std::string filename = absl::StrCat(prefix, relative_filename);
+    std::string filename = prefix + relative_filename;
 
     // Create the output file.
     int file_descriptor;
@@ -622,7 +621,7 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToDisk(
 }
 
 bool CommandLineInterface::GeneratorContextImpl::WriteAllToZip(
-    absl::string_view filename) {
+    const std::string& filename) {
   if (had_error_) {
     return false;
   }
@@ -630,8 +629,8 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToZip(
   // Create the output file.
   int file_descriptor;
   do {
-    file_descriptor = open(std::string(filename).c_str(),
-                           O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
+    file_descriptor =
+        open(filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
   } while (file_descriptor < 0 && errno == EINTR);
 
   if (file_descriptor < 0) {
@@ -707,7 +706,7 @@ CommandLineInterface::GeneratorContextImpl::OpenForInsertWithGeneratedCodeInfo(
 // -------------------------------------------------------------------
 
 CommandLineInterface::MemoryOutputStream::MemoryOutputStream(
-    GeneratorContextImpl* directory, absl::string_view filename,
+    GeneratorContextImpl* directory, const std::string& filename,
     bool append_mode)
     : directory_(directory),
       filename_(filename),
@@ -715,16 +714,16 @@ CommandLineInterface::MemoryOutputStream::MemoryOutputStream(
       inner_(new io::StringOutputStream(&data_)) {}
 
 CommandLineInterface::MemoryOutputStream::MemoryOutputStream(
-    GeneratorContextImpl* directory, absl::string_view filename,
-    absl::string_view insertion_point)
+    GeneratorContextImpl* directory, const std::string& filename,
+    const std::string& insertion_point)
     : directory_(directory),
       filename_(filename),
       insertion_point_(insertion_point),
       inner_(new io::StringOutputStream(&data_)) {}
 
 CommandLineInterface::MemoryOutputStream::MemoryOutputStream(
-    GeneratorContextImpl* directory, absl::string_view filename,
-    absl::string_view insertion_point, const google::protobuf::GeneratedCodeInfo& info)
+    GeneratorContextImpl* directory, const std::string& filename,
+    const std::string& insertion_point, const google::protobuf::GeneratedCodeInfo& info)
     : directory_(directory),
       filename_(filename),
       insertion_point_(insertion_point),
@@ -732,7 +731,7 @@ CommandLineInterface::MemoryOutputStream::MemoryOutputStream(
       info_to_insert_(info) {}
 
 void CommandLineInterface::MemoryOutputStream::InsertShiftedInfo(
-    absl::string_view insertion_content, size_t insertion_offset,
+    const std::string& insertion_content, size_t insertion_offset,
     size_t indent_length, google::protobuf::GeneratedCodeInfo& target_info) {
   // Keep track of how much extra data was added for indents before the
   // current annotation being inserted. `pos` and `source_annotation.begin()`
@@ -768,7 +767,7 @@ void CommandLineInterface::MemoryOutputStream::InsertShiftedInfo(
 }
 
 void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
-    absl::string_view insertion_content, size_t insertion_offset,
+    const std::string& insertion_content, size_t insertion_offset,
     size_t insertion_length, size_t indent_length) {
   auto it = directory_->files_.find(absl::StrCat(filename_, ".pb.meta"));
   if (it == directory_->files_.end() && info_to_insert_.annotation().empty()) {
@@ -964,31 +963,30 @@ CommandLineInterface::CommandLineInterface()
 
 CommandLineInterface::~CommandLineInterface() = default;
 
-void CommandLineInterface::RegisterGenerator(absl::string_view flag_name,
+void CommandLineInterface::RegisterGenerator(const std::string& flag_name,
                                              CodeGenerator* generator,
-                                             absl::string_view help_text) {
+                                             const std::string& help_text) {
   GeneratorInfo info;
-  info.flag_name = std::string(flag_name);
+  info.flag_name = flag_name;
   info.generator = generator;
-  info.help_text = std::string(help_text);
+  info.help_text = help_text;
   generators_by_flag_name_[flag_name] = info;
 }
 
-void CommandLineInterface::RegisterGenerator(absl::string_view flag_name,
-                                             absl::string_view option_flag_name,
-                                             CodeGenerator* generator,
-                                             absl::string_view help_text) {
+void CommandLineInterface::RegisterGenerator(
+    const std::string& flag_name, const std::string& option_flag_name,
+    CodeGenerator* generator, const std::string& help_text) {
   GeneratorInfo info;
-  info.flag_name = std::string(flag_name);
-  info.option_flag_name = std::string(option_flag_name);
+  info.flag_name = flag_name;
+  info.option_flag_name = option_flag_name;
   info.generator = generator;
-  info.help_text = std::string(help_text);
+  info.help_text = help_text;
   generators_by_flag_name_[flag_name] = info;
   generators_by_option_name_[option_flag_name] = info;
 }
 
-void CommandLineInterface::AllowPlugins(absl::string_view exe_name_prefix) {
-  plugin_prefix_ = std::string(exe_name_prefix);
+void CommandLineInterface::AllowPlugins(const std::string& exe_name_prefix) {
+  plugin_prefix_ = exe_name_prefix;
 }
 
 namespace {
@@ -1031,7 +1029,7 @@ bool HasReservedFieldNumber(const FieldDescriptor* field) {
 
 namespace {
 std::unique_ptr<SimpleDescriptorDatabase>
-PopulateSingleSimpleDescriptorDatabase(absl::string_view descriptor_set_name);
+PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name);
 
 // Indicates whether the field is compatible with the given target type.
 bool IsFieldCompatible(const FieldDescriptor& field,
@@ -1206,7 +1204,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   // Any --descriptor_set_in FileDescriptorSet objects will be used as a
   // fallback to input_files on command line, so create that db first.
   if (!descriptor_set_in_names_.empty()) {
-    for (absl::string_view name : descriptor_set_in_names_) {
+    for (const std::string& name : descriptor_set_in_names_) {
       std::unique_ptr<SimpleDescriptorDatabase> database_for_descriptor_set =
           PopulateSingleSimpleDescriptorDatabase(name);
       if (!database_for_descriptor_set) {
@@ -1358,7 +1356,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   for (const auto& pair : output_directories) {
-    absl::string_view location = pair.first;
+    const std::string& location = pair.first;
     GeneratorContextImpl* directory = pair.second.get();
     if (absl::EndsWith(location, "/")) {
       if (!directory->WriteAllToDisk(location)) {
@@ -1460,10 +1458,10 @@ bool CommandLineInterface::InitializeDiskSourceTree(
 
 namespace {
 std::unique_ptr<SimpleDescriptorDatabase>
-PopulateSingleSimpleDescriptorDatabase(absl::string_view descriptor_set_name) {
+PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name) {
   int fd;
   do {
-    fd = open(std::string(descriptor_set_name).c_str(), O_RDONLY | O_BINARY);
+    fd = open(descriptor_set_name.c_str(), O_RDONLY | O_BINARY);
   } while (fd < 0 && errno == EINTR);
   if (fd < 0) {
     std::cerr << descriptor_set_name << ": " << strerror(ENOENT) << std::endl;
@@ -2028,8 +2026,8 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
 }
 
 CommandLineInterface::ParseArgumentStatus
-CommandLineInterface::InterpretArgument(absl::string_view name,
-                                        absl::string_view value) {
+CommandLineInterface::InterpretArgument(const std::string& name,
+                                        const std::string& value) {
   if (name.empty()) {
     // Not a flag.  Just a filename.
     if (value.empty()) {
@@ -2048,8 +2046,8 @@ CommandLineInterface::InterpretArgument(absl::string_view name,
     // On Windows, the shell (typically cmd.exe) does not expand wildcards in
     // file names (e.g. foo\*.proto), so we do it ourselves.
     switch (google::protobuf::io::win32::ExpandWildcards(
-        std::string(value), [this](absl::string_view path) {
-          this->input_files_.push_back(std::string(path));
+        value, [this](const std::string& path) {
+          this->input_files_.push_back(path);
         })) {
       case google::protobuf::io::win32::ExpandWildcardsResult::kSuccess:
         break;
@@ -2067,7 +2065,7 @@ CommandLineInterface::InterpretArgument(absl::string_view name,
 #else   // not _WIN32
     // On other platforms than Windows (e.g. Linux, Mac OS) the shell (typically
     // Bash) expands wildcards.
-    input_files_.push_back(std::string(value));
+    input_files_.push_back(value);
 #endif  // _WIN32
 
   } else if (name == "-I" || name == "--proto_path") {
@@ -2135,7 +2133,7 @@ CommandLineInterface::InterpretArgument(absl::string_view name,
     direct_dependencies_.insert(direct.begin(), direct.end());
 
   } else if (name == "--direct_dependencies_violation_msg") {
-    direct_dependencies_violation_msg_ = std::string(value);
+    direct_dependencies_violation_msg_ = value;
 
   } else if (name == "--descriptor_set_in") {
     if (!descriptor_set_in_names_.empty()) {
@@ -2176,7 +2174,7 @@ CommandLineInterface::InterpretArgument(absl::string_view name,
           << std::endl;
       return PARSE_ARGUMENT_FAIL;
     }
-    descriptor_set_out_name_ = std::string(value);
+    descriptor_set_out_name_ = value;
 
   } else if (name == "--dependency_out") {
     if (!dependency_out_name_.empty()) {
@@ -2192,7 +2190,7 @@ CommandLineInterface::InterpretArgument(absl::string_view name,
                 << std::endl;
       return PARSE_ARGUMENT_FAIL;
     }
-    dependency_out_name_ = std::string(value);
+    dependency_out_name_ = value;
 
   } else if (name == "--include_imports") {
     if (imports_in_descriptor_set_) {
@@ -2263,7 +2261,7 @@ CommandLineInterface::InterpretArgument(absl::string_view name,
       return PARSE_ARGUMENT_FAIL;
     }
 
-    codec_type_ = std::string(value);
+    codec_type_ = value;
 
   } else if (name == "--deterministic_output") {
     deterministic_output_ = true;
@@ -2290,14 +2288,14 @@ CommandLineInterface::InterpretArgument(absl::string_view name,
       return PARSE_ARGUMENT_FAIL;
     }
 
-    absl::string_view plugin_name;
-    absl::string_view path;
+    std::string plugin_name;
+    std::string path;
 
-    auto equals_pos = value.find_first_of('=');
-    if (equals_pos == value.npos) {
+    std::string::size_type equals_pos = value.find_first_of('=');
+    if (equals_pos == std::string::npos) {
       // Use the basename of the file.
-      auto slash_pos = value.find_last_of('/');
-      if (slash_pos == value.npos) {
+      std::string::size_type slash_pos = value.find_last_of('/');
+      if (slash_pos == std::string::npos) {
         plugin_name = value;
       } else {
         plugin_name = value.substr(slash_pos + 1);
@@ -2308,7 +2306,7 @@ CommandLineInterface::InterpretArgument(absl::string_view name,
       path = value.substr(equals_pos + 1);
     }
 
-    plugins_[plugin_name] = std::string(path);
+    plugins_[plugin_name] = path;
 
   } else if (name == "--print_free_field_numbers") {
     if (mode_ != MODE_COMPILE) {
@@ -2364,7 +2362,7 @@ CommandLineInterface::InterpretArgument(absl::string_view name,
           << std::endl;
       return PARSE_ARGUMENT_FAIL;
     }
-    edition_defaults_out_name_ = std::string(value);
+    edition_defaults_out_name_ = value;
   } else if (name == "--edition_defaults_minimum") {
     if (edition_defaults_minimum_ != EDITION_UNKNOWN) {
       std::cerr << name << " may only be passed once." << std::endl;
@@ -2398,14 +2396,14 @@ CommandLineInterface::InterpretArgument(absl::string_view name,
         if (!parameters->empty()) {
           parameters->append(",");
         }
-        parameters->append(std::string(value));
+        parameters->append(value);
       } else if (absl::StartsWith(name, "--") && absl::EndsWith(name, "_opt")) {
         std::string* parameters =
             &plugin_parameters_[PluginName(plugin_prefix_, name)];
         if (!parameters->empty()) {
           parameters->append(",");
         }
-        parameters->append(std::string(value));
+        parameters->append(value);
       } else {
         std::cerr << "Unknown flag: " << name << std::endl;
         return PARSE_ARGUMENT_FAIL;
@@ -2420,7 +2418,7 @@ CommandLineInterface::InterpretArgument(absl::string_view name,
       }
 
       OutputDirective directive;
-      directive.name = std::string(name);
+      directive.name = name;
       if (generator_info == nullptr) {
         directive.generator = nullptr;
       } else {
@@ -2430,12 +2428,12 @@ CommandLineInterface::InterpretArgument(absl::string_view name,
       // Split value at ':' to separate the generator parameter from the
       // filename.  However, avoid doing this if the colon is part of a valid
       // Windows-style absolute path.
-      auto colon_pos = value.find_first_of(':');
-      if (colon_pos == value.npos || IsWindowsAbsolutePath(value)) {
-        directive.output_location = std::string(value);
+      std::string::size_type colon_pos = value.find_first_of(':');
+      if (colon_pos == std::string::npos || IsWindowsAbsolutePath(value)) {
+        directive.output_location = value;
       } else {
-        directive.parameter = std::string(value.substr(0, colon_pos));
-        directive.output_location = std::string(value.substr(colon_pos + 1));
+        directive.parameter = value.substr(0, colon_pos);
+        directive.output_location = value.substr(colon_pos + 1);
       }
 
       output_directives_.push_back(directive);
@@ -2556,7 +2554,7 @@ Parse PROTO_FILES and generate output based on the options given:
 }
 
 bool CommandLineInterface::EnforceProto3OptionalSupport(
-    absl::string_view codegen_name, uint64_t supported_features,
+    const std::string& codegen_name, uint64_t supported_features,
     const std::vector<const FileDescriptor*>& parsed_files) const {
   bool supports_proto3_optional =
       supported_features & CodeGenerator::FEATURE_PROTO3_OPTIONAL;
@@ -2580,7 +2578,7 @@ bool CommandLineInterface::EnforceProto3OptionalSupport(
 }
 
 bool CommandLineInterface::EnforceEditionsSupport(
-    absl::string_view codegen_name, uint64_t supported_features,
+    const std::string& codegen_name, uint64_t supported_features,
     Edition minimum_edition, Edition maximum_edition,
     const std::vector<const FileDescriptor*>& parsed_files) const {
   if (experimental_editions_) {
@@ -2696,13 +2694,12 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
 
   std::vector<std::string> output_filenames;
   for (const auto& pair : output_directories) {
-    absl::string_view location = pair.first;
+    const std::string& location = pair.first;
     GeneratorContextImpl* directory = pair.second.get();
     std::vector<std::string> relative_output_filenames;
     directory->GetOutputFilenames(&relative_output_filenames);
     for (size_t i = 0; i < relative_output_filenames.size(); ++i) {
-      std::string output_filename =
-          absl::StrCat(location, relative_output_filenames[i]);
+      std::string output_filename = location + relative_output_filenames[i];
       if (output_filename.compare(0, 2, "./") == 0) {
         output_filename = output_filename.substr(2);
       }
@@ -2747,7 +2744,7 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
 
     for (int i = 0; i < file_set.file_size(); ++i) {
       const FileDescriptorProto& file = file_set.file(i);
-      absl::string_view virtual_file = file.name();
+      const std::string& virtual_file = file.name();
       std::string disk_file;
       if (source_tree &&
           source_tree->VirtualFileToDiskFile(virtual_file, &disk_file)) {
@@ -2766,11 +2763,11 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
 
 bool CommandLineInterface::GeneratePluginOutput(
     const std::vector<const FileDescriptor*>& parsed_files,
-    absl::string_view plugin_name, absl::string_view parameter,
+    const std::string& plugin_name, const std::string& parameter,
     GeneratorContext* generator_context, std::string* error) {
   CodeGeneratorRequest request;
   CodeGeneratorResponse response;
-  std::string processed_parameter = std::string(parameter);
+  std::string processed_parameter = parameter;
 
   bool bootstrap = GetBootstrapParam(processed_parameter);
 
@@ -3098,14 +3095,14 @@ bool CommandLineInterface::WriteEditionDefaults(const DescriptorPool& pool) {
 }
 
 const CommandLineInterface::GeneratorInfo*
-CommandLineInterface::FindGeneratorByFlag(absl::string_view name) const {
+CommandLineInterface::FindGeneratorByFlag(const std::string& name) const {
   auto it = generators_by_flag_name_.find(name);
   if (it == generators_by_flag_name_.end()) return nullptr;
   return &it->second;
 }
 
 const CommandLineInterface::GeneratorInfo*
-CommandLineInterface::FindGeneratorByOption(absl::string_view option) const {
+CommandLineInterface::FindGeneratorByOption(const std::string& option) const {
   auto it = generators_by_option_name_.find(option);
   if (it == generators_by_option_name_.end()) return nullptr;
   return &it->second;
@@ -3171,10 +3168,10 @@ void GatherOccupiedFieldRanges(
 // Utility function for PrintFreeFieldNumbers.
 // Actually prints the formatted free field numbers for given message name and
 // occupied ranges.
-void FormatFreeFieldNumbers(absl::string_view name,
+void FormatFreeFieldNumbers(const std::string& name,
                             const absl::btree_set<FieldRange>& ranges) {
   std::string output;
-  absl::StrAppendFormat(&output, "%-35s free:", name);
+  absl::StrAppendFormat(&output, "%-35s free:", name.c_str());
   int next_free_number = 1;
   for (const auto& range : ranges) {
     // This happens when groups re-use parent field numbers, in which
@@ -3216,5 +3213,3 @@ void CommandLineInterface::PrintFreeFieldNumbers(const Descriptor* descriptor) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-
-#include "google/protobuf/port_undef.inc"

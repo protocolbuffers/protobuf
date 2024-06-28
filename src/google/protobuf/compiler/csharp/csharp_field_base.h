@@ -59,6 +59,7 @@ class FieldGeneratorBase : public SourceGeneratorBase {
 
   void AddDeprecatedFlag(io::Printer* printer);
   void AddNullCheck(io::Printer* printer);
+  void AddNullCheck(io::Printer* printer, const std::string& name);
 
   void AddPublicMemberAttributes(io::Printer* printer);
   void SetCommonOneofFieldVariables(

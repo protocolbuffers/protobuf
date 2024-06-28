@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "absl/log/die_if_null.h"
-#include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/io/printer.h"
 
@@ -19,7 +18,7 @@ NamespacePrinter::NamespacePrinter(
     : p_(ABSL_DIE_IF_NULL(p)),
       namespace_components_(std::move(namespace_components)) {
   // Open the namespace.
-  for (absl::string_view ns : namespace_components_) {
+  for (const std::string& ns : namespace_components_) {
     p_->Print(absl::Substitute("namespace $0 {\n", ns));
   }
   p_->Print("\n");
@@ -27,7 +26,7 @@ NamespacePrinter::NamespacePrinter(
 
 NamespacePrinter::~NamespacePrinter() {
   // Close the namespace.
-  for (absl::string_view ns : namespace_components_) {
+  for (const std::string& ns : namespace_components_) {
     p_->Print(absl::Substitute("}  // namespace $0\n", ns));
   }
 }

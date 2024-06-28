@@ -71,7 +71,7 @@ struct ImportModules {
 };
 
 // Checks whether a descriptor name matches a well-known type.
-bool IsWellKnownType(absl::string_view name) {
+bool IsWellKnownType(const std::string& name) {
   // LINT.IfChange(wktbases)
   return (name == "google.protobuf.Any" ||
           name == "google.protobuf.Duration" ||
@@ -132,7 +132,7 @@ void CheckImportModules(const Descriptor* descriptor,
 void PyiGenerator::PrintImportForDescriptor(
     const FileDescriptor& desc, absl::flat_hash_set<std::string>* seen_aliases,
     bool* has_importlib) const {
-  absl::string_view filename = desc.name();
+  const std::string& filename = desc.name();
   std::string module_name_owned = StrippedModuleName(filename);
   absl::string_view module_name(module_name_owned);
   size_t last_dot_pos = module_name.rfind('.');
@@ -282,9 +282,9 @@ printer_->Print("\n");
 // Annotate wrapper for debugging purposes
 // Print a message after Annotate to see what is annotated.
 template <typename DescriptorT>
-void PyiGenerator::Annotate(absl::string_view label,
+void PyiGenerator::Annotate(const std::string& label,
                             const DescriptorT* descriptor) const {
-  printer_->Annotate(label, descriptor);
+printer_->Annotate(label.c_str(), descriptor);
 }
 
 void PyiGenerator::PrintEnum(const EnumDescriptor& enum_descriptor) const {

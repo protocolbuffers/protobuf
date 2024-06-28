@@ -25,7 +25,7 @@ namespace protobuf {
 namespace json {
 
 absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* resolver,
-                                absl::string_view type_url,
+                                const std::string& type_url,
                                 io::ZeroCopyInputStream* binary_input,
                                 io::ZeroCopyOutputStream* json_output,
                                 const PrintOptions& options) {
@@ -45,8 +45,8 @@ absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* resolver,
 }
 
 absl::Status BinaryToJsonString(google::protobuf::util::TypeResolver* resolver,
-                                absl::string_view type_url,
-                                absl::string_view binary_input,
+                                const std::string& type_url,
+                                const std::string& binary_input,
                                 std::string* json_output,
                                 const PrintOptions& options) {
   io::ArrayInputStream input_stream(binary_input.data(), binary_input.size());
@@ -56,7 +56,7 @@ absl::Status BinaryToJsonString(google::protobuf::util::TypeResolver* resolver,
 }
 
 absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
-                                absl::string_view type_url,
+                                const std::string& type_url,
                                 io::ZeroCopyInputStream* json_input,
                                 io::ZeroCopyOutputStream* binary_output,
                                 const ParseOptions& options) {
@@ -72,7 +72,7 @@ absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
 }
 
 absl::Status JsonToBinaryString(google::protobuf::util::TypeResolver* resolver,
-                                absl::string_view type_url,
+                                const std::string& type_url,
                                 absl::string_view json_input,
                                 std::string* binary_output,
                                 const ParseOptions& options) {
@@ -112,5 +112,3 @@ absl::Status JsonStringToMessage(absl::string_view input, Message* message,
 }  // namespace json
 }  // namespace protobuf
 }  // namespace google
-
-#include "google/protobuf/port_undef.inc"

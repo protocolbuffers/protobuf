@@ -192,7 +192,7 @@ const FieldDescriptor** SortFieldsByStorageSize(const Descriptor* descriptor) {
 
 }  // namespace
 
-MessageGenerator::MessageGenerator(absl::string_view file_description_name,
+MessageGenerator::MessageGenerator(const std::string& file_description_name,
                                    const Descriptor* descriptor,
                                    const GenerationOptions& generation_options)
     : file_description_name_(file_description_name),

@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
-#include "absl/strings/string_view.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {
@@ -25,7 +24,7 @@ class ZipWriter {
   ZipWriter(io::ZeroCopyOutputStream* raw_output);
   ~ZipWriter();
 
-  bool Write(absl::string_view filename, absl::string_view contents);
+  bool Write(const std::string& filename, const std::string& contents);
   bool WriteDirectory();
 
  private:

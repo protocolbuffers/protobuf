@@ -13,12 +13,21 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <cstddef>
+#include <cstdint>
+
+#include <gmock/gmock.h>
+#include "absl/log/absl_check.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
+#include "absl/types/span.h"
+#include "google/protobuf/compiler/command_line_interface_tester.h"
+#include "google/protobuf/unittest_features.pb.h"
+#include "google/protobuf/unittest_invalid_features.pb.h"
+
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
-
-#include <cstddef>
-#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -28,19 +37,13 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/descriptor.pb.h"
-#include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include "absl/log/absl_check.h"
-#include "absl/strings/escaping.h"
-#include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/command_line_interface.h"
-#include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/mock_code_generator.h"
 #include "google/protobuf/compiler/plugin.pb.h"
@@ -48,9 +51,6 @@
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
-#include "google/protobuf/unittest_features.pb.h"
-#include "google/protobuf/unittest_invalid_features.pb.h"
-
 
 #ifdef GOOGLE_PROTOBUF_USE_BAZEL_GENERATED_PLUGIN_PATHS
 // This is needed because of https://github.com/bazelbuild/bazel/issues/19124.
@@ -158,29 +158,29 @@ class CommandLineInterfaceTest : public CommandLineInterfaceTester {
   // generate given these inputs.  message_name is the name of the first
   // message that appeared in the proto file; this is just to make extra
   // sure that the correct file was parsed.
-  void ExpectGenerated(absl::string_view generator_name,
-                       absl::string_view parameter,
-                       absl::string_view proto_name,
-                       absl::string_view message_name);
-  void ExpectGenerated(absl::string_view generator_name,
-                       absl::string_view parameter,
-                       absl::string_view proto_name,
-                       absl::string_view message_name,
-                       absl::string_view output_directory);
-  void ExpectGeneratedWithMultipleInputs(absl::string_view generator_name,
-                                         absl::string_view all_proto_names,
-                                         absl::string_view proto_name,
-                                         absl::string_view message_name);
-  void ExpectGeneratedWithInsertions(absl::string_view generator_name,
-                                     absl::string_view parameter,
-                                     absl::string_view insertions,
-                                     absl::string_view proto_name,
-                                     absl::string_view message_name);
-  void CheckGeneratedAnnotations(absl::string_view name,
-                                 absl::string_view file);
+  void ExpectGenerated(const std::string& generator_name,
+                       const std::string& parameter,
+                       const std::string& proto_name,
+                       const std::string& message_name);
+  void ExpectGenerated(const std::string& generator_name,
+                       const std::string& parameter,
+                       const std::string& proto_name,
+                       const std::string& message_name,
+                       const std::string& output_directory);
+  void ExpectGeneratedWithMultipleInputs(const std::string& generator_name,
+                                         const std::string& all_proto_names,
+                                         const std::string& proto_name,
+                                         const std::string& message_name);
+  void ExpectGeneratedWithInsertions(const std::string& generator_name,
+                                     const std::string& parameter,
+                                     const std::string& insertions,
+                                     const std::string& proto_name,
+                                     const std::string& message_name);
+  void CheckGeneratedAnnotations(const std::string& name,
+                                 const std::string& file);
 
 #if defined(_WIN32)
-  void ExpectNullCodeGeneratorCalled(absl::string_view parameter);
+  void ExpectNullCodeGeneratorCalled(const std::string& parameter);
 #endif  // _WIN32
 
 
@@ -195,8 +195,8 @@ class CommandLineInterfaceTest : public CommandLineInterfaceTester {
 
   // The default code generators support all features. Use this to create a
   // code generator that omits the given feature(s).
-  void CreateGeneratorWithMissingFeatures(absl::string_view name,
-                                          absl::string_view description,
+  void CreateGeneratorWithMissingFeatures(const std::string& name,
+                                          const std::string& description,
                                           uint64_t features) {
     auto generator = std::make_unique<MockCodeGenerator>(name);
     generator->SuppressFeatures(features);
@@ -286,49 +286,48 @@ void CommandLineInterfaceTest::RunWithArgs(std::vector<std::string> args) {
 
 // -------------------------------------------------------------------
 
-void CommandLineInterfaceTest::ExpectGenerated(absl::string_view generator_name,
-                                               absl::string_view parameter,
-                                               absl::string_view proto_name,
-                                               absl::string_view message_name) {
+void CommandLineInterfaceTest::ExpectGenerated(
+    const std::string& generator_name, const std::string& parameter,
+    const std::string& proto_name, const std::string& message_name) {
   MockCodeGenerator::ExpectGenerated(generator_name, parameter, "", proto_name,
                                      message_name, proto_name,
                                      temp_directory());
 }
 
 void CommandLineInterfaceTest::ExpectGenerated(
-    absl::string_view generator_name, absl::string_view parameter,
-    absl::string_view proto_name, absl::string_view message_name,
-    absl::string_view output_directory) {
+    const std::string& generator_name, const std::string& parameter,
+    const std::string& proto_name, const std::string& message_name,
+    const std::string& output_directory) {
   MockCodeGenerator::ExpectGenerated(
       generator_name, parameter, "", proto_name, message_name, proto_name,
       absl::StrCat(temp_directory(), "/", output_directory));
 }
 
 void CommandLineInterfaceTest::ExpectGeneratedWithMultipleInputs(
-    absl::string_view generator_name, absl::string_view all_proto_names,
-    absl::string_view proto_name, absl::string_view message_name) {
+    const std::string& generator_name, const std::string& all_proto_names,
+    const std::string& proto_name, const std::string& message_name) {
   MockCodeGenerator::ExpectGenerated(generator_name, "", "", proto_name,
                                      message_name, all_proto_names,
                                      temp_directory());
 }
 
 void CommandLineInterfaceTest::ExpectGeneratedWithInsertions(
-    absl::string_view generator_name, absl::string_view parameter,
-    absl::string_view insertions, absl::string_view proto_name,
-    absl::string_view message_name) {
+    const std::string& generator_name, const std::string& parameter,
+    const std::string& insertions, const std::string& proto_name,
+    const std::string& message_name) {
   MockCodeGenerator::ExpectGenerated(generator_name, parameter, insertions,
                                      proto_name, message_name, proto_name,
                                      temp_directory());
 }
 
 void CommandLineInterfaceTest::CheckGeneratedAnnotations(
-    absl::string_view name, absl::string_view file) {
+    const std::string& name, const std::string& file) {
   MockCodeGenerator::CheckGeneratedAnnotations(name, file, temp_directory());
 }
 
 #if defined(_WIN32)
 void CommandLineInterfaceTest::ExpectNullCodeGeneratorCalled(
-    absl::string_view parameter) {
+    const std::string& parameter) {
   EXPECT_TRUE(null_generator_->called_);
   EXPECT_EQ(parameter, null_generator_->parameter_);
 }
@@ -4025,14 +4024,14 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
     close(duped_stdin_);
   }
 
-  void RedirectStdinFromText(absl::string_view input) {
+  void RedirectStdinFromText(const std::string& input) {
     std::string filename = absl::StrCat(TestTempDir(), "/test_stdin");
     ABSL_CHECK_OK(File::SetContents(filename, input, true));
     ABSL_CHECK(RedirectStdinFromFile(filename));
   }
 
-  bool RedirectStdinFromFile(absl::string_view filename) {
-    int fd = open(std::string(filename).c_str(), O_RDONLY);
+  bool RedirectStdinFromFile(const std::string& filename) {
+    int fd = open(filename.c_str(), O_RDONLY);
     if (fd < 0) return false;
     dup2(fd, STDIN_FILENO);
     close(fd);
@@ -4040,7 +4039,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
   }
 
   // Remove '\r' characters from text.
-  std::string StripCR(absl::string_view text) {
+  std::string StripCR(const std::string& text) {
     std::string result;
 
     for (size_t i = 0; i < text.size(); ++i) {
@@ -4055,7 +4054,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
   enum Type { TEXT, BINARY };
   enum ReturnCode { SUCCESS, ERROR };
 
-  bool Run(absl::string_view command, bool specify_proto_files = true) {
+  bool Run(const std::string& command, bool specify_proto_files = true) {
     std::vector<std::string> args;
     args.push_back("protoc");
     for (absl::string_view split_piece :
@@ -4095,7 +4094,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
     return result == 0;
   }
 
-  void ExpectStdoutMatchesBinaryFile(absl::string_view filename) {
+  void ExpectStdoutMatchesBinaryFile(const std::string& filename) {
     std::string expected_output;
     ABSL_CHECK_OK(
         File::GetContents(filename, &expected_output, true));
@@ -4105,7 +4104,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
     EXPECT_TRUE(captured_stdout_ == expected_output);
   }
 
-  void ExpectStdoutMatchesTextFile(absl::string_view filename) {
+  void ExpectStdoutMatchesTextFile(const std::string& filename) {
     std::string expected_output;
     ABSL_CHECK_OK(
         File::GetContents(filename, &expected_output, true));
@@ -4113,15 +4112,15 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
     ExpectStdoutMatchesText(expected_output);
   }
 
-  void ExpectStdoutMatchesText(absl::string_view expected_text) {
+  void ExpectStdoutMatchesText(const std::string& expected_text) {
     EXPECT_EQ(StripCR(expected_text), StripCR(captured_stdout_));
   }
 
-  void ExpectStderrMatchesText(absl::string_view expected_text) {
+  void ExpectStderrMatchesText(const std::string& expected_text) {
     EXPECT_EQ(StripCR(expected_text), StripCR(captured_stderr_));
   }
 
-  void ExpectStderrContainsText(absl::string_view expected_text) {
+  void ExpectStderrContainsText(const std::string& expected_text) {
     EXPECT_NE(StripCR(captured_stderr_).find(StripCR(expected_text)),
               std::string::npos);
   }

@@ -158,8 +158,8 @@ TextFormatConformanceTestSuiteImpl<MessageType>::
 
 template <typename MessageType>
 void TextFormatConformanceTestSuiteImpl<MessageType>::ExpectParseFailure(
-    absl::string_view test_name, ConformanceLevel level,
-    absl::string_view input) {
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input) {
   MessageType prototype;
   // We don't expect output, but if the program erroneously accepts the protobuf
   // we let it send its response as this.  We must not leave it unspecified.
@@ -185,17 +185,17 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::ExpectParseFailure(
 
 template <typename MessageType>
 void TextFormatConformanceTestSuiteImpl<MessageType>::RunValidTextFormatTest(
-    absl::string_view test_name, ConformanceLevel level,
-    absl::string_view input_text) {
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_text) {
   MessageType prototype;
   RunValidTextFormatTestWithMessage(test_name, level, input_text, prototype);
 }
 
 template <typename MessageType>
 void TextFormatConformanceTestSuiteImpl<MessageType>::
-    RunValidTextFormatTestWithMessage(absl::string_view test_name,
+    RunValidTextFormatTestWithMessage(const std::string& test_name,
                                       ConformanceLevel level,
-                                      absl::string_view input_text,
+                                      const std::string& input_text,
                                       const Message& message) {
   ConformanceRequestSetting setting1(
       level, conformance::TEXT_FORMAT, conformance::PROTOBUF,
@@ -209,10 +209,10 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::
 
 template <typename MessageType>
 void TextFormatConformanceTestSuiteImpl<MessageType>::
-    RunValidTextFormatTestWithExpected(absl::string_view test_name,
+    RunValidTextFormatTestWithExpected(const std::string& test_name,
                                        ConformanceLevel level,
-                                       absl::string_view input_text,
-                                       absl::string_view expected_text) {
+                                       const std::string& input_text,
+                                       const std::string& expected_text) {
   MessageType prototype;
   ConformanceRequestSetting setting1(
       level, conformance::TEXT_FORMAT, conformance::PROTOBUF,
@@ -226,7 +226,7 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::
 
 template <typename MessageType>
 void TextFormatConformanceTestSuiteImpl<
-    MessageType>::RunValidUnknownTextFormatTest(absl::string_view test_name,
+    MessageType>::RunValidUnknownTextFormatTest(const std::string& test_name,
                                                 const Message& message) {
   std::string serialized_input;
   message.SerializeToString(&serialized_input);
@@ -836,7 +836,7 @@ void TextFormatConformanceTestSuiteImpl<
 template <typename MessageType>
 void TextFormatConformanceTestSuiteImpl<MessageType>::
     TestTextFormatPerformanceMergeMessageWithRepeatedField(
-        absl::string_view test_type_name, absl::string_view message_field) {
+        const std::string& test_type_name, const std::string& message_field) {
   std::string recursive_message =
       absl::StrCat("recursive_message { ", message_field, " }");
 

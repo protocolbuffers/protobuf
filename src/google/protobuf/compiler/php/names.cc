@@ -49,7 +49,7 @@ bool IsReservedName(absl::string_view name) {
   return false;
 }
 
-std::string ReservedNamePrefix(absl::string_view classname,
+std::string ReservedNamePrefix(const std::string& classname,
                                const FileDescriptor* file) {
   if (IsReservedName(classname)) {
     if (file->package() == "google.protobuf") {
@@ -65,11 +65,11 @@ std::string ReservedNamePrefix(absl::string_view classname,
 namespace {
 
 template <typename DescriptorType>
-std::string ClassNamePrefixImpl(absl::string_view classname,
+std::string ClassNamePrefixImpl(const std::string& classname,
                                 const DescriptorType* desc) {
-  absl::string_view prefix = desc->file()->options().php_class_prefix();
+  const std::string& prefix = (desc->file()->options()).php_class_prefix();
   if (!prefix.empty()) {
-    return std::string(prefix);
+    return prefix;
   }
 
   return ReservedNamePrefix(classname, desc->file());
@@ -94,11 +94,11 @@ std::string GeneratedClassNameImpl(const ServiceDescriptor* desc) {
 
 }  // namespace
 
-std::string ClassNamePrefix(absl::string_view classname,
+std::string ClassNamePrefix(const std::string& classname,
                             const Descriptor* desc) {
   return ClassNamePrefixImpl(classname, desc);
 }
-std::string ClassNamePrefix(absl::string_view classname,
+std::string ClassNamePrefix(const std::string& classname,
                             const EnumDescriptor* desc) {
   return ClassNamePrefixImpl(classname, desc);
 }

@@ -181,7 +181,7 @@ bool IsForbiddenKotlin(absl::string_view field_name) {
   return kKotlinForbiddenNames.contains(field_name);
 }
 
-std::string EscapeKotlinKeywords(absl::string_view name) {
+std::string EscapeKotlinKeywords(std::string name) {
   std::vector<std::string> escaped_packages;
   std::vector<std::string> packages = absl::StrSplit(name, ".");  // NOLINT
   for (absl::string_view package : packages) {
@@ -211,7 +211,7 @@ std::string FileClassName(const FileDescriptor* file, bool immutable) {
   return ClassNameResolver().GetFileClassName(file, immutable);
 }
 
-std::string JavaPackageToDir(absl::string_view package_name) {
+std::string JavaPackageToDir(std::string package_name) {
   std::string package_dir = absl::StrReplaceAll(package_name, {{".", "/"}});
   if (!package_dir.empty()) absl::StrAppend(&package_dir, "/");
   return package_dir;

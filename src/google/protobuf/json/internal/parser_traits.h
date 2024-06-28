@@ -117,7 +117,7 @@ struct ParseProto2Descriptor : Proto2Descriptor {
   //
   // Body should have a signature `absl::Status(const Desc&, Msg&)`.
   template <typename F>
-  static absl::Status NewDynamic(Field f, absl::string_view type_url, Msg& msg,
+  static absl::Status NewDynamic(Field f, const std::string& type_url, Msg& msg,
                                  F body) {
     RecordAsSeen(f, msg);
     return WithDynamicType(
@@ -263,7 +263,7 @@ struct ParseProto3Type : Proto3Type {
   }
 
   template <typename F>
-  static absl::Status NewDynamic(Field f, absl::string_view type_url, Msg& msg,
+  static absl::Status NewDynamic(Field f, const std::string& type_url, Msg& msg,
                                  F body) {
     RecordAsSeen(f, msg);
     return WithDynamicType(

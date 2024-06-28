@@ -51,14 +51,14 @@ using google::protobuf::io::win32::mkdir;
 using google::protobuf::io::win32::stat;
 #endif
 
-bool File::Exists(absl::string_view name) {
-  return access(std::string(name).c_str(), F_OK) == 0;
+bool File::Exists(const std::string& name) {
+  return access(name.c_str(), F_OK) == 0;
 }
 
-absl::Status File::ReadFileToString(absl::string_view name, std::string* output,
-                                    bool text_mode) {
+absl::Status File::ReadFileToString(const std::string& name,
+                                    std::string* output, bool text_mode) {
   char buffer[1024];
-  FILE* file = fopen(std::string(name).c_str(), text_mode ? "rt" : "rb");
+  FILE* file = fopen(name.c_str(), text_mode ? "rt" : "rb");
   if (file == nullptr) return absl::NotFoundError("Could not open file");
 
   while (true) {
@@ -73,13 +73,13 @@ absl::Status File::ReadFileToString(absl::string_view name, std::string* output,
   return absl::OkStatus();
 }
 
-void File::ReadFileToStringOrDie(absl::string_view name, std::string* output) {
+void File::ReadFileToStringOrDie(const std::string& name, std::string* output) {
   ABSL_CHECK_OK(ReadFileToString(name, output)) << "Could not read: " << name;
 }
 
 absl::Status File::WriteStringToFile(absl::string_view contents,
-                                     absl::string_view name) {
-  FILE* file = fopen(std::string(name).c_str(), "wb");
+                                     const std::string& name) {
+  FILE* file = fopen(name.c_str(), "wb");
   if (file == nullptr) {
     return absl::InternalError(
         absl::StrCat("fopen(", name, ", \"wb\"): ", strerror(errno)));
@@ -98,8 +98,8 @@ absl::Status File::WriteStringToFile(absl::string_view contents,
 }
 
 void File::WriteStringToFileOrDie(absl::string_view contents,
-                                  absl::string_view name) {
-  FILE* file = fopen(std::string(name).c_str(), "wb");
+                                  const std::string& name) {
+  FILE* file = fopen(name.c_str(), "wb");
   ABSL_CHECK(file != nullptr)
       << "fopen(" << name << ", \"wb\"): " << strerror(errno);
   ABSL_CHECK_EQ(fwrite(contents.data(), 1, contents.size(), file),
@@ -109,17 +109,17 @@ void File::WriteStringToFileOrDie(absl::string_view contents,
       << "fclose(" << name << "): " << strerror(errno);
 }
 
-absl::Status File::CreateDir(absl::string_view name, int mode) {
+absl::Status File::CreateDir(const std::string& name, int mode) {
   if (!name.empty()) {
     ABSL_CHECK(name[name.size() - 1] != '.');
   }
-  if (mkdir(std::string(name).c_str(), mode) != 0) {
+  if (mkdir(name.c_str(), mode) != 0) {
     return absl::InternalError("Failed to create directory");
   }
   return absl::OkStatus();
 }
 
-absl::Status File::RecursivelyCreateDir(absl::string_view path, int mode) {
+absl::Status File::RecursivelyCreateDir(const std::string& path, int mode) {
   if (CreateDir(path, mode).ok()) return absl::OkStatus();
 
   if (Exists(path)) return absl::AlreadyExistsError("Path already exists");
@@ -134,11 +134,9 @@ absl::Status File::RecursivelyCreateDir(absl::string_view path, int mode) {
   return CreateDir(path, mode);
 }
 
-void File::DeleteRecursively(absl::string_view name_view, void* dummy1,
+void File::DeleteRecursively(const std::string& name, void* dummy1,
                              void* dummy2) {
-  if (name_view.empty()) return;
-
-  std::string name(name_view);
+  if (name.empty()) return;
 
   // We don't care too much about error checking here since this is only used
   // in tests to delete temporary directories that are under /tmp anyway.
@@ -150,7 +148,7 @@ void File::DeleteRecursively(absl::string_view name_view, void* dummy1,
       FindFirstFileA(absl::StrCat(name, "/*").c_str(), &find_data);
   if (find_handle == INVALID_HANDLE_VALUE) {
     // Just delete it, whatever it is.
-    DeleteFileA(std::string(name).c_str());
+    DeleteFileA(name.c_str());
     RemoveDirectoryA(name.c_str());
     return;
   }
@@ -198,8 +196,8 @@ void File::DeleteRecursively(absl::string_view name_view, void* dummy1,
 #endif
 }
 
-bool File::ChangeWorkingDirectory(absl::string_view new_working_directory) {
-  return chdir(std::string(new_working_directory).c_str()) == 0;
+bool File::ChangeWorkingDirectory(const std::string& new_working_directory) {
+  return chdir(new_working_directory.c_str()) == 0;
 }
 
 }  // namespace protobuf
