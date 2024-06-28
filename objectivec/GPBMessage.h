@@ -493,6 +493,15 @@ CF_EXTERN_C_END
  **/
 - (void)clear;
 
+/**
+ * Clears any unknown fields on this message.
+ *
+ * Note: To clear this message's unknown field and all the unknown fields of the
+ * messages within the fields of this message, use
+ * `GPBMessageDropUnknownFieldsRecursively()`.
+ **/
+- (void)clearUnknownFields;
+
 @end
 
 NS_ASSUME_NONNULL_END

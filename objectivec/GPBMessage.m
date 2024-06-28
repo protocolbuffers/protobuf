@@ -1251,6 +1251,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   }
 }
 
+- (void)clearUnknownFields {
+  self.unknownFields = nil;
+}
+
 - (BOOL)isInitialized {
   GPBDescriptor *descriptor = [self descriptor];
   for (GPBFieldDescriptor *field in descriptor->fields_) {
