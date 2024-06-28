@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 // Macro to create structs that will act as opaque pointees. These structs are
 // never intended to be dereferenced in Rust.
 // This is a workaround until stabilization of [`extern type`].
