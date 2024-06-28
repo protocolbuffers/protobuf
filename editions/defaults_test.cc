@@ -251,3 +251,5 @@ TEST_F(OverridableDefaultsTest, Edition2023) {
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

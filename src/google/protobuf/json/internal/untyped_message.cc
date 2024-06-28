@@ -566,3 +566,5 @@ absl::Status UntypedMessage::InsertField(const ResolverPool::Field& field,
 }  // namespace json_internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

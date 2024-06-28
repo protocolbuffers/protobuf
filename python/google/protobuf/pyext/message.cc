@@ -3050,3 +3050,5 @@ bool InitProto2MessageModule(PyObject* m) {
 }  // namespace python
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
