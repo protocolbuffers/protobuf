@@ -10,7 +10,8 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
-#include "rust/cpp_kernel/cpp_api.h"
+#include "rust/cpp_kernel/serialized_data.h"
+#include "rust/cpp_kernel/strings.h"
 #include "google/protobuf/unittest.pb.h"
 
 using google::protobuf::rust_internal::SerializedData;

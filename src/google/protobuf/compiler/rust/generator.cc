@@ -217,7 +217,9 @@ bool RustGenerator::Generate(const FileDescriptor* file,
         R"cc(
 #include "$proto_h$"
           $proto_deps_h$
-#include "google/protobuf/rust/cpp_kernel/cpp_api.h"
+#include "google/protobuf/rust/cpp_kernel/map.h"
+#include "google/protobuf/rust/cpp_kernel/serialized_data.h"
+#include "google/protobuf/rust/cpp_kernel/strings.h"
         )cc");
   }
 

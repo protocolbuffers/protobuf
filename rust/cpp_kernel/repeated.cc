@@ -1,15 +1,13 @@
-#include "rust/cpp_kernel/cpp_api.h"
-
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <string>
 
-#include "google/protobuf/map.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
+#include "rust/cpp_kernel/strings.h"
 
 extern "C" {
 #define expose_repeated_field_methods(ty, rust_ty)                            \
@@ -106,66 +104,4 @@ expose_repeated_ptr_field_methods(ProtoBytes);
 
 #undef expose_repeated_ptr_field_methods
 
-void __rust_proto_thunk__UntypedMapIterator_increment(
-    google::protobuf::internal::UntypedMapIterator* iter) {
-  iter->PlusPlus();
-}
-
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(int32_t, i32, int32_t, value,
-                                                   cpp_value);
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(uint32_t, u32, uint32_t,
-                                                   value, cpp_value);
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(float, f32, float, value,
-                                                   cpp_value);
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(double, f64, double, value,
-                                                   cpp_value);
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(bool, bool, bool, value,
-                                                   cpp_value);
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(uint64_t, u64, uint64_t,
-                                                   value, cpp_value);
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(int64_t, i64, int64_t, value,
-                                                   cpp_value);
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(
-    std::string, ProtoBytes, google::protobuf::rust_internal::PtrAndLen,
-    std::string(value.ptr, value.len),
-    google::protobuf::rust_internal::PtrAndLen(cpp_value.data(), cpp_value.size()));
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(
-    std::string, ProtoString, google::protobuf::rust_internal::PtrAndLen,
-    std::string(value.ptr, value.len),
-    google::protobuf::rust_internal::PtrAndLen(cpp_value.data(), cpp_value.size()));
-
-#undef expose_scalar_map_methods
-#undef expose_map_methods
-
-google::protobuf::rust_internal::RustStringRawParts utf8_debug_string(
-    const google::protobuf::Message* msg) {
-  std::string text = google::protobuf::Utf8Format(*msg);
-  return google::protobuf::rust_internal::RustStringRawParts(text);
-}
-
-google::protobuf::rust_internal::RustStringRawParts utf8_debug_string_lite(
-    const google::protobuf::MessageLite* msg) {
-  std::string text = google::protobuf::Utf8Format(*msg);
-  return google::protobuf::rust_internal::RustStringRawParts(text);
-}
-}
-
-namespace google {
-namespace protobuf {
-namespace rust_internal {
-
-RustStringRawParts::RustStringRawParts(std::string src) {
-  if (src.empty()) {
-    data = nullptr;
-    len = 0;
-  } else {
-    void* data_ = google::protobuf::rust_internal::__pb_rust_alloc(src.length(), 1);
-    std::memcpy(data_, src.data(), src.length());
-    data = static_cast<char*>(data_);
-    len = src.length();
-  }
-}
-
-}  // namespace rust_internal
-}  // namespace protobuf
-}  // namespace google
+}  // extern "C"
