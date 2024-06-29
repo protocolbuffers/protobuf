@@ -724,6 +724,16 @@ module BasicTest
       end
     end
 
+    def test_repeated_field_each_without_block # regression test for issue 5999
+      proto = proto_module::TestMessage.new
+      proto.repeated_string << "a"
+      proto.repeated_string << "b"
+      proto.repeated_string << "c"
+
+      # should not throw.
+      proto.repeated_string.each.with_index { |item, index| puts(item, index) }
+    end
+
     def test_oneof_fields_respond_to? # regression test for issue 9202
       msg = proto_module::OneofMessage.new
       # `has_` prefix + "?" suffix actions should work for oneofs fields and members.
