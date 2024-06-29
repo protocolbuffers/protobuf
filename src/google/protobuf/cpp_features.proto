@@ -53,4 +53,15 @@ message CppFeatures {
     edition_defaults = { edition: EDITION_LEGACY, value: "STRING" },
     edition_defaults = { edition: EDITION_2024, value: "VIEW" }
   ];
+
+  optional bool enum_name_uses_string_view = 3 [
+    retention = RETENTION_SOURCE,
+    targets = TARGET_TYPE_ENUM,
+    targets = TARGET_TYPE_FILE,
+    feature_support = {
+      edition_introduced: EDITION_2024,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "false" },
+    edition_defaults = { edition: EDITION_2024, value: "true" }
+  ];
 }
