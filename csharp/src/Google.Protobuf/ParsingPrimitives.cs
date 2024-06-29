@@ -754,13 +754,13 @@ namespace Google.Protobuf
         /// <summary>
         /// Checks whether there is known data available of the specified size remaining to parse
         /// in the underlying data source.
-        /// When parsing from a Stream this will return false because we have no knowledge of the amount
+        /// When parsing from a non-seekable Stream this will return false because we have no knowledge of the amount
         /// of data remaining in the stream until it is read.
         /// </summary>
         private static bool IsDataAvailableInSource(ref ParserInternalState state, int size)
         {
             // Data fits in remaining source data.
-            // Note that this will never be true when reading from a stream as the total length is unknown.
+            // Note that this will never be true when reading from a non-seekable stream as the total length is unknown.
             return size <= state.segmentedBufferHelper.TotalLength - state.totalBytesRetired - state.bufferPos;
         }
 
