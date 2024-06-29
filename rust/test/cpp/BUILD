@@ -29,11 +29,27 @@ rust_cc_proto_library(
     deps = [":debug_proto"],
 )
 
+proto_library(
+    name = "optimize_for_lite_proto",
+    testonly = True,
+    srcs = ["optimize_for_lite.proto"],
+)
+
+rust_cc_proto_library(
+    name = "optimize_for_lite_cpp_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+    ],
+    deps = [":optimize_for_lite_proto"],
+)
+
 rust_test(
     name = "debug_test",
     srcs = ["debug_test.rs"],
     deps = [
         ":debug_cpp_rust_proto",
+        ":optimize_for_lite_cpp_rust_proto",
         "//rust:protobuf_cpp",
         "@crate_index//:googletest",
     ],

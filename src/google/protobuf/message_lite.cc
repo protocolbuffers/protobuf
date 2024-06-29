@@ -128,6 +128,12 @@ std::string MessageLite::InitializationErrorString() const {
 }
 
 std::string MessageLite::DebugString() const {
+  auto* data = GetClassData();
+  ABSL_DCHECK(data != nullptr);
+  if (!data->is_lite) {
+    return data->full().descriptor_methods->debug_string(*this);
+  }
+
   return absl::StrCat("MessageLite at 0x", absl::Hex(this));
 }
 

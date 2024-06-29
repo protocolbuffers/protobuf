@@ -224,12 +224,15 @@ size_t Message::SpaceUsedLongImpl(const MessageLite& msg_lite) {
   return msg.GetReflection()->SpaceUsedLong(msg);
 }
 
+static std::string DebugStringImpl(const MessageLite& msg) {
+  return DownCastMessage<Message>(msg).DebugString();
+}
+
 PROTOBUF_CONSTINIT const MessageLite::DescriptorMethods
     Message::kDescriptorMethods = {
-        GetTypeNameImpl,
-        InitializationErrorStringImpl,
-        GetTcParseTableImpl,
-        SpaceUsedLongImpl,
+        GetTypeNameImpl,     InitializationErrorStringImpl,
+        GetTcParseTableImpl, SpaceUsedLongImpl,
+        DebugStringImpl,
 };
 
 namespace internal {
