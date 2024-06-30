@@ -461,6 +461,9 @@ void Generator::PrintImports(absl::string_view module_import_prefix) const {
       module_name =
           std::string(absl::StripPrefix(module_name, kThirdPartyPrefix));
     }
+    if (!module_import_prefix.empty()) {
+      module_name = absl::StrCat(module_import_prefix, ".", module_name);
+    }
     printer_->Print("from $module$ import *\n", "module", module_name);
   }
   printer_->Print("\n");
