@@ -200,9 +200,9 @@ GeneratorOptions Generator::ParseParameter(absl::string_view parameter,
       options.annotate_pyi = true;
     } else if (option.first == "experimental_strip_nonfunctional_codegen") {
       options.strip_nonfunctional_codegen = true;
-    } else if (options.first == "module_prefix") {
+    } else if (option.first == "module_import_prefix") {
       options.module_import_prefix =
-          std::string(absl::StripSuffix(options[i].second, "."));
+          std::string(absl::StripSuffix(option.second, "."));
     } else {
       *error = absl::StrCat("Unknown generator option: ", option.first);
     }
