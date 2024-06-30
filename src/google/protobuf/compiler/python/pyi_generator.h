@@ -67,7 +67,7 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
                                 bool* has_importlib) const;
   template <typename DescriptorT>
   void Annotate(const std::string& label, const DescriptorT* descriptor) const;
-  void PrintImports() const;
+  void PrintImports(absl::string_view module_import_prefix) const;
   void PrintTopLevelEnums() const;
   void PrintEnum(const EnumDescriptor& enum_descriptor) const;
   void PrintEnumValues(const EnumDescriptor& enum_descriptor,
@@ -92,6 +92,7 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
   mutable const FileDescriptor* file_;  // Set in Generate().  Under mutex_.
   mutable io::Printer* printer_;        // Set in Generate().  Under mutex_.
   mutable bool strip_nonfunctional_codegen_ = false;  // Set in Generate().
+  mutable std::string module_import_prefix;  // Set in Generate().
   // import_map will be a mapping from filename to module alias, e.g.
   // "google3/foo/bar.py" -> "_bar"
   mutable absl::flat_hash_map<std::string, std::string> import_map_;

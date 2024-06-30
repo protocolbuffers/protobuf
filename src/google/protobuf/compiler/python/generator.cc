@@ -227,6 +227,9 @@ bool Generator::Generate(const FileDescriptor* file,
     if (options.strip_nonfunctional_codegen) {
       pyi_options.push_back("experimental_strip_nonfunctional_codegen");
     }
+    if (!options.module_import_prefix.empty()) {
+      pyi_options.push_back(absl::StrCat("module_import_prefix", "=", options.module_import_prefix));
+    }
     if (!pyi_generator.Generate(file, absl::StrJoin(pyi_options, ","), context,
                                 error)) {
       return false;

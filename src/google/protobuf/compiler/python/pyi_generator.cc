@@ -164,7 +164,7 @@ void PyiGenerator::PrintImportForDescriptor(
   }
 }
 
-void PyiGenerator::PrintImports() const {
+void PyiGenerator::PrintImports(absl::string_view module_import_prefix) const {
   // Prints imported dependent _pb2 files.
   absl::flat_hash_set<std::string> seen_aliases;
   bool has_importlib = false;
@@ -262,7 +262,8 @@ void PyiGenerator::PrintImports() const {
   // Public imports
   for (int i = 0; i < file_->public_dependency_count(); ++i) {
     const FileDescriptor* public_dep = file_->public_dependency(i);
-    std::string module_name = StrippedModuleName(public_dep->name());
+    std::string module_name = absl::StrCat(
+        module_import_prefix, StrippedModuleName(public_dep->name()));
     // Top level messages in public imports
     for (int i = 0; i < public_dep->message_type_count(); ++i) {
       printer_->Print(
@@ -582,6 +583,9 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
       filename = option.first;
     } else if (option.first == "experimental_strip_nonfunctional_codegen") {
       strip_nonfunctional_codegen_ = true;
+    } else if (option.first == "module_import_prefix") {
+      module_import_prefix =
+          std::string(absl::StripSuffix(option.second, "."));
     } else {
       *error = absl::StrCat("Unknown generator option: ", option.first);
       return false;
@@ -603,7 +607,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
   io::Printer printer(output.get(), printer_opt);
   printer_ = &printer;
 
-  PrintImports();
+  PrintImports(module_import_prefix);
   printer_->Print("DESCRIPTOR: _descriptor.FileDescriptor\n");
 
   // Prints extensions and enums from imports.
