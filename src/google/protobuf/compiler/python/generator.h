@@ -47,6 +47,8 @@ namespace python {
 // CodeGenerator with the CommandLineInterface in your main() function.
 
 struct GeneratorOptions {
+  std::string module_import_prefix;
+
   bool generate_pyi = false;
   bool annotate_pyi = false;
   bool bootstrap = false;
@@ -82,7 +84,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
  private:
   GeneratorOptions ParseParameter(absl::string_view parameter,
                                   std::string* error) const;
-  void PrintImports() const;
+  void PrintImports(absl::string_view module_import_prefix) const;
   template <typename DescriptorT>
   std::string GetResolvedFeatures(const DescriptorT& descriptor) const;
   void PrintResolvedFeatures() const;
