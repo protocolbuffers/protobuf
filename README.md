@@ -60,7 +60,7 @@ If you would like to build protoc binary from source, see the [C++ Installation 
 Protobuf Runtime Installation
 -----------------------------
 
-Protobuf supports several different programming languages. For each programming
+supports several different programming languages. For each programming
 language, you can find instructions in the corresponding source directory about
 how to install protobuf runtime for that specific language:
 
