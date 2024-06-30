@@ -64,7 +64,8 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
  private:
   void PrintImportForDescriptor(const FileDescriptor& desc,
                                 absl::flat_hash_set<std::string>* seen_aliases,
-                                bool* has_importlib) const;
+                                bool* has_importlib,
+                                absl::string_view module_import_prefix) const;
   template <typename DescriptorT>
   void Annotate(const std::string& label, const DescriptorT* descriptor) const;
   void PrintImports(absl::string_view module_import_prefix) const;

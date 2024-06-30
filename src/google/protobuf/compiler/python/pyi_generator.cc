@@ -131,9 +131,12 @@ void CheckImportModules(const Descriptor* descriptor,
 
 void PyiGenerator::PrintImportForDescriptor(
     const FileDescriptor& desc, absl::flat_hash_set<std::string>* seen_aliases,
-    bool* has_importlib) const {
+    bool* has_importlib, absl::string_view module_import_prefix) const {
   const std::string& filename = desc.name();
   std::string module_name_owned = StrippedModuleName(filename);
+  if (!module_import_prefix.empty()) {
+    module_name_owned = absl::StrCat(module_import_prefix, ".", StrippedModuleName(filename));
+  }
   absl::string_view module_name(module_name_owned);
   size_t last_dot_pos = module_name.rfind('.');
   std::string alias = absl::StrCat("_", module_name.substr(last_dot_pos + 1));
@@ -173,10 +176,11 @@ void PyiGenerator::PrintImports(absl::string_view module_import_prefix) const {
     if (strip_nonfunctional_codegen_ && IsKnownFeatureProto(dep->name())) {
       continue;
     }
-    PrintImportForDescriptor(*dep, &seen_aliases, &has_importlib);
+    PrintImportForDescriptor(*dep, &seen_aliases, &has_importlib,
+                             module_import_prefix);
     for (int j = 0; j < dep->public_dependency_count(); ++j) {
       PrintImportForDescriptor(*dep->public_dependency(j), &seen_aliases,
-                               &has_importlib);
+                               &has_importlib, module_import_prefix);
     }
   }
 
