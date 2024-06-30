@@ -135,7 +135,8 @@ void PyiGenerator::PrintImportForDescriptor(
   const std::string& filename = desc.name();
   std::string module_name_owned = StrippedModuleName(filename);
   if (!module_import_prefix.empty()) {
-    module_name_owned = absl::StrCat(module_import_prefix, ".", StrippedModuleName(filename));
+    module_name_owned =
+        absl::StrCat(module_import_prefix, ".", module_name_owned);
   }
   absl::string_view module_name(module_name_owned);
   size_t last_dot_pos = module_name.rfind('.');
@@ -266,8 +267,10 @@ void PyiGenerator::PrintImports(absl::string_view module_import_prefix) const {
   // Public imports
   for (int i = 0; i < file_->public_dependency_count(); ++i) {
     const FileDescriptor* public_dep = file_->public_dependency(i);
-    std::string module_name = absl::StrCat(
-        module_import_prefix, StrippedModuleName(public_dep->name()));
+    std::string module_name = StrippedModuleName(public_dep->name());
+    if (!module_import_prefix.empty()) {
+      module_name = absl::StrCat(module_import_prefix, ".", module_name);
+    }
     // Top level messages in public imports
     for (int i = 0; i < public_dep->message_type_count(); ++i) {
       printer_->Print(
