@@ -19,6 +19,10 @@ upb_CType pbphp_dtype_to_type(upb_FieldType type);
 // converted.
 bool Convert_PhpToInt64(const zval* php_val, int64_t* i64);
 
+// Converts |php_val| to an uint64_t. Returns false if the value cannot be
+// converted.
+bool Convert_PhpToUint64(const zval* php_val, uint64_t* u64);
+
 // Converts |php_val| to a upb_MessageValue according to |type|. If type is
 // kUpb_CType_Message, then |desc| must be the Descriptor for this message type.
 // If type is string, message, or bytes, then |arena| will be used to copy
