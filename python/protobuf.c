@@ -199,7 +199,7 @@ PyObject* PyUpb_ObjCache_Get(const void* key) {
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  PyObject_HEAD
   upb_Arena* arena;
 } PyUpb_Arena;
 
