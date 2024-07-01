@@ -9,9 +9,9 @@ syntax = "proto2";
 
 package protos_generator.tests;
 
-import "hpb_generator/tests/no_package.proto";
+import "google/protobuf/hpb_generator/tests/no_package.proto";
 
-// option java_multiple_files = true;
+option java_multiple_files = true;
 
 message MyMessage {
   optional MessageWithEnumUpbTest my_type = 1;

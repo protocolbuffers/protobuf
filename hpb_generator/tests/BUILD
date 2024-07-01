@@ -12,12 +12,12 @@
 #     "cc_proto_library",
 # )
 # load(
-#     "//bazel:upb_proto_library.bzl",
-#     "upb_c_proto_library",
+#     "//hpb/bazel:upb_cc_proto_library.bzl",
+#     "upb_cc_proto_library",
 # )
 # load(
-#     "//protos/bazel:upb_cc_proto_library.bzl",
-#     "upb_cc_proto_library",
+#     "//bazel:upb_proto_library.bzl",
+#     "upb_c_proto_library",
 # )
 # load(
 #     "//upb/bazel:build_defs.bzl",

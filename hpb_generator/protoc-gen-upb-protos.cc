@@ -15,18 +15,18 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/descriptor.h"
-#include "hpb_generator/gen_enums.h"
-#include "hpb_generator/gen_extensions.h"
-#include "hpb_generator/gen_messages.h"
-#include "hpb_generator/gen_utils.h"
-#include "hpb_generator/names.h"
-#include "hpb_generator/output.h"
+#include "google/protobuf/hpb_generator/gen_enums.h"
+#include "google/protobuf/hpb_generator/gen_extensions.h"
+#include "google/protobuf/hpb_generator/gen_messages.h"
+#include "google/protobuf/hpb_generator/gen_utils.h"
+#include "google/protobuf/hpb_generator/names.h"
+#include "google/protobuf/hpb_generator/output.h"
 
 namespace protos_generator {
 namespace {
 
 namespace protoc = ::google::protobuf::compiler;
-namespace protobuf = ::google::protobuf;
+namespace protobuf = ::proto2;
 using FileDescriptor = ::google::protobuf::FileDescriptor;
 using google::protobuf::Edition;
 
@@ -150,7 +150,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
     }
   }
 
-  output("#include \"upb/port/def.inc\"\n");
+  output("#include \"third_party/upb/upb/port/def.inc\"\n");
 
   const std::vector<const protobuf::Descriptor*> this_file_messages =
       SortedMessages(file);
@@ -182,7 +182,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
 
   WriteEndNamespace(file, output);
 
-  output("\n#include \"upb/port/undef.inc\"\n\n");
+  output("\n#include \"third_party/upb/upb/port/undef.inc\"\n\n");
   // End of "C" section.
 
   output("#endif  /* $0_UPB_PROTO_H_ */\n", ToPreproc(file->name()));
@@ -205,7 +205,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
   for (int i = 0; i < file->dependency_count(); i++) {
     output("#include \"$0\"\n", CppHeaderFilename(file->dependency(i)));
   }
-  output("#include \"upb/port/def.inc\"\n");
+  output("#include \"third_party/upb/upb/port/def.inc\"\n");
 
   WriteStartNamespace(file, output);
   WriteMessageImplementations(file, output);
@@ -214,7 +214,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
   WriteExtensionIdentifiers(this_file_exts, output);
   WriteEndNamespace(file, output);
 
-  output("#include \"upb/port/undef.inc\"\n\n");
+  output("#include \"third_party/upb/upb/port/undef.inc\"\n\n");
 }
 
 void WriteMessageImplementations(const protobuf::FileDescriptor* file,
