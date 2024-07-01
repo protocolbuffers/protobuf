@@ -1,6 +1,24 @@
-"""Load dependencies needed to compile the protobuf library as a 3rd-party consumer."""
+"""Load dependencies needed to compile the protobuf library as a 3rd-party consumer.
+
+The consumers should use the following WORKSPACE snippet, which loads dependencies
+and sets up the repositories protobuf needs:
+
+```
+http_archive(
+    name = "protobuf",
+    strip_prefix = "protobuf-VERSION",
+    sha256 = ...,
+    url = ...,
+)
+
+load("@protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
+```
+"""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("//bazel/private:proto_bazel_features.bzl", "proto_bazel_features")  # buildifier: disable=bzl-visibility
 load("//python/dist:python_downloads.bzl", "python_nuget_package", "python_source_archive")
 load("//python/dist:system_python.bzl", "system_python")
 
@@ -96,6 +114,9 @@ def protobuf_deps():
                 "https://github.com/bazelbuild/rules_proto/archive/refs/tags/5.3.0-21.7.tar.gz",
             ],
         )
+
+    if not native.existing_rule("proto_bazel_features"):
+        proto_bazel_features(name = "proto_bazel_features")
 
     if not native.existing_rule("rules_python"):
         http_archive(
