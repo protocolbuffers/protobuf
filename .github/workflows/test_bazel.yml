@@ -11,6 +11,10 @@ on:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
+      continuous-prefix:
+        required: true
+        description: "The prefix for tests that should only be run continuously"
+        type: string
 
 permissions:
   contents: read
@@ -23,39 +27,39 @@ jobs:
         runner: [ ubuntu, windows, macos ]
         bazelversion: [ '7.1.2' ]
         bzlmod: [true, false ]
-        run-on-presubmit: [ true ]
+        presubmit: [ true ]
         include:
           - runner: ubuntu
             bazelversion: '6.4.0'
             bzlmod: true
-            run-on-presubmit: false
+            presubmit: false
           - runner: ubuntu
             bazelversion: '6.4.0'
             bzlmod: false
-            run-on-presubmit: false
+            presubmit: false
     runs-on: ${{ matrix.runner }}-latest
-    name: ${{ (!matrix.run-on-presubmit && inputs.test-type == 'presubmit') && '[SKIPPED]' || '' }} Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }} ${{ !matrix.run-on-presubmit && '(Continuous)' || '' }}
+    name: ${{ !matrix.presubmit && inputs.continuous-prefix || '' }} Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }}
     steps:
       - name: Checkout pending changes
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Windows startup flags
-        if: ${{ runner.os == 'Windows' && (matrix.run-on-presubmit || inputs.test-type == 'continuous') }}
+        if: ${{ runner.os == 'Windows' && (matrix.presubmit || inputs.test-type == 'continuous') }}
         working-directory: examples
         shell: bash
         run: echo "startup --output_user_root=C:/ --windows_enable_symlinks" >> .bazelrc
 
       - name: Configure Bazel version
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continous' }}
+        if: ${{ matrix.presubmit || inputs.test-type == 'continous' }}
         working-directory: examples
         shell: bash
         run: echo "${{ matrix.bazelversion }}" > .bazelversion
 
       - name: Run tests
-        if: ${{ matrix.run-on-presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
