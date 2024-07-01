@@ -91,7 +91,7 @@ Documentation
 
 The complete documentation is available at the [Protocol Buffers doc site](https://protobuf.dev).
 
-Support Policy
+Policy
 --------------
 
 Read about our [version support policy](https://protobuf.dev/version-support/)
