@@ -103,7 +103,7 @@ jobs:
       - name: Set Test Type Variables
         id: set-test-type-vars
         run: |
-          if [[ ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }} ]]; then
+          if [ ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }} ]; then
             echo "test-type=presubmit" >> "$GITHUB_OUTPUT"
             echo "continuous-prefix=[SKIPPED](Continuous)" >> "$GITHUB_OUTPUT"
           else
