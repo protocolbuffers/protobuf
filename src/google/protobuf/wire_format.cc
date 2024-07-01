@@ -1296,7 +1296,7 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
     switch (field->type()) {
 #define HANDLE_PRIMITIVE_TYPE(TYPE, CPPTYPE, TYPE_METHOD, CPPTYPE_METHOD)      \
   case FieldDescriptor::TYPE_##TYPE: {                                         \
-    auto r =                                                                   \
+    const auto& r =                                                            \
         message_reflection->GetRepeatedFieldInternal<CPPTYPE>(message, field); \
     target = stream->Write##TYPE_METHOD##Packed(                               \
         field->number(), r, FieldDataOnlyByteSize(field, message), target);    \
@@ -1314,7 +1314,7 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
 #undef HANDLE_PRIMITIVE_TYPE
 #define HANDLE_PRIMITIVE_TYPE(TYPE, CPPTYPE, TYPE_METHOD, CPPTYPE_METHOD)      \
   case FieldDescriptor::TYPE_##TYPE: {                                         \
-    auto r =                                                                   \
+    const auto& r =                                                            \
         message_reflection->GetRepeatedFieldInternal<CPPTYPE>(message, field); \
     target = stream->WriteFixedPacked(field->number(), r, target);             \
     break;                                                                     \
