@@ -83,7 +83,7 @@ jobs:
       # Stores a string that will serve as the prefix for all continuous tests.
       # Either way we prepend "(Continuous)" but in the case that we are in
       # a presubmit run, we should also mark them "[SKIPPED]"
-      continuous-prefix: ${{ steps.set-test-type-vars.output.continuous-prefix }}
+      continuous-prefix: ${{ steps.set-test-type-vars.outputs.continuous-prefix }}
     steps:
       - name: Check
         # Trivially pass for safe PRs, and explicitly error for unsafe ones
