@@ -7,7 +7,7 @@
 
 syntax = "proto2";
 
-package protos_generator.test;
+package hpb_generator.test;
 
 import "hpb_generator/tests/child_model.proto";
 

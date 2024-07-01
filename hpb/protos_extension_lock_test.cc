@@ -16,8 +16,8 @@
 #include <gtest/gtest.h>
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
-#include "hpb_generator/tests/test_model.upb.proto.h"
 #include "google/protobuf/hpb/protos.h"
+#include "hpb_generator/tests/test_model.upb.proto.h"
 #include "upb/mem/arena.hpp"
 
 #ifndef ASSERT_OK
@@ -27,7 +27,7 @@
 #define EXPECT_OK(x) EXPECT_TRUE(x.ok())
 #endif  // EXPECT_OK
 
-namespace protos_generator::test::protos {
+namespace hpb_generator::test::protos {
 
 namespace {
 
@@ -125,4 +125,4 @@ TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothEager) {
 #endif  // _MSC_VER
 
 }  // namespace
-}  // namespace protos_generator::test::protos
+}  // namespace hpb_generator::test::protos

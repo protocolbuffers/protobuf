@@ -15,15 +15,15 @@
 
 namespace protos::testing {
 namespace {
-using ::protos_generator::test::protos::TestModel;
+using ::hpb_generator::test::protos::TestModel;
 
 TEST(CppGeneratedCode, InternalMoveMessage) {
   // Generate message (simulating message created in another VM/language)
   upb_Arena* source_arena = upb_Arena_New();
-  protos_generator_test_TestModel* message =
-      protos_generator_test_TestModel_new(source_arena);
+  hpb_generator_test_TestModel* message =
+      hpb_generator_test_TestModel_new(source_arena);
   ASSERT_NE(message, nullptr);
-  protos_generator_test_TestModel_set_int_value_with_default(message, 123);
+  hpb_generator_test_TestModel_set_int_value_with_default(message, 123);
 
   // Move ownership.
   TestModel model = protos::internal::MoveMessage<TestModel>(
