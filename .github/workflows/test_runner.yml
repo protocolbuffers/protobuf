@@ -57,8 +57,8 @@ concurrency:
   cancel-in-progress: ${{ contains(fromJSON('["pull_request", "pull_request_target", "workflow_dispatch"]'), github.event_name) }}
 
 jobs:
-  check-tag:
-    name: Check for Safety
+  set-vars:
+    name: Set Variables
 
     # Avoid running tests twice on PR updates.  If the PR is coming from our
     # repository, it's safe and we can use `pull_request`.  Otherwise, we should
@@ -79,11 +79,11 @@ jobs:
       checkout-sha: ${{ steps.safe-checkout.outputs.sha }}
       # Stores a string denoting whether this is a presubmit or continuous
       # run. This helps us determine which tests to block on.
-      test-type: ${{ steps.set-test-type.outputs.test-type }}
+      test-type: ${{ steps.set-test-type-vars.outputs.test-type }}
       # Stores a string that will serve as the prefix for all continuous tests.
       # Either way we prepend "(Continuous)" but in the case that we are in
       # a presubmit run, we should also mark them "[SKIPPED]"
-      continuous-prefix: ${{ steps.set-continuous-prefix.output.continuous-prefix }}
+      continuous-prefix: ${{ steps.set-test-type-vars.output.continuous-prefix }}
     steps:
       - name: Check
         # Trivially pass for safe PRs, and explicitly error for unsafe ones
@@ -100,27 +100,20 @@ jobs:
           ${{ github.event_name != 'pull_request_target' }} ||
           echo "sha=${{ github.event.pull_request.head.sha  }}"  >> $GITHUB_OUTPUT
 
-      - name: Set Test Type
-        id: set-test-type
+      - name: Set Test Type Variables
+        id: set-test-type-vars
         run: |
           if [[ ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }} ]]; then
             echo "test-type=presubmit" >> "$GITHUB_OUTPUT"
-          else
-            echo "test-type=continuous" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Set Continuous Prefix
-        id: set-continuous-prefix
-        run: |
-          if [[ ${{ steps.test-type.outputs.test-type == 'presubmit' }} ]]; then
             echo "continuous-prefix=[SKIPPED](Continuous)" >> "$GITHUB_OUTPUT"
           else
+            echo "test-type=continuous" >> "$GITHUB_OUTPUT"
             echo "continuous-prefix=(Continuous)" >> "$GITHUB_OUTPUT"
           fi
 
   remove-tag:
     name: Remove safety tag
-    needs: [check-tag]
+    needs: [set-vars]
     if: github.event.action == 'labeled'
     runs-on: ubuntu-latest
     permissions:
@@ -136,118 +129,118 @@ jobs:
   # human stamp before continuing.
   bazel:
     name: Bazel
-    needs: [check-tag]
+    needs: [set-vars]
     uses: ./.github/workflows/test_bazel.yml
     with:
-      test-type: ${{ needs.check-tag.outputs.test-type }}
-      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
+      test-type: ${{ needs.set-vars.outputs.test-type }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
 
   cpp:
     name: C++
-    needs: [check-tag]
+    needs: [set-vars]
     uses: ./.github/workflows/test_cpp.yml
     with:
-      test-type: ${{ needs.check-tag.outputs.test-type }}
-      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
+      test-type: ${{ needs.set-vars.outputs.test-type }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
 
   java:
     name: Java
-    needs: [check-tag]
+    needs: [set-vars]
     uses: ./.github/workflows/test_java.yml
     with:
-      test-type: ${{ needs.check-tag.outputs.test-type }}
-      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
+      test-type: ${{ needs.set-vars.outputs.test-type }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
 
   python:
     name: Python
-    needs: [check-tag]
+    needs: [set-vars]
     uses: ./.github/workflows/test_python.yml
     with:
-      test-type: ${{ needs.check-tag.outputs.test-type }}
-      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
+      test-type: ${{ needs.set-vars.outputs.test-type }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
 
   ruby:
     name: Ruby
-    needs: [check-tag]
+    needs: [set-vars]
     uses: ./.github/workflows/test_ruby.yml
     with:
-      test-type: ${{ needs.check-tag.outputs.test-type }}
-      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
+      test-type: ${{ needs.set-vars.outputs.test-type }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
 
   php:
     name: PHP
-    needs: [check-tag]
+    needs: [set-vars]
     uses: ./.github/workflows/test_php.yml
     with:
-      test-type: ${{ needs.check-tag.outputs.test-type }}
-      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
+      test-type: ${{ needs.set-vars.outputs.test-type }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
 
   php-ext:
     name: PHP Extension
-    needs: [check-tag]
+    needs: [set-vars]
     uses: ./.github/workflows/test_php_ext.yml
     with:
-      test-type: ${{ needs.check-tag.outputs.test-type }}
-      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
+      test-type: ${{ needs.set-vars.outputs.test-type }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
 
   csharp:
     name: C#
-    needs: [check-tag]
+    needs: [set-vars]
     uses: ./.github/workflows/test_csharp.yml
     with:
-      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
     secrets: inherit
 
   objectivec:
     name: Objective-C
-    needs: [check-tag]
+    needs: [set-vars]
     uses: ./.github/workflows/test_objectivec.yml
     with:
-      test-type: ${{ needs.check-tag.outputs.test-type }}
-      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
+      test-type: ${{ needs.set-vars.outputs.test-type }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
 
   rust:
     name: Rust
-    needs: [check-tag]
+    needs: [set-vars]
     uses: ./.github/workflows/test_rust.yml
     with:
-      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
     secrets: inherit
 
   upb:
     name: μpb
-    needs: [check-tag]
+    needs: [set-vars]
     uses: ./.github/workflows/test_upb.yml
     with:
-      test-type: ${{ needs.check-tag.outputs.test-type }}
-      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.check-tag.outputs.continuous-prefix }}
+      test-type: ${{ needs.set-vars.outputs.test-type }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
 
   staleness:
     name: Staleness
-    needs: [check-tag]
+    needs: [set-vars]
     uses: ./.github/workflows/staleness_check.yml
     # Staleness tests have scheduled runs during off-hours to avoid race conditions.
     if: ${{ github.event_name != 'schedule' }}
     with:
-      safe-checkout: ${{ needs.check-tag.outputs.checkout-sha }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
     secrets: inherit
 
   # This test depends on all blocking tests and indicates whether they all suceeded.
