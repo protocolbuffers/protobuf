@@ -13,12 +13,18 @@
 
 @interface GPBUnknownField ()
 
-- (void)writeToOutput:(GPBCodedOutputStream *)output;
+- (nonnull instancetype)initWithNumber:(int32_t)number varint:(uint64_t)varint;
+- (nonnull instancetype)initWithNumber:(int32_t)number fixed32:(uint32_t)fixed32;
+- (nonnull instancetype)initWithNumber:(int32_t)number fixed64:(uint64_t)fixed64;
+- (nonnull instancetype)initWithNumber:(int32_t)number lengthDelimited:(nonnull NSData *)data;
+- (nonnull instancetype)initWithNumber:(int32_t)number group:(nonnull GPBUnknownFields *)group;
+
+- (void)writeToOutput:(nonnull GPBCodedOutputStream *)output;
 - (size_t)serializedSize;
 
-- (void)writeAsMessageSetExtensionToOutput:(GPBCodedOutputStream *)output;
+- (void)writeAsMessageSetExtensionToOutput:(nonnull GPBCodedOutputStream *)output;
 - (size_t)serializedSizeAsMessageSetExtension;
 
-- (void)mergeFromField:(GPBUnknownField *)other;
+- (void)mergeFromField:(nonnull GPBUnknownField *)other;
 
 @end

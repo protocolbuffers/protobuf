@@ -26,6 +26,7 @@
 #import "GPBRootObject.m"
 #import "GPBUnknownField.m"
 #import "GPBUnknownFieldSet.m"
+#import "GPBUnknownFields.m"
 #import "GPBUtilities.m"
 #import "GPBWellKnownTypes.m"
 #import "GPBWireFormat.m"
