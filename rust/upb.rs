@@ -18,7 +18,6 @@ use std::mem::{size_of, ManuallyDrop, MaybeUninit};
 use std::ptr::{self, NonNull};
 use std::slice;
 use std::sync::OnceLock;
-
 extern crate upb;
 
 // Temporarily 'pub' since a lot of gencode is directly calling any of the ffi
@@ -607,8 +606,7 @@ impl UpbTypeConversions for ProtoBytes {
         // SAFETY: The arena memory is not freed due to `ManuallyDrop`.
         let arena = ManuallyDrop::new(unsafe { Arena::from_raw(raw_arena) });
         let copied = copy_bytes_in_arena(&arena, val);
-        let msg_val = Self::to_message_value(copied);
-        msg_val
+        Self::to_message_value(copied)
     }
 
     unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, ProtoBytes> {
@@ -792,5 +790,36 @@ pub unsafe fn upb_Map_InsertAndReturnIfInserted(
         upb::MapInsertStatus::Inserted => true,
         upb::MapInsertStatus::Replaced => false,
         upb::MapInsertStatus::OutOfMemory => panic!("map arena is out of memory"),
+    }
+}
+
+/// Returns a string of field number to value entries of a message. If it fails
+/// to do this, will return an error string.
+///
+/// # Safety
+/// - `mt` must correspond to the |msg|'s minitable.
+pub unsafe fn upb_debug_string(msg: RawMessage, mt: *const upb_MiniTable, options: i32) -> String {
+    let mut buf_vec: Vec<u8> = Vec::with_capacity(1024); // Start out with a reasonable size
+    let buf: *mut u8 = buf_vec.as_mut_ptr();
+    let size: usize = buf_vec.capacity();
+    let real_size: usize = unsafe { upb_DebugString(msg, mt, options, buf, size) };
+    if real_size < size {
+        // We allocated enough space for the buffer, we're good to go
+        let slice = unsafe { slice::from_raw_parts(buf, real_size) };
+        match std::str::from_utf8(slice) {
+            Ok(s) => s.to_string(),
+            Err(_e) => "Failed to encode message as text".to_string(),
+        }
+    } else {
+        // we need to resize the char buffer with its true size
+        let mut buf_resize_vec: Vec<u8> = Vec::with_capacity(real_size);
+        let buf_resize: *mut u8 = buf_resize_vec.as_mut_ptr();
+        let real_size_resize: usize =
+            unsafe { upb_DebugString(msg, mt, options, buf_resize, real_size) };
+        let slice_resize = unsafe { slice::from_raw_parts(buf_resize, real_size_resize) };
+        match std::str::from_utf8(slice_resize) {
+            Ok(s) => s.to_string(),
+            Err(_e) => "Failed to encode message as text".to_string(),
+        }
     }
 }

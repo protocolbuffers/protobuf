@@ -19,6 +19,7 @@
 #include "upb/message/map.h"         // IWYU pragma: keep
 #include "upb/message/merge.h"       // IWYU pragma: keep
 #include "upb/mini_table/message.h"  // IWYU pragma: keep
+#include "upb/text/debug_string.h"   // IWYU pragma: keep
 // go/keep-sorted end
 
 const size_t __rust_proto_kUpb_Map_Begin = kUpb_Map_Begin;

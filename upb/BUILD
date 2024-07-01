@@ -7,7 +7,7 @@
 
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_python//python:defs.bzl", "py_binary")
-load("//bazel/private:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
+load("//bazel/private:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")  # buildifier: disable=bzl-visibility
 load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 # begin:google_only
@@ -281,10 +281,13 @@ upb_amalgamation(
         "//upb/lex:lex",
         "//upb/mem:internal",
         "//upb/message:internal",
+        "//upb/message:iterator",
         "//upb/message:types",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
         "//upb/reflection:internal",
+        "//upb/text:debug",
+        "//upb/text:internal",
     ],
     strip_import_prefix = ["src"],
 )
@@ -327,10 +330,13 @@ upb_amalgamation(
         "//upb/lex:lex",
         "//upb/mem:internal",
         "//upb/message:internal",
+        "//upb/message:iterator",
         "//upb/message:types",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
         "//upb/reflection:internal",
+        "//upb/text:debug",
+        "//upb/text:internal",
     ],
     prefix = "php-",
     strip_import_prefix = ["src"],
@@ -374,10 +380,13 @@ upb_amalgamation(
         "//upb/lex:lex",
         "//upb/mem:internal",
         "//upb/message:internal",
+        "//upb/message:iterator",
         "//upb/message:types",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
         "//upb/reflection:internal",
+        "//upb/text:debug",
+        "//upb/text:internal",
     ],
     prefix = "ruby-",
     strip_import_prefix = ["src"],

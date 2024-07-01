@@ -25,6 +25,7 @@ rust_library(
         "opaque_pointee.rs",
         "owned_arena_box.rs",
         "string_view.rs",
+        "text.rs",
         "wire.rs",
     ],
     visibility = [
@@ -48,5 +49,6 @@ cc_library(
         "//upb:message_compare",
         "//upb:message_copy",
         "//upb/mini_table",
+        "//upb/text:debug",
     ],
 )

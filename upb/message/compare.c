@@ -15,6 +15,7 @@
 #include "upb/message/internal/accessors.h"
 #include "upb/message/internal/compare_unknown.h"
 #include "upb/message/internal/extension.h"
+#include "upb/message/internal/iterator.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/extension.h"
@@ -25,66 +26,10 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-#define kUpb_BaseField_Begin ((size_t)-1)
-#define kUpb_Extension_Begin ((size_t)-1)
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-static bool _upb_Message_NextBaseField(const upb_Message* msg,
-                                       const upb_MiniTable* m,
-                                       const upb_MiniTableField** out_f,
-                                       upb_MessageValue* out_v, size_t* iter) {
-  const size_t count = upb_MiniTable_FieldCount(m);
-  size_t i = *iter;
-
-  while (++i < count) {
-    const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(m, i);
-    const void* src = UPB_PRIVATE(_upb_Message_DataPtr)(msg, f);
-
-    upb_MessageValue val;
-    UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, &val, src);
-
-    // Skip field if unset or empty.
-    if (upb_MiniTableField_HasPresence(f)) {
-      if (!upb_Message_HasBaseField(msg, f)) continue;
-    } else {
-      if (UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(f, src)) continue;
-
-      if (upb_MiniTableField_IsArray(f)) {
-        if (upb_Array_Size(val.array_val) == 0) continue;
-      } else if (upb_MiniTableField_IsMap(f)) {
-        if (upb_Map_Size(val.map_val) == 0) continue;
-      }
-    }
-
-    *out_f = f;
-    *out_v = val;
-    *iter = i;
-    return true;
-  }
-
-  return false;
-}
-
-static bool _upb_Message_NextExtension(const upb_Message* msg,
-                                       const upb_MiniTable* m,
-                                       const upb_MiniTableExtension** out_e,
-                                       upb_MessageValue* out_v, size_t* iter) {
-  size_t count;
-  const upb_Extension* exts = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
-  size_t i = *iter;
-
-  if (++i < count) {
-    *out_e = exts[i].ext;
-    *out_v = exts[i].data;
-    *iter = i;
-    return true;
-  }
-
-  return false;
-}
 
 bool upb_Message_IsEmpty(const upb_Message* msg, const upb_MiniTable* m) {
   if (upb_Message_ExtensionCount(msg)) return false;
@@ -92,7 +37,7 @@ bool upb_Message_IsEmpty(const upb_Message* msg, const upb_MiniTable* m) {
   const upb_MiniTableField* f;
   upb_MessageValue v;
   size_t iter = kUpb_BaseField_Begin;
-  return !_upb_Message_NextBaseField(msg, m, &f, &v, &iter);
+  return !UPB_PRIVATE(_upb_Message_NextBaseField)(msg, m, &f, &v, &iter);
 }
 
 static bool _upb_Array_IsEqual(const upb_Array* arr1, const upb_Array* arr2,
@@ -154,8 +99,10 @@ static bool _upb_Message_BaseFieldsAreEqual(const upb_Message* msg1,
     const upb_MiniTableField *f1, *f2;
     upb_MessageValue val1, val2;
 
-    const bool got1 = _upb_Message_NextBaseField(msg1, m, &f1, &val1, &iter1);
-    const bool got2 = _upb_Message_NextBaseField(msg2, m, &f2, &val2, &iter2);
+    const bool got1 =
+        UPB_PRIVATE(_upb_Message_NextBaseField)(msg1, m, &f1, &val1, &iter1);
+    const bool got2 =
+        UPB_PRIVATE(_upb_Message_NextBaseField)(msg2, m, &f2, &val2, &iter2);
 
     if (got1 != got2) return false;  // Must have identical field counts.
     if (!got1) return true;          // Loop termination condition.
@@ -195,7 +142,7 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
 
   // Iterate over all extensions for msg1, and search msg2 for each extension.
   size_t iter1 = kUpb_Extension_Begin;
-  while (_upb_Message_NextExtension(msg1, m, &e, &val1, &iter1)) {
+  while (UPB_PRIVATE(_upb_Message_NextExtension)(msg1, m, &e, &val1, &iter1)) {
     const upb_Extension* ext2 = UPB_PRIVATE(_upb_Message_Getext)(msg2, e);
     if (!ext2) return false;
 

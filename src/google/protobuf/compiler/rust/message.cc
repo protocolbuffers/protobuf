@@ -156,11 +156,19 @@ void MessageDebug(Context& ctx, const Descriptor& msg) {
       return;
 
     case Kernel::kUpb:
-      ctx.Emit({},
+      ctx.Emit({{"minitable", UpbMinitableName(msg)}},
                R"rs(
-        f.debug_struct(std::any::type_name::<Self>())
-          .field("raw_msg", &self.raw_msg())
-          .finish()
+        let mini_table = unsafe { $std$::ptr::addr_of!($minitable$) };
+        let options: i32 = 4; // Will not sort maps by default, unknown fields will be printed, and output will not be in a singe line.
+        let string = unsafe {
+          $pbr$::upb_debug_string(
+            self.raw_msg(),
+            mini_table,
+            options,
+          )
+        };
+        write!(f, "{}", string)
+        
       )rs");
       return;
   }

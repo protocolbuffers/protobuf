@@ -10,23 +10,16 @@
 
 #include "upb/reflection/def.h"
 
+// IWYU pragma: begin_exports
+#include "upb/text/options.h"
+// IWYU pragma: end_exports
+
 // Must be last.
 #include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-enum {
-  // When set, prints everything on a single line.
-  UPB_TXTENC_SINGLELINE = 1,
-
-  // When set, unknown fields are not printed.
-  UPB_TXTENC_SKIPUNKNOWN = 2,
-
-  // When set, maps are *not* sorted (this avoids allocating tmp mem).
-  UPB_TXTENC_NOSORT = 4
-};
 
 /* Encodes the given |msg| to text format.  The message's reflection is given in
  * |m|.  The symtab in |symtab| is used to find extensions (if NULL, extensions

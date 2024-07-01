@@ -11,10 +11,59 @@ cc_library(
     name = "text",
     srcs = [
         "encode.c",
+        "options.h",
     ],
     hdrs = [
         "encode.h",
     ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":internal",
+        "//upb:base",
+        "//upb:eps_copy_input_stream",
+        "//upb:message",
+        "//upb:port",
+        "//upb:reflection",
+        "//upb/lex",
+        "//upb/message:internal",
+        "//upb/message:types",
+    ],
+)
+
+cc_library(
+    name = "debug",
+    srcs = [
+        "debug_string.c",
+        "options.h",
+    ],
+    hdrs = [
+        "debug_string.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":internal",
+        "//upb:base",
+        "//upb:eps_copy_input_stream",
+        "//upb:message",
+        "//upb:mini_table",
+        "//upb:port",
+        "//upb/lex",
+        "//upb/message:internal",
+        "//upb/message:iterator",
+        "//upb/message:types",
+        "//upb/mini_table:internal",
+    ],
+)
+
+cc_library(
+    name = "internal",
+    srcs = [
+        "internal/encode.c",
+        "options.h",
+    ],
+    hdrs = ["internal/encode.h"],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
@@ -23,11 +72,32 @@ cc_library(
         "//upb:eps_copy_input_stream",
         "//upb:message",
         "//upb:port",
-        "//upb:reflection",
         "//upb:wire_reader",
         "//upb/lex",
         "//upb/message:internal",
-        "//upb/message:types",
+    ],
+)
+
+cc_test(
+    name = "encode_debug_test",
+    srcs = [
+        "encode_debug_test.cc",
+    ],
+    deps = [
+        ":debug",
+        "//upb:base",
+        "//upb:eps_copy_input_stream",
+        "//upb:mem",
+        "//upb:message",
+        "//upb:mini_table",
+        "//upb:port",
+        "//upb:wire_reader",
+        "//upb/message:internal",
+        "//upb/test:test_proto_upb_minitable",
+        "//upb/test:test_upb_proto",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
