@@ -246,7 +246,7 @@ jobs:
   # This test depends on all blocking tests and indicates whether they all suceeded.
   all_blocking_tests:
     name: All Blocking Tests
-    needs: [bazel, cpp, java, python, ruby, php, php-ext, csharp, objectivec, rust, upb, staleness]
+    needs: [set-vars, bazel, cpp, java, python, ruby, php, php-ext, csharp, objectivec, rust, upb, staleness]
     runs-on: ubuntu-latest
     steps:
       - name: Check test results
