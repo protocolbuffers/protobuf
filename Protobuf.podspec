@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
   s.source = { :git => 'https://github.com/protocolbuffers/protobuf.git',
                :tag => "v#{s.version}" }
 
-  s.source_files = 'objectivec/*.{h,m}',
+  s.source_files = 'objectivec/*.{h,m,swift}',
                    'objectivec/google/protobuf/Any.pbobjc.h',
                    'objectivec/google/protobuf/Api.pbobjc.h',
                    'objectivec/google/protobuf/Duration.pbobjc.h',
@@ -32,6 +32,9 @@ Pod::Spec.new do |s|
   # The following would cause duplicate symbol definitions. GPBProtocolBuffers is expected to be
   # left out, as it's an umbrella implementation file.
   s.exclude_files = 'objectivec/GPBProtocolBuffers.m'
+
+  # Now that there is a Swift source file, set a version.
+  s.swift_version = '5.0'
 
   s.resource_bundle = {
     "Protobuf_Privacy" => "PrivacyInfo.xcprivacy"
