@@ -284,7 +284,7 @@ struct alignas(uint64_t) TcParseTableBase {
   uint16_t num_aux_entries;
   uint32_t aux_offset;
 
-  const MessageLite* default_instance;
+  const MessageLite::ClassData* class_data;
   using PostLoopHandler = const char* (*)(MessageLite* msg, const char* ptr,
                                           ParseContext* ctx);
   PostLoopHandler post_loop_handler;
@@ -309,7 +309,7 @@ struct alignas(uint64_t) TcParseTableBase {
                              uint32_t field_entries_offset,
                              uint16_t num_field_entries,
                              uint16_t num_aux_entries, uint32_t aux_offset,
-                             const MessageLite* default_instance,
+                             const MessageLite::ClassData* class_data,
                              PostLoopHandler post_loop_handler,
                              TailCallParseFunc fallback
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -328,7 +328,7 @@ struct alignas(uint64_t) TcParseTableBase {
         num_field_entries(num_field_entries),
         num_aux_entries(num_aux_entries),
         aux_offset(aux_offset),
-        default_instance(default_instance),
+        class_data(class_data),
         post_loop_handler(post_loop_handler),
         fallback(fallback)
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -473,6 +473,8 @@ struct alignas(uint64_t) TcParseTableBase {
                                    aux_offset +
                                    num_aux_entries * sizeof(FieldAux));
   }
+
+  const MessageLite* default_instance() const { return class_data->prototype; }
 };
 
 #if defined(_MSC_VER) && !defined(_WIN64)
@@ -549,9 +551,10 @@ PROTOBUF_CC const char* StubParseImpl(PROTOBUF_TC_PARAM_DECL) {
 }
 
 template <typename T,
-          PROTOBUF_CC const char* (*func)(T*, const char*, ParseContext*)>
+          PROTOBUF_CC const char* (*func)(T*, const char*, ParseContext*),
+          typename ClassData>
 constexpr TcParseTable<0> CreateStubTcParseTable(
-    const MessageLite* default_instance,
+    const ClassData* class_data,
     TcParseTableBase::PostLoopHandler post_loop_handler = nullptr) {
   return {
       {
@@ -565,7 +568,7 @@ constexpr TcParseTable<0> CreateStubTcParseTable(
           0,                  // num_field_entries
           0,                  // num_aux_entries
           0,                  // aux_offset
-          default_instance,   //
+          class_data,         //
           post_loop_handler,  //
           nullptr,            // fallback
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE

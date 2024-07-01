@@ -58,14 +58,14 @@ const ImplicitWeakMessage& ImplicitWeakMessage::default_instance() {
   return implicit_weak_message_default_instance.instance;
 }
 
-static const auto table =
-    internal::CreateStubTcParseTable<ImplicitWeakMessage,
-                                     ImplicitWeakMessage::ParseImpl>(
-        &implicit_weak_message_default_instance.instance);
+const TcParseTable<0> ImplicitWeakMessage::table_ =
+    internal::CreateStubTcParseTable<ImplicitWeakMessage, ParseImpl>(
+        class_data_.base());
 
 constexpr MessageLite::ClassDataLite<1> ImplicitWeakMessage::class_data_ = {
     {
-        &table.header,
+        &implicit_weak_message_default_instance.instance,
+        &table_.header,
         nullptr,  // on_demand_register_arena_dtor
         nullptr,  // is_initialized (always true)
         MergeImpl,

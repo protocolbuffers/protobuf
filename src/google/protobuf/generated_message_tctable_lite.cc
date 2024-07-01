@@ -353,7 +353,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastEndG2(PROTOBUF_TC_PARAM_DECL) {
 
 inline PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::NewMessage(
     const TcParseTableBase* table, Arena* arena) {
-  return table->default_instance->New(arena);
+  return table->default_instance()->New(arena);
 }
 
 MessageLite* TcParser::AddMessage(const TcParseTableBase* table,
@@ -1682,7 +1682,7 @@ void* TcParser::MaybeGetSplitBase(MessageLite* msg, const bool is_split,
   if (is_split) {
     const uint32_t split_offset = GetSplitOffset(table);
     void* default_split =
-        TcParser::RefAt<void*>(table->default_instance, split_offset);
+        TcParser::RefAt<void*>(table->default_instance(), split_offset);
     void*& split = TcParser::RefAt<void*>(msg, split_offset);
     if (split == default_split) {
       // Allocate split instance when needed.

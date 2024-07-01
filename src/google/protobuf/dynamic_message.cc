@@ -263,15 +263,11 @@ struct DynamicMessageFactory::TypeInfo {
   //   important (the prototype must be deleted *before* the offsets).
   std::unique_ptr<uint32_t[]> offsets;
   std::unique_ptr<uint32_t[]> has_bits_indices;
-  // Don't use a unique_ptr to hold the prototype: the destructor for
-  // DynamicMessage needs to know whether it is the prototype, and does so by
-  // looking back at this field. This would assume details about the
-  // implementation of unique_ptr.
-  const DynamicMessage* prototype;
   int weak_field_map_offset;  // The offset for the weak_field_map;
 
   DynamicMessage::ClassDataFull class_data = {
       DynamicMessage::ClassData{
+          nullptr,  // default_instance
           nullptr,  // tc_table
           nullptr,  // on_demand_register_arena_dtor
           &DynamicMessage::IsInitializedImpl,
@@ -289,10 +285,10 @@ struct DynamicMessageFactory::TypeInfo {
       nullptr,  // get_metadata_tracker
   };
 
-  TypeInfo() : prototype(nullptr) {}
+  TypeInfo() = default;
 
   ~TypeInfo() {
-    delete prototype;
+    delete class_data.prototype;
     delete class_data.reflection;
 
     auto* type = class_data.descriptor;
@@ -337,7 +333,7 @@ DynamicMessage::DynamicMessage(DynamicMessageFactory::TypeInfo* type_info,
   // created, which needs the address of the prototype of Foo (the value in
   // map). To break the cyclic dependency, we have to assign the address of
   // prototype into type_info first.
-  type_info->prototype = this;
+  type_info->class_data.prototype = this;
   SharedCtor(lock_factory);
 }
 
@@ -467,10 +463,10 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
 }
 
 bool DynamicMessage::is_prototype() const {
-  return type_info_->prototype == this ||
+  return type_info_->class_data.prototype == this ||
          // If type_info_->prototype is nullptr, then we must be constructing
          // the prototype now, which means we must be the prototype.
-         type_info_->prototype == nullptr;
+         type_info_->class_data.prototype == nullptr;
 }
 
 #if defined(__cpp_lib_destroying_delete) && defined(__cpp_sized_deallocation)
@@ -659,7 +655,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   const TypeInfo** target = &prototypes_[type];
   if (*target != nullptr) {
     // Already exists.
-    return (*target)->prototype;
+    return static_cast<const Message*>((*target)->class_data.prototype);
   }
 
   TypeInfo* type_info = new TypeInfo;
@@ -784,7 +780,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   DynamicMessage* prototype = new (base) DynamicMessage(type_info, false);
 
   internal::ReflectionSchema schema = {
-      type_info->prototype,
+      static_cast<const Message*>(type_info->class_data.prototype),
       type_info->offsets.get(),
       type_info->has_bits_indices.get(),
       type_info->has_bits_offset,

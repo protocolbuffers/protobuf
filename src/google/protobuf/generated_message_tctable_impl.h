@@ -927,9 +927,10 @@ class PROTOBUF_EXPORT TcParser final {
       // it will be handled just like if it was an unknown extension: sent to
       // the unknown field set.
       return RefAt<ExtensionSet>(msg, table->extension_offset)
-          .ParseField(tag, ptr,
-                      static_cast<const MessageBaseT*>(table->default_instance),
-                      &msg->_internal_metadata_, ctx);
+          .ParseField(
+              tag, ptr,
+              static_cast<const MessageBaseT*>(table->default_instance()),
+              &msg->_internal_metadata_, ctx);
     } else {
       // Otherwise, we directly put it on the unknown field set.
       return UnknownFieldParse(
@@ -944,7 +945,7 @@ class PROTOBUF_EXPORT TcParser final {
       PROTOBUF_TC_PARAM_NO_DATA_DECL) {
     return RefAt<ExtensionSet>(msg, table->extension_offset)
         .ParseMessageSet(
-            ptr, static_cast<const MessageBaseT*>(table->default_instance),
+            ptr, static_cast<const MessageBaseT*>(table->default_instance()),
             &msg->_internal_metadata_, ctx);
   }
 
