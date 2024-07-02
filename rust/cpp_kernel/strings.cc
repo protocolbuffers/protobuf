@@ -7,20 +7,20 @@
 
 namespace google {
 namespace protobuf {
-namespace rust_internal {
+namespace rust {
 
 RustStringRawParts::RustStringRawParts(std::string src) {
   if (src.empty()) {
     data = nullptr;
     len = 0;
   } else {
-    void* d = rust_proto_alloc(src.length(), 1);
+    void* d = proto2_rust_alloc(src.length(), 1);
     std::memcpy(d, src.data(), src.length());
     data = static_cast<char*>(d);
     len = src.length();
   }
 }
 
-}  // namespace rust_internal
+}  // namespace rust
 }  // namespace protobuf
 }  // namespace google

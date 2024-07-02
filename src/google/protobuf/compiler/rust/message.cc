@@ -1267,11 +1267,11 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
         extern $abi$ {
         void* $new_thunk$() { return new $QualifiedMsg$(); }
         void $delete_thunk$(void* ptr) { delete static_cast<$QualifiedMsg$*>(ptr); }
-        bool $serialize_thunk$($QualifiedMsg$* msg, google::protobuf::rust_internal::SerializedData* out) {
-          return google::protobuf::rust_internal::SerializeMsg(msg, out);
+        bool $serialize_thunk$($QualifiedMsg$* msg, google::protobuf::rust::SerializedData* out) {
+          return google::protobuf::rust::SerializeMsg(msg, out);
         }
         bool $parse_thunk$($QualifiedMsg$* msg,
-                                 google::protobuf::rust_internal::SerializedData data) {
+                                 google::protobuf::rust::SerializedData data) {
           return msg->ParseFromArray(data.data, data.len);
         }
 

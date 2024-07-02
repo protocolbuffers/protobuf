@@ -8,16 +8,16 @@
 
 extern "C" {
 
-google::protobuf::rust_internal::RustStringRawParts rust_proto_utf8_debug_string(
+google::protobuf::rust::RustStringRawParts proto2_rust_utf8_debug_string(
     const google::protobuf::Message* msg) {
   std::string text = google::protobuf::Utf8Format(*msg);
-  return google::protobuf::rust_internal::RustStringRawParts(text);
+  return google::protobuf::rust::RustStringRawParts(text);
 }
 
-google::protobuf::rust_internal::RustStringRawParts rust_proto_utf8_debug_string_lite(
+google::protobuf::rust::RustStringRawParts proto2_rust_utf8_debug_string_lite(
     const google::protobuf::MessageLite* msg) {
   std::string text = google::protobuf::Utf8Format(*msg);
-  return google::protobuf::rust_internal::RustStringRawParts(text);
+  return google::protobuf::rust::RustStringRawParts(text);
 }
 
 }  // extern "C"
