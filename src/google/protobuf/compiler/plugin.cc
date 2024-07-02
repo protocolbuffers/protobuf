@@ -41,6 +41,28 @@ namespace compiler {
 using google::protobuf::io::win32::setmode;
 #endif
 
+// class MemoryOutputStreamLite : public io::ZeroCopyOutputStream {
+//  public:
+//   MemoryOutputStreamLite(std::string* content)
+//       : content_(content), inner_(new io::StringOutputStream(&data_)) {}
+//   bool Next(void** data, int* size) override {
+//     return inner_->Next(data, size);
+//   }
+//   void BackUp(int count) override { inner_->BackUp(count); }
+//   int64_t ByteCount() const override { return inner_->ByteCount(); }
+//   ~MemoryOutputStreamLite() override;
+
+//  private:
+//   std::string data_;
+//   std::string* content_;
+//   std::unique_ptr<io::StringOutputStream> inner_;
+// };
+
+// MemoryOutputStreamLite::~MemoryOutputStreamLite() {
+//   inner_.reset();
+//   content_->append(data_);
+// }
+
 class GeneratorResponseContext : public GeneratorContext {
  public:
   GeneratorResponseContext(
@@ -54,6 +76,29 @@ class GeneratorResponseContext : public GeneratorContext {
   // implements GeneratorContext --------------------------------------
 
   io::ZeroCopyOutputStream* Open(const std::string& filename) override {
+    CodeGeneratorResponse::File* file = response_->add_file();
+    file->set_name(filename);
+    return new io::StringOutputStream(file->mutable_content());
+  }
+
+  // io::ZeroCopyOutputStream* OpenForAppend(
+  //     const std::string& filename) override {
+  //   for (auto& file : *response_->mutable_file()) {
+  //     if (file.name() == filename) {
+  //       return new io::StringOutputStream(file.mutable_content());
+  //     }
+  //   }
+  //   return Open(filename);
+  // }
+  io::ZeroCopyOutputStream* OpenForAppend(
+      const std::string& filename) override {
+    for (auto& file : *response_->mutable_file()) {
+      if (file.name() == filename) {
+        // return new MemoryOutputStreamLite(file.mutable_content());
+        return new io::StringOutputStream(file.mutable_content());
+      }
+    }
+    // return Open(filename);
     CodeGeneratorResponse::File* file = response_->add_file();
     file->set_name(filename);
     return new io::StringOutputStream(file->mutable_content());
