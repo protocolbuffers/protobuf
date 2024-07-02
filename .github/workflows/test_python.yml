@@ -3,10 +3,19 @@ name: Python Tests
 on:
   workflow_call:
     inputs:
+      test-type:
+        required: true
+        description: "The type of test this is run from -- presubmit or continuous"
+        type: string
       safe-checkout:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
+      continuous-prefix:
+        required: true
+        description: "The prefix for tests that should only be run continuously"
+        type: string
+
 
 permissions:
   contents: read
@@ -32,15 +41,26 @@ jobs:
             # TODO Enable this once conformance tests are fixed.
             flags: --define=use_fast_cpp_protos=true --test_tag_filters=-conformance
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17
+            presubmit: true
+          - version: "3.8"
+            presubmit: true
+          - version: "3.9"
+            presubmit: false
+          - version: "3.10"
+            presubmit: false
+          - version: "3.11"
+            presubmit: true
 
-    name: Linux ${{ matrix.type }} ${{ matrix.version }}
+    name: ${{ !matrix.presubmit && inputs.continuous-prefix || '' }} Linux ${{ matrix.type }} ${{ matrix.version }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
+        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
+        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:{0}-63dd26c0c7a808d92673a3e52e848189d4ab0f17', matrix.version) }}

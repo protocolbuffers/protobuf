@@ -3,10 +3,19 @@ name: PHP Extension Tests
 on:
   workflow_call:
     inputs:
+      test-type:
+        required: true
+        description: "The type of test this is run from -- presubmit or continuous"
+        type: string
       safe-checkout:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
+      continuous-prefix:
+        required: true
+        description: "The prefix for tests that should only be run continuously"
+        type: string
+
 
 permissions:
   contents: read  #  to fetch code (actions/checkout)
@@ -41,15 +50,23 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        version: ["8.1", "8.2", "8.3"]
-    name: Build ${{ matrix.version }}
+        include:
+          - version: "8.1"
+            presubmit: false
+          - version: "8.2"
+            presubmit: false
+          - version: "8.3"
+            presubmit: true
+    name: ${{ !matrix.presubmit && inputs.continuous-prefix || '' }} Build ${{ matrix.version }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
+        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
         with:
           name: protobuf-php-release
 
       - name: Run tests
+        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-extension:${{ matrix.version }}-a48f26c08d9a803dd0177dda63563f6ea6f7b2d4
