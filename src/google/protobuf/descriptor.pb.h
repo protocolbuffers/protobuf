@@ -871,8 +871,6 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
       62, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_UninterpretedOption_NamePart_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1131,8 +1129,6 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
       106, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_SourceCodeInfo_Location_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1392,8 +1388,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
       64, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_GeneratedCodeInfo_Annotation_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1613,8 +1607,6 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
       71, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_FieldOptions_FeatureSupport_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1808,8 +1800,6 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
       57, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_FieldOptions_EditionDefault_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -2348,8 +2338,6 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
       0, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_FeatureSet_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -2588,8 +2576,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
       71, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_ExtensionRangeOptions_Declaration_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -2778,8 +2764,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
       0, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_EnumDescriptorProto_EnumReservedRange_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -2965,8 +2949,6 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
       0, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_DescriptorProto_ReservedRange_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -3242,8 +3224,6 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
       75, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_UninterpretedOption_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -3429,8 +3409,6 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
       0, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_SourceCodeInfo_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -3609,8 +3587,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
       0, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_GeneratedCodeInfo_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -3819,8 +3795,6 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
       0, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_FeatureSetDefaults_FeatureSetEditionDefault_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -4213,8 +4187,6 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
       0, 12>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_ServiceOptions_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -4596,8 +4568,6 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
       0, 7>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_OneofOptions_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -5022,8 +4992,6 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
       0, 12>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_MethodOptions_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -5466,8 +5434,6 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
       0, 7>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_MessageOptions_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -6161,8 +6127,6 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
       202, 12>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_FileOptions_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -6813,8 +6777,6 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
       0, 7>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_FieldOptions_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -7037,8 +6999,6 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
       0, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_FeatureSetDefaults_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -7469,8 +7429,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
       0, 12>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_ExtensionRangeOptions_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -7893,8 +7851,6 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
       0, 7>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_EnumValueOptions_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -8314,8 +8270,6 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
       0, 7>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_EnumOptions_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -8520,8 +8474,6 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
       49, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_OneofDescriptorProto_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -8782,8 +8734,6 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
       71, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_MethodDescriptorProto_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -9175,8 +9125,6 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
       96, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_FieldDescriptorProto_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -9398,8 +9346,6 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
       53, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_EnumValueDescriptorProto_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -9607,8 +9553,6 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
       0, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_DescriptorProto_ExtensionRange_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -9828,8 +9772,6 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
       51, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_ServiceDescriptorProto_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -10091,8 +10033,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
       61, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_EnumDescriptorProto_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -10447,8 +10387,6 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
       65, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_DescriptorProto_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -10854,8 +10792,6 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
       79, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_FileDescriptorProto_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -11051,8 +10987,6 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
       0, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_FileDescriptorSet_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
