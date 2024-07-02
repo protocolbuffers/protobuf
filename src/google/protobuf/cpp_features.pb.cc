@@ -201,9 +201,8 @@ const ::google::protobuf::MessageLite::ClassDataFull
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<CppFeatures>(),
             ::google::protobuf::Message::GetNewImpl<CppFeatures>(),
-            ::google::protobuf::Message::GetClearImpl<CppFeatures>(),
-                ::google::protobuf::Message::GetByteSizeLongImpl<CppFeatures>(),
-                ::google::protobuf::Message::GetSerializeImpl<CppFeatures>(),
+            &CppFeatures::Clear, &CppFeatures::ByteSizeLong,
+                &CppFeatures::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
             false,
@@ -257,78 +256,98 @@ const ::_pbi::TcParseTable<1, 2, 1, 0, 2> CppFeatures::_table_ = {
   }},
 };
 
-PROTOBUF_NOINLINE void CppFeatures::Clear() {
-// @@protoc_insertion_point(message_clear_start:pb.CppFeatures)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    void CppFeatures::Clear(MessageLite& base) {
+      CppFeatures& this_ = static_cast<CppFeatures&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+    void CppFeatures::Clear() {
+      CppFeatures& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+            // @@protoc_insertion_point(message_clear_start:pb.CppFeatures)
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  cached_has_bits = _impl_._has_bits_[0];
+  cached_has_bits = this_._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
-    ::memset(&_impl_.legacy_closed_enum_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.string_type_) -
-        reinterpret_cast<char*>(&_impl_.legacy_closed_enum_)) + sizeof(_impl_.string_type_));
+    ::memset(&this_._impl_.legacy_closed_enum_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&this_._impl_.string_type_) -
+        reinterpret_cast<char*>(&this_._impl_.legacy_closed_enum_)) + sizeof(this_._impl_.string_type_));
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-::uint8_t* CppFeatures::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:pb.CppFeatures)
-  ::uint32_t cached_has_bits = 0;
-  (void)cached_has_bits;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::uint8_t* CppFeatures::_InternalSerialize(
+            const MessageLite& base, ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) {
+          const CppFeatures& this_ = static_cast<const CppFeatures&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::uint8_t* CppFeatures::_InternalSerialize(
+            ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+          const CppFeatures& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(serialize_to_array_start:pb.CppFeatures)
+          ::uint32_t cached_has_bits = 0;
+          (void)cached_has_bits;
 
-  cached_has_bits = _impl_._has_bits_[0];
-  // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if (cached_has_bits & 0x00000001u) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(
-        1, this->_internal_legacy_closed_enum(), target);
-  }
+          cached_has_bits = this_._impl_._has_bits_[0];
+          // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+          if (cached_has_bits & 0x00000001u) {
+            target = stream->EnsureSpace(target);
+            target = ::_pbi::WireFormatLite::WriteBoolToArray(
+                1, this_._internal_legacy_closed_enum(), target);
+          }
 
-  // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if (cached_has_bits & 0x00000002u) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteEnumToArray(
-        2, this->_internal_string_type(), target);
-  }
+          // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+          if (cached_has_bits & 0x00000002u) {
+            target = stream->EnsureSpace(target);
+            target = ::_pbi::WireFormatLite::WriteEnumToArray(
+                2, this_._internal_string_type(), target);
+          }
 
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target =
-        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
-  }
-  // @@protoc_insertion_point(serialize_to_array_end:pb.CppFeatures)
-  return target;
-}
+          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+            target =
+                ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+                    this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+          }
+          // @@protoc_insertion_point(serialize_to_array_end:pb.CppFeatures)
+          return target;
+        }
 
-::size_t CppFeatures::ByteSizeLong() const {
-  // @@protoc_insertion_point(message_byte_size_start:pb.CppFeatures)
-  ::size_t total_size = 0;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::size_t CppFeatures::ByteSizeLong(const MessageLite& base) {
+          const CppFeatures& this_ = static_cast<const CppFeatures&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::size_t CppFeatures::ByteSizeLong() const {
+          const CppFeatures& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(message_byte_size_start:pb.CppFeatures)
+          ::size_t total_size = 0;
 
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+          ::uint32_t cached_has_bits = 0;
+          // Prevent compiler warnings about cached_has_bits being unused
+          (void)cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(
-      reinterpret_cast<const void*>(this));
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
-    // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    if (cached_has_bits & 0x00000001u) {
-      total_size += 2;
-    }
-    // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    if (cached_has_bits & 0x00000002u) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this->_internal_string_type());
-    }
-  }
-  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
-}
+          ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+          cached_has_bits = this_._impl_._has_bits_[0];
+          if (cached_has_bits & 0x00000003u) {
+            // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+            if (cached_has_bits & 0x00000001u) {
+              total_size += 2;
+            }
+            // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+            if (cached_has_bits & 0x00000002u) {
+              total_size += 1 +
+                            ::_pbi::WireFormatLite::EnumSize(this_._internal_string_type());
+            }
+          }
+          return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                                     &this_._impl_._cached_size_);
+        }
 
 void CppFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<CppFeatures*>(&to_msg);

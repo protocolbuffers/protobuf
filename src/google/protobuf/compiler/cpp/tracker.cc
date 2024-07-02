@@ -148,14 +148,14 @@ std::vector<Sub> MakeTrackerCalls(const Descriptor* message,
   return GenerateTrackerCalls(
       opts, message, absl::nullopt,
       {
-          Call("serialize", "OnSerialize"),
+          Call("serialize", "OnSerialize").This("&this_"),
           Call("deserialize", "OnDeserialize").This("_this"),
           // TODO: Ideally annotate_reflection should not exist and we
           // need to annotate all reflective calls on our own, however, as this
           // is a cause for side effects, i.e. reading values dynamically, we
           // want the users know that dynamic access can happen.
           Call("reflection", "OnGetMetadata").This(absl::nullopt),
-          Call("bytesize", "OnByteSize"),
+          Call("bytesize", "OnByteSize").This("&this_"),
           Call("mergefrom", "OnMergeFrom").This("_this").Arg("&from"),
           Call("unknown_fields", "OnUnknownFields"),
           Call("mutable_unknown_fields", "OnMutableUnknownFields"),

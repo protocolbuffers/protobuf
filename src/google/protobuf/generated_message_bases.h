@@ -29,11 +29,13 @@ namespace internal {
 // rather than Message.
 class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
  public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
-  size_t ByteSizeLong() const PROTOBUF_FINAL;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL { Clear(*this); }
+  size_t ByteSizeLong() const PROTOBUF_FINAL { return ByteSizeLong(*this); }
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
   ::uint8_t* _InternalSerialize(
-      ::uint8_t* target, io::EpsCopyOutputStream* stream) const PROTOBUF_FINAL;
+      ::uint8_t* target, io::EpsCopyOutputStream* stream) const PROTOBUF_FINAL {
+    return _InternalSerialize(*this, target, stream);
+  }
 
  protected:
   using Message::Message;
@@ -42,6 +44,11 @@ class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
   static void MergeImpl(MessageLite& to, const MessageLite& from);
   static void CopyImpl(Message& to, const Message& from);
   void InternalSwap(ZeroFieldsBase* other);
+  static void Clear(MessageLite& msg);
+  static size_t ByteSizeLong(const MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(const MessageLite& msg,
+                                       ::uint8_t* target,
+                                       io::EpsCopyOutputStream* stream);
 
   struct {
     mutable internal::CachedSize _cached_size_;

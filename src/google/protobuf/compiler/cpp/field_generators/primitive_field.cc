@@ -102,7 +102,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
 
   void GenerateClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field_$ = $kDefault$;
+      this_.$field_$ = $kDefault$;
     )cc");
   }
 
@@ -248,13 +248,13 @@ void SingularPrimitive::GenerateSerializeWithCachedSizesToArray(
     p->Emit(R"cc(
       target = ::$proto_ns$::internal::WireFormatLite::
           Write$declared_type$ToArrayWithField<$number$>(
-              stream, this->_internal_$name$(), target);
+              stream, this_._internal_$name$(), target);
     )cc");
   } else {
     p->Emit(R"cc(
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::Write$DeclaredType$ToArray(
-          $number$, this->_internal_$name$(), target);
+          $number$, this_._internal_$name$(), target);
     )cc");
   }
 }
@@ -275,14 +275,14 @@ void SingularPrimitive::GenerateByteSize(io::Printer* p) const {
   if (tag_size == 1) {
     p->Emit(R"cc(
       total_size += ::_pbi::WireFormatLite::$DeclaredType$SizePlusOne(
-          this->_internal_$name$());
+          this_._internal_$name$());
     )cc");
     return;
   }
 
   p->Emit(R"cc(
     total_size += $kTagBytes$ + ::_pbi::WireFormatLite::$DeclaredType$Size(
-                                    this->_internal_$name$());
+                                    this_._internal_$name$());
   )cc");
 }
 
@@ -297,9 +297,9 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
 
   void GenerateClearingCode(io::Printer* p) const override {
     if (should_split()) {
-      p->Emit("$field_$.ClearIfNotDefault();\n");
+      p->Emit("this_.$field_$.ClearIfNotDefault();\n");
     } else {
-      p->Emit("$field_$.Clear();\n");
+      p->Emit("this_.$field_$.Clear();\n");
     }
   }
 
@@ -546,10 +546,10 @@ void RepeatedPrimitive::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
   if (!field_->is_packed()) {
     p->Emit(R"cc(
-      for (int i = 0, n = this->_internal_$name$_size(); i < n; ++i) {
+      for (int i = 0, n = this_._internal_$name$_size(); i < n; ++i) {
         target = stream->EnsureSpace(target);
         target = ::_pbi::WireFormatLite::Write$DeclaredType$ToArray(
-            $number$, this->_internal_$name$().Get(i), target);
+            $number$, this_._internal_$name$().Get(i), target);
       }
     )cc");
     return;
@@ -557,8 +557,8 @@ void RepeatedPrimitive::GenerateSerializeWithCachedSizesToArray(
 
   if (FixedSize(field_->type()).has_value()) {
     p->Emit(R"cc(
-      if (this->_internal_$name$_size() > 0) {
-        target = stream->WriteFixedPacked($number$, _internal_$name$(), target);
+      if (this_._internal_$name$_size() > 0) {
+        target = stream->WriteFixedPacked($number$, this_._internal_$name$(), target);
       }
     )cc");
     return;
@@ -569,11 +569,11 @@ void RepeatedPrimitive::GenerateSerializeWithCachedSizesToArray(
           {"byte_size",
            [&] {
              if (HasCachedSize()) {
-               p->Emit(R"cc($_field_cached_byte_size_$.Get();)cc");
+               p->Emit(R"cc(this_.$_field_cached_byte_size_$.Get();)cc");
              } else {
                p->Emit(R"cc(
                  ::_pbi::WireFormatLite::$DeclaredType$Size(
-                     this->_internal_$name$());
+                     this_._internal_$name$());
                )cc");
              }
            }},
@@ -583,7 +583,7 @@ void RepeatedPrimitive::GenerateSerializeWithCachedSizesToArray(
           int byte_size = $byte_size$;
           if (byte_size > 0) {
             target = stream->Write$DeclaredType$Packed(
-                $number$, _internal_$name$(), byte_size, target);
+                $number$, this_._internal_$name$(), byte_size, target);
           }
         }
       )cc");
@@ -598,12 +598,12 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
                 if (fixed_size.has_value()) {
                   p->Emit({{"kFixed", *fixed_size}}, R"cc(
                     std::size_t{$kFixed$} *
-                        ::_pbi::FromIntSize(this->_internal_$name$_size())
+                        ::_pbi::FromIntSize(this_._internal_$name$_size())
                   )cc");
                 } else {
                   p->Emit(R"cc(
                     ::_pbi::WireFormatLite::$DeclaredType$Size(
-                        this->_internal_$name$())
+                        this_._internal_$name$())
                   )cc");
                 }
               }}  // Here and below, we need to disable the default ;-chomping
@@ -613,7 +613,8 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
            [&] {
              if (!HasCachedSize()) return;
              p->Emit(R"cc(
-               $_field_cached_byte_size_$.Set(::_pbi::ToCachedSize(data_size));
+               this_.$_field_cached_byte_size_$.Set(
+                   ::_pbi::ToCachedSize(data_size));
              )cc");
            }},
           Sub{"tag_size",
@@ -628,7 +629,7 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
                 } else {
                   p->Emit(R"cc(
                     std::size_t{$kTagBytes$} *
-                        ::_pbi::FromIntSize(this->_internal_$name$_size());
+                        ::_pbi::FromIntSize(this_._internal_$name$_size());
                   )cc");
                 }
               }}
