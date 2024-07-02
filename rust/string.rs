@@ -164,6 +164,12 @@ impl ProtoString {
     }
 }
 
+impl From<ProtoString> for ProtoBytes {
+    fn from(v: ProtoString) -> Self {
+        ProtoBytes { inner: v.inner }
+    }
+}
+
 impl From<&str> for ProtoString {
     fn from(v: &str) -> Self {
         Self::from(v.as_bytes())

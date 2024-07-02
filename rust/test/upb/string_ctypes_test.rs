@@ -12,7 +12,7 @@ use unittest_proto3_rust_proto::TestAllTypes;
 fn test_stringpiece_repeated() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.repeated_string_piece().len(), eq(0));
-    msg.repeated_string_piece_mut().push("hello".into());
+    msg.repeated_string_piece_mut().push("hello");
     assert_that!(msg.repeated_string_piece().len(), eq(1));
     assert_that!(msg.repeated_string_piece().get(0), some(eq("hello")));
 }
@@ -29,7 +29,7 @@ fn test_cord() {
 fn test_cord_repeated() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.repeated_cord().len(), eq(0));
-    msg.repeated_cord_mut().push("hello".into());
+    msg.repeated_cord_mut().push("hello");
     assert_that!(msg.repeated_cord().len(), eq(1));
     assert_that!(msg.repeated_cord().get(0), some(eq("hello")));
 }

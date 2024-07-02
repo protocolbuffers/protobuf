@@ -105,8 +105,8 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
             unsafe { $map_size_thunk$(map.as_raw($pbi$::Private)) }
         }
 
-        fn map_insert(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>, value: $pb$::View<'_, Self>) -> bool {
-            unsafe { $map_insert_thunk$(map.as_raw($pbi$::Private), $to_ffi_key_expr$, value) }
+        fn map_insert(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
+            unsafe { $map_insert_thunk$(map.as_raw($pbi$::Private), $to_ffi_key_expr$, value.into_proxied($pbi$::Private)) }
         }
 
         fn map_get<'a>(map: $pb$::View<'a, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
@@ -193,13 +193,13 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
               }
           }
 
-          fn map_insert(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>, value: $pb$::View<'_, Self>) -> bool {
+          fn map_insert(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
               let arena = map.inner($pbi$::Private).raw_arena($pbi$::Private);
               unsafe {
                   $pbr$::upb_Map_InsertAndReturnIfInserted(
                       map.as_raw($pbi$::Private),
                       <$key_t$ as $pbr$::UpbTypeConversions>::to_message_value(key),
-                      $pbr$::upb_MessageValue { int32_val: value.0 },
+                      $pbr$::upb_MessageValue { int32_val: value.into_proxied($pbi$::Private).0 },
                       arena
                   )
               }
@@ -389,6 +389,18 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
         }
       }
 
+      impl $pb$::IntoProxied<$name$> for $name$ {
+        fn into_proxied(self, _: $pbi$::Private) -> Self {
+          self
+        }
+      }
+
+      impl $pb$::IntoProxied<i32> for $name$ {
+        fn into_proxied(self, _: $pbi$::Private) -> i32 {
+          self.0
+        }
+      }
+
       impl $pb$::Proxied for $name$ {
         type View<'a> = $name$;
       }
@@ -410,8 +422,8 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
           $pbr$::cast_enum_repeated_view($pbi$::Private, r).len()
         }
 
-        fn repeated_push(r: $pb$::Mut<$pb$::Repeated<Self>>, val: $name$) {
-          $pbr$::cast_enum_repeated_mut($pbi$::Private, r).push(val.into())
+        fn repeated_push(r: $pb$::Mut<$pb$::Repeated<Self>>, val: impl $pb$::IntoProxied<$name$>) {
+          $pbr$::cast_enum_repeated_mut($pbi$::Private, r).push(val.into_proxied($pbi$::Private))
         }
 
         fn repeated_clear(r: $pb$::Mut<$pb$::Repeated<Self>>) {
@@ -434,12 +446,12 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
         unsafe fn repeated_set_unchecked(
             r: $pb$::Mut<$pb$::Repeated<Self>>,
             index: usize,
-            val: $name$,
+            val: impl $pb$::IntoProxied<$name$>,
         ) {
           // SAFETY: In-bounds as promised by the caller.
           unsafe {
             $pbr$::cast_enum_repeated_mut($pbi$::Private, r)
-              .set_unchecked(index, val.into())
+              .set_unchecked(index, val.into_proxied($pbi$::Private))
           }
         }
 
@@ -484,7 +496,7 @@ void GenerateEnumThunksCc(Context& ctx, const EnumDescriptor& desc) {
       R"cc(
         extern $abi$ {
           __PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(
-              $cpp_t$, $rs_t$, $cpp_t$, value, cpp_value)
+              $cpp_t$, $rs_t$, $cpp_t$, $cpp_t$, value, cpp_value)
         }
       )cc");
 }

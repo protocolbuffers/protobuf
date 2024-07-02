@@ -142,7 +142,7 @@ fn test_bytes_and_string_copied() {
         // Ensure val is dropped after inserting into the map.
         let mut key = String::from("hello");
         let mut val = String::from("world");
-        msg.map_string_string_mut().insert(key.as_str(), val.as_str());
+        msg.map_string_string_mut().insert(key.as_str(), &val);
         msg.map_int32_bytes_mut().insert(1, val.as_bytes());
         // Validate that map keys are copied by mutating the originals.
         key.replace_range(.., "ayo");
@@ -233,7 +233,7 @@ macro_rules! generate_map_with_msg_values_tests {
 
 
                 assert_that!(
-                    msg.[< map_ $k_field _all_types_mut >]().insert($k_nonzero, TestAllTypes::new().as_view()),
+                    msg.[< map_ $k_field _all_types_mut >]().insert($k_nonzero, TestAllTypes::new()),
                     eq(true));
                 assert_that!(
                     msg.[< map_ $k_field _all_types_mut >]().remove($k_nonzero),
@@ -264,7 +264,7 @@ macro_rules! generate_map_with_msg_values_tests {
 
                 // single element iter
                 assert_that!(
-                    msg.[< map_ $k_field _all_types_mut >]().insert($k_nonzero, TestAllTypes::new().as_view()),
+                    msg.[< map_ $k_field _all_types_mut >]().insert($k_nonzero, TestAllTypes::new()),
                     eq(true));
                 // assert_that!(
                 //     msg.[< map_ $k_field _all_types >]().iter().collect::<Vec<_>>(),
@@ -285,7 +285,7 @@ macro_rules! generate_map_with_msg_values_tests {
                 assert_that!(
                     msg
                         .[< map_ $k_field _all_types_mut >]()
-                        .insert($k_other, TestAllTypes::new().as_view()),
+                        .insert($k_other, TestAllTypes::new()),
                     eq(true));
 
                 assert_that!(

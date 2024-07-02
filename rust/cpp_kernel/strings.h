@@ -47,4 +47,18 @@ struct RustStringRawParts {
 }  // namespace protobuf
 }  // namespace google
 
+extern "C" {
+
+// Allocates a new std::string on the C++ heap and returns a pointer to it.
+std::string* third_party_protobuf_rust_cpp_kernel_new_string(
+    google::protobuf::rust_internal::PtrAndLen src);
+
+// Deletes a std::string object from the C++ heap.
+void third_party_protobuf_rust_cpp_kernel_delete_string(std::string* str);
+
+// Obtain a PtrAndLen, the FFI-safe view type, from a std::string.
+google::protobuf::rust_internal::PtrAndLen
+third_party_protobuf_rust_cpp_kernel_to_string_view(std::string* str);
+}
+
 #endif  // GOOGLE_PROTOBUF_RUST_CPP_KERNEL_STRINGS_H__

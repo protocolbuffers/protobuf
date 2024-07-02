@@ -226,12 +226,15 @@ macro_rules! impl_repeated_base {
             unsafe { upb_Array_Size(f.as_raw(Private)) }
         }
         #[inline]
-        fn repeated_push(mut f: Mut<Repeated<$t>>, v: View<$t>) {
+        fn repeated_push(mut f: Mut<Repeated<$t>>, v: impl IntoProxied<$t>) {
             let arena = f.raw_arena(Private);
             unsafe {
                 assert!(upb_Array_Append(
                     f.as_raw(Private),
-                    <$t as UpbTypeConversions>::to_message_value_copy_if_required(arena, v),
+                    <$t as UpbTypeConversions>::into_message_value_fuse_if_required(
+                        arena,
+                        v.into_proxied(Private)
+                    ),
                     arena,
                 ));
             }
@@ -249,13 +252,20 @@ macro_rules! impl_repeated_base {
             }
         }
         #[inline]
-        unsafe fn repeated_set_unchecked(mut f: Mut<Repeated<$t>>, i: usize, v: View<$t>) {
+        unsafe fn repeated_set_unchecked(
+            mut f: Mut<Repeated<$t>>,
+            i: usize,
+            v: impl IntoProxied<$t>,
+        ) {
             let arena = f.raw_arena(Private);
             unsafe {
                 upb_Array_Set(
                     f.as_raw(Private),
                     i,
-                    <$t as UpbTypeConversions>::to_message_value_copy_if_required(arena, v.into()),
+                    <$t as UpbTypeConversions>::into_message_value_fuse_if_required(
+                        arena,
+                        v.into_proxied(Private),
+                    ),
                 )
             }
         }
@@ -340,7 +350,7 @@ macro_rules! impl_repeated_bytes {
     }
 }
 
-impl<'msg, T: ?Sized> RepeatedMut<'msg, T> {
+impl<'msg, T> RepeatedMut<'msg, T> {
     // Returns a `RawArena` which is live for at least `'msg`
     #[doc(hidden)]
     pub fn raw_arena(&mut self, _private: Private) -> RawArena {
@@ -538,13 +548,14 @@ impl<'msg> InnerMapMut<'msg> {
 
 pub trait UpbTypeConversions: Proxied {
     fn upb_type() -> upb::CType;
+
     fn to_message_value(val: View<'_, Self>) -> upb_MessageValue;
 
     /// # Safety
     /// - `raw_arena` must point to a valid upb arena.
-    unsafe fn to_message_value_copy_if_required(
+    unsafe fn into_message_value_fuse_if_required(
         raw_arena: RawArena,
-        val: View<'_, Self>,
+        val: Self,
     ) -> upb_MessageValue;
 
     /// # Safety
@@ -568,7 +579,7 @@ macro_rules! impl_upb_type_conversions_for_scalars {
                 }
 
                 #[inline(always)]
-                unsafe fn to_message_value_copy_if_required(_: RawArena, val: View<'_, $t>) -> upb_MessageValue {
+                unsafe fn into_message_value_fuse_if_required(_: RawArena, val: $t) -> upb_MessageValue {
                     Self::to_message_value(val)
                 }
 
@@ -600,14 +611,17 @@ impl UpbTypeConversions for ProtoBytes {
         upb_MessageValue { str_val: val.into() }
     }
 
-    unsafe fn to_message_value_copy_if_required(
-        raw_arena: RawArena,
-        val: View<'_, ProtoBytes>,
+    unsafe fn into_message_value_fuse_if_required(
+        raw_parent_arena: RawArena,
+        val: ProtoBytes,
     ) -> upb_MessageValue {
         // SAFETY: The arena memory is not freed due to `ManuallyDrop`.
-        let arena = ManuallyDrop::new(unsafe { Arena::from_raw(raw_arena) });
-        let copied = copy_bytes_in_arena(&arena, val);
-        let msg_val = Self::to_message_value(copied);
+        let parent_arena = ManuallyDrop::new(unsafe { Arena::from_raw(raw_parent_arena) });
+        let (data, arena) = val.inner.0.into_parts();
+
+        parent_arena.fuse(&arena);
+
+        let msg_val = Self::to_message_value(unsafe { data.as_ref() });
         msg_val
     }
 
@@ -625,15 +639,15 @@ impl UpbTypeConversions for ProtoString {
         upb_MessageValue { str_val: val.as_bytes().into() }
     }
 
-    unsafe fn to_message_value_copy_if_required(
+    unsafe fn into_message_value_fuse_if_required(
         raw_arena: RawArena,
-        val: View<'_, ProtoString>,
+        val: ProtoString,
     ) -> upb_MessageValue {
         // SAFETY: `raw_arena` is valid as promised by the caller
         unsafe {
-            <ProtoBytes as UpbTypeConversions>::to_message_value_copy_if_required(
+            <ProtoBytes as UpbTypeConversions>::into_message_value_fuse_if_required(
                 raw_arena,
-                val.as_bytes(),
+                val.into(),
             )
         }
     }
@@ -701,13 +715,13 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     }
                 }
 
-                fn map_insert(mut map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>, value: View<'_, Self>) -> bool {
+                fn map_insert(mut map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>, value: impl IntoProxied<Self>) -> bool {
                     let arena = map.raw_arena(Private);
                     unsafe {
                         upb_Map_InsertAndReturnIfInserted(
                             map.as_raw(Private),
                             <$key_t as UpbTypeConversions>::to_message_value(key),
-                            <$t as UpbTypeConversions>::to_message_value_copy_if_required(arena, value),
+                            <$t as UpbTypeConversions>::into_message_value_fuse_if_required(arena, value.into_proxied(Private)),
                             arena
                         )
                     }

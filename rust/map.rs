@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use crate::{
-    Mut, MutProxied, MutProxy, Proxied, View, ViewProxy,
+    IntoProxied, Mut, MutProxied, MutProxy, Proxied, View, ViewProxy,
     __internal::Private,
     __runtime::{InnerMap, InnerMapMut, RawMap, RawMapIter},
 };
@@ -92,7 +92,11 @@ where
 
     fn map_clear(map: Mut<'_, Map<K, Self>>);
     fn map_len(map: View<'_, Map<K, Self>>) -> usize;
-    fn map_insert(map: Mut<'_, Map<K, Self>>, key: View<'_, K>, value: View<'_, Self>) -> bool;
+    fn map_insert(
+        map: Mut<'_, Map<K, Self>>,
+        key: View<'_, K>,
+        value: impl IntoProxied<Self>,
+    ) -> bool;
     fn map_get<'a>(map: View<'a, Map<K, Self>>, key: View<'_, K>) -> Option<View<'a, Self>>;
     fn map_remove(map: Mut<'_, Map<K, Self>>, key: View<'_, K>) -> bool;
 
@@ -283,16 +287,11 @@ where
     /// Adds a key-value pair to the map.
     ///
     /// Returns `true` if the entry was newly inserted.
-    pub fn insert<'a, 'b>(
-        &mut self,
-        key: impl Into<View<'a, K>>,
-        value: impl Into<View<'b, V>>,
-    ) -> bool
+    pub fn insert<'a>(&mut self, key: impl Into<View<'a, K>>, value: impl IntoProxied<V>) -> bool
     where
         K: 'a,
-        V: 'b,
     {
-        V::map_insert(self.as_mut(), key.into(), value.into())
+        V::map_insert(self.as_mut(), key.into(), value)
     }
 
     pub fn remove<'a>(&mut self, key: impl Into<View<'a, K>>) -> bool
@@ -313,12 +312,11 @@ where
         V::map_get(self.as_view(), key.into())
     }
 
-    pub fn copy_from<'a, 'b>(
+    pub fn copy_from<'a>(
         &mut self,
-        src: impl IntoIterator<Item = (impl Into<View<'a, K>>, impl Into<View<'b, V>>)>,
+        src: impl IntoIterator<Item = (impl Into<View<'a, K>>, impl IntoProxied<V>)>,
     ) where
         K: 'a,
-        V: 'b,
     {
         //TODO
         self.clear();
@@ -446,7 +444,7 @@ where
     K: Proxied + ?Sized + 'msg + 'k,
     V: ProxiedInMapValue<K> + ?Sized + 'msg + 'v,
     KView: Into<View<'k, K>>,
-    VView: Into<View<'v, V>>,
+    VView: IntoProxied<V>,
 {
     fn extend<T: IntoIterator<Item = (KView, VView)>>(&mut self, iter: T) {
         for (k, v) in iter.into_iter() {

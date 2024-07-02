@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <utility>
 
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
@@ -66,9 +67,8 @@ expose_repeated_field_methods(int64_t, i64);
     delete r;                                                          \
   }                                                                    \
   void __pb_rust_RepeatedField_##ty##_add(                             \
-      google::protobuf::RepeatedPtrField<std::string>* r,                        \
-      google::protobuf::rust_internal::PtrAndLen val) {                          \
-    r->Add(std::string(val.ptr, val.len));                             \
+      google::protobuf::RepeatedPtrField<std::string>* r, std::string* val) {    \
+    r->Add(std::move(*val));                                           \
   }                                                                    \
   size_t __pb_rust_RepeatedField_##ty##_size(                          \
       google::protobuf::RepeatedPtrField<std::string>* r) {                      \
@@ -81,8 +81,8 @@ expose_repeated_field_methods(int64_t, i64);
   }                                                                    \
   void __pb_rust_RepeatedField_##ty##_set(                             \
       google::protobuf::RepeatedPtrField<std::string>* r, size_t index,          \
-      google::protobuf::rust_internal::PtrAndLen val) {                          \
-    *r->Mutable(index) = std::string(val.ptr, val.len);                \
+      std::string* val) {                                              \
+    *r->Mutable(index) = std::move(*val);                              \
   }                                                                    \
   void __pb_rust_RepeatedField_##ty##_copy_from(                       \
       const google::protobuf::RepeatedPtrField<std::string>* src,                \

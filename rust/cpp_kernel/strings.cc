@@ -24,3 +24,19 @@ RustStringRawParts::RustStringRawParts(std::string src) {
 }  // namespace rust_internal
 }  // namespace protobuf
 }  // namespace google
+
+extern "C" {
+std::string* third_party_protobuf_rust_cpp_kernel_new_string(
+    google::protobuf::rust_internal::PtrAndLen src) {
+  return new std::string(src.ptr, src.len);
+}
+
+void third_party_protobuf_rust_cpp_kernel_delete_string(std::string* str) {
+  delete str;
+}
+
+google::protobuf::rust_internal::PtrAndLen
+third_party_protobuf_rust_cpp_kernel_to_string_view(std::string* str) {
+  return google::protobuf::rust_internal::PtrAndLen(str->data(), str->length());
+}
+}

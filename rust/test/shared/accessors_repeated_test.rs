@@ -193,7 +193,7 @@ fn test_repeated_message() {
     assert_that!(msg.repeated_nested_message().len(), eq(0));
     let mut nested = NestedMessage::new();
     nested.set_bb(1);
-    msg.repeated_nested_message_mut().push(nested.as_view());
+    msg.repeated_nested_message_mut().push(nested);
     assert_that!(msg.repeated_nested_message().get(0).unwrap().bb(), eq(1));
 
     let mut msg2 = TestAllTypes::new();
@@ -203,8 +203,7 @@ fn test_repeated_message() {
     let mut nested2 = NestedMessage::new();
     nested2.set_bb(2);
 
-    // TODO: b/320936046 - Test SettableValue once available
-    msg.repeated_nested_message_mut().set(0, nested2.as_view());
+    msg.repeated_nested_message_mut().set(0, nested2);
     assert_that!(msg.repeated_nested_message().get(0).unwrap().bb(), eq(2));
 
     assert_that!(
@@ -227,14 +226,12 @@ fn test_repeated_strings() {
         assert_that!(msg.repeated_string(), empty());
         {
             let s = String::from("set from Mut");
-            // TODO: b/320936046 - Test SettableValue once available
-            msg.repeated_string_mut().push(s.as_str().into());
+            msg.repeated_string_mut().push(s);
         }
-        msg.repeated_string_mut().push("second str".into());
+        msg.repeated_string_mut().push("second str");
         {
             let s2 = String::from("set second str");
-            // TODO: b/320936046 - Test SettableValue once available
-            msg.repeated_string_mut().set(1, s2.as_str().into());
+            msg.repeated_string_mut().set(1, s2);
         }
         assert_that!(msg.repeated_string().len(), eq(2));
         assert_that!(msg.repeated_string().get(0).unwrap(), eq("set from Mut"));
@@ -264,14 +261,12 @@ fn test_repeated_bytes() {
         assert_that!(msg.repeated_bytes(), empty());
         {
             let s = Vec::from(b"set from Mut");
-            // TODO: b/320936046 - Test SettableValue once available
-            msg.repeated_bytes_mut().push(&s[..]);
+            msg.repeated_bytes_mut().push(s);
         }
         msg.repeated_bytes_mut().push(b"second bytes");
         {
             let s2 = Vec::from(b"set second bytes");
-            // TODO: b/320936046 - Test SettableValue once available
-            msg.repeated_bytes_mut().set(1, &s2[..]);
+            msg.repeated_bytes_mut().set(1, s2);
         }
         assert_that!(msg.repeated_bytes().len(), eq(2));
         assert_that!(msg.repeated_bytes().get(0).unwrap(), eq(b"set from Mut"));
