@@ -19,10 +19,7 @@ namespace compiler {
 // This is a version of protoc that has no built-in code generators.
 // See go/protobuf-toolchain-protoc
 int ProtocMain(int argc, char* argv[]) {
-#ifndef _MSC_VER
-  // TODO Re-enable this once github runner issue is resolved.
   absl::InitializeLog();
-#endif  // !_MSC_VER
 
   CommandLineInterface cli;
   cli.AllowPlugins("protoc-");
