@@ -261,17 +261,17 @@ impl From<RustStringRawParts> for String {
 }
 
 extern "C" {
-    fn rust_proto_utf8_debug_string(msg: RawMessage) -> RustStringRawParts;
-    fn rust_proto_utf8_debug_string_lite(msg: RawMessage) -> RustStringRawParts;
+    fn proto2_rust_utf8_debug_string(msg: RawMessage) -> RustStringRawParts;
+    fn proto2_rust_utf8_debug_string_lite(msg: RawMessage) -> RustStringRawParts;
 }
 
 pub fn debug_string(_private: Private, msg: RawMessage, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     // SAFETY:
     // - `msg` is a valid protobuf message.
     #[cfg(not(lite_runtime))]
-    let dbg_str: String = unsafe { rust_proto_utf8_debug_string(msg) }.into();
+    let dbg_str: String = unsafe { proto2_rust_utf8_debug_string(msg) }.into();
     #[cfg(lite_runtime)]
-    let dbg_str: String = unsafe { rust_proto_utf8_debug_string_lite(msg) }.into();
+    let dbg_str: String = unsafe { proto2_rust_utf8_debug_string_lite(msg) }.into();
 
     write!(f, "{dbg_str}")
 }
@@ -485,15 +485,15 @@ macro_rules! impl_repeated_primitives {
         paste!{
             impl_repeated_primitives!(@impl $(
                 $t => [
-                    [< rust_proto_RepeatedField_ $t _new >],
-                    [< rust_proto_RepeatedField_ $t _free >],
-                    [< rust_proto_RepeatedField_ $t _add >],
-                    [< rust_proto_RepeatedField_ $t _size >],
-                    [< rust_proto_RepeatedField_ $t _get >],
-                    [< rust_proto_RepeatedField_ $t _set >],
-                    [< rust_proto_RepeatedField_ $t _clear >],
-                    [< rust_proto_RepeatedField_ $t _copy_from >],
-                    [< rust_proto_RepeatedField_ $t _reserve >],
+                    [< proto2_rust_RepeatedField_ $t _new >],
+                    [< proto2_rust_RepeatedField_ $t _free >],
+                    [< proto2_rust_RepeatedField_ $t _add >],
+                    [< proto2_rust_RepeatedField_ $t _size >],
+                    [< proto2_rust_RepeatedField_ $t _get >],
+                    [< proto2_rust_RepeatedField_ $t _set >],
+                    [< proto2_rust_RepeatedField_ $t _clear >],
+                    [< proto2_rust_RepeatedField_ $t _copy_from >],
+                    [< proto2_rust_RepeatedField_ $t _reserve >],
                 ],
             )*);
         }
@@ -644,7 +644,7 @@ impl UntypedMapIterator {
         //   - Standard layout.
         //   - The size and alignment of the Rust type above.
         //   - With the `node_` field first.
-        unsafe { rust_proto_thunk_UntypedMapIterator_increment(self) }
+        unsafe { proto2_rust_thunk_UntypedMapIterator_increment(self) }
 
         // SAFETY:
         // - The `get` function always writes valid values to `ffi_key` and `ffi_value`
@@ -656,22 +656,22 @@ impl UntypedMapIterator {
 }
 
 extern "C" {
-    fn rust_proto_thunk_UntypedMapIterator_increment(iter: &mut UntypedMapIterator);
+    fn proto2_rust_thunk_UntypedMapIterator_increment(iter: &mut UntypedMapIterator);
 }
 
 macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
     ($key_t:ty, $ffi_key_t:ty, $to_ffi_key:expr, $from_ffi_key:expr, for $($t:ty, $ffi_t:ty, $to_ffi_value:expr, $from_ffi_value:expr;)*) => {
         paste! { $(
             extern "C" {
-                fn [< rust_proto_thunk_Map_ $key_t _ $t _new >]() -> RawMap;
-                fn [< rust_proto_thunk_Map_ $key_t _ $t _free >](m: RawMap);
-                fn [< rust_proto_thunk_Map_ $key_t _ $t _clear >](m: RawMap);
-                fn [< rust_proto_thunk_Map_ $key_t _ $t _size >](m: RawMap) -> usize;
-                fn [< rust_proto_thunk_Map_ $key_t _ $t _insert >](m: RawMap, key: $ffi_key_t, value: $ffi_t) -> bool;
-                fn [< rust_proto_thunk_Map_ $key_t _ $t _get >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
-                fn [< rust_proto_thunk_Map_ $key_t _ $t _iter >](m: RawMap) -> UntypedMapIterator;
-                fn [< rust_proto_thunk_Map_ $key_t _ $t _iter_get >](iter: &mut UntypedMapIterator, key: *mut $ffi_key_t, value: *mut $ffi_t);
-                fn [< rust_proto_thunk_Map_ $key_t _ $t _remove >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
+                fn [< proto2_rust_thunk_Map_ $key_t _ $t _new >]() -> RawMap;
+                fn [< proto2_rust_thunk_Map_ $key_t _ $t _free >](m: RawMap);
+                fn [< proto2_rust_thunk_Map_ $key_t _ $t _clear >](m: RawMap);
+                fn [< proto2_rust_thunk_Map_ $key_t _ $t _size >](m: RawMap) -> usize;
+                fn [< proto2_rust_thunk_Map_ $key_t _ $t _insert >](m: RawMap, key: $ffi_key_t, value: $ffi_t) -> bool;
+                fn [< proto2_rust_thunk_Map_ $key_t _ $t _get >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
+                fn [< proto2_rust_thunk_Map_ $key_t _ $t _iter >](m: RawMap) -> UntypedMapIterator;
+                fn [< proto2_rust_thunk_Map_ $key_t _ $t _iter_get >](iter: &mut UntypedMapIterator, key: *mut $ffi_key_t, value: *mut $ffi_t);
+                fn [< proto2_rust_thunk_Map_ $key_t _ $t _remove >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_t) -> bool;
             }
 
             impl ProxiedInMapValue<$key_t> for $t {
@@ -680,7 +680,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                         Map::from_inner(
                             Private,
                             InnerMap {
-                                raw: [< rust_proto_thunk_Map_ $key_t _ $t _new >](),
+                                raw: [< proto2_rust_thunk_Map_ $key_t _ $t _new >](),
                             }
                         )
                     }
@@ -690,28 +690,28 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     // SAFETY:
                     // - `map.inner.raw` is a live `RawMap`
                     // - This function is only called once for `map` in `Drop`.
-                    unsafe { [< rust_proto_thunk_Map_ $key_t _ $t _free >](map.as_mut().as_raw(Private)); }
+                    unsafe { [< proto2_rust_thunk_Map_ $key_t _ $t _free >](map.as_mut().as_raw(Private)); }
                 }
 
 
                 fn map_clear(mut map: Mut<'_, Map<$key_t, Self>>) {
-                    unsafe { [< rust_proto_thunk_Map_ $key_t _ $t _clear >](map.as_raw(Private)); }
+                    unsafe { [< proto2_rust_thunk_Map_ $key_t _ $t _clear >](map.as_raw(Private)); }
                 }
 
                 fn map_len(map: View<'_, Map<$key_t, Self>>) -> usize {
-                    unsafe { [< rust_proto_thunk_Map_ $key_t _ $t _size >](map.as_raw(Private)) }
+                    unsafe { [< proto2_rust_thunk_Map_ $key_t _ $t _size >](map.as_raw(Private)) }
                 }
 
                 fn map_insert(mut map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>, value: View<'_, Self>) -> bool {
                     let ffi_key = $to_ffi_key(key);
                     let ffi_value = $to_ffi_value(value);
-                    unsafe { [< rust_proto_thunk_Map_ $key_t _ $t _insert >](map.as_raw(Private), ffi_key, ffi_value) }
+                    unsafe { [< proto2_rust_thunk_Map_ $key_t _ $t _insert >](map.as_raw(Private), ffi_key, ffi_value) }
                 }
 
                 fn map_get<'a>(map: View<'a, Map<$key_t, Self>>, key: View<'_, $key_t>) -> Option<View<'a, Self>> {
                     let ffi_key = $to_ffi_key(key);
                     let mut ffi_value = MaybeUninit::uninit();
-                    let found = unsafe { [< rust_proto_thunk_Map_ $key_t _ $t _get >](map.as_raw(Private), ffi_key, ffi_value.as_mut_ptr()) };
+                    let found = unsafe { [< proto2_rust_thunk_Map_ $key_t _ $t _get >](map.as_raw(Private), ffi_key, ffi_value.as_mut_ptr()) };
 
                     if !found {
                         return None;
@@ -723,7 +723,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                 fn map_remove(mut map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>) -> bool {
                     let ffi_key = $to_ffi_key(key);
                     let mut ffi_value = MaybeUninit::uninit();
-                    unsafe { [< rust_proto_thunk_Map_ $key_t _ $t _remove >](map.as_raw(Private), ffi_key, ffi_value.as_mut_ptr()) }
+                    unsafe { [< proto2_rust_thunk_Map_ $key_t _ $t _remove >](map.as_raw(Private), ffi_key, ffi_value.as_mut_ptr()) }
                 }
 
                 fn map_iter(map: View<'_, Map<$key_t, Self>>) -> MapIter<'_, $key_t, Self> {
@@ -735,7 +735,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     unsafe {
                         MapIter::from_raw(
                             Private,
-                            [< rust_proto_thunk_Map_ $key_t _ $t _iter >](map.as_raw(Private))
+                            [< proto2_rust_thunk_Map_ $key_t _ $t _iter >](map.as_raw(Private))
                         )
                     }
                 }
@@ -750,7 +750,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     unsafe {
                         iter.as_raw_mut(Private).next_unchecked::<$key_t, Self, _, _>(
                             Private,
-                            [< rust_proto_thunk_Map_ $key_t _ $t _iter_get >],
+                            [< proto2_rust_thunk_Map_ $key_t _ $t _iter_get >],
                             $from_ffi_key,
                             $from_ffi_value,
                         )

@@ -14,8 +14,8 @@
 #include "rust/cpp_kernel/strings.h"
 #include "google/protobuf/unittest.pb.h"
 
-using google::protobuf::rust_internal::SerializedData;
-using google::protobuf::rust_internal::SerializeMsg;
+using google::protobuf::rust::SerializedData;
+using google::protobuf::rust::SerializeMsg;
 
 extern "C" void MutateTestAllTypes(protobuf_unittest::TestAllTypes* msg) {
   msg->set_optional_int64(42);
@@ -46,7 +46,7 @@ extern "C" void* NewWithExtension() {
   return proto;
 }
 
-extern "C" google::protobuf::rust_internal::PtrAndLen GetBytesExtension(
+extern "C" google::protobuf::rust::PtrAndLen GetBytesExtension(
     const protobuf_unittest::TestAllExtensions* proto) {
   absl::string_view bytes =
       proto->GetExtension(protobuf_unittest::optional_bytes_extension);
