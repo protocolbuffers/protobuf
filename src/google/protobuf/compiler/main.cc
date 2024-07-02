@@ -35,10 +35,7 @@ namespace protobuf {
 namespace compiler {
 
 int ProtobufMain(int argc, char* argv[]) {
-#ifndef _MSC_VER
-  // TODO Re-enable this once github runner issue is resolved.
   absl::InitializeLog();
-#endif  // !_MSC_VER
 
   CommandLineInterface cli;
   cli.AllowPlugins("protoc-");

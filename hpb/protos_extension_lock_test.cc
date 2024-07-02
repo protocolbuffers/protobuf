@@ -102,8 +102,6 @@ void TestConcurrentExtensionAccess(::protos::ExtensionRegistry registry) {
   test_theme();
   test_theme_extension();
 }
-#ifndef _MSC_VER
-// TODO Re-enable this once github runner issue is resolved.
 
 TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothLazy) {
   ::upb::Arena arena;
@@ -121,8 +119,6 @@ TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothEager) {
   TestConcurrentExtensionAccess(
       {{&theme, &ThemeExtension::theme_extension}, arena});
 }
-
-#endif  // _MSC_VER
 
 }  // namespace
 }  // namespace protos_generator::test::protos
