@@ -8,13 +8,13 @@
 
 extern "C" {
 
-google::protobuf::rust_internal::RustStringRawParts utf8_debug_string(
+google::protobuf::rust_internal::RustStringRawParts rust_proto_utf8_debug_string(
     const google::protobuf::Message* msg) {
   std::string text = google::protobuf::Utf8Format(*msg);
   return google::protobuf::rust_internal::RustStringRawParts(text);
 }
 
-google::protobuf::rust_internal::RustStringRawParts utf8_debug_string_lite(
+google::protobuf::rust_internal::RustStringRawParts rust_proto_utf8_debug_string_lite(
     const google::protobuf::MessageLite* msg) {
   std::string text = google::protobuf::Utf8Format(*msg);
   return google::protobuf::rust_internal::RustStringRawParts(text);

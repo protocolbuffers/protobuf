@@ -14,7 +14,7 @@ RustStringRawParts::RustStringRawParts(std::string src) {
     data = nullptr;
     len = 0;
   } else {
-    void* d = __pb_rust_alloc(src.length(), 1);
+    void* d = rust_proto_alloc(src.length(), 1);
     std::memcpy(d, src.data(), src.length());
     data = static_cast<char*>(d);
     len = src.length();

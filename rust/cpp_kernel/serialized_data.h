@@ -46,7 +46,7 @@ inline bool SerializeMsg(const google::protobuf::MessageLite* msg, SerializedDat
                     << " exceeded maximum protobuf size of 2GB: " << len;
     return false;
   }
-  uint8_t* bytes = static_cast<uint8_t*>(__pb_rust_alloc(len, alignof(char)));
+  uint8_t* bytes = static_cast<uint8_t*>(rust_proto_alloc(len, alignof(char)));
   if (bytes == nullptr) {
     ABSL_LOG(FATAL) << "Rust allocator failed to allocate memory.";
   }

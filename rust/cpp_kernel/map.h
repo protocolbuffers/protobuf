@@ -6,22 +6,22 @@
     key_ty, rust_key_ty, ffi_key_ty, to_cpp_key, to_ffi_key, value_ty,         \
     rust_value_ty, ffi_value_ty, to_cpp_value, to_ffi_value)                   \
   google::protobuf::Map<key_ty, value_ty>*                                               \
-      __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_new() {        \
+      rust_proto_thunk_Map_##rust_key_ty##_##rust_value_ty##_new() {           \
     return new google::protobuf::Map<key_ty, value_ty>();                                \
   }                                                                            \
-  void __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_free(         \
+  void rust_proto_thunk_Map_##rust_key_ty##_##rust_value_ty##_free(            \
       google::protobuf::Map<key_ty, value_ty>* m) {                                      \
     delete m;                                                                  \
   }                                                                            \
-  void __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_clear(        \
+  void rust_proto_thunk_Map_##rust_key_ty##_##rust_value_ty##_clear(           \
       google::protobuf::Map<key_ty, value_ty>* m) {                                      \
     m->clear();                                                                \
   }                                                                            \
-  size_t __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_size(       \
+  size_t rust_proto_thunk_Map_##rust_key_ty##_##rust_value_ty##_size(          \
       const google::protobuf::Map<key_ty, value_ty>* m) {                                \
     return m->size();                                                          \
   }                                                                            \
-  bool __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_insert(       \
+  bool rust_proto_thunk_Map_##rust_key_ty##_##rust_value_ty##_insert(          \
       google::protobuf::Map<key_ty, value_ty>* m, ffi_key_ty key, ffi_value_ty value) {  \
     auto iter_and_inserted = m->try_emplace(to_cpp_key, to_cpp_value);         \
     if (!iter_and_inserted.second) {                                           \
@@ -29,7 +29,7 @@
     }                                                                          \
     return iter_and_inserted.second;                                           \
   }                                                                            \
-  bool __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_get(          \
+  bool rust_proto_thunk_Map_##rust_key_ty##_##rust_value_ty##_get(             \
       const google::protobuf::Map<key_ty, value_ty>* m, ffi_key_ty key,                  \
       ffi_value_ty* value) {                                                   \
     auto cpp_key = to_cpp_key;                                                 \
@@ -42,11 +42,11 @@
     return true;                                                               \
   }                                                                            \
   google::protobuf::internal::UntypedMapIterator                                         \
-      __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_iter(          \
+      rust_proto_thunk_Map_##rust_key_ty##_##rust_value_ty##_iter(             \
           const google::protobuf::Map<key_ty, value_ty>* m) {                            \
     return google::protobuf::internal::UntypedMapIterator::FromTyped(m->cbegin());       \
   }                                                                            \
-  void __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_iter_get(     \
+  void rust_proto_thunk_Map_##rust_key_ty##_##rust_value_ty##_iter_get(        \
       const google::protobuf::internal::UntypedMapIterator* iter, ffi_key_ty* key,       \
       ffi_value_ty* value) {                                                   \
     auto typed_iter =                                                          \
@@ -56,7 +56,7 @@
     *key = to_ffi_key;                                                         \
     *value = to_ffi_value;                                                     \
   }                                                                            \
-  bool __rust_proto_thunk__Map_##rust_key_ty##_##rust_value_ty##_remove(       \
+  bool rust_proto_thunk_Map_##rust_key_ty##_##rust_value_ty##_remove(          \
       google::protobuf::Map<key_ty, value_ty>* m, ffi_key_ty key, ffi_value_ty* value) { \
     auto cpp_key = to_cpp_key;                                                 \
     auto num_removed = m->erase(cpp_key);                                      \

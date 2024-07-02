@@ -8,7 +8,7 @@
 
 extern "C" {
 
-void __rust_proto_thunk__UntypedMapIterator_increment(
+void rust_proto_thunk_UntypedMapIterator_increment(
     google::protobuf::internal::UntypedMapIterator* iter) {
   iter->PlusPlus();
 }
