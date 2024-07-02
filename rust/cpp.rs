@@ -657,6 +657,12 @@ impl UntypedMapIterator {
 
 extern "C" {
     fn __rust_proto_thunk__UntypedMapIterator_increment(iter: &mut UntypedMapIterator);
+
+    pub fn rust_proto_map_new() -> RawMap;
+    pub fn rust_proto_map_free(m: RawMap);
+    pub fn rust_proto_map_clear(m: RawMap);
+    pub fn rust_proto_map_size(m: RawMap) -> usize;
+    pub fn rust_proto_map_iter(m: RawMap) -> UntypedMapIterator;
 }
 
 macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
