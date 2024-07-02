@@ -10,6 +10,7 @@ package com.google.protobuf;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
+import java.util.logging.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -143,5 +144,39 @@ public final class RuntimeVersionTest {
         .contains(
             "Detected mismatched Protobuf Gencode/Runtime version suffixes when loading"
                 + " testing.Foo");
+  }
+
+  @Test
+  public void versionValidation_warnOlderGencodeVersion() {
+    TestUtil.TestLogHandler logHandler = new TestUtil.TestLogHandler();
+    Logger logger = Logger.getLogger(RuntimeVersion.class.getName());
+    logger.addHandler(logHandler);
+    RuntimeVersion.validateProtobufGencodeVersion(
+        RuntimeVersion.DOMAIN,
+        RuntimeVersion.MAJOR,
+        RuntimeVersion.MINOR - 1,
+        RuntimeVersion.PATCH,
+        RuntimeVersion.SUFFIX,
+        "dummy");
+    assertThat(logHandler.getStoredLogRecords()).hasSize(1);
+    assertThat(logHandler.getStoredLogRecords().get(0).getMessage())
+        .contains("Please avoid checked-in Protobuf gencode that can be obsolete.");
+  }
+
+  @Test
+  public void versionValidation_gencodeOneMajorVersionOlderWarning() {
+    TestUtil.TestLogHandler logHandler = new TestUtil.TestLogHandler();
+    Logger logger = Logger.getLogger(RuntimeVersion.class.getName());
+    logger.addHandler(logHandler);
+    RuntimeVersion.validateProtobufGencodeVersion(
+        RuntimeVersion.DOMAIN,
+        RuntimeVersion.MAJOR - 1,
+        RuntimeVersion.MINOR,
+        RuntimeVersion.PATCH,
+        RuntimeVersion.SUFFIX,
+        "dummy");
+    assertThat(logHandler.getStoredLogRecords()).hasSize(1);
+    assertThat(logHandler.getStoredLogRecords().get(0).getMessage())
+        .contains("is exactly one major version older than the runtime version");
   }
 }
