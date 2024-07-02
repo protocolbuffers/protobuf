@@ -131,9 +131,13 @@ void CheckImportModules(const Descriptor* descriptor,
 
 void PyiGenerator::PrintImportForDescriptor(
     const FileDescriptor& desc, absl::flat_hash_set<std::string>* seen_aliases,
-    bool* has_importlib) const {
+    bool* has_importlib, absl::string_view module_import_prefix) const {
   const std::string& filename = desc.name();
   std::string module_name_owned = StrippedModuleName(filename);
+  if (!module_import_prefix.empty()) {
+    module_name_owned =
+        absl::StrCat(module_import_prefix, ".", module_name_owned);
+  }
   absl::string_view module_name(module_name_owned);
   size_t last_dot_pos = module_name.rfind('.');
   std::string alias = absl::StrCat("_", module_name.substr(last_dot_pos + 1));
@@ -164,7 +168,7 @@ void PyiGenerator::PrintImportForDescriptor(
   }
 }
 
-void PyiGenerator::PrintImports() const {
+void PyiGenerator::PrintImports(absl::string_view module_import_prefix) const {
   // Prints imported dependent _pb2 files.
   absl::flat_hash_set<std::string> seen_aliases;
   bool has_importlib = false;
@@ -173,10 +177,11 @@ void PyiGenerator::PrintImports() const {
     if (strip_nonfunctional_codegen_ && IsKnownFeatureProto(dep->name())) {
       continue;
     }
-    PrintImportForDescriptor(*dep, &seen_aliases, &has_importlib);
+    PrintImportForDescriptor(*dep, &seen_aliases, &has_importlib,
+                             module_import_prefix);
     for (int j = 0; j < dep->public_dependency_count(); ++j) {
       PrintImportForDescriptor(*dep->public_dependency(j), &seen_aliases,
-                               &has_importlib);
+                               &has_importlib, module_import_prefix);
     }
   }
 
@@ -263,6 +268,9 @@ void PyiGenerator::PrintImports() const {
   for (int i = 0; i < file_->public_dependency_count(); ++i) {
     const FileDescriptor* public_dep = file_->public_dependency(i);
     std::string module_name = StrippedModuleName(public_dep->name());
+    if (!module_import_prefix.empty()) {
+      module_name = absl::StrCat(module_import_prefix, ".", module_name);
+    }
     // Top level messages in public imports
     for (int i = 0; i < public_dep->message_type_count(); ++i) {
       printer_->Print(
@@ -582,6 +590,9 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
       filename = option.first;
     } else if (option.first == "experimental_strip_nonfunctional_codegen") {
       strip_nonfunctional_codegen_ = true;
+    } else if (option.first == "module_import_prefix") {
+      module_import_prefix =
+          std::string(absl::StripSuffix(option.second, "."));
     } else {
       *error = absl::StrCat("Unknown generator option: ", option.first);
       return false;
@@ -603,7 +614,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
   io::Printer printer(output.get(), printer_opt);
   printer_ = &printer;
 
-  PrintImports();
+  PrintImports(module_import_prefix);
   printer_->Print("DESCRIPTOR: _descriptor.FileDescriptor\n");
 
   // Prints extensions and enums from imports.

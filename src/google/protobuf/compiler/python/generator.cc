@@ -200,6 +200,9 @@ GeneratorOptions Generator::ParseParameter(absl::string_view parameter,
       options.annotate_pyi = true;
     } else if (option.first == "experimental_strip_nonfunctional_codegen") {
       options.strip_nonfunctional_codegen = true;
+    } else if (option.first == "module_import_prefix") {
+      options.module_import_prefix =
+          std::string(absl::StripSuffix(option.second, "."));
     } else {
       *error = absl::StrCat("Unknown generator option: ", option.first);
     }
@@ -223,6 +226,9 @@ bool Generator::Generate(const FileDescriptor* file,
     }
     if (options.strip_nonfunctional_codegen) {
       pyi_options.push_back("experimental_strip_nonfunctional_codegen");
+    }
+    if (!options.module_import_prefix.empty()) {
+      pyi_options.push_back(absl::StrCat("module_import_prefix", "=", options.module_import_prefix));
     }
     if (!pyi_generator.Generate(file, absl::StrJoin(pyi_options, ","), context,
                                 error)) {
@@ -289,7 +295,7 @@ bool Generator::Generate(const FileDescriptor* file,
   printer_ = &printer;
 
   PrintTopBoilerplate();
-  PrintImports();
+  PrintImports(options.module_import_prefix);
   PrintFileDescriptor();
   printer_->Print("_globals = globals()\n");
   if (GeneratingDescriptorProto()) {
@@ -403,7 +409,7 @@ void Generator::PrintTopBoilerplate() const {
 }
 
 // Prints Python imports for all modules imported by |file|.
-void Generator::PrintImports() const {
+void Generator::PrintImports(absl::string_view module_import_prefix) const {
   bool has_importlib = false;
   for (int i = 0; i < file_->dependency_count(); ++i) {
     absl::string_view filename = file_->dependency(i)->name();
@@ -413,6 +419,9 @@ void Generator::PrintImports() const {
     if (!opensource_runtime_) {
       module_name =
           std::string(absl::StripPrefix(module_name, kThirdPartyPrefix));
+    }
+    if (!module_import_prefix.empty()) {
+      module_name = absl::StrCat(module_import_prefix, ".", module_name);
     }
     if (ContainsPythonKeyword(module_name)) {
       // If the module path contains a Python keyword, we have to quote the
@@ -451,6 +460,9 @@ void Generator::PrintImports() const {
     if (!opensource_runtime_) {
       module_name =
           std::string(absl::StripPrefix(module_name, kThirdPartyPrefix));
+    }
+    if (!module_import_prefix.empty()) {
+      module_name = absl::StrCat(module_import_prefix, ".", module_name);
     }
     printer_->Print("from $module$ import *\n", "module", module_name);
   }

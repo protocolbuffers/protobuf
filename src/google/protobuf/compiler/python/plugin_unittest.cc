@@ -51,9 +51,7 @@ class TestGenerator : public CodeGenerator {
   }
 };
 
-// opposed to importlib) in the usual case where the .proto file paths do not
-// not contain any Python keywords.
-TEST(PythonPluginTest, ImportTest) {
+void SetupTestFiles() {
   // Create files test1.proto and test2.proto with the former importing the
   // latter.
   ABSL_CHECK_OK(
@@ -71,6 +69,12 @@ TEST(PythonPluginTest, ImportTest) {
                         "package foo;\n"
                         "message Message2 {}\n",
                         true));
+}
+
+// opposed to importlib) in the usual case where the .proto file paths do not
+// not contain any Python keywords.
+TEST(PythonPluginTest, ImportTest) {
+  SetupTestFiles();
 
   compiler::CommandLineInterface cli;
   cli.SetInputsAreProtoPathRelative(true);
@@ -96,6 +100,36 @@ TEST(PythonPluginTest, ImportTest) {
       found_expected_import = true;
     }
     EXPECT_FALSE(absl::StrContains(line, "importlib"));
+  }
+  EXPECT_TRUE(found_expected_import);
+}
+
+TEST(PythonPluginTest, ImportPrefixTest) {
+  // SetupTestFiles();
+
+  compiler::CommandLineInterface cli;
+  cli.SetInputsAreProtoPathRelative(true);
+  python::Generator python_generator;
+  cli.RegisterGenerator("--python_out", &python_generator, "");
+  std::string proto_path = absl::StrCat("-I", ::testing::TempDir());
+  std::string python_out = absl::StrCat("--python_out=module_import_prefix=added_prefix:", ::testing::TempDir());
+  const char* argv[] = {"protoc", proto_path.c_str(), "-I.", python_out.c_str(),
+                        "test1.proto"};
+  ASSERT_EQ(0, cli.Run(5, argv));
+
+  // Loop over the lines of the generated code and verify that we find the
+  // prefixed import.
+  std::string output;
+  ABSL_CHECK_OK(
+      File::GetContents(absl::StrCat(::testing::TempDir(), "/test1_pb2.py"),
+                        &output, true));
+  std::vector<absl::string_view> lines = absl::StrSplit(output, '\n');
+  std::string expected_import = "from added_prefix";
+  bool found_expected_import = false;
+  for (absl::string_view line : lines) {
+    if (absl::StrContains(line, expected_import)) {
+      found_expected_import = true;
+    }
   }
   EXPECT_TRUE(found_expected_import);
 }
