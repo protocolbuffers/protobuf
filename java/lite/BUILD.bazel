@@ -90,7 +90,6 @@ pkg_files(
         "generate-sources-build.xml",
         "generate-test-sources-build.xml",
         "lite.awk",
-        "pom.xml",
         "pom_template.xml",
         "process-lite-sources-build.xml",
     ],

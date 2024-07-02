@@ -346,7 +346,6 @@ pkg_files(
         "BUILD.bazel",
         "generate-sources-build.xml",
         "generate-test-sources-build.xml",
-        "pom.xml",
         "pom_template.xml",
     ],
     strip_prefix = strip_prefix.from_root(""),

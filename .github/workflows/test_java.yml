@@ -89,9 +89,6 @@ jobs:
       run: |
         mv ${{ steps.build-protoc.outputs.protoc }} protoc
         sudo rm -rf _build
-    - name: Install snapshot version locally (not using generated pom.xml)
-      run: |
-        mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
       working-directory: java
     - name: Generate pom.xml files from the template
       uses: protocolbuffers/protobuf-ci/bazel-docker@v3

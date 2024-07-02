@@ -20,7 +20,8 @@ sh_test(
         "//java/util",
     ] + glob([
         "pom.xml",
-        "*/pom.xml",
+        "*/*_mvn-pom.xml",  # TODO: Get from pom_template.xml e.g. https://source.corp.google.com/piper///depot/google3/third_party/protobuf/release/kokoro/java/common/linux/build.sh
+        # https://github.com/protocolbuffers/protobuf/actions/runs/9751999314/job/26914685853
         "test/linkage-monitor-check-bom/pom.xml",
     ]),
     tags = [

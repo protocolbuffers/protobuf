@@ -13,7 +13,6 @@ load("//java/internal:testing.bzl", "junit_tests")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
 
 LITE_SRCS = [
-    # Keep in sync with `//java/lite:pom.xml`.
     "src/main/java/com/google/protobuf/AbstractMessageLite.java",
     "src/main/java/com/google/protobuf/AbstractParser.java",
     "src/main/java/com/google/protobuf/AbstractProtobufList.java",
@@ -523,7 +522,6 @@ protobuf_java_library(
 )
 
 LITE_TEST_EXCLUSIONS = [
-    # Keep in sync with //java/lite:pom.xml id=copy-test-source-files execution.
     "src/test/java/com/google/protobuf/AbstractMessageTest.java",
     "src/test/java/com/google/protobuf/AbstractProto2SchemaTest.java",
     "src/test/java/com/google/protobuf/AnyTest.java",
@@ -602,7 +600,6 @@ pkg_files(
         "BUILD.bazel",
         "generate-sources-build.xml",
         "generate-test-sources-build.xml",
-        "pom.xml",
         "pom_template.xml",
     ],
     strip_prefix = strip_prefix.from_root(""),
