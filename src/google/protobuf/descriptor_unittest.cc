@@ -3222,6 +3222,7 @@ TEST_P(AllowUnknownDependenciesTest, UnknownExtendee) {
             extendee->extension_range(0)->end_number());
 }
 
+
 TEST_P(AllowUnknownDependenciesTest, CustomOption) {
   // Test that we can use a custom option without having parsed
   // descriptor.proto.
