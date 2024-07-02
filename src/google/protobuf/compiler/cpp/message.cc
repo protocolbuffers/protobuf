@@ -1257,6 +1257,12 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
   GenerateOneofHasBits(p);
 }
 
+void MessageGenerator::GenerateVerifyDecl(io::Printer* p) {
+}
+
+void MessageGenerator::GenerateAnnotationDecl(io::Printer* p) {
+}
+
 void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
   Formatter format(p);
   absl::flat_hash_map<absl::string_view, std::string> vars;
@@ -1265,35 +1271,45 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
   auto v = p->WithVars(std::move(vars));
   // Templatize constexpr constructor as a workaround for a bug in gcc 12
   // (warning in gcc 13).
-  p->Emit(R"cc(
-    class $classname$ final
-        : public ::$proto_ns$::internal::MapEntry<
+  p->Emit(
+      {{"decl_verify_func",
+        [&] {
+        }},
+       {"decl_annotate", [&] { GenerateAnnotationDecl(p); }},
+       {"parse_decls",
+        [&] { parse_function_generator_->GenerateDataDecls(p); }}},
+      R"cc(
+        class $classname$ final
+            : public ::$proto_ns$::internal::MapEntry<
+                  $classname$, $key_cpp$, $val_cpp$,
+                  ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,
+                  ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> {
+         public:
+          using SuperType = ::$proto_ns$::internal::MapEntry<
               $classname$, $key_cpp$, $val_cpp$,
               ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,
-              ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> {
-     public:
-      using SuperType = ::$proto_ns$::internal::MapEntry<
-          $classname$, $key_cpp$, $val_cpp$,
-          ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,
-          ::$proto_ns$::internal::WireFormatLite::$val_wire_type$>;
-      $classname$();
-      template <typename = void>
-      explicit PROTOBUF_CONSTEXPR $classname$(
-          ::$proto_ns$::internal::ConstantInitialized);
-      explicit $classname$(::$proto_ns$::Arena* arena);
-      static const $classname$* internal_default_instance() {
-        return reinterpret_cast<const $classname$*>(
-            &_$classname$_default_instance_);
-      }
-  )cc");
-  parse_function_generator_->GenerateDataDecls(p);
-  p->Emit(R"cc(
-    const $superclass$::ClassData* GetClassData() const PROTOBUF_FINAL;
-    static const $superclass$::ClassDataFull _class_data_;
-  )cc");
-  format(
-      "  friend struct ::$tablename$;\n"
-      "};\n");
+              ::$proto_ns$::internal::WireFormatLite::$val_wire_type$>;
+          $classname$();
+          template <typename = void>
+          explicit PROTOBUF_CONSTEXPR $classname$(
+              ::$proto_ns$::internal::ConstantInitialized);
+          explicit $classname$(::$proto_ns$::Arena* arena);
+          static const $classname$* internal_default_instance() {
+            return reinterpret_cast<const $classname$*>(
+                &_$classname$_default_instance_);
+          }
+
+          $decl_verify_func$;
+
+         private:
+          $parse_decls$;
+          $decl_annotate$;
+
+          const $superclass$::ClassData* GetClassData() const PROTOBUF_FINAL;
+          static const $superclass$::ClassDataFull _class_data_;
+          friend struct ::$tablename$;
+        };
+      )cc");
 }
 
 void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
@@ -1597,12 +1613,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             ~$classname$() PROTOBUF_FINAL;
           )cc");
         }},
-       {"decl_annotate",
-        [&] {
-        }},
-       {"decl_verify_func",
-        [&] {
-        }},
+       {"decl_annotate", [&] { GenerateAnnotationDecl(p); }},
+       {"decl_verify_func", [&] { GenerateVerifyDecl(p); }},
        {"descriptor_accessor",
         [&] {
           // Only generate this member if it's not disabled.
@@ -1953,7 +1965,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             }
             return *this;
           }
-          $decl_annotate$;
           $decl_verify_func$;
 
           inline const $unknown_fields_type$& unknown_fields() const
@@ -2013,6 +2024,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
          private:
           friend class ::$proto_ns$::internal::AnyMetadata;
           static ::absl::string_view FullMessageName() { return "$full_name$"; }
+          $decl_annotate$;
 
           //~ TODO Make this private! Currently people are
           //~ deriving from protos to give access to this constructor,
