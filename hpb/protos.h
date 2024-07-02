@@ -78,6 +78,9 @@ class Ptr final {
   Proxy<T> p_;
 };
 
+template <typename T>
+Ptr(T* m) -> Ptr<T>;
+
 inline absl::string_view UpbStrToStringView(upb_StringView str) {
   return absl::string_view(str.data, str.size);
 }

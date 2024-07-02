@@ -9,11 +9,11 @@
 #define UPB_PROTOS_GENERATOR_GEN_EXTENSIONS_H_
 
 #include "google/protobuf/descriptor.h"
-#include "hpb_generator/output.h"
+#include "google/protobuf/hpb_generator/output.h"
 
 namespace protos_generator {
 
-namespace protobuf = ::google::protobuf;
+namespace protobuf = ::proto2;
 
 void WriteExtensionIdentifiersHeader(
     const std::vector<const protobuf::FieldDescriptor*>& extensions,

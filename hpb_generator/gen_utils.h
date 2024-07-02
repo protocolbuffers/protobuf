@@ -17,7 +17,7 @@
 
 namespace protos_generator {
 
-namespace protobuf = ::google::protobuf;
+namespace protobuf = ::proto2;
 
 enum class MessageClassType {
   kMessage,
