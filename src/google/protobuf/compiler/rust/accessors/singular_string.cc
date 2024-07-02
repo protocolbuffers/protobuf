@@ -161,11 +161,11 @@ void SingularString::InThunkCc(Context& ctx,
              }}},
            R"cc(
              $with_presence_fields_thunks$;
-             ::google::protobuf::rust_internal::PtrAndLen $getter_thunk$($QualifiedMsg$* msg) {
+             ::google::protobuf::rust::PtrAndLen $getter_thunk$($QualifiedMsg$* msg) {
                absl::string_view val = msg->$field$();
-               return ::google::protobuf::rust_internal::PtrAndLen(val.data(), val.size());
+               return ::google::protobuf::rust::PtrAndLen(val.data(), val.size());
              }
-             void $setter_thunk$($QualifiedMsg$* msg, ::google::protobuf::rust_internal::PtrAndLen s) {
+             void $setter_thunk$($QualifiedMsg$* msg, ::google::protobuf::rust::PtrAndLen s) {
                msg->set_$field$(absl::string_view(s.ptr, s.len));
              }
            )cc");

@@ -8,7 +8,7 @@
 
 extern "C" {
 
-void rust_proto_thunk_UntypedMapIterator_increment(
+void proto2_rust_thunk_UntypedMapIterator_increment(
     google::protobuf::internal::UntypedMapIterator* iter) {
   iter->PlusPlus();
 }
@@ -28,12 +28,12 @@ __PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(uint64_t, u64, uint64_t,
 __PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(int64_t, i64, int64_t, value,
                                                    cpp_value);
 __PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(
-    std::string, ProtoBytes, google::protobuf::rust_internal::PtrAndLen,
+    std::string, ProtoBytes, google::protobuf::rust::PtrAndLen,
     std::string(value.ptr, value.len),
-    google::protobuf::rust_internal::PtrAndLen(cpp_value.data(), cpp_value.size()));
+    google::protobuf::rust::PtrAndLen(cpp_value.data(), cpp_value.size()));
 __PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(
-    std::string, ProtoString, google::protobuf::rust_internal::PtrAndLen,
+    std::string, ProtoString, google::protobuf::rust::PtrAndLen,
     std::string(value.ptr, value.len),
-    google::protobuf::rust_internal::PtrAndLen(cpp_value.data(), cpp_value.size()));
+    google::protobuf::rust::PtrAndLen(cpp_value.data(), cpp_value.size()));
 
 }  // extern "C"

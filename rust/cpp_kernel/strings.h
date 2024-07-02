@@ -14,7 +14,7 @@
 
 namespace google {
 namespace protobuf {
-namespace rust_internal {
+namespace rust {
 
 // Represents an ABI-stable version of &[u8]/string_view (borrowed slice of
 // bytes) for FFI use only.
@@ -43,7 +43,7 @@ struct RustStringRawParts {
   explicit RustStringRawParts(std::string src);
 };
 
-}  // namespace rust_internal
+}  // namespace rust
 }  // namespace protobuf
 }  // namespace google
 
