@@ -75,6 +75,7 @@
 #undef PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 #undef PROTOBUF_PREFETCH_PARSE_TABLE
 #undef PROTOBUF_PREFETCH_WITH_OFFSET
+#undef PROTOBUF_DEBUG_COUNTER
 #undef PROTOBUF_TC_PARAM_DECL
 #undef PROTOBUF_DEBUG
 #undef PROTOBUF_NO_THREADLOCAL
@@ -119,6 +120,8 @@
 #pragma pop_macro("ERROR_BUSY")
 #pragma pop_macro("ERROR_INSTALL_FAILED")
 #pragma pop_macro("ERROR_NOT_FOUND")
+#pragma pop_macro("ERROR_RETRY")
+#pragma pop_macro("ERROR_TIMEOUT")
 #pragma pop_macro("GetClassName")
 #pragma pop_macro("GetCurrentTime")
 #pragma pop_macro("GetMessage")

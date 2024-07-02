@@ -3657,6 +3657,11 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateClassData(io::Printer* p) {
+  auto vars = p->WithVars(
+      {{"default_instance",
+        absl::StrCat("&", DefaultInstanceName(descriptor_, options_),
+                     "._instance")}});
+
   const auto on_demand_register_arena_dtor = [&] {
     if (NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand) {
       p->Emit(R"cc(
@@ -3742,6 +3747,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
           const ::$proto_ns$::MessageLite::ClassDataFull
               $classname$::_class_data_ = {
                   $superclass$::ClassData{
+                      $default_instance$,
                       &_table_.header,
                       $on_demand_register_arena_dtor$,
                       $is_initialized$,
@@ -3779,6 +3785,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
           const ::$proto_ns$::MessageLite::ClassDataLite<$type_size$>
               $classname$::_class_data_ = {
                   {
+                      $default_instance$,
                       &_table_.header,
                       $on_demand_register_arena_dtor$,
                       $is_initialized$,

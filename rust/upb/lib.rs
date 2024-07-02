@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 mod arena;
 pub use arena::{upb_Arena, Arena, RawArena};
 
@@ -22,8 +29,8 @@ pub use map::{
 
 mod message;
 pub use message::{
-    upb_Message, upb_Message_DeepClone, upb_Message_DeepCopy, upb_Message_IsEqual, upb_Message_New,
-    upb_Message_SetBaseField, RawMessage,
+    upb_Message, upb_Message_DeepClone, upb_Message_DeepCopy, upb_Message_IsEqual,
+    upb_Message_MergeFrom, upb_Message_New, upb_Message_SetBaseField, RawMessage,
 };
 
 mod message_value;

@@ -339,6 +339,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     Api::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_Api_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
@@ -374,7 +375,7 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
     7,  // num_field_entries
     4,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_Api_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -759,6 +760,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     Method::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_Method_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
@@ -794,7 +796,7 @@ const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
     7,  // num_field_entries
     1,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_Method_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -1123,6 +1125,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     Mixin::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_Mixin_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
@@ -1158,7 +1161,7 @@ const ::_pbi::TcParseTable<1, 2, 0, 38, 2> Mixin::_table_ = {
     2,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
-    &_Mixin_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE

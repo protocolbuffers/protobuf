@@ -65,13 +65,13 @@ std::string GetHeaderFile(Context& ctx, const FileDescriptor& file) {
 
 std::string RawMapThunk(Context& ctx, const Descriptor& msg,
                         absl::string_view key_t, absl::string_view op) {
-  return absl::StrCat("__rust_proto_thunk__Map_", key_t, "_",
+  return absl::StrCat("rust_proto_thunk_Map_", key_t, "_",
                       GetUnderscoreDelimitedFullName(ctx, *&msg), "_", op);
 }
 
 std::string RawMapThunk(Context& ctx, const EnumDescriptor& desc,
                         absl::string_view key_t, absl::string_view op) {
-  return absl::StrCat("__rust_proto_thunk__Map_", key_t, "_",
+  return absl::StrCat("rust_proto_thunk_Map_", key_t, "_",
                       GetUnderscoreDelimitedFullName(ctx, *&desc), "_", op);
 }
 
@@ -82,7 +82,7 @@ std::string FieldPrefix(Context& ctx, const T& field) {
   // NOTE: When ctx.is_upb(), this functions outputs must match the symbols
   // that the upbc plugin generates exactly. Failure to do so correctly results
   // in a link-time failure.
-  absl::string_view prefix = ctx.is_cpp() ? "__rust_proto_thunk__" : "";
+  absl::string_view prefix = ctx.is_cpp() ? "rust_proto_thunk_" : "";
   std::string thunk_prefix = absl::StrCat(
       prefix, GetUnderscoreDelimitedFullName(ctx, *field.containing_type()));
   return thunk_prefix;
@@ -148,7 +148,7 @@ std::string ThunkName(Context& ctx, const OneofDescriptor& field,
 
 std::string ThunkName(Context& ctx, const Descriptor& msg,
                       absl::string_view op) {
-  absl::string_view prefix = ctx.is_cpp() ? "__rust_proto_thunk__" : "";
+  absl::string_view prefix = ctx.is_cpp() ? "rust_proto_thunk_" : "";
   return absl::StrCat(prefix, GetUnderscoreDelimitedFullName(ctx, msg), "_",
                       op);
 }
@@ -465,3 +465,5 @@ PROTOBUF_CONSTINIT const MapKeyType kMapKeyTypes[] = {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

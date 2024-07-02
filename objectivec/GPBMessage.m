@@ -1251,6 +1251,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   }
 }
 
+- (void)clearUnknownFields {
+  self.unknownFields = nil;
+}
+
 - (BOOL)isInitialized {
   GPBDescriptor *descriptor = [self descriptor];
   for (GPBFieldDescriptor *field in descriptor->fields_) {
@@ -3537,10 +3541,13 @@ GPB_INLINE BOOL GPBIsCaseOfSelForOneOf(const char *selName, size_t selNameLength
   if (self) {
     NSData *data = [aDecoder decodeObjectOfClass:[NSData class] forKey:kGPBDataCoderKey];
     if (data.length) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-      [self mergeFromData:data extensionRegistry:nil];
-#pragma clang diagnostic pop
+      GPBCodedInputStream *input = [[GPBCodedInputStream alloc] initWithData:data];
+      @try {
+        [self mergeFromCodedInputStream:input extensionRegistry:nil];
+        [input checkLastTagWas:0];
+      } @finally {
+        [input release];
+      }
     }
   }
   return self;

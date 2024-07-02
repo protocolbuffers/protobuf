@@ -73,6 +73,7 @@
 #include "google/protobuf/unittest_lazy_dependencies_custom_option.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies_enum.pb.h"
 #include "google/protobuf/unittest_proto3_arena.pb.h"
+#include "google/protobuf/unittest_string_type.pb.h"
 
 
 // Must be included last.
@@ -7856,12 +7857,11 @@ TEST_F(FeaturesTest, Edition2023InferredFeatures) {
         options { ctype: STRING_PIECE }
       }
       field {
-        name: "ctype_and_string_type"
+        name: "view"
         number: 4
         label: LABEL_OPTIONAL
         type: TYPE_STRING
         options {
-          ctype: CORD
           features {
             [pb.cpp] { string_type: VIEW }
           }
@@ -9685,7 +9685,7 @@ TEST_F(FeaturesTest, EnumFeatureHelpers) {
         type_name: "FooOpen"
         options {
           features {
-            [pb.cpp] { legacy_closed_enum: true string_type: STRING }
+            [pb.cpp] { legacy_closed_enum: true }
           }
         }
       }

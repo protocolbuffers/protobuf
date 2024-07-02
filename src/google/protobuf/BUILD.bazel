@@ -257,7 +257,11 @@ cc_library(
     deps = [
         "@com_google_absl//absl/base:config",
         "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/base:prefetch",
         "@com_google_absl//absl/meta:type_traits",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:optional",
     ],
 )
 
@@ -498,7 +502,6 @@ cc_library(
         "message_lite.h",
         "metadata_lite.h",
         "parse_context.h",
-        "port.h",
         "raw_ptr.h",
         "repeated_field.h",
         "repeated_ptr_field.h",
@@ -841,6 +844,7 @@ filegroup(
         "unittest_proto3_lite.proto",
         "unittest_proto3_optional.proto",
         "unittest_retention.proto",
+        "unittest_string_type.proto",
         "unittest_well_known_types.proto",
     ],
     visibility = ["//:__subpackages__"],
@@ -931,6 +935,7 @@ proto_library(
     deps = [
         ":any_proto",
         ":api_proto",
+        ":cpp_features_proto",
         ":descriptor_proto",
         ":duration_proto",
         ":empty_proto",
@@ -1253,6 +1258,7 @@ cc_test(
     srcs = ["descriptor_database_unittest.cc"],
     deps = [
         ":protobuf",
+        ":test_textproto",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "@com_google_googletest//:gtest",

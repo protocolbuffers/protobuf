@@ -70,6 +70,10 @@
 		F4353D371AC06F10005A6198 /* GPBDictionaryTests+String.m in Sources */ = {isa = PBXBuildFile; fileRef = F4353D301AC06F10005A6198 /* GPBDictionaryTests+String.m */; };
 		F4353D381AC06F10005A6198 /* GPBDictionaryTests+UInt32.m in Sources */ = {isa = PBXBuildFile; fileRef = F4353D311AC06F10005A6198 /* GPBDictionaryTests+UInt32.m */; };
 		F4353D391AC06F10005A6198 /* GPBDictionaryTests+UInt64.m in Sources */ = {isa = PBXBuildFile; fileRef = F4353D321AC06F10005A6198 /* GPBDictionaryTests+UInt64.m */; };
+		F43ADD302C2F2B91005312E5 /* GPBUnknownFields.m in Sources */ = {isa = PBXBuildFile; fileRef = F43ADD2E2C2F2B91005312E5 /* GPBUnknownFields.m */; };
+		F43ADD312C2F2B91005312E5 /* GPBUnknownFields.h in Headers */ = {isa = PBXBuildFile; fileRef = F43ADD2F2C2F2B91005312E5 /* GPBUnknownFields.h */; };
+		F43ADD332C2F2BAD005312E5 /* GPBUnknownFieldsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F43ADD322C2F2BAD005312E5 /* GPBUnknownFieldsTest.m */; };
+		F43ADD432C2F381F005312E5 /* GPBCompileTest25.m in Sources */ = {isa = PBXBuildFile; fileRef = F43ADD422C2F381F005312E5 /* GPBCompileTest25.m */; };
 		F43C88D0191D77FC009E917D /* text_format_unittest_data.txt in Resources */ = {isa = PBXBuildFile; fileRef = F43C88CF191D77FC009E917D /* text_format_unittest_data.txt */; };
 		F4487C4D1A9F8E0200531423 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		F4487C521A9F8E4D00531423 /* GPBProtocolBuffers.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BCF338814ED799900BC5317 /* GPBProtocolBuffers.m */; };
@@ -206,6 +210,10 @@
 		F4353D311AC06F10005A6198 /* GPBDictionaryTests+UInt32.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GPBDictionaryTests+UInt32.m"; sourceTree = "<group>"; };
 		F4353D321AC06F10005A6198 /* GPBDictionaryTests+UInt64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GPBDictionaryTests+UInt64.m"; sourceTree = "<group>"; };
 		F43725911AC9832D004DCAFB /* GPBDictionary_PackagePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPBDictionary_PackagePrivate.h; sourceTree = "<group>"; };
+		F43ADD2E2C2F2B91005312E5 /* GPBUnknownFields.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBUnknownFields.m; sourceTree = "<group>"; };
+		F43ADD2F2C2F2B91005312E5 /* GPBUnknownFields.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBUnknownFields.h; sourceTree = "<group>"; };
+		F43ADD322C2F2BAD005312E5 /* GPBUnknownFieldsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBUnknownFieldsTest.m; sourceTree = "<group>"; };
+		F43ADD422C2F381F005312E5 /* GPBCompileTest25.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest25.m; sourceTree = "<group>"; };
 		F43C88CF191D77FC009E917D /* text_format_unittest_data.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = text_format_unittest_data.txt; sourceTree = "<group>"; };
 		F4411BE71AF12FD700324B4A /* GPBArray_PackagePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPBArray_PackagePrivate.h; sourceTree = "<group>"; };
 		F4487C511A9F8E0200531423 /* libTestSingleSourceBuild.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libTestSingleSourceBuild.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -409,6 +417,8 @@
 				F4B6B8AF1A9CC98000892426 /* GPBUnknownField_PackagePrivate.h */,
 				7461B4AE0F94F99000A0C422 /* GPBUnknownField.h */,
 				7461B4AF0F94F99000A0C422 /* GPBUnknownField.m */,
+				F43ADD2F2C2F2B91005312E5 /* GPBUnknownFields.h */,
+				F43ADD2E2C2F2B91005312E5 /* GPBUnknownFields.m */,
 				F4B6B8B21A9CCBDA00892426 /* GPBUnknownFieldSet_PackagePrivate.h */,
 				7461B4E10F94F99000A0C422 /* GPBUnknownFieldSet.h */,
 				7461B4E20F94F99000A0C422 /* GPBUnknownFieldSet.m */,
@@ -478,6 +488,7 @@
 				F40EE48A206BF8B00071091A /* GPBCompileTest22.m */,
 				F40EE487206BF8B00071091A /* GPBCompileTest23.m */,
 				F4A92AFC2B88E105001E4F69 /* GPBCompileTest24.m */,
+				F43ADD422C2F381F005312E5 /* GPBCompileTest25.m */,
 				5102DABB1891A052002037B6 /* GPBConcurrencyTests.m */,
 				F4353D1C1AB8822D005A6198 /* GPBDescriptorTests.m */,
 				F4C4B9E21E1D974F00D3B61D /* GPBDictionaryTests.m */,
@@ -502,6 +513,7 @@
 				8BD3981E14BE59D70081D629 /* GPBUnittestProtos.m */,
 				F4F8D8811D789FCE002CE128 /* GPBUnittestProtos2.m */,
 				7461B6B80F94FDF900A0C422 /* GPBUnknownFieldSetTest.m */,
+				F43ADD322C2F2BAD005312E5 /* GPBUnknownFieldsTest.m */,
 				7461B6BA0F94FDF900A0C422 /* GPBUtilitiesTests.m */,
 				8B4248DB1A92933A00BC1EC6 /* GPBWellKnownTypesTest.m */,
 				7461B6BC0F94FDF900A0C422 /* GPBWireFormatTests.m */,
@@ -563,6 +575,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F43ADD312C2F2B91005312E5 /* GPBUnknownFields.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -708,6 +721,7 @@
 				7461B53C0F94FB4E00A0C422 /* GPBCodedInputStream.m in Sources */,
 				F47CF93223D9006000C7B24C /* GPBWrappers.pbobjc.m in Sources */,
 				F47CF94123D902D500C7B24C /* GPBEmpty.pbobjc.m in Sources */,
+				F43ADD302C2F2B91005312E5 /* GPBUnknownFields.m in Sources */,
 				F47CF94623D902D500C7B24C /* GPBDuration.pbobjc.m in Sources */,
 				F47CF92F23D9006000C7B24C /* GPBSourceContext.pbobjc.m in Sources */,
 				7461B53D0F94FB4E00A0C422 /* GPBCodedOutputStream.m in Sources */,
@@ -769,9 +783,11 @@
 				5102DABC1891A073002037B6 /* GPBConcurrencyTests.m in Sources */,
 				F4487C751AADF7F500531423 /* GPBMessageTests+Runtime.m in Sources */,
 				F40EE4AC206BF8B90071091A /* GPBCompileTest02.m in Sources */,
+				F43ADD432C2F381F005312E5 /* GPBCompileTest25.m in Sources */,
 				F4353D351AC06F10005A6198 /* GPBDictionaryTests+Int32.m in Sources */,
 				F40EE4AF206BF8B90071091A /* GPBCompileTest05.m in Sources */,
 				F40EE4B8206BF8B90071091A /* GPBCompileTest14.m in Sources */,
+				F43ADD332C2F2BAD005312E5 /* GPBUnknownFieldsTest.m in Sources */,
 				8BBEA4B0147C727D00C4ADB7 /* GPBTestUtilities.m in Sources */,
 				F40EE4AE206BF8B90071091A /* GPBCompileTest04.m in Sources */,
 				F40EE4BA206BF8B90071091A /* GPBCompileTest16.m in Sources */,

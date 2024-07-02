@@ -693,3 +693,5 @@ bool FieldMaskUtil::TrimMessage(const FieldMask& mask, Message* message,
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

@@ -109,9 +109,11 @@ cc_library(
     name = "copy",
     srcs = [
         "copy.c",
+        "merge.c",
     ],
     hdrs = [
         "copy.h",
+        "merge.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -122,6 +124,7 @@ cc_library(
         "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
+        "//upb:wire",
         "//upb/base:internal",
         "//upb/mini_table:internal",
     ],
@@ -147,6 +150,26 @@ cc_library(
         "//upb:port",
         "//upb:wire",
         "//upb:wire_reader",
+    ],
+)
+
+cc_test(
+    name = "merge_test",
+    srcs = ["merge_test.cc"],
+    deps = [
+        ":copy",
+        ":internal",
+        "//upb:base",
+        "//upb:mem",
+        "//upb:message",
+        "//upb:mini_table",
+        "//upb:port",
+        "//upb:wire",
+        "//upb/test:test_messages_proto2_upb_minitable",
+        "//upb/test:test_messages_proto2_upb_proto",
+        "//upb/test:test_upb_proto",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 

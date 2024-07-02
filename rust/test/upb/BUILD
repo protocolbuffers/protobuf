@@ -10,3 +10,19 @@
 # * `rust_upb_proto_library` instead of `rust_proto_library`.
 # * `//rust:protobuf_upb_export` instead of
 #   `//rust:protobuf`.
+
+load("@rules_rust//rust:defs.bzl", "rust_test")
+
+# TODO: Enable this for the cpp kernel and move these tests to shared.
+rust_test(
+    name = "string_ctypes_test_upb_test",
+    srcs = ["string_ctypes_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb_export": "protobuf",
+    },
+    deps = [
+        "//rust:protobuf_upb_export",
+        "//rust/test:unittest_proto3_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)

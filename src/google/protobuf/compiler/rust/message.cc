@@ -178,6 +178,7 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
               {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
               {"parse_thunk", ThunkName(ctx, msg, "parse")},
               {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
+              {"merge_from_thunk", ThunkName(ctx, msg, "merge_from")},
               {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
               {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
               {"repeated_get_mut_thunk",
@@ -195,6 +196,7 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
           fn $serialize_thunk$(raw_msg: $pbr$::RawMessage, out: &mut $pbr$::SerializedData) -> bool;
           fn $parse_thunk$(raw_msg: $pbr$::RawMessage, data: $pbr$::SerializedData) -> bool;
           fn $copy_from_thunk$(dst: $pbr$::RawMessage, src: $pbr$::RawMessage);
+          fn $merge_from_thunk$(dst: $pbr$::RawMessage, src: $pbr$::RawMessage);
           fn $repeated_len_thunk$(raw: $pbr$::RawRepeatedField) -> usize;
           fn $repeated_add_thunk$(raw: $pbr$::RawRepeatedField) -> $pbr$::RawMessage;
           fn $repeated_get_thunk$(raw: $pbr$::RawRepeatedField, index: usize) -> $pbr$::RawMessage;
@@ -301,6 +303,46 @@ void MessageGetMinitable(Context& ctx, const Descriptor& msg) {
         unsafe { $std$::ptr::addr_of!($minitable$) }
       }
     )rs");
+  }
+}
+
+void MessageMergeFrom(Context& ctx, const Descriptor& msg) {
+  switch (ctx.opts().kernel) {
+    case Kernel::kCpp:
+      ctx.Emit(
+          {
+              {"merge_from_thunk", ThunkName(ctx, msg, "merge_from")},
+          },
+          R"rs(
+          pub fn merge_from<'src>(&mut self, src: impl $pb$::ViewProxy<'src, Proxied = $Msg$>) {
+            // SAFETY: self and src are both valid `$Msg$`s.
+            unsafe {
+              $merge_from_thunk$(self.raw_msg(), src.as_view().raw_msg());
+            }
+          }
+        )rs");
+      return;
+    case Kernel::kUpb:
+      ctx.Emit(
+          {
+              {"minitable", UpbMinitableName(msg)},
+          },
+          R"rs(
+          pub fn merge_from<'src>(&mut self, src: impl $pb$::ViewProxy<'src, Proxied = $Msg$>) {
+            // SAFETY: self and src are both valid `$Msg$`s.
+            unsafe {
+              assert!(
+                $pbr$::upb_Message_MergeFrom(self.raw_msg(), 
+                  src.as_view().raw_msg(),
+                  $std$::ptr::addr_of!($minitable$),
+                  // Use a nullptr for the ExtensionRegistry.
+                  $std$::ptr::null(),
+                  self.arena().raw())
+              );
+            }
+          }
+        )rs");
+      return;
   }
 }
 
@@ -863,6 +905,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         }},
        {"into_proxied_impl", [&] { IntoProxiedForMessage(ctx, msg); }},
        {"get_upb_minitable", [&] { MessageGetMinitable(ctx, msg); }},
+       {"msg_merge_from", [&] { MessageMergeFrom(ctx, msg); }},
        {"repeated_impl", [&] { MessageProxiedInRepeated(ctx, msg); }},
        {"map_value_impl", [&] { MessageProxiedInMapValue(ctx, msg); }},
        {"unwrap_upb",
@@ -1023,6 +1066,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             $pb$::ViewProxy::as_view(self).to_owned()
           }
 
+          $msg_merge_from$
+
           $get_upb_minitable$
 
           $raw_arena_getter_for_msgmut$
@@ -1090,6 +1135,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
           pub fn as_mut(&mut self) -> $Msg$Mut {
             $Msg$Mut::new($pbi$::Private, &mut self.inner)
+          }
+
+          pub fn merge_from<'src>(&mut self, src: impl $pb$::ViewProxy<'src, Proxied = $Msg$>) {
+            self.as_mut().merge_from(src);
           }
 
           $get_upb_minitable$
@@ -1181,6 +1230,7 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
        {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
        {"parse_thunk", ThunkName(ctx, msg, "parse")},
        {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
+       {"merge_from_thunk", ThunkName(ctx, msg, "merge_from")},
        {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
        {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
        {"repeated_get_mut_thunk", ThunkName(ctx, msg, "repeated_get_mut")},
@@ -1227,6 +1277,10 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
 
         void $copy_from_thunk$($QualifiedMsg$* dst, const $QualifiedMsg$* src) {
           dst->CopyFrom(*src);
+        }
+
+        void $merge_from_thunk$($QualifiedMsg$* dst, const $QualifiedMsg$* src) {
+          dst->MergeFrom(*src);
         }
 
         size_t $repeated_len_thunk$(google::protobuf::RepeatedPtrField<$QualifiedMsg$>* field) {

@@ -631,6 +631,7 @@ class PROTOBUF_EXPORT MessageLite {
   using NewMessageF = void* (*)(const void* prototype, Arena* arena);
   using DeleteMessageF = void (*)(void* msg, bool free_memory);
   struct ClassData {
+    const MessageLite* prototype;
     const internal::TcParseTableBase* tc_table;
     void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
     bool (*is_initialized)(const MessageLite&);
@@ -649,18 +650,21 @@ class PROTOBUF_EXPORT MessageLite {
     // LITE objects (ie !descriptor_methods) collocate their name as a
     // char[] just beyond the ClassData.
     bool is_lite;
+    bool is_dynamic = false;
 
     // In normal mode we have the small constructor to avoid the cost in
     // codegen.
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
-    constexpr ClassData(const internal::TcParseTableBase* tc_table,
+    constexpr ClassData(const MessageLite* prototype,
+                        const internal::TcParseTableBase* tc_table,
                         void (*on_demand_register_arena_dtor)(MessageLite&,
                                                               Arena&),
                         bool (*is_initialized)(const MessageLite&),
                         void (*merge_to_from)(MessageLite& to,
                                               const MessageLite& from_msg),
                         uint32_t cached_size_offset, bool is_lite)
-        : tc_table(tc_table),
+        : prototype(prototype),
+          tc_table(tc_table),
           on_demand_register_arena_dtor(on_demand_register_arena_dtor),
           is_initialized(is_initialized),
           merge_to_from(merge_to_from),
@@ -671,6 +675,7 @@ class PROTOBUF_EXPORT MessageLite {
     // But we always provide the full constructor even in normal mode to make
     // helper code simpler.
     constexpr ClassData(
+        const MessageLite* prototype,
         const internal::TcParseTableBase* tc_table,
         void (*on_demand_register_arena_dtor)(MessageLite&, Arena&),
         bool (*is_initialized)(const MessageLite&),
@@ -682,7 +687,8 @@ class PROTOBUF_EXPORT MessageLite {
         uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
                               io::EpsCopyOutputStream* stream),
         uint32_t cached_size_offset, bool is_lite)
-        : tc_table(tc_table),
+        : prototype(prototype),
+          tc_table(tc_table),
           on_demand_register_arena_dtor(on_demand_register_arena_dtor),
           is_initialized(is_initialized),
           merge_to_from(merge_to_from),
@@ -838,6 +844,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::LazyField;
   friend class internal::SwapFieldHelper;
   friend class internal::TcParser;
+  friend struct internal::TcParseTableBase;
   friend class internal::UntypedMapBase;
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
@@ -1087,12 +1094,19 @@ T* DynamicCastMessage(MessageLite* from) {
       DynamicCastMessage<T>(static_cast<const MessageLite*>(from)));
 }
 
+namespace internal {
+[[noreturn]] PROTOBUF_EXPORT void FailDynamicCast(const MessageLite& from,
+                                                  const MessageLite& to);
+}  // namespace internal
+
 template <typename T>
 const T& DynamicCastMessage(const MessageLite& from) {
   const T* destination_message = DynamicCastMessage<T>(&from);
-  ABSL_CHECK(destination_message != nullptr)
-      << "Cannot downcast " << from.GetTypeName() << " to "
-      << T::default_instance().GetTypeName();
+  if (ABSL_PREDICT_FALSE(destination_message == nullptr)) {
+    // Move the logging into an out-of-line function to reduce bloat in the
+    // caller.
+    internal::FailDynamicCast(from, T::default_instance());
+  }
   return *destination_message;
 }
 

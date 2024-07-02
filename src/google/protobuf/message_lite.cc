@@ -195,6 +195,17 @@ void MessageLite::LogInitializationErrorMessage() const {
 
 namespace internal {
 
+void FailDynamicCast(const MessageLite& from, const MessageLite& to) {
+  const auto to_name = to.GetTypeName();
+  if (internal::GetClassData(from)->is_dynamic) {
+    ABSL_LOG(FATAL)
+        << "Cannot downcast from a DynamicMessage to generated type "
+        << to_name;
+  }
+  const auto from_name = from.GetTypeName();
+  ABSL_LOG(FATAL) << "Cannot downcast " << from_name << " to " << to_name;
+}
+
 template <bool aliasing>
 bool MergeFromImpl(absl::string_view input, MessageLite* msg,
                    const internal::TcParseTableBase* tc_table,
