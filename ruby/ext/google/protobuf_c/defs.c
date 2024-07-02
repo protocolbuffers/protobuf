@@ -1510,7 +1510,7 @@ static VALUE MethodDescriptor_initialize(VALUE _self, VALUE cookie,
   }
 
   RB_OBJ_WRITE(_self, &self->descriptor_pool, descriptor_pool);
-  self->methoddef = (const upb_ServiceDef*)NUM2ULL(ptr);
+  self->methoddef = (const upb_MethodDef*)NUM2ULL(ptr);
 
   return Qnil;
 }
