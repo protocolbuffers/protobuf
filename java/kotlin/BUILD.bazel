@@ -64,6 +64,9 @@ kt_jvm_export(
         "//src/google/protobuf:descriptor_proto_srcs",
     ],
     tags = ["manual"],
+    toolchains = [
+        "@bazel_tools//tools/jdk:toolchain_type",
+    ],
     runtime_deps = [
         ":bytestring_lib",
         ":full_extensions",
