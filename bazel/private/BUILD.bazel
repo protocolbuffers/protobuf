@@ -6,6 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("//bazel/private:native_bool_flag.bzl", "native_bool_flag")
 
 licenses(["notice"])
 
@@ -39,4 +40,27 @@ bzl_library(
         "proto_toolchain_rule.bzl",
     ],
     visibility = ["//bazel:__subpackages__"],
+)
+
+native_bool_flag(
+    name = "experimental_proto_descriptor_sets_include_source_info",
+    flag = "experimental_proto_descriptor_sets_include_source_info",
+    match_value = "true",
+    visibility = ["//visibility:public"],
+)
+
+native_bool_flag(
+    name = "strict_proto_deps",
+    flag = "strict_proto_deps",
+    match_value = "off",
+    result = False,
+    visibility = ["//visibility:public"],
+)
+
+native_bool_flag(
+    name = "strict_public_imports",
+    flag = "strict_public_imports",
+    match_value = "off",
+    result = False,
+    visibility = ["//visibility:public"],
 )

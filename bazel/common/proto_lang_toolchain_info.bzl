@@ -1,5 +1,5 @@
 """ProtoLangToolchainInfo"""
 
-load("//bazel/common:proto_common.bzl", "proto_common")
+load("//bazel/private:native.bzl", "native_proto_common")
 
-ProtoLangToolchainInfo = proto_common.ProtoLangToolchainInfo
+ProtoLangToolchainInfo = native_proto_common.ProtoLangToolchainInfo
