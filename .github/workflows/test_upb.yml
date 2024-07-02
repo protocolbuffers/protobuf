@@ -172,13 +172,13 @@ jobs:
           # supported Python versions and assume this gives us sufficient test
           # coverage.
           - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'binary' }
-          - { os: macos-11, python-version: "3.8", architecture: x64, type: 'binary' }
+          - { os: macos-12, python-version: "3.8", architecture: x64, type: 'binary' }
           - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'binary' }
-          - { os: macos-12, python-version: "3.12", architecture: x64, type: 'binary' }
+          - { os: macos-13, python-version: "3.12", architecture: x64, type: 'binary' }
           - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'source' }
-          - { os: macos-11, python-version: "3.8", architecture: x64, type: 'source' }
+          - { os: macos-12, python-version: "3.8", architecture: x64, type: 'source' }
           - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'source' }
-          - { os: macos-12, python-version: "3.12", architecture: x64, type: 'source' }
+          - { os: macos-13, python-version: "3.12", architecture: x64, type: 'source' }
 
           # Windows uses the full API up until Python 3.10.
           - { os: windows-2019, python-version: "3.8", architecture: x86, type: 'binary' }
