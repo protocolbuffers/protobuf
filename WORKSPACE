@@ -52,6 +52,12 @@ load("@com_google_googletest//:googletest_deps.bzl", "googletest_deps")
 
 googletest_deps()
 
+load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
+
+rules_java_dependencies()
+
+rules_java_toolchains()
+
 load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
 
 rules_jvm_external_deps()
@@ -99,12 +105,13 @@ load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
 rules_cc_dependencies()
 
 # For `kt_jvm_library`
-load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
+load("@rules_kotlin//kotlin:dependencies.bzl", "kt_download_local_dev_dependencies")
+kt_download_local_dev_dependencies()
 
+load("@rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
 kotlin_repositories()
 
-load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
-
+load("@rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
 kt_register_toolchains()
 
 http_archive(

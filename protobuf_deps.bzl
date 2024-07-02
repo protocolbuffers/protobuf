@@ -82,8 +82,8 @@ def protobuf_deps():
     if not native.existing_rule("rules_java"):
         http_archive(
             name = "rules_java",
-            url = "https://github.com/bazelbuild/rules_java/releases/download/6.0.0/rules_java-6.0.0.tar.gz",
-            sha256 = "469b7f3b580b4fcf8112f4d6d0d5a4ce8e1ad5e21fee67d8e8335d5f8b3debab",
+            url = "https://github.com/bazelbuild/rules_java/releases/download/7.6.5/rules_java-7.6.5.tar.gz",
+            sha256 = "8afd053dd2a7b85a4f033584f30a7f1666c5492c56c76e04eec4428bdb2a86cf",
         )
 
     # TODO: remove after toolchain types are moved to protobuf
@@ -115,8 +115,8 @@ def protobuf_deps():
         _github_archive(
             name = "rules_jvm_external",
             repo = "https://github.com/bazelbuild/rules_jvm_external",
-            commit = "906875b0d5eaaf61a8ca2c9c3835bde6f435d011",
-            sha256 = "744bd7436f63af7e9872948773b8b106016dc164acb3960b4963f86754532ee7",
+            commit = "5f6f2f44c7ac219a999a87a38c7b22c0bfc0c5f7",
+            sha256 = "ec582ec43d0a354e49ca3525ed32a9b9d756b806e0a0ff3955b4255f0931ff5d",
         )
 
     if not native.existing_rule("rules_pkg"):
@@ -143,11 +143,11 @@ def protobuf_deps():
             url = "https://github.com/bazelbuild/apple_support/releases/download/1.12.0/apple_support.1.12.0.tar.gz",
         )
 
-    if not native.existing_rule("io_bazel_rules_kotlin"):
+    if not native.existing_rule("rules_kotlin"):
         http_archive(
-            name = "io_bazel_rules_kotlin",
-            urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v1.8.1/rules_kotlin_release.tgz"],
-            sha256 = "a630cda9fdb4f56cf2dc20a4bf873765c41cf00e9379e8d59cd07b24730f4fde",
+            name = "rules_kotlin",
+            sha256 = "3b772976fec7bdcda1d84b9d39b176589424c047eb2175bed09aac630e50af43",
+            url = "https://github.com/bazelbuild/rules_kotlin/releases/download/v1.9.6/rules_kotlin-v1.9.6.tar.gz",
         )
 
     # Python Downloads
