@@ -82,8 +82,10 @@ def protobuf_deps():
     if not native.existing_rule("rules_java"):
         http_archive(
             name = "rules_java",
-            url = "https://github.com/bazelbuild/rules_java/releases/download/7.6.5/rules_java-7.6.5.tar.gz",
-            sha256 = "8afd053dd2a7b85a4f033584f30a7f1666c5492c56c76e04eec4428bdb2a86cf",
+            urls = [
+              "https://github.com/bazelbuild/rules_java/releases/download/7.4.0/rules_java-7.4.0.tar.gz",
+            ],
+            sha256 = "976ef08b49c929741f201790e59e3807c72ad81f428c8bc953cdbeff5fed15eb",
         )
 
     # TODO: remove after toolchain types are moved to protobuf
