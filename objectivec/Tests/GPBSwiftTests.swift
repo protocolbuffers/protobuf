@@ -7,7 +7,10 @@
 
 import Foundation
 import XCTest
+// This works for the Xcode project, but for any other build that gets the tests wired up
+// it will need something else.
 import ProtocolBuffers
+
 // Test some usage of the ObjC library from Swift.
 
 private func dataFromStr(_ str: String) -> Data {
