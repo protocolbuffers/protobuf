@@ -218,6 +218,7 @@ bool RustGenerator::Generate(const FileDescriptor* file,
 #include "$proto_h$"
           $proto_deps_h$
 #include "google/protobuf/map.h"
+#include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/rust/cpp_kernel/map.h"
 #include "google/protobuf/rust/cpp_kernel/serialized_data.h"

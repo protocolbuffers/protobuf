@@ -618,6 +618,7 @@ class PROTOBUF_EXPORT MessageLite {
     std::string (*initialization_error_string)(const MessageLite&);
     const internal::TcParseTableBase* (*get_tc_table)(const MessageLite&);
     size_t (*space_used_long)(const MessageLite&);
+    std::string (*debug_string)(const MessageLite&);
   };
 
   // Note: The order of arguments in the functions is chosen so that it has
