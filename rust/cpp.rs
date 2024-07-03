@@ -64,6 +64,17 @@ mod _opaque_pointees {
         _data: [u8; 0],
         _marker: std::marker::PhantomData<(*mut u8, ::std::marker::PhantomPinned)>,
     }
+
+    /// Opaque pointee for [`CppStdString`]
+    ///
+    /// This type is not meant to be dereferenced in Rust code.
+    /// It is only meant to provide type safety for raw pointers
+    /// which are manipulated behind FFI.
+    #[repr(C)]
+    pub(super) struct CppStdStringData {
+        _data: [u8; 0],
+        _marker: std::marker::PhantomData<(*mut u8, ::std::marker::PhantomPinned)>,
+    }
 }
 
 /// A raw pointer to the underlying message for this runtime.
@@ -75,23 +86,43 @@ pub type RawRepeatedField = NonNull<_opaque_pointees::RawRepeatedFieldData>;
 /// A raw pointer to the underlying arena for this runtime.
 pub type RawMap = NonNull<_opaque_pointees::RawMapData>;
 
+/// A raw pointer to a std::string.
+type CppStdString = NonNull<_opaque_pointees::CppStdStringData>;
+
 /// Kernel-specific owned `string` and `bytes` field type.
-// TODO - b/334788521: Allocate this on the C++ side (maybe as a std::string), and move the
-// std::string instead of copying the string_view (which we currently do).
 #[derive(Debug)]
-pub struct InnerProtoString(Box<[u8]>);
+pub struct InnerProtoString {
+    owned_ptr: CppStdString,
+}
+
+impl Drop for InnerProtoString {
+    fn drop(&mut self) {
+        // SAFETY: `self.owned_ptr` points to a valid std::string object.
+        unsafe {
+            proto2_rust_cpp_delete_string(self.owned_ptr);
+        }
+    }
+}
 
 impl InnerProtoString {
     pub(crate) fn as_bytes(&self) -> &[u8] {
-        self.0.as_ref()
+        // SAFETY: `self.owned_ptr` points to a valid std::string object.
+        unsafe { proto2_rust_cpp_string_to_view(self.owned_ptr).as_ref() }
     }
 }
 
 impl From<&[u8]> for InnerProtoString {
     fn from(val: &[u8]) -> Self {
-        let owned_copy: Box<[u8]> = val.into();
-        InnerProtoString(owned_copy)
+        // SAFETY: `val` is valid byte slice.
+        let owned_ptr: CppStdString = unsafe { proto2_rust_cpp_new_string(val.into()) };
+        InnerProtoString { owned_ptr }
     }
+}
+
+extern "C" {
+    fn proto2_rust_cpp_new_string(src: PtrAndLen) -> CppStdString;
+    fn proto2_rust_cpp_delete_string(src: CppStdString);
+    fn proto2_rust_cpp_string_to_view(src: CppStdString) -> PtrAndLen;
 }
 
 /// Represents an ABI-stable version of `NonNull<[u8]>`/`string_view` (a
