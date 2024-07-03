@@ -222,8 +222,6 @@ class PROTOBUF_EXPORT Timestamp final : public ::google::protobuf::Message
       0, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_Timestamp_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;

@@ -263,8 +263,6 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
       0, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_ListValue_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -440,8 +438,6 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
       37, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_Struct_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -751,8 +747,6 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
       42, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_Value_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
