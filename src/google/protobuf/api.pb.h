@@ -241,8 +241,6 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
       38, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_Mixin_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -504,8 +502,6 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
       68, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_Method_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -785,8 +781,6 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
       39, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_Api_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
