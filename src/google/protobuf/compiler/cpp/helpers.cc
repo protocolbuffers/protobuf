@@ -1916,6 +1916,18 @@ std::vector<io::Printer::Sub> AnnotatedAccessors(
   return vars;
 }
 
+std::vector<io::Printer::Sub> NullabilityPrePostVars(const Options& options) {
+  std::vector<io::Printer::Sub> vars;
+  if (options.opensource_runtime) {
+    vars.push_back({"LNullable", ""});
+    vars.push_back({"RNullable", ""});
+  } else {
+    vars.push_back({"LNullable", "absl::Nullable<"});
+    vars.push_back({"RNullable", ">"});
+  }
+  return vars;
+}
+
 bool IsFileDescriptorProto(const FileDescriptor* file, const Options& options) {
   if (Namespace(file, options) !=
       absl::StrCat("::", ProtobufNamespace(options))) {

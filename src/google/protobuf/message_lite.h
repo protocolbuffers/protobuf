@@ -24,6 +24,7 @@
 #include <type_traits>
 
 #include "absl/base/attributes.h"
+#include "absl/base/nullability.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
@@ -253,7 +254,7 @@ class PROTOBUF_EXPORT MessageLite {
     return static_cast<MessageLite*>(_class_data_->new_message(this, arena));
   }
 #else
-  virtual MessageLite* New(Arena* arena) const = 0;
+  virtual MessageLite* New(absl::Nullable<Arena*> arena) const = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Returns the arena, if any, that directly owns this message and its internal
@@ -261,7 +262,9 @@ class PROTOBUF_EXPORT MessageLite {
   // internal memory). This method is used in proto's implementation for
   // swapping, moving and setting allocated, for deciding whether the ownership
   // of this message or its internal memory could be changed.
-  Arena* GetArena() const { return _internal_metadata_.arena(); }
+  absl::Nullable<Arena*> GetArena() const {
+    return _internal_metadata_.arena();
+  }
 
   // Clear all fields of the message and set them to their default values.
   // Clear() assumes that any memory allocated to hold parts of the message
@@ -1101,7 +1104,8 @@ std::string Utf8Format(const MessageLite& message_lite);
 // !NDEBUG. It should only be used when the caller is certain that the input
 // message is of instance `T`.
 template <typename T>
-const T* DynamicCastMessage(const MessageLite* from) {
+absl::Nullable<const T*> DynamicCastMessage(
+    absl::Nullable<const MessageLite*> from) {
   static_assert(std::is_base_of<MessageLite, T>::value, "");
 
   // We might avoid the call to T::GetClassData() altogether if T were to
@@ -1114,7 +1118,7 @@ const T* DynamicCastMessage(const MessageLite* from) {
 }
 
 template <typename T>
-T* DynamicCastMessage(MessageLite* from) {
+absl::Nullable<T*> DynamicCastMessage(absl::Nullable<MessageLite*> from) {
   return const_cast<T*>(
       DynamicCastMessage<T>(static_cast<const MessageLite*>(from)));
 }
@@ -1167,7 +1171,8 @@ T& DownCastMessage(MessageLite& from) {
 }
 
 template <>
-inline const MessageLite* DynamicCastMessage(const MessageLite* from) {
+inline absl::Nullable<const MessageLite*> DynamicCastMessage(
+    absl::Nullable<const MessageLite*> from) {
   return from;
 }
 template <>

@@ -3957,7 +3957,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
   bool has_overridable_features() const;
   void clear_overridable_features() ;
   const ::google::protobuf::FeatureSet& overridable_features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_overridable_features();
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet*release_overridable_features();
   ::google::protobuf::FeatureSet* mutable_overridable_features();
   void set_allocated_overridable_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_overridable_features(::google::protobuf::FeatureSet* value);
@@ -3972,7 +3972,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
   bool has_fixed_features() const;
   void clear_fixed_features() ;
   const ::google::protobuf::FeatureSet& fixed_features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_fixed_features();
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet*release_fixed_features();
   ::google::protobuf::FeatureSet* mutable_fixed_features();
   void set_allocated_fixed_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_fixed_features(::google::protobuf::FeatureSet* value);
@@ -4201,7 +4201,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet*release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -4609,7 +4609,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet*release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -5027,7 +5027,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet*release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -5452,7 +5452,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet*release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -6117,7 +6117,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet*release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -6768,7 +6768,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet*release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -6783,7 +6783,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   bool has_feature_support() const;
   void clear_feature_support() ;
   const ::google::protobuf::FieldOptions_FeatureSupport& feature_support() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FieldOptions_FeatureSupport* release_feature_support();
+  PROTOBUF_NODISCARD ::google::protobuf::FieldOptions_FeatureSupport*release_feature_support();
   ::google::protobuf::FieldOptions_FeatureSupport* mutable_feature_support();
   void set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* value);
   void unsafe_arena_set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* value);
@@ -7555,7 +7555,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet*release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -7967,7 +7967,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet*release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -7982,7 +7982,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   bool has_feature_support() const;
   void clear_feature_support() ;
   const ::google::protobuf::FieldOptions_FeatureSupport& feature_support() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FieldOptions_FeatureSupport* release_feature_support();
+  PROTOBUF_NODISCARD ::google::protobuf::FieldOptions_FeatureSupport*release_feature_support();
   ::google::protobuf::FieldOptions_FeatureSupport* mutable_feature_support();
   void set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* value);
   void unsafe_arena_set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* value);
@@ -8406,7 +8406,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   bool has_features() const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet* release_features();
+  PROTOBUF_NODISCARD ::google::protobuf::FeatureSet*release_features();
   ::google::protobuf::FeatureSet* mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* value);
@@ -8838,7 +8838,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::OneofOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::OneofOptions* release_options();
+  PROTOBUF_NODISCARD ::google::protobuf::OneofOptions*release_options();
   ::google::protobuf::OneofOptions* mutable_options();
   void set_allocated_options(::google::protobuf::OneofOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::OneofOptions* value);
@@ -9092,7 +9092,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::MethodOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::MethodOptions* release_options();
+  PROTOBUF_NODISCARD ::google::protobuf::MethodOptions*release_options();
   ::google::protobuf::MethodOptions* mutable_options();
   void set_allocated_options(::google::protobuf::MethodOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::MethodOptions* value);
@@ -9466,7 +9466,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::FieldOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FieldOptions* release_options();
+  PROTOBUF_NODISCARD ::google::protobuf::FieldOptions*release_options();
   ::google::protobuf::FieldOptions* mutable_options();
   void set_allocated_options(::google::protobuf::FieldOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::FieldOptions* value);
@@ -9747,7 +9747,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::EnumValueOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::EnumValueOptions* release_options();
+  PROTOBUF_NODISCARD ::google::protobuf::EnumValueOptions*release_options();
   ::google::protobuf::EnumValueOptions* mutable_options();
   void set_allocated_options(::google::protobuf::EnumValueOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::EnumValueOptions* value);
@@ -9959,7 +9959,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::ExtensionRangeOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::ExtensionRangeOptions* release_options();
+  PROTOBUF_NODISCARD ::google::protobuf::ExtensionRangeOptions*release_options();
   ::google::protobuf::ExtensionRangeOptions* mutable_options();
   void set_allocated_options(::google::protobuf::ExtensionRangeOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::ExtensionRangeOptions* value);
@@ -10216,7 +10216,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::ServiceOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::ServiceOptions* release_options();
+  PROTOBUF_NODISCARD ::google::protobuf::ServiceOptions*release_options();
   ::google::protobuf::ServiceOptions* mutable_options();
   void set_allocated_options(::google::protobuf::ServiceOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::ServiceOptions* value);
@@ -10493,7 +10493,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::EnumOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::EnumOptions* release_options();
+  PROTOBUF_NODISCARD ::google::protobuf::EnumOptions*release_options();
   ::google::protobuf::EnumOptions* mutable_options();
   void set_allocated_options(::google::protobuf::EnumOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::EnumOptions* value);
@@ -10863,7 +10863,7 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::MessageOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::MessageOptions* release_options();
+  PROTOBUF_NODISCARD ::google::protobuf::MessageOptions*release_options();
   ::google::protobuf::MessageOptions* mutable_options();
   void set_allocated_options(::google::protobuf::MessageOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::MessageOptions* value);
@@ -11258,7 +11258,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   bool has_options() const;
   void clear_options() ;
   const ::google::protobuf::FileOptions& options() const;
-  PROTOBUF_NODISCARD ::google::protobuf::FileOptions* release_options();
+  PROTOBUF_NODISCARD ::google::protobuf::FileOptions*release_options();
   ::google::protobuf::FileOptions* mutable_options();
   void set_allocated_options(::google::protobuf::FileOptions* value);
   void unsafe_arena_set_allocated_options(::google::protobuf::FileOptions* value);
@@ -11273,7 +11273,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   bool has_source_code_info() const;
   void clear_source_code_info() ;
   const ::google::protobuf::SourceCodeInfo& source_code_info() const;
-  PROTOBUF_NODISCARD ::google::protobuf::SourceCodeInfo* release_source_code_info();
+  PROTOBUF_NODISCARD ::google::protobuf::SourceCodeInfo*release_source_code_info();
   ::google::protobuf::SourceCodeInfo* mutable_source_code_info();
   void set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* value);
   void unsafe_arena_set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* value);

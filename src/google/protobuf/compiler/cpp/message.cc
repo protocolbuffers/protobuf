@@ -465,30 +465,30 @@ bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
   }
 
   // Emit has_bit check for each has_bit_dword index.
-  p->Emit(
-      {{"cond",
-        [&] {
-          int first_word = hasword_masks.front().word;
-          for (const auto& m : hasword_masks) {
-            uint32_t mask = m.mask;
-            int this_word = m.word;
-            if (this_word != first_word) {
-              p->Emit(R"cc(
-                ||
-              )cc");
-            }
-            auto v = p->WithVars({{"mask", absl::StrFormat("0x%08xu", mask)}});
-            if (this_word == cached_has_word_index) {
-              p->Emit("(cached_has_bits & $mask$) != 0");
-            } else {
-              p->Emit({{"from", from}, {"word", this_word}},
-                      "($from$_impl_._has_bits_[$word$] & $mask$) != 0");
-            }
-          }
-        }}},
-      R"cc(
-        if (PROTOBUF_PREDICT_FALSE($cond$)) {
-      )cc");
+  p->Emit({{"cond",
+            [&] {
+              int first_word = hasword_masks.front().word;
+              for (const auto& m : hasword_masks) {
+                uint32_t mask = m.mask;
+                int this_word = m.word;
+                if (this_word != first_word) {
+                  p->Emit(R"cc(
+                    ||
+                  )cc");
+                }
+                auto v =
+                    p->WithVars({{"mask", absl::StrFormat("0x%08xu", mask)}});
+                if (this_word == cached_has_word_index) {
+                  p->Emit("(cached_has_bits & $mask$) != 0");
+                } else {
+                  p->Emit({{"from", from}, {"word", this_word}},
+                          "($from$_impl_._has_bits_[$word$] & $mask$) != 0");
+                }
+              }
+            }}},
+          R"cc(
+            if (PROTOBUF_PREDICT_FALSE($cond$)) {
+          )cc");
   p->Indent();
   return true;
 }
@@ -1682,6 +1682,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
+  auto n = p->WithVars(NullabilityPrePostVars(options_));
   Formatter format(p);
 
   if (IsMapEntryMessage(descriptor_)) {
@@ -2043,6 +2044,14 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             ? "ClassDataFull"
             : absl::StrFormat("ClassDataLite<%d>",
                               descriptor_->full_name().size() + 1)},
+
+       {
+           "nullable_arena_ptr",
+           // clang-format off
+           // (to keep the * next to the $)
+            [&] { p->Emit(R"cc($LNullable$::$proto_ns$::Arena*$RNullable$)cc"); }
+           // clang-format on
+       },
        {"split_friend",
         [&] {
           if (!ShouldSplit(descriptor_, options_)) return;
@@ -2133,7 +2142,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           // implements Message ----------------------------------------------
 
-          $classname$* New(::$proto_ns$::Arena* arena = nullptr) const PROTOBUF_FINAL {
+          $classname$* New($nullable_arena_ptr$ arena = nullptr) const PROTOBUF_FINAL {
             return $superclass$::DefaultConstruct<$classname$>(arena);
           }
           $generated_methods$;

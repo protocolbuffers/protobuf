@@ -1158,6 +1158,11 @@ std::vector<io::Printer::Sub> AnnotatedAccessors(
     absl::optional<google::protobuf::io::AnnotationCollector::Semantic> semantic =
         absl::nullopt);
 
+// Generates a vector of substitutions for use with Printer::WithVars for
+// $LNullable$ and $RNullable$ (Left and Right). The substitutions are used to
+// wrap a type with absl::Nullable<T>.
+std::vector<io::Printer::Sub> NullabilityPrePostVars(const Options& options);
+
 // Check whether `file` represents the .proto file FileDescriptorProto and
 // friends. This file needs special handling because it must be usable during
 // dynamic initialization.

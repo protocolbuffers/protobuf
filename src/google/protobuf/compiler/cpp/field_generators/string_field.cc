@@ -254,15 +254,24 @@ void SingularString::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"set_"}, AnnotationCollector::kSet));
   auto v3 = p->WithVars(
       AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
+  auto v4 = p->WithVars(NullabilityPrePostVars(options_));
 
   p->Emit(
-      {{"donated",
-        [&] {
-          if (!is_inlined()) return;
-          p->Emit(R"cc(
-            inline PROTOBUF_ALWAYS_INLINE bool _internal_$name$_donated() const;
-          )cc");
-        }}},
+      {
+          {"donated",
+           [&] {
+             if (!is_inlined()) return;
+             p->Emit(R"cc(
+               inline PROTOBUF_ALWAYS_INLINE bool _internal_$name$_donated()
+                   const;
+             )cc");
+           }},
+          {"nullable_string_ptr",
+           // clang-format off
+           // (to keep the * next to the $)
+           [&] { p->Emit(R"cc($LNullable$std::string*$RNullable$)cc"); }},
+          // clang-format on
+      },
       R"cc(
         $DEPRECATED$ const std::string& $name$() const;
         //~ Using `Arg_ = const std::string&` will make the type of `arg`
@@ -272,8 +281,8 @@ void SingularString::GenerateAccessorDeclarations(io::Printer* p) const {
         template <typename Arg_ = const std::string&, typename... Args_>
         $DEPRECATED$ void $set_name$(Arg_&& arg, Args_... args);
         $DEPRECATED$ std::string* $mutable_name$();
-        $DEPRECATED$ PROTOBUF_NODISCARD std::string* $release_name$();
-        $DEPRECATED$ void $set_allocated_name$(std::string* value);
+        $DEPRECATED$ PROTOBUF_NODISCARD $nullable_string_ptr$ $release_name$();
+        $DEPRECATED$ void $set_allocated_name$($nullable_string_ptr$ value);
 
         private:
         const std::string& _internal_$name$() const;
@@ -416,6 +425,7 @@ void SingularString::SetAllocatedImpl(io::Printer* p) const {
 }
 
 void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
+  auto v = p->WithVars(NullabilityPrePostVars(options_));
   p->Emit(
       {
           {"if_IsDefault",
@@ -442,6 +452,11 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
            SafeFunctionName(field_->containing_type(), field_, "release_")},
           {"release_impl", [&] { ReleaseImpl(p); }},
           {"set_allocated_impl", [&] { SetAllocatedImpl(p); }},
+          {"nullable_string_ptr",
+           // clang-format off
+           // (to keep the * next to the $)
+           [&] { p->Emit(R"cc($LNullable$std::string*$RNullable$)cc"); }},
+          // clang-format on
       },
       R"cc(
         inline const std::string& $Msg$::$name$() const
@@ -488,7 +503,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $update_hasbit$;
           return $field_$.Mutable($lazy_args$, $set_args$);
         }
-        inline std::string* $Msg$::$release_name$() {
+        inline $nullable_string_ptr$ $Msg$::$release_name$() {
           $WeakDescriptorSelfPin$;
           $TsanDetectConcurrentMutation$;
           $annotate_release$;
@@ -496,7 +511,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           // @@protoc_insertion_point(field_release:$pkg.Msg.field$)
           $release_impl$;
         }
-        inline void $Msg$::set_allocated_$name$(std::string* value) {
+        inline void $Msg$::set_allocated_$name$($nullable_string_ptr$ value) {
           $WeakDescriptorSelfPin$;
           $TsanDetectConcurrentMutation$;
           $PrepareSplitMessageForWrite$;

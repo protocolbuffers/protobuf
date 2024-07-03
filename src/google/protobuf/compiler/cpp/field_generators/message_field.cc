@@ -161,27 +161,37 @@ void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
   auto v1 = p->WithVars(vars);
   auto v2 = p->WithVars(
       AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
+  auto v3 = p->WithVars(NullabilityPrePostVars(options_));
 
-  p->Emit(R"cc(
-    $DEPRECATED$ const $Submsg$& $name$() const;
-    $DEPRECATED$ PROTOBUF_NODISCARD $Submsg$* $release_name$();
-    $DEPRECATED$ $Submsg$* $mutable_name$();
-    $DEPRECATED$ void $set_allocated_name$($Submsg$* value);
-    $DEPRECATED$ void $unsafe_arena_set_allocated_name$($Submsg$* value);
-    $DEPRECATED$ $Submsg$* $unsafe_arena_release_name$();
+  p->Emit(
+      {
+          {"n_submsg_p",
+           // clang-format off
+           // (to keep the * next to the $)
+           [&] { p->Emit(R"cc($LNullable$$Submsg$*$RNullable$)cc"); }},
+          // clang-format on
+      },
+      R"cc(
+        $DEPRECATED$ const $Submsg$& $name$() const;
+        $DEPRECATED$ PROTOBUF_NODISCARD $n_submsg_p$$release_name$();
+        $DEPRECATED$ $Submsg$* $mutable_name$();
+        $DEPRECATED$ void $set_allocated_name$($n_submsg_p$ value);
+        $DEPRECATED$ void $unsafe_arena_set_allocated_name$($n_submsg_p$ value);
+        $DEPRECATED$ $n_submsg_p$ $unsafe_arena_release_name$();
 
-    private:
-    const $Submsg$& _internal_$name$() const;
-    $Submsg$* _internal_mutable_$name$();
+        private:
+        const $Submsg$& _internal_$name$() const;
+        $Submsg$* _internal_mutable_$name$();
 
-    public:
-  )cc");
+        public:
+      )cc");
 }
 
 void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
-  auto v =
+  auto v1 =
       p->WithVars({{"release_name", SafeFunctionName(field_->containing_type(),
                                                      field_, "release_")}});
+  auto v2 = p->WithVars(NullabilityPrePostVars(options_));
   p->Emit(
       {
           {"update_hasbit",
@@ -195,6 +205,11 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
                }
              )cc");
            }},
+          {"n_submsg_p",
+           // clang-format off
+           // (to keep the * next to the $)
+           [&] { p->Emit(R"cc($LNullable$$Submsg$*$RNullable$)cc"); }},
+          // clang-format on
       },
       R"cc(
         inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
@@ -209,7 +224,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
           return _internal_$name_internal$();
         }
-        inline void $Msg$::unsafe_arena_set_allocated_$name$($Submsg$* value) {
+        inline void $Msg$::unsafe_arena_set_allocated_$name$($n_submsg_p$ value) {
           $WeakDescriptorSelfPin$;
           $TsanDetectConcurrentMutation$;
           $PrepareSplitMessageForWrite$;
@@ -223,7 +238,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $annotate_set$;
           // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)
         }
-        inline $Submsg$* $Msg$::$release_name$() {
+        inline $n_submsg_p$ $Msg$::$release_name$() {
           $WeakDescriptorSelfPin$;
           $TsanDetectConcurrentMutation$;
           $StrongRef$;
@@ -246,7 +261,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
           return released;
         }
-        inline $Submsg$* $Msg$::unsafe_arena_release_$name$() {
+        inline $n_submsg_p$ $Msg$::unsafe_arena_release_$name$() {
           $WeakDescriptorSelfPin$;
           $TsanDetectConcurrentMutation$;
           $annotate_release$;
@@ -281,7 +296,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         }
         //~ We handle the most common case inline, and delegate less common
         //~ cases to the slow fallback function.
-        inline void $Msg$::set_allocated_$name$($Submsg$* value) {
+        inline void $Msg$::set_allocated_$name$($n_submsg_p$ value) {
           $WeakDescriptorSelfPin$;
           $pb$::Arena* message_arena = GetArena();
           $TsanDetectConcurrentMutation$;
@@ -486,48 +501,65 @@ class OneofMessage : public SingularMessage {
 };
 
 void OneofMessage::GenerateNonInlineAccessorDefinitions(io::Printer* p) const {
-  p->Emit(R"cc(
-    void $Msg$::set_allocated_$name$($Submsg$* $name$) {
-      $pb$::Arena* message_arena = GetArena();
-      clear_$oneof_name$();
-      if ($name$) {
-        $pb$::Arena* submessage_arena = $foreign_cast$($name$)->GetArena();
-        if (message_arena != submessage_arena) {
-          $name$ = $pbi$::GetOwnedMessage(message_arena, $name$, submessage_arena);
+  auto v = p->WithVars(NullabilityPrePostVars(options_));
+  p->Emit(
+      {
+          {"nullable_submsg_ptr",
+           // clang-format off
+           // (to keep the * next to the $)
+           [&] { p->Emit(R"cc($LNullable$$Submsg$*$RNullable$)cc"); }},
+          // clang-format on
+      },
+      R"cc(
+        void $Msg$::set_allocated_$name$($nullable_submsg_ptr$ $name$) {
+          $pb$::Arena* message_arena = GetArena();
+          clear_$oneof_name$();
+          if ($name$) {
+            $pb$::Arena* submessage_arena = $foreign_cast$($name$)->GetArena();
+            if (message_arena != submessage_arena) {
+              $name$ = $pbi$::GetOwnedMessage(message_arena, $name$, submessage_arena);
+            }
+            set_has_$name$();
+            $field_$ = $name$;
+          }
+          $annotate_set$;
+          // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)
         }
-        set_has_$name$();
-        $field_$ = $name$;
-      }
-      $annotate_set$;
-      // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)
-    }
-  )cc");
+      )cc");
 }
 
 void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
-  auto v =
+  auto v1 =
       p->WithVars({{"release_name", SafeFunctionName(field_->containing_type(),
                                                      field_, "release_")}});
-
-  p->Emit(R"cc(
-    inline $Submsg$* $Msg$::$release_name$() {
-      $WeakDescriptorSelfPin$;
-      $annotate_release$;
-      // @@protoc_insertion_point(field_release:$pkg.Msg.field$)
-      $StrongRef$;
-      if ($has_field$) {
-        clear_has_$oneof_name$();
-        auto* temp = $cast_field_$;
-        if (GetArena() != nullptr) {
-          temp = $pbi$::DuplicateIfNonNull(temp);
-        }
-        $field_$ = nullptr;
-        return temp;
-      } else {
-        return nullptr;
-      }
-    }
-  )cc");
+  auto v2 = p->WithVars(NullabilityPrePostVars(options_));
+  std::vector<const Sub> Subs = {
+      {"n_submsg_p",
+       // clang-format off
+       // (to keep the * next to the $)
+       [&] { p->Emit(R"cc($LNullable$$Submsg$*$RNullable$)cc"); }},
+      // clang-format on
+  };
+  p->Emit(Subs,
+          R"cc(
+            inline $n_submsg_p$ $Msg$::$release_name$() {
+              $WeakDescriptorSelfPin$;
+              $annotate_release$;
+              // @@protoc_insertion_point(field_release:$pkg.Msg.field$)
+              $StrongRef$;
+              if ($has_field$) {
+                clear_has_$oneof_name$();
+                auto* temp = $cast_field_$;
+                if (GetArena() != nullptr) {
+                  temp = $pbi$::DuplicateIfNonNull(temp);
+                }
+                $field_$ = nullptr;
+                return temp;
+              } else {
+                return nullptr;
+              }
+            }
+          )cc");
   p->Emit(R"cc(
     inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
       $StrongRef$;
@@ -542,37 +574,40 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return _internal_$name_internal$();
     }
   )cc");
-  p->Emit(R"cc(
-    inline $Submsg$* $Msg$::unsafe_arena_release_$name$() {
-      $WeakDescriptorSelfPin$;
-      $annotate_release$;
-      // @@protoc_insertion_point(field_unsafe_arena_release:$pkg.Msg.field$)
-      $StrongRef$;
-      if ($has_field$) {
-        clear_has_$oneof_name$();
-        auto* temp = $cast_field_$;
-        $field_$ = nullptr;
-        return temp;
-      } else {
-        return nullptr;
-      }
-    }
-  )cc");
-  p->Emit(R"cc(
-    inline void $Msg$::unsafe_arena_set_allocated_$name$($Submsg$* value) {
-      $WeakDescriptorSelfPin$;
-      // We rely on the oneof clear method to free the earlier contents
-      // of this oneof. We can directly use the pointer we're given to
-      // set the new value.
-      clear_$oneof_name$();
-      if (value) {
-        set_has_$name_internal$();
-        $field_$ = $weak_cast$(value);
-      }
-      $annotate_set$;
-      // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)
-    }
-  )cc");
+  p->Emit(Subs,
+          R"cc(
+            inline $n_submsg_p$ $Msg$::unsafe_arena_release_$name$() {
+              $WeakDescriptorSelfPin$;
+              $annotate_release$;
+              // @@protoc_insertion_point(field_unsafe_arena_release:$pkg.Msg.field$)
+              $StrongRef$;
+              if ($has_field$) {
+                clear_has_$oneof_name$();
+                auto* temp = $cast_field_$;
+                $field_$ = nullptr;
+                return temp;
+              } else {
+                return nullptr;
+              }
+            }
+          )cc");
+  p->Emit(Subs,
+          R"cc(
+            inline void $Msg$::unsafe_arena_set_allocated_$name$(
+                $n_submsg_p$ value) {
+              $WeakDescriptorSelfPin$;
+              // We rely on the oneof clear method to free the earlier contents
+              // of this oneof. We can directly use the pointer we're given to
+              // set the new value.
+              clear_$oneof_name$();
+              if (value) {
+                set_has_$name_internal$();
+                $field_$ = $weak_cast$(value);
+              }
+              $annotate_set$;
+              // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)
+            }
+          )cc");
   p->Emit(R"cc(
     inline $Submsg$* $Msg$::_internal_mutable_$name_internal$() {
       $StrongRef$;

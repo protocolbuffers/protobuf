@@ -219,6 +219,12 @@ void FileGenerator::GenerateMacroUndefs(io::Printer* p) {
   }
 }
 
+void FileGenerator::GenerateNullabilityPragma(io::Printer* p) {
+  if (!options_.opensource_runtime) {
+    p->Print("ABSL_POINTERS_DEFAULT_NONNULL\n");
+  }
+}
+
 
 void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
   p->Emit(
@@ -227,6 +233,7 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
            [&] { IncludeFile("third_party/protobuf/port_def.inc", p); }},
           {"port_undef",
            [&] { IncludeFile("third_party/protobuf/port_undef.inc", p); }},
+          {"nullability_pragma", [&] { GenerateNullabilityPragma(p); }},
           {"dllexport_macro", FileDllExport(file_, options_)},
           {"undefs", [&] { GenerateMacroUndefs(p); }},
           {"global_state_decls",
@@ -280,6 +287,7 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
           // Must be included last.
           $port_def$
 
+          $nullability_pragma$
           #define $dllexport_macro$$ dllexport_decl$
           $undefs$
 
@@ -1639,6 +1647,15 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
       IncludeFile("third_party/protobuf/string_piece_field_support.h", p);
     }
   }
+
+  if (!options_.opensource_runtime) {
+    // We at least need this for the default non-null pragma
+    // which is generated independent of what field types are present.
+    p->Emit(R"(
+      #include "absl/base/nullability.h"
+      )");
+  }
+
   if (HasCordFields(file_, options_)) {
     p->Emit(R"(
       #include "absl/strings/cord.h"

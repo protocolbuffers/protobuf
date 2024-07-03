@@ -160,6 +160,9 @@ class PROTOC_EXPORT FileGenerator {
   // generally a breaking change so we prefer the #undef approach.
   void GenerateMacroUndefs(io::Printer* p);
 
+  // Indicate that by default, pointers are non-null for nullability checks.
+  void GenerateNullabilityPragma(io::Printer* p);
+
   // Calculates if we should skip importing a specific dependency.
   bool ShouldSkipDependencyImports(const FileDescriptor* dep) const;
 

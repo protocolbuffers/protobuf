@@ -549,7 +549,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   bool has_generated_code_info() const;
   void clear_generated_code_info() ;
   const ::google::protobuf::GeneratedCodeInfo& generated_code_info() const;
-  PROTOBUF_NODISCARD ::google::protobuf::GeneratedCodeInfo* release_generated_code_info();
+  PROTOBUF_NODISCARD ::google::protobuf::GeneratedCodeInfo*release_generated_code_info();
   ::google::protobuf::GeneratedCodeInfo* mutable_generated_code_info();
   void set_allocated_generated_code_info(::google::protobuf::GeneratedCodeInfo* value);
   void unsafe_arena_set_allocated_generated_code_info(::google::protobuf::GeneratedCodeInfo* value);
@@ -1099,7 +1099,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   bool has_compiler_version() const;
   void clear_compiler_version() ;
   const ::google::protobuf::compiler::Version& compiler_version() const;
-  PROTOBUF_NODISCARD ::google::protobuf::compiler::Version* release_compiler_version();
+  PROTOBUF_NODISCARD ::google::protobuf::compiler::Version*release_compiler_version();
   ::google::protobuf::compiler::Version* mutable_compiler_version();
   void set_allocated_compiler_version(::google::protobuf::compiler::Version* value);
   void unsafe_arena_set_allocated_compiler_version(::google::protobuf::compiler::Version* value);
