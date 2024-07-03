@@ -52,7 +52,7 @@ use std::fmt::Debug;
 /// An instance of a `Proxied` can be accessed immutably via `Proxied::View`.
 ///
 /// All Protobuf field types implement `Proxied`.
-pub trait Proxied {
+pub trait Proxied: Sized {
     /// The proxy type that provides shared access to a `T`, like a `&'msg T`.
     ///
     /// Most code should use the type alias [`View`].
