@@ -6,6 +6,8 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBUnknownFields.h"
+#import "GPBCodedOutputStream.h"
+#import "GPBCodedOutputStream_PackagePrivate.h"
 #import "GPBUnknownField_PackagePrivate.h"
 
 #define CHECK_FIELD_NUMBER(number)                                                      \
@@ -135,6 +137,44 @@
                                   objects:(__unsafe_unretained id _Nonnull *)stackbuf
                                     count:(NSUInteger)len {
   return [fields_ countByEnumeratingWithState:state objects:stackbuf count:len];
+}
+
+#pragma mark - Internal Methods
+
+- (size_t)serializedSize {
+  size_t result = 0;
+  for (GPBUnknownField *field in self->fields_) {
+    result += [field serializedSize];
+  }
+  return result;
+}
+
+- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)output {
+  for (GPBUnknownField *field in fields_) {
+    [field writeToOutput:output];
+  }
+}
+
+- (NSData *)serializeAsData {
+  if (fields_.count == 0) {
+    return [NSData data];
+  }
+  size_t expectedSize = [self serializedSize];
+  NSMutableData *data = [NSMutableData dataWithLength:expectedSize];
+  GPBCodedOutputStream *stream = [[GPBCodedOutputStream alloc] initWithData:data];
+  @try {
+    [self writeToCodedOutputStream:stream];
+    [stream flush];
+  } @catch (NSException *exception) {
+#if defined(DEBUG) && DEBUG
+    NSLog(@"Internal exception while building GPBUnknownFields serialized data: %@", exception);
+#endif
+  }
+#if defined(DEBUG) && DEBUG
+  NSAssert([stream bytesWritten] == expectedSize, @"Internal error within the library");
+#endif
+  [stream release];
+  return data;
 }
 
 @end

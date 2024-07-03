@@ -5,9 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#import <Foundation/Foundation.h>
+
 #import "GPBTestUtilities.h"
 #import "GPBUnknownField.h"
 #import "GPBUnknownFields.h"
+#import "GPBUnknownFields_PackagePrivate.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
 
 @interface UnknownFieldsTest : GPBTestCase
@@ -509,6 +512,68 @@
   XCTAssertThrowsSpecificNamed([ufs firstGroup:-1], NSException, NSInvalidArgumentException);
   XCTAssertThrowsSpecificNamed([ufs fields:0], NSException, NSInvalidArgumentException);
   XCTAssertThrowsSpecificNamed([ufs fields:-1], NSException, NSInvalidArgumentException);
+}
+
+- (void)testSerialize {
+  // Don't need to test CodedOutputStream, just make sure things basically end up there.
+  {
+    GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+    XCTAssertEqualObjects([ufs serializeAsData], [NSData data]);
+  }
+  {
+    GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+    [ufs addFieldNumber:1 varint:1];
+    XCTAssertEqualObjects([ufs serializeAsData], DataFromBytes(0x08, 0x01));
+  }
+  {
+    GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+    [ufs addFieldNumber:1 fixed32:1];
+    XCTAssertEqualObjects([ufs serializeAsData], DataFromBytes(0x0d, 0x01, 0x00, 0x00, 0x00));
+  }
+  {
+    GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+    [ufs addFieldNumber:1 fixed64:1];
+    XCTAssertEqualObjects([ufs serializeAsData],
+                          DataFromBytes(0x09, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00));
+  }
+  {
+    GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+    [ufs addFieldNumber:1 lengthDelimited:DataFromCStr("foo")];
+    XCTAssertEqualObjects([ufs serializeAsData], DataFromBytes(0x0a, 0x03, 0x66, 0x6f, 0x6f));
+  }
+  {
+    GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+    [ufs addGroupWithFieldNumber:1];  // Empty group
+    XCTAssertEqualObjects([ufs serializeAsData], DataFromBytes(0x0b, 0x0c));
+  }
+  {
+    GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+    GPBUnknownFields* group = [ufs addGroupWithFieldNumber:1];  // With some fields
+    [group addFieldNumber:10 varint:10];
+    [group addFieldNumber:11 fixed32:32];
+    [group addFieldNumber:12 fixed32:32];
+    XCTAssertEqualObjects([ufs serializeAsData],
+                          DataFromBytes(0x0b, 0x50, 0x0a, 0x5d, 0x20, 0x00, 0x00, 0x00, 0x65, 0x20,
+                                        0x00, 0x00, 0x00, 0x0c));
+  }
+}
+
+- (void)testMessageMergeUnknowns {
+  GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+  [ufs addFieldNumber:TestAllTypes_FieldNumber_OptionalInt64 varint:100];
+  [ufs addFieldNumber:TestAllTypes_FieldNumber_OptionalFixed32 fixed32:200];
+  [ufs addFieldNumber:TestAllTypes_FieldNumber_OptionalFixed64 fixed64:300];
+  [ufs addFieldNumber:TestAllTypes_FieldNumber_OptionalBytes lengthDelimited:DataFromCStr("foo")];
+  GPBUnknownFields* group = [ufs addGroupWithFieldNumber:TestAllTypes_FieldNumber_OptionalGroup];
+  [group addFieldNumber:TestAllTypes_OptionalGroup_FieldNumber_A varint:55];
+
+  TestAllTypes* msg = [TestAllTypes message];
+  [msg mergeUnknownFields:ufs extensionRegistry:nil];
+  XCTAssertEqual(msg.optionalInt64, 100);
+  XCTAssertEqual(msg.optionalFixed32, 200);
+  XCTAssertEqual(msg.optionalFixed64, 300);
+  XCTAssertEqualObjects(msg.optionalBytes, DataFromCStr("foo"));
+  XCTAssertEqual(msg.optionalGroup.a, 55);
 }
 
 @end

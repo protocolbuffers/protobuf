@@ -22,6 +22,7 @@
 #import "GPBExtensionRegistry.h"
 #import "GPBRootObject_PackagePrivate.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
+#import "GPBUnknownFields_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
 
 // Returns a new instance that was automatically created by |autocreator| for
@@ -1253,6 +1254,16 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 
 - (void)clearUnknownFields {
   self.unknownFields = nil;
+}
+
+- (void)mergeUnknownFields:(GPBUnknownFields *)unknownFields
+         extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry {
+  NSData *data = [unknownFields serializeAsData];
+  if (![self mergeFromData:data extensionRegistry:extensionRegistry error:NULL]) {
+#if defined(DEBUG) && DEBUG
+    NSAssert(0, @"Internal error within the library, failed to parse data from unknown fields.");
+#endif
+  };
 }
 
 - (BOOL)isInitialized {

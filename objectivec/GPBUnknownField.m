@@ -7,10 +7,12 @@
 
 #import "GPBUnknownField.h"
 #import "GPBUnknownField_PackagePrivate.h"
+#import "GPBWireFormat.h"
 
 #import "GPBArray.h"
 #import "GPBCodedOutputStream_PackagePrivate.h"
 #import "GPBUnknownFieldSet.h"
+#import "GPBUnknownFields_PackagePrivate.h"
 
 #define ASSERT_FIELD_TYPE(type)                               \
   if (type_ != type) {                                        \
@@ -287,57 +289,90 @@
 }
 
 - (void)writeToOutput:(GPBCodedOutputStream *)output {
-  ASSERT_FIELD_TYPE(GPBUnknownFieldTypeLegacy);
-  NSUInteger count = storage_.legacy.mutableVarintList.count;
-  if (count > 0) {
-    [output writeUInt64Array:number_ values:storage_.legacy.mutableVarintList tag:0];
-  }
-  count = storage_.legacy.mutableFixed32List.count;
-  if (count > 0) {
-    [output writeFixed32Array:number_ values:storage_.legacy.mutableFixed32List tag:0];
-  }
-  count = storage_.legacy.mutableFixed64List.count;
-  if (count > 0) {
-    [output writeFixed64Array:number_ values:storage_.legacy.mutableFixed64List tag:0];
-  }
-  count = storage_.legacy.mutableLengthDelimitedList.count;
-  if (count > 0) {
-    [output writeBytesArray:number_ values:storage_.legacy.mutableLengthDelimitedList];
-  }
-  count = storage_.legacy.mutableGroupList.count;
-  if (count > 0) {
-    [output writeUnknownGroupArray:number_ values:storage_.legacy.mutableGroupList];
+  switch (type_) {
+    case GPBUnknownFieldTypeVarint:
+      [output writeUInt64:number_ value:storage_.intValue];
+      break;
+    case GPBUnknownFieldTypeFixed32:
+      [output writeFixed32:number_ value:(uint32_t)storage_.intValue];
+      break;
+    case GPBUnknownFieldTypeFixed64:
+      [output writeFixed64:number_ value:storage_.intValue];
+      break;
+    case GPBUnknownFieldTypeLengthDelimited:
+      [output writeBytes:number_ value:storage_.lengthDelimited];
+      break;
+    case GPBUnknownFieldTypeGroup:
+      [output writeRawVarint32:GPBWireFormatMakeTag(number_, GPBWireFormatStartGroup)];
+      [storage_.group writeToCodedOutputStream:output];
+      [output writeRawVarint32:GPBWireFormatMakeTag(number_, GPBWireFormatEndGroup)];
+      break;
+    case GPBUnknownFieldTypeLegacy: {
+      NSUInteger count = storage_.legacy.mutableVarintList.count;
+      if (count > 0) {
+        [output writeUInt64Array:number_ values:storage_.legacy.mutableVarintList tag:0];
+      }
+      count = storage_.legacy.mutableFixed32List.count;
+      if (count > 0) {
+        [output writeFixed32Array:number_ values:storage_.legacy.mutableFixed32List tag:0];
+      }
+      count = storage_.legacy.mutableFixed64List.count;
+      if (count > 0) {
+        [output writeFixed64Array:number_ values:storage_.legacy.mutableFixed64List tag:0];
+      }
+      count = storage_.legacy.mutableLengthDelimitedList.count;
+      if (count > 0) {
+        [output writeBytesArray:number_ values:storage_.legacy.mutableLengthDelimitedList];
+      }
+      count = storage_.legacy.mutableGroupList.count;
+      if (count > 0) {
+        [output writeUnknownGroupArray:number_ values:storage_.legacy.mutableGroupList];
+      }
+    }
   }
 }
 
 - (size_t)serializedSize {
-  ASSERT_FIELD_TYPE(GPBUnknownFieldTypeLegacy);
-  __block size_t result = 0;
-  int32_t number = number_;
-  [storage_.legacy.mutableVarintList
-      enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-        result += GPBComputeUInt64Size(number, value);
-      }];
+  switch (type_) {
+    case GPBUnknownFieldTypeVarint:
+      return GPBComputeUInt64Size(number_, storage_.intValue);
+    case GPBUnknownFieldTypeFixed32:
+      return GPBComputeFixed32Size(number_, (uint32_t)storage_.intValue);
+    case GPBUnknownFieldTypeFixed64:
+      return GPBComputeFixed64Size(number_, storage_.intValue);
+    case GPBUnknownFieldTypeLengthDelimited:
+      return GPBComputeBytesSize(number_, storage_.lengthDelimited);
+    case GPBUnknownFieldTypeGroup:
+      return (GPBComputeTagSize(number_) * 2) + [storage_.group serializedSize];
+    case GPBUnknownFieldTypeLegacy: {
+      __block size_t result = 0;
+      int32_t number = number_;
+      [storage_.legacy.mutableVarintList
+          enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+            result += GPBComputeUInt64Size(number, value);
+          }];
 
-  [storage_.legacy.mutableFixed32List
-      enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-        result += GPBComputeFixed32Size(number, value);
-      }];
+      [storage_.legacy.mutableFixed32List
+          enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+            result += GPBComputeFixed32Size(number, value);
+          }];
 
-  [storage_.legacy.mutableFixed64List
-      enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
-        result += GPBComputeFixed64Size(number, value);
-      }];
+      [storage_.legacy.mutableFixed64List
+          enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+            result += GPBComputeFixed64Size(number, value);
+          }];
 
-  for (NSData *data in storage_.legacy.mutableLengthDelimitedList) {
-    result += GPBComputeBytesSize(number, data);
+      for (NSData *data in storage_.legacy.mutableLengthDelimitedList) {
+        result += GPBComputeBytesSize(number, data);
+      }
+
+      for (GPBUnknownFieldSet *set in storage_.legacy.mutableGroupList) {
+        result += GPBComputeUnknownGroupSize(number, set);
+      }
+
+      return result;
+    }
   }
-
-  for (GPBUnknownFieldSet *set in storage_.legacy.mutableGroupList) {
-    result += GPBComputeUnknownGroupSize(number, set);
-  }
-
-  return result;
 }
 
 - (void)writeAsMessageSetExtensionToOutput:(GPBCodedOutputStream *)output {

@@ -20,6 +20,22 @@ static inline NSData *DataFromCStr(const char *str) {
   return [NSData dataWithBytes:str length:strlen(str)];
 }
 
+static inline NSData *_DataFromBytesInternal(int32_t unused, ...) {
+  NSMutableData *values = [NSMutableData dataWithCapacity:0];
+  va_list list;
+  va_start(list, unused);
+  int32_t n;
+  while ((n = va_arg(list, int32_t)) != 256) {
+    NSCAssert(n >= 0 && n < 256, @"Only 8 bit values");
+    uint8_t u = (uint8_t)n;
+    [values appendBytes:&u length:1];
+  }
+  va_end(list);
+  return values;
+}
+
+#define DataFromBytes(...) _DataFromBytesInternal(0, __VA_ARGS__, 256)
+
 // Helper for uses of C arrays in tests cases.
 #ifndef GPBARRAYSIZE
 #define GPBARRAYSIZE(a) ((sizeof(a) / sizeof((a[0]))))
