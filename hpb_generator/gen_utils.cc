@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "hpb_generator/gen_utils.h"
+#include "google/protobuf/compiler/hpb/gen_utils.h"
 
 #include <algorithm>
 #include <string>
@@ -15,7 +15,7 @@
 
 namespace protos_generator {
 
-namespace protobuf = ::google::protobuf;
+namespace protobuf = ::proto2;
 
 void AddEnums(const protobuf::Descriptor* message,
               std::vector<const protobuf::EnumDescriptor*>* enums) {

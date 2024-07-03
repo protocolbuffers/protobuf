@@ -40,7 +40,7 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:${{ matrix.config.bazel_version || '6.3.0' }}-75f2a85ece6526cc3d54087018c0f1097d78d42b
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel
-          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //bazel/... //benchmarks/... //lua/... //hpb_generator/... //python/... //upb/... //upb_generator/... ${{ matrix.config.flags }}
+          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/... ${{ matrix.config.flags }}
           exclude-targets: ${{ matrix.config.exclude-targets }}
 
   linux-gcc:
@@ -59,7 +59,7 @@ jobs:
           image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-63dd26c0c7a808d92673a3e52e848189d4ab0f17"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-gcc"
-          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt //bazel/... //benchmarks/... //lua/... //hpb_generator/... //python/... //upb/... //upb_generator/...
+          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
 
   windows:
     strategy:
@@ -80,7 +80,7 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-windows"
-          bazel: test --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 //upb/... //upb_generator/... //python/... //hpb_generator/...
+          bazel: test --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 //upb/... //upb_generator/... //python/...
           version: 6.3.0
           exclude-targets: -//python:conformance_test -//upb/reflection:def_builder_test
 
@@ -107,7 +107,7 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-macos"
-          bazel: ${{ matrix.config.bazel-command }} --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 ${{ matrix.config.flags }} //bazel/... //benchmarks/... //lua/... //hpb_generator/... //python/... //upb/... //upb_generator/...
+          bazel: ${{ matrix.config.bazel-command }} --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 ${{ matrix.config.flags }} //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
           version: 6.3.0
 
   no-python:

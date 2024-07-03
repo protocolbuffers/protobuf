@@ -235,12 +235,12 @@ def _upb_cc_proto_library_aspect_impl(target, ctx):
 _upb_cc_proto_library_aspect = aspect(
     attrs = {
         "_ccopts": attr.label(
-            default = "//protos:upb_cc_proto_library_copts__for_generated_code_only_do_not_use",
+            default = "//hpb:upb_cc_proto_library_copts__for_generated_code_only_do_not_use",
         ),
         "_gen_upbprotos": attr.label(
             executable = True,
             cfg = "exec",
-            default = "//hpb_generator:protoc-gen-upb-protos",
+            default = "//src/google/protobuf/compiler/hpb:protoc-gen-upb-protos",
         ),
         "_protoc": attr.label(
             executable = True,

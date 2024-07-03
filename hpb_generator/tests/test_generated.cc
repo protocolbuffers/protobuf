@@ -18,9 +18,9 @@
 #include <gtest/gtest.h>
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-#include "hpb_generator/tests/child_model.upb.proto.h"
-#include "hpb_generator/tests/no_package.upb.proto.h"
-#include "hpb_generator/tests/test_model.upb.proto.h"
+#include "google/protobuf/compiler/hpb/tests/child_model.upb.proto.h"
+#include "google/protobuf/compiler/hpb/tests/no_package.upb.proto.h"
+#include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
 #include "protos/protos.h"
 #include "protos/repeated_field.h"
 #include "protos/repeated_field_iterator.h"

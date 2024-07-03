@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_PROTOS_GENERATOR_OUTPUT_H
-#define UPB_PROTOS_GENERATOR_OUTPUT_H
+#ifndef PROTOBUF_COMPILER_HBP_OUTPUT_H_
+#define PROTOBUF_COMPILER_HBP_OUTPUT_H_
 
 #include <vector>
 
@@ -148,4 +148,4 @@ std::string CSourceFilename(const google::protobuf::FileDescriptor* file);
 
 }  // namespace protos_generator
 
-#endif  // UPB_PROTOS_GENERATOR_OUTPUT_H
+#endif  // PROTOBUF_COMPILER_HBP_OUTPUT_H_

@@ -5,15 +5,15 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_PROTOS_GENERATOR_GEN_EXTENSIONS_H_
-#define UPB_PROTOS_GENERATOR_GEN_EXTENSIONS_H_
+#ifndef PROTOBUF_COMPILER_HBP_GEN_EXTENSIONS_H_
+#define PROTOBUF_COMPILER_HBP_GEN_EXTENSIONS_H_
 
 #include "google/protobuf/descriptor.h"
-#include "hpb_generator/output.h"
+#include "google/protobuf/compiler/hpb/output.h"
 
 namespace protos_generator {
 
-namespace protobuf = ::google::protobuf;
+namespace protobuf = ::proto2;
 
 void WriteExtensionIdentifiersHeader(
     const std::vector<const protobuf::FieldDescriptor*>& extensions,
@@ -28,4 +28,4 @@ void WriteExtensionIdentifier(const protobuf::FieldDescriptor* ext,
 
 }  // namespace protos_generator
 
-#endif  // UPB_PROTOS_GENERATOR_GEN_EXTENSIONS_H_
+#endif  // PROTOBUF_COMPILER_HBP_GEN_EXTENSIONS_H_

@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "hpb_generator/gen_messages.h"
+#include "google/protobuf/compiler/hpb/gen_messages.h"
 
 #include <cstddef>
 #include <string>
@@ -16,18 +16,18 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
-#include "hpb_generator/gen_accessors.h"
-#include "hpb_generator/gen_enums.h"
-#include "hpb_generator/gen_extensions.h"
-#include "hpb_generator/gen_utils.h"
-#include "hpb_generator/names.h"
-#include "hpb_generator/output.h"
+#include "google/protobuf/compiler/hpb/gen_accessors.h"
+#include "google/protobuf/compiler/hpb/gen_enums.h"
+#include "google/protobuf/compiler/hpb/gen_extensions.h"
+#include "google/protobuf/compiler/hpb/gen_utils.h"
+#include "google/protobuf/compiler/hpb/names.h"
+#include "google/protobuf/compiler/hpb/output.h"
 #include "upb_generator/common.h"
 #include "upb_generator/file_layout.h"
 
 namespace protos_generator {
 
-namespace protobuf = ::google::protobuf;
+namespace protobuf = ::proto2;
 
 void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
                                  Output& output);

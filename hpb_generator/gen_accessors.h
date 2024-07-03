@@ -5,16 +5,16 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_PROTOS_GENERATOR_ACCESSORS_H_
-#define UPB_PROTOS_GENERATOR_ACCESSORS_H_
+#ifndef PROTOBUF_COMPILER_HBP_GEN_ACCESSORS_H_
+#define PROTOBUF_COMPILER_HBP_GEN_ACCESSORS_H_
 
 #include "google/protobuf/descriptor.h"
-#include "hpb_generator/gen_utils.h"
-#include "hpb_generator/output.h"
+#include "google/protobuf/compiler/hpb/gen_utils.h"
+#include "google/protobuf/compiler/hpb/output.h"
 
 namespace protos_generator {
 
-namespace protobuf = ::google::protobuf;
+namespace protobuf = ::proto2;
 
 void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
                                  Output& output);
@@ -25,4 +25,4 @@ void WriteOneofAccessorsInHeader(const protobuf::Descriptor* desc,
                                  Output& output);
 }  // namespace protos_generator
 
-#endif  // UPB_PROTOS_GENERATOR_ACCESSORS_H_
+#endif  // PROTOBUF_COMPILER_HBP_GEN_ACCESSORS_H_

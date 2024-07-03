@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_PROTOS_GENERATOR_GEN_UTILS_H_
-#define UPB_PROTOS_GENERATOR_GEN_UTILS_H_
+#ifndef PROTOBUF_COMPILER_HBP_GEN_UTILS_H_
+#define PROTOBUF_COMPILER_HBP_GEN_UTILS_H_
 
 #include <string>
 #include <vector>
@@ -17,7 +17,7 @@
 
 namespace protos_generator {
 
-namespace protobuf = ::google::protobuf;
+namespace protobuf = ::proto2;
 
 enum class MessageClassType {
   kMessage,
@@ -42,4 +42,4 @@ std::string ToCamelCase(const std::string& input, bool lower_first);
 
 }  // namespace protos_generator
 
-#endif  // UPB_PROTOS_GENERATOR_GEN_UTILS_H_
+#endif  // PROTOBUF_COMPILER_HBP_GEN_UTILS_H_

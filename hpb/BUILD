@@ -138,8 +138,8 @@ cc_test(
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         ":protos_internal",
-        "//hpb_generator/tests:test_model_upb_cc_proto",
-        "//hpb_generator/tests:test_model_upb_proto",
+        "//src/google/protobuf/compiler/hpb/tests:test_model_upb_cc_proto",
+        "//src/google/protobuf/compiler/hpb/tests:test_model_upb_proto",
         "//upb:mem",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -168,7 +168,7 @@ cc_test(
     deps = [
         "//hpb",
         "//hpb:protos_extension_lock",
-        "//hpb_generator/tests:test_model_upb_cc_proto",
+        "//src/google/protobuf/compiler/hpb/tests:test_model_upb_cc_proto",
         "//upb:mem",
         "@com_google_absl//absl/hash",
         "@com_google_absl//absl/log:absl_check",

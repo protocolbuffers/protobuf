@@ -5,15 +5,15 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_PROTOS_GENERATOR_ENUMS_H_
-#define UPB_PROTOS_GENERATOR_ENUMS_H_
+#ifndef PROTOBUF_COMPILER_HBP_GEN_ENUMS_H_
+#define PROTOBUF_COMPILER_HBP_GEN_ENUMS_H_
 
 #include "google/protobuf/descriptor.h"
-#include "hpb_generator/output.h"
+#include "google/protobuf/compiler/hpb/output.h"
 
 namespace protos_generator {
 
-namespace protobuf = ::google::protobuf;
+namespace protobuf = ::proto2;
 
 std::string EnumTypeName(const protobuf::EnumDescriptor* enum_descriptor);
 std::string EnumValueSymbolInNameSpace(
@@ -26,4 +26,4 @@ void WriteEnumDeclarations(
 
 }  // namespace protos_generator
 
-#endif  // UPB_PROTOS_GENERATOR_ENUMS_H_
+#endif  // PROTOBUF_COMPILER_HBP_GEN_ENUMS_H_

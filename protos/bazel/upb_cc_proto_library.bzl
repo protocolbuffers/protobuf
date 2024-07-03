@@ -240,7 +240,7 @@ _upb_cc_proto_library_aspect = aspect(
         "_gen_upbprotos": attr.label(
             executable = True,
             cfg = "exec",
-            default = "//hpb_generator:protoc-gen-upb-protos",
+            default = "//src/google/protobuf/compiler/hpb:protoc-gen-upb-protos",
         ),
         "_protoc": attr.label(
             executable = True,
