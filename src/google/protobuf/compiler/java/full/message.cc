@@ -993,8 +993,8 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
   for (auto& kv : oneofs_) {
     const OneofDescriptor* oneof = kv.second;
     printer->Print(
-        "if (!get$oneof_capitalized_name$Case().equals("
-        "other.get$oneof_capitalized_name$Case())) return false;\n",
+        "if (get$oneof_capitalized_name$Case() != "
+        "other.get$oneof_capitalized_name$Case()) return false;\n",
         "oneof_capitalized_name",
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name);
     printer->Print("switch ($oneof_name$Case_) {\n", "oneof_name",
