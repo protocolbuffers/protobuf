@@ -25,6 +25,9 @@ fn test_fixed32_accessors() {
 
     msg.set_optional_fixed32(43);
     assert_that!(msg.optional_fixed32(), eq(43));
+
+    msg.clear_optional_fixed32();
+    assert_that!(msg.optional_fixed32(), eq(0));
 }
 
 #[test]
@@ -35,7 +38,7 @@ fn test_bool_accessors() {
     msg.set_optional_bool(true);
     assert_that!(msg.optional_bool(), eq(true));
 
-    msg.set_optional_bool(bool::default());
+    msg.clear_optional_bool();
     assert_that!(msg.optional_bool(), eq(false));
 }
 
