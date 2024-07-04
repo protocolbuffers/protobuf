@@ -9,10 +9,7 @@
 
 use googletest::prelude::*;
 use protobuf::proto;
-use unittest_rust_proto::{
-    test_all_types::{self, NestedMessage},
-    NestedTestAllTypes, TestAllTypes,
-};
+use unittest_rust_proto::{test_all_types, NestedTestAllTypes, TestAllTypes};
 
 struct TestValue {
     val: i64,
@@ -40,7 +37,7 @@ fn test_setting_literals() {
             let x = 10;
             100 + x
         },
-        optional_nested_message: NestedMessage { bb: 42 },
+        optional_nested_message: __ { bb: 42 },
         optional_float: 111.5,
         optional_double: 112000.5,
         optional_bool: true,
@@ -69,27 +66,21 @@ fn test_setting_literals() {
 
 #[test]
 fn single_nested_message() {
-    let msg = proto!(TestAllTypes { optional_nested_message: NestedMessage { bb: 42 } });
+    let msg = proto!(TestAllTypes { optional_nested_message: __ { bb: 42 } });
     assert_that!(msg.optional_nested_message().bb(), eq(42));
 
     // field above it
-    let msg = proto!(TestAllTypes {
-        optional_int32: 1,
-        optional_nested_message: NestedMessage { bb: 42 }
-    });
+    let msg = proto!(TestAllTypes { optional_int32: 1, optional_nested_message: __ { bb: 42 } });
     assert_that!(msg.optional_nested_message().bb(), eq(42));
 
     // field below it
-    let msg = proto!(TestAllTypes {
-        optional_nested_message: NestedMessage { bb: 42 },
-        optional_int32: 1
-    });
+    let msg = proto!(TestAllTypes { optional_nested_message: __ { bb: 42 }, optional_int32: 1 });
     assert_that!(msg.optional_nested_message().bb(), eq(42));
 
     // field above and below it
     let msg = proto!(TestAllTypes {
         optional_int32: 1,
-        optional_nested_message: NestedMessage { bb: 42 },
+        optional_nested_message: __ { bb: 42 },
         optional_int64: 2
     });
     assert_that!(msg.optional_nested_message().bb(), eq(42));
@@ -100,20 +91,18 @@ fn single_nested_message() {
 
     // empty nested message should be present
     // make sure that qualified path names work
-    let msg = proto!(::unittest_rust_proto::TestAllTypes {
-        optional_nested_message: unittest_rust_proto::test_all_types::NestedMessage {}
-    });
+    let msg = proto!(::unittest_rust_proto::TestAllTypes { optional_nested_message: __ {} });
     assert_that!(msg.has_optional_nested_message(), eq(true));
 }
 
 #[test]
 fn test_recursive_msg() {
     let msg = proto!(NestedTestAllTypes {
-        child: NestedTestAllTypes {
-            payload: TestAllTypes { optional_int32: 41 },
-            child: NestedTestAllTypes {
-                child: NestedTestAllTypes { payload: TestAllTypes { optional_int32: 43 } },
-                payload: TestAllTypes { optional_int32: 42 }
+        child: __ {
+            payload: __ { optional_int32: 41 },
+            child: __ {
+                child: __ { payload: __ { optional_int32: 43 } },
+                payload: __ { optional_int32: 42 }
             }
         }
     });
@@ -125,7 +114,7 @@ fn test_recursive_msg() {
 
 #[test]
 fn test_spread_msg() {
-    let msg = proto!(TestAllTypes { optional_nested_message: NestedMessage { bb: 42 } });
+    let msg = proto!(TestAllTypes { optional_nested_message: __ { bb: 42 } });
     let msg2 = proto!(TestAllTypes { ..msg.as_view() });
     assert_that!(msg2.optional_nested_message().bb(), eq(42));
     let msg3 = proto!(TestAllTypes { optional_int32: 1, ..msg.as_view() });
@@ -136,16 +125,16 @@ fn test_spread_msg() {
 #[test]
 fn test_spread_nested_msg() {
     let msg = proto!(NestedTestAllTypes {
-        child: NestedTestAllTypes {
-            payload: TestAllTypes { optional_int32: 41 },
-            child: NestedTestAllTypes {
-                child: NestedTestAllTypes { payload: TestAllTypes { optional_int32: 43 } },
-                payload: TestAllTypes { optional_int32: 42 }
+        child: __ {
+            payload: __ { optional_int32: 41 },
+            child: __ {
+                child: __ { payload: __ { optional_int32: 43 } },
+                payload: __ { optional_int32: 42 }
             }
         }
     });
     let msg2 = proto!(NestedTestAllTypes {
-        child: NestedTestAllTypes { payload: TestAllTypes { optional_int32: 100 }, ..msg.child() }
+        child: __ { payload: __ { optional_int32: 100 }, ..msg.child() }
     });
     assert_that!(msg2.child().payload().optional_int32(), eq(100));
     assert_that!(msg2.child().child().payload().optional_int32(), eq(42));

@@ -52,50 +52,50 @@ macro_rules! proto_internal {
     };
 
     // nested message,
-    (@msg $msg:ident $submsg:ident : $($msgtype:ident)::+ { $field:ident : $($value:tt)* }, $($rest:tt)*) => {
-        proto_internal!(@msg $msg $submsg : $($msgtype)::+ { $field : $($value)* });
+    (@msg $msg:ident $submsg:ident : __ { $field:ident : $($value:tt)* }, $($rest:tt)*) => {
+        proto_internal!(@msg $msg $submsg : __ { $field : $($value)* });
         proto_internal!(@msg $msg $($rest)*);
     };
-    (@msg $msg:ident $submsg:ident : ::$($msgtype:ident)::+ { $field:ident : $($value:tt)* }, $($rest:tt)*) => {
-        proto_internal!(@msg $msg $submsg : ::$($msgtype)::+ { $field : $($value)* });
+    (@msg $msg:ident $submsg:ident : __ { $field:ident : $($value:tt)* }, $($rest:tt)*) => {
+        proto_internal!(@msg $msg $submsg : __ { $field : $($value)* });
         proto_internal!(@msg $msg $($rest)*);
     };
 
     // nested message
-    (@msg $msg:ident $submsg:ident : $($msgtype:ident)::+ { $field:ident : $($value:tt)* }) => {
+    (@msg $msg:ident $submsg:ident : __ { $field:ident : $($value:tt)* }) => {
         {
-            let mut $msg: <$($msgtype)::+ as $crate::MutProxied>::Mut<'_> = $crate::__internal::paste!($msg.[<$submsg _mut>]());
+            let mut $msg = $crate::__internal::paste!($msg.[<$submsg _mut>]());
             proto_internal!(@merge $msg $field : $($value)*);
             proto_internal!(@msg $msg $field : $($value)*);
         }
     };
-    (@msg $msg:ident $submsg:ident : ::$($msgtype:ident)::+ { $field:ident : $($value:tt)* }) => {
+    (@msg $msg:ident $submsg:ident : __ { $field:ident : $($value:tt)* }) => {
         {
-            let mut $msg: <::$($msgtype)::+ as $crate::MutProxied>::Mut<'_> = $crate::__internal::paste!($msg.[<$submsg _mut>]());
+            let mut $msg = $crate::__internal::paste!($msg.[<$submsg _mut>]());
             proto_internal!(@merge $msg $field : $($value)*);
             proto_internal!(@msg $msg $field : $($value)*);
         }
     };
 
     // empty nested message,
-    (@msg $msg:ident $submsg:ident : $($msgtype:ident)::+ { }, $($rest:tt)*) => {
-        proto_internal!(@msg $msg $submsg : $($msgtype)::+ { });
+    (@msg $msg:ident $submsg:ident : __ { }, $($rest:tt)*) => {
+        proto_internal!(@msg $msg $submsg : __ { });
         proto_internal!(@msg $msg $($rest)*);
     };
-    (@msg $msg:ident $submsg:ident : ::$($msgtype:ident)::+ { }, $($rest:tt)*) => {
-        proto_internal!(@msg $msg $submsg : ::$($msgtype)::+ { });
+    (@msg $msg:ident $submsg:ident : __ { }, $($rest:tt)*) => {
+        proto_internal!(@msg $msg $submsg : __ { });
         proto_internal!(@msg $msg $($rest)*);
     };
 
     // empty nested message
-    (@msg $msg:ident $submsg:ident : $($msgtype:ident)::+ { }) => {
+    (@msg $msg:ident $submsg:ident : __ { }) => {
         {
-            let mut $msg: <$($msgtype)::+ as $crate::MutProxied>::Mut<'_> = $crate::__internal::paste!($msg.[<$submsg _mut>]());
+            let mut $msg = $crate::__internal::paste!($msg.[<$submsg _mut>]());
         }
     };
-    (@msg $msg:ident $submsg:ident : ::$($msgtype:ident)::+ { }) => {
+    (@msg $msg:ident $submsg:ident : __ { }) => {
         {
-            let mut $msg: <::$($msgtype)::+ as $crate::MutProxied>::Mut<'_> = $crate::__internal::paste!($msg.[<$submsg _mut>]());
+            let mut $msg = $crate::__internal::paste!($msg.[<$submsg _mut>]());
         }
     };
 

@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <utility>
 
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
@@ -56,45 +57,45 @@ expose_repeated_field_methods(uint64_t, u64);
 expose_repeated_field_methods(int64_t, i64);
 #undef expose_repeated_field_methods
 
-#define expose_repeated_ptr_field_methods(ty)                                  \
-  google::protobuf::RepeatedPtrField<std::string>*                                       \
-      proto2_rust_RepeatedField_##ty##_new() {                                 \
-    return new google::protobuf::RepeatedPtrField<std::string>();                        \
-  }                                                                            \
-  void proto2_rust_RepeatedField_##ty##_free(                                  \
-      google::protobuf::RepeatedPtrField<std::string>* r) {                              \
-    delete r;                                                                  \
-  }                                                                            \
-  void proto2_rust_RepeatedField_##ty##_add(                                   \
-      google::protobuf::RepeatedPtrField<std::string>* r, google::protobuf::rust::PtrAndLen val) { \
-    r->Add(std::string(val.ptr, val.len));                                     \
-  }                                                                            \
-  size_t proto2_rust_RepeatedField_##ty##_size(                                \
-      google::protobuf::RepeatedPtrField<std::string>* r) {                              \
-    return r->size();                                                          \
-  }                                                                            \
-  google::protobuf::rust::PtrAndLen proto2_rust_RepeatedField_##ty##_get(                \
-      google::protobuf::RepeatedPtrField<std::string>* r, size_t index) {                \
-    const std::string& s = r->Get(index);                                      \
-    return google::protobuf::rust::PtrAndLen(s.data(), s.size());                        \
-  }                                                                            \
-  void proto2_rust_RepeatedField_##ty##_set(                                   \
-      google::protobuf::RepeatedPtrField<std::string>* r, size_t index,                  \
-      google::protobuf::rust::PtrAndLen val) {                                           \
-    *r->Mutable(index) = std::string(val.ptr, val.len);                        \
-  }                                                                            \
-  void proto2_rust_RepeatedField_##ty##_copy_from(                             \
-      const google::protobuf::RepeatedPtrField<std::string>* src,                        \
-      google::protobuf::RepeatedPtrField<std::string>* dst) {                            \
-    dst->CopyFrom(*src);                                                       \
-  }                                                                            \
-  void proto2_rust_RepeatedField_##ty##_clear(                                 \
-      google::protobuf::RepeatedPtrField<std::string>* r) {                              \
-    r->Clear();                                                                \
-  }                                                                            \
-  void proto2_rust_RepeatedField_##ty##_reserve(                               \
-      google::protobuf::RepeatedPtrField<std::string>* r, size_t additional) {           \
-    r->Reserve(r->size() + additional);                                        \
+#define expose_repeated_ptr_field_methods(ty)                        \
+  google::protobuf::RepeatedPtrField<std::string>*                             \
+      proto2_rust_RepeatedField_##ty##_new() {                       \
+    return new google::protobuf::RepeatedPtrField<std::string>();              \
+  }                                                                  \
+  void proto2_rust_RepeatedField_##ty##_free(                        \
+      google::protobuf::RepeatedPtrField<std::string>* r) {                    \
+    delete r;                                                        \
+  }                                                                  \
+  void proto2_rust_RepeatedField_##ty##_add(                         \
+      google::protobuf::RepeatedPtrField<std::string>* r, std::string* val) {  \
+    r->AddAllocated(val);                                            \
+  }                                                                  \
+  size_t proto2_rust_RepeatedField_##ty##_size(                      \
+      google::protobuf::RepeatedPtrField<std::string>* r) {                    \
+    return r->size();                                                \
+  }                                                                  \
+  google::protobuf::rust::PtrAndLen proto2_rust_RepeatedField_##ty##_get(      \
+      google::protobuf::RepeatedPtrField<std::string>* r, size_t index) {      \
+    const std::string& s = r->Get(index);                            \
+    return google::protobuf::rust::PtrAndLen(s.data(), s.size());              \
+  }                                                                  \
+  void proto2_rust_RepeatedField_##ty##_set(                         \
+      google::protobuf::RepeatedPtrField<std::string>* r, size_t index,        \
+      std::string* val) {                                            \
+    *r->Mutable(index) = std::move(*val);                            \
+  }                                                                  \
+  void proto2_rust_RepeatedField_##ty##_copy_from(                   \
+      const google::protobuf::RepeatedPtrField<std::string>* src,              \
+      google::protobuf::RepeatedPtrField<std::string>* dst) {                  \
+    dst->CopyFrom(*src);                                             \
+  }                                                                  \
+  void proto2_rust_RepeatedField_##ty##_clear(                       \
+      google::protobuf::RepeatedPtrField<std::string>* r) {                    \
+    r->Clear();                                                      \
+  }                                                                  \
+  void proto2_rust_RepeatedField_##ty##_reserve(                     \
+      google::protobuf::RepeatedPtrField<std::string>* r, size_t additional) { \
+    r->Reserve(r->size() + additional);                              \
   }
 
 expose_repeated_ptr_field_methods(ProtoString);

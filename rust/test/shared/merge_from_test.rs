@@ -46,9 +46,7 @@ fn merge_repeated_non_empty() {
 #[test]
 fn merge_from_sub_message() {
     let mut dst = NestedTestAllTypes::new();
-    let src = proto!(NestedTestAllTypes {
-        child: NestedTestAllTypes { payload: TestAllTypes { optional_int32: 42 } }
-    });
+    let src = proto!(NestedTestAllTypes { child: __ { payload: __ { optional_int32: 42 } } });
     dst.merge_from(src.as_view());
     assert_that!(dst.as_view().child().payload().optional_int32(), eq(42));
 }
