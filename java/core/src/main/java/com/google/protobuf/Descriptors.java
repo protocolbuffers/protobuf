@@ -2343,7 +2343,7 @@ public final class Descriptors {
         new Comparator<EnumValueDescriptor>() {
           @Override
           public int compare(EnumValueDescriptor o1, EnumValueDescriptor o2) {
-            return Integer.valueOf(o1.getNumber()).compareTo(o2.getNumber());
+            return Integer.compare(o1.getNumber(), o2.getNumber());
           }
         };
 
