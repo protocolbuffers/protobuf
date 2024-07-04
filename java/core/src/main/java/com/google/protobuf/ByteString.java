@@ -287,13 +287,12 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
 
           while (formerBytes.hasNext() && latterBytes.hasNext()) {
             int result =
-                Integer.valueOf(toInt(formerBytes.nextByte()))
-                    .compareTo(toInt(latterBytes.nextByte()));
+                Integer.compare(toInt(formerBytes.nextByte()), toInt(latterBytes.nextByte()));
             if (result != 0) {
               return result;
             }
           }
-          return Integer.valueOf(former.size()).compareTo(Integer.valueOf(latter.size()));
+          return Integer.compare(former.size(), latter.size());
         }
       };
 
