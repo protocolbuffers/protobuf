@@ -442,12 +442,17 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     return true;
   }
 
+  // Avoid iterator allocation.
+  @SuppressWarnings({"ForeachList", "ForeachListWithUserVar"})
   private static <T extends FieldDescriptorLite<T>> boolean isInitialized(
       final Map.Entry<T, Object> entry) {
     final T descriptor = entry.getKey();
     if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE) {
       if (descriptor.isRepeated()) {
-        for (final Object element : (List<?>) entry.getValue()) {
+        List<?> list = (List<?>) entry.getValue();
+        int listSize = list.size();
+        for (int i = 0; i < listSize; i++) {
+          Object element = list.get(i);
           if (!isMessageFieldValueInitialized(element)) {
             return false;
           }
@@ -722,6 +727,8 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
   }
 
   /** Write a single field. */
+  // Avoid iterator allocation.
+  @SuppressWarnings({"ForeachList", "ForeachListWithUserVar"})
   public static void writeField(
       final FieldDescriptorLite<?> descriptor, final Object value, final CodedOutputStream output)
       throws IOException {
@@ -729,6 +736,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     int number = descriptor.getNumber();
     if (descriptor.isRepeated()) {
       final List<?> valueList = (List<?>) value;
+      int valueListSize = valueList.size();
       if (descriptor.isPacked()) {
         if (valueList.isEmpty()) {
           // The tag should not be written for empty packed fields.
@@ -737,16 +745,19 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
         output.writeTag(number, WireFormat.WIRETYPE_LENGTH_DELIMITED);
         // Compute the total data size so the length can be written.
         int dataSize = 0;
-        for (final Object element : valueList) {
+        for (int i = 0; i < valueListSize; i++) {
+          Object element = valueList.get(i);
           dataSize += computeElementSizeNoTag(type, element);
         }
         output.writeUInt32NoTag(dataSize);
         // Write the data itself, without any tags.
-        for (final Object element : valueList) {
+        for (int i = 0; i < valueListSize; i++) {
+          Object element = valueList.get(i);
           writeElementNoTag(output, type, element);
         }
       } else {
-        for (final Object element : valueList) {
+        for (int i = 0; i < valueListSize; i++) {
+          Object element = valueList.get(i);
           writeElement(output, type, number, element);
         }
       }
@@ -897,17 +908,21 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
   }
 
   /** Compute the number of bytes needed to encode a particular field. */
+  // Avoid iterator allocation.
+  @SuppressWarnings({"ForeachList", "ForeachListWithUserVar"})
   public static int computeFieldSize(final FieldDescriptorLite<?> descriptor, final Object value) {
     WireFormat.FieldType type = descriptor.getLiteType();
     int number = descriptor.getNumber();
     if (descriptor.isRepeated()) {
       List<?> valueList = (List<?>) value;
+      int valueListSize = valueList.size();
       if (descriptor.isPacked()) {
         if (valueList.isEmpty()) {
           return 0;
         }
         int dataSize = 0;
-        for (final Object element : valueList) {
+        for (int i = 0; i < valueListSize; i++) {
+          Object element = valueList.get(i);
           dataSize += computeElementSizeNoTag(type, element);
         }
         return dataSize
@@ -915,7 +930,8 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
             + CodedOutputStream.computeUInt32SizeNoTag(dataSize);
       } else {
         int size = 0;
-        for (final Object element : valueList) {
+        for (int i = 0; i < valueListSize; i++) {
+          Object element = valueList.get(i);
           size += computeElementSize(type, number, element);
         }
         return size;
@@ -1111,7 +1127,8 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
      * Useful for implementing {@link Message.Builder#setField(Descriptors.FieldDescriptor,
      * Object)}.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    // Avoid iterator allocation.
+    @SuppressWarnings({"unchecked", "ForeachList", "ForeachListWithUserVar"})
     public void setField(final T descriptor, Object value) {
       ensureIsMutable();
       if (descriptor.isRepeated()) {
@@ -1122,8 +1139,10 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
 
         // Wrap the contents in a new list so that the caller cannot change
         // the list's contents after setting it.
-        final List newList = new ArrayList((List) value);
-        for (final Object element : newList) {
+        final List<Object> newList = new ArrayList<>((List<Object>) value);
+        int newListSize = newList.size();
+        for (int i = 0; i < newListSize; i++) {
+          Object element = newList.get(i);
           verifyType(descriptor, element);
           hasNestedBuilders = hasNestedBuilders || element instanceof MessageLite.Builder;
         }
@@ -1305,7 +1324,8 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       }
     }
 
-    @SuppressWarnings("unchecked")
+    // Avoid iterator allocation.
+    @SuppressWarnings({"unchecked", "ForeachList", "ForeachListWithUserVar"})
     private void mergeFromField(final Map.Entry<T, Object> entry) {
       final T descriptor = entry.getKey();
       Object otherValue = entry.getValue();
@@ -1316,11 +1336,14 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
           throw new IllegalStateException("Lazy fields can not be repeated");
         }
         List<Object> value = (List<Object>) getFieldAllowBuilders(descriptor);
+        List<?> otherList = (List<?>) otherValue;
+        int otherListSize = otherList.size();
         if (value == null) {
-          value = new ArrayList<>();
+          value = new ArrayList<>(otherListSize);
           fields.put(descriptor, value);
         }
-        for (Object element : (List<?>) otherValue) {
+        for (int i = 0; i < otherListSize; i++) {
+          Object element = otherList.get(i);
           value.add(FieldSet.cloneIfMutable(element));
         }
       } else if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE) {

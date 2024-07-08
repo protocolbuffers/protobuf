@@ -8,6 +8,8 @@
 package com.google.protobuf;
 
 import com.google.protobuf.AbstractMessageLite.Builder.LimitedInputStream;
+import com.google.protobuf.Internal.IntList;
+import com.google.protobuf.Internal.LongList;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -780,15 +782,15 @@ public final class UnknownFieldSet implements MessageLite {
     @SuppressWarnings({"ForeachList", "ForeachListWithUserVar"}) // No iterator allocation.
     public void writeTo(int fieldNumber, CodedOutputStream output) throws IOException {
       for (int i = 0; i < varint.size(); i++) {
-        long value = varint.get(i);
+        long value = varint.getLong(i);
         output.writeUInt64(fieldNumber, value);
       }
       for (int i = 0; i < fixed32.size(); i++) {
-        int value = fixed32.get(i);
+        int value = fixed32.getInt(i);
         output.writeFixed32(fieldNumber, value);
       }
       for (int i = 0; i < fixed64.size(); i++) {
-        long value = fixed64.get(i);
+        long value = fixed64.getLong(i);
         output.writeFixed64(fieldNumber, value);
       }
       for (int i = 0; i < lengthDelimited.size(); i++) {
@@ -806,15 +808,15 @@ public final class UnknownFieldSet implements MessageLite {
     public int getSerializedSize(int fieldNumber) {
       int result = 0;
       for (int i = 0; i < varint.size(); i++) {
-        long value = varint.get(i);
+        long value = varint.getLong(i);
         result += CodedOutputStream.computeUInt64Size(fieldNumber, value);
       }
       for (int i = 0; i < fixed32.size(); i++) {
-        int value = fixed32.get(i);
+        int value = fixed32.getInt(i);
         result += CodedOutputStream.computeFixed32Size(fieldNumber, value);
       }
       for (int i = 0; i < fixed64.size(); i++) {
-        long value = fixed64.get(i);
+        long value = fixed64.getLong(i);
         result += CodedOutputStream.computeFixed64Size(fieldNumber, value);
       }
       for (int i = 0; i < lengthDelimited.size(); i++) {
@@ -898,9 +900,9 @@ public final class UnknownFieldSet implements MessageLite {
       return result;
     }
 
-    private List<Long> varint;
-    private List<Integer> fixed32;
-    private List<Long> fixed64;
+    private LongList varint;
+    private IntList fixed32;
+    private LongList fixed64;
     private List<ByteString> lengthDelimited;
     private List<UnknownFieldSet> group;
 
@@ -927,18 +929,24 @@ public final class UnknownFieldSet implements MessageLite {
         Field copy = new Field();
         if (result.varint == null) {
           copy.varint = null;
+        } else if (result.varint.isModifiable()) {
+          copy.varint = result.varint.mutableCopyWithCapacity(result.varint.size());
         } else {
-          copy.varint = new ArrayList<>(result.varint);
+          copy.varint = result.varint;
         }
         if (result.fixed32 == null) {
           copy.fixed32 = null;
+        } else if (result.fixed32.isModifiable()) {
+          copy.fixed32 = result.fixed32.mutableCopyWithCapacity(result.fixed32.size());
         } else {
-          copy.fixed32 = new ArrayList<>(result.fixed32);
+          copy.fixed32 = result.fixed32;
         }
         if (result.fixed64 == null) {
           copy.fixed64 = null;
+        } else if (result.fixed64.isModifiable()) {
+          copy.fixed64 = result.fixed64.mutableCopyWithCapacity(result.fixed64.size());
         } else {
-          copy.fixed64 = new ArrayList<>(result.fixed64);
+          copy.fixed64 = result.fixed64;
         }
         if (result.lengthDelimited == null) {
           copy.lengthDelimited = null;
@@ -962,19 +970,22 @@ public final class UnknownFieldSet implements MessageLite {
       public Field build() {
         Field built = new Field();
         if (result.varint == null) {
-          built.varint = Collections.emptyList();
+          built.varint = LongArrayList.emptyList();
         } else {
-          built.varint = Collections.unmodifiableList(new ArrayList<>(result.varint));
+          result.varint.makeImmutable();
+          built.varint = result.varint;
         }
         if (result.fixed32 == null) {
-          built.fixed32 = Collections.emptyList();
+          built.fixed32 = IntArrayList.emptyList();
         } else {
-          built.fixed32 = Collections.unmodifiableList(new ArrayList<>(result.fixed32));
+          result.fixed32.makeImmutable();
+          built.fixed32 = result.fixed32;
         }
         if (result.fixed64 == null) {
-          built.fixed64 = Collections.emptyList();
+          built.fixed64 = LongArrayList.emptyList();
         } else {
-          built.fixed64 = Collections.unmodifiableList(new ArrayList<>(result.fixed64));
+          result.fixed64.makeImmutable();
+          built.fixed64 = result.fixed64;
         }
         if (result.lengthDelimited == null) {
           built.lengthDelimited = Collections.emptyList();
@@ -1004,19 +1015,19 @@ public final class UnknownFieldSet implements MessageLite {
       public Builder mergeFrom(Field other) {
         if (!other.varint.isEmpty()) {
           if (result.varint == null) {
-            result.varint = new ArrayList<Long>();
+            result.varint = new LongArrayList();
           }
           result.varint.addAll(other.varint);
         }
         if (!other.fixed32.isEmpty()) {
           if (result.fixed32 == null) {
-            result.fixed32 = new ArrayList<Integer>();
+            result.fixed32 = new IntArrayList();
           }
           result.fixed32.addAll(other.fixed32);
         }
         if (!other.fixed64.isEmpty()) {
           if (result.fixed64 == null) {
-            result.fixed64 = new ArrayList<>();
+            result.fixed64 = new LongArrayList();
           }
           result.fixed64.addAll(other.fixed64);
         }
@@ -1038,27 +1049,27 @@ public final class UnknownFieldSet implements MessageLite {
       /** Add a varint value. */
       public Builder addVarint(long value) {
         if (result.varint == null) {
-          result.varint = new ArrayList<>();
+          result.varint = new LongArrayList();
         }
-        result.varint.add(value);
+        result.varint.addLong(value);
         return this;
       }
 
       /** Add a fixed32 value. */
       public Builder addFixed32(int value) {
         if (result.fixed32 == null) {
-          result.fixed32 = new ArrayList<>();
+          result.fixed32 = new IntArrayList();
         }
-        result.fixed32.add(value);
+        result.fixed32.addInt(value);
         return this;
       }
 
       /** Add a fixed64 value. */
       public Builder addFixed64(long value) {
         if (result.fixed64 == null) {
-          result.fixed64 = new ArrayList<>();
+          result.fixed64 = new LongArrayList();
         }
-        result.fixed64.add(value);
+        result.fixed64.addLong(value);
         return this;
       }
 
