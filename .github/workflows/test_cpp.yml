@@ -19,9 +19,9 @@ jobs:
         config:
           - { name: Optimized, flags: --config=opt }
           - { name: Debug, flags: --config=dbg }
-          - { name: ASAN, flags: --config=asan, runner: ubuntu-20-large }
-          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-20-large }
-          - { name: TSAN, flags: --config=tsan, runner: ubuntu-20-large }
+          - { name: ASAN, flags: --config=asan, runner: ubuntu-20-4core }
+          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-20-4core }
+          - { name: TSAN, flags: --config=tsan, runner: ubuntu-20-4core }
           - { name: UBSAN, flags: --config=ubsan }
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
         include:
@@ -80,7 +80,7 @@ jobs:
       matrix:
         arch: [x86_64, aarch64]
     name: Linux Release ${{ matrix.arch}}
-    runs-on: ubuntu-20-large
+    runs-on: ubuntu-20-4core
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
