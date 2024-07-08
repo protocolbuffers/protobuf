@@ -1378,7 +1378,13 @@ public final class TextFormat {
     }
   }
 
-  /** Thrown when encountering an unknown field while parsing a text format message. */
+  /** Obsolete exception, once thrown when encountering an unknown field while parsing a text
+  format message.
+  *
+  * @deprecated This exception is unused and will be removed in the next breaking release
+  (v5.x.x).
+  */
+  @Deprecated
   public static class UnknownFieldParseException extends ParseException {
     private final String unknownField;
 
