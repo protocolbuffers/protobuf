@@ -21,10 +21,10 @@
 #include "google/protobuf/compiler/hpb/tests/child_model.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/no_package.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
+#include "google/protobuf/hpb/requires.h"
 #include "protos/protos.h"
 #include "protos/repeated_field.h"
 #include "protos/repeated_field_iterator.h"
-#include "protos/requires.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 

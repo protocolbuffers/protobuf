@@ -96,9 +96,4 @@
 #     visibility = ["//visibility:public"],
 # )
 #
-# cc_library(
-#     name = "requires",
-#     hdrs = ["requires.h"],
-#     visibility = ["//visibility:public"],
-# )
 # end:google_only
