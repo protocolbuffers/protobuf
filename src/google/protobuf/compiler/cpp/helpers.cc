@@ -1862,7 +1862,17 @@ FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
                                         const Options& options,
                                         bool* has_opt_codesize_extension) {
   if (has_opt_codesize_extension) *has_opt_codesize_extension = false;
-  switch (options.enforce_mode) {
+  auto enforce_mode = options.enforce_mode;
+  if (file->name() == "google/protobuf/any.proto" ||
+      file->name() == "google/protobuf/wrappers.proto" ||
+      file->name() == "google/protobuf/struct.proto" ||
+      file->name() == "google/protobuf/duration.proto" ||
+      file->name() == "google/protobuf/timestamp.proto" ||
+      file->name() == "google/protobuf/empty.proto" ||
+      file->name() == "google/protobuf/field_mask.proto") {
+    enforce_mode = EnforceOptimizeMode::kNoEnforcement;
+  }
+  switch (enforce_mode) {
     case EnforceOptimizeMode::kSpeed:
       return FileOptions::SPEED;
     case EnforceOptimizeMode::kLiteRuntime:
