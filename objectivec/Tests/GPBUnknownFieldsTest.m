@@ -566,6 +566,8 @@
   [ufs addFieldNumber:TestAllTypes_FieldNumber_OptionalBytes lengthDelimited:DataFromCStr("foo")];
   GPBUnknownFields* group = [ufs addGroupWithFieldNumber:TestAllTypes_FieldNumber_OptionalGroup];
   [group addFieldNumber:TestAllTypes_OptionalGroup_FieldNumber_A varint:55];
+  [ufs addFieldNumber:123456 varint:4321];
+  [group addFieldNumber:123456 varint:5432];
 
   TestAllTypes* msg = [TestAllTypes message];
   [msg mergeUnknownFields:ufs extensionRegistry:nil];
@@ -574,6 +576,34 @@
   XCTAssertEqual(msg.optionalFixed64, 300);
   XCTAssertEqualObjects(msg.optionalBytes, DataFromCStr("foo"));
   XCTAssertEqual(msg.optionalGroup.a, 55);
+  GPBUnknownFields* ufs2 = [[[GPBUnknownFields alloc] initFromMessage:msg] autorelease];
+  XCTAssertEqual(ufs2.count, 1);  // The unknown at the root
+  uint64_t varint = 0;
+  XCTAssertTrue([ufs2 getFirst:123456 varint:&varint]);
+  XCTAssertEqual(varint, 4321);
+  GPBUnknownFields* ufs2group =
+      [[[GPBUnknownFields alloc] initFromMessage:msg.optionalGroup] autorelease];
+  XCTAssertEqual(ufs2group.count, 1);  // The unknown at in group
+  XCTAssertTrue([ufs2group getFirst:123456 varint:&varint]);
+  XCTAssertEqual(varint, 5432);
+
+  TestEmptyMessage* emptyMessage = [TestEmptyMessage message];
+  [emptyMessage mergeUnknownFields:ufs extensionRegistry:nil];
+  GPBUnknownFields* ufs3 = [[[GPBUnknownFields alloc] initFromMessage:emptyMessage] autorelease];
+  XCTAssertEqualObjects(ufs3, ufs);  // Round trip through an empty message got us same fields back.
+  XCTAssertTrue(ufs3 != ufs);        // But they are different objects.
+}
+
+- (void)testRoundTripLotsOfFields {
+  // Usage a message with everything, into an empty message to get a lot of unknown fields,
+  // and confirm it comes back to match.
+  TestAllTypes* allFields = [self allSetRepeatedCount:kGPBDefaultRepeatCount];
+  NSData* allFieldsData = [allFields data];
+  TestEmptyMessage* emptyMessage = [TestEmptyMessage parseFromData:allFieldsData error:NULL];
+  GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] initFromMessage:emptyMessage] autorelease];
+  TestAllTypes* allFields2 = [TestAllTypes message];
+  [allFields2 mergeUnknownFields:ufs extensionRegistry:nil];
+  XCTAssertEqualObjects(allFields2, allFields);
 }
 
 @end

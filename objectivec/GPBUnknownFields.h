@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+@class GPBMessage;
 @class GPBUnknownField;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -25,6 +26,16 @@ NS_ASSUME_NONNULL_BEGIN
  */
 __attribute__((objc_subclassing_restricted))
 @interface GPBUnknownFields : NSObject<NSCopying, NSFastEnumeration>
+
+/**
+ * Initializes a new instance with the data from the unknown fields from the given
+ * message.
+ *
+ * Note: The instance is not linked to the message, any change will not be
+ * reflected on the message the changes have to be pushed back to the message
+ * with `-[GPBMessage mergeUnknownFields:error:]`.
+ **/
+- (instancetype)initFromMessage:(nonnull GPBMessage *)message;
 
 /**
  * Initializes a new empty instance.

@@ -6,14 +6,27 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBUnknownFields.h"
+
+#import <Foundation/Foundation.h>
+
+#import "GPBCodedInputStream_PackagePrivate.h"
 #import "GPBCodedOutputStream.h"
 #import "GPBCodedOutputStream_PackagePrivate.h"
+#import "GPBMessage.h"
+#import "GPBUnknownField.h"
+#import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUnknownField_PackagePrivate.h"
+#import "GPBUnknownFields_PackagePrivate.h"
+#import "GPBWireFormat.h"
 
 #define CHECK_FIELD_NUMBER(number)                                                      \
   if (number <= 0) {                                                                    \
     [NSException raise:NSInvalidArgumentException format:@"Not a valid field number."]; \
   }
+
+@interface GPBUnknownFields ()
+- (BOOL)mergeFromInputStream:(nonnull GPBCodedInputStream *)input endTag:(uint32_t)endTag;
+@end
 
 @implementation GPBUnknownFields {
  @package
@@ -25,6 +38,29 @@
 // protos can turn on -Wdirect-ivar-access without issues.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdirect-ivar-access"
+
+- (instancetype)initFromMessage:(nonnull GPBMessage *)message {
+  self = [super init];
+  if (self) {
+    fields_ = [[NSMutableArray alloc] init];
+    // TODO: b/349146447 - Move off the legacy class and directly to the data once Message is
+    // updated.
+    GPBUnknownFieldSet *legacyUnknownFields = [message unknownFields];
+    if (legacyUnknownFields) {
+      GPBCodedInputStream *input =
+          [[GPBCodedInputStream alloc] initWithData:[legacyUnknownFields data]];
+      // Parse until the end of the data (tag will be zero).
+      if (![self mergeFromInputStream:input endTag:0]) {
+        [input release];
+        [self release];
+        [NSException raise:NSInternalInconsistencyException
+                    format:@"Internal error: Unknown field data from message was malformed."];
+      }
+      [input release];
+    }
+  }
+  return self;
+}
 
 - (instancetype)init {
   self = [super init];
@@ -175,6 +211,88 @@
 #endif
   [stream release];
   return data;
+}
+
+- (BOOL)mergeFromInputStream:(nonnull GPBCodedInputStream *)input endTag:(uint32_t)endTag {
+#if defined(DEBUG) && DEBUG
+  NSAssert(endTag == 0 || GPBWireFormatGetTagWireType(endTag) == GPBWireFormatEndGroup,
+           @"Internal error:Invalid end tag: %u", endTag);
+#endif
+  GPBCodedInputStreamState *state = &input->state_;
+  @try {
+    while (YES) {
+      uint32_t tag = GPBCodedInputStreamReadTag(state);
+      if (tag == endTag) {
+        return YES;
+      }
+      if (tag == 0) {
+        // Reached end of input without finding the end tag.
+        return NO;
+      }
+      GPBWireFormat wireType = GPBWireFormatGetTagWireType(tag);
+      int32_t fieldNumber = GPBWireFormatGetTagFieldNumber(tag);
+      switch (wireType) {
+        case GPBWireFormatVarint: {
+          uint64_t value = GPBCodedInputStreamReadInt64(state);
+          GPBUnknownField *field = [[GPBUnknownField alloc] initWithNumber:fieldNumber
+                                                                    varint:value];
+          [fields_ addObject:field];
+          [field release];
+          break;
+        }
+        case GPBWireFormatFixed32: {
+          uint32_t value = GPBCodedInputStreamReadFixed32(state);
+          GPBUnknownField *field = [[GPBUnknownField alloc] initWithNumber:fieldNumber
+                                                                   fixed32:value];
+          [fields_ addObject:field];
+          [field release];
+          break;
+        }
+        case GPBWireFormatFixed64: {
+          uint64_t value = GPBCodedInputStreamReadFixed64(state);
+          GPBUnknownField *field = [[GPBUnknownField alloc] initWithNumber:fieldNumber
+                                                                   fixed64:value];
+          [fields_ addObject:field];
+          [field release];
+          break;
+        }
+        case GPBWireFormatLengthDelimited: {
+          NSData *data = GPBCodedInputStreamReadRetainedBytes(state);
+          GPBUnknownField *field = [[GPBUnknownField alloc] initWithNumber:fieldNumber
+                                                           lengthDelimited:data];
+          [fields_ addObject:field];
+          [field release];
+          [data release];
+          break;
+        }
+        case GPBWireFormatStartGroup: {
+          GPBUnknownFields *group = [[GPBUnknownFields alloc] init];
+          GPBUnknownField *field = [[GPBUnknownField alloc] initWithNumber:fieldNumber group:group];
+          [fields_ addObject:field];
+          [field release];
+          [group release];  // Still will be held in the field/fields_.
+          uint32_t endGroupTag = GPBWireFormatMakeTag(fieldNumber, GPBWireFormatEndGroup);
+          if ([group mergeFromInputStream:input endTag:endGroupTag]) {
+            GPBCodedInputStreamCheckLastTagWas(state, endGroupTag);
+          } else {
+            [NSException
+                 raise:NSInternalInconsistencyException
+                format:@"Internal error: Unknown field data for nested group was malformed."];
+          }
+          break;
+        }
+        case GPBWireFormatEndGroup:
+          [NSException raise:NSInternalInconsistencyException
+                      format:@"Unexpected end group tag: %u", tag];
+          break;
+      }
+    }
+  } @catch (NSException *exception) {
+#if defined(DEBUG) && DEBUG
+    NSLog(@"%@: Internal exception while parsing unknown data, this shouldn't happen!: %@",
+          [self class], exception);
+#endif
+  }
 }
 
 @end
