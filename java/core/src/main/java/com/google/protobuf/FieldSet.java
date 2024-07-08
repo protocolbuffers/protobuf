@@ -442,12 +442,17 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     return true;
   }
 
+  // Avoid iterator allocation.
+  @SuppressWarnings({"ForeachList", "ForeachListWithUserVar"})
   private static <T extends FieldDescriptorLite<T>> boolean isInitialized(
       final Map.Entry<T, Object> entry) {
     final T descriptor = entry.getKey();
     if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE) {
       if (descriptor.isRepeated()) {
-        for (final Object element : (List<?>) entry.getValue()) {
+        List<?> list = (List<?>) entry.getValue();
+        int listSize = list.size();
+        for (int i = 0; i < listSize; i++) {
+          Object element = list.get(i);
           if (!isMessageFieldValueInitialized(element)) {
             return false;
           }
@@ -1319,7 +1324,8 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       }
     }
 
-    @SuppressWarnings("unchecked")
+    // Avoid iterator allocation.
+    @SuppressWarnings({"unchecked", "ForeachList", "ForeachListWithUserVar"})
     private void mergeFromField(final Map.Entry<T, Object> entry) {
       final T descriptor = entry.getKey();
       Object otherValue = entry.getValue();
@@ -1330,11 +1336,14 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
           throw new IllegalStateException("Lazy fields can not be repeated");
         }
         List<Object> value = (List<Object>) getFieldAllowBuilders(descriptor);
+        List<?> otherList = (List<?>) otherValue;
+        int otherListSize = otherList.size();
         if (value == null) {
-          value = new ArrayList<>();
+          value = new ArrayList<>(otherListSize);
           fields.put(descriptor, value);
         }
-        for (Object element : (List<?>) otherValue) {
+        for (int i = 0; i < otherListSize; i++) {
+          Object element = otherList.get(i);
           value.add(FieldSet.cloneIfMutable(element));
         }
       } else if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE) {
