@@ -78,7 +78,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
   /** Get an immutable empty FieldSet. */
   @SuppressWarnings("unchecked")
   public static <T extends FieldSet.FieldDescriptorLite<T>> FieldSet<T> emptySet() {
-    return DEFAULT_INSTANCE;
+    return (FieldSet<T>) DEFAULT_INSTANCE;
   }
 
   /** Construct a new Builder. */
@@ -86,8 +86,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     return new Builder<T>();
   }
 
-  @SuppressWarnings("rawtypes")
-  private static final FieldSet DEFAULT_INSTANCE = new FieldSet(true);
+  private static final FieldSet<?> DEFAULT_INSTANCE = new FieldSet<>(true);
 
   /** Returns {@code true} if empty, {@code false} otherwise. */
   boolean isEmpty() {
