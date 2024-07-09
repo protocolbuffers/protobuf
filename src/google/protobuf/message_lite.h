@@ -395,6 +395,8 @@ class PROTOBUF_EXPORT MessageLite {
   bool SerializeToZeroCopyStream(io::ZeroCopyOutputStream* output) const;
   // Like SerializeToZeroCopyStream(), but allows missing required fields.
   bool SerializePartialToZeroCopyStream(io::ZeroCopyOutputStream* output) const;
+  bool SerializePartialToZeroCopyStream(io::ZeroCopyOutputStream* output,
+                                        size_t size) const;
   // Serialize the message and store it in the given string.  All required
   // fields must be set.
   bool SerializeToString(std::string* output) const;

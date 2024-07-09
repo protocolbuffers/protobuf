@@ -534,6 +534,11 @@ bool MessageLite::SerializeToZeroCopyStream(
 bool MessageLite::SerializePartialToZeroCopyStream(
     io::ZeroCopyOutputStream* output) const {
   const size_t size = ByteSizeLong();  // Force size to be cached.
+  return SerializePartialToZeroCopyStream(output, size);
+}
+
+bool MessageLite::SerializePartialToZeroCopyStream(
+    io::ZeroCopyOutputStream* output, size_t size) const {
   if (size > INT_MAX) {
     ABSL_LOG(ERROR) << GetTypeName()
                     << " exceeded maximum protobuf size of 2GB: " << size;
