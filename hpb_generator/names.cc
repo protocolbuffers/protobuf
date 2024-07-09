@@ -11,8 +11,7 @@
 
 #include "upb_generator/keywords.h"
 
-namespace protos_generator {
-
+namespace google::protobuf::hpb_generator {
 namespace protobuf = ::proto2;
 
 namespace {
@@ -175,4 +174,5 @@ std::string MessageProxyType(const protobuf::FieldDescriptor* field,
          "Proxy";
 }
 
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator

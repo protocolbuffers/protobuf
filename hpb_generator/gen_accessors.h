@@ -12,7 +12,7 @@
 #include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/output.h"
 
-namespace protos_generator {
+namespace google::protobuf::hpb_generator {
 
 namespace protobuf = ::proto2;
 
@@ -23,6 +23,7 @@ void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
                                  MessageClassType handle_type, Output& output);
 void WriteOneofAccessorsInHeader(const protobuf::Descriptor* desc,
                                  Output& output);
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator
 
 #endif  // PROTOBUF_COMPILER_HBP_GEN_ACCESSORS_H_

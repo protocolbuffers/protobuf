@@ -54,7 +54,7 @@ TEST(CppGeneratedCode, ImportedEnum) { EXPECT_EQ(3, TestEnum::DEVICE_MONITOR); }
 
 TEST(CppGeneratedCode, Enum) { EXPECT_EQ(1, RED); }
 
-TEST(CppGeneratedCode, EnumNoPackage) { EXPECT_EQ(1, ::protos_CELSIUS); }
+TEST(CppGeneratedCode, EnumNoPackage) { EXPECT_EQ(1, ::hpb_CELSIUS); }
 
 TEST(CppGeneratedCode, MessageEnumType) {
   TestModel_Category category1 = TestModel_Category_IMAGES;

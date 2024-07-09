@@ -16,7 +16,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
-namespace protos_generator {
+namespace google::protobuf::hpb_generator {
 
 class Output {
  public:
@@ -146,6 +146,7 @@ std::string FileLayoutName(const google::protobuf::FileDescriptor* file);
 std::string CHeaderFilename(const google::protobuf::FileDescriptor* file);
 std::string CSourceFilename(const google::protobuf::FileDescriptor* file);
 
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator
 
 #endif  // PROTOBUF_COMPILER_HBP_OUTPUT_H_

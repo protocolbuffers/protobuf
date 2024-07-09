@@ -15,7 +15,7 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.h"
 
-namespace protos_generator {
+namespace google::protobuf::hpb_generator {
 
 namespace protobuf = ::proto2;
 
@@ -40,6 +40,7 @@ std::vector<const protobuf::FieldDescriptor*> FieldNumberOrder(
 
 std::string ToCamelCase(const std::string& input, bool lower_first);
 
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator
 
 #endif  // PROTOBUF_COMPILER_HBP_GEN_UTILS_H_

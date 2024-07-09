@@ -12,7 +12,8 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/hpb/output.h"
 
-namespace protos_generator {
+namespace google::protobuf::hpb_generator {
+
 namespace protobuf = ::proto2;
 
 void WriteRepeatedFieldUsingAccessors(const protobuf::FieldDescriptor* field,
@@ -41,6 +42,7 @@ void WriteRepeatedScalarAccessor(const protobuf::Descriptor* message,
                                  absl::string_view resolved_field_name,
                                  absl::string_view class_name, Output& output);
 
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator
 
 #endif  // PROTOBUF_COMPILER_HBP_GEN_REPEATED_FIELDS_H_

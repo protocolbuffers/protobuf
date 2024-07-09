@@ -11,7 +11,7 @@
 
 #include "absl/strings/str_replace.h"
 
-namespace protos_generator {
+namespace google::protobuf::hpb_generator {
 namespace {
 
 namespace protobuf = ::proto2;
@@ -66,4 +66,5 @@ std::string CSourceFilename(const google::protobuf::FileDescriptor* file) {
   return StripExtension(file->name()) + ".upb.c";
 }
 
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator

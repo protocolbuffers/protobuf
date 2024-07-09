@@ -25,7 +25,7 @@
 #include "upb_generator/common.h"
 #include "upb_generator/file_layout.h"
 
-namespace protos_generator {
+namespace google::protobuf::hpb_generator {
 
 namespace protobuf = ::proto2;
 
@@ -537,4 +537,5 @@ void WriteUsingEnumsInHeader(
   }
 }
 
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator

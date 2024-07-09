@@ -17,7 +17,7 @@
 #include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/names.h"
 
-namespace protos_generator {
+namespace google::protobuf::hpb_generator {
 
 namespace protobuf = ::proto2;
 
@@ -118,4 +118,5 @@ void WriteHeaderEnumForwardDecls(
   }
 }
 
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator

@@ -13,11 +13,11 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/compiler/hpb/output.h"
 
-namespace protos_generator {
+namespace google::protobuf::hpb_generator {
 
 namespace protobuf = ::proto2;
 
-inline constexpr absl::string_view kNoPackageNamePrefix = "protos_";
+inline constexpr absl::string_view kNoPackageNamePrefix = "hpb_";
 
 std::string ClassName(const protobuf::Descriptor* descriptor);
 std::string QualifiedClassName(const protobuf::Descriptor* descriptor);
@@ -45,6 +45,7 @@ std::string MessageCProxyType(const protobuf::FieldDescriptor* field,
 std::string MessageProxyType(const protobuf::FieldDescriptor* field,
                              bool is_const);
 
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator
 
 #endif  // PROTOBUF_COMPILER_HBP_GEN_NAMES_H_

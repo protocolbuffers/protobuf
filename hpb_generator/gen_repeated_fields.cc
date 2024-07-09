@@ -23,7 +23,8 @@
 #include "upb_generator/file_layout.h"
 #include "upb_generator/names.h"
 
-namespace protos_generator {
+namespace google::protobuf::hpb_generator {
+
 namespace protobuf = ::proto2;
 
 // Adds using accessors to reuse base Access class members from a Proxy/CProxy.
@@ -322,4 +323,5 @@ void WriteRepeatedScalarAccessor(const protobuf::Descriptor* message,
   );
 }
 
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator

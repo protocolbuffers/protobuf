@@ -13,7 +13,7 @@
 
 #include "absl/strings/ascii.h"
 
-namespace protos_generator {
+namespace google::protobuf::hpb_generator {
 
 namespace protobuf = ::proto2;
 
@@ -126,4 +126,5 @@ std::string ToCamelCase(const std::string& input, bool lower_first) {
   return result;
 }
 
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator

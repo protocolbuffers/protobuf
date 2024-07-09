@@ -11,7 +11,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/hpb/output.h"
 
-namespace protos_generator {
+namespace google::protobuf::hpb_generator {
 
 namespace protobuf = ::proto2;
 
@@ -26,6 +26,7 @@ void WriteExtensionIdentifiers(
 void WriteExtensionIdentifier(const protobuf::FieldDescriptor* ext,
                               Output& output);
 
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator
 
 #endif  // PROTOBUF_COMPILER_HBP_GEN_EXTENSIONS_H_
