@@ -20,7 +20,7 @@ jobs:
           - { name: "Bazel 7", bazel_version: "7.1.1" }
           - { name: "Fastbuild" }
           - { name: "Optimized", flags: "-c opt" }
-          - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/...", runner: ubuntu-20-4core }
+          - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/...", runner: ubuntu-22-4core }
           - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/... -//lua/..." }
           - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-//benchmarks:benchmark -//python/..." }
           # TODO: Add 32-bit ASAN test

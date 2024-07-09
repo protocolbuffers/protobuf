@@ -19,9 +19,9 @@ jobs:
         config:
           - { name: Optimized, flags: --config=opt }
           - { name: Debug, flags: --config=dbg }
-          - { name: ASAN, flags: --config=asan, runner: ubuntu-20-4core }
-          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-20-4core }
-          - { name: TSAN, flags: --config=tsan, runner: ubuntu-20-4core }
+          - { name: ASAN, flags: --config=asan, runner: ubuntu-22-4core }
+          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-22-4core }
+          - { name: TSAN, flags: --config=tsan, runner: ubuntu-22-4core }
           - { name: UBSAN, flags: --config=ubsan }
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
         include:
