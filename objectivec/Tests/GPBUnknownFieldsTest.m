@@ -604,6 +604,82 @@
   TestAllTypes* allFields2 = [TestAllTypes message];
   [allFields2 mergeUnknownFields:ufs extensionRegistry:nil];
   XCTAssertEqualObjects(allFields2, allFields);
+
+  // Confirm that the they still all end up in unknowns when parsed into a message with extensions
+  // support for the field numbers (but no registry).
+  {
+    TestEmptyMessageWithExtensions* msgWithExts =
+        [TestEmptyMessageWithExtensions parseFromData:allFieldsData error:NULL];
+    GPBUnknownFields* ufs2 = [[[GPBUnknownFields alloc] initFromMessage:msgWithExts] autorelease];
+    XCTAssertEqualObjects(ufs2, ufs);
+  }
+
+  // Sanity check that with the registry, they go into the extension fields.
+  {
+    TestAllExtensions* msgWithExts =
+        [TestAllExtensions parseFromData:allFieldsData
+                       extensionRegistry:[UnittestRoot extensionRegistry]
+                                   error:NULL];
+    GPBUnknownFields* ufs2 = [[[GPBUnknownFields alloc] initFromMessage:msgWithExts] autorelease];
+    XCTAssertEqual(ufs2.count, 0);
+  }
+}
+
+- (void)testMismatchedFieldTypes {
+  // Start with a valid set of field data, and map it into unknown fields.
+  TestAllTypes* allFields = [self allSetRepeatedCount:kGPBDefaultRepeatCount];
+  NSData* allFieldsData = [allFields data];
+  TestEmptyMessage* emptyMessage = [TestEmptyMessage parseFromData:allFieldsData error:NULL];
+  GPBUnknownFields* ufsRightTypes =
+      [[[GPBUnknownFields alloc] initFromMessage:emptyMessage] autorelease];
+
+  // Now build a new set of unknown fields where all the data types are wrong for the original
+  // fields.
+  GPBUnknownFields* ufsWrongTypes = [[[GPBUnknownFields alloc] init] autorelease];
+  for (GPBUnknownField* field in ufsRightTypes) {
+    if (field.type != GPBUnknownFieldTypeVarint) {
+      // Original field is not a varint, so use a varint.
+      [ufsWrongTypes addFieldNumber:field.number varint:1];
+    } else {
+      // Original field *is* a varint, so use something else.
+      [ufsWrongTypes addFieldNumber:field.number fixed32:1];
+    }
+  }
+
+  // Parse into a message with the field numbers, the wrong types should force everything into
+  // unknown fields again.
+  {
+    TestAllTypes* msg = [TestAllTypes message];
+    [msg mergeUnknownFields:ufsWrongTypes extensionRegistry:nil];
+    GPBUnknownFields* ufs2 = [[[GPBUnknownFields alloc] initFromMessage:msg] autorelease];
+    XCTAssertFalse(ufs2.empty);
+    XCTAssertEqualObjects(ufs2, ufsWrongTypes);  // All back as unknown fields.
+  }
+
+  // Parse into a message with extension registiry, the wrong types should still force everything
+  // into unknown fields.
+  {
+    TestAllExtensions* msg = [TestAllExtensions message];
+    [msg mergeUnknownFields:ufsWrongTypes extensionRegistry:[UnittestRoot extensionRegistry]];
+    GPBUnknownFields* ufs2 = [[[GPBUnknownFields alloc] initFromMessage:msg] autorelease];
+    XCTAssertFalse(ufs2.empty);
+    XCTAssertEqualObjects(ufs2, ufsWrongTypes);  // All back as unknown fields.
+  }
+}
+
+- (void)testLargeVarint {
+  GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+  [ufs addFieldNumber:1 varint:0x7FFFFFFFFFFFFFFFL];
+
+  TestEmptyMessage* emptyMessage = [TestEmptyMessage message];
+  [emptyMessage mergeUnknownFields:ufs extensionRegistry:nil];
+
+  GPBUnknownFields* ufsParsed =
+      [[[GPBUnknownFields alloc] initFromMessage:emptyMessage] autorelease];
+  XCTAssertEqual(ufsParsed.count, 1);
+  uint64_t varint = 0;
+  XCTAssertTrue([ufsParsed getFirst:1 varint:&varint]);
+  XCTAssertEqual(varint, 0x7FFFFFFFFFFFFFFFL);
 }
 
 @end
