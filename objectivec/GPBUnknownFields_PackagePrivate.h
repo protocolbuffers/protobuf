@@ -13,8 +13,6 @@
 
 @interface GPBUnknownFields ()
 
-- (size_t)serializedSize;
 - (nonnull NSData *)serializeAsData;
-- (void)writeToCodedOutputStream:(nonnull GPBCodedOutputStream *)output;
 
 @end
