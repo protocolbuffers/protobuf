@@ -71,7 +71,7 @@ mod _opaque_pointees {
     /// It is only meant to provide type safety for raw pointers
     /// which are manipulated behind FFI.
     #[repr(C)]
-    pub(super) struct CppStdStringData {
+    pub struct CppStdStringData {
         _data: [u8; 0],
         _marker: std::marker::PhantomData<(*mut u8, ::std::marker::PhantomPinned)>,
     }
@@ -87,7 +87,7 @@ pub type RawRepeatedField = NonNull<_opaque_pointees::RawRepeatedFieldData>;
 pub type RawMap = NonNull<_opaque_pointees::RawMapData>;
 
 /// A raw pointer to a std::string.
-type CppStdString = NonNull<_opaque_pointees::CppStdStringData>;
+pub type CppStdString = NonNull<_opaque_pointees::CppStdStringData>;
 
 /// Kernel-specific owned `string` and `bytes` field type.
 #[derive(Debug)]
@@ -108,6 +108,11 @@ impl InnerProtoString {
     pub(crate) fn as_bytes(&self) -> &[u8] {
         // SAFETY: `self.owned_ptr` points to a valid std::string object.
         unsafe { proto2_rust_cpp_string_to_view(self.owned_ptr).as_ref() }
+    }
+
+    pub fn into_raw(self, _private: Private) -> CppStdString {
+        let s = ManuallyDrop::new(self);
+        s.owned_ptr
     }
 }
 
@@ -219,7 +224,7 @@ impl SerializedData {
     pub fn into_vec(self) -> Vec<u8> {
         // We need to prevent self from being dropped, because we are going to transfer
         // ownership of self.data to the Vec<u8>.
-        let s = std::mem::ManuallyDrop::new(self);
+        let s = ManuallyDrop::new(self);
 
         unsafe {
             // SAFETY:
@@ -352,14 +357,6 @@ impl<'msg> MutatorMessageRef<'msg> {
     }
 }
 
-pub fn copy_bytes_in_arena_if_needed_by_runtime<'msg>(
-    _msg_ref: MutatorMessageRef<'msg>,
-    val: &'msg [u8],
-) -> &'msg [u8] {
-    // Nothing to do, the message manages its own string memory for C++.
-    val
-}
-
 /// The raw type-erased version of an owned `Repeated`.
 #[derive(Debug)]
 pub struct InnerRepeated {
@@ -430,8 +427,7 @@ impl CppTypeConversions for ProtoString {
     }
 
     fn into_insertelem(v: Self) -> CppStdString {
-        let v = ManuallyDrop::new(v);
-        v.inner.owned_ptr
+        v.into_inner(Private).into_raw(Private)
     }
 }
 
@@ -444,8 +440,7 @@ impl CppTypeConversions for ProtoBytes {
     }
 
     fn into_insertelem(v: Self) -> CppStdString {
-        let v = ManuallyDrop::new(v);
-        v.inner.owned_ptr
+        v.into_inner(Private).into_raw(Private)
     }
 }
 
@@ -817,13 +812,11 @@ fn ptrlen_to_str<'msg>(val: PtrAndLen) -> &'msg ProtoStr {
 }
 
 fn protostr_into_cppstdstring(val: ProtoString) -> CppStdString {
-    let m = ManuallyDrop::new(val);
-    m.inner.owned_ptr
+    val.into_inner(Private).into_raw(Private)
 }
 
 fn protobytes_into_cppstdstring(val: ProtoBytes) -> CppStdString {
-    let m = ManuallyDrop::new(val);
-    m.inner.owned_ptr
+    val.into_inner(Private).into_raw(Private)
 }
 
 // Warning: this function is unsound on its own! `val.as_ref()` must be safe to

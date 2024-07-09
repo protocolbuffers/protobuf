@@ -128,13 +128,6 @@ impl<'msg> MutatorMessageRef<'msg> {
     }
 }
 
-pub fn copy_bytes_in_arena_if_needed_by_runtime<'msg>(
-    msg_ref: MutatorMessageRef<'msg>,
-    val: &'msg [u8],
-) -> &'msg [u8] {
-    copy_bytes_in_arena(msg_ref.arena, val)
-}
-
 fn copy_bytes_in_arena<'msg>(arena: &'msg Arena, val: &'msg [u8]) -> &'msg [u8] {
     // SAFETY: the alignment of `[u8]` is less than `UPB_MALLOC_ALIGN`.
     let new_alloc = unsafe { arena.alloc(Layout::for_value(val)) };
@@ -156,6 +149,12 @@ pub struct InnerProtoString(OwnedArenaBox<[u8]>);
 impl InnerProtoString {
     pub(crate) fn as_bytes(&self) -> &[u8] {
         &self.0
+    }
+
+    #[doc(hidden)]
+    pub fn into_raw_parts(self, _private: Private) -> (PtrAndLen, Arena) {
+        let (data_ptr, arena) = self.0.into_parts();
+        (unsafe { data_ptr.as_ref().into() }, arena)
     }
 }
 
@@ -617,12 +616,11 @@ impl UpbTypeConversions for ProtoBytes {
     ) -> upb_MessageValue {
         // SAFETY: The arena memory is not freed due to `ManuallyDrop`.
         let parent_arena = ManuallyDrop::new(unsafe { Arena::from_raw(raw_parent_arena) });
-        let (data, arena) = val.inner.0.into_parts();
 
+        let (view, arena) = val.inner.into_raw_parts(Private);
         parent_arena.fuse(&arena);
 
-        let msg_val = Self::to_message_value(unsafe { data.as_ref() });
-        msg_val
+        upb_MessageValue { str_val: view }
     }
 
     unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, ProtoBytes> {
