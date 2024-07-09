@@ -73,6 +73,7 @@
   if ((self = [super init])) {
     number_ = number;
     type_ = GPBUnknownFieldTypeGroup;
+    // Taking ownership of the group; so retain, not copy.
     storage_.group = [group retain];
   }
   return self;
@@ -161,21 +162,12 @@
 - (id)copyWithZone:(NSZone *)zone {
   switch (type_) {
     case GPBUnknownFieldTypeVarint:
-      return [[GPBUnknownField allocWithZone:zone] initWithNumber:number_ varint:storage_.intValue];
     case GPBUnknownFieldTypeFixed32:
-      return [[GPBUnknownField allocWithZone:zone] initWithNumber:number_
-                                                          fixed32:(uint32_t)storage_.intValue];
     case GPBUnknownFieldTypeFixed64:
-      return [[GPBUnknownField allocWithZone:zone] initWithNumber:number_
-                                                          fixed64:storage_.intValue];
     case GPBUnknownFieldTypeLengthDelimited:
-      return [[GPBUnknownField allocWithZone:zone]
-           initWithNumber:number_
-          lengthDelimited:[storage_.lengthDelimited copyWithZone:zone]];
     case GPBUnknownFieldTypeGroup:
-      return
-          [[GPBUnknownField allocWithZone:zone] initWithNumber:number_
-                                                         group:[storage_.group copyWithZone:zone]];
+      // In these modes, the object isn't mutable, so just return self.
+      return [self retain];
     case GPBUnknownFieldTypeLegacy: {
       GPBUnknownField *result = [[GPBUnknownField allocWithZone:zone] initWithNumber:number_];
       result->storage_.legacy.mutableFixed32List =

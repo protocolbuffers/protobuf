@@ -48,6 +48,9 @@
 }
 
 - (void)testEqualityAndHash {
+  // This also calls the methods on the `GPBUnknownField` objects for completeness and to
+  // make any failure in that class easier to notice/debug.
+
   // Empty
 
   GPBUnknownFields* ufs1 = [[[GPBUnknownFields alloc] init] autorelease];
@@ -64,6 +67,13 @@
   [ufs2 addFieldNumber:1 varint:1];
   XCTAssertEqualObjects(ufs1, ufs2);
   XCTAssertEqual([ufs1 hash], [ufs2 hash]);
+  GPBUnknownField* field1 = [[ufs1 fields:1] firstObject];
+  XCTAssertNotNil(field1);
+  GPBUnknownField* field2 = [[ufs2 fields:1] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
+  XCTAssertEqual([field1 hash], [field2 hash]);
 
   // Fixed32
 
@@ -72,6 +82,13 @@
   [ufs2 addFieldNumber:2 fixed32:1];
   XCTAssertEqualObjects(ufs1, ufs2);
   XCTAssertEqual([ufs1 hash], [ufs2 hash]);
+  field1 = [[ufs1 fields:2] firstObject];
+  XCTAssertNotNil(field1);
+  field2 = [[ufs2 fields:2] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
+  XCTAssertEqual([field1 hash], [field2 hash]);
 
   // Fixed64
 
@@ -80,6 +97,13 @@
   [ufs2 addFieldNumber:3 fixed64:1];
   XCTAssertEqualObjects(ufs1, ufs2);
   XCTAssertEqual([ufs1 hash], [ufs2 hash]);
+  field1 = [[ufs1 fields:3] firstObject];
+  XCTAssertNotNil(field1);
+  field2 = [[ufs2 fields:3] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
+  XCTAssertEqual([field1 hash], [field2 hash]);
 
   // LengthDelimited
 
@@ -88,6 +112,13 @@
   [ufs2 addFieldNumber:4 lengthDelimited:DataFromCStr("foo")];
   XCTAssertEqualObjects(ufs1, ufs2);
   XCTAssertEqual([ufs1 hash], [ufs2 hash]);
+  field1 = [[ufs1 fields:4] firstObject];
+  XCTAssertNotNil(field1);
+  field2 = [[ufs2 fields:4] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
+  XCTAssertEqual([field1 hash], [field2 hash]);
 
   // Group
 
@@ -98,10 +129,20 @@
   [group2 addFieldNumber:10 varint:10];
   XCTAssertEqualObjects(ufs1, ufs2);
   XCTAssertEqual([ufs1 hash], [ufs2 hash]);
+  field1 = [[ufs1 fields:5] firstObject];
+  XCTAssertNotNil(field1);
+  field2 = [[ufs2 fields:5] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
+  XCTAssertEqual([field1 hash], [field2 hash]);
 }
 
 - (void)testInequality_Values {
   // Same field number and type, different values.
+
+  // This also calls the methods on the `GPBUnknownField` objects for completeness and to
+  // make any failure in that class easier to notice/debug.
 
   GPBUnknownFields* ufs1 = [[[GPBUnknownFields alloc] init] autorelease];
   GPBUnknownFields* ufs2 = [[[GPBUnknownFields alloc] init] autorelease];
@@ -109,6 +150,12 @@
   [ufs1 addFieldNumber:1 varint:1];
   [ufs2 addFieldNumber:1 varint:2];
   XCTAssertNotEqualObjects(ufs1, ufs2);
+  GPBUnknownField* field1 = [[ufs1 fields:1] firstObject];
+  XCTAssertNotNil(field1);
+  GPBUnknownField* field2 = [[ufs2 fields:1] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertNotEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
 
   [ufs1 clear];
   [ufs2 clear];
@@ -117,6 +164,12 @@
   [ufs1 addFieldNumber:1 fixed32:1];
   [ufs2 addFieldNumber:1 fixed32:2];
   XCTAssertNotEqualObjects(ufs1, ufs2);
+  field1 = [[ufs1 fields:1] firstObject];
+  XCTAssertNotNil(field1);
+  field2 = [[ufs2 fields:1] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertNotEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
 
   [ufs1 clear];
   [ufs2 clear];
@@ -125,6 +178,12 @@
   [ufs1 addFieldNumber:1 fixed64:1];
   [ufs2 addFieldNumber:1 fixed64:2];
   XCTAssertNotEqualObjects(ufs1, ufs2);
+  field1 = [[ufs1 fields:1] firstObject];
+  XCTAssertNotNil(field1);
+  field2 = [[ufs2 fields:1] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertNotEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
 
   [ufs1 clear];
   [ufs2 clear];
@@ -133,6 +192,12 @@
   [ufs1 addFieldNumber:1 lengthDelimited:DataFromCStr("foo")];
   [ufs2 addFieldNumber:1 lengthDelimited:DataFromCStr("bar")];
   XCTAssertNotEqualObjects(ufs1, ufs2);
+  field1 = [[ufs1 fields:1] firstObject];
+  XCTAssertNotNil(field1);
+  field2 = [[ufs2 fields:1] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertNotEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
 
   [ufs1 clear];
   [ufs2 clear];
@@ -144,10 +209,19 @@
   [group2 addFieldNumber:10 varint:20];
   XCTAssertNotEqualObjects(ufs1, ufs2);
   XCTAssertNotEqualObjects(group1, group2);
+  field1 = [[ufs1 fields:1] firstObject];
+  XCTAssertNotNil(field1);
+  field2 = [[ufs2 fields:1] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertNotEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
 }
 
 - (void)testInequality_FieldNumbers {
   // Same type and value, different field numbers.
+
+  // This also calls the methods on the `GPBUnknownField` objects for completeness and to
+  // make any failure in that class easier to notice/debug.
 
   GPBUnknownFields* ufs1 = [[[GPBUnknownFields alloc] init] autorelease];
   GPBUnknownFields* ufs2 = [[[GPBUnknownFields alloc] init] autorelease];
@@ -155,6 +229,12 @@
   [ufs1 addFieldNumber:1 varint:1];
   [ufs2 addFieldNumber:2 varint:1];
   XCTAssertNotEqualObjects(ufs1, ufs2);
+  GPBUnknownField* field1 = [[ufs1 fields:1] firstObject];
+  XCTAssertNotNil(field1);
+  GPBUnknownField* field2 = [[ufs2 fields:2] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertNotEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
 
   [ufs1 clear];
   [ufs2 clear];
@@ -163,6 +243,12 @@
   [ufs1 addFieldNumber:1 fixed32:1];
   [ufs2 addFieldNumber:2 fixed32:1];
   XCTAssertNotEqualObjects(ufs1, ufs2);
+  field1 = [[ufs1 fields:1] firstObject];
+  XCTAssertNotNil(field1);
+  field2 = [[ufs2 fields:2] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertNotEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
 
   [ufs1 clear];
   [ufs2 clear];
@@ -171,6 +257,12 @@
   [ufs1 addFieldNumber:1 fixed64:1];
   [ufs2 addFieldNumber:2 fixed64:1];
   XCTAssertNotEqualObjects(ufs1, ufs2);
+  field1 = [[ufs1 fields:1] firstObject];
+  XCTAssertNotNil(field1);
+  field2 = [[ufs2 fields:2] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertNotEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
 
   [ufs1 clear];
   [ufs2 clear];
@@ -179,6 +271,12 @@
   [ufs1 addFieldNumber:1 lengthDelimited:DataFromCStr("foo")];
   [ufs2 addFieldNumber:2 lengthDelimited:DataFromCStr("fod")];
   XCTAssertNotEqualObjects(ufs1, ufs2);
+  field1 = [[ufs1 fields:1] firstObject];
+  XCTAssertNotNil(field1);
+  field2 = [[ufs2 fields:2] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertNotEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
 
   [ufs1 clear];
   [ufs2 clear];
@@ -190,10 +288,19 @@
   [group2 addFieldNumber:10 varint:10];
   XCTAssertNotEqualObjects(ufs1, ufs2);
   XCTAssertEqualObjects(group1, group2);
+  field1 = [[ufs1 fields:1] firstObject];
+  XCTAssertNotNil(field1);
+  field2 = [[ufs2 fields:2] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertNotEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
 }
 
 - (void)testInequality_Types {
   // Same field number and value when possible, different types.
+
+  // This also calls the methods on the `GPBUnknownField` objects for completeness and to
+  // make any failure in that class easier to notice/debug.
 
   GPBUnknownFields* ufs1 = [[[GPBUnknownFields alloc] init] autorelease];
   GPBUnknownFields* ufs2 = [[[GPBUnknownFields alloc] init] autorelease];
@@ -201,6 +308,12 @@
   [ufs1 addFieldNumber:1 varint:1];
   [ufs2 addFieldNumber:1 fixed32:1];
   XCTAssertNotEqualObjects(ufs1, ufs2);
+  GPBUnknownField* field1 = [[ufs1 fields:1] firstObject];
+  XCTAssertNotNil(field1);
+  GPBUnknownField* field2 = [[ufs2 fields:1] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertNotEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
 
   [ufs1 clear];
   [ufs2 clear];
@@ -209,6 +322,12 @@
   [ufs1 addFieldNumber:1 fixed32:1];
   [ufs2 addFieldNumber:1 fixed64:1];
   XCTAssertNotEqualObjects(ufs1, ufs2);
+  field1 = [[ufs1 fields:1] firstObject];
+  XCTAssertNotNil(field1);
+  field2 = [[ufs2 fields:1] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertNotEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
 
   [ufs1 clear];
   [ufs2 clear];
@@ -217,6 +336,12 @@
   [ufs1 addFieldNumber:1 fixed64:1];
   [ufs2 addFieldNumber:1 varint:1];
   XCTAssertNotEqualObjects(ufs1, ufs2);
+  field1 = [[ufs1 fields:1] firstObject];
+  XCTAssertNotNil(field1);
+  field2 = [[ufs2 fields:1] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertNotEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
 
   [ufs1 clear];
   [ufs2 clear];
@@ -225,6 +350,12 @@
   [ufs1 addFieldNumber:1 lengthDelimited:DataFromCStr("foo")];
   [ufs2 addFieldNumber:1 varint:1];
   XCTAssertNotEqualObjects(ufs1, ufs2);
+  field1 = [[ufs1 fields:1] firstObject];
+  XCTAssertNotNil(field1);
+  field2 = [[ufs2 fields:1] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertNotEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
 
   [ufs1 clear];
   [ufs2 clear];
@@ -234,6 +365,12 @@
   [group1 addFieldNumber:10 varint:10];
   [ufs2 addFieldNumber:1 varint:1];
   XCTAssertNotEqualObjects(ufs1, ufs2);
+  field1 = [[ufs1 fields:1] firstObject];
+  XCTAssertNotNil(field1);
+  field2 = [[ufs2 fields:1] firstObject];
+  XCTAssertNotNil(field2);
+  XCTAssertNotEqualObjects(field1, field2);
+  XCTAssertTrue(field1 != field2);  // Different objects.
 }
 
 - (void)testGetFirst {
@@ -460,6 +597,34 @@
   XCTAssertTrue(ufs.description.length > 10);
   for (GPBUnknownField* field in ufs) {
     XCTAssertTrue(field.description.length > 10);
+  }
+}
+
+- (void)testCopy {
+  GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+  [ufs addFieldNumber:1 varint:1];
+  [ufs addFieldNumber:2 fixed32:2];
+  [ufs addFieldNumber:3 fixed64:3];
+  [ufs addFieldNumber:4 lengthDelimited:DataFromCStr("foo")];
+  GPBUnknownFields* group = [ufs addGroupWithFieldNumber:5];
+
+  GPBUnknownFields* ufs2 = [[ufs copy] autorelease];
+  XCTAssertTrue(ufs != ufs2);        // Different objects
+  XCTAssertEqualObjects(ufs, ufs2);  // Equal contents
+  // All the actual field objects should be the same since they are immutable.
+  XCTAssertTrue([[ufs fields:1] firstObject] == [[ufs2 fields:1] firstObject]);  // Same object
+  XCTAssertTrue([[ufs fields:2] firstObject] == [[ufs2 fields:2] firstObject]);  // Same object
+  XCTAssertTrue([[ufs fields:3] firstObject] == [[ufs2 fields:3] firstObject]);  // Same object
+  XCTAssertTrue([[ufs fields:4] firstObject] == [[ufs2 fields:4] firstObject]);  // Same object
+  XCTAssertTrue([[ufs fields:4] firstObject].lengthDelimited ==
+                [[ufs2 fields:4] firstObject].lengthDelimited);                  // Same object
+  XCTAssertTrue([[ufs fields:5] firstObject] == [[ufs2 fields:5] firstObject]);  // Same object
+  XCTAssertTrue(group == [[ufs2 fields:5] firstObject].group);                   // Same object
+
+  // Now force copies on the fields to confirm that is not making new objects either.
+  for (GPBUnknownField* field in ufs) {
+    GPBUnknownField* field2 = [[field copy] autorelease];
+    XCTAssertTrue(field == field2);  // Same object (since they aren't mutable).
   }
 }
 
