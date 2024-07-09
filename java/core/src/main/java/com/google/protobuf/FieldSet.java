@@ -722,6 +722,8 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
   }
 
   /** Write a single field. */
+  // Avoid iterator allocation.
+  @SuppressWarnings({"ForeachList", "ForeachListWithUserVar"})
   public static void writeField(
       final FieldDescriptorLite<?> descriptor, final Object value, final CodedOutputStream output)
       throws IOException {
@@ -729,6 +731,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     int number = descriptor.getNumber();
     if (descriptor.isRepeated()) {
       final List<?> valueList = (List<?>) value;
+      int valueListSize = valueList.size();
       if (descriptor.isPacked()) {
         if (valueList.isEmpty()) {
           // The tag should not be written for empty packed fields.
@@ -737,16 +740,19 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
         output.writeTag(number, WireFormat.WIRETYPE_LENGTH_DELIMITED);
         // Compute the total data size so the length can be written.
         int dataSize = 0;
-        for (final Object element : valueList) {
+        for (int i = 0; i < valueListSize; i++) {
+          Object element = valueList.get(i);
           dataSize += computeElementSizeNoTag(type, element);
         }
         output.writeUInt32NoTag(dataSize);
         // Write the data itself, without any tags.
-        for (final Object element : valueList) {
+        for (int i = 0; i < valueListSize; i++) {
+          Object element = valueList.get(i);
           writeElementNoTag(output, type, element);
         }
       } else {
-        for (final Object element : valueList) {
+        for (int i = 0; i < valueListSize; i++) {
+          Object element = valueList.get(i);
           writeElement(output, type, number, element);
         }
       }
