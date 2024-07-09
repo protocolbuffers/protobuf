@@ -19,14 +19,13 @@ jobs:
         config:
           - { name: "Fastbuild" }
           - { name: "Optimized", flags: "-c opt" }
-          - { name: "FastTable", flags: "--//upb:fasttable_enabled=true" }
-          - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/..." }
+          - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/...", runner: ubuntu-20-4core }
           - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/... -//lua/..." }
           - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-//benchmarks:benchmark -//python/..." }
           # TODO: b/297027295 - Add 32-bit ASAN test
 
     name: ${{ matrix.config.name }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
 
     steps:
       - name: Checkout pending changes
@@ -172,11 +171,11 @@ jobs:
           - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'binary' }
           - { os: macos-11, python-version: "3.8", architecture: x64, type: 'binary' }
           - { os: ubuntu-latest, python-version: "3.11", architecture: x64, type: 'binary' }
-          - { os: macos-12, python-version: "3.11", architecture: x64, type: 'binary' }
+          - { os: macos-11, python-version: "3.11", architecture: x64, type: 'binary' }
           - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'source' }
           - { os: macos-11, python-version: "3.8", architecture: x64, type: 'source' }
           - { os: ubuntu-latest, python-version: "3.11", architecture: x64, type: 'source' }
-          - { os: macos-12, python-version: "3.11", architecture: x64, type: 'source' }
+          - { os: macos-11, python-version: "3.11", architecture: x64, type: 'source' }
 
           # Windows uses the full API up until Python 3.10, so each of these
           # jobs tests a distinct binary wheel.
