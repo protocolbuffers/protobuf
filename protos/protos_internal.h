@@ -7,5 +7,5 @@
 
 #ifndef UPB_PROTOS_PROTOS_INTERNAL_H_
 #define UPB_PROTOS_PROTOS_INTERNAL_H_
-#include "google/protobuf/hpb/protos_internal.h"
+#include "google/protobuf/hpb/internal.h"
 #endif

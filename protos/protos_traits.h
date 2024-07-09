@@ -7,5 +7,5 @@
 
 #ifndef UPB_PROTOS_PROTOS_TRAITS_H_
 #define UPB_PROTOS_PROTOS_TRAITS_H_
-#include "google/protobuf/hpb/protos_traits.h"
+#include "google/protobuf/hpb/traits.h"
 #endif

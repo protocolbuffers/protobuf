@@ -7,5 +7,5 @@
 
 #ifndef UPB_PROTOS_PROTOS_EXTENSION_LOCK_H_
 #define UPB_PROTOS_PROTOS_EXTENSION_LOCK_H_
-#include "google/protobuf/hpb/protos_extension_lock.h"
+#include "google/protobuf/hpb/extension_lock.h"
 #endif

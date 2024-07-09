@@ -7,5 +7,5 @@
 
 #ifndef UPB_PROTOS_PROTOS_H_
 #define UPB_PROTOS_PROTOS_H_
-#include "google/protobuf/hpb/protos.h"
+#include "google/protobuf/hpb/hpb.h"
 #endif

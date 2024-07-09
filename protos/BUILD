@@ -53,7 +53,7 @@
 #     copts = UPB_DEFAULT_CPPOPTS,
 #     visibility = ["//visibility:private"],
 #     deps = [
-#         "//hpb:protos_traits",
+#         "//hpb:traits",
 #     ],
 # )
 #
@@ -63,7 +63,7 @@
 #     copts = UPB_DEFAULT_CPPOPTS,
 #     visibility = ["//visibility:public"],
 #     deps = [
-#         "//hpb:protos_internal",
+#         "//hpb:internal",
 #     ],
 # )
 #
@@ -73,7 +73,7 @@
 #     copts = UPB_DEFAULT_CPPOPTS,
 #     visibility = ["//visibility:public"],
 #     deps = [
-#         "//hpb:protos_extension_lock",
+#         "//hpb:extension_lock",
 #     ],
 # )
 #
