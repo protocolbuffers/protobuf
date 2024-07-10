@@ -261,6 +261,19 @@ where
     }
 }
 
+impl<'msg, T, I, U> IntoProxied<Repeated<T>> for I
+where
+    I: Iterator<Item = U>,
+    T: 'msg + ProxiedInRepeated,
+    U: IntoProxied<T>,
+{
+    fn into_proxied(self, _private: Private) -> Repeated<T> {
+        let mut repeated: Repeated<T> = Repeated::new();
+        repeated.as_mut().extend(self);
+        repeated
+    }
+}
+
 /// Types that can appear in a `Repeated<T>`.
 ///
 /// This trait is implemented by generated code to communicate how the proxied
@@ -587,5 +600,11 @@ mod tests {
         r.as_mut().extend(&x.as_mut());
 
         assert_that!(r.as_mut(), elements_are![eq(0), eq(1), eq(2), eq(3)]);
+    }
+
+    #[test]
+    fn test_repeated_iter_into_proxied() {
+        let r: Repeated<i32> = [0, 1, 2, 3].into_iter().into_proxied(Private);
+        assert_that!(r.as_view(), elements_are![eq(0), eq(1), eq(2), eq(3)]);
     }
 }
