@@ -563,6 +563,7 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/message/copy.c
   ${protobuf_SOURCE_DIR}/upb/message/internal/compare_unknown.c
   ${protobuf_SOURCE_DIR}/upb/message/internal/extension.c
+  ${protobuf_SOURCE_DIR}/upb/message/internal/iterator.c
   ${protobuf_SOURCE_DIR}/upb/message/internal/message.c
   ${protobuf_SOURCE_DIR}/upb/message/map.c
   ${protobuf_SOURCE_DIR}/upb/message/map_sorter.c
@@ -594,6 +595,7 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/reflection/oneof_def.c
   ${protobuf_SOURCE_DIR}/upb/reflection/service_def.c
   ${protobuf_SOURCE_DIR}/upb/text/encode.c
+  ${protobuf_SOURCE_DIR}/upb/text/internal/encode.c
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto.c
   ${protobuf_SOURCE_DIR}/upb/util/required_fields.c
   ${protobuf_SOURCE_DIR}/upb/wire/decode.c
@@ -635,6 +637,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/message/internal/array.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/compare_unknown.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/extension.h
+  ${protobuf_SOURCE_DIR}/upb/message/internal/iterator.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/map.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/map_entry.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/map_sorter.h
@@ -707,6 +710,8 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/reflection/oneof_def.h
   ${protobuf_SOURCE_DIR}/upb/reflection/service_def.h
   ${protobuf_SOURCE_DIR}/upb/text/encode.h
+  ${protobuf_SOURCE_DIR}/upb/text/internal/encode.h
+  ${protobuf_SOURCE_DIR}/upb/text/options.h
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto.h
   ${protobuf_SOURCE_DIR}/upb/util/required_fields.h
   ${protobuf_SOURCE_DIR}/upb/wire/decode.h
