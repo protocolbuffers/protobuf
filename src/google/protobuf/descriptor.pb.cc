@@ -57,7 +57,7 @@ struct UninterpretedOption_NamePartDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOption_NamePartDefaultTypeInternal _UninterpretedOption_NamePart_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOption_NamePartDefaultTypeInternal _UninterpretedOption_NamePart_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr SourceCodeInfo_Location::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -97,7 +97,7 @@ struct SourceCodeInfo_LocationDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfo_LocationDefaultTypeInternal _SourceCodeInfo_Location_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfo_LocationDefaultTypeInternal _SourceCodeInfo_Location_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr GeneratedCodeInfo_Annotation::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -134,7 +134,7 @@ struct GeneratedCodeInfo_AnnotationDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfo_AnnotationDefaultTypeInternal _GeneratedCodeInfo_Annotation_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfo_AnnotationDefaultTypeInternal _GeneratedCodeInfo_Annotation_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr FieldOptions_FeatureSupport::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -169,7 +169,7 @@ struct FieldOptions_FeatureSupportDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptions_FeatureSupportDefaultTypeInternal _FieldOptions_FeatureSupport_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptions_FeatureSupportDefaultTypeInternal _FieldOptions_FeatureSupport_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr FieldOptions_EditionDefault::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -202,7 +202,7 @@ struct FieldOptions_EditionDefaultDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptions_EditionDefaultDefaultTypeInternal _FieldOptions_EditionDefault_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptions_EditionDefaultDefaultTypeInternal _FieldOptions_EditionDefault_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr FeatureSet::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -237,7 +237,7 @@ struct FeatureSetDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSetDefaultTypeInternal _FeatureSet_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSetDefaultTypeInternal _FeatureSet_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr ExtensionRangeOptions_Declaration::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -275,7 +275,7 @@ struct ExtensionRangeOptions_DeclarationDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExtensionRangeOptions_DeclarationDefaultTypeInternal _ExtensionRangeOptions_Declaration_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExtensionRangeOptions_DeclarationDefaultTypeInternal _ExtensionRangeOptions_Declaration_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr EnumDescriptorProto_EnumReservedRange::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -306,7 +306,7 @@ struct EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal _EnumDescriptorProto_EnumReservedRange_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal _EnumDescriptorProto_EnumReservedRange_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr DescriptorProto_ReservedRange::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -337,7 +337,7 @@ struct DescriptorProto_ReservedRangeDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ReservedRangeDefaultTypeInternal _DescriptorProto_ReservedRange_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ReservedRangeDefaultTypeInternal _DescriptorProto_ReservedRange_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr UninterpretedOption::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -379,7 +379,7 @@ struct UninterpretedOptionDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOptionDefaultTypeInternal _UninterpretedOption_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UninterpretedOptionDefaultTypeInternal _UninterpretedOption_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr SourceCodeInfo::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -409,7 +409,7 @@ struct SourceCodeInfoDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfoDefaultTypeInternal _SourceCodeInfo_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SourceCodeInfoDefaultTypeInternal _SourceCodeInfo_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr GeneratedCodeInfo::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -439,7 +439,7 @@ struct GeneratedCodeInfoDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfoDefaultTypeInternal _GeneratedCodeInfo_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfoDefaultTypeInternal _GeneratedCodeInfo_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr FeatureSetDefaults_FeatureSetEditionDefault::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -471,7 +471,7 @@ struct FeatureSetDefaults_FeatureSetEditionDefaultDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSetDefaults_FeatureSetEditionDefaultDefaultTypeInternal _FeatureSetDefaults_FeatureSetEditionDefault_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSetDefaults_FeatureSetEditionDefaultDefaultTypeInternal _FeatureSetDefaults_FeatureSetEditionDefault_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr ServiceOptions::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -503,7 +503,7 @@ struct ServiceOptionsDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceOptionsDefaultTypeInternal _ServiceOptions_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceOptionsDefaultTypeInternal _ServiceOptions_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr OneofOptions::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -534,7 +534,7 @@ struct OneofOptionsDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofOptionsDefaultTypeInternal _OneofOptions_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofOptionsDefaultTypeInternal _OneofOptions_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr MethodOptions::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -567,7 +567,7 @@ struct MethodOptionsDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodOptionsDefaultTypeInternal _MethodOptions_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodOptionsDefaultTypeInternal _MethodOptions_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr MessageOptions::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -603,7 +603,7 @@ struct MessageOptionsDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MessageOptionsDefaultTypeInternal _MessageOptions_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MessageOptionsDefaultTypeInternal _MessageOptions_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr FileOptions::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -673,7 +673,7 @@ struct FileOptionsDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileOptionsDefaultTypeInternal _FileOptions_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileOptionsDefaultTypeInternal _FileOptions_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr FieldOptions::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -716,7 +716,7 @@ struct FieldOptionsDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptionsDefaultTypeInternal _FieldOptions_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldOptionsDefaultTypeInternal _FieldOptions_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr FeatureSetDefaults::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -748,7 +748,7 @@ struct FeatureSetDefaultsDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSetDefaultsDefaultTypeInternal _FeatureSetDefaults_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FeatureSetDefaultsDefaultTypeInternal _FeatureSetDefaults_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr ExtensionRangeOptions::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -781,7 +781,7 @@ struct ExtensionRangeOptionsDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExtensionRangeOptionsDefaultTypeInternal _ExtensionRangeOptions_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExtensionRangeOptionsDefaultTypeInternal _ExtensionRangeOptions_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr EnumValueOptions::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -815,7 +815,7 @@ struct EnumValueOptionsDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueOptionsDefaultTypeInternal _EnumValueOptions_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueOptionsDefaultTypeInternal _EnumValueOptions_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr EnumOptions::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -849,7 +849,7 @@ struct EnumOptionsDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumOptionsDefaultTypeInternal _EnumOptions_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumOptionsDefaultTypeInternal _EnumOptions_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr OneofDescriptorProto::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -882,7 +882,7 @@ struct OneofDescriptorProtoDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofDescriptorProtoDefaultTypeInternal _OneofDescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 OneofDescriptorProtoDefaultTypeInternal _OneofDescriptorProto_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr MethodDescriptorProto::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -923,7 +923,7 @@ struct MethodDescriptorProtoDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodDescriptorProtoDefaultTypeInternal _MethodDescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 MethodDescriptorProtoDefaultTypeInternal _MethodDescriptorProto_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr FieldDescriptorProto::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -973,7 +973,7 @@ struct FieldDescriptorProtoDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldDescriptorProtoDefaultTypeInternal _FieldDescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FieldDescriptorProtoDefaultTypeInternal _FieldDescriptorProto_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr EnumValueDescriptorProto::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -1007,7 +1007,7 @@ struct EnumValueDescriptorProtoDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueDescriptorProtoDefaultTypeInternal _EnumValueDescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumValueDescriptorProtoDefaultTypeInternal _EnumValueDescriptorProto_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr DescriptorProto_ExtensionRange::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -1039,7 +1039,7 @@ struct DescriptorProto_ExtensionRangeDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ExtensionRangeDefaultTypeInternal _DescriptorProto_ExtensionRange_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProto_ExtensionRangeDefaultTypeInternal _DescriptorProto_ExtensionRange_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr ServiceDescriptorProto::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -1073,7 +1073,7 @@ struct ServiceDescriptorProtoDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceDescriptorProtoDefaultTypeInternal _ServiceDescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ServiceDescriptorProtoDefaultTypeInternal _ServiceDescriptorProto_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr EnumDescriptorProto::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -1109,7 +1109,7 @@ struct EnumDescriptorProtoDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDescriptorProtoDefaultTypeInternal _EnumDescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EnumDescriptorProtoDefaultTypeInternal _EnumDescriptorProto_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr DescriptorProto::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -1150,7 +1150,7 @@ struct DescriptorProtoDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProtoDefaultTypeInternal _DescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DescriptorProtoDefaultTypeInternal _DescriptorProto_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr FileDescriptorProto::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -1198,7 +1198,7 @@ struct FileDescriptorProtoDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorProtoDefaultTypeInternal _FileDescriptorProto_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorProtoDefaultTypeInternal _FileDescriptorProto_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr FileDescriptorSet::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -1228,7 +1228,7 @@ struct FileDescriptorSetDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorSetDefaultTypeInternal _FileDescriptorSet_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 FileDescriptorSetDefaultTypeInternal _FileDescriptorSet_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 }  // namespace protobuf
 }  // namespace google
 static const ::_pb::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[17];

@@ -26,6 +26,10 @@
 // detect/prohibit anytime it is #included twice without a corresponding
 // #undef.
 
+// We need to include these headers for __cpp_lib_ macros
+#include <new>
+#include <string>
+
 #ifdef PROTOBUF_PORT_
 #error "port_def.inc included multiple times"
 #endif
@@ -994,9 +998,26 @@ namespace internal {
 #define PROTOBUF_DEPRECATE_AND_INLINE() [[deprecated]]
 #endif
 
+#ifdef PROTOBUF_DEFAULT_INSTANCE_SECTION
+#error PROTOBUF_DEFAULT_INSTANCE_SECTION was previously defined
+#endif
+// For now, only use rodata for debug builds.
+// And only when we can constinit the instances
+// We also need C++20 support for certain fields.
+#if (!defined(NDEBUG) || defined(PROTOBUF_ASAN) || defined(PROTOBUF_MSAN) || \
+     defined(PROTOBUF_TSAN)) &&                                              \
+    defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES) &&                         \
+    (defined(__cpp_lib_constexpr_string) &&                                  \
+     __cpp_lib_constexpr_string >= 201907L)
+#define PROTOBUF_DEFAULT_INSTANCE_SECTION \
+  ABSL_ATTRIBUTE_SECTION_VARIABLE(.data.rel.ro)
+#define PROTOBUF_USES_RODATA_FOR_DEFAULTS
+#else
+#define PROTOBUF_DEFAULT_INSTANCE_SECTION
+#endif
 
-namespace google {
-namespace protobuf {
+
+        namespace proto2 {
 namespace internal {
 #if defined(PROTOBUF_INTERNAL_ENABLE_DEBUG_COUNTERS)
 #define PROTOBUF_DEBUG_COUNTER(name)                                   \
@@ -1011,5 +1032,4 @@ namespace internal {
   ::google::protobuf::internal::NoopDebugCounter {}
 #endif  // PROTOBUF_ENABLE_DEBUG_COUNTERS
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+ }  // namespace proto2

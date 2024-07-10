@@ -55,7 +55,7 @@ struct VersionDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 VersionDefaultTypeInternal _Version_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 VersionDefaultTypeInternal _Version_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr CodeGeneratorResponse_File::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -89,7 +89,7 @@ struct CodeGeneratorResponse_FileDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr CodeGeneratorResponse::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -120,7 +120,7 @@ struct CodeGeneratorResponseDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponseDefaultTypeInternal _CodeGeneratorResponse_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponseDefaultTypeInternal _CodeGeneratorResponse_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 
 inline constexpr CodeGeneratorRequest::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -151,7 +151,7 @@ struct CodeGeneratorRequestDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google

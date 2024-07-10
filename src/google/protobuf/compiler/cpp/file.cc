@@ -556,6 +556,8 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
 
   if (!ShouldGenerateClass(generator->descriptor(), options_)) return;
 
+  auto vars = p->WithVars({{"rodata", "PROTOBUF_DEFAULT_INSTANCE_SECTION"}});
+
   // Generate the split instance first because it's needed in the constexpr
   // constructor.
   if (ShouldSplit(generator->descriptor(), options_)) {
@@ -615,9 +617,11 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
           };
 
           PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$ $rodata$;
         )cc");
   } else if (UsingImplicitWeakDescriptor(file_, options_)) {
+    // On these we use a special section to take advantage of weak linkage, so
+    // we can't use `rodata` section directly.
     p->Emit(
         {
             {"index", generator->index_in_file_messages()},
@@ -661,7 +665,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
           };
 
           PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
-              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$;
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $type$ $name$ $rodata$;
         )cc");
   }
 

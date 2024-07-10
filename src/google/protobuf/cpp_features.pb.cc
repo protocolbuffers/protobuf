@@ -50,7 +50,7 @@ struct CppFeaturesDefaultTypeInternal {
 };
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CppFeaturesDefaultTypeInternal _CppFeatures_default_instance_;
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CppFeaturesDefaultTypeInternal _CppFeatures_default_instance_ PROTOBUF_DEFAULT_INSTANCE_SECTION;
 }  // namespace pb
 static const ::_pb::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto[1];
 static constexpr const ::_pb::ServiceDescriptor**

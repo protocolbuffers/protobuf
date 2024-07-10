@@ -12,6 +12,7 @@
 
 #include <gtest/gtest.h>
 #include "absl/base/config.h"
+#include "google/protobuf/unittest.pb.h"
 
 // Must be included last
 #include "google/protobuf/port_def.inc"
@@ -44,6 +45,18 @@ TEST(PortTest, UnreachableTrapsOnDebugMode) {
   EXPECT_DEATH(Unreachable(), "Assumption failed: 'Unreachable'");
 #endif
 #endif
+}
+
+TEST(PortTest, WhenEnabledRodataDefaultsCrashOnWrite) {
+#if !defined(PROTOBUF_USES_RODATA_FOR_DEFAULTS) || \
+    !defined(ABSL_HAVE_ATTRIBUTE_SECTION)
+  GTEST_SKIP() << "Unsupported";
+#endif
+
+  EXPECT_DEATH(const_cast<protobuf_unittest::TestAllTypes&>(
+                   protobuf_unittest::TestAllTypes::default_instance())
+                   .set_optional_int32(1),
+               "SIGSEGV");
 }
 
 }  // namespace internal

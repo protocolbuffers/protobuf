@@ -324,6 +324,7 @@ cc_test(
     srcs = ["port_test.cc"],
     deps = [
         ":port",
+        ":unittest_cc_proto",
         ":varint_shuffle",
         "@com_google_absl//absl/base:config",
         "@com_google_absl//absl/log:absl_check",

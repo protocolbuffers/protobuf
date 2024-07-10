@@ -531,7 +531,8 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   p->Emit(R"cc(
     inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
       $StrongRef$;
-      return $has_field$ ? *$cast_field_$ : reinterpret_cast<$Submsg$&>($kDefault$);
+      return $has_field$ ? *$cast_field_$
+                         : reinterpret_cast<const $Submsg$&>($kDefault$);
     }
   )cc");
   p->Emit(R"cc(
