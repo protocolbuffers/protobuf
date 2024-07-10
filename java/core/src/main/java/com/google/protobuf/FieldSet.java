@@ -1319,7 +1319,8 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       }
     }
 
-    @SuppressWarnings("unchecked")
+    // Avoid iterator allocation.
+    @SuppressWarnings({"unchecked", "ForeachList", "ForeachListWithUserVar"})
     private void mergeFromField(final Map.Entry<T, Object> entry) {
       final T descriptor = entry.getKey();
       Object otherValue = entry.getValue();
@@ -1330,11 +1331,14 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
           throw new IllegalStateException("Lazy fields can not be repeated");
         }
         List<Object> value = (List<Object>) getFieldAllowBuilders(descriptor);
+        List<?> otherList = (List<?>) otherValue;
+        int otherListSize = otherList.size();
         if (value == null) {
-          value = new ArrayList<>();
+          value = new ArrayList<>(otherListSize);
           fields.put(descriptor, value);
         }
-        for (Object element : (List<?>) otherValue) {
+        for (int i = 0; i < otherListSize; i++) {
+          Object element = otherList.get(i);
           value.add(FieldSet.cloneIfMutable(element));
         }
       } else if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE) {
