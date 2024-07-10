@@ -49,14 +49,14 @@ std::string GenerateTestData() {
 
 std::mutex m[8];
 void unlock_func(const void* msg) { m[absl::HashOf(msg) & 0x7].unlock(); }
-::protos::internal::UpbExtensionUnlocker lock_func(const void* msg) {
+::hpb::internal::UpbExtensionUnlocker lock_func(const void* msg) {
   m[absl::HashOf(msg) & 0x7].lock();
   return &unlock_func;
 }
 
 void TestConcurrentExtensionAccess(::protos::ExtensionRegistry registry) {
-  ::protos::internal::upb_extension_locker_global.store(
-      &lock_func, std::memory_order_release);
+  ::hpb::internal::upb_extension_locker_global.store(&lock_func,
+                                                     std::memory_order_release);
   const std::string payload = GenerateTestData();
   TestModel parsed_model =
       ::protos::Parse<TestModel>(payload, registry).value();

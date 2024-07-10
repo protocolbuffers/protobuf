@@ -30,7 +30,7 @@
 
 namespace {
 
-using ::protos::internal::Requires;
+using ::hpb::internal::Requires;
 using ::protos_generator::test::protos::ChildModel1;
 using ::protos_generator::test::protos::container_ext;
 using ::protos_generator::test::protos::ContainerExtension;

@@ -37,7 +37,7 @@ namespace internal {
 // upb_Array* for the message when the RepeatedFieldProxy is constructed.
 template <class T>
 class RepeatedFieldProxyBase {
-  using Array = add_const_if_T_is_const<T, upb_Array>;
+  using Array = hpb::internal::add_const_if_T_is_const<T, upb_Array>;
 
  public:
   explicit RepeatedFieldProxyBase(Array* arr, upb_Arena* arena)
