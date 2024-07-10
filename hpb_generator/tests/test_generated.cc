@@ -31,19 +31,19 @@
 namespace {
 
 using ::hpb::internal::Requires;
-using ::protos_generator::test::protos::ChildModel1;
-using ::protos_generator::test::protos::container_ext;
-using ::protos_generator::test::protos::ContainerExtension;
-using ::protos_generator::test::protos::other_ext;
-using ::protos_generator::test::protos::RED;
-using ::protos_generator::test::protos::TestEnum;
-using ::protos_generator::test::protos::TestModel;
-using ::protos_generator::test::protos::TestModel_Category;
-using ::protos_generator::test::protos::TestModel_Category_IMAGES;
-using ::protos_generator::test::protos::TestModel_Category_NEWS;
-using ::protos_generator::test::protos::TestModel_Category_VIDEO;
-using ::protos_generator::test::protos::theme;
-using ::protos_generator::test::protos::ThemeExtension;
+using ::hpb_unittest::protos::ChildModel1;
+using ::hpb_unittest::protos::container_ext;
+using ::hpb_unittest::protos::ContainerExtension;
+using ::hpb_unittest::protos::other_ext;
+using ::hpb_unittest::protos::RED;
+using ::hpb_unittest::protos::TestEnum;
+using ::hpb_unittest::protos::TestModel;
+using ::hpb_unittest::protos::TestModel_Category;
+using ::hpb_unittest::protos::TestModel_Category_IMAGES;
+using ::hpb_unittest::protos::TestModel_Category_NEWS;
+using ::hpb_unittest::protos::TestModel_Category_VIDEO;
+using ::hpb_unittest::protos::theme;
+using ::hpb_unittest::protos::ThemeExtension;
 using ::testing::ElementsAre;
 
 TEST(CppGeneratedCode, Constructor) { TestModel test_model; }

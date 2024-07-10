@@ -20,14 +20,7 @@
 #include "google/protobuf/hpb/hpb.h"
 #include "upb/mem/arena.hpp"
 
-#ifndef ASSERT_OK
-#define ASSERT_OK(x) ASSERT_TRUE(x.ok())
-#endif  // ASSERT_OK
-#ifndef EXPECT_OK
-#define EXPECT_OK(x) EXPECT_TRUE(x.ok())
-#endif  // EXPECT_OK
-
-namespace protos_generator::test::protos {
+namespace hpb_unittest::protos {
 
 namespace {
 
@@ -121,4 +114,4 @@ TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothEager) {
 }
 
 }  // namespace
-}  // namespace protos_generator::test::protos
+}  // namespace hpb_unittest::protos
