@@ -117,8 +117,6 @@ void DeclareSubmodulesForNonPrimarySrcs(
     std::string relative_mod_path =
         primary_relpath.Relative(RelativePath(non_primary_file_path));
     ctx.Emit({{"file_path", relative_mod_path},
-              {"foo", primary_file_path},
-              {"bar", non_primary_file_path},
               {"mod_name", RustInternalModuleName(ctx, *non_primary_src)}},
              R"rs(
                         #[path="$file_path$"]
