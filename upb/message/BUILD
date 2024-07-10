@@ -86,6 +86,24 @@ cc_library(
 )
 
 cc_library(
+    name = "iterator",
+    srcs = [
+        "internal/iterator.c",
+    ],
+    hdrs = [
+        "internal/iterator.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":internal",
+        ":message",
+        "//upb:mini_table",
+        "//upb:port",
+    ],
+)
+
+cc_library(
     name = "compare",
     srcs = [
         "compare.c",
@@ -97,6 +115,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
+        ":iterator",
         ":message",
         "//upb:base",
         "//upb:mini_table",
