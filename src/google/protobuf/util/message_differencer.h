@@ -182,7 +182,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
     // If "field" is a repeated field which is being treated as a map or
     // a set (see TreatAsMap() and TreatAsSet(), below), new_index indicates
     // the index the position to which the element has moved.  If the element
-    // has not moved, "new_index" will have the same value as "index".
+    // has not moved, "new_index" will be -1.
     int new_index = -1;
 
     // If "field" is a map field, point to the map entry.
