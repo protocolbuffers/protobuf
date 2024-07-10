@@ -81,8 +81,8 @@ namespace python {
 // All descriptors are stored here.
 std::unordered_map<const void*, PyObject*>* interned_descriptors;
 
-PyObject* PyString_FromCppString(const std::string& str) {
-  return PyUnicode_FromStringAndSize(str.c_str(), str.size());
+PyObject* PyString_FromCppString(absl::string_view str) {
+  return PyUnicode_FromStringAndSize(str.data(), str.size());
 }
 
 // Check that the calling Python code is the global scope of a _pb2.py module.
@@ -266,7 +266,7 @@ static PyObject* GetOrBuildMessageInDefaultPool(
       message_factory::GetOrCreateMessageClass(message_factory, message_type);
   if (message_class == nullptr) {
     PyErr_Format(PyExc_TypeError, "Could not retrieve class for: %s",
-                 message_type->full_name().c_str());
+                 std::string(message_type->full_name()).c_str());
     return nullptr;
   }
   ScopedPyObjectPtr args(PyTuple_New(0));
@@ -278,7 +278,7 @@ static PyObject* GetOrBuildMessageInDefaultPool(
   }
   if (!PyObject_TypeCheck(value.get(), CMessage_Type)) {
     PyErr_Format(PyExc_TypeError, "Invalid class for %s: %s",
-                 message_type->full_name().c_str(),
+                 std::string(message_type->full_name()).c_str(),
                  Py_TYPE(value.get())->tp_name);
     return nullptr;
   }
@@ -339,7 +339,7 @@ static PyObject* CopyToPythonProto(const DescriptorClass *descriptor,
   if (!PyObject_TypeCheck(target, CMessage_Type) ||
       message->message->GetDescriptor() != self_descriptor) {
     PyErr_Format(PyExc_TypeError, "Not a %s message",
-                 self_descriptor->full_name().c_str());
+                 std::string(self_descriptor->full_name()).c_str());
     return nullptr;
   }
   cmessage::AssureWritable(message);
@@ -902,8 +902,8 @@ static PyObject* GetDefaultValue(PyBaseDescriptor *self, void *closure) {
       break;
     }
     case FieldDescriptor::CPPTYPE_STRING: {
-      const std::string& value = _GetDescriptor(self)->default_value_string();
-      result = ToStringObject(_GetDescriptor(self), value);
+      result = ToStringObject(_GetDescriptor(self),
+                              _GetDescriptor(self)->default_value_string());
       break;
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
@@ -918,7 +918,7 @@ static PyObject* GetDefaultValue(PyBaseDescriptor *self, void *closure) {
     }
     default:
       PyErr_Format(PyExc_NotImplementedError, "default value for %s",
-                   _GetDescriptor(self)->full_name().c_str());
+                   std::string(_GetDescriptor(self)->full_name()).c_str());
       return nullptr;
   }
   return result;
@@ -2052,8 +2052,8 @@ static bool AddEnumValues(PyTypeObject *type,
     if (obj == nullptr) {
       return false;
     }
-    if (PyDict_SetItemString(type->tp_dict, value->name().c_str(), obj.get()) <
-        0) {
+    if (PyDict_SetItemString(type->tp_dict, std::string(value->name()).c_str(),
+                             obj.get()) < 0) {
       return false;
     }
   }

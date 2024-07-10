@@ -131,6 +131,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     Empty::_class_data_ = {
         ::google::protobuf::internal::ZeroFieldsBase::ClassData{
+            &_Empty_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
@@ -138,9 +139,8 @@ const ::google::protobuf::MessageLite::ClassDataFull
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::internal::ZeroFieldsBase::GetDeleteImpl<Empty>(),
             ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<Empty>(),
-            ::google::protobuf::internal::ZeroFieldsBase::GetClearImpl<Empty>(),
-                ::google::protobuf::internal::ZeroFieldsBase::GetByteSizeLongImpl<Empty>(),
-                ::google::protobuf::internal::ZeroFieldsBase::GetSerializeImpl<Empty>(),
+            ::google::protobuf::internal::ZeroFieldsBase::GetClearImpl<Empty>(), &Empty::ByteSizeLong,
+                &Empty::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Empty, _impl_._cached_size_),
             false,
@@ -166,7 +166,7 @@ const ::_pbi::TcParseTable<0, 0, 0, 0, 2> Empty::_table_ = {
     0,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
-    &_Empty_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE

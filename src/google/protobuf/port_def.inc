@@ -235,6 +235,11 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_TAILCALL false
 #endif
 
+#ifdef PROTOBUF_CC
+#error PROTOBUF_CC was previously defined
+#endif
+#define PROTOBUF_CC
+
 #if defined(__clang__)
 #define PROTOBUF_IGNORE_DEPRECATION_START                     \
   _Pragma("clang diagnostic push")                                  \
@@ -744,6 +749,10 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #undef ERROR_INSTALL_FAILED
 #pragma push_macro("ERROR_NOT_FOUND")
 #undef ERROR_NOT_FOUND
+#pragma push_macro("ERROR_RETRY")
+#undef ERROR_RETRY
+#pragma push_macro("ERROR_TIMEOUT")
+#undef ERROR_TIMEOUT
 #pragma push_macro("GetClassName")
 #undef GetClassName
 #pragma push_macro("GetCurrentTime")
@@ -978,3 +987,22 @@ namespace internal {
 #define PROTOBUF_DEPRECATE_AND_INLINE() [[deprecated]]
 #endif
 
+
+namespace google {
+namespace protobuf {
+namespace internal {
+#if defined(PROTOBUF_INTERNAL_ENABLE_DEBUG_COUNTERS)
+#define PROTOBUF_DEBUG_COUNTER(name)                                   \
+  ([]() -> auto & {                                                    \
+    static constexpr const char *counter_name = name;                  \
+    static ::google::protobuf::internal::RealDebugCounter counter(counter_name); \
+    return counter;                                                    \
+  }())
+
+#else  // PROTOBUF_ENABLE_DEBUG_COUNTERS
+#define PROTOBUF_DEBUG_COUNTER(name) \
+  ::google::protobuf::internal::NoopDebugCounter {}
+#endif  // PROTOBUF_ENABLE_DEBUG_COUNTERS
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google

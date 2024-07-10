@@ -333,4 +333,15 @@ TEST(FuzzTest, RoundTripDescriptorRegressionOneofSameName) {
            })pb"));
 }
 
+TEST(FuzzTest, NegativeOneofIndex) {
+  RoundTripDescriptor(ParseTextProtoOrDie(
+      R"pb(file {
+             message_type {
+               name: "A"
+               field { name: "A" number: 0 type_name: "" oneof_index: -1 }
+             }
+           }
+      )pb"));
+}
+
 }  // namespace upb_test

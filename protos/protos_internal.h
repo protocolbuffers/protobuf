@@ -7,19 +7,5 @@
 
 #ifndef UPB_PROTOS_PROTOS_INTERNAL_H_
 #define UPB_PROTOS_PROTOS_INTERNAL_H_
-
-#include "upb/mem/arena.h"
-#include "upb/message/message.h"
-
-namespace protos::internal {
-
-// Moves ownership of a message created in a source arena.
-//
-// Utility function to provide a way to move ownership across languages or VMs.
-template <typename T>
-T MoveMessage(upb_Message* msg, upb_Arena* arena) {
-  return T(msg, arena);
-}
-
-}  // namespace protos::internal
+#include "google/protobuf/hpb/internal.h"
 #endif

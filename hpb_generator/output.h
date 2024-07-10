@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_PROTOS_GENERATOR_OUTPUT_H
-#define UPB_PROTOS_GENERATOR_OUTPUT_H
+#ifndef PROTOBUF_COMPILER_HBP_OUTPUT_H_
+#define PROTOBUF_COMPILER_HBP_OUTPUT_H_
 
 #include <vector>
 
@@ -16,7 +16,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
-namespace protos_generator {
+namespace google::protobuf::hpb_generator {
 
 class Output {
  public:
@@ -146,6 +146,7 @@ std::string FileLayoutName(const google::protobuf::FileDescriptor* file);
 std::string CHeaderFilename(const google::protobuf::FileDescriptor* file);
 std::string CSourceFilename(const google::protobuf::FileDescriptor* file);
 
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator
 
-#endif  // UPB_PROTOS_GENERATOR_OUTPUT_H
+#endif  // PROTOBUF_COMPILER_HBP_OUTPUT_H_

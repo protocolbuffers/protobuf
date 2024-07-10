@@ -23,3 +23,5 @@ ABSL_CONST_INIT PROTOBUF_EXPORT
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

@@ -1094,7 +1094,14 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       }
     }
 
-    // TODO: Remove, replace with newExtensionSerializer().
+    /**
+     * For compatibility with older gencode.
+     *
+     * <p> TODO Remove this in the next breaking release.
+     *
+     * @deprecated Use {@link newExtensionSerializer()} instead.
+     */
+    @Deprecated
     protected ExtensionWriter newExtensionWriter() {
       return new ExtensionWriter(false);
     }

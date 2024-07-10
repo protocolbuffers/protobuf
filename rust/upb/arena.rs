@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 use crate::opaque_pointee::opaque_pointee;
 use std::alloc::{self, Layout};
 use std::cell::UnsafeCell;
@@ -149,7 +156,6 @@ impl Arena {
     /// guaranteed to last until both `self` and `other` have been dropped.
     /// The pointers returned by `Arena::alloc` will continue to be valid so
     /// long as either `self` or `other` has not been dropped.
-    ///
     pub fn fuse(&self, other: &Arena) {
         // SAFETY: `self.raw()` and `other.raw()` are both valid UPB arenas.
         let success = unsafe { upb_Arena_Fuse(self.raw(), other.raw()) };

@@ -28,7 +28,10 @@
 // Must be included last
 #include "google/protobuf/port_def.inc"
 
+#ifndef PROTOBUF_PRAGMA_INIT_SEG_DONE
 PROTOBUF_PRAGMA_INIT_SEG
+#define PROTOBUF_PRAGMA_INIT_SEG_DONE
+#endif
 
 
 namespace google {

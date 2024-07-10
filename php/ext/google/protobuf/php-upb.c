@@ -341,11 +341,6 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #define UPB_DESC_MINITABLE(sym) &google__protobuf__##sym##_msg_init
 #endif
 
-#ifdef UPB_TRACING_ENABLED
-#ifdef NDEBUG
-error UPB_TRACING_ENABLED Tracing should be disabled in production builds
-#endif
-#endif
 
 // Linker arrays combine elements from multiple translation units into a single
 // array that can be iterated over at runtime.
@@ -3958,7 +3953,7 @@ static void jsonenc_value(jsonenc* e, const upb_Message* msg,
 
 UPB_NORETURN static void jsonenc_err(jsonenc* e, const char* msg) {
   upb_Status_SetErrorMessage(e->status, msg);
-  longjmp(e->err, 1);
+  UPB_LONGJMP(e->err, 1);
 }
 
 UPB_PRINTF(2, 3)
@@ -3967,7 +3962,7 @@ UPB_NORETURN static void jsonenc_errf(jsonenc* e, const char* fmt, ...) {
   va_start(argp, fmt);
   upb_Status_VSetErrorFormat(e->status, fmt, argp);
   va_end(argp);
-  longjmp(e->err, 1);
+  UPB_LONGJMP(e->err, 1);
 }
 
 static upb_Arena* jsonenc_arena(jsonenc* e) {
@@ -4724,6 +4719,10 @@ upb_alloc upb_alloc_global = {&upb_global_allocfunc};
 
 // Must be last.
 
+static UPB_ATOMIC(size_t) max_block_size = 32 << 10;
+
+void upb_Arena_SetMaxBlockSize(size_t max) { max_block_size = max; }
+
 typedef struct upb_MemBlock {
   // Atomic only for the benefit of SpaceAllocated().
   UPB_ATOMIC(struct upb_MemBlock*) next;
@@ -4961,7 +4960,14 @@ static bool _upb_Arena_AllocBlock(upb_Arena* a, size_t size) {
   if (!ai->block_alloc) return false;
   upb_MemBlock* last_block = upb_Atomic_Load(&ai->blocks, memory_order_acquire);
   size_t last_size = last_block != NULL ? last_block->size : 128;
-  size_t block_size = UPB_MAX(size, last_size * 2) + kUpb_MemblockReserve;
+
+  // Don't naturally grow beyond the max block size.
+  size_t clamped_size = UPB_MIN(last_size * 2, max_block_size);
+
+  // We may need to exceed the max block size if the user requested a large
+  // allocation.
+  size_t block_size = UPB_MAX(size, clamped_size) + kUpb_MemblockReserve;
+
   upb_MemBlock* block =
       upb_malloc(_upb_ArenaInternal_BlockAlloc(ai), block_size);
 
@@ -5865,66 +5871,10 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
 
 // Must be last.
 
-#define kUpb_BaseField_Begin ((size_t)-1)
-#define kUpb_Extension_Begin ((size_t)-1)
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-static bool _upb_Message_NextBaseField(const upb_Message* msg,
-                                       const upb_MiniTable* m,
-                                       const upb_MiniTableField** out_f,
-                                       upb_MessageValue* out_v, size_t* iter) {
-  const size_t count = upb_MiniTable_FieldCount(m);
-  size_t i = *iter;
-
-  while (++i < count) {
-    const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(m, i);
-    const void* src = UPB_PRIVATE(_upb_Message_DataPtr)(msg, f);
-
-    upb_MessageValue val;
-    UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, &val, src);
-
-    // Skip field if unset or empty.
-    if (upb_MiniTableField_HasPresence(f)) {
-      if (!upb_Message_HasBaseField(msg, f)) continue;
-    } else {
-      if (UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(f, src)) continue;
-
-      if (upb_MiniTableField_IsArray(f)) {
-        if (upb_Array_Size(val.array_val) == 0) continue;
-      } else if (upb_MiniTableField_IsMap(f)) {
-        if (upb_Map_Size(val.map_val) == 0) continue;
-      }
-    }
-
-    *out_f = f;
-    *out_v = val;
-    *iter = i;
-    return true;
-  }
-
-  return false;
-}
-
-static bool _upb_Message_NextExtension(const upb_Message* msg,
-                                       const upb_MiniTable* m,
-                                       const upb_MiniTableExtension** out_e,
-                                       upb_MessageValue* out_v, size_t* iter) {
-  size_t count;
-  const upb_Extension* exts = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
-  size_t i = *iter;
-
-  if (++i < count) {
-    *out_e = exts[i].ext;
-    *out_v = exts[i].data;
-    *iter = i;
-    return true;
-  }
-
-  return false;
-}
 
 bool upb_Message_IsEmpty(const upb_Message* msg, const upb_MiniTable* m) {
   if (upb_Message_ExtensionCount(msg)) return false;
@@ -5932,7 +5882,7 @@ bool upb_Message_IsEmpty(const upb_Message* msg, const upb_MiniTable* m) {
   const upb_MiniTableField* f;
   upb_MessageValue v;
   size_t iter = kUpb_BaseField_Begin;
-  return !_upb_Message_NextBaseField(msg, m, &f, &v, &iter);
+  return !UPB_PRIVATE(_upb_Message_NextBaseField)(msg, m, &f, &v, &iter);
 }
 
 static bool _upb_Array_IsEqual(const upb_Array* arr1, const upb_Array* arr2,
@@ -5994,8 +5944,10 @@ static bool _upb_Message_BaseFieldsAreEqual(const upb_Message* msg1,
     const upb_MiniTableField *f1, *f2;
     upb_MessageValue val1, val2;
 
-    const bool got1 = _upb_Message_NextBaseField(msg1, m, &f1, &val1, &iter1);
-    const bool got2 = _upb_Message_NextBaseField(msg2, m, &f2, &val2, &iter2);
+    const bool got1 =
+        UPB_PRIVATE(_upb_Message_NextBaseField)(msg1, m, &f1, &val1, &iter1);
+    const bool got2 =
+        UPB_PRIVATE(_upb_Message_NextBaseField)(msg2, m, &f2, &val2, &iter2);
 
     if (got1 != got2) return false;  // Must have identical field counts.
     if (!got1) return true;          // Loop termination condition.
@@ -6035,7 +5987,7 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
 
   // Iterate over all extensions for msg1, and search msg2 for each extension.
   size_t iter1 = kUpb_Extension_Begin;
-  while (_upb_Message_NextExtension(msg1, m, &e, &val1, &iter1)) {
+  while (UPB_PRIVATE(_upb_Message_NextExtension)(msg1, m, &e, &val1, &iter1)) {
     const upb_Extension* ext2 = UPB_PRIVATE(_upb_Message_Getext)(msg2, e);
     if (!ext2) return false;
 
@@ -6381,6 +6333,36 @@ upb_Message* upb_Message_ShallowClone(const upb_Message* msg,
   upb_Message* clone = upb_Message_New(m, arena);
   upb_Message_ShallowCopy(clone, msg, m);
   return clone;
+}
+
+#include "stddef.h"
+
+// Must be last.
+
+bool upb_Message_MergeFrom(upb_Message* dst, const upb_Message* src,
+                           const upb_MiniTable* mt,
+                           const upb_ExtensionRegistry* extreg,
+                           upb_Arena* arena) {
+  char* buf = NULL;
+  size_t size = 0;
+  // This tmp arena is used to hold the bytes for `src` serialized. This bends
+  // the typical "no hidden allocations" design of upb, but under a properly
+  // optimized implementation this extra allocation would not be necessary and
+  // so we don't want to unnecessarily have the bad API or bloat the passed-in
+  // arena with this very-short-term allocation.
+  upb_Arena* encode_arena = upb_Arena_New();
+  upb_EncodeStatus e_status = upb_Encode(src, mt, 0, encode_arena, &buf, &size);
+  if (e_status != kUpb_EncodeStatus_Ok) {
+    upb_Arena_Free(encode_arena);
+    return false;
+  }
+  upb_DecodeStatus d_status = upb_Decode(buf, size, dst, mt, extreg, 0, arena);
+  if (d_status != kUpb_DecodeStatus_Ok) {
+    upb_Arena_Free(encode_arena);
+    return false;
+  }
+  upb_Arena_Free(encode_arena);
+  return true;
 }
 
 
@@ -12280,6 +12262,66 @@ void upb_Message_SetNewMessageTraceHandler(void (*handler)(const upb_MiniTable*,
 #endif  // UPB_TRACING_ENABLED
 
 
+#include <stddef.h>
+
+
+// Must be last.
+
+bool UPB_PRIVATE(_upb_Message_NextBaseField)(const upb_Message* msg,
+                                             const upb_MiniTable* m,
+                                             const upb_MiniTableField** out_f,
+                                             upb_MessageValue* out_v,
+                                             size_t* iter) {
+  const size_t count = upb_MiniTable_FieldCount(m);
+  size_t i = *iter;
+
+  while (++i < count) {
+    const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(m, i);
+    const void* src = UPB_PRIVATE(_upb_Message_DataPtr)(msg, f);
+
+    upb_MessageValue val;
+    UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, &val, src);
+
+    // Skip field if unset or empty.
+    if (upb_MiniTableField_HasPresence(f)) {
+      if (!upb_Message_HasBaseField(msg, f)) continue;
+    } else {
+      if (UPB_PRIVATE(_upb_MiniTableField_DataIsZero)(f, src)) continue;
+
+      if (upb_MiniTableField_IsArray(f)) {
+        if (upb_Array_Size(val.array_val) == 0) continue;
+      } else if (upb_MiniTableField_IsMap(f)) {
+        if (upb_Map_Size(val.map_val) == 0) continue;
+      }
+    }
+
+    *out_f = f;
+    *out_v = val;
+    *iter = i;
+    return true;
+  }
+
+  return false;
+}
+
+bool UPB_PRIVATE(_upb_Message_NextExtension)(
+    const upb_Message* msg, const upb_MiniTable* m,
+    const upb_MiniTableExtension** out_e, upb_MessageValue* out_v,
+    size_t* iter) {
+  size_t count;
+  const upb_Extension* exts = UPB_PRIVATE(_upb_Message_Getexts)(msg, &count);
+  size_t i = *iter;
+
+  if (++i < count) {
+    *out_e = exts[i].ext;
+    *out_v = exts[i].data;
+    *iter = i;
+    return true;
+  }
+
+  return false;
+}
+
 const char _kUpb_ToBase92[] = {
     ' ', '!', '#', '$', '%', '&', '(', ')', '*', '+', ',', '-', '.', '/',
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=',
@@ -14361,7 +14403,7 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
                            f->full_name);
     }
 
-    if (oneof_index >= upb_MessageDef_OneofCount(m)) {
+    if (oneof_index < 0 || oneof_index >= upb_MessageDef_OneofCount(m)) {
       _upb_DefBuilder_Errf(ctx, "oneof_index out of range (%s)", f->full_name);
     }
 

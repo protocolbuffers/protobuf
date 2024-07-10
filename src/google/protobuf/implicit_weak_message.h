@@ -12,6 +12,7 @@
 #include <string>
 
 #include "google/protobuf/arena.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
@@ -81,13 +82,29 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 
   typedef void InternalArenaConstructable_;
 
-  static const char* ParseImpl(ImplicitWeakMessage* msg, const char* ptr,
-                               ParseContext* ctx);
+  static PROTOBUF_CC const char* ParseImpl(ImplicitWeakMessage* msg,
+                                           const char* ptr, ParseContext* ctx);
 
  private:
+  static const TcParseTable<0> table_;
   static const ClassDataLite<1> class_data_;
 
   static void MergeImpl(MessageLite&, const MessageLite&);
+
+  static void ClearImpl(MessageLite& msg) {
+    static_cast<ImplicitWeakMessage&>(msg).Clear();
+  }
+
+  static size_t ByteSizeLongImpl(const MessageLite& msg) {
+    return static_cast<const ImplicitWeakMessage&>(msg).ByteSizeLong();
+  }
+
+  static uint8_t* _InternalSerializeImpl(const MessageLite& msg,
+                                         uint8_t* target,
+                                         io::EpsCopyOutputStream* stream) {
+    return static_cast<const ImplicitWeakMessage&>(msg)._InternalSerialize(
+        target, stream);
+  }
 
   // This std::string is allocated on the heap, but we use a raw pointer so that
   // the default instance can be constant-initialized. In the const methods, we

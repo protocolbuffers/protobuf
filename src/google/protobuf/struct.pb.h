@@ -205,10 +205,26 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
     return true;
   }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
-  ::size_t ByteSizeLong() const PROTOBUF_FINAL;
-  ::uint8_t* _InternalSerialize(::uint8_t* target,
-                              ::google::protobuf::io::EpsCopyOutputStream*
-                                  stream) const PROTOBUF_FINAL;
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
+
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
+  #else   // PROTOBUF_CUSTOM_VTABLE
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -263,8 +279,6 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
       0, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_ListValue_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -384,10 +398,26 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
     return true;
   }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
-  ::size_t ByteSizeLong() const PROTOBUF_FINAL;
-  ::uint8_t* _InternalSerialize(::uint8_t* target,
-                              ::google::protobuf::io::EpsCopyOutputStream*
-                                  stream) const PROTOBUF_FINAL;
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
+
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
+  #else   // PROTOBUF_CUSTOM_VTABLE
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -440,8 +470,6 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
       37, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_Struct_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -488,13 +516,17 @@ class Struct_FieldsEntry_DoNotUse final
     return reinterpret_cast<const Struct_FieldsEntry_DoNotUse*>(
         &_Struct_FieldsEntry_DoNotUse_default_instance_);
   }
-friend class ::google::protobuf::internal::TcParser;
-static const ::google::protobuf::internal::TcParseTable<
-    1, 2, 1,
-    46, 2>
-    _table_;
-const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-static const ::google::protobuf::Message::ClassDataFull _class_data_;
+
+
+ private:
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      1, 2, 1,
+      46, 2>
+      _table_;
+
+  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
 };
 // -------------------------------------------------------------------
@@ -603,10 +635,26 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
     return true;
   }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
-  ::size_t ByteSizeLong() const PROTOBUF_FINAL;
-  ::uint8_t* _InternalSerialize(::uint8_t* target,
-                              ::google::protobuf::io::EpsCopyOutputStream*
-                                  stream) const PROTOBUF_FINAL;
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
+
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
+  #else   // PROTOBUF_CUSTOM_VTABLE
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
@@ -747,8 +795,6 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
       42, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_Value_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;

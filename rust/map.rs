@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use crate::{
-    Mut, MutProxied, MutProxy, Proxied, View, ViewProxy,
+    IntoProxied, Mut, MutProxied, MutProxy, Proxied, View, ViewProxy,
     __internal::Private,
     __runtime::{InnerMap, InnerMapMut, RawMap, RawMapIter},
 };
@@ -92,7 +92,11 @@ where
 
     fn map_clear(map: Mut<'_, Map<K, Self>>);
     fn map_len(map: View<'_, Map<K, Self>>) -> usize;
-    fn map_insert(map: Mut<'_, Map<K, Self>>, key: View<'_, K>, value: View<'_, Self>) -> bool;
+    fn map_insert(
+        map: Mut<'_, Map<K, Self>>,
+        key: View<'_, K>,
+        value: impl IntoProxied<Self>,
+    ) -> bool;
     fn map_get<'a>(map: View<'a, Map<K, Self>>, key: View<'_, K>) -> Option<View<'a, Self>>;
     fn map_remove(map: Mut<'_, Map<K, Self>>, key: View<'_, K>) -> bool;
 
@@ -283,16 +287,11 @@ where
     /// Adds a key-value pair to the map.
     ///
     /// Returns `true` if the entry was newly inserted.
-    pub fn insert<'a, 'b>(
-        &mut self,
-        key: impl Into<View<'a, K>>,
-        value: impl Into<View<'b, V>>,
-    ) -> bool
+    pub fn insert<'a>(&mut self, key: impl Into<View<'a, K>>, value: impl IntoProxied<V>) -> bool
     where
         K: 'a,
-        V: 'b,
     {
-        V::map_insert(self.as_mut(), key.into(), value.into())
+        V::map_insert(self.as_mut(), key.into(), value)
     }
 
     pub fn remove<'a>(&mut self, key: impl Into<View<'a, K>>) -> bool
@@ -313,12 +312,11 @@ where
         V::map_get(self.as_view(), key.into())
     }
 
-    pub fn copy_from<'a, 'b>(
+    pub fn copy_from<'a>(
         &mut self,
-        src: impl IntoIterator<Item = (impl Into<View<'a, K>>, impl Into<View<'b, V>>)>,
+        src: impl IntoIterator<Item = (impl Into<View<'a, K>>, impl IntoProxied<V>)>,
     ) where
         K: 'a,
-        V: 'b,
     {
         //TODO
         self.clear();
@@ -446,7 +444,7 @@ where
     K: Proxied + ?Sized + 'msg + 'k,
     V: ProxiedInMapValue<K> + ?Sized + 'msg + 'v,
     KView: Into<View<'k, K>>,
-    VView: Into<View<'v, V>>,
+    VView: IntoProxied<V>,
 {
     fn extend<T: IntoIterator<Item = (KView, VView)>>(&mut self, iter: T) {
         for (k, v) in iter.into_iter() {
@@ -458,7 +456,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ProtoStr;
+    use crate::{ProtoBytes, ProtoStr, ProtoString};
     use googletest::prelude::*;
 
     #[test]
@@ -489,7 +487,7 @@ mod tests {
 
     #[test]
     fn test_proxied_str() {
-        let mut map: Map<ProtoStr, ProtoStr> = Map::new();
+        let mut map: Map<ProtoString, ProtoString> = Map::new();
         let mut map_mut = map.as_mut();
         map_mut.insert("a", "b");
 
@@ -514,7 +512,7 @@ mod tests {
 
     #[test]
     fn test_proxied_iter() {
-        let mut map: Map<i32, ProtoStr> = Map::new();
+        let mut map: Map<i32, ProtoString> = Map::new();
         let mut map_mut = map.as_mut();
         map_mut.insert(15, "fizzbuzz");
         map_mut.insert(5, "buzz");
@@ -561,7 +559,7 @@ mod tests {
 
     #[test]
     fn test_overwrite_insert() {
-        let mut map: Map<i32, ProtoStr> = Map::new();
+        let mut map: Map<i32, ProtoString> = Map::new();
         let mut map_mut = map.as_mut();
         assert!(map_mut.insert(0, "fizz"));
         // insert should return false when the key is already present
@@ -571,7 +569,7 @@ mod tests {
 
     #[test]
     fn test_extend() {
-        let mut map: Map<i32, ProtoStr> = Map::new();
+        let mut map: Map<i32, ProtoString> = Map::new();
         let mut map_mut = map.as_mut();
 
         map_mut.extend([(0, ""); 0]);
@@ -588,7 +586,7 @@ mod tests {
             ]
         );
 
-        let mut map_2: Map<i32, ProtoStr> = Map::new();
+        let mut map_2: Map<i32, ProtoString> = Map::new();
         let mut map_2_mut = map_2.as_mut();
         map_2_mut.extend([(2, "bing"), (3, "bong")]);
 
@@ -608,7 +606,7 @@ mod tests {
 
     #[test]
     fn test_copy_from() {
-        let mut map: Map<i32, ProtoStr> = Map::new();
+        let mut map: Map<i32, ProtoString> = Map::new();
         let mut map_mut = map.as_mut();
         map_mut.copy_from([(0, "fizz"), (1, "buzz"), (2, "fizzbuzz")]);
 
@@ -621,7 +619,7 @@ mod tests {
             ]
         );
 
-        let mut map_2: Map<i32, ProtoStr> = Map::new();
+        let mut map_2: Map<i32, ProtoString> = Map::new();
         let mut map_2_mut = map_2.as_mut();
         map_2_mut.copy_from([(2, "bing"), (3, "bong")]);
 
@@ -651,12 +649,12 @@ mod tests {
         macro_rules! gen_proto_keys {
             ($($key_t:ty),*) => {
                 $(
-                    gen_proto_values!($key_t, f32, f64, i32, u32, i64, bool, ProtoStr, [u8]);
+                    gen_proto_values!($key_t, f32, f64, i32, u32, i64, bool, ProtoString, ProtoBytes);
                 )*
             }
         }
 
-        gen_proto_keys!(i32, u32, i64, u64, bool, ProtoStr);
+        gen_proto_keys!(i32, u32, i64, u64, bool, ProtoString);
     }
 
     #[test]

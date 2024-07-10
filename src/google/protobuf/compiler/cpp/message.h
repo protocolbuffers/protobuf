@@ -116,7 +116,9 @@ class MessageGenerator {
   // Generate standard Message methods.
   void GenerateClear(io::Printer* p);
   void GenerateOneofClear(io::Printer* p);
+  void GenerateVerifyDecl(io::Printer* p);
   void GenerateVerify(io::Printer* p);
+  void GenerateAnnotationDecl(io::Printer* p);
   void GenerateSerializeWithCachedSizes(io::Printer* p);
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p);
   void GenerateSerializeWithCachedSizesBody(io::Printer* p);

@@ -22,6 +22,7 @@
 #import "GPBExtensionRegistry.h"
 #import "GPBRootObject_PackagePrivate.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
+#import "GPBUnknownFields_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
 
 // Returns a new instance that was automatically created by |autocreator| for
@@ -1249,6 +1250,20 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   if (zeroStorage) {
     memset(messageStorage_, 0, descriptor->storageSize_);
   }
+}
+
+- (void)clearUnknownFields {
+  self.unknownFields = nil;
+}
+
+- (void)mergeUnknownFields:(GPBUnknownFields *)unknownFields
+         extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry {
+  NSData *data = [unknownFields serializeAsData];
+  if (![self mergeFromData:data extensionRegistry:extensionRegistry error:NULL]) {
+#if defined(DEBUG) && DEBUG
+    NSAssert(0, @"Internal error within the library, failed to parse data from unknown fields.");
+#endif
+  };
 }
 
 - (BOOL)isInitialized {
@@ -3537,10 +3552,13 @@ GPB_INLINE BOOL GPBIsCaseOfSelForOneOf(const char *selName, size_t selNameLength
   if (self) {
     NSData *data = [aDecoder decodeObjectOfClass:[NSData class] forKey:kGPBDataCoderKey];
     if (data.length) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-      [self mergeFromData:data extensionRegistry:nil];
-#pragma clang diagnostic pop
+      GPBCodedInputStream *input = [[GPBCodedInputStream alloc] initWithData:data];
+      @try {
+        [self mergeFromCodedInputStream:input extensionRegistry:nil];
+        [input checkLastTagWas:0];
+      } @finally {
+        [input release];
+      }
     }
   }
   return self;

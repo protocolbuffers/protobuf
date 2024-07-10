@@ -18,19 +18,19 @@
 #include <gtest/gtest.h>
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-#include "hpb_generator/tests/child_model.upb.proto.h"
-#include "hpb_generator/tests/no_package.upb.proto.h"
-#include "hpb_generator/tests/test_model.upb.proto.h"
+#include "google/protobuf/compiler/hpb/tests/child_model.upb.proto.h"
+#include "google/protobuf/compiler/hpb/tests/no_package.upb.proto.h"
+#include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
+#include "google/protobuf/hpb/requires.h"
 #include "protos/protos.h"
 #include "protos/repeated_field.h"
 #include "protos/repeated_field_iterator.h"
-#include "protos/requires.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 
 namespace {
 
-using ::protos::internal::Requires;
+using ::hpb::internal::Requires;
 using ::protos_generator::test::protos::ChildModel1;
 using ::protos_generator::test::protos::container_ext;
 using ::protos_generator::test::protos::ContainerExtension;
@@ -54,7 +54,7 @@ TEST(CppGeneratedCode, ImportedEnum) { EXPECT_EQ(3, TestEnum::DEVICE_MONITOR); }
 
 TEST(CppGeneratedCode, Enum) { EXPECT_EQ(1, RED); }
 
-TEST(CppGeneratedCode, EnumNoPackage) { EXPECT_EQ(1, ::protos_CELSIUS); }
+TEST(CppGeneratedCode, EnumNoPackage) { EXPECT_EQ(1, ::hpb_CELSIUS); }
 
 TEST(CppGeneratedCode, MessageEnumType) {
   TestModel_Category category1 = TestModel_Category_IMAGES;

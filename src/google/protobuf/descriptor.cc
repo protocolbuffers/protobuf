@@ -3053,6 +3053,10 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
 
   if (&options() != &FieldOptions::default_instance()) {
     *proto->mutable_options() = options();
+    if (proto_features_->GetExtension(pb::cpp).has_string_type()) {
+      // ctype must have been set in InferLegacyProtoFeatures so avoid copying.
+      proto->mutable_options()->clear_ctype();
+    }
   }
 
   RestoreFeaturesToOptions(proto_features_, proto);
@@ -5466,6 +5470,24 @@ static void InferLegacyProtoFeatures(const FieldDescriptorProto& proto,
   }
 }
 
+// TODO: we should update proto code to not need ctype to be set
+// when string_type is set.
+static void EnforceCTypeStringTypeConsistency(
+    Edition edition, FieldDescriptor::CppType type,
+    const pb::CppFeatures& cpp_features, FieldOptions& options) {
+  if (&options == &FieldOptions::default_instance()) return;
+  if (edition < Edition::EDITION_2024 &&
+      type == FieldDescriptor::CPPTYPE_STRING) {
+    switch (cpp_features.string_type()) {
+      case pb::CppFeatures::CORD:
+        options.set_ctype(FieldOptions::CORD);
+        break;
+      default:
+        break;
+    }
+  }
+}
+
 template <class DescriptorT>
 void DescriptorBuilder::ResolveFeaturesImpl(
     Edition edition, const typename DescriptorT::Proto& proto,
@@ -6091,6 +6113,24 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
          iter != options_to_interpret_.end(); ++iter) {
       option_interpreter.InterpretNonExtensionOptions(&(*iter));
     }
+
+    // TODO: move this check back to generator.cc once we no longer
+    // need to set both ctype and string_type internally.
+    internal::VisitDescriptors(
+        *result, proto,
+        [&](const FieldDescriptor& field, const FieldDescriptorProto& proto) {
+          if (field.options_->has_ctype() && field.options_->features()
+                                                 .GetExtension(pb::cpp)
+                                                 .has_string_type()) {
+            AddError(
+                field.full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
+                absl::StrFormat("Field %s specifies both string_type and ctype "
+                                "which is not supported.",
+                                field.full_name())
+                    .c_str());
+          }
+        });
+
     // Handle feature resolution.  This must occur after option interpretation,
     // but before validation.
     internal::VisitDescriptors(
@@ -6107,6 +6147,14 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
                   OptionsT*>(descriptor.options_),
               alloc);
         });
+
+    internal::VisitDescriptors(*result, [&](const FieldDescriptor& field) {
+      EnforceCTypeStringTypeConsistency(
+          field.file()->edition(), field.cpp_type(),
+          field.merged_features_->GetExtension(pb::cpp),
+          const_cast<  // NOLINT(google3-runtime-proto-const-cast)
+              FieldOptions&>(*field.options_));
+    });
 
     // Post-process cleanup for field features.
     internal::VisitDescriptors(
@@ -7346,21 +7394,13 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
             field->number());
 
     if (extension_range == nullptr) {
-      // Set of valid extension numbers for MessageSet is different (< 2^32)
-      // from other extendees (< 2^29). If unknown deps are allowed, we may not
-      // have that information, and wrongly deem the extension as invalid.
-      auto skip_check = get_allow_unknown(pool_) &&
-                        absl::StripPrefix(proto.extendee(), ".") ==
-                            "google.protobuf.bridge.MessageSet";
-      if (!skip_check) {
-        AddError(field->full_name(), proto,
-                 DescriptorPool::ErrorCollector::NUMBER, [&] {
-                   return absl::Substitute(
-                       "\"$0\" does not declare $1 as an "
-                       "extension number.",
-                       field->containing_type()->full_name(), field->number());
-                 });
-      }
+      AddError(field->full_name(), proto,
+               DescriptorPool::ErrorCollector::NUMBER, [&] {
+                 return absl::Substitute(
+                     "\"$0\" does not declare $1 as an "
+                     "extension number.",
+                     field->containing_type()->full_name(), field->number());
+               });
     }
   }
 

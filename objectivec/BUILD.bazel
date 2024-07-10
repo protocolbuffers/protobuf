@@ -59,6 +59,10 @@ staleness_test(
 
 objc_library(
     name = "objectivec",
+    srcs = [
+        # Private headers that aren't used from the generated sources.
+        "GPBUnknownFields_PackagePrivate.h",
+    ],
     hdrs = [
         "GPBAny.pbobjc.h",
         "GPBApi.pbobjc.h",
@@ -84,6 +88,7 @@ objc_library(
         "GPBRootObject.h",
         "GPBRuntimeTypes.h",
         "GPBUnknownField.h",
+        "GPBUnknownFields.h",
         "GPBUnknownFieldSet.h",
         "GPBUtilities.h",
         "GPBWellKnownTypes.h",
@@ -138,6 +143,7 @@ objc_library(
         "GPBType.pbobjc.m",
         "GPBUnknownField.m",
         "GPBUnknownFieldSet.m",
+        "GPBUnknownFields.m",
         "GPBUtilities.m",
         "GPBWellKnownTypes.m",
         "GPBWireFormat.m",

@@ -9,7 +9,7 @@ syntax = "proto2";
 
 package protos_generator.tests;
 
-import "hpb_generator/tests/no_package.proto";
+import "google/protobuf/compiler/hpb/tests/no_package.proto";
 
 // option java_multiple_files = true;
 

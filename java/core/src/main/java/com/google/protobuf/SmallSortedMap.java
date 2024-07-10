@@ -111,10 +111,6 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
   private Map<K, V> overflowEntriesDescending;
   private volatile DescendingEntrySet lazyDescendingEntrySet;
 
-  /**
-   * @code arraySize Size of the array in which the lexicographically smallest mappings are stored.
-   *     (i.e. the {@code k} referred to in the class documentation).
-   */
   private SmallSortedMap() {
     this.entryList = Collections.emptyList();
     this.overflowEntries = Collections.emptyMap();

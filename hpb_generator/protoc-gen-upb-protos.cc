@@ -15,18 +15,18 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/descriptor.h"
-#include "hpb_generator/gen_enums.h"
-#include "hpb_generator/gen_extensions.h"
-#include "hpb_generator/gen_messages.h"
-#include "hpb_generator/gen_utils.h"
-#include "hpb_generator/names.h"
-#include "hpb_generator/output.h"
+#include "google/protobuf/compiler/hpb/gen_enums.h"
+#include "google/protobuf/compiler/hpb/gen_extensions.h"
+#include "google/protobuf/compiler/hpb/gen_messages.h"
+#include "google/protobuf/compiler/hpb/gen_utils.h"
+#include "google/protobuf/compiler/hpb/names.h"
+#include "google/protobuf/compiler/hpb/output.h"
 
-namespace protos_generator {
+namespace google::protobuf::hpb_generator {
 namespace {
 
 namespace protoc = ::google::protobuf::compiler;
-namespace protobuf = ::google::protobuf;
+namespace protobuf = ::proto2;
 using FileDescriptor = ::google::protobuf::FileDescriptor;
 using google::protobuf::Edition;
 
@@ -265,9 +265,10 @@ void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
 }
 
 }  // namespace
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator
 
 int main(int argc, char** argv) {
-  protos_generator::Generator generator_cc;
+  google::protobuf::hpb_generator::Generator generator_cc;
   return google::protobuf::compiler::PluginMain(argc, argv, &generator_cc);
 }

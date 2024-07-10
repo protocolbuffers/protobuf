@@ -31,8 +31,6 @@ import java.io.IOException;
  * @author xiangl@google.com (Xiang Li)
  */
 public class LazyFieldLite {
-  private static final ExtensionRegistryLite EMPTY_REGISTRY =
-      ExtensionRegistryLite.getEmptyRegistry();
 
   /*
    * The value associated with the LazyFieldLite object is stored in one or more of the following

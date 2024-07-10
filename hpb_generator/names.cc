@@ -5,15 +5,14 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "hpb_generator/names.h"
+#include "google/protobuf/compiler/hpb/names.h"
 
 #include <string>
 
 #include "upb_generator/keywords.h"
 
-namespace protos_generator {
-
-namespace protobuf = ::google::protobuf;
+namespace google::protobuf::hpb_generator {
+namespace protobuf = ::proto2;
 
 namespace {
 
@@ -175,4 +174,5 @@ std::string MessageProxyType(const protobuf::FieldDescriptor* field,
          "Proxy";
 }
 
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator

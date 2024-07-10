@@ -1,5 +1,11 @@
-use crate::{upb_ExtensionRegistry, upb_MiniTable, Arena, OwnedArenaBox, RawArena, RawMessage};
-use std::ptr::NonNull;
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+use crate::{upb_ExtensionRegistry, upb_MiniTable, Arena, RawArena, RawMessage};
 
 // LINT.IfChange(encode_status)
 #[repr(C)]
@@ -37,12 +43,12 @@ enum DecodeOption {
 
 /// If Err, then EncodeStatus != Ok.
 ///
-/// SAFETY:
+/// # Safety
 /// - `msg` must be associated with `mini_table`.
 pub unsafe fn encode(
     msg: RawMessage,
     mini_table: *const upb_MiniTable,
-) -> Result<OwnedArenaBox<[u8]>, EncodeStatus> {
+) -> Result<Vec<u8>, EncodeStatus> {
     let arena = Arena::new();
     let mut buf: *mut u8 = std::ptr::null_mut();
     let mut len = 0usize;
@@ -55,8 +61,7 @@ pub unsafe fn encode(
     if status == EncodeStatus::Ok {
         assert!(!buf.is_null()); // EncodeStatus Ok should never return NULL data, even for len=0.
         // SAFETY: upb guarantees that `buf` is valid to read for `len`.
-        let slice = NonNull::new_unchecked(std::ptr::slice_from_raw_parts_mut(buf, len));
-        Ok(OwnedArenaBox::new(slice, arena))
+        Ok((*std::ptr::slice_from_raw_parts(buf, len)).to_vec())
     } else {
         Err(status)
     }
@@ -65,7 +70,7 @@ pub unsafe fn encode(
 /// Decodes into the provided message (merge semantics). If Err, then
 /// DecodeStatus != Ok.
 ///
-/// SAFETY:
+/// # Safety
 /// - `msg` must be mutable.
 /// - `msg` must be associated with `mini_table`.
 pub unsafe fn decode(

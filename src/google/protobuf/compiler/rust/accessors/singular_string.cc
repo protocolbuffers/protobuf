@@ -49,7 +49,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"getter",
            [&] {
              ctx.Emit(R"rs(
-                pub fn $field$($view_self$) -> &$view_lifetime$ $proxied_type$ {
+                pub fn $field$($view_self$) -> $pb$::View<$view_lifetime$, $proxied_type$> {
                   let view = unsafe { $getter_thunk$(self.raw_msg()).as_ref() };
                   $transform_view$
                 })rs");
@@ -58,7 +58,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
            [&] {
              if (!field.has_presence()) return;
              ctx.Emit(R"rs(
-            pub fn $raw_field_name$_opt($view_self$) -> $pb$::Optional<&$view_lifetime$ $proxied_type$> {
+            pub fn $raw_field_name$_opt($view_self$) -> $pb$::Optional<$pb$::View<$view_lifetime$, $proxied_type$>> {
                 $pb$::Optional::new(
                   self.$field$(),
                   self.has_$raw_field_name$()
@@ -66,24 +66,46 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
               }
           )rs");
            }},
-          {"setter",
+          {"setter_impl",
            [&] {
-             if (accessor_case == AccessorCase::VIEW) return;
-             ctx.Emit(R"rs(
-              // TODO: Use IntoProxied once string/bytes types support it.
-              pub fn set_$raw_field_name$(&mut self, val: impl std::convert::AsRef<$proxied_type$>) {
-                let string_view: $pbr$::PtrAndLen =
-                  $pbr$::copy_bytes_in_arena_if_needed_by_runtime(
-                    self.as_mutator_message_ref($pbi$::Private),
-                    val.as_ref().into()
-                  ).into();
+             if (ctx.is_cpp()) {
+               ctx.Emit(R"rs(
+                let s = val.into_proxied($pbi$::Private);
+                unsafe {
+                  $setter_thunk$(
+                    self.as_mutator_message_ref($pbi$::Private).msg(),
+                    s.into_inner($pbi$::Private).into_raw($pbi$::Private)
+                  );
+                }
+              )rs");
+             } else {
+               ctx.Emit(R"rs(
+                let s = val.into_proxied($pbi$::Private);
+                let (view, arena) =
+                  s.into_inner($pbi$::Private).into_raw_parts($pbi$::Private);
+
+                let mm_ref =
+                  self.as_mutator_message_ref($pbi$::Private);
+                let parent_arena = mm_ref.arena($pbi$::Private);
+
+                parent_arena.fuse(&arena);
 
                 unsafe {
                   $setter_thunk$(
                     self.as_mutator_message_ref($pbi$::Private).msg(),
-                    string_view
+                    view
                   );
                 }
+              )rs");
+             }
+           }},
+          {"setter",
+           [&] {
+             if (accessor_case == AccessorCase::VIEW) return;
+             ctx.Emit({},
+                      R"rs(
+              pub fn set_$raw_field_name$(&mut self, val: impl $pb$::IntoProxied<$proxied_type$>) {
+                $setter_impl$
               }
             )rs");
            }},
@@ -119,6 +141,18 @@ void SingularString::InExternC(Context& ctx,
   ctx.Emit({{"hazzer_thunk", ThunkName(ctx, field, "has")},
             {"getter_thunk", ThunkName(ctx, field, "get")},
             {"setter_thunk", ThunkName(ctx, field, "set")},
+            {"setter",
+             [&] {
+               if (ctx.is_cpp()) {
+                 ctx.Emit(R"rs(
+                  fn $setter_thunk$(raw_msg: $pbr$::RawMessage, val: $pbr$::CppStdString);
+                )rs");
+               } else {
+                 ctx.Emit(R"rs(
+                  fn $setter_thunk$(raw_msg: $pbr$::RawMessage, val: $pbr$::PtrAndLen);
+                )rs");
+               }
+             }},
             {"clearer_thunk", ThunkName(ctx, field, "clear")},
             {"with_presence_fields_thunks",
              [&] {
@@ -132,7 +166,7 @@ void SingularString::InExternC(Context& ctx,
            R"rs(
           $with_presence_fields_thunks$
           fn $getter_thunk$(raw_msg: $pbr$::RawMessage) -> $pbr$::PtrAndLen;
-          fn $setter_thunk$(raw_msg: $pbr$::RawMessage, val: $pbr$::PtrAndLen);
+          $setter$
         )rs");
 }
 
@@ -157,12 +191,13 @@ void SingularString::InThunkCc(Context& ctx,
              }}},
            R"cc(
              $with_presence_fields_thunks$;
-             ::google::protobuf::rust_internal::PtrAndLen $getter_thunk$($QualifiedMsg$* msg) {
+             ::google::protobuf::rust::PtrAndLen $getter_thunk$($QualifiedMsg$* msg) {
                absl::string_view val = msg->$field$();
-               return ::google::protobuf::rust_internal::PtrAndLen(val.data(), val.size());
+               return ::google::protobuf::rust::PtrAndLen(val.data(), val.size());
              }
-             void $setter_thunk$($QualifiedMsg$* msg, ::google::protobuf::rust_internal::PtrAndLen s) {
-               msg->set_$field$(absl::string_view(s.ptr, s.len));
+             void $setter_thunk$($QualifiedMsg$* msg, std::string* s) {
+               msg->set_$field$(std::move(*s));
+               delete s;
              }
            )cc");
 }
