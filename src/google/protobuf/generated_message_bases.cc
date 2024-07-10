@@ -7,6 +7,8 @@
 
 #include "google/protobuf/generated_message_bases.h"
 
+#include <cstddef>
+
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -26,23 +28,27 @@ namespace internal {
 // =============================================================================
 // ZeroFieldsBase
 
-void ZeroFieldsBase::Clear() {
-  _internal_metadata_.Clear<UnknownFieldSet>();  //
+void ZeroFieldsBase::Clear(MessageLite& msg) {
+  static_cast<ZeroFieldsBase&>(msg)
+      ._internal_metadata_.Clear<UnknownFieldSet>();
 }
 
 ZeroFieldsBase::~ZeroFieldsBase() {
   _internal_metadata_.Delete<UnknownFieldSet>();
 }
 
-size_t ZeroFieldsBase::ByteSizeLong() const {
-  return MaybeComputeUnknownFieldsSize(0, &_impl_._cached_size_);
+size_t ZeroFieldsBase::ByteSizeLong(const MessageLite& base) {
+  auto& msg = static_cast<const ZeroFieldsBase&>(base);
+  return msg.MaybeComputeUnknownFieldsSize(0, &msg._impl_._cached_size_);
 }
 
-::uint8_t* ZeroFieldsBase::_InternalSerialize(
-    ::uint8_t* target, io::EpsCopyOutputStream* stream) const {
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+::uint8_t* ZeroFieldsBase::_InternalSerialize(const MessageLite& msg,
+                                              ::uint8_t* target,
+                                              io::EpsCopyOutputStream* stream) {
+  auto& this_ = static_cast<const ZeroFieldsBase&>(msg);
+  if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
     target = internal::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields<UnknownFieldSet>(
+        this_._internal_metadata_.unknown_fields<UnknownFieldSet>(
             UnknownFieldSet::default_instance),
         target, stream);
   }
