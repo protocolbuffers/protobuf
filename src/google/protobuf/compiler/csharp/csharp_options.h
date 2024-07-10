@@ -51,7 +51,7 @@ struct Options {
   bool serializable;
   // If true, strip out nonfunctional codegen.
   bool strip_nonfunctional_codegen;
-  //  Whether the generated files are support null reference types. 
+  //  Whether the generated files support null reference types. 
   // Defaults to false
   bool enable_nullable_reference_types;
 };
