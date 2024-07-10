@@ -903,17 +903,21 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
   }
 
   /** Compute the number of bytes needed to encode a particular field. */
+  // Avoid iterator allocation.
+  @SuppressWarnings({"ForeachList", "ForeachListWithUserVar"})
   public static int computeFieldSize(final FieldDescriptorLite<?> descriptor, final Object value) {
     WireFormat.FieldType type = descriptor.getLiteType();
     int number = descriptor.getNumber();
     if (descriptor.isRepeated()) {
       List<?> valueList = (List<?>) value;
+      int valueListSize = valueList.size();
       if (descriptor.isPacked()) {
         if (valueList.isEmpty()) {
           return 0;
         }
         int dataSize = 0;
-        for (final Object element : valueList) {
+        for (int i = 0; i < valueListSize; i++) {
+          Object element = valueList.get(i);
           dataSize += computeElementSizeNoTag(type, element);
         }
         return dataSize
@@ -921,7 +925,8 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
             + CodedOutputStream.computeUInt32SizeNoTag(dataSize);
       } else {
         int size = 0;
-        for (final Object element : valueList) {
+        for (int i = 0; i < valueListSize; i++) {
+          Object element = valueList.get(i);
           size += computeElementSize(type, number, element);
         }
         return size;
