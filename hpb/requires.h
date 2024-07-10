@@ -1,5 +1,5 @@
-#ifndef THIRD_PARTY_UPB_PROTOS_REQUIRES_H_
-#define THIRD_PARTY_UPB_PROTOS_REQUIRES_H_
+#ifndef PROTOBUF_HPB_REQUIRES_H_
+#define PROTOBUF_HPB_REQUIRES_H_
 
 #include <type_traits>
 namespace protos::internal {
@@ -14,4 +14,4 @@ constexpr bool Requires(F) {
 }
 }  // namespace protos::internal
 
-#endif  // THIRD_PARTY_UPB_PROTOS_REQUIRES_H_
+#endif  // PROTOBUF_HPB_REQUIRES_H_

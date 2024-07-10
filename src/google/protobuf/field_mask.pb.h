@@ -223,8 +223,6 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
       39, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_FieldMask_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;

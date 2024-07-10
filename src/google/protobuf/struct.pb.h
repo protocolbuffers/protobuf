@@ -263,8 +263,6 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
       0, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_ListValue_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -440,8 +438,6 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
       37, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_Struct_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -488,13 +484,17 @@ class Struct_FieldsEntry_DoNotUse final
     return reinterpret_cast<const Struct_FieldsEntry_DoNotUse*>(
         &_Struct_FieldsEntry_DoNotUse_default_instance_);
   }
-friend class ::google::protobuf::internal::TcParser;
-static const ::google::protobuf::internal::TcParseTable<
-    1, 2, 1,
-    46, 2>
-    _table_;
-const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-static const ::google::protobuf::Message::ClassDataFull _class_data_;
+
+
+ private:
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      1, 2, 1,
+      46, 2>
+      _table_;
+
+  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static const ::google::protobuf::Message::ClassDataFull _class_data_;
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
 };
 // -------------------------------------------------------------------
@@ -747,8 +747,6 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
       42, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_Value_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;

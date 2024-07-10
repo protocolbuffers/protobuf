@@ -13,6 +13,7 @@
 #ifndef GOOGLE_PROTOBUF_PORT_H__
 #define GOOGLE_PROTOBUF_PORT_H__
 
+#include <atomic>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -325,6 +326,41 @@ inline void PrefetchToLocalCache(const void* ptr) {
 }
 
 constexpr bool IsOss() { return true; }
+
+// Counter library for debugging internal protobuf logic.
+// It allows instrumenting code that has different options (eg fast vs slow
+// path) to get visibility into how much we are hitting each path.
+// When compiled with -DPROTOBUF_INTERNAL_ENABLE_DEBUG_COUNTERS, the counters
+// register an atexit handler to dump the table. Otherwise, they are a noop and
+// have not runtime cost.
+//
+// Usage:
+//
+// if (do_fast) {
+//   PROTOBUF_DEBUG_COUNTER("Foo.Fast").Inc();
+//   ...
+// } else {
+//   PROTOBUF_DEBUG_COUNTER("Foo.Slow").Inc();
+//   ...
+// }
+class PROTOBUF_EXPORT RealDebugCounter {
+ public:
+  explicit RealDebugCounter(absl::string_view name) { Register(name); }
+  // Lossy increment.
+  void Inc() { counter_.store(value() + 1, std::memory_order_relaxed); }
+  size_t value() const { return counter_.load(std::memory_order_relaxed); }
+
+ private:
+  void Register(absl::string_view name);
+  std::atomic<size_t> counter_{};
+};
+
+// When the feature is not enabled, the type is a noop.
+class NoopDebugCounter {
+ public:
+  explicit constexpr NoopDebugCounter() = default;
+  constexpr void Inc() {}
+};
 
 }  // namespace internal
 }  // namespace protobuf

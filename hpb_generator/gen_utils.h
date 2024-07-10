@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_PROTOS_GENERATOR_GEN_UTILS_H_
-#define UPB_PROTOS_GENERATOR_GEN_UTILS_H_
+#ifndef PROTOBUF_COMPILER_HBP_GEN_UTILS_H_
+#define PROTOBUF_COMPILER_HBP_GEN_UTILS_H_
 
 #include <string>
 #include <vector>
@@ -15,9 +15,9 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.h"
 
-namespace protos_generator {
+namespace google::protobuf::hpb_generator {
 
-namespace protobuf = ::google::protobuf;
+namespace protobuf = ::proto2;
 
 enum class MessageClassType {
   kMessage,
@@ -40,6 +40,7 @@ std::vector<const protobuf::FieldDescriptor*> FieldNumberOrder(
 
 std::string ToCamelCase(const std::string& input, bool lower_first);
 
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator
 
-#endif  // UPB_PROTOS_GENERATOR_GEN_UTILS_H_
+#endif  // PROTOBUF_COMPILER_HBP_GEN_UTILS_H_

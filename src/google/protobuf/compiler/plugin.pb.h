@@ -304,8 +304,6 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
       47, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_Version_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -539,8 +537,6 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
       86, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_CodeGeneratorResponse_File_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -797,8 +793,6 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
       60, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_CodeGeneratorResponse_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1061,8 +1055,6 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
       79, 2>
       _table_;
 
-  static constexpr const void* _raw_default_instance_ =
-      &_CodeGeneratorRequest_default_instance_;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;

@@ -63,7 +63,7 @@ void GPBMessageDropUnknownFieldsRecursively(GPBMessage *initialMessage) {
     [todo removeLastObject];
 
     // Clear unknowns.
-    msg.unknownFields = nil;
+    [msg clearUnknownFields];
 
     // Handle the message fields.
     GPBDescriptor *descriptor = [[msg class] descriptor];

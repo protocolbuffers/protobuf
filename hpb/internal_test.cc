@@ -5,12 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "protos/protos_internal.h"
+#include "google/protobuf/hpb/internal.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "hpb_generator/tests/test_model.upb.h"
-#include "hpb_generator/tests/test_model.upb.proto.h"
+#include "google/protobuf/compiler/hpb/tests/test_model.upb.h"
+#include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
 #include "upb/mem/arena.h"
 
 namespace protos::testing {

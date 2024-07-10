@@ -12,6 +12,7 @@
 #include <string>
 
 #include "google/protobuf/arena.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
@@ -85,6 +86,7 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
                                            const char* ptr, ParseContext* ctx);
 
  private:
+  static const TcParseTable<0> table_;
   static const ClassDataLite<1> class_data_;
 
   static void MergeImpl(MessageLite&, const MessageLite&);

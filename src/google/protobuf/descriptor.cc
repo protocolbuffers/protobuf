@@ -7394,21 +7394,13 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
             field->number());
 
     if (extension_range == nullptr) {
-      // Set of valid extension numbers for MessageSet is different (< 2^32)
-      // from other extendees (< 2^29). If unknown deps are allowed, we may not
-      // have that information, and wrongly deem the extension as invalid.
-      auto skip_check = get_allow_unknown(pool_) &&
-                        absl::StripPrefix(proto.extendee(), ".") ==
-                            "google.protobuf.bridge.MessageSet";
-      if (!skip_check) {
-        AddError(field->full_name(), proto,
-                 DescriptorPool::ErrorCollector::NUMBER, [&] {
-                   return absl::Substitute(
-                       "\"$0\" does not declare $1 as an "
-                       "extension number.",
-                       field->containing_type()->full_name(), field->number());
-                 });
-      }
+      AddError(field->full_name(), proto,
+               DescriptorPool::ErrorCollector::NUMBER, [&] {
+                 return absl::Substitute(
+                     "\"$0\" does not declare $1 as an "
+                     "extension number.",
+                     field->containing_type()->full_name(), field->number());
+               });
     }
   }
 

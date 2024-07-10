@@ -363,6 +363,32 @@ rust_test(
 )
 
 rust_test(
+    name = "merge_from_cpp_test",
+    srcs = ["merge_from_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp": "protobuf",
+    },
+    deps = [
+        "//rust:protobuf_cpp",
+        "//rust/test:unittest_cpp_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "merge_from_upb_test",
+    srcs = ["merge_from_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb": "protobuf",
+    },
+    deps = [
+        "//rust:protobuf_upb",
+        "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
     name = "proto_macro_cpp_test",
     srcs = ["proto_macro_test.rs"],
     aliases = {

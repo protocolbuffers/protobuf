@@ -51,6 +51,8 @@ from google.protobuf.internal import wire_format
 
 _FieldDescriptor = descriptor_mod.FieldDescriptor
 _AnyFullTypeName = 'google.protobuf.Any'
+_StructFullTypeName = 'google.protobuf.Struct'
+_ListValueFullTypeName = 'google.protobuf.ListValue'
 _ExtensionDict = extension_dict._ExtensionDict
 
 class GeneratedProtocolMessageType(type):
@@ -515,37 +517,47 @@ def _AddInitMethod(message_descriptor, cls):
         # field=None is the same as no field at all.
         continue
       if field.label == _FieldDescriptor.LABEL_REPEATED:
-        copy = field._default_constructor(self)
+        field_copy = field._default_constructor(self)
         if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:  # Composite
           if _IsMapField(field):
             if _IsMessageMapField(field):
               for key in field_value:
-                copy[key].MergeFrom(field_value[key])
+                field_copy[key].MergeFrom(field_value[key])
             else:
-              copy.update(field_value)
+              field_copy.update(field_value)
           else:
             for val in field_value:
               if isinstance(val, dict):
-                copy.add(**val)
+                field_copy.add(**val)
               else:
-                copy.add().MergeFrom(val)
+                field_copy.add().MergeFrom(val)
         else:  # Scalar
           if field.cpp_type == _FieldDescriptor.CPPTYPE_ENUM:
             field_value = [_GetIntegerEnumValue(field.enum_type, val)
                            for val in field_value]
-          copy.extend(field_value)
-        self._fields[field] = copy
+          field_copy.extend(field_value)
+        self._fields[field] = field_copy
       elif field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
-        copy = field._default_constructor(self)
+        field_copy = field._default_constructor(self)
         new_val = None
         if isinstance(field_value, message_mod.Message):
           new_val = field_value
         elif isinstance(field_value, dict):
-          new_val = field.message_type._concrete_class(**field_value)
-        elif field.message_type.full_name == 'google.protobuf.Timestamp':
-          copy.FromDatetime(field_value)
-        elif field.message_type.full_name == 'google.protobuf.Duration':
-          copy.FromTimedelta(field_value)
+          if field.message_type.full_name == _StructFullTypeName:
+            field_copy.Clear()
+            if len(field_value) == 1 and 'fields' in field_value:
+              try:
+                field_copy.update(field_value)
+              except:
+                # Fall back to init normal message field
+                field_copy.Clear()
+                new_val = field.message_type._concrete_class(**field_value)
+            else:
+              field_copy.update(field_value)
+          else:
+            new_val = field.message_type._concrete_class(**field_value)
+        elif hasattr(field_copy, '_internal_assign'):
+          field_copy._internal_assign(field_value)
         else:
           raise TypeError(
               'Message field {0}.{1} must be initialized with a '
@@ -558,10 +570,10 @@ def _AddInitMethod(message_descriptor, cls):
 
         if new_val:
           try:
-            copy.MergeFrom(new_val)
+            field_copy.MergeFrom(new_val)
           except TypeError:
             _ReraiseTypeErrorWithFieldName(message_descriptor.name, field_name)
-        self._fields[field] = copy
+        self._fields[field] = field_copy
       else:
         if field.cpp_type == _FieldDescriptor.CPPTYPE_ENUM:
           field_value = _GetIntegerEnumValue(field.enum_type, field_value)
@@ -777,6 +789,14 @@ def _AddPropertiesForNonRepeatedCompositeField(field, cls):
     elif field.message_type.full_name == 'google.protobuf.Duration':
       getter(self)
       self._fields[field].FromTimedelta(new_value)
+    elif field.message_type.full_name == _StructFullTypeName:
+      getter(self)
+      self._fields[field].Clear()
+      self._fields[field].update(new_value)
+    elif field.message_type.full_name == _ListValueFullTypeName:
+      getter(self)
+      self._fields[field].Clear()
+      self._fields[field].extend(new_value)
     else:
       raise AttributeError(
           'Assignment not allowed to composite field '
@@ -978,6 +998,15 @@ def _InternalUnpackAny(msg):
 def _AddEqualsMethod(message_descriptor, cls):
   """Helper for _AddMessageMethods()."""
   def __eq__(self, other):
+    if self.DESCRIPTOR.full_name == _ListValueFullTypeName and isinstance(
+        other, list
+    ):
+      return self._internal_compare(other)
+    if self.DESCRIPTOR.full_name == _StructFullTypeName and isinstance(
+        other, dict
+    ):
+      return self._internal_compare(other)
+
     if (not isinstance(other, message_mod.Message) or
         other.DESCRIPTOR != self.DESCRIPTOR):
       return NotImplemented

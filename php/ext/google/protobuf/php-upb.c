@@ -4719,6 +4719,10 @@ upb_alloc upb_alloc_global = {&upb_global_allocfunc};
 
 // Must be last.
 
+static UPB_ATOMIC(size_t) max_block_size = 32 << 10;
+
+void upb_Arena_SetMaxBlockSize(size_t max) { max_block_size = max; }
+
 typedef struct upb_MemBlock {
   // Atomic only for the benefit of SpaceAllocated().
   UPB_ATOMIC(struct upb_MemBlock*) next;
@@ -4956,7 +4960,14 @@ static bool _upb_Arena_AllocBlock(upb_Arena* a, size_t size) {
   if (!ai->block_alloc) return false;
   upb_MemBlock* last_block = upb_Atomic_Load(&ai->blocks, memory_order_acquire);
   size_t last_size = last_block != NULL ? last_block->size : 128;
-  size_t block_size = UPB_MAX(size, last_size * 2) + kUpb_MemblockReserve;
+
+  // Don't naturally grow beyond the max block size.
+  size_t clamped_size = UPB_MIN(last_size * 2, max_block_size);
+
+  // We may need to exceed the max block size if the user requested a large
+  // allocation.
+  size_t block_size = UPB_MAX(size, clamped_size) + kUpb_MemblockReserve;
+
   upb_MemBlock* block =
       upb_malloc(_upb_ArenaInternal_BlockAlloc(ai), block_size);
 
@@ -6376,6 +6387,36 @@ upb_Message* upb_Message_ShallowClone(const upb_Message* msg,
   upb_Message* clone = upb_Message_New(m, arena);
   upb_Message_ShallowCopy(clone, msg, m);
   return clone;
+}
+
+#include "stddef.h"
+
+// Must be last.
+
+bool upb_Message_MergeFrom(upb_Message* dst, const upb_Message* src,
+                           const upb_MiniTable* mt,
+                           const upb_ExtensionRegistry* extreg,
+                           upb_Arena* arena) {
+  char* buf = NULL;
+  size_t size = 0;
+  // This tmp arena is used to hold the bytes for `src` serialized. This bends
+  // the typical "no hidden allocations" design of upb, but under a properly
+  // optimized implementation this extra allocation would not be necessary and
+  // so we don't want to unnecessarily have the bad API or bloat the passed-in
+  // arena with this very-short-term allocation.
+  upb_Arena* encode_arena = upb_Arena_New();
+  upb_EncodeStatus e_status = upb_Encode(src, mt, 0, encode_arena, &buf, &size);
+  if (e_status != kUpb_EncodeStatus_Ok) {
+    upb_Arena_Free(encode_arena);
+    return false;
+  }
+  upb_DecodeStatus d_status = upb_Decode(buf, size, dst, mt, extreg, 0, arena);
+  if (d_status != kUpb_DecodeStatus_Ok) {
+    upb_Arena_Free(encode_arena);
+    return false;
+  }
+  upb_Arena_Free(encode_arena);
+  return true;
 }
 
 
@@ -14356,7 +14397,7 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
                            f->full_name);
     }
 
-    if (oneof_index >= upb_MessageDef_OneofCount(m)) {
+    if (oneof_index < 0 || oneof_index >= upb_MessageDef_OneofCount(m)) {
       _upb_DefBuilder_Errf(ctx, "oneof_index out of range (%s)", f->full_name);
     }
 

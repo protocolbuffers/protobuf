@@ -987,3 +987,22 @@ namespace internal {
 #define PROTOBUF_DEPRECATE_AND_INLINE() [[deprecated]]
 #endif
 
+
+namespace google {
+namespace protobuf {
+namespace internal {
+#if defined(PROTOBUF_INTERNAL_ENABLE_DEBUG_COUNTERS)
+#define PROTOBUF_DEBUG_COUNTER(name)                                   \
+  ([]() -> auto & {                                                    \
+    static constexpr const char *counter_name = name;                  \
+    static ::google::protobuf::internal::RealDebugCounter counter(counter_name); \
+    return counter;                                                    \
+  }())
+
+#else  // PROTOBUF_ENABLE_DEBUG_COUNTERS
+#define PROTOBUF_DEBUG_COUNTER(name) \
+  ::google::protobuf::internal::NoopDebugCounter {}
+#endif  // PROTOBUF_ENABLE_DEBUG_COUNTERS
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google

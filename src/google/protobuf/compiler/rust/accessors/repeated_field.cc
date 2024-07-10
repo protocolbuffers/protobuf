@@ -63,7 +63,6 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   )rs");
              }
            }},
-          {"clearer_thunk", ThunkName(ctx, field, "clear")},
           {"getter_mut",
            [&] {
              if (accessor_case == AccessorCase::VIEW) {
@@ -181,10 +180,8 @@ void RepeatedField::InExternC(Context& ctx,
                     fn $move_setter_thunk$(raw_msg: $pbr$::RawMessage, value: $pbr$::RawRepeatedField);
                   )rs");
                }
-             }},
-            {"clearer_thunk", ThunkName(ctx, field, "clear")}},
+             }}},
            R"rs(
-          fn $clearer_thunk$(raw_msg: $pbr$::RawMessage);
           $getter$
         )rs");
 }
@@ -226,7 +223,6 @@ void RepeatedField::InThunkCc(Context& ctx,
             {"ElementType", CppElementType(field)},
             {"ContainerType", CppRepeatedContainerType(field)},
             {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
-            {"clearer_thunk", ThunkName(ctx, field, "clear")},
             {"getter_thunk", ThunkName(ctx, field, "get")},
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"repeated_copy_from_thunk",
@@ -236,9 +232,6 @@ void RepeatedField::InThunkCc(Context& ctx,
              [&] {
                ctx.Emit(
                    R"cc(
-                     void $clearer_thunk$($QualifiedMsg$* msg) {
-                       msg->clear_$field$();
-                     }
                      $ContainerType$<$ElementType$>* $getter_mut_thunk$($QualifiedMsg$* msg) {
                        return msg->mutable_$field$();
                      }

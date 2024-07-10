@@ -128,6 +128,12 @@ std::string MessageLite::InitializationErrorString() const {
 }
 
 std::string MessageLite::DebugString() const {
+  auto* data = GetClassData();
+  ABSL_DCHECK(data != nullptr);
+  if (!data->is_lite) {
+    return data->full().descriptor_methods->debug_string(*this);
+  }
+
   return absl::StrCat("MessageLite at 0x", absl::Hex(this));
 }
 
@@ -194,6 +200,17 @@ void MessageLite::LogInitializationErrorMessage() const {
 }
 
 namespace internal {
+
+void FailDynamicCast(const MessageLite& from, const MessageLite& to) {
+  const auto to_name = to.GetTypeName();
+  if (internal::GetClassData(from)->is_dynamic) {
+    ABSL_LOG(FATAL)
+        << "Cannot downcast from a DynamicMessage to generated type "
+        << to_name;
+  }
+  const auto from_name = from.GetTypeName();
+  ABSL_LOG(FATAL) << "Cannot downcast " << from_name << " to " << to_name;
+}
 
 template <bool aliasing>
 bool MergeFromImpl(absl::string_view input, MessageLite* msg,

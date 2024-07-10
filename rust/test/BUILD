@@ -39,7 +39,10 @@ rust_cc_proto_library(
 rust_upb_proto_library(
     name = "unittest_proto3_upb_rust_proto",
     testonly = True,
-    visibility = ["//rust/test/shared:__subpackages__"],
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+        "//rust/test/upb:__subpackages__",
+    ],
     deps = [UNITTEST_PROTO3_TARGET],
 )
 

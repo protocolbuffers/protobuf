@@ -466,8 +466,11 @@ std::string Generator::GetResolvedFeatures(
   }
 
   // Load the resolved features from our pool.
-  const Descriptor* feature_set = file_->pool()->FindMessageTypeByName(
-      FeatureSet::GetDescriptor()->full_name());
+  const Descriptor* feature_set =
+      file_->FindMessageTypeByName(FeatureSet::GetDescriptor()->name());
+  ABSL_CHECK(feature_set != nullptr)
+      << "Malformed descriptor.proto doesn't contain "
+      << FeatureSet::GetDescriptor()->full_name();
   auto message_factory = absl::make_unique<DynamicMessageFactory>();
   auto features =
       absl::WrapUnique(message_factory->GetPrototype(feature_set)->New());

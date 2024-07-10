@@ -2660,6 +2660,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     FileDescriptorSet::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_FileDescriptorSet_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             FileDescriptorSet::IsInitializedImpl,
@@ -2694,7 +2695,7 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> FileDescriptorSet::_table_ = {
     1,  // num_field_entries
     1,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_FileDescriptorSet_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -2916,6 +2917,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     FileDescriptorProto::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_FileDescriptorProto_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             FileDescriptorProto::IsInitializedImpl,
@@ -2950,7 +2952,7 @@ constexpr ::_pbi::TcParseTable<4, 13, 7, 79, 2> FileDescriptorProto::_table_ = {
     13,  // num_field_entries
     7,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_FileDescriptorProto_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -3518,6 +3520,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     DescriptorProto_ExtensionRange::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_DescriptorProto_ExtensionRange_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             DescriptorProto_ExtensionRange::IsInitializedImpl,
@@ -3552,7 +3555,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 0, 2> DescriptorProto_ExtensionRange::_t
     3,  // num_field_entries
     1,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_DescriptorProto_ExtensionRange_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -3791,6 +3794,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     DescriptorProto_ReservedRange::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_DescriptorProto_ReservedRange_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
@@ -3825,7 +3829,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> DescriptorProto_ReservedRange::_ta
     2,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
-    &_DescriptorProto_ReservedRange_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -4060,6 +4064,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     DescriptorProto::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_DescriptorProto_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             DescriptorProto::IsInitializedImpl,
@@ -4094,7 +4099,7 @@ constexpr ::_pbi::TcParseTable<4, 10, 8, 65, 2> DescriptorProto::_table_ = {
     10,  // num_field_entries
     8,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_DescriptorProto_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -4592,6 +4597,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     ExtensionRangeOptions_Declaration::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_ExtensionRangeOptions_Declaration_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
@@ -4626,7 +4632,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 71, 2> ExtensionRangeOptions_Declaration
     5,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
-    &_ExtensionRangeOptions_Declaration_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -4933,6 +4939,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     ExtensionRangeOptions::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_ExtensionRangeOptions_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             ExtensionRangeOptions::IsInitializedImpl,
@@ -4967,7 +4974,7 @@ constexpr ::_pbi::TcParseTable<3, 4, 4, 0, 12> ExtensionRangeOptions::_table_ = 
     4,  // num_field_entries
     4,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_ExtensionRangeOptions_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -5307,6 +5314,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     FieldDescriptorProto::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_FieldDescriptorProto_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             FieldDescriptorProto::IsInitializedImpl,
@@ -5341,7 +5349,7 @@ constexpr ::_pbi::TcParseTable<4, 11, 3, 96, 2> FieldDescriptorProto::_table_ = 
     11,  // num_field_entries
     3,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_FieldDescriptorProto_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -5816,6 +5824,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     OneofDescriptorProto::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_OneofDescriptorProto_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             OneofDescriptorProto::IsInitializedImpl,
@@ -5850,7 +5859,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 1, 49, 2> OneofDescriptorProto::_table_ = {
     2,  // num_field_entries
     1,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_OneofDescriptorProto_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -6069,6 +6078,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     EnumDescriptorProto_EnumReservedRange::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_EnumDescriptorProto_EnumReservedRange_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
@@ -6103,7 +6113,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 0, 2> EnumDescriptorProto_EnumReservedRa
     2,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
-    &_EnumDescriptorProto_EnumReservedRange_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -6328,6 +6338,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     EnumDescriptorProto::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_EnumDescriptorProto_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             EnumDescriptorProto::IsInitializedImpl,
@@ -6362,7 +6373,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 61, 2> EnumDescriptorProto::_table_ = {
     5,  // num_field_entries
     3,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_EnumDescriptorProto_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -6698,6 +6709,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     EnumValueDescriptorProto::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_EnumValueDescriptorProto_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             EnumValueDescriptorProto::IsInitializedImpl,
@@ -6732,7 +6744,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 1, 53, 2> EnumValueDescriptorProto::_table_
     3,  // num_field_entries
     1,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_EnumValueDescriptorProto_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -7001,6 +7013,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     ServiceDescriptorProto::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_ServiceDescriptorProto_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             ServiceDescriptorProto::IsInitializedImpl,
@@ -7035,7 +7048,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 51, 2> ServiceDescriptorProto::_table_ =
     3,  // num_field_entries
     2,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_ServiceDescriptorProto_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -7326,6 +7339,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     MethodDescriptorProto::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_MethodDescriptorProto_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             MethodDescriptorProto::IsInitializedImpl,
@@ -7360,7 +7374,7 @@ constexpr ::_pbi::TcParseTable<3, 6, 1, 71, 2> MethodDescriptorProto::_table_ = 
     6,  // num_field_entries
     1,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_MethodDescriptorProto_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -7749,6 +7763,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     FileOptions::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_FileOptions_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             FileOptions::IsInitializedImpl,
@@ -7783,7 +7798,7 @@ constexpr ::_pbi::TcParseTable<5, 21, 3, 202, 12> FileOptions::_table_ = {
     21,  // num_field_entries
     3,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_FileOptions_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -8538,6 +8553,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     MessageOptions::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_MessageOptions_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             MessageOptions::IsInitializedImpl,
@@ -8572,7 +8588,7 @@ constexpr ::_pbi::TcParseTable<3, 7, 2, 0, 7> MessageOptions::_table_ = {
     7,  // num_field_entries
     2,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_MessageOptions_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -8927,6 +8943,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     FieldOptions_EditionDefault::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_FieldOptions_EditionDefault_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
@@ -8961,7 +8978,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 1, 57, 2> FieldOptions_EditionDefault::_tab
     2,  // num_field_entries
     1,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_FieldOptions_EditionDefault_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -9188,6 +9205,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     FieldOptions_FeatureSupport::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_FieldOptions_FeatureSupport_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
@@ -9222,7 +9240,7 @@ constexpr ::_pbi::TcParseTable<2, 4, 3, 71, 2> FieldOptions_FeatureSupport::_tab
     4,  // num_field_entries
     3,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_FieldOptions_FeatureSupport_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -9517,6 +9535,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     FieldOptions::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_FieldOptions_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             FieldOptions::IsInitializedImpl,
@@ -9551,7 +9570,7 @@ constexpr ::_pbi::TcParseTable<4, 14, 8, 0, 7> FieldOptions::_table_ = {
     14,  // num_field_entries
     8,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_FieldOptions_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -10096,6 +10115,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     OneofOptions::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_OneofOptions_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             OneofOptions::IsInitializedImpl,
@@ -10130,7 +10150,7 @@ constexpr ::_pbi::TcParseTable<2, 2, 2, 0, 7> OneofOptions::_table_ = {
     2,  // num_field_entries
     2,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_OneofOptions_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -10396,6 +10416,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     EnumOptions::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_EnumOptions_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             EnumOptions::IsInitializedImpl,
@@ -10430,7 +10451,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 2, 0, 7> EnumOptions::_table_ = {
     5,  // num_field_entries
     2,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_EnumOptions_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -10769,6 +10790,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     EnumValueOptions::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_EnumValueOptions_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             EnumValueOptions::IsInitializedImpl,
@@ -10803,7 +10825,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 3, 0, 7> EnumValueOptions::_table_ = {
     5,  // num_field_entries
     3,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_EnumValueOptions_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -11147,6 +11169,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     ServiceOptions::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_ServiceOptions_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             ServiceOptions::IsInitializedImpl,
@@ -11181,7 +11204,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 2, 0, 12> ServiceOptions::_table_ = {
     3,  // num_field_entries
     2,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_ServiceOptions_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -11475,6 +11498,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     MethodOptions::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_MethodOptions_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             MethodOptions::IsInitializedImpl,
@@ -11509,7 +11533,7 @@ constexpr ::_pbi::TcParseTable<3, 4, 3, 0, 12> MethodOptions::_table_ = {
     4,  // num_field_entries
     3,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_MethodOptions_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -11817,6 +11841,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     UninterpretedOption_NamePart::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_UninterpretedOption_NamePart_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             UninterpretedOption_NamePart::IsInitializedImpl,
@@ -11851,7 +11876,7 @@ constexpr ::_pbi::TcParseTable<1, 2, 0, 62, 2> UninterpretedOption_NamePart::_ta
     2,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
-    &_UninterpretedOption_NamePart_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -12093,6 +12118,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     UninterpretedOption::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_UninterpretedOption_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             UninterpretedOption::IsInitializedImpl,
@@ -12127,7 +12153,7 @@ constexpr ::_pbi::TcParseTable<3, 7, 1, 75, 2> UninterpretedOption::_table_ = {
     7,  // num_field_entries
     1,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_UninterpretedOption_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -12495,6 +12521,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     FeatureSet::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_FeatureSet_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             FeatureSet::IsInitializedImpl,
@@ -12529,7 +12556,7 @@ constexpr ::_pbi::TcParseTable<3, 6, 6, 0, 2> FeatureSet::_table_ = {
     6,  // num_field_entries
     6,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_FeatureSet_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -12862,6 +12889,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     FeatureSetDefaults_FeatureSetEditionDefault::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_FeatureSetDefaults_FeatureSetEditionDefault_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             FeatureSetDefaults_FeatureSetEditionDefault::IsInitializedImpl,
@@ -12896,7 +12924,7 @@ constexpr ::_pbi::TcParseTable<2, 3, 3, 0, 2> FeatureSetDefaults_FeatureSetEditi
     3,  // num_field_entries
     3,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_FeatureSetDefaults_FeatureSetEditionDefault_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -13173,6 +13201,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     FeatureSetDefaults::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_FeatureSetDefaults_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             FeatureSetDefaults::IsInitializedImpl,
@@ -13207,7 +13236,7 @@ constexpr ::_pbi::TcParseTable<1, 3, 3, 0, 2> FeatureSetDefaults::_table_ = {
     3,  // num_field_entries
     3,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_FeatureSetDefaults_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -13469,6 +13498,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     SourceCodeInfo_Location::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_SourceCodeInfo_Location_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
@@ -13503,7 +13533,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 0, 106, 2> SourceCodeInfo_Location::_table_
     5,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
-    &_SourceCodeInfo_Location_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -13810,6 +13840,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     SourceCodeInfo::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_SourceCodeInfo_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
@@ -13844,7 +13875,7 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> SourceCodeInfo::_table_ = {
     1,  // num_field_entries
     1,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_SourceCodeInfo_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -14040,6 +14071,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     GeneratedCodeInfo_Annotation::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_GeneratedCodeInfo_Annotation_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
@@ -14074,7 +14106,7 @@ constexpr ::_pbi::TcParseTable<3, 5, 1, 64, 2> GeneratedCodeInfo_Annotation::_ta
     5,  // num_field_entries
     1,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_GeneratedCodeInfo_Annotation_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -14369,6 +14401,7 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
     GeneratedCodeInfo::_class_data_ = {
         ::google::protobuf::Message::ClassData{
+            &_GeneratedCodeInfo_default_instance_._instance,
             &_table_.header,
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
@@ -14403,7 +14436,7 @@ constexpr ::_pbi::TcParseTable<0, 1, 1, 0, 2> GeneratedCodeInfo::_table_ = {
     1,  // num_field_entries
     1,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    &_GeneratedCodeInfo_default_instance_._instance,
+    _class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE

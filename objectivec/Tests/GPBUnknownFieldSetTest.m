@@ -333,6 +333,15 @@
 
   XCTAssertEqual(unknownFields_.countOfFields, message.unknownFields.countOfFields);
   XCTAssertEqualObjects(allFieldsData_, message.data);
+
+  // Just confirm as known extensions, they don't go into unknown data and end up in the
+  // extensions dictionary.
+  TestAllExtensions* allExtensionsMessage =
+      [TestAllExtensions parseFromData:allFieldsData_
+                     extensionRegistry:[UnittestRoot extensionRegistry]
+                                 error:NULL];
+  XCTAssertEqual(allExtensionsMessage.unknownFields.countOfFields, (NSUInteger)0);
+  XCTAssertEqualObjects([allExtensionsMessage data], allFieldsData_);
 }
 
 - (void)testWrongExtensionTypeTreatedAsUnknown {
@@ -340,8 +349,10 @@
   // when parsing extensions.
 
   NSData* bizarroData = [self getBizarroData];
-  TestAllExtensions* allExtensionsMessage = [TestAllExtensions parseFromData:bizarroData
-                                                                       error:NULL];
+  TestAllExtensions* allExtensionsMessage =
+      [TestAllExtensions parseFromData:bizarroData
+                     extensionRegistry:[UnittestRoot extensionRegistry]
+                                 error:NULL];
   TestEmptyMessage* emptyMessage = [TestEmptyMessage parseFromData:bizarroData error:NULL];
 
   // All fields should have been interpreted as unknown, so the debug strings

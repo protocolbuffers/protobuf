@@ -35,6 +35,9 @@ option(protobuf_BUILD_LIBUPB "Build libupb" ON)
 option(protobuf_DISABLE_RTTI "Remove runtime type information in the binaries" OFF)
 option(protobuf_TEST_XML_OUTDIR "Output directory for XML logs from tests." "")
 option(protobuf_ALLOW_CCACHE "Adjust build flags to allow for ccache support." OFF)
+
+# We support Unity (Jumbo) builds best-effort.
+option(protobuf_USE_UNITY_BUILD "Enable Unity (Jumbo) build for" OFF)
 if (BUILD_SHARED_LIBS)
   set(protobuf_BUILD_SHARED_LIBS_DEFAULT ON)
 else (BUILD_SHARED_LIBS)
