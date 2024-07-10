@@ -139,9 +139,8 @@ const ::google::protobuf::MessageLite::ClassDataFull
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::internal::ZeroFieldsBase::GetDeleteImpl<Empty>(),
             ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<Empty>(),
-            ::google::protobuf::internal::ZeroFieldsBase::GetClearImpl<Empty>(),
-                ::google::protobuf::internal::ZeroFieldsBase::GetByteSizeLongImpl<Empty>(),
-                ::google::protobuf::internal::ZeroFieldsBase::GetSerializeImpl<Empty>(),
+            ::google::protobuf::internal::ZeroFieldsBase::GetClearImpl<Empty>(), &Empty::ByteSizeLong,
+                &Empty::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Empty, _impl_._cached_size_),
             false,

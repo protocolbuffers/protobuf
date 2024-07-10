@@ -539,9 +539,8 @@ const ::google::protobuf::MessageLite::ClassDataFull
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Type>(),
             ::google::protobuf::Message::GetNewImpl<Type>(),
-            ::google::protobuf::Message::GetClearImpl<Type>(),
-                ::google::protobuf::Message::GetByteSizeLongImpl<Type>(),
-                ::google::protobuf::Message::GetSerializeImpl<Type>(),
+            ::google::protobuf::Message::GetClearImpl<Type>(), &Type::ByteSizeLong,
+                &Type::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Type, _impl_._cached_size_),
             false,
@@ -655,145 +654,162 @@ PROTOBUF_NOINLINE void Type::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-::uint8_t* Type::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Type)
-  ::uint32_t cached_has_bits = 0;
-  (void)cached_has_bits;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::uint8_t* Type::_InternalSerialize(
+            const MessageLite& base, ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) {
+          const Type& this_ = static_cast<const Type&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::uint8_t* Type::_InternalSerialize(
+            ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+          const Type& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Type)
+          ::uint32_t cached_has_bits = 0;
+          (void)cached_has_bits;
 
-  // string name = 1;
-  if (!this->_internal_name().empty()) {
-    const std::string& _s = this->_internal_name();
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-        _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.name");
-    target = stream->WriteStringMaybeAliased(1, _s, target);
-  }
+          // string name = 1;
+          if (!this_._internal_name().empty()) {
+            const std::string& _s = this_._internal_name();
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.name");
+            target = stream->WriteStringMaybeAliased(1, _s, target);
+          }
 
-  // repeated .google.protobuf.Field fields = 2;
-  for (unsigned i = 0, n = static_cast<unsigned>(
-                           this->_internal_fields_size());
-       i < n; i++) {
-    const auto& repfield = this->_internal_fields().Get(i);
-    target =
-        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-            2, repfield, repfield.GetCachedSize(),
-            target, stream);
-  }
+          // repeated .google.protobuf.Field fields = 2;
+          for (unsigned i = 0, n = static_cast<unsigned>(
+                                   this_._internal_fields_size());
+               i < n; i++) {
+            const auto& repfield = this_._internal_fields().Get(i);
+            target =
+                ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+                    2, repfield, repfield.GetCachedSize(),
+                    target, stream);
+          }
 
-  // repeated string oneofs = 3;
-  for (int i = 0, n = this->_internal_oneofs_size(); i < n; ++i) {
-    const auto& s = this->_internal_oneofs().Get(i);
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-        s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.oneofs");
-    target = stream->WriteString(3, s, target);
-  }
+          // repeated string oneofs = 3;
+          for (int i = 0, n = this_._internal_oneofs_size(); i < n; ++i) {
+            const auto& s = this_._internal_oneofs().Get(i);
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.oneofs");
+            target = stream->WriteString(3, s, target);
+          }
 
-  // repeated .google.protobuf.Option options = 4;
-  for (unsigned i = 0, n = static_cast<unsigned>(
-                           this->_internal_options_size());
-       i < n; i++) {
-    const auto& repfield = this->_internal_options().Get(i);
-    target =
-        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-            4, repfield, repfield.GetCachedSize(),
-            target, stream);
-  }
+          // repeated .google.protobuf.Option options = 4;
+          for (unsigned i = 0, n = static_cast<unsigned>(
+                                   this_._internal_options_size());
+               i < n; i++) {
+            const auto& repfield = this_._internal_options().Get(i);
+            target =
+                ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+                    4, repfield, repfield.GetCachedSize(),
+                    target, stream);
+          }
 
-  cached_has_bits = _impl_._has_bits_[0];
-  // .google.protobuf.SourceContext source_context = 5;
-  if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        5, *_impl_.source_context_, _impl_.source_context_->GetCachedSize(), target, stream);
-  }
+          cached_has_bits = this_._impl_._has_bits_[0];
+          // .google.protobuf.SourceContext source_context = 5;
+          if (cached_has_bits & 0x00000001u) {
+            target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+                5, *this_._impl_.source_context_, this_._impl_.source_context_->GetCachedSize(), target,
+                stream);
+          }
 
-  // .google.protobuf.Syntax syntax = 6;
-  if (this->_internal_syntax() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteEnumToArray(
-        6, this->_internal_syntax(), target);
-  }
+          // .google.protobuf.Syntax syntax = 6;
+          if (this_._internal_syntax() != 0) {
+            target = stream->EnsureSpace(target);
+            target = ::_pbi::WireFormatLite::WriteEnumToArray(
+                6, this_._internal_syntax(), target);
+          }
 
-  // string edition = 7;
-  if (!this->_internal_edition().empty()) {
-    const std::string& _s = this->_internal_edition();
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-        _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.edition");
-    target = stream->WriteStringMaybeAliased(7, _s, target);
-  }
+          // string edition = 7;
+          if (!this_._internal_edition().empty()) {
+            const std::string& _s = this_._internal_edition();
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.edition");
+            target = stream->WriteStringMaybeAliased(7, _s, target);
+          }
 
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target =
-        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
-  }
-  // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Type)
-  return target;
-}
+          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+            target =
+                ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+                    this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+          }
+          // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Type)
+          return target;
+        }
 
-::size_t Type::ByteSizeLong() const {
-  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Type)
-  ::size_t total_size = 0;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::size_t Type::ByteSizeLong(const MessageLite& base) {
+          const Type& this_ = static_cast<const Type&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::size_t Type::ByteSizeLong() const {
+          const Type& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Type)
+          ::size_t total_size = 0;
 
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+          ::uint32_t cached_has_bits = 0;
+          // Prevent compiler warnings about cached_has_bits being unused
+          (void)cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(
-      reinterpret_cast<const void*>(this));
-   {
-    // repeated .google.protobuf.Field fields = 2;
-     {
-      total_size += 1UL * this->_internal_fields_size();
-      for (const auto& msg : this->_internal_fields()) {
-        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
-      }
-    }
-    // repeated string oneofs = 3;
-     {
-      total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_oneofs().size());
-      for (int i = 0, n = _internal_oneofs().size(); i < n; ++i) {
-        total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
-            _internal_oneofs().Get(i));
-      }
-    }
-    // repeated .google.protobuf.Option options = 4;
-     {
-      total_size += 1UL * this->_internal_options_size();
-      for (const auto& msg : this->_internal_options()) {
-        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
-      }
-    }
-  }
-   {
-    // string name = 1;
-    if (!this->_internal_name().empty()) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this->_internal_name());
-    }
-    // string edition = 7;
-    if (!this->_internal_edition().empty()) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this->_internal_edition());
-    }
-  }
-   {
-    // .google.protobuf.SourceContext source_context = 5;
-    cached_has_bits = _impl_._has_bits_[0];
-    if (cached_has_bits & 0x00000001u) {
-      total_size +=
-          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.source_context_);
-    }
-  }
-   {
-    // .google.protobuf.Syntax syntax = 6;
-    if (this->_internal_syntax() != 0) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this->_internal_syntax());
-    }
-  }
-  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
-}
+          ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+           {
+            // repeated .google.protobuf.Field fields = 2;
+             {
+              total_size += 1UL * this_._internal_fields_size();
+              for (const auto& msg : this_._internal_fields()) {
+                total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+              }
+            }
+            // repeated string oneofs = 3;
+             {
+              total_size +=
+                  1 * ::google::protobuf::internal::FromIntSize(this_._internal_oneofs().size());
+              for (int i = 0, n = this_._internal_oneofs().size(); i < n; ++i) {
+                total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+                    this_._internal_oneofs().Get(i));
+              }
+            }
+            // repeated .google.protobuf.Option options = 4;
+             {
+              total_size += 1UL * this_._internal_options_size();
+              for (const auto& msg : this_._internal_options()) {
+                total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+              }
+            }
+          }
+           {
+            // string name = 1;
+            if (!this_._internal_name().empty()) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                              this_._internal_name());
+            }
+            // string edition = 7;
+            if (!this_._internal_edition().empty()) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                              this_._internal_edition());
+            }
+          }
+           {
+            // .google.protobuf.SourceContext source_context = 5;
+            cached_has_bits =
+                this_._impl_._has_bits_[0];
+            if (cached_has_bits & 0x00000001u) {
+              total_size += 1 +
+                            ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.source_context_);
+            }
+          }
+           {
+            // .google.protobuf.Syntax syntax = 6;
+            if (this_._internal_syntax() != 0) {
+              total_size += 1 +
+                            ::_pbi::WireFormatLite::EnumSize(this_._internal_syntax());
+            }
+          }
+          return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                                     &this_._impl_._cached_size_);
+        }
 
 void Type::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Type*>(&to_msg);
@@ -956,9 +972,8 @@ const ::google::protobuf::MessageLite::ClassDataFull
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Field>(),
             ::google::protobuf::Message::GetNewImpl<Field>(),
-            ::google::protobuf::Message::GetClearImpl<Field>(),
-                ::google::protobuf::Message::GetByteSizeLongImpl<Field>(),
-                ::google::protobuf::Message::GetSerializeImpl<Field>(),
+            ::google::protobuf::Message::GetClearImpl<Field>(), &Field::ByteSizeLong,
+                &Field::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Field, _impl_._cached_size_),
             false,
@@ -1090,167 +1105,181 @@ PROTOBUF_NOINLINE void Field::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-::uint8_t* Field::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Field)
-  ::uint32_t cached_has_bits = 0;
-  (void)cached_has_bits;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::uint8_t* Field::_InternalSerialize(
+            const MessageLite& base, ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) {
+          const Field& this_ = static_cast<const Field&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::uint8_t* Field::_InternalSerialize(
+            ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+          const Field& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Field)
+          ::uint32_t cached_has_bits = 0;
+          (void)cached_has_bits;
 
-  // .google.protobuf.Field.Kind kind = 1;
-  if (this->_internal_kind() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteEnumToArray(
-        1, this->_internal_kind(), target);
-  }
+          // .google.protobuf.Field.Kind kind = 1;
+          if (this_._internal_kind() != 0) {
+            target = stream->EnsureSpace(target);
+            target = ::_pbi::WireFormatLite::WriteEnumToArray(
+                1, this_._internal_kind(), target);
+          }
 
-  // .google.protobuf.Field.Cardinality cardinality = 2;
-  if (this->_internal_cardinality() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteEnumToArray(
-        2, this->_internal_cardinality(), target);
-  }
+          // .google.protobuf.Field.Cardinality cardinality = 2;
+          if (this_._internal_cardinality() != 0) {
+            target = stream->EnsureSpace(target);
+            target = ::_pbi::WireFormatLite::WriteEnumToArray(
+                2, this_._internal_cardinality(), target);
+          }
 
-  // int32 number = 3;
-  if (this->_internal_number() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<3>(
-            stream, this->_internal_number(), target);
-  }
+          // int32 number = 3;
+          if (this_._internal_number() != 0) {
+            target = ::google::protobuf::internal::WireFormatLite::
+                WriteInt32ToArrayWithField<3>(
+                    stream, this_._internal_number(), target);
+          }
 
-  // string name = 4;
-  if (!this->_internal_name().empty()) {
-    const std::string& _s = this->_internal_name();
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-        _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.name");
-    target = stream->WriteStringMaybeAliased(4, _s, target);
-  }
+          // string name = 4;
+          if (!this_._internal_name().empty()) {
+            const std::string& _s = this_._internal_name();
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.name");
+            target = stream->WriteStringMaybeAliased(4, _s, target);
+          }
 
-  // string type_url = 6;
-  if (!this->_internal_type_url().empty()) {
-    const std::string& _s = this->_internal_type_url();
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-        _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.type_url");
-    target = stream->WriteStringMaybeAliased(6, _s, target);
-  }
+          // string type_url = 6;
+          if (!this_._internal_type_url().empty()) {
+            const std::string& _s = this_._internal_type_url();
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.type_url");
+            target = stream->WriteStringMaybeAliased(6, _s, target);
+          }
 
-  // int32 oneof_index = 7;
-  if (this->_internal_oneof_index() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<7>(
-            stream, this->_internal_oneof_index(), target);
-  }
+          // int32 oneof_index = 7;
+          if (this_._internal_oneof_index() != 0) {
+            target = ::google::protobuf::internal::WireFormatLite::
+                WriteInt32ToArrayWithField<7>(
+                    stream, this_._internal_oneof_index(), target);
+          }
 
-  // bool packed = 8;
-  if (this->_internal_packed() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(
-        8, this->_internal_packed(), target);
-  }
+          // bool packed = 8;
+          if (this_._internal_packed() != 0) {
+            target = stream->EnsureSpace(target);
+            target = ::_pbi::WireFormatLite::WriteBoolToArray(
+                8, this_._internal_packed(), target);
+          }
 
-  // repeated .google.protobuf.Option options = 9;
-  for (unsigned i = 0, n = static_cast<unsigned>(
-                           this->_internal_options_size());
-       i < n; i++) {
-    const auto& repfield = this->_internal_options().Get(i);
-    target =
-        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-            9, repfield, repfield.GetCachedSize(),
-            target, stream);
-  }
+          // repeated .google.protobuf.Option options = 9;
+          for (unsigned i = 0, n = static_cast<unsigned>(
+                                   this_._internal_options_size());
+               i < n; i++) {
+            const auto& repfield = this_._internal_options().Get(i);
+            target =
+                ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+                    9, repfield, repfield.GetCachedSize(),
+                    target, stream);
+          }
 
-  // string json_name = 10;
-  if (!this->_internal_json_name().empty()) {
-    const std::string& _s = this->_internal_json_name();
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-        _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.json_name");
-    target = stream->WriteStringMaybeAliased(10, _s, target);
-  }
+          // string json_name = 10;
+          if (!this_._internal_json_name().empty()) {
+            const std::string& _s = this_._internal_json_name();
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.json_name");
+            target = stream->WriteStringMaybeAliased(10, _s, target);
+          }
 
-  // string default_value = 11;
-  if (!this->_internal_default_value().empty()) {
-    const std::string& _s = this->_internal_default_value();
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-        _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.default_value");
-    target = stream->WriteStringMaybeAliased(11, _s, target);
-  }
+          // string default_value = 11;
+          if (!this_._internal_default_value().empty()) {
+            const std::string& _s = this_._internal_default_value();
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.default_value");
+            target = stream->WriteStringMaybeAliased(11, _s, target);
+          }
 
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target =
-        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
-  }
-  // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Field)
-  return target;
-}
+          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+            target =
+                ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+                    this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+          }
+          // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Field)
+          return target;
+        }
 
-::size_t Field::ByteSizeLong() const {
-  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Field)
-  ::size_t total_size = 0;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::size_t Field::ByteSizeLong(const MessageLite& base) {
+          const Field& this_ = static_cast<const Field&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::size_t Field::ByteSizeLong() const {
+          const Field& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Field)
+          ::size_t total_size = 0;
 
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+          ::uint32_t cached_has_bits = 0;
+          // Prevent compiler warnings about cached_has_bits being unused
+          (void)cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(
-      reinterpret_cast<const void*>(this));
-   {
-    // repeated .google.protobuf.Option options = 9;
-     {
-      total_size += 1UL * this->_internal_options_size();
-      for (const auto& msg : this->_internal_options()) {
-        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
-      }
-    }
-  }
-   {
-    // string name = 4;
-    if (!this->_internal_name().empty()) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this->_internal_name());
-    }
-    // string type_url = 6;
-    if (!this->_internal_type_url().empty()) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this->_internal_type_url());
-    }
-    // string json_name = 10;
-    if (!this->_internal_json_name().empty()) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this->_internal_json_name());
-    }
-    // string default_value = 11;
-    if (!this->_internal_default_value().empty()) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this->_internal_default_value());
-    }
-    // .google.protobuf.Field.Kind kind = 1;
-    if (this->_internal_kind() != 0) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this->_internal_kind());
-    }
-    // .google.protobuf.Field.Cardinality cardinality = 2;
-    if (this->_internal_cardinality() != 0) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this->_internal_cardinality());
-    }
-    // int32 number = 3;
-    if (this->_internal_number() != 0) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-          this->_internal_number());
-    }
-    // int32 oneof_index = 7;
-    if (this->_internal_oneof_index() != 0) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-          this->_internal_oneof_index());
-    }
-    // bool packed = 8;
-    if (this->_internal_packed() != 0) {
-      total_size += 2;
-    }
-  }
-  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
-}
+          ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+           {
+            // repeated .google.protobuf.Option options = 9;
+             {
+              total_size += 1UL * this_._internal_options_size();
+              for (const auto& msg : this_._internal_options()) {
+                total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+              }
+            }
+          }
+           {
+            // string name = 4;
+            if (!this_._internal_name().empty()) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                              this_._internal_name());
+            }
+            // string type_url = 6;
+            if (!this_._internal_type_url().empty()) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                              this_._internal_type_url());
+            }
+            // string json_name = 10;
+            if (!this_._internal_json_name().empty()) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                              this_._internal_json_name());
+            }
+            // string default_value = 11;
+            if (!this_._internal_default_value().empty()) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                              this_._internal_default_value());
+            }
+            // .google.protobuf.Field.Kind kind = 1;
+            if (this_._internal_kind() != 0) {
+              total_size += 1 +
+                            ::_pbi::WireFormatLite::EnumSize(this_._internal_kind());
+            }
+            // .google.protobuf.Field.Cardinality cardinality = 2;
+            if (this_._internal_cardinality() != 0) {
+              total_size += 1 +
+                            ::_pbi::WireFormatLite::EnumSize(this_._internal_cardinality());
+            }
+            // int32 number = 3;
+            if (this_._internal_number() != 0) {
+              total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+                  this_._internal_number());
+            }
+            // int32 oneof_index = 7;
+            if (this_._internal_oneof_index() != 0) {
+              total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+                  this_._internal_oneof_index());
+            }
+            // bool packed = 8;
+            if (this_._internal_packed() != 0) {
+              total_size += 2;
+            }
+          }
+          return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                                     &this_._impl_._cached_size_);
+        }
 
 void Field::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Field*>(&to_msg);
@@ -1420,9 +1449,8 @@ const ::google::protobuf::MessageLite::ClassDataFull
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Enum>(),
             ::google::protobuf::Message::GetNewImpl<Enum>(),
-            ::google::protobuf::Message::GetClearImpl<Enum>(),
-                ::google::protobuf::Message::GetByteSizeLongImpl<Enum>(),
-                ::google::protobuf::Message::GetSerializeImpl<Enum>(),
+            ::google::protobuf::Message::GetClearImpl<Enum>(), &Enum::ByteSizeLong,
+                &Enum::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Enum, _impl_._cached_size_),
             false,
@@ -1529,129 +1557,145 @@ PROTOBUF_NOINLINE void Enum::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-::uint8_t* Enum::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Enum)
-  ::uint32_t cached_has_bits = 0;
-  (void)cached_has_bits;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::uint8_t* Enum::_InternalSerialize(
+            const MessageLite& base, ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) {
+          const Enum& this_ = static_cast<const Enum&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::uint8_t* Enum::_InternalSerialize(
+            ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+          const Enum& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Enum)
+          ::uint32_t cached_has_bits = 0;
+          (void)cached_has_bits;
 
-  // string name = 1;
-  if (!this->_internal_name().empty()) {
-    const std::string& _s = this->_internal_name();
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-        _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Enum.name");
-    target = stream->WriteStringMaybeAliased(1, _s, target);
-  }
+          // string name = 1;
+          if (!this_._internal_name().empty()) {
+            const std::string& _s = this_._internal_name();
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Enum.name");
+            target = stream->WriteStringMaybeAliased(1, _s, target);
+          }
 
-  // repeated .google.protobuf.EnumValue enumvalue = 2;
-  for (unsigned i = 0, n = static_cast<unsigned>(
-                           this->_internal_enumvalue_size());
-       i < n; i++) {
-    const auto& repfield = this->_internal_enumvalue().Get(i);
-    target =
-        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-            2, repfield, repfield.GetCachedSize(),
-            target, stream);
-  }
+          // repeated .google.protobuf.EnumValue enumvalue = 2;
+          for (unsigned i = 0, n = static_cast<unsigned>(
+                                   this_._internal_enumvalue_size());
+               i < n; i++) {
+            const auto& repfield = this_._internal_enumvalue().Get(i);
+            target =
+                ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+                    2, repfield, repfield.GetCachedSize(),
+                    target, stream);
+          }
 
-  // repeated .google.protobuf.Option options = 3;
-  for (unsigned i = 0, n = static_cast<unsigned>(
-                           this->_internal_options_size());
-       i < n; i++) {
-    const auto& repfield = this->_internal_options().Get(i);
-    target =
-        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-            3, repfield, repfield.GetCachedSize(),
-            target, stream);
-  }
+          // repeated .google.protobuf.Option options = 3;
+          for (unsigned i = 0, n = static_cast<unsigned>(
+                                   this_._internal_options_size());
+               i < n; i++) {
+            const auto& repfield = this_._internal_options().Get(i);
+            target =
+                ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+                    3, repfield, repfield.GetCachedSize(),
+                    target, stream);
+          }
 
-  cached_has_bits = _impl_._has_bits_[0];
-  // .google.protobuf.SourceContext source_context = 4;
-  if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        4, *_impl_.source_context_, _impl_.source_context_->GetCachedSize(), target, stream);
-  }
+          cached_has_bits = this_._impl_._has_bits_[0];
+          // .google.protobuf.SourceContext source_context = 4;
+          if (cached_has_bits & 0x00000001u) {
+            target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+                4, *this_._impl_.source_context_, this_._impl_.source_context_->GetCachedSize(), target,
+                stream);
+          }
 
-  // .google.protobuf.Syntax syntax = 5;
-  if (this->_internal_syntax() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteEnumToArray(
-        5, this->_internal_syntax(), target);
-  }
+          // .google.protobuf.Syntax syntax = 5;
+          if (this_._internal_syntax() != 0) {
+            target = stream->EnsureSpace(target);
+            target = ::_pbi::WireFormatLite::WriteEnumToArray(
+                5, this_._internal_syntax(), target);
+          }
 
-  // string edition = 6;
-  if (!this->_internal_edition().empty()) {
-    const std::string& _s = this->_internal_edition();
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-        _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Enum.edition");
-    target = stream->WriteStringMaybeAliased(6, _s, target);
-  }
+          // string edition = 6;
+          if (!this_._internal_edition().empty()) {
+            const std::string& _s = this_._internal_edition();
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Enum.edition");
+            target = stream->WriteStringMaybeAliased(6, _s, target);
+          }
 
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target =
-        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
-  }
-  // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Enum)
-  return target;
-}
+          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+            target =
+                ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+                    this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+          }
+          // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Enum)
+          return target;
+        }
 
-::size_t Enum::ByteSizeLong() const {
-  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Enum)
-  ::size_t total_size = 0;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::size_t Enum::ByteSizeLong(const MessageLite& base) {
+          const Enum& this_ = static_cast<const Enum&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::size_t Enum::ByteSizeLong() const {
+          const Enum& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Enum)
+          ::size_t total_size = 0;
 
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+          ::uint32_t cached_has_bits = 0;
+          // Prevent compiler warnings about cached_has_bits being unused
+          (void)cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(
-      reinterpret_cast<const void*>(this));
-   {
-    // repeated .google.protobuf.EnumValue enumvalue = 2;
-     {
-      total_size += 1UL * this->_internal_enumvalue_size();
-      for (const auto& msg : this->_internal_enumvalue()) {
-        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
-      }
-    }
-    // repeated .google.protobuf.Option options = 3;
-     {
-      total_size += 1UL * this->_internal_options_size();
-      for (const auto& msg : this->_internal_options()) {
-        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
-      }
-    }
-  }
-   {
-    // string name = 1;
-    if (!this->_internal_name().empty()) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this->_internal_name());
-    }
-    // string edition = 6;
-    if (!this->_internal_edition().empty()) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this->_internal_edition());
-    }
-  }
-   {
-    // .google.protobuf.SourceContext source_context = 4;
-    cached_has_bits = _impl_._has_bits_[0];
-    if (cached_has_bits & 0x00000001u) {
-      total_size +=
-          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.source_context_);
-    }
-  }
-   {
-    // .google.protobuf.Syntax syntax = 5;
-    if (this->_internal_syntax() != 0) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this->_internal_syntax());
-    }
-  }
-  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
-}
+          ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+           {
+            // repeated .google.protobuf.EnumValue enumvalue = 2;
+             {
+              total_size += 1UL * this_._internal_enumvalue_size();
+              for (const auto& msg : this_._internal_enumvalue()) {
+                total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+              }
+            }
+            // repeated .google.protobuf.Option options = 3;
+             {
+              total_size += 1UL * this_._internal_options_size();
+              for (const auto& msg : this_._internal_options()) {
+                total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+              }
+            }
+          }
+           {
+            // string name = 1;
+            if (!this_._internal_name().empty()) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                              this_._internal_name());
+            }
+            // string edition = 6;
+            if (!this_._internal_edition().empty()) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                              this_._internal_edition());
+            }
+          }
+           {
+            // .google.protobuf.SourceContext source_context = 4;
+            cached_has_bits =
+                this_._impl_._has_bits_[0];
+            if (cached_has_bits & 0x00000001u) {
+              total_size += 1 +
+                            ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.source_context_);
+            }
+          }
+           {
+            // .google.protobuf.Syntax syntax = 5;
+            if (this_._internal_syntax() != 0) {
+              total_size += 1 +
+                            ::_pbi::WireFormatLite::EnumSize(this_._internal_syntax());
+            }
+          }
+          return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                                     &this_._impl_._cached_size_);
+        }
 
 void Enum::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Enum*>(&to_msg);
@@ -1792,9 +1836,8 @@ const ::google::protobuf::MessageLite::ClassDataFull
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<EnumValue>(),
             ::google::protobuf::Message::GetNewImpl<EnumValue>(),
-            ::google::protobuf::Message::GetClearImpl<EnumValue>(),
-                ::google::protobuf::Message::GetByteSizeLongImpl<EnumValue>(),
-                ::google::protobuf::Message::GetSerializeImpl<EnumValue>(),
+            ::google::protobuf::Message::GetClearImpl<EnumValue>(), &EnumValue::ByteSizeLong,
+                &EnumValue::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(EnumValue, _impl_._cached_size_),
             false,
@@ -1871,81 +1914,95 @@ PROTOBUF_NOINLINE void EnumValue::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-::uint8_t* EnumValue::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumValue)
-  ::uint32_t cached_has_bits = 0;
-  (void)cached_has_bits;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::uint8_t* EnumValue::_InternalSerialize(
+            const MessageLite& base, ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) {
+          const EnumValue& this_ = static_cast<const EnumValue&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::uint8_t* EnumValue::_InternalSerialize(
+            ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+          const EnumValue& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumValue)
+          ::uint32_t cached_has_bits = 0;
+          (void)cached_has_bits;
 
-  // string name = 1;
-  if (!this->_internal_name().empty()) {
-    const std::string& _s = this->_internal_name();
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-        _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.EnumValue.name");
-    target = stream->WriteStringMaybeAliased(1, _s, target);
-  }
+          // string name = 1;
+          if (!this_._internal_name().empty()) {
+            const std::string& _s = this_._internal_name();
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.EnumValue.name");
+            target = stream->WriteStringMaybeAliased(1, _s, target);
+          }
 
-  // int32 number = 2;
-  if (this->_internal_number() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::
-        WriteInt32ToArrayWithField<2>(
-            stream, this->_internal_number(), target);
-  }
+          // int32 number = 2;
+          if (this_._internal_number() != 0) {
+            target = ::google::protobuf::internal::WireFormatLite::
+                WriteInt32ToArrayWithField<2>(
+                    stream, this_._internal_number(), target);
+          }
 
-  // repeated .google.protobuf.Option options = 3;
-  for (unsigned i = 0, n = static_cast<unsigned>(
-                           this->_internal_options_size());
-       i < n; i++) {
-    const auto& repfield = this->_internal_options().Get(i);
-    target =
-        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-            3, repfield, repfield.GetCachedSize(),
-            target, stream);
-  }
+          // repeated .google.protobuf.Option options = 3;
+          for (unsigned i = 0, n = static_cast<unsigned>(
+                                   this_._internal_options_size());
+               i < n; i++) {
+            const auto& repfield = this_._internal_options().Get(i);
+            target =
+                ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+                    3, repfield, repfield.GetCachedSize(),
+                    target, stream);
+          }
 
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target =
-        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
-  }
-  // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.EnumValue)
-  return target;
-}
+          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+            target =
+                ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+                    this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+          }
+          // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.EnumValue)
+          return target;
+        }
 
-::size_t EnumValue::ByteSizeLong() const {
-  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumValue)
-  ::size_t total_size = 0;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::size_t EnumValue::ByteSizeLong(const MessageLite& base) {
+          const EnumValue& this_ = static_cast<const EnumValue&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::size_t EnumValue::ByteSizeLong() const {
+          const EnumValue& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumValue)
+          ::size_t total_size = 0;
 
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+          ::uint32_t cached_has_bits = 0;
+          // Prevent compiler warnings about cached_has_bits being unused
+          (void)cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(
-      reinterpret_cast<const void*>(this));
-   {
-    // repeated .google.protobuf.Option options = 3;
-     {
-      total_size += 1UL * this->_internal_options_size();
-      for (const auto& msg : this->_internal_options()) {
-        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
-      }
-    }
-  }
-   {
-    // string name = 1;
-    if (!this->_internal_name().empty()) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this->_internal_name());
-    }
-    // int32 number = 2;
-    if (this->_internal_number() != 0) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-          this->_internal_number());
-    }
-  }
-  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
-}
+          ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+           {
+            // repeated .google.protobuf.Option options = 3;
+             {
+              total_size += 1UL * this_._internal_options_size();
+              for (const auto& msg : this_._internal_options()) {
+                total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+              }
+            }
+          }
+           {
+            // string name = 1;
+            if (!this_._internal_name().empty()) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                              this_._internal_name());
+            }
+            // int32 number = 2;
+            if (this_._internal_number() != 0) {
+              total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+                  this_._internal_number());
+            }
+          }
+          return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                                     &this_._impl_._cached_size_);
+        }
 
 void EnumValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<EnumValue*>(&to_msg);
@@ -2073,9 +2130,8 @@ const ::google::protobuf::MessageLite::ClassDataFull
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Option>(),
             ::google::protobuf::Message::GetNewImpl<Option>(),
-            ::google::protobuf::Message::GetClearImpl<Option>(),
-                ::google::protobuf::Message::GetByteSizeLongImpl<Option>(),
-                ::google::protobuf::Message::GetSerializeImpl<Option>(),
+            ::google::protobuf::Message::GetClearImpl<Option>(), &Option::ByteSizeLong,
+                &Option::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Option, _impl_._cached_size_),
             false,
@@ -2149,64 +2205,80 @@ PROTOBUF_NOINLINE void Option::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-::uint8_t* Option::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Option)
-  ::uint32_t cached_has_bits = 0;
-  (void)cached_has_bits;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::uint8_t* Option::_InternalSerialize(
+            const MessageLite& base, ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) {
+          const Option& this_ = static_cast<const Option&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::uint8_t* Option::_InternalSerialize(
+            ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+          const Option& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Option)
+          ::uint32_t cached_has_bits = 0;
+          (void)cached_has_bits;
 
-  // string name = 1;
-  if (!this->_internal_name().empty()) {
-    const std::string& _s = this->_internal_name();
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-        _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Option.name");
-    target = stream->WriteStringMaybeAliased(1, _s, target);
-  }
+          // string name = 1;
+          if (!this_._internal_name().empty()) {
+            const std::string& _s = this_._internal_name();
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Option.name");
+            target = stream->WriteStringMaybeAliased(1, _s, target);
+          }
 
-  cached_has_bits = _impl_._has_bits_[0];
-  // .google.protobuf.Any value = 2;
-  if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        2, *_impl_.value_, _impl_.value_->GetCachedSize(), target, stream);
-  }
+          cached_has_bits = this_._impl_._has_bits_[0];
+          // .google.protobuf.Any value = 2;
+          if (cached_has_bits & 0x00000001u) {
+            target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+                2, *this_._impl_.value_, this_._impl_.value_->GetCachedSize(), target,
+                stream);
+          }
 
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target =
-        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
-  }
-  // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Option)
-  return target;
-}
+          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+            target =
+                ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+                    this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+          }
+          // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Option)
+          return target;
+        }
 
-::size_t Option::ByteSizeLong() const {
-  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Option)
-  ::size_t total_size = 0;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::size_t Option::ByteSizeLong(const MessageLite& base) {
+          const Option& this_ = static_cast<const Option&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::size_t Option::ByteSizeLong() const {
+          const Option& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Option)
+          ::size_t total_size = 0;
 
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+          ::uint32_t cached_has_bits = 0;
+          // Prevent compiler warnings about cached_has_bits being unused
+          (void)cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(
-      reinterpret_cast<const void*>(this));
-   {
-    // string name = 1;
-    if (!this->_internal_name().empty()) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this->_internal_name());
-    }
-  }
-   {
-    // .google.protobuf.Any value = 2;
-    cached_has_bits = _impl_._has_bits_[0];
-    if (cached_has_bits & 0x00000001u) {
-      total_size +=
-          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*_impl_.value_);
-    }
-  }
-  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
-}
+          ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+           {
+            // string name = 1;
+            if (!this_._internal_name().empty()) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                              this_._internal_name());
+            }
+          }
+           {
+            // .google.protobuf.Any value = 2;
+            cached_has_bits =
+                this_._impl_._has_bits_[0];
+            if (cached_has_bits & 0x00000001u) {
+              total_size += 1 +
+                            ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.value_);
+            }
+          }
+          return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                                     &this_._impl_._cached_size_);
+        }
 
 void Option::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Option*>(&to_msg);

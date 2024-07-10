@@ -201,9 +201,8 @@ const ::google::protobuf::MessageLite::ClassDataFull
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Any>(),
             ::google::protobuf::Message::GetNewImpl<Any>(),
-            ::google::protobuf::Message::GetClearImpl<Any>(),
-                ::google::protobuf::Message::GetByteSizeLongImpl<Any>(),
-                ::google::protobuf::Message::GetSerializeImpl<Any>(),
+            ::google::protobuf::Message::GetClearImpl<Any>(), &Any::ByteSizeLong,
+                &Any::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Any, _impl_._cached_size_),
             false,
@@ -272,60 +271,74 @@ PROTOBUF_NOINLINE void Any::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-::uint8_t* Any::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Any)
-  ::uint32_t cached_has_bits = 0;
-  (void)cached_has_bits;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::uint8_t* Any::_InternalSerialize(
+            const MessageLite& base, ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) {
+          const Any& this_ = static_cast<const Any&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::uint8_t* Any::_InternalSerialize(
+            ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+          const Any& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Any)
+          ::uint32_t cached_has_bits = 0;
+          (void)cached_has_bits;
 
-  // string type_url = 1;
-  if (!this->_internal_type_url().empty()) {
-    const std::string& _s = this->_internal_type_url();
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-        _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Any.type_url");
-    target = stream->WriteStringMaybeAliased(1, _s, target);
-  }
+          // string type_url = 1;
+          if (!this_._internal_type_url().empty()) {
+            const std::string& _s = this_._internal_type_url();
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Any.type_url");
+            target = stream->WriteStringMaybeAliased(1, _s, target);
+          }
 
-  // bytes value = 2;
-  if (!this->_internal_value().empty()) {
-    const std::string& _s = this->_internal_value();
-    target = stream->WriteBytesMaybeAliased(2, _s, target);
-  }
+          // bytes value = 2;
+          if (!this_._internal_value().empty()) {
+            const std::string& _s = this_._internal_value();
+            target = stream->WriteBytesMaybeAliased(2, _s, target);
+          }
 
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target =
-        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
-  }
-  // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Any)
-  return target;
-}
+          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+            target =
+                ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+                    this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+          }
+          // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Any)
+          return target;
+        }
 
-::size_t Any::ByteSizeLong() const {
-  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Any)
-  ::size_t total_size = 0;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::size_t Any::ByteSizeLong(const MessageLite& base) {
+          const Any& this_ = static_cast<const Any&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::size_t Any::ByteSizeLong() const {
+          const Any& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Any)
+          ::size_t total_size = 0;
 
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+          ::uint32_t cached_has_bits = 0;
+          // Prevent compiler warnings about cached_has_bits being unused
+          (void)cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(
-      reinterpret_cast<const void*>(this));
-   {
-    // string type_url = 1;
-    if (!this->_internal_type_url().empty()) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this->_internal_type_url());
-    }
-    // bytes value = 2;
-    if (!this->_internal_value().empty()) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
-                                      this->_internal_value());
-    }
-  }
-  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
-}
+          ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+           {
+            // string type_url = 1;
+            if (!this_._internal_type_url().empty()) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                              this_._internal_type_url());
+            }
+            // bytes value = 2;
+            if (!this_._internal_value().empty()) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
+                                              this_._internal_value());
+            }
+          }
+          return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                                     &this_._impl_._cached_size_);
+        }
 
 void Any::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Any*>(&to_msg);

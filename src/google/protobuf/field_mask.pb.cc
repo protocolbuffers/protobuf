@@ -174,9 +174,8 @@ const ::google::protobuf::MessageLite::ClassDataFull
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<FieldMask>(),
             ::google::protobuf::Message::GetNewImpl<FieldMask>(),
-            ::google::protobuf::Message::GetClearImpl<FieldMask>(),
-                ::google::protobuf::Message::GetByteSizeLongImpl<FieldMask>(),
-                ::google::protobuf::Message::GetSerializeImpl<FieldMask>(),
+            ::google::protobuf::Message::GetClearImpl<FieldMask>(), &FieldMask::ByteSizeLong,
+                &FieldMask::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._cached_size_),
             false,
@@ -238,52 +237,67 @@ PROTOBUF_NOINLINE void FieldMask::Clear() {
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
-::uint8_t* FieldMask::_InternalSerialize(
-    ::uint8_t* target,
-    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldMask)
-  ::uint32_t cached_has_bits = 0;
-  (void)cached_has_bits;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::uint8_t* FieldMask::_InternalSerialize(
+            const MessageLite& base, ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) {
+          const FieldMask& this_ = static_cast<const FieldMask&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::uint8_t* FieldMask::_InternalSerialize(
+            ::uint8_t* target,
+            ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+          const FieldMask& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldMask)
+          ::uint32_t cached_has_bits = 0;
+          (void)cached_has_bits;
 
-  // repeated string paths = 1;
-  for (int i = 0, n = this->_internal_paths_size(); i < n; ++i) {
-    const auto& s = this->_internal_paths().Get(i);
-    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-        s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.FieldMask.paths");
-    target = stream->WriteString(1, s, target);
-  }
+          // repeated string paths = 1;
+          for (int i = 0, n = this_._internal_paths_size(); i < n; ++i) {
+            const auto& s = this_._internal_paths().Get(i);
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.FieldMask.paths");
+            target = stream->WriteString(1, s, target);
+          }
 
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target =
-        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-            _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
-  }
-  // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.FieldMask)
-  return target;
-}
+          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+            target =
+                ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+                    this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+          }
+          // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.FieldMask)
+          return target;
+        }
 
-::size_t FieldMask::ByteSizeLong() const {
-  // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldMask)
-  ::size_t total_size = 0;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        ::size_t FieldMask::ByteSizeLong(const MessageLite& base) {
+          const FieldMask& this_ = static_cast<const FieldMask&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+        ::size_t FieldMask::ByteSizeLong() const {
+          const FieldMask& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldMask)
+          ::size_t total_size = 0;
 
-  ::uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void)cached_has_bits;
+          ::uint32_t cached_has_bits = 0;
+          // Prevent compiler warnings about cached_has_bits being unused
+          (void)cached_has_bits;
 
-  ::_pbi::Prefetch5LinesFrom7Lines(
-      reinterpret_cast<const void*>(this));
-   {
-    // repeated string paths = 1;
-     {
-      total_size += 1 * ::google::protobuf::internal::FromIntSize(_internal_paths().size());
-      for (int i = 0, n = _internal_paths().size(); i < n; ++i) {
-        total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
-            _internal_paths().Get(i));
-      }
-    }
-  }
-  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
-}
+          ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+           {
+            // repeated string paths = 1;
+             {
+              total_size +=
+                  1 * ::google::protobuf::internal::FromIntSize(this_._internal_paths().size());
+              for (int i = 0, n = this_._internal_paths().size(); i < n; ++i) {
+                total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+                    this_._internal_paths().Get(i));
+              }
+            }
+          }
+          return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                                     &this_._impl_._cached_size_);
+        }
 
 void FieldMask::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<FieldMask*>(&to_msg);
