@@ -43,7 +43,8 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' OR '$(TargetFramework)' == 'netstandard1.1' ">
-    <PackageReference Include="System.Memory" Version="4.5.5"/>
+    <!-- TODO -->
+    <PackageReference Include="System.Memory" Version="4.5.3"/>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
