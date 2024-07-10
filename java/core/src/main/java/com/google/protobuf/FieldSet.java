@@ -442,12 +442,17 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     return true;
   }
 
+  // Avoid iterator allocation.
+  @SuppressWarnings({"ForeachList", "ForeachListWithUserVar"})
   private static <T extends FieldDescriptorLite<T>> boolean isInitialized(
       final Map.Entry<T, Object> entry) {
     final T descriptor = entry.getKey();
     if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE) {
       if (descriptor.isRepeated()) {
-        for (final Object element : (List<?>) entry.getValue()) {
+        List<?> list = (List<?>) entry.getValue();
+        int listSize = list.size();
+        for (int i = 0; i < listSize; i++) {
+          Object element = list.get(i);
           if (!isMessageFieldValueInitialized(element)) {
             return false;
           }
