@@ -1122,7 +1122,8 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
      * Useful for implementing {@link Message.Builder#setField(Descriptors.FieldDescriptor,
      * Object)}.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    // Avoid iterator allocation.
+    @SuppressWarnings({"unchecked", "ForeachList", "ForeachListWithUserVar"})
     public void setField(final T descriptor, Object value) {
       ensureIsMutable();
       if (descriptor.isRepeated()) {
@@ -1133,8 +1134,10 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
 
         // Wrap the contents in a new list so that the caller cannot change
         // the list's contents after setting it.
-        final List newList = new ArrayList((List) value);
-        for (final Object element : newList) {
+        final List<Object> newList = new ArrayList<>((List<Object>) value);
+        int newListSize = newList.size();
+        for (int i = 0; i < newListSize; i++) {
+          Object element = newList.get(i);
           verifyType(descriptor, element);
           hasNestedBuilders = hasNestedBuilders || element instanceof MessageLite.Builder;
         }
