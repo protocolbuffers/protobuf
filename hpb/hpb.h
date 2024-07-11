@@ -20,7 +20,7 @@
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 
-namespace protos {
+namespace hpb {
 
 using Arena = ::upb::Arena;
 class ExtensionRegistry;
@@ -86,7 +86,7 @@ inline absl::string_view UpbStrToStringView(upb_StringView str) {
   return absl::string_view(str.data, str.size);
 }
 
-// TODO: update bzl and move to upb runtime / protos.cc.
+// TODO: update bzl and move to upb runtime / hpb.cc.
 inline upb_StringView UpbStrFromStringView(absl::string_view str,
                                            upb_Arena* arena) {
   const size_t str_size = str.size();
@@ -96,7 +96,7 @@ inline upb_StringView UpbStrFromStringView(absl::string_view str,
 }
 
 template <typename T>
-typename T::Proxy CreateMessage(::protos::Arena& arena) {
+typename T::Proxy CreateMessage(::hpb::Arena& arena) {
   return typename T::Proxy(upb_Message_New(T::minitable(), arena.ptr()),
                            arena.ptr());
 }
@@ -271,7 +271,7 @@ using PtrOrRaw = T;
 template <typename T>
 void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
   static_assert(!std::is_const_v<T>);
-  ::protos::internal::DeepCopy(
+  ::hpb::internal::DeepCopy(
       internal::GetInternalMsg(target_message),
       internal::GetInternalMsg(source_message), T::minitable(),
       static_cast<upb_Arena*>(target_message->GetInternalArena()));
@@ -280,27 +280,27 @@ void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
 template <typename T>
 typename T::Proxy CloneMessage(Ptr<T> message, upb_Arena* arena) {
   return internal::PrivateAccess::Proxy<T>(
-      ::protos::internal::DeepClone(internal::GetInternalMsg(message),
-                                    T::minitable(), arena),
+      ::hpb::internal::DeepClone(internal::GetInternalMsg(message),
+                                 T::minitable(), arena),
       arena);
 }
 
 template <typename T>
 void DeepCopy(Ptr<const T> source_message, T* target_message) {
   static_assert(!std::is_const_v<T>);
-  DeepCopy(source_message, protos::Ptr(target_message));
+  DeepCopy(source_message, hpb::Ptr(target_message));
 }
 
 template <typename T>
 void DeepCopy(const T* source_message, Ptr<T> target_message) {
   static_assert(!std::is_const_v<T>);
-  DeepCopy(protos::Ptr(source_message), target_message);
+  DeepCopy(hpb::Ptr(source_message), target_message);
 }
 
 template <typename T>
 void DeepCopy(const T* source_message, T* target_message) {
   static_assert(!std::is_const_v<T>);
-  DeepCopy(protos::Ptr(source_message), protos::Ptr(target_message));
+  DeepCopy(hpb::Ptr(source_message), hpb::Ptr(target_message));
 }
 
 template <typename T>
@@ -313,7 +313,7 @@ void ClearMessage(internal::PtrOrRaw<T> message) {
 class ExtensionRegistry {
  public:
   ExtensionRegistry(
-      const std::vector<const ::protos::internal::ExtensionMiniTableProvider*>&
+      const std::vector<const ::hpb::internal::ExtensionMiniTableProvider*>&
           extensions,
       const upb::Arena& arena)
       : registry_(upb_ExtensionRegistry_New(arena.ptr())) {
@@ -330,7 +330,7 @@ class ExtensionRegistry {
   }
 
  private:
-  friend upb_ExtensionRegistry* ::protos::internal::GetUpbExtensions(
+  friend upb_ExtensionRegistry* ::hpb::internal::GetUpbExtensions(
       const ExtensionRegistry& extension_registry);
   upb_ExtensionRegistry* registry_;
 };
@@ -347,24 +347,24 @@ template <typename T, typename Extendee, typename Extension,
           typename = EnableIfProtosClass<T>>
 ABSL_MUST_USE_RESULT bool HasExtension(
     Ptr<T> message,
-    const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
-  return ::protos::internal::HasExtensionOrUnknown(
-      ::protos::internal::GetInternalMsg(message), id.mini_table_ext());
+    const ::hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
+  return ::hpb::internal::HasExtensionOrUnknown(
+      ::hpb::internal::GetInternalMsg(message), id.mini_table_ext());
 }
 
 template <typename T, typename Extendee, typename Extension,
           typename = EnableIfProtosClass<T>>
 ABSL_MUST_USE_RESULT bool HasExtension(
     const T* message,
-    const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
-  return HasExtension(protos::Ptr(message), id);
+    const ::hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
+  return HasExtension(hpb::Ptr(message), id);
 }
 
 template <typename T, typename Extension, typename = EnableIfProtosClass<T>,
           typename = EnableIfMutableProto<T>>
 void ClearExtension(
     Ptr<T> message,
-    const ::protos::internal::ExtensionIdentifier<T, Extension>& id) {
+    const ::hpb::internal::ExtensionIdentifier<T, Extension>& id) {
   static_assert(!std::is_const_v<T>, "");
   upb_Message_ClearExtension(internal::GetInternalMsg(message),
                              id.mini_table_ext());
@@ -372,109 +372,108 @@ void ClearExtension(
 
 template <typename T, typename Extension, typename = EnableIfProtosClass<T>>
 void ClearExtension(
-    T* message,
-    const ::protos::internal::ExtensionIdentifier<T, Extension>& id) {
-  ClearExtension(::protos::Ptr(message), id);
+    T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id) {
+  ClearExtension(::hpb::Ptr(message), id);
 }
 
 template <typename T, typename Extension, typename = EnableIfProtosClass<T>,
           typename = EnableIfMutableProto<T>>
 absl::Status SetExtension(
     Ptr<T> message,
-    const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
+    const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
     const Extension& value) {
   static_assert(!std::is_const_v<T>);
   auto* message_arena = static_cast<upb_Arena*>(message->GetInternalArena());
-  return ::protos::internal::SetExtension(internal::GetInternalMsg(message),
-                                          message_arena, id.mini_table_ext(),
-                                          internal::GetInternalMsg(&value));
+  return ::hpb::internal::SetExtension(internal::GetInternalMsg(message),
+                                       message_arena, id.mini_table_ext(),
+                                       internal::GetInternalMsg(&value));
 }
 
 template <typename T, typename Extension, typename = EnableIfProtosClass<T>,
           typename = EnableIfMutableProto<T>>
 absl::Status SetExtension(
     Ptr<T> message,
-    const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
+    const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
     Ptr<Extension> value) {
   static_assert(!std::is_const_v<T>);
   auto* message_arena = static_cast<upb_Arena*>(message->GetInternalArena());
-  return ::protos::internal::SetExtension(internal::GetInternalMsg(message),
-                                          message_arena, id.mini_table_ext(),
-                                          internal::GetInternalMsg(value));
+  return ::hpb::internal::SetExtension(internal::GetInternalMsg(message),
+                                       message_arena, id.mini_table_ext(),
+                                       internal::GetInternalMsg(value));
 }
 
 template <typename T, typename Extension, typename = EnableIfProtosClass<T>,
           typename = EnableIfMutableProto<T>>
 absl::Status SetExtension(
     Ptr<T> message,
-    const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
+    const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
     Extension&& value) {
   Extension ext = std::move(value);
   static_assert(!std::is_const_v<T>);
   auto* message_arena = static_cast<upb_Arena*>(message->GetInternalArena());
   auto* extension_arena = static_cast<upb_Arena*>(ext.GetInternalArena());
-  return ::protos::internal::MoveExtension(
+  return ::hpb::internal::MoveExtension(
       internal::GetInternalMsg(message), message_arena, id.mini_table_ext(),
       internal::GetInternalMsg(&ext), extension_arena);
 }
 
 template <typename T, typename Extension, typename = EnableIfProtosClass<T>>
 absl::Status SetExtension(
-    T* message, const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
+    T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
     const Extension& value) {
-  return ::protos::SetExtension(::protos::Ptr(message), id, value);
+  return ::hpb::SetExtension(::hpb::Ptr(message), id, value);
 }
 
 template <typename T, typename Extension, typename = EnableIfProtosClass<T>>
 absl::Status SetExtension(
-    T* message, const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
+    T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
     Extension&& value) {
-  return ::protos::SetExtension(::protos::Ptr(message), id,
-                                std::forward<Extension>(value));
+  return ::hpb::SetExtension(::hpb::Ptr(message), id,
+                             std::forward<Extension>(value));
 }
 
 template <typename T, typename Extension, typename = EnableIfProtosClass<T>>
 absl::Status SetExtension(
-    T* message, const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
+    T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
     Ptr<Extension> value) {
-  return ::protos::SetExtension(::protos::Ptr(message), id, value);
+  return ::hpb::SetExtension(::hpb::Ptr(message), id, value);
 }
 
 template <typename T, typename Extendee, typename Extension,
           typename = EnableIfProtosClass<T>>
 absl::StatusOr<Ptr<const Extension>> GetExtension(
     Ptr<T> message,
-    const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
+    const ::hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
   // TODO: Fix const correctness issues.
   upb_MessageValue value;
-  const bool ok = ::protos::internal::GetOrPromoteExtension(
+  const bool ok = ::hpb::internal::GetOrPromoteExtension(
       const_cast<upb_Message*>(internal::GetInternalMsg(message)),
-      id.mini_table_ext(), ::protos::internal::GetArena(message), &value);
+      id.mini_table_ext(), ::hpb::internal::GetArena(message), &value);
   if (!ok) {
     return ExtensionNotFoundError(
         upb_MiniTableExtension_Number(id.mini_table_ext()));
   }
-  return Ptr<const Extension>(::protos::internal::CreateMessage<Extension>(
-      (upb_Message*)value.msg_val, ::protos::internal::GetArena(message)));
+  return Ptr<const Extension>(::hpb::internal::CreateMessage<Extension>(
+      (upb_Message*)value.msg_val, ::hpb::internal::GetArena(message)));
 }
 
 template <typename T, typename Extendee, typename Extension,
           typename = EnableIfProtosClass<T>>
 absl::StatusOr<Ptr<const Extension>> GetExtension(
     const T* message,
-    const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
-  return GetExtension(protos::Ptr(message), id);
+    const ::hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
+  return GetExtension(hpb::Ptr(message), id);
 }
 
 template <typename T>
 ABSL_MUST_USE_RESULT bool Parse(Ptr<T> message, absl::string_view bytes) {
   static_assert(!std::is_const_v<T>);
   upb_Message_Clear(internal::GetInternalMsg(message),
-                    ::protos::internal::GetMiniTable(message));
+                    ::hpb::internal::GetMiniTable(message));
   auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
   return upb_Decode(bytes.data(), bytes.size(),
                     internal::GetInternalMsg(message),
-                    ::protos::internal::GetMiniTable(message),
+                    ::hpb::internal::GetMiniTable(message),
                     /* extreg= */ nullptr, /* options= */ 0,
                     arena) == kUpb_DecodeStatus_Ok;
 }
@@ -482,36 +481,36 @@ ABSL_MUST_USE_RESULT bool Parse(Ptr<T> message, absl::string_view bytes) {
 template <typename T>
 ABSL_MUST_USE_RESULT bool Parse(
     Ptr<T> message, absl::string_view bytes,
-    const ::protos::ExtensionRegistry& extension_registry) {
+    const ::hpb::ExtensionRegistry& extension_registry) {
   static_assert(!std::is_const_v<T>);
   upb_Message_Clear(internal::GetInternalMsg(message),
-                    ::protos::internal::GetMiniTable(message));
+                    ::hpb::internal::GetMiniTable(message));
   auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
   return upb_Decode(bytes.data(), bytes.size(),
                     internal::GetInternalMsg(message),
-                    ::protos::internal::GetMiniTable(message),
+                    ::hpb::internal::GetMiniTable(message),
                     /* extreg= */
-                    ::protos::internal::GetUpbExtensions(extension_registry),
+                    ::hpb::internal::GetUpbExtensions(extension_registry),
                     /* options= */ 0, arena) == kUpb_DecodeStatus_Ok;
 }
 
 template <typename T>
 ABSL_MUST_USE_RESULT bool Parse(
     T* message, absl::string_view bytes,
-    const ::protos::ExtensionRegistry& extension_registry) {
+    const ::hpb::ExtensionRegistry& extension_registry) {
   static_assert(!std::is_const_v<T>);
-  return Parse(protos::Ptr(message, bytes, extension_registry));
+  return Parse(hpb::Ptr(message, bytes, extension_registry));
 }
 
 template <typename T>
 ABSL_MUST_USE_RESULT bool Parse(T* message, absl::string_view bytes) {
   static_assert(!std::is_const_v<T>);
   upb_Message_Clear(internal::GetInternalMsg(message),
-                    ::protos::internal::GetMiniTable(message));
+                    ::hpb::internal::GetMiniTable(message));
   auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
   return upb_Decode(bytes.data(), bytes.size(),
                     internal::GetInternalMsg(message),
-                    ::protos::internal::GetMiniTable(message),
+                    ::hpb::internal::GetMiniTable(message),
                     /* extreg= */ nullptr, /* options= */ 0,
                     arena) == kUpb_DecodeStatus_Ok;
 }
@@ -522,7 +521,7 @@ absl::StatusOr<T> Parse(absl::string_view bytes, int options = 0) {
   auto* arena = static_cast<upb_Arena*>(message.GetInternalArena());
   upb_DecodeStatus status =
       upb_Decode(bytes.data(), bytes.size(), message.msg(),
-                 ::protos::internal::GetMiniTable(&message),
+                 ::hpb::internal::GetMiniTable(&message),
                  /* extreg= */ nullptr, /* options= */ 0, arena);
   if (status == kUpb_DecodeStatus_Ok) {
     return message;
@@ -532,14 +531,14 @@ absl::StatusOr<T> Parse(absl::string_view bytes, int options = 0) {
 
 template <typename T>
 absl::StatusOr<T> Parse(absl::string_view bytes,
-                        const ::protos::ExtensionRegistry& extension_registry,
+                        const ::hpb::ExtensionRegistry& extension_registry,
                         int options = 0) {
   T message;
   auto* arena = static_cast<upb_Arena*>(message.GetInternalArena());
   upb_DecodeStatus status =
       upb_Decode(bytes.data(), bytes.size(), message.msg(),
-                 ::protos::internal::GetMiniTable(&message),
-                 ::protos::internal::GetUpbExtensions(extension_registry),
+                 ::hpb::internal::GetMiniTable(&message),
+                 ::hpb::internal::GetUpbExtensions(extension_registry),
                  /* options= */ 0, arena);
   if (status == kUpb_DecodeStatus_Ok) {
     return message;
@@ -550,19 +549,19 @@ absl::StatusOr<T> Parse(absl::string_view bytes,
 template <typename T>
 absl::StatusOr<absl::string_view> Serialize(const T* message, upb::Arena& arena,
                                             int options = 0) {
-  return ::protos::internal::Serialize(
-      internal::GetInternalMsg(message),
-      ::protos::internal::GetMiniTable(message), arena.ptr(), options);
+  return ::hpb::internal::Serialize(internal::GetInternalMsg(message),
+                                    ::hpb::internal::GetMiniTable(message),
+                                    arena.ptr(), options);
 }
 
 template <typename T>
 absl::StatusOr<absl::string_view> Serialize(Ptr<T> message, upb::Arena& arena,
                                             int options = 0) {
-  return ::protos::internal::Serialize(
-      internal::GetInternalMsg(message),
-      ::protos::internal::GetMiniTable(message), arena.ptr(), options);
+  return ::hpb::internal::Serialize(internal::GetInternalMsg(message),
+                                    ::hpb::internal::GetMiniTable(message),
+                                    arena.ptr(), options);
 }
 
-}  // namespace protos
+}  // namespace hpb
 
 #endif  // PROTOBUF_HPB_HPB_H_

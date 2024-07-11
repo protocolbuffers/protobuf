@@ -27,7 +27,7 @@
 #define EXPECT_OK(x) EXPECT_TRUE(x.ok())
 #endif  // EXPECT_OK
 
-namespace protos_generator::test::protos {
+namespace protos_generator::test::hpb {
 
 namespace {
 
@@ -36,13 +36,13 @@ std::string GenerateTestData() {
   model.set_str1("str");
   ThemeExtension extension1;
   extension1.set_ext_name("theme");
-  ABSL_CHECK_OK(::protos::SetExtension(&model, theme, extension1));
+  ABSL_CHECK_OK(::hpb::SetExtension(&model, theme, extension1));
   ThemeExtension extension2;
   extension2.set_ext_name("theme_extension");
-  ABSL_CHECK_OK(::protos::SetExtension(&model, ThemeExtension::theme_extension,
-                                       extension2));
+  ABSL_CHECK_OK(
+      ::hpb::SetExtension(&model, ThemeExtension::theme_extension, extension2));
   ::upb::Arena arena;
-  auto bytes = ::protos::Serialize(&model, arena);
+  auto bytes = ::hpb::Serialize(&model, arena);
   ABSL_CHECK_OK(bytes);
   return std::string(bytes->data(), bytes->size());
 }
@@ -54,28 +54,27 @@ void unlock_func(const void* msg) { m[absl::HashOf(msg) & 0x7].unlock(); }
   return &unlock_func;
 }
 
-void TestConcurrentExtensionAccess(::protos::ExtensionRegistry registry) {
+void TestConcurrentExtensionAccess(::hpb::ExtensionRegistry registry) {
   ::hpb::internal::upb_extension_locker_global.store(&lock_func,
                                                      std::memory_order_release);
   const std::string payload = GenerateTestData();
-  TestModel parsed_model =
-      ::protos::Parse<TestModel>(payload, registry).value();
+  TestModel parsed_model = ::hpb::Parse<TestModel>(payload, registry).value();
   const auto test_main = [&] { EXPECT_EQ("str", parsed_model.str1()); };
   const auto test_theme = [&] {
-    ASSERT_TRUE(::protos::HasExtension(&parsed_model, theme));
-    auto ext = ::protos::GetExtension(&parsed_model, theme);
+    ASSERT_TRUE(::hpb::HasExtension(&parsed_model, theme));
+    auto ext = ::hpb::GetExtension(&parsed_model, theme);
     ASSERT_OK(ext);
     EXPECT_EQ((*ext)->ext_name(), "theme");
   };
   const auto test_theme_extension = [&] {
     auto ext =
-        ::protos::GetExtension(&parsed_model, ThemeExtension::theme_extension);
+        ::hpb::GetExtension(&parsed_model, ThemeExtension::theme_extension);
     ASSERT_OK(ext);
     EXPECT_EQ((*ext)->ext_name(), "theme_extension");
   };
   const auto test_serialize = [&] {
     ::upb::Arena arena;
-    EXPECT_OK(::protos::Serialize(&parsed_model, arena));
+    EXPECT_OK(::hpb::Serialize(&parsed_model, arena));
   };
   const auto test_copy_constructor = [&] {
     TestModel copy_a = parsed_model;
@@ -121,4 +120,4 @@ TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothEager) {
 }
 
 }  // namespace
-}  // namespace protos_generator::test::protos
+}  // namespace protos_generator::test::hpb

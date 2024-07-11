@@ -13,9 +13,9 @@
 #include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
 #include "upb/mem/arena.h"
 
-namespace protos::testing {
+namespace hpb::testing {
 namespace {
-using ::protos_generator::test::protos::TestModel;
+using ::protos_generator::test::hpb::TestModel;
 
 TEST(CppGeneratedCode, InternalMoveMessage) {
   // Generate message (simulating message created in another VM/language)
@@ -26,12 +26,12 @@ TEST(CppGeneratedCode, InternalMoveMessage) {
   protos_generator_test_TestModel_set_int_value_with_default(message, 123);
 
   // Move ownership.
-  TestModel model = protos::internal::MoveMessage<TestModel>(
-      (upb_Message*)message, source_arena);
+  TestModel model = hpb::internal::MoveMessage<TestModel>((upb_Message*)message,
+                                                          source_arena);
   // Now that we have moved ownership, free original arena.
   upb_Arena_Free(source_arena);
   EXPECT_EQ(model.int_value_with_default(), 123);
 }
 
 }  // namespace
-}  // namespace protos::testing
+}  // namespace hpb::testing

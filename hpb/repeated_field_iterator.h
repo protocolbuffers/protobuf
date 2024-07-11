@@ -20,7 +20,7 @@
 #include "upb/message/array.h"
 #include "upb/message/message.h"
 
-namespace protos {
+namespace hpb {
 namespace internal {
 
 // TODO: Implement std iterator for messages
@@ -354,10 +354,10 @@ struct MessageIteratorPolicy {
     void AddOffset(ptrdiff_t offset) { arr += offset; }
     auto Get() const {
       if constexpr (std::is_const_v<T>) {
-        return ::protos::internal::CreateMessage<
-            typename std::remove_const_t<T>>(*arr, arena);
+        return ::hpb::internal::CreateMessage<typename std::remove_const_t<T>>(
+            *arr, arena);
       } else {
-        return ::protos::internal::CreateMessageProxy<T>(*arr, arena);
+        return ::hpb::internal::CreateMessageProxy<T>(*arr, arena);
       }
     }
     auto Index() const { return arr; }
@@ -365,6 +365,6 @@ struct MessageIteratorPolicy {
 };
 
 }  // namespace internal
-}  // namespace protos
+}  // namespace hpb
 
 #endif  // PROTOBUF_HPB_REPEATED_FIELD_ITERATOR_H_

@@ -18,7 +18,7 @@ namespace {
 
 std::string NamespaceFromPackageName(absl::string_view package_name) {
   return absl::StrCat(absl::StrReplaceAll(package_name, {{".", "::"}}),
-                      "::protos");
+                      "::hpb");
 }
 
 std::string DotsToColons(const std::string& name) {
@@ -36,8 +36,8 @@ std::string QualifiedFileLevelSymbol(const protobuf::FileDescriptor* file,
   if (file->package().empty()) {
     return absl::StrCat("::", name);
   }
-  // Append ::protos postfix to package name.
-  return absl::StrCat(Namespace(file->package()), "::protos::", name);
+  // Append ::hpb postfix to package name.
+  return absl::StrCat(Namespace(file->package()), "::hpb::", name);
 }
 
 std::string CppTypeInternal(const protobuf::FieldDescriptor* field,
@@ -81,7 +81,7 @@ std::string ClassName(const protobuf::Descriptor* descriptor) {
   const protobuf::Descriptor* parent = descriptor->containing_type();
   std::string res;
   // Classes in global namespace without package names are prefixed
-  // by protos_ to avoid collision with C compiler structs defined in
+  // by hpb_ to avoid collision with C compiler structs defined in
   // proto.upb.h.
   if ((parent && parent->file()->package().empty()) ||
       descriptor->file()->package().empty()) {
@@ -154,7 +154,7 @@ std::string MessagePtrConstType(const protobuf::FieldDescriptor* field,
                                 bool is_const) {
   ABSL_DCHECK(field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE);
   std::string maybe_const = is_const ? "const " : "";
-  return "::protos::Ptr<" + maybe_const +
+  return "::hpb::Ptr<" + maybe_const +
          QualifiedClassName(field->message_type()) + ">";
 }
 
