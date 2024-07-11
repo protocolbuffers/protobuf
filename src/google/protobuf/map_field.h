@@ -417,7 +417,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 
   // Synchronizes the content in Map to RepeatedPtrField if there is any change
   // to Map after last synchronization.
-  void SyncRepeatedFieldWithMap() const;
+  const RepeatedPtrFieldBase& SyncRepeatedFieldWithMap(bool for_mutation) const;
   void SyncRepeatedFieldWithMapNoLock();
 
   // Synchronizes the content in RepeatedPtrField to Map if there is any change
