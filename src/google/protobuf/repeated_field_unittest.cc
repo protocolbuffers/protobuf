@@ -1240,8 +1240,8 @@ TEST(RepeatedField, HardenAgainstBadTruncate) {
   for (int size = 0; size < 10; ++size) {
     field.Truncate(size);
 #if GTEST_HAS_DEATH_TEST
-    EXPECT_DEBUG_DEATH(field.Truncate(size + 1), "new_size <= current_size_");
-    EXPECT_DEBUG_DEATH(field.Truncate(size + 2), "new_size <= current_size_");
+    EXPECT_DEBUG_DEATH(field.Truncate(size + 1), "new_size <= size");
+    EXPECT_DEBUG_DEATH(field.Truncate(size + 2), "new_size <= size");
 #elif defined(NDEBUG)
     field.Truncate(size + 1);
     field.Truncate(size + 1);
