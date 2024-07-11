@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "absl/strings/ascii.h"
+#include "absl/strings/string_view.h"
 
 namespace google::protobuf::hpb_generator {
 
@@ -102,7 +103,7 @@ std::vector<const protobuf::FieldDescriptor*> FieldNumberOrder(
   return fields;
 }
 
-std::string ToCamelCase(const std::string& input, bool lower_first) {
+std::string ToCamelCase(const absl::string_view input, bool lower_first) {
   bool capitalize_next = !lower_first;
   std::string result;
   result.reserve(input.size());

@@ -108,7 +108,7 @@ std::string ExtraMessageOrBuilderInterfaces(const Descriptor* descriptor);
 // Get the unqualified Java class name for mutable messages. i.e. without
 // package or outer classnames.
 inline std::string ShortMutableJavaClassName(const Descriptor* descriptor) {
-  return descriptor->name();
+  return std::string(descriptor->name());
 }
 
 // Whether the given descriptor is for one of the core descriptor protos. We

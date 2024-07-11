@@ -11,32 +11,23 @@
 
 #include "google/protobuf/compiler/command_line_interface.h"
 
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-
-#include "absl/algorithm/container.h"
-#include "absl/base/attributes.h"
-#include "absl/base/log_severity.h"
-#include "absl/container/btree_map.h"
-#include "absl/container/btree_set.h"
-#include "absl/container/flat_hash_map.h"
-#include "absl/log/globals.h"
-#include "absl/status/status.h"
-#include "absl/status/statusor.h"
-#include "absl/strings/str_cat.h"
-#include "absl/types/span.h"
-#include "google/protobuf/compiler/versions.h"
-#include "google/protobuf/descriptor_database.h"
-#include "google/protobuf/descriptor_visitor.h"
-#include "google/protobuf/feature_resolver.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
-
-#include "google/protobuf/stubs/platform_macros.h"
-
+#include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+
+#include <algorithm>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <ostream>
+#include <string>
+#include <utility>
+#include <vector>
 #ifdef major
 #undef major
 #endif
@@ -45,20 +36,10 @@
 #endif
 #include <fcntl.h>
 #include <sys/stat.h>
+
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
-#include <errno.h>
-
-#include <fstream>
-#include <iostream>
-
-#include <limits.h>  // For PATH_MAX
-
-#include <memory>
-#include <string>
-#include <utility>
-#include <vector>
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
@@ -66,27 +47,44 @@
 #include <sys/sysctl.h>
 #endif
 
+#include "absl/algorithm/container.h"
+#include "absl/base/attributes.h"
+#include "absl/base/log_severity.h"
+#include "absl/container/btree_map.h"
+#include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/container/flat_hash_set.h"
+#include "absl/log/globals.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/importer.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/compiler/subprocess.h"
+#include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/compiler/zip_writer.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_database.h"
+#include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/feature_resolver.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/text_format.h"
 
 
@@ -94,9 +92,7 @@
 #include "google/protobuf/io/io_win32.h"
 #endif
 
-#if defined(_WIN32) || defined(__CYGWIN__)
-#include "absl/strings/ascii.h"
-#endif
+#include "google/protobuf/stubs/platform_macros.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -3168,10 +3164,10 @@ void GatherOccupiedFieldRanges(
 // Utility function for PrintFreeFieldNumbers.
 // Actually prints the formatted free field numbers for given message name and
 // occupied ranges.
-void FormatFreeFieldNumbers(const std::string& name,
+void FormatFreeFieldNumbers(absl::string_view name,
                             const absl::btree_set<FieldRange>& ranges) {
   std::string output;
-  absl::StrAppendFormat(&output, "%-35s free:", name.c_str());
+  absl::StrAppendFormat(&output, "%-35s free:", name);
   int next_free_number = 1;
   for (const auto& range : ranges) {
     // This happens when groups re-use parent field numbers, in which
