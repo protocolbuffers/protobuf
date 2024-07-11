@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
@@ -603,8 +604,13 @@ void PrintUTF8ErrorLog(absl::string_view message_name,
   ABSL_LOG(ERROR) << error_message;
 }
 
-bool WireFormatLite::VerifyUtf8String(const char* data, int size, Operation op,
-                                      const char* field_name) {
+bool WireFormatLite::VerifyUtf8String(
+    ABSL_ATTRIBUTE_UNUSED const char* data, ABSL_ATTRIBUTE_UNUSED int size,
+    ABSL_ATTRIBUTE_UNUSED Operation op,
+    ABSL_ATTRIBUTE_UNUSED const char* field_name) {
+#ifdef NDEBUG
+  return true;
+#endif
   if (!utf8_range::IsStructurallyValid({data, static_cast<size_t>(size)})) {
     const char* operation_str = nullptr;
     switch (op) {
