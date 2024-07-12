@@ -48,19 +48,19 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Windows startup flags
-        if: ${{ runner.os == 'Windows' && (matrix.continuous-only || inputs.continuous-run) }}
+        if: ${{ runner.os == 'Windows' && (!matrix.continuous-only || inputs.continuous-run) }}
         working-directory: examples
         shell: bash
         run: echo "startup --output_user_root=C:/ --windows_enable_symlinks" >> .bazelrc
 
       - name: Configure Bazel version
-        if: ${{ matrix.continuous-only || inputs.continuous-run }}
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         working-directory: examples
         shell: bash
         run: echo "${{ matrix.bazelversion }}" > .bazelversion
 
       - name: Run tests
-        if: ${{ matrix.continuous-only || inputs.continuous-run }}
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
