@@ -267,6 +267,10 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
                        fields:(NSArray *)fields
                   storageSize:(uint32_t)storageSize
                    wireFormat:(BOOL)wireFormat {
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
+  // This is also checked by the generator.
+  NSAssert(!wireFormat || fields.count == 0, @"Internal error: MessageSets should not have fields");
+#endif
   if ((self = [super init])) {
     messageClass_ = messageClass;
     messageName_ = [messageName copy];
@@ -1139,8 +1143,16 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
     GPBRuntimeMatchFailure();
   }
 
-#if defined(DEBUG) && DEBUG
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   NSAssert(usesClassRefs, @"Internal error: all extensions should have class refs");
+
+  // This is also checked by the generator.
+  // If the extension is a MessageSet extension, then it must be a message field.
+  NSAssert(
+      ((desc->options & GPBExtensionSetWireFormat) == 0) || desc->dataType == GPBDataTypeMessage,
+      @"Internal error: If a MessageSet extension is set, the data type must be a message.");
+  // NOTE: Could also check that the exteneded class is a MessageSet, but that would force the ObjC
+  // runtime to start up that class and that isn't desirable here.
 #endif
 
   if ((self = [super init])) {
