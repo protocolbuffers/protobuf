@@ -3,9 +3,10 @@ name: Objective-C Tests
 on:
   workflow_call:
     inputs:
-      test-type:
+      continuous-run:
         required: true
-        description: "The type of test this is run from -- presubmit or continuous"
+        description: "Boolean string denoting whether this run is continuous --
+          empty string for presubmit, non-empty string for continuous."
         type: string
       safe-checkout:
         required: true
@@ -38,30 +39,30 @@ jobs:
           xc_project: "ProtocolBuffers_iOS.xcodeproj"
         # We run presubmits on all "Debug" entries, but not on "Release" entries
         - xc_config: "Debug"
-          presubmit: true
+          continuous-only: false
         - xc_config: "Release"
-          presubmit: false
+          continuous-only: true
 
-    name: ${{ !matrix.presubmit && inputs.continuous-prefix || '' }} Xcode ${{ matrix.platform}} ${{ matrix.xc_config }}
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Xcode ${{ matrix.platform}} ${{ matrix.xc_config }}
     runs-on: macos-12
     env:
       DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
     steps:
       - name: Checkout pending changes
-        if: ${{ !matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/ccache@v3
         with:
           cache-prefix: objectivec_${{ matrix.platform }}_${{ matrix.xc_config }}
           support-modules: true
 
       - name: Run tests
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bash@v3
         env:
           CC: ${{ github.workspace }}/ci/clang_wrapper
@@ -78,7 +79,7 @@ jobs:
               | xcpretty
 
       - name: Report ccache stats
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         shell: bash
         run: ccache -s -v
 
@@ -96,22 +97,22 @@ jobs:
             XCODE: "15.2"
           # We run presubmits on all "Debug" entries, but not on "Release" entries
           - CONFIGURATION: "Debug"
-            presubmit: true
+            continuous-only: false
           - CONFIGURATION: "Release"
-            presubmit: false
-    name: ${{ !matrix.presubmit && inputs.continuous-prefix || '' }} CocoaPods ${{ matrix.PLATFORM }} ${{ matrix.CONFIGURATION }}
+            continuous-only: true
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} CocoaPods ${{ matrix.PLATFORM }} ${{ matrix.CONFIGURATION }}
     runs-on: ${{ matrix.OS }}
     steps:
       - name: Checkout pending changes
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Xcode version
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         run: sudo xcode-select -switch /Applications/Xcode_${{ matrix.XCODE }}.app
       - name: Pod lib lint
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -131,36 +132,36 @@ jobs:
           - name: Optimized
             flags: --config=opt
             bazel_action: test
-            presubmit: false
+            continuous-only: true
           - name: Debug
             flags: --config=dbg
             bazel_action: test
-            presubmit: true
+            continuous-only: false
           # Current github runners are all Intel based, so just build/compile
           # for Apple Silicon to detect issues there.
           - name: Apple_Silicon_Optimized
             flags: --config=opt --cpu=darwin_arm64
             bazel_action: build
-            presubmit: false
+            continuous-only: true
           - name: Apple_Silicon_Debug
             flags: --config=dbg --cpu=darwin_arm64
             bazel_action: build
-            presubmit: true
+            continuous-only: false
         # TODO: Could add iOS to atleast build the objc_library targets for that.
         platform: ["macOS"]
         include:
         - platform: "macOS"
           bazel_targets: //objectivec/...
-    name: ${{ !matrix.config.presubmit && inputs.continuous-prefix || '' }} Bazel ${{ matrix.platform }} ${{ matrix.config.name }}
+    name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Bazel ${{ matrix.platform }} ${{ matrix.config.name }}
     runs-on: macos-12
     steps:
       - name: Checkout pending changes
-        if: ${{ matrix.config.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: bazel ${{ matrix.config.bazel_action }}
-        if: ${{ matrix.config.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
