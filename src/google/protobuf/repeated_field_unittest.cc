@@ -274,6 +274,7 @@ TEST(RepeatedField, ArenaAllocationSizesMatchExpectedValues) {
   CheckAllocationSizes<RepeatedField<bool>>(false);
   CheckAllocationSizes<RepeatedField<uint32_t>>(false);
   CheckAllocationSizes<RepeatedField<uint64_t>>(false);
+  CheckAllocationSizes<RepeatedField<absl::Cord>>(false);
 }
 
 TEST(RepeatedField, NaturalGrowthOnArenasReuseBlocks) {

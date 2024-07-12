@@ -95,6 +95,23 @@ struct RepeatedFieldDestructorSkippableBase<Element, true> : RepeatedFieldBase {
   using DestructorSkippable_ = void;
 };
 
+template <size_t kMinSize>
+struct HeapRep {
+  // Avoid 'implicitly deleted dtor' warnings on certain compilers.
+  ~HeapRep() = delete;
+
+  void* elements() { return this + 1; }
+
+  // Align to 8 as sanitizers are picky on the alignment of containers to start
+  // at 8 byte offsets even when compiling for 32 bit platforms.
+  union {
+    alignas(8) Arena* arena;
+    // We pad the header to be at least `sizeof(Element)` so that we have
+    // power-of-two sized allocations, which enables Arena optimizations.
+    char padding[kMinSize];
+  };
+};
+
 }  // namespace internal
 
 // RepeatedField is used to represent repeated fields of a primitive type (in
@@ -296,7 +313,7 @@ class RepeatedField final
   // function non-const.
   inline Arena* GetArena() {
     return Capacity() == 0 ? static_cast<Arena*>(arena_or_elements_)
-                           : rep()->arena;
+                           : heap_rep()->arena;
   }
 
   // For internal use only.
@@ -306,28 +323,17 @@ class RepeatedField final
 
  private:
   using InternalArenaConstructable_ = void;
+  // We use std::max in order to share template instantiations between
+  // different element types.
+  using HeapRep = internal::HeapRep<std::max<size_t>(sizeof(Element), 8)>;
 
   template <typename T>
   friend class Arena::InternalHelper;
 
   friend class Arena;
 
-  // Pad the rep to being max(Arena*, Element) with a minimum align
-  // of 8 as sanitizers are picky on the alignment of containers to
-  // start at 8 byte offsets even when compiling for 32 bit platforms.
-  struct Rep {
-    union {
-      alignas(8) Arena* arena;
-      Element unused;
-    };
-    Element* elements() { return reinterpret_cast<Element*>(this + 1); }
-
-    // Avoid 'implicitly deleted dtor' warnings on certain compilers.
-    ~Rep() = delete;
-  };
-
   static constexpr int kInitialSize = 0;
-  static PROTOBUF_CONSTEXPR const size_t kRepHeaderSize = sizeof(Rep);
+  static PROTOBUF_CONSTEXPR const size_t kRepHeaderSize = sizeof(HeapRep);
 
   RepeatedField(Arena* arena, const RepeatedField& rhs);
   RepeatedField(Arena* arena, RepeatedField&& rhs);
@@ -425,28 +431,28 @@ class RepeatedField final
     return static_cast<Element*>(arena_or_elements_);
   }
 
-  // Returns a pointer to the Rep struct.
-  // pre-condition: the Rep must have been allocated, ie elements() is safe.
-  Rep* rep() const {
-    return reinterpret_cast<Rep*>(reinterpret_cast<char*>(elements()) -
-                                  kRepHeaderSize);
+  // Returns a pointer to the HeapRep struct.
+  // pre-condition: the HeapRep must have been allocated, ie elements() is safe.
+  HeapRep* heap_rep() const {
+    return reinterpret_cast<HeapRep*>(reinterpret_cast<char*>(elements()) -
+                                      kRepHeaderSize);
   }
 
   // Internal helper to delete all elements and deallocate the storage.
   template <bool in_destructor = false>
   void InternalDeallocate() {
     const size_t bytes = Capacity() * sizeof(Element) + kRepHeaderSize;
-    if (rep()->arena == nullptr) {
-      internal::SizedDelete(rep(), bytes);
+    if (heap_rep()->arena == nullptr) {
+      internal::SizedDelete(heap_rep(), bytes);
     } else if (!in_destructor) {
       // If we are in the destructor, we might be being destroyed as part of
       // the arena teardown. We can't try and return blocks to the arena then.
-      rep()->arena->ReturnArrayMemory(rep(), bytes);
+      heap_rep()->arena->ReturnArrayMemory(heap_rep(), bytes);
     }
   }
 
   // A note on the representation here (see also comment below for
-  // RepeatedPtrFieldBase's struct Rep):
+  // RepeatedPtrFieldBase's struct HeapRep):
   //
   // We maintain the same sizeof(RepeatedField) as before we added arena support
   // so that we do not degrade performance by bloating memory usage. Directly
@@ -458,8 +464,9 @@ class RepeatedField final
   int size_;
   int capacity_;
   // If capacity_ == 0 this points to an Arena otherwise it points to the
-  // elements member of a Rep struct. Using this invariant allows the storage of
-  // the arena pointer without an extra allocation in the constructor.
+  // elements member of a HeapRep struct. Using this invariant allows the
+  // storage of the arena pointer without an extra allocation in the
+  // constructor.
   void* arena_or_elements_;
 };
 
@@ -938,7 +945,7 @@ template <typename Element>
 PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int current_size,
                                                               int new_size) {
   ABSL_DCHECK_GT(new_size, Capacity());
-  Rep* new_rep;
+  HeapRep* new_rep;
   Arena* arena = GetArena();
 
   new_size = internal::CalculateReserveSize<Element, kRepHeaderSize>(Capacity(),
@@ -959,15 +966,16 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int current_size,
         std::min((res.n - kRepHeaderSize) / sizeof(Element),
                  static_cast<size_t>(std::numeric_limits<int>::max()));
     new_size = static_cast<int>(num_available);
-    new_rep = static_cast<Rep*>(res.p);
+    new_rep = static_cast<HeapRep*>(res.p);
   } else {
-    new_rep = reinterpret_cast<Rep*>(Arena::CreateArray<char>(arena, bytes));
+    new_rep =
+        reinterpret_cast<HeapRep*>(Arena::CreateArray<char>(arena, bytes));
   }
   new_rep->arena = arena;
 
   if (Capacity() > 0) {
     if (current_size > 0) {
-      Element* pnew = new_rep->elements();
+      Element* pnew = static_cast<Element*>(new_rep->elements());
       Element* pold = elements();
       // TODO: add absl::is_trivially_relocatable<Element>
       if (std::is_trivial<Element>::value) {
@@ -983,7 +991,7 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int current_size,
   }
 
   set_capacity(new_size);
-  arena_or_elements_ = new_rep->elements();
+  arena_or_elements_ = static_cast<Element*>(new_rep->elements());
 }
 
 // Ideally we would be able to use:
