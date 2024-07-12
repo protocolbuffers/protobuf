@@ -95,9 +95,9 @@ class MapEntry : public Message {
 
   ~MapEntry() PROTOBUF_OVERRIDE {
     if (GetArena() != nullptr) return;
-    Message::_internal_metadata_.template Delete<UnknownFieldSet>();
-    KeyTypeHandler::DeleteNoArena(key_);
-    ValueTypeHandler::DeleteNoArena(value_);
+    this->_internal_metadata_.template Delete<UnknownFieldSet>();
+    KeyTypeHandler::DeleteNoArena(_impl_.key_);
+    ValueTypeHandler::DeleteNoArena(_impl_.value_);
   }
 
   using InternalArenaConstructable_ = void;
@@ -107,14 +107,29 @@ class MapEntry : public Message {
     return Arena::Create<Derived>(arena);
   }
 
+  struct _Internal;
+
  protected:
   friend class google::protobuf::Arena;
 
-  HasBits<1> _has_bits_{};
-  mutable CachedSize _cached_size_{};
+  // Field naming follows the convention of generated messages to make code
+  // sharing easier.
+  struct {
+    HasBits<1> _has_bits_{};
+    mutable CachedSize _cached_size_{};
 
-  KeyOnMemory key_{KeyTypeHandler::Constinit()};
-  ValueOnMemory value_{ValueTypeHandler::Constinit()};
+    KeyOnMemory key_{KeyTypeHandler::Constinit()};
+    ValueOnMemory value_{ValueTypeHandler::Constinit()};
+  } _impl_;
+};
+
+template <typename Derived, typename Key, typename Value,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType>
+struct MapEntry<Derived, Key, Value, kKeyFieldType,
+                kValueFieldType>::_Internal {
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(MapEntry, _impl_._has_bits_);
 };
 
 }  // namespace internal

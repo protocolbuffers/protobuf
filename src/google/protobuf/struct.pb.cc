@@ -127,7 +127,7 @@ static constexpr const ::_pb::ServiceDescriptor**
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fstruct_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
         protodesc_cold) = {
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct_FieldsEntry_DoNotUse, _has_bits_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct_FieldsEntry_DoNotUse, _impl_._has_bits_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct_FieldsEntry_DoNotUse, _internal_metadata_),
         ~0u,  // no _extensions_
         ~0u,  // no _oneof_case_
@@ -135,8 +135,8 @@ const ::uint32_t
         ~0u,  // no _inlined_string_donated_
         ~0u,  // no _split_
         ~0u,  // no sizeof(Split)
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct_FieldsEntry_DoNotUse, key_),
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct_FieldsEntry_DoNotUse, value_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct_FieldsEntry_DoNotUse, _impl_.key_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct_FieldsEntry_DoNotUse, _impl_.value_),
         0,
         1,
         ~0u,  // no _has_bits_
@@ -249,7 +249,7 @@ bool NullValue_IsValid(int value) {
               const ::google::protobuf::MessageLite::ClassDataFull
                   Struct_FieldsEntry_DoNotUse::_class_data_ = {
                       ::google::protobuf::Message::ClassData{
-                          nullptr,  // tc_table
+                          &_table_.header,
                           nullptr,  // OnDemandRegisterArenaDtor
                           nullptr,  // IsInitialized
                           &Struct_FieldsEntry_DoNotUse::MergeImpl,
@@ -259,7 +259,7 @@ bool NullValue_IsValid(int value) {
                           ::google::protobuf::Message::ClearImpl, ::google::protobuf::Message::ByteSizeLongImpl,
                               ::google::protobuf::Message::_InternalSerializeImpl,
               #endif  // PROTOBUF_CUSTOM_VTABLE
-                          PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _cached_size_),
+                          PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_._cached_size_),
                           false,
                       },
                       &Struct_FieldsEntry_DoNotUse::kDescriptorMethods,
@@ -271,6 +271,49 @@ bool NullValue_IsValid(int value) {
                 ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
                 return _class_data_.base();
               }
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::_pbi::TcParseTable<1, 2, 1, 46, 2> Struct_FieldsEntry_DoNotUse::_table_ = {
+  {
+    PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_._has_bits_),
+    0, // no _extensions_
+    2, 8,  // max_field_number, fast_idx_mask
+    offsetof(decltype(_table_), field_lookup_table),
+    4294967292,  // skipmap
+    offsetof(decltype(_table_), field_entries),
+    2,  // num_field_entries
+    1,  // num_aux_entries
+    offsetof(decltype(_table_), aux_entries),
+    &_Struct_FieldsEntry_DoNotUse_default_instance_._instance,
+    nullptr,  // post_loop_handler
+    ::_pbi::TcParser::DiscardEverythingFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::google::protobuf::Struct_FieldsEntry_DoNotUse>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+  }, {{
+    // .google.protobuf.Value value = 2;
+    {::_pbi::TcParser::FastMtS1,
+     {18, 0, 0, PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.value_)}},
+    // string key = 1;
+    {::_pbi::TcParser::FastUS1,
+     {10, 63, 0, PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.key_)}},
+  }}, {{
+    65535, 65535
+  }}, {{
+    // string key = 1;
+    {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.key_), -1, 0,
+    (0 | ::_fl::kFcSingular | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    // .google.protobuf.Value value = 2;
+    {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.value_), _Internal::kHasBitsOffset + 0, 0,
+    (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
+  }}, {{
+    {::_pbi::TcParser::GetTable<::google::protobuf::Value>()},
+  }}, {{
+    "\42\3\0\0\0\0\0\0"
+    "google.protobuf.Struct.FieldsEntry"
+    "key"
+  }},
+};
+
 // ===================================================================
 
 class Struct::_Internal {

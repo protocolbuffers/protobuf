@@ -1,4 +1,4 @@
-use crate::{upb_ExtensionRegistry, upb_MiniTable, Arena, OwnedArenaBox, RawArena, RawMessage};
+use crate::{upb_ExtensionRegistry, upb_MiniTable, Arena, RawArena, RawMessage};
 use std::ptr::NonNull;
 
 // LINT.IfChange(encode_status)
@@ -26,14 +26,23 @@ pub enum DecodeStatus {
 }
 // LINT.ThenChange()
 
+#[repr(i32)]
+#[allow(dead_code)]
+enum DecodeOption {
+    AliasString = 1,
+    CheckRequired = 2,
+    ExperimentalAllowUnlinked = 4,
+    AlwaysValidateUtf8 = 8,
+}
+
 /// If Err, then EncodeStatus != Ok.
 ///
-/// SAFETY:
+/// # Safety
 /// - `msg` must be associated with `mini_table`.
 pub unsafe fn encode(
     msg: RawMessage,
     mini_table: *const upb_MiniTable,
-) -> Result<OwnedArenaBox<[u8]>, EncodeStatus> {
+) -> Result<Vec<u8>, EncodeStatus> {
     let arena = Arena::new();
     let mut buf: *mut u8 = std::ptr::null_mut();
     let mut len = 0usize;
@@ -46,8 +55,7 @@ pub unsafe fn encode(
     if status == EncodeStatus::Ok {
         assert!(!buf.is_null()); // EncodeStatus Ok should never return NULL data, even for len=0.
         // SAFETY: upb guarantees that `buf` is valid to read for `len`.
-        let slice = NonNull::new_unchecked(std::ptr::slice_from_raw_parts_mut(buf, len));
-        Ok(OwnedArenaBox::new(slice, arena))
+        Ok((*std::ptr::slice_from_raw_parts(buf, len)).to_vec())
     } else {
         Err(status)
     }
@@ -56,7 +64,7 @@ pub unsafe fn encode(
 /// Decodes into the provided message (merge semantics). If Err, then
 /// DecodeStatus != Ok.
 ///
-/// SAFETY:
+/// # Safety
 /// - `msg` must be mutable.
 /// - `msg` must be associated with `mini_table`.
 pub unsafe fn decode(
@@ -67,11 +75,13 @@ pub unsafe fn decode(
 ) -> Result<(), DecodeStatus> {
     let len = buf.len();
     let buf = buf.as_ptr();
+    let options = DecodeOption::CheckRequired as i32;
+
     // SAFETY:
     // - `mini_table` is the one associated with `msg`
     // - `buf` is legally readable for at least `buf_size` bytes.
     // - `extreg` is null.
-    let status = upb_Decode(buf, len, msg, mini_table, std::ptr::null(), 0, arena.raw());
+    let status = upb_Decode(buf, len, msg, mini_table, std::ptr::null(), options, arena.raw());
     match status {
         DecodeStatus::Ok => Ok(()),
         _ => Err(status),

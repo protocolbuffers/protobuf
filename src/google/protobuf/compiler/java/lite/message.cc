@@ -773,16 +773,17 @@ void ImmutableMessageLiteGenerator::GenerateKotlinDsl(
 
   for (auto& kv : oneofs_) {
     const OneofDescriptor* oneof = kv.second;
+    auto oneof_name = context_->GetOneofGeneratorInfo(oneof)->name;
     printer->Print(
         "public val $oneof_name$Case: $message$.$oneof_capitalized_name$Case\n"
         "  @JvmName(\"get$oneof_capitalized_name$Case\")\n"
-        "  get() = _builder.get$oneof_capitalized_name$Case()\n\n"
+        "  get() = _builder.$oneof_property_name$Case\n\n"
         "public fun clear$oneof_capitalized_name$() {\n"
         "  _builder.clear$oneof_capitalized_name$()\n"
         "}\n",
-        "oneof_name", context_->GetOneofGeneratorInfo(oneof)->name,
-        "oneof_capitalized_name",
-        context_->GetOneofGeneratorInfo(oneof)->capitalized_name, "message",
+        "oneof_name", oneof_name, "oneof_capitalized_name",
+        context_->GetOneofGeneratorInfo(oneof)->capitalized_name,
+        "oneof_property_name", GetKotlinPropertyName(oneof_name), "message",
         EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true)));
   }
 

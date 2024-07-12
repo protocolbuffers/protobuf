@@ -68,7 +68,7 @@ proto_library(
     name = "test_proto",
     testonly = 1,
     srcs = ["test.proto"],
-    visibility = ["//upb:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
 
 upb_minitable_proto_library(

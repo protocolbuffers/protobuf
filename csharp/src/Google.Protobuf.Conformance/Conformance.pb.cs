@@ -495,8 +495,8 @@ namespace Conformance {
     /// <summary>
     /// The full name for the test message to use; for the moment, either:
     /// protobuf_test_messages.proto3.TestAllTypesProto3 or
-    /// protobuf_test_messages.google.protobuf.TestAllTypesProto2 or
-    /// protobuf_test_messages.editions.google.protobuf.TestAllTypesProto2 or
+    /// protobuf_test_messages.proto2.TestAllTypesProto2 or
+    /// protobuf_test_messages.editions.proto2.TestAllTypesProto2 or
     /// protobuf_test_messages.editions.proto3.TestAllTypesProto3 or
     /// protobuf_test_messages.editions.TestAllTypesEdition2023.
     /// </summary>

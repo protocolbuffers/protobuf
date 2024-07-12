@@ -49,7 +49,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"getter",
            [&] {
              ctx.Emit(R"rs(
-                pub fn $field$($view_self$) -> &$view_lifetime$ $proxied_type$ {
+                pub fn $field$($view_self$) -> $pb$::View<$view_lifetime$, $proxied_type$> {
                   let view = unsafe { $getter_thunk$(self.raw_msg()).as_ref() };
                   $transform_view$
                 })rs");
@@ -58,7 +58,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
            [&] {
              if (!field.has_presence()) return;
              ctx.Emit(R"rs(
-            pub fn $raw_field_name$_opt($view_self$) -> $pb$::Optional<&$view_lifetime$ $proxied_type$> {
+            pub fn $raw_field_name$_opt($view_self$) -> $pb$::Optional<$pb$::View<$view_lifetime$, $proxied_type$>> {
                 $pb$::Optional::new(
                   self.$field$(),
                   self.has_$raw_field_name$()
@@ -69,13 +69,17 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"setter",
            [&] {
              if (accessor_case == AccessorCase::VIEW) return;
-             ctx.Emit(R"rs(
-              // TODO: Use IntoProxied once string/bytes types support it.
-              pub fn set_$raw_field_name$(&mut self, val: impl std::convert::AsRef<$proxied_type$>) {
+             ctx.Emit({{"as_ref_method",
+                        (field.type() == FieldDescriptor::TYPE_STRING
+                             ? "as_bytes()"
+                             : "as_ref()")}},
+                      R"rs(
+              pub fn set_$raw_field_name$(&mut self, val: impl $pb$::IntoProxied<$proxied_type$>) {
+                let into_proxied = val.into_proxied($pbi$::Private);
                 let string_view: $pbr$::PtrAndLen =
                   $pbr$::copy_bytes_in_arena_if_needed_by_runtime(
                     self.as_mutator_message_ref($pbi$::Private),
-                    val.as_ref().into()
+                    into_proxied.$as_ref_method$,
                   ).into();
 
                 unsafe {

@@ -6,6 +6,11 @@ on:
     - cron: 0 10 * * *
   workflow_call:
     inputs:
+      continuous-run:
+        required: true
+        description: "Boolean string denoting whether this run is continuous --
+          empty string for presubmit, non-empty string for continuous."
+        type: string
       safe-checkout:
         required: false
         description: "The SHA key for the commit we want to run over"
@@ -18,17 +23,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        branch: [main, 25.x, 27.x]
+        branch: [main]
         os: [{ name: Linux, value: ubuntu-latest}]
+        include:
+          # If we are in a continuous run, test other supported branches
+          - branch: ${{ inputs.continuous-run && '25.x' }}
+          - branch: ${{ inputs.continuous-run && '27.x' }}
 
-    name: Test staleness ${{ matrix.os.name }} ${{ github.head_ref && 'PR' || matrix.branch }}
+    name: Test staleness ${{ matrix.os.name }} ${{ matrix.branch }}
     runs-on: ${{ matrix.os.value }}
     if: ${{ github.event.repository.full_name == 'protocolbuffers/protobuf' }}
     steps:
-      - name: Checkout ${{ github.head_ref && 'PR' || matrix.branch }}
+      - name: Checkout ${{ matrix.branch }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
-          ref: ${{ inputs.safe-checkout || github.head_ref || matrix.branch }}
+          ref: ${{ inputs.safe-checkout || matrix.branch }}
 
       - name: Mark runs associated with commits
         if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}

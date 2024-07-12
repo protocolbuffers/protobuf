@@ -1286,6 +1286,7 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
             &_$classname$_default_instance_);
       }
   )cc");
+  parse_function_generator_->GenerateDataDecls(p);
   p->Emit(R"cc(
     const $superclass$::ClassData* GetClassData() const PROTOBUF_FINAL;
     static const $superclass$::ClassDataFull _class_data_;
@@ -2155,6 +2156,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
               $verify$;
               $class_data$;
             )cc");
+    parse_function_generator_->GenerateDataDefinitions(p);
     return;
   }
   if (IsAnyMessage(descriptor_)) {
@@ -3720,19 +3722,6 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             {"is_initialized", is_initialized},
             {"pin_weak_descriptor", pin_weak_descriptor},
             {"custom_vtable_methods", custom_vtable_methods},
-            {"table",
-             [&] {
-               // Map entries use the dynamic parser.
-               if (IsMapEntryMessage(descriptor_)) {
-                 p->Emit(R"cc(
-                   nullptr,  // tc_table
-                 )cc");
-               } else {
-                 p->Emit(R"cc(
-                   &_table_.header,
-                 )cc");
-               }
-             }},
             {"tracker_on_get_metadata",
              [&] {
                if (HasTracker(descriptor_, options_)) {
@@ -3752,7 +3741,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
           const ::$proto_ns$::MessageLite::ClassDataFull
               $classname$::_class_data_ = {
                   $superclass$::ClassData{
-                      $table$,
+                      &_table_.header,
                       $on_demand_register_arena_dtor$,
                       $is_initialized$,
                       &$classname$::MergeImpl,

@@ -156,7 +156,7 @@ struct PtrAndLen {
                                       value_ty, rust_value_ty, ffi_value_ty, \
                                       to_cpp_value, to_ffi_value);           \
   __PB_RUST_EXPOSE_SCALAR_MAP_METHODS(                                       \
-      std::string, ProtoStr, google::protobuf::rust_internal::PtrAndLen,               \
+      std::string, ProtoString, google::protobuf::rust_internal::PtrAndLen,            \
       std::string(key.ptr, key.len),                                         \
       google::protobuf::rust_internal::PtrAndLen(cpp_key.data(), cpp_key.size()),      \
       value_ty, rust_value_ty, ffi_value_ty, to_cpp_value, to_ffi_value);

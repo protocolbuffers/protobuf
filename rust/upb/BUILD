@@ -45,6 +45,7 @@ cc_library(
     deps = [
         "//upb:mem",
         "//upb:message",
+        "//upb:message_compare",
         "//upb:message_copy",
         "//upb/mini_table",
     ],

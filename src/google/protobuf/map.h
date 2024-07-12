@@ -560,7 +560,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
  protected:
   // 16 bytes is the minimum useful size for the array cache in the arena.
-  enum { kMinTableSize = 16 / sizeof(void*) };
+  enum : map_index_t { kMinTableSize = 16 / sizeof(void*) };
 
  public:
   Arena* arena() const { return this->alloc_.arena(); }
@@ -645,9 +645,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   // Return a power of two no less than max(kMinTableSize, n).
   // Assumes either n < kMinTableSize or n is a power of two.
   map_index_t TableSize(map_index_t n) {
-    return n < static_cast<map_index_t>(kMinTableSize)
-               ? static_cast<map_index_t>(kMinTableSize)
-               : n;
+    return n < kMinTableSize ? kMinTableSize : n;
   }
 
   template <typename T>
@@ -697,7 +695,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   }
 
   TableEntryPtr* CreateEmptyTable(map_index_t n) {
-    ABSL_DCHECK_GE(n, map_index_t{kMinTableSize});
+    ABSL_DCHECK_GE(n, kMinTableSize);
     ABSL_DCHECK_EQ(n & (n - 1), 0u);
     TableEntryPtr* result = AllocFor<TableEntryPtr>(alloc_).allocate(n);
     memset(result, 0, n * sizeof(result[0]));
