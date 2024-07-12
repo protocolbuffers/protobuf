@@ -429,9 +429,9 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state, int32_t
     extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
   CheckRecursionLimit(&state_);
   ++state_.recursionDepth;
-  [message mergeFromCodedInputStream:self extensionRegistry:extensionRegistry];
-  GPBCodedInputStreamCheckLastTagWas(&state_,
-                                     GPBWireFormatMakeTag(fieldNumber, GPBWireFormatEndGroup));
+  [message mergeFromCodedInputStream:self
+                   extensionRegistry:extensionRegistry
+                           endingTag:GPBWireFormatMakeTag(fieldNumber, GPBWireFormatEndGroup)];
   --state_.recursionDepth;
 }
 
@@ -452,8 +452,7 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state, int32_t
   size_t length2 = (size_t)length;  // Cast safe on 32bit because of CheckFieldSize() above.
   size_t oldLimit = GPBCodedInputStreamPushLimit(&state_, length2);
   ++state_.recursionDepth;
-  [message mergeFromCodedInputStream:self extensionRegistry:extensionRegistry];
-  GPBCodedInputStreamCheckLastTagWas(&state_, 0);
+  [message mergeFromCodedInputStream:self extensionRegistry:extensionRegistry endingTag:0];
   --state_.recursionDepth;
   GPBCodedInputStreamPopLimit(&state_, oldLimit);
 }
