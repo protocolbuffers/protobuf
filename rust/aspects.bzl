@@ -4,7 +4,6 @@ Disclaimer: This project is experimental, under heavy development, and should no
 be used yet."""
 
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
-load("@rules_proto//proto:defs.bzl", "ProtoInfo", "proto_common")
 
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVariantInfo")
@@ -12,6 +11,8 @@ load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVari
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:rustc.bzl", "rustc_compile_action")
 load("//bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library_aspect")
+load("//bazel/common:proto_common.bzl", "proto_common")
+load("//bazel/common:proto_info.bzl", "ProtoInfo")
 
 visibility(["//rust/..."])
 
