@@ -66,7 +66,7 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
           $serialize_thunk$(self.raw_msg(), &mut serialized_data)
         };
         if success {
-          Ok(serialized_data)
+          Ok(serialized_data.into_vec())
         } else {
           Err($pb$::SerializeError)
         }
@@ -939,7 +939,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             self.msg
           }
 
-          pub fn serialize(&self) -> Result<$pbr$::SerializedData, $pb$::SerializeError> {
+          pub fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
             $Msg::serialize$
           }
 
@@ -1015,7 +1015,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             self.inner
           }
 
-          pub fn serialize(&self) -> Result<$pbr$::SerializedData, $pb$::SerializeError> {
+          pub fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
             $pb$::ViewProxy::as_view(self).serialize()
           }
 
@@ -1069,7 +1069,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
           $raw_arena_getter_for_message$
 
-          pub fn serialize(&self) -> Result<$pbr$::SerializedData, $pb$::SerializeError> {
+          pub fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
             self.as_view().serialize()
           }
           #[deprecated = "Prefer Msg::parse(), or use the new name 'clear_and_parse' to parse into a pre-existing message."]

@@ -1350,7 +1350,9 @@ PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
       upb_Decode(buf, size, self->ptr.msg, layout, extreg, options, arena);
   Py_XDECREF(bytes);
   if (status != kUpb_DecodeStatus_Ok) {
-    PyErr_Format(state->decode_error_class, "Error parsing message");
+    PyErr_Format(state->decode_error_class,
+                 "Error parsing message with type '%s'",
+                 upb_MessageDef_FullName(msgdef));
     return NULL;
   }
   PyUpb_Message_SyncSubobjs(self);

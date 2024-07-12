@@ -10,23 +10,103 @@
 #![allow(unused)]
 
 use crate::__internal::Private;
-use crate::__runtime::{PtrAndLen, RawMessage};
-use crate::{Mut, MutProxied, MutProxy, Optional, Proxied, View, ViewProxy};
+use crate::__runtime::{InnerProtoString, PtrAndLen, RawMessage};
+use crate::{IntoProxied, Mut, MutProxied, MutProxy, Optional, Proxied, View, ViewProxy};
 use std::borrow::Cow;
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use std::convert::{AsMut, AsRef};
+use std::ffi::{OsStr, OsString};
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::iter;
 use std::ops::{Deref, DerefMut};
+use std::ptr;
+use std::rc::Rc;
+use std::sync::Arc;
 use utf8::Utf8Chunks;
 
-impl Proxied for [u8] {
+pub struct ProtoBytes {
+    pub(crate) inner: InnerProtoString,
+}
+
+impl AsRef<[u8]> for ProtoBytes {
+    fn as_ref(&self) -> &[u8] {
+        self.inner.as_bytes()
+    }
+}
+
+impl From<&[u8]> for ProtoBytes {
+    fn from(v: &[u8]) -> ProtoBytes {
+        ProtoBytes { inner: InnerProtoString::from(v) }
+    }
+}
+
+impl<const N: usize> From<&[u8; N]> for ProtoBytes {
+    fn from(v: &[u8; N]) -> ProtoBytes {
+        ProtoBytes { inner: InnerProtoString::from(v.as_ref()) }
+    }
+}
+
+impl Proxied for ProtoBytes {
     type View<'msg> = &'msg [u8];
 }
 
+impl IntoProxied<ProtoBytes> for ProtoBytes {
+    fn into_proxied(self, _private: Private) -> ProtoBytes {
+        self
+    }
+}
+
+impl IntoProxied<ProtoBytes> for &[u8] {
+    fn into_proxied(self, _private: Private) -> ProtoBytes {
+        ProtoBytes::from(self)
+    }
+}
+
+impl<const N: usize> IntoProxied<ProtoBytes> for &[u8; N] {
+    fn into_proxied(self, _private: Private) -> ProtoBytes {
+        ProtoBytes::from(self.as_ref())
+    }
+}
+
+impl IntoProxied<ProtoBytes> for Vec<u8> {
+    fn into_proxied(self, _private: Private) -> ProtoBytes {
+        ProtoBytes::from(AsRef::<[u8]>::as_ref(&self))
+    }
+}
+
+impl IntoProxied<ProtoBytes> for &Vec<u8> {
+    fn into_proxied(self, _private: Private) -> ProtoBytes {
+        ProtoBytes::from(AsRef::<[u8]>::as_ref(self))
+    }
+}
+
+impl IntoProxied<ProtoBytes> for Box<[u8]> {
+    fn into_proxied(self, _private: Private) -> ProtoBytes {
+        ProtoBytes::from(AsRef::<[u8]>::as_ref(&self))
+    }
+}
+
+impl IntoProxied<ProtoBytes> for Cow<'_, [u8]> {
+    fn into_proxied(self, _private: Private) -> ProtoBytes {
+        ProtoBytes::from(AsRef::<[u8]>::as_ref(&self))
+    }
+}
+
+impl IntoProxied<ProtoBytes> for Rc<[u8]> {
+    fn into_proxied(self, _private: Private) -> ProtoBytes {
+        ProtoBytes::from(AsRef::<[u8]>::as_ref(&self))
+    }
+}
+
+impl IntoProxied<ProtoBytes> for Arc<[u8]> {
+    fn into_proxied(self, _private: Private) -> ProtoBytes {
+        ProtoBytes::from(AsRef::<[u8]>::as_ref(&self))
+    }
+}
+
 impl<'msg> ViewProxy<'msg> for &'msg [u8] {
-    type Proxied = [u8];
+    type Proxied = ProtoBytes;
 
     fn as_view(&self) -> &[u8] {
         self
@@ -47,6 +127,118 @@ pub struct Utf8Error(pub(crate) ());
 impl From<std::str::Utf8Error> for Utf8Error {
     fn from(_: std::str::Utf8Error) -> Utf8Error {
         Utf8Error(())
+    }
+}
+
+/// An owned type representing protobuf `string` field's contents.
+///
+/// # UTF-8
+///
+/// Protobuf [docs] state that a `string` field contains UTF-8 encoded text.
+/// However, not every runtime enforces this, and the Rust runtime is designed
+/// to integrate with other runtimes with FFI, like C++.
+///
+/// `ProtoString` represents a string type that is expected to contain valid
+/// UTF-8. However, `ProtoString` is not validated, so users must
+/// call [`ProtoString::to_string`] to perform a (possibly runtime-elided) UTF-8
+/// validation check. This validation should rarely fail in pure Rust programs,
+/// but is necessary to prevent UB when interacting with C++, or other languages
+/// with looser restrictions.
+///
+///
+/// # `Display` and `ToString`
+/// `ProtoString` is ordinarily UTF-8 and so implements `Display`. If there are
+/// any invalid UTF-8 sequences, they are replaced with [`U+FFFD REPLACEMENT
+/// CHARACTER`]. Because anything implementing `Display` also implements
+/// `ToString`, `ProtoString::to_string()` is equivalent to
+/// `String::from_utf8_lossy(proto_string.as_bytes()).into_owned()`.
+///
+/// [`U+FFFD REPLACEMENT CHARACTER`]: std::char::REPLACEMENT_CHARACTER
+pub struct ProtoString {
+    pub(crate) inner: InnerProtoString,
+}
+
+impl ProtoString {
+    pub fn as_bytes(&self) -> &[u8] {
+        self.inner.as_bytes()
+    }
+}
+
+impl From<&str> for ProtoString {
+    fn from(v: &str) -> Self {
+        Self::from(v.as_bytes())
+    }
+}
+
+impl From<&[u8]> for ProtoString {
+    fn from(v: &[u8]) -> Self {
+        Self { inner: InnerProtoString::from(v) }
+    }
+}
+
+impl IntoProxied<ProtoString> for ProtoString {
+    fn into_proxied(self, _private: Private) -> ProtoString {
+        self
+    }
+}
+
+impl IntoProxied<ProtoString> for &str {
+    fn into_proxied(self, _private: Private) -> ProtoString {
+        ProtoString::from(self)
+    }
+}
+
+impl IntoProxied<ProtoString> for &ProtoStr {
+    fn into_proxied(self, _private: Private) -> ProtoString {
+        ProtoString::from(self.as_bytes())
+    }
+}
+
+impl IntoProxied<ProtoString> for String {
+    fn into_proxied(self, _private: Private) -> ProtoString {
+        ProtoString::from(self.as_str())
+    }
+}
+
+impl IntoProxied<ProtoString> for &String {
+    fn into_proxied(self, _private: Private) -> ProtoString {
+        ProtoString::from(self.as_bytes())
+    }
+}
+
+impl IntoProxied<ProtoString> for OsString {
+    fn into_proxied(self, private: Private) -> ProtoString {
+        self.as_os_str().into_proxied(private)
+    }
+}
+
+impl IntoProxied<ProtoString> for &OsStr {
+    fn into_proxied(self, _private: Private) -> ProtoString {
+        ProtoString::from(self.as_encoded_bytes())
+    }
+}
+
+impl IntoProxied<ProtoString> for Box<str> {
+    fn into_proxied(self, _private: Private) -> ProtoString {
+        ProtoString::from(AsRef::<str>::as_ref(&self))
+    }
+}
+
+impl IntoProxied<ProtoString> for Cow<'_, str> {
+    fn into_proxied(self, _private: Private) -> ProtoString {
+        ProtoString::from(AsRef::<str>::as_ref(&self))
+    }
+}
+
+impl IntoProxied<ProtoString> for Rc<str> {
+    fn into_proxied(self, _private: Private) -> ProtoString {
+        ProtoString::from(AsRef::<str>::as_ref(&self))
+    }
+}
+
+impl IntoProxied<ProtoString> for Arc<str> {
+    fn into_proxied(self, _private: Private) -> ProtoString {
+        ProtoString::from(AsRef::<str>::as_ref(&self))
     }
 }
 
@@ -261,12 +453,12 @@ impl Ord for ProtoStr {
     }
 }
 
-impl Proxied for ProtoStr {
+impl Proxied for ProtoString {
     type View<'msg> = &'msg ProtoStr;
 }
 
 impl<'msg> ViewProxy<'msg> for &'msg ProtoStr {
-    type Proxied = ProtoStr;
+    type Proxied = ProtoString;
 
     fn as_view(&self) -> &ProtoStr {
         self
@@ -276,30 +468,6 @@ impl<'msg> ViewProxy<'msg> for &'msg ProtoStr {
     where
         'msg: 'shorter,
     {
-        self
-    }
-}
-
-// TODO: remove after IntoProxied has been implemented for
-// ProtoStr.
-impl AsRef<ProtoStr> for String {
-    fn as_ref(&self) -> &ProtoStr {
-        ProtoStr::from_str(self.as_str())
-    }
-}
-
-// TODO: remove after IntoProxied has been implemented for
-// ProtoStr.
-impl AsRef<ProtoStr> for &str {
-    fn as_ref(&self) -> &ProtoStr {
-        ProtoStr::from_str(self)
-    }
-}
-
-// TODO: remove after IntoProxied has been implemented for
-// ProtoStr.
-impl AsRef<ProtoStr> for &ProtoStr {
-    fn as_ref(&self) -> &ProtoStr {
         self
     }
 }

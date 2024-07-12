@@ -61,7 +61,7 @@ macro_rules! generate_parameterized_serialization_test {
                 msg.set_optional_bool(true);
                 let mut msg2 = [< $type >]::new();
                 msg2.set_optional_bytes(msg.serialize().unwrap());
-                assert_that!(msg2.optional_bytes(), eq(msg.serialize().unwrap().as_ref()));
+                assert_that!(msg2.optional_bytes(), eq(msg.serialize().unwrap()));
             }
 
             #[test]

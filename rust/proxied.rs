@@ -224,7 +224,6 @@ pub trait IntoProxied<T: Proxied> {
 mod tests {
     use super::*;
     use googletest::prelude::*;
-    use std::borrow::Cow;
 
     #[derive(Debug, Default, PartialEq)]
     struct MyProxied {

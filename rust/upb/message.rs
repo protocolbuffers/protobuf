@@ -28,4 +28,11 @@ extern "C" {
         mini_table: *const upb_MiniTableField,
         val: *const std::ffi::c_void,
     );
+
+    pub fn upb_Message_IsEqual(
+        m1: RawMessage,
+        m2: RawMessage,
+        mini_table: *const upb_MiniTable,
+        options: i32,
+    ) -> bool;
 }
