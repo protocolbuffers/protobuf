@@ -22,6 +22,7 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
@@ -119,7 +120,7 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   void AddVarint(int number, uint64_t value);
   void AddFixed32(int number, uint32_t value);
   void AddFixed64(int number, uint64_t value);
-  void AddLengthDelimited(int number, const std::string& value);
+  void AddLengthDelimited(int number, absl::string_view value);
   std::string* AddLengthDelimited(int number);
   UnknownFieldSet* AddGroup(int number);
 
@@ -142,7 +143,7 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   bool ParseFromCodedStream(io::CodedInputStream* input);
   bool ParseFromZeroCopyStream(io::ZeroCopyInputStream* input);
   bool ParseFromArray(const void* data, int size);
-  inline bool ParseFromString(const std::string& data) {
+  inline bool ParseFromString(const absl::string_view data) {
     return ParseFromArray(data.data(), static_cast<int>(data.size()));
   }
 
@@ -238,7 +239,7 @@ class PROTOBUF_EXPORT UnknownField {
   inline void set_varint(uint64_t value);
   inline void set_fixed32(uint32_t value);
   inline void set_fixed64(uint64_t value);
-  inline void set_length_delimited(const std::string& value);
+  inline void set_length_delimited(absl::string_view value);
   inline std::string* mutable_length_delimited();
   inline UnknownFieldSet* mutable_group();
 
@@ -304,8 +305,8 @@ inline UnknownField* UnknownFieldSet::mutable_field(int index) {
 }
 
 inline void UnknownFieldSet::AddLengthDelimited(int number,
-                                                const std::string& value) {
-  AddLengthDelimited(number)->assign(value);
+                                                const absl::string_view value) {
+  AddLengthDelimited(number)->assign(value.data(), value.size());
 }
 
 
@@ -349,9 +350,9 @@ inline void UnknownField::set_fixed64(uint64_t value) {
   assert(type() == TYPE_FIXED64);
   data_.fixed64_ = value;
 }
-inline void UnknownField::set_length_delimited(const std::string& value) {
+inline void UnknownField::set_length_delimited(const absl::string_view value) {
   assert(type() == TYPE_LENGTH_DELIMITED);
-  data_.length_delimited_.string_value->assign(value);
+  data_.length_delimited_.string_value->assign(value.data(), value.size());
 }
 inline std::string* UnknownField::mutable_length_delimited() {
   assert(type() == TYPE_LENGTH_DELIMITED);
