@@ -212,10 +212,6 @@ static void GPBUnknownFieldSetSerializedSizeAsMessageSet(__unused const void *ke
   return data;
 }
 
-+ (BOOL)isFieldTag:(int32_t)tag {
-  return GPBWireFormatGetTagWireType(tag) != GPBWireFormatEndGroup;
-}
-
 - (void)addField:(GPBUnknownField *)field {
   int32_t number = [field number];
   checkNumber(number);
