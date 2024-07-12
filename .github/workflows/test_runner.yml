@@ -242,6 +242,7 @@ jobs:
     # Staleness tests have scheduled runs during off-hours to avoid race conditions.
     if: ${{ github.event_name != 'schedule' }}
     with:
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
     secrets: inherit
 
