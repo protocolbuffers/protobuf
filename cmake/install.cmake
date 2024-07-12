@@ -24,6 +24,10 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf.pc.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf-lite.pc.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc @ONLY)
+if (protobuf_BUILD_LIBUPB)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/upb.pc.cmake
+                ${CMAKE_CURRENT_BINARY_DIR}/upb.pc @ONLY)
+endif ()
 
 set(_protobuf_libraries libprotobuf-lite libprotobuf)
 if (protobuf_BUILD_LIBPROTOC)
@@ -72,6 +76,9 @@ if (protobuf_BUILD_PROTOC_BINARIES)
 endif (protobuf_BUILD_PROTOC_BINARIES)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+if (protobuf_BUILD_LIBUPB)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/upb.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+endif ()
 
 include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
 set(protobuf_HEADERS
