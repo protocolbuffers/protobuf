@@ -71,3 +71,6 @@ crate.spec(
 )
 crate.from_specs()
 use_repo(crate, crate_index = "crates")
+
+# Development dependencies
+bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
