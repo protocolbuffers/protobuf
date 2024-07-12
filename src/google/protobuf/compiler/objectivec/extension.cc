@@ -39,6 +39,11 @@ ExtensionGenerator::ExtensionGenerator(
   ABSL_CHECK(!descriptor->is_map())
       << "error: Extension is a map<>!"
       << " That used to be blocked by the compiler.";
+  ABSL_CHECK(
+      !descriptor->containing_type()->options().message_set_wire_format() ||
+      descriptor->type() == FieldDescriptor::TYPE_MESSAGE)
+      << "error: Extension to a message_set_wire_format message and the type "
+         "wasn't a message!";
 }
 
 void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) const {
