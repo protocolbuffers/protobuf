@@ -173,7 +173,8 @@ class SingularString : public FieldGeneratorBase {
   }
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
-    if (is_inlined() || EmptyDefault()) {
+    ABSL_CHECK(!is_inlined());
+    if (EmptyDefault()) {
       p->Emit("new (&$field$) decltype($field$){arena, from.$field$};\n");
     } else {
       p->Emit(
@@ -207,12 +208,6 @@ void SingularString::GenerateStaticMembers(io::Printer* p) const {
   if (!EmptyDefault()) {
     p->Emit(R"cc(
       static const $pbi$::LazyString $default_variable_name$;
-    )cc");
-  }
-  if (is_inlined()) {
-    // `_init_inline_xxx` is used for initializing default instances.
-    p->Emit(R"cc(
-      static std::true_type _init_inline_$name$_;
     )cc");
   }
 }

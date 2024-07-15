@@ -665,27 +665,6 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx, io::Printer* p) {
         )cc");
   }
 
-  for (int i = 0; i < generator->descriptor()->field_count(); ++i) {
-    const FieldDescriptor* field = generator->descriptor()->field(i);
-    if (!IsStringInlined(field, options_)) {
-      continue;
-    }
-
-    // Force the initialization of the inlined string in the default instance.
-    p->Emit(
-        {
-            {"class", ClassName(generator->descriptor())},
-            {"field", FieldName(field)},
-            {"default", DefaultInstanceName(generator->descriptor(), options_)},
-            {"member", FieldMemberName(field, ShouldSplit(field, options_))},
-        },
-        R"cc(
-          PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 std::true_type
-              $class$::Impl_::_init_inline_$field$_ =
-                  ($default$._instance.$member$.Init(), std::true_type{});
-        )cc");
-  }
-
   if (options_.lite_implicit_weak_fields) {
     p->Emit(
         {
@@ -1600,7 +1579,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   IncludeFile("third_party/protobuf/io/coded_stream.h", p);
   IncludeFile("third_party/protobuf/arena.h", p);
   IncludeFile("third_party/protobuf/arenastring.h", p);
-  if (IsStringInliningEnabled(options_)) {
+  if (IsStringInliningEnabled(file_, options_)) {
     IncludeFile("third_party/protobuf/inlined_string_field.h", p);
   }
   if (HasSimpleBaseClasses(file_, options_)) {

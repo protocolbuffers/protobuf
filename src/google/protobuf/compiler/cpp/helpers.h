@@ -355,7 +355,8 @@ bool IsLikelyPresent(const FieldDescriptor* field, const Options& options);
 float GetPresenceProbability(const FieldDescriptor* field,
                              const Options& options);
 
-bool IsStringInliningEnabled(const Options& options);
+bool IsStringInliningEnabled(const FileDescriptor* file,
+                             const Options& options);
 
 // Returns true if the provided field is a singular string and can be inlined.
 bool CanStringBeInlined(const FieldDescriptor* field);

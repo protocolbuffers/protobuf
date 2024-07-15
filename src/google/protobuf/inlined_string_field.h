@@ -85,16 +85,18 @@ namespace internal {
 // For more details of the donating states transitions, go/pd-inlined-string.
 class PROTOBUF_EXPORT InlinedStringField {
  public:
-  InlinedStringField() { Init(); }
+  InlinedStringField() : str_() {}
   InlinedStringField(const InlinedStringField&) = delete;
   InlinedStringField& operator=(const InlinedStringField&) = delete;
-  inline void Init() { new (get_mutable()) std::string(); }
   // Add the dummy parameter just to make InlinedStringField(nullptr)
   // unambiguous.
+  // We have to hide this constructor from builds that do not support it. They
+  // won't use it in their codegen, but they might include the header.
+#if defined(__cpp_lib_constexpr_string) && __cpp_lib_constexpr_string >= 201907L
   constexpr InlinedStringField(
       const ExplicitlyConstructed<std::string>* /*default_value*/,
-      bool /*dummy*/)
-      : value_{} {}
+      bool /*dummy*/) {}
+#endif
   explicit InlinedStringField(const std::string& default_value);
   explicit InlinedStringField(Arena* arena);
   InlinedStringField(Arena* arena, const InlinedStringField& rhs);
@@ -346,7 +348,9 @@ class PROTOBUF_EXPORT InlinedStringField {
   PROTOBUF_NDEBUG_INLINE std::string* get_mutable();
   PROTOBUF_NDEBUG_INLINE const std::string* get_const() const;
 
-  alignas(std::string) char value_[sizeof(std::string)];
+  union {
+    std::string str_;
+  };
 
   std::string* MutableSlow(::google::protobuf::Arena* arena, bool donated,
                            uint32_t* donating_states, uint32_t mask,
@@ -359,18 +363,14 @@ class PROTOBUF_EXPORT InlinedStringField {
   typedef void DestructorSkippable_;
 };
 
-inline std::string* InlinedStringField::get_mutable() {
-  return reinterpret_cast<std::string*>(&value_);
-}
+inline std::string* InlinedStringField::get_mutable() { return &str_; }
 
 inline const std::string* InlinedStringField::get_const() const {
-  return reinterpret_cast<const std::string*>(&value_);
+  return &str_;
 }
 
-inline InlinedStringField::InlinedStringField(
-    const std::string& default_value) {
-  new (get_mutable()) std::string(default_value);
-}
+inline InlinedStringField::InlinedStringField(const std::string& default_value)
+    : str_(default_value) {}
 
 
 #ifdef GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE
@@ -386,12 +386,12 @@ inline void InternalRegisterArenaDtor(Arena* arena, void* object,
 }
 #endif  // GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE
 
-inline InlinedStringField::InlinedStringField(Arena* /*arena*/) { Init(); }
+inline InlinedStringField::InlinedStringField(Arena* /*arena*/) : str_() {}
 
 inline InlinedStringField::InlinedStringField(Arena* arena,
                                               const InlinedStringField& rhs) {
   const std::string& src = *rhs.get_const();
-  new (value_) std::string(src);
+  ::new (static_cast<void*>(&str_)) std::string(src);
 }
 
 inline const std::string& InlinedStringField::GetNoArena() const {
