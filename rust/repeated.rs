@@ -287,18 +287,14 @@ where
 pub unsafe trait ProxiedInRepeated: Proxied {
     /// Constructs a new owned `Repeated` field.
     #[doc(hidden)]
-    fn repeated_new(_private: Private) -> Repeated<Self> {
-        unimplemented!("not required")
-    }
+    fn repeated_new(_private: Private) -> Repeated<Self>;
 
     /// Frees the repeated field in-place, for use in `Drop`.
     ///
     /// # Safety
     /// - After `repeated_free`, no other methods on the input are safe to call.
     #[doc(hidden)]
-    unsafe fn repeated_free(_private: Private, _repeated: &mut Repeated<Self>) {
-        unimplemented!("not required")
-    }
+    unsafe fn repeated_free(_private: Private, _repeated: &mut Repeated<Self>);
 
     /// Gets the length of the repeated field.
     fn repeated_len(repeated: View<Repeated<Self>>) -> usize;
@@ -365,7 +361,7 @@ impl<T: ProxiedInRepeated> Repeated<T> {
         T::repeated_new(Private)
     }
 
-    pub(crate) fn from_inner(inner: InnerRepeated) -> Self {
+    pub fn from_inner(_private: Private, inner: InnerRepeated) -> Self {
         Self { inner, _phantom: PhantomData }
     }
 
