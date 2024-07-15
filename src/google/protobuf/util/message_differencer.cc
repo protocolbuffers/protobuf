@@ -898,7 +898,7 @@ bool MessageDifferencer::CompareWithFieldsInternal(
       const bool ignore_field =
           IsIgnored(message1, message2, field2, *parent_fields);
       if (!ignore_field && force_compare_no_presence_fields_.contains(field2)) {
-        force_compare_failure_triggering_fields_.insert(field2->full_name());
+        force_compare_failure_triggering_fields_.emplace(field2->full_name());
       }
 
       // Field 2 is not in the field list for message 1.
@@ -990,7 +990,7 @@ bool MessageDifferencer::CompareWithFieldsInternal(
           message1, message2, unpacked_any, field1, -1, -1, parent_fields);
 
       if (force_compare_no_presence_fields_.contains(field1)) {
-        force_compare_failure_triggering_fields_.insert(field1->full_name());
+        force_compare_failure_triggering_fields_.emplace(field1->full_name());
       }
 
       if (reporter_ != nullptr) {
@@ -2382,3 +2382,5 @@ MessageDifferencer::CreateMultipleFieldsMapKeyComparator(
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

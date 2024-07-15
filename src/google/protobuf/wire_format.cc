@@ -544,12 +544,12 @@ bool WireFormat::ParseAndMergeField(
         if (strict_utf8_check) {
           if (!WireFormatLite::VerifyUtf8String(value.data(), value.length(),
                                                 WireFormatLite::PARSE,
-                                                field->full_name().c_str())) {
+                                                field->full_name())) {
             return false;
           }
         } else {
           VerifyUTF8StringNamedField(value.data(), value.length(), PARSE,
-                                     field->full_name().c_str());
+                                     field->full_name());
         }
         if (field->is_repeated()) {
           message_reflection->AddString(message, field, value);
@@ -1017,12 +1017,12 @@ const char* WireFormat::_InternalParseAndMergeField(
         if (strict_utf8_check) {
           if (!WireFormatLite::VerifyUtf8String(value.data(), value.length(),
                                                 WireFormatLite::PARSE,
-                                                field->full_name().c_str())) {
+                                                field->full_name())) {
             return nullptr;
           }
         } else {
           VerifyUTF8StringNamedField(value.data(), value.length(), PARSE,
-                                     field->full_name().c_str());
+                                     field->full_name());
         }
       }
       if (field->is_repeated()) {
@@ -1415,10 +1415,10 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
         if (strict_utf8_check) {
           WireFormatLite::VerifyUtf8String(value.data(), value.length(),
                                            WireFormatLite::SERIALIZE,
-                                           field->full_name().c_str());
+                                           field->full_name());
         } else {
           VerifyUTF8StringNamedField(value.data(), value.length(), SERIALIZE,
-                                     field->full_name().c_str());
+                                     field->full_name());
         }
         target = stream->WriteString(field->number(), value, target);
         break;

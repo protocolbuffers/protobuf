@@ -532,12 +532,13 @@ class PROTOBUF_EXPORT Printer {
   // Pushes a new variable lookup frame that stores `vars` by value.
   //
   // Returns an RAII object that pops the lookup frame.
-  template <typename Map = absl::flat_hash_map<std::string, std::string>,
-            typename = std::enable_if_t<!std::is_pointer<Map>::value>,
-            // Prefer the more specific span impl if this could be turned into
-            // a span.
-            typename = std::enable_if_t<
-                !std::is_convertible<Map, absl::Span<const Sub>>::value>>
+  template <
+      typename Map = absl::flat_hash_map<absl::string_view, absl::string_view>,
+      typename = std::enable_if_t<!std::is_pointer<Map>::value>,
+      // Prefer the more specific span impl if this could be turned into
+      // a span.
+      typename = std::enable_if_t<
+          !std::is_convertible<Map, absl::Span<const Sub>>::value>>
   auto WithVars(Map&& vars);
 
   // Pushes a new variable lookup frame that stores `vars` by value.
@@ -608,7 +609,8 @@ class PROTOBUF_EXPORT Printer {
   // -- Old-style API below; to be deprecated and removed. --
   // TODO: Deprecate these APIs.
 
-  template <typename Map = absl::flat_hash_map<std::string, std::string>>
+  template <
+      typename Map = absl::flat_hash_map<absl::string_view, absl::string_view>>
   void Print(const Map& vars, absl::string_view text);
 
   template <typename... Args>

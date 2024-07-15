@@ -570,15 +570,15 @@ TEST_F(FileDescriptorTest, CopyHeadingTo) {
 }
 
 void ExtractDebugString(
-    const FileDescriptor* file, absl::flat_hash_set<std::string>* visited,
-    std::vector<std::pair<std::string, std::string>>* debug_strings) {
+    const FileDescriptor* file, absl::flat_hash_set<absl::string_view>* visited,
+    std::vector<std::pair<absl::string_view, std::string>>* debug_strings) {
   if (!visited->insert(file->name()).second) {
     return;
   }
   for (int i = 0; i < file->dependency_count(); ++i) {
     ExtractDebugString(file->dependency(i), visited, debug_strings);
   }
-  debug_strings->push_back(std::make_pair(file->name(), file->DebugString()));
+  debug_strings->push_back({file->name(), file->DebugString()});
 }
 
 class SimpleErrorCollector : public io::ErrorCollector {
@@ -596,8 +596,8 @@ class SimpleErrorCollector : public io::ErrorCollector {
 // Test that the result of FileDescriptor::DebugString() can be used to create
 // the original descriptors.
 TEST_F(FileDescriptorTest, DebugStringRoundTrip) {
-  absl::flat_hash_set<std::string> visited;
-  std::vector<std::pair<std::string, std::string>> debug_strings;
+  absl::flat_hash_set<absl::string_view> visited;
+  std::vector<std::pair<absl::string_view, std::string>> debug_strings;
   ExtractDebugString(protobuf_unittest::TestAllTypes::descriptor()->file(),
                      &visited, &debug_strings);
   ExtractDebugString(
@@ -609,7 +609,7 @@ TEST_F(FileDescriptorTest, DebugStringRoundTrip) {
 
   DescriptorPool pool;
   for (size_t i = 0; i < debug_strings.size(); ++i) {
-    const std::string& name = debug_strings[i].first;
+    const absl::string_view name = debug_strings[i].first;
     const std::string& content = debug_strings[i].second;
     io::ArrayInputStream input_stream(content.data(), content.size());
     SimpleErrorCollector error_collector;
@@ -850,16 +850,17 @@ TEST_F(DescriptorTest, ContainingType) {
 
 TEST_F(DescriptorTest, FieldNamesDedup) {
   const auto collect_unique_names = [](const FieldDescriptor* field) {
-    absl::btree_set<std::string> names{field->name(), field->lowercase_name(),
-                                       field->camelcase_name(),
-                                       field->json_name()};
+    absl::btree_set<absl::string_view> names{
+        field->name(), field->lowercase_name(), field->camelcase_name(),
+        field->json_name()};
     // Verify that we have the same number of string objects as we have string
     // values. That is, duplicate names use the same std::string object.
     // This is for memory efficiency.
-    EXPECT_EQ(names.size(), (absl::flat_hash_set<const std::string*>{
-                                &field->name(), &field->lowercase_name(),
-                                &field->camelcase_name(), &field->json_name()}
-                                 .size()))
+    EXPECT_EQ(names.size(),
+              (absl::flat_hash_set<const void*>{
+                  field->name().data(), field->lowercase_name().data(),
+                  field->camelcase_name().data(), field->json_name().data()}
+                   .size()))
         << testing::PrintToString(names);
     return names;
   };

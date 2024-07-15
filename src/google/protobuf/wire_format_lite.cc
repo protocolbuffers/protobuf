@@ -604,7 +604,7 @@ void PrintUTF8ErrorLog(absl::string_view message_name,
 }
 
 bool WireFormatLite::VerifyUtf8String(const char* data, int size, Operation op,
-                                      const char* field_name) {
+                                      const absl::string_view field_name) {
   if (!utf8_range::IsStructurallyValid({data, static_cast<size_t>(size)})) {
     const char* operation_str = nullptr;
     switch (op) {

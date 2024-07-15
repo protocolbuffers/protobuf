@@ -17,11 +17,13 @@
 
 #include <assert.h>
 
+#include <atomic>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -43,6 +45,12 @@ class InternalMetadata;           // metadata_lite.h
 class WireFormat;                 // wire_format.h
 class MessageSetFieldSkipperUsingCord;
 // extension_set_heavy.cc
+
+#if defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
+using UFSStringView = absl::string_view;
+#else
+using UFSStringView = const std::string&;
+#endif
 }  // namespace internal
 
 class Message;       // message.h
@@ -233,7 +241,7 @@ class PROTOBUF_EXPORT UnknownField {
   inline uint64_t varint() const;
   inline uint32_t fixed32() const;
   inline uint64_t fixed64() const;
-  inline const std::string& length_delimited() const;
+  inline internal::UFSStringView length_delimited() const;
   inline const UnknownFieldSet& group() const;
 
   inline void set_varint(uint64_t value);
@@ -329,7 +337,7 @@ inline uint64_t UnknownField::fixed64() const {
   assert(type() == TYPE_FIXED64);
   return data_.fixed64_;
 }
-inline const std::string& UnknownField::length_delimited() const {
+inline internal::UFSStringView UnknownField::length_delimited() const {
   assert(type() == TYPE_LENGTH_DELIMITED);
   return *data_.length_delimited_.string_value;
 }
