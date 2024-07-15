@@ -449,11 +449,11 @@ public final class TextFormat {
         }
         switch (fieldType) {
           case BOOLEAN:
-            return Boolean.valueOf((boolean) getKey()).compareTo((boolean) b.getKey());
+            return ((Boolean) getKey()).compareTo((Boolean) b.getKey());
           case LONG:
-            return Long.valueOf((long) getKey()).compareTo((long) b.getKey());
+            return ((Long) getKey()).compareTo((Long) b.getKey());
           case INT:
-            return Integer.valueOf((int) getKey()).compareTo((int) b.getKey());
+            return ((Integer) getKey()).compareTo((Integer) b.getKey());
           case STRING:
             String aString = (String) getKey();
             String bString = (String) b.getKey();
