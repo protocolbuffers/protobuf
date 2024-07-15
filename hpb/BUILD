@@ -157,6 +157,9 @@ cc_test(
     srcs = ["repeated_field_iterator_test.cc"],
     deps = [
         ":repeated_field",
+        "//hpb",
+        "//upb:message",
+        "@com_google_absl//absl/strings:string_view",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

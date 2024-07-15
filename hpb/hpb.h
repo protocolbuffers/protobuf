@@ -20,9 +20,12 @@
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 
-namespace protos {
-
+namespace hpb {
 using Arena = ::upb::Arena;
+}
+
+namespace protos {
+using hpb::Arena;
 class ExtensionRegistry;
 
 template <typename T>
