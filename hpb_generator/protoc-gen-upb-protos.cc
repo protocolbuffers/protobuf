@@ -13,14 +13,14 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/compiler/plugin.h"
-#include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/hpb/gen_enums.h"
 #include "google/protobuf/compiler/hpb/gen_extensions.h"
 #include "google/protobuf/compiler/hpb/gen_messages.h"
 #include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/names.h"
 #include "google/protobuf/compiler/hpb/output.h"
+#include "google/protobuf/compiler/plugin.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google::protobuf::hpb_generator {
 namespace {
@@ -256,7 +256,8 @@ void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
                                     Output& output) {
   // Import forward-declaration of types defined in this file.
   output("#include \"$0\"\n", UpbCFilename(file));
-  output("#include \"$0\"\n", ForwardingHeaderFilename(file));
+  output("#include \"$0\"  // IWYU pragma: export\n",
+         ForwardingHeaderFilename(file));
   // Import forward-declaration of types in dependencies.
   for (int i = 0; i < file->dependency_count(); ++i) {
     output("#include \"$0\"\n", ForwardingHeaderFilename(file->dependency(i)));
