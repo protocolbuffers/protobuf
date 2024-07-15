@@ -17,9 +17,9 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-const float kUpb_FltInfinity = INFINITY;
-const double kUpb_Infinity = INFINITY;
-const double kUpb_NaN = NAN;
+const float kUpb_FltInfinity = (float)(1.0 / 0.0);
+const double kUpb_Infinity = 1.0 / 0.0;
+const double kUpb_NaN = 0.0 / 0.0;
 
 bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
                                        upb_Arena* a) {
