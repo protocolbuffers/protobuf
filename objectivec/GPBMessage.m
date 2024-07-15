@@ -742,16 +742,12 @@ static void DecodeSingleValueFromInputStream(GPBExtensionDescriptor *extension,
                       message:targetMessage
             extensionRegistry:extensionRegistry];
       } else {
-        // description->dataType == GPBDataTypeMessage
-        if (GPBExtensionIsWireFormat(description)) {
-          // For MessageSet fields the message length will have already been
-          // read.
-          [targetMessage mergeFromCodedInputStream:input
-                                 extensionRegistry:extensionRegistry
-                                         endingTag:0];
-        } else {
-          [input readMessage:targetMessage extensionRegistry:extensionRegistry];
-        }
+// description->dataType == GPBDataTypeMessage
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
+        NSCAssert(!GPBExtensionIsWireFormat(description),
+                  @"Internal error: got a MessageSet extension when not expected.");
+#endif
+        [input readMessage:targetMessage extensionRegistry:extensionRegistry];
       }
       // Nothing to add below since the caller provided the message (and added it).
       nsValue = nil;
@@ -2183,81 +2179,85 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
   uint32_t typeId = 0;
   NSData *rawBytes = nil;
-  GPBExtensionDescriptor *extension = nil;
   GPBCodedInputStreamState *state = &input->state_;
+  BOOL gotType = NO;
+  BOOL gotBytes = NO;
   while (true) {
     uint32_t tag = GPBCodedInputStreamReadTag(state);
-    if (tag == 0) {
+    if (tag == GPBWireFormatMessageSetItemEndTag || tag == 0) {
       break;
     }
 
     if (tag == GPBWireFormatMessageSetTypeIdTag) {
-      typeId = GPBCodedInputStreamReadUInt32(state);
-      if (typeId != 0) {
-        extension = [extensionRegistry extensionForDescriptor:[self descriptor] fieldNumber:typeId];
+      uint32_t tmp = GPBCodedInputStreamReadUInt32(state);
+      // Spec says only use the first value.
+      if (!gotType) {
+        gotType = YES;
+        typeId = tmp;
       }
     } else if (tag == GPBWireFormatMessageSetMessageTag) {
-      rawBytes = [GPBCodedInputStreamReadRetainedBytesNoCopy(state) autorelease];
+      if (gotBytes) {
+        // Skip over the payload instead of collecting it.
+        [input skipField:tag];
+      } else {
+        rawBytes = [GPBCodedInputStreamReadRetainedBytesNoCopy(state) autorelease];
+        gotBytes = YES;
+      }
     } else {
+      // Don't capture unknowns within the message set impl group.
       if (![input skipField:tag]) {
         break;
       }
     }
   }
 
-  [input checkLastTagWas:GPBWireFormatMessageSetItemEndTag];
+  // If we get here because of end of input (tag zero) or the wrong end tag (within the skipField:),
+  // this will error.
+  GPBCodedInputStreamCheckLastTagWas(state, GPBWireFormatMessageSetItemEndTag);
 
-  if (rawBytes != nil && typeId != 0) {
-    if (extension != nil) {
-      GPBCodedInputStream *newInput = [[GPBCodedInputStream alloc] initWithData:rawBytes];
-      @try {
-        ExtensionMergeFromInputStream(extension, extension.packable, newInput, extensionRegistry,
-                                      self);
-      } @finally {
-        [newInput release];
-      }
-    } else {
-      GPBUnknownFieldSet *unknownFields = GetOrMakeUnknownFields(self);
-      // rawBytes was created via a NoCopy, so it can be reusing a
-      // subrange of another NSData that might go out of scope as things
-      // unwind, so a copy is needed to ensure what is saved in the
-      // unknown fields stays valid.
-      NSData *cloned = [NSData dataWithData:rawBytes];
-      [unknownFields mergeMessageSetMessage:typeId data:cloned];
-    }
+  if (!gotType || !gotBytes) {
+    // upb_Decoder_DecodeMessageSetItem does't keep this partial as an unknown field, it just drops
+    // it, so do the same thing.
+    return;
   }
-}
 
-- (void)parseUnknownField:(GPBCodedInputStream *)input
-        extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry
-                      tag:(uint32_t)tag {
-  int32_t fieldNumber = GPBWireFormatGetTagFieldNumber(tag);
-  GPBDescriptor *descriptor = [self descriptor];
-  GPBExtensionDescriptor *extension = [extensionRegistry extensionForDescriptor:descriptor
-                                                                    fieldNumber:fieldNumber];
-  if (extension == nil) {
-    if (descriptor.wireFormat && GPBWireFormatMessageSetItemTag == tag) {
-      [self parseMessageSet:input extensionRegistry:extensionRegistry];
-      return;
+  GPBExtensionDescriptor *extension = [extensionRegistry extensionForDescriptor:[self descriptor]
+                                                                    fieldNumber:typeId];
+  if (extension) {
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
+    NSAssert(extension.dataType == GPBDataTypeMessage,
+             @"Internal Error: MessageSet extension must be a message field.");
+    NSAssert(GPBExtensionIsWireFormat(extension->description_),
+             @"Internal Error: MessageSet extension must have message_set_wire_format set.");
+    NSAssert(!GPBExtensionIsRepeated(extension->description_),
+             @"Internal Error: MessageSet extension can't be repeated.");
+#endif
+    // Look up the existing one to merge to or create a new one.
+    GPBMessage *targetMessage = [self getExistingExtension:extension];
+    if (!targetMessage) {
+      GPBDescriptor *descriptor = [extension.msgClass descriptor];
+      targetMessage = [[descriptor.messageClass alloc] init];
+      [self setExtension:extension value:targetMessage];
+      [targetMessage release];
+    }
+    GPBCodedInputStream *newInput = [[GPBCodedInputStream alloc] initWithData:rawBytes];
+    @try {
+      [targetMessage mergeFromCodedInputStream:newInput
+                             extensionRegistry:extensionRegistry
+                                     endingTag:0];
+    } @finally {
+      [newInput release];
     }
   } else {
-    GPBWireFormat wireType = GPBWireFormatGetTagWireType(tag);
-    if (extension.wireType == wireType) {
-      ExtensionMergeFromInputStream(extension, extension.packable, input, extensionRegistry, self);
-      return;
-    }
-    // Primitive, repeated types can be packed on unpacked on the wire, and are
-    // parsed either way.
-    if ([extension isRepeated] && !GPBDataTypeIsObject(extension->description_->dataType) &&
-        (extension.alternateWireType == wireType)) {
-      ExtensionMergeFromInputStream(extension, !extension.packable, input, extensionRegistry, self);
-      return;
-    }
-  }
-  GPBUnknownFieldSet *unknownFields = GetOrMakeUnknownFields(self);
-  if (![unknownFields mergeFieldFrom:tag input:input]) {
-    [NSException raise:NSInternalInconsistencyException
-                format:@"Internal Error: Unable to parse unknown field %u", tag];
+    // The extension isn't in the registry, but it was well formed, so the whole group structure
+    // get preserved as an unknown field.
+    GPBUnknownFieldSet *unknownFields = GetOrMakeUnknownFields(self);
+    // rawBytes was created via a NoCopy, so it can be reusing a
+    // subrange of another NSData that might go out of scope as things
+    // unwind, so a copy is needed to ensure what is saved in the
+    // unknown fields stays valid.
+    NSData *cloned = [NSData dataWithData:rawBytes];
+    [unknownFields mergeMessageSetMessage:typeId data:cloned];
   }
 }
 
@@ -2475,6 +2475,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
   uint32_t tag = 0;
   NSUInteger startingIndex = 0;
   NSArray *fields = descriptor->fields_;
+  BOOL isMessageSetWireFormat = descriptor.isWireFormat;
   NSUInteger numFields = fields.count;
   while (YES) {
     BOOL merged = NO;
@@ -2551,7 +2552,40 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
 
     if (merged) continue;  // On to the next tag
 
-    [self parseUnknownField:input extensionRegistry:extensionRegistry tag:tag];
+    if (isMessageSetWireFormat) {
+      if (GPBWireFormatMessageSetItemTag == tag) {
+        [self parseMessageSet:input extensionRegistry:extensionRegistry];
+        continue;  // On to the next tag
+      }
+    } else {
+      // ObjC Runtime currently doesn't track if a message supported extensions, so the check is
+      // always done.
+      GPBExtensionDescriptor *extension =
+          [extensionRegistry extensionForDescriptor:descriptor
+                                        fieldNumber:GPBWireFormatGetTagFieldNumber(tag)];
+      if (extension) {
+        GPBWireFormat wireType = GPBWireFormatGetTagWireType(tag);
+        if (extension.wireType == wireType) {
+          ExtensionMergeFromInputStream(extension, extension.packable, input, extensionRegistry,
+                                        self);
+          continue;  // On to the next tag
+        }
+        // Primitive, repeated types can be packed on unpacked on the wire, and are
+        // parsed either way.
+        if ([extension isRepeated] && !GPBDataTypeIsObject(extension->description_->dataType) &&
+            (extension.alternateWireType == wireType)) {
+          ExtensionMergeFromInputStream(extension, !extension.packable, input, extensionRegistry,
+                                        self);
+          continue;  // On to the next tag
+        }
+      }
+    }
+
+    GPBUnknownFieldSet *unknownFields = GetOrMakeUnknownFields(self);
+    if (![unknownFields mergeFieldFrom:tag input:input]) {
+      [NSException raise:NSInternalInconsistencyException
+                  format:@"Internal Error: Unable to parse unknown field %u", tag];
+    }
   }  // while(YES)
 }
 
