@@ -24,7 +24,9 @@ jobs:
       fail-fast: false
       matrix:
         branch: [main]
-        os: [{ name: Linux, value: ubuntu-latest}]
+        os:
+          - name: Linux
+            value: ubuntu-latest
         include:
           # If we are in a continuous run, test other supported branches
           - branch: ${{ inputs.continuous-run && '25.x' }}
