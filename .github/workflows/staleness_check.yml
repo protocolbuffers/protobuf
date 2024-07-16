@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        branch: [main]
+        branch: main
         os:
           - name: Linux
             value: ubuntu-latest
