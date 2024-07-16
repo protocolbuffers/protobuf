@@ -2803,7 +2803,8 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
       const EnumValueDescriptor* enum_desc =
           field->enum_type()->FindValueByNumber(enum_value);
       if (enum_desc != nullptr) {
-        printer->PrintEnum(enum_value, enum_desc->name(), generator);
+        printer->PrintEnum(enum_value, internal::NameOfEnumAsString(enum_desc),
+                           generator);
       } else {
         // Ordinarily, enum_desc should not be null, because proto2 has the
         // invariant that set enum field values must be in-range, but with the
@@ -2923,7 +2924,7 @@ void TextFormat::Printer::PrintUnknownFields(
       }
       case UnknownField::TYPE_LENGTH_DELIMITED: {
         OutOfLinePrintString(generator, field.number());
-        const std::string& value = field.length_delimited();
+        const absl::string_view value = field.length_delimited();
         // We create a CodedInputStream so that we can adhere to our recursion
         // budget when we attempt to parse the data. UnknownFieldSet parsing is
         // recursive because of groups.

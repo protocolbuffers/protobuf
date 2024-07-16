@@ -6,6 +6,7 @@ load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 
 package(
     default_visibility = [
+        "//:__pkg__",  # "public" targets are alias rules in //.
         "//src/google/protobuf:__subpackages__",
     ],
 )

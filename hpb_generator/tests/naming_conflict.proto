@@ -7,7 +7,7 @@
 
 syntax = "proto3";
 
-package protos_generator.test;
+package hpb_unittest;
 
 message HasChildCount {
   optional HasChildCount has_child_count = 1;

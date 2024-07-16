@@ -5,11 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#import "GPBTestUtilities.h"
-
 #import "GPBCodedInputStream.h"
 #import "GPBMessage_PackagePrivate.h"
+#import "GPBTestUtilities.h"
+#import "GPBUnknownField.h"
 #import "GPBUnknownField_PackagePrivate.h"
+#import "GPBUnknownFields.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
 #import "objectivec/Tests/UnittestMset.pbobjc.h"
 
@@ -195,6 +196,84 @@ const int kUnknownTypeId = 1550055;
   XCTAssertNotNil(unknownField);
   XCTAssertEqual(unknownField.lengthDelimitedList.count, (NSUInteger)1);
   XCTAssertEqualObjects(unknownField.lengthDelimitedList[0], [NSData dataWithBytes:"bar" length:3]);
+}
+
+- (void)testParseMessageSet_FirstValueSticks {
+  MSetRawBreakableMessageSet* raw = [MSetRawBreakableMessageSet message];
+
+  {
+    MSetRawBreakableMessageSet_Item* item = [MSetRawBreakableMessageSet_Item message];
+
+    [item.typeIdArray addValue:[MSetMessageExtension1 messageSetExtension].fieldNumber];
+    MSetMessageExtension1* message1 = [MSetMessageExtension1 message];
+    message1.i = 123;
+    NSData* itemData = [message1 data];
+    [item.messageArray addObject:itemData];
+
+    [item.typeIdArray addValue:[MSetMessageExtension2 messageSetExtension].fieldNumber];
+    MSetMessageExtension2* message2 = [MSetMessageExtension2 message];
+    message2.str = @"foo";
+    itemData = [message2 data];
+    [item.messageArray addObject:itemData];
+
+    [raw.itemArray addObject:item];
+  }
+
+  NSData* data = [raw data];
+
+  // Parse as a MSetMessage and check the contents.
+  NSError* err = nil;
+  MSetMessage* messageSet = [MSetMessage parseFromData:data
+                                     extensionRegistry:[MSetUnittestMsetRoot extensionRegistry]
+                                                 error:&err];
+  XCTAssertNotNil(messageSet);
+  XCTAssertNil(err);
+  XCTAssertTrue([messageSet hasExtension:[MSetMessageExtension1 messageSetExtension]]);
+  XCTAssertEqual([[messageSet getExtension:[MSetMessageExtension1 messageSetExtension]] i], 123);
+  XCTAssertFalse([messageSet hasExtension:[MSetMessageExtension2 messageSetExtension]]);
+  GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] initFromMessage:messageSet] autorelease];
+  XCTAssertTrue(ufs.empty);
+}
+
+- (void)testParseMessageSet_PartialValuesDropped {
+  MSetRawBreakableMessageSet* raw = [MSetRawBreakableMessageSet message];
+
+  {
+    MSetRawBreakableMessageSet_Item* item = [MSetRawBreakableMessageSet_Item message];
+    [item.typeIdArray addValue:[MSetMessageExtension1 messageSetExtension].fieldNumber];
+    // No payload.
+    [raw.itemArray addObject:item];
+  }
+
+  {
+    MSetRawBreakableMessageSet_Item* item = [MSetRawBreakableMessageSet_Item message];
+    // No type ID.
+    MSetMessageExtension2* message = [MSetMessageExtension2 message];
+    message.str = @"foo";
+    NSData* itemData = [message data];
+    [item.messageArray addObject:itemData];
+    [raw.itemArray addObject:item];
+  }
+
+  {
+    MSetRawBreakableMessageSet_Item* item = [MSetRawBreakableMessageSet_Item message];
+    // Neither type ID nor payload.
+    [raw.itemArray addObject:item];
+  }
+
+  NSData* data = [raw data];
+
+  // Parse as a MSetMessage and check the contents.
+  NSError* err = nil;
+  MSetMessage* messageSet = [MSetMessage parseFromData:data
+                                     extensionRegistry:[MSetUnittestMsetRoot extensionRegistry]
+                                                 error:&err];
+  XCTAssertNotNil(messageSet);
+  XCTAssertNil(err);
+  XCTAssertEqual([messageSet extensionsCurrentlySet].count,
+                 (NSUInteger)0);  // None because they were all partial and dropped.
+  GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] initFromMessage:messageSet] autorelease];
+  XCTAssertTrue(ufs.empty);
 }
 
 - (void)assertFieldsInOrder:(NSData*)data {

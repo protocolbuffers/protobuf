@@ -33,10 +33,9 @@ static const Reflection* GetReflectionOrDie(const Message& m) {
   const Reflection* r = m.GetReflection();
   if (r == nullptr) {
     const Descriptor* d = m.GetDescriptor();
-    const std::string& mtype = d ? d->name() : "unknown";
     // RawMessage is one known type for which GetReflection() returns nullptr.
-    ABSL_LOG(FATAL) << "Message does not support reflection (type " << mtype
-                    << ").";
+    ABSL_LOG(FATAL) << "Message does not support reflection (type "
+                    << (d ? d->name() : "unknown") << ").";
   }
   return r;
 }
@@ -389,7 +388,7 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
     for (int i = 0; i < field_count; i++) {
       if (descriptor->field(i)->is_required()) {
         if (!reflection->HasField(message, descriptor->field(i))) {
-          errors->push_back(prefix + descriptor->field(i)->name());
+          errors->push_back(absl::StrCat(prefix, descriptor->field(i)->name()));
         }
       }
     }

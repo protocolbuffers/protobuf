@@ -63,8 +63,7 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   variables_["extendee"] =
       QualifiedClassName(descriptor_->containing_type(), options_);
   variables_["type_traits"] = type_traits_;
-  std::string name = descriptor_->name();
-  variables_["name"] = ResolveKeyword(name);
+  variables_["name"] = ResolveKeyword(descriptor_->name());
   variables_["constant_name"] = FieldConstantName(descriptor_);
   variables_["field_type"] =
       absl::StrCat(static_cast<int>(descriptor_->type()));

@@ -20,9 +20,12 @@
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 
-namespace protos {
-
+namespace hpb {
 using Arena = ::upb::Arena;
+}
+
+namespace protos {
+using hpb::Arena;
 class ExtensionRegistry;
 
 template <typename T>
@@ -266,6 +269,14 @@ template <typename T, typename U = RemovePtrT<T>,
           typename = std::enable_if_t<!std::is_const_v<U>>>
 using PtrOrRaw = T;
 
+template <typename T>
+using EnableIfHpbClass = std::enable_if_t<
+    std::is_base_of<typename T::Access, T>::value &&
+    std::is_base_of<typename T::Access, typename T::ExtendableType>::value>;
+
+template <typename T>
+using EnableIfMutableProto = std::enable_if_t<!std::is_const<T>::value>;
+
 }  // namespace internal
 
 template <typename T>
@@ -335,16 +346,8 @@ class ExtensionRegistry {
   upb_ExtensionRegistry* registry_;
 };
 
-template <typename T>
-using EnableIfProtosClass = std::enable_if_t<
-    std::is_base_of<typename T::Access, T>::value &&
-    std::is_base_of<typename T::Access, typename T::ExtendableType>::value>;
-
-template <typename T>
-using EnableIfMutableProto = std::enable_if_t<!std::is_const<T>::value>;
-
 template <typename T, typename Extendee, typename Extension,
-          typename = EnableIfProtosClass<T>>
+          typename = internal::EnableIfHpbClass<T>>
 ABSL_MUST_USE_RESULT bool HasExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
@@ -353,15 +356,16 @@ ABSL_MUST_USE_RESULT bool HasExtension(
 }
 
 template <typename T, typename Extendee, typename Extension,
-          typename = EnableIfProtosClass<T>>
+          typename = internal::EnableIfHpbClass<T>>
 ABSL_MUST_USE_RESULT bool HasExtension(
     const T* message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
   return HasExtension(protos::Ptr(message), id);
 }
 
-template <typename T, typename Extension, typename = EnableIfProtosClass<T>,
-          typename = EnableIfMutableProto<T>>
+template <typename T, typename Extension,
+          typename = internal::EnableIfHpbClass<T>,
+          typename = internal::EnableIfMutableProto<T>>
 void ClearExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<T, Extension>& id) {
@@ -370,15 +374,17 @@ void ClearExtension(
                              id.mini_table_ext());
 }
 
-template <typename T, typename Extension, typename = EnableIfProtosClass<T>>
+template <typename T, typename Extension,
+          typename = internal::EnableIfHpbClass<T>>
 void ClearExtension(
     T* message,
     const ::protos::internal::ExtensionIdentifier<T, Extension>& id) {
   ClearExtension(::protos::Ptr(message), id);
 }
 
-template <typename T, typename Extension, typename = EnableIfProtosClass<T>,
-          typename = EnableIfMutableProto<T>>
+template <typename T, typename Extension,
+          typename = internal::EnableIfHpbClass<T>,
+          typename = internal::EnableIfMutableProto<T>>
 absl::Status SetExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
@@ -390,8 +396,9 @@ absl::Status SetExtension(
                                           internal::GetInternalMsg(&value));
 }
 
-template <typename T, typename Extension, typename = EnableIfProtosClass<T>,
-          typename = EnableIfMutableProto<T>>
+template <typename T, typename Extension,
+          typename = internal::EnableIfHpbClass<T>,
+          typename = internal::EnableIfMutableProto<T>>
 absl::Status SetExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
@@ -403,8 +410,9 @@ absl::Status SetExtension(
                                           internal::GetInternalMsg(value));
 }
 
-template <typename T, typename Extension, typename = EnableIfProtosClass<T>,
-          typename = EnableIfMutableProto<T>>
+template <typename T, typename Extension,
+          typename = internal::EnableIfHpbClass<T>,
+          typename = internal::EnableIfMutableProto<T>>
 absl::Status SetExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
@@ -418,14 +426,16 @@ absl::Status SetExtension(
       internal::GetInternalMsg(&ext), extension_arena);
 }
 
-template <typename T, typename Extension, typename = EnableIfProtosClass<T>>
+template <typename T, typename Extension,
+          typename = internal::EnableIfHpbClass<T>>
 absl::Status SetExtension(
     T* message, const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
     const Extension& value) {
   return ::protos::SetExtension(::protos::Ptr(message), id, value);
 }
 
-template <typename T, typename Extension, typename = EnableIfProtosClass<T>>
+template <typename T, typename Extension,
+          typename = internal::EnableIfHpbClass<T>>
 absl::Status SetExtension(
     T* message, const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
     Extension&& value) {
@@ -433,7 +443,8 @@ absl::Status SetExtension(
                                 std::forward<Extension>(value));
 }
 
-template <typename T, typename Extension, typename = EnableIfProtosClass<T>>
+template <typename T, typename Extension,
+          typename = internal::EnableIfHpbClass<T>>
 absl::Status SetExtension(
     T* message, const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
     Ptr<Extension> value) {
@@ -441,7 +452,7 @@ absl::Status SetExtension(
 }
 
 template <typename T, typename Extendee, typename Extension,
-          typename = EnableIfProtosClass<T>>
+          typename = internal::EnableIfHpbClass<T>>
 absl::StatusOr<Ptr<const Extension>> GetExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
@@ -459,7 +470,7 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
 }
 
 template <typename T, typename Extendee, typename Extension,
-          typename = EnableIfProtosClass<T>>
+          typename = internal::EnableIfHpbClass<T>>
 absl::StatusOr<Ptr<const Extension>> GetExtension(
     const T* message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {

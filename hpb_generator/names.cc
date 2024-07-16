@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "upb_generator/keywords.h"
 
 namespace google::protobuf::hpb_generator {
@@ -21,11 +22,11 @@ std::string NamespaceFromPackageName(absl::string_view package_name) {
                       "::protos");
 }
 
-std::string DotsToColons(const std::string& name) {
+std::string DotsToColons(const absl::string_view name) {
   return absl::StrReplaceAll(name, {{".", "::"}});
 }
 
-std::string Namespace(const std::string& package) {
+std::string Namespace(const absl::string_view package) {
   if (package.empty()) return "";
   return "::" + DotsToColons(package);
 }

@@ -27,7 +27,7 @@
 #define EXPECT_OK(x) EXPECT_TRUE(x.ok())
 #endif  // EXPECT_OK
 
-namespace protos_generator::test::protos {
+namespace hpb_unittest::protos {
 
 namespace {
 
@@ -121,4 +121,4 @@ TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothEager) {
 }
 
 }  // namespace
-}  // namespace protos_generator::test::protos
+}  // namespace hpb_unittest::protos

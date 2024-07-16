@@ -8,4 +8,7 @@
 #ifndef UPB_PROTOS_PROTOS_INTERNAL_H_
 #define UPB_PROTOS_PROTOS_INTERNAL_H_
 #include "google/protobuf/hpb/internal.h"
+namespace protos::internal {
+using ::hpb::internal::MoveMessage;
+}  // namespace protos::internal
 #endif

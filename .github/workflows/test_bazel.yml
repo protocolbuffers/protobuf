@@ -22,9 +22,7 @@ jobs:
         include:
           - runner: ubuntu
             bazelversion: '6.4.0'
-            bzlmod: true
-          - runner: ubuntu
-            bazelversion: '6.4.0'
+            # Not running Bazel 6 with bzlmod, because it doesn't support use_repo_rule in rules_jvm_external
             bzlmod: false
     runs-on: ${{ matrix.runner }}-latest
     name: Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }}

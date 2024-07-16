@@ -31,6 +31,16 @@ jobs:
             version: '17'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-21efb73c613deddd6db6a0a86f262324a77de13f
             targets: //java/... //java/internal:java_version //compatibility/...
+          - name: Bazel7
+            version: 'bazel7nobzlmod'
+            image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
+            targets: //java/... //java/internal:java_version //compatibility/...
+            flags: --noenable_bzlmod
+          - name: Bazel7 with Bzlmod
+            version: 'bazel7bzlmod'
+            image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
+            targets: //java/... //java/internal:java_version //compatibility/...
+            flags: --enable_bzlmod
           - name: aarch64
             version: 'aarch64'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.1.2-aarch64-5be0f4fde927ca702ed4cebe096bfb632d6d9a36
@@ -49,7 +59,7 @@ jobs:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: java_linux/${{ matrix.version }}
-          bazel: test ${{ matrix.targets }} --test_env=KOKORO_JAVA_VERSION
+          bazel: test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_JAVA_VERSION
 
 # TODO restore this test (or a better one) when gRPC has rebuilt with 26.x
   # linkage-monitor:

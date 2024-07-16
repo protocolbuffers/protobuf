@@ -103,5 +103,6 @@ cc_library(
         ":output",
         "//src/google/protobuf",
         "//upb_generator:keywords",
+        "@com_google_absl//absl/strings:string_view",
     ],
 )

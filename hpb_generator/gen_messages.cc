@@ -254,8 +254,7 @@ void WriteModelPublicDeclaration(
             int options));
         friend upb_Arena* ::protos::internal::GetArena<$0>($0* message);
         friend upb_Arena* ::protos::internal::GetArena<$0>(::protos::Ptr<$0> message);
-        friend $0(::protos::internal::MoveMessage<$0>(upb_Message* msg,
-                                                      upb_Arena* arena));
+        friend $0(::hpb::internal::MoveMessage<$0>(upb_Message* msg, upb_Arena* arena));
       )cc",
       ClassName(descriptor), MessageName(descriptor),
       QualifiedClassName(descriptor));

@@ -95,7 +95,7 @@ void ImmutableMessageLiteGenerator::GenerateInterface(io::Printer* printer) {
       {"deprecation",
        descriptor_->options().deprecated() ? "@java.lang.Deprecated " : ""},
       {"extra_interfaces", ExtraMessageOrBuilderInterfaces(descriptor_)},
-      {"classname", descriptor_->name()},
+      {"classname", std::string(descriptor_->name())},
   };
 
   if (!context_->options().opensource_runtime) {

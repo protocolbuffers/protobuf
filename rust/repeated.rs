@@ -261,6 +261,19 @@ where
     }
 }
 
+impl<'msg, T, I, U> IntoProxied<Repeated<T>> for I
+where
+    I: Iterator<Item = U>,
+    T: 'msg + ProxiedInRepeated,
+    U: IntoProxied<T>,
+{
+    fn into_proxied(self, _private: Private) -> Repeated<T> {
+        let mut repeated: Repeated<T> = Repeated::new();
+        repeated.as_mut().extend(self);
+        repeated
+    }
+}
+
 /// Types that can appear in a `Repeated<T>`.
 ///
 /// This trait is implemented by generated code to communicate how the proxied
@@ -274,18 +287,14 @@ where
 pub unsafe trait ProxiedInRepeated: Proxied {
     /// Constructs a new owned `Repeated` field.
     #[doc(hidden)]
-    fn repeated_new(_private: Private) -> Repeated<Self> {
-        unimplemented!("not required")
-    }
+    fn repeated_new(_private: Private) -> Repeated<Self>;
 
     /// Frees the repeated field in-place, for use in `Drop`.
     ///
     /// # Safety
     /// - After `repeated_free`, no other methods on the input are safe to call.
     #[doc(hidden)]
-    unsafe fn repeated_free(_private: Private, _repeated: &mut Repeated<Self>) {
-        unimplemented!("not required")
-    }
+    unsafe fn repeated_free(_private: Private, _repeated: &mut Repeated<Self>);
 
     /// Gets the length of the repeated field.
     fn repeated_len(repeated: View<Repeated<Self>>) -> usize;
@@ -352,7 +361,7 @@ impl<T: ProxiedInRepeated> Repeated<T> {
         T::repeated_new(Private)
     }
 
-    pub(crate) fn from_inner(inner: InnerRepeated) -> Self {
+    pub fn from_inner(_private: Private, inner: InnerRepeated) -> Self {
         Self { inner, _phantom: PhantomData }
     }
 
@@ -587,5 +596,11 @@ mod tests {
         r.as_mut().extend(&x.as_mut());
 
         assert_that!(r.as_mut(), elements_are![eq(0), eq(1), eq(2), eq(3)]);
+    }
+
+    #[test]
+    fn test_repeated_iter_into_proxied() {
+        let r: Repeated<i32> = [0, 1, 2, 3].into_iter().into_proxied(Private);
+        assert_that!(r.as_view(), elements_are![eq(0), eq(1), eq(2), eq(3)]);
     }
 }

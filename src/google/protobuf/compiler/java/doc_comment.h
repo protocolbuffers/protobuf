@@ -12,6 +12,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_DOC_COMMENT_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_DOC_COMMENT_H__
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
 
@@ -71,7 +72,7 @@ void WriteMethodDocComment(io::Printer* printer, const MethodDescriptor* method,
 
 // Exposed for testing only.
 // Also called by proto1-Java code generator.
-PROTOC_EXPORT std::string EscapeJavadoc(const std::string& input);
+PROTOC_EXPORT std::string EscapeJavadoc(absl::string_view input);
 
 }  // namespace java
 }  // namespace compiler

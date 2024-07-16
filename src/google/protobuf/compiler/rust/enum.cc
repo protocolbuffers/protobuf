@@ -418,6 +418,14 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
       }
 
       unsafe impl $pb$::ProxiedInRepeated for $name$ {
+        fn repeated_new(_private: $pbi$::Private) -> $pb$::Repeated<Self> {
+          $pbr$::new_enum_repeated($pbi$::Private)
+        }
+
+        unsafe fn repeated_free(_private: $pbi$::Private, _f: &mut $pb$::Repeated<Self>) {
+          $pbr$::free_enum_repeated($pbi$::Private, _f)
+        }
+
         fn repeated_len(r: $pb$::View<$pb$::Repeated<Self>>) -> usize {
           $pbr$::cast_enum_repeated_view($pbi$::Private, r).len()
         }

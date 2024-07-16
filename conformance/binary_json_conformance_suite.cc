@@ -1810,7 +1810,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
   const std::string type_name =
       UpperCase(absl::StrCat(".", FieldDescriptor::TypeName(type)));
   const FieldDescriptor* field = GetFieldForType(type, true, Packed::kFalse);
-  std::string field_name = field->name();
+  const absl::string_view field_name = field->name();
 
   std::string message_field =
       absl::StrCat("\"", field_name, "\": [", field_value, "]");

@@ -41,7 +41,7 @@ absl::flat_hash_map<absl::string_view, std::string> EnumVars(
     const EnumValueDescriptor* min, const EnumValueDescriptor* max) {
   auto classname = ClassName(enum_, false);
   return {
-      {"Enum", enum_->name()},
+      {"Enum", std::string(enum_->name())},
       {"Enum_", ResolveKeyword(enum_->name())},
       {"Msg_Enum", classname},
       {"::Msg_Enum", QualifiedClassName(enum_, options)},

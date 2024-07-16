@@ -59,17 +59,17 @@ class Message;
 
 namespace internal {
 
-template <typename T, int kRepHeaderSize>
+template <typename T, int kHeapRepHeaderSize>
 constexpr int RepeatedFieldLowerClampLimit() {
   // The header is padded to be at least `sizeof(T)` when it would be smaller
   // otherwise.
-  static_assert(sizeof(T) <= kRepHeaderSize, "");
+  static_assert(sizeof(T) <= kHeapRepHeaderSize, "");
   // We want to pad the minimum size to be a power of two bytes, including the
   // header.
-  // The first allocation is kRepHeaderSize bytes worth of elements for a total
-  // of 2*kRepHeaderSize bytes.
-  // For an 8-byte header, we allocate 8 bool, 2 ints, or 1 int64.
-  return kRepHeaderSize / sizeof(T);
+  // The first allocation is kHeapRepHeaderSize bytes worth of elements for a
+  // total of 2*kHeapRepHeaderSize bytes. For an 8-byte header, we allocate 8
+  // bool, 2 ints, or 1 int64.
+  return kHeapRepHeaderSize / sizeof(T);
 }
 
 // kRepeatedFieldUpperClampLimit is the lowest signed integer value that
@@ -93,6 +93,23 @@ struct RepeatedFieldDestructorSkippableBase : RepeatedFieldBase {};
 template <typename Element>
 struct RepeatedFieldDestructorSkippableBase<Element, true> : RepeatedFieldBase {
   using DestructorSkippable_ = void;
+};
+
+template <size_t kMinSize>
+struct HeapRep {
+  // Avoid 'implicitly deleted dtor' warnings on certain compilers.
+  ~HeapRep() = delete;
+
+  void* elements() { return this + 1; }
+
+  // Align to 8 as sanitizers are picky on the alignment of containers to start
+  // at 8 byte offsets even when compiling for 32 bit platforms.
+  union {
+    alignas(8) Arena* arena;
+    // We pad the header to be at least `sizeof(Element)` so that we have
+    // power-of-two sized allocations, which enables Arena optimizations.
+    char padding[kMinSize];
+  };
 };
 
 }  // namespace internal
@@ -206,7 +223,12 @@ class RepeatedField final
   void ExtractSubrange(int start, int num, Element* elements);
 
   ABSL_ATTRIBUTE_REINITIALIZES void Clear();
+
+  // Appends the elements from `other` after this instance.
+  // The end result length will be `other.size() + this->size()`.
   void MergeFrom(const RepeatedField& other);
+
+  // Replaces the contents with a copy of the elements from `other`.
   ABSL_ATTRIBUTE_REINITIALIZES void CopyFrom(const RepeatedField& other);
 
   // Replaces the contents with RepeatedField(begin, end).
@@ -295,8 +317,8 @@ class RepeatedField final
   // Note: this can be inaccurate for split default fields so we make this
   // function non-const.
   inline Arena* GetArena() {
-    return (total_size_ == 0) ? static_cast<Arena*>(arena_or_elements_)
-                              : rep()->arena;
+    return Capacity() == 0 ? static_cast<Arena*>(arena_or_elements_)
+                           : heap_rep()->arena;
   }
 
   // For internal use only.
@@ -306,32 +328,24 @@ class RepeatedField final
 
  private:
   using InternalArenaConstructable_ = void;
+  // We use std::max in order to share template instantiations between
+  // different element types.
+  using HeapRep = internal::HeapRep<std::max<size_t>(sizeof(Element), 8)>;
 
   template <typename T>
   friend class Arena::InternalHelper;
 
   friend class Arena;
 
-  // Pad the rep to being max(Arena*, Element) with a minimum align
-  // of 8 as sanitizers are picky on the alignment of containers to
-  // start at 8 byte offsets even when compiling for 32 bit platforms.
-  struct Rep {
-    union {
-      alignas(8) Arena* arena;
-      Element unused;
-    };
-    Element* elements() { return reinterpret_cast<Element*>(this + 1); }
-
-    // Avoid 'implicitly deleted dtor' warnings on certain compilers.
-    ~Rep() = delete;
-  };
-
   static constexpr int kInitialSize = 0;
-  static PROTOBUF_CONSTEXPR const size_t kRepHeaderSize = sizeof(Rep);
+  static PROTOBUF_CONSTEXPR const size_t kHeapRepHeaderSize = sizeof(HeapRep);
 
   RepeatedField(Arena* arena, const RepeatedField& rhs);
   RepeatedField(Arena* arena, RepeatedField&& rhs);
 
+
+  void set_size(int s) { size_ = s; }
+  void set_capacity(int c) { capacity_ = c; }
 
   // Swaps entire contents with "other". Should be called only if the caller can
   // guarantee that both repeated fields are on the same arena or are on the
@@ -373,20 +387,20 @@ class RepeatedField final
   // Reserves space to expand the field to at least the given size.
   // If the array is grown, it will always be at least doubled in size.
   // If `annotate_size` is true (the default), then this function will annotate
-  // the old container from `current_size` to `total_size_` (unpoison memory)
+  // the old container from `old_size` to `capacity_` (unpoison memory)
   // directly before it is being released, and annotate the new container from
-  // `total_size_` to `current_size` (poison unused memory).
-  void Grow(int current_size, int new_size);
-  void GrowNoAnnotate(int current_size, int new_size);
+  // `capacity_` to `old_size` (poison unused memory).
+  void Grow(int old_size, int new_size);
+  void GrowNoAnnotate(int old_size, int new_size);
 
   // Annotates a change in size of this instance. This function should be called
-  // with (total_size, current_size) after new memory has been allocated and
-  // filled from previous memory), and called with (current_size, total_size)
+  // with (capacity, old_size) after new memory has been allocated and
+  // filled from previous memory), and called with (old_size, capacity)
   // right before (previously annotated) memory is released.
   void AnnotateSize(int old_size, int new_size) const {
     if (old_size != new_size) {
       ABSL_ANNOTATE_CONTIGUOUS_CONTAINER(
-          unsafe_elements(), unsafe_elements() + total_size_,
+          unsafe_elements(), unsafe_elements() + Capacity(),
           unsafe_elements() + old_size, unsafe_elements() + new_size);
       if (new_size < old_size) {
         ABSL_ANNOTATE_MEMORY_IS_UNINITIALIZED(
@@ -396,21 +410,21 @@ class RepeatedField final
     }
   }
 
-  // Replaces current_size_ with new_size and returns the previous value of
-  // current_size_. This function is intended to be the only place where
-  // current_size_ is modified, with the exception of `AddInputIterator()`
+  // Replaces size_ with new_size and returns the previous value of
+  // size_. This function is intended to be the only place where
+  // size_ is modified, with the exception of `AddInputIterator()`
   // where the size of added items is not known in advance.
   inline int ExchangeCurrentSize(int new_size) {
-    const int prev_size = current_size_;
+    const int prev_size = size();
     AnnotateSize(prev_size, new_size);
-    current_size_ = new_size;
+    set_size(new_size);
     return prev_size;
   }
 
   // Returns a pointer to elements array.
   // pre-condition: the array must have been allocated.
   Element* elements() const {
-    ABSL_DCHECK_GT(total_size_, 0);
+    ABSL_DCHECK_GT(Capacity(), 0);
     // Because of above pre-condition this cast is safe.
     return unsafe_elements();
   }
@@ -422,28 +436,28 @@ class RepeatedField final
     return static_cast<Element*>(arena_or_elements_);
   }
 
-  // Returns a pointer to the Rep struct.
-  // pre-condition: the Rep must have been allocated, ie elements() is safe.
-  Rep* rep() const {
-    return reinterpret_cast<Rep*>(reinterpret_cast<char*>(elements()) -
-                                  kRepHeaderSize);
+  // Returns a pointer to the HeapRep struct.
+  // pre-condition: the HeapRep must have been allocated, ie elements() is safe.
+  HeapRep* heap_rep() const {
+    return reinterpret_cast<HeapRep*>(reinterpret_cast<char*>(elements()) -
+                                      kHeapRepHeaderSize);
   }
 
   // Internal helper to delete all elements and deallocate the storage.
   template <bool in_destructor = false>
   void InternalDeallocate() {
-    const size_t bytes = total_size_ * sizeof(Element) + kRepHeaderSize;
-    if (rep()->arena == nullptr) {
-      internal::SizedDelete(rep(), bytes);
+    const size_t bytes = Capacity() * sizeof(Element) + kHeapRepHeaderSize;
+    if (heap_rep()->arena == nullptr) {
+      internal::SizedDelete(heap_rep(), bytes);
     } else if (!in_destructor) {
       // If we are in the destructor, we might be being destroyed as part of
       // the arena teardown. We can't try and return blocks to the arena then.
-      rep()->arena->ReturnArrayMemory(rep(), bytes);
+      heap_rep()->arena->ReturnArrayMemory(heap_rep(), bytes);
     }
   }
 
   // A note on the representation here (see also comment below for
-  // RepeatedPtrFieldBase's struct Rep):
+  // RepeatedPtrFieldBase's struct HeapRep):
   //
   // We maintain the same sizeof(RepeatedField) as before we added arena support
   // so that we do not degrade performance by bloating memory usage. Directly
@@ -452,11 +466,12 @@ class RepeatedField final
   // empty (common case), and add only an 8-byte header to the elements array
   // when non-empty. We make sure to place the size fields directly in the
   // RepeatedField class to avoid costly cache misses due to the indirection.
-  int current_size_;
-  int total_size_;
-  // If total_size_ == 0 this points to an Arena otherwise it points to the
-  // elements member of a Rep struct. Using this invariant allows the storage of
-  // the arena pointer without an extra allocation in the constructor.
+  int size_;
+  int capacity_;
+  // If capacity_ == 0 this points to an Arena otherwise it points to the
+  // elements member of a HeapRep struct. Using this invariant allows the
+  // storage of the arena pointer without an extra allocation in the
+  // constructor.
   void* arena_or_elements_;
 };
 
@@ -464,22 +479,22 @@ class RepeatedField final
 
 template <typename Element>
 constexpr RepeatedField<Element>::RepeatedField()
-    : current_size_(0), total_size_(0), arena_or_elements_(nullptr) {
+    : size_(0), capacity_(0), arena_or_elements_(nullptr) {
   StaticValidityCheck();
 }
 
 template <typename Element>
 inline RepeatedField<Element>::RepeatedField(Arena* arena)
-    : current_size_(0), total_size_(0), arena_or_elements_(arena) {
+    : size_(0), capacity_(0), arena_or_elements_(arena) {
   StaticValidityCheck();
 }
 
 template <typename Element>
 inline RepeatedField<Element>::RepeatedField(Arena* arena,
                                              const RepeatedField& rhs)
-    : current_size_(0), total_size_(0), arena_or_elements_(arena) {
+    : size_(0), capacity_(0), arena_or_elements_(arena) {
   StaticValidityCheck();
-  if (auto size = rhs.current_size_) {
+  if (auto size = rhs.size()) {
     Grow(0, size);
     ExchangeCurrentSize(size);
     UninitializedCopyN(rhs.elements(), size, unsafe_elements());
@@ -489,7 +504,7 @@ inline RepeatedField<Element>::RepeatedField(Arena* arena,
 template <typename Element>
 template <typename Iter, typename>
 RepeatedField<Element>::RepeatedField(Iter begin, Iter end)
-    : current_size_(0), total_size_(0), arena_or_elements_(nullptr) {
+    : size_(0), capacity_(0), arena_or_elements_(nullptr) {
   StaticValidityCheck();
   Add(begin, end);
 }
@@ -503,8 +518,8 @@ RepeatedField<Element>::~RepeatedField() {
   auto arena = GetArena();
   if (arena) (void)arena->SpaceAllocated();
 #endif
-  if (total_size_ > 0) {
-    Destroy(unsafe_elements(), unsafe_elements() + current_size_);
+  if (Capacity() > 0) {
+    Destroy(unsafe_elements(), unsafe_elements() + size());
     InternalDeallocate<true>();
   }
 }
@@ -553,42 +568,41 @@ inline RepeatedField<Element>& RepeatedField<Element>::operator=(
 
 template <typename Element>
 inline bool RepeatedField<Element>::empty() const {
-  return current_size_ == 0;
+  return size() == 0;
 }
 
 template <typename Element>
 inline int RepeatedField<Element>::size() const {
-  return current_size_;
+  return size_;
 }
 
 template <typename Element>
 inline int RepeatedField<Element>::Capacity() const {
-  return total_size_;
+  return capacity_;
 }
 
 template <typename Element>
 inline void RepeatedField<Element>::AddAlreadyReserved(Element value) {
-  ABSL_DCHECK_LT(current_size_, total_size_);
-  void* p = elements() + ExchangeCurrentSize(current_size_ + 1);
+  ABSL_DCHECK_LT(size(), Capacity());
+  void* p = elements() + ExchangeCurrentSize(size() + 1);
   ::new (p) Element(std::move(value));
 }
 
 template <typename Element>
 inline Element* RepeatedField<Element>::AddAlreadyReserved()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  ABSL_DCHECK_LT(current_size_, total_size_);
+  ABSL_DCHECK_LT(size(), Capacity());
   // new (p) <TrivialType> compiles into nothing: this is intentional as this
   // function is documented to return uninitialized data for trivial types.
-  void* p = elements() + ExchangeCurrentSize(current_size_ + 1);
+  void* p = elements() + ExchangeCurrentSize(size() + 1);
   return ::new (p) Element;
 }
 
 template <typename Element>
 inline Element* RepeatedField<Element>::AddNAlreadyReserved(int n)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  ABSL_DCHECK_GE(total_size_ - current_size_, n)
-      << total_size_ << ", " << current_size_;
-  Element* p = unsafe_elements() + ExchangeCurrentSize(current_size_ + n);
+  ABSL_DCHECK_GE(Capacity() - size(), n) << Capacity() << ", " << size();
+  Element* p = unsafe_elements() + ExchangeCurrentSize(size() + n);
   for (Element *begin = p, *end = p + n; begin != end; ++begin) {
     new (static_cast<void*>(begin)) Element;
   }
@@ -598,12 +612,12 @@ inline Element* RepeatedField<Element>::AddNAlreadyReserved(int n)
 template <typename Element>
 inline void RepeatedField<Element>::Resize(int new_size, const Element& value) {
   ABSL_DCHECK_GE(new_size, 0);
-  if (new_size > current_size_) {
-    if (new_size > total_size_) Grow(current_size_, new_size);
+  if (new_size > size()) {
+    if (new_size > Capacity()) Grow(size(), new_size);
     Element* first = elements() + ExchangeCurrentSize(new_size);
-    std::uninitialized_fill(first, elements() + current_size_, value);
-  } else if (new_size < current_size_) {
-    Destroy(unsafe_elements() + new_size, unsafe_elements() + current_size_);
+    std::uninitialized_fill(first, elements() + size(), value);
+  } else if (new_size < size()) {
+    Destroy(unsafe_elements() + new_size, unsafe_elements() + size());
     ExchangeCurrentSize(new_size);
   }
 }
@@ -612,7 +626,7 @@ template <typename Element>
 inline const Element& RepeatedField<Element>::Get(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ABSL_DCHECK_GE(index, 0);
-  ABSL_DCHECK_LT(index, current_size_);
+  ABSL_DCHECK_LT(index, size());
   return elements()[index];
 }
 
@@ -620,7 +634,7 @@ template <typename Element>
 inline const Element& RepeatedField<Element>::at(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ABSL_CHECK_GE(index, 0);
-  ABSL_CHECK_LT(index, current_size_);
+  ABSL_CHECK_LT(index, size());
   return elements()[index];
 }
 
@@ -628,7 +642,7 @@ template <typename Element>
 inline Element& RepeatedField<Element>::at(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ABSL_CHECK_GE(index, 0);
-  ABSL_CHECK_LT(index, current_size_);
+  ABSL_CHECK_LT(index, size());
   return elements()[index];
 }
 
@@ -636,85 +650,85 @@ template <typename Element>
 inline Element* RepeatedField<Element>::Mutable(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ABSL_DCHECK_GE(index, 0);
-  ABSL_DCHECK_LT(index, current_size_);
+  ABSL_DCHECK_LT(index, size());
   return &elements()[index];
 }
 
 template <typename Element>
 inline void RepeatedField<Element>::Set(int index, const Element& value) {
   ABSL_DCHECK_GE(index, 0);
-  ABSL_DCHECK_LT(index, current_size_);
+  ABSL_DCHECK_LT(index, size());
   elements()[index] = value;
 }
 
 template <typename Element>
 inline void RepeatedField<Element>::Add(Element value) {
-  int total_size = total_size_;
+  int capacity = Capacity();
   Element* elem = unsafe_elements();
-  if (ABSL_PREDICT_FALSE(current_size_ == total_size)) {
-    Grow(current_size_, current_size_ + 1);
-    total_size = total_size_;
+  if (ABSL_PREDICT_FALSE(size() == capacity)) {
+    Grow(size(), size() + 1);
+    capacity = Capacity();
     elem = unsafe_elements();
   }
-  int new_size = current_size_ + 1;
+  int new_size = size() + 1;
   void* p = elem + ExchangeCurrentSize(new_size);
   ::new (p) Element(std::move(value));
 
   // The below helps the compiler optimize dense loops.
-  ABSL_ASSUME(new_size == current_size_);
+  ABSL_ASSUME(new_size == size_);
   ABSL_ASSUME(elem == arena_or_elements_);
-  ABSL_ASSUME(total_size == total_size_);
+  ABSL_ASSUME(capacity == capacity_);
 }
 
 template <typename Element>
 inline Element* RepeatedField<Element>::Add() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  if (ABSL_PREDICT_FALSE(current_size_ == total_size_)) {
-    Grow(current_size_, current_size_ + 1);
+  if (ABSL_PREDICT_FALSE(size() == Capacity())) {
+    Grow(size(), size() + 1);
   }
-  void* p = unsafe_elements() + ExchangeCurrentSize(current_size_ + 1);
+  void* p = unsafe_elements() + ExchangeCurrentSize(size() + 1);
   return ::new (p) Element;
 }
 
 template <typename Element>
 template <typename Iter>
 inline void RepeatedField<Element>::AddForwardIterator(Iter begin, Iter end) {
-  int total_size = total_size_;
+  int capacity = Capacity();
   Element* elem = unsafe_elements();
-  int new_size = current_size_ + static_cast<int>(std::distance(begin, end));
-  if (ABSL_PREDICT_FALSE(new_size > total_size)) {
-    Grow(current_size_, new_size);
+  int new_size = size() + static_cast<int>(std::distance(begin, end));
+  if (ABSL_PREDICT_FALSE(new_size > capacity)) {
+    Grow(size(), new_size);
     elem = unsafe_elements();
-    total_size = total_size_;
+    capacity = Capacity();
   }
   UninitializedCopy(begin, end, elem + ExchangeCurrentSize(new_size));
 
   // The below helps the compiler optimize dense loops.
-  ABSL_ASSUME(new_size == current_size_);
+  ABSL_ASSUME(new_size == size_);
   ABSL_ASSUME(elem == arena_or_elements_);
-  ABSL_ASSUME(total_size == total_size_);
+  ABSL_ASSUME(capacity == capacity_);
 }
 
 template <typename Element>
 template <typename Iter>
 inline void RepeatedField<Element>::AddInputIterator(Iter begin, Iter end) {
-  Element* first = unsafe_elements() + current_size_;
-  Element* last = unsafe_elements() + total_size_;
-  AnnotateSize(current_size_, total_size_);
+  Element* first = unsafe_elements() + size();
+  Element* last = unsafe_elements() + Capacity();
+  AnnotateSize(size(), Capacity());
 
   while (begin != end) {
     if (ABSL_PREDICT_FALSE(first == last)) {
-      int current_size = first - unsafe_elements();
-      GrowNoAnnotate(current_size, current_size + 1);
-      first = unsafe_elements() + current_size;
-      last = unsafe_elements() + total_size_;
+      int size = first - unsafe_elements();
+      GrowNoAnnotate(size, size + 1);
+      first = unsafe_elements() + size;
+      last = unsafe_elements() + Capacity();
     }
     ::new (static_cast<void*>(first)) Element(*begin);
     ++begin;
     ++first;
   }
 
-  current_size_ = first - unsafe_elements();
-  AnnotateSize(total_size_, current_size_);
+  set_size(first - unsafe_elements());
+  AnnotateSize(Capacity(), size());
 }
 
 template <typename Element>
@@ -731,9 +745,9 @@ inline void RepeatedField<Element>::Add(Iter begin, Iter end) {
 
 template <typename Element>
 inline void RepeatedField<Element>::RemoveLast() {
-  ABSL_DCHECK_GT(current_size_, 0);
-  elements()[current_size_ - 1].~Element();
-  ExchangeCurrentSize(current_size_ - 1);
+  ABSL_DCHECK_GT(size(), 0);
+  elements()[size() - 1].~Element();
+  ExchangeCurrentSize(size() - 1);
 }
 
 template <typename Element>
@@ -741,33 +755,32 @@ void RepeatedField<Element>::ExtractSubrange(int start, int num,
                                              Element* elements) {
   ABSL_DCHECK_GE(start, 0);
   ABSL_DCHECK_GE(num, 0);
-  ABSL_DCHECK_LE(start + num, this->current_size_);
+  ABSL_DCHECK_LE(start + num, size());
 
   // Save the values of the removed elements if requested.
   if (elements != nullptr) {
-    for (int i = 0; i < num; ++i) elements[i] = this->Get(i + start);
+    for (int i = 0; i < num; ++i) elements[i] = Get(i + start);
   }
 
   // Slide remaining elements down to fill the gap.
   if (num > 0) {
-    for (int i = start + num; i < this->current_size_; ++i)
-      this->Set(i - num, this->Get(i));
-    this->Truncate(this->current_size_ - num);
+    for (int i = start + num; i < size(); ++i) Set(i - num, Get(i));
+    Truncate(size() - num);
   }
 }
 
 template <typename Element>
 inline void RepeatedField<Element>::Clear() {
-  Destroy(unsafe_elements(), unsafe_elements() + current_size_);
+  Destroy(unsafe_elements(), unsafe_elements() + size());
   ExchangeCurrentSize(0);
 }
 
 template <typename Element>
 inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
   ABSL_DCHECK_NE(&other, this);
-  if (auto size = other.current_size_) {
-    Reserve(current_size_ + size);
-    Element* dst = elements() + ExchangeCurrentSize(current_size_ + size);
+  if (auto size = other.size()) {
+    Reserve(this->size() + size);
+    Element* dst = elements() + ExchangeCurrentSize(this->size() + size);
     UninitializedCopyN(other.elements(), size, dst);
   }
 }
@@ -822,7 +835,7 @@ inline void RepeatedField<Element>::InternalSwap(
   // Swap all fields at once.
   static_assert(std::is_standard_layout<RepeatedField<Element>>::value,
                 "offsetof() requires standard layout before c++17");
-  static constexpr size_t kOffset = offsetof(RepeatedField, current_size_);
+  static constexpr size_t kOffset = offsetof(RepeatedField, size_);
   internal::memswap<offsetof(RepeatedField, arena_or_elements_) +
                     sizeof(this->arena_or_elements_) - kOffset>(
       reinterpret_cast<char*>(this) + kOffset,
@@ -877,102 +890,105 @@ RepeatedField<Element>::cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
 template <typename Element>
 inline typename RepeatedField<Element>::iterator RepeatedField<Element>::end()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return iterator(unsafe_elements() + current_size_);
+  return iterator(unsafe_elements() + size());
 }
 template <typename Element>
 inline typename RepeatedField<Element>::const_iterator
 RepeatedField<Element>::end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return const_iterator(unsafe_elements() + current_size_);
+  return const_iterator(unsafe_elements() + size());
 }
 template <typename Element>
 inline typename RepeatedField<Element>::const_iterator
 RepeatedField<Element>::cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return const_iterator(unsafe_elements() + current_size_);
+  return const_iterator(unsafe_elements() + size());
 }
 
 template <typename Element>
 inline size_t RepeatedField<Element>::SpaceUsedExcludingSelfLong() const {
-  return total_size_ > 0 ? (total_size_ * sizeof(Element) + kRepHeaderSize) : 0;
+  return Capacity() > 0 ? (Capacity() * sizeof(Element) + kHeapRepHeaderSize)
+                        : 0;
 }
 
 namespace internal {
-// Returns the new size for a reserved field based on its 'total_size' and the
+// Returns the new size for a reserved field based on its 'capacity' and the
 // requested 'new_size'. The result is clamped to the closed interval:
 //   [internal::kMinRepeatedFieldAllocationSize,
 //    std::numeric_limits<int>::max()]
 // Requires:
-//     new_size > total_size &&
-//     (total_size == 0 ||
-//      total_size >= kRepeatedFieldLowerClampLimit)
-template <typename T, int kRepHeaderSize>
-inline int CalculateReserveSize(int total_size, int new_size) {
-  constexpr int lower_limit = RepeatedFieldLowerClampLimit<T, kRepHeaderSize>();
+//     new_size > capacity &&
+//     (capacity == 0 ||
+//      capacity >= kRepeatedFieldLowerClampLimit)
+template <typename T, int kHeapRepHeaderSize>
+inline int CalculateReserveSize(int capacity, int new_size) {
+  constexpr int lower_limit =
+      RepeatedFieldLowerClampLimit<T, kHeapRepHeaderSize>();
   if (new_size < lower_limit) {
     // Clamp to smallest allowed size.
     return lower_limit;
   }
   constexpr int kMaxSizeBeforeClamp =
-      (std::numeric_limits<int>::max() - kRepHeaderSize) / 2;
-  if (PROTOBUF_PREDICT_FALSE(total_size > kMaxSizeBeforeClamp)) {
+      (std::numeric_limits<int>::max() - kHeapRepHeaderSize) / 2;
+  if (PROTOBUF_PREDICT_FALSE(capacity > kMaxSizeBeforeClamp)) {
     return std::numeric_limits<int>::max();
   }
   // We want to double the number of bytes, not the number of elements, to try
   // to stay within power-of-two allocations.
-  // The allocation has kRepHeaderSize + sizeof(T) * capacity.
-  int doubled_size = 2 * total_size + kRepHeaderSize / sizeof(T);
+  // The allocation has kHeapRepHeaderSize + sizeof(T) * capacity.
+  int doubled_size = 2 * capacity + kHeapRepHeaderSize / sizeof(T);
   return std::max(doubled_size, new_size);
 }
 }  // namespace internal
 
 template <typename Element>
 void RepeatedField<Element>::Reserve(int new_size) {
-  if (ABSL_PREDICT_FALSE(new_size > total_size_)) {
-    Grow(current_size_, new_size);
+  if (ABSL_PREDICT_FALSE(new_size > Capacity())) {
+    Grow(size(), new_size);
   }
 }
 
 // Avoid inlining of Reserve(): new, copy, and delete[] lead to a significant
 // amount of code bloat.
 template <typename Element>
-PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int current_size,
+PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int old_size,
                                                               int new_size) {
-  ABSL_DCHECK_GT(new_size, total_size_);
-  Rep* new_rep;
+  ABSL_DCHECK_GT(new_size, Capacity());
+  HeapRep* new_rep;
   Arena* arena = GetArena();
 
-  new_size = internal::CalculateReserveSize<Element, kRepHeaderSize>(
-      total_size_, new_size);
+  new_size = internal::CalculateReserveSize<Element, kHeapRepHeaderSize>(
+      Capacity(), new_size);
 
-  ABSL_DCHECK_LE(
-      static_cast<size_t>(new_size),
-      (std::numeric_limits<size_t>::max() - kRepHeaderSize) / sizeof(Element))
+  ABSL_DCHECK_LE(static_cast<size_t>(new_size),
+                 (std::numeric_limits<size_t>::max() - kHeapRepHeaderSize) /
+                     sizeof(Element))
       << "Requested size is too large to fit into size_t.";
   size_t bytes =
-      kRepHeaderSize + sizeof(Element) * static_cast<size_t>(new_size);
+      kHeapRepHeaderSize + sizeof(Element) * static_cast<size_t>(new_size);
   if (arena == nullptr) {
-    ABSL_DCHECK_LE((bytes - kRepHeaderSize) / sizeof(Element),
+    ABSL_DCHECK_LE((bytes - kHeapRepHeaderSize) / sizeof(Element),
                    static_cast<size_t>(std::numeric_limits<int>::max()))
         << "Requested size is too large to fit element count into int.";
     internal::SizedPtr res = internal::AllocateAtLeast(bytes);
     size_t num_available =
-        std::min((res.n - kRepHeaderSize) / sizeof(Element),
+        std::min((res.n - kHeapRepHeaderSize) / sizeof(Element),
                  static_cast<size_t>(std::numeric_limits<int>::max()));
     new_size = static_cast<int>(num_available);
-    new_rep = static_cast<Rep*>(res.p);
+    new_rep = static_cast<HeapRep*>(res.p);
   } else {
-    new_rep = reinterpret_cast<Rep*>(Arena::CreateArray<char>(arena, bytes));
+    new_rep =
+        reinterpret_cast<HeapRep*>(Arena::CreateArray<char>(arena, bytes));
   }
   new_rep->arena = arena;
 
-  if (total_size_ > 0) {
-    if (current_size > 0) {
-      Element* pnew = new_rep->elements();
+  if (Capacity() > 0) {
+    if (old_size > 0) {
+      Element* pnew = static_cast<Element*>(new_rep->elements());
       Element* pold = elements();
       // TODO: add absl::is_trivially_relocatable<Element>
       if (std::is_trivial<Element>::value) {
-        memcpy(static_cast<void*>(pnew), pold, current_size * sizeof(Element));
+        memcpy(static_cast<void*>(pnew), pold, old_size * sizeof(Element));
       } else {
-        for (Element* end = pnew + current_size; pnew != end; ++pnew, ++pold) {
+        for (Element* end = pnew + old_size; pnew != end; ++pnew, ++pold) {
           ::new (static_cast<void*>(pnew)) Element(std::move(*pold));
           pold->~Element();
         }
@@ -981,8 +997,8 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int current_size,
     InternalDeallocate();
   }
 
-  total_size_ = new_size;
-  arena_or_elements_ = new_rep->elements();
+  set_capacity(new_size);
+  arena_or_elements_ = static_cast<Element*>(new_rep->elements());
 }
 
 // Ideally we would be able to use:
@@ -991,18 +1007,18 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(int current_size,
 // However, as explained in b/266411038#comment9, this causes issues
 // in shared libraries for Youtube (and possibly elsewhere).
 template <typename Element>
-PROTOBUF_NOINLINE void RepeatedField<Element>::Grow(int current_size,
+PROTOBUF_NOINLINE void RepeatedField<Element>::Grow(int old_size,
                                                     int new_size) {
-  AnnotateSize(current_size, total_size_);
-  GrowNoAnnotate(current_size, new_size);
-  AnnotateSize(total_size_, current_size);
+  AnnotateSize(old_size, Capacity());
+  GrowNoAnnotate(old_size, new_size);
+  AnnotateSize(Capacity(), old_size);
 }
 
 template <typename Element>
 inline void RepeatedField<Element>::Truncate(int new_size) {
-  ABSL_DCHECK_LE(new_size, current_size_);
-  if (new_size < current_size_) {
-    Destroy(unsafe_elements() + new_size, unsafe_elements() + current_size_);
+  ABSL_DCHECK_LE(new_size, size());
+  if (new_size < size()) {
+    Destroy(unsafe_elements() + new_size, unsafe_elements() + size());
     ExchangeCurrentSize(new_size);
   }
 }

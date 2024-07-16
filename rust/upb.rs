@@ -189,6 +189,12 @@ impl InnerRepeated {
     pub fn arena(&self) -> &Arena {
         &self.arena
     }
+
+    /// # Safety
+    /// - `raw` must be a valid `RawRepeatedField`
+    pub unsafe fn from_raw_parts(_: Private, raw: RawRepeatedField, arena: Arena) -> Self {
+        Self { raw, arena }
+    }
 }
 
 /// The raw type-erased pointer version of `RepeatedMut`.
@@ -211,10 +217,10 @@ macro_rules! impl_repeated_base {
         #[inline]
         fn repeated_new(_: Private) -> Repeated<$t> {
             let arena = Arena::new();
-            Repeated::from_inner(InnerRepeated {
-                raw: unsafe { upb_Array_New(arena.raw(), $upb_tag) },
-                arena,
-            })
+            Repeated::from_inner(
+                Private,
+                InnerRepeated { raw: unsafe { upb_Array_New(arena.raw(), $upb_tag) }, arena },
+            )
         }
         #[allow(dead_code)]
         unsafe fn repeated_free(_: Private, _f: &mut Repeated<$t>) {
@@ -436,6 +442,24 @@ pub fn reserve_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
 ) {
     let int_repeated = cast_enum_repeated_mut(private, repeated);
     ProxiedInRepeated::repeated_reserve(int_repeated, additional);
+}
+
+pub fn new_enum_repeated<E: Enum + ProxiedInRepeated>(_: Private) -> Repeated<E> {
+    let arena = Arena::new();
+    // SAFETY:
+    // - `upb_Array_New` is unsafe but assumed to be sound when called on a valid
+    //   arena.
+    unsafe {
+        let raw = upb_Array_New(arena.raw(), upb::CType::Int32);
+        Repeated::from_inner(Private, InnerRepeated::from_raw_parts(Private, raw, arena))
+    }
+}
+
+pub fn free_enum_repeated<E: Enum + ProxiedInRepeated>(
+    _private: Private,
+    _repeated: &mut Repeated<E>,
+) {
+    // No-op: the memory will be dropped by the arena.
 }
 
 /// Returns a static empty RepeatedView.

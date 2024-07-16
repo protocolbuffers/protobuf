@@ -11,7 +11,7 @@
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
 
-namespace protos::internal {
+namespace hpb::internal {
 
 // Moves ownership of a message created in a source arena.
 //
@@ -21,5 +21,5 @@ T MoveMessage(upb_Message* msg, upb_Arena* arena) {
   return T(msg, arena);
 }
 
-}  // namespace protos::internal
+}  // namespace hpb::internal
 #endif

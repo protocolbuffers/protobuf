@@ -184,6 +184,8 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
               {"parse_thunk", ThunkName(ctx, msg, "parse")},
               {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
               {"merge_from_thunk", ThunkName(ctx, msg, "merge_from")},
+              {"repeated_new_thunk", ThunkName(ctx, msg, "repeated_new")},
+              {"repeated_free_thunk", ThunkName(ctx, msg, "repeated_free")},
               {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
               {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
               {"repeated_get_mut_thunk",
@@ -202,6 +204,8 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
           fn $parse_thunk$(raw_msg: $pbr$::RawMessage, data: $pbr$::SerializedData) -> bool;
           fn $copy_from_thunk$(dst: $pbr$::RawMessage, src: $pbr$::RawMessage);
           fn $merge_from_thunk$(dst: $pbr$::RawMessage, src: $pbr$::RawMessage);
+          fn $repeated_new_thunk$() -> $pbr$::RawRepeatedField;
+          fn $repeated_free_thunk$(raw: $pbr$::RawRepeatedField);
           fn $repeated_len_thunk$(raw: $pbr$::RawRepeatedField) -> usize;
           fn $repeated_add_thunk$(raw: $pbr$::RawRepeatedField) -> $pbr$::RawMessage;
           fn $repeated_get_thunk$(raw: $pbr$::RawRepeatedField, index: usize) -> $pbr$::RawMessage;
@@ -363,6 +367,8 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
               {"repeated_get_mut_thunk",
                ThunkName(ctx, msg, "repeated_get_mut")},
               {"repeated_add_thunk", ThunkName(ctx, msg, "repeated_add")},
+              {"repeated_new_thunk", ThunkName(ctx, msg, "repeated_new")},
+              {"repeated_free_thunk", ThunkName(ctx, msg, "repeated_free")},
               {"repeated_clear_thunk", ThunkName(ctx, msg, "repeated_clear")},
               {"repeated_copy_from_thunk",
                ThunkName(ctx, msg, "repeated_copy_from")},
@@ -371,6 +377,24 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
           },
           R"rs(
         unsafe impl $pb$::ProxiedInRepeated for $Msg$ {
+          fn repeated_new(_private: $pbi$::Private) -> $pb$::Repeated<Self> {
+            // SAFETY:
+            // - The thunk returns an unaliased and valid `RepeatedPtrField*`
+            unsafe {
+              $pb$::Repeated::from_inner($pbi$::Private,
+                $pbr$::InnerRepeated::from_raw($pbi$::Private,
+                  $repeated_new_thunk$()
+                )
+              )
+            }
+          }
+
+          unsafe fn repeated_free(_private: $pbi$::Private, f: &mut $pb$::Repeated<Self>) {
+            // SAFETY
+            // - `f.raw()` is a valid `RepeatedPtrField*`.
+            unsafe { $repeated_free_thunk$(f.as_view().as_raw($pbi$::Private)) }
+          }
+
           fn repeated_len(f: $pb$::View<$pb$::Repeated<Self>>) -> usize {
             // SAFETY: `f.as_raw()` is a valid `RepeatedPtrField*`.
             unsafe { $repeated_len_thunk$(f.as_raw($pbi$::Private)) }
@@ -450,6 +474,21 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
           },
           R"rs(
         unsafe impl $pb$::ProxiedInRepeated for $Msg$ {
+          fn repeated_new(_private: $pbi$::Private) -> $pb$::Repeated<Self> {
+            let arena = $pbr$::Arena::new();
+            unsafe {
+              $pb$::Repeated::from_inner($pbi$::Private, $pbr$::InnerRepeated::from_raw_parts(
+                  $pbi$::Private,
+                  $pbr$::upb_Array_New(arena.raw(), $pbr$::CType::Message),
+                  arena,
+              ))
+            }
+          }
+
+          unsafe fn repeated_free(_private: $pbi$::Private, _f: &mut $pb$::Repeated<Self>) {
+            // No-op: the memory will be dropped by the arena.
+          }
+
           fn repeated_len(f: $pb$::View<$pb$::Repeated<Self>>) -> usize {
             // SAFETY: `f.as_raw()` is a valid `upb_Array*`.
             unsafe { $pbr$::upb_Array_Size(f.as_raw($pbi$::Private)) }
@@ -1215,6 +1254,8 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
        {"parse_thunk", ThunkName(ctx, msg, "parse")},
        {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
        {"merge_from_thunk", ThunkName(ctx, msg, "merge_from")},
+       {"repeated_new_thunk", ThunkName(ctx, msg, "repeated_new")},
+       {"repeated_free_thunk", ThunkName(ctx, msg, "repeated_free")},
        {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
        {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
        {"repeated_get_mut_thunk", ThunkName(ctx, msg, "repeated_get_mut")},
@@ -1265,6 +1306,14 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
 
         void $merge_from_thunk$($QualifiedMsg$* dst, const $QualifiedMsg$* src) {
           dst->MergeFrom(*src);
+        }
+
+        void* $repeated_new_thunk$() {
+          return new google::protobuf::RepeatedPtrField<$QualifiedMsg$>();
+        }
+
+        void $repeated_free_thunk$(void* ptr) {
+          delete static_cast<google::protobuf::RepeatedPtrField<$QualifiedMsg$>*>(ptr);
         }
 
         size_t $repeated_len_thunk$(google::protobuf::RepeatedPtrField<$QualifiedMsg$>* field) {

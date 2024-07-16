@@ -371,6 +371,13 @@ impl InnerRepeated {
     pub fn raw(&self) -> RawRepeatedField {
         self.raw
     }
+
+    /// # Safety
+    /// - `raw` must be a valid `proto2::RepeatedField*` or
+    ///   `proto2::RepeatedPtrField*`.
+    pub unsafe fn from_raw(_: Private, raw: RawRepeatedField) -> Self {
+        Self { raw }
+    }
 }
 
 /// The raw type-erased pointer version of `RepeatedMut`.
@@ -480,7 +487,7 @@ macro_rules! impl_repeated_primitives {
                 #[allow(dead_code)]
                 #[inline]
                 fn repeated_new(_: Private) -> Repeated<$t> {
-                    Repeated::from_inner(InnerRepeated {
+                    Repeated::from_inner(Private, InnerRepeated {
                         raw: unsafe { $new_thunk() }
                     })
                 }
@@ -579,6 +586,30 @@ pub fn reserve_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
 ) {
     let int_repeated = cast_enum_repeated_mut(private, repeated);
     ProxiedInRepeated::repeated_reserve(int_repeated, additional);
+}
+
+pub fn new_enum_repeated<E: Enum + ProxiedInRepeated>(_: Private) -> Repeated<E> {
+    let int_repeated = Repeated::<c_int>::new();
+    let raw = int_repeated.inner.raw();
+    std::mem::forget(int_repeated);
+    unsafe { Repeated::from_inner(Private, InnerRepeated::from_raw(Private, raw)) }
+}
+
+/// Cast a `RepeatedMut<SomeEnum>` to `RepeatedMut<c_int>` and call
+/// repeated_free.
+/// # Safety
+/// - The passed in `&mut Repeated<E>` must not be used after this function is
+///   called.
+pub unsafe fn free_enum_repeated<E: Enum + ProxiedInRepeated>(
+    _: Private,
+    repeated: &mut Repeated<E>,
+) {
+    unsafe {
+        let mut int_r: Repeated<c_int> =
+            Repeated::from_inner(Private, InnerRepeated::from_raw(Private, repeated.inner.raw()));
+        ProxiedInRepeated::repeated_free(Private, &mut int_r);
+        std::mem::forget(int_r);
+    }
 }
 
 #[derive(Debug)]

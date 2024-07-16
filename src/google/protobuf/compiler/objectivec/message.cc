@@ -133,7 +133,7 @@ struct ExtensionRangeOrdering {
 
 // This is a reduced case of Descriptor::ExtensionRange with just start and end.
 struct SimpleExtensionRange {
-  SimpleExtensionRange(int start, int end) : start(start), end(end){};
+  SimpleExtensionRange(int start, int end) : start(start), end(end) {};
   int start;  // inclusive
   int end;    // exclusive
 
@@ -202,8 +202,12 @@ MessageGenerator::MessageGenerator(const std::string& file_description_name,
       class_name_(ClassName(descriptor_)),
       deprecated_attribute_(
           GetOptionalDeprecatedAttribute(descriptor, descriptor->file())) {
-  ABSL_DCHECK(!descriptor->options().map_entry())
+  ABSL_CHECK(!descriptor->options().map_entry())
       << "error: MessageGenerator create of a map<>!";
+  ABSL_CHECK(!descriptor->options().message_set_wire_format() ||
+             descriptor->field_count() == 0)
+      << "error: MessageGenerator message_set_wire_format should never have "
+         "fields!";
   for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
     oneof_generators_.push_back(std::make_unique<OneofGenerator>(
         descriptor_->real_oneof_decl(i), generation_options));

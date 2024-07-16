@@ -173,6 +173,18 @@ fn test_repeated_enum_accessors() {
 }
 
 #[test]
+fn test_repeated_enum_set() {
+    use test_all_types::NestedEnum;
+
+    let mut msg = TestAllTypes::new();
+    msg.set_repeated_nested_enum([NestedEnum::Foo, NestedEnum::Bar, NestedEnum::Baz].into_iter());
+    assert_that!(
+        msg.repeated_nested_enum(),
+        elements_are![eq(NestedEnum::Foo), eq(NestedEnum::Bar), eq(NestedEnum::Baz)]
+    );
+}
+
+#[test]
 fn test_repeated_bool_set() {
     let mut msg = TestAllTypes::new();
     let mut msg2 = TestAllTypes::new();
@@ -216,6 +228,15 @@ fn test_repeated_message() {
     assert_that!(msg2.repeated_nested_message().get(0).unwrap().bb(), eq(1));
     msg2.repeated_nested_message_mut().clear();
     assert_that!(msg2.repeated_nested_message().len(), eq(0));
+}
+
+#[test]
+fn test_repeated_message_setter() {
+    let mut msg = TestAllTypes::new();
+    let mut nested = NestedMessage::new();
+    nested.set_bb(1);
+    msg.set_repeated_nested_message([nested].into_iter());
+    assert_that!(msg.repeated_nested_message().get(0).unwrap().bb(), eq(1));
 }
 
 #[test]

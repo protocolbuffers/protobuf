@@ -99,11 +99,11 @@ load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies")
 rules_cc_dependencies()
 
 # For `kt_jvm_library`
-load("@io_bazel_rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
+load("@rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
 
 kotlin_repositories()
 
-load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
+load("@rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
 
 kt_register_toolchains()
 
@@ -244,4 +244,13 @@ http_archive(
     name = "utf8_range",
     strip_prefix = "utf8_range-d863bc33e15cba6d873c878dcca9e6fe52b2f8cb",
     url = "https://github.com/protocolbuffers/utf8_range/archive/d863bc33e15cba6d873c878dcca9e6fe52b2f8cb.zip",
+)
+
+# Needed for testing only
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+http_archive(
+    name = "rules_testing",
+    sha256 = "02c62574631876a4e3b02a1820cb51167bb9cdcdea2381b2fa9d9b8b11c407c4",
+    strip_prefix = "rules_testing-0.6.0",
+    url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.6.0/rules_testing-v0.6.0.tar.gz",
 )

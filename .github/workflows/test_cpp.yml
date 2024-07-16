@@ -30,13 +30,21 @@ jobs:
           - targets: //pkg/... //src/... @com_google_protobuf_examples//... //third_party/utf8_range/...
 
           # Override cases with custom images
-          - config: { name: "Bazel7" }
+          - config: { name: "Bazel7", flags: --noenable_bzlmod }
+            version: Bazel7
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e"
             targets: "//src/... //third_party/utf8_range/..."
+          - config: { name: "Bazel7 with Bzlmod", flags: --enable_bzlmod }
+            version: Bazel7bzlmod
+            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e"
+            targets: "//src/... //third_party/utf8_range/..."
+            # TODO: enable back command_line_interface_unittest after bug is fixed
+            exclude-targets: "-//src/google/protobuf/compiler:command_line_interface_unittest"
           - config: { name: "TCMalloc" }
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc:7.1.2-32f99e4e642096935aa0e50862482f7ffe1b231b"
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "aarch64" }
+            version: TcMalloc
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:6.3.0-aarch64-68e662b3a56b881804dc4e9d45f949791cbc4b94"
     name: Linux ${{ matrix.config.name }}
@@ -51,8 +59,9 @@ jobs:
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: cpp_linux/${{ matrix.config.name }}
+          bazel-cache: cpp_linux/${{ matrix.version }}
           bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }}
+          exclude-targets: ${{ matrix.exclude-targets }}
 
   linux-gcc:
     strategy:
@@ -425,6 +434,12 @@ jobs:
         with:
           arch: ${{ matrix.windows-arch || 'x64' }}
           vsversion: ${{ matrix.vsversion }}
+
+      # Workaround for Abseil incompatibility with CMake 3.30 (b/352354235).
+      - name: Downgrade CMake
+        if: ${{ runner.os == 'Windows' }}
+        run: choco install cmake --version 3.29.6 --force
+        shell: bash
 
       # Workaround for incompatibility between gcloud and windows-2019 runners.
       - name: Install Python
