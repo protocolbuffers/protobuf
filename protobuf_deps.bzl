@@ -101,7 +101,7 @@ def protobuf_deps():
         http_archive(
             name = "rules_java",
             url = "https://github.com/bazelbuild/rules_java/releases/download/7.11.1/rules_java-7.11.1.tar.gz",
-            sha256 = "6f3ce0e9fba979a844faba2d60467843fbf5191d8ca61fa3d2ea17655b56bb8c",
+            #sha256 = "469b7f3b580b4fcf8112f4d6d0d5a4ce8e1ad5e21fee67d8e8335d5f8b3debab",
         )
 
     if not native.existing_rule("proto_bazel_features"):
@@ -153,11 +153,12 @@ def protobuf_deps():
             url = "https://github.com/bazelbuild/apple_support/releases/download/1.12.0/apple_support.1.12.0.tar.gz",
         )
 
-    if not native.existing_rule("io_bazel_rules_kotlin"):
+    if not native.existing_rule("rules_kotlin"):
+        # Version 1.9.0 is the lowest available on BCR
         http_archive(
-            name = "io_bazel_rules_kotlin",
-            urls = ["https://github.com/bazelbuild/rules_kotlin/releases/download/v1.8.1/rules_kotlin_release.tgz"],
-            sha256 = "a630cda9fdb4f56cf2dc20a4bf873765c41cf00e9379e8d59cd07b24730f4fde",
+            name = "rules_kotlin",
+            sha256 = "5766f1e599acf551aa56f49dab9ab9108269b03c557496c54acaf41f98e2b8d6",
+            url = "https://github.com/bazelbuild/rules_kotlin/releases/download/v1.9.0/rules_kotlin-v1.9.0.tar.gz",
         )
 
     if not native.existing_rule("rules_license"):
