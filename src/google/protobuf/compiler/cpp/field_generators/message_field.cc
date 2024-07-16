@@ -31,9 +31,10 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
+
 using ::google::protobuf::internal::cpp::HasHasbit;
-using Sub = ::google::protobuf::io::Printer::Sub;
 using ::google::protobuf::io::AnnotationCollector;
+using Sub = ::google::protobuf::io::Printer::Sub;
 
 std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
                       bool weak) {
@@ -382,8 +383,6 @@ void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
     )cc");
   }
 }
-
-using internal::cpp::HasHasbit;
 
 void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
