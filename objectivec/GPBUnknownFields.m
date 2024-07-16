@@ -12,6 +12,7 @@
 #import "GPBCodedInputStream_PackagePrivate.h"
 #import "GPBCodedOutputStream.h"
 #import "GPBCodedOutputStream_PackagePrivate.h"
+#import "GPBDescriptor.h"
 #import "GPBMessage.h"
 #import "GPBUnknownField.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
@@ -199,8 +200,19 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
     // updated.
     GPBUnknownFieldSet *legacyUnknownFields = [message unknownFields];
     if (legacyUnknownFields) {
-      GPBCodedInputStream *input =
-          [[GPBCodedInputStream alloc] initWithData:[legacyUnknownFields data]];
+      NSData *data;
+      if (message.descriptor.isWireFormat) {
+        NSMutableData *mutableData =
+            [NSMutableData dataWithLength:legacyUnknownFields.serializedSizeAsMessageSet];
+        GPBCodedOutputStream *output = [[GPBCodedOutputStream alloc] initWithData:mutableData];
+        [legacyUnknownFields writeAsMessageSetTo:output];
+        [output flush];
+        [output release];
+        data = mutableData;
+      } else {
+        data = [legacyUnknownFields data];
+      }
+      GPBCodedInputStream *input = [[GPBCodedInputStream alloc] initWithData:data];
       // Parse until the end of the data (tag will be zero).
       if (!MergeFromInputStream(self, input, 0)) {
         [input release];
