@@ -467,18 +467,15 @@ pub fn empty_array<T: ?Sized + ProxiedInRepeated>() -> RepeatedView<'static, T> 
     // TODO: Consider creating a static empty array in C.
 
     // Use `i32` for a shared empty repeated for all repeated types in the program.
-    static EMPTY_REPEATED_VIEW: OnceLock<RepeatedView<'static, i32>> = OnceLock::new();
+    static EMPTY_REPEATED_VIEW: OnceLock<Repeated<i32>> = OnceLock::new();
 
     // SAFETY:
     // - Because the repeated is never mutated, the repeated type is unused and
     //   therefore valid for `T`.
-    // - The view is leaked for `'static`.
     unsafe {
         RepeatedView::from_raw(
             Private,
-            EMPTY_REPEATED_VIEW
-                .get_or_init(|| Box::leak(Box::new(Repeated::new())).as_mut().into_view())
-                .as_raw(Private),
+            EMPTY_REPEATED_VIEW.get_or_init(Repeated::new).as_view().as_raw(Private),
         )
     }
 }
@@ -502,7 +499,7 @@ where
     //
     // If we used a larger key, then UPB would hash more bytes of the key than Rust
     // initialized.
-    static EMPTY_MAP_VIEW: OnceLock<MapView<'static, bool, bool>> = OnceLock::new();
+    static EMPTY_MAP_VIEW: OnceLock<Map<bool, bool>> = OnceLock::new();
 
     // SAFETY:
     // - The map is empty and never mutated.
@@ -511,14 +508,8 @@ where
     //   The map is empty, therefore it doesn't matter what hash is computed, but we
     //   have to use `bool` type as the smallest key possible (otherwise UPB would
     //   read more bytes than Rust allocated).
-    // - The view is leaked for `'static`.
     unsafe {
-        MapView::from_raw(
-            Private,
-            EMPTY_MAP_VIEW
-                .get_or_init(|| Box::leak(Box::new(Map::new())).as_mut().into_view())
-                .as_raw(Private),
-        )
+        MapView::from_raw(Private, EMPTY_MAP_VIEW.get_or_init(Map::new).as_view().as_raw(Private))
     }
 }
 
