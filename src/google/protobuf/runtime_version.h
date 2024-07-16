@@ -18,7 +18,7 @@
 #endif  // PROTOBUF_OSS_VERSION_SUFFIX
 
 // The OSS versions are not stripped to avoid merging conflicts.
-#define PROTOBUF_OSS_VERSION 5028000
+#define PROTOBUF_OSS_VERSION 5029000
 #define PROTOBUF_OSS_VERSION_SUFFIX "-dev"
 
 #define PROTOBUF_VERSION PROTOBUF_OSS_VERSION

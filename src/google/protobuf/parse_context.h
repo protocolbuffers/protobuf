@@ -112,7 +112,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
   // In sanitizer mode we use memory poisoning to guarantee that:
   //  - We do not read an uninitialized token.
-  //  - We would like to verify that this token was consumed, but unforuntately
+  //  - We would like to verify that this token was consumed, but unfortunately
   //    __asan_address_is_poisoned is allowed to have false negatives.
   class LimitToken {
    public:
@@ -256,9 +256,9 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   bool DataAvailable(const char* ptr) { return ptr < limit_end_; }
 
  protected:
-  // Returns true is limit (either an explicit limit or end of stream) is
+  // Returns true if limit (either an explicit limit or end of stream) is
   // reached. It aligns *ptr across buffer seams.
-  // If limit is exceeded it returns true and ptr is set to null.
+  // If limit is exceeded, it returns true and ptr is set to null.
   bool DoneWithCheck(const char** ptr, int d) {
     ABSL_DCHECK(*ptr);
     if (PROTOBUF_PREDICT_TRUE(*ptr < limit_end_)) return false;
@@ -266,7 +266,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     ABSL_DCHECK_LE(overrun, kSlopBytes);  // Guaranteed by parse loop.
     if (overrun ==
         limit_) {  //  No need to flip buffers if we ended on a limit.
-      // If we actually overrun the buffer and next_chunk_ is null. It means
+      // If we actually overrun the buffer and next_chunk_ is null, it means
       // the stream ended and we passed the stream end.
       if (overrun > 0 && next_chunk_ == nullptr) *ptr = nullptr;
       return true;

@@ -315,7 +315,7 @@ class PROTOBUF_EXPORT WireFormatLite {
 
   // Returns true if the data is valid UTF-8.
   static bool VerifyUtf8String(const char* data, int size, Operation op,
-                               const char* field_name);
+                               absl::string_view field_name);
 
   template <typename MessageType>
   static inline bool ReadGroup(int field_number, io::CodedInputStream* input,

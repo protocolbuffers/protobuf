@@ -194,6 +194,13 @@ namespace internal {
 #define PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(t, expected)
 #endif
 
+// `typedef` instead of `using` for SWIG
+#if defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
+typedef absl::string_view DescriptorStringView;
+#else
+typedef const std::string& DescriptorStringView;
+#endif
+
 class FlatAllocator;
 
 class PROTOBUF_EXPORT LazyDescriptor {
@@ -286,6 +293,9 @@ PROTOBUF_EXPORT absl::string_view ShortEditionName(Edition edition);
 
 bool IsEnumFullySequential(const EnumDescriptor* enum_desc);
 
+const std::string& DefaultValueStringAsString(const FieldDescriptor* field);
+const std::string& NameOfEnumAsString(const EnumValueDescriptor* descriptor);
+
 }  // namespace internal
 
 // Provide an Abseil formatter for edition names.
@@ -308,14 +318,14 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
 #endif
 
   // The name of the message type, not including its scope.
-  const std::string& name() const;
+  internal::DescriptorStringView name() const;
 
   // The fully-qualified name of the message type, scope delimited by
   // periods.  For example, message type "Foo" which is declared in package
   // "bar" has full name "bar.Foo".  If a type "Baz" is nested within
   // Foo, Baz's full_name is "bar.Foo.Baz".  To get only the part that
   // comes after the last '.', use name().
-  const std::string& full_name() const;
+  internal::DescriptorStringView full_name() const;
 
   // Index of this descriptor within the file or containing type's message
   // type array.
@@ -493,10 +503,12 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
     const ExtensionRangeOptions& options() const { return *options_; }
 
     // Returns the name of the containing type.
-    const std::string& name() const { return containing_type_->name(); }
+    internal::DescriptorStringView name() const {
+      return containing_type_->name();
+    }
 
     // Returns the full name of the containing type.
-    const std::string& full_name() const {
+    internal::DescriptorStringView full_name() const {
       return containing_type_->full_name();
     }
 
@@ -615,7 +627,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   int reserved_name_count() const;
 
   // Gets a reserved name by index, where 0 <= index < reserved_name_count().
-  const std::string& reserved_name(int index) const;
+  internal::DescriptorStringView reserved_name(int index) const;
 
   // Returns true if the field name is reserved.
   bool IsReservedName(absl::string_view name) const;
@@ -827,9 +839,13 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Users may not declare fields that use reserved numbers.
   static const int kLastReservedNumber = 19999;
 
-  const std::string& name() const;  // Name of this field within the message.
-  const std::string& full_name() const;  // Fully-qualified name of the field.
-  const std::string& json_name() const;  // JSON name of this field.
+  // Name of this field within the message.
+  internal::DescriptorStringView name() const;
+  // Fully-qualified name of the field.
+  internal::DescriptorStringView full_name() const;
+  // JSON name of this field.
+  internal::DescriptorStringView json_name() const;
+
   const FileDescriptor* file() const;  // File in which this field was defined.
   bool is_extension() const;           // Is this an extension field?
   int number() const;                  // Declared tag number.
@@ -840,7 +856,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // field names should be lowercased anyway according to the protobuf style
   // guide, so this only makes a difference when dealing with old .proto files
   // which do not follow the guide.)
-  const std::string& lowercase_name() const;
+  internal::DescriptorStringView lowercase_name() const;
 
   // Same as name() except converted to camel-case.  In this conversion, any
   // time an underscore appears in the name, it is removed and the next
@@ -851,7 +867,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   //   fooBar -> fooBar
   // This (and especially the FindFieldByCamelcaseName() method) can be useful
   // when parsing formats which prefer to use camel-case naming style.
-  const std::string& camelcase_name() const;
+  internal::DescriptorStringView camelcase_name() const;
 
   Type type() const;                  // Declared type of this field.
   const char* type_name() const;      // Name of the declared type.
@@ -947,7 +963,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   const EnumValueDescriptor* default_value_enum() const;
   // Get the field default value if cpp_type() == CPPTYPE_STRING.  If no
   // explicit default was defined, the default is the empty string.
-  const std::string& default_value_string() const;
+  internal::DescriptorStringView default_value_string() const;
 
   // The Descriptor for the message of which this is a field.  For extensions,
   // this is the extended type.  Never nullptr.
@@ -1025,7 +1041,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // its printable name) can be accomplished with
   //     message->file()->pool()->FindExtensionByPrintableName(message, name)
   // where the extension extends "message".
-  const std::string& PrintableNameForExtension() const;
+  internal::DescriptorStringView PrintableNameForExtension() const;
 
   // Source Location ---------------------------------------------------
 
@@ -1043,6 +1059,8 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   friend class compiler::cpp::Formatter;
   friend class Reflection;
   friend class FieldDescriptorLegacy;
+  friend const std::string& internal::DefaultValueStringAsString(
+      const FieldDescriptor* field);
 
   // Returns true if this field was syntactically written with "optional" in the
   // .proto file. Excludes singular proto3 fields that do not have a label.
@@ -1176,8 +1194,10 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
   OneofDescriptor& operator=(const OneofDescriptor&) = delete;
 #endif
 
-  const std::string& name() const;       // Name of this oneof.
-  const std::string& full_name() const;  // Fully-qualified name of the oneof.
+  // Name of this oneof.
+  internal::DescriptorStringView name() const;
+  // Fully-qualified name of the oneof.
+  internal::DescriptorStringView full_name() const;
 
   // Index of this oneof within the message's oneof array.
   int index() const;
@@ -1282,10 +1302,10 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
 #endif
 
   // The name of this enum type in the containing scope.
-  const std::string& name() const;
+  internal::DescriptorStringView name() const;
 
   // The fully-qualified name of the enum type, scope delimited by periods.
-  const std::string& full_name() const;
+  internal::DescriptorStringView full_name() const;
 
   // Index of this enum within the file or containing message's enum array.
   int index() const;
@@ -1381,7 +1401,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   int reserved_name_count() const;
 
   // Gets a reserved name by index, where 0 <= index < reserved_name_count().
-  const std::string& reserved_name(int index) const;
+  internal::DescriptorStringView reserved_name(int index) const;
 
   // Returns true if the field name is reserved.
   bool IsReservedName(absl::string_view name) const;
@@ -1494,7 +1514,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   EnumValueDescriptor& operator=(const EnumValueDescriptor&) = delete;
 #endif
 
-  const std::string& name() const;  // Name of this enum constant.
+  internal::DescriptorStringView name() const;  // Name of this enum constant.
   int index() const;                // Index within the enums's Descriptor.
   int number() const;               // Numeric value of this enum constant.
 
@@ -1503,7 +1523,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   // "google.protobuf.FieldDescriptorProto.TYPE_INT32", NOT
   // "google.protobuf.FieldDescriptorProto.Type.TYPE_INT32".  This is to conform
   // with C++ scoping rules for enums.
-  const std::string& full_name() const;
+  internal::DescriptorStringView full_name() const;
 
   // The .proto file in which this value was defined.  Never nullptr.
   const FileDescriptor* file() const;
@@ -1545,6 +1565,8 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   // Allows access to GetLocationPath for annotations.
   friend class io::Printer;
   friend class compiler::cpp::Formatter;
+  friend const std::string& internal::NameOfEnumAsString(
+      const EnumValueDescriptor* descriptor);
 
   // Get the merged features that apply to this enum value.  These are specified
   // in the .proto file through the feature options in the message definition.
@@ -1595,9 +1617,9 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
 #endif
 
   // The name of the service, not including its containing scope.
-  const std::string& name() const;
+  internal::DescriptorStringView name() const;
   // The fully-qualified name of the service, scope delimited by periods.
-  const std::string& full_name() const;
+  internal::DescriptorStringView full_name() const;
   // Index of this service within the file's services array.
   int index() const;
 
@@ -1699,9 +1721,9 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
 #endif
 
   // Name of this method, not including containing scope.
-  const std::string& name() const;
+  internal::DescriptorStringView name() const;
   // The fully-qualified name of the method, scope delimited by periods.
-  const std::string& full_name() const;
+  internal::DescriptorStringView full_name() const;
   // Index within the service's Descriptor.
   int index() const;
 
@@ -1807,10 +1829,10 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
 
   // The filename, relative to the source tree.
   // e.g. "foo/bar/baz.proto"
-  const std::string& name() const;
+  internal::DescriptorStringView name() const;
 
   // The package, e.g. "google.protobuf.compiler".
-  const std::string& package() const;
+  internal::DescriptorStringView package() const;
 
   // The DescriptorPool in which this FileDescriptor and all its contents were
   // allocated.  Never nullptr.
@@ -2472,13 +2494,19 @@ class PROTOBUF_EXPORT DescriptorPool {
   inline TYPE CLASS::FIELD() const { return FIELD##_; }
 
 // Strings fields are stored as pointers but returned as const references.
-#define PROTOBUF_DEFINE_STRING_ACCESSOR(CLASS, FIELD) \
-  inline const std::string& CLASS::FIELD() const { return *FIELD##_; }
+#define PROTOBUF_DEFINE_STRING_ACCESSOR(CLASS, FIELD)          \
+  inline internal::DescriptorStringView CLASS::FIELD() const { \
+    return *FIELD##_;                                          \
+  }
 
 // Name and full name are stored in a single array to save space.
-#define PROTOBUF_DEFINE_NAME_ACCESSOR(CLASS)                              \
-  inline const std::string& CLASS::name() const { return all_names_[0]; } \
-  inline const std::string& CLASS::full_name() const { return all_names_[1]; }
+#define PROTOBUF_DEFINE_NAME_ACCESSOR(CLASS)                       \
+  inline internal::DescriptorStringView CLASS::name() const {      \
+    return all_names_[0];                                          \
+  }                                                                \
+  inline internal::DescriptorStringView CLASS::full_name() const { \
+    return all_names_[1];                                          \
+  }
 
 // Arrays take an index parameter, obviously.
 #define PROTOBUF_DEFINE_ARRAY_ACCESSOR(CLASS, FIELD, TYPE) \
@@ -2627,7 +2655,8 @@ inline bool Descriptor::IsReservedName(absl::string_view name) const {
 
 // Can't use PROTOBUF_DEFINE_ARRAY_ACCESSOR because reserved_names_ is actually
 // an array of pointers rather than the usual array of objects.
-inline const std::string& Descriptor::reserved_name(int index) const {
+inline internal::DescriptorStringView Descriptor::reserved_name(
+    int index) const {
   return *reserved_names_[index];
 }
 
@@ -2646,19 +2675,20 @@ inline bool EnumDescriptor::IsReservedName(absl::string_view name) const {
 
 // Can't use PROTOBUF_DEFINE_ARRAY_ACCESSOR because reserved_names_ is actually
 // an array of pointers rather than the usual array of objects.
-inline const std::string& EnumDescriptor::reserved_name(int index) const {
+inline internal::DescriptorStringView EnumDescriptor::reserved_name(
+    int index) const {
   return *reserved_names_[index];
 }
 
-inline const std::string& FieldDescriptor::lowercase_name() const {
+inline internal::DescriptorStringView FieldDescriptor::lowercase_name() const {
   return all_names_[lowercase_name_index_];
 }
 
-inline const std::string& FieldDescriptor::camelcase_name() const {
+inline internal::DescriptorStringView FieldDescriptor::camelcase_name() const {
   return all_names_[camelcase_name_index_];
 }
 
-inline const std::string& FieldDescriptor::json_name() const {
+inline internal::DescriptorStringView FieldDescriptor::json_name() const {
   return all_names_[json_name_index_];
 }
 
@@ -2821,6 +2851,16 @@ inline const FileDescriptor* FileDescriptor::weak_dependency(int index) const {
 }
 
 namespace internal {
+
+inline const std::string& DefaultValueStringAsString(
+    const FieldDescriptor* field) {
+  return *field->default_value_string_;
+}
+
+inline const std::string& NameOfEnumAsString(
+    const EnumValueDescriptor* descriptor) {
+  return descriptor->all_names_[0];
+}
 
 inline bool IsEnumFullySequential(const EnumDescriptor* enum_desc) {
   return enum_desc->sequential_value_limit_ == enum_desc->value_count() - 1;

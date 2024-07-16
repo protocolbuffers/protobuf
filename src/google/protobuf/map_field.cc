@@ -7,6 +7,7 @@
 
 #include "google/protobuf/map_field.h"
 
+#include <atomic>
 #include <utility>
 #include <vector>
 
@@ -14,6 +15,7 @@
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/raw_ptr.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -87,15 +89,14 @@ void MapFieldBase::CopyIterator(MapIterator* this_iter,
 
 const RepeatedPtrFieldBase& MapFieldBase::GetRepeatedField() const {
   ConstAccess();
-  SyncRepeatedFieldWithMap();
-  return reinterpret_cast<RepeatedPtrFieldBase&>(payload().repeated_field);
+  return SyncRepeatedFieldWithMap(false);
 }
 
 RepeatedPtrFieldBase* MapFieldBase::MutableRepeatedField() {
   MutableAccess();
-  SyncRepeatedFieldWithMap();
+  auto& res = SyncRepeatedFieldWithMap(true);
   SetRepeatedDirty();
-  return reinterpret_cast<RepeatedPtrFieldBase*>(&payload().repeated_field);
+  return const_cast<RepeatedPtrFieldBase*>(&res);
 }
 
 template <typename T>
@@ -187,21 +188,36 @@ void MapFieldBase::SetRepeatedDirty() {
   payload().state.store(STATE_MODIFIED_REPEATED, std::memory_order_relaxed);
 }
 
-void MapFieldBase::SyncRepeatedFieldWithMap() const {
+const RepeatedPtrFieldBase& MapFieldBase::SyncRepeatedFieldWithMap(
+    bool for_mutation) const {
   ConstAccess();
   if (state() == STATE_MODIFIED_MAP) {
-    auto& p = payload();
+    auto* p = maybe_payload();
+    if (p == nullptr) {
+      // If we have no payload, and we do not want to mutate the object, and the
+      // map is empty, then do nothing.
+      // This prevents modifying global default instances which might be in ro
+      // memory.
+      if (!for_mutation && GetMapRaw().empty()) {
+        return *RawPtr<const RepeatedPtrFieldBase>();
+      }
+      p = &payload();
+    }
+
     {
-      absl::MutexLock lock(&p.mutex);
+      absl::MutexLock lock(&p->mutex);
       // Double check state, because another thread may have seen the same
       // state and done the synchronization before the current thread.
-      if (p.state.load(std::memory_order_relaxed) == STATE_MODIFIED_MAP) {
+      if (p->state.load(std::memory_order_relaxed) == STATE_MODIFIED_MAP) {
         const_cast<MapFieldBase*>(this)->SyncRepeatedFieldWithMapNoLock();
-        p.state.store(CLEAN, std::memory_order_release);
+        p->state.store(CLEAN, std::memory_order_release);
       }
     }
     ConstAccess();
+    return reinterpret_cast<const RepeatedPtrFieldBase&>(p->repeated_field);
   }
+  return reinterpret_cast<const RepeatedPtrFieldBase&>(
+      payload().repeated_field);
 }
 
 void MapFieldBase::SyncRepeatedFieldWithMapNoLock() {

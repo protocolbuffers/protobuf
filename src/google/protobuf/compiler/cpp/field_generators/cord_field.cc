@@ -262,12 +262,12 @@ void CordFieldGenerator::GenerateSerializeWithCachedSizesToArray(
   if (field_->type() == FieldDescriptor::TYPE_STRING) {
     GenerateUtf8CheckCodeForCord(
         field_, options_, false,
-        absl::Substitute("this->_internal_$0(), ", printer->LookupVar("name")),
+        absl::Substitute("this_._internal_$0(), ", printer->LookupVar("name")),
         format);
   }
   format(
       "target = stream->Write$declared_type$($number$, "
-      "this->_internal_$name$(), "
+      "this_._internal_$name$(), "
       "target);\n");
 }
 
@@ -276,7 +276,7 @@ void CordFieldGenerator::GenerateByteSize(io::Printer* printer) const {
   format(
       "total_size += $tag_size$ +\n"
       "  ::$proto_ns$::internal::WireFormatLite::$declared_type$Size(\n"
-      "    this->_internal_$name$());\n");
+      "    this_._internal_$name$());\n");
 }
 
 void CordFieldGenerator::GenerateConstexprAggregateInitializer(

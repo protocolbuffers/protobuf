@@ -577,10 +577,12 @@ public class DescriptorsTest {
                                   DescriptorProtos.FieldOptions.newBuilder()
                                       .setFeatures(
                                           DescriptorProtos.FeatureSet.newBuilder()
-                                              .setExtension(
-                                                  // Extension cannot be directly set using custom
-                                                  // descriptor, so set using generated for now.
-                                                  JavaFeaturesProto.java_,
+                                              .setField(
+                                                  // Set extension using custom descriptor
+                                                  javaFeaturesDescriptor.findExtensionByName(
+                                                      JavaFeaturesProto.java_
+                                                          .getDescriptor()
+                                                          .getName()),
                                                   JavaFeaturesProto.JavaFeatures.newBuilder()
                                                       .setLegacyClosedEnum(true)
                                                       .build())
@@ -597,14 +599,6 @@ public class DescriptorsTest {
                               .build())
                       .build())
               .build();
-      // Reparse using custom java features descriptor.
-      ExtensionRegistry registry = ExtensionRegistry.newInstance();
-      registry.add(
-          javaFeaturesDescriptor.getExtensions().get(0),
-          DynamicMessage.getDefaultInstance(
-              javaFeaturesDescriptor.getExtensions().get(0).getMessageType()));
-      editionsClosedEnumFile =
-          FileDescriptorProto.parseFrom(editionsClosedEnumFile.toByteString(), registry);
       Descriptor editionsClosedMessage =
           Descriptors.FileDescriptor.buildFrom(
                   editionsClosedEnumFile,

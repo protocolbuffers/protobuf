@@ -15,6 +15,7 @@ __author__ = 'shaod@google.com (Dennis Shao)'
 
 from enum import Enum
 import os
+import warnings
 
 
 class Domain(Enum):
@@ -27,7 +28,7 @@ class Domain(Enum):
 # These OSS versions are not stripped to avoid merging conflicts.
 OSS_DOMAIN = Domain.PUBLIC
 OSS_MAJOR = 5
-OSS_MINOR = 28
+OSS_MINOR = 29
 OSS_PATCH = 0
 OSS_SUFFIX = '-dev'
 
@@ -87,17 +88,31 @@ def ValidateProtobufRuntimeVersion(
     )
 
   if gen_major != MAJOR:
-    _ReportVersionError(
-        'Detected mismatched Protobuf Gencode/Runtime major versions when'
-        f' loading {location}: gencode {gen_version} runtime {version}.'
-        f' Same major version is required. {error_prompt}'
-    )
+    if gen_major == MAJOR - 1:
+      warnings.warn(
+          'Protobuf gencode version %s is exactly one major version older than'
+          ' the runtime version %s at %s. Please update the gencode to avoid'
+          ' compatibility violations in the next runtime release.'
+          % (gen_version, version, location)
+      )
+    else:
+      _ReportVersionError(
+          'Detected mismatched Protobuf Gencode/Runtime major versions when'
+          f' loading {location}: gencode {gen_version} runtime {version}.'
+          f' Same major version is required. {error_prompt}'
+      )
 
   if MINOR < gen_minor or (MINOR == gen_minor and PATCH < gen_patch):
     _ReportVersionError(
         'Detected incompatible Protobuf Gencode/Runtime versions when loading'
         f' {location}: gencode {gen_version} runtime {version}. Runtime version'
         f' cannot be older than the linked gencode version. {error_prompt}'
+    )
+  elif MINOR > gen_minor or PATCH > gen_patch:
+    warnings.warn(
+        'Protobuf gencode version %s is older than the runtime version %s at'
+        ' %s. Please avoid checked-in Protobuf gencode that can be obsolete.'
+        % (gen_version, version, location)
     )
 
   if gen_suffix != SUFFIX:

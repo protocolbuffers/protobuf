@@ -171,6 +171,32 @@ TEST(ArenaTest, Contains) {
   upb_Arena_Free(arena2);
 }
 
+TEST(ArenaTest, LargeAlloc) {
+  // Tests an allocation larger than the max block size.
+  upb_Arena* arena = upb_Arena_New();
+  size_t size = 100000;
+  char* mem = static_cast<char*>(upb_Arena_Malloc(arena, size));
+  EXPECT_NE(mem, nullptr);
+  for (size_t i = 0; i < size; ++i) {
+    mem[i] = static_cast<char>(i);
+  }
+  for (size_t i = 0; i < size; ++i) {
+    EXPECT_EQ(mem[i], static_cast<char>(i));
+  }
+  upb_Arena_Free(arena);
+}
+
+TEST(ArenaTest, MaxBlockSize) {
+  upb_Arena* arena = upb_Arena_New();
+  // Perform 600 1k allocations (600k total) and ensure that the amount of
+  // memory allocated does not exceed 700k.
+  for (int i = 0; i < 600; ++i) {
+    upb_Arena_Malloc(arena, 1024);
+  }
+  EXPECT_LE(upb_Arena_SpaceAllocated(arena, nullptr), 700 * 1024);
+  upb_Arena_Free(arena);
+}
+
 #ifdef UPB_USE_C11_ATOMICS
 
 TEST(ArenaTest, FuzzFuseFreeRace) {

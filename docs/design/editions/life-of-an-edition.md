@@ -188,11 +188,11 @@ breaking changes.
 
 ### Large-scale Changes with Features Only: Immolation of `required`
 
-We can use features to move fields off of `features.presence = LEGACY_REQUIRED`
-(the edition’s spelling of `required`) and onto `features.presence =
-EXPLICIT_PRESENCE`.
+We can use features to move fields off of `features.field_presence =
+LEGACY_REQUIRED` (the edition’s spelling of `required`) and onto
+`features.field_presence = EXPLICIT_PRESENCE`.
 
-To do this, we introduce a new value for `features.presence`,
+To do this, we introduce a new value for `features.field_presence`,
 `ALWAYS_SERIALIZE`, which behaves like `EXPLICIT_PRESENCE`, but, if the has-bit
 is not set, the default is serialized. (This is sort of like a cross between
 `required` and `proto3` no-label.)

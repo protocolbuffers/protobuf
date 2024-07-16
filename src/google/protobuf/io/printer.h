@@ -182,7 +182,7 @@ class AnnotationProtoCollector : public AnnotationCollector {
 // emits the string " bar ". If the substituted-in variable is the empty string,
 // then the surrounding spaces are *not* printed:
 //
-//   p.Emit({{"xzy", xyz}}, "$xyz $Thing");
+//   p.Emit({{"xyz", xyz}}, "$xyz $Thing");
 //
 // If xyz is "Foo", this will become "Foo Thing", but if it is "", this becomes
 // "Thing", rather than " Thing". This helps minimize awkward whitespace in the
@@ -192,9 +192,15 @@ class AnnotationProtoCollector : public AnnotationCollector {
 //
 //   p.Emit({{"num", 5}}, "x = $num$;");
 //
-// If a variable is referenced in the format string that is missing, the program
+// If a variable that is referenced in the format string is missing, the program
 // will crash. Callers must statically know that every variable reference is
 // valid, and MUST NOT pass user-provided strings directly into Emit().
+//
+// In practice, this means the first member of io::Printer::Sub here:
+//
+//   p.Emit({{"num", 5}}, "x = $num$;");
+//            ^
+// must always be a string literal.
 //
 // Substitutions can be configured to "chomp" a single character after them, to
 // help make indentation work out. This can be configured by passing a
@@ -211,9 +217,15 @@ class AnnotationProtoCollector : public AnnotationCollector {
 // empty lines that follow, if it was on an empty line; this promotes cleaner
 // formatting of the output.
 //
-// Any number of different characters can be potentially skipped, but only one
-// will actually be skipped. For example, callback substitutions (see below) use
-// ";," by default as their "chomping set".
+// You can configure a large set of skippable characters, but when chomping,
+// only one character will actually be skipped at a time. For example, callback
+// substitutions (see below) use ";," by default as their "chomping set".
+//
+//   p.Emit({io::Printer::Sub("var", 123).WithSuffix(";,")}, R"cc(
+//       $var$,;
+//   )cc");
+//
+// will produce "123,".
 //
 // # Callback Substitution
 //
@@ -520,12 +532,13 @@ class PROTOBUF_EXPORT Printer {
   // Pushes a new variable lookup frame that stores `vars` by value.
   //
   // Returns an RAII object that pops the lookup frame.
-  template <typename Map = absl::flat_hash_map<std::string, std::string>,
-            typename = std::enable_if_t<!std::is_pointer<Map>::value>,
-            // Prefer the more specific span impl if this could be turned into
-            // a span.
-            typename = std::enable_if_t<
-                !std::is_convertible<Map, absl::Span<const Sub>>::value>>
+  template <
+      typename Map = absl::flat_hash_map<absl::string_view, absl::string_view>,
+      typename = std::enable_if_t<!std::is_pointer<Map>::value>,
+      // Prefer the more specific span impl if this could be turned into
+      // a span.
+      typename = std::enable_if_t<
+          !std::is_convertible<Map, absl::Span<const Sub>>::value>>
   auto WithVars(Map&& vars);
 
   // Pushes a new variable lookup frame that stores `vars` by value.
@@ -596,7 +609,8 @@ class PROTOBUF_EXPORT Printer {
   // -- Old-style API below; to be deprecated and removed. --
   // TODO: Deprecate these APIs.
 
-  template <typename Map = absl::flat_hash_map<std::string, std::string>>
+  template <
+      typename Map = absl::flat_hash_map<absl::string_view, absl::string_view>>
   void Print(const Map& vars, absl::string_view text);
 
   template <typename... Args>

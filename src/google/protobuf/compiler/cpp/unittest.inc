@@ -40,8 +40,8 @@
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/unittest_no_generic_services.pb.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "absl/base/casts.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/arena.h"
@@ -65,6 +65,8 @@ namespace cpp {
 
 // Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
 namespace cpp_unittest {
+
+using ::testing::UnorderedElementsAre;
 
 
 void DoNothing() {}
@@ -2080,19 +2082,18 @@ TEST(HELPERS_TEST_NAME, TestSCC) {
   UNITTEST::TestMutualRecursionA a;
   MessageSCCAnalyzer scc_analyzer((Options()));
   const SCC* scc = scc_analyzer.GetSCC(a.GetDescriptor());
-  std::vector<std::string> names;
+  std::vector<absl::string_view> names;
   names.reserve(scc->descriptors.size());
   for (int i = 0; i < scc->descriptors.size(); i++) {
     names.push_back(scc->descriptors[i]->full_name());
   }
-  std::string package = a.GetDescriptor()->file()->package();
-  ASSERT_EQ(names.size(), 4);
-  std::sort(names.begin(), names.end());
-  EXPECT_EQ(names[0], absl::StrCat(package, ".TestMutualRecursionA"));
-  EXPECT_EQ(names[1], absl::StrCat(package, ".TestMutualRecursionA.SubGroup"));
-  EXPECT_EQ(names[2],
-            absl::StrCat(package, ".TestMutualRecursionA.SubMessage"));
-  EXPECT_EQ(names[3], absl::StrCat(package, ".TestMutualRecursionB"));
+  const absl::string_view package = a.GetDescriptor()->file()->package();
+  EXPECT_THAT(names,
+              UnorderedElementsAre(
+                  absl::StrCat(package, ".TestMutualRecursionA"),
+                  absl::StrCat(package, ".TestMutualRecursionA.SubGroup"),
+                  absl::StrCat(package, ".TestMutualRecursionA.SubMessage"),
+                  absl::StrCat(package, ".TestMutualRecursionB")));
 
   MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
   EXPECT_EQ(result.is_recursive, true);

@@ -69,6 +69,9 @@ class FieldGeneratorBase {
   // I.e., the field can be initialized with `memset(&field, 0, sizeof(field))`
   bool has_trivial_zero_default() const { return has_trivial_zero_default_; }
 
+  // Returns true if the provided field can be initialized with `= {}`.
+  bool has_brace_default_assign() const { return has_brace_default_assign_; }
+
   // Returns true if the field is a singular or repeated message.
   // This includes group message types. To explicitly check if a message
   // type is a group type, use the `is_group()` function,
@@ -204,6 +207,7 @@ class FieldGeneratorBase {
   bool is_trivial_ = false;
   bool has_trivial_value_ = false;
   bool has_trivial_zero_default_ = false;
+  bool has_brace_default_assign_ = false;
   bool is_message_ = false;
   bool is_group_ = false;
   bool is_string_ = false;
@@ -254,6 +258,9 @@ class FieldGenerator {
   bool has_trivial_value() const { return impl_->has_trivial_value(); }
   bool has_trivial_zero_default() const {
     return impl_->has_trivial_zero_default();
+  }
+  bool has_brace_default_assign() const {
+    return impl_->has_brace_default_assign();
   }
   bool is_message() const { return impl_->is_message(); }
   bool is_group() const { return impl_->is_group(); }

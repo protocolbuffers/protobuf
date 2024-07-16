@@ -264,7 +264,7 @@ static int Contains(PyObject* _self, PyObject* key) {
 
   if (!field_descriptor->is_extension()) {
     PyErr_Format(PyExc_KeyError, "%s is not an extension",
-                 field_descriptor->full_name().c_str());
+                 std::string(field_descriptor->full_name()).c_str());
     return -1;
   }
 

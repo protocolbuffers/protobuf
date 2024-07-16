@@ -206,8 +206,8 @@ size_t Message::SpaceUsedLong() const {
   return GetClassData()->full().descriptor_methods->space_used_long(*this);
 }
 
-static std::string GetTypeNameImpl(const MessageLite& msg) {
-  return DownCastMessage<Message>(msg).GetDescriptor()->full_name();
+absl::string_view Message::GetTypeNameImpl(const ClassData* data) {
+  return GetMetadataImpl(data->full()).descriptor->full_name();
 }
 
 static std::string InitializationErrorStringImpl(const MessageLite& msg) {
@@ -224,12 +224,15 @@ size_t Message::SpaceUsedLongImpl(const MessageLite& msg_lite) {
   return msg.GetReflection()->SpaceUsedLong(msg);
 }
 
+static std::string DebugStringImpl(const MessageLite& msg) {
+  return DownCastMessage<Message>(msg).DebugString();
+}
+
 PROTOBUF_CONSTINIT const MessageLite::DescriptorMethods
     Message::kDescriptorMethods = {
-        GetTypeNameImpl,
-        InitializationErrorStringImpl,
-        GetTcParseTableImpl,
-        SpaceUsedLongImpl,
+        GetTypeNameImpl,     InitializationErrorStringImpl,
+        GetTcParseTableImpl, SpaceUsedLongImpl,
+        DebugStringImpl,
 };
 
 namespace internal {

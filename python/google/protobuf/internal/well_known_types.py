@@ -283,6 +283,9 @@ class Timestamp(object):
     self.seconds = seconds
     self.nanos = nanos
 
+  def _internal_assign(self, dt):
+    self.FromDatetime(dt)
+
   def __add__(self, value) -> datetime.datetime:
     if isinstance(value, Duration):
       return self.ToDatetime() + value.ToTimedelta()
@@ -442,6 +445,9 @@ class Duration(object):
           'object got {0}: {1}'.format(type(td).__name__, e)
       ) from e
 
+  def _internal_assign(self, td):
+    self.FromTimedelta(td)
+
   def _NormalizeDuration(self, seconds, nanos):
     """Set Duration by seconds and nanos."""
     # Force nanos to be negative if the duration is negative.
@@ -550,6 +556,24 @@ class Struct(object):
   def __iter__(self):
     return iter(self.fields)
 
+  def _internal_assign(self, dictionary):
+    self.Clear()
+    self.update(dictionary)
+
+  def _internal_compare(self, other):
+    size = len(self)
+    if size != len(other):
+      return False
+    for key, value in self.items():
+      if key not in other:
+        return False
+      if isinstance(other[key], (dict, list)):
+        if not value._internal_compare(other[key]):
+          return False
+      elif value != other[key]:
+        return False
+    return True
+
   def keys(self):  # pylint: disable=invalid-name
     return self.fields.keys()
 
@@ -604,6 +628,22 @@ class ListValue(object):
 
   def __delitem__(self, key):
     del self.values[key]
+
+  def _internal_assign(self, elem_seq):
+    self.Clear()
+    self.extend(elem_seq)
+
+  def _internal_compare(self, other):
+    size = len(self)
+    if size != len(other):
+      return False
+    for i in range(size):
+      if isinstance(other[i], (dict, list)):
+        if not self[i]._internal_compare(other[i]):
+          return False
+      elif self[i] != other[i]:
+        return False
+    return True
 
   def items(self):
     for i in range(len(self)):

@@ -19,6 +19,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
@@ -40,7 +41,7 @@ absl::flat_hash_map<absl::string_view, std::string> EnumVars(
     const EnumValueDescriptor* min, const EnumValueDescriptor* max) {
   auto classname = ClassName(enum_, false);
   return {
-      {"Enum", enum_->name()},
+      {"Enum", std::string(enum_->name())},
       {"Enum_", ResolveKeyword(enum_->name())},
       {"Msg_Enum", classname},
       {"::Msg_Enum", QualifiedClassName(enum_, options)},
@@ -441,12 +442,12 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
       ++index;
       offset += e.first.size();
     }
-    absl::c_sort(offsets, [](const auto& a, const auto& b) {
+    absl::c_stable_sort(offsets, [](const auto& a, const auto& b) {
       return a.byte_offset < b.byte_offset;
     });
 
     std::vector<Offset> offsets_by_number = offsets;
-    absl::c_sort(offsets_by_number, [](const auto& a, const auto& b) {
+    absl::c_stable_sort(offsets_by_number, [](const auto& a, const auto& b) {
       return a.number < b.number;
     });
 

@@ -58,6 +58,15 @@ UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size);
 UPB_API_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
                                        size_t size);
 
+// Sets the maximum block size for all arenas. This is a global configuration
+// setting that will affect all existing and future arenas. If
+// upb_Arena_Malloc() is called with a size larger than this, we will exceed
+// this size and allocate a larger block.
+//
+// This API is meant for experimentation only. It will likely be removed in
+// the future.
+void upb_Arena_SetMaxBlockSize(size_t max);
+
 // Shrinks the last alloc from arena.
 // REQUIRES: (ptr, oldsize) was the last malloc/realloc from this arena.
 // We could also add a upb_Arena_TryShrinkLast() which is simply a no-op if

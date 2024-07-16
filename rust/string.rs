@@ -29,6 +29,15 @@ pub struct ProtoBytes {
     pub(crate) inner: InnerProtoString,
 }
 
+impl ProtoBytes {
+    // Returns the kernel-specific container. This method is private in spirit and
+    // must not be called by a user.
+    #[doc(hidden)]
+    pub fn into_inner(self, _private: Private) -> InnerProtoString {
+        self.inner
+    }
+}
+
 impl AsRef<[u8]> for ProtoBytes {
     fn as_ref(&self) -> &[u8] {
         self.inner.as_bytes()
@@ -161,6 +170,19 @@ pub struct ProtoString {
 impl ProtoString {
     pub fn as_bytes(&self) -> &[u8] {
         self.inner.as_bytes()
+    }
+
+    // Returns the kernel-specific container. This method is private in spirit and
+    // must not be called by a user.
+    #[doc(hidden)]
+    pub fn into_inner(self, _private: Private) -> InnerProtoString {
+        self.inner
+    }
+}
+
+impl From<ProtoString> for ProtoBytes {
+    fn from(v: ProtoString) -> Self {
+        ProtoBytes { inner: v.inner }
     }
 }
 

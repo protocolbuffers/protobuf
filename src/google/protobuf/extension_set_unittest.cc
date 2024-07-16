@@ -1444,3 +1444,5 @@ TEST(ExtensionSetTest, Descriptor) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

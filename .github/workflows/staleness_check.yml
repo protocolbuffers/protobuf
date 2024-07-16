@@ -29,6 +29,7 @@ jobs:
           # If we are in a continuous run, test other supported branches
           - branch: ${{ inputs.continuous-run && '25.x' }}
           - branch: ${{ inputs.continuous-run && '27.x' }}
+          - branch: ${{ inputs.continuous-run && '28.x' }}
 
     name: Test staleness ${{ matrix.os.name }} ${{ matrix.branch }}
     runs-on: ${{ matrix.os.value }}

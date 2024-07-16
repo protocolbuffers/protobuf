@@ -35,10 +35,7 @@ namespace protobuf {
 namespace compiler {
 
 int ProtobufMain(int argc, char* argv[]) {
-#ifndef _MSC_VER
-  // TODO Re-enable this once github runner issue is resolved.
   absl::InitializeLog();
-#endif  // !_MSC_VER
 
   CommandLineInterface cli;
   cli.AllowPlugins("protoc-");
@@ -144,3 +141,5 @@ int main(int argc, char* argv[]) {
   return google::protobuf::compiler::ProtobufMain(argc, argv);
 }
 #endif
+
+#include "google/protobuf/port_undef.inc"

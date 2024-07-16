@@ -563,9 +563,11 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/message/copy.c
   ${protobuf_SOURCE_DIR}/upb/message/internal/compare_unknown.c
   ${protobuf_SOURCE_DIR}/upb/message/internal/extension.c
+  ${protobuf_SOURCE_DIR}/upb/message/internal/iterator.c
   ${protobuf_SOURCE_DIR}/upb/message/internal/message.c
   ${protobuf_SOURCE_DIR}/upb/message/map.c
   ${protobuf_SOURCE_DIR}/upb/message/map_sorter.c
+  ${protobuf_SOURCE_DIR}/upb/message/merge.c
   ${protobuf_SOURCE_DIR}/upb/message/message.c
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/build_enum.c
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/decode.c
@@ -593,6 +595,7 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/reflection/oneof_def.c
   ${protobuf_SOURCE_DIR}/upb/reflection/service_def.c
   ${protobuf_SOURCE_DIR}/upb/text/encode.c
+  ${protobuf_SOURCE_DIR}/upb/text/internal/encode.c
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto.c
   ${protobuf_SOURCE_DIR}/upb/util/required_fields.c
   ${protobuf_SOURCE_DIR}/upb/wire/decode.c
@@ -634,6 +637,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/message/internal/array.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/compare_unknown.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/extension.h
+  ${protobuf_SOURCE_DIR}/upb/message/internal/iterator.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/map.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/map_entry.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/map_sorter.h
@@ -642,6 +646,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/message/internal/types.h
   ${protobuf_SOURCE_DIR}/upb/message/map.h
   ${protobuf_SOURCE_DIR}/upb/message/map_gencode_util.h
+  ${protobuf_SOURCE_DIR}/upb/message/merge.h
   ${protobuf_SOURCE_DIR}/upb/message/message.h
   ${protobuf_SOURCE_DIR}/upb/message/tagged_ptr.h
   ${protobuf_SOURCE_DIR}/upb/message/value.h
@@ -705,6 +710,8 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/reflection/oneof_def.h
   ${protobuf_SOURCE_DIR}/upb/reflection/service_def.h
   ${protobuf_SOURCE_DIR}/upb/text/encode.h
+  ${protobuf_SOURCE_DIR}/upb/text/internal/encode.h
+  ${protobuf_SOURCE_DIR}/upb/text/options.h
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto.h
   ${protobuf_SOURCE_DIR}/upb/util/required_fields.h
   ${protobuf_SOURCE_DIR}/upb/wire/decode.h
@@ -978,6 +985,7 @@ set(upb_test_files
   ${protobuf_SOURCE_DIR}/upb/message/copy_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/internal/compare_unknown_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/map_test.cc
+  ${protobuf_SOURCE_DIR}/upb/message/merge_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/test.cc
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test.cc
   ${protobuf_SOURCE_DIR}/upb/test/editions_test.cc
@@ -999,6 +1007,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/debug_counter_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_database_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_visitor_test.cc
@@ -1081,6 +1090,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_lite.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_optional.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_retention.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_string_type.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_string_view.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_well_known_types.proto
 )

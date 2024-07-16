@@ -12,7 +12,10 @@ load(":protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])
+exports_files([
+    "LICENSE",
+    "PrivacyInfo.xcprivacy",
+])
 
 ################################################################################
 # Well Known Types Proto Library Rules

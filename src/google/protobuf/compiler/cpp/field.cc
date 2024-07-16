@@ -147,6 +147,7 @@ FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* field,
   }
 
   has_trivial_zero_default_ = CanInitializeByZeroing(field, options, scc);
+  has_brace_default_assign_ = has_trivial_zero_default_ && !is_lazy_;
 }
 
 void FieldGeneratorBase::GenerateMemberConstexprConstructor(

@@ -27,6 +27,7 @@
 #undef PROTOBUF_NDEBUG_INLINE
 #undef PROTOBUF_MUSTTAIL
 #undef PROTOBUF_TAILCALL
+#undef PROTOBUF_CC
 #undef PROTOBUF_NOINLINE
 #undef PROTOBUF_IGNORE_DEPRECATION_START
 #undef PROTOBUF_IGNORE_DEPRECATION_STOP
@@ -74,6 +75,7 @@
 #undef PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 #undef PROTOBUF_PREFETCH_PARSE_TABLE
 #undef PROTOBUF_PREFETCH_WITH_OFFSET
+#undef PROTOBUF_DEBUG_COUNTER
 #undef PROTOBUF_TC_PARAM_DECL
 #undef PROTOBUF_DEBUG
 #undef PROTOBUF_NO_THREADLOCAL
@@ -81,6 +83,7 @@
 #ifdef PROTOBUF_FUTURE_BREAKING_CHANGES
 #undef PROTOBUF_FUTURE_BREAKING_CHANGES
 #undef PROTOBUF_FUTURE_DESCRIPTOR_EXTENSION_DECL
+#undef PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
 #endif
 
 // Restore macros that may have been #undef'd in port_def.inc.
@@ -118,6 +121,8 @@
 #pragma pop_macro("ERROR_BUSY")
 #pragma pop_macro("ERROR_INSTALL_FAILED")
 #pragma pop_macro("ERROR_NOT_FOUND")
+#pragma pop_macro("ERROR_RETRY")
+#pragma pop_macro("ERROR_TIMEOUT")
 #pragma pop_macro("GetClassName")
 #pragma pop_macro("GetCurrentTime")
 #pragma pop_macro("GetMessage")

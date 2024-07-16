@@ -3,8 +3,9 @@
 Disclaimer: This project is experimental, under heavy development, and should not
 be used yet."""
 
-load("@rules_proto//proto:defs.bzl", "ProtoInfo", "proto_common")
 load("@rules_rust//rust:defs.bzl", "rust_common")
+load("//bazel/common:proto_common.bzl", "proto_common")
+load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load(
     "//rust:aspects.bzl",
     "RustProtoInfo",

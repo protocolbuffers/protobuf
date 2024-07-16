@@ -14,8 +14,6 @@
 
 @interface GPBUnknownFieldSet ()
 
-+ (BOOL)isFieldTag:(int32_t)tag;
-
 - (NSData *)data;
 
 - (size_t)serializedSize;
