@@ -143,6 +143,16 @@ ruby_test(
 )
 
 ruby_test(
+    name = "utf8",
+    srcs = ["utf8.rb"],
+    deps = [
+        ":test_ruby_protos",
+        "//ruby:protobuf",
+        "@protobuf_bundle//:test-unit",
+    ],
+)
+
+ruby_test(
     name = "well_known_types_test",
     srcs = ["well_known_types_test.rb"],
     deps = [
