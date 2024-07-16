@@ -18,7 +18,8 @@ bazel_dep(name = "jsoncpp", version = "1.9.5")
 bazel_dep(name = "rules_cc", version = "0.0.9")
 bazel_dep(name = "rules_fuzzing", version = "0.5.2")
 bazel_dep(name = "rules_java", version = "5.3.5")
-bazel_dep(name = "rules_jvm_external", version = "5.1")
+bazel_dep(name = "rules_jvm_external", version = "6.0")
+bazel_dep(name = "rules_kotlin", version = "1.9.0")
 bazel_dep(name = "rules_pkg", version = "0.7.0")
 bazel_dep(name = "rules_python", version = "0.28.0")
 bazel_dep(name = "rules_rust", version = "0.45.1")
@@ -72,5 +73,29 @@ crate.spec(
 crate.from_specs()
 use_repo(crate, crate_index = "crates")
 
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    artifacts = [
+        "com.google.caliper:caliper:1.0-beta-3",
+        "com.google.code.findbugs:jsr305:3.0.2",
+        "com.google.code.gson:gson:2.8.9",
+        "com.google.errorprone:error_prone_annotations:2.5.1",
+        "com.google.j2objc:j2objc-annotations:2.8",
+        "com.google.guava:guava:32.0.1-jre",
+        "com.google.guava:guava-testlib:32.0.1-jre",
+        "com.google.truth:truth:1.1.2",
+        "junit:junit:4.13.2",
+        "org.mockito:mockito-core:4.3.1",
+        "biz.aQute.bnd:biz.aQute.bndlib:6.4.0",
+        "info.picocli:picocli:4.6.3",
+    ],
+    repositories = [
+        "https://repo1.maven.org/maven2",
+        "https://repo.maven.apache.org/maven2",
+    ],
+)
+use_repo(maven, "maven")
+
 # Development dependencies
+bazel_dep(name = "googletest", version = "1.14.0", repo_name = "com_google_googletest", dev_dependency = True)
 bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
