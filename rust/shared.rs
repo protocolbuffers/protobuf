@@ -22,6 +22,7 @@ use std::fmt;
 /// These are the items protobuf users can access directly.
 #[doc(hidden)]
 pub mod __public {
+    pub use crate::codegen_traits::{Message, MessageMut, MessageView};
     pub use crate::r#enum::{Enum, UnknownEnumValue};
     pub use crate::map::{Map, MapIter, MapMut, MapView, ProxiedInMapValue};
     pub use crate::optional::Optional;
@@ -51,6 +52,7 @@ pub mod __runtime;
 #[path = "upb.rs"]
 pub mod __runtime;
 
+mod codegen_traits;
 #[path = "enum.rs"]
 mod r#enum;
 mod map;

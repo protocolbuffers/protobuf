@@ -951,6 +951,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           inner: $pbr$::MessageInner
         }
 
+        impl $pb$::Message for $Msg$ {}
+
         impl std::fmt::Debug for $Msg$ {
           fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             $Msg::debug$
@@ -987,6 +989,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           msg: $pbr$::RawMessage,
           _phantom: $Phantom$<&'msg ()>,
         }
+
+        impl $pb$::MessageView for $Msg$View<'_> {}
 
         impl std::fmt::Debug for $Msg$View<'_> {
           fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -1046,6 +1050,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         pub struct $Msg$Mut<'msg> {
           inner: $pbr$::MutatorMessageRef<'msg>,
         }
+
+        impl $pb$::MessageMut for $Msg$Mut<'_> {}
 
         impl std::fmt::Debug for $Msg$Mut<'_> {
           fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
