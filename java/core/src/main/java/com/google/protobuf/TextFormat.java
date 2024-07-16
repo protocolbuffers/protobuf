@@ -17,9 +17,12 @@ import java.math.BigInteger;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,11 +51,11 @@ public final class TextFormat {
    * @deprecated Use {@code printer().emittingSingleLine(true).printToString(MessageOrBuilder)}
    */
   @Deprecated
-  @InlineMe(
-      replacement = "TextFormat.printer().emittingSingleLine(true).printToString(message)",
-      imports = "com.google.protobuf.TextFormat")
   public static String shortDebugString(final MessageOrBuilder message) {
-    return printer().emittingSingleLine(true).printToString(message);
+    return printer()
+        .emittingSingleLine(true)
+        .setFieldReporterLevel(Printer.FieldReporterLevel.SHORT_DEBUG_STRING)
+        .printToString(message);
   }
 
   /**
@@ -124,6 +127,26 @@ public final class TextFormat {
             false,
             false);
 
+    /**
+     * A list of the public APIs that output human-readable text from a message. A higher-level API
+     * must be larger than any lower-level APIs it calls under the hood, e.g
+     * DEBUG_MULTILINE.compareTo(PRINTER_PRINT_TO_STRING) > 0. The inverse is not necessarily true.
+     */
+    static enum FieldReporterLevel {
+      NO_REPORT,
+      PRINT,
+      PRINTER_PRINT_TO_STRING,
+      TEXTFORMAT_PRINT_TO_STRING,
+      PRINT_UNICODE,
+      SHORT_DEBUG_STRING,
+      LEGACY_MULTILINE,
+      LEGACY_SINGLE_LINE,
+      DEBUG_MULTILINE,
+      DEBUG_SINGLE_LINE,
+      ABSTRACT_TO_STRING,
+      ABSTRACT_MUTABLE_TO_STRING
+    }
+
     /** Whether to escape non ASCII characters with backslash and octal. */
     private final boolean escapeNonAscii;
 
@@ -137,6 +160,24 @@ public final class TextFormat {
     private final boolean enablingSafeDebugFormat;
 
     private final boolean singleLine;
+
+    public static final ThreadLocal<FieldReporterLevel> fieldReporterLevel =
+        new ThreadLocal<FieldReporterLevel>() {
+          @Override
+          protected FieldReporterLevel initialValue() {
+            return FieldReporterLevel.NO_REPORT;
+          }
+        };
+
+    // Any API level higher than this level will be reported. This is set to
+    // ABSTRACT_MUTABLE_TO_STRING by default to prevent reporting for now.
+    private static final ThreadLocal<FieldReporterLevel> sensitiveFieldReportingLevel =
+        new ThreadLocal<FieldReporterLevel>() {
+          @Override
+          protected FieldReporterLevel initialValue() {
+            return FieldReporterLevel.ABSTRACT_MUTABLE_TO_STRING;
+          }
+        };
 
     private Printer(
         boolean escapeNonAscii,
@@ -219,13 +260,32 @@ public final class TextFormat {
           escapeNonAscii, typeRegistry, extensionRegistry, enablingSafeDebugFormat, singleLine);
     }
 
+    void setSensitiveFieldReportingLevel(FieldReporterLevel level) {
+      Printer.sensitiveFieldReportingLevel.set(level);
+    }
+
+    @CanIgnoreReturnValue
+    Printer setFieldReporterLevel(FieldReporterLevel level) {
+      if (level.compareTo(fieldReporterLevel.get()) > 0) {
+        fieldReporterLevel.set(level);
+      }
+      return this;
+    }
+
+    void resetFieldReporterLevel() {
+      fieldReporterLevel.set(FieldReporterLevel.NO_REPORT);
+    }
+
     /**
      * Outputs a textual representation of the Protocol Message supplied into the parameter output.
      * (This representation is the new version of the classic "ProtocolPrinter" output from the
      * original Protocol Buffer system)
      */
     public void print(final MessageOrBuilder message, final Appendable output) throws IOException {
-      print(message, setSingleLineOutput(output, this.singleLine));
+      setFieldReporterLevel(FieldReporterLevel.PRINT);
+      TextGenerator generator = setSingleLineOutput(output, this.singleLine);
+      print(message, generator);
+      TextFormat.printer().resetFieldReporterLevel();
     }
 
     /** Outputs a textual representation of {@code fields} to {@code output}. */
@@ -430,7 +490,7 @@ public final class TextFormat {
     private void printFieldValue(
         final FieldDescriptor field, final Object value, final TextGenerator generator)
         throws IOException {
-      if (shouldRedact(field)) {
+      if (shouldRedact(field, generator)) {
         generator.print(REDACTED_MARKER);
         if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
           generator.eol();
@@ -513,13 +573,15 @@ public final class TextFormat {
     // option
     // must be on. 2) The field must be marked by a debug_redact=true option, or is marked by an
     // option with an enum value that is marked by a debug_redact=true option.
-    private boolean shouldRedact(final FieldDescriptor field) {
-      if (!this.enablingSafeDebugFormat) {
+    private boolean shouldRedact(final FieldDescriptor field, TextGenerator generator) {
+      // Skip checking if it's sensitive and potentially reporting it if we don't care about either.
+      if (!shouldReport(fieldReporterLevel.get()) && !enablingSafeDebugFormat) {
         return false;
       }
-      if (field.getOptions().hasDebugRedact()) {
-        return field.getOptions().getDebugRedact();
-      }
+      boolean isSensitive = false;
+      if (field.getOptions().hasDebugRedact() && field.getOptions().getDebugRedact()) {
+        isSensitive = true;
+      } else {
       // Iterate through every option; if it's an enum, we check each enum value for debug_redact.
       for (Map.Entry<Descriptors.FieldDescriptor, Object> entry :
           field.getOptions().getAllFields().entrySet()) {
@@ -530,17 +592,24 @@ public final class TextFormat {
         if (option.isRepeated()) {
           for (EnumValueDescriptor value : (List<EnumValueDescriptor>) entry.getValue()) {
             if (shouldRedactOptionValue(value)) {
-              return true;
+                isSensitive = true;
+                break;
             }
           }
         } else {
           EnumValueDescriptor optionValue = (EnumValueDescriptor) entry.getValue();
           if (shouldRedactOptionValue(optionValue)) {
-            return true;
+              isSensitive = true;
+              break;
           }
         }
+        }
       }
-      return false;
+      return isSensitive && enablingSafeDebugFormat;
+    }
+
+    private boolean shouldReport(FieldReporterLevel level) {
+      return sensitiveFieldReportingLevel.get().compareTo(level) < 0;
     }
 
     /** Like {@code print()}, but writes directly to a {@code String} and returns it. */
@@ -550,6 +619,7 @@ public final class TextFormat {
         if (enablingSafeDebugFormat) {
           applyUnstablePrefix(text);
         }
+        setFieldReporterLevel(FieldReporterLevel.PRINTER_PRINT_TO_STRING);
         print(message, text);
         return text.toString();
       } catch (IOException e) {
@@ -578,9 +648,10 @@ public final class TextFormat {
      *     this.printer().emittingSingleLine(true).printToString(MessageOrBuilder)}
      */
     @Deprecated
-    @InlineMe(replacement = "this.emittingSingleLine(true).printToString(message)")
     public String shortDebugString(final MessageOrBuilder message) {
-      return this.emittingSingleLine(true).printToString(message);
+      return this.emittingSingleLine(true)
+          .setFieldReporterLevel(FieldReporterLevel.SHORT_DEBUG_STRING)
+          .printToString(message);
     }
 
     /**

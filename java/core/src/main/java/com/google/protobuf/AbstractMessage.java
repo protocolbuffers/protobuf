@@ -84,7 +84,9 @@ public abstract class AbstractMessage
 
   @Override
   public final String toString() {
-    return TextFormat.printer().printToString(this);
+    return TextFormat.printer()
+        .setFieldReporterLevel(TextFormat.Printer.FieldReporterLevel.ABSTRACT_TO_STRING)
+        .printToString(this);
   }
 
   @Override
