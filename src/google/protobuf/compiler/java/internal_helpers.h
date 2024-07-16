@@ -57,7 +57,7 @@ inline bool CheckUtf8(const FieldDescriptor* descriptor) {
 //    bit 0: whether the field is required.
 //    bit 1: whether the field requires UTF-8 validation.
 //    bit 2: whether the field needs isInitialized check.
-//    bit 3: whether the field is a map field with proto2 enum value.
+//    bit 3: whether the field is a closed enum.
 //    bits 4-7: unused
 int GetExperimentalJavaFieldType(const FieldDescriptor* field);
 

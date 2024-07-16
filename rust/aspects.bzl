@@ -4,7 +4,6 @@ Disclaimer: This project is experimental, under heavy development, and should no
 be used yet."""
 
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
-load("@rules_proto//proto:defs.bzl", "ProtoInfo", "proto_common")
 
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVariantInfo")
@@ -12,6 +11,8 @@ load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVari
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:rustc.bzl", "rustc_compile_action")
 load("//bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library_aspect")
+load("//bazel/common:proto_common.bzl", "proto_common")
+load("//bazel/common:proto_info.bzl", "ProtoInfo")
 
 visibility(["//rust/..."])
 
@@ -334,7 +335,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
             ctx = ctx,
             attr = attr,
             cc_toolchain = cc_toolchain,
-            cc_infos = [target[CcInfo], ctx.attr._cpp_thunks_deps[CcInfo]] + dep_cc_infos,
+            cc_infos = [target[CcInfo]] + [dep[CcInfo] for dep in ctx.attr._cpp_thunks_deps] + dep_cc_infos,
         ) for thunk in thunks])
 
     runtime = proto_lang_toolchain.runtime
@@ -385,8 +386,11 @@ def _make_proto_library_aspect(is_upb):
                 executable = True,
                 cfg = "exec",
             ),
-            "_cpp_thunks_deps": attr.label(
-                default = Label("//rust/cpp_kernel:cpp_api"),
+            "_cpp_thunks_deps": attr.label_list(
+                default = [
+                    Label("//rust/cpp_kernel:cpp_api"),
+                    Label("//src/google/protobuf"),
+                ],
             ),
             "_error_format": attr.label(
                 default = Label("@rules_rust//:error_format"),

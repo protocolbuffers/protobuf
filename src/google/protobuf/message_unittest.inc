@@ -18,9 +18,10 @@
 #include <sys/types.h>
 
 #include <cmath>
-#include <functional>
+#include <cstddef>
+#include <cstdint>
 #include <limits>
-#include <vector>
+#include <string>
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -825,12 +826,21 @@ TEST(MESSAGE_TEST_NAME, DownCastMessageInvalidPointerType) {
 TEST(MESSAGE_TEST_NAME, DownCastMessageInvalidReferenceType) {
   UNITTEST::TestAllTypes test_all_types;
 
-  MessageLite& test_all_types_pointer = test_all_types;
+  MessageLite& test_all_types_ref = test_all_types;
 
   ASSERT_DEBUG_DEATH(
-      DownCastMessage<UNITTEST::TestRequired>(test_all_types_pointer),
+      DownCastMessage<UNITTEST::TestRequired>(test_all_types_ref),
       "Cannot downcast " + test_all_types.GetTypeName() + " to " +
           UNITTEST::TestRequired::default_instance().GetTypeName());
+}
+
+TEST(MESSAGE_TEST_NAME, MessageDebugStringMatchesBehindPointerAndLitePointer) {
+  UNITTEST::TestAllTypes test_all_types;
+  test_all_types.set_optional_string("foo");
+  Message* msg_full_pointer = &test_all_types;
+  MessageLite* msg_lite_pointer = &test_all_types;
+  ASSERT_EQ(test_all_types.DebugString(), msg_full_pointer->DebugString());
+  ASSERT_EQ(test_all_types.DebugString(), msg_lite_pointer->DebugString());
 }
 
 #if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet.

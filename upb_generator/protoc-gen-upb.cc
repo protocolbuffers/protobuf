@@ -243,10 +243,10 @@ void DumpEnumValues(upb::EnumDefPtr desc, Output& output) {
   for (int i = 0; i < desc.value_count(); i++) {
     values.push_back(desc.value(i));
   }
-  std::sort(values.begin(), values.end(),
-            [](upb::EnumValDefPtr a, upb::EnumValDefPtr b) {
-              return a.number() < b.number();
-            });
+  std::stable_sort(values.begin(), values.end(),
+                   [](upb::EnumValDefPtr a, upb::EnumValDefPtr b) {
+                     return a.number() < b.number();
+                   });
 
   for (size_t i = 0; i < values.size(); i++) {
     auto value = values[i];

@@ -146,10 +146,8 @@ CMessageClass* GetOrCreateMessageClass(PyMessageFactory* self,
   }
   // Create a new message class.
   ScopedPyObjectPtr args(Py_BuildValue(
-      "s(){sOsOsO}", descriptor->name().c_str(),
-      "DESCRIPTOR", py_descriptor.get(),
-      "__module__", Py_None,
-      "message_factory", self));
+      "s(){sOsOsO}", std::string(descriptor->name()).c_str(), "DESCRIPTOR",
+      py_descriptor.get(), "__module__", Py_None, "message_factory", self));
   if (args == nullptr) {
     return nullptr;
   }
@@ -197,7 +195,7 @@ CMessageClass* GetMessageClass(PyMessageFactory* self,
   iterator ret = self->classes_by_descriptor->find(message_descriptor);
   if (ret == self->classes_by_descriptor->end()) {
     PyErr_Format(PyExc_TypeError, "No message class registered for '%s'",
-                 message_descriptor->full_name().c_str());
+                 std::string(message_descriptor->full_name()).c_str());
     return nullptr;
   } else {
     return ret->second;

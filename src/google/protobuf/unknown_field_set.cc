@@ -14,6 +14,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/internal/resize_uninitialized.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
@@ -280,7 +281,7 @@ void UnknownField::DeepCopy(const UnknownField& other) {
 uint8_t* UnknownField::InternalSerializeLengthDelimitedNoTag(
     uint8_t* target, io::EpsCopyOutputStream* stream) const {
   ABSL_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
-  const std::string& data = *data_.length_delimited_.string_value;
+  const absl::string_view data = *data_.length_delimited_.string_value;
   target = io::CodedOutputStream::WriteVarint32ToArray(data.size(), target);
   target = stream->WriteRaw(data.data(), data.size(), target);
   return target;

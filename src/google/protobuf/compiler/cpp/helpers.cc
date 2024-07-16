@@ -332,9 +332,7 @@ bool CanInitializeByZeroing(const FieldDescriptor* field,
     case FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool() == false;
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      // Non-repeated, non-lazy message fields are raw pointers initialized to
-      // null.
-      return !IsLazy(field, options, scc_analyzer);
+      return true;
     default:
       return false;
   }
@@ -446,7 +444,7 @@ std::string ResolveKeyword(absl::string_view name) {
 }
 
 std::string DotsToColons(absl::string_view name) {
-  std::vector<std::string> scope = absl::StrSplit(name, ".", absl::SkipEmpty());
+  std::vector<std::string> scope = absl::StrSplit(name, '.', absl::SkipEmpty());
   for (auto& word : scope) {
     word = ResolveKeyword(word);
   }
@@ -531,7 +529,7 @@ std::string SuperClassName(const Descriptor* descriptor,
 }
 
 std::string FieldName(const FieldDescriptor* field) {
-  std::string result = field->name();
+  std::string result = std::string(field->name());
   absl::AsciiStrToLower(&result);
   if (Keywords().count(result) > 0) {
     result.append("_");
@@ -565,7 +563,7 @@ std::string QualifiedOneofCaseConstantName(const FieldDescriptor* field) {
 }
 
 std::string EnumValueName(const EnumValueDescriptor* enum_value) {
-  std::string result = enum_value->name();
+  std::string result = std::string(enum_value->name());
   if (Keywords().count(result) > 0) {
     result.append("_");
   }
@@ -904,7 +902,7 @@ std::string SafeFunctionName(const Descriptor* descriptor,
                              const FieldDescriptor* field,
                              absl::string_view prefix) {
   // Do not use FieldName() since it will escape keywords.
-  std::string name = field->name();
+  std::string name = std::string(field->name());
   absl::AsciiStrToLower(&name);
   std::string function_name = absl::StrCat(prefix, name);
   if (descriptor->FindFieldByName(function_name)) {
@@ -1954,3 +1952,5 @@ bool NeedsPostLoopHandler(const Descriptor* descriptor,
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

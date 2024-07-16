@@ -530,7 +530,7 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
           // #import the headers for anything that a plain dependency of this
           // proto file (that means they were just an include, not a "public"
           // include).
-          absl::flat_hash_set<std::string> public_import_names;
+          absl::flat_hash_set<absl::string_view> public_import_names;
           for (int i = 0; i < file_->public_dependency_count(); i++) {
             public_import_names.insert(file_->public_dependency(i)->name());
           }

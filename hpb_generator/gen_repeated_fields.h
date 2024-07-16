@@ -5,15 +5,16 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef THIRD_PARTY_UPB_PROTOS_GENERATOR_GEN_REPEATED_FIELDS_H_
-#define THIRD_PARTY_UPB_PROTOS_GENERATOR_GEN_REPEATED_FIELDS_H_
+#ifndef PROTOBUF_COMPILER_HBP_GEN_REPEATED_FIELDS_H_
+#define PROTOBUF_COMPILER_HBP_GEN_REPEATED_FIELDS_H_
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
-#include "hpb_generator/output.h"
+#include "google/protobuf/compiler/hpb/output.h"
 
-namespace protos_generator {
-namespace protobuf = ::google::protobuf;
+namespace google::protobuf::hpb_generator {
+
+namespace protobuf = ::proto2;
 
 void WriteRepeatedFieldUsingAccessors(const protobuf::FieldDescriptor* field,
                                       absl::string_view class_name,
@@ -41,6 +42,7 @@ void WriteRepeatedScalarAccessor(const protobuf::Descriptor* message,
                                  absl::string_view resolved_field_name,
                                  absl::string_view class_name, Output& output);
 
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator
 
-#endif  // THIRD_PARTY_UPB_PROTOS_GENERATOR_GEN_REPEATED_FIELDS_H_
+#endif  // PROTOBUF_COMPILER_HBP_GEN_REPEATED_FIELDS_H_

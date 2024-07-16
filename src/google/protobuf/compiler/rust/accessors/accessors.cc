@@ -27,10 +27,11 @@ namespace {
 std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
     Context& ctx, const FieldDescriptor& field) {
   // TODO: We do not support ctype=CORD fields or repeated
-  // ctype=STRING_PIECE fields.
+  // ctype=STRING_PIECE fields on cpp kernel yet (upb doesn't care about ctype).
   auto ctype = field.options().ctype();
-  if (ctype == FieldOptions::CORD ||
-      (ctype == FieldOptions::STRING_PIECE && field.is_repeated())) {
+  if (ctx.is_cpp() &&
+      (ctype == FieldOptions::CORD ||
+       (ctype == FieldOptions::STRING_PIECE && field.is_repeated()))) {
     return std::make_unique<UnsupportedField>(
         "fields has an unsupported ctype");
   }

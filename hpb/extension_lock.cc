@@ -5,12 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "protos/protos_extension_lock.h"
+#include "google/protobuf/hpb/extension_lock.h"
 
 #include <atomic>
 
-namespace protos::internal {
+namespace hpb::internal {
 
 std::atomic<UpbExtensionLocker> upb_extension_locker_global;
 
-}  // namespace protos::internal
+}  // namespace hpb::internal

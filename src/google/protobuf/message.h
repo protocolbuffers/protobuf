@@ -389,6 +389,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
                                        internal::CachedSize* cached_size) const;
 
   // Reflection based version for reflection based types.
+  static absl::string_view GetTypeNameImpl(const ClassData* data);
   static void MergeImpl(MessageLite& to, const MessageLite& from);
   static void ClearImpl(MessageLite& msg);
   static size_t ByteSizeLongImpl(const MessageLite& msg);

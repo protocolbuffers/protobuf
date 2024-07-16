@@ -133,7 +133,6 @@ cc_toolchain_config(
     extra_compiler_flags = [
         "-isystem/usr/lib/gcc/i686-w64-mingw32/10-posix/include/c++",
         "-isystem/usr/lib/gcc/i686-w64-mingw32/10-posix/include/c++/i686-w64-mingw32",
-        "-fsjlj-exceptions",
     ],
     extra_include = "/usr/lib/gcc/i686-w64-mingw32",
     extra_linker_flags = [

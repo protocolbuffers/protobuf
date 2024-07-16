@@ -122,3 +122,32 @@ fn test_recursive_msg() {
     assert_that!(msg.child().child().payload().optional_int32(), eq(42));
     assert_that!(msg.child().child().child().payload().optional_int32(), eq(43));
 }
+
+#[test]
+fn test_spread_msg() {
+    let msg = proto!(TestAllTypes { optional_nested_message: NestedMessage { bb: 42 } });
+    let msg2 = proto!(TestAllTypes { ..msg.as_view() });
+    assert_that!(msg2.optional_nested_message().bb(), eq(42));
+    let msg3 = proto!(TestAllTypes { optional_int32: 1, ..msg.as_view() });
+    assert_that!(msg3.optional_nested_message().bb(), eq(42));
+    assert_that!(msg3.optional_int32(), eq(1));
+}
+
+#[test]
+fn test_spread_nested_msg() {
+    let msg = proto!(NestedTestAllTypes {
+        child: NestedTestAllTypes {
+            payload: TestAllTypes { optional_int32: 41 },
+            child: NestedTestAllTypes {
+                child: NestedTestAllTypes { payload: TestAllTypes { optional_int32: 43 } },
+                payload: TestAllTypes { optional_int32: 42 }
+            }
+        }
+    });
+    let msg2 = proto!(NestedTestAllTypes {
+        child: NestedTestAllTypes { payload: TestAllTypes { optional_int32: 100 }, ..msg.child() }
+    });
+    assert_that!(msg2.child().payload().optional_int32(), eq(100));
+    assert_that!(msg2.child().child().payload().optional_int32(), eq(42));
+    assert_that!(msg2.child().child().child().payload().optional_int32(), eq(43));
+}

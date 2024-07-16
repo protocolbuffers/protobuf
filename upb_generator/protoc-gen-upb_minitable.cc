@@ -364,7 +364,7 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
       auto pair = subs.emplace(index, GetSub(field, false));
       ABSL_CHECK(pair.second);
       if (options.one_output_per_message && field.IsSubMessage() &&
-          IsCrossFile(field)) {
+          IsCrossFile(field) && !upb_MiniTableField_IsMap(f)) {
         if (seen.insert(pools.GetMiniTable64(field.message_type())).second) {
           output(
               "__attribute__((weak)) const upb_MiniTable* $0 ="

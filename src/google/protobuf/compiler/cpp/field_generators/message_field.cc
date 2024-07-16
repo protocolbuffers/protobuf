@@ -400,21 +400,22 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
   if (!is_group()) {
     p->Emit(R"cc(
       target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
-          $number$, *$field_$, $field_$->GetCachedSize(), target, stream);
+          $number$, *this_.$field_$, this_.$field_$->GetCachedSize(), target,
+          stream);
     )cc");
   } else {
     p->Emit(R"cc(
       target = stream->EnsureSpace(target);
       target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
-          $number$, *$field_$, target, stream);
+          $number$, *this_.$field_$, target, stream);
     )cc");
   }
 }
 
 void SingularMessage::GenerateByteSize(io::Printer* p) const {
   p->Emit(R"cc(
-    total_size +=
-        $tag_size$ + $pbi$::WireFormatLite::$declared_type$Size(*$field_$);
+    total_size += $tag_size$ +
+                  $pbi$::WireFormatLite::$declared_type$Size(*this_.$field_$);
   )cc");
 }
 
@@ -953,8 +954,8 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
                 }
               }}},
             R"cc(
-              for (auto it = this->$field_$.pointer_begin(),
-                        end = this->$field_$.pointer_end();
+              for (auto it = this_.$field_$.pointer_begin(),
+                        end = this_.$field_$.pointer_end();
                    it < end; ++it) {
                 $serialize_field$;
               }
@@ -965,7 +966,7 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
                 if (field_->type() == FieldDescriptor::TYPE_MESSAGE) {
                   p->Emit(
                       R"cc(
-                        const auto& repfield = this->_internal_$name$().Get(i);
+                        const auto& repfield = this_._internal_$name$().Get(i);
                         target =
                             $pbi$::WireFormatLite::InternalWrite$declared_type$(
                                 $number$, repfield, repfield.GetCachedSize(),
@@ -977,14 +978,14 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
                         target = stream->EnsureSpace(target);
                         target =
                             $pbi$::WireFormatLite::InternalWrite$declared_type$(
-                                $number$, this->_internal_$name$().Get(i),
+                                $number$, this_._internal_$name$().Get(i),
                                 target, stream);
                       )cc");
                 }
               }}},
             R"cc(
               for (unsigned i = 0, n = static_cast<unsigned>(
-                                       this->_internal_$name$_size());
+                                       this_._internal_$name$_size());
                    i < n; i++) {
                 $serialize_field$;
               }
@@ -995,8 +996,8 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
 void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
   p->Emit(
       R"cc(
-        total_size += $tag_size$UL * this->_internal_$name$_size();
-        for (const auto& msg : this->_internal$_weak$_$name$()) {
+        total_size += $tag_size$UL * this_._internal_$name$_size();
+        for (const auto& msg : this_._internal$_weak$_$name$()) {
           total_size += $pbi$::WireFormatLite::$declared_type$Size(msg);
         }
       )cc");

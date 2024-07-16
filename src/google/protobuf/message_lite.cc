@@ -92,16 +92,17 @@ const char* MessageLite::_InternalParse(const char* ptr,
 }
 
 std::string MessageLite::GetTypeName() const {
-  auto* data = GetClassData();
-  ABSL_DCHECK(data != nullptr);
+  return std::string(TypeId::Get(*this).name());
+}
 
-  if (!data->is_lite) {
+absl::string_view TypeId::name() const {
+  if (!data_->is_lite) {
     // For !LITE messages, we use the descriptor method function.
-    return data->full().descriptor_methods->get_type_name(*this);
+    return data_->full().descriptor_methods->get_type_name(data_);
   }
 
   // For LITE messages, the type name is a char[] just beyond ClassData.
-  return reinterpret_cast<const char*>(data) + sizeof(ClassData);
+  return reinterpret_cast<const char*>(data_) + sizeof(MessageLite::ClassData);
 }
 
 void MessageLite::OnDemandRegisterArenaDtor(Arena* arena) {
@@ -127,6 +128,12 @@ std::string MessageLite::InitializationErrorString() const {
 }
 
 std::string MessageLite::DebugString() const {
+  auto* data = GetClassData();
+  ABSL_DCHECK(data != nullptr);
+  if (!data->is_lite) {
+    return data->full().descriptor_methods->debug_string(*this);
+  }
+
   return absl::StrCat("MessageLite at 0x", absl::Hex(this));
 }
 
@@ -193,6 +200,17 @@ void MessageLite::LogInitializationErrorMessage() const {
 }
 
 namespace internal {
+
+void FailDynamicCast(const MessageLite& from, const MessageLite& to) {
+  const auto to_name = to.GetTypeName();
+  if (internal::GetClassData(from)->is_dynamic) {
+    ABSL_LOG(FATAL)
+        << "Cannot downcast from a DynamicMessage to generated type "
+        << to_name;
+  }
+  const auto from_name = from.GetTypeName();
+  ABSL_LOG(FATAL) << "Cannot downcast " << from_name << " to " << to_name;
+}
 
 template <bool aliasing>
 bool MergeFromImpl(absl::string_view input, MessageLite* msg,

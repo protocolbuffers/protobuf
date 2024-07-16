@@ -22,7 +22,7 @@ namespace protobuf {
 MapReflectionTester::MapReflectionTester(const Descriptor* base_descriptor)
     : base_descriptor_(base_descriptor) {
   const DescriptorPool* pool = base_descriptor->file()->pool();
-  std::string package = base_descriptor->file()->package();
+  const absl::string_view package = base_descriptor->file()->package();
 
   map_enum_foo_ =
       pool->FindEnumValueByName(absl::StrCat(package, ".MAP_ENUM_FOO"));

@@ -10,6 +10,7 @@
 #include "google/protobuf/compiler/java/shared_code_generator.h"
 
 #include <memory>
+#include <utility>
 
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -17,6 +18,7 @@
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/compiler/java/names.h"
+#include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.h"
@@ -166,7 +168,7 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
   // Find out all dependencies.
   std::vector<std::pair<std::string, std::string> > dependencies;
   for (int i = 0; i < file_->dependency_count(); i++) {
-    std::string filename = file_->dependency(i)->name();
+    const absl::string_view filename = file_->dependency(i)->name();
     std::string package = FileJavaPackage(file_->dependency(i), true, options_);
     std::string classname =
         name_resolver_->GetDescriptorClassName(file_->dependency(i));
@@ -176,7 +178,7 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
     } else {
       full_name = absl::StrCat(package, ".", classname);
     }
-    dependencies.push_back(std::make_pair(filename, full_name));
+    dependencies.push_back(std::make_pair(std::string(filename), full_name));
   }
 
   // -----------------------------------------------------------------

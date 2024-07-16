@@ -65,13 +65,13 @@ std::string GetHeaderFile(Context& ctx, const FileDescriptor& file) {
 
 std::string RawMapThunk(Context& ctx, const Descriptor& msg,
                         absl::string_view key_t, absl::string_view op) {
-  return absl::StrCat("__rust_proto_thunk__Map_", key_t, "_",
+  return absl::StrCat("proto2_rust_thunk_Map_", key_t, "_",
                       GetUnderscoreDelimitedFullName(ctx, *&msg), "_", op);
 }
 
 std::string RawMapThunk(Context& ctx, const EnumDescriptor& desc,
                         absl::string_view key_t, absl::string_view op) {
-  return absl::StrCat("__rust_proto_thunk__Map_", key_t, "_",
+  return absl::StrCat("proto2_rust_thunk_Map_", key_t, "_",
                       GetUnderscoreDelimitedFullName(ctx, *&desc), "_", op);
 }
 
@@ -82,7 +82,7 @@ std::string FieldPrefix(Context& ctx, const T& field) {
   // NOTE: When ctx.is_upb(), this functions outputs must match the symbols
   // that the upbc plugin generates exactly. Failure to do so correctly results
   // in a link-time failure.
-  absl::string_view prefix = ctx.is_cpp() ? "__rust_proto_thunk__" : "";
+  absl::string_view prefix = ctx.is_cpp() ? "proto2_rust_thunk_" : "";
   std::string thunk_prefix = absl::StrCat(
       prefix, GetUnderscoreDelimitedFullName(ctx, *field.containing_type()));
   return thunk_prefix;
@@ -148,7 +148,7 @@ std::string ThunkName(Context& ctx, const OneofDescriptor& field,
 
 std::string ThunkName(Context& ctx, const Descriptor& msg,
                       absl::string_view op) {
-  absl::string_view prefix = ctx.is_cpp() ? "__rust_proto_thunk__" : "";
+  absl::string_view prefix = ctx.is_cpp() ? "proto2_rust_thunk_" : "";
   return absl::StrCat(prefix, GetUnderscoreDelimitedFullName(ctx, msg), "_",
                       op);
 }
@@ -456,12 +456,14 @@ PROTOBUF_CONSTINIT const MapKeyType kMapKeyTypes[] = {
      /*rs_from_ffi_key_expr=*/
      "$pb$::ProtoStr::from_utf8_unchecked(ffi_key.as_ref())",
      /*cc_key_t=*/"std::string",
-     /*cc_ffi_key_t=*/"google::protobuf::rust_internal::PtrAndLen",
+     /*cc_ffi_key_t=*/"google::protobuf::rust::PtrAndLen",
      /*cc_from_ffi_key_expr=*/
      "std::string(key.ptr, key.len)", /*cc_to_ffi_key_expr=*/
-     "google::protobuf::rust_internal::PtrAndLen(cpp_key.data(), cpp_key.size())"}};
+     "google::protobuf::rust::PtrAndLen(cpp_key.data(), cpp_key.size())"}};
 
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

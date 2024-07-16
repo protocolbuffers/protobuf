@@ -99,3 +99,5 @@ const char* TcParser::MessageSetWireFormatParseLoop(
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

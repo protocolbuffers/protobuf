@@ -5,33 +5,32 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "protos/protos_internal.h"
+#include "google/protobuf/hpb/internal.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "hpb_generator/tests/test_model.upb.h"
-#include "hpb_generator/tests/test_model.upb.proto.h"
+#include "google/protobuf/compiler/hpb/tests/test_model.upb.h"
+#include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
 #include "upb/mem/arena.h"
 
-namespace protos::testing {
+namespace hpb::testing {
 namespace {
-using ::protos_generator::test::protos::TestModel;
+using ::hpb_unittest::protos::TestModel;
 
 TEST(CppGeneratedCode, InternalMoveMessage) {
   // Generate message (simulating message created in another VM/language)
   upb_Arena* source_arena = upb_Arena_New();
-  protos_generator_test_TestModel* message =
-      protos_generator_test_TestModel_new(source_arena);
+  hpb_unittest_TestModel* message = hpb_unittest_TestModel_new(source_arena);
   ASSERT_NE(message, nullptr);
-  protos_generator_test_TestModel_set_int_value_with_default(message, 123);
+  hpb_unittest_TestModel_set_int_value_with_default(message, 123);
 
   // Move ownership.
-  TestModel model = protos::internal::MoveMessage<TestModel>(
-      (upb_Message*)message, source_arena);
+  TestModel model = hpb::internal::MoveMessage<TestModel>((upb_Message*)message,
+                                                          source_arena);
   // Now that we have moved ownership, free original arena.
   upb_Arena_Free(source_arena);
   EXPECT_EQ(model.int_value_with_default(), 123);
 }
 
 }  // namespace
-}  // namespace protos::testing
+}  // namespace hpb::testing

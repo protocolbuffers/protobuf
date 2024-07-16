@@ -152,7 +152,9 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
   printer->Indent();
 
   // TODO: Consider a C#-escaping format here instead of just Base64.
-  std::string base64 = FileDescriptorToBase64(file_);
+  std::string base64 = options()->strip_nonfunctional_codegen
+                           ? ""
+                           : FileDescriptorToBase64(file_);
   while (base64.size() > 60) {
     printer->Print("\"$base64$\",\n", "base64", base64.substr(0, 60));
     base64 = base64.substr(60);
@@ -254,9 +256,21 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
       std::vector<std::string> oneofs;
       oneofs.reserve(descriptor->oneof_decl_count());
       for (int i = 0; i < descriptor->oneof_decl_count(); i++) {
-          oneofs.push_back(UnderscoresToCamelCase(descriptor->oneof_decl(i)->name(), true));
+        if (options()->strip_nonfunctional_codegen &&
+            i >= descriptor->real_oneof_decl_count()) {
+          // Skip synthetic oneofs, which don't affect any actual behavior
+          // outside reflection.
+          break;
+        }
+        oneofs.push_back(
+            UnderscoresToCamelCase(descriptor->oneof_decl(i)->name(), true));
       }
-      printer->Print("new[]{ \"$oneofs$\" }, ", "oneofs", absl::StrJoin(oneofs, "\", \""));
+      if (oneofs.empty()) {
+        printer->Print("null, ");
+      } else {
+        printer->Print("new[]{ \"$oneofs$\" }, ", "oneofs",
+                       absl::StrJoin(oneofs, "\", \""));
+      }
   }
   else {
       printer->Print("null, ");

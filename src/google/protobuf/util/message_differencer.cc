@@ -898,7 +898,7 @@ bool MessageDifferencer::CompareWithFieldsInternal(
       const bool ignore_field =
           IsIgnored(message1, message2, field2, *parent_fields);
       if (!ignore_field && force_compare_no_presence_fields_.contains(field2)) {
-        force_compare_failure_triggering_fields_.insert(field2->full_name());
+        force_compare_failure_triggering_fields_.emplace(field2->full_name());
       }
 
       // Field 2 is not in the field list for message 1.
@@ -990,7 +990,7 @@ bool MessageDifferencer::CompareWithFieldsInternal(
           message1, message2, unpacked_any, field1, -1, -1, parent_fields);
 
       if (force_compare_no_presence_fields_.contains(field1)) {
-        force_compare_failure_triggering_fields_.insert(field1->full_name());
+        force_compare_failure_triggering_fields_.emplace(field1->full_name());
       }
 
       if (reporter_ != nullptr) {
@@ -1913,6 +1913,29 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
 
   match_list1->assign(count1, -1);
   match_list2->assign(count2, -1);
+
+  // In the special case where both repeated fields have exactly one element,
+  // return without calling the comparator.  This optimization prevents the
+  // pathological case of deeply nested repeated fields of size 1 from taking
+  // exponential-time to compare.
+  //
+  // In the case where reporter_ is set, we need to do the compare here to
+  // properly distinguish a modify from an add+delete.  The code below will not
+  // pass the reporter along in recursive calls to nested repeated fields, so
+  // the inner call will have the opportunity to perform this optimization and
+  // avoid exponential-time behavior.
+  //
+  // In the case where key_comparator is set, we need to do the compare here to
+  // fulfill the interface contract that keys will be compared even if the user
+  // asked to ignore that field.  The code will only compare the key fields
+  // which (hopefully) do not contain further repeated fields.
+  if (count1 == 1 && count2 == 1 && reporter_ == nullptr &&
+      key_comparator == nullptr) {
+    match_list1->at(0) = 0;
+    match_list2->at(0) = 0;
+    return true;
+  }
+
   // Ensure that we don't report differences during the matching process. Since
   // field comparators could potentially use this message differencer object to
   // perform further comparisons, turn off reporting here and re-enable it
@@ -2359,3 +2382,5 @@ MessageDifferencer::CreateMultipleFieldsMapKeyComparator(
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

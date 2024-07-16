@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 /// ABI compatible struct with upb_StringView.
 ///
 /// Note that this has semantics similar to `std::string_view` in C++ and
