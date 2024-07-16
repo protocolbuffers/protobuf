@@ -40,7 +40,7 @@ jobs:
             version: 'bazel7bzlmod'
             image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
             targets: //java/... //java/internal:java_version //compatibility/...
-            flags: --enable_bzlmod
+            flags: --enable_bzlmod --enable_workspace
           - name: aarch64
             version: 'aarch64'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17

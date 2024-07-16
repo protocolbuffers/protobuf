@@ -34,7 +34,7 @@ jobs:
             version: Bazel7
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e"
             targets: "//src/... //third_party/utf8_range/..."
-          - config: { name: "Bazel7 with Bzlmod", flags: --enable_bzlmod }
+          - config: { name: "Bazel7 with Bzlmod", flags: --enable_bzlmod --enable_workspace }
             version: Bazel7bzlmod
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e"
             targets: "//src/... //third_party/utf8_range/..."
