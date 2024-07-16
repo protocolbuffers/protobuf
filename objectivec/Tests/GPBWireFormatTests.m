@@ -11,6 +11,7 @@
 #import "GPBUnknownField.h"
 #import "GPBUnknownField_PackagePrivate.h"
 #import "GPBUnknownFields.h"
+#import "GPBWireFormat.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
 #import "objectivec/Tests/UnittestMset.pbobjc.h"
 
@@ -111,32 +112,43 @@
 }
 
 const int kUnknownTypeId = 1550055;
+const int kUnknownTypeId2 = 1550056;
 
 - (void)testSerializeMessageSet {
   // Set up a MSetMessage with two known messages and an unknown one.
   MSetMessage* message_set = [MSetMessage message];
   [[message_set getExtension:[MSetMessageExtension1 messageSetExtension]] setI:123];
   [[message_set getExtension:[MSetMessageExtension2 messageSetExtension]] setStr:@"foo"];
+
   GPBUnknownField* unknownField =
       [[[GPBUnknownField alloc] initWithNumber:kUnknownTypeId] autorelease];
-  [unknownField addLengthDelimited:[NSData dataWithBytes:"bar" length:3]];
+  [unknownField addLengthDelimited:DataFromCStr("bar")];
   GPBUnknownFieldSet* unknownFieldSet = [[[GPBUnknownFieldSet alloc] init] autorelease];
   [unknownFieldSet addField:unknownField];
   [message_set setUnknownFields:unknownFieldSet];
+
+  GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+  GPBUnknownFields* group = [ufs addGroupWithFieldNumber:GPBWireFormatMessageSetItem];
+  [group addFieldNumber:GPBWireFormatMessageSetTypeId varint:kUnknownTypeId2];
+  [group addFieldNumber:GPBWireFormatMessageSetMessage lengthDelimited:DataFromCStr("baz")];
+  [message_set mergeUnknownFields:ufs extensionRegistry:[MSetUnittestMsetRoot extensionRegistry]];
 
   NSData* data = [message_set data];
 
   // Parse back using MSetRawMessageSet and check the contents.
   MSetRawMessageSet* raw = [MSetRawMessageSet parseFromData:data error:NULL];
 
+  GPBUnknownFields* ufs2 = [[[GPBUnknownFields alloc] initFromMessage:raw] autorelease];
+  XCTAssertTrue(ufs2.empty);
   XCTAssertEqual([raw.unknownFields countOfFields], (NSUInteger)0);
 
-  XCTAssertEqual(raw.itemArray.count, (NSUInteger)3);
+  XCTAssertEqual(raw.itemArray.count, (NSUInteger)4);
   XCTAssertEqual((uint32_t)[raw.itemArray[0] typeId],
                  [MSetMessageExtension1 messageSetExtension].fieldNumber);
   XCTAssertEqual((uint32_t)[raw.itemArray[1] typeId],
                  [MSetMessageExtension2 messageSetExtension].fieldNumber);
   XCTAssertEqual([raw.itemArray[2] typeId], kUnknownTypeId);
+  XCTAssertEqual([raw.itemArray[3] typeId], kUnknownTypeId2);
 
   MSetMessageExtension1* message1 =
       [MSetMessageExtension1 parseFromData:[((MSetRawMessageSet_Item*)raw.itemArray[0]) message]
@@ -148,7 +160,8 @@ const int kUnknownTypeId = 1550055;
                                      error:NULL];
   XCTAssertEqualObjects(message2.str, @"foo");
 
-  XCTAssertEqualObjects([raw.itemArray[2] message], [NSData dataWithBytes:"bar" length:3]);
+  XCTAssertEqualObjects([raw.itemArray[2] message], DataFromCStr("bar"));
+  XCTAssertEqualObjects([raw.itemArray[3] message], DataFromCStr("baz"));
 }
 
 - (void)testParseMessageSet {
@@ -176,7 +189,7 @@ const int kUnknownTypeId = 1550055;
   {
     MSetRawMessageSet_Item* item = [MSetRawMessageSet_Item message];
     item.typeId = kUnknownTypeId;
-    item.message = [NSData dataWithBytes:"bar" length:3];
+    item.message = DataFromCStr("bar");
     [raw.itemArray addObject:item];
   }
 
@@ -191,11 +204,22 @@ const int kUnknownTypeId = 1550055;
   XCTAssertEqualObjects([[messageSet getExtension:[MSetMessageExtension2 messageSetExtension]] str],
                         @"foo");
 
+  GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] initFromMessage:messageSet] autorelease];
+  XCTAssertEqual(ufs.count, (NSUInteger)1);
+  GPBUnknownFields* group = [ufs firstGroup:GPBWireFormatMessageSetItem];
+  XCTAssertNotNil(group);
+  XCTAssertEqual(group.count, (NSUInteger)2);
+  uint64_t varint = 0;
+  XCTAssertTrue([group getFirst:GPBWireFormatMessageSetTypeId varint:&varint]);
+  XCTAssertEqual(varint, kUnknownTypeId);
+  XCTAssertEqualObjects([group firstLengthDelimited:GPBWireFormatMessageSetMessage],
+                        DataFromCStr("bar"));
+
   XCTAssertEqual([messageSet.unknownFields countOfFields], (NSUInteger)1);
   GPBUnknownField* unknownField = [messageSet.unknownFields getField:kUnknownTypeId];
   XCTAssertNotNil(unknownField);
   XCTAssertEqual(unknownField.lengthDelimitedList.count, (NSUInteger)1);
-  XCTAssertEqualObjects(unknownField.lengthDelimitedList[0], [NSData dataWithBytes:"bar" length:3]);
+  XCTAssertEqualObjects(unknownField.lengthDelimitedList[0], DataFromCStr("bar"));
 }
 
 - (void)testParseMessageSet_FirstValueSticks {
