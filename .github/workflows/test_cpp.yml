@@ -38,8 +38,6 @@ jobs:
             version: Bazel7bzlmod
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e"
             targets: "//src/... //third_party/utf8_range/..."
-            # TODO: enable back command_line_interface_unittest after bug is fixed
-            exclude-targets: "-//src/google/protobuf/compiler:command_line_interface_unittest"
           - config: { name: "TCMalloc" }
             version: TcMalloc
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:1c5133455481f4d1bb8afa477029604f41f1a3c46cebe4d9958cf1af95b5c87c"
