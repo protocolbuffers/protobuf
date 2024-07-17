@@ -19,10 +19,6 @@ jobs:
         include:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby, but only on Bazel 5.x.
-          - { name: Ruby 2.7, ruby: ruby-2.7.0, ffi: NATIVE }
-          # TODO Re-enable these once flakes are fixed
-          #- { name: Ruby 2.7, ruby: ruby-2.7.0, ffi: FFI }
-          - { name: Ruby 3.0, ruby: ruby-3.0.2 }
           - { name: Ruby 3.1, ruby: ruby-3.1.0 }
           - { name: Ruby 3.2, ruby: ruby-3.2.0, ffi: NATIVE }
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }
