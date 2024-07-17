@@ -35,6 +35,7 @@ test_protos = %w[
   tests/test_import_proto2.proto
   tests/test_ruby_package.proto
   tests/test_ruby_package_proto2.proto
+  tests/utf8.proto
 ]
 
 # These are omitted for now because we don't support proto2.
