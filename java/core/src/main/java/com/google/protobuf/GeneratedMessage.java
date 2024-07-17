@@ -489,9 +489,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
      */
     private Object unknownFieldsOrBuilder = UnknownFieldSet.getDefaultInstance();
 
-    protected Builder() {
-      this(null);
-    }
+    protected Builder() {}
 
     protected Builder(BuilderParent builderParent) {
       this.builderParent = builderParent;
