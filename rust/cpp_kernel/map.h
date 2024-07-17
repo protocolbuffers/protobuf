@@ -2,6 +2,7 @@
 #define GOOGLE_PROTOBUF_RUST_CPP_KERNEL_MAP_H__
 
 #include <memory>
+#include <type_traits>
 
 namespace google {
 namespace protobuf {
@@ -13,12 +14,12 @@ namespace rust {
 // for std::string pointers it returns a std::unique_ptr to take ownership of
 // the raw pointer.
 template <typename T>
-int MakeCleanup(T value) {
-  return 0;
-}
-
-inline std::unique_ptr<std::string> MakeCleanup(std::string* value) {
-  return std::unique_ptr<std::string>(value);
+auto MakeCleanup(T value) {
+  if constexpr (std::is_same<T, std::string*>::value) {
+    return std::unique_ptr<std::string>(value);
+  } else {
+    return 0;
+  }
 }
 
 }  // namespace rust
