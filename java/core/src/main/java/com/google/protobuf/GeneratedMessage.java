@@ -2054,8 +2054,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
                   new RepeatedEnumFieldAccessor(
                       field, camelCaseNames[i], messageClass, builderClass);
             } else {
-              fields[i] =
-                  new RepeatedFieldAccessor(field, camelCaseNames[i], messageClass, builderClass);
+              fields[i] = new RepeatedFieldAccessor(camelCaseNames[i], messageClass, builderClass);
             }
           } else {
             if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
@@ -2611,7 +2610,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       protected final MethodInvoker invoker;
 
       RepeatedFieldAccessor(
-          final FieldDescriptor descriptor,
           final String camelCaseName,
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder<?>> builderClass) {
@@ -2916,7 +2914,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           final String camelCaseName,
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder<?>> builderClass) {
-        super(descriptor, camelCaseName, messageClass, builderClass);
+        super(camelCaseName, messageClass, builderClass);
 
         enumDescriptor = descriptor.getEnumType();
 
@@ -3112,7 +3110,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           final String camelCaseName,
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder<?>> builderClass) {
-        super(descriptor, camelCaseName, messageClass, builderClass);
+        super(camelCaseName, messageClass, builderClass);
 
         newBuilderMethod = getMethodOrDie(type, "newBuilder");
         getBuilderMethodBuilder =
