@@ -30,14 +30,17 @@
 #include "absl/base/call_once.h"
 #include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
+#include "absl/meta/type_traits.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/internal_visibility.h"
-#include "google/protobuf/port.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
+
 
 // clang-format off
 #include "google/protobuf/port_def.inc"  // Must be last
@@ -317,7 +320,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   void SetDouble(int number, FieldType type, double value, desc);
   void SetBool(int number, FieldType type, bool value, desc);
   void SetEnum(int number, FieldType type, int value, desc);
-  void SetString(int number, FieldType type, std::string value, desc);
+  void SetString(int number, FieldType type, absl::string_view value, desc);
+  void SetString(int number, FieldType type, std::string&& value, desc);
   std::string* MutableString(int number, FieldType type, desc);
   MessageLite* MutableMessage(int number, FieldType type,
                               const MessageLite& prototype, desc);
@@ -381,7 +385,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   void SetRepeatedDouble(int number, int index, double value);
   void SetRepeatedBool(int number, int index, bool value);
   void SetRepeatedEnum(int number, int index, int value);
-  void SetRepeatedString(int number, int index, std::string value);
+  void SetRepeatedString(int number, int index, absl::string_view value);
+  void SetRepeatedString(int number, int index, std::string&& value);
   std::string* MutableRepeatedString(int number, int index);
   MessageLite* MutableRepeatedMessage(int number, int index);
 
@@ -394,7 +399,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   void AddDouble(int number, FieldType type, bool packed, double value, desc);
   void AddBool(int number, FieldType type, bool packed, bool value, desc);
   void AddEnum(int number, FieldType type, bool packed, int value, desc);
-  void AddString(int number, FieldType type, std::string value, desc);
+  void AddString(int number, FieldType type, absl::string_view value, desc);
+  void AddString(int number, FieldType type, std::string&& value, desc);
   std::string* AddString(int number, FieldType type, desc);
   MessageLite* AddMessage(int number, FieldType type,
                           const MessageLite& prototype, desc);
@@ -969,16 +975,30 @@ constexpr ExtensionSet::ExtensionSet(Arena* arena)
 
 // These are just for convenience...
 inline void ExtensionSet::SetString(int number, FieldType type,
-                                    std::string value,
+                                    absl::string_view value,
+                                    const FieldDescriptor* descriptor) {
+  MutableString(number, type, descriptor)->assign(value.data(), value.size());
+}
+inline void ExtensionSet::SetString(int number, FieldType type,
+                                    std::string&& value,
                                     const FieldDescriptor* descriptor) {
   MutableString(number, type, descriptor)->assign(std::move(value));
 }
 inline void ExtensionSet::SetRepeatedString(int number, int index,
-                                            std::string value) {
+                                            absl::string_view value) {
+  MutableRepeatedString(number, index)->assign(value.data(), value.size());
+}
+inline void ExtensionSet::SetRepeatedString(int number, int index,
+                                            std::string&& value) {
   MutableRepeatedString(number, index)->assign(std::move(value));
 }
 inline void ExtensionSet::AddString(int number, FieldType type,
-                                    std::string value,
+                                    absl::string_view value,
+                                    const FieldDescriptor* descriptor) {
+  AddString(number, type, descriptor)->assign(value.data(), value.size());
+}
+inline void ExtensionSet::AddString(int number, FieldType type,
+                                    std::string&& value,
                                     const FieldDescriptor* descriptor) {
   AddString(number, type, descriptor)->assign(std::move(value));
 }

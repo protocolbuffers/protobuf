@@ -1297,6 +1297,108 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
 }
 
 
+TEST(MESSAGE_TEST_NAME, ReflectionSetStringWorksWithAnyKindOfInput) {
+  UNITTEST::TestAllTypes message;
+  auto* ref = message.GetReflection();
+  const auto* field =
+      message.GetDescriptor()->FindFieldByName("optional_string");
+  const char* value = "This is the string";
+  const auto validate = [&] {
+    EXPECT_EQ(value, message.optional_string());
+    message.Clear();
+  };
+
+  message.set_optional_string(value);
+  validate();
+
+  // char*
+  ref->SetString(&message, field, value);
+  validate();
+
+  // absl::string_view
+  ref->SetString(&message, field, absl::string_view(value));
+  validate();
+
+  // rvalue std::string
+  ref->SetString(&message, field, std::string(value));
+  validate();
+
+  // lvalue std::string
+  std::string s_value = value;
+  ref->SetString(&message, field, s_value);
+  validate();
+
+  // cord input
+  ref->SetString(&message, field, absl::Cord(value));
+  validate();
+}
+
+TEST(MESSAGE_TEST_NAME, ReflectionAddRepeatedStringWorksWithAnyKindOfInput) {
+  UNITTEST::TestAllTypes message;
+  auto* ref = message.GetReflection();
+  const auto* field =
+      message.GetDescriptor()->FindFieldByName("repeated_string");
+  const char* value = "This is the string";
+  const auto validate = [&] {
+    EXPECT_THAT(message.repeated_string(), ElementsAre(value));
+    message.Clear();
+  };
+
+  message.add_repeated_string(value);
+  validate();
+
+  // char*
+  ref->AddString(&message, field, value);
+  validate();
+
+  // absl::string_view
+  ref->AddString(&message, field, absl::string_view(value));
+  validate();
+
+  // rvalue std::string
+  ref->AddString(&message, field, std::string(value));
+  validate();
+
+  // lvalue std::string
+  std::string s_value = value;
+  ref->AddString(&message, field, s_value);
+  validate();
+
+}
+
+TEST(MESSAGE_TEST_NAME, ReflectionSetRepeatedStringWorksWithAnyKindOfInput) {
+  UNITTEST::TestAllTypes message;
+  auto* ref = message.GetReflection();
+  const auto* field =
+      message.GetDescriptor()->FindFieldByName("repeated_string");
+  const char* value = "This is the string";
+  const auto validate = [&] {
+    EXPECT_THAT(message.repeated_string(), ElementsAre(value));
+    message.set_repeated_string(0, "");
+  };
+
+  message.add_repeated_string(value);
+  validate();
+
+  // char*
+  ref->SetRepeatedString(&message, field, 0, value);
+  validate();
+
+  // absl::string_view
+  ref->SetRepeatedString(&message, field, 0, absl::string_view(value));
+  validate();
+
+  // rvalue std::string
+  ref->SetRepeatedString(&message, field, 0, std::string(value));
+  validate();
+
+  // lvalue std::string
+  std::string s_value = value;
+  ref->SetRepeatedString(&message, field, 0, s_value);
+  validate();
+
+}
+
 TEST(MESSAGE_TEST_NAME, CheckSerializationWhenInterleavedExtensions) {
   UNITTEST::TestExtensionRangeSerialize in_message;
 

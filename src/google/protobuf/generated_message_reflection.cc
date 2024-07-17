@@ -1917,8 +1917,9 @@ absl::string_view Reflection::GetStringView(const Message& message,
 }
 
 
-void Reflection::SetString(Message* message, const FieldDescriptor* field,
-                           std::string value) const {
+template <typename T>
+void Reflection::SetStringImpl(Message* message, const FieldDescriptor* field,
+                               T value) const {
   USAGE_MUTABLE_CHECK_ALL(SetString, SINGULAR, STRING);
   if (field->is_extension()) {
     return MutableExtensionSet(message)->SetString(
@@ -1967,6 +1968,17 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
     }
   }
 }
+void Reflection::SetString(Message* message, const FieldDescriptor* field,
+                           absl::string_view value) const {
+  SetStringImpl<absl::string_view>(message, field, value);
+}
+template <int&...>
+void Reflection::SetString(Message* message, const FieldDescriptor* field,
+                           std::string&& value) const {
+  SetStringImpl<std::string&&>(message, field, std::move(value));
+}
+template void Reflection::SetString(Message*, const FieldDescriptor*,
+                                    std::string&&) const;
 
 void Reflection::SetString(Message* message, const FieldDescriptor* field,
                            const absl::Cord& value) const {
@@ -2069,9 +2081,10 @@ absl::string_view Reflection::GetRepeatedStringView(
 }
 
 
-void Reflection::SetRepeatedString(Message* message,
-                                   const FieldDescriptor* field, int index,
-                                   std::string value) const {
+template <typename T>
+void Reflection::SetRepeatedStringImpl(Message* message,
+                                       const FieldDescriptor* field, int index,
+                                       T value) const {
   USAGE_MUTABLE_CHECK_ALL(SetRepeatedString, REPEATED, STRING);
   if (field->is_extension()) {
     MutableExtensionSet(message)->SetRepeatedString(field->number(), index,
@@ -2087,9 +2100,24 @@ void Reflection::SetRepeatedString(Message* message,
   }
 }
 
+template <int&...>
+void Reflection::SetRepeatedString(Message* message,
+                                   const FieldDescriptor* field, int index,
+                                   std::string&& value) const {
+  SetRepeatedStringImpl<std::string&&>(message, field, index, std::move(value));
+}
+template void Reflection::SetRepeatedString(Message*, const FieldDescriptor*,
+                                            int, std::string&&) const;
+void Reflection::SetRepeatedString(Message* message,
+                                   const FieldDescriptor* field, int index,
+                                   absl::string_view value) const {
+  SetRepeatedStringImpl<absl::string_view>(message, field, index, value);
+}
 
-void Reflection::AddString(Message* message, const FieldDescriptor* field,
-                           std::string value) const {
+
+template <typename T>
+void Reflection::AddStringImpl(Message* message, const FieldDescriptor* field,
+                               T value) const {
   USAGE_MUTABLE_CHECK_ALL(AddString, REPEATED, STRING);
   if (field->is_extension()) {
     MutableExtensionSet(message)->AddString(field->number(), field->type(),
@@ -2102,6 +2130,17 @@ void Reflection::AddString(Message* message, const FieldDescriptor* field,
         break;
     }
   }
+}
+template <int&...>
+void Reflection::AddString(Message* message, const FieldDescriptor* field,
+                           std::string&& value) const {
+  AddStringImpl<std::string&&>(message, field, std::move(value));
+}
+template void Reflection::AddString(Message*, const FieldDescriptor*,
+                                    std::string&&) const;
+void Reflection::AddString(Message* message, const FieldDescriptor* field,
+                           absl::string_view value) const {
+  AddStringImpl<absl::string_view>(message, field, value);
 }
 
 

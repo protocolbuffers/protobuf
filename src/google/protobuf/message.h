@@ -665,7 +665,11 @@ class PROTOBUF_EXPORT Reflection final {
   void SetBool(Message* message, const FieldDescriptor* field,
                bool value) const;
   void SetString(Message* message, const FieldDescriptor* field,
-                 std::string value) const;
+                 absl::string_view value) const;
+  // The template is to affect ranking and trigger on exact match.
+  template <int&...>
+  void SetString(Message* message, const FieldDescriptor* field,
+                 std::string&& value) const;
   // Set a string field to a Cord value.  If the underlying field is
   // represented using a Cord already, this involves no copies  (just
   // reference counting).  Otherwise, a copy must be made.
@@ -791,7 +795,11 @@ class PROTOBUF_EXPORT Reflection final {
   void SetRepeatedBool(Message* message, const FieldDescriptor* field,
                        int index, bool value) const;
   void SetRepeatedString(Message* message, const FieldDescriptor* field,
-                         int index, std::string value) const;
+                         int index, absl::string_view value) const;
+  // The template is to affect ranking and trigger on exact match.
+  template <int&...>
+  void SetRepeatedString(Message* message, const FieldDescriptor* field,
+                         int index, std::string&& value) const;
   void SetRepeatedEnum(Message* message, const FieldDescriptor* field,
                        int index, const EnumValueDescriptor* value) const;
   // Set an enum field's value with an integer rather than EnumValueDescriptor.
@@ -828,7 +836,11 @@ class PROTOBUF_EXPORT Reflection final {
   void AddBool(Message* message, const FieldDescriptor* field,
                bool value) const;
   void AddString(Message* message, const FieldDescriptor* field,
-                 std::string value) const;
+                 absl::string_view value) const;
+  // The template is to affect ranking and trigger on exact match.
+  template <int&...>
+  void AddString(Message* message, const FieldDescriptor* field,
+                 std::string&& value) const;
   void AddEnum(Message* message, const FieldDescriptor* field,
                const EnumValueDescriptor* value) const;
 
@@ -1122,6 +1134,16 @@ class PROTOBUF_EXPORT Reflection final {
              const internal::ReflectionSchema& schema,
              const DescriptorPool* pool, MessageFactory* factory);
 
+  template <typename T>
+  void SetStringImpl(Message* message, const FieldDescriptor* field,
+                     T value) const;
+  template <typename T>
+  void AddStringImpl(Message* message, const FieldDescriptor* field,
+                     T value) const;
+  template <typename T>
+  void SetRepeatedStringImpl(Message* message, const FieldDescriptor* field,
+                             int index, T value) const;
+
   // Special version for specialized implementations of string.  We can't
   // call MutableRawRepeatedField directly here because we don't have access to
   // FieldOptions::* which are defined in descriptor.pb.h.  Including that
@@ -1339,6 +1361,15 @@ class PROTOBUF_EXPORT Reflection final {
                                              const char* ptr,
                                              internal::ParseContext* ctx);
 };
+
+// Mark as extern because they are defined in the .cc
+extern template void Reflection::SetString(Message*, const FieldDescriptor*,
+                                           std::string&&) const;
+extern template void Reflection::AddString(Message*, const FieldDescriptor*,
+                                           std::string&&) const;
+extern template void Reflection::SetRepeatedString(Message*,
+                                                   const FieldDescriptor*, int,
+                                                   std::string&&) const;
 
 extern template void Reflection::SwapFieldsImpl<true>(
     Message* message1, Message* message2,
