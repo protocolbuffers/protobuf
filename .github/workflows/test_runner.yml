@@ -256,4 +256,4 @@ jobs:
         run: "${{ !contains(join(needs.*.result, ' '), 'failure') && !contains(join(needs.*.result, ' '), 'cancelled') }}"
     # This workflow must run even if one or more of the dependent workflows
     # failed.
-    if: always()
+    if: always() && ${{ needs.check-tag.result != 'skipped' }}
