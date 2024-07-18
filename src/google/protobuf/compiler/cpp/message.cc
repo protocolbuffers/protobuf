@@ -1367,7 +1367,7 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
           )cc");
           if (need_to_emit_cached_size) {
             p->Emit(R"cc(
-              mutable ::$proto_ns$::internal::CachedSize _cached_size_;
+              ::$proto_ns$::internal::CachedSize _cached_size_;
             )cc");
             need_to_emit_cached_size = false;
           }
@@ -1437,7 +1437,7 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
 
           need_to_emit_cached_size = false;
           p->Emit(R"cc(
-            mutable ::$proto_ns$::internal::CachedSize _cached_size_;
+            ::$proto_ns$::internal::CachedSize _cached_size_;
           )cc");
         }},
        {"oneof_case",

@@ -625,3 +625,7 @@ message RecursiveMessage {
   RecursiveMessage recurse = 1;
   bytes payload = 2;
 }
+
+message RecursiveGroup {
+  RecursiveGroup recurse = 1 [features.message_encoding = DELIMITED];
+}

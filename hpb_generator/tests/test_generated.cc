@@ -20,8 +20,10 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/hpb/tests/child_model.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/no_package.upb.proto.h"
+#include "google/protobuf/compiler/hpb/tests/test_extension.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
 #include "google/protobuf/hpb/hpb.h"
+#include "google/protobuf/hpb/repeated_field.h"
 #include "google/protobuf/hpb/requires.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
@@ -154,11 +156,11 @@ TEST(CppGeneratedCode, ScalarInt64) {
   EXPECT_EQ(testModel.optional_int64(), 0);
   EXPECT_FALSE(testModel.has_optional_int64());
   // Set value.
-  testModel.set_optional_int64(0xFF00CCDDA0001000);
+  testModel.set_optional_int64(static_cast<int64_t>(0xFF00CCDDA0001000));
   EXPECT_TRUE(testModel.has_optional_int64());
   EXPECT_EQ(testModel.optional_int64(), 0xFF00CCDDA0001000);
   // Change value.
-  testModel.set_optional_int64(0xFF00CCDD70002000);
+  testModel.set_optional_int64(static_cast<int64_t>(0xFF00CCDD70002000));
   EXPECT_TRUE(testModel.has_optional_int64());
   EXPECT_EQ(testModel.optional_int64(), 0xFF00CCDD70002000);
   // Clear value.
@@ -166,7 +168,7 @@ TEST(CppGeneratedCode, ScalarInt64) {
   EXPECT_FALSE(testModel.has_optional_int64());
   EXPECT_EQ(testModel.optional_int64(), 0);
   // Set after clear.
-  testModel.set_optional_int64(0xFF00CCDDA0001000);
+  testModel.set_optional_int64(static_cast<int64_t>(0xFF00CCDDA0001000));
   EXPECT_TRUE(testModel.has_optional_int64());
   EXPECT_EQ(testModel.optional_int64(), 0xFF00CCDDA0001000);
 }
@@ -1237,6 +1239,10 @@ TEST(CppGeneratedCode, HasExtensionAndRegistry) {
 TEST(CppGeneratedCode, FieldNumberConstants) {
   static_assert(TestModel::kChildMapFieldNumber == 225);
   EXPECT_EQ(225, TestModel::kChildMapFieldNumber);
+}
+
+TEST(CppGeneratedCode, ExtensionFieldNumberConstant) {
+  EXPECT_EQ(12003, ::protos::ExtensionNumber(ThemeExtension::theme_extension));
 }
 
 TEST(CppGeneratedCode, ClearConstMessageShouldFailForConstChild) {

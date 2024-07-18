@@ -47,6 +47,7 @@ rust_library(
 #
 # shared.rs is the root of the crate and has public items re-exported in protobuf.rs for user use.
 PROTOBUF_SHARED = [
+    "codegen_traits.rs",
     "enum.rs",
     "internal.rs",
     "primitive.rs",

@@ -609,10 +609,8 @@ fn test_singular_msg_field() {
 #[test]
 fn test_message_opt() {
     let msg = TestAllTypes::new();
-    let opt: Optional<
-        unittest_rust_proto::test_all_types::NestedMessageView<'_>,
-        unittest_rust_proto::test_all_types::NestedMessageView<'_>,
-    > = msg.optional_nested_message_opt();
+    let opt: Optional<unittest_rust_proto::test_all_types::NestedMessageView<'_>> =
+        msg.optional_nested_message_opt();
     assert_that!(opt.is_set(), eq(false));
     assert_that!(opt.into_inner().bb(), eq(0));
 }

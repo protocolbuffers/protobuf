@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use crate::{
-    IntoProxied, Mut, MutProxied, MutProxy, Proxied, View, ViewProxy,
+    IntoProxied, Mut, MutProxied, MutProxy, Proxied, Proxy, View, ViewProxy,
     __internal::Private,
     __runtime::{InnerMap, InnerMapMut, RawMap, RawMapIter},
 };
@@ -112,7 +112,7 @@ impl<K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> MutProxied for Map<K
     type Mut<'msg> = MapMut<'msg, K, V> where K: 'msg, V: 'msg;
 }
 
-impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> ViewProxy<'msg>
+impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> Proxy<'msg>
     for MapView<'msg, K, V>
 {
     type Proxied = Map<K, V>;
@@ -130,6 +130,11 @@ impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> ViewProxy<'msg
 }
 
 impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> ViewProxy<'msg>
+    for MapView<'msg, K, V>
+{
+}
+
+impl<'msg, K: Proxied + ?Sized, V: ProxiedInMapValue<K> + ?Sized> Proxy<'msg>
     for MapMut<'msg, K, V>
 {
     type Proxied = Map<K, V>;

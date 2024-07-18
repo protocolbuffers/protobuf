@@ -7,7 +7,7 @@
 
 use googletest::prelude::*;
 use paste::paste;
-use protobuf::ViewProxy;
+use protobuf::Proxy;
 use unittest_rust_proto::{test_all_types, test_all_types::NestedMessage, TestAllTypes};
 
 macro_rules! generate_repeated_numeric_test {

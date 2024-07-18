@@ -336,7 +336,7 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const Version& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr suffix_;
     ::int32_t major_;
     ::int32_t minor_;
@@ -585,7 +585,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const CodeGeneratorResponse_File& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::internal::ArenaStringPtr insertion_point_;
     ::google::protobuf::internal::ArenaStringPtr content_;
@@ -857,7 +857,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const CodeGeneratorResponse& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File > file_;
     ::google::protobuf::internal::ArenaStringPtr error_;
     ::uint64_t supported_features_;
@@ -1135,7 +1135,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const CodeGeneratorRequest& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField<std::string> file_to_generate_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > proto_file_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > source_file_descriptors_;

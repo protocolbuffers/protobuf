@@ -8,11 +8,13 @@
 #ifndef PROTOBUF_HPB_HPB_H_
 #define PROTOBUF_HPB_HPB_H_
 
+#include <cstdint>
 #include <type_traits>
 #include <vector>
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/string_view.h"
 #include "upb/base/status.hpp"
 #include "upb/mem/arena.hpp"
 #include "upb/message/copy.h"
@@ -148,6 +150,10 @@ struct PrivateAccess {
   static auto CreateMessage(upb_Arena* arena) {
     return typename T::Proxy(upb_Message_New(T::minitable(), arena), arena);
   }
+  template <typename ExtensionId>
+  static constexpr uint32_t GetExtensionNumber(const ExtensionId& id) {
+    return id.number();
+  }
 };
 
 template <typename T>
@@ -200,6 +206,12 @@ class ExtensionIdentifier : public ExtensionMiniTableProvider {
   constexpr explicit ExtensionIdentifier(
       const upb_MiniTableExtension* mini_table_ext)
       : ExtensionMiniTableProvider(mini_table_ext) {}
+
+ private:
+  constexpr uint32_t number() const {
+    return upb_MiniTableExtension_Number(mini_table_ext());
+  }
+  friend class PrivateAccess;
 };
 
 template <typename T>
@@ -572,6 +584,12 @@ absl::StatusOr<absl::string_view> Serialize(Ptr<T> message, upb::Arena& arena,
   return ::protos::internal::Serialize(
       internal::GetInternalMsg(message),
       ::protos::internal::GetMiniTable(message), arena.ptr(), options);
+}
+
+template <typename T, typename Extension>
+constexpr uint32_t ExtensionNumber(
+    internal::ExtensionIdentifier<T, Extension> id) {
+  return internal::PrivateAccess::GetExtensionNumber(id);
 }
 
 }  // namespace protos

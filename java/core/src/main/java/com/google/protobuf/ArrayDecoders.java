@@ -24,8 +24,7 @@ import java.io.IOException;
 @CheckReturnValue
 final class ArrayDecoders {
 
-  private ArrayDecoders() {
-  }
+  private ArrayDecoders() {}
 
   /**
    * A helper used to return multiple values in a Java function. Java doesn't natively support

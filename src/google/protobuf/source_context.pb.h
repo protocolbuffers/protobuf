@@ -249,7 +249,7 @@ class PROTOBUF_EXPORT SourceContext final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const SourceContext& from_msg);
     ::google::protobuf::internal::ArenaStringPtr file_name_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };

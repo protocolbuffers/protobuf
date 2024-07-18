@@ -51,7 +51,7 @@ class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
                                        io::EpsCopyOutputStream* stream);
 
   struct {
-    mutable internal::CachedSize _cached_size_;
+    internal::CachedSize _cached_size_;
   } _impl_;
 };
 

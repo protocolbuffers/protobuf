@@ -311,7 +311,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const CppFeatures& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     bool legacy_closed_enum_;
     int string_type_;
     PROTOBUF_TSAN_DECLARE_MEMBER

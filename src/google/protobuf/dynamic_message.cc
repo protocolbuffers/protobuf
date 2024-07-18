@@ -246,7 +246,7 @@ class DynamicMessage final : public Message {
   void* MutableOneofFieldRaw(const FieldDescriptor* f);
 
   const DynamicMessageFactory::TypeInfo* type_info_;
-  mutable internal::CachedSize cached_byte_size_;
+  internal::CachedSize cached_byte_size_;
 };
 
 struct DynamicMessageFactory::TypeInfo {

@@ -37,7 +37,7 @@ namespace compiler {
 namespace rust {
 
 std::string GetCrateName(Context& ctx, const FileDescriptor& dep) {
-  return RsSafeName(ctx.generator_context().ImportPathToCrateName(dep.name()));
+  return RsSafeName(ctx.ImportPathToCrateName(dep.name()));
 }
 
 std::string GetRsFile(Context& ctx, const FileDescriptor& file) {

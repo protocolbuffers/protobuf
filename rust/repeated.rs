@@ -15,7 +15,7 @@ use std::iter::FusedIterator;
 use std::marker::PhantomData;
 
 use crate::{
-    IntoProxied, Mut, MutProxied, MutProxy, Proxied, View, ViewProxy,
+    IntoProxied, Mut, MutProxied, MutProxy, Proxied, Proxy, View, ViewProxy,
     __internal::Private,
     __runtime::{InnerRepeated, InnerRepeatedMut, RawRepeatedField},
 };
@@ -397,7 +397,7 @@ where
     type Mut<'msg> = RepeatedMut<'msg, T> where Repeated<T>: 'msg;
 }
 
-impl<'msg, T> ViewProxy<'msg> for RepeatedView<'msg, T>
+impl<'msg, T> Proxy<'msg> for RepeatedView<'msg, T>
 where
     T: ProxiedInRepeated + 'msg,
 {
@@ -417,7 +417,9 @@ where
     }
 }
 
-impl<'msg, T> ViewProxy<'msg> for RepeatedMut<'msg, T>
+impl<'msg, T> ViewProxy<'msg> for RepeatedView<'msg, T> where T: ProxiedInRepeated + 'msg {}
+
+impl<'msg, T> Proxy<'msg> for RepeatedMut<'msg, T>
 where
     T: ProxiedInRepeated + 'msg,
 {

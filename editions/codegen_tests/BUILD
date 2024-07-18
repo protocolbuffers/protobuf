@@ -1,7 +1,7 @@
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 
 exports_files(
-    glob(["*.proto"]) + ["rust_bazel_crate_mapping.txt"],
+    glob(["*.proto"]),
     visibility = [
         "//editions:__pkg__",
     ],

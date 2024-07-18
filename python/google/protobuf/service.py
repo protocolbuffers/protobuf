@@ -19,6 +19,14 @@ and can avoid unnecessary layers of indirection.
 
 __author__ = 'petar@google.com (Petar Petrov)'
 
+import warnings
+
+warnings.warn(
+    'google.protobuf.service module is deprecated. RPC implementations '
+    'should provide code generator plugins which generate code specific to '
+    'the RPC implementation. service.py will be removed in Jan 2025',
+    stacklevel=2,
+)
 
 class RpcException(Exception):
   """Exception raised on failed blocking RPC method call."""

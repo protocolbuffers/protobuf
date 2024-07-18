@@ -295,7 +295,7 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const ListValue& from_msg);
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value > values_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -489,7 +489,7 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
                       ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
                       ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>
         fields_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -820,7 +820,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
       ::google::protobuf::Struct* struct_value_;
       ::google::protobuf::ListValue* list_value_;
     } kind_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::uint32_t _oneof_case_[1];
     PROTOBUF_TSAN_DECLARE_MEMBER
   };

@@ -383,10 +383,10 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // For CODE_SIZE types
   static bool IsInitializedImpl(const MessageLite&);
 
-  size_t ComputeUnknownFieldsSize(size_t total_size,
-                                  internal::CachedSize* cached_size) const;
-  size_t MaybeComputeUnknownFieldsSize(size_t total_size,
-                                       internal::CachedSize* cached_size) const;
+  size_t ComputeUnknownFieldsSize(
+      size_t total_size, const internal::CachedSize* cached_size) const;
+  size_t MaybeComputeUnknownFieldsSize(
+      size_t total_size, const internal::CachedSize* cached_size) const;
 
   // Reflection based version for reflection based types.
   static absl::string_view GetTypeNameImpl(const ClassData* data);

@@ -489,9 +489,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
      */
     private Object unknownFieldsOrBuilder = UnknownFieldSet.getDefaultInstance();
 
-    protected Builder() {
-      this(null);
-    }
+    protected Builder() {}
 
     protected Builder(BuilderParent builderParent) {
       this.builderParent = builderParent;
@@ -845,7 +843,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
      * the generated API only allows us to access it as a map. This method returns the underlying
      * map field directly and thus enables us to access the map field as a list.
      */
-    @SuppressWarnings({"unused", "rawtypes"})
+    @SuppressWarnings("unused")
     protected MapFieldReflectionAccessor internalGetMapFieldReflection(int fieldNumber) {
       return internalGetMapField(fieldNumber);
     }
@@ -860,7 +858,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     }
 
     /** Like {@link #internalGetMapFieldReflection} but return a mutable version. */
-    @SuppressWarnings({"unused", "rawtypes"})
+    @SuppressWarnings("unused")
     protected MapFieldReflectionAccessor internalGetMutableMapFieldReflection(int fieldNumber) {
       return internalGetMutableMapField(fieldNumber);
     }
@@ -2056,8 +2054,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
                   new RepeatedEnumFieldAccessor(
                       field, camelCaseNames[i], messageClass, builderClass);
             } else {
-              fields[i] =
-                  new RepeatedFieldAccessor(field, camelCaseNames[i], messageClass, builderClass);
+              fields[i] = new RepeatedFieldAccessor(camelCaseNames[i], messageClass, builderClass);
             }
           } else {
             if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
@@ -2613,7 +2610,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       protected final MethodInvoker invoker;
 
       RepeatedFieldAccessor(
-          final FieldDescriptor descriptor,
           final String camelCaseName,
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder<?>> builderClass) {
@@ -2918,7 +2914,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           final String camelCaseName,
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder<?>> builderClass) {
-        super(descriptor, camelCaseName, messageClass, builderClass);
+        super(camelCaseName, messageClass, builderClass);
 
         enumDescriptor = descriptor.getEnumType();
 
@@ -3114,7 +3110,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           final String camelCaseName,
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder<?>> builderClass) {
-        super(descriptor, camelCaseName, messageClass, builderClass);
+        super(camelCaseName, messageClass, builderClass);
 
         newBuilderMethod = getMethodOrDie(type, "newBuilder");
         getBuilderMethodBuilder =

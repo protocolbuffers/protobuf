@@ -3939,6 +3939,29 @@ bool FieldDescriptor::has_optional_keyword() const {
                               is_optional() && !containing_oneof());
 }
 
+FieldDescriptor::CppStringType FieldDescriptor::cpp_string_type() const {
+  ABSL_DCHECK(cpp_type() == FieldDescriptor::CPPTYPE_STRING);
+  switch (features().GetExtension(pb::cpp).string_type()) {
+    case pb::CppFeatures::VIEW:
+      return CppStringType::kView;
+    case pb::CppFeatures::CORD:
+      // In open-source, protobuf CORD is only supported for singular bytes
+      // fields.
+      if (type() != FieldDescriptor::TYPE_BYTES || is_repeated() ||
+          is_extension()) {
+        return CppStringType::kString;
+      }
+      return CppStringType::kCord;
+    case pb::CppFeatures::STRING:
+      return CppStringType::kString;
+    default:
+      // If features haven't been resolved, this is a dynamic build not for C++
+      // codegen.  Just use string type.
+      ABSL_DCHECK(!features().GetExtension(pb::cpp).has_string_type());
+      return CppStringType::kString;
+  }
+}
+
 // Location methods ===============================================
 
 bool FileDescriptor::GetSourceLocation(const std::vector<int>& path,
