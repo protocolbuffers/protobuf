@@ -41,10 +41,10 @@ http_archive(
 
 http_archive(
     name = "com_google_googletest",
-    sha256 = "730215d76eace9dd49bf74ce044e8daa065d175f1ac891cc1d6bb184ef94e565",
-    strip_prefix = "googletest-f53219cdcb7b084ef57414efea92ee5b71989558",
+    sha256 = "7315acb6bf10e99f332c8a43f00d5fbb1ee6ca48c52f6b936991b216c586aaad",
+    strip_prefix = "googletest-1.15.0",
     urls = [
-        "https://github.com/google/googletest/archive/f53219cdcb7b084ef57414efea92ee5b71989558.tar.gz" # 2023-03-16
+        "https://github.com/google/googletest/releases/download/v1.15.0/googletest-1.15.0.tar.gz" # 2024-07-15
     ],
 )
 

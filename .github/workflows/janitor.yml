@@ -45,7 +45,8 @@ jobs:
 
 
             This issue is labeled `inactive` because the last activity was over
-            90 days ago.
+            90 days ago. This issue will be closed and archived after 14
+            additional days without activity.
           close-issue-message: >
             We triage inactive PRs and issues in order to make it easier to find
             active work. If this issue should remain active or becomes active

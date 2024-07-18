@@ -33,11 +33,18 @@ module Google
             return_value[:bool_val] = value
           when :string
             raise TypeError.new "Invalid argument for string field '#{name}' (given #{value.class})." unless value.is_a?(String) or value.is_a?(Symbol)
-            begin
+            value = value.to_s if value.is_a?(Symbol)
+            if value.encoding == Encoding::UTF_8
+              unless value.valid_encoding?
+                # TODO:
+                # For now we only warn for this case.  We will remove the
+                # warning and throw an exception below in the 30.x release
+                warn "String is invalid UTF-8. This will be an error in a future version."
+                # raise Encoding::InvalidByteSequenceError.new "String is invalid UTF-8"
+              end
+              string_value = value
+            else
               string_value = value.to_s.encode("UTF-8")
-            rescue Encoding::UndefinedConversionError
-              # TODO - why not include the field name here?
-              raise Encoding::UndefinedConversionError.new "String is invalid UTF-8"
             end
             return_value[:str_val][:size] = string_value.bytesize
             return_value[:str_val][:data] = Google::Protobuf::FFI.arena_malloc(arena, string_value.bytesize)

@@ -21,6 +21,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "google/protobuf/message_lite.h"
 #include "utf8_validity.h"
 
 
@@ -829,6 +830,91 @@ size_t WireFormatLite::SInt64Size(const RepeatedField<int64_t>& value) {
 }
 
 #endif
+
+size_t WireFormatLite::Int32SizeWithPackedTagSize(
+    const RepeatedField<int32_t>& value, size_t tag_size,
+    const internal::CachedSize& cached_size) {
+  if (value.empty()) {
+    cached_size.Set(0);
+    return 0;
+  }
+  size_t res;
+  PROTOBUF_ALWAYS_INLINE_CALL res = Int32Size(value);
+  cached_size.Set(ToCachedSize(res));
+  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+}
+size_t WireFormatLite::Int64SizeWithPackedTagSize(
+    const RepeatedField<int64_t>& value, size_t tag_size,
+    const internal::CachedSize& cached_size) {
+  if (value.empty()) {
+    cached_size.Set(0);
+    return 0;
+  }
+  size_t res;
+  PROTOBUF_ALWAYS_INLINE_CALL res = Int64Size(value);
+  cached_size.Set(ToCachedSize(res));
+  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+}
+size_t WireFormatLite::UInt32SizeWithPackedTagSize(
+    const RepeatedField<uint32_t>& value, size_t tag_size,
+    const internal::CachedSize& cached_size) {
+  if (value.empty()) {
+    cached_size.Set(0);
+    return 0;
+  }
+  size_t res;
+  PROTOBUF_ALWAYS_INLINE_CALL res = UInt32Size(value);
+  cached_size.Set(ToCachedSize(res));
+  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+}
+size_t WireFormatLite::UInt64SizeWithPackedTagSize(
+    const RepeatedField<uint64_t>& value, size_t tag_size,
+    const internal::CachedSize& cached_size) {
+  if (value.empty()) {
+    cached_size.Set(0);
+    return 0;
+  }
+  size_t res;
+  PROTOBUF_ALWAYS_INLINE_CALL res = UInt64Size(value);
+  cached_size.Set(ToCachedSize(res));
+  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+}
+size_t WireFormatLite::SInt32SizeWithPackedTagSize(
+    const RepeatedField<int32_t>& value, size_t tag_size,
+    const internal::CachedSize& cached_size) {
+  if (value.empty()) {
+    cached_size.Set(0);
+    return 0;
+  }
+  size_t res;
+  PROTOBUF_ALWAYS_INLINE_CALL res = SInt32Size(value);
+  cached_size.Set(ToCachedSize(res));
+  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+}
+size_t WireFormatLite::SInt64SizeWithPackedTagSize(
+    const RepeatedField<int64_t>& value, size_t tag_size,
+    const internal::CachedSize& cached_size) {
+  if (value.empty()) {
+    cached_size.Set(0);
+    return 0;
+  }
+  size_t res;
+  PROTOBUF_ALWAYS_INLINE_CALL res = SInt64Size(value);
+  cached_size.Set(ToCachedSize(res));
+  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+}
+size_t WireFormatLite::EnumSizeWithPackedTagSize(
+    const RepeatedField<int>& value, size_t tag_size,
+    const internal::CachedSize& cached_size) {
+  if (value.empty()) {
+    cached_size.Set(0);
+    return 0;
+  }
+  size_t res;
+  PROTOBUF_ALWAYS_INLINE_CALL res = EnumSize(value);
+  cached_size.Set(ToCachedSize(res));
+  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+}
 
 }  // namespace internal
 }  // namespace protobuf

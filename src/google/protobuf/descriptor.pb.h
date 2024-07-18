@@ -903,7 +903,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const UninterpretedOption_NamePart& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_part_;
     bool is_extension_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -1177,11 +1177,11 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const SourceCodeInfo_Location& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedField<::int32_t> path_;
-    mutable ::google::protobuf::internal::CachedSize _path_cached_byte_size_;
+    ::google::protobuf::internal::CachedSize _path_cached_byte_size_;
     ::google::protobuf::RepeatedField<::int32_t> span_;
-    mutable ::google::protobuf::internal::CachedSize _span_cached_byte_size_;
+    ::google::protobuf::internal::CachedSize _span_cached_byte_size_;
     ::google::protobuf::RepeatedPtrField<std::string> leading_detached_comments_;
     ::google::protobuf::internal::ArenaStringPtr leading_comments_;
     ::google::protobuf::internal::ArenaStringPtr trailing_comments_;
@@ -1452,9 +1452,9 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const GeneratedCodeInfo_Annotation& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedField<::int32_t> path_;
-    mutable ::google::protobuf::internal::CachedSize _path_cached_byte_size_;
+    ::google::protobuf::internal::CachedSize _path_cached_byte_size_;
     ::google::protobuf::internal::ArenaStringPtr source_file_;
     ::int32_t begin_;
     ::int32_t end_;
@@ -1687,7 +1687,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const FieldOptions_FeatureSupport& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr deprecation_warning_;
     int edition_introduced_;
     int edition_deprecated_;
@@ -1896,7 +1896,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const FieldOptions_EditionDefault& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr value_;
     int edition_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -2451,7 +2451,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
                           const FeatureSet& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     int field_presence_;
     int enum_type_;
     int repeated_field_encoding_;
@@ -2704,7 +2704,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const ExtensionRangeOptions_Declaration& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr full_name_;
     ::google::protobuf::internal::ArenaStringPtr type_;
     ::int32_t number_;
@@ -2908,7 +2908,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const EnumDescriptorProto_EnumReservedRange& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::int32_t start_;
     ::int32_t end_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -3109,7 +3109,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const DescriptorProto_ReservedRange& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::int32_t start_;
     ::int32_t end_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -3400,7 +3400,7 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const UninterpretedOption& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption_NamePart > name_;
     ::google::protobuf::internal::ArenaStringPtr identifier_value_;
     ::google::protobuf::internal::ArenaStringPtr string_value_;
@@ -3601,7 +3601,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const SourceCodeInfo& from_msg);
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location > location_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -3795,7 +3795,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const GeneratedCodeInfo& from_msg);
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::GeneratedCodeInfo_Annotation > annotation_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -4019,7 +4019,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const FeatureSetDefaults_FeatureSetEditionDefault& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::FeatureSet* overridable_features_;
     ::google::protobuf::FeatureSet* fixed_features_;
     int edition_;
@@ -4428,7 +4428,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
                           const ServiceOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
     bool deprecated_;
@@ -4825,7 +4825,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
                           const OneofOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -5265,7 +5265,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
                           const MethodOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
     bool deprecated_;
@@ -5723,7 +5723,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
                           const MessageOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
     bool message_set_wire_format_;
@@ -6432,7 +6432,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
                           const FileOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::internal::ArenaStringPtr java_package_;
     ::google::protobuf::internal::ArenaStringPtr java_outer_classname_;
@@ -7098,7 +7098,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
                           const FieldOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedField<int> targets_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldOptions_EditionDefault > edition_defaults_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
@@ -7335,7 +7335,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const FeatureSetDefaults& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault > defaults_;
     int minimum_edition_;
     int maximum_edition_;
@@ -7782,7 +7782,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
                           const ExtensionRangeOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::ExtensionRangeOptions_Declaration > declaration_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
@@ -8220,7 +8220,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
                           const EnumValueOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
     ::google::protobuf::FieldOptions_FeatureSupport* feature_support_;
@@ -8655,7 +8655,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
                           const EnumOptions& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* features_;
     bool allow_alias_;
@@ -8874,7 +8874,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const OneofDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::OneofOptions* options_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -9150,7 +9150,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const MethodDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::internal::ArenaStringPtr input_type_;
     ::google::protobuf::internal::ArenaStringPtr output_type_;
@@ -9557,7 +9557,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const FieldDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::internal::ArenaStringPtr extendee_;
     ::google::protobuf::internal::ArenaStringPtr type_name_;
@@ -9794,7 +9794,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const EnumValueDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::EnumValueOptions* options_;
     ::int32_t number_;
@@ -10017,7 +10017,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const DescriptorProto_ExtensionRange& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::ExtensionRangeOptions* options_;
     ::int32_t start_;
     ::int32_t end_;
@@ -10252,7 +10252,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const ServiceDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto > method_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::ServiceOptions* options_;
@@ -10529,7 +10529,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const EnumDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto > value_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto_EnumReservedRange > reserved_range_;
     ::google::protobuf::RepeatedPtrField<std::string> reserved_name_;
@@ -10899,7 +10899,7 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const DescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > field_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto > nested_type_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto > enum_type_;
@@ -11320,7 +11320,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const FileDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField<std::string> dependency_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto > message_type_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto > enum_type_;
@@ -11531,7 +11531,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const FileDescriptorSet& from_msg);
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > file_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };

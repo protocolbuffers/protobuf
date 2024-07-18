@@ -387,9 +387,9 @@ class RepeatedField final
   // Reserves space to expand the field to at least the given size.
   // If the array is grown, it will always be at least doubled in size.
   // If `annotate_size` is true (the default), then this function will annotate
-  // the old container from `old_size` to `capacity_` (unpoison memory)
+  // the old container from `old_size` to `Capacity()` (unpoison memory)
   // directly before it is being released, and annotate the new container from
-  // `capacity_` to `old_size` (poison unused memory).
+  // `Capacity()` to `old_size` (poison unused memory).
   void Grow(int old_size, int new_size);
   void GrowNoAnnotate(int old_size, int new_size);
 
@@ -410,10 +410,10 @@ class RepeatedField final
     }
   }
 
-  // Replaces size_ with new_size and returns the previous value of
-  // size_. This function is intended to be the only place where
-  // size_ is modified, with the exception of `AddInputIterator()`
-  // where the size of added items is not known in advance.
+  // Replaces size with new_size and returns the previous value of size. This
+  // function is intended to be the only place where size is modified, with the
+  // exception of `AddInputIterator()` where the size of added items is not
+  // known in advance.
   inline int ExchangeCurrentSize(int new_size) {
     const int prev_size = size();
     AnnotateSize(prev_size, new_size);
@@ -422,7 +422,7 @@ class RepeatedField final
   }
 
   // Returns a pointer to elements array.
-  // pre-condition: the array must have been allocated.
+  // pre-condition: Capacity() > 0.
   Element* elements() const {
     ABSL_DCHECK_GT(Capacity(), 0);
     // Because of above pre-condition this cast is safe.
@@ -612,12 +612,14 @@ inline Element* RepeatedField<Element>::AddNAlreadyReserved(int n)
 template <typename Element>
 inline void RepeatedField<Element>::Resize(int new_size, const Element& value) {
   ABSL_DCHECK_GE(new_size, 0);
-  if (new_size > size()) {
-    if (new_size > Capacity()) Grow(size(), new_size);
+  const int old_size = size();
+  if (new_size > old_size) {
+    if (new_size > Capacity()) Grow(old_size, new_size);
     Element* first = elements() + ExchangeCurrentSize(new_size);
-    std::uninitialized_fill(first, elements() + size(), value);
-  } else if (new_size < size()) {
-    Destroy(unsafe_elements() + new_size, unsafe_elements() + size());
+    std::uninitialized_fill(first, elements() + new_size, value);
+  } else if (new_size < old_size) {
+    Element* elem = unsafe_elements();
+    Destroy(elem + new_size, elem + old_size);
     ExchangeCurrentSize(new_size);
   }
 }
@@ -656,21 +658,20 @@ inline Element* RepeatedField<Element>::Mutable(int index)
 
 template <typename Element>
 inline void RepeatedField<Element>::Set(int index, const Element& value) {
-  ABSL_DCHECK_GE(index, 0);
-  ABSL_DCHECK_LT(index, size());
-  elements()[index] = value;
+  *Mutable(index) = value;
 }
 
 template <typename Element>
 inline void RepeatedField<Element>::Add(Element value) {
+  const int old_size = size();
   int capacity = Capacity();
   Element* elem = unsafe_elements();
-  if (ABSL_PREDICT_FALSE(size() == capacity)) {
-    Grow(size(), size() + 1);
+  if (ABSL_PREDICT_FALSE(old_size == capacity)) {
+    Grow(old_size, old_size + 1);
     capacity = Capacity();
     elem = unsafe_elements();
   }
-  int new_size = size() + 1;
+  int new_size = old_size + 1;
   void* p = elem + ExchangeCurrentSize(new_size);
   ::new (p) Element(std::move(value));
 
@@ -682,21 +683,23 @@ inline void RepeatedField<Element>::Add(Element value) {
 
 template <typename Element>
 inline Element* RepeatedField<Element>::Add() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  if (ABSL_PREDICT_FALSE(size() == Capacity())) {
-    Grow(size(), size() + 1);
+  const int old_size = size();
+  if (ABSL_PREDICT_FALSE(old_size == Capacity())) {
+    Grow(old_size, old_size + 1);
   }
-  void* p = unsafe_elements() + ExchangeCurrentSize(size() + 1);
+  void* p = unsafe_elements() + ExchangeCurrentSize(old_size + 1);
   return ::new (p) Element;
 }
 
 template <typename Element>
 template <typename Iter>
 inline void RepeatedField<Element>::AddForwardIterator(Iter begin, Iter end) {
+  const int old_size = size();
   int capacity = Capacity();
   Element* elem = unsafe_elements();
-  int new_size = size() + static_cast<int>(std::distance(begin, end));
+  int new_size = old_size + static_cast<int>(std::distance(begin, end));
   if (ABSL_PREDICT_FALSE(new_size > capacity)) {
-    Grow(size(), new_size);
+    Grow(old_size, new_size);
     elem = unsafe_elements();
     capacity = Capacity();
   }
@@ -711,24 +714,27 @@ inline void RepeatedField<Element>::AddForwardIterator(Iter begin, Iter end) {
 template <typename Element>
 template <typename Iter>
 inline void RepeatedField<Element>::AddInputIterator(Iter begin, Iter end) {
-  Element* first = unsafe_elements() + size();
-  Element* last = unsafe_elements() + Capacity();
+  Element* elem = unsafe_elements();
+  Element* first = elem + size();
+  Element* last = elem + Capacity();
   AnnotateSize(size(), Capacity());
 
   while (begin != end) {
     if (ABSL_PREDICT_FALSE(first == last)) {
-      int size = first - unsafe_elements();
+      int size = first - elem;
       GrowNoAnnotate(size, size + 1);
-      first = unsafe_elements() + size;
-      last = unsafe_elements() + Capacity();
+      elem = unsafe_elements();
+      first = elem + size;
+      last = elem + Capacity();
     }
     ::new (static_cast<void*>(first)) Element(*begin);
     ++begin;
     ++first;
   }
 
-  set_size(first - unsafe_elements());
-  AnnotateSize(Capacity(), size());
+  const int new_size = first - elem;
+  set_size(new_size);
+  AnnotateSize(Capacity(), new_size);
 }
 
 template <typename Element>
@@ -745,9 +751,10 @@ inline void RepeatedField<Element>::Add(Iter begin, Iter end) {
 
 template <typename Element>
 inline void RepeatedField<Element>::RemoveLast() {
-  ABSL_DCHECK_GT(size(), 0);
-  elements()[size() - 1].~Element();
-  ExchangeCurrentSize(size() - 1);
+  const int old_size = size();
+  ABSL_DCHECK_GT(old_size, 0);
+  elements()[old_size - 1].~Element();
+  ExchangeCurrentSize(old_size - 1);
 }
 
 template <typename Element>
@@ -755,7 +762,8 @@ void RepeatedField<Element>::ExtractSubrange(int start, int num,
                                              Element* elements) {
   ABSL_DCHECK_GE(start, 0);
   ABSL_DCHECK_GE(num, 0);
-  ABSL_DCHECK_LE(start + num, size());
+  const int old_size = size();
+  ABSL_DCHECK_LE(start + num, old_size);
 
   // Save the values of the removed elements if requested.
   if (elements != nullptr) {
@@ -764,24 +772,26 @@ void RepeatedField<Element>::ExtractSubrange(int start, int num,
 
   // Slide remaining elements down to fill the gap.
   if (num > 0) {
-    for (int i = start + num; i < size(); ++i) Set(i - num, Get(i));
-    Truncate(size() - num);
+    for (int i = start + num; i < old_size; ++i) Set(i - num, Get(i));
+    Truncate(old_size - num);
   }
 }
 
 template <typename Element>
 inline void RepeatedField<Element>::Clear() {
-  Destroy(unsafe_elements(), unsafe_elements() + size());
+  Element* elem = unsafe_elements();
+  Destroy(elem, elem + size());
   ExchangeCurrentSize(0);
 }
 
 template <typename Element>
 inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
   ABSL_DCHECK_NE(&other, this);
-  if (auto size = other.size()) {
-    Reserve(this->size() + size);
-    Element* dst = elements() + ExchangeCurrentSize(this->size() + size);
-    UninitializedCopyN(other.elements(), size, dst);
+  if (auto other_size = other.size()) {
+    const int old_size = size();
+    Reserve(old_size + other_size);
+    Element* dst = elements() + ExchangeCurrentSize(old_size + other_size);
+    UninitializedCopyN(other.elements(), other_size, dst);
   }
 }
 
@@ -905,8 +915,8 @@ RepeatedField<Element>::cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
 
 template <typename Element>
 inline size_t RepeatedField<Element>::SpaceUsedExcludingSelfLong() const {
-  return Capacity() > 0 ? (Capacity() * sizeof(Element) + kHeapRepHeaderSize)
-                        : 0;
+  const int capacity = Capacity();
+  return capacity > 0 ? capacity * sizeof(Element) + kHeapRepHeaderSize : 0;
 }
 
 namespace internal {
@@ -1016,9 +1026,11 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::Grow(int old_size,
 
 template <typename Element>
 inline void RepeatedField<Element>::Truncate(int new_size) {
-  ABSL_DCHECK_LE(new_size, size());
-  if (new_size < size()) {
-    Destroy(unsafe_elements() + new_size, unsafe_elements() + size());
+  const int old_size = size();
+  ABSL_DCHECK_LE(new_size, old_size);
+  if (new_size < old_size) {
+    Element* elem = unsafe_elements();
+    Destroy(elem + new_size, elem + old_size);
     ExchangeCurrentSize(new_size);
   }
 }

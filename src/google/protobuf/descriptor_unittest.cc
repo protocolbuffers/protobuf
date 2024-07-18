@@ -7594,6 +7594,9 @@ TEST_F(FeaturesTest, Proto2Features) {
   EXPECT_TRUE(message->FindFieldByName("req")->is_required());
   EXPECT_TRUE(file->enum_type(0)->is_closed());
 
+  EXPECT_EQ(message->FindFieldByName("str")->cpp_string_type(),
+            FieldDescriptor::CppStringType::kString);
+
   // Check round-trip consistency.
   FileDescriptorProto proto;
   file->CopyTo(&proto);
@@ -9708,6 +9711,73 @@ TEST_F(FeaturesTest, EnumFeatureHelpers) {
   EXPECT_TRUE(HasPreservingUnknownEnumSemantics(field_open));
   EXPECT_FALSE(HasPreservingUnknownEnumSemantics(field_closed));
   EXPECT_FALSE(HasPreservingUnknownEnumSemantics(field_legacy_closed));
+}
+
+TEST_F(FeaturesTest, FieldCppStringType) {
+  BuildDescriptorMessagesInTestPool();
+  const std::string file_contents = absl::Substitute(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2024
+        message_type {
+          name: "Foo"
+          field {
+            name: "view"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+          }
+          field {
+            name: "str"
+            number: 2
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+            options {
+              features {
+                [pb.cpp] { string_type: STRING }
+              }
+            }
+          }
+          field {
+            name: "cord"
+            number: 3
+            label: LABEL_OPTIONAL
+            type: TYPE_STRING
+            options {
+              features {
+                [pb.cpp] { string_type: CORD }
+              }
+            }
+          }
+          field {
+            name: "cord_bytes"
+            number: 4
+            label: LABEL_OPTIONAL
+            type: TYPE_BYTES
+            options {
+              features {
+                [pb.cpp] { string_type: CORD }
+              }
+            }
+          } $0
+        }
+      )pb",
+      ""
+  );
+  const FileDescriptor* file = BuildFile(file_contents);
+  const Descriptor* message = file->message_type(0);
+  const FieldDescriptor* view = message->field(0);
+  const FieldDescriptor* str = message->field(1);
+  const FieldDescriptor* cord = message->field(2);
+  const FieldDescriptor* cord_bytes = message->field(3);
+
+  EXPECT_EQ(view->cpp_string_type(), FieldDescriptor::CppStringType::kView);
+  EXPECT_EQ(str->cpp_string_type(), FieldDescriptor::CppStringType::kString);
+  EXPECT_EQ(cord_bytes->cpp_string_type(),
+            FieldDescriptor::CppStringType::kCord);
+  EXPECT_EQ(cord->cpp_string_type(), FieldDescriptor::CppStringType::kString);
+
 }
 
 TEST_F(FeaturesTest, MergeFeatureValidationFailed) {

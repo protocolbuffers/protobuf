@@ -1790,7 +1790,7 @@ public class JsonFormat {
       try {
         BigDecimal decimalValue = new BigDecimal(json.getAsString());
         BigInteger value = decimalValue.toBigIntegerExact();
-        if (value.signum() < 0 || value.compareTo(new BigInteger("FFFFFFFF", 16)) > 0) {
+        if (value.signum() < 0 || value.compareTo(MAX_UINT32) > 0) {
           throw new InvalidProtocolBufferException("Out of range uint32 value: " + json);
         }
         return value.intValue();
@@ -1802,6 +1802,7 @@ public class JsonFormat {
       }
     }
 
+    private static final BigInteger MAX_UINT32 = new BigInteger("FFFFFFFF", 16);
     private static final BigInteger MAX_UINT64 = new BigInteger("FFFFFFFFFFFFFFFF", 16);
 
     private long parseUint64(JsonElement json) throws InvalidProtocolBufferException {

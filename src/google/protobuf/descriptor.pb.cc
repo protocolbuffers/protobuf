@@ -3304,21 +3304,17 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
             // repeated int32 public_dependency = 10;
              {
               std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
-                  this_._internal_public_dependency())
-              ;
+                  this_._internal_public_dependency());
               std::size_t tag_size = std::size_t{1} *
                   ::_pbi::FromIntSize(this_._internal_public_dependency_size());
-              ;
               total_size += tag_size + data_size;
             }
             // repeated int32 weak_dependency = 11;
              {
               std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
-                  this_._internal_weak_dependency())
-              ;
+                  this_._internal_weak_dependency());
               std::size_t tag_size = std::size_t{1} *
                   ::_pbi::FromIntSize(this_._internal_weak_dependency_size());
-              ;
               total_size += tag_size + data_size;
             }
           }
@@ -10112,15 +10108,11 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
            {
             // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
              {
-              std::size_t data_size = 0;
-              auto count = static_cast<std::size_t>(this_._internal_targets_size());
-
-              for (std::size_t i = 0; i < count; ++i) {
-                data_size += ::_pbi::WireFormatLite::EnumSize(
-                    this_._internal_targets().Get(static_cast<int>(i)));
-              }
-              total_size += data_size;
-              total_size += std::size_t{2} * count;
+              std::size_t data_size =
+                  ::_pbi::WireFormatLite::EnumSize(this_._internal_targets());
+              std::size_t tag_size = std::size_t{2} *
+                  ::_pbi::FromIntSize(this_._internal_targets_size());
+              total_size += data_size + tag_size;
             }
             // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
              {
@@ -14098,31 +14090,17 @@ PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
            {
             // repeated int32 path = 1 [packed = true];
              {
-              std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
-                  this_._internal_path())
-              ;
-              this_._impl_._path_cached_byte_size_.Set(
-                  ::_pbi::ToCachedSize(data_size));
-              std::size_t tag_size = data_size == 0
-                  ? 0
-                  : 1 + ::_pbi::WireFormatLite::Int32Size(
-                                      static_cast<int32_t>(data_size))
-              ;
-              total_size += tag_size + data_size;
+              total_size +=
+                  ::_pbi::WireFormatLite::Int32SizeWithPackedTagSize(
+                      this_._internal_path(), 1,
+                      this_._impl_._path_cached_byte_size_);
             }
             // repeated int32 span = 2 [packed = true];
              {
-              std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
-                  this_._internal_span())
-              ;
-              this_._impl_._span_cached_byte_size_.Set(
-                  ::_pbi::ToCachedSize(data_size));
-              std::size_t tag_size = data_size == 0
-                  ? 0
-                  : 1 + ::_pbi::WireFormatLite::Int32Size(
-                                      static_cast<int32_t>(data_size))
-              ;
-              total_size += tag_size + data_size;
+              total_size +=
+                  ::_pbi::WireFormatLite::Int32SizeWithPackedTagSize(
+                      this_._internal_span(), 1,
+                      this_._impl_._span_cached_byte_size_);
             }
             // repeated string leading_detached_comments = 6;
              {
@@ -14692,17 +14670,10 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
            {
             // repeated int32 path = 1 [packed = true];
              {
-              std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
-                  this_._internal_path())
-              ;
-              this_._impl_._path_cached_byte_size_.Set(
-                  ::_pbi::ToCachedSize(data_size));
-              std::size_t tag_size = data_size == 0
-                  ? 0
-                  : 1 + ::_pbi::WireFormatLite::Int32Size(
-                                      static_cast<int32_t>(data_size))
-              ;
-              total_size += tag_size + data_size;
+              total_size +=
+                  ::_pbi::WireFormatLite::Int32SizeWithPackedTagSize(
+                      this_._internal_path(), 1,
+                      this_._impl_._path_cached_byte_size_);
             }
           }
           cached_has_bits = this_._impl_._has_bits_[0];

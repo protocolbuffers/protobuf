@@ -37,7 +37,6 @@
 #include "google/protobuf/unittest_lite.pb.h"
 #include "google/protobuf/wire_format.h"
 
-
 namespace google {
 namespace protobuf {
 
@@ -335,7 +334,6 @@ TEST_F(UnknownFieldSetTest, MergeFromMessageLite) {
   EXPECT_EQ(unknown_field.fixed32(), 42);
 }
 
-
 TEST_F(UnknownFieldSetTest, Clear) {
   // Clear the set.
   empty_message_.Clear();
@@ -575,7 +573,6 @@ TEST_F(UnknownFieldSetTest, SpaceUsed) {
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Var2";
 }
 
-
 TEST_F(UnknownFieldSetTest, Empty) {
   UnknownFieldSet unknown_fields;
   EXPECT_TRUE(unknown_fields.empty());
@@ -732,6 +729,5 @@ TEST_F(UnknownFieldSetTest, SerializeToCord_TestPackedTypes) {
 }
 
 }  // namespace
-
 }  // namespace protobuf
 }  // namespace google

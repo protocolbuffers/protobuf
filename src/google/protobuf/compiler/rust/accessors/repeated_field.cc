@@ -232,7 +232,8 @@ void RepeatedField::InThunkCc(Context& ctx,
              [&] {
                ctx.Emit(
                    R"cc(
-                     $ContainerType$<$ElementType$>* $getter_mut_thunk$($QualifiedMsg$* msg) {
+                     $ContainerType$<$ElementType$>* $getter_mut_thunk$(
+                         $QualifiedMsg$* msg) {
                        return msg->mutable_$field$();
                      }
                      const $ContainerType$<$ElementType$>* $getter_thunk$(
@@ -243,6 +244,7 @@ void RepeatedField::InThunkCc(Context& ctx,
                          $QualifiedMsg$* msg,
                          $ContainerType$<$ElementType$>* value) {
                        *msg->mutable_$field$() = std::move(*value);
+                       delete value;
                      }
                    )cc");
              }}},

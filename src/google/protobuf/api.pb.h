@@ -275,7 +275,7 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
                           const Mixin& from_msg);
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::internal::ArenaStringPtr root_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -558,7 +558,7 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
     bool request_streaming_;
     bool response_streaming_;
     int syntax_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -848,7 +848,7 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const Api& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method > methods_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option > options_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin > mixins_;

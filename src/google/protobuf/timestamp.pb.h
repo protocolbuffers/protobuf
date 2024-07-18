@@ -255,7 +255,7 @@ class PROTOBUF_EXPORT Timestamp final : public ::google::protobuf::Message
                           const Timestamp& from_msg);
     ::int64_t seconds_;
     ::int32_t nanos_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };

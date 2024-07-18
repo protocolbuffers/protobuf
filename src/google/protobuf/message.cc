@@ -185,7 +185,7 @@ size_t Message::ByteSizeLong() const {
 #endif  // !PROTOBUF_CUSTOM_VTABLE
 
 size_t Message::ComputeUnknownFieldsSize(
-    size_t total_size, internal::CachedSize* cached_size) const {
+    size_t total_size, const internal::CachedSize* cached_size) const {
   total_size += WireFormat::ComputeUnknownFieldsSize(
       _internal_metadata_.unknown_fields<UnknownFieldSet>(
           UnknownFieldSet::default_instance));
@@ -194,7 +194,7 @@ size_t Message::ComputeUnknownFieldsSize(
 }
 
 size_t Message::MaybeComputeUnknownFieldsSize(
-    size_t total_size, internal::CachedSize* cached_size) const {
+    size_t total_size, const internal::CachedSize* cached_size) const {
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     return ComputeUnknownFieldsSize(total_size, cached_size);
   }
