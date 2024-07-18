@@ -45,6 +45,21 @@ public interface MessageLite extends MessageLiteOrBuilder {
    */
   void writeTo(CodedOutputStream output) throws IOException;
 
+  // -----------------------------------------------------------------
+  // Convenience method.
+  /**
+   * Serializes the message and writes it to {@code output}. This is just a trivial wrapper around
+   * {@link #writeTo(CodedOutputStream)}. This does not flush or close the stream.
+   *
+   * <p>NOTE: Protocol Buffers are not self-delimiting. Therefore, if you write any more data to the
+   * stream after the message, you must somehow ensure that the parser on the receiving end does not
+   * interpret this as being part of the protocol message. This can be done, for instance, by
+   *  writing the size of the message before the data, then making sure to limit the input to that
+   * size on the receiving end by wrapping the InputStream in one which limits the input.
+   * Alternatively, just use {@link #writeDelimitedTo(OutputStream)}.
+   */
+  void writeTo(OutputStream output) throws IOException;
+
   /**
    * Get the number of bytes required to encode this message. The result is only computed on the
    * first call and memoized after that.
@@ -77,19 +92,6 @@ public interface MessageLite extends MessageLiteOrBuilder {
    * unpredictable. It may throw a runtime exception or truncate or slice the data.
    */
   byte[] toByteArray();
-
-  /**
-   * Serializes the message and writes it to {@code output}. This is just a trivial wrapper around
-   * {@link #writeTo(CodedOutputStream)}. This does not flush or close the stream.
-   *
-   * <p>NOTE: Protocol Buffers are not self-delimiting. Therefore, if you write any more data to the
-   * stream after the message, you must somehow ensure that the parser on the receiving end does not
-   * interpret this as being part of the protocol message. This can be done, for instance, by
-   *  writing the size of the message before the data, then making sure to limit the input to that
-   * size on the receiving end by wrapping the InputStream in one which limits the input.
-   * Alternatively, just use {@link #writeDelimitedTo(OutputStream)}.
-   */
-  void writeTo(OutputStream output) throws IOException;
 
   /**
    * Like {@link #writeTo(OutputStream)}, but writes the size of the message as a varint before
