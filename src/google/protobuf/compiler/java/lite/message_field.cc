@@ -309,10 +309,12 @@ void ImmutableMessageFieldLiteGenerator::GenerateKotlinDslMembers(
   GenerateKotlinOrNull(printer);
 }
 
-void ImmutableMessageFieldLiteGenerator::GenerateKotlinOrNull(io::Printer* printer) const {
+void ImmutableMessageFieldLiteGenerator::GenerateKotlinOrNull(
+    io::Printer* printer) const {
   if (descriptor_->has_presence() &&
       descriptor_->real_containing_oneof() == nullptr) {
     printer->Print(variables_,
+                   "$kt_deprecation$\n"
                    "public val $classname$Kt.Dsl.$name$OrNull: $kt_type$?\n"
                    "  get() = $kt_dsl_builder$.$name$OrNull\n");
   }

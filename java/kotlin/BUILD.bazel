@@ -276,6 +276,7 @@ kt_jvm_library(
         "//java/core:test_util",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
+        "@rules_kotlin//kotlin/compiler:kotlin-reflect",
     ],
 )
 

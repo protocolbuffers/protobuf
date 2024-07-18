@@ -26,12 +26,14 @@ import protobuf_unittest.UnittestProto.TestAllTypes.NestedEnum
 import protobuf_unittest.UnittestProto.TestEmptyMessage
 import protobuf_unittest.UnittestProto.TestEmptyMessageWithExtensions
 import protobuf_unittest.copy
+import protobuf_unittest.deprecatedMessageOrNull
 import protobuf_unittest.foreignMessage
 import protobuf_unittest.optionalGroupExtension
 import protobuf_unittest.optionalNestedMessageOrNull
 import protobuf_unittest.repeatedGroupExtension
 import protobuf_unittest.testAllExtensions
 import protobuf_unittest.testAllTypes
+import protobuf_unittest.testDeprecatedFields
 import protobuf_unittest.testEmptyMessage
 import protobuf_unittest.testEmptyMessageWithExtensions
 import protobuf_unittest.testEnumMap
@@ -958,5 +960,16 @@ class Proto2Test {
     }
     assertThat(someNestedMessage.optionalNestedMessageOrNull)
       .isEqualTo(TestAllTypesKt.nestedMessage { bb = 118 })
+  }
+
+  @Test
+  fun testDeprecated() {
+    val testInstance =
+      protobuf_unittest.UnittestProto.TestDeprecatedFields.getDefaultInstance()
+    assertThat(testInstance::deprecatedMessageOrNull.annotations.any { it is Deprecated }).isTrue()
+
+    val unused = testDeprecatedFields {
+      assertThat(::deprecatedMessage.annotations.any { it is Deprecated }).isTrue()
+    }
   }
 }

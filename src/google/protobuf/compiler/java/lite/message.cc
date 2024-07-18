@@ -854,6 +854,11 @@ void ImmutableMessageLiteGenerator::GenerateKotlinOrNull(
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (field->has_presence() && GetJavaType(field) == JAVATYPE_MESSAGE) {
+      if (field->options().deprecated()) {
+        printer->Print(
+            "@kotlin.Deprecated(message = \"Field $name$ is deprecated\")\n",
+            "name", context_->GetFieldGeneratorInfo(field)->name);
+      }
       printer->Print(
           "public val $full_classname$OrBuilder.$camelcase_name$OrNull: "
           "$full_name$?\n"
