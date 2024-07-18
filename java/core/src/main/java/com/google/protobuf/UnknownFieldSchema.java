@@ -55,7 +55,6 @@ abstract class UnknownFieldSchema<T, B> {
   /** Marks unknown fields as immutable. */
   abstract void makeImmutable(Object message);
 
-  /** Merges one field into the unknown fields. */
   final boolean mergeOneFieldFrom(B unknownFields, Reader reader) throws IOException {
     int tag = reader.getTag();
     int fieldNumber = WireFormat.getTagFieldNumber(tag);
@@ -88,7 +87,7 @@ abstract class UnknownFieldSchema<T, B> {
     }
   }
 
-  final void mergeFrom(B unknownFields, Reader reader) throws IOException {
+  private final void mergeFrom(B unknownFields, Reader reader) throws IOException {
     while (true) {
       if (reader.getFieldNumber() == Reader.READ_DONE
           || !mergeOneFieldFrom(unknownFields, reader)) {
