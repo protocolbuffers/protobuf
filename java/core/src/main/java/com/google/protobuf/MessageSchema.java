@@ -3006,6 +3006,7 @@ final class MessageSchema<T> implements Schema<T> {
               unknownFields = unknownFieldSchema.getBuilderFromMessage(message);
             }
             // Unknown field.
+
             if (unknownFieldSchema.mergeOneFieldFrom(unknownFields, reader)) {
               continue;
             }
@@ -3381,6 +3382,7 @@ final class MessageSchema<T> implements Schema<T> {
               if (unknownFields == null) {
                 unknownFields = unknownFieldSchema.getBuilderFromMessage(message);
               }
+
               if (!unknownFieldSchema.mergeOneFieldFrom(unknownFields, reader)) {
                 return;
               }
@@ -3397,6 +3399,7 @@ final class MessageSchema<T> implements Schema<T> {
             if (unknownFields == null) {
               unknownFields = unknownFieldSchema.getBuilderFromMessage(message);
             }
+
             if (!unknownFieldSchema.mergeOneFieldFrom(unknownFields, reader)) {
               return;
             }
