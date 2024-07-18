@@ -80,12 +80,70 @@ public class UnknownFieldSetTest {
   // =================================================================
 
   @Test
-  public void testFieldBuildersAreReusable() {
+  public void testFixed32FieldBuildersAreReusable() {
     UnknownFieldSet.Field.Builder fieldBuilder = UnknownFieldSet.Field.newBuilder();
     fieldBuilder.addFixed32(10);
     UnknownFieldSet.Field first = fieldBuilder.build();
     UnknownFieldSet.Field second = fieldBuilder.build();
     fieldBuilder.addFixed32(11);
+    UnknownFieldSet.Field third = fieldBuilder.build();
+
+    assertThat(first).isEqualTo(second);
+    assertThat(first).isNotEqualTo(third);
+  }
+
+  @Test
+  public void testFixed64FieldBuildersAreReusable() {
+    UnknownFieldSet.Field.Builder fieldBuilder = UnknownFieldSet.Field.newBuilder();
+    fieldBuilder.addFixed64(10);
+    UnknownFieldSet.Field first = fieldBuilder.build();
+    UnknownFieldSet.Field second = fieldBuilder.build();
+    fieldBuilder.addFixed64(11);
+    UnknownFieldSet.Field third = fieldBuilder.build();
+
+    assertThat(first).isEqualTo(second);
+    assertThat(first).isNotEqualTo(third);
+  }
+
+  @Test
+  public void testVarintFieldBuildersAreReusable() {
+    UnknownFieldSet.Field.Builder fieldBuilder = UnknownFieldSet.Field.newBuilder();
+    fieldBuilder.addVarint(10);
+    UnknownFieldSet.Field first = fieldBuilder.build();
+    UnknownFieldSet.Field second = fieldBuilder.build();
+    fieldBuilder.addVarint(11);
+    UnknownFieldSet.Field third = fieldBuilder.build();
+
+    assertThat(first).isEqualTo(second);
+    assertThat(first).isNotEqualTo(third);
+  }
+
+  @Test
+  public void testLengthDelimitedFieldBuildersAreReusable() {
+    UnknownFieldSet.Field.Builder fieldBuilder = UnknownFieldSet.Field.newBuilder();
+    fieldBuilder.addLengthDelimited(ByteString.copyFromUtf8("foo"));
+    UnknownFieldSet.Field first = fieldBuilder.build();
+    UnknownFieldSet.Field second = fieldBuilder.build();
+    fieldBuilder.addLengthDelimited(ByteString.copyFromUtf8("bar"));
+    UnknownFieldSet.Field third = fieldBuilder.build();
+
+    assertThat(first).isEqualTo(second);
+    assertThat(first).isNotEqualTo(third);
+  }
+
+  @Test
+  public void testGroupFieldBuildersAreReusable() {
+    UnknownFieldSet.Field.Builder fieldBuilder = UnknownFieldSet.Field.newBuilder();
+    fieldBuilder.addGroup(
+        UnknownFieldSet.newBuilder()
+            .addField(10, UnknownFieldSet.Field.newBuilder().addVarint(10).build())
+            .build());
+    UnknownFieldSet.Field first = fieldBuilder.build();
+    UnknownFieldSet.Field second = fieldBuilder.build();
+    fieldBuilder.addGroup(
+        UnknownFieldSet.newBuilder()
+            .addField(11, UnknownFieldSet.Field.newBuilder().addVarint(11).build())
+            .build());
     UnknownFieldSet.Field third = fieldBuilder.build();
 
     assertThat(first).isEqualTo(second);
