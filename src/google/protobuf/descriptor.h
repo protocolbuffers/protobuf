@@ -875,6 +875,10 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   const char* cpp_type_name() const;  // Name of the C++ type.
   Label label() const;                // optional/required/repeated
 
+#ifndef SWIG
+  CppStringType cpp_string_type() const;  // The C++ string type of this field.
+#endif
+
   bool is_required() const;  // shorthand for label() == LABEL_REQUIRED
   bool is_optional() const;  // shorthand for label() == LABEL_OPTIONAL
   bool is_repeated() const;  // shorthand for label() == LABEL_REPEATED
@@ -2932,22 +2936,21 @@ PROTOBUF_EXPORT bool HasPreservingUnknownEnumSemantics(
 
 PROTOBUF_EXPORT bool HasHasbit(const FieldDescriptor* field);
 
+#ifndef SWIG
 // For a string field, returns the effective ctype.  If the actual ctype is
 // not supported, returns the default of STRING.
 template <typename FieldDesc = FieldDescriptor,
           typename FieldOpts = FieldOptions>
 typename FieldOpts::CType EffectiveStringCType(const FieldDesc* field) {
-  ABSL_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
-  // Open-source protobuf release only supports STRING ctype and CORD for
-  // sinuglar bytes.
-  if (field->type() == FieldDescriptor::TYPE_BYTES && !field->is_repeated() &&
-      field->options().ctype() == FieldOpts::CORD && !field->is_extension()) {
-    return FieldOpts::CORD;
+  // TODO Replace this function with FieldDescriptor::string_type;
+  switch (field->cpp_string_type()) {
+    case FieldDescriptor::CppStringType::kCord:
+      return FieldOpts::CORD;
+    default:
+      return FieldOpts::STRING;
   }
-  return FieldOpts::STRING;
 }
 
-#ifndef SWIG
 enum class Utf8CheckMode : uint8_t {
   kStrict = 0,  // Parsing will fail if non UTF-8 data is in string fields.
   kVerify = 1,  // Only log an error but parsing will succeed.
