@@ -255,7 +255,7 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const FieldMask& from_msg);
     ::google::protobuf::RepeatedPtrField<std::string> paths_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
