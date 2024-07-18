@@ -6,11 +6,13 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBUnknownField.h"
-#import "GPBUnknownField_PackagePrivate.h"
 
 #import "GPBArray.h"
 #import "GPBCodedOutputStream_PackagePrivate.h"
 #import "GPBUnknownFieldSet.h"
+#import "GPBUnknownField_PackagePrivate.h"
+#import "GPBUnknownFields_PackagePrivate.h"
+#import "GPBWireFormat.h"
 
 #define ASSERT_FIELD_TYPE(type)                               \
   if (type_ != type) {                                        \
@@ -18,24 +20,7 @@
                 format:@"GPBUnknownField is the wrong type"]; \
   }
 
-@implementation GPBUnknownField {
- @protected
-  int32_t number_;
-  GPBUnknownFieldType type_;
-
-  union {
-    uint64_t intValue;        // type == Varint, Fixed32, Fixed64
-    NSData *lengthDelimited;  // type == LengthDelimited
-    GPBUnknownFields *group;  // type == Group
-    struct {                  // type == Legacy
-      GPBUInt64Array *mutableVarintList;
-      GPBUInt32Array *mutableFixed32List;
-      GPBUInt64Array *mutableFixed64List;
-      NSMutableArray<NSData *> *mutableLengthDelimitedList;
-      NSMutableArray<GPBUnknownFieldSet *> *mutableGroupList;
-    } legacy;
-  } storage_;
-}
+@implementation GPBUnknownField
 
 @synthesize number = number_;
 @synthesize type = type_;
@@ -88,6 +73,7 @@
   if ((self = [super init])) {
     number_ = number;
     type_ = GPBUnknownFieldTypeGroup;
+    // Taking ownership of the group; so retain, not copy.
     storage_.group = [group retain];
   }
   return self;
@@ -176,21 +162,12 @@
 - (id)copyWithZone:(NSZone *)zone {
   switch (type_) {
     case GPBUnknownFieldTypeVarint:
-      return [[GPBUnknownField allocWithZone:zone] initWithNumber:number_ varint:storage_.intValue];
     case GPBUnknownFieldTypeFixed32:
-      return [[GPBUnknownField allocWithZone:zone] initWithNumber:number_
-                                                          fixed32:(uint32_t)storage_.intValue];
     case GPBUnknownFieldTypeFixed64:
-      return [[GPBUnknownField allocWithZone:zone] initWithNumber:number_
-                                                          fixed64:storage_.intValue];
     case GPBUnknownFieldTypeLengthDelimited:
-      return [[GPBUnknownField allocWithZone:zone]
-           initWithNumber:number_
-          lengthDelimited:[storage_.lengthDelimited copyWithZone:zone]];
     case GPBUnknownFieldTypeGroup:
-      return
-          [[GPBUnknownField allocWithZone:zone] initWithNumber:number_
-                                                         group:[storage_.group copyWithZone:zone]];
+      // In these modes, the object isn't mutable, so just return self.
+      return [self retain];
     case GPBUnknownFieldTypeLegacy: {
       GPBUnknownField *result = [[GPBUnknownField allocWithZone:zone] initWithNumber:number_];
       result->storage_.legacy.mutableFixed32List =

@@ -12,12 +12,12 @@
 #     "cc_proto_library",
 # )
 # load(
-#     "//bazel:upb_proto_library.bzl",
-#     "upb_c_proto_library",
+#     "//hpb/bazel:upb_cc_proto_library.bzl",
+#     "upb_cc_proto_library",
 # )
 # load(
-#     "//protos/bazel:upb_cc_proto_library.bzl",
-#     "upb_cc_proto_library",
+#     "//bazel:upb_proto_library.bzl",
+#     "upb_c_proto_library",
 # )
 # load(
 #     "//upb/bazel:build_defs.bzl",
@@ -154,10 +154,11 @@
 #         "@com_google_googletest//:gtest", "@com_google_googletest//:gtest_main",
 #         "@com_google_absl//absl/status:statusor",
 #         "@com_google_absl//absl/strings",
+#         "//hpb:requires",
+#         "//hpb",
+#         "//hpb:repeated_field",
 #         "//protos",
-#         "//protos:requires",
 #         "//upb:mem",
-#         "//protos:repeated_field",
 #     ],
 # )
 # end:google_only

@@ -32,7 +32,7 @@ fn string_view_works() {
 fn repeated_string_view_works() {
     let mut msg = edition2023_rust_proto::EditionsMessage::new();
     assert_that!(msg.repeated_str_view().len(), eq(0));
-    msg.repeated_str_view_mut().push("first".into());
+    msg.repeated_str_view_mut().push("first");
     assert_that!(msg.repeated_str_view().len(), eq(1));
     assert_that!(msg.repeated_str_view().get(0), some(eq("first")));
 }

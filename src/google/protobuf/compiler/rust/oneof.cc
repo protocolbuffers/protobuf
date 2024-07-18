@@ -130,9 +130,11 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
            }},
       },
       // TODO: Revisit if isize is the optimal repr for this enum.
-      // TODO: not_set currently has phantom data just to avoid the
-      // lifetime on the enum breaking compilation if there are zero supported
-      // fields on it (e.g. if the oneof only has Messages inside).
+      // Note: This enum deliberately has a 'msg lifetime associated with it
+      // even if all fields were scalars; we could conditionally exclude the
+      // lifetime under that case, but it would mean changing the .proto file
+      // to add an additional string or message-typed field to the oneof would
+      // be a more breaking change than it needs to be.
       R"rs(
       #[non_exhaustive]
       #[derive(Debug, Clone, Copy)]

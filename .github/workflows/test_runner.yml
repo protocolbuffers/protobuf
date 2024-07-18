@@ -48,7 +48,7 @@ on:
 
   # manual
   workflow_dispatch:
-
+ 
 permissions:
   contents: read
 
@@ -77,9 +77,11 @@ jobs:
       # Store the sha for checkout so we can easily use it later.  For safe
       # events, this will be blank and use the defaults.
       checkout-sha: ${{ steps.safe-checkout.outputs.sha }}
-      # Stores a string denoting whether this is a presubmit or continuous
-      # run. This helps us determine which tests to block on.
-      test-type: ${{ steps.set-test-type-vars.outputs.test-type }}
+      # Stores a string to be used as a boolean denoting whether this is a
+      # continuous run. An empty string denotes that the run is on presubmit,
+      # otherwise we are in a continuous run. This helps us determine which
+      # tests to block on.
+      continuous-run: ${{ steps.set-test-type-vars.outputs.continuous-run }}
       # Stores a string that will serve as the prefix for all continuous tests.
       # Either way we prepend "(Continuous)" but in the case that we are in
       # a presubmit run, we should also mark them "[SKIPPED]"
@@ -104,10 +106,10 @@ jobs:
         id: set-test-type-vars
         run: |
           if [ "${{ github.event_name }}" == 'pull_request' ] || [ "${{ github.event_name }}" == 'pull_request_target' ]; then
-            echo "test-type=presubmit" >> "$GITHUB_OUTPUT"
-            echo "continuous-prefix=[SKIPPED](Continuous)" >> "$GITHUB_OUTPUT"
+            echo "continuous-run=" >> "$GITHUB_OUTPUT"
+            echo "continuous-prefix=[SKIPPED] (Continuous)" >> "$GITHUB_OUTPUT"
           else
-            echo "test-type=continuous" >> "$GITHUB_OUTPUT"
+            echo "continuous-run=continuous" >> "$GITHUB_OUTPUT"
             echo "continuous-prefix=(Continuous)" >> "$GITHUB_OUTPUT"
           fi
 
@@ -132,7 +134,7 @@ jobs:
     needs: [set-vars]
     uses: ./.github/workflows/test_bazel.yml
     with:
-      test-type: ${{ needs.set-vars.outputs.test-type }}
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
@@ -142,7 +144,7 @@ jobs:
     needs: [set-vars]
     uses: ./.github/workflows/test_cpp.yml
     with:
-      test-type: ${{ needs.set-vars.outputs.test-type }}
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
@@ -152,7 +154,7 @@ jobs:
     needs: [set-vars]
     uses: ./.github/workflows/test_java.yml
     with:
-      test-type: ${{ needs.set-vars.outputs.test-type }}
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
@@ -162,7 +164,7 @@ jobs:
     needs: [set-vars]
     uses: ./.github/workflows/test_python.yml
     with:
-      test-type: ${{ needs.set-vars.outputs.test-type }}
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
@@ -172,7 +174,7 @@ jobs:
     needs: [set-vars]
     uses: ./.github/workflows/test_ruby.yml
     with:
-      test-type: ${{ needs.set-vars.outputs.test-type }}
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
@@ -182,7 +184,7 @@ jobs:
     needs: [set-vars]
     uses: ./.github/workflows/test_php.yml
     with:
-      test-type: ${{ needs.set-vars.outputs.test-type }}
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
@@ -192,7 +194,7 @@ jobs:
     needs: [set-vars]
     uses: ./.github/workflows/test_php_ext.yml
     with:
-      test-type: ${{ needs.set-vars.outputs.test-type }}
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
@@ -210,7 +212,7 @@ jobs:
     needs: [set-vars]
     uses: ./.github/workflows/test_objectivec.yml
     with:
-      test-type: ${{ needs.set-vars.outputs.test-type }}
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
@@ -228,7 +230,7 @@ jobs:
     needs: [set-vars]
     uses: ./.github/workflows/test_upb.yml
     with:
-      test-type: ${{ needs.set-vars.outputs.test-type }}
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
@@ -240,6 +242,7 @@ jobs:
     # Staleness tests have scheduled runs during off-hours to avoid race conditions.
     if: ${{ github.event_name != 'schedule' }}
     with:
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
     secrets: inherit
 
@@ -250,7 +253,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check test results
-        run: "${{ !contains(join(needs.*.result, ' '), 'failure') && !contains(join(needs.*.result, ' '), 'cancelled') && !contains(join(needs.*.result, ' '), 'skipped') }}"
+        run: "${{ !contains(join(needs.*.result, ' '), 'failure') && !contains(join(needs.*.result, ' '), 'cancelled') }}"
     # This workflow must run even if one or more of the dependent workflows
     # failed.
-    if: always()
+    if: always() && ${{ needs.check-tag.result != 'skipped' }}

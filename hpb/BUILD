@@ -31,7 +31,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":hpb",
-        ":protos_traits",
+        ":traits",
         "//upb:base",
         "//upb:mem",
         "//upb:message",
@@ -44,16 +44,16 @@ cc_library(
 cc_library(
     name = "hpb",
     srcs = [
-        "protos.cc",
+        "hpb.cc",
     ],
     hdrs = [
-        "protos.h",
+        "hpb.h",
     ],
     compatible_with = ["//buildenv/target:non_prod"],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":protos_extension_lock",
+        ":extension_lock",
         "//upb:base",
         "//upb:mem",
         "//upb:message",
@@ -71,9 +71,9 @@ cc_library(
 
 # Internally used type traits.
 cc_library(
-    name = "protos_traits",
+    name = "traits",
     hdrs = [
-        "protos_traits.h",
+        "traits.h",
     ],
     compatible_with = ["//buildenv/target:non_prod"],
     copts = UPB_DEFAULT_CPPOPTS,
@@ -82,8 +82,8 @@ cc_library(
 )
 
 cc_library(
-    name = "protos_internal",
-    hdrs = ["protos_internal.h"],
+    name = "internal",
+    hdrs = ["internal.h"],
     compatible_with = ["//buildenv/target:non_prod"],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//upb:friends"],
@@ -99,10 +99,10 @@ cc_library(
 )
 
 cc_library(
-    name = "protos_extension_lock",
-    srcs = ["protos_extension_lock.cc"],
+    name = "extension_lock",
+    srcs = ["extension_lock.cc"],
     hdrs = [
-        "protos_extension_lock.h",
+        "extension_lock.h",
     ],
     compatible_with = ["//buildenv/target:non_prod"],
     copts = UPB_DEFAULT_CPPOPTS,
@@ -118,14 +118,14 @@ cc_library(
 cc_library(
     name = "generated_protos_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
-        "protos_internal.h",
+        "internal.h",
     ],
     compatible_with = ["//buildenv/target:non_prod"],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":hpb",
-        ":protos_internal",
+        ":internal",
         ":repeated_field",
         "//upb:mem",
         "//upb:message",
@@ -133,13 +133,13 @@ cc_library(
 )
 
 cc_test(
-    name = "protos_internal_test",
-    srcs = ["protos_internal_test.cc"],
+    name = "internal_test",
+    srcs = ["internal_test.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
-        ":protos_internal",
-        "//hpb_generator/tests:test_model_upb_cc_proto",
-        "//hpb_generator/tests:test_model_upb_proto",
+        ":internal",
+        "//src/google/protobuf/compiler/hpb/tests:test_model_upb_cc_proto",
+        "//src/google/protobuf/compiler/hpb/tests:test_model_upb_proto",
         "//upb:mem",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -157,18 +157,21 @@ cc_test(
     srcs = ["repeated_field_iterator_test.cc"],
     deps = [
         ":repeated_field",
+        "//hpb",
+        "//upb:message",
+        "@com_google_absl//absl/strings:string_view",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
 
 cc_test(
-    name = "protos_extension_lock_test",
-    srcs = ["protos_extension_lock_test.cc"],
+    name = "extension_lock_test",
+    srcs = ["extension_lock_test.cc"],
     deps = [
         "//hpb",
-        "//hpb:protos_extension_lock",
-        "//hpb_generator/tests:test_model_upb_cc_proto",
+        "//hpb:extension_lock",
+        "//src/google/protobuf/compiler/hpb/tests:test_model_upb_cc_proto",
         "//upb:mem",
         "@com_google_absl//absl/hash",
         "@com_google_absl//absl/log:absl_check",

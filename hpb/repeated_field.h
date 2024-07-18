@@ -15,9 +15,9 @@
 #include <type_traits>
 
 #include "absl/strings/string_view.h"
-#include "google/protobuf/hpb/protos.h"
-#include "google/protobuf/hpb/protos_traits.h"
+#include "google/protobuf/hpb/hpb.h"
 #include "google/protobuf/hpb/repeated_field_iterator.h"
+#include "google/protobuf/hpb/traits.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
@@ -37,7 +37,7 @@ namespace internal {
 // upb_Array* for the message when the RepeatedFieldProxy is constructed.
 template <class T>
 class RepeatedFieldProxyBase {
-  using Array = add_const_if_T_is_const<T, upb_Array>;
+  using Array = hpb::internal::add_const_if_T_is_const<T, upb_Array>;
 
  public:
   explicit RepeatedFieldProxyBase(Array* arr, upb_Arena* arena)

@@ -16,6 +16,7 @@
 @class GPBExtensionDescriptor;
 @class GPBFieldDescriptor;
 @class GPBUnknownFieldSet;
+@class GPBUnknownFields;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -501,6 +502,18 @@ CF_EXTERN_C_END
  * `GPBMessageDropUnknownFieldsRecursively()`.
  **/
 - (void)clearUnknownFields;
+
+/**
+ * Merges in the data from an `GPBUnknownFields`, meaning the data from the unknown fields gets
+ * re-parsed so any known fields will be propertly set.
+ *
+ * If the intent is to replace the message's unknown fields, call `-clearUnknownFields` first.
+ *
+ * @param unknownFields     The unknown fields to merge the data from.
+ * @param extensionRegistry The extension registry to use to look up extensions, can be `nil`.
+ **/
+- (void)mergeUnknownFields:(GPBUnknownFields *)unknownFields
+         extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry;
 
 @end
 

@@ -113,7 +113,7 @@ bool ParseNamedEnum(const EnumDescriptor* descriptor, absl::string_view name,
 
 const std::string& NameOfEnum(const EnumDescriptor* descriptor, int value) {
   const EnumValueDescriptor* d = descriptor->FindValueByNumber(value);
-  return (d == nullptr ? GetEmptyString() : d->name());
+  return (d == nullptr ? GetEmptyString() : internal::NameOfEnumAsString(d));
 }
 
 // Internal helper routine for NameOfDenseEnum in the header file.
@@ -131,7 +131,7 @@ const std::string** MakeDenseEnumCache(const EnumDescriptor* desc, int min_val,
     if (str_ptrs[num - min_val] == nullptr) {
       // Don't over-write an existing entry, because in case of duplication, the
       // first one wins.
-      str_ptrs[num - min_val] = &desc->value(i)->name();
+      str_ptrs[num - min_val] = &internal::NameOfEnumAsString(desc->value(i));
     }
   }
   // Change any unfilled entries to point to the empty string.
@@ -1796,11 +1796,11 @@ std::string Reflection::GetString(const Message& message,
                                   const FieldDescriptor* field) const {
   USAGE_CHECK_ALL(GetString, SINGULAR, STRING);
   if (field->is_extension()) {
-    return GetExtensionSet(message).GetString(field->number(),
-                                              field->default_value_string());
+    return GetExtensionSet(message).GetString(
+        field->number(), internal::DefaultValueStringAsString(field));
   } else {
     if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
-      return field->default_value_string();
+      return std::string(field->default_value_string());
     }
     switch (internal::cpp::EffectiveStringCType(field)) {
       case FieldOptions::CORD:
@@ -1815,7 +1815,8 @@ std::string Reflection::GetString(const Message& message,
           return GetField<InlinedStringField>(message, field).GetNoArena();
         } else {
           const auto& str = GetField<ArenaStringPtr>(message, field);
-          return str.IsDefault() ? field->default_value_string() : str.Get();
+          return str.IsDefault() ? std::string(field->default_value_string())
+                                 : str.Get();
         }
     }
   }
@@ -1827,11 +1828,11 @@ const std::string& Reflection::GetStringReference(const Message& message,
   (void)scratch;  // Parameter is used by Google-internal code.
   USAGE_CHECK_ALL(GetStringReference, SINGULAR, STRING);
   if (field->is_extension()) {
-    return GetExtensionSet(message).GetString(field->number(),
-                                              field->default_value_string());
+    return GetExtensionSet(message).GetString(
+        field->number(), internal::DefaultValueStringAsString(field));
   } else {
     if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
-      return field->default_value_string();
+      return internal::DefaultValueStringAsString(field);
     }
     switch (internal::cpp::EffectiveStringCType(field)) {
       case FieldOptions::CORD:
@@ -1848,7 +1849,8 @@ const std::string& Reflection::GetStringReference(const Message& message,
           return GetField<InlinedStringField>(message, field).GetNoArena();
         } else {
           const auto& str = GetField<ArenaStringPtr>(message, field);
-          return str.IsDefault() ? field->default_value_string() : str.Get();
+          return str.IsDefault() ? internal::DefaultValueStringAsString(field)
+                                 : str.Get();
         }
     }
   }
@@ -1859,7 +1861,7 @@ absl::Cord Reflection::GetCord(const Message& message,
   USAGE_CHECK_ALL(GetCord, SINGULAR, STRING);
   if (field->is_extension()) {
     return absl::Cord(GetExtensionSet(message).GetString(
-        field->number(), field->default_value_string()));
+        field->number(), internal::DefaultValueStringAsString(field)));
   } else {
     if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
       return absl::Cord(field->default_value_string());
@@ -1894,8 +1896,8 @@ absl::string_view Reflection::GetStringView(const Message& message,
   USAGE_CHECK_ALL(GetStringView, SINGULAR, STRING);
 
   if (field->is_extension()) {
-    return GetExtensionSet(message).GetString(field->number(),
-                                              field->default_value_string());
+    return GetExtensionSet(message).GetString(
+        field->number(), internal::DefaultValueStringAsString(field));
   }
   if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
     return field->default_value_string();

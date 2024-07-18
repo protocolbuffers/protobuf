@@ -4,7 +4,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
 """Public rules for using upb protos:
   - upb_cc_proto_library()
 """
@@ -12,6 +11,7 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
 load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
+load("//bazel/common:proto_info.bzl", "ProtoInfo")
 
 # begin:google_only
 #
@@ -240,7 +240,7 @@ _upb_cc_proto_library_aspect = aspect(
         "_gen_upbprotos": attr.label(
             executable = True,
             cfg = "exec",
-            default = "//hpb_generator:protoc-gen-upb-protos",
+            default = "//src/google/protobuf/compiler/hpb:protoc-gen-upb-protos",
         ),
         "_protoc": attr.label(
             executable = True,

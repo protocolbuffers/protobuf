@@ -22,11 +22,14 @@ use std::fmt;
 /// These are the items protobuf users can access directly.
 #[doc(hidden)]
 pub mod __public {
+    pub use crate::codegen_traits::{Message, MessageMut, MessageView};
     pub use crate::r#enum::{Enum, UnknownEnumValue};
     pub use crate::map::{Map, MapIter, MapMut, MapView, ProxiedInMapValue};
     pub use crate::optional::Optional;
     pub use crate::proto;
-    pub use crate::proxied::{IntoProxied, Mut, MutProxied, MutProxy, Proxied, View, ViewProxy};
+    pub use crate::proxied::{
+        IntoProxied, Mut, MutProxied, MutProxy, Proxied, Proxy, View, ViewProxy,
+    };
     pub use crate::repeated::{
         ProxiedInRepeated, Repeated, RepeatedIter, RepeatedMut, RepeatedView,
     };
@@ -51,6 +54,7 @@ pub mod __runtime;
 #[path = "upb.rs"]
 pub mod __runtime;
 
+mod codegen_traits;
 #[path = "enum.rs"]
 mod r#enum;
 mod map;
@@ -88,4 +92,11 @@ impl fmt::Display for SerializeError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Couldn't serialize proto into bytes (depth too deep or missing required fields)")
     }
+}
+
+pub fn get_repeated_default_value<T: repeated::ProxiedInRepeated + Default>(
+    _: __internal::Private,
+    _: repeated::RepeatedView<'_, T>,
+) -> T {
+    Default::default()
 }

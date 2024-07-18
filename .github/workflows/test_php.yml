@@ -4,9 +4,10 @@ name: PHP Tests
 on:
   workflow_call:
     inputs:
-      test-type:
+      continuous-run:
         required: true
-        description: "The type of test this is run from -- presubmit or continuous"
+        description: "Boolean string denoting whether this run is continuous --
+          empty string for presubmit, non-empty string for continuous."
         type: string
       safe-checkout:
         required: true
@@ -58,18 +59,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Setup composer
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/composer-setup@v3
         with:
           cache-prefix: php-${{ matrix.version-short }}
           directory: php
       - name: Run tests
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:${{ matrix.version }}-66964dc8b07b6d1fc73a5cc14e59e84c1c534cea
@@ -104,13 +105,13 @@ jobs:
       image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:836f2cedcfe351d9a30055076630408e61994fc7d783e8333a99570968990eeb
     steps:
       - name: Checkout pending changes
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Cross compile protoc for i386
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.continuous-run }}
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
         with:
@@ -119,14 +120,14 @@ jobs:
           architecture: linux-i386
 
       - name: Setup composer
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/composer-setup@v3
         with:
           cache-prefix: php-${{ matrix.version }}
           directory: php
 
       - name: Run tests
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: ${{ env.image }}
@@ -191,38 +192,38 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Checkout pending changes
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Uninstall problematic libgd
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.continuous-run }}
         run: brew uninstall --ignore-dependencies gd
 
       - name: Install dependencies
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.continuous-run }}
         run: brew install coreutils gd
 
       - name: Pin PHP version
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.continuous-run }}
         uses: shivammathur/setup-php@8872c784b04a1420e81191df5d64fbd59d3d3033 # 2.30.2
         with:
           php-version: ${{ matrix.version }}
 
       - name: Check PHP version
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.continuous-run }}
         run: php --version | grep ${{ matrix.version }} || (echo "Invalid PHP version - $(php --version)" && exit 1)
 
       - name: Setup composer
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/composer-setup@v3
         with:
           cache-prefix: php-${{ matrix.version }}
           directory: php
 
       - name: Run tests
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bash@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -235,7 +236,7 @@ jobs:
             popd
 
       - name: Run conformance tests
-        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
+        if: ${{ matrix.presubmit || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}

@@ -58,6 +58,7 @@
 #include "google/protobuf/port_def.inc"
 
 using ::testing::ElementsAre;
+using ::testing::IsEmpty;
 using ::testing::Pair;
 
 namespace google {
@@ -3152,6 +3153,20 @@ TEST(GeneratedMapFieldReflectionTest, Accessors) {
 
   reflection_tester.ModifyMapFieldsViaReflection(&message);
   MapTestUtil::ExpectMapFieldsModified(message);
+}
+
+TEST(GeneratedMapFieldReflectionTest,
+     AccessingTheDefaultInstanceWithReflectionDoesNotModifyIt) {
+  const auto& msg = UNITTEST::TestMap::default_instance();
+  const auto clone_bytes = [&] {
+    return std::string(reinterpret_cast<const char*>(&msg), sizeof(msg));
+  };
+  const auto before = clone_bytes();
+  const auto& rep = msg.GetReflection()->GetRepeatedFieldRef<google::protobuf::Message>(
+      msg, msg.GetDescriptor()->FindFieldByName("map_int32_int32"));
+  EXPECT_THAT(rep, IsEmpty());
+  const auto after = clone_bytes();
+  EXPECT_EQ(before, after);
 }
 
 TEST(GeneratedMapFieldReflectionTest, Swap) {

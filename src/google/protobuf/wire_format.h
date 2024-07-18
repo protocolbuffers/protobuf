@@ -260,7 +260,8 @@ class PROTOBUF_EXPORT WireFormat {
   // The NamedField variant takes a field name in order to produce an
   // informative error message if verification fails.
   static void VerifyUTF8StringNamedField(const char* data, int size,
-                                         Operation op, const char* field_name);
+                                         Operation op,
+                                         absl::string_view field_name);
 
  private:
   struct MessageSetParser;
@@ -345,9 +346,9 @@ inline void WireFormat::VerifyUTF8String(const char* data, int size,
 #endif
 }
 
-inline void WireFormat::VerifyUTF8StringNamedField(const char* data, int size,
-                                                   WireFormat::Operation op,
-                                                   const char* field_name) {
+inline void WireFormat::VerifyUTF8StringNamedField(
+    const char* data, int size, WireFormat::Operation op,
+    const absl::string_view field_name) {
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
   WireFormatLite::VerifyUtf8String(
       data, size, static_cast<WireFormatLite::Operation>(op), field_name);

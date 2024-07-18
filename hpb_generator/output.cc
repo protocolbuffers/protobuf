@@ -5,16 +5,16 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "hpb_generator/output.h"
+#include "google/protobuf/compiler/hpb/output.h"
 
 #include <string>
 
 #include "absl/strings/str_replace.h"
 
-namespace protos_generator {
+namespace google::protobuf::hpb_generator {
 namespace {
 
-namespace protobuf = ::google::protobuf;
+namespace protobuf = ::proto2;
 
 }  // namespace
 
@@ -66,4 +66,5 @@ std::string CSourceFilename(const google::protobuf::FileDescriptor* file) {
   return StripExtension(file->name()) + ".upb.c";
 }
 
-}  // namespace protos_generator
+}  // namespace protobuf
+}  // namespace google::hpb_generator

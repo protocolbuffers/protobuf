@@ -14,7 +14,7 @@
 
 namespace google {
 namespace protobuf {
-namespace rust_internal {
+namespace rust {
 
 // Represents an ABI-stable version of &[u8]/string_view (borrowed slice of
 // bytes) for FFI use only.
@@ -43,8 +43,20 @@ struct RustStringRawParts {
   explicit RustStringRawParts(std::string src);
 };
 
-}  // namespace rust_internal
+}  // namespace rust
 }  // namespace protobuf
 }  // namespace google
+
+extern "C" {
+
+// Allocates a new std::string on the C++ heap and returns a pointer to it.
+std::string* proto2_rust_cpp_new_string(google::protobuf::rust::PtrAndLen src);
+
+// Deletes a std::string object from the C++ heap.
+void proto2_rust_cpp_delete_string(std::string* str);
+
+// Obtain a PtrAndLen, the FFI-safe view type, from a std::string.
+google::protobuf::rust::PtrAndLen proto2_rust_cpp_string_to_view(std::string* str);
+}
 
 #endif  // GOOGLE_PROTOBUF_RUST_CPP_KERNEL_STRINGS_H__

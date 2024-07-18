@@ -59,7 +59,7 @@ using ::google::protobuf::internal::cpp::IsLazilyInitializedFile;
 absl::flat_hash_map<absl::string_view, std::string> FileVars(
     const FileDescriptor* file, const Options& options) {
   return {
-      {"filename", file->name()},
+      {"filename", std::string(file->name())},
       {"package_ns", Namespace(file, options)},
       {"tablename", UniqueName("TableStruct", file, options)},
       {"desc_table", DescriptorTableName(file, options)},
@@ -1833,3 +1833,5 @@ std::vector<const Descriptor*> FileGenerator::MessagesInTopologicalOrder()
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

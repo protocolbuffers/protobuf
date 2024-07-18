@@ -583,7 +583,7 @@ inline std::string IncludeGuard(const FileDescriptor* file,
       extension = ".proto.static_reflection.h";
   }
   std::string filename_identifier =
-      FilenameIdentifier(file->name() + extension);
+      FilenameIdentifier(absl::StrCat(file->name(), extension));
 
   if (IsWellKnownMessage(file)) {
     // For well-known messages we need third_party/protobuf and net/proto2 to
@@ -1022,7 +1022,7 @@ class PROTOC_EXPORT Formatter {
 template <typename T>
 std::string FieldComment(const T* field, const Options& options) {
   if (options.strip_nonfunctional_codegen) {
-    return field->name();
+    return std::string(field->name());
   }
   // Print the field's (or oneof's) proto-syntax definition as a comment.
   // We don't want to print group bodies so we cut off after the first

@@ -20,7 +20,7 @@
 
 namespace google {
 namespace protobuf {
-namespace rust_internal {
+namespace rust {
 
 // Represents serialized Protobuf wire format data.
 //
@@ -46,7 +46,7 @@ inline bool SerializeMsg(const google::protobuf::MessageLite* msg, SerializedDat
                     << " exceeded maximum protobuf size of 2GB: " << len;
     return false;
   }
-  uint8_t* bytes = static_cast<uint8_t*>(rust_proto_alloc(len, alignof(char)));
+  uint8_t* bytes = static_cast<uint8_t*>(proto2_rust_alloc(len, alignof(char)));
   if (bytes == nullptr) {
     ABSL_LOG(FATAL) << "Rust allocator failed to allocate memory.";
   }
@@ -57,7 +57,7 @@ inline bool SerializeMsg(const google::protobuf::MessageLite* msg, SerializedDat
   return true;
 }
 
-}  // namespace rust_internal
+}  // namespace rust
 }  // namespace protobuf
 }  // namespace google
 

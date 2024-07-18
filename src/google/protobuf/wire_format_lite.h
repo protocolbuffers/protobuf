@@ -315,7 +315,7 @@ class PROTOBUF_EXPORT WireFormatLite {
 
   // Returns true if the data is valid UTF-8.
   static bool VerifyUtf8String(const char* data, int size, Operation op,
-                               const char* field_name);
+                               absl::string_view field_name);
 
   template <typename MessageType>
   static inline bool ReadGroup(int field_number, io::CodedInputStream* input,
@@ -699,6 +699,28 @@ class PROTOBUF_EXPORT WireFormatLite {
   static size_t SInt32Size(const RepeatedField<int32_t>& value);
   static size_t SInt64Size(const RepeatedField<int64_t>& value);
   static size_t EnumSize(const RepeatedField<int>& value);
+
+  static size_t Int32SizeWithPackedTagSize(
+      const RepeatedField<int32_t>& value, size_t tag_size,
+      const internal::CachedSize& cached_size);
+  static size_t Int64SizeWithPackedTagSize(
+      const RepeatedField<int64_t>& value, size_t tag_size,
+      const internal::CachedSize& cached_size);
+  static size_t UInt32SizeWithPackedTagSize(
+      const RepeatedField<uint32_t>& value, size_t tag_size,
+      const internal::CachedSize& cached_size);
+  static size_t UInt64SizeWithPackedTagSize(
+      const RepeatedField<uint64_t>& value, size_t tag_size,
+      const internal::CachedSize& cached_size);
+  static size_t SInt32SizeWithPackedTagSize(
+      const RepeatedField<int32_t>& value, size_t tag_size,
+      const internal::CachedSize& cached_size);
+  static size_t SInt64SizeWithPackedTagSize(
+      const RepeatedField<int64_t>& value, size_t tag_size,
+      const internal::CachedSize& cached_size);
+  static size_t EnumSizeWithPackedTagSize(
+      const RepeatedField<int>& value, size_t tag_size,
+      const internal::CachedSize& cached_size);
 
   // These types always have the same size.
   static constexpr size_t kFixed32Size = 4;

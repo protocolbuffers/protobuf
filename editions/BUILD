@@ -8,6 +8,7 @@ bzl_library(
     name = "defaults",
     srcs = ["defaults.bzl"],
     visibility = ["//visibility:public"],
+    deps = ["//bazel/common:proto_info_bzl"],
 )
 
 # Aggregate all the features owned by the Protobuf repo.

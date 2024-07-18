@@ -11,7 +11,7 @@
 
 use crate::__internal::Private;
 use crate::__runtime::{InnerProtoString, PtrAndLen, RawMessage};
-use crate::{IntoProxied, Mut, MutProxied, MutProxy, Optional, Proxied, View, ViewProxy};
+use crate::{IntoProxied, Mut, MutProxied, MutProxy, Optional, Proxied, Proxy, View, ViewProxy};
 use std::borrow::Cow;
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use std::convert::{AsMut, AsRef};
@@ -27,6 +27,15 @@ use utf8::Utf8Chunks;
 
 pub struct ProtoBytes {
     pub(crate) inner: InnerProtoString,
+}
+
+impl ProtoBytes {
+    // Returns the kernel-specific container. This method is private in spirit and
+    // must not be called by a user.
+    #[doc(hidden)]
+    pub fn into_inner(self, _private: Private) -> InnerProtoString {
+        self.inner
+    }
 }
 
 impl AsRef<[u8]> for ProtoBytes {
@@ -105,7 +114,7 @@ impl IntoProxied<ProtoBytes> for Arc<[u8]> {
     }
 }
 
-impl<'msg> ViewProxy<'msg> for &'msg [u8] {
+impl<'msg> Proxy<'msg> for &'msg [u8] {
     type Proxied = ProtoBytes;
 
     fn as_view(&self) -> &[u8] {
@@ -119,6 +128,8 @@ impl<'msg> ViewProxy<'msg> for &'msg [u8] {
         self
     }
 }
+
+impl<'msg> ViewProxy<'msg> for &'msg [u8] {}
 
 /// The bytes were not valid UTF-8.
 #[derive(Debug, PartialEq)]
@@ -161,6 +172,19 @@ pub struct ProtoString {
 impl ProtoString {
     pub fn as_bytes(&self) -> &[u8] {
         self.inner.as_bytes()
+    }
+
+    // Returns the kernel-specific container. This method is private in spirit and
+    // must not be called by a user.
+    #[doc(hidden)]
+    pub fn into_inner(self, _private: Private) -> InnerProtoString {
+        self.inner
+    }
+}
+
+impl From<ProtoString> for ProtoBytes {
+    fn from(v: ProtoString) -> Self {
+        ProtoBytes { inner: v.inner }
     }
 }
 
@@ -457,7 +481,7 @@ impl Proxied for ProtoString {
     type View<'msg> = &'msg ProtoStr;
 }
 
-impl<'msg> ViewProxy<'msg> for &'msg ProtoStr {
+impl<'msg> Proxy<'msg> for &'msg ProtoStr {
     type Proxied = ProtoString;
 
     fn as_view(&self) -> &ProtoStr {
@@ -471,6 +495,8 @@ impl<'msg> ViewProxy<'msg> for &'msg ProtoStr {
         self
     }
 }
+
+impl<'msg> ViewProxy<'msg> for &'msg ProtoStr {}
 
 /// Implements `PartialCmp` and `PartialEq` for the `lhs` against the `rhs`
 /// using `AsRef<[u8]>`.

@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/hpb/protos_extension_lock.h"
+#include "google/protobuf/hpb/extension_lock.h"
 
 #include <atomic>
 #include <mutex>
@@ -16,8 +16,8 @@
 #include <gtest/gtest.h>
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
-#include "hpb_generator/tests/test_model.upb.proto.h"
-#include "google/protobuf/hpb/protos.h"
+#include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
+#include "google/protobuf/hpb/hpb.h"
 #include "upb/mem/arena.hpp"
 
 #ifndef ASSERT_OK
@@ -27,7 +27,7 @@
 #define EXPECT_OK(x) EXPECT_TRUE(x.ok())
 #endif  // EXPECT_OK
 
-namespace protos_generator::test::protos {
+namespace hpb_unittest::protos {
 
 namespace {
 
@@ -49,14 +49,14 @@ std::string GenerateTestData() {
 
 std::mutex m[8];
 void unlock_func(const void* msg) { m[absl::HashOf(msg) & 0x7].unlock(); }
-::protos::internal::UpbExtensionUnlocker lock_func(const void* msg) {
+::hpb::internal::UpbExtensionUnlocker lock_func(const void* msg) {
   m[absl::HashOf(msg) & 0x7].lock();
   return &unlock_func;
 }
 
 void TestConcurrentExtensionAccess(::protos::ExtensionRegistry registry) {
-  ::protos::internal::upb_extension_locker_global.store(
-      &lock_func, std::memory_order_release);
+  ::hpb::internal::upb_extension_locker_global.store(&lock_func,
+                                                     std::memory_order_release);
   const std::string payload = GenerateTestData();
   TestModel parsed_model =
       ::protos::Parse<TestModel>(payload, registry).value();
@@ -102,8 +102,6 @@ void TestConcurrentExtensionAccess(::protos::ExtensionRegistry registry) {
   test_theme();
   test_theme_extension();
 }
-#ifndef _MSC_VER
-// TODO Re-enable this once github runner issue is resolved.
 
 TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothLazy) {
   ::upb::Arena arena;
@@ -122,7 +120,5 @@ TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothEager) {
       {{&theme, &ThemeExtension::theme_extension}, arena});
 }
 
-#endif  // _MSC_VER
-
 }  // namespace
-}  // namespace protos_generator::test::protos
+}  // namespace hpb_unittest::protos

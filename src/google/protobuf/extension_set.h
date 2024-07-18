@@ -632,7 +632,41 @@ class PROTOBUF_EXPORT ExtensionSet {
   }
   static std::atomic<LazyMessageExtension* (*)(Arena* arena)>
       maybe_create_lazy_extension_;
+
+  // We can't directly use std::atomic for Extension::cached_size because
+  // Extension needs to be trivially copyable.
+  class TrivialAtomicInt {
+   public:
+    int operator()() const {
+      return reinterpret_cast<const AtomicT*>(int_)->load(
+          std::memory_order_relaxed);
+    }
+    void set(int v) {
+      reinterpret_cast<AtomicT*>(int_)->store(v, std::memory_order_relaxed);
+    }
+
+   private:
+    using AtomicT = std::atomic<int>;
+    alignas(AtomicT) char int_[sizeof(AtomicT)];
+  };
+
   struct Extension {
+    // Some helper methods for operations on a single Extension.
+    uint8_t* InternalSerializeFieldWithCachedSizesToArray(
+        const MessageLite* extendee, const ExtensionSet* extension_set,
+        int number, uint8_t* target, io::EpsCopyOutputStream* stream) const;
+    uint8_t* InternalSerializeMessageSetItemWithCachedSizesToArray(
+        const MessageLite* extendee, const ExtensionSet* extension_set,
+        int number, uint8_t* target, io::EpsCopyOutputStream* stream) const;
+    size_t ByteSize(int number) const;
+    size_t MessageSetItemByteSize(int number) const;
+    void Clear();
+    int GetSize() const;
+    void Free();
+    size_t SpaceUsedExcludingSelfLong() const;
+    bool IsInitialized(const ExtensionSet* ext_set, const MessageLite* extendee,
+                       int number, Arena* arena) const;
+
     // The order of these fields packs Extension into 24 bytes when using 8
     // byte alignment. Consider this when adding or removing fields here.
     union {
@@ -683,29 +717,12 @@ class PROTOBUF_EXPORT ExtensionSet {
 
     // For packed fields, the size of the packed data is recorded here when
     // ByteSize() is called then used during serialization.
-    // TODO:  Use atomic<int> when C++ supports it.
-    mutable int cached_size;
+    mutable TrivialAtomicInt cached_size;
 
     // The descriptor for this extension, if one exists and is known.  May be
     // nullptr.  Must not be nullptr if the descriptor for the extension does
     // not live in the same pool as the descriptor for the containing type.
     const FieldDescriptor* descriptor;
-
-    // Some helper methods for operations on a single Extension.
-    uint8_t* InternalSerializeFieldWithCachedSizesToArray(
-        const MessageLite* extendee, const ExtensionSet* extension_set,
-        int number, uint8_t* target, io::EpsCopyOutputStream* stream) const;
-    uint8_t* InternalSerializeMessageSetItemWithCachedSizesToArray(
-        const MessageLite* extendee, const ExtensionSet* extension_set,
-        int number, uint8_t* target, io::EpsCopyOutputStream* stream) const;
-    size_t ByteSize(int number) const;
-    size_t MessageSetItemByteSize(int number) const;
-    void Clear();
-    int GetSize() const;
-    void Free();
-    size_t SpaceUsedExcludingSelfLong() const;
-    bool IsInitialized(const ExtensionSet* ext_set, const MessageLite* extendee,
-                       int number, Arena* arena) const;
   };
 
   // The Extension struct is small enough to be passed by value, so we use it

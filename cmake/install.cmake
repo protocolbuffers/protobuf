@@ -24,6 +24,10 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf.pc.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf-lite.pc.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc @ONLY)
+if (protobuf_BUILD_LIBUPB)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/upb.pc.cmake
+                ${CMAKE_CURRENT_BINARY_DIR}/upb.pc @ONLY)
+endif ()
 
 set(_protobuf_libraries libprotobuf-lite libprotobuf)
 if (protobuf_BUILD_LIBPROTOC)
@@ -72,6 +76,9 @@ if (protobuf_BUILD_PROTOC_BINARIES)
 endif (protobuf_BUILD_PROTOC_BINARIES)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+if (protobuf_BUILD_LIBUPB)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/upb.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+endif ()
 
 include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
 set(protobuf_HEADERS
@@ -122,15 +129,9 @@ set(_install_cmakedir_desc "Directory relative to CMAKE_INSTALL to install the c
 set(_build_cmakedir_desc "Directory relative to CMAKE_CURRENT_BINARY_DIR for cmake configuration files")
 set(_exampledir_desc "Directory relative to CMAKE_INSTALL_DATA to install examples")
 set(_protobuf_subdir_desc "Subdirectory in which to install cmake configuration files")
-if(NOT MSVC)
-  set(protobuf_CMAKE_SUBDIR "cmake/protobuf" CACHE STRING "${_protobuf_subdir_desc}")
-  set(CMAKE_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/${protobuf_CMAKE_SUBDIR}" CACHE STRING "${_install_cmakedir_desc}")
-  set(CMAKE_INSTALL_EXAMPLEDIR "${CMAKE_INSTALL_DATADIR}/protobuf/examples" CACHE STRING "${_exampledir_desc}")
-else()
-  set(protobuf_CMAKE_SUBDIR "cmake" CACHE STRING "${_protobuf_subdir_desc}")
-  set(CMAKE_INSTALL_CMAKEDIR "cmake" CACHE STRING "${_cmakedir_desc}")
-  set(CMAKE_INSTALL_EXAMPLEDIR "examples" CACHE STRING "${_exampledir_desc}")
-endif()
+set(protobuf_CMAKE_SUBDIR "cmake/protobuf" CACHE STRING "${_protobuf_subdir_desc}")
+set(CMAKE_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/${protobuf_CMAKE_SUBDIR}" CACHE STRING "${_install_cmakedir_desc}")
+set(CMAKE_INSTALL_EXAMPLEDIR "${CMAKE_INSTALL_DATADIR}/protobuf/examples" CACHE STRING "${_exampledir_desc}")
 set(CMAKE_BUILD_CMAKEDIR "${CMAKE_CURRENT_BINARY_DIR}/${protobuf_CMAKE_SUBDIR}" CACHE STRING "${_build_cmakedir_desc}")
 mark_as_advanced(protobuf_CMAKE_SUBDIR)
 mark_as_advanced(CMAKE_BUILD_CMAKEDIR)

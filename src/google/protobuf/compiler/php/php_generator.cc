@@ -752,9 +752,10 @@ void GenerateEnumToPool(const EnumDescriptor* en, io::Printer* printer) {
 
   for (int i = 0; i < en->value_count(); i++) {
     const EnumValueDescriptor* value = en->value(i);
-    printer->Print("->value(\"^name^\", ^number^)\n", "name",
-                   ConstantNamePrefix(value->name()) + value->name(), "number",
-                   IntToString(value->number()));
+    printer->Print(
+        "->value(\"^name^\", ^number^)\n", "name",
+        absl::StrCat(ConstantNamePrefix(value->name()), value->name()),
+        "number", IntToString(value->number()));
   }
   printer->Print("->finalizeToPool();\n\n");
   Outdent(printer);
@@ -1172,17 +1173,19 @@ bool GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
       hasReserved = true;
     }
 
-    printer.Print("const ^name^ = ^number^;\n", "name", prefix + value->name(),
-                  "number", IntToString(value->number()));
+    printer.Print("const ^name^ = ^number^;\n", "name",
+                  absl::StrCat(prefix, value->name()), "number",
+                  IntToString(value->number()));
   }
 
   printer.Print("\nprivate static $valueToName = [\n");
   Indent(&printer);
   for (int i = 0; i < en->value_count(); i++) {
     const EnumValueDescriptor* value = en->value(i);
-    printer.Print("self::^constant^ => '^name^',\n", "constant",
-                  ConstantNamePrefix(value->name()) + value->name(), "name",
-                  value->name());
+    printer.Print(
+        "self::^constant^ => '^name^',\n", "constant",
+        absl::StrCat(ConstantNamePrefix(value->name()), value->name()), "name",
+        value->name());
   }
   Outdent(&printer);
   printer.Print("];\n");

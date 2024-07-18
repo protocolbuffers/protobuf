@@ -124,7 +124,8 @@ static int AddDescriptors(PyObject* cls, const Descriptor* descriptor) {
     if (property == nullptr) {
       return -1;
     }
-    if (PyObject_SetAttrString(cls, field_descriptor->name().c_str(),
+    if (PyObject_SetAttrString(cls,
+                               std::string(field_descriptor->name()).c_str(),
                                property.get()) < 0) {
       return -1;
     }
@@ -144,7 +145,8 @@ static int AddDescriptors(PyObject* cls, const Descriptor* descriptor) {
     if (wrapped == nullptr) {
       return -1;
     }
-    if (PyObject_SetAttrString(cls, enum_descriptor->name().c_str(),
+    if (PyObject_SetAttrString(cls,
+                               std::string(enum_descriptor->name()).c_str(),
                                wrapped.get()) == -1) {
       return -1;
     }
@@ -158,8 +160,9 @@ static int AddDescriptors(PyObject* cls, const Descriptor* descriptor) {
       if (value_number == nullptr) {
         return -1;
       }
-      if (PyObject_SetAttrString(cls, enum_value_descriptor->name().c_str(),
-                                 value_number.get()) == -1) {
+      if (PyObject_SetAttrString(
+              cls, std::string(enum_value_descriptor->name()).c_str(),
+              value_number.get()) == -1) {
         return -1;
       }
     }
@@ -178,7 +181,7 @@ static int AddDescriptors(PyObject* cls, const Descriptor* descriptor) {
     }
 
     // Add the extension field to the message class.
-    if (PyObject_SetAttrString(cls, field->name().c_str(),
+    if (PyObject_SetAttrString(cls, std::string(field->name()).c_str(),
                                extension_field.get()) == -1) {
       return -1;
     }
@@ -245,7 +248,7 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   }
 
   PyObject* well_known_class = PyDict_GetItemString(
-      WKT_classes, message_descriptor->full_name().c_str());
+      WKT_classes, std::string(message_descriptor->full_name()).c_str());
   if (well_known_class == nullptr) {
     new_args.reset(Py_BuildValue("s(OO)O", name, CMessage_Type,
                                  PythonMessage_class, dict));
@@ -676,20 +679,20 @@ bool CheckAndSetString(PyObject* arg, Message* message,
 }
 
 PyObject* ToStringObject(const FieldDescriptor* descriptor,
-                         const std::string& value) {
+                         const absl::string_view value) {
   if (descriptor->type() != FieldDescriptor::TYPE_STRING) {
-    return PyBytes_FromStringAndSize(value.c_str(), value.length());
+    return PyBytes_FromStringAndSize(value.data(), value.length());
   }
 
   PyObject* result =
-      PyUnicode_DecodeUTF8(value.c_str(), value.length(), nullptr);
+      PyUnicode_DecodeUTF8(value.data(), value.length(), nullptr);
   // If the string can't be decoded in UTF-8, just return a string object that
   // contains the raw bytes. This can't happen if the value was assigned using
   // the members of the Python message object, but can happen if the values were
   // parsed from the wire (binary).
   if (result == nullptr) {
     PyErr_Clear();
-    result = PyBytes_FromStringAndSize(value.c_str(), value.length());
+    result = PyBytes_FromStringAndSize(value.data(), value.length());
   }
   return result;
 }
@@ -700,8 +703,8 @@ bool CheckFieldBelongsToMessage(const FieldDescriptor* field_descriptor,
     return true;
   }
   PyErr_Format(PyExc_KeyError, "Field '%s' does not belong to message '%s'",
-               field_descriptor->full_name().c_str(),
-               message->GetDescriptor()->full_name().c_str());
+               std::string(field_descriptor->full_name()).c_str(),
+               std::string(message->GetDescriptor()->full_name()).c_str());
   return false;
 }
 
@@ -969,7 +972,7 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
     if (property == nullptr ||
         !PyObject_TypeCheck(property.get(), CFieldProperty_Type)) {
       PyErr_Format(PyExc_ValueError, "Protocol message %s has no \"%s\" field.",
-                   self->message->GetDescriptor()->name().c_str(),
+                   std::string(self->message->GetDescriptor()->name()).c_str(),
                    PyString_AsString(name));
       return -1;
     }
@@ -1023,7 +1026,7 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
         ScopedPyObjectPtr iter(PyObject_GetIter(value));
         if (iter == nullptr) {
           PyErr_Format(PyExc_TypeError, "Value of field '%s' must be iterable",
-                       descriptor->name().c_str());
+                       std::string(descriptor->name()).c_str());
           return -1;
         }
         ScopedPyObjectPtr next;
@@ -1053,7 +1056,7 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
         ScopedPyObjectPtr iter(PyObject_GetIter(value));
         if (iter == nullptr) {
           PyErr_Format(PyExc_TypeError, "Value of field '%s' must be iterable",
-                       descriptor->name().c_str());
+                       std::string(descriptor->name()).c_str());
           return -1;
         }
         ScopedPyObjectPtr next;
@@ -1130,7 +1133,7 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
             PyErr_Format(PyExc_TypeError,
                          "Parameter to initialize message field must be "
                          "dict or instance of same class: expected %s got %s.",
-                         descriptor->full_name().c_str(),
+                         std::string(descriptor->full_name()).c_str(),
                          Py_TYPE(value)->tp_name);
             return -1;
           }
@@ -1190,7 +1193,8 @@ static CMessage* NewCMessage(CMessageClass* type) {
       type->py_message_factory->message_factory->GetPrototype(
           message_descriptor);
   if (prototype == nullptr) {
-    PyErr_SetString(PyExc_TypeError, message_descriptor->full_name().c_str());
+    PyErr_SetString(PyExc_TypeError,
+                    std::string(message_descriptor->full_name()).c_str());
     return nullptr;
   }
 
@@ -1315,11 +1319,11 @@ const FieldDescriptor* FindFieldWithOneofs(const Message* message,
 }
 
 bool CheckHasPresence(const FieldDescriptor* field_descriptor, bool in_oneof) {
-  auto message_name = field_descriptor->containing_type()->name();
+  auto message_name = std::string(field_descriptor->containing_type()->name());
   if (field_descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
-    PyErr_Format(PyExc_ValueError,
-                 "Protocol message %s has no singular \"%s\" field.",
-                 message_name.c_str(), field_descriptor->name().c_str());
+    PyErr_Format(
+        PyExc_ValueError, "Protocol message %s has no singular \"%s\" field.",
+        message_name.c_str(), std::string(field_descriptor->name()).c_str());
     return false;
   }
 
@@ -1327,7 +1331,8 @@ bool CheckHasPresence(const FieldDescriptor* field_descriptor, bool in_oneof) {
     PyErr_Format(PyExc_ValueError,
                  "Can't test non-optional, non-submessage field \"%s.%s\" for "
                  "presence in proto3.",
-                 message_name.c_str(), field_descriptor->name().c_str());
+                 message_name.c_str(),
+                 std::string(field_descriptor->name()).c_str());
     return false;
   }
 
@@ -1344,7 +1349,7 @@ PyObject* HasField(CMessage* self, PyObject* arg) {
     PyErr_Format(PyExc_ValueError,
                  "The field name passed to message %s"
                  " is not a str.",
-                 message->GetDescriptor()->name().c_str());
+                 std::string(message->GetDescriptor()->name()).c_str());
     return nullptr;
   }
 
@@ -1354,7 +1359,8 @@ PyObject* HasField(CMessage* self, PyObject* arg) {
   if (field_descriptor == nullptr) {
     if (!is_in_oneof) {
       PyErr_Format(PyExc_ValueError, "Protocol message %s has no field %s.",
-                   message->GetDescriptor()->name().c_str(), field_name);
+                   std::string(message->GetDescriptor()->name()).c_str(),
+                   field_name);
       return nullptr;
     } else {
       Py_RETURN_FALSE;
@@ -1578,9 +1584,9 @@ PyObject* Clear(CMessage* self) {
 
 static std::string GetMessageName(CMessage* self) {
   if (self->parent_field_descriptor != nullptr) {
-    return self->parent_field_descriptor->full_name();
+    return std::string(self->parent_field_descriptor->full_name());
   } else {
-    return self->message->GetDescriptor()->full_name();
+    return std::string(self->message->GetDescriptor()->full_name());
   }
 }
 
@@ -1751,22 +1757,25 @@ static PyObject* ToStr(CMessage* self) {
 PyObject* MergeFrom(CMessage* self, PyObject* arg) {
   CMessage* other_message;
   if (!PyObject_TypeCheck(arg, CMessage_Type)) {
-    PyErr_Format(PyExc_TypeError,
-                 "Parameter to MergeFrom() must be instance of same class: "
-                 "expected %s got %s.",
-                 self->message->GetDescriptor()->full_name().c_str(),
-                 Py_TYPE(arg)->tp_name);
+    PyErr_Format(
+        PyExc_TypeError,
+        "Parameter to MergeFrom() must be instance of same class: "
+        "expected %s got %s.",
+        std::string(self->message->GetDescriptor()->full_name()).c_str(),
+        Py_TYPE(arg)->tp_name);
     return nullptr;
   }
 
   other_message = reinterpret_cast<CMessage*>(arg);
   if (other_message->message->GetDescriptor() !=
       self->message->GetDescriptor()) {
-    PyErr_Format(PyExc_TypeError,
-                 "Parameter to MergeFrom() must be instance of same class: "
-                 "expected %s got %s.",
-                 self->message->GetDescriptor()->full_name().c_str(),
-                 other_message->message->GetDescriptor()->full_name().c_str());
+    PyErr_Format(
+        PyExc_TypeError,
+        "Parameter to MergeFrom() must be instance of same class: "
+        "expected %s got %s.",
+        std::string(self->message->GetDescriptor()->full_name()).c_str(),
+        std::string(other_message->message->GetDescriptor()->full_name())
+            .c_str());
     return nullptr;
   }
   AssureWritable(self);
@@ -1784,11 +1793,12 @@ PyObject* MergeFrom(CMessage* self, PyObject* arg) {
 static PyObject* CopyFrom(CMessage* self, PyObject* arg) {
   CMessage* other_message;
   if (!PyObject_TypeCheck(arg, CMessage_Type)) {
-    PyErr_Format(PyExc_TypeError,
-                 "Parameter to CopyFrom() must be instance of same class: "
-                 "expected %s got %s.",
-                 self->message->GetDescriptor()->full_name().c_str(),
-                 Py_TYPE(arg)->tp_name);
+    PyErr_Format(
+        PyExc_TypeError,
+        "Parameter to CopyFrom() must be instance of same class: "
+        "expected %s got %s.",
+        std::string(self->message->GetDescriptor()->full_name()).c_str(),
+        Py_TYPE(arg)->tp_name);
     return nullptr;
   }
 
@@ -1800,11 +1810,13 @@ static PyObject* CopyFrom(CMessage* self, PyObject* arg) {
 
   if (other_message->message->GetDescriptor() !=
       self->message->GetDescriptor()) {
-    PyErr_Format(PyExc_TypeError,
-                 "Parameter to CopyFrom() must be instance of same class: "
-                 "expected %s got %s.",
-                 self->message->GetDescriptor()->full_name().c_str(),
-                 other_message->message->GetDescriptor()->full_name().c_str());
+    PyErr_Format(
+        PyExc_TypeError,
+        "Parameter to CopyFrom() must be instance of same class: "
+        "expected %s got %s.",
+        std::string(self->message->GetDescriptor()->full_name()).c_str(),
+        std::string(other_message->message->GetDescriptor()->full_name())
+            .c_str());
     return nullptr;
   }
 
@@ -1870,7 +1882,8 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
     // Parse error.
     PyErr_Format(
         DecodeError_class, "Error parsing message with type '%s'",
-        self->GetMessageClass()->message_descriptor->full_name().c_str());
+        std::string(self->GetMessageClass()->message_descriptor->full_name())
+            .c_str());
     return nullptr;
   }
   if (ctx.BytesUntilLimit(ptr) < 0) {
@@ -1879,7 +1892,8 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
         DecodeError_class,
         "Error parsing message as the message exceeded the protobuf limit "
         "with type '%s'",
-        self->GetMessageClass()->message_descriptor->full_name().c_str());
+        std::string(self->GetMessageClass()->message_descriptor->full_name())
+            .c_str());
     return nullptr;
   }
 
@@ -1928,8 +1942,8 @@ static PyObject* WhichOneof(CMessage* self, PyObject* arg) {
   if (field_in_oneof == nullptr) {
     Py_RETURN_NONE;
   } else {
-    const std::string& name = field_in_oneof->name();
-    return PyUnicode_FromStringAndSize(name.c_str(), name.size());
+    const absl::string_view name = field_in_oneof->name();
+    return PyUnicode_FromStringAndSize(name.data(), name.size());
   }
 }
 
@@ -1995,7 +2009,8 @@ static PyObject* ListFields(CMessage* self) {
 
       PyObject* field_value = GetFieldValue(self, fields[i]);
       if (field_value == nullptr) {
-        PyErr_SetString(PyExc_ValueError, fields[i]->name().c_str());
+        PyErr_SetString(PyExc_ValueError,
+                        std::string(fields[i]->name()).c_str());
         return nullptr;
       }
       PyTuple_SET_ITEM(t.get(), 0, field_descriptor.release());
@@ -2532,7 +2547,8 @@ PyObject* GetFieldValue(CMessage* self,
   if (self->message->GetDescriptor() != field_descriptor->containing_type()) {
     PyErr_Format(PyExc_TypeError,
                  "descriptor to field '%s' doesn't apply to '%s' object",
-                 field_descriptor->full_name().c_str(), Py_TYPE(self)->tp_name);
+                 std::string(field_descriptor->full_name()).c_str(),
+                 Py_TYPE(self)->tp_name);
     return nullptr;
   }
 
@@ -2590,13 +2606,14 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
   if (self->message->GetDescriptor() != field_descriptor->containing_type()) {
     PyErr_Format(PyExc_TypeError,
                  "descriptor to field '%s' doesn't apply to '%s' object",
-                 field_descriptor->full_name().c_str(), Py_TYPE(self)->tp_name);
+                 std::string(field_descriptor->full_name()).c_str(),
+                 Py_TYPE(self)->tp_name);
     return -1;
   } else if (field_descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
     PyErr_Format(PyExc_AttributeError,
                  "Assignment not allowed to repeated "
                  "field \"%s\" in protocol message object.",
-                 field_descriptor->name().c_str());
+                 std::string(field_descriptor->name()).c_str());
     return -1;
   } else if (field_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     if (field_descriptor->message_type()->well_known_type() !=
@@ -2615,7 +2632,7 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
     PyErr_Format(PyExc_AttributeError,
                  "Assignment not allowed to "
                  "field \"%s\" in protocol message object.",
-                 field_descriptor->name().c_str());
+                 std::string(field_descriptor->name()).c_str());
     return -1;
   } else {
     AssureWritable(self);

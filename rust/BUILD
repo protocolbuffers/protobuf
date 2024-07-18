@@ -6,6 +6,7 @@ load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 
 package(
     default_visibility = [
+        "//:__pkg__",  # "public" targets are alias rules in //.
         "//src/google/protobuf:__subpackages__",
     ],
 )
@@ -46,6 +47,7 @@ rust_library(
 #
 # shared.rs is the root of the crate and has public items re-exported in protobuf.rs for user use.
 PROTOBUF_SHARED = [
+    "codegen_traits.rs",
     "enum.rs",
     "internal.rs",
     "primitive.rs",

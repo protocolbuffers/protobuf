@@ -74,6 +74,9 @@
 		F43ADD312C2F2B91005312E5 /* GPBUnknownFields.h in Headers */ = {isa = PBXBuildFile; fileRef = F43ADD2F2C2F2B91005312E5 /* GPBUnknownFields.h */; };
 		F43ADD332C2F2BAD005312E5 /* GPBUnknownFieldsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F43ADD322C2F2BAD005312E5 /* GPBUnknownFieldsTest.m */; };
 		F43ADD432C2F381F005312E5 /* GPBCompileTest25.m in Sources */ = {isa = PBXBuildFile; fileRef = F43ADD422C2F381F005312E5 /* GPBCompileTest25.m */; };
+		F43ADD502C333D6C005312E5 /* GPBUnknownFields+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43ADD4F2C333D6B005312E5 /* GPBUnknownFields+Additions.swift */; };
+		F43ADD562C345CED005312E5 /* GPBUnknownField+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43ADD552C345CED005312E5 /* GPBUnknownField+Additions.swift */; };
+		F43ADD5C2C35A6CC005312E5 /* GPBUnknownFields_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = F43ADD5B2C35A6CC005312E5 /* GPBUnknownFields_PackagePrivate.h */; };
 		F43C88D0191D77FC009E917D /* text_format_unittest_data.txt in Resources */ = {isa = PBXBuildFile; fileRef = F43C88CF191D77FC009E917D /* text_format_unittest_data.txt */; };
 		F4487C4D1A9F8E0200531423 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		F4487C521A9F8E4D00531423 /* GPBProtocolBuffers.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BCF338814ED799900BC5317 /* GPBProtocolBuffers.m */; };
@@ -214,6 +217,9 @@
 		F43ADD2F2C2F2B91005312E5 /* GPBUnknownFields.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBUnknownFields.h; sourceTree = "<group>"; };
 		F43ADD322C2F2BAD005312E5 /* GPBUnknownFieldsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBUnknownFieldsTest.m; sourceTree = "<group>"; };
 		F43ADD422C2F381F005312E5 /* GPBCompileTest25.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest25.m; sourceTree = "<group>"; };
+		F43ADD4F2C333D6B005312E5 /* GPBUnknownFields+Additions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GPBUnknownFields+Additions.swift"; sourceTree = "<group>"; };
+		F43ADD552C345CED005312E5 /* GPBUnknownField+Additions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GPBUnknownField+Additions.swift"; sourceTree = "<group>"; };
+		F43ADD5B2C35A6CC005312E5 /* GPBUnknownFields_PackagePrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBUnknownFields_PackagePrivate.h; sourceTree = "<group>"; };
 		F43C88CF191D77FC009E917D /* text_format_unittest_data.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = text_format_unittest_data.txt; sourceTree = "<group>"; };
 		F4411BE71AF12FD700324B4A /* GPBArray_PackagePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPBArray_PackagePrivate.h; sourceTree = "<group>"; };
 		F4487C511A9F8E0200531423 /* libTestSingleSourceBuild.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libTestSingleSourceBuild.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -417,8 +423,11 @@
 				F4B6B8AF1A9CC98000892426 /* GPBUnknownField_PackagePrivate.h */,
 				7461B4AE0F94F99000A0C422 /* GPBUnknownField.h */,
 				7461B4AF0F94F99000A0C422 /* GPBUnknownField.m */,
+				F43ADD552C345CED005312E5 /* GPBUnknownField+Additions.swift */,
+				F43ADD5B2C35A6CC005312E5 /* GPBUnknownFields_PackagePrivate.h */,
 				F43ADD2F2C2F2B91005312E5 /* GPBUnknownFields.h */,
 				F43ADD2E2C2F2B91005312E5 /* GPBUnknownFields.m */,
+				F43ADD4F2C333D6B005312E5 /* GPBUnknownFields+Additions.swift */,
 				F4B6B8B21A9CCBDA00892426 /* GPBUnknownFieldSet_PackagePrivate.h */,
 				7461B4E10F94F99000A0C422 /* GPBUnknownFieldSet.h */,
 				7461B4E20F94F99000A0C422 /* GPBUnknownFieldSet.m */,
@@ -576,6 +585,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F43ADD312C2F2B91005312E5 /* GPBUnknownFields.h in Headers */,
+				F43ADD5C2C35A6CC005312E5 /* GPBUnknownFields_PackagePrivate.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -668,6 +678,9 @@
 				LastTestingUpgradeCheck = 0600;
 				LastUpgradeCheck = 1400;
 				TargetAttributes = {
+					7461B52D0F94FAF800A0C422 = {
+						LastSwiftMigration = 1530;
+					};
 					8BBEA4A5147C727100C4ADB7 = {
 						LastSwiftMigration = "";
 						TestTargetID = 8B9A5EA41831993600A9D33B;
@@ -719,6 +732,7 @@
 			files = (
 				F47CF93123D9006000C7B24C /* GPBType.pbobjc.m in Sources */,
 				7461B53C0F94FB4E00A0C422 /* GPBCodedInputStream.m in Sources */,
+				F43ADD502C333D6C005312E5 /* GPBUnknownFields+Additions.swift in Sources */,
 				F47CF93223D9006000C7B24C /* GPBWrappers.pbobjc.m in Sources */,
 				F47CF94123D902D500C7B24C /* GPBEmpty.pbobjc.m in Sources */,
 				F43ADD302C2F2B91005312E5 /* GPBUnknownFields.m in Sources */,
@@ -737,6 +751,7 @@
 				8B79657B14992E3F002FFBFC /* GPBRootObject.m in Sources */,
 				F47CF93523D9006000C7B24C /* GPBTimestamp.pbobjc.m in Sources */,
 				8B96157414C8C38C00A2AC0B /* GPBDescriptor.m in Sources */,
+				F43ADD562C345CED005312E5 /* GPBUnknownField+Additions.swift in Sources */,
 				F45C69CC16DFD08D0081955B /* GPBExtensionInternals.m in Sources */,
 				F47CF92B23D9006000C7B24C /* GPBStruct.pbobjc.m in Sources */,
 				F47CF94323D902D500C7B24C /* GPBAny.pbobjc.m in Sources */,
@@ -834,10 +849,14 @@
 		7461B52F0F94FAFA00A0C422 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
 				PRODUCT_NAME = ProtocolBuffers;
+				SWIFT_OBJC_BRIDGING_HEADER = GPBProtocolBuffers.h;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};
 			name = Debug;
@@ -845,10 +864,13 @@
 		7461B5300F94FAFA00A0C422 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
 				PRODUCT_NAME = ProtocolBuffers;
+				SWIFT_OBJC_BRIDGING_HEADER = GPBProtocolBuffers.h;
+				SWIFT_VERSION = 5.0;
 				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)";
 			};
 			name = Release;
@@ -856,6 +878,7 @@
 		8BBEA4A7147C727100C4ADB7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -888,6 +911,7 @@
 		8BBEA4A8147C727100C4ADB7 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMBINE_HIDPI_IMAGES = YES;

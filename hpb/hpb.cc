@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/hpb/protos.h"
+#include "google/protobuf/hpb/hpb.h"
 
 #include <atomic>
 #include <cstddef>
@@ -14,7 +14,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/hpb/protos_extension_lock.h"
+#include "google/protobuf/hpb/extension_lock.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/copy.h"
@@ -82,6 +82,10 @@ absl::Status MessageDecodeError(upb_DecodeStatus status, SourceLocation loc
 // end:github_only
 
 namespace internal {
+
+using ::hpb::internal::upb_extension_locker_global;
+using ::hpb::internal::UpbExtensionLocker;
+using ::hpb::internal::UpbExtensionUnlocker;
 
 upb_ExtensionRegistry* GetUpbExtensions(
     const ExtensionRegistry& extension_registry) {

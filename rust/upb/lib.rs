@@ -50,5 +50,8 @@ pub use owned_arena_box::OwnedArenaBox;
 mod string_view;
 pub use string_view::StringView;
 
+mod text;
+pub use text::debug_string;
+
 pub mod wire;
 pub use wire::{upb_Decode, DecodeStatus, EncodeStatus};
