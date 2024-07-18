@@ -23,13 +23,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        branch: [main, 25.x, 27.x, 28.x]
+        branch: [main]
         os: [{ name: Linux, value: ubuntu-latest}]
-        exclude:
-          # If we are in a presubmit run, only test main
-          - branch: ${{ !inputs.continuous-run && '25.x' }}
-          - branch: ${{ !inputs.continuous-run && '27.x' }}
-          - branch: ${{ !inputs.continuous-run && '28.x' }}
+        include:
+          # If we are in a continuous run, test other release branches
+          - branch: ${{ inputs.continuous-run && '25.x' }}
+          - branch: ${{ inputs.continuous-run && '27.x' }}
+          - branch: ${{ inputs.continuous-run && '28.x' }}
 
     name: Test staleness ${{ matrix.os.name }} ${{ matrix.branch }}
     runs-on: ${{ matrix.os.value }}
