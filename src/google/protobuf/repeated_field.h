@@ -658,9 +658,7 @@ inline Element* RepeatedField<Element>::Mutable(int index)
 
 template <typename Element>
 inline void RepeatedField<Element>::Set(int index, const Element& value) {
-  ABSL_DCHECK_GE(index, 0);
-  ABSL_DCHECK_LT(index, size());
-  elements()[index] = value;
+  *Mutable(index) = value;
 }
 
 template <typename Element>
