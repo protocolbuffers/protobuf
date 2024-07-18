@@ -437,7 +437,7 @@ void RepeatedPrimitive::GeneratePrivateMembers(io::Printer* p) const {
   if (HasCachedSize()) {
     p->Emit({{"_cached_size_", MakeVarintCachedSizeName(field_)}},
             R"cc(
-              mutable $pbi$::CachedSize $_cached_size_$;
+              $pbi$::CachedSize $_cached_size_$;
             )cc");
   }
 }

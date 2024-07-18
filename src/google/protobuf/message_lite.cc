@@ -139,14 +139,6 @@ std::string MessageLite::DebugString() const {
 
 int MessageLite::GetCachedSize() const { return AccessCachedSize().Get(); }
 
-internal::CachedSize& MessageLite::AccessCachedSize() const {
-  auto* data = GetClassData();
-  ABSL_DCHECK(data != nullptr);
-  ABSL_DCHECK(data->cached_size_offset != 0);
-  return *reinterpret_cast<internal::CachedSize*>(const_cast<char*>(
-      reinterpret_cast<const char*>(this) + data->cached_size_offset));
-}
-
 namespace {
 
 // When serializing, we first compute the byte size, then serialize the message.

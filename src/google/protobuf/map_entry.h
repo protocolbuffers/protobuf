@@ -116,7 +116,7 @@ class MapEntry : public Message {
   // sharing easier.
   struct {
     HasBits<1> _has_bits_{};
-    mutable CachedSize _cached_size_{};
+    CachedSize _cached_size_{};
 
     KeyOnMemory key_{KeyTypeHandler::Constinit()};
     ValueOnMemory value_{ValueTypeHandler::Constinit()};

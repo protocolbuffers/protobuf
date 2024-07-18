@@ -95,7 +95,7 @@ class PROTOBUF_EXPORT CachedSize {
     return __atomic_load_n(&atom_, __ATOMIC_RELAXED);
   }
 
-  void Set(Scalar desired) noexcept {
+  void Set(Scalar desired) const noexcept {
     __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
   }
 #else
@@ -109,16 +109,16 @@ class PROTOBUF_EXPORT CachedSize {
     return atom_.load(std::memory_order_relaxed);
   }
 
-  void Set(Scalar desired) noexcept {
+  void Set(Scalar desired) const noexcept {
     atom_.store(desired, std::memory_order_relaxed);
   }
 #endif
 
  private:
 #if PROTOBUF_BUILTIN_ATOMIC
-  Scalar atom_;
+  mutable Scalar atom_;
 #else
-  std::atomic<Scalar> atom_;
+  mutable std::atomic<Scalar> atom_;
 #endif
 };
 
@@ -770,7 +770,11 @@ class PROTOBUF_EXPORT MessageLite {
 
   // Return the cached size object as described by
   // ClassData::cached_size_offset.
-  internal::CachedSize& AccessCachedSize() const;
+  const internal::CachedSize& AccessCachedSize() const {
+    return *reinterpret_cast<const internal::CachedSize*>(
+        reinterpret_cast<const char*>(this) +
+        GetClassData()->cached_size_offset);
+  }
 
  public:
   enum ParseFlags {

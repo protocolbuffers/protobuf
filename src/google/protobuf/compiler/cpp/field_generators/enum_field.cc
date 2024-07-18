@@ -241,7 +241,7 @@ class RepeatedEnum : public FieldGeneratorBase {
 
     if (has_cached_size_) {
       p->Emit(R"cc(
-        mutable $pbi$::CachedSize $cached_size_name$;
+        $pbi$::CachedSize $cached_size_name$;
       )cc");
     }
   }
