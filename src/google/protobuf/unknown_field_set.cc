@@ -26,7 +26,6 @@
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
 
-
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
@@ -95,9 +94,9 @@ size_t UnknownFieldSet::SpaceUsedExcludingSelfLong() const {
   for (const UnknownField& field : fields_) {
     switch (field.type()) {
       case UnknownField::TYPE_LENGTH_DELIMITED:
-        total_size += sizeof(*field.data_.length_delimited_.string_value) +
+        total_size += sizeof(*field.data_.string_value) +
                       internal::StringSpaceUsedExcludingSelfLong(
-                          *field.data_.length_delimited_.string_value);
+                          *field.data_.string_value);
         break;
       case UnknownField::TYPE_GROUP:
         total_size += field.data_.group_->SpaceUsedLong();
@@ -142,10 +141,9 @@ std::string* UnknownFieldSet::AddLengthDelimited(int number) {
   auto& field = fields_.back();
   field.number_ = number;
   field.SetType(UnknownField::TYPE_LENGTH_DELIMITED);
-  field.data_.length_delimited_.string_value = new std::string;
-  return field.data_.length_delimited_.string_value;
+  field.data_.string_value = new std::string;
+  return field.data_.string_value;
 }
-
 
 UnknownFieldSet* UnknownFieldSet::AddGroup(int number) {
   fields_.emplace_back();
@@ -249,7 +247,7 @@ bool UnknownFieldSet::SerializeToCord(absl::Cord* output) const {
 void UnknownField::Delete() {
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
-      delete data_.length_delimited_.string_value;
+      delete data_.string_value;
       break;
     case UnknownField::TYPE_GROUP:
       delete data_.group_;
@@ -263,8 +261,7 @@ void UnknownField::DeepCopy(const UnknownField& other) {
   (void)other;  // Parameter is used by Google-internal code.
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
-      data_.length_delimited_.string_value =
-          new std::string(*data_.length_delimited_.string_value);
+      data_.string_value = new std::string(*data_.string_value);
       break;
     case UnknownField::TYPE_GROUP: {
       UnknownFieldSet* group = new UnknownFieldSet();
@@ -277,11 +274,10 @@ void UnknownField::DeepCopy(const UnknownField& other) {
   }
 }
 
-
 uint8_t* UnknownField::InternalSerializeLengthDelimitedNoTag(
     uint8_t* target, io::EpsCopyOutputStream* stream) const {
   ABSL_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
-  const absl::string_view data = *data_.length_delimited_.string_value;
+  const absl::string_view data = *data_.string_value;
   target = io::CodedOutputStream::WriteVarint32ToArray(data.size(), target);
   target = stream->WriteRaw(data.data(), data.size(), target);
   return target;

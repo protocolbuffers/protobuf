@@ -255,6 +255,8 @@ class PROTOBUF_EXPORT UnknownField {
   uint8_t* InternalSerializeLengthDelimitedNoTag(
       uint8_t* target, io::EpsCopyOutputStream* stream) const;
 
+ private:
+  friend class UnknownFieldSet;
 
   // If this UnknownField contains a pointer, delete it.
   void Delete();
@@ -266,17 +268,13 @@ class PROTOBUF_EXPORT UnknownField {
   // UnknownField is being created.
   inline void SetType(Type type);
 
-  union LengthDelimited {
-    std::string* string_value;
-  };
-
   uint32_t number_;
   uint32_t type_;
   union {
     uint64_t varint_;
     uint32_t fixed32_;
     uint64_t fixed64_;
-    mutable union LengthDelimited length_delimited_;
+    std::string* string_value;
     UnknownFieldSet* group_;
   } data_;
 };
@@ -317,9 +315,6 @@ inline void UnknownFieldSet::AddLengthDelimited(int number,
   AddLengthDelimited(number)->assign(value.data(), value.size());
 }
 
-
-
-
 inline int UnknownField::number() const { return static_cast<int>(number_); }
 inline UnknownField::Type UnknownField::type() const {
   return static_cast<Type>(type_);
@@ -339,7 +334,7 @@ inline uint64_t UnknownField::fixed64() const {
 }
 inline internal::UFSStringView UnknownField::length_delimited() const {
   assert(type() == TYPE_LENGTH_DELIMITED);
-  return *data_.length_delimited_.string_value;
+  return *data_.string_value;
 }
 inline const UnknownFieldSet& UnknownField::group() const {
   assert(type() == TYPE_GROUP);
@@ -360,11 +355,11 @@ inline void UnknownField::set_fixed64(uint64_t value) {
 }
 inline void UnknownField::set_length_delimited(const absl::string_view value) {
   assert(type() == TYPE_LENGTH_DELIMITED);
-  data_.length_delimited_.string_value->assign(value.data(), value.size());
+  data_.string_value->assign(value.data(), value.size());
 }
 inline std::string* UnknownField::mutable_length_delimited() {
   assert(type() == TYPE_LENGTH_DELIMITED);
-  return data_.length_delimited_.string_value;
+  return data_.string_value;
 }
 inline UnknownFieldSet* UnknownField::mutable_group() {
   assert(type() == TYPE_GROUP);
@@ -376,16 +371,12 @@ bool UnknownFieldSet::MergeFromMessage(const MessageType& message) {
   return InternalMergeFromMessage(message);
 }
 
-
 inline size_t UnknownField::GetLengthDelimitedSize() const {
   ABSL_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
-  return data_.length_delimited_.string_value->size();
+  return data_.string_value->size();
 }
 
-inline void UnknownField::SetType(Type type) {
-  type_ = type;
-}
-
+inline void UnknownField::SetType(Type type) { type_ = type; }
 
 }  // namespace protobuf
 }  // namespace google
