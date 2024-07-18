@@ -1358,7 +1358,7 @@ size_t ExtensionSet::Extension::ByteSize(int number) const {
           break;
       }
 
-      cached_size = ToCachedSize(result);
+      cached_size.set(ToCachedSize(result));
       if (result > 0) {
         result += io::CodedOutputStream::VarintSize32(result);
         result += io::CodedOutputStream::VarintSize32(WireFormatLite::MakeTag(
@@ -1678,12 +1678,12 @@ uint8_t* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
     uint8_t* target, io::EpsCopyOutputStream* stream) const {
   if (is_repeated) {
     if (is_packed) {
-      if (cached_size == 0) return target;
+      if (cached_size() == 0) return target;
 
       target = stream->EnsureSpace(target);
       target = WireFormatLite::WriteTagToArray(
           number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, target);
-      target = WireFormatLite::WriteInt32NoTagToArray(cached_size, target);
+      target = WireFormatLite::WriteInt32NoTagToArray(cached_size(), target);
 
       switch (real_type(type)) {
 #define HANDLE_TYPE(UPPERCASE, CAMELCASE, LOWERCASE)                 \
