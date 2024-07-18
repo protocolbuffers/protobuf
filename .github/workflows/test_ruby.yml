@@ -34,9 +34,9 @@ jobs:
           - { name: Ruby 3.1, ruby: ruby-3.1.0, continuous-only: true }
           - { name: Ruby 3.2, ruby: ruby-3.2.0, continuous-only: true }
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }
-          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI, continuous-only: true }
+          - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
           - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: NATIVE }
-          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI, continuous-only: true }
+          - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI }
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name }} ${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: ubuntu-latest
@@ -138,7 +138,7 @@ jobs:
         - { version: "3.1", continuous-only: true }
         - { version: "3.2", continuous-only: true }
         - { version: "3.3", ffi: NATIVE }
-        - { version: "3.3", ffi: FFI, continuous-only: true }
+        - { version: "3.3", ffi: FFI }
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: macos-12
@@ -182,7 +182,7 @@ jobs:
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
           - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI }
-    name: Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }} (Continuous)
+    name: (Continuous) Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     # None of these ruby gem tests should be run on presubmit
     if: ${{ inputs.continuous-run }}
     runs-on: ubuntu-latest
