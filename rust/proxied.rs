@@ -56,7 +56,7 @@ pub trait Proxied: Sized {
     /// The proxy type that provides shared access to a `T`, like a `&'msg T`.
     ///
     /// Most code should use the type alias [`View`].
-    type View<'msg>: ViewProxy<'msg, Proxied = Self> + Copy + Send
+    type View<'msg>: ViewProxy<'msg, Proxied = Self>
     where
         Self: 'msg;
 }
@@ -90,11 +90,12 @@ pub type View<'msg, T> = <T as Proxied>::View<'msg>;
 #[allow(dead_code)]
 pub type Mut<'msg, T> = <T as MutProxied>::Mut<'msg>;
 
-/// Declares conversion operations common to all views.
+/// Declares conversion operations common to all proxies (both views and mut
+/// proxies).
 ///
 /// This trait is intentionally made non-object-safe to prevent a potential
 /// future incompatible change.
-pub trait ViewProxy<'msg>: 'msg + Sync + Unpin + Sized + Debug {
+pub trait Proxy<'msg>: 'msg + Sync + Unpin + Sized + Debug {
     type Proxied: 'msg + Proxied + ?Sized;
 
     /// Converts a borrow into a `View` with the lifetime of that borrow.
@@ -148,11 +149,14 @@ pub trait ViewProxy<'msg>: 'msg + Sync + Unpin + Sized + Debug {
         'msg: 'shorter;
 }
 
-/// Declares operations common to all mutators.
+/// Declares conversion operations common to view proxies.
+pub trait ViewProxy<'msg>: Proxy<'msg> + Copy + Send {}
+
+/// Declares operations common to all mut proxies.
 ///
 /// This trait is intentionally made non-object-safe to prevent a potential
 /// future incompatible change.
-pub trait MutProxy<'msg>: ViewProxy<'msg>
+pub trait MutProxy<'msg>: Proxy<'msg>
 where
     Self::Proxied: MutProxied,
 {
@@ -259,7 +263,7 @@ mod tests {
         }
     }
 
-    impl<'msg> ViewProxy<'msg> for MyProxiedView<'msg> {
+    impl<'msg> Proxy<'msg> for MyProxiedView<'msg> {
         type Proxied = MyProxied;
 
         fn as_view(&self) -> View<'msg, MyProxied> {
@@ -274,12 +278,14 @@ mod tests {
         }
     }
 
+    impl<'msg> ViewProxy<'msg> for MyProxiedView<'msg> {}
+
     #[derive(Debug)]
     struct MyProxiedMut<'msg> {
         my_proxied_ref: &'msg mut MyProxied,
     }
 
-    impl<'msg> ViewProxy<'msg> for MyProxiedMut<'msg> {
+    impl<'msg> Proxy<'msg> for MyProxiedMut<'msg> {
         type Proxied = MyProxied;
 
         fn as_view(&self) -> View<'_, MyProxied> {

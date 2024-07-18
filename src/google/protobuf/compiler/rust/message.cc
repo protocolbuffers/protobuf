@@ -260,7 +260,7 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
 
         impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$Mut<'msg> {
           fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
-            $pb$::IntoProxied::into_proxied($pb$::ViewProxy::into_view(self), _private)
+            $pb$::IntoProxied::into_proxied($pb$::Proxy::into_view(self), _private)
           }
         }
 
@@ -289,7 +289,7 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
 
         impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$Mut<'msg> {
           fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
-            $pb$::IntoProxied::into_proxied($pb$::ViewProxy::into_view(self), _private)
+            $pb$::IntoProxied::into_proxied($pb$::Proxy::into_view(self), _private)
           }
         }
 
@@ -323,7 +323,7 @@ void MessageMergeFrom(Context& ctx, const Descriptor& msg) {
               {"merge_from_thunk", ThunkName(ctx, msg, "merge_from")},
           },
           R"rs(
-          pub fn merge_from<'src>(&mut self, src: impl $pb$::ViewProxy<'src, Proxied = $Msg$>) {
+          pub fn merge_from<'src>(&mut self, src: impl $pb$::Proxy<'src, Proxied = $Msg$>) {
             // SAFETY: self and src are both valid `$Msg$`s.
             unsafe {
               $merge_from_thunk$(self.raw_msg(), src.as_view().raw_msg());
@@ -337,7 +337,7 @@ void MessageMergeFrom(Context& ctx, const Descriptor& msg) {
               {"minitable", UpbMinitableName(msg)},
           },
           R"rs(
-          pub fn merge_from<'src>(&mut self, src: impl $pb$::ViewProxy<'src, Proxied = $Msg$>) {
+          pub fn merge_from<'src>(&mut self, src: impl $pb$::Proxy<'src, Proxied = $Msg$>) {
             // SAFETY: self and src are both valid `$Msg$`s.
             unsafe {
               assert!(
@@ -1029,7 +1029,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         // - `$Msg$View` does not use thread-local data.
         unsafe impl Send for $Msg$View<'_> {}
 
-        impl<'msg> $pb$::ViewProxy<'msg> for $Msg$View<'msg> {
+        impl<'msg> $pb$::Proxy<'msg> for $Msg$View<'msg> {
           type Proxied = $Msg$;
 
           fn as_view(&self) -> $pb$::View<'msg, $Msg$> {
@@ -1039,6 +1039,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             self
           }
         }
+
+        impl<'msg> $pb$::ViewProxy<'msg> for $Msg$View<'msg> {}
 
         $into_proxied_impl$
 
@@ -1088,11 +1090,11 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
 
           pub fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
-            $pb$::ViewProxy::as_view(self).serialize()
+            $pb$::Proxy::as_view(self).serialize()
           }
 
           pub fn to_owned(&self) -> $Msg$ {
-            $pb$::ViewProxy::as_view(self).to_owned()
+            $pb$::Proxy::as_view(self).to_owned()
           }
 
           $msg_merge_from$
@@ -1117,7 +1119,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           fn into_mut<'shorter>(self) -> $pb$::Mut<'shorter, $Msg$> where 'msg : 'shorter { self }
         }
 
-        impl<'msg> $pb$::ViewProxy<'msg> for $Msg$Mut<'msg> {
+        impl<'msg> $pb$::Proxy<'msg> for $Msg$Mut<'msg> {
           type Proxied = $Msg$;
           fn as_view(&self) -> $pb$::View<'_, $Msg$> {
             $Msg$View { msg: self.raw_msg(), _phantom: $std$::marker::PhantomData }
@@ -1166,7 +1168,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             $Msg$Mut::new($pbi$::Private, &mut self.inner)
           }
 
-          pub fn merge_from<'src>(&mut self, src: impl $pb$::ViewProxy<'src, Proxied = $Msg$>) {
+          pub fn merge_from<'src>(&mut self, src: impl $pb$::Proxy<'src, Proxied = $Msg$>) {
             self.as_mut().merge_from(src);
           }
 

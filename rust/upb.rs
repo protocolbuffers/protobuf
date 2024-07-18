@@ -10,7 +10,7 @@
 use crate::__internal::{Enum, Private};
 use crate::{
     IntoProxied, Map, MapIter, MapMut, MapView, Mut, ProtoBytes, ProtoStr, ProtoString, Proxied,
-    ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View, ViewProxy,
+    ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
 };
 use core::fmt::Debug;
 use std::alloc::Layout;
