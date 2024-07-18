@@ -12254,14 +12254,20 @@ TEST_F(DatabaseBackedPoolTest, UnittestProto) {
 }
 
 TEST_F(DatabaseBackedPoolTest, FeatureResolution) {
-  FileDescriptorProto proto;
-  FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
-  std::string text_proto;
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
-  pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
+  {
+    FileDescriptorProto proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
+  {
+    FileDescriptorProto proto;
+    pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
   AddToDatabase(&database_, R"pb(
     name: "features.proto"
     syntax: "editions"
@@ -12305,14 +12311,20 @@ TEST_F(DatabaseBackedPoolTest, FeatureResolution) {
 }
 
 TEST_F(DatabaseBackedPoolTest, FeatureLifetimeError) {
-  FileDescriptorProto proto;
-  FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
-  std::string text_proto;
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
-  pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
+  {
+    FileDescriptorProto proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
+  {
+    FileDescriptorProto proto;
+    pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
   AddToDatabase(&database_, R"pb(
     name: "features.proto"
     syntax: "editions"
@@ -12338,14 +12350,20 @@ TEST_F(DatabaseBackedPoolTest, FeatureLifetimeError) {
 }
 
 TEST_F(DatabaseBackedPoolTest, FeatureLifetimeErrorUnknownDependencies) {
-  FileDescriptorProto proto;
-  FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
-  std::string text_proto;
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
-  pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
+  {
+    FileDescriptorProto proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
+  {
+    FileDescriptorProto proto;
+    pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
   AddToDatabase(&database_, R"pb(
     name: "option.proto"
     syntax: "editions"
