@@ -7,6 +7,7 @@
 
 #include "google/protobuf/compiler/java/kotlin_generator.h"
 
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/file.h"
 #include "google/protobuf/compiler/java/generator.h"
@@ -57,6 +58,8 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
       file_options.annotation_list_file = option.second;
     } else if (option.first == "experimental_strip_nonfunctional_codegen") {
       file_options.strip_nonfunctional_codegen = true;
+    } else if (option.first == "no_jvm_dsl") {
+      file_options.jvm_dsl = false;
     } else {
       *error = absl::StrCat("Unknown generator option: ", option.first);
       return false;
@@ -81,8 +84,8 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
     return std::unique_ptr<io::ZeroCopyOutputStream>(context->Open(filename));
   };
   std::string package_dir = JavaPackageToDir(file_generator->java_package());
-  std::string kotlin_filename =
-      absl::StrCat(package_dir, file_generator->GetKotlinClassname(), ".kt");
+  std::string kotlin_filename = absl::StrCat(
+      package_dir, file_generator->GetKotlinClassname(), ".proto.kt");
   all_files.push_back(kotlin_filename);
   std::string info_full_path = absl::StrCat(kotlin_filename, ".pb.meta");
   if (file_options.annotate_code) {

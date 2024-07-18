@@ -197,6 +197,7 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf/compiler:code_generator",
+        "@com_google_absl//absl/strings",
     ],
 )
 
