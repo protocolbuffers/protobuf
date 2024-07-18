@@ -103,7 +103,7 @@ TEST(DefaultsTest, CheckFuture) {
 TEST(DefaultsTest, CheckFarFuture) {
   auto defaults = ReadDefaults("test_defaults_far_future");
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults().size(), 6);
+  ASSERT_EQ(defaults->defaults().size(), 7);
   ASSERT_EQ(defaults->minimum_edition(), EDITION_99997_TEST_ONLY);
   ASSERT_EQ(defaults->maximum_edition(), EDITION_99999_TEST_ONLY);
 

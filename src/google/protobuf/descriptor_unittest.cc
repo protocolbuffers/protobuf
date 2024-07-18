@@ -10906,7 +10906,8 @@ TEST_F(FeaturesTest, RemovedFeature) {
         }
       )pb",
       "foo.proto: foo.proto: NAME: Feature "
-      "pb.TestFeatures.removed_feature has been removed in edition 2024\n");
+      "pb.TestFeatures.removed_feature has been removed in edition 2024 and "
+      "can't be used in edition 2024\n");
 }
 
 TEST_F(FeaturesTest, RemovedFeatureDefault) {
@@ -10937,7 +10938,8 @@ TEST_F(FeaturesTest, FutureFeature) {
         }
       )pb",
       "foo.proto: foo.proto: NAME: Feature "
-      "pb.TestFeatures.future_feature wasn't introduced until edition 2024\n");
+      "pb.TestFeatures.future_feature wasn't introduced until edition 2024 and "
+      "can't be used in edition 2023\n");
 }
 
 TEST_F(FeaturesTest, FutureFeatureDefault) {
@@ -12317,14 +12319,20 @@ TEST_F(DatabaseBackedPoolTest, UnittestProto) {
 }
 
 TEST_F(DatabaseBackedPoolTest, FeatureResolution) {
-  FileDescriptorProto proto;
-  FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
-  std::string text_proto;
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
-  pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
+  {
+    FileDescriptorProto proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
+  {
+    FileDescriptorProto proto;
+    pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
   AddToDatabase(&database_, R"pb(
     name: "features.proto"
     syntax: "editions"
@@ -12368,14 +12376,20 @@ TEST_F(DatabaseBackedPoolTest, FeatureResolution) {
 }
 
 TEST_F(DatabaseBackedPoolTest, FeatureLifetimeError) {
-  FileDescriptorProto proto;
-  FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
-  std::string text_proto;
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
-  pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
+  {
+    FileDescriptorProto proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
+  {
+    FileDescriptorProto proto;
+    pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
   AddToDatabase(&database_, R"pb(
     name: "features.proto"
     syntax: "editions"
@@ -12394,21 +12408,27 @@ TEST_F(DatabaseBackedPoolTest, FeatureLifetimeError) {
   DescriptorPool pool(&database_, &error_collector);
 
   EXPECT_TRUE(pool.FindMessageTypeByName("FooFeatures") == nullptr);
-  EXPECT_EQ(
-      error_collector.text_,
-      "features.proto: FooFeatures: NAME: Feature "
-      "pb.TestFeatures.future_feature wasn't introduced until edition 2024\n");
+  EXPECT_EQ(error_collector.text_,
+            "features.proto: FooFeatures: NAME: Feature "
+            "pb.TestFeatures.future_feature wasn't introduced until edition "
+            "2024 and can't be used in edition 2023\n");
 }
 
 TEST_F(DatabaseBackedPoolTest, FeatureLifetimeErrorUnknownDependencies) {
-  FileDescriptorProto proto;
-  FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
-  std::string text_proto;
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
-  pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
-  google::protobuf::TextFormat::PrintToString(proto, &text_proto);
-  AddToDatabase(&database_, text_proto);
+  {
+    FileDescriptorProto proto;
+    FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
+  {
+    FileDescriptorProto proto;
+    pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
+    std::string text_proto;
+    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    AddToDatabase(&database_, text_proto);
+  }
   AddToDatabase(&database_, R"pb(
     name: "option.proto"
     syntax: "editions"
@@ -12458,10 +12478,10 @@ TEST_F(DatabaseBackedPoolTest, FeatureLifetimeErrorUnknownDependencies) {
   // Verify that the extension does trigger a lifetime error.
   error_collector.text_.clear();
   ASSERT_EQ(pool.FindExtensionByName("foo_extension"), nullptr);
-  EXPECT_EQ(
-      error_collector.text_,
-      "option.proto: foo_extension: NAME: Feature "
-      "pb.TestFeatures.legacy_feature has been removed in edition 2023\n");
+  EXPECT_EQ(error_collector.text_,
+            "option.proto: foo_extension: NAME: Feature "
+            "pb.TestFeatures.legacy_feature has been removed in edition 2023 "
+            "and can't be used in edition 2023\n");
 }
 
 TEST_F(DatabaseBackedPoolTest, DoesntRetryDbUnnecessarily) {
