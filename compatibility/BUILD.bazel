@@ -97,6 +97,27 @@ buf_breaking_test(
     against = "@com_google_protobuf_previous_release//:wrappers_proto",
 )
 
+buf_breaking_test(
+    name = "compiler_plugin_proto_breaking",
+    targets = ["//:compiler_plugin_proto"],
+    config = ":buf.yaml",
+    against = "@com_google_protobuf_previous_release//:compiler_plugin_proto",
+)
+
+buf_breaking_test(
+    name = "cpp_features_proto_breaking",
+    targets = ["//:cpp_features_proto"],
+    config = ":buf.yaml",
+    against = "@com_google_protobuf_previous_release//:cpp_features_proto",
+)
+
+buf_breaking_test(
+    name = "java_features_proto_breaking",
+    targets = ["//:java_features_proto"],
+    config = ":buf.yaml",
+    against = "@com_google_protobuf_previous_release//:java_features_proto",
+)
+
 test_suite(
     name = "proto_breaking",
     tests = [
@@ -111,5 +132,8 @@ test_suite(
         "timestamp_proto_breaking",
         "type_proto_breaking",
         "wrappers_proto_breaking",
+        "compiler_plugin_proto_breaking",
+        "cpp_features_proto_breaking",
+        "java_features_proto_breaking",
     ],
 )
