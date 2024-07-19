@@ -227,10 +227,16 @@ bool MayEmitIfNonDefaultCheck(io::Printer* p, const std::string& prefix,
   ABSL_CHECK(!HasHasbit(field));
   if (!ShouldEmitNonDefaultCheck(field)) return false;
 
+  // SUBTLE: format_string must be a raw string without newline.
+  // io::Printer::Emit treats the format string as a "raw string" if it doesn't
+  // contain multiple lines. Note that a string of the form "\n($condition$)\n"
+  // (i.e. newline characters are present; there is only one non-empty line)
+  // will be treated as a multi-line string.
+  //
+  // io::Printer::Emit will print a newline if the input is a multi-line string.
+  absl::string_view format_string = "if ($condition$) ";
   p->Emit({{"condition", [&] { EmitNonDefaultCheck(p, prefix, field); }}},
-          R"cc(
-            if ($condition$) {
-          )cc");
+          format_string);
   return true;
 }
 
@@ -3952,12 +3958,15 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         } else if (field->is_optional() && !HasHasbit(field)) {
           // Merge semantics without true field presence: primitive fields are
           // merged only if non-zero (numeric) or non-empty (string).
-          bool have_enclosing_if = MayEmitIfNonDefaultCheck(p, "from.", field);
-          if (have_enclosing_if) format.Indent();
+          bool emitted_check = MayEmitIfNonDefaultCheck(p, "from.", field);
+          if (emitted_check) {
+            p->Emit("{\n");
+            p->Indent();
+          }
           generator.GenerateMergingCode(p);
-          if (have_enclosing_if) {
-            format.Outdent();
-            format("}\n");
+          if (emitted_check) {
+            p->Outdent();
+            p->Emit("}\n");
           }
         } else if (field->options().weak() ||
                    cached_has_word_index != HasWordIndex(field)) {
@@ -4225,14 +4234,15 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
           }
         )cc");
   } else if (field->is_optional()) {
-    bool have_enclosing_if = MayEmitIfNonDefaultCheck(p, "this_.", field);
-    if (have_enclosing_if) p->Indent();
+    bool emitted_check = MayEmitIfNonDefaultCheck(p, "this_.", field);
+    if (emitted_check) {
+      p->Emit("{\n");
+      p->Indent();
+    }
     emit_body();
-    if (have_enclosing_if) {
+    if (emitted_check) {
       p->Outdent();
-      p->Emit(R"cc(
-        }
-      )cc");
+      p->Emit("}\n");
     }
   } else {
     emit_body();
