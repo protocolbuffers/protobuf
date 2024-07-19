@@ -1233,11 +1233,25 @@ class PROTOBUF_EXPORT Reflection final {
     return schema_.IsFieldInlined(field);
   }
 
-  bool HasBit(const Message& message, const FieldDescriptor* field) const;
-  void SetBit(Message* message, const FieldDescriptor* field) const;
-  inline void ClearBit(Message* message, const FieldDescriptor* field) const;
-  inline void SwapBit(Message* message1, Message* message2,
-                      const FieldDescriptor* field) const;
+  // For "proto3 non-optional" pritmitive fields, aka implicit-presence fields,
+  // returns true if the field is populated, i.e., nonzero. False otherwise.
+  bool IsScalarFieldNonZero(const Message& message,
+                            const FieldDescriptor* field) const;
+  // Returns whether the field is present if there are usable hasbits in the
+  // field schema. (Note that in some cases hasbits are merely a hint to
+  // indicate "possible presence", and another zero-check is required).
+  bool IsFieldPresentGivenHasbits(const Message& message,
+                                  const FieldDescriptor* field,
+                                  const uint32_t* hasbits,
+                                  uint32_t hasbit_index) const;
+  // Returns true if the field is considered "present"; false otherwise.
+  // For proto2 this is strongly coupled with hasbits -- less so for proto3,
+  // i.e. the "implicit presence" fields.
+  bool IsPresent(const Message& message, const FieldDescriptor* field) const;
+  void SetHasBit(Message* message, const FieldDescriptor* field) const;
+  inline void ClearHasBit(Message* message, const FieldDescriptor* field) const;
+  inline void SwapHasBit(Message* message1, Message* message2,
+                         const FieldDescriptor* field) const;
 
   inline const uint32_t* GetInlinedStringDonatedArray(
       const Message& message) const;

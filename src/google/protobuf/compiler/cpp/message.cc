@@ -62,6 +62,8 @@ namespace cpp {
 namespace {
 using ::google::protobuf::internal::WireFormat;
 using ::google::protobuf::internal::WireFormatLite;
+using ::google::protobuf::internal::cpp::GetFieldHasbitMode;
+using ::google::protobuf::internal::cpp::HasbitMode;
 using ::google::protobuf::internal::cpp::HasHasbit;
 using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 using Sub = ::google::protobuf::io::Printer::Sub;
@@ -187,7 +189,7 @@ RunMap FindRuns(const std::vector<const FieldDescriptor*>& fields,
 
 void EmitNonDefaultCheck(io::Printer* p, const std::string& prefix,
                          const FieldDescriptor* field) {
-  ABSL_CHECK(!HasHasbit(field));
+  ABSL_CHECK(GetFieldHasbitMode(field) != HasbitMode::kTrueHasbit);
   ABSL_CHECK(!field->is_repeated());
   ABSL_CHECK(!field->containing_oneof() || field->real_containing_oneof());
 
@@ -216,6 +218,9 @@ void EmitNonDefaultCheck(io::Printer* p, const std::string& prefix,
 }
 
 bool ShouldEmitNonDefaultCheck(const FieldDescriptor* field) {
+  if (GetFieldHasbitMode(field) == HasbitMode::kTrueHasbit) {
+    return false;
+  }
   return (!field->is_repeated() && !field->containing_oneof()) ||
          field->real_containing_oneof();
 }
@@ -224,11 +229,17 @@ bool ShouldEmitNonDefaultCheck(const FieldDescriptor* field) {
 // considered non-default (will be sent over the wire), for message types
 // without true field presence. Should only be called if
 // !HasHasbit(field).
+// If |with_enclosing_braces_always| is set to true, will generate enclosing
+// braces even if nondefault check is not emitted -- i.e. code may look like:
+// {
+//   // code...
+// }
+// If |with_enclosing_braces_always| is set to false, enclosing braces will not
+// be generated if nondefault check is not emitted.
 void MayEmitIfNonDefaultCheck(io::Printer* p, const std::string& prefix,
                               const FieldDescriptor* field,
-                              absl::AnyInvocable<void()> emit_body) {
-  ABSL_CHECK(!HasHasbit(field));
-
+                              absl::AnyInvocable<void()> emit_body,
+                              bool with_enclosing_braces_always) {
   if (ShouldEmitNonDefaultCheck(field)) {
     p->Emit(
         {
@@ -240,7 +251,10 @@ void MayEmitIfNonDefaultCheck(io::Printer* p, const std::string& prefix,
             $emit_body$;
           }
         )cc");
-  } else {
+    return;
+  }
+
+  if (with_enclosing_braces_always) {
     // In repeated fields, the same variable name may be emitted multiple
     // times, hence the need for emitting braces even when the if condition is
     // not necessary, so that the code looks like:
@@ -259,7 +273,11 @@ void MayEmitIfNonDefaultCheck(io::Printer* p, const std::string& prefix,
                 $emit_body$;
               }
             )cc");
+    return;
   }
+
+  // If no enclosing braces need to be emitted, just emit the body directly.
+  emit_body();
 }
 
 bool HasInternalHasMethod(const FieldDescriptor* field) {
@@ -1033,7 +1051,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
         )cc");
     return;
   }
-  if (HasHasbit(field)) {
+  if (GetFieldHasbitMode(field) == HasbitMode::kTrueHasbit) {
     auto v = p->WithVars(HasBitVars(field));
     p->Emit(
         {Sub{"ASSUME",
@@ -1243,7 +1261,8 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
   };
 
   if (!HasHasbit(field)) {
-    MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body));
+    MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body),
+                             /*with_enclosing_braces_always=*/true);
     return;
   }
   if (field->options().weak()) {
@@ -1259,10 +1278,17 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
   int has_bit_index = has_bit_indices_[field->index()];
   p->Emit({{"mask",
             absl::StrFormat("0x%08xu", uint32_t{1} << (has_bit_index % 32))},
-           {"emit_body", [&] { emit_body(); }}},
+           {"check_nondefault_and_emit_body",
+            [&] {
+              // Note that it's possible that the field has explicit presence.
+              // In that case, nondefault check will not be emitted but
+              // emit_body will still be emitted.
+              MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body),
+                                       /*with_enclosing_braces_always=*/false);
+            }}},
           R"cc(
             if (cached_has_bits & $mask$) {
-              $emit_body$;
+              $check_nondefault_and_emit_body$;
             }
           )cc");
 }
@@ -4214,9 +4240,10 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         } else if (field->is_optional() && !HasHasbit(field)) {
           // Merge semantics without true field presence: primitive fields are
           // merged only if non-zero (numeric) or non-empty (string).
-          MayEmitIfNonDefaultCheck(p, "from.", field, /*emit_body=*/[&]() {
-            generator.GenerateMergingCode(p);
-          });
+          MayEmitIfNonDefaultCheck(
+              p, "from.", field,
+              /*emit_body=*/[&]() { generator.GenerateMergingCode(p); },
+              /*with_enclosing_braces_always=*/true);
         } else if (field->options().weak() ||
                    cached_has_word_index != HasWordIndex(field)) {
           // Check hasbit, not using cached bits.
@@ -4237,10 +4264,20 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           format("if (cached_has_bits & 0x$1$u) {\n", mask);
           format.Indent();
 
-          if (check_has_byte && IsPOD(field)) {
-            generator.GenerateCopyConstructorCode(p);
+          if (GetFieldHasbitMode(field) == HasbitMode::kHintHasbit) {
+            // Merge semantics without true field presence: primitive fields are
+            // merged only if non-zero (numeric) or non-empty (string).
+            MayEmitIfNonDefaultCheck(
+                p, "from.", field,
+                /*emit_body=*/[&]() { generator.GenerateMergingCode(p); },
+                /*with_enclosing_braces_always=*/false);
           } else {
-            generator.GenerateMergingCode(p);
+            ABSL_DCHECK(GetFieldHasbitMode(field) == HasbitMode::kTrueHasbit);
+            if (check_has_byte && IsPOD(field)) {
+              generator.GenerateCopyConstructorCode(p);
+            } else {
+              generator.GenerateMergingCode(p);
+            }
           }
 
           format.Outdent();
@@ -4463,7 +4500,12 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
   if (HasHasbit(field)) {
     p->Emit(
         {
-            {"body", emit_body},
+            {"body",
+             [&]() {
+               MayEmitIfNonDefaultCheck(p, "this_.", field,
+                                        std::move(emit_body),
+                                        /*with_enclosing_braces_always=*/false);
+             }},
             {"cond",
              [&] {
                int has_bit_index = HasBitIndex(field);
@@ -4483,7 +4525,8 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
           }
         )cc");
   } else if (field->is_optional()) {
-    MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body));
+    MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body),
+                             /*with_enclosing_braces_always=*/true);
   } else {
     emit_body();
   }

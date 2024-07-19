@@ -338,7 +338,11 @@ bool HasRequiredFields(const Descriptor* descriptor);
 bool IsRealOneof(const FieldDescriptor* descriptor);
 
 inline bool HasHasbit(const FieldDescriptor* descriptor) {
-  return internal::cpp::HasHasbit(descriptor);
+  // kTrueHasbit indicate explicit presence and should be checked instead of
+  // checking internal::cpp::HasHasbit.
+  // C++ implementations may generate hasbits for fields with implicit presence.
+  return internal::cpp::GetFieldHasbitMode(descriptor) ==
+         internal::cpp::HasbitMode::kTrueHasbit;
 }
 
 // Check whether a message has repeated fields.

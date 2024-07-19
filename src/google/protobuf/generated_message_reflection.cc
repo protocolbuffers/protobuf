@@ -790,18 +790,18 @@ void SwapFieldHelper::SwapMessage(const Reflection* r, Message* lhs,
 
   if (*lhs_sub != nullptr && *rhs_sub != nullptr) {
     (*lhs_sub)->GetReflection()->Swap(*lhs_sub, *rhs_sub);
-  } else if (*lhs_sub == nullptr && r->HasBit(*rhs, field)) {
+  } else if (*lhs_sub == nullptr && r->IsPresent(*rhs, field)) {
     *lhs_sub = (*rhs_sub)->New(lhs_arena);
     (*lhs_sub)->CopyFrom(**rhs_sub);
     r->ClearField(rhs, field);
     // Ensures has bit is unchanged after ClearField.
-    r->SetBit(rhs, field);
-  } else if (*rhs_sub == nullptr && r->HasBit(*lhs, field)) {
+    r->SetHasBit(rhs, field);
+  } else if (*rhs_sub == nullptr && r->IsPresent(*lhs, field)) {
     *rhs_sub = (*lhs_sub)->New(rhs_arena);
     (*rhs_sub)->CopyFrom(**lhs_sub);
     r->ClearField(lhs, field);
     // Ensures has bit is unchanged after ClearField.
-    r->SetBit(lhs, field);
+    r->SetHasBit(lhs, field);
   }
 }
 
@@ -1169,7 +1169,7 @@ void Reflection::SwapFieldsImpl(
         // oneof already. This has to be done after SwapField, because SwapField
         // may depend on the information in has bits.
         if (!field->is_repeated()) {
-          SwapBit(message1, message2, field);
+          SwapHasBit(message1, message2, field);
           if (field->options().ctype() == FieldOptions::STRING &&
               IsInlined(field)) {
             ABSL_DCHECK(!unsafe_shallow_swap ||
@@ -1225,7 +1225,7 @@ bool Reflection::HasField(const Message& message,
     if (schema_.InRealOneof(field)) {
       return HasOneofField(message, field);
     } else {
-      return HasBit(message, field);
+      return IsPresent(message, field);
     }
   }
 }
@@ -1371,8 +1371,8 @@ void Reflection::ClearField(Message* message,
       ClearOneofField(message, field);
       return;
     }
-    if (HasBit(*message, field)) {
-      ClearBit(message, field);
+    if (IsPresent(*message, field)) {
+      ClearHasBit(message, field);
 
       // We need to set the field back to its default value.
       switch (field->cpp_type()) {
@@ -1423,8 +1423,8 @@ void Reflection::ClearField(Message* message,
 
         case FieldDescriptor::CPPTYPE_MESSAGE:
           if (schema_.HasBitIndex(field) == static_cast<uint32_t>(-1)) {
-            // Proto3 does not have has-bits and we need to set a message field
-            // to nullptr in order to indicate its un-presence.
+            // Proto3 messages don't have hasbits, and we need to set a message
+            // field to nullptr in order to indicate its un-presence.
             if (message->GetArena() == nullptr) {
               delete *MutableRaw<Message*>(message, field);
             }
@@ -1683,11 +1683,13 @@ void Reflection::ListFields(const Message& message,
           append_to_output(field);
         }
       } else if (has_bits && has_bits_indices[i] != static_cast<uint32_t>(-1)) {
-        // Equivalent to: HasBit(message, field)
-        if (IsIndexInHasBitSet(has_bits, has_bits_indices[i])) {
+        // Equivalent to: IsPresent(message, field)
+        if (IsFieldPresentGivenHasbits(message, field, has_bits,
+                                       has_bits_indices[i])) {
           append_to_output(field);
         }
-      } else if (HasBit(message, field)) {  // Fall back on proto3-style HasBit.
+      } else if (IsPresent(message, field)) {
+        // Fall back on proto3-style HasBit.
         append_to_output(field);
       }
     }
@@ -2337,7 +2339,7 @@ Message* Reflection::MutableMessage(Message* message,
         *result_holder = default_message->New(message->GetArena());
       }
     } else {
-      SetBit(message, field);
+      SetHasBit(message, field);
     }
 
     if (*result_holder == nullptr) {
@@ -2371,9 +2373,9 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
     }
 
     if (sub_message == nullptr) {
-      ClearBit(message, field);
+      ClearHasBit(message, field);
     } else {
-      SetBit(message, field);
+      SetHasBit(message, field);
     }
     Message** sub_message_holder = MutableRaw<Message*>(message, field);
     if (message->GetArena() == nullptr) {
@@ -2432,7 +2434,7 @@ Message* Reflection::UnsafeArenaReleaseMessage(Message* message,
                                                                 factory));
   } else {
     if (!(field->is_repeated() || schema_.InRealOneof(field))) {
-      ClearBit(message, field);
+      ClearHasBit(message, field);
     }
     if (schema_.InRealOneof(field)) {
       if (HasOneofField(*message, field)) {
@@ -2903,12 +2905,105 @@ void Reflection::SwapInlinedStringDonated(Message* lhs, Message* rhs,
   }
 }
 
-// Simple accessors for manipulating has_bits_.
-bool Reflection::HasBit(const Message& message,
-                        const FieldDescriptor* field) const {
+bool Reflection::IsScalarFieldNonZero(const Message& message,
+                                      const FieldDescriptor* field) const {
+  ABSL_DCHECK(!field->has_presence());
+  ABSL_DCHECK(!field->is_repeated());
+  ABSL_DCHECK(!field->is_map());
+  // Scalar primitive (numeric or string/bytes) fields are present if
+  // their value is non-zero (numeric) or non-empty (string/bytes). N.B.:
+  // we must use this definition here, rather than the "scalar fields
+  // always present" in the proto3 docs, because MergeFrom() semantics
+  // require presence as "present on wire", and reflection-based merge
+  // (which uses HasField()) needs to be consistent with this.
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_STRING:
+      switch (internal::cpp::EffectiveStringCType(field)) {
+        case FieldOptions::CORD:
+          return !GetField<const absl::Cord>(message, field).empty();
+        default:
+        case FieldOptions::STRING: {
+          if (IsInlined(field)) {
+            return !GetField<InlinedStringField>(message, field)
+                        .GetNoArena()
+                        .empty();
+          }
+
+          return !GetField<ArenaStringPtr>(message, field).Get().empty();
+        }
+      }
+      return false;
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return GetRaw<bool>(message, field) != false;
+    case FieldDescriptor::CPPTYPE_INT32:
+      return GetRaw<int32_t>(message, field) != 0;
+    case FieldDescriptor::CPPTYPE_INT64:
+      return GetRaw<int64_t>(message, field) != 0;
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return GetRaw<uint32_t>(message, field) != 0;
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return GetRaw<uint64_t>(message, field) != 0;
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      static_assert(sizeof(uint32_t) == sizeof(float),
+                    "Code assumes uint32_t and float are the same size.");
+      return GetRaw<uint32_t>(message, field) != 0;
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      static_assert(sizeof(uint64_t) == sizeof(double),
+                    "Code assumes uint64_t and double are the same size.");
+      return GetRaw<uint64_t>(message, field) != 0;
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return GetRaw<int>(message, field) != 0;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      // Should have been handled before this function is called.
+      break;
+  }
+  ABSL_LOG(FATAL) << "Reached impossible case in IsPresent().";
+  return false;
+}
+
+bool Reflection::IsFieldPresentGivenHasbits(const Message& message,
+                                            const FieldDescriptor* field,
+                                            const uint32_t* hasbits,
+                                            uint32_t hasbit_index) const {
+  // If hasbit exists but is not set, field is guaranteed to be missing.
+  if (!IsIndexInHasBitSet(hasbits, hasbit_index)) {
+    return false;
+  }
+
+  // For explicit-presence fields, a set hasbit indicates a present field.
+  if (field->has_presence()) {
+    return true;
+  }
+
+  // proto3: hasbits are present, but an additional zero check must be
+  // performed because hasbit can be set to true while field is zero.
+
+  // Repeated fields do not have hasbits enabled in proto3.
+  ABSL_DCHECK(!field->is_repeated())
+      << "repeated fields do not have hasbits in proto3.";
+
+  // Handling map entries in proto3:
+  // During reflection, map entries have the same behavior as explicit presence
+  // fields, even though they're "not supposed to do that" according to the
+  // gencode and the proto3 spec. We will fix this one day...
+  if (!field->is_extension() &&  // If field is extension, containing_type is
+                                 // bogus.
+      (field->containing_type() != nullptr &&
+       field->containing_type()->options().map_entry())) {
+    return true;
+  }
+
+  // This is the vanilla case: for a non-repeated primitive or string field,
+  // returns if the field is nonzero (i.e. present in proto3 semantics).
+  return IsScalarFieldNonZero(message, field);
+}
+
+bool Reflection::IsPresent(const Message& message,
+                           const FieldDescriptor* field) const {
   ABSL_DCHECK(!field->options().weak());
   if (schema_.HasBitIndex(field) != static_cast<uint32_t>(-1)) {
-    return IsIndexInHasBitSet(GetHasBits(message), schema_.HasBitIndex(field));
+    return IsFieldPresentGivenHasbits(message, field, GetHasBits(message),
+                                      schema_.HasBitIndex(field));
   }
 
   // proto3: no has-bits. All fields present except messages, which are
@@ -2916,64 +3011,17 @@ bool Reflection::HasBit(const Message& message,
   if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     return !schema_.IsDefaultInstance(message) &&
            GetRaw<const Message*>(message, field) != nullptr;
-  } else {
-    // Non-message field (and non-oneof, since that was handled in HasField()
-    // before calling us), and singular (again, checked in HasField). So, this
-    // field must be a scalar.
-
-    // Scalar primitive (numeric or string/bytes) fields are present if
-    // their value is non-zero (numeric) or non-empty (string/bytes). N.B.:
-    // we must use this definition here, rather than the "scalar fields
-    // always present" in the proto3 docs, because MergeFrom() semantics
-    // require presence as "present on wire", and reflection-based merge
-    // (which uses HasField()) needs to be consistent with this.
-    switch (field->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_STRING:
-        switch (internal::cpp::EffectiveStringCType(field)) {
-          case FieldOptions::CORD:
-            return !GetField<const absl::Cord>(message, field).empty();
-          default:
-          case FieldOptions::STRING: {
-            if (IsInlined(field)) {
-              return !GetField<InlinedStringField>(message, field)
-                          .GetNoArena()
-                          .empty();
-            }
-
-            return GetField<ArenaStringPtr>(message, field).Get().size() > 0;
-          }
-        }
-        return false;
-      case FieldDescriptor::CPPTYPE_BOOL:
-        return GetRaw<bool>(message, field) != false;
-      case FieldDescriptor::CPPTYPE_INT32:
-        return GetRaw<int32_t>(message, field) != 0;
-      case FieldDescriptor::CPPTYPE_INT64:
-        return GetRaw<int64_t>(message, field) != 0;
-      case FieldDescriptor::CPPTYPE_UINT32:
-        return GetRaw<uint32_t>(message, field) != 0;
-      case FieldDescriptor::CPPTYPE_UINT64:
-        return GetRaw<uint64_t>(message, field) != 0;
-      case FieldDescriptor::CPPTYPE_FLOAT:
-        static_assert(sizeof(uint32_t) == sizeof(float),
-                      "Code assumes uint32_t and float are the same size.");
-        return GetRaw<uint32_t>(message, field) != 0;
-      case FieldDescriptor::CPPTYPE_DOUBLE:
-        static_assert(sizeof(uint64_t) == sizeof(double),
-                      "Code assumes uint64_t and double are the same size.");
-        return GetRaw<uint64_t>(message, field) != 0;
-      case FieldDescriptor::CPPTYPE_ENUM:
-        return GetRaw<int>(message, field) != 0;
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        // handled above; avoid warning
-        break;
-    }
-    ABSL_LOG(FATAL) << "Reached impossible case in HasBit().";
-    return false;
   }
+
+  // Non-message field (and non-oneof, since that was handled in HasField()
+  // before calling us), and singular (again, checked in HasField). So, this
+  // field must be a scalar.
+
+  return IsScalarFieldNonZero(message, field);
 }
 
-void Reflection::SetBit(Message* message, const FieldDescriptor* field) const {
+void Reflection::SetHasBit(Message* message,
+                           const FieldDescriptor* field) const {
   ABSL_DCHECK(!field->options().weak());
   const uint32_t index = schema_.HasBitIndex(field);
   if (index == static_cast<uint32_t>(-1)) return;
@@ -2981,8 +3029,8 @@ void Reflection::SetBit(Message* message, const FieldDescriptor* field) const {
       (static_cast<uint32_t>(1) << (index % 32));
 }
 
-void Reflection::ClearBit(Message* message,
-                          const FieldDescriptor* field) const {
+void Reflection::ClearHasBit(Message* message,
+                             const FieldDescriptor* field) const {
   ABSL_DCHECK(!field->options().weak());
   const uint32_t index = schema_.HasBitIndex(field);
   if (index == static_cast<uint32_t>(-1)) return;
@@ -2990,22 +3038,22 @@ void Reflection::ClearBit(Message* message,
       ~(static_cast<uint32_t>(1) << (index % 32));
 }
 
-void Reflection::SwapBit(Message* message1, Message* message2,
-                         const FieldDescriptor* field) const {
+void Reflection::SwapHasBit(Message* message1, Message* message2,
+                            const FieldDescriptor* field) const {
   ABSL_DCHECK(!field->options().weak());
   if (!schema_.HasHasbits()) {
     return;
   }
-  bool temp_has_bit = HasBit(*message1, field);
-  if (HasBit(*message2, field)) {
-    SetBit(message1, field);
+  bool temp_is_present = IsPresent(*message1, field);
+  if (IsPresent(*message2, field)) {
+    SetHasBit(message1, field);
   } else {
-    ClearBit(message1, field);
+    ClearHasBit(message1, field);
   }
-  if (temp_has_bit) {
-    SetBit(message2, field);
+  if (temp_is_present) {
+    SetHasBit(message2, field);
   } else {
-    ClearBit(message2, field);
+    ClearHasBit(message2, field);
   }
 }
 
@@ -3133,14 +3181,14 @@ void Reflection::SetField(Message* message, const FieldDescriptor* field,
     ClearOneof(message, field->containing_oneof());
   }
   *MutableRaw<Type>(message, field) = value;
-  real_oneof ? SetOneofCase(message, field) : SetBit(message, field);
+  real_oneof ? SetOneofCase(message, field) : SetHasBit(message, field);
 }
 
 template <typename Type>
 Type* Reflection::MutableField(Message* message,
                                const FieldDescriptor* field) const {
   schema_.InRealOneof(field) ? SetOneofCase(message, field)
-                             : SetBit(message, field);
+                             : SetHasBit(message, field);
   return MutableRaw<Type>(message, field);
 }
 

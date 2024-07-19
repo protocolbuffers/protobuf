@@ -2946,9 +2946,34 @@ constexpr int MaxMessageDeclarationNestingDepth() { return 32; }
 PROTOBUF_EXPORT bool HasPreservingUnknownEnumSemantics(
     const FieldDescriptor* field);
 
+#ifndef SWIG
+enum class HasbitMode : uint8_t {
+  // Hasbits do not exist for the field.
+  kNoHasbit,
+  // Hasbits exist and indicate field presence.
+  // Hasbit is set if and only if field is present.
+  kTrueHasbit,
+  // Hasbits exist and "hint at" field presence.
+  // When hasbit is set, field is 'probably' present, but field accessors must
+  // still check for field presence (i.e. false positives are possible).
+  // When hasbit is unset, field is guaranteed to be not present.
+  kHintHasbit,
+};
+
+// Returns the "hasbit mode" of the field. Depending on the implementation, a
+// field can:
+//   - have no hasbits in its internal object (kNoHasbit);
+//   - have hasbits where hasbit == 1 indicates field presence and hasbit == 0
+//     indicates an unset field (kTrueHasbit);
+//   - have hasbits where hasbit == 1 indicates "field is possibly modified" and
+//     hasbit == 0 indicates "field is definitely missing" (kHintHasbit).
+PROTOBUF_EXPORT HasbitMode GetFieldHasbitMode(const FieldDescriptor* field);
+
+// Returns true if there are hasbits for the field.
+// Note that this does not correlate with "hazzer"s, i.e., whether has_foo APIs
+// are emitted.
 PROTOBUF_EXPORT bool HasHasbit(const FieldDescriptor* field);
 
-#ifndef SWIG
 // For a string field, returns the effective ctype.  If the actual ctype is
 // not supported, returns the default of STRING.
 template <typename FieldDesc = FieldDescriptor,
