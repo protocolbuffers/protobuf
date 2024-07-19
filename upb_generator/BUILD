@@ -273,6 +273,7 @@ bootstrap_cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//pkg:__pkg__"],
     deps = [
+        "//src/google/protobuf/compiler:code_generator",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
@@ -313,6 +314,7 @@ bootstrap_cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//upb:friends"],
     deps = [
+        "//src/google/protobuf/compiler:code_generator",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",

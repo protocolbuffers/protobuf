@@ -24,6 +24,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "upb/base/descriptor_constants.h"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
@@ -550,7 +551,9 @@ void WriteMiniTableHeader(const DefPoolPair& pools, upb::FileDefPtr file,
       ToPreproc(file.name()));
 }
 
-void WriteMiniTableSourceIncludes(upb::FileDefPtr file, Output& output) {
+void WriteMiniTableSourceIncludes(upb::FileDefPtr file,
+                                  const MiniTableOptions& options,
+                                  Output& output) {
   EmitFileWarning(file.name(), output);
 
   output(
@@ -560,6 +563,11 @@ void WriteMiniTableSourceIncludes(upb::FileDefPtr file, Output& output) {
       MiniTableHeaderFilename(file));
 
   for (int i = 0; i < file.dependency_count(); i++) {
+    if (options.strip_nonfunctional_codegen &&
+        google::protobuf::compiler::IsKnownFeatureProto(file.dependency(i).name())) {
+      // Strip feature imports for editions codegen tests.
+      continue;
+    }
     output("#include \"$0\"\n", MiniTableHeaderFilename(file.dependency(i)));
   }
 
@@ -576,7 +584,7 @@ void WriteMiniTableSourceIncludes(upb::FileDefPtr file, Output& output) {
 
 void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
                           const MiniTableOptions& options, Output& output) {
-  WriteMiniTableSourceIncludes(file, output);
+  WriteMiniTableSourceIncludes(file, options, output);
 
   std::vector<upb::MessageDefPtr> messages = SortedMessages(file);
   std::vector<upb::FieldDefPtr> extensions = SortedExtensions(file);
@@ -673,21 +681,21 @@ void WriteMiniTableMultipleSources(const DefPoolPair& pools,
 
   for (auto message : messages) {
     Output output;
-    WriteMiniTableSourceIncludes(file, output);
+    WriteMiniTableSourceIncludes(file, options, output);
     WriteMessage(message, pools, options, output);
     plugin->AddOutputFile(MultipleSourceFilename(file, message.full_name(), &i),
                           output.output());
   }
   for (const auto e : enums) {
     Output output;
-    WriteMiniTableSourceIncludes(file, output);
+    WriteMiniTableSourceIncludes(file, options, output);
     WriteEnum(e, output);
     plugin->AddOutputFile(MultipleSourceFilename(file, e.full_name(), &i),
                           output.output());
   }
   for (const auto ext : extensions) {
     Output output;
-    WriteMiniTableSourceIncludes(file, output);
+    WriteMiniTableSourceIncludes(file, options, output);
     WriteExtension(pools, ext, output);
     plugin->AddOutputFile(MultipleSourceFilename(file, ext.full_name(), &i),
                           output.output());
