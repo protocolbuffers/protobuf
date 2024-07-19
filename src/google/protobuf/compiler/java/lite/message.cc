@@ -859,12 +859,33 @@ void ImmutableMessageLiteGenerator::GenerateTopLevelKotlinMembers(
 
 void ImmutableMessageLiteGenerator::GenerateKotlinOrNull(
     io::Printer* printer) const {
-  // Generate getFieldOrNull getters for all optional message fields in both
-  // `Foo` and `Foo.Builder`.  We don't simply generate them in `FooOrBuilder`
-  // because some Kotlin proto implementations don't have `FooOrBuilder`.
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
-    if (field->has_presence() && GetJavaType(field) == JAVATYPE_MESSAGE) {
+    if (!field->has_presence() || GetJavaType(field) != JAVATYPE_MESSAGE) {
+      continue;
+    }
+    if (context_->options().jvm_dsl) {
+      // On the JVM, we can use `FooOrBuilder`, and it saves code size to
+      // generate only one method instead of two.
+      if (field->options().deprecated()) {
+        printer->Print(
+            "@kotlin.Deprecated(message = \"Field $name$ is deprecated\")\n",
+            "name", context_->GetFieldGeneratorInfo(field)->name);
+      }
+      printer->Print(
+          "public val $full_classname$OrBuilder.$camelcase_name$OrNull: "
+          "$full_name$?\n"
+          "  get() = if (has$name$()) get$name$() else null\n\n",
+          "full_classname",
+          EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true)),
+          "camelcase_name", context_->GetFieldGeneratorInfo(field)->name,
+          "full_name",
+          EscapeKotlinKeywords(
+              name_resolver_->GetImmutableClassName(field->message_type())),
+          "name", context_->GetFieldGeneratorInfo(field)->capitalized_name);
+    } else {
+      // Non-JVM platforms don't have `FooOrBuilder`, so we generate `Foo`
+      // and `Foo.Builder` methods.
       if (field->options().deprecated()) {
         printer->Print(
             "@kotlin.Deprecated(message = \"Field $name$ is deprecated\")\n",
@@ -884,6 +905,11 @@ void ImmutableMessageLiteGenerator::GenerateKotlinOrNull(
           context_->GetFieldGeneratorInfo(field)->capitalized_name, "name",
           EscapeKotlinKeywords(GetKotlinPropertyName(
               context_->GetFieldGeneratorInfo(field)->capitalized_name)));
+      if (field->options().deprecated()) {
+        printer->Print(
+            "@kotlin.Deprecated(message = \"Field $name$ is deprecated\")\n",
+            "name", context_->GetFieldGeneratorInfo(field)->name);
+      }
       printer->Print(
           "public val $full_classname$.Builder.$camelcase_name$OrNull: "
           "$full_name$?\n"
