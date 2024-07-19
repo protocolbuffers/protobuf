@@ -99,3 +99,4 @@ use_repo(maven, "maven")
 # Development dependencies
 bazel_dep(name = "googletest", version = "1.14.0", repo_name = "com_google_googletest", dev_dependency = True)
 bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
+bazel_dep(name = "rules_buf", version = "0.3.0", dev_dependency = True)
