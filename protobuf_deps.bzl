@@ -105,19 +105,18 @@ def protobuf_deps():
         major_version_int = int(version_parts[0])
         minor_version_int = int(version_parts[1])
 
-        if major_version_int < 6 or (major_version_int == 6 and minor_version_int <= 3):
-            # Works with Bazel 6.3.0, but not higher
+        if major_version_int < 7:
             http_archive(
                 name = "rules_java",
-                url = "https://github.com/bazelbuild/rules_java/releases/download/6.0.0/rules_java-6.0.0.tar.gz",
-                sha256 = "469b7f3b580b4fcf8112f4d6d0d5a4ce8e1ad5e21fee67d8e8335d5f8b3debab",
+                url = "https://github.com/bazelbuild/rules_java/archive/52ebbbb3cd2776e11e56197ee0110dd614097c94.tar.gz",
+                sha256 = "d36ae1f0b56b25e03cb531c862d7551bc23263375bb6963a0eb17c298c86b278",
+                strip_prefix = "rules_java-52ebbbb3cd2776e11e56197ee0110dd614097c94",
             )
         else:
-            # Version 6.5.2 works both with Bazel 6.4.0 and Bazel 7
             http_archive(
                 name = "rules_java",
-                url = "https://github.com/bazelbuild/rules_java/releases/download/6.5.0/rules_java-6.5.0.tar.gz",
-                sha256 = "160d1ebf33763124766fb35316329d907ca67f733238aa47624a8e3ff3cf2ef4",
+                url = "https://github.com/bazelbuild/rules_java/releases/download/7.10.0/rules_java-7.10.0.tar.gz",
+                sha256 = "eb5447f019734b0c4284eaa5f8248415084da5445ba8201c935a211ab8af43a0",
             )
 
     if not native.existing_rule("proto_bazel_features"):
