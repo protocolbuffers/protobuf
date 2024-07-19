@@ -12,6 +12,8 @@
 // TODO:  Improve this unittest to bring it up to the standards of
 //   other proto2 unittests.
 
+#define PROTOBUF_ENABLE_BOUNDS_CHECKS 1
+
 #include "google/protobuf/repeated_field.h"
 
 #include <algorithm>

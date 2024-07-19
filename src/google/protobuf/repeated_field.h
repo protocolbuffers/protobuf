@@ -21,6 +21,8 @@
 #ifndef GOOGLE_PROTOBUF_REPEATED_FIELD_H__
 #define GOOGLE_PROTOBUF_REPEATED_FIELD_H__
 
+#include <stdlib.h>
+
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
@@ -51,6 +53,8 @@
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
 #endif
+
+#define PROTOBUF_ENABLE_BOUNDS_CHECKS
 
 namespace google {
 namespace protobuf {
@@ -629,8 +633,15 @@ inline void RepeatedField<Element>::Resize(int new_size, const Element& value) {
 template <typename Element>
 inline const Element& RepeatedField<Element>::Get(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  ABSL_DCHECK_GE(index, 0);
-  ABSL_DCHECK_LT(index, size());
+// PROTOBUF_ASSERT_INDEX(index, size());
+#ifdef PROTOBUF_ENABLE_BOUNDS_CHECKS
+  if (PROTOBUF_PREDICT_FALSE((index) < 0 || (index) >= (size()))) {
+    ABSL_LOG(FATAL) << "Index out of bounds";
+  }
+#else
+  // No bounds check when disabled
+#endif
+  ABSL_LOG(INFO) << "Get: " << index;
   return elements()[index];
 }
 
