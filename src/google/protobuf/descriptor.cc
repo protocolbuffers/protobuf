@@ -3939,6 +3939,29 @@ bool FieldDescriptor::has_optional_keyword() const {
                               is_optional() && !containing_oneof());
 }
 
+FieldDescriptor::CppStringType FieldDescriptor::cpp_string_type() const {
+  ABSL_DCHECK(cpp_type() == FieldDescriptor::CPPTYPE_STRING);
+  switch (features().GetExtension(pb::cpp).string_type()) {
+    case pb::CppFeatures::VIEW:
+      return CppStringType::kView;
+    case pb::CppFeatures::CORD:
+      // In open-source, protobuf CORD is only supported for singular bytes
+      // fields.
+      if (type() != FieldDescriptor::TYPE_BYTES || is_repeated() ||
+          is_extension()) {
+        return CppStringType::kString;
+      }
+      return CppStringType::kCord;
+    case pb::CppFeatures::STRING:
+      return CppStringType::kString;
+    default:
+      // If features haven't been resolved, this is a dynamic build not for C++
+      // codegen.  Just use string type.
+      ABSL_DCHECK(!features().GetExtension(pb::cpp).has_string_type());
+      return CppStringType::kString;
+  }
+}
+
 // Location methods ===============================================
 
 bool FileDescriptor::GetSourceLocation(const std::vector<int>& path,
@@ -5476,8 +5499,7 @@ static void EnforceCTypeStringTypeConsistency(
     Edition edition, FieldDescriptor::CppType type,
     const pb::CppFeatures& cpp_features, FieldOptions& options) {
   if (&options == &FieldOptions::default_instance()) return;
-  if (edition < Edition::EDITION_2024 &&
-      type == FieldDescriptor::CPPTYPE_STRING) {
+  if (type == FieldDescriptor::CPPTYPE_STRING) {
     switch (cpp_features.string_type()) {
       case pb::CppFeatures::CORD:
         options.set_ctype(FieldOptions::CORD);
@@ -6150,6 +6172,14 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
         });
 
     internal::VisitDescriptors(*result, [&](const FieldDescriptor& field) {
+      if (result->edition() >= Edition::EDITION_2024 &&
+          field.options().has_ctype()) {
+        // "ctype" is no longer supported in edition 2024 and beyond.
+        AddError(
+            field.full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+            "ctype option is not allowed under edition 2024 and beyond. Use "
+            "the feature string_type = VIEW|CORD|STRING|... instead.");
+      }
       EnforceCTypeStringTypeConsistency(
           field.file()->edition(), field.cpp_type(),
           field.merged_features_->GetExtension(pb::cpp),
@@ -7904,12 +7934,7 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
   auto& field_options = field->options();
 
   if (field_options.has_ctype()) {
-    if (edition >= Edition::EDITION_2024) {
-      // "ctype" is no longer supported in edition 2024 and beyond.
-      AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-               "ctype option is not allowed under edition 2024 and beyond. Use "
-               "the feature string_type = VIEW|CORD|STRING|... instead.");
-    } else if (edition == Edition::EDITION_2023) {
+    if (edition == Edition::EDITION_2023) {
       if (field->cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
         AddError(field->full_name(), proto,
                  DescriptorPool::ErrorCollector::TYPE,
