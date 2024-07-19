@@ -695,7 +695,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
               }},
              {"hazzer",
               [&] {
-                if (!field->has_presence()) return;
+                if (field->is_repeated()) return;
                 p->Emit({Sub("has_name", absl::StrCat("has_", name))
                              .AnnotatedAs(field)},
                         R"cc(

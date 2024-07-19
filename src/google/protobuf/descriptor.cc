@@ -9801,8 +9801,13 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
 }
 
 bool HasHasbit(const FieldDescriptor* field) {
-  return field->has_presence() && !field->real_containing_oneof() &&
-         !field->options().weak();
+  if (field->has_presence()) {
+    // Explicit-presence fields always have hasbits.
+    return !field->real_containing_oneof() && !field->options().weak();
+  } else {
+    return !field->is_repeated() && !field->real_containing_oneof() &&
+           !field->options().weak();
+  }
 }
 
 static bool IsVerifyUtf8(const FieldDescriptor* field, bool is_lite) {
