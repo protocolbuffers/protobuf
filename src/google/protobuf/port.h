@@ -128,6 +128,24 @@ inline SizedPtr AllocateAtLeast(size_t size) {
 #endif  // !NDEBUG && ABSL_HAVE_THREAD_LOCAL && __cpp_inline_variables
   return {::operator new(size), size};
 }
+// As above, but with guaranteed alignment.
+template <size_t align>
+SizedPtr AllocateAtLeastAligned(size_t size) {
+  if (align <= alignof(std::max_align_t)) return AllocateAtLeast(size);
+
+
+#if defined(__cpp_aligned_new)
+  return {::operator new(size, std::align_val_t{align}), size};
+#else   // defined(__cpp_aligned_new)
+  // NOTE: we can remove this branch once we require C++17, which is scheduled
+  // for 2024-12-15.
+  uintptr_t addr =
+      reinterpret_cast<uintptr_t>(::operator new(size + align - 1));
+  addr = (addr + align - 1) & ~(align - 1);
+  return {reinterpret_cast<void*>(addr), size};
+#endif  // defined(__cpp_aligned_new)
+
+}
 
 inline void SizedDelete(void* p, size_t size) {
 #if defined(__cpp_sized_deallocation)
