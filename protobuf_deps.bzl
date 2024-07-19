@@ -116,8 +116,8 @@ def protobuf_deps():
             # Version 6.5.2 works both with Bazel 6.4.0 and Bazel 7
             http_archive(
                 name = "rules_java",
-                url = "https://github.com/bazelbuild/rules_java/releases/download/6.5.0/rules_java-6.5.0.tar.gz",
-                sha256 = "160d1ebf33763124766fb35316329d907ca67f733238aa47624a8e3ff3cf2ef4",
+                url = "https://github.com/bazelbuild/rules_java/releases/download/7.7.0/rules_java-7.7.0.tar.gz",
+                sha256 = "790d1ab5c75a6236b2ceaef01f50687a9d18a219aaff70865cb20326cb50bbc2",
             )
 
     # TODO: remove after toolchain types are moved to protobuf
