@@ -229,7 +229,9 @@ class PROTOBUF_EXPORT MessageLite {
   // Construct a new instance on the arena. Ownership is passed to the caller
   // if arena is a nullptr.
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  MessageLite* New(Arena* arena) const;
+  MessageLite* New(Arena* arena) const {
+    return static_cast<MessageLite*>(_class_data_->new_message(this, arena));
+  }
 #else
   virtual MessageLite* New(Arena* arena) const = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -246,7 +248,7 @@ class PROTOBUF_EXPORT MessageLite {
   // will likely be needed again, so the memory used may not be freed.
   // To ensure that all memory used by a Message is freed, you must delete it.
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void Clear();
+  void Clear() { _class_data_->clear(*this); }
 #else
   virtual void Clear() = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -470,7 +472,7 @@ class PROTOBUF_EXPORT MessageLite {
   // ByteSizeLong() is generally linear in the number of fields defined for the
   // proto.
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  size_t ByteSizeLong() const;
+  size_t ByteSizeLong() const { return _class_data_->byte_size_long(*this); }
 #else
   virtual size_t ByteSizeLong() const = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -512,7 +514,11 @@ class PROTOBUF_EXPORT MessageLite {
   // sub-message is changed, all of its parents' cached sizes would need to be
   // invalidated, which is too much work for an otherwise inlined setter
   // method.)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  int GetCachedSize() const { return AccessCachedSize().Get(); }
+#else
   int GetCachedSize() const;
+#endif
 
   const char* _InternalParse(const char* ptr, internal::ParseContext* ctx);
 
@@ -795,7 +801,9 @@ class PROTOBUF_EXPORT MessageLite {
   //  uint8_t* _InternalSerialize(uint8_t* ptr) const;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   uint8_t* _InternalSerialize(uint8_t* ptr,
-                              io::EpsCopyOutputStream* stream) const;
+                              io::EpsCopyOutputStream* stream) const {
+    return _class_data_->serialize(*this, ptr, stream);
+  }
 #else   // PROTOBUF_CUSTOM_VTABLE
   virtual uint8_t* _InternalSerialize(
       uint8_t* ptr, io::EpsCopyOutputStream* stream) const = 0;

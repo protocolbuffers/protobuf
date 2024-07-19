@@ -64,23 +64,6 @@ void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
   data->merge_to_from(*this, other);
 }
 
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-uint8_t* MessageLite::_InternalSerialize(
-    uint8_t* ptr, io::EpsCopyOutputStream* stream) const {
-  return _class_data_->serialize(*this, ptr, stream);
-}
-
-MessageLite* MessageLite::New(Arena* arena) const {
-  return static_cast<MessageLite*>(_class_data_->new_message(this, arena));
-}
-
-void MessageLite::Clear() { _class_data_->clear(*this); }
-
-size_t MessageLite::ByteSizeLong() const {
-  return _class_data_->byte_size_long(*this);
-}
-#endif  // PROTOBUF_CUSTOM_VTABLE
-
 bool MessageLite::IsInitialized() const {
   auto* data = GetClassData();
   return data->is_initialized != nullptr ? data->is_initialized(*this) : true;
@@ -137,7 +120,9 @@ std::string MessageLite::DebugString() const {
   return absl::StrCat("MessageLite at 0x", absl::Hex(this));
 }
 
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
 int MessageLite::GetCachedSize() const { return AccessCachedSize().Get(); }
+#endif
 
 namespace {
 
