@@ -13,14 +13,14 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/compiler/plugin.h"
-#include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/hpb/gen_enums.h"
 #include "google/protobuf/compiler/hpb/gen_extensions.h"
 #include "google/protobuf/compiler/hpb/gen_messages.h"
 #include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/names.h"
 #include "google/protobuf/compiler/hpb/output.h"
+#include "google/protobuf/compiler/plugin.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google::protobuf::hpb_generator {
 namespace {
@@ -211,7 +211,6 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
   WriteMessageImplementations(file, output);
   const std::vector<const protobuf::FieldDescriptor*> this_file_exts =
       SortedExtensions(file);
-  WriteExtensionIdentifiers(this_file_exts, output);
   WriteEndNamespace(file, output);
 
   output("#include \"upb/port/undef.inc\"\n\n");

@@ -1242,6 +1242,8 @@ TEST(CppGeneratedCode, FieldNumberConstants) {
 }
 
 TEST(CppGeneratedCode, ExtensionFieldNumberConstant) {
+  static_assert(::protos::ExtensionNumber(ThemeExtension::theme_extension) ==
+                12003);
   EXPECT_EQ(12003, ::protos::ExtensionNumber(ThemeExtension::theme_extension));
 }
 

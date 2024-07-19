@@ -7,9 +7,14 @@
 
 #include "google/protobuf/compiler/hpb/gen_extensions.h"
 
+#include <cassert>
+#include <string>
+#include <vector>
+
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/names.h"
+#include "google/protobuf/compiler/hpb/output.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google::protobuf::hpb_generator {
 
@@ -38,15 +43,19 @@ void WriteExtensionIdentifierHeader(const protobuf::FieldDescriptor* ext,
   if (ext->extension_scope()) {
     output(
         R"cc(
-          static const ::protos::internal::ExtensionIdentifier<$0, $1> $2;
+          static constexpr ::protos::internal::ExtensionIdentifier<$0, $3> $2{
+              $4, &$1};
         )cc",
-        ContainingTypeName(ext), CppTypeParameterName(ext), ext->name());
+        ContainingTypeName(ext), mini_table_name, ext->name(),
+        CppTypeParameterName(ext), ext->number());
   } else {
     output(
         R"cc(
-          extern const ::protos::internal::ExtensionIdentifier<$0, $1> $2;
+          inline constexpr ::protos::internal::ExtensionIdentifier<$0, $3> $2{
+              $4, &$1};
         )cc",
-        ContainingTypeName(ext), CppTypeParameterName(ext), ext->name());
+        ContainingTypeName(ext), mini_table_name, ext->name(),
+        CppTypeParameterName(ext), ext->number());
   }
 }
 
@@ -56,37 +65,6 @@ void WriteExtensionIdentifiersHeader(
   for (const auto* ext : extensions) {
     if (!ext->extension_scope()) {
       WriteExtensionIdentifierHeader(ext, output);
-    }
-  }
-}
-
-void WriteExtensionIdentifier(const protobuf::FieldDescriptor* ext,
-                              Output& output) {
-  std::string mini_table_name =
-      absl::StrCat(ExtensionIdentifierBase(ext), "_", ext->name(), "_ext");
-  if (ext->extension_scope()) {
-    output(
-        R"cc(
-          const ::protos::internal::ExtensionIdentifier<$0, $3> $4::$2(&$1);
-        )cc",
-        ContainingTypeName(ext), mini_table_name, ext->name(),
-        CppTypeParameterName(ext), ClassName(ext->extension_scope()));
-  } else {
-    output(
-        R"cc(
-          const ::protos::internal::ExtensionIdentifier<$0, $3> $2(&$1);
-        )cc",
-        ContainingTypeName(ext), mini_table_name, ext->name(),
-        CppTypeParameterName(ext));
-  }
-}
-
-void WriteExtensionIdentifiers(
-    const std::vector<const protobuf::FieldDescriptor*>& extensions,
-    Output& output) {
-  for (const auto* ext : extensions) {
-    if (!ext->extension_scope()) {
-      WriteExtensionIdentifier(ext, output);
     }
   }
 }
