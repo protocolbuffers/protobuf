@@ -393,12 +393,7 @@ class CommandLineInterface::ErrorPrinter
                          absl::string_view message, absl::string_view type,
                          std::ostream& out) {
     std::string dfile;
-    if (
-#ifndef PROTOBUF_OPENSOURCE
-        // Print full path when running under MSVS
-        format_ == CommandLineInterface::ERROR_FORMAT_MSVS &&
-#endif  // !PROTOBUF_OPENSOURCE
-        tree_ != nullptr && tree_->VirtualFileToDiskFile(filename, &dfile)) {
+    if (tree_ != nullptr && tree_->VirtualFileToDiskFile(filename, &dfile)) {
       out << dfile;
     } else {
       out << filename;
