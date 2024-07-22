@@ -109,7 +109,7 @@ def _rule_impl(ctx):
     if runtime:
         proguard_provider_specs = runtime[ProguardSpecInfo]
     else:
-        proguard_provider_specs = ProguardSpecInfo(specs = depset())
+        proguard_provider_specs = ProguardSpecInfo(depset())
 
     java_info = java_info_merge_for_protos([dep[JavaInfo] for dep in ctx.attr.deps], merge_java_outputs = False)
 
