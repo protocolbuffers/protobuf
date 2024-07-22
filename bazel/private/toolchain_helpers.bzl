@@ -45,5 +45,5 @@ toolchains = struct(
     find_toolchain = _find_toolchain,
     if_legacy_toolchain = _if_legacy_toolchain,
     INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION = _incompatible_toolchain_resolution,
-    PROTO_TOOLCHAIN = "@rules_proto//proto:toolchain_type",
+    PROTO_TOOLCHAIN = "//bazel/private:proto_toolchain_type",
 )
