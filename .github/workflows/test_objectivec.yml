@@ -57,8 +57,7 @@ jobs:
                 -scheme ProtocolBuffers \
                 -configuration ${{ matrix.xc_config }} \
                 -destination "${{ matrix.destination }}" \
-                test \
-              | xcpretty
+                test
 
       - name: Report ccache stats
         shell: bash
