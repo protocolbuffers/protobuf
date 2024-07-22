@@ -173,8 +173,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   inline ~Arena() = default;
 
-#ifndef PROTOBUF_FUTURE_CREATE_MESSAGE
-  // Deprecated. Use Create<T> instead.
+  // Deprecated. Use Create<T> instead. TODO: depreate OSS version
+  // once internal migration to Arena::Create is done.
   template <typename T, typename... Args>
   ABSL_DEPRECATED("Use Create")
   static T* CreateMessage(Arena* arena, Args&&... args) {
@@ -184,7 +184,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
         "CreateMessage can only construct types that are ArenaConstructable");
     return Create<Type>(arena, std::forward<Args>(args)...);
   }
-#endif  // !PROTOBUF_FUTURE_CREATE_MESSAGE
 
   // Allocates an object type T if the arena passed in is not nullptr;
   // otherwise, returns a heap-allocated object.

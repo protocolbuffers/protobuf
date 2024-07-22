@@ -84,7 +84,6 @@
 #undef PROTOBUF_FUTURE_BREAKING_CHANGES
 #undef PROTOBUF_FUTURE_DESCRIPTOR_EXTENSION_DECL
 #undef PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
-#undef PROTOBUF_FUTURE_CREATE_MESSAGE
 #endif
 
 // Restore macros that may have been #undef'd in port_def.inc.
