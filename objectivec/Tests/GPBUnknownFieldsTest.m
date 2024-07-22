@@ -847,4 +847,164 @@
   XCTAssertEqual(varint, 0x7FFFFFFFFFFFFFFFL);
 }
 
+static NSData* DataForGroupsOfDepth(NSUInteger depth) {
+  NSMutableData* data = [NSMutableData dataWithCapacity:0];
+
+  uint32_t byte = 35;  // 35 = 0b100011 -> field 4/start group
+  for (NSUInteger i = 0; i < depth; ++i) {
+    [data appendBytes:&byte length:1];
+  }
+
+  byte = 8;  // 8 = 0b1000, -> field 1/varint
+  [data appendBytes:&byte length:1];
+  byte = 1;  // 1 -> varint value of 1
+  [data appendBytes:&byte length:1];
+
+  byte = 36;  // 36 = 0b100100 -> field 4/end group
+  for (NSUInteger i = 0; i < depth; ++i) {
+    [data appendBytes:&byte length:1];
+  }
+  return data;
+}
+
+- (void)testParsingNestingGroupData {
+  // 35 = 0b100011 -> field 4/start group
+  // 36 = 0b100100 -> field 4/end group
+  // 43 = 0b101011 -> field 5/end group
+  // 44 = 0b101100 -> field 5/end group
+  // 8 = 0b1000, 1 -> field 1/varint, value of 1
+  // 21 = 0b10101, 0x78, 0x56, 0x34, 0x12 -> field 2/fixed32, value of 0x12345678
+  // 25 = 0b11001, 0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12 -> field 3/fixed64,
+  //                                                                 value of 0x123456789abcdef0LL
+  // 50 = 0b110010, 0x0 -> field 6/length delimited, length 0
+  // 50 = 0b110010, 0x1, 42 -> field 6/length delimited, length 1, byte 42
+  // 0 -> field 0 which is invalid/varint
+  // 15 = 0b1111 -> field 1, wire type 7 which is invalid
+
+  TestEmptyMessage* m = [TestEmptyMessage parseFromData:DataFromBytes(35, 36)
+                                                  error:NULL];  // empty group
+  GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] initFromMessage:m] autorelease];
+  XCTAssertEqual(ufs.count, (NSUInteger)1);
+  GPBUnknownFields* group = [ufs firstGroup:4];
+  XCTAssertTrue(group.empty);
+
+  m = [TestEmptyMessage parseFromData:DataFromBytes(35, 8, 1, 36) error:NULL];  // varint
+  ufs = [[[GPBUnknownFields alloc] initFromMessage:m] autorelease];
+  XCTAssertEqual(ufs.count, (NSUInteger)1);
+  group = [ufs firstGroup:4];
+  XCTAssertEqual(group.count, (NSUInteger)1);
+  uint64_t varint = 0;
+  XCTAssertTrue([group getFirst:1 varint:&varint]);
+  XCTAssertEqual(varint, 1);
+
+  m = [TestEmptyMessage parseFromData:DataFromBytes(35, 21, 0x78, 0x56, 0x34, 0x12, 36)
+                                error:NULL];  // fixed32
+  ufs = [[[GPBUnknownFields alloc] initFromMessage:m] autorelease];
+  XCTAssertEqual(ufs.count, (NSUInteger)1);
+  group = [ufs firstGroup:4];
+  XCTAssertEqual(group.count, (NSUInteger)1);
+  uint32_t fixed32 = 0;
+  XCTAssertTrue([group getFirst:2 fixed32:&fixed32]);
+  XCTAssertEqual(fixed32, 0x12345678);
+
+  m = [TestEmptyMessage
+      parseFromData:DataFromBytes(35, 25, 0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12,
+                                  36)
+              error:NULL];  // fixed64
+  ufs = [[[GPBUnknownFields alloc] initFromMessage:m] autorelease];
+  XCTAssertEqual(ufs.count, (NSUInteger)1);
+  group = [ufs firstGroup:4];
+  XCTAssertEqual(group.count, (NSUInteger)1);
+  uint64_t fixed64 = 0;
+  XCTAssertTrue([group getFirst:3 fixed64:&fixed64]);
+  XCTAssertEqual(fixed64, 0x123456789abcdef0LL);
+  XCTAssertEqual(m.unknownFields.countOfFields, (NSUInteger)1);
+
+  m = [TestEmptyMessage parseFromData:DataFromBytes(35, 50, 0, 36)
+                                error:NULL];  // length delimited, length 0
+  ufs = [[[GPBUnknownFields alloc] initFromMessage:m] autorelease];
+  XCTAssertEqual(ufs.count, (NSUInteger)1);
+  group = [ufs firstGroup:4];
+  XCTAssertEqual(group.count, (NSUInteger)1);
+  NSData* lengthDelimited = [group firstLengthDelimited:6];
+  XCTAssertEqualObjects(lengthDelimited, [NSData data]);
+
+  m = [TestEmptyMessage parseFromData:DataFromBytes(35, 50, 1, 42, 36)
+                                error:NULL];  // length delimited, length 1, byte 42
+  ufs = [[[GPBUnknownFields alloc] initFromMessage:m] autorelease];
+  XCTAssertEqual(ufs.count, (NSUInteger)1);
+  group = [ufs firstGroup:4];
+  XCTAssertEqual(group.count, (NSUInteger)1);
+  lengthDelimited = [group firstLengthDelimited:6];
+  XCTAssertEqualObjects(lengthDelimited, DataFromBytes(42));
+
+  m = [TestEmptyMessage parseFromData:DataFromBytes(35, 43, 44, 36) error:NULL];  // Sub group
+  ufs = [[[GPBUnknownFields alloc] initFromMessage:m] autorelease];
+  XCTAssertEqual(ufs.count, (NSUInteger)1);
+  group = [ufs firstGroup:4];
+  XCTAssertEqual(group.count, (NSUInteger)1);
+  group = [group firstGroup:5];
+  XCTAssertTrue(group.empty);
+
+  m = [TestEmptyMessage parseFromData:DataFromBytes(35, 8, 1, 43, 8, 2, 44, 36)
+                                error:NULL];  // varint and sub group with varint
+  ufs = [[[GPBUnknownFields alloc] initFromMessage:m] autorelease];
+  XCTAssertEqual(ufs.count, (NSUInteger)1);
+  group = [ufs firstGroup:4];
+  XCTAssertEqual(group.count, (NSUInteger)2);
+  varint = 0;
+  XCTAssertTrue([group getFirst:1 varint:&varint]);
+  XCTAssertEqual(varint, 1);
+  group = [group firstGroup:5];
+  XCTAssertEqual(group.count, (NSUInteger)1);
+  XCTAssertTrue([group getFirst:1 varint:&varint]);
+  XCTAssertEqual(varint, 2);
+
+  XCTAssertNil([TestEmptyMessage parseFromData:DataFromBytes(35, 0, 36)
+                                         error:NULL]);  // Invalid field number
+  XCTAssertNil([TestEmptyMessage parseFromData:DataFromBytes(35, 15, 36)
+                                         error:NULL]);  // Invalid wire type
+  XCTAssertNil([TestEmptyMessage parseFromData:DataFromBytes(35, 21, 0x78, 0x56, 0x34)
+                                         error:NULL]);  // truncated fixed32
+  XCTAssertNil([TestEmptyMessage
+      parseFromData:DataFromBytes(35, 25, 0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56,
+                                  0x34)
+              error:NULL]);  // truncated fixed64
+
+  // Mising end group
+  XCTAssertNil([TestEmptyMessage parseFromData:DataFromBytes(35) error:NULL]);
+  XCTAssertNil([TestEmptyMessage parseFromData:DataFromBytes(35, 8, 1) error:NULL]);
+  XCTAssertNil([TestEmptyMessage parseFromData:DataFromBytes(35, 43) error:NULL]);
+  XCTAssertNil([TestEmptyMessage parseFromData:DataFromBytes(35, 43, 8, 1) error:NULL]);
+
+  // Wrong end group
+  XCTAssertNil([TestEmptyMessage parseFromData:DataFromBytes(35, 44) error:NULL]);
+  XCTAssertNil([TestEmptyMessage parseFromData:DataFromBytes(35, 8, 1, 44) error:NULL]);
+  XCTAssertNil([TestEmptyMessage parseFromData:DataFromBytes(35, 43, 36) error:NULL]);
+  XCTAssertNil([TestEmptyMessage parseFromData:DataFromBytes(35, 43, 8, 1, 36) error:NULL]);
+  XCTAssertNil([TestEmptyMessage parseFromData:DataFromBytes(35, 43, 44, 44) error:NULL]);
+  XCTAssertNil([TestEmptyMessage parseFromData:DataFromBytes(35, 43, 8, 1, 44, 44) error:NULL]);
+
+  // This is the same limit as within GPBCodedInputStream.
+  const NSUInteger kDefaultRecursionLimit = 100;
+  // That depth parses.
+  NSData* testData = DataForGroupsOfDepth(kDefaultRecursionLimit);
+  m = [TestEmptyMessage parseFromData:testData error:NULL];
+  ufs = [[[GPBUnknownFields alloc] initFromMessage:m] autorelease];
+  XCTAssertEqual(ufs.count, (NSUInteger)1);
+  group = [ufs firstGroup:4];
+  for (NSUInteger i = 1; i < kDefaultRecursionLimit; ++i) {
+    XCTAssertEqual(group.count, (NSUInteger)1);
+    group = [group firstGroup:4];
+  }
+  // group is now the inner most group.
+  XCTAssertEqual(group.count, (NSUInteger)1);
+  varint = 0;
+  XCTAssertTrue([group getFirst:1 varint:&varint]);
+  XCTAssertEqual(varint, 1);
+  // One more level deep fails.
+  testData = DataForGroupsOfDepth(kDefaultRecursionLimit + 1);
+  XCTAssertNil([TestEmptyMessage parseFromData:testData error:NULL]);
+}
+
 @end

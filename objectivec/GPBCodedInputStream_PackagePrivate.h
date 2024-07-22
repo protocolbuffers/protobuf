@@ -76,6 +76,9 @@ NSData *GPBCodedInputStreamReadRetainedBytes(GPBCodedInputStreamState *state)
     __attribute((ns_returns_retained));
 NSData *GPBCodedInputStreamReadRetainedBytesNoCopy(GPBCodedInputStreamState *state)
     __attribute((ns_returns_retained));
+NSData *GPBCodedInputStreamReadRetainedBytesToEndGroupNoCopy(GPBCodedInputStreamState *state,
+                                                             int32_t fieldNumber)
+    __attribute((ns_returns_retained));
 
 size_t GPBCodedInputStreamPushLimit(GPBCodedInputStreamState *state, size_t byteLimit);
 void GPBCodedInputStreamPopLimit(GPBCodedInputStreamState *state, size_t oldLimit);
