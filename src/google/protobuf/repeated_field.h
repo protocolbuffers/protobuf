@@ -766,15 +766,17 @@ void RepeatedField<Element>::ExtractSubrange(int start, int num,
   ABSL_DCHECK_GE(num, 0);
   const int old_size = size();
   ABSL_DCHECK_LE(start + num, old_size);
+  Element* elem = unsafe_elements();
 
   // Save the values of the removed elements if requested.
   if (elements != nullptr) {
-    for (int i = 0; i < num; ++i) elements[i] = Get(i + start);
+    for (int i = 0; i < num; ++i) elements[i] = std::move(elem[i + start]);
   }
 
   // Slide remaining elements down to fill the gap.
   if (num > 0) {
-    for (int i = start + num; i < old_size; ++i) Set(i - num, Get(i));
+    for (int i = start + num; i < old_size; ++i)
+      elem[i - num] = std::move(elem[i]);
     Truncate(old_size - num);
   }
 }
