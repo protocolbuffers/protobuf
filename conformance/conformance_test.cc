@@ -70,9 +70,6 @@ bool CheckSetEmpty(const SetT& set_to_check, absl::string_view write_to_file,
     absl::string_view filename = write_to_file;
     if (!output_dir.empty()) {
       full_filename = std::string(output_dir);
-      if (*output_dir.rbegin() != '/') {
-        full_filename.push_back('/');
-      }
       absl::StrAppend(&full_filename, write_to_file);
       filename = full_filename;
     }
@@ -82,7 +79,9 @@ bool CheckSetEmpty(const SetT& set_to_check, absl::string_view write_to_file,
         os << v << "\n";
       }
     } else {
-      absl::StrAppendFormat(output, "Failed to open file: %s\n", filename);
+      absl::StrAppendFormat(output,
+                            "Failed to open file: %s\n",
+                            filename);
     }
   }
 
@@ -468,37 +467,48 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   }
   RunSuiteImpl();
 
+  if (*output_dir_.rbegin() != '/') {
+    output_dir_.push_back('/');
+  }
+
   bool ok = true;
   if (!CheckSetEmpty(
           expected_to_fail_, "nonexistent_tests.txt",
-          absl::StrCat("These tests were listed in the failure list, but they "
-                       "don't exist.  Remove them from the failure list by "
-                       "running:\n"
-                       "  ./update_failure_list.py ",
-                       failure_list_filename_,
-                       " --remove nonexistent_tests.txt"),
+          absl::StrCat(
+              "These tests were listed in the failure list, but they "
+              "don't exist.  Remove them from the failure list by "
+              "running from the root of your workspace:\n"
+              "  bazel run "
+              "//google/protobuf/conformance:update_failure_list -- ",
+              failure_list_filename_, " --remove ", output_dir_,
+              "nonexistent_tests.txt"),
           output_dir_, &output_)) {
     ok = false;
   }
   if (!CheckSetEmpty(
           unexpected_failing_tests_, "failing_tests.txt",
-          absl::StrCat("These tests failed.  If they can't be fixed right now, "
-                       "you can add them to the failure list so the overall "
-                       "suite can succeed.  Add them to the failure list by "
-                       "running:\n"
-                       "  ./update_failure_list.py ",
-                       failure_list_filename_, " --add failing_tests.txt"),
+          absl::StrCat(
+              "These tests failed.  If they can't be fixed right now, "
+              "you can add them to the failure list so the overall "
+              "suite can succeed.  Add them to the failure list by "
+              "running from the root of your workspace:\n"
+              "  bazel run "
+              "//google/protobuf/conformance:update_failure_list -- ",
+              failure_list_filename_, " --add ", output_dir_,
+              "failing_tests.txt"),
           output_dir_, &output_)) {
     ok = false;
   }
   if (!CheckSetEmpty(
           unexpected_succeeding_tests_, "succeeding_tests.txt",
-          absl::StrCat("These tests succeeded, even though they were listed in "
-                       "the failure list.  Remove them from the failure list "
-                       "by running:\n"
-                       "  ./update_failure_list.py ",
-                       failure_list_filename_,
-                       " --remove succeeding_tests.txt"),
+          absl::StrCat(
+              "These tests succeeded, even though they were listed in "
+              "the failure list.  Remove them from the failure list by running "
+              "from the root of your workspace:\n"
+              "  bazel run "
+              "//google/protobuf/conformance:update_failure_list -- ",
+              failure_list_filename_, " --remove ", output_dir_,
+              "succeeding_tests.txt"),
           output_dir_, &output_)) {
     ok = false;
   }

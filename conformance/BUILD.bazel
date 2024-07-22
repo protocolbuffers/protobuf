@@ -304,6 +304,11 @@ py_binary(
     ],
 )
 
+py_binary(
+    name = "update_failure_list",
+    srcs = ["update_failure_list.py"],
+)
+
 inline_sh_binary(
     name = "conformance_php",
     testonly = 1,
