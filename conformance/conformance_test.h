@@ -129,14 +129,13 @@ class ForkPipeRunner : public ConformanceTestRunner {
 class ConformanceTestSuite {
  public:
   ConformanceTestSuite()
-      : testee_(""),
-        verbose_(false),
+      : verbose_(false),
         performance_(false),
         enforce_recommended_(false),
         maximum_edition_(Edition::EDITION_PROTO3),
         failure_list_flag_name_("--failure_list"),
-        debug_test_names_(nullptr),
-        debug_(false) {}
+        debug_(false),
+        isolated_(false) {}
   virtual ~ConformanceTestSuite() = default;
 
   void SetPerformance(bool performance) { performance_ = performance; }
@@ -169,12 +168,15 @@ class ConformanceTestSuite {
   // Sets if we are running the test in debug mode.
   void SetDebug(bool debug) { debug_ = debug; }
 
+  // Sets if we are running only the given tests by the --test flag.
+  void SetIsolated(bool isolated) { isolated_ = isolated; }
+
   // Sets the testee name
   void SetTestee(const std::string& testee) { testee_ = testee; }
 
-  // Sets the debug test names
-  void SetDebugTestNames(absl::flat_hash_set<std::string>& debug_test_names) {
-    debug_test_names_ = &debug_test_names;
+  // Sets the names of tests to ONLY be run isolated from all the others.
+  void SetTestNames(absl::flat_hash_set<std::string>& test_names) {
+    test_names_ = &test_names;
   }
 
   // Run all the conformance tests against the given test runner.
@@ -185,8 +187,6 @@ class ConformanceTestSuite {
   // The filename here is *only* used to create/format useful error messages for
   // how to update the failure list.  We do NOT read this file at all.
 
-  // "debug_test_names" holds the list of test names that the user requested to
-  // debug.  If this is empty, we will run all the tests.
   bool RunSuite(ConformanceTestRunner* runner, std::string* output,
                 const std::string& filename,
                 conformance::FailureSet* failure_list);
@@ -311,8 +311,10 @@ class ConformanceTestSuite {
   std::string output_dir_;
   std::string failure_list_flag_name_;
   std::string failure_list_filename_;
-  absl::flat_hash_set<std::string>* debug_test_names_;
+  absl::flat_hash_set<std::string>* test_names_;
   bool debug_;
+  bool isolated_;  // If names were given for test_names_ only those tests
+                   // will be run and this bool will be set to true.
 
   // The set of test names that are expected to fail in this run, but haven't
   // failed yet.
@@ -326,7 +328,7 @@ class ConformanceTestSuite {
 
   // The set of test names that have been run.  Used to ensure that there are no
   // duplicate names in the suite.
-  absl::flat_hash_set<std::string> test_names_;
+  absl::flat_hash_set<std::string> test_names_ran_;
 
   // The set of tests that failed, but weren't expected to: They weren't
   // present in our failure lists.

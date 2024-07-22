@@ -156,13 +156,13 @@ void UsageError() {
           "  --output_dir                <dirname> Directory to write\n"
           "                              output files.\n\n");
   fprintf(stderr,
-          "  --debug <test_name1> <test_name2> ... <test_nameN> Debug the \n");
-  fprintf(stderr, "                              specified tests by running\n");
+          "  --test <test_name1> <test_name2> ... <test_nameN> Only run\n");
+  fprintf(stderr, "                              the specified tests.\n\n");
   fprintf(stderr,
-          "                              them in isolation and producing\n");
-  fprintf(stderr,
-          "                              serialized request data for piping\n");
-  fprintf(stderr, "                              directly to the testee.\n\n");
+          "  --debug                     Enable debug mode\n"
+          "                              to produce octal serialized\n"
+          "                              ConformanceRequest for the tests\n"
+          "                              passed to --test.\n\n");
   fprintf(stderr, "  --performance               Boolean option\n");
   fprintf(stderr, "                              for enabling run of\n");
   fprintf(stderr, "                              performance tests.\n");
@@ -228,7 +228,8 @@ int ForkPipeRunner::Run(int argc, char *argv[],
   std::vector<string> program_args;
   bool performance = false;
   bool debug = false;
-  absl::flat_hash_set<string> debug_test_names;
+  bool isolated = false;
+  absl::flat_hash_set<string> test_names;
   bool enforce_recommended = false;
   Edition maximum_edition = EDITION_UNKNOWN;
   std::string output_dir;
@@ -237,6 +238,8 @@ int ForkPipeRunner::Run(int argc, char *argv[],
   for (int arg = 1; arg < argc; ++arg) {
     if (strcmp(argv[arg], "--performance") == 0) {
       performance = true;
+    } else if (strcmp(argv[arg], "--debug") == 0) {
+      debug = true;
     } else if (strcmp(argv[arg], "--verbose") == 0) {
       verbose = true;
     } else if (strcmp(argv[arg], "--enforce_recommended") == 0) {
@@ -253,16 +256,16 @@ int ForkPipeRunner::Run(int argc, char *argv[],
       if (++arg == argc) UsageError();
       output_dir = argv[arg];
 
-    } else if (strcmp(argv[arg], "--debug") == 0) {
+    } else if (strcmp(argv[arg], "--test") == 0) {
       if (++arg == argc) UsageError();
-      for (int debug_arg = arg; debug_arg < argc; ++debug_arg) {
+      for (int test_arg = arg; test_arg < argc; ++test_arg) {
         // Stop when we either find another flag or we reach the last arg
         // (program arg)
-        if (argv[debug_arg][0] == '-' || debug_arg == argc - 1) {
-          arg = debug_arg - 1;
+        if (argv[test_arg][0] == '-' || test_arg == argc - 1) {
+          arg = test_arg - 1;
           break;
         }
-        debug_test_names.insert(argv[debug_arg]);
+        test_names.insert(argv[test_arg]);
       }
 
     } else if (argv[arg][0] == '-') {
@@ -286,12 +289,8 @@ int ForkPipeRunner::Run(int argc, char *argv[],
     }
   }
 
-  if (!debug_test_names.empty()) {
-    debug = true;
-  }
-  auto last_slash = program.find_last_of('/');
-  if (last_slash != string::npos) {
-    testee = program.substr(last_slash + 1);
+  if (!test_names.empty()) {
+    isolated = true;
   }
 
   bool all_ok = true;
@@ -311,8 +310,9 @@ int ForkPipeRunner::Run(int argc, char *argv[],
     suite->SetMaximumEdition(maximum_edition);
     suite->SetOutputDir(output_dir);
     suite->SetDebug(debug);
-    suite->SetDebugTestNames(debug_test_names);
-    suite->SetTestee(testee);
+    suite->SetIsolated(isolated);
+    suite->SetTestNames(test_names);
+    suite->SetTestee(program);
 
     ForkPipeRunner runner(program, program_args, performance);
 
@@ -323,11 +323,11 @@ int ForkPipeRunner::Run(int argc, char *argv[],
     fwrite(output.c_str(), 1, output.size(), stderr);
   }
 
-  if (!debug_test_names.empty()) {
+  if (!test_names.empty()) {
     fprintf(stderr,
-            "These tests were requested to be debugged, but they do "
+            "These tests were requested to be ran isolated, but they do "
             "not exist. Revise the test names:\n\n");
-    for (const string &test_name : debug_test_names) {
+    for (const string &test_name : test_names) {
       fprintf(stderr, "  %s\n", test_name.c_str());
     }
     fprintf(stderr, "\n\n");
