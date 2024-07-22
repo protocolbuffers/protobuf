@@ -113,11 +113,11 @@ def protobuf_deps():
                 sha256 = "469b7f3b580b4fcf8112f4d6d0d5a4ce8e1ad5e21fee67d8e8335d5f8b3debab",
             )
         else:
-            # Version 6.5.2 works both with Bazel 6.4.0 and Bazel 7
+            # Version 7.9.1 works both with Bazel 6.4.0 and Bazel 7
             http_archive(
                 name = "rules_java",
-                url = "https://github.com/bazelbuild/rules_java/releases/download/6.5.0/rules_java-6.5.0.tar.gz",
-                sha256 = "160d1ebf33763124766fb35316329d907ca67f733238aa47624a8e3ff3cf2ef4",
+                url = "https://github.com/bazelbuild/rules_java/releases/download/7.9.1/rules_java-7.9.1.tar.gz",
+                sha256 = "e1df5fec7d4dde1f8b0a79d3622b3351552d4c05c9ea1671165351a58493a2c6",
             )
 
     if not native.existing_rule("proto_bazel_features"):

@@ -1,5 +1,9 @@
 build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
 
+# Needed for java_lite_proto_library, that's using ProguardSpecProvider
+# Once the provider is ported to Starlark the flag may be removed.
+common --experimental_google_legacy_api
+
 build --copt="-Werror" --copt="-Wno-sign-compare" --copt="-Wno-sign-conversion" --copt="-Wno-error=sign-conversion"
 
 build:dbg --compilation_mode=dbg
