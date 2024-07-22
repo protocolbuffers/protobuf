@@ -20,13 +20,11 @@
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/util/type_resolver.h"
-#include "absl/container/btree_set.h"
+#include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "absl/strings/string_view.h"
+#include "conformance/conformance.pb.h"
 #include "conformance/conformance.pb.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/wire_format_lite.h"
 
 namespace conformance {
 class ConformanceRequest;
@@ -46,7 +44,7 @@ class ConformanceTestSuite;
 
 class ConformanceTestRunner {
  public:
-  virtual ~ConformanceTestRunner() {}
+  virtual ~ConformanceTestRunner() = default;
 
   // Call to run a single conformance test.
   //
@@ -78,10 +76,10 @@ class ForkPipeRunner : public ConformanceTestRunner {
   explicit ForkPipeRunner(const std::string& executable)
       : child_pid_(-1), executable_(executable) {}
 
-  virtual ~ForkPipeRunner() {}
+  ~ForkPipeRunner() override = default;
 
   void RunTest(const std::string& test_name, const std::string& request,
-               std::string* response);
+               std::string* response) override;
 
  private:
   void SpawnTestProgram();
@@ -134,7 +132,7 @@ class ConformanceTestSuite {
         enforce_recommended_(false),
         maximum_edition_(Edition::EDITION_PROTO3),
         failure_list_flag_name_("--failure_list") {}
-  virtual ~ConformanceTestSuite() {}
+  virtual ~ConformanceTestSuite() = default;
 
   void SetPerformance(bool performance) { performance_ = performance; }
   void SetVerbose(bool verbose) { verbose_ = verbose; }
@@ -201,7 +199,7 @@ class ConformanceTestSuite {
                               const Message& prototype_message,
                               const std::string& test_name,
                               const std::string& input);
-    virtual ~ConformanceRequestSetting() {}
+    virtual ~ConformanceRequestSetting() = default;
 
     std::unique_ptr<Message> NewTestMessage() const;
 
@@ -259,12 +257,11 @@ class ConformanceTestSuite {
   conformance::ConformanceResponse TruncateResponse(
       const conformance::ConformanceResponse& response);
 
-  void ReportSuccess(const std::string& test_name);
-  void ReportFailure(const std::string& test_name, ConformanceLevel level,
+  void ReportSuccess(const conformance::TestStatus& test);
+  void ReportFailure(conformance::TestStatus& test, ConformanceLevel level,
                      const conformance::ConformanceRequest& request,
-                     const conformance::ConformanceResponse& response,
-                     absl::string_view message);
-  void ReportSkip(const std::string& test_name,
+                     const conformance::ConformanceResponse& response);
+  void ReportSkip(const conformance::TestStatus& test,
                   const conformance::ConformanceRequest& request,
                   const conformance::ConformanceResponse& response);
 
@@ -278,7 +275,7 @@ class ConformanceTestSuite {
                const conformance::ConformanceRequest& request,
                conformance::ConformanceResponse* response);
 
-  void AddExpectedFailedTest(const std::string& test_name);
+  void AddExpectedFailedTest(const conformance::TestStatus& failure);
 
   virtual void RunSuiteImpl() = 0;
 
@@ -296,20 +293,36 @@ class ConformanceTestSuite {
 
   // The set of test names that are expected to fail in this run, but haven't
   // failed yet.
-  absl::btree_set<std::string> expected_to_fail_;
+  absl::btree_map<std::string, conformance::TestStatus> expected_to_fail_;
+
+  // The set of tests that failed because their failure message did not match
+  // the actual failure message. These are failure messages that may need to be
+  // removed from our failure lists.
+  absl::btree_map<std::string, conformance::TestStatus>
+      expected_failure_messages_;
 
   // The set of test names that have been run.  Used to ensure that there are no
   // duplicate names in the suite.
   absl::flat_hash_set<std::string> test_names_;
 
-  // The set of tests that failed, but weren't expected to.
-  absl::btree_set<std::string> unexpected_failing_tests_;
+  // The set of tests that failed, but weren't expected to: They weren't
+  // present in our failure lists.
+  absl::btree_map<std::string, conformance::TestStatus>
+      unexpected_failing_tests_;
 
-  // The set of tests that succeeded, but weren't expected to.
-  absl::btree_set<std::string> unexpected_succeeding_tests_;
+  // The set of tests that succeeded, but weren't expected to: They were present
+  // in our failure lists, but managed to succeed.
+  absl::btree_map<std::string, conformance::TestStatus>
+      unexpected_succeeding_tests_;
+
+  // The set of tests that failed because their failure message did not match
+  // the actual failure message. These are failure messages that may need to be
+  // added to our failure lists.
+  absl::btree_map<std::string, conformance::TestStatus>
+      unexpected_failure_messages_;
 
   // The set of tests that the testee opted out of;
-  absl::btree_set<std::string> skipped_;
+  absl::btree_map<std::string, conformance::TestStatus> skipped_;
 };
 
 }  // namespace protobuf

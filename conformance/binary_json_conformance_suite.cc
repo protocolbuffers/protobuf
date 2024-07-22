@@ -14,6 +14,7 @@
 #include <cstring>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -25,6 +26,8 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "json/reader.h"
+#include "json/value.h"
 #include "conformance/conformance.pb.h"
 #include "conformance_test.h"
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
@@ -43,6 +46,7 @@
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
+using conformance::TestStatus;
 using conformance::WireFormat;
 using google::protobuf::Descriptor;
 using google::protobuf::FieldDescriptor;
@@ -302,19 +306,22 @@ bool BinaryAndJsonConformanceSuite::ParseResponse(
   const std::string& test_name = setting.GetTestName();
   ConformanceLevel level = setting.GetLevel();
 
+  TestStatus test;
+  test.set_name(test_name);
   switch (response.result_case()) {
     case ConformanceResponse::kProtobufPayload: {
       if (requested_output != conformance::PROTOBUF) {
-        ReportFailure(test_name, level, request, response,
-                      absl::StrCat("Test was asked for ",
-                                   WireFormatToString(requested_output),
-                                   " output but provided PROTOBUF instead."));
+        test.set_failure_message(absl::StrCat(
+            "Test was asked for ", WireFormatToString(requested_output),
+            " output but provided PROTOBUF instead."));
+        ReportFailure(test, level, request, response);
         return false;
       }
 
       if (!test_message->ParseFromString(response.protobuf_payload())) {
-        ReportFailure(test_name, level, request, response,
-                      "Protobuf output we received from test was unparseable.");
+        test.set_failure_message(
+            "Protobuf output we received from test was unparseable.");
+        ReportFailure(test, level, request, response);
         return false;
       }
 
@@ -323,16 +330,17 @@ bool BinaryAndJsonConformanceSuite::ParseResponse(
 
     case ConformanceResponse::kJsonPayload: {
       if (requested_output != conformance::JSON) {
-        ReportFailure(test_name, level, request, response,
-                      absl::StrCat("Test was asked for ",
-                                   WireFormatToString(requested_output),
-                                   " output but provided JSON instead."));
+        test.set_failure_message(absl::StrCat(
+            "Test was asked for ", WireFormatToString(requested_output),
+            " output but provided JSON instead."));
+        ReportFailure(test, level, request, response);
         return false;
       }
 
       if (!ParseJsonResponse(response, test_message)) {
-        ReportFailure(test_name, level, request, response,
-                      "JSON output we received from test was unparseable.");
+        test.set_failure_message(
+            "JSON output we received from test was unparseable.");
+        ReportFailure(test, level, request, response);
         return false;
       }
 
@@ -438,13 +446,15 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
                    setting.GetSyntaxIdentifier(), ".ProtobufInput.", test_name);
 
   suite_.RunTest(effective_test_name, request, &response);
+  TestStatus test;
+  test.set_name(effective_test_name);
   if (response.result_case() == ConformanceResponse::kParseError) {
-    suite_.ReportSuccess(effective_test_name);
+    suite_.ReportSuccess(test);
   } else if (response.result_case() == ConformanceResponse::kSkipped) {
-    suite_.ReportSkip(effective_test_name, request, response);
+    suite_.ReportSkip(test, request, response);
   } else {
-    suite_.ReportFailure(effective_test_name, level, request, response,
-                         "Should have failed to parse, but didn't.");
+    test.set_failure_message("Should have failed to parse, but didn't.");
+    suite_.ReportFailure(test, level, request, response);
   }
 }
 
@@ -633,32 +643,34 @@ void BinaryAndJsonConformanceSuiteImpl<
 
   suite_.RunTest(effective_test_name, request, &response);
 
+  TestStatus test;
+  test.set_name(effective_test_name);
   if (response.result_case() == ConformanceResponse::kSkipped) {
-    suite_.ReportSkip(effective_test_name, request, response);
+    suite_.ReportSkip(test, request, response);
     return;
   }
 
   if (response.result_case() != ConformanceResponse::kJsonPayload) {
-    suite_.ReportFailure(effective_test_name, level, request, response,
-                         absl::StrCat("Expected JSON payload but got type ",
-                                      response.result_case()));
+    test.set_failure_message(absl::StrCat("Expected JSON payload but got type ",
+                                          response.result_case()));
+    suite_.ReportFailure(test, level, request, response);
     return;
   }
   Json::Reader reader;
   Json::Value value;
   if (!reader.parse(response.json_payload(), value)) {
-    suite_.ReportFailure(
-        effective_test_name, level, request, response,
+    test.set_failure_message(
         absl::StrCat("JSON payload cannot be parsed as valid JSON: ",
                      reader.getFormattedErrorMessages()));
+    suite_.ReportFailure(test, level, request, response);
     return;
   }
   if (!validator(value)) {
-    suite_.ReportFailure(effective_test_name, level, request, response,
-                         "JSON payload validation failed.");
+    test.set_failure_message("JSON payload validation failed.");
+    suite_.ReportFailure(test, level, request, response);
     return;
   }
-  suite_.ReportSuccess(effective_test_name);
+  suite_.ReportSuccess(test);
 }
 
 template <typename MessageType>
@@ -678,13 +690,16 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::ExpectParseFailureForJson(
                    SyntaxIdentifier(), ".JsonInput.", test_name);
 
   suite_.RunTest(effective_test_name, request, &response);
+
+  TestStatus test;
+  test.set_name(effective_test_name);
   if (response.result_case() == ConformanceResponse::kParseError) {
-    suite_.ReportSuccess(effective_test_name);
+    suite_.ReportSuccess(test);
   } else if (response.result_case() == ConformanceResponse::kSkipped) {
-    suite_.ReportSkip(effective_test_name, request, response);
+    suite_.ReportSkip(test, request, response);
   } else {
-    suite_.ReportFailure(effective_test_name, level, request, response,
-                         "Should have failed to parse, but didn't.");
+    test.set_failure_message("Should have failed to parse, but didn't.");
+    suite_.ReportFailure(test, level, request, response);
   }
 }
 
@@ -708,13 +723,16 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
                    SyntaxIdentifier(), ".", test_name, ".JsonOutput");
 
   suite_.RunTest(effective_test_name, request, &response);
+
+  TestStatus test;
+  test.set_name(effective_test_name);
   if (response.result_case() == ConformanceResponse::kSerializeError) {
-    suite_.ReportSuccess(effective_test_name);
+    suite_.ReportSuccess(test);
   } else if (response.result_case() == ConformanceResponse::kSkipped) {
-    suite_.ReportSkip(effective_test_name, request, response);
+    suite_.ReportSkip(test, request, response);
   } else {
-    suite_.ReportFailure(effective_test_name, level, request, response,
-                         "Should have failed to serialize, but didn't.");
+    test.set_failure_message("Should have failed to serialize, but didn't.");
+    suite_.ReportFailure(test, level, request, response);
   }
 }
 
@@ -1207,7 +1225,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForOneofType(
 
   {
     // Tests oneof with default value.
-    const std::string proto = default_value;
+    const std::string& proto = default_value;
     MessageType test_message;
     test_message.MergeFromString(proto);
     std::string text;
@@ -1223,7 +1241,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForOneofType(
 
   {
     // Tests oneof with non-default value.
-    const std::string proto = non_default_value;
+    const std::string& proto = non_default_value;
     MessageType test_message;
     test_message.MergeFromString(proto);
     std::string text;
@@ -1240,7 +1258,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForOneofType(
   {
     // Tests oneof with multiple values of the same field.
     const std::string proto = absl::StrCat(default_value, non_default_value);
-    const std::string expected_proto = non_default_value;
+    const std::string& expected_proto = non_default_value;
     MessageType test_message;
     test_message.MergeFromString(expected_proto);
     std::string text;
@@ -1266,7 +1284,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForOneofType(
                      GetDefaultValue(other_type));
 
     const std::string proto = absl::StrCat(other_value, non_default_value);
-    const std::string expected_proto = non_default_value;
+    const std::string& expected_proto = non_default_value;
     MessageType test_message;
     test_message.MergeFromString(expected_proto);
     std::string text;
@@ -1421,9 +1439,12 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownOrdering() {
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
   suite_.RunTest(setting.GetTestName(), request, &response);
+
   MessageType response_message;
+  TestStatus test;
+  test.set_name(setting.GetTestName());
   if (response.result_case() == ConformanceResponse::kSkipped) {
-    suite_.ReportSkip(setting.GetTestName(), request, response);
+    suite_.ReportSkip(test, request, response);
     return;
   }
   suite_.ParseResponse(response, setting, &response_message);
@@ -1441,10 +1462,10 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownOrdering() {
       ufs.field(1).varint() != 123 ||
       ufs.field(2).length_delimited() != "def" ||
       ufs.field(3).varint() != 456) {
-    suite_.ReportFailure(setting.GetTestName(), setting.GetLevel(), request,
-                         response, "Unknown field mismatch");
+    test.set_failure_message("Unknown field mismatch");
+    suite_.ReportFailure(test, setting.GetLevel(), request, response);
   } else {
-    suite_.ReportSuccess(setting.GetTestName());
+    suite_.ReportSuccess(test);
   }
 }
 

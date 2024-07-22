@@ -98,7 +98,7 @@ def do_test(request):
           "Required.Proto2.ProtobufInput.PrematureEofInPackedField.UINT64",
       ]
     for x in failures:
-      failure_set.failure.append(x)
+      failure_set.test.append(conformance_pb2.TestStatus(name=x))
     response.protobuf_payload = failure_set.SerializeToString()
     return response
 
@@ -194,6 +194,8 @@ def do_test_io():
 
 while True:
   if not do_test_io():
-    sys.stderr.write("conformance_python: received EOF from test runner " +
-                     "after %s tests, exiting\n" % (test_count))
+    sys.stderr.write(
+        "conformance_python: received EOF from test runner "
+        + "after %s tests, exiting\n" % (test_count,)
+    )
     sys.exit(0)

@@ -9,14 +9,18 @@
 
 #include <stdarg.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <fstream>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "google/protobuf/util/field_comparator.h"
 #include "google/protobuf/util/message_differencer.h"
+#include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
@@ -30,6 +34,7 @@
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
+using conformance::TestStatus;
 using conformance::WireFormat;
 using google::protobuf::util::DefaultFieldComparator;
 using google::protobuf::util::MessageDifferencer;
@@ -52,16 +57,37 @@ static std::string ToOctString(const std::string& binary_string) {
   return oct_string;
 }
 
-template <typename SetT>
-bool CheckSetEmpty(const SetT& set_to_check, absl::string_view write_to_file,
-                   absl::string_view msg, absl::string_view output_dir,
-                   std::string* output) {
+// Removes all newlines.
+static void Normalize(std::string& input) {
+  input.erase(std::remove(input.begin(), input.end(), '\n'), input.end());
+}
+
+// Sets up a failure message properly for our failure lists.
+static TestStatus FormatFailureMessage(TestStatus& input) {
+  // Make copy just this once, as we need to modify it for our failure lists.
+  std::string formatted_failure_message = input.failure_message();
+  // Remove newlines
+  Normalize(formatted_failure_message);
+  // Truncate failure message if needed
+  if (formatted_failure_message.length() > 128) {
+    formatted_failure_message = formatted_failure_message.substr(0, 128);
+  }
+  TestStatus properly_formatted;
+  properly_formatted.set_name(input.name());
+  properly_formatted.set_failure_message(formatted_failure_message);
+  return properly_formatted;
+}
+
+bool CheckSetEmpty(const absl::btree_map<std::string, TestStatus>& set_to_check,
+                   absl::string_view write_to_file, absl::string_view msg,
+                   absl::string_view output_dir, std::string* output) {
   if (set_to_check.empty()) return true;
 
   absl::StrAppendFormat(output, "\n");
   absl::StrAppendFormat(output, "%s\n\n", msg);
-  for (absl::string_view v : set_to_check) {
-    absl::StrAppendFormat(output, "  %s\n", v);
+  for (const auto& pair : set_to_check) {
+    absl::StrAppendFormat(output, "  %s # %s\n", pair.first,
+                          pair.second.failure_message());
   }
   absl::StrAppendFormat(output, "\n");
 
@@ -75,8 +101,8 @@ bool CheckSetEmpty(const SetT& set_to_check, absl::string_view write_to_file,
     }
     std::ofstream os{std::string(filename)};
     if (os) {
-      for (absl::string_view v : set_to_check) {
-        os << v << "\n";
+      for (const auto& pair : set_to_check) {
+        os << pair.first << " # " << pair.second.failure_message() << "\n";
       }
     } else {
       absl::StrAppendFormat(output,
@@ -264,47 +290,72 @@ ConformanceResponse ConformanceTestSuite::TruncateResponse(
   return debug_response;
 }
 
-void ConformanceTestSuite::ReportSuccess(const std::string& test_name) {
-  if (expected_to_fail_.erase(test_name) != 0) {
+void ConformanceTestSuite::ReportSuccess(const TestStatus& test) {
+  if (expected_to_fail_.erase(test.name()) != 0) {
     absl::StrAppendFormat(
         &output_,
         "ERROR: test %s is in the failure list, but test succeeded.  "
         "Remove it from the failure list.\n",
-        test_name);
-    unexpected_succeeding_tests_.insert(test_name);
+        test.name());
+    unexpected_succeeding_tests_[test.name()] = test;
   }
   successes_++;
 }
 
-void ConformanceTestSuite::ReportFailure(const std::string& test_name,
+void ConformanceTestSuite::ReportFailure(TestStatus& test,
                                          ConformanceLevel level,
                                          const ConformanceRequest& request,
-                                         const ConformanceResponse& response,
-                                         absl::string_view message) {
-  if (expected_to_fail_.erase(test_name) == 1) {
-    expected_failures_++;
+                                         const ConformanceResponse& response) {
+  if (expected_to_fail_.contains(test.name())) {
+    // Make copy just this once, as we need to modify them for comparison.
+    // Failure message from the failure list.
+    string expected_failure_message =
+        expected_to_fail_[test.name()].failure_message();
+    // Actual failure message from the test run.
+    std::string actual_failure_message = test.failure_message();
+
+    Normalize(actual_failure_message);
+    if (actual_failure_message.rfind(expected_failure_message, 0) == 0) {
+      // Our failure messages match.
+      expected_failures_++;
+    } else {
+      // We want to add the test to the failure list with its correct failure
+      // message.
+      unexpected_failure_messages_[test.name()] = FormatFailureMessage(test);
+      // We want to remove the test from the failure list. That means passing
+      // to it the same failure message that was in the list.
+      TestStatus incorrect_failure_message;
+      incorrect_failure_message.set_name(test.name());
+      incorrect_failure_message.set_failure_message(
+          expected_to_fail_[test.name()].failure_message());
+
+      expected_failure_messages_[test.name()] = incorrect_failure_message;
+    }
+    expected_to_fail_.erase(test.name());
     if (!verbose_) return;
   } else if (level == RECOMMENDED && !enforce_recommended_) {
-    absl::StrAppendFormat(&output_, "WARNING, test=%s: ", test_name);
+    absl::StrAppendFormat(&output_, "WARNING, test=%s: ", test.name());
   } else {
-    absl::StrAppendFormat(&output_, "ERROR, test=%s: ", test_name);
-    unexpected_failing_tests_.insert(test_name);
+    absl::StrAppendFormat(&output_, "ERROR, test=%s: ", test.name());
+
+    unexpected_failing_tests_[test.name()] = FormatFailureMessage(test);
   }
 
-  absl::StrAppendFormat(&output_, "%s, request=%s, response=%s\n", message,
+  absl::StrAppendFormat(&output_, "%s, request=%s, response=%s\n",
+                        test.failure_message(),
                         TruncateRequest(request).ShortDebugString(),
                         TruncateResponse(response).ShortDebugString());
 }
 
-void ConformanceTestSuite::ReportSkip(const std::string& test_name,
+void ConformanceTestSuite::ReportSkip(const TestStatus& test,
                                       const ConformanceRequest& request,
                                       const ConformanceResponse& response) {
   if (verbose_) {
     absl::StrAppendFormat(
-        &output_, "SKIPPED, test=%s request=%s, response=%s\n", test_name,
+        &output_, "SKIPPED, test=%s request=%s, response=%s\n", test.name(),
         request.ShortDebugString(), response.ShortDebugString());
   }
-  skipped_.insert(test_name);
+  skipped_[test.name()] = test;
 }
 
 void ConformanceTestSuite::RunValidInputTest(
@@ -344,22 +395,26 @@ void ConformanceTestSuite::VerifyResponse(
   ABSL_CHECK(reference_message->ParseFromString(equivalent_wire_format))
       << "Failed to parse wire data for test case: " << test_name;
 
+  TestStatus test;
+  test.set_name(test_name);
+
   switch (response.result_case()) {
     case ConformanceResponse::RESULT_NOT_SET:
-      ReportFailure(test_name, level, request, response,
-                    "Response didn't have any field in the Response.");
+      test.set_failure_message(
+          "Response didn't have any field in the Response.");
+      ReportFailure(test, level, request, response);
       return;
 
     case ConformanceResponse::kParseError:
     case ConformanceResponse::kTimeoutError:
     case ConformanceResponse::kRuntimeError:
     case ConformanceResponse::kSerializeError:
-      ReportFailure(test_name, level, request, response,
-                    "Failed to parse input or produce output.");
+      test.set_failure_message("Failed to parse input or produce output.");
+      ReportFailure(test, level, request, response);
       return;
 
     case ConformanceResponse::kSkipped:
-      ReportSkip(test_name, request, response);
+      ReportSkip(test, request, response);
       return;
 
     default:
@@ -385,16 +440,14 @@ void ConformanceTestSuite::VerifyResponse(
   } else {
     check = differencer.Compare(*reference_message, *test_message);
   }
-
   if (check) {
     if (need_report_success) {
-      ReportSuccess(test_name);
+      ReportSuccess(test);
     }
   } else {
-    ReportFailure(
-        test_name, level, request, response,
-        absl::StrCat("Output was not equivalent to reference message: ",
-                     differences));
+    test.set_failure_message(absl::StrCat(
+        "Output was not equivalent to reference message: ", differences));
+    ReportFailure(test, level, request, response);
   }
 }
 
@@ -442,8 +495,8 @@ std::string ConformanceTestSuite::WireFormatToString(WireFormat wire_format) {
   return "";
 }
 
-void ConformanceTestSuite::AddExpectedFailedTest(const std::string& test_name) {
-  expected_to_fail_.insert(test_name);
+void ConformanceTestSuite::AddExpectedFailedTest(const TestStatus& failure) {
+  expected_to_fail_[failure.name()] = failure;
 }
 
 bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
@@ -462,7 +515,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   failure_list_filename_ = filename;
   expected_to_fail_.clear();
-  for (const std::string& failure : failure_list->failure()) {
+  for (const TestStatus& failure : failure_list->test()) {
     AddExpectedFailedTest(failure);
   }
   RunSuiteImpl();
@@ -485,6 +538,35 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
           output_dir_, &output_)) {
     ok = false;
   }
+  if (!CheckSetEmpty(
+          expected_failure_messages_, "expected_failure_messages.txt",
+          absl::StrCat(
+              "These tests were listed in the failure list, but their failure "
+              "messages do not match.  Remove them from the failure list "
+              "by running:\n"
+              "  bazel run ",
+              "//google/protobuf/conformance:update_failure_list -- ",
+              failure_list_filename_, " --remove ", output_dir_,
+              "expected_failure_messages.txt"),
+          output_dir_, &output_)) {
+    ok = false;
+  }
+  if (!CheckSetEmpty(
+          unexpected_failure_messages_, "unexpected_failure_messages.txt",
+          absl::StrCat(
+              "These tests failed because their failure messages did "
+              "not match.  If they can't be fixed right now, "
+              "you can add them to the failure list so the overall "
+              "suite can succeed.  Add them to the failure list by "
+              "running from the root of your workspace:\n"
+              "  bazel run "
+              "//google/protobuf/conformance:update_failure_list -- ",
+              failure_list_filename_, " --add ", output_dir_,
+              "unexpected_failure_messages.txt"),
+          output_dir_, &output_)) {
+    ok = false;
+  }
+
   if (!CheckSetEmpty(
           unexpected_failing_tests_, "failing_tests.txt",
           absl::StrCat(
@@ -522,9 +604,11 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   absl::StrAppendFormat(&output_,
                         "CONFORMANCE SUITE %s: %d successes, %zu skipped, "
-                        "%d expected failures, %zu unexpected failures.\n",
+                        "%d expected failures, %zu unexpected failures, %zu "
+                        "unexpected_failure_messages.\n",
                         ok ? "PASSED" : "FAILED", successes_, skipped_.size(),
-                        expected_failures_, unexpected_failing_tests_.size());
+                        expected_failures_, unexpected_failing_tests_.size(),
+                        unexpected_failure_messages_.size());
   absl::StrAppendFormat(&output_, "\n");
 
   output->assign(output_);

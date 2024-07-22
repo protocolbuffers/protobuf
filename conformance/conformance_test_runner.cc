@@ -37,21 +37,24 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <cctype>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <future>
+#include <string>
 #include <vector>
 
 #include "absl/log/absl_log.h"
+#include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
+#include "conformance/conformance.pb.h"
 #include "conformance/conformance.pb.h"
 #include "conformance_test.h"
 #include "google/protobuf/endian.h"
 
-using conformance::ConformanceResponse;
 using google::protobuf::ConformanceTestSuite;
 using std::string;
 using std::vector;
@@ -76,15 +79,34 @@ void ParseFailureList(const char *filename,
     exit(1);
   }
 
-  for (string line; getline(infile, line);) {
-    // Remove whitespace.
-    line.erase(std::remove_if(line.begin(), line.end(), ::isspace), line.end());
-
+  for (string line; std::getline(infile, line);) {
     // Remove comments.
-    line = line.substr(0, line.find("#"));
+    string test_name = line.substr(0, line.find('#'));
 
-    if (!line.empty()) {
-      failure_list->add_failure(line);
+    test_name.erase(
+        std::remove_if(test_name.begin(), test_name.end(), ::isspace),
+        test_name.end());
+
+    if (test_name.empty()) {  // Skip empty lines.
+      continue;
+    }
+
+    // If we remove whitespace from the beginning of a line, and what we have
+    // left at first is a '#', then we have a comment.
+    if (test_name[0] != '#') {
+      // Find our failure message if it exists. Will be set to an empty string
+      // if no message is found. Empty failure messages also pass our tests.
+      size_t check_message = line.find('#');
+      string message;
+      if (check_message != std::string::npos) {
+        message = line.substr(check_message + 1);  // +1 to skip the delimiter
+        // If we had only whitespace after the delimiter, we will have an empty
+        // failure message and the test will still pass.
+        message = std::string(absl::StripAsciiWhitespace(message));
+      }
+      conformance::TestStatus *test = failure_list->add_test();
+      test->set_name(test_name);
+      test->set_failure_message(message);
     }
   }
 }
