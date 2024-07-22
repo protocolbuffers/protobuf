@@ -58,6 +58,7 @@ impl ScratchSpace {
     }
 }
 
+#[doc(hidden)]
 pub type SerializedData = upb::OwnedArenaBox<[u8]>;
 
 impl IntoProxied<ProtoBytes> for SerializedData {

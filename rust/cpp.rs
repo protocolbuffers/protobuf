@@ -188,6 +188,7 @@ impl From<&ProtoStr> for PtrAndLen {
 /// This struct is ABI-compatible with the equivalent struct on the C++ side. It
 /// owns (and drops) its data.
 #[repr(C)]
+#[doc(hidden)]
 pub struct SerializedData {
     /// Owns the memory.
     data: NonNull<u8>,
@@ -195,7 +196,7 @@ pub struct SerializedData {
 }
 
 impl SerializedData {
-    pub fn new() -> Self {
+    pub fn new(_private: Private) -> Self {
         Self { data: NonNull::dangling(), len: 0 }
     }
 

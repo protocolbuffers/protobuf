@@ -61,7 +61,7 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
       ctx.Emit({{"serialize_thunk", ThunkName(ctx, msg, "serialize")}}, R"rs(
-        let mut serialized_data = $pbr$::SerializedData::new();
+        let mut serialized_data = $pbr$::SerializedData::new($pbi$::Private);
         let success = unsafe {
           $serialize_thunk$(self.raw_msg(), &mut serialized_data)
         };
