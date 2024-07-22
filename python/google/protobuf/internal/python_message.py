@@ -72,7 +72,7 @@ class GeneratedProtocolMessageType(type):
   mydescriptor = Descriptor(.....)
   factory = symbol_database.Default()
   factory.pool.AddDescriptor(mydescriptor)
-  MyProtoClass = factory.GetPrototype(mydescriptor)
+  MyProtoClass = message_factory.GetMessageClass(mydescriptor)
   myproto_instance = MyProtoClass()
   myproto.foo_field = 23
   ...
@@ -120,7 +120,7 @@ class GeneratedProtocolMessageType(type):
     # to achieve similar results.
     #
     # This most commonly happens in `text_format.py` when using descriptors from
-    # a custom pool; it calls symbol_database.Global().getPrototype() on a
+    # a custom pool; it calls message_factory.GetMessageClass() on a
     # descriptor which already has an existing concrete class.
     new_class = getattr(descriptor, '_concrete_class', None)
     if new_class:
@@ -988,7 +988,10 @@ def _InternalUnpackAny(msg):
   if descriptor is None:
     return None
 
-  message_class = factory.GetPrototype(descriptor)
+  # Unable to import message_factory at top becaue of circular import.
+  # pylint: disable=g-import-not-at-top
+  from google.protobuf import message_factory
+  message_class = message_factory.GetMessageClass(descriptor)
   message = message_class()
 
   message.ParseFromString(msg.value)
