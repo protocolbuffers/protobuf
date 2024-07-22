@@ -953,15 +953,33 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
         impl $pb$::Message for $Msg$ {}
 
+        impl std::default::Default for $Msg$ {
+          fn default() -> Self {
+            Self::new()
+          }
+        }
+
+        impl $pb$::Parse for $Msg$ {
+          fn parse(serialized: &[u8]) -> Result<Self, $pb$::ParseError> {
+            Self::parse(serialized)
+          }
+        }
+
         impl std::fmt::Debug for $Msg$ {
           fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             $Msg::debug$
           }
         }
 
-        impl std::default::Default for $Msg$ {
-          fn default() -> Self {
-            Self::new()
+        impl $pb$::Serialize for $Msg$ {
+          fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
+            self.serialize()
+          }
+        }
+
+        impl $pb$::ClearAndParse for $Msg$ {
+          fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
+            self.clear_and_parse(data)
           }
         }
 
@@ -990,11 +1008,19 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           _phantom: $Phantom$<&'msg ()>,
         }
 
-        impl $pb$::MessageView for $Msg$View<'_> {}
+        impl<'msg> $pb$::MessageView<'msg> for $Msg$View<'msg> {
+          type Message = $Msg$;
+        }
 
         impl std::fmt::Debug for $Msg$View<'_> {
           fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             $Msg::debug$
+          }
+        }
+
+        impl $pb$::Serialize for $Msg$View<'_> {
+          fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
+            self.serialize()
           }
         }
 
@@ -1053,11 +1079,19 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           inner: $pbr$::MutatorMessageRef<'msg>,
         }
 
-        impl $pb$::MessageMut for $Msg$Mut<'_> {}
+        impl<'msg> $pb$::MessageMut<'msg> for $Msg$Mut<'msg> {
+          type Message = $Msg$;
+        }
 
         impl std::fmt::Debug for $Msg$Mut<'_> {
           fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             $Msg::debug$
+          }
+        }
+
+        impl $pb$::Serialize for $Msg$Mut<'_> {
+          fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
+            self.serialize()
           }
         }
 
