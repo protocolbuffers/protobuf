@@ -53,6 +53,7 @@ typedef struct GPBCodedInputStreamState {
 
 CF_EXTERN_C_BEGIN
 
+void GPBRaiseStreamError(NSInteger code, NSString *reason);
 int32_t GPBCodedInputStreamReadTag(GPBCodedInputStreamState *state);
 
 double GPBCodedInputStreamReadDouble(GPBCodedInputStreamState *state);
