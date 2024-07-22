@@ -237,7 +237,7 @@ void WriteModelPublicDeclaration(
           arena_ = owned_arena_.ptr();
           upb_Arena_Fuse(arena_, arena);
         }
-        ::protos::Arena owned_arena_;
+        ::hpb::Arena owned_arena_;
         friend struct ::protos::internal::PrivateAccess;
         friend Proxy;
         friend CProxy;
@@ -248,7 +248,7 @@ void WriteModelPublicDeclaration(
             const ::protos::ExtensionRegistry& extension_registry,
             int options));
         friend upb_Arena* ::protos::internal::GetArena<$0>($0* message);
-        friend upb_Arena* ::protos::internal::GetArena<$0>(::protos::Ptr<$0> message);
+        friend upb_Arena* ::protos::internal::GetArena<$0>(::hpb::Ptr<$0> message);
         friend $0(::hpb::internal::MoveMessage<$0>(upb_Message* msg, upb_Arena* arena));
       )cc",
       ClassName(descriptor), MessageName(descriptor),
@@ -293,22 +293,22 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
 
         $0Proxy(upb_Message* msg, upb_Arena* arena)
             : internal::$0Access(($1*)msg, arena) {}
-        friend $0::Proxy(::protos::CreateMessage<$0>(::protos::Arena& arena));
+        friend $0::Proxy(::protos::CreateMessage<$0>(::hpb::Arena& arena));
         friend $0::Proxy(::protos::internal::CreateMessageProxy<$0>(
             upb_Message*, upb_Arena*));
         friend struct ::protos::internal::PrivateAccess;
         friend class RepeatedFieldProxy;
         friend class $0CProxy;
         friend class $0Access;
-        friend class ::protos::Ptr<$0>;
-        friend class ::protos::Ptr<const $0>;
+        friend class ::hpb::Ptr<$0>;
+        friend class ::hpb::Ptr<const $0>;
         static const upb_MiniTable* minitable() { return $0::minitable(); }
         friend const upb_MiniTable* ::protos::internal::GetMiniTable<$0Proxy>(
             const $0Proxy* message);
         friend const upb_MiniTable* ::protos::internal::GetMiniTable<$0Proxy>(
-            ::protos::Ptr<$0Proxy> message);
+            ::hpb::Ptr<$0Proxy> message);
         friend upb_Arena* ::protos::internal::GetArena<$2>($2* message);
-        friend upb_Arena* ::protos::internal::GetArena<$2>(::protos::Ptr<$2> message);
+        friend upb_Arena* ::protos::internal::GetArena<$2>(::hpb::Ptr<$2> message);
         static void Rebind($0Proxy& lhs, const $0Proxy& rhs) {
           lhs.msg_ = rhs.msg_;
           lhs.arena_ = rhs.arena_;
@@ -349,13 +349,13 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
             : internal::$0Access(($1*)msg, arena){};
         friend struct ::protos::internal::PrivateAccess;
         friend class RepeatedFieldProxy;
-        friend class ::protos::Ptr<$0>;
-        friend class ::protos::Ptr<const $0>;
+        friend class ::hpb::Ptr<$0>;
+        friend class ::hpb::Ptr<const $0>;
         static const upb_MiniTable* minitable() { return $0::minitable(); }
         friend const upb_MiniTable* ::protos::internal::GetMiniTable<$0CProxy>(
             const $0CProxy* message);
         friend const upb_MiniTable* ::protos::internal::GetMiniTable<$0CProxy>(
-            ::protos::Ptr<$0CProxy> message);
+            ::hpb::Ptr<$0CProxy> message);
 
         static void Rebind($0CProxy& lhs, const $0CProxy& rhs) {
           lhs.msg_ = rhs.msg_;
@@ -369,7 +369,7 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
 
 void WriteDefaultInstanceHeader(const protobuf::Descriptor* message,
                                 Output& output) {
-  output("  static ::protos::Ptr<const $0> default_instance();\n",
+  output("  static ::hpb::Ptr<const $0> default_instance();\n",
          ClassName(message));
 }
 
@@ -445,7 +445,7 @@ void WriteMessageImplementation(
 
     output(
         R"cc(
-          ::protos::Ptr<const $0> $0::default_instance() {
+          ::hpb::Ptr<const $0> $0::default_instance() {
             return ::protos::internal::CreateMessage<$0>(
                 (upb_Message *)_$0_default_instance_.msg,
                 _$0_default_instance_.arena);

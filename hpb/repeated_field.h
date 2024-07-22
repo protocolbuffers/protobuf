@@ -94,7 +94,7 @@ class RepeatedFieldProxy
       : RepeatedFieldProxyBase<T>(arr, arena) {}
   RepeatedFieldProxy(upb_Array* arr, upb_Arena* arena)
       : RepeatedFieldProxyMutableBase<T>(arr, arena) {}
-  // Constructor used by ::protos::Ptr.
+  // Constructor used by ::hpb::Ptr.
   RepeatedFieldProxy(const RepeatedFieldProxy&) = default;
 
   // T::CProxy [] operator specialization.
@@ -147,7 +147,7 @@ class RepeatedFieldProxy
   reverse_iterator rend() const { return reverse_iterator(begin()); }
 
  private:
-  friend class ::protos::Ptr<T>;
+  friend class ::hpb::Ptr<T>;
 };
 
 // RepeatedField proxy for repeated strings.
@@ -175,7 +175,7 @@ class RepeatedFieldStringProxy
   // Mutable constructor.
   RepeatedFieldStringProxy(upb_Array* arr, upb_Arena* arena)
       : RepeatedFieldProxyMutableBase<T>(arr, arena) {}
-  // Constructor used by ::protos::Ptr.
+  // Constructor used by ::hpb::Ptr.
   RepeatedFieldStringProxy(const RepeatedFieldStringProxy&) = default;
 
   reference operator[](size_t n) const { return begin()[n]; }
@@ -222,7 +222,7 @@ class RepeatedFieldScalarProxy
       : RepeatedFieldProxyBase<T>(arr, arena) {}
   RepeatedFieldScalarProxy(upb_Array* arr, upb_Arena* arena)
       : RepeatedFieldProxyMutableBase<T>(arr, arena) {}
-  // Constructor used by ::protos::Ptr.
+  // Constructor used by ::hpb::Ptr.
   RepeatedFieldScalarProxy(const RepeatedFieldScalarProxy&) = default;
 
   T operator[](size_t n) const {
@@ -285,10 +285,10 @@ class RepeatedField {
   // We would like to reference T::CProxy. Validate forwarding header design.
   using ValueProxy = std::conditional_t<
       kIsScalar, T,
-      std::conditional_t<kIsString, absl::string_view, ::protos::Ptr<T>>>;
+      std::conditional_t<kIsString, absl::string_view, ::hpb::Ptr<T>>>;
   using ValueCProxy = std::conditional_t<
       kIsScalar, const T,
-      std::conditional_t<kIsString, absl::string_view, ::protos::Ptr<const T>>>;
+      std::conditional_t<kIsString, absl::string_view, ::hpb::Ptr<const T>>>;
   using Access = std::conditional_t<
       kIsScalar, internal::RepeatedFieldScalarProxy<T>,
       std::conditional_t<kIsString, internal::RepeatedFieldStringProxy<T>,
