@@ -5,14 +5,14 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#import "GPBTestUtilities.h"
-
 #import <objc/runtime.h>
 
+#import "GPBArray.h"
 #import "GPBArray_PackagePrivate.h"
 #import "GPBDescriptor.h"
 #import "GPBDictionary_PackagePrivate.h"
 #import "GPBMessage_PackagePrivate.h"
+#import "GPBTestUtilities.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUnknownField_PackagePrivate.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
@@ -2020,6 +2020,54 @@
   XCTAssertEqual([msgPrime.mumbleArray valueAtIndex:2], EnumTestMsg_MyEnum_Two);
   XCTAssertEqual([msgPrime.mumbleArray valueAtIndex:3], EnumTestMsg_MyEnum_NegOne);
   XCTAssertEqual([msgPrime.mumbleArray valueAtIndex:4], EnumTestMsg_MyEnum_NegTwo);
+}
+
+- (void)testCloseEnumsValuesOutOfRange {
+  // The unknown values should all make it into the unknown fields.
+  EnumTestMsg *msg1 = [EnumTestMsg message];
+  msg1.bar = EnumTestMsg_MyEnum_NegTwo;
+  msg1.baz = EnumTestMsg_MyEnum_Two;
+  [msg1.mumbleArray addValue:EnumTestMsg_MyEnum_Two];
+  [msg1.mumbleArray addValue:EnumTestMsg_MyEnum_NegTwo];
+
+  NSData *data = [msg1 data];
+  XCTAssertNotNil(data);
+
+  EnumTestMsgPrime *msg2 = [EnumTestMsgPrime parseFromData:data error:NULL];
+  XCTAssertNotNil(msg2);
+  XCTAssertEqualObjects(data, [msg2 data]);
+  XCTAssertFalse(msg2.hasBar);
+  XCTAssertFalse(msg2.hasBaz);
+  XCTAssertEqual(msg2.mumbleArray_Count, 0U);
+
+  GPBUnknownFields *ufs = [[[GPBUnknownFields alloc] initFromMessage:msg2] autorelease];
+  XCTAssertEqual(ufs.count, 4U);
+  uint64_t varint;
+  XCTAssertTrue([ufs getFirst:EnumTestMsg_FieldNumber_Bar varint:&varint]);
+  XCTAssertEqual(varint, (uint64_t)EnumTestMsg_MyEnum_NegTwo);
+  XCTAssertTrue([ufs getFirst:EnumTestMsg_FieldNumber_Baz varint:&varint]);
+  XCTAssertEqual(varint, (uint64_t)EnumTestMsg_MyEnum_Two);
+  NSArray<GPBUnknownField *> *fields = [ufs fields:EnumTestMsg_FieldNumber_MumbleArray];
+  XCTAssertEqual(fields.count, 2U);
+  XCTAssertEqual(fields[0].varint, (uint64_t)EnumTestMsg_MyEnum_Two);
+  XCTAssertEqual(fields[1].varint, (uint64_t)EnumTestMsg_MyEnum_NegTwo);
+
+  GPBUnknownFieldSet *unknownFields = msg2.unknownFields;
+  XCTAssertNotNil(unknownFields);
+  XCTAssertEqual(unknownFields.countOfFields, 3U);
+  XCTAssertTrue([unknownFields hasField:EnumTestMsg_FieldNumber_Bar]);
+  XCTAssertTrue([unknownFields hasField:EnumTestMsg_FieldNumber_Baz]);
+  XCTAssertTrue([unknownFields hasField:EnumTestMsg_FieldNumber_MumbleArray]);
+  GPBUnknownField *field = [unknownFields getField:EnumTestMsg_FieldNumber_Bar];
+  XCTAssertEqual(field.varintList.count, 1U);
+  XCTAssertEqual([field.varintList valueAtIndex:0], (uint64_t)EnumTestMsg_MyEnum_NegTwo);
+  field = [unknownFields getField:EnumTestMsg_FieldNumber_Baz];
+  XCTAssertEqual(field.varintList.count, 1U);
+  XCTAssertEqual([field.varintList valueAtIndex:0], (uint64_t)EnumTestMsg_MyEnum_Two);
+  field = [unknownFields getField:EnumTestMsg_FieldNumber_MumbleArray];
+  XCTAssertEqual(field.varintList.count, 2U);
+  XCTAssertEqual([field.varintList valueAtIndex:0], (uint64_t)EnumTestMsg_MyEnum_Two);
+  XCTAssertEqual([field.varintList valueAtIndex:1], (uint64_t)EnumTestMsg_MyEnum_NegTwo);
 }
 
 - (void)testReservedWordNaming {
