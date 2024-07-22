@@ -33,7 +33,7 @@ extern "C" {
     fn GetBytesExtension(msg: RawMessage) -> PtrAndLen;
 }
 
-#[test]
+#[googletest::test]
 fn send_to_cpp() {
     let mut msg1 = TestAllTypes::new();
     msg1.set_optional_int32(7);
@@ -43,7 +43,7 @@ fn send_to_cpp() {
     assert_eq!(i, 7);
 }
 
-#[test]
+#[googletest::test]
 fn mutate_message_mut_in_cpp() {
     let mut msg1 = TestAllTypes::new();
     unsafe {
@@ -58,7 +58,7 @@ fn mutate_message_mut_in_cpp() {
     proto_assert_eq!(msg1, msg2);
 }
 
-#[test]
+#[googletest::test]
 fn deserialize_in_rust() {
     let mut msg1 = TestAllTypes::new();
     msg1.set_optional_int64(-1);
@@ -71,7 +71,7 @@ fn deserialize_in_rust() {
     proto_assert_eq!(msg1, msg2);
 }
 
-#[test]
+#[googletest::test]
 fn deserialize_in_cpp() {
     let mut msg1 = TestAllTypes::new();
     msg1.set_optional_int64(-1);
@@ -88,7 +88,7 @@ fn deserialize_in_cpp() {
     proto_assert_eq!(msg1, msg2);
 }
 
-#[test]
+#[googletest::test]
 fn deserialize_in_cpp_into_mut() {
     let mut msg1 = TestAllTypes::new();
     msg1.set_optional_int64(-1);
@@ -106,7 +106,7 @@ fn deserialize_in_cpp_into_mut() {
     }
 }
 
-#[test]
+#[googletest::test]
 fn deserialize_in_cpp_into_view() {
     let mut msg1 = TestAllTypes::new();
     msg1.set_optional_int64(-1);
@@ -126,7 +126,7 @@ fn deserialize_in_cpp_into_view() {
 
 // This test ensures that random fields we (Rust) don't know about don't
 // accidentally get destroyed by Rust.
-#[test]
+#[googletest::test]
 fn smuggle_extension() {
     let msg1 = unsafe {
         TestAllExtensions::__unstable_wrap_cpp_grant_permission_to_break(NewWithExtension())

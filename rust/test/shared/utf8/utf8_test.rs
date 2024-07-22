@@ -34,7 +34,7 @@ fn make_non_utf8_proto_str() -> &'static ProtoStr {
     }
 }
 
-#[test]
+#[googletest::test]
 fn test_proto2() {
     let non_utf8_str = make_non_utf8_proto_str();
 
@@ -52,7 +52,7 @@ fn test_proto2() {
     assert_that!(parsed_result, ok(anything()));
 }
 
-#[test]
+#[googletest::test]
 fn test_proto3() {
     let non_utf8_str = make_non_utf8_proto_str();
 
@@ -70,7 +70,7 @@ fn test_proto3() {
     assert_that!(parsed_result, err(matches_pattern!(&ParseError)));
 }
 
-#[test]
+#[googletest::test]
 fn test_verify() {
     let non_utf8_str = make_non_utf8_proto_str();
 

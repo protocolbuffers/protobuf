@@ -8,7 +8,7 @@
 use googletest::prelude::*;
 use unittest_proto3_rust_proto::TestAllTypes;
 
-#[test]
+#[googletest::test]
 fn test_stringpiece_repeated() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.repeated_string_piece().len(), eq(0));
@@ -17,7 +17,7 @@ fn test_stringpiece_repeated() {
     assert_that!(msg.repeated_string_piece().get(0), some(eq("hello")));
 }
 
-#[test]
+#[googletest::test]
 fn test_cord() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_cord(), eq(""));
@@ -25,7 +25,7 @@ fn test_cord() {
     assert_that!(msg.optional_cord(), eq("hello"));
 }
 
-#[test]
+#[googletest::test]
 fn test_cord_repeated() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.repeated_cord().len(), eq(0));

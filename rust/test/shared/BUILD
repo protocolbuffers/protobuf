@@ -87,6 +87,7 @@ rust_test(
     srcs = ["import_public_test.rs"],
     deps = [
         "//rust/test:import_public_cpp_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -95,6 +96,7 @@ rust_test(
     srcs = ["import_public_test.rs"],
     deps = [
         "//rust/test:import_public_upb_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -105,6 +107,7 @@ rust_test(
         "//rust/test:dots_in_package_cpp_rust_proto",
         "//rust/test:no_package_cpp_rust_proto",
         "//rust/test:package_cpp_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -115,6 +118,7 @@ rust_test(
         "//rust/test:dots_in_package_upb_rust_proto",
         "//rust/test:no_package_upb_rust_proto",
         "//rust/test:package_upb_rust_proto",
+        "@crate_index//:googletest",
     ],
 )
 
@@ -155,13 +159,19 @@ rust_test(
 rust_test(
     name = "nested_types_cpp_test",
     srcs = ["nested_types_test.rs"],
-    deps = ["//rust/test:unittest_cpp_rust_proto"],
+    deps = [
+        "//rust/test:unittest_cpp_rust_proto",
+        "@crate_index//:googletest",
+    ],
 )
 
 rust_test(
     name = "nested_types_upb_test",
     srcs = ["nested_types_test.rs"],
-    deps = ["//rust/test:unittest_upb_rust_proto"],
+    deps = [
+        "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
 )
 
 rust_test(
