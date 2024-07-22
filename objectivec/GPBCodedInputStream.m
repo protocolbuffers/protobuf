@@ -267,6 +267,60 @@ NSData *GPBCodedInputStreamReadRetainedBytesNoCopy(GPBCodedInputStreamState *sta
   return result;
 }
 
+static void SkipToEndGroupInternal(GPBCodedInputStreamState *state, uint32_t endGroupTag) {
+  CheckRecursionLimit(state);
+  ++state->recursionDepth;
+  while (YES) {
+    uint32_t tag = GPBCodedInputStreamReadTag(state);
+    if (tag == endGroupTag || tag == 0) {
+      GPBCodedInputStreamCheckLastTagWas(state, endGroupTag);  // Will fail for end of input.
+      --state->recursionDepth;
+      return;
+    }
+    switch (GPBWireFormatGetTagWireType(tag)) {
+      case GPBWireFormatVarint:
+        (void)ReadRawVarint64(state);
+        break;
+      case GPBWireFormatFixed64:
+        SkipRawData(state, sizeof(uint64_t));
+        break;
+      case GPBWireFormatLengthDelimited: {
+        uint64_t size = ReadRawVarint64(state);
+        CheckFieldSize(size);
+        size_t size2 = (size_t)size;  // Cast safe on 32bit because of CheckFieldSize() above.
+        SkipRawData(state, size2);
+        break;
+      }
+      case GPBWireFormatStartGroup:
+        SkipToEndGroupInternal(state, GPBWireFormatMakeTag(GPBWireFormatGetTagFieldNumber(tag),
+                                                           GPBWireFormatEndGroup));
+        break;
+      case GPBWireFormatEndGroup:
+        GPBRaiseStreamError(GPBCodedInputStreamErrorInvalidTag, @"Unmatched end group");
+        break;
+      case GPBWireFormatFixed32:
+        SkipRawData(state, sizeof(uint32_t));
+        break;
+    }
+  }
+}
+
+// This doesn't include the start group, but it collects all bytes until the end group including
+// the end group tag.
+NSData *GPBCodedInputStreamReadRetainedBytesToEndGroupNoCopy(GPBCodedInputStreamState *state,
+                                                             int32_t fieldNumber) {
+  // Better have just read the start of the group.
+  GPBCodedInputStreamCheckLastTagWas(state,
+                                     GPBWireFormatMakeTag(fieldNumber, GPBWireFormatStartGroup));
+  const uint8_t *start = state->bytes + state->bufferPos;
+  SkipToEndGroupInternal(state, GPBWireFormatMakeTag(fieldNumber, GPBWireFormatEndGroup));
+  // This will be after the end group tag.
+  const uint8_t *end = state->bytes + state->bufferPos;
+  return [[NSData alloc] initWithBytesNoCopy:(void *)start
+                                      length:(NSUInteger)(end - start)
+                                freeWhenDone:NO];
+}
+
 size_t GPBCodedInputStreamPushLimit(GPBCodedInputStreamState *state, size_t byteLimit) {
   byteLimit += state->bufferPos;
   size_t oldLimit = state->currentLimit;
