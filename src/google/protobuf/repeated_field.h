@@ -56,6 +56,7 @@ namespace google {
 namespace protobuf {
 
 class Message;
+class UnknownField;  // For the allowlist
 
 namespace internal {
 
@@ -141,6 +142,7 @@ class RepeatedField final
         absl::disjunction<internal::is_supported_integral_type<Element>,
                           internal::is_supported_floating_point_type<Element>,
                           std::is_same<absl::Cord, Element>,
+                          std::is_same<UnknownField, Element>,
                           is_proto_enum<Element>>::value,
         "We only support non-string scalars in RepeatedField.");
   }

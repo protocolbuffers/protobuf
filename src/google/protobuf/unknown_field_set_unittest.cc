@@ -175,6 +175,94 @@ TEST_F(UnknownFieldSetTest, Group) {
   EXPECT_EQ(all_fields_.optionalgroup().a(), nested_field.varint());
 }
 
+static void PopulateUFS(UnknownFieldSet& set) {
+  UnknownFieldSet* node = &set;
+  for (int i = 0; i < 3; ++i) {
+    node->AddVarint(1, 100);
+    const char* long_str = "This is a very long string, not sso";
+    node->AddLengthDelimited(2, long_str);
+    *node->AddLengthDelimited(3) = long_str;
+    // Test some recursion too.
+    node = node->AddGroup(4);
+  }
+}
+
+TEST_F(UnknownFieldSetTest, ArenaSupportWorksWithMergeFrom) {
+  Arena arena;
+
+  for (bool lhs_arena : {false, true}) {
+    for (bool rhs_arena : {false, true}) {
+      UnknownFieldSet lhs_stack, rhs_stack;
+      auto& lhs =
+          lhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : lhs_stack;
+      auto& rhs =
+          rhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : rhs_stack;
+      PopulateUFS(rhs);
+      lhs.MergeFrom(rhs);
+    }
+  }
+}
+
+TEST_F(UnknownFieldSetTest, ArenaSupportWorksWithMergeAndDestroy) {
+  Arena arena;
+
+  for (bool lhs_arena : {false, true}) {
+    for (bool populate_lhs : {false, true}) {
+      for (bool rhs_arena : {false, true}) {
+        for (bool populate_rhs : {false, true}) {
+          UnknownFieldSet lhs_stack, rhs_stack;
+          auto& lhs =
+              lhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : lhs_stack;
+          auto& rhs =
+              rhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : rhs_stack;
+          if (populate_lhs) PopulateUFS(lhs);
+          if (populate_rhs) PopulateUFS(rhs);
+          lhs.MergeFromAndDestroy(&rhs);
+        }
+      }
+    }
+  }
+}
+
+TEST_F(UnknownFieldSetTest, ArenaSupportWorksWithSwap) {
+  Arena arena;
+
+  for (bool lhs_arena : {false, true}) {
+    for (bool rhs_arena : {false, true}) {
+      UnknownFieldSet lhs_stack, rhs_stack;
+      auto& lhs =
+          lhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : lhs_stack;
+      auto& rhs =
+          rhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : rhs_stack;
+      PopulateUFS(lhs);
+      lhs.Swap(&rhs);
+    }
+  }
+}
+
+TEST_F(UnknownFieldSetTest, ArenaSupportWorksWithClear) {
+  Arena arena;
+  auto* ufs = Arena::Create<UnknownFieldSet>(&arena);
+  PopulateUFS(*ufs);
+  // Clear should not try to delete memory from the arena.
+  ufs->Clear();
+}
+
+TEST_F(UnknownFieldSetTest, ArenaSupportWorksDelete) {
+  Arena arena;
+
+  auto* ufs = Arena::Create<UnknownFieldSet>(&arena);
+  PopulateUFS(*ufs);
+
+  while (ufs->field_count() != 0) {
+    ufs->DeleteByNumber(ufs->field(0).number());
+  }
+
+  ufs = Arena::Create<UnknownFieldSet>(&arena);
+  PopulateUFS(*ufs);
+  ufs->DeleteSubrange(0, ufs->field_count());
+}
+
 TEST_F(UnknownFieldSetTest, SerializeFastAndSlowAreEquivalent) {
   int size =
       WireFormat::ComputeUnknownFieldsSize(empty_message_.unknown_fields());
@@ -516,13 +604,15 @@ TEST_F(UnknownFieldSetTest, UnknownEnumValue) {
 TEST_F(UnknownFieldSetTest, SpaceUsedExcludingSelf) {
   UnknownFieldSet empty;
   empty.AddVarint(1, 0);
-  EXPECT_EQ(sizeof(UnknownField), empty.SpaceUsedExcludingSelf());
+  RepeatedField<UnknownField> rep;
+  rep.Add();
+  EXPECT_EQ(rep.SpaceUsedExcludingSelf(), empty.SpaceUsedExcludingSelf());
 }
 
 TEST_F(UnknownFieldSetTest, SpaceUsed) {
   // Keep shadow vectors to avoid making assumptions about its capacity growth.
   // We imitate the push back calls here to determine the expected capacity.
-  std::vector<UnknownField> shadow_vector, shadow_vector_group;
+  RepeatedField<UnknownField> shadow_vector, shadow_vector_group;
   unittest::TestEmptyMessage empty_message;
 
   // Make sure an unknown field set has zero space used until a field is
@@ -532,8 +622,8 @@ TEST_F(UnknownFieldSetTest, SpaceUsed) {
   UnknownFieldSet* group = nullptr;
   const auto total = [&] {
     size_t result = base;
-    result += shadow_vector.capacity() * sizeof(UnknownField);
-    result += shadow_vector_group.capacity() * sizeof(UnknownField);
+    result += shadow_vector.SpaceUsedExcludingSelfLong();
+    result += shadow_vector_group.SpaceUsedExcludingSelfLong();
     if (str != nullptr) {
       result += sizeof(std::string);
       static const size_t sso_capacity = std::string().capacity();
@@ -550,26 +640,26 @@ TEST_F(UnknownFieldSetTest, SpaceUsed) {
 
   // Make sure each thing we add to the set increases the SpaceUsedLong().
   unknown_fields->AddVarint(1, 0);
-  shadow_vector.emplace_back();
+  shadow_vector.Add();
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Var";
 
   str = unknown_fields->AddLengthDelimited(1);
-  shadow_vector.emplace_back();
+  shadow_vector.Add();
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Str";
 
   str->assign(sizeof(std::string) + 1, 'x');
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Str2";
 
   group = unknown_fields->AddGroup(1);
-  shadow_vector.emplace_back();
+  shadow_vector.Add();
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Group";
 
   group->AddVarint(1, 0);
-  shadow_vector_group.emplace_back();
+  shadow_vector_group.Add();
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Group2";
 
   unknown_fields->AddVarint(1, 0);
-  shadow_vector.emplace_back();
+  shadow_vector.Add();
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Var2";
 }
 
