@@ -96,7 +96,7 @@ pub type Mut<'msg, T> = <T as MutProxied>::Mut<'msg>;
 /// This trait is intentionally made non-object-safe to prevent a potential
 /// future incompatible change.
 pub trait Proxy<'msg>: 'msg + Sync + Unpin + Sized + Debug {
-    type Proxied: 'msg + Proxied + ?Sized;
+    type Proxied: 'msg + Proxied;
 
     /// Converts a borrow into a `View` with the lifetime of that borrow.
     ///

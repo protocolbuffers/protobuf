@@ -464,7 +464,7 @@ pub fn free_enum_repeated<E: Enum + ProxiedInRepeated>(
 }
 
 /// Returns a static empty RepeatedView.
-pub fn empty_array<T: ?Sized + ProxiedInRepeated>() -> RepeatedView<'static, T> {
+pub fn empty_array<T: ProxiedInRepeated>() -> RepeatedView<'static, T> {
     // TODO: Consider creating a static empty array in C.
 
     // Use `i32` for a shared empty repeated for all repeated types in the program.
@@ -484,8 +484,8 @@ pub fn empty_array<T: ?Sized + ProxiedInRepeated>() -> RepeatedView<'static, T> 
 /// Returns a static empty MapView.
 pub fn empty_map<K, V>() -> MapView<'static, K, V>
 where
-    K: Proxied + ?Sized,
-    V: ProxiedInMapValue<K> + ?Sized,
+    K: Proxied,
+    V: ProxiedInMapValue<K>,
 {
     // TODO: Consider creating a static empty map in C.
 
