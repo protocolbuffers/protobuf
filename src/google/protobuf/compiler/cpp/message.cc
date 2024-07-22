@@ -227,16 +227,16 @@ bool MayEmitIfNonDefaultCheck(io::Printer* p, const std::string& prefix,
   ABSL_CHECK(!HasHasbit(field));
   if (!ShouldEmitNonDefaultCheck(field)) return false;
 
-  // SUBTLE: format_string must be a raw string without newline.
+  // SUBTLE: |format| must be a raw string without newline.
   // io::Printer::Emit treats the format string as a "raw string" if it doesn't
   // contain multiple lines. Note that a string of the form "\n($condition$)\n"
   // (i.e. newline characters are present; there is only one non-empty line)
-  // will be treated as a multi-line string.
+  // will still be treated as a multi-line string.
   //
   // io::Printer::Emit will print a newline if the input is a multi-line string.
-  absl::string_view format_string = "if ($condition$) ";
+  // In this case, we prefer to let the caller handle if-statement braces.
   p->Emit({{"condition", [&] { EmitNonDefaultCheck(p, prefix, field); }}},
-          format_string);
+          /*format=*/"if ($condition$)");
   return true;
 }
 
@@ -3960,7 +3960,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           // merged only if non-zero (numeric) or non-empty (string).
           bool emitted_check = MayEmitIfNonDefaultCheck(p, "from.", field);
           if (emitted_check) {
-            p->Emit("{\n");
+            p->Emit(" {\n");
             p->Indent();
           }
           generator.GenerateMergingCode(p);
@@ -4236,7 +4236,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
   } else if (field->is_optional()) {
     bool emitted_check = MayEmitIfNonDefaultCheck(p, "this_.", field);
     if (emitted_check) {
-      p->Emit("{\n");
+      p->Emit(" {\n");
       p->Indent();
     }
     emit_body();
@@ -4778,30 +4778,23 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
                               }},
                              {"check_if_field_present",
                               [&] {
-                                if (HasHasbit(field)) {
-                                  if (field->options().weak()) {
-                                    p->Emit("if (has_$name$())");
-                                    return;
-                                  }
-
-                                  int has_bit_index =
-                                      has_bit_indices_[field->index()];
-                                  p->Emit({{"mask",
-                                            absl::StrFormat(
-                                                "0x%08xu",
-                                                1u << (has_bit_index % 32))}},
-                                          "if (cached_has_bits & $mask$)");
-                                } else if (ShouldEmitNonDefaultCheck(field)) {
-                                  // Without field presence: field is
-                                  // serialized only if it has a non-default
-                                  // value.
-                                  p->Emit({{"non_default_check",
-                                            [&] {
-                                              EmitNonDefaultCheck(p, "this_.",
-                                                                  field);
-                                            }}},
-                                          "if ($non_default_check$)");
+                                if (!HasHasbit(field)) {
+                                  MayEmitIfNonDefaultCheck(p, "this_.", field);
+                                  return;
                                 }
+
+                                if (field->options().weak()) {
+                                  p->Emit("if (has_$name$())");
+                                  return;
+                                }
+
+                                int has_bit_index =
+                                    has_bit_indices_[field->index()];
+                                p->Emit(
+                                    {{"mask", absl::StrFormat(
+                                                  "0x%08xu",
+                                                  1u << (has_bit_index % 32))}},
+                                    "if (cached_has_bits & $mask$)");
                               }}},
                             R"cc(
                               $comment$;
