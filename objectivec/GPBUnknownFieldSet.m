@@ -154,7 +154,10 @@ static void CopyWorker(__unused const void *key, const void *value, void *contex
 - (NSString *)description {
   NSMutableString *description =
       [NSMutableString stringWithFormat:@"<%@ %p>: TextFormat: {\n", [self class], self];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   NSString *textFormat = GPBTextFormatForUnknownFieldSet(self, @"  ");
+#pragma clang diagnostic pop
   [description appendString:textFormat];
   [description appendString:@"}"];
   return description;
