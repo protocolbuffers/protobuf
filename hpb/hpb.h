@@ -82,13 +82,7 @@ class Ptr final {
 template <typename T>
 Ptr(T* m) -> Ptr<T>;
 
-}  // namespace hpb
-
-namespace protos {
-using hpb::Arena;
-using hpb::Ptr;
-class ExtensionRegistry;
-
+// TODO: b/354766950 - Move upb-specific chunks out of hpb header
 inline absl::string_view UpbStrToStringView(upb_StringView str) {
   return absl::string_view(str.data, str.size);
 }
@@ -100,12 +94,6 @@ inline upb_StringView UpbStrFromStringView(absl::string_view str,
   char* buffer = static_cast<char*>(upb_Arena_Malloc(arena, str_size));
   memcpy(buffer, str.data(), str_size);
   return upb_StringView_FromDataAndSize(buffer, str_size);
-}
-
-template <typename T>
-typename T::Proxy CreateMessage(::hpb::Arena& arena) {
-  return typename T::Proxy(upb_Message_New(T::minitable(), arena.ptr()),
-                           arena.ptr());
 }
 
 // begin:github_only
@@ -133,6 +121,48 @@ absl::Status MessageDecodeError(upb_DecodeStatus status,
 
 absl::Status MessageEncodeError(upb_EncodeStatus status,
                                 SourceLocation loc = SourceLocation::current());
+
+namespace internal {
+template <typename T>
+struct RemovePtr;
+
+template <typename T>
+struct RemovePtr<Ptr<T>> {
+  using type = T;
+};
+
+template <typename T>
+struct RemovePtr<T*> {
+  using type = T;
+};
+
+template <typename T>
+using RemovePtrT = typename RemovePtr<T>::type;
+
+template <typename T, typename U = RemovePtrT<T>,
+          typename = std::enable_if_t<!std::is_const_v<U>>>
+using PtrOrRaw = T;
+
+template <typename T>
+using EnableIfHpbClass = std::enable_if_t<
+    std::is_base_of<typename T::Access, T>::value &&
+    std::is_base_of<typename T::Access, typename T::ExtendableType>::value>;
+
+template <typename T>
+using EnableIfMutableProto = std::enable_if_t<!std::is_const<T>::value>;
+}  // namespace internal
+
+}  // namespace hpb
+
+namespace protos {
+using hpb::Arena;
+using hpb::ExtensionNotFoundError;
+using hpb::MessageAllocationError;
+using hpb::MessageDecodeError;
+using hpb::MessageEncodeError;
+using hpb::Ptr;
+using hpb::SourceLocation;
+class ExtensionRegistry;
 
 namespace internal {
 struct PrivateAccess {
@@ -261,36 +291,13 @@ absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
 absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
                           const upb_MiniTableExtension* ext,
                           const upb_Message* extension);
-
-template <typename T>
-struct RemovePtr;
-
-template <typename T>
-struct RemovePtr<Ptr<T>> {
-  using type = T;
-};
-
-template <typename T>
-struct RemovePtr<T*> {
-  using type = T;
-};
-
-template <typename T>
-using RemovePtrT = typename RemovePtr<T>::type;
-
-template <typename T, typename U = RemovePtrT<T>,
-          typename = std::enable_if_t<!std::is_const_v<U>>>
-using PtrOrRaw = T;
-
-template <typename T>
-using EnableIfHpbClass = std::enable_if_t<
-    std::is_base_of<typename T::Access, T>::value &&
-    std::is_base_of<typename T::Access, typename T::ExtendableType>::value>;
-
-template <typename T>
-using EnableIfMutableProto = std::enable_if_t<!std::is_const<T>::value>;
-
 }  // namespace internal
+
+template <typename T>
+typename T::Proxy CreateMessage(::hpb::Arena& arena) {
+  return typename T::Proxy(upb_Message_New(T::minitable(), arena.ptr()),
+                           arena.ptr());
+}
 
 template <typename T>
 void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
@@ -328,7 +335,7 @@ void DeepCopy(const T* source_message, T* target_message) {
 }
 
 template <typename T>
-void ClearMessage(internal::PtrOrRaw<T> message) {
+void ClearMessage(hpb::internal::PtrOrRaw<T> message) {
   auto ptr = Ptr(message);
   auto minitable = internal::GetMiniTable(ptr);
   upb_Message_Clear(internal::GetInternalMsg(ptr), minitable);
@@ -360,7 +367,7 @@ class ExtensionRegistry {
 };
 
 template <typename T, typename Extendee, typename Extension,
-          typename = internal::EnableIfHpbClass<T>>
+          typename = hpb::internal::EnableIfHpbClass<T>>
 ABSL_MUST_USE_RESULT bool HasExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
@@ -369,7 +376,7 @@ ABSL_MUST_USE_RESULT bool HasExtension(
 }
 
 template <typename T, typename Extendee, typename Extension,
-          typename = internal::EnableIfHpbClass<T>>
+          typename = hpb::internal::EnableIfHpbClass<T>>
 ABSL_MUST_USE_RESULT bool HasExtension(
     const T* message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
@@ -377,8 +384,8 @@ ABSL_MUST_USE_RESULT bool HasExtension(
 }
 
 template <typename T, typename Extension,
-          typename = internal::EnableIfHpbClass<T>,
-          typename = internal::EnableIfMutableProto<T>>
+          typename = hpb::internal::EnableIfHpbClass<T>,
+          typename = hpb::internal::EnableIfMutableProto<T>>
 void ClearExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<T, Extension>& id) {
@@ -388,7 +395,7 @@ void ClearExtension(
 }
 
 template <typename T, typename Extension,
-          typename = internal::EnableIfHpbClass<T>>
+          typename = hpb::internal::EnableIfHpbClass<T>>
 void ClearExtension(
     T* message,
     const ::protos::internal::ExtensionIdentifier<T, Extension>& id) {
@@ -396,8 +403,8 @@ void ClearExtension(
 }
 
 template <typename T, typename Extension,
-          typename = internal::EnableIfHpbClass<T>,
-          typename = internal::EnableIfMutableProto<T>>
+          typename = hpb::internal::EnableIfHpbClass<T>,
+          typename = hpb::internal::EnableIfMutableProto<T>>
 absl::Status SetExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
@@ -410,8 +417,8 @@ absl::Status SetExtension(
 }
 
 template <typename T, typename Extension,
-          typename = internal::EnableIfHpbClass<T>,
-          typename = internal::EnableIfMutableProto<T>>
+          typename = hpb::internal::EnableIfHpbClass<T>,
+          typename = hpb::internal::EnableIfMutableProto<T>>
 absl::Status SetExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
@@ -424,8 +431,8 @@ absl::Status SetExtension(
 }
 
 template <typename T, typename Extension,
-          typename = internal::EnableIfHpbClass<T>,
-          typename = internal::EnableIfMutableProto<T>>
+          typename = hpb::internal::EnableIfHpbClass<T>,
+          typename = hpb::internal::EnableIfMutableProto<T>>
 absl::Status SetExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
@@ -440,7 +447,7 @@ absl::Status SetExtension(
 }
 
 template <typename T, typename Extension,
-          typename = internal::EnableIfHpbClass<T>>
+          typename = hpb::internal::EnableIfHpbClass<T>>
 absl::Status SetExtension(
     T* message, const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
     const Extension& value) {
@@ -448,7 +455,7 @@ absl::Status SetExtension(
 }
 
 template <typename T, typename Extension,
-          typename = internal::EnableIfHpbClass<T>>
+          typename = hpb::internal::EnableIfHpbClass<T>>
 absl::Status SetExtension(
     T* message, const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
     Extension&& value) {
@@ -457,7 +464,7 @@ absl::Status SetExtension(
 }
 
 template <typename T, typename Extension,
-          typename = internal::EnableIfHpbClass<T>>
+          typename = hpb::internal::EnableIfHpbClass<T>>
 absl::Status SetExtension(
     T* message, const ::protos::internal::ExtensionIdentifier<T, Extension>& id,
     Ptr<Extension> value) {
@@ -465,7 +472,7 @@ absl::Status SetExtension(
 }
 
 template <typename T, typename Extendee, typename Extension,
-          typename = internal::EnableIfHpbClass<T>>
+          typename = hpb::internal::EnableIfHpbClass<T>>
 absl::StatusOr<Ptr<const Extension>> GetExtension(
     Ptr<T> message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
@@ -483,7 +490,7 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
 }
 
 template <typename T, typename Extendee, typename Extension,
-          typename = internal::EnableIfHpbClass<T>>
+          typename = hpb::internal::EnableIfHpbClass<T>>
 absl::StatusOr<Ptr<const Extension>> GetExtension(
     const T* message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {

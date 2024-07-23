@@ -27,7 +27,7 @@
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 
-namespace protos {
+namespace hpb {
 
 // begin:google_only
 absl::Status MessageAllocationError(SourceLocation loc) {
@@ -80,7 +80,9 @@ absl::Status MessageDecodeError(upb_DecodeStatus status, SourceLocation loc
 //   return absl::Status(absl::StatusCode::kUnknown, "Upb message parse error");
 // }
 // end:github_only
+}  // namespace hpb
 
+namespace protos {
 namespace internal {
 
 using ::hpb::internal::upb_extension_locker_global;
