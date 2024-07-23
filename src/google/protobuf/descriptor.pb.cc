@@ -10530,8 +10530,7 @@ PROTOBUF_NOINLINE void OneofOptions::Clear() {
           }
            {
             // optional .google.protobuf.FeatureSet features = 1;
-            cached_has_bits =
-                this_._impl_._has_bits_[0];
+            cached_has_bits = this_._impl_._has_bits_[0];
             if (cached_has_bits & 0x00000001u) {
               total_size += 1 +
                             ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);

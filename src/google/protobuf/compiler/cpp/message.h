@@ -186,6 +186,10 @@ class MessageGenerator {
   int HasWordIndex(const FieldDescriptor* field) const;
   std::vector<uint32_t> RequiredFieldsBitMask() const;
 
+  // Helper function to reduce nesting levels of deep Emit calls.
+  void EmitUpdateByteSizeForField(const FieldDescriptor* field, io::Printer* p,
+                                  int& cached_has_word_index) const;
+
   const Descriptor* descriptor_;
   int index_in_file_messages_;
   Options options_;

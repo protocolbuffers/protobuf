@@ -1213,6 +1213,55 @@ class AccessorVerifier {
 
 }  // namespace
 
+void MessageGenerator::EmitUpdateByteSizeForField(
+    const FieldDescriptor* field, io::Printer* p,
+    int& cached_has_word_index) const {
+  p->Emit(
+      {{"comment", [&] { PrintFieldComment(Formatter{p}, field, options_); }},
+       {"update_byte_size_for_field",
+        [&] { field_generators_.get(field).GenerateByteSize(p); }},
+       {"update_cached_has_bits",
+        [&] {
+          if (!HasHasbit(field) || field->options().weak()) return;
+
+          int has_bit_index = has_bit_indices_[field->index()];
+
+          if (cached_has_word_index == (has_bit_index / 32)) return;
+
+          cached_has_word_index = (has_bit_index / 32);
+          p->Emit({{"index", cached_has_word_index}},
+                  R"cc(
+                    cached_has_bits = this_.$has_bits$[$index$];
+                  )cc");
+        }},
+       {"check_if_field_present",
+        [&] {
+          if (!HasHasbit(field)) {
+            MayEmitIfNonDefaultCheck(p, "this_.", field);
+            return;
+          }
+
+          if (field->options().weak()) {
+            p->Emit("if (has_$name$())");
+            return;
+          }
+
+          int has_bit_index = has_bit_indices_[field->index()];
+          p->Emit(
+              {{"mask", absl::StrFormat("0x%08xu",
+                                        uint32_t{1} << (has_bit_index % 32))}},
+              "if (cached_has_bits & $mask$)");
+        }}},
+      R"cc(
+        $comment$;
+        $update_cached_has_bits$;
+        $check_if_field_present$ {
+          //~ Force newline.
+          $update_byte_size_for_field$;
+        }
+      )cc");
+}
+
 void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
   p->Emit("// $classname$\n\n");
 
@@ -4748,62 +4797,8 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
                       // Go back and emit checks for each of the fields we
                       // processed.
                       for (const auto* field : fields) {
-                        p->Emit(
-                            {{"comment",
-                              [&] {
-                                PrintFieldComment(Formatter{p}, field,
-                                                  options_);
-                              }},
-                             {"update_byte_size_for_field",
-                              [&] {
-                                field_generators_.get(field).GenerateByteSize(
-                                    p);
-                              }},
-                             {"update_cached_has_bits",
-                              [&] {
-                                if (!HasHasbit(field) ||
-                                    field->options().weak())
-                                  return;
-                                int has_bit_index =
-                                    has_bit_indices_[field->index()];
-                                if (cached_has_word_index ==
-                                    (has_bit_index / 32))
-                                  return;
-                                cached_has_word_index = (has_bit_index / 32);
-                                p->Emit({{"index", cached_has_word_index}},
-                                        R"cc(
-                                          cached_has_bits =
-                                              this_.$has_bits$[$index$];
-                                        )cc");
-                              }},
-                             {"check_if_field_present",
-                              [&] {
-                                if (!HasHasbit(field)) {
-                                  MayEmitIfNonDefaultCheck(p, "this_.", field);
-                                  return;
-                                }
-
-                                if (field->options().weak()) {
-                                  p->Emit("if (has_$name$())");
-                                  return;
-                                }
-
-                                int has_bit_index =
-                                    has_bit_indices_[field->index()];
-                                p->Emit(
-                                    {{"mask", absl::StrFormat(
-                                                  "0x%08xu",
-                                                  1u << (has_bit_index % 32))}},
-                                    "if (cached_has_bits & $mask$)");
-                              }}},
-                            R"cc(
-                              $comment$;
-                              $update_cached_has_bits$;
-                              $check_if_field_present$ {
-                                //~ Force newline.
-                                $update_byte_size_for_field$;
-                              }
-                            )cc");
+                        EmitUpdateByteSizeForField(field, p,
+                                                   cached_has_word_index);
                       }
                     }},
                    {"may_update_cached_has_word_index",
