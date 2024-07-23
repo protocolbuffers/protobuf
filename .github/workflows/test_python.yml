@@ -17,8 +17,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         type: [ Pure, C++]
-        # TODO: b/309627662 - Add coverage for Python 3.12.
-        version: ["3.8", "3.9", "3.10", "3.11"]
+        version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13.0b4"]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -43,7 +42,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:{0}-63dd26c0c7a808d92673a3e52e848189d4ab0f17', matrix.version) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:{0}-384d5abe83a791c6b1ce04f5d7bc0b1f84a30d38', matrix.version) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_linux/${{ matrix.type }}_${{ matrix.version }}
           bazel: test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION
@@ -56,7 +55,7 @@ jobs:
       matrix:
         type: [ Pure, C++]
         # TODO Consider expanding this set of versions.
-        version: [ "3.12" ]
+        version: [ "3.12", "3.13" ]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -73,11 +72,12 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Pin Python version
-        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+        uses: actions/setup-python@v5.1.1
         with:
           python-version: ${{ matrix.version }}
           cache: pip
           cache-dependency-path: 'python/requirements.txt'
+          allow-prereleases: true
 
       - name: Validate version
         run: python3 --version | grep ${{ matrix.version }} || (echo "Invalid Python version - $(python3 --version)" && exit 1)
