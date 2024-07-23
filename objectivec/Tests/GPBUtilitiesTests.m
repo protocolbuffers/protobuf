@@ -6,17 +6,16 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #import <XCTest/XCTest.h>
-
-#import "GPBUtilities_PackagePrivate.h"
-
 #import <objc/runtime.h>
-
-#import "GPBTestUtilities.h"
 
 #import "GPBDescriptor.h"
 #import "GPBDescriptor_PackagePrivate.h"
 #import "GPBMessage.h"
+#import "GPBTestUtilities.h"
+#import "GPBUnknownField.h"
 #import "GPBUnknownField_PackagePrivate.h"
+#import "GPBUtilities.h"
+#import "GPBUtilities_PackagePrivate.h"
 
 #import "objectivec/Tests/MapUnittest.pbobjc.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
@@ -166,6 +165,54 @@
   NSString *expected = [[NSString alloc] initWithData:expectedData encoding:NSUTF8StringEncoding];
   XCTAssertEqualObjects(expected, result);
   [expected release];
+}
+
+- (void)testTextFormatUnknownFields {
+  GPBUnknownFields *ufs = [[[GPBUnknownFields alloc] init] autorelease];
+  [ufs addFieldNumber:100 varint:5];
+  [ufs addFieldNumber:100 varint:4];
+  [ufs addFieldNumber:10 varint:1];
+  [ufs addFieldNumber:300 fixed32:0x50];
+  [ufs addFieldNumber:300 fixed32:0x40];
+  [ufs addFieldNumber:10 fixed32:0x10];
+  [ufs addFieldNumber:200 fixed64:0x5000];
+  [ufs addFieldNumber:200 fixed64:0x4000];
+  [ufs addFieldNumber:10 fixed64:0x1000];
+  [ufs addFieldNumber:10 lengthDelimited:DataFromCStr("foo")];
+  [ufs addFieldNumber:10 lengthDelimited:DataFromCStr("bar")];
+  GPBUnknownFields *group = [ufs addGroupWithFieldNumber:150];
+  [group addFieldNumber:2 varint:2];
+  [group addFieldNumber:1 varint:1];
+  group = [ufs addGroupWithFieldNumber:150];
+  [group addFieldNumber:1 varint:1];
+  [group addFieldNumber:3 fixed32:0x3];
+  [group addFieldNumber:2 fixed64:0x2];
+  TestEmptyMessage *message = [TestEmptyMessage message];
+  [message mergeUnknownFields:ufs extensionRegistry:nil];
+
+  NSString *expected = @"# --- Unknown fields ---\n"
+                       @"10: 1\n"
+                       @"10: 0x10\n"
+                       @"10: 0x1000\n"
+                       @"10: \"foo\"\n"
+                       @"10: \"bar\"\n"
+                       @"100: 5\n"
+                       @"100: 4\n"
+                       @"150: {\n"
+                       @"  1: 1\n"
+                       @"  2: 2\n"
+                       @"}\n"
+                       @"150: {\n"
+                       @"  1: 1\n"
+                       @"  2: 0x2\n"
+                       @"  3: 0x3\n"
+                       @"}\n"
+                       @"200: 0x5000\n"
+                       @"200: 0x4000\n"
+                       @"300: 0x50\n"
+                       @"300: 0x40\n";
+  NSString *result = GPBTextFormatForMessage(message, nil);
+  XCTAssertEqualObjects(expected, result);
 }
 
 - (void)testSetRepeatedFields {
