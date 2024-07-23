@@ -87,10 +87,11 @@ jobs:
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
-      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f #v5.1.1
         with:
           cache: pip
           cache-dependency-path: 'python/requirements.txt'
+          allow-prereleases: true
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
@@ -114,10 +115,11 @@ jobs:
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
-      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f #v5.1.1
         with:
           cache: pip
           cache-dependency-path: 'python/requirements.txt'
+          allow-prereleases: true
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
@@ -189,10 +191,14 @@ jobs:
           - { os: macos-12, python-version: "3.8", architecture: x64, type: 'binary' }
           - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'binary' }
           - { os: macos-13, python-version: "3.12", architecture: x64, type: 'binary' }
+          - { os: ubuntu-latest, python-version: "3.13.0-rc.2", architecture: x64, type: 'binary', continuous-only: true }
+          - { os: macos-13, python-version: "3.13.0-rc.2", architecture: x64, type: 'binary', continuous-only: true }
           - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'source', continuous-only: true }
           - { os: macos-12, python-version: "3.8", architecture: x64, type: 'source', continuous-only: true }
           - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'source', continuous-only: true }
           - { os: macos-13, python-version: "3.12", architecture: x64, type: 'source', continuous-only: true }
+          - { os: ubuntu-latest, python-version: "3.13.0-rc.2", architecture: x64, type: 'source', continuous-only: true }
+          - { os: macos-13, python-version: "3.13.0-rc.2", architecture: x64, type: 'source', continuous-only: true }
 
           # Windows uses the full API up until Python 3.10.
           - { os: windows-2019, python-version: "3.8", architecture: x86, type: 'binary', continuous-only: true }
@@ -200,11 +206,13 @@ jobs:
           - { os: windows-2019, python-version: "3.10", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.11", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.12", architecture: x86, type: 'binary', continuous-only: true }
+          - { os: windows-2019, python-version: "3.13.0-rc.2", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.8", architecture: x64, type: 'binary' }
           - { os: windows-2019, python-version: "3.9", architecture: x64, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.10", architecture: x64, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.11", architecture: x64, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.12", architecture: x64, type: 'binary' }
+          - { os: windows-2019, python-version: "3.13.0-rc.2", architecture: x64, type: 'binary', continuous-only: true }
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Test Wheels Python ${{ matrix.python-version }} ${{ matrix.os }} ${{ matrix.architecture }} ${{ matrix.type }}
     needs: build_wheels
     runs-on: ${{ matrix.os }}
@@ -225,11 +233,12 @@ jobs:
         with:
           name: requirements
           path: requirements
-      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f #v5.1.1
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ matrix.architecture }}
+          allow-prereleases: true
       - name: Setup Python venv
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         run: |
@@ -275,7 +284,7 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        python-version: ["3.8", "3.12"]
+        python-version: ["3.8", "3.12", "3.13.0-rc.2"]
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:
@@ -286,9 +295,10 @@ jobs:
           path: wheels
       - name: Delete Binary Wheels
         run: find wheels -type f | grep -v none-any | xargs rm
-      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f #v5.1.1
         with:
           python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
       - name: Setup Python venv
         run: |
           python -m pip install --upgrade pip
