@@ -11,7 +11,10 @@
 
 use crate::__internal::Private;
 use crate::__runtime::{InnerProtoString, PtrAndLen, RawMessage};
-use crate::{IntoProxied, Mut, MutProxied, MutProxy, Optional, Proxied, Proxy, View, ViewProxy};
+use crate::{
+    AsView, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Optional, Proxied, Proxy, View,
+    ViewProxy,
+};
 use std::borrow::Cow;
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use std::convert::{AsMut, AsRef};
@@ -114,13 +117,17 @@ impl IntoProxied<ProtoBytes> for Arc<[u8]> {
     }
 }
 
-impl<'msg> Proxy<'msg> for &'msg [u8] {
+impl<'msg> Proxy<'msg> for &'msg [u8] {}
+
+impl AsView for &[u8] {
     type Proxied = ProtoBytes;
 
     fn as_view(&self) -> &[u8] {
         self
     }
+}
 
+impl<'msg> IntoView<'msg> for &'msg [u8] {
     fn into_view<'shorter>(self) -> &'shorter [u8]
     where
         'msg: 'shorter,
@@ -481,13 +488,17 @@ impl Proxied for ProtoString {
     type View<'msg> = &'msg ProtoStr;
 }
 
-impl<'msg> Proxy<'msg> for &'msg ProtoStr {
+impl<'msg> Proxy<'msg> for &'msg ProtoStr {}
+
+impl AsView for &ProtoStr {
     type Proxied = ProtoString;
 
     fn as_view(&self) -> &ProtoStr {
         self
     }
+}
 
+impl<'msg> IntoView<'msg> for &'msg ProtoStr {
     fn into_view<'shorter>(self) -> &'shorter ProtoStr
     where
         'msg: 'shorter,

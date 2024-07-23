@@ -72,7 +72,7 @@ pub trait MutProxied: Proxied {
     /// `&'msg mut T`.
     ///
     /// Most code should use the type alias [`Mut`].
-    type Mut<'msg>: MutProxy<'msg, Proxied = Self>
+    type Mut<'msg>: MutProxy<'msg, MutProxied = Self>
     where
         Self: 'msg;
 }
@@ -90,13 +90,13 @@ pub type View<'msg, T> = <T as Proxied>::View<'msg>;
 #[allow(dead_code)]
 pub type Mut<'msg, T> = <T as MutProxied>::Mut<'msg>;
 
-/// Declares conversion operations common to all proxies (both views and mut
-/// proxies).
+/// Used to semantically do a cheap "to-reference" conversion. This is
+/// implemented on both owned `Proxied` types as well as ViewProxy and MutProxy
+/// types.
 ///
-/// This trait is intentionally made non-object-safe to prevent a potential
-/// future incompatible change.
-pub trait Proxy<'msg>: 'msg + Sync + Unpin + Sized + Debug {
-    type Proxied: 'msg + Proxied;
+/// On ViewProxy this will behave as a reborrow into a shorter lifetime.
+pub trait AsView {
+    type Proxied: Proxied;
 
     /// Converts a borrow into a `View` with the lifetime of that borrow.
     ///
@@ -118,7 +118,16 @@ pub trait Proxy<'msg>: 'msg + Sync + Unpin + Sized + Debug {
     ///
     /// [invariant]: https://doc.rust-lang.org/nomicon/subtyping.html#variance
     fn as_view(&self) -> View<'_, Self::Proxied>;
+}
 
+/// Used to turn another 'borrow' into a ViewProxy.
+///
+/// On a MutProxy this borrows to a View (semantically matching turning a `&mut
+/// T` into a `&T`).
+///
+/// On a ViewProxy this will behave as a reborrow into a shorter lifetime
+/// (semantically matching a `&'a T` into a `&'b T` where `'a: 'b`).
+pub trait IntoView<'msg>: AsView {
     /// Converts into a `View` with a potentially shorter lifetime.
     ///
     /// In non-generic code we don't need to use `into_view` because the proxy
@@ -149,41 +158,22 @@ pub trait Proxy<'msg>: 'msg + Sync + Unpin + Sized + Debug {
         'msg: 'shorter;
 }
 
-/// Declares conversion operations common to view proxies.
-pub trait ViewProxy<'msg>: Proxy<'msg> + Copy + Send {}
-
-/// Declares operations common to all mut proxies.
+/// Used to semantically do a cheap "to-mut-reference" conversion. This is
+/// implemented on both owned `Proxied` types as well as MutProxy types.
 ///
-/// This trait is intentionally made non-object-safe to prevent a potential
-/// future incompatible change.
-pub trait MutProxy<'msg>: Proxy<'msg>
-where
-    Self::Proxied: MutProxied,
-{
-    /// Gets an immutable view of this field. This is shorthand for `as_view`.
-    ///
-    /// This provides a shorter lifetime than `into_view` but can also be called
-    /// multiple times - if the result of `get` is not living long enough
-    /// for your use, use that instead.
-    fn get(&self) -> View<'_, Self::Proxied> {
-        self.as_view()
-    }
+/// On MutProxy this will behave as a reborrow into a shorter lifetime.
+pub trait AsMut: AsView<Proxied = Self::MutProxied> {
+    type MutProxied: MutProxied;
 
     /// Converts a borrow into a `Mut` with the lifetime of that borrow.
-    ///
-    /// This function enables calling multiple methods consuming `self`, for
-    /// example:
-    ///
-    /// ```ignore
-    ///   let mut sub: Mut<SubMsg> = msg.submsg_mut();
-    ///   sub.as_mut().field_x_mut().set(10);  // field_x_mut is fn(self)
-    ///   sub.field_y_mut().set(20);  // `sub` is now consumed
-    /// ```
-    ///
-    /// `as_mut` is also useful in generic code to explicitly perform the
-    /// operation that in concrete code coercion would perform implicitly.
-    fn as_mut(&mut self) -> Mut<'_, Self::Proxied>;
+    fn as_mut(&mut self) -> Mut<'_, Self::MutProxied>;
+}
 
+/// Used to turn another 'borrow' into a MutProxy.
+///
+/// On a MutProxy this will behave as a reborrow into a shorter lifetime
+/// (semantically matching a `&mut 'a T` into a `&mut 'b T` where `'a: 'b`).
+pub trait IntoMut<'msg>: AsMut {
     /// Converts into a `Mut` with a potentially shorter lifetime.
     ///
     /// In non-generic code we don't need to use `into_mut` because the proxy
@@ -206,9 +196,34 @@ where
     /// ```
     ///
     /// [invariant]: https://doc.rust-lang.org/nomicon/subtyping.html#variance
-    fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
+    fn into_mut<'shorter>(self) -> Mut<'shorter, Self::MutProxied>
     where
         'msg: 'shorter;
+}
+
+/// Declares conversion operations common to all proxies (both views and mut
+/// proxies).
+///
+/// This trait is intentionally made non-object-safe to prevent a potential
+/// future incompatible change.
+pub trait Proxy<'msg>: 'msg + IntoView<'msg> + Sync + Unpin + Sized + Debug {}
+
+/// Declares conversion operations common to view proxies.
+pub trait ViewProxy<'msg>: Proxy<'msg> + Copy + Send {}
+
+/// Declares operations common to all mut proxies.
+///
+/// This trait is intentionally made non-object-safe to prevent a potential
+/// future incompatible change.
+pub trait MutProxy<'msg>: Proxy<'msg> + AsMut + IntoMut<'msg> {
+    /// Gets an immutable view of this field. This is shorthand for `as_view`.
+    ///
+    /// This provides a shorter lifetime than `into_view` but can also be called
+    /// multiple times - if the result of `get` is not living long enough
+    /// for your use, use that instead.
+    fn get(&self) -> View<'_, Self::Proxied> {
+        self.as_view()
+    }
 }
 
 /// A value to `Proxied`-value conversion that consumes the input value.
@@ -263,34 +278,43 @@ mod tests {
         }
     }
 
-    impl<'msg> Proxy<'msg> for MyProxiedView<'msg> {
+    impl<'msg> Proxy<'msg> for MyProxiedView<'msg> {}
+
+    impl<'msg> ViewProxy<'msg> for MyProxiedView<'msg> {}
+
+    impl<'msg> AsView for MyProxiedView<'msg> {
         type Proxied = MyProxied;
 
-        fn as_view(&self) -> View<'msg, MyProxied> {
+        fn as_view(&self) -> MyProxiedView<'msg> {
             *self
         }
+    }
 
-        fn into_view<'shorter>(self) -> View<'shorter, MyProxied>
+    impl<'msg> IntoView<'msg> for MyProxiedView<'msg> {
+        fn into_view<'shorter>(self) -> MyProxiedView<'shorter>
         where
             'msg: 'shorter,
         {
             self
         }
     }
-
-    impl<'msg> ViewProxy<'msg> for MyProxiedView<'msg> {}
 
     #[derive(Debug)]
     struct MyProxiedMut<'msg> {
         my_proxied_ref: &'msg mut MyProxied,
     }
 
-    impl<'msg> Proxy<'msg> for MyProxiedMut<'msg> {
+    impl<'msg> Proxy<'msg> for MyProxiedMut<'msg> {}
+
+    impl<'msg> AsView for MyProxiedMut<'msg> {
         type Proxied = MyProxied;
 
-        fn as_view(&self) -> View<'_, MyProxied> {
+        fn as_view(&self) -> MyProxiedView<'_> {
             MyProxiedView { my_proxied_ref: self.my_proxied_ref }
         }
+    }
+
+    impl<'msg> IntoView<'msg> for MyProxiedMut<'msg> {
         fn into_view<'shorter>(self) -> View<'shorter, MyProxied>
         where
             'msg: 'shorter,
@@ -299,18 +323,24 @@ mod tests {
         }
     }
 
-    impl<'msg> MutProxy<'msg> for MyProxiedMut<'msg> {
-        fn as_mut(&mut self) -> Mut<'_, MyProxied> {
+    impl<'msg> AsMut for MyProxiedMut<'msg> {
+        type MutProxied = MyProxied;
+
+        fn as_mut(&mut self) -> MyProxiedMut<'_> {
             MyProxiedMut { my_proxied_ref: self.my_proxied_ref }
         }
+    }
 
-        fn into_mut<'shorter>(self) -> Mut<'shorter, MyProxied>
+    impl<'msg> IntoMut<'msg> for MyProxiedMut<'msg> {
+        fn into_mut<'shorter>(self) -> MyProxiedMut<'shorter>
         where
             'msg: 'shorter,
         {
             self
         }
     }
+
+    impl<'msg> MutProxy<'msg> for MyProxiedMut<'msg> {}
 
     #[googletest::test]
     fn test_as_view() {
@@ -427,7 +457,8 @@ mod tests {
         // `[x, y]` fails to compile because `'a` is not the same as `'b` and the `Mut`
         // lifetime parameter is (conservatively) invariant.
         // `[x.as_mut(), y]` fails because that borrow cannot outlive `'b`.
-        [x.into_mut(), y]
+        let tmp: Mut<'b, T> = x.into_mut();
+        [tmp, y]
     }
 
     #[googletest::test]

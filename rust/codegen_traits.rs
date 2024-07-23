@@ -43,7 +43,7 @@ pub trait MessageView<'msg>: ViewProxy<'msg, Proxied = Self::Message>
 
 /// A trait that all generated message muts implement.
 pub trait MessageMut<'msg>:
-    MutProxy<'msg, Proxied = Self::Message>
+    MutProxy<'msg, MutProxied = Self::Message>
     // Read traits:
     + Debug + Serialize
     // Write traits:

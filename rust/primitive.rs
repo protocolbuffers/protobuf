@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 use crate::__internal::Private;
-use crate::{IntoProxied, Proxied, Proxy, View, ViewProxy};
+use crate::{AsView, IntoProxied, IntoView, Proxied, Proxy, ViewProxy};
 
 macro_rules! impl_singular_primitives {
   ($($t:ty),*) => {
@@ -15,15 +15,22 @@ macro_rules! impl_singular_primitives {
         }
 
         impl<'msg> Proxy<'msg> for $t {
+        }
+
+        impl AsView for $t {
             type Proxied = $t;
 
-            fn as_view(&self) -> View<'_, Self::Proxied> {
-                *self
-            }
+            fn as_view(&self) -> $t {
+              *self
+          }
+        }
 
-            fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied> {
-                self
-            }
+        impl<'msg> IntoView<'msg> for $t {
+            fn into_view<'shorter>(self) -> $t
+            where
+                'msg: 'shorter {
+              self
+          }
         }
 
         impl<'msg> ViewProxy<'msg> for $t {}

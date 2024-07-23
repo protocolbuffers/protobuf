@@ -6,7 +6,8 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use crate::{
-    IntoProxied, Mut, MutProxied, MutProxy, Proxied, Proxy, View, ViewProxy,
+    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy, View,
+    ViewProxy,
     __internal::Private,
     __runtime::{InnerMap, InnerMapMut, RawMap, RawMapIter},
 };
@@ -112,14 +113,18 @@ impl<K: Proxied, V: ProxiedInMapValue<K>> MutProxied for Map<K, V> {
     type Mut<'msg> = MapMut<'msg, K, V> where K: 'msg, V: 'msg;
 }
 
-impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> Proxy<'msg> for MapView<'msg, K, V> {
+impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> Proxy<'msg> for MapView<'msg, K, V> {}
+
+impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> AsView for MapView<'msg, K, V> {
     type Proxied = Map<K, V>;
 
-    fn as_view(&self) -> View<'_, Self::Proxied> {
+    fn as_view(&self) -> MapView<'_, K, V> {
         *self
     }
+}
 
-    fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
+impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> IntoView<'msg> for MapView<'msg, K, V> {
+    fn into_view<'shorter>(self) -> MapView<'shorter, K, V>
     where
         'msg: 'shorter,
     {
@@ -129,14 +134,18 @@ impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> Proxy<'msg> for MapView<'msg, K,
 
 impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> ViewProxy<'msg> for MapView<'msg, K, V> {}
 
-impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> Proxy<'msg> for MapMut<'msg, K, V> {
+impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> Proxy<'msg> for MapMut<'msg, K, V> {}
+
+impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> AsView for MapMut<'msg, K, V> {
     type Proxied = Map<K, V>;
 
-    fn as_view(&self) -> View<'_, Self::Proxied> {
+    fn as_view(&self) -> MapView<'_, K, V> {
         MapView { raw: self.inner.raw, _phantom: PhantomData }
     }
+}
 
-    fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
+impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> IntoView<'msg> for MapMut<'msg, K, V> {
+    fn into_view<'shorter>(self) -> MapView<'shorter, K, V>
     where
         'msg: 'shorter,
     {
@@ -144,18 +153,24 @@ impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> Proxy<'msg> for MapMut<'msg, K, 
     }
 }
 
-impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> MutProxy<'msg> for MapMut<'msg, K, V> {
-    fn as_mut(&mut self) -> Mut<'_, Self::Proxied> {
+impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> AsMut for MapMut<'msg, K, V> {
+    type MutProxied = Map<K, V>;
+
+    fn as_mut(&mut self) -> MapMut<'_, K, V> {
         MapMut { inner: self.inner, _phantom: PhantomData }
     }
+}
 
-    fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
+impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> IntoMut<'msg> for MapMut<'msg, K, V> {
+    fn into_mut<'shorter>(self) -> MapMut<'shorter, K, V>
     where
         'msg: 'shorter,
     {
         MapMut { inner: self.inner, _phantom: PhantomData }
     }
 }
+
+impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> MutProxy<'msg> for MapMut<'msg, K, V> {}
 
 impl<K, V> Map<K, V>
 where

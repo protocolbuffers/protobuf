@@ -33,7 +33,8 @@ pub mod __public {
     pub use crate::optional::Optional;
     pub use crate::proto;
     pub use crate::proxied::{
-        IntoProxied, Mut, MutProxied, MutProxy, Proxied, Proxy, View, ViewProxy,
+        AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy,
+        View, ViewProxy,
     };
     pub use crate::repeated::{
         ProxiedInRepeated, Repeated, RepeatedIter, RepeatedMut, RepeatedView,

@@ -15,7 +15,8 @@ use std::iter::FusedIterator;
 use std::marker::PhantomData;
 
 use crate::{
-    IntoProxied, Mut, MutProxied, MutProxy, Proxied, Proxy, View, ViewProxy,
+    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy, View,
+    ViewProxy,
     __internal::Private,
     __runtime::{InnerRepeated, InnerRepeatedMut, RawRepeatedField},
 };
@@ -397,17 +398,24 @@ where
     type Mut<'msg> = RepeatedMut<'msg, T> where Repeated<T>: 'msg;
 }
 
-impl<'msg, T> Proxy<'msg> for RepeatedView<'msg, T>
+impl<'msg, T> Proxy<'msg> for RepeatedView<'msg, T> where T: ProxiedInRepeated + 'msg {}
+
+impl<'msg, T> AsView for RepeatedView<'msg, T>
 where
     T: ProxiedInRepeated + 'msg,
 {
     type Proxied = Repeated<T>;
 
     #[inline]
-    fn as_view(&self) -> View<'_, Self::Proxied> {
+    fn as_view(&self) -> View<'msg, Self::Proxied> {
         *self
     }
+}
 
+impl<'msg, T> IntoView<'msg> for RepeatedView<'msg, T>
+where
+    T: ProxiedInRepeated + 'msg,
+{
     #[inline]
     fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
     where
@@ -419,43 +427,59 @@ where
 
 impl<'msg, T> ViewProxy<'msg> for RepeatedView<'msg, T> where T: ProxiedInRepeated + 'msg {}
 
-impl<'msg, T> Proxy<'msg> for RepeatedMut<'msg, T>
+impl<'msg, T> Proxy<'msg> for RepeatedMut<'msg, T> where T: ProxiedInRepeated + 'msg {}
+
+impl<'msg, T> AsView for RepeatedMut<'msg, T>
 where
     T: ProxiedInRepeated + 'msg,
 {
     type Proxied = Repeated<T>;
 
     #[inline]
-    fn as_view(&self) -> View<'_, Self::Proxied> {
-        RepeatedView { raw: self.inner.raw, _phantom: PhantomData }
-    }
-
-    #[inline]
-    fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
-    where
-        'msg: 'shorter,
-    {
+    fn as_view(&self) -> RepeatedView<'_, T> {
         RepeatedView { raw: self.inner.raw, _phantom: PhantomData }
     }
 }
 
-impl<'msg, T> MutProxy<'msg> for RepeatedMut<'msg, T>
+impl<'msg, T> IntoView<'msg> for RepeatedMut<'msg, T>
 where
     T: ProxiedInRepeated + 'msg,
 {
     #[inline]
-    fn as_mut(&mut self) -> Mut<'_, Self::Proxied> {
-        RepeatedMut { inner: self.inner, _phantom: PhantomData }
+    fn into_view<'shorter>(self) -> RepeatedView<'shorter, T>
+    where
+        'msg: 'shorter,
+    {
+        RepeatedView { raw: self.inner.raw, _phantom: PhantomData }
     }
+}
+
+impl<'msg, T> AsMut for RepeatedMut<'msg, T>
+where
+    T: ProxiedInRepeated + 'msg,
+{
+    type MutProxied = Repeated<T>;
 
     #[inline]
-    fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
+    fn as_mut(&mut self) -> RepeatedMut<'_, T> {
+        RepeatedMut { inner: self.inner, _phantom: PhantomData }
+    }
+}
+
+impl<'msg, T> IntoMut<'msg> for RepeatedMut<'msg, T>
+where
+    T: ProxiedInRepeated + 'msg,
+{
+    #[inline]
+    fn into_mut<'shorter>(self) -> RepeatedMut<'shorter, T>
     where
         'msg: 'shorter,
     {
         RepeatedMut { inner: self.inner, _phantom: PhantomData }
     }
 }
+
+impl<'msg, T> MutProxy<'msg> for RepeatedMut<'msg, T> where T: ProxiedInRepeated + 'msg {}
 
 impl<'msg, T> iter::Iterator for RepeatedIter<'msg, T>
 where

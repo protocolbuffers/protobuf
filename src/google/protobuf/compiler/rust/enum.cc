@@ -405,19 +405,22 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
         type View<'a> = $name$;
       }
 
-      impl $pb$::Proxy<'_> for $name$ {
+      impl $pb$::Proxy<'_> for $name$ {}
+      impl $pb$::ViewProxy<'_> for $name$ {}
+
+      impl $pb$::AsView for $name$ {
         type Proxied = $name$;
 
         fn as_view(&self) -> $name$ {
           *self
         }
+      }
 
-        fn into_view<'shorter>(self) -> $pb$::View<'shorter, $name$> {
+      impl<'msg> $pb$::IntoView<'msg> for $name$ {
+        fn into_view<'shorter>(self) -> $name$ where 'msg: 'shorter {
           self
         }
       }
-
-      impl $pb$::ViewProxy<'_> for $name$ {}
 
       unsafe impl $pb$::ProxiedInRepeated for $name$ {
         fn repeated_new(_private: $pbi$::Private) -> $pb$::Repeated<Self> {
