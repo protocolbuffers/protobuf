@@ -419,6 +419,17 @@
 
   // All the values should be in unknown fields.
 
+  GPBUnknownFields *ufs = [[GPBUnknownFields alloc] initFromMessage:msg];
+  XCTAssertEqual(ufs.count, 3U);
+  uint64_t varint;
+  XCTAssertTrue([ufs getFirst:Message2_FieldNumber_OptionalEnum varint:&varint]);
+  XCTAssertEqual(varint, (uint64_t)Message3_Enum_Extra3);
+  XCTAssertTrue([ufs getFirst:Message2_FieldNumber_RepeatedEnumArray varint:&varint]);
+  XCTAssertEqual(varint, (uint64_t)Message3_Enum_Extra3);
+  XCTAssertTrue([ufs getFirst:Message2_FieldNumber_OneofEnum varint:&varint]);
+  XCTAssertEqual(varint, (uint64_t)Message3_Enum_Extra3);
+  [ufs release];
+
   GPBUnknownFieldSet *unknownFields = msg.unknownFields;
 
   XCTAssertEqual([unknownFields countOfFields], 3U);
@@ -1398,6 +1409,9 @@
   int32_t val = -1;
   XCTAssertTrue([msg1.knownMapField getEnum:&val forKey:0]);
   XCTAssertEqual(val, Proto2MapEnum_Proto2MapEnumFoo);
+  GPBUnknownFields *ufs = [[GPBUnknownFields alloc] initFromMessage:msg1];
+  XCTAssertEqual(ufs.count, 1U);
+  [ufs release];
   XCTAssertEqual(msg1.unknownFields.countOfFields, 1U);
 
   data = [msg1 data];
@@ -1410,6 +1424,9 @@
   XCTAssertEqual(msg2.unknownMapField.count, 1U);
   XCTAssertTrue([msg2.unknownMapField getEnum:&val forKey:0]);
   XCTAssertEqual(val, Proto2MapEnumPlusExtra_EProto2MapEnumExtra);
+  ufs = [[GPBUnknownFields alloc] initFromMessage:msg2];
+  XCTAssertTrue(ufs.empty);
+  [ufs release];
   XCTAssertEqual(msg2.unknownFields.countOfFields, 0U);
 
   XCTAssertEqualObjects(orig, msg2);
