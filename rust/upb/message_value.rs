@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use crate::{RawArray, RawMap, RawMessage, StringView};
+use super::{RawArray, RawMap, RawMessage, StringView};
 
 // Transcribed from google3/third_party/upb/upb/message/value.h
 #[repr(C)]

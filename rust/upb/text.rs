@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use crate::{upb_MiniTable, RawMessage};
+use super::{upb_MiniTable, RawMessage};
 
 extern "C" {
     /// Returns the minimum needed length (excluding NULL) that `buf` has to be
