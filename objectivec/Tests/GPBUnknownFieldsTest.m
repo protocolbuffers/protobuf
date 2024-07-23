@@ -918,7 +918,6 @@ static NSData* DataForGroupsOfDepth(NSUInteger depth) {
   uint64_t fixed64 = 0;
   XCTAssertTrue([group getFirst:3 fixed64:&fixed64]);
   XCTAssertEqual(fixed64, 0x123456789abcdef0LL);
-  XCTAssertEqual(m.unknownFields.countOfFields, (NSUInteger)1);
 
   m = [TestEmptyMessage parseFromData:DataFromBytes(35, 50, 0, 36)
                                 error:NULL];  // length delimited, length 0

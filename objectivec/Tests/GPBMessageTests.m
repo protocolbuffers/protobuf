@@ -13,8 +13,10 @@
 #import "GPBDictionary_PackagePrivate.h"
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBTestUtilities.h"
+#import "GPBUnknownField.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUnknownField_PackagePrivate.h"
+#import "GPBUnknownFields.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
 #import "objectivec/Tests/UnittestImport.pbobjc.h"
 #import "objectivec/Tests/UnittestObjc.pbobjc.h"
@@ -501,6 +503,11 @@
 
   [message setUnknownFields:unknownFields];
 
+  GPBUnknownFields *ufs = [[[GPBUnknownFields alloc] init] autorelease];
+  [ufs addFieldNumber:1234 fixed32:1234];
+  [ufs addFieldNumber:2345 varint:54321];
+  [message mergeUnknownFields:ufs extensionRegistry:nil];
+
   NSString *description = [message description];
   XCTAssertGreaterThan([description length], 0U);
 
@@ -984,6 +991,19 @@
   message.optionalNestedMessage = nil;
   XCTAssertFalse([message hasOptionalNestedMessage]);
   [message.optionalNestedMessage setUnknownFields:unknownFields];
+  XCTAssertTrue([message hasOptionalNestedMessage]);
+
+  message.optionalNestedMessage = nil;
+  XCTAssertFalse([message hasOptionalNestedMessage]);
+  GPBUnknownFields *ufs = [[[GPBUnknownFields alloc] init] autorelease];
+  [ufs addFieldNumber:1 varint:1];
+  [message.optionalNestedMessage mergeUnknownFields:ufs extensionRegistry:nil];
+  XCTAssertTrue([message hasOptionalNestedMessage]);
+
+  message.optionalNestedMessage = nil;
+  XCTAssertFalse([message hasOptionalNestedMessage]);
+  [ufs clear];  // Also make sure merging zero length forces it to become visible.
+  [message.optionalNestedMessage mergeUnknownFields:ufs extensionRegistry:nil];
   XCTAssertTrue([message hasOptionalNestedMessage]);
 }
 
@@ -1481,6 +1501,19 @@
   XCTAssertFalse([msg hasExtension:[UnittestRoot repeatedNestedEnumExtension]]);
   XCTAssertFalse([msg hasExtension:[UnittestRoot repeatedForeignEnumExtension]]);
 
+  GPBUnknownFields *ufs = [[[GPBUnknownFields alloc] initFromMessage:msg] autorelease];
+  XCTAssertEqual(ufs.count, 3);
+  uint64_t varint;
+  XCTAssertTrue([ufs getFirst:[UnittestRoot optionalNestedEnumExtension].fieldNumber
+                       varint:&varint]);
+  XCTAssertEqual(varint, 10);
+  XCTAssertTrue([ufs getFirst:[UnittestRoot repeatedNestedEnumExtension].fieldNumber
+                       varint:&varint]);
+  XCTAssertEqual(varint, 11);
+  XCTAssertTrue([ufs getFirst:[UnittestRoot repeatedForeignEnumExtension].fieldNumber
+                       varint:&varint]);
+  XCTAssertEqual(varint, 12);
+
   GPBUnknownFieldSet *unknownFields = msg.unknownFields;
   GPBUnknownField *field =
       [unknownFields getField:[UnittestRoot optionalNestedEnumExtension].fieldNumber];
@@ -1522,6 +1555,18 @@
   XCTAssertTrue([msg hasExtension:[UnittestRoot repeatedForeignEnumExtension]]);
   expected = @[ @4, @6 ];
   XCTAssertEqualObjects([msg getExtension:[UnittestRoot repeatedForeignEnumExtension]], expected);
+
+  ufs = [[[GPBUnknownFields alloc] initFromMessage:msg] autorelease];
+  XCTAssertEqual(ufs.count, 3);
+  XCTAssertTrue([ufs getFirst:[UnittestRoot optionalNestedEnumExtension].fieldNumber
+                       varint:&varint]);
+  XCTAssertEqual(varint, 10);
+  XCTAssertTrue([ufs getFirst:[UnittestRoot repeatedNestedEnumExtension].fieldNumber
+                       varint:&varint]);
+  XCTAssertEqual(varint, 11);
+  XCTAssertTrue([ufs getFirst:[UnittestRoot repeatedForeignEnumExtension].fieldNumber
+                       varint:&varint]);
+  XCTAssertEqual(varint, 12);
 
   unknownFields = msg.unknownFields;
   field = [unknownFields getField:[UnittestRoot optionalNestedEnumExtension].fieldNumber];
@@ -1840,6 +1885,9 @@
   [unknowns mergeVarintField:123 value:456];
   GPBMessage *message = [GPBMessage message];
   [message setUnknownFields:unknowns];
+  GPBUnknownFields *ufs = [[[GPBUnknownFields alloc] init] autorelease];
+  [ufs addFieldNumber:1234 varint:5678];
+  [message mergeUnknownFields:ufs extensionRegistry:nil];
   NSData *data = [message data];
   GPBMessage *message2 = [GPBMessage parseFromData:data extensionRegistry:nil error:NULL];
   XCTAssertEqualObjects(message, message2);
@@ -1850,12 +1898,19 @@
   [unknowns1 mergeVarintField:123 value:456];
   GPBMessage *message1 = [GPBMessage message];
   [message1 setUnknownFields:unknowns1];
+  GPBUnknownFields *ufs1 = [[[GPBUnknownFields alloc] init] autorelease];
+  [ufs1 addFieldNumber:1234 varint:5678];
+  [message1 mergeUnknownFields:ufs1 extensionRegistry:nil];
 
   GPBUnknownFieldSet *unknowns2 = [[[GPBUnknownFieldSet alloc] init] autorelease];
   [unknowns2 mergeVarintField:789 value:987];
   [unknowns2 mergeVarintField:654 value:321];
   GPBMessage *message2 = [GPBMessage message];
   [message2 setUnknownFields:unknowns2];
+  GPBUnknownFields *ufs2 = [[[GPBUnknownFields alloc] init] autorelease];
+  [ufs2 addFieldNumber:2345 fixed32:6789];
+  [ufs2 addFieldNumber:3456 fixed32:7890];
+  [message2 mergeUnknownFields:ufs2 extensionRegistry:nil];
 
   NSMutableData *delimitedData = [NSMutableData data];
   [delimitedData appendData:[message1 delimitedData]];

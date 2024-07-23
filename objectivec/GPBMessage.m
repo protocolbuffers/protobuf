@@ -2085,6 +2085,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 - (BOOL)mergeFromData:(NSData *)data
     extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
                 error:(NSError **)errorPtr {
+  GPBBecomeVisibleToAutocreator(self);
   GPBCodedInputStream *input = [[GPBCodedInputStream alloc] initWithData:data];
   @try {
     [self mergeFromCodedInputStream:input extensionRegistry:extensionRegistry endingTag:0];

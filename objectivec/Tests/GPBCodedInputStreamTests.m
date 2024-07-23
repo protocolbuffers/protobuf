@@ -11,7 +11,9 @@
 #import "GPBCodedInputStream_PackagePrivate.h"
 #import "GPBCodedOutputStream.h"
 #import "GPBTestUtilities.h"
+#import "GPBUnknownField.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
+#import "GPBUnknownFields.h"
 #import "GPBUtilities_PackagePrivate.h"
 #import "GPBWireFormat.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
@@ -268,20 +270,55 @@
   TestAllTypes* message = [self allSetRepeatedCount:kGPBDefaultRepeatCount];
   NSData* rawBytes = message.data;
 
-  // Create two parallel inputs.  Parse one as unknown fields while using
-  // skipField() to skip each field on the other.  Expect the same tags.
+  TestEmptyMessage* empty = [TestEmptyMessage parseFromData:rawBytes error:NULL];
+  XCTAssertNotNil(empty);
+  GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] initFromMessage:empty] autorelease];
+  NSMutableArray<NSNumber*>* fieldNumbers = [NSMutableArray arrayWithCapacity:ufs.count];
+  for (GPBUnknownField* field in ufs) {
+    GPBWireFormat wireFormat;
+    switch (field.type) {
+      case GPBUnknownFieldTypeFixed32:
+        wireFormat = GPBWireFormatFixed32;
+        break;
+      case GPBUnknownFieldTypeFixed64:
+        wireFormat = GPBWireFormatFixed64;
+        break;
+      case GPBUnknownFieldTypeVarint:
+        wireFormat = GPBWireFormatVarint;
+        break;
+      case GPBUnknownFieldTypeLengthDelimited:
+        wireFormat = GPBWireFormatLengthDelimited;
+        break;
+      case GPBUnknownFieldTypeGroup:
+        wireFormat = GPBWireFormatStartGroup;
+        break;
+      case GPBUnknownFieldTypeLegacy:
+        XCTFail(@"Legacy field type not expected");
+        wireFormat = GPBWireFormatVarint;
+        break;
+    }
+    uint32_t tag = GPBWireFormatMakeTag(field.number, wireFormat);
+    [fieldNumbers addObject:@(tag)];
+  }
+
+  // Check the tags compared to what's in the UnknownFields to confirm the stream is
+  // skipping as expected (this covers the tags within a group also).
   GPBCodedInputStream* input1 = [GPBCodedInputStream streamWithData:rawBytes];
   GPBCodedInputStream* input2 = [GPBCodedInputStream streamWithData:rawBytes];
   GPBUnknownFieldSet* unknownFields = [[[GPBUnknownFieldSet alloc] init] autorelease];
 
+  NSUInteger idx = 0;
   while (YES) {
     int32_t tag = [input1 readTag];
     XCTAssertEqual(tag, [input2 readTag]);
     if (tag == 0) {
+      XCTAssertEqual(idx, fieldNumbers.count);
       break;
     }
+    XCTAssertEqual(tag, [fieldNumbers[idx] intValue]);
     [unknownFields mergeFieldFrom:tag input:input1];
     [input2 skipField:tag];
+    ++idx;
   }
 }
 

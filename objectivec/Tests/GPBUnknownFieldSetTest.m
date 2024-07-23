@@ -282,6 +282,10 @@
   TestEmptyMessage* destination2 = [TestEmptyMessage message];
   [destination2 mergeFrom:source3];
 
+  XCTAssertEqualObjects(destination1.unknownFields, destination2.unknownFields);
+  XCTAssertEqualObjects(destination1.unknownFields, source3.unknownFields);
+  XCTAssertEqualObjects(destination2.unknownFields, source3.unknownFields);
+
   XCTAssertEqualObjects(destination1.data, destination2.data);
   XCTAssertEqualObjects(destination1.data, source3.data);
   XCTAssertEqualObjects(destination2.data, source3.data);
