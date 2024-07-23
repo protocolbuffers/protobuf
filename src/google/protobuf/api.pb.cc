@@ -602,8 +602,7 @@ PROTOBUF_NOINLINE void Api::Clear() {
           }
            {
             // .google.protobuf.SourceContext source_context = 5;
-            cached_has_bits =
-                this_._impl_._has_bits_[0];
+            cached_has_bits = this_._impl_._has_bits_[0];
             if (cached_has_bits & 0x00000001u) {
               total_size += 1 +
                             ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.source_context_);
