@@ -513,6 +513,11 @@ TEST_F(CodedStreamTest, VarintSize64PowersOfTwo) {
 // -------------------------------------------------------------------
 // Fixed-size int tests
 
+struct Fixed16Case {
+  uint8_t bytes[sizeof(uint16_t)];  // Encoded bytes.
+  uint32_t value;                   // Parsed value.
+};
+
 struct Fixed32Case {
   uint8_t bytes[sizeof(uint32_t)];  // Encoded bytes.
   uint32_t value;                   // Parsed value.
@@ -522,6 +527,13 @@ struct Fixed64Case {
   uint8_t bytes[sizeof(uint64_t)];  // Encoded bytes.
   uint64_t value;                   // Parsed value.
 };
+
+class Fixed16Cases : public CodedStreamTest,
+                     public testing::WithParamInterface<Fixed16Case> {};
+
+class Fixed16CasesWithSizes
+    : public CodedStreamTest,
+      public testing::WithParamInterface<std::tuple<Fixed16Case, int>> {};
 
 class Fixed32Cases : public CodedStreamTest,
                      public testing::WithParamInterface<Fixed32Case> {};
@@ -545,6 +557,11 @@ inline std::ostream& operator<<(std::ostream& os, const Fixed64Case& c) {
   return os << "0x" << std::hex << c.value << std::dec;
 }
 
+Fixed16Case kFixed16Cases[] = {
+    {{0xef, 0xcd}, 0xcdefu},
+    {{0x12, 0x34}, 0x3412u},
+};
+
 Fixed32Case kFixed32Cases[] = {
     {{0xef, 0xcd, 0xab, 0x90}, 0x90abcdefu},
     {{0x12, 0x34, 0x56, 0x78}, 0x78563412u},
@@ -556,6 +573,23 @@ Fixed64Case kFixed64Cases[] = {
     {{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88},
      uint64_t{0x8877665544332211u}},
 };
+
+TEST_P(Fixed16CasesWithSizes, ReadLittleEndian16) {
+  Fixed16Case kFixed16Cases_case = std::get<0>(GetParam());
+  int kBlockSizes_case = std::get<1>(GetParam());
+  memcpy(buffer_, kFixed16Cases_case.bytes, sizeof(kFixed16Cases_case.bytes));
+  ArrayInputStream input(buffer_, sizeof(buffer_), kBlockSizes_case);
+
+  {
+    CodedInputStream coded_input(&input);
+
+    uint16_t value;
+    EXPECT_TRUE(coded_input.ReadLittleEndian16(&value));
+    EXPECT_EQ(kFixed16Cases_case.value, value);
+  }
+
+  EXPECT_EQ(sizeof(uint16_t), input.ByteCount());
+}
 
 TEST_P(Fixed32CasesWithSizes, ReadLittleEndian32) {
   Fixed32Case kFixed32Cases_case = std::get<0>(GetParam());
@@ -589,6 +623,24 @@ TEST_P(Fixed64CasesWithSizes, ReadLittleEndian64) {
   }
 
   EXPECT_EQ(sizeof(uint64_t), input.ByteCount());
+}
+
+TEST_P(Fixed16CasesWithSizes, WriteLittleEndian16) {
+  Fixed16Case kFixed16Cases_case = std::get<0>(GetParam());
+  int kBlockSizes_case = std::get<1>(GetParam());
+  ArrayOutputStream output(buffer_, sizeof(buffer_), kBlockSizes_case);
+
+  {
+    CodedOutputStream coded_output(&output);
+
+    coded_output.WriteLittleEndian16(kFixed16Cases_case.value);
+    EXPECT_FALSE(coded_output.HadError());
+
+    EXPECT_EQ(sizeof(uint16_t), coded_output.ByteCount());
+  }
+
+  EXPECT_EQ(sizeof(uint16_t), output.ByteCount());
+  EXPECT_EQ(0, memcmp(buffer_, kFixed16Cases_case.bytes, sizeof(uint16_t)));
 }
 
 TEST_P(Fixed32CasesWithSizes, WriteLittleEndian32) {
@@ -628,6 +680,17 @@ TEST_P(Fixed64CasesWithSizes, WriteLittleEndian64) {
 }
 
 // Tests using the static methods to read fixed-size values from raw arrays.
+
+TEST_P(Fixed16Cases, ReadLittleEndian16FromArray) {
+  Fixed16Case kFixed16Cases_case = GetParam();
+  memcpy(buffer_, kFixed16Cases_case.bytes, sizeof(kFixed16Cases_case.bytes));
+
+  uint16_t value;
+  const uint8_t* end =
+      CodedInputStream::ReadLittleEndian16FromArray(buffer_, &value);
+  EXPECT_EQ(kFixed16Cases_case.value, value);
+  EXPECT_TRUE(end == buffer_ + sizeof(value));
+}
 
 TEST_P(Fixed32Cases, ReadLittleEndian32FromArray) {
   Fixed32Case kFixed32Cases_case = GetParam();
@@ -1600,6 +1663,11 @@ INSTANTIATE_TEST_SUITE_P(
                           "_BlockSize_", std::get<1>(param_info.param));
     });
 INSTANTIATE_TEST_SUITE_P(
+    CodedStreamUnitTest, Fixed16Cases, testing::ValuesIn(kFixed16Cases),
+    [](const testing::TestParamInfo<Fixed16Cases::ParamType>& param_info) {
+      return absl::StrCat("Fixed16Case_Value_", param_info.param.value);
+    });
+INSTANTIATE_TEST_SUITE_P(
     CodedStreamUnitTest, Fixed32Cases, testing::ValuesIn(kFixed32Cases),
     [](const testing::TestParamInfo<Fixed32Cases::ParamType>& param_info) {
       return absl::StrCat("Fixed32Case_Value_", param_info.param.value);
@@ -1608,6 +1676,16 @@ INSTANTIATE_TEST_SUITE_P(
     CodedStreamUnitTest, Fixed64Cases, testing::ValuesIn(kFixed64Cases),
     [](const testing::TestParamInfo<Fixed64Cases::ParamType>& param_info) {
       return absl::StrCat("Fixed64Case_Value_", param_info.param.value);
+    });
+INSTANTIATE_TEST_SUITE_P(
+    CodedStreamUnitTest, Fixed16CasesWithSizes,
+    testing::Combine(testing::ValuesIn(kFixed16Cases),
+                     testing::ValuesIn(kBlockSizes)),
+    [](const testing::TestParamInfo<Fixed16CasesWithSizes::ParamType>&
+           param_info) {
+      return absl::StrCat("Fixed16Case_Value_",
+                          std::get<0>(param_info.param).value, "_BlockSize_",
+                          std::get<1>(param_info.param));
     });
 INSTANTIATE_TEST_SUITE_P(
     CodedStreamUnitTest, Fixed32CasesWithSizes,
