@@ -8,4 +8,13 @@
 #ifndef UPB_PROTOS_PROTOS_H_
 #define UPB_PROTOS_PROTOS_H_
 #include "google/protobuf/hpb/hpb.h"
+namespace protos {
+namespace internal {
+using hpb::internal::CreateMessage;
+using hpb::internal::CreateMessageProxy;
+using hpb::internal::ExtensionIdentifier;
+using hpb::internal::GetInternalMsg;
+using hpb::internal::PrivateAccess;
+}  // namespace internal
+}  // namespace protos
 #endif

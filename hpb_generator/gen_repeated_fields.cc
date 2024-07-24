@@ -135,7 +135,7 @@ void WriteRepeatedMessageAccessor(const protobuf::Descriptor* message,
           size_t len;
           auto* ptr = $3_$5(msg_, &len);
           assert(index < len);
-          return ::protos::internal::CreateMessage<$4>(
+          return ::hpb::internal::CreateMessage<$4>(
               (upb_Message*)*(ptr + index), arena_);
         }
       )cc",
@@ -149,7 +149,7 @@ void WriteRepeatedMessageAccessor(const protobuf::Descriptor* message,
           if (!new_msg) {
             return ::protos::MessageAllocationError();
           }
-          return ::protos::internal::CreateMessageProxy<$4>((upb_Message*)new_msg, $5);
+          return ::hpb::internal::CreateMessageProxy<$4>((upb_Message*)new_msg, $5);
         }
       )cc",
       class_name, MessagePtrConstType(field, /* const */ false),
@@ -162,7 +162,7 @@ void WriteRepeatedMessageAccessor(const protobuf::Descriptor* message,
           size_t len;
           auto* ptr = $3_$6(msg_, &len);
           assert(index < len);
-          return ::protos::internal::CreateMessageProxy<$4>(
+          return ::hpb::internal::CreateMessageProxy<$4>(
               (upb_Message*)*(ptr + index), $5);
         }
       )cc",

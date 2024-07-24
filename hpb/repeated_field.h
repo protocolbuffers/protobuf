@@ -100,7 +100,7 @@ class RepeatedFieldProxy
   // T::CProxy [] operator specialization.
   typename T::CProxy operator[](size_t n) const {
     upb_MessageValue message_value = upb_Array_Get(this->arr_, n);
-    return ::protos::internal::CreateMessage<typename std::remove_const_t<T>>(
+    return ::hpb::internal::CreateMessage<typename std::remove_const_t<T>>(
         (upb_Message*)message_value.msg_val, this->arena_);
   }
 
@@ -109,8 +109,8 @@ class RepeatedFieldProxy
   template <int&... DeductionBlocker, bool b = !kIsConst,
             typename = std::enable_if_t<b>>
   typename T::Proxy operator[](size_t n) {
-    return ::protos::internal::CreateMessageProxy<T>(this->GetMessage(n),
-                                                     this->arena_);
+    return ::hpb::internal::CreateMessageProxy<T>(this->GetMessage(n),
+                                                  this->arena_);
   }
 
   // Mutable message reference specialization.
@@ -119,8 +119,8 @@ class RepeatedFieldProxy
   void push_back(const T& t) {
     upb_MessageValue message_value;
     message_value.msg_val = upb_Message_DeepClone(
-        PrivateAccess::GetInternalMsg(&t), ::protos::internal::GetMiniTable(&t),
-        this->arena_);
+        ::hpb::internal::PrivateAccess::GetInternalMsg(&t),
+        ::protos::internal::GetMiniTable(&t), this->arena_);
     upb_Array_Append(this->arr_, message_value, this->arena_);
   }
 
@@ -129,8 +129,9 @@ class RepeatedFieldProxy
             typename = std::enable_if_t<b>>
   void push_back(T&& msg) {
     upb_MessageValue message_value;
-    message_value.msg_val = PrivateAccess::GetInternalMsg(&msg);
-    upb_Arena_Fuse(GetArena(&msg), this->arena_);
+    message_value.msg_val =
+        ::hpb::internal::PrivateAccess::GetInternalMsg(&msg);
+    upb_Arena_Fuse(::protos::internal::GetArena(&msg), this->arena_);
     upb_Array_Append(this->arr_, message_value, this->arena_);
     T moved_msg = std::move(msg);
   }

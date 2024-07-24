@@ -712,7 +712,7 @@ TEST(CppGeneratedCode, SetExtension) {
     // Use a nested scope to make sure the arenas are fused correctly.
     ThemeExtension extension1;
     extension1.set_ext_name("Hello World");
-    prior_message = ::protos::internal::GetInternalMsg(&extension1);
+    prior_message = ::hpb::internal::GetInternalMsg(&extension1);
     EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
     EXPECT_EQ(
         true,
@@ -721,7 +721,7 @@ TEST(CppGeneratedCode, SetExtension) {
   EXPECT_EQ(true, ::protos::HasExtension(&model, theme));
   auto ext = ::protos::GetExtension(&model, theme);
   EXPECT_TRUE(ext.ok());
-  EXPECT_EQ(::protos::internal::GetInternalMsg(*ext), prior_message);
+  EXPECT_EQ(::hpb::internal::GetInternalMsg(*ext), prior_message);
 }
 
 TEST(CppGeneratedCode, SetExtensionWithPtr) {
@@ -734,7 +734,7 @@ TEST(CppGeneratedCode, SetExtensionWithPtr) {
     ::hpb::Ptr<ThemeExtension> extension1 =
         ::protos::CreateMessage<ThemeExtension>(arena);
     extension1->set_ext_name("Hello World");
-    prior_message = ::protos::internal::GetInternalMsg(extension1);
+    prior_message = ::hpb::internal::GetInternalMsg(extension1);
     EXPECT_EQ(false, ::protos::HasExtension(model, theme));
     auto res = ::protos::SetExtension(model, theme, extension1);
     EXPECT_EQ(true, res.ok());
@@ -742,7 +742,7 @@ TEST(CppGeneratedCode, SetExtensionWithPtr) {
   EXPECT_EQ(true, ::protos::HasExtension(model, theme));
   auto ext = ::protos::GetExtension(model, theme);
   EXPECT_TRUE(ext.ok());
-  EXPECT_NE(::protos::internal::GetInternalMsg(*ext), prior_message);
+  EXPECT_NE(::hpb::internal::GetInternalMsg(*ext), prior_message);
 }
 
 #ifndef _MSC_VER
@@ -776,7 +776,7 @@ TEST(CppGeneratedCode, SetExtensionWithPtrSameArena) {
     ::hpb::Ptr<ThemeExtension> extension1 =
         ::protos::CreateMessage<ThemeExtension>(arena);
     extension1->set_ext_name("Hello World");
-    prior_message = ::protos::internal::GetInternalMsg(extension1);
+    prior_message = ::hpb::internal::GetInternalMsg(extension1);
     EXPECT_EQ(false, ::protos::HasExtension(model, theme));
     auto res = ::protos::SetExtension(model, theme, extension1);
     EXPECT_EQ(true, res.ok());
@@ -784,7 +784,7 @@ TEST(CppGeneratedCode, SetExtensionWithPtrSameArena) {
   EXPECT_EQ(true, ::protos::HasExtension(model, theme));
   auto ext = ::protos::GetExtension(model, theme);
   EXPECT_TRUE(ext.ok());
-  EXPECT_NE(::protos::internal::GetInternalMsg(*ext), prior_message);
+  EXPECT_NE(::hpb::internal::GetInternalMsg(*ext), prior_message);
 }
 
 TEST(CppGeneratedCode, SetExtensionFusingFailureShouldCopy) {
