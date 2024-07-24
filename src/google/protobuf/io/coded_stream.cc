@@ -239,7 +239,12 @@ bool CodedInputStream::ReadRaw(void* buffer, int size) {
     buffer = reinterpret_cast<uint8_t*>(buffer) + current_buffer_size;
     size -= current_buffer_size;
     Advance(current_buffer_size);
-    if (!Refresh()) return false;
+    if (!Refresh()) {
+      // If we had an error, set the leftover memory to make sure we don't leak
+      // uninit data in the object.
+      memset(buffer, 0xCD, size);
+      return false;
+    }
   }
 
   memcpy(buffer, buffer_, size);

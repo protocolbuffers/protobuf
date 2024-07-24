@@ -231,6 +231,19 @@ TEST_F(CodedStreamTest, EmptyInputBeforeEos) {
   EXPECT_TRUE(input.ConsumedEntireMessage());
 }
 
+TEST_F(CodedStreamTest, ReadRawDoesNotLeaveUninitDataOnFailure) {
+  const char buffer[] = "ABCDE";
+  ArrayInputStream input(buffer, sizeof(buffer));
+  CodedInputStream coded_input(&input);
+
+  char out[20];
+  std::fill(std::begin(out), std::end(out), 0xFF);
+  ASSERT_FALSE(coded_input.ReadRaw(out, 20));
+  for (char c : out) {
+    EXPECT_NE(c, 0xFF);
+  }
+}
+
 TEST_1D(CodedStreamTest, ExpectTag, kVarintCases) {
   // Leave one byte at the beginning of the buffer so we can read it
   // to force the first buffer to be loaded.
