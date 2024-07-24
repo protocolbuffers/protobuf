@@ -209,7 +209,7 @@ pub trait IntoMut<'msg>: AsMut {
 pub trait Proxy<'msg>: 'msg + IntoView<'msg> + Sync + Unpin + Sized + Debug {}
 
 /// Declares conversion operations common to view proxies.
-pub trait ViewProxy<'msg>: Proxy<'msg> + Copy + Send {}
+pub trait ViewProxy<'msg>: Proxy<'msg> + Send {}
 
 /// Declares operations common to all mut proxies.
 ///

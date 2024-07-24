@@ -52,6 +52,7 @@ PROTOBUF_SHARED = [
     "internal.rs",
     "primitive.rs",
     "optional.rs",
+    "cord.rs",
     "proxied.rs",
     "repeated.rs",
     "shared.rs",

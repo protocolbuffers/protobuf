@@ -17,6 +17,32 @@
 load("@rules_rust//rust:defs.bzl", "rust_test")
 
 rust_test(
+    name = "ctype_cord_upb_test",
+    srcs = ["ctype_cord_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb_export": "protobuf",
+    },
+    deps = [
+        "//rust:protobuf_upb_export",
+        "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "ctype_cord_cpp_test",
+    srcs = ["ctype_cord_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp_export": "protobuf",
+    },
+    deps = [
+        "//rust:protobuf_cpp_export",
+        "//rust/test:unittest_cpp_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
     name = "child_parent_upb_test",
     srcs = ["child_parent_test.rs"],
     deps = [

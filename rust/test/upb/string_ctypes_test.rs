@@ -18,14 +18,6 @@ fn test_stringpiece_repeated() {
 }
 
 #[googletest::test]
-fn test_cord() {
-    let mut msg = TestAllTypes::new();
-    assert_that!(msg.optional_cord(), eq(""));
-    msg.set_optional_cord("hello");
-    assert_that!(msg.optional_cord(), eq("hello"));
-}
-
-#[googletest::test]
 fn test_cord_repeated() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.repeated_cord().len(), eq(0));

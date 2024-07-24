@@ -28,6 +28,7 @@ pub mod __public {
         write::{Clear, ClearAndParse},
         Message, MessageMut, MessageView,
     };
+    pub use crate::cord::{ProtoBytesCow, ProtoStringCow};
     pub use crate::r#enum::{Enum, UnknownEnumValue};
     pub use crate::map::{Map, MapIter, MapMut, MapView, ProxiedInMapValue};
     pub use crate::optional::Optional;
@@ -61,6 +62,7 @@ pub mod __runtime;
 pub mod __runtime;
 
 mod codegen_traits;
+mod cord;
 #[path = "enum.rs"]
 mod r#enum;
 mod map;

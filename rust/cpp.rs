@@ -114,6 +114,12 @@ impl InnerProtoString {
         let s = ManuallyDrop::new(self);
         s.owned_ptr
     }
+
+    /// # Safety
+    ///  - `src` points to a valid CppStdString.
+    pub unsafe fn from_raw(_private: Private, src: CppStdString) -> InnerProtoString {
+        InnerProtoString { owned_ptr: src }
+    }
 }
 
 impl From<&[u8]> for InnerProtoString {

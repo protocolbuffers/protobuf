@@ -39,6 +39,15 @@ impl ProtoBytes {
     pub fn into_inner(self, _private: Private) -> InnerProtoString {
         self.inner
     }
+
+    #[doc(hidden)]
+    pub fn from_inner(_private: Private, inner: InnerProtoString) -> ProtoBytes {
+        Self { inner }
+    }
+
+    pub fn as_view(&self) -> &[u8] {
+        self.inner.as_bytes()
+    }
 }
 
 impl AsRef<[u8]> for ProtoBytes {
@@ -177,6 +186,10 @@ pub struct ProtoString {
 }
 
 impl ProtoString {
+    pub fn as_view(&self) -> &ProtoStr {
+        unsafe { ProtoStr::from_utf8_unchecked(self.as_bytes()) }
+    }
+
     pub fn as_bytes(&self) -> &[u8] {
         self.inner.as_bytes()
     }
@@ -186,6 +199,17 @@ impl ProtoString {
     #[doc(hidden)]
     pub fn into_inner(self, _private: Private) -> InnerProtoString {
         self.inner
+    }
+
+    #[doc(hidden)]
+    pub fn from_inner(_private: Private, inner: InnerProtoString) -> ProtoString {
+        Self { inner }
+    }
+}
+
+impl AsRef<[u8]> for ProtoString {
+    fn as_ref(&self) -> &[u8] {
+        self.inner.as_bytes()
     }
 }
 
@@ -538,6 +562,24 @@ impl_bytes_partial_cmp!(
     <()> ProtoStr => str,
     <()> str => ProtoStr,
 );
+
+impl std::fmt::Debug for ProtoString {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        std::fmt::Debug::fmt(self.as_view(), f)
+    }
+}
+
+impl std::fmt::Debug for ProtoBytes {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        std::fmt::Debug::fmt(self.as_view(), f)
+    }
+}
+
+unsafe impl Sync for ProtoString {}
+unsafe impl Send for ProtoString {}
+
+unsafe impl Send for ProtoBytes {}
+unsafe impl Sync for ProtoBytes {}
 
 #[cfg(test)]
 mod tests {
