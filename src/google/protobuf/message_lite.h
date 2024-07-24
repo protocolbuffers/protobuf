@@ -88,6 +88,7 @@ class PROTOBUF_EXPORT CachedSize {
   constexpr CachedSize() noexcept : atom_(Scalar{}) {}
   // NOLINTNEXTLINE(google-explicit-constructor)
   constexpr CachedSize(Scalar desired) noexcept : atom_(desired) {}
+
 #if PROTOBUF_BUILTIN_ATOMIC
   constexpr CachedSize(const CachedSize& other) = default;
 
@@ -96,6 +97,15 @@ class PROTOBUF_EXPORT CachedSize {
   }
 
   void Set(Scalar desired) const noexcept {
+    // Avoid writing the value when it is zero. This prevents writing to gloabl
+    // default instances, which might be in readonly memory.
+    if (ABSL_PREDICT_FALSE(desired == 0)) {
+      if (Get() == 0) return;
+    }
+    __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
+  }
+
+  void SetNonZero(Scalar desired) const noexcept {
     __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
   }
 #else
@@ -110,6 +120,15 @@ class PROTOBUF_EXPORT CachedSize {
   }
 
   void Set(Scalar desired) const noexcept {
+    // Avoid writing the value when it is zero. This prevents writing to gloabl
+    // default instances, which might be in readonly memory.
+    if (ABSL_PREDICT_FALSE(desired == 0)) {
+      if (Get() == 0) return;
+    }
+    atom_.store(desired, std::memory_order_relaxed);
+  }
+
+  void SetNonZero(Scalar desired) const noexcept {
     atom_.store(desired, std::memory_order_relaxed);
   }
 #endif

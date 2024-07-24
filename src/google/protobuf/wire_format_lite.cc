@@ -840,7 +840,7 @@ size_t WireFormatLite::Int32SizeWithPackedTagSize(
   }
   size_t res;
   PROTOBUF_ALWAYS_INLINE_CALL res = Int32Size(value);
-  cached_size.Set(ToCachedSize(res));
+  cached_size.SetNonZero(ToCachedSize(res));
   return tag_size + res + Int32Size(static_cast<int32_t>(res));
 }
 size_t WireFormatLite::Int64SizeWithPackedTagSize(
@@ -852,7 +852,7 @@ size_t WireFormatLite::Int64SizeWithPackedTagSize(
   }
   size_t res;
   PROTOBUF_ALWAYS_INLINE_CALL res = Int64Size(value);
-  cached_size.Set(ToCachedSize(res));
+  cached_size.SetNonZero(ToCachedSize(res));
   return tag_size + res + Int32Size(static_cast<int32_t>(res));
 }
 size_t WireFormatLite::UInt32SizeWithPackedTagSize(
@@ -864,7 +864,7 @@ size_t WireFormatLite::UInt32SizeWithPackedTagSize(
   }
   size_t res;
   PROTOBUF_ALWAYS_INLINE_CALL res = UInt32Size(value);
-  cached_size.Set(ToCachedSize(res));
+  cached_size.SetNonZero(ToCachedSize(res));
   return tag_size + res + Int32Size(static_cast<int32_t>(res));
 }
 size_t WireFormatLite::UInt64SizeWithPackedTagSize(
@@ -876,7 +876,7 @@ size_t WireFormatLite::UInt64SizeWithPackedTagSize(
   }
   size_t res;
   PROTOBUF_ALWAYS_INLINE_CALL res = UInt64Size(value);
-  cached_size.Set(ToCachedSize(res));
+  cached_size.SetNonZero(ToCachedSize(res));
   return tag_size + res + Int32Size(static_cast<int32_t>(res));
 }
 size_t WireFormatLite::SInt32SizeWithPackedTagSize(
@@ -888,7 +888,7 @@ size_t WireFormatLite::SInt32SizeWithPackedTagSize(
   }
   size_t res;
   PROTOBUF_ALWAYS_INLINE_CALL res = SInt32Size(value);
-  cached_size.Set(ToCachedSize(res));
+  cached_size.SetNonZero(ToCachedSize(res));
   return tag_size + res + Int32Size(static_cast<int32_t>(res));
 }
 size_t WireFormatLite::SInt64SizeWithPackedTagSize(
@@ -900,7 +900,7 @@ size_t WireFormatLite::SInt64SizeWithPackedTagSize(
   }
   size_t res;
   PROTOBUF_ALWAYS_INLINE_CALL res = SInt64Size(value);
-  cached_size.Set(ToCachedSize(res));
+  cached_size.SetNonZero(ToCachedSize(res));
   return tag_size + res + Int32Size(static_cast<int32_t>(res));
 }
 size_t WireFormatLite::EnumSizeWithPackedTagSize(
@@ -912,7 +912,7 @@ size_t WireFormatLite::EnumSizeWithPackedTagSize(
   }
   size_t res;
   PROTOBUF_ALWAYS_INLINE_CALL res = EnumSize(value);
-  cached_size.Set(ToCachedSize(res));
+  cached_size.SetNonZero(ToCachedSize(res));
   return tag_size + res + Int32Size(static_cast<int32_t>(res));
 }
 
