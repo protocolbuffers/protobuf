@@ -15,6 +15,7 @@
 #include <climits>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <istream>
 #include <ostream>
 #include <string>
