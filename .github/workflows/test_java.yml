@@ -107,8 +107,9 @@ jobs:
         bazel-cache: java_linux/11
         # protobuf-java and protobuf-java-util are the member of the BOM
         bash: |
-          bazel build //java/core:core_mvn-pom //java/kotlin-lite:kotlin-lite_mvn-pom //java/kotlin:kotlin_mvn-pom //java/lite:lite_mvn-pom //java/util:util_mvn-pom
+          bazel build //java/core:core_mvn-pom //java/core:lite_mvn-pom //java/kotlin-lite:kotlin-lite_mvn-pom //java/kotlin:kotlin_mvn-pom //java/util:util_mvn-pom
           cp -f bazel-bin/java/core/core_mvn-pom.xml //java/core/pom.xml
+          cp -f bazel-bin/java/core/lite_mvn-pom.xml //java/lite/pom.xml
           cp -f bazel-bin/java/kotlin-lite/kotlin-lite_mvn-pom.xml //java/kotlin-lite/pom.xml
           cp -f bazel-bin/java/kotlin/kotlin_mvn-pom.xml //java/kotlin/pom.xml
           cp -f bazel-bin/java/lite/lite_mvn-pom.xml //java/lite/pom.xml
