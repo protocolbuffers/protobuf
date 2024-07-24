@@ -21,4 +21,5 @@ pub use crate::ProtoStr;
 pub use crate::__runtime::{PtrAndLen, RawMap, RawMessage, RawRepeatedField};
 
 /// Used to protect internal-only items from being used accidentally.
+#[derive(Debug)]
 pub struct Private;

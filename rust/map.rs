@@ -109,8 +109,24 @@ impl<K: Proxied, V: ProxiedInMapValue<K>> Proxied for Map<K, V> {
     type View<'msg> = MapView<'msg, K, V> where K: 'msg, V: 'msg;
 }
 
+impl<K: Proxied, V: ProxiedInMapValue<K>> AsView for Map<K, V> {
+    type Proxied = Self;
+
+    fn as_view(&self) -> MapView<'_, K, V> {
+        self.as_view()
+    }
+}
+
 impl<K: Proxied, V: ProxiedInMapValue<K>> MutProxied for Map<K, V> {
     type Mut<'msg> = MapMut<'msg, K, V> where K: 'msg, V: 'msg;
+}
+
+impl<K: Proxied, V: ProxiedInMapValue<K>> AsMut for Map<K, V> {
+    type MutProxied = Self;
+
+    fn as_mut(&mut self) -> MapMut<'_, K, V> {
+        self.as_mut()
+    }
 }
 
 impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> Proxy<'msg> for MapView<'msg, K, V> {}

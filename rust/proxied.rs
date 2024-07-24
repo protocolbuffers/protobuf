@@ -52,7 +52,7 @@ use std::fmt::Debug;
 /// An instance of a `Proxied` can be accessed immutably via `Proxied::View`.
 ///
 /// All Protobuf field types implement `Proxied`.
-pub trait Proxied: Sized {
+pub trait Proxied: AsView<Proxied = Self> + Sized {
     /// The proxy type that provides shared access to a `T`, like a `&'msg T`.
     ///
     /// Most code should use the type alias [`View`].
@@ -67,7 +67,7 @@ pub trait Proxied: Sized {
 /// and immutably via `MutProxied::View`.
 ///
 /// `MutProxied` is implemented by message, map and repeated field types.
-pub trait MutProxied: Proxied {
+pub trait MutProxied: Proxied + AsMut<MutProxied = Self> {
     /// The proxy type that provides exclusive mutable access to a `T`, like a
     /// `&'msg mut T`.
     ///
@@ -263,8 +263,22 @@ mod tests {
         type View<'msg> = MyProxiedView<'msg>;
     }
 
+    impl AsView for MyProxied {
+        type Proxied = Self;
+        fn as_view(&self) -> MyProxiedView<'_> {
+            self.as_view()
+        }
+    }
+
     impl MutProxied for MyProxied {
         type Mut<'msg> = MyProxiedMut<'msg>;
+    }
+
+    impl AsMut for MyProxied {
+        type MutProxied = Self;
+        fn as_mut(&mut self) -> MyProxiedMut<'_> {
+            self.as_mut()
+        }
     }
 
     #[derive(Debug, Clone, Copy)]

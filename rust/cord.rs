@@ -18,7 +18,7 @@ macro_rules! impl_cord_types {
     ($($t:ty, $vt:ty);*) => {
         paste! { $(
           #[derive(Debug)]
-          pub struct [< $t Cord>];
+          pub struct [< $t Cord>](Private);
 
           #[derive(Debug)]
           pub enum [< $t Cow>]<'a> {
@@ -28,6 +28,13 @@ macro_rules! impl_cord_types {
 
           impl Proxied for [< $t Cord>] {
             type View<'msg> = [< $t Cow>]<'msg>;
+          }
+
+          impl AsView for [< $t Cord>] {
+            type Proxied = Self;
+            fn as_view(&self) -> [< $t Cow>]<'_> {
+              unimplemented!("Proto Cord should never be constructed");
+            }
           }
 
           impl<'msg> Proxy<'msg> for [< $t Cow>]<'msg> {}

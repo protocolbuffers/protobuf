@@ -391,11 +391,33 @@ where
     type View<'msg> = RepeatedView<'msg, T> where Repeated<T>: 'msg;
 }
 
+impl<T> AsView for Repeated<T>
+where
+    T: ProxiedInRepeated,
+{
+    type Proxied = Self;
+
+    fn as_view(&self) -> RepeatedView<'_, T> {
+        self.as_view()
+    }
+}
+
 impl<T> MutProxied for Repeated<T>
 where
     T: ProxiedInRepeated,
 {
     type Mut<'msg> = RepeatedMut<'msg, T> where Repeated<T>: 'msg;
+}
+
+impl<T> AsMut for Repeated<T>
+where
+    T: ProxiedInRepeated,
+{
+    type MutProxied = Self;
+
+    fn as_mut(&mut self) -> RepeatedMut<'_, T> {
+        self.as_mut()
+    }
 }
 
 impl<'msg, T> Proxy<'msg> for RepeatedView<'msg, T> where T: ProxiedInRepeated + 'msg {}

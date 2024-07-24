@@ -7,7 +7,7 @@
 
 //! Traits that are implemeted by codegen types.
 
-use crate::{AsMut, AsView, MutProxied, MutProxy, ViewProxy};
+use crate::{MutProxied, MutProxy, ViewProxy};
 use create::Parse;
 use read::Serialize;
 use std::fmt::Debug;
@@ -16,12 +16,12 @@ use write::ClearAndParse;
 /// A trait that all generated owned message types implement.
 pub trait Message: MutProxied
   // Create traits:
-  + create::Parse + Default
+  + Parse + Default
   // Read traits:
-  + Debug + Serialize + AsView
+  + Debug + Serialize
   // Write traits:
   // TODO: Msg should impl Clear.
-  + ClearAndParse + AsMut
+  + ClearAndParse
   // Thread safety:
   + Send + Sync
   // Copy/Clone:
@@ -31,23 +31,22 @@ pub trait Message: MutProxied
 /// A trait that all generated message views implement.
 pub trait MessageView<'msg>: ViewProxy<'msg, Proxied = Self::Message>
     // Read traits:
-    + Debug + Serialize + AsView
+    + Debug + Serialize
     // Thread safety:
     + Send + Sync
     // Copy/Clone:
     + Copy + Clone
-    {
-      #[doc(hidden)]
-      type Message: Message;
-    }
+{
+    #[doc(hidden)]
+    type Message: Message;
+}
 
 /// A trait that all generated message muts implement.
 pub trait MessageMut<'msg>:
     MutProxy<'msg, MutProxied = Self::Message>
     // Read traits:
-    + Debug + Serialize + AsView
+    + Debug + Serialize
     // Write traits:
-    + AsMut
     // TODO: MsgMut should impl Clear and ClearAndParse.
     // Thread safety:
     + Sync
@@ -60,7 +59,6 @@ pub trait MessageMut<'msg>:
 /// Operations related to constructing a message. Only owned messages implement
 /// these traits.
 pub(crate) mod create {
-
     pub trait Parse: Sized {
         fn parse(serialized: &[u8]) -> Result<Self, crate::ParseError>;
     }

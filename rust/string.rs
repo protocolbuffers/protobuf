@@ -72,6 +72,14 @@ impl Proxied for ProtoBytes {
     type View<'msg> = &'msg [u8];
 }
 
+impl AsView for ProtoBytes {
+    type Proxied = Self;
+
+    fn as_view(&self) -> &[u8] {
+        self.as_view()
+    }
+}
+
 impl IntoProxied<ProtoBytes> for ProtoBytes {
     fn into_proxied(self, _private: Private) -> ProtoBytes {
         self
@@ -510,6 +518,14 @@ impl Ord for ProtoStr {
 
 impl Proxied for ProtoString {
     type View<'msg> = &'msg ProtoStr;
+}
+
+impl AsView for ProtoString {
+    type Proxied = Self;
+
+    fn as_view(&self) -> &ProtoStr {
+        self.as_view()
+    }
 }
 
 impl<'msg> Proxy<'msg> for &'msg ProtoStr {}
