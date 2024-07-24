@@ -105,15 +105,14 @@ jobs:
         image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
         bazel-cache: java_linux/11
-        # protobuf-java and protobuf-java-util are the member of the BOM
         bash: |
           bazel build //java/core:core_mvn-pom //java/core:lite_mvn-pom //java/kotlin-lite:kotlin-lite_mvn-pom //java/kotlin:kotlin_mvn-pom //java/util:util_mvn-pom
-          cp -f bazel-bin/java/core/core_mvn-pom.xml //java/core/pom.xml
-          cp -f bazel-bin/java/core/lite_mvn-pom.xml //java/lite/pom.xml
-          cp -f bazel-bin/java/kotlin-lite/kotlin-lite_mvn-pom.xml //java/kotlin-lite/pom.xml
-          cp -f bazel-bin/java/kotlin/kotlin_mvn-pom.xml //java/kotlin/pom.xml
-          cp -f bazel-bin/java/lite/lite_mvn-pom.xml //java/lite/pom.xml
-          cp -f bazel-bin/java/util/util_mvn-pom.xml //java/util/pom.xml
+          cp -f bazel-bin/java/core/core_mvn-pom.xml core/pom.xml
+          cp -f bazel-bin/java/core/lite_mvn-pom.xml lite/pom.xml
+          cp -f bazel-bin/java/kotlin-lite/kotlin-lite_mvn-pom.xml kotlin-lite/pom.xml
+          cp -f bazel-bin/java/kotlin/kotlin_mvn-pom.xml kotlin/pom.xml
+          cp -f bazel-bin/java/util/util_mvn-pom.xml util/pom.xml
+      working-directory: java
     - name: Install snapshot version locally (using generated pom.xml)
       run: |
         mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
