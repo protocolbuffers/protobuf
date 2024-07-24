@@ -120,6 +120,7 @@ jobs:
         cp -f kotlin-lite_mvn-pom.xml kotlin-lite/pom.xml
         cp -f kotlin_mvn-pom.xml kotlin/pom.xml
         cp -f util_mvn-pom.xml util/pom.xml
+      working-directory: java
     - name: Install snapshot version locally (using generated pom.xml)
       run: |
         mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
