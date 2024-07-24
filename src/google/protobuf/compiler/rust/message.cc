@@ -1246,6 +1246,20 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }
 
+        impl $pb$::AsView for $Msg$ {
+          type Proxied = Self;
+          fn as_view(&self) -> $Msg$View {
+            self.as_view()
+          }
+        }
+
+        impl $pb$::AsMut for $Msg$ {
+          type MutProxied = Self;
+          fn as_mut(&mut self) -> $Msg$Mut {
+            self.as_mut()
+          }
+        }
+
         extern "C" {
           $Msg_externs$
 

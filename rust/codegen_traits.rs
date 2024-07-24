@@ -7,7 +7,7 @@
 
 //! Traits that are implemeted by codegen types.
 
-use crate::{MutProxied, MutProxy, ViewProxy};
+use crate::{AsMut, AsView, MutProxied, MutProxy, ViewProxy};
 use create::Parse;
 use read::Serialize;
 use std::fmt::Debug;
@@ -18,10 +18,10 @@ pub trait Message: MutProxied
   // Create traits:
   + create::Parse + Default
   // Read traits:
-  + Debug + Serialize
+  + Debug + Serialize + AsView
   // Write traits:
   // TODO: Msg should impl Clear.
-  + ClearAndParse
+  + ClearAndParse + AsMut
   // Thread safety:
   + Send + Sync
   // Copy/Clone:
@@ -31,11 +31,11 @@ pub trait Message: MutProxied
 /// A trait that all generated message views implement.
 pub trait MessageView<'msg>: ViewProxy<'msg, Proxied = Self::Message>
     // Read traits:
-    + Debug + Serialize
+    + Debug + Serialize + AsView
     // Thread safety:
     + Send + Sync
-  // Copy/Clone:
-  + Copy + Clone
+    // Copy/Clone:
+    + Copy + Clone
     {
       #[doc(hidden)]
       type Message: Message;
@@ -45,8 +45,9 @@ pub trait MessageView<'msg>: ViewProxy<'msg, Proxied = Self::Message>
 pub trait MessageMut<'msg>:
     MutProxy<'msg, MutProxied = Self::Message>
     // Read traits:
-    + Debug + Serialize
+    + Debug + Serialize + AsView
     // Write traits:
+    + AsMut
     // TODO: MsgMut should impl Clear and ClearAndParse.
     // Thread safety:
     + Sync
