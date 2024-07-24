@@ -7,4 +7,4 @@
 
 # Copyright 2007 Google Inc. All Rights Reserved.
 
-__version__ = '4.25.4'
+__version__ = '4.25.5'
