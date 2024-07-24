@@ -12,6 +12,9 @@
 #import "GPBUnknownField_PackagePrivate.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 @interface GPBUnknownFieldSet (GPBUnknownFieldSetTest)
 - (void)getTags:(int32_t*)tags;
 @end
@@ -668,3 +671,5 @@ static NSData* DataForGroupsOfDepth(NSUInteger depth) {
 }
 
 @end
+
+#pragma clang diagnostic pop

@@ -493,6 +493,8 @@
   TestAllTypes *message = [TestAllTypes message];
   [self setAllFields:message repeatedCount:kGPBDefaultRepeatCount];
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   GPBUnknownFieldSet *unknownFields = [[[GPBUnknownFieldSet alloc] init] autorelease];
   GPBUnknownField *field = [[[GPBUnknownField alloc] initWithNumber:2] autorelease];
   [field addVarint:2];
@@ -502,6 +504,7 @@
   [unknownFields addField:field];
 
   [message setUnknownFields:unknownFields];
+#pragma clang diagnostic pop
 
   GPBUnknownFields *ufs = [[[GPBUnknownFields alloc] init] autorelease];
   [ufs addFieldNumber:1234 fixed32:1234];
@@ -976,6 +979,9 @@
 }
 
 - (void)testAutocreatedUnknownFields {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
   // Doing anything with (except reading) unknown fields should cause the
   // submessage to become visible.
   TestAllTypes *message = [TestAllTypes message];
@@ -1005,6 +1011,8 @@
   [ufs clear];  // Also make sure merging zero length forces it to become visible.
   [message.optionalNestedMessage mergeUnknownFields:ufs extensionRegistry:nil];
   XCTAssertTrue([message hasOptionalNestedMessage]);
+
+#pragma clang diagnostic pop
 }
 
 - (void)testSetAutocreatedSubmessageToSelf {
@@ -1514,6 +1522,8 @@
                        varint:&varint]);
   XCTAssertEqual(varint, 12);
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   GPBUnknownFieldSet *unknownFields = msg.unknownFields;
   GPBUnknownField *field =
       [unknownFields getField:[UnittestRoot optionalNestedEnumExtension].fieldNumber];
@@ -1528,6 +1538,7 @@
   XCTAssertNotNil(field);
   XCTAssertEqual(field.varintList.count, 1);
   XCTAssertEqual([field.varintList valueAtIndex:0], 12);
+#pragma clang diagnostic pop
 
   // Unknown and known, the known come though an unknown go to unknown fields.
 
@@ -1568,6 +1579,8 @@
                        varint:&varint]);
   XCTAssertEqual(varint, 12);
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   unknownFields = msg.unknownFields;
   field = [unknownFields getField:[UnittestRoot optionalNestedEnumExtension].fieldNumber];
   XCTAssertNotNil(field);
@@ -1581,6 +1594,7 @@
   XCTAssertNotNil(field);
   XCTAssertEqual(field.varintList.count, 1);
   XCTAssertEqual([field.varintList valueAtIndex:0], 12);
+#pragma clang diagnostic pop
 }
 
 - (void)testDefaultingExtensionMessages {
@@ -1881,10 +1895,13 @@
 }
 
 - (void)testGenerateAndParseUnknownMessage {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   GPBUnknownFieldSet *unknowns = [[[GPBUnknownFieldSet alloc] init] autorelease];
   [unknowns mergeVarintField:123 value:456];
   GPBMessage *message = [GPBMessage message];
   [message setUnknownFields:unknowns];
+#pragma clang diagnostic pop
   GPBUnknownFields *ufs = [[[GPBUnknownFields alloc] init] autorelease];
   [ufs addFieldNumber:1234 varint:5678];
   [message mergeUnknownFields:ufs extensionRegistry:nil];
@@ -1894,19 +1911,25 @@
 }
 
 - (void)testDelimitedWriteAndParseMultipleMessages {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   GPBUnknownFieldSet *unknowns1 = [[[GPBUnknownFieldSet alloc] init] autorelease];
   [unknowns1 mergeVarintField:123 value:456];
   GPBMessage *message1 = [GPBMessage message];
   [message1 setUnknownFields:unknowns1];
+#pragma clang diagnostic pop
   GPBUnknownFields *ufs1 = [[[GPBUnknownFields alloc] init] autorelease];
   [ufs1 addFieldNumber:1234 varint:5678];
   [message1 mergeUnknownFields:ufs1 extensionRegistry:nil];
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   GPBUnknownFieldSet *unknowns2 = [[[GPBUnknownFieldSet alloc] init] autorelease];
   [unknowns2 mergeVarintField:789 value:987];
   [unknowns2 mergeVarintField:654 value:321];
   GPBMessage *message2 = [GPBMessage message];
   [message2 setUnknownFields:unknowns2];
+#pragma clang diagnostic pop
   GPBUnknownFields *ufs2 = [[[GPBUnknownFields alloc] init] autorelease];
   [ufs2 addFieldNumber:2345 fixed32:6789];
   [ufs2 addFieldNumber:3456 fixed32:7890];
@@ -2107,6 +2130,8 @@
   XCTAssertEqual(fields[0].varint, (uint64_t)EnumTestMsg_MyEnum_Two);
   XCTAssertEqual(fields[1].varint, (uint64_t)EnumTestMsg_MyEnum_NegTwo);
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   GPBUnknownFieldSet *unknownFields = msg2.unknownFields;
   XCTAssertNotNil(unknownFields);
   XCTAssertEqual(unknownFields.countOfFields, 3U);
@@ -2123,6 +2148,7 @@
   XCTAssertEqual(field.varintList.count, 2U);
   XCTAssertEqual([field.varintList valueAtIndex:0], (uint64_t)EnumTestMsg_MyEnum_Two);
   XCTAssertEqual([field.varintList valueAtIndex:1], (uint64_t)EnumTestMsg_MyEnum_NegTwo);
+#pragma clang diagnostic pop
 }
 
 - (void)testReservedWordNaming {
