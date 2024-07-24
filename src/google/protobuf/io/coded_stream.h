@@ -199,6 +199,8 @@ class PROTOBUF_EXPORT CodedInputStream {
   bool ReadCord(absl::Cord* output, int size);
 
 
+  // Read a 16-bit little-endian integer.
+  bool ReadLittleEndian16(uint16_t* value);
   // Read a 32-bit little-endian integer.
   bool ReadLittleEndian32(uint32_t* value);
   // Read a 64-bit little-endian integer.
@@ -206,6 +208,9 @@ class PROTOBUF_EXPORT CodedInputStream {
 
   // These methods read from an externally provided buffer. The caller is
   // responsible for ensuring that the buffer has sufficient space.
+  // Read a 16-bit little-endian integer.
+  static const uint8_t* ReadLittleEndian16FromArray(const uint8_t* buffer,
+                                                    uint16_t* value);
   // Read a 32-bit little-endian integer.
   static const uint8_t* ReadLittleEndian32FromArray(const uint8_t* buffer,
                                                     uint32_t* value);
@@ -592,6 +597,7 @@ class PROTOBUF_EXPORT CodedInputStream {
   bool ReadVarint32Slow(uint32_t* value);
   bool ReadVarint64Slow(uint64_t* value);
   int ReadVarintSizeAsIntSlow();
+  bool ReadLittleEndian16Fallback(uint16_t* value);
   bool ReadLittleEndian32Fallback(uint32_t* value);
   bool ReadLittleEndian64Fallback(uint64_t* value);
 
@@ -1127,19 +1133,26 @@ class PROTOBUF_EXPORT CodedOutputStream {
   static uint8_t* WriteCordToArray(const absl::Cord& cord, uint8_t* target);
 
 
+  // Write a 16-bit little-endian integer.
+  void WriteLittleEndian16(uint16_t value) {
+    cur_ = impl_.EnsureSpace(cur_);
+    SetCur(WriteLittleEndian16ToArray(value, Cur()));
+  }
+  // Like WriteLittleEndian16() but writing directly to the target array.
+  static uint8_t* WriteLittleEndian16ToArray(uint16_t value, uint8_t* target);
   // Write a 32-bit little-endian integer.
   void WriteLittleEndian32(uint32_t value) {
     cur_ = impl_.EnsureSpace(cur_);
     SetCur(WriteLittleEndian32ToArray(value, Cur()));
   }
-  // Like WriteLittleEndian32()  but writing directly to the target array.
+  // Like WriteLittleEndian32() but writing directly to the target array.
   static uint8_t* WriteLittleEndian32ToArray(uint32_t value, uint8_t* target);
   // Write a 64-bit little-endian integer.
   void WriteLittleEndian64(uint64_t value) {
     cur_ = impl_.EnsureSpace(cur_);
     SetCur(WriteLittleEndian64ToArray(value, Cur()));
   }
-  // Like WriteLittleEndian64()  but writing directly to the target array.
+  // Like WriteLittleEndian64() but writing directly to the target array.
   static uint8_t* WriteLittleEndian64ToArray(uint64_t value, uint8_t* target);
 
   // Write an unsigned integer with Varint encoding.  Writing a 32-bit value
@@ -1322,6 +1335,19 @@ inline bool CodedInputStream::ReadVarintSizeAsInt(int* value) {
 }
 
 // static
+inline const uint8_t* CodedInputStream::ReadLittleEndian16FromArray(
+    const uint8_t* buffer, uint16_t* value) {
+#if defined(ABSL_IS_LITTLE_ENDIAN) && \
+    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
+  memcpy(value, buffer, sizeof(*value));
+  return buffer + sizeof(*value);
+#else
+  *value = (static_cast<uint16_t>(buffer[0])) |
+           (static_cast<uint16_t>(buffer[1]) << 8);
+  return buffer + sizeof(*value);
+#endif
+}
+// static
 inline const uint8_t* CodedInputStream::ReadLittleEndian32FromArray(
     const uint8_t* buffer, uint32_t* value) {
 #if defined(ABSL_IS_LITTLE_ENDIAN) && \
@@ -1354,6 +1380,20 @@ inline const uint8_t* CodedInputStream::ReadLittleEndian64FromArray(
                    (static_cast<uint32_t>(buffer[7]) << 24);
   *value = static_cast<uint64_t>(part0) | (static_cast<uint64_t>(part1) << 32);
   return buffer + sizeof(*value);
+#endif
+}
+
+inline bool CodedInputStream::ReadLittleEndian16(uint16_t* value) {
+#if defined(ABSL_IS_LITTLE_ENDIAN) && \
+    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
+  if (PROTOBUF_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
+    buffer_ = ReadLittleEndian16FromArray(buffer_, value);
+    return true;
+  } else {
+    return ReadLittleEndian16Fallback(value);
+  }
+#else
+  return ReadLittleEndian16Fallback(value);
 #endif
 }
 
@@ -1648,6 +1688,18 @@ inline void CodedOutputStream::WriteVarint32SignExtended(int32_t value) {
 inline uint8_t* CodedOutputStream::WriteVarint32SignExtendedToArray(
     int32_t value, uint8_t* target) {
   return WriteVarint64ToArray(static_cast<uint64_t>(value), target);
+}
+
+inline uint8_t* CodedOutputStream::WriteLittleEndian16ToArray(uint16_t value,
+                                                              uint8_t* target) {
+#if defined(ABSL_IS_LITTLE_ENDIAN) && \
+    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
+  memcpy(target, &value, sizeof(value));
+#else
+  target[0] = static_cast<uint8_t>(value);
+  target[1] = static_cast<uint8_t>(value >> 8);
+#endif
+  return target + sizeof(value);
 }
 
 inline uint8_t* CodedOutputStream::WriteLittleEndian32ToArray(uint32_t value,
