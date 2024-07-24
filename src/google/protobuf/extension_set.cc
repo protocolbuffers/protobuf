@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -1099,9 +1100,10 @@ void ExtensionSet::Swap(const MessageLite* extendee, ExtensionSet* other) {
 void ExtensionSet::InternalSwap(ExtensionSet* other) {
   using std::swap;
   swap(arena_, other->arena_);
+  swap(map_, other->map_);
   swap(flat_capacity_, other->flat_capacity_);
   swap(flat_size_, other->flat_size_);
-  swap(map_, other->map_);
+  swap(is_large_, other->is_large_);
 }
 
 void ExtensionSet::SwapExtension(const MessageLite* extendee,
@@ -1625,7 +1627,7 @@ void ExtensionSet::GrowCapacity(size_t minimum_new_capacity) {
       hint = new_map.large->insert(hint, {it->first, it->second});
     }
     flat_size_ = static_cast<uint16_t>(-1);
-    ABSL_DCHECK(is_large());
+    is_large_ = true;
   } else {
     new_map.flat = Arena::CreateArray<KeyValue>(arena, new_flat_capacity);
     std::copy(begin, end, new_map.flat);

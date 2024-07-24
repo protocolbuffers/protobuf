@@ -769,7 +769,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // If flat_capacity_ > kMaximumFlatCapacity, converts to LargeMap.
   void GrowCapacity(size_t minimum_new_capacity);
   static constexpr uint16_t kMaximumFlatCapacity = 256;
-  bool is_large() const { return static_cast<int16_t>(flat_size_) < 0; }
+  bool is_large() const { return is_large_; }
 
   // Removes a key from the ExtensionSet.
   void Erase(int key);
@@ -963,26 +963,26 @@ class PROTOBUF_EXPORT ExtensionSet {
     return map_.flat + flat_size_;
   }
 
+  static void DeleteFlatMap(const KeyValue* flat, uint16_t flat_capacity);
+
   Arena* arena_;
 
   // Manual memory-management:
   // map_.flat is an allocated array of flat_capacity_ elements.
   // [map_.flat, map_.flat + flat_size_) is the currently-in-use prefix.
-  uint16_t flat_capacity_;
-  uint16_t flat_size_;  // negative int16_t(flat_size_) indicates is_large()
   union AllocatedData {
-    KeyValue* flat;
+    KeyValue* flat = nullptr;
 
     // If flat_capacity_ > kMaximumFlatCapacity, switch to LargeMap,
     // which guarantees O(n lg n) CPU but larger constant factors.
     LargeMap* large;
   } map_;
-
-  static void DeleteFlatMap(const KeyValue* flat, uint16_t flat_capacity);
+  uint16_t flat_capacity_ = 0;
+  uint16_t flat_size_ = 0;
+  bool is_large_ = false;
 };
 
-constexpr ExtensionSet::ExtensionSet(Arena* arena)
-    : arena_(arena), flat_capacity_(0), flat_size_(0), map_{nullptr} {}
+constexpr ExtensionSet::ExtensionSet(Arena* arena) : arena_(arena) {}
 
 // These are just for convenience...
 inline void ExtensionSet::SetString(int number, FieldType type,

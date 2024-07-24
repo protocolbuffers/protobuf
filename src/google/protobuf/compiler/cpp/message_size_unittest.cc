@@ -47,9 +47,11 @@ ABSL_CHECK_MESSAGE_SIZE(MockZeroFieldsBase, 24);
 
 struct MockExtensionSet {
   void* arena;       // 8 bytes
-  int16_t capacity;  // 4 bytes
-  int16_t size;      // 4 bytes
   void* data;        // 8 bytes
+  int16_t capacity;  // 2 bytes
+  int16_t size;      // 2 bytes
+  bool is_large;     // 1 byte
+  // 3 bytes padding.
 };
 ABSL_CHECK_MESSAGE_SIZE(MockExtensionSet, 24);
 
