@@ -24,6 +24,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -47,6 +48,8 @@ class InternalMetadata;           // metadata_lite.h
 class WireFormat;                 // wire_format.h
 class MessageSetFieldSkipperUsingCord;
 // extension_set_heavy.cc
+class UnknownFieldParserHelper;
+struct UnknownFieldSetTestPeer;
 
 #if defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
 using UFSStringView = absl::string_view;
@@ -87,7 +90,13 @@ class PROTOBUF_EXPORT UnknownField {
   inline void set_fixed32(uint32_t value);
   inline void set_fixed64(uint64_t value);
   inline void set_length_delimited(absl::string_view value);
+  // template to avoid ambiguous overload resolution.
+  template <int&...>
+  inline void set_length_delimited(std::string&& value);
+  inline void set_length_delimited(const absl::Cord& value);
+#if !defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
   inline std::string* mutable_length_delimited();
+#endif  // PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
   inline UnknownFieldSet* mutable_group();
 
   inline size_t GetLengthDelimitedSize() const;
@@ -191,7 +200,14 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   void AddFixed32(int number, uint32_t value);
   void AddFixed64(int number, uint64_t value);
   void AddLengthDelimited(int number, absl::string_view value);
+  // template to avoid ambiguous overload resolution.
+  template <int&...>
+  void AddLengthDelimited(int number, std::string&& value);
+  void AddLengthDelimited(int number, const absl::Cord& value);
+
+#if !defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
   std::string* AddLengthDelimited(int number);
+#endif  // PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
   UnknownFieldSet* AddGroup(int number);
 
   // Adds an unknown field from another set.
@@ -233,6 +249,10 @@ class PROTOBUF_EXPORT UnknownFieldSet {
       : UnknownFieldSet(arena) {}
 
  private:
+  friend internal::WireFormat;
+  friend internal::UnknownFieldParserHelper;
+  friend internal::UnknownFieldSetTestPeer;
+
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
@@ -240,6 +260,14 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   explicit UnknownFieldSet(Arena* arena) : fields_(arena) {}
 
   Arena* arena() { return fields_.GetArena(); }
+
+  // Returns a buffer of `size` chars for the user to fill in.
+  // The buffer is potentially uninitialized memory. Failing to write to it
+  // might lead to undefined behavior when reading it later.
+  // Prefer the overloads above when possible. Calling this API without
+  // validating the `size` parameter can lead to unintentional memory usage and
+  // potential OOM.
+  absl::Span<char> AddLengthDelimitedUninitialized(int number, size_t size);
 
   void ClearFallback();
   void SwapSlow(UnknownFieldSet* other);
@@ -275,7 +303,7 @@ inline void WriteVarint(uint32_t num, uint64_t val, UnknownFieldSet* unknown) {
 }
 inline void WriteLengthDelimited(uint32_t num, absl::string_view val,
                                  UnknownFieldSet* unknown) {
-  unknown->AddLengthDelimited(num)->assign(val.data(), val.size());
+  unknown->AddLengthDelimited(num, val);
 }
 
 PROTOBUF_EXPORT
@@ -331,7 +359,10 @@ inline UnknownField* UnknownFieldSet::mutable_field(int index) {
 
 inline void UnknownFieldSet::AddLengthDelimited(int number,
                                                 const absl::string_view value) {
-  AddLengthDelimited(number)->assign(value.data(), value.size());
+  auto field = AddLengthDelimitedUninitialized(number, value.size());
+  if (!value.empty()) {
+    memcpy(field.data(), value.data(), value.size());
+  }
 }
 
 inline int UnknownField::number() const { return static_cast<int>(number_); }
@@ -376,10 +407,21 @@ inline void UnknownField::set_length_delimited(const absl::string_view value) {
   assert(type() == TYPE_LENGTH_DELIMITED);
   data_.string_value->assign(value.data(), value.size());
 }
+template <int&...>
+inline void UnknownField::set_length_delimited(std::string&& value) {
+  assert(type() == TYPE_LENGTH_DELIMITED);
+  *data_.string_value = std::move(value);
+}
+inline void UnknownField::set_length_delimited(const absl::Cord& value) {
+  assert(type() == TYPE_LENGTH_DELIMITED);
+  absl::CopyCordToString(value, data_.string_value);
+}
+#if !defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
 inline std::string* UnknownField::mutable_length_delimited() {
   assert(type() == TYPE_LENGTH_DELIMITED);
   return data_.string_value;
 }
+#endif  // PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
 inline UnknownFieldSet* UnknownField::mutable_group() {
   assert(type() == TYPE_GROUP);
   return data_.group_;
@@ -396,6 +438,8 @@ inline size_t UnknownField::GetLengthDelimitedSize() const {
 }
 
 inline void UnknownField::SetType(Type type) { type_ = type; }
+
+extern template void UnknownFieldSet::AddLengthDelimited(int, std::string&&);
 
 namespace internal {
 

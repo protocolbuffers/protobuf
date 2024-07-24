@@ -12,6 +12,7 @@
 
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -262,6 +263,23 @@ const char* EpsCopyInputStream::ReadCordFallback(const char* ptr, int size,
   ptr = InitFrom(zcis_);
   limit_ = new_limit - static_cast<int>(buffer_end_ - ptr);
   limit_end_ = buffer_end_ + (std::min)(0, limit_);
+  return ptr;
+}
+
+const char* EpsCopyInputStream::ReadCharsFallback(const char* ptr,
+                                                  absl::Span<char> out) {
+  char* out_ptr = out.data();
+  ptr = AppendSize(ptr, out.size(), [&](const char* p, int s) {
+    memcpy(out_ptr, p, s);
+    out_ptr += s;
+  });
+
+  // If we had an error, set the leftover memory to make sure we don't leak
+  // uninit data in the object.
+  if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
+    memset(out_ptr, 0xCD, out.data() + out.size() - out_ptr);
+  }
+
   return ptr;
 }
 
