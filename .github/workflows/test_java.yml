@@ -116,6 +116,10 @@ jobs:
     - name: Copy the generated pom.xml files to a copy of the java repository
       run: |
         cp -r java testMaven
+        cp -f generatedPoms/lite_mvn-pom.xml testMaven/lite/pom.xml
+        cp -f generatedPoms/kotlin-lite_mvn-pom.xml testMaven/kotlin-lite/pom.xml
+        cp -f generatedPoms/kotlin_mvn-pom.xml testMaven/kotlin/pom.xml
+        cp -f generatedPoms/util_mvn-pom.xml testMaven/util/pom.xml
     - name: Install snapshot version locally (using generated pom.xml)
       run: |
         mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
