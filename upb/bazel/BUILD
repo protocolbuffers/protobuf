@@ -27,5 +27,5 @@ licenses(["notice"])
 py_binary(
     name = "amalgamate",
     srcs = ["amalgamate.py"],
-    visibility = ["//upb:__pkg__"],
+    visibility = ["//visibility:private"],
 )
