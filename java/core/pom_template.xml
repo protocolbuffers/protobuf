@@ -21,6 +21,38 @@
 
   <build>
     <plugins>
+      <!-- Add the generated sources to the build -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-generated-sources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${generated.sources.dir}</source>
+              </sources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>add-generated-test-sources</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>add-test-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${generated.testsources.dir}</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <!-- OSGI bundle configuration -->
       <plugin>
         <groupId>org.apache.felix</groupId>

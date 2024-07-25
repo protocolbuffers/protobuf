@@ -116,6 +116,7 @@ jobs:
     - name: Copy the generated pom.xml files to a copy of the java repository
       run: |
         cp -r java testMaven
+        cp -f generatedPoms/core_mvn-pom.xml testMaven/core/pom.xml
         cp -f generatedPoms/lite_mvn-pom.xml testMaven/lite/pom.xml
         cp -f generatedPoms/kotlin-lite_mvn-pom.xml testMaven/kotlin-lite/pom.xml
         cp -f generatedPoms/kotlin_mvn-pom.xml testMaven/kotlin/pom.xml
