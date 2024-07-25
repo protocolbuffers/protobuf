@@ -45,7 +45,11 @@ rust_test(
 rust_test(
     name = "child_parent_upb_test",
     srcs = ["child_parent_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb_export": "protobuf",
+    },
     deps = [
+        "//rust:protobuf_upb_export",
         "//rust/test:child_upb_rust_proto",
         "//rust/test:parent_upb_rust_proto",
         "@crate_index//:googletest",
@@ -55,7 +59,11 @@ rust_test(
 rust_test(
     name = "child_parent_cpp_test",
     srcs = ["child_parent_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp_export": "protobuf",
+    },
     deps = [
+        "//rust:protobuf_cpp_export",
         "//rust/test:child_cpp_rust_proto",
         "//rust/test:parent_cpp_rust_proto",
         "@crate_index//:googletest",
@@ -263,10 +271,14 @@ rust_test(
 rust_test(
     name = "serialization_upb_test",
     srcs = ["serialization_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb_export": "protobuf",
+    },
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
     deps = [
+        "//rust:protobuf_upb_export",
         "//rust/test:unittest_edition_upb_rust_proto",
         "//rust/test:unittest_proto3_optional_upb_rust_proto",
         "//rust/test:unittest_proto3_upb_rust_proto",
@@ -278,10 +290,14 @@ rust_test(
 rust_test(
     name = "serialization_cpp_test",
     srcs = ["serialization_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp_export": "protobuf",
+    },
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
     deps = [
+        "//rust:protobuf_cpp_export",
         "//rust/test:unittest_cpp_rust_proto",
         "//rust/test:unittest_edition_cpp_rust_proto",
         "//rust/test:unittest_proto3_cpp_rust_proto",

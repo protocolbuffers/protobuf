@@ -7,13 +7,14 @@
 use conformance_rust_proto::{ConformanceRequest, ConformanceResponse, WireFormat};
 
 #[cfg(cpp_kernel)]
-use protobuf_cpp as kernel;
+use protobuf_cpp as protobuf;
 
 #[cfg(upb_kernel)]
-use protobuf_upb as kernel;
+use protobuf_upb as protobuf;
 
-use kernel::Optional::{Set, Unset};
-use kernel::{Message, ParseError};
+use protobuf::prelude::*;
+use protobuf::Optional::{Set, Unset};
+use protobuf::ParseError;
 
 use std::io::{self, ErrorKind, Read, Write};
 use test_messages_edition2023_rust_proto::TestAllTypesEdition2023;

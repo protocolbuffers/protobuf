@@ -6,6 +6,8 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use googletest::prelude::*;
+use protobuf_cpp::prelude::*;
+
 use protobuf_cpp::__runtime::{PtrAndLen, RawMessage};
 use unittest_rust_proto::{TestAllExtensions, TestAllTypes, TestAllTypesMut, TestAllTypesView};
 

@@ -6,6 +6,8 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use googletest::prelude::*;
+use protobuf::prelude::*;
+
 use paste::paste;
 use unittest_edition_rust_proto::TestAllTypes as TestAllTypesEditions;
 use unittest_proto3_optional_rust_proto::TestProto3Optional;

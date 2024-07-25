@@ -48,18 +48,21 @@ rust_library(
 #
 # shared.rs is the root of the crate and has public items re-exported in protobuf.rs for user use.
 PROTOBUF_SHARED = [
+    # go/keep-sorted start
     "codegen_traits.rs",
+    "cord.rs",
     "enum.rs",
     "internal.rs",
-    "primitive.rs",
+    "map.rs",
     "optional.rs",
-    "cord.rs",
+    "prelude.rs",
+    "primitive.rs",
+    "proto_macro.rs",
     "proxied.rs",
     "repeated.rs",
     "shared.rs",
     "string.rs",
-    "map.rs",
-    "proto_macro.rs",
+    # go/keep-sorted end
 ]
 
 # The Rust Protobuf runtime using the upb kernel.

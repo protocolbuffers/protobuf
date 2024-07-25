@@ -6,6 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use googletest::prelude::*;
+use protobuf::prelude::*;
 
 #[googletest::test]
 fn test_canonical_types() {

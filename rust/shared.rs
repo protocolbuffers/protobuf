@@ -45,6 +45,8 @@ pub mod __public {
 }
 pub use __public::*;
 
+pub mod prelude;
+
 /// Everything in `__internal` is allowed to change without it being considered
 /// a breaking change for the protobuf library. Nothing in here should be
 /// exported in `protobuf.rs`.

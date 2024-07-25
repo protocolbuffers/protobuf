@@ -973,7 +973,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
         impl $pb$::Serialize for $Msg$ {
           fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
-            self.serialize()
+            $pb$::AsView::as_view(self).serialize()
           }
         }
 
@@ -1020,7 +1020,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
         impl $pb$::Serialize for $Msg$View<'_> {
           fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
-            self.serialize()
+            $Msg::serialize$
           }
         }
 
@@ -1033,10 +1033,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
           fn raw_msg(&self) -> $pbr$::RawMessage {
             self.msg
-          }
-
-          pub fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
-            $Msg::serialize$
           }
 
           pub fn to_owned(&self) -> $Msg$ {
@@ -1096,7 +1092,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
         impl $pb$::Serialize for $Msg$Mut<'_> {
           fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
-            self.serialize()
+            $pb$::AsView::as_view(self).serialize()
           }
         }
 
@@ -1126,10 +1122,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           pub fn as_mutator_message_ref(&mut self, _private: $pbi$::Private)
             -> $pbr$::MutatorMessageRef<'msg> {
             self.inner
-          }
-
-          pub fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
-            $pb$::AsView::as_view(self).serialize()
           }
 
           pub fn to_owned(&self) -> $Msg$ {
@@ -1200,9 +1192,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
           $raw_arena_getter_for_message$
 
-          pub fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
-            self.as_view().serialize()
-          }
           #[deprecated = "Prefer Msg::parse(), or use the new name 'clear_and_parse' to parse into a pre-existing message."]
           pub fn deserialize(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
             self.clear_and_parse(data)
