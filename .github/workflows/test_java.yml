@@ -100,6 +100,7 @@ jobs:
         mv ${{ steps.build-protoc.outputs.protoc }} protoc
         sudo rm -rf _build
     - name: Generate pom.xml files from the template
+      id: generate-poms
       uses: protocolbuffers/protobuf-ci/bazel-docker@v3
       with:
         image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
@@ -115,11 +116,11 @@ jobs:
     - name: Copy the generated pom.xml files to the java repository
       shell: bash
       run: |
-        cp -f core_mvn-pom.xml core/pom.xml
-        cp -f lite_mvn-pom.xml lite/pom.xml
-        cp -f kotlin-lite_mvn-pom.xml kotlin-lite/pom.xml
-        cp -f kotlin_mvn-pom.xml kotlin/pom.xml
-        cp -f util_mvn-pom.xml util/pom.xml
+        mv -f ${{ steps.generate-poms.outputs.core_mvn-pom.xml }} core/pom.xml
+        mv -f ${{ steps.generate-poms.outputs.lite_mvn-pom.xml }} lite/pom.xml
+        mv -f ${{ steps.generate-poms.outputs.kotlin-lite_mvn-pom.xml }} kotlin-lite/pom.xml
+        mv -f ${{ steps.generate-poms.outputs.kotlin_mvn-pom.xml }} kotlin/pom.xml
+        mv -f ${{ steps.generate-poms.outputs.util_mvn-pom.xml }} util/pom.xml
       working-directory: java
     - name: Install snapshot version locally (using generated pom.xml)
       run: |
