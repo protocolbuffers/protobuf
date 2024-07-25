@@ -7,10 +7,10 @@
 
 syntax = "proto2";
 
+package objc.protobuf.tests;
+
 import "google/protobuf/any.proto";
 import "objectivec/Tests/unittest.proto";
-
-package objc.protobuf.tests;
 
 // Explicit empty prefix, tests some validations code paths also.
 option objc_class_prefix = "";
@@ -78,143 +78,142 @@ message self {
   }
 
   enum autorelease {
-    retain      = 1;
-    release     = 2;
+    retain = 1;
+    release = 2;
     retainCount = 3;
   }
 
   // Singular
   // Objective C Keywords
-  optional bool id                =  1;
-  optional bool _cmd              =  2;
+  optional bool id = 1;
+  optional bool _cmd = 2;
   // super is used as submessage above
-  optional bool in                =  4;
-  optional bool out               =  5;
-  optional bool inout             =  6;
-  optional bool bycopy            =  7;
-  optional bool byref             =  8;
-  optional bool oneway            =  9;
-  optional bool self              =  10;
-  optional bool instancetype      =  11;
-  optional bool nullable          =  12;
-  optional bool nonnull           =  13;
-  optional bool nil               =  14;
+  optional bool in = 4;
+  optional bool out = 5;
+  optional bool inout = 6;
+  optional bool bycopy = 7;
+  optional bool byref = 8;
+  optional bool oneway = 9;
+  optional bool self = 10;
+  optional bool instancetype = 11;
+  optional bool nullable = 12;
+  optional bool nonnull = 13;
+  optional bool nil = 14;
   // Nil and nil can't be in the same message
-  optional bool YES               =  16;
-  optional bool NO                =  17;
-  optional bool weak              =  18;
+  optional bool YES = 16;
+  optional bool NO = 17;
+  optional bool weak = 18;
 
   // Some C/C++ Keywords
-  optional bool case              = 30;
-  optional bool if                = 31;
-  optional bool and_eq            = 32;
-  optional bool public            = 33;
-  optional bool private           = 34;
-  optional bool typename          = 35;
-  optional bool static_cast       = 36;
-  optional bool typeof            = 37;
-  optional bool restrict          = 38;
-  optional bool NULL              = 39;
+  optional bool case = 30;
+  optional bool if = 31;
+  optional bool and_eq = 32;
+  optional bool public = 33;
+  optional bool private = 34;
+  optional bool typename = 35;
+  optional bool static_cast = 36;
+  optional bool typeof = 37;
+  optional bool restrict = 38;
+  optional bool NULL = 39;
 
   // Some NSObject Methods
-  optional bool dealloc           = 110;
-  optional bool isProxy           = 111;
-  optional bool copy              = 112;
-  optional bool description       = 113;
-  optional bool zone              = 114;
-  optional bool className         = 115;
-  optional bool __retain_OA       = 116;
-  optional bool CAMLType          = 117;
-  optional bool isNSDictionary__  = 118;
+  optional bool dealloc = 110;
+  optional bool isProxy = 111;
+  optional bool copy = 112;
+  optional bool description = 113;
+  optional bool zone = 114;
+  optional bool className = 115;
+  optional bool __retain_OA = 116;
+  optional bool CAMLType = 117;
+  optional bool isNSDictionary__ = 118;
   optional bool accessibilityLabel = 119;
 
   // Some Objc "keywords" that we shouldn't
   // have to worry about because they
   // can only appear in specialized areas.
-  optional bool assign            = 200;
-  optional bool getter            = 201;
-  optional bool setter            = 202;
-  optional bool atomic            = 203;
-  optional bool nonatomic         = 204;
-  optional bool strong            = 205;
-  optional bool null_resettable   = 206;
-  optional bool readonly          = 207;
+  optional bool assign = 200;
+  optional bool getter = 201;
+  optional bool setter = 202;
+  optional bool atomic = 203;
+  optional bool nonatomic = 204;
+  optional bool strong = 205;
+  optional bool null_resettable = 206;
+  optional bool readonly = 207;
 
   // Some GPBMessage methods
-  optional bool clear             = 300;
-  optional bool data              = 301;
-  optional bool descriptor        = 302;
-  optional bool delimitedData     = 303;
+  optional bool clear = 300;
+  optional bool data = 301;
+  optional bool descriptor = 302;
+  optional bool delimitedData = 303;
 
   // Some MacTypes
-  optional bool Fixed             = 400;
-  optional bool Point             = 401;
-  optional bool FixedPoint        = 402;
-  optional bool Style             = 403;
+  optional bool Fixed = 400;
+  optional bool Point = 401;
+  optional bool FixedPoint = 402;
+  optional bool Style = 403;
 
   // C/C++ reserved identifiers
-  optional bool _Generic          = 500;
-  optional bool __block           = 501;
+  optional bool _Generic = 500;
+  optional bool __block = 501;
 
   // Try a keyword as a type
-  optional autorelease SubEnum    = 1000;
+  optional autorelease SubEnum = 1000;
 
   optional group New = 2000 {
-   optional string copy = 1;
+    optional string copy = 1;
   }
   optional group MutableCopy = 2001 {
     optional int32 extensionRegistry = 1;
   }
 
   extensions 3000 to 3999;
-
 }
 
 enum retain {
-  count          = 4;
-  initialized    = 5;
+  count = 4;
+  initialized = 5;
   serializedSize = 6;
 }
 
 message ObjCPropertyNaming {
   // Test that the properties properly get things all caps.
-  optional string url           = 1;
+  optional string url = 1;
   optional string thumbnail_url = 2;
-  optional string url_foo       = 3;
+  optional string url_foo = 3;
   optional string some_url_blah = 4;
-  optional string http          = 5;
-  optional string https         = 6;
+  optional string http = 5;
+  optional string https = 6;
   // This one doesn't.
-  repeated string urls          = 7;
+  repeated string urls = 7;
 }
 
 // EnumValueShortName: The short names shouldn't get suffixes/prefixes.
 enum Foo {
   SERIALIZED_SIZE = 1;
-  SIZE            = 2;
-  OTHER           = 3;
+  SIZE = 2;
+  OTHER = 3;
 }
 
 // EnumValueShortName: The enum name gets a prefix.
 enum Category {
-  RED  = 1;
+  RED = 1;
   BLUE = 2;
 }
 
 // EnumValueShortName: Twist case, full name gets PB, but the short names
 // should still end up correct.
 enum Time {
-  BASE            = 1;
-  RECORD          = 2;
-  SOMETHING_ELSE  = 3;
+  BASE = 1;
+  RECORD = 2;
+  SOMETHING_ELSE = 3;
 }
 
 extend self {
-  repeated    int32 debugDescription    =  3000 [packed = true];
-  repeated    int64 finalize            =  3001 [packed = true];
-  repeated   uint32 hash                =  3002 [packed = true];
-  repeated   uint64 classForCoder       =  3003 [packed = true];
-  repeated   sint32 byref               =  3004 [packed = true];
+  repeated int32 debugDescription = 3000 [packed = true];
+  repeated int64 finalize = 3001 [packed = true];
+  repeated uint32 hash = 3002 [packed = true];
+  repeated uint64 classForCoder = 3003 [packed = true];
+  repeated sint32 byref = 3004 [packed = true];
 }
 
 // Test handing of fields that start with init*.
@@ -700,13 +699,17 @@ message JustToScopeExtensions {
 
     repeated string mutableCopy_val_lower_complex_repeated = 2711;
     repeated string mutableCopy_Val_upper_complex_repeated = 2712;
-    repeated string mutableCopyvalue_lower_no_underscore_complex_repeated = 2713;
-    repeated string mutableCopyValue_upper_no_underscore_complex_repeated = 2714;
+    repeated string mutableCopyvalue_lower_no_underscore_complex_repeated =
+        2713;
+    repeated string mutableCopyValue_upper_no_underscore_complex_repeated =
+        2714;
 
     repeated int32 mutableCopy_val_lower_primitive_repeated = 2715;
     repeated int32 mutableCopy_Val_upper_primitive_repeated = 2716;
-    repeated int32 mutableCopyvalue_lower_no_underscore_primitive_repeated = 2717;
-    repeated int32 mutableCopyValue_upper_no_underscore_primitive_repeated = 2718;
+    repeated int32 mutableCopyvalue_lower_no_underscore_primitive_repeated =
+        2717;
+    repeated int32 mutableCopyValue_upper_no_underscore_primitive_repeated =
+        2718;
 
     repeated self mutableCopy_val_lower_message_repeated = 2719;
     repeated self mutableCopy_Val_upper_message_repeated = 2720;
@@ -781,9 +784,9 @@ message ObjcWeirdDefaults {
 // Used to confirm negative enum values work as expected.
 message EnumTestMsg {
   enum MyEnum {
-    ZERO    = 0;
-    ONE     = 1;
-    TWO     = 2;
+    ZERO = 0;
+    ONE = 1;
+    TWO = 2;
     NEG_ONE = -1;
     NEG_TWO = -2;
   }
@@ -792,6 +795,20 @@ message EnumTestMsg {
   optional MyEnum baz = 3 [default = NEG_ONE];
 
   repeated MyEnum mumble = 4;
+}
+
+message EnumTestMsgPrime {
+  enum MyEnumPrime {
+    ZERO = 0;
+    ONE = 1;
+    NEG_ONE = -1;
+    // Lacks 2, -2.
+  }
+  optional MyEnumPrime foo = 1;
+  optional MyEnumPrime bar = 2 [default = ONE];
+  optional MyEnumPrime baz = 3 [default = NEG_ONE];
+
+  repeated MyEnumPrime mumble = 4;
 }
 
 // Test case for https://github.com/protocolbuffers/protobuf/issues/1453

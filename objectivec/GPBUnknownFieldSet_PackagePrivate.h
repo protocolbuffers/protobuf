@@ -14,8 +14,6 @@
 
 @interface GPBUnknownFieldSet ()
 
-+ (BOOL)isFieldTag:(int32_t)tag;
-
 - (NSData *)data;
 
 - (size_t)serializedSize;
@@ -29,9 +27,7 @@
 - (void)mergeFromCodedInputStream:(GPBCodedInputStream *)input;
 
 - (void)mergeVarintField:(int32_t)number value:(int32_t)value;
+- (void)mergeLengthDelimited:(int32_t)number value:(NSData *)value;
 - (BOOL)mergeFieldFrom:(int32_t)tag input:(GPBCodedInputStream *)input;
-- (void)mergeMessageSetMessage:(int32_t)number data:(NSData *)messageData;
-
-- (void)addUnknownMapEntry:(int32_t)fieldNum value:(NSData *)data;
 
 @end

@@ -12,7 +12,9 @@
 #import "GPBCodedInputStream_PackagePrivate.h"
 #import "GPBCodedOutputStream.h"
 #import "GPBCodedOutputStream_PackagePrivate.h"
+#import "GPBDescriptor.h"
 #import "GPBMessage.h"
+#import "GPBMessage_PackagePrivate.h"
 #import "GPBUnknownField.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUnknownField_PackagePrivate.h"
@@ -195,12 +197,9 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
   self = [super init];
   if (self) {
     fields_ = [[NSMutableArray alloc] init];
-    // TODO: b/349146447 - Move off the legacy class and directly to the data once Message is
-    // updated.
-    GPBUnknownFieldSet *legacyUnknownFields = [message unknownFields];
-    if (legacyUnknownFields) {
-      GPBCodedInputStream *input =
-          [[GPBCodedInputStream alloc] initWithData:[legacyUnknownFields data]];
+    NSData *data = GPBMessageUnknownFieldsData(message);
+    if (data) {
+      GPBCodedInputStream *input = [[GPBCodedInputStream alloc] initWithData:data];
       // Parse until the end of the data (tag will be zero).
       if (!MergeFromInputStream(self, input, 0)) {
         [input release];
