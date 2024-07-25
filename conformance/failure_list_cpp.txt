@@ -30,7 +30,7 @@ Recommended.Editions_Proto2.JsonInput.StringFieldUppercaseEscapeLetter          
 Recommended.Editions_Proto2.JsonInput.TrailingCommaInAnObject                                                      # Should have failed to parse, but didn't.
 Recommended.Editions_Proto2.JsonInput.TrailingCommaInAnObjectWithNewlines                                          # Should have failed to parse, but didn't.
 Recommended.Editions_Proto2.JsonInput.TrailingCommaInAnObjectWithSpace                                             # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.TrailingCommaInAnObjectWithSpaceCommaSpace                                   # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.TrailingCommaInAnObjectWithSpaceCommaSpace                                                 # Should have failed to parse, but didn't.
 Recommended.Editions_Proto3.FieldMaskNumbersDontRoundTrip.JsonOutput                                               # Should have failed to serialize, but didn't.
 Recommended.Editions_Proto3.FieldMaskPathsDontRoundTrip.JsonOutput                                                 # Should have failed to serialize, but didn't.
 Recommended.Editions_Proto3.FieldMaskTooManyUnderscore.JsonOutput                                                  # Should have failed to serialize, but didn't.
@@ -57,7 +57,6 @@ Recommended.Editions_Proto3.JsonInput.StringFieldUppercaseEscapeLetter          
 Recommended.Editions_Proto3.JsonInput.TrailingCommaInAnObject                                                      # Should have failed to parse, but didn't.
 Recommended.Editions_Proto3.JsonInput.TrailingCommaInAnObjectWithNewlines                                          # Should have failed to parse, but didn't.
 Recommended.Editions_Proto3.JsonInput.TrailingCommaInAnObjectWithSpace                                             # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.TrailingCommaInAnObjectWithSpaceCommaSpace                                   # Should have failed to parse, but didn't.
 Recommended.Proto2.JsonInput.BoolFieldDoubleQuotedFalse                                                            # Should have failed to parse, but didn't.
 Recommended.Proto2.JsonInput.BoolFieldDoubleQuotedTrue                                                             # Should have failed to parse, but didn't.
 Recommended.Proto2.JsonInput.FieldNameDuplicate                                                                    # Should have failed to parse, but didn't.
@@ -81,7 +80,6 @@ Recommended.Proto2.JsonInput.StringFieldUppercaseEscapeLetter                   
 Recommended.Proto2.JsonInput.TrailingCommaInAnObject                                                               # Should have failed to parse, but didn't.
 Recommended.Proto2.JsonInput.TrailingCommaInAnObjectWithNewlines                                                   # Should have failed to parse, but didn't.
 Recommended.Proto2.JsonInput.TrailingCommaInAnObjectWithSpace                                                      # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.TrailingCommaInAnObjectWithSpaceCommaSpace                                            # Should have failed to parse, but didn't.
 Recommended.Proto3.FieldMaskNumbersDontRoundTrip.JsonOutput                                                        # Should have failed to serialize, but didn't.
 Recommended.Proto3.FieldMaskPathsDontRoundTrip.JsonOutput                                                          # Should have failed to serialize, but didn't.
 Recommended.Proto3.FieldMaskTooManyUnderscore.JsonOutput                                                           # Should have failed to serialize, but didn't.
@@ -108,4 +106,3 @@ Recommended.Proto3.JsonInput.StringFieldUppercaseEscapeLetter                   
 Recommended.Proto3.JsonInput.TrailingCommaInAnObject                                                               # Should have failed to parse, but didn't.
 Recommended.Proto3.JsonInput.TrailingCommaInAnObjectWithNewlines                                                   # Should have failed to parse, but didn't.
 Recommended.Proto3.JsonInput.TrailingCommaInAnObjectWithSpace                                                      # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.TrailingCommaInAnObjectWithSpaceCommaSpace                                            # Should have failed to parse, but didn't.

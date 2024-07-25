@@ -22,6 +22,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "google/protobuf/arena.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance.pb.h"
 #include "google/protobuf/descriptor.h"
@@ -172,6 +173,33 @@ class ConformanceTestSuite {
                 const std::string& filename,
                 conformance::FailureSet* failure_list);
 
+  // Each suite will be able to define how a wildcard can be matched in a test
+  // name and what the wildcard expands to, since suites may
+  // differ in what tests they run. For example, if a suite repeats the same
+  // test for different message types, the suite can define a wildcard that
+  // matches any of the message types in a certain section of a test name and
+  // expands to each of them.
+  //
+  // A pattern (regex) should have capture groups around the wildcard for
+  // replacement ability in expansion.
+  class SectionDescription {
+   public:
+    std::string pattern_;
+    absl::flat_hash_set<std::string> expands_to_;
+
+    SectionDescription() : pattern_(""), expands_to_({}) {}
+
+    void SetPattern(const std::string& pattern) { pattern_ = pattern; }
+
+    void SetExpandsTo(const absl::flat_hash_set<std::string>& expands_to) {
+      expands_to_ = expands_to;
+    }
+  };
+
+  void AddSectionDescription(const SectionDescription& section_description) {
+    section_descriptions_.push_back(section_description);
+  }
+
  protected:
   // Test cases are classified into a few categories:
   //   REQUIRED: the test case must be passed for an implementation to be
@@ -257,7 +285,7 @@ class ConformanceTestSuite {
   conformance::ConformanceResponse TruncateResponse(
       const conformance::ConformanceResponse& response);
 
-  void ReportSuccess(const conformance::TestStatus& test);
+  void ReportSuccess(conformance::TestStatus& test);
   void ReportFailure(conformance::TestStatus& test, ConformanceLevel level,
                      const conformance::ConformanceRequest& request,
                      const conformance::ConformanceResponse& response);
@@ -277,6 +305,16 @@ class ConformanceTestSuite {
 
   void AddExpectedFailedTest(const conformance::TestStatus& failure);
 
+  void CheckDuplicates(const conformance::TestStatus& failure);
+
+  bool ContainsWildcard(const std::string& test_name);
+
+  // Returns false if the test name does not match any SectionDescription
+  // pattern. If the test name does not contain a wildcard or it did match,
+  // returns true.
+  bool ExpandWildcards(absl::flat_hash_set<std::string>& expanded,
+                       const std::string& test_name);
+
   virtual void RunSuiteImpl() = 0;
 
   ConformanceTestRunner* runner_;
@@ -295,11 +333,22 @@ class ConformanceTestSuite {
   // failed yet.
   absl::btree_map<std::string, conformance::TestStatus> expected_to_fail_;
 
+  // The set of test names (expanded from wildcard(s)) that are expected to fail
+  // in this run, but haven't failed yet.
+  absl::btree_map<std::string, conformance::TestStatus>
+      expected_to_fail_expanded_wildcards_;
+
   // The set of tests that failed because their failure message did not match
   // the actual failure message. These are failure messages that may need to be
   // removed from our failure lists.
   absl::btree_map<std::string, conformance::TestStatus>
       expected_failure_messages_;
+
+  // The set of tests (expanded from wildcard(s)) that failed because their
+  // failure message did not match the actual failure message. Their
+  // equivalent wildcarded name may need to be removed from our failure lists.
+  absl::btree_map<std::string, conformance::TestStatus>
+      expected_failure_messages_expanded_wildcards_;
 
   // The set of test names that have been run.  Used to ensure that there are no
   // duplicate names in the suite.
@@ -315,6 +364,13 @@ class ConformanceTestSuite {
   absl::btree_map<std::string, conformance::TestStatus>
       unexpected_succeeding_tests_;
 
+  // The set of tests (expanded from wildcard(s)) that succeeded, but weren't
+  // expected to: They were present in our failure lists, but managed to
+  // succeed. Their equivalent wildcarded name may need to be removed from our
+  // failure lists.
+  absl::btree_map<std::string, conformance::TestStatus>
+      unexpected_succeeding_tests_expanded_wildcards_;
+
   // The set of tests that failed because their failure message did not match
   // the actual failure message. These are failure messages that may need to be
   // added to our failure lists.
@@ -323,6 +379,14 @@ class ConformanceTestSuite {
 
   // The set of tests that the testee opted out of;
   absl::btree_map<std::string, conformance::TestStatus> skipped_;
+
+  // Each SectionDescription holds information about how to match a wildcard
+  // and what the wildcard expands to for a section of a test name.
+  std::vector<SectionDescription> section_descriptions_;
+
+  // Test names with wildcards that did not match any SectionDescription
+  // pattern.
+  absl::btree_map<std::string, conformance::TestStatus> unmatched_wildcards_;
 };
 
 }  // namespace protobuf
