@@ -11,15 +11,10 @@
 
 #include "google/protobuf/unknown_field_set.h"
 
-#include <cstring>
-#include <string>
-#include <utility>
-
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/span.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -122,36 +117,6 @@ void UnknownFieldSet::AddFixed64(int number, uint64_t value) {
   field.data_.fixed64_ = value;
 }
 
-void UnknownFieldSet::AddLengthDelimited(int number, const absl::Cord& value) {
-  auto out = AddLengthDelimitedUninitialized(number, value.size());
-  for (absl::string_view part : value.Chunks()) {
-    memcpy(out.data(), part.data(), part.size());
-    out.remove_prefix(part.size());
-  }
-}
-
-absl::Span<char> UnknownFieldSet::AddLengthDelimitedUninitialized(int number,
-                                                                  size_t size) {
-  auto& field = *fields_.Add();
-  field.number_ = number;
-  field.SetType(UnknownField::TYPE_LENGTH_DELIMITED);
-  std::string* str = field.data_.string_value =
-      Arena::Create<std::string>(arena());
-  absl::strings_internal::STLStringResizeUninitialized(str, size);
-  return absl::Span<char>(*str);
-}
-
-template <int&...>
-void UnknownFieldSet::AddLengthDelimited(int number, std::string&& value) {
-  auto& field = *fields_.Add();
-  field.number_ = number;
-  field.SetType(UnknownField::TYPE_LENGTH_DELIMITED);
-  field.data_.string_value =
-      Arena::Create<std::string>(arena(), std::move(value));
-}
-template void UnknownFieldSet::AddLengthDelimited(int, std::string&&);
-
-#if !defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
 std::string* UnknownFieldSet::AddLengthDelimited(int number) {
   auto& field = *fields_.Add();
   field.number_ = number;
@@ -159,7 +124,6 @@ std::string* UnknownFieldSet::AddLengthDelimited(int number) {
   field.data_.string_value = Arena::Create<std::string>(arena());
   return field.data_.string_value;
 }
-#endif  // PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
 
 UnknownFieldSet* UnknownFieldSet::AddGroup(int number) {
   auto& field = *fields_.Add();
@@ -320,10 +284,10 @@ class UnknownFieldParserHelper {
   }
   const char* ParseLengthDelimited(uint32_t num, const char* ptr,
                                    ParseContext* ctx) {
+    std::string* s = unknown_->AddLengthDelimited(num);
     int size = ReadSize(&ptr);
     GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-    return ctx->ReadChars(ptr,
-                          unknown_->AddLengthDelimitedUninitialized(num, size));
+    return ctx->ReadString(ptr, size, s);
   }
   const char* ParseGroup(uint32_t num, const char* ptr, ParseContext* ctx) {
     return ctx->ParseGroupInlined(ptr, num * 8 + 3, [&](const char* ptr) {

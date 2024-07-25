@@ -13,7 +13,6 @@
 
 #include <stack>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "absl/log/absl_check.h"
@@ -85,21 +84,9 @@ bool WireFormat::SkipField(io::CodedInputStream* input, uint32_t tag,
       if (!input->ReadVarint32(&length)) return false;
       if (unknown_fields == nullptr) {
         if (!input->Skip(length)) return false;
-      } else if (length > 1'000'000) {
-        // If the provided length is too long, use the `std::string` approach,
-        // which will grow as it reads data instead of allocating all at the
-        // beginning. This protects against malformed input.
-        // Any reasonable value here is fine.
-        std::string str;
-        if (!input->ReadString(&str, length)) {
-          return false;
-        }
-        unknown_fields->AddLengthDelimited(number, std::move(str));
       } else {
-        if (!input->ReadRaw(
-                unknown_fields->AddLengthDelimitedUninitialized(number, length)
-                    .data(),
-                length)) {
+        if (!input->ReadString(unknown_fields->AddLengthDelimited(number),
+                               length)) {
           return false;
         }
       }
@@ -375,10 +362,8 @@ bool WireFormat::SkipMessageSetField(io::CodedInputStream* input,
                                      UnknownFieldSet* unknown_fields) {
   uint32_t length;
   if (!input->ReadVarint32(&length)) return false;
-  return input->ReadRaw(
-      unknown_fields->AddLengthDelimitedUninitialized(field_number, length)
-          .data(),
-      length);
+  return input->ReadString(unknown_fields->AddLengthDelimited(field_number),
+                           length);
 }
 
 bool WireFormat::ParseAndMergeMessageSetField(uint32_t field_number,

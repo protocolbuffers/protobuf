@@ -212,15 +212,6 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return ReadCordFallback(ptr, size, cord);
   }
 
-  PROTOBUF_NODISCARD const char* ReadChars(const char* ptr,
-                                           absl::Span<char> out) {
-    if (out.size() <= static_cast<size_t>(buffer_end_ + kSlopBytes - ptr)) {
-      memcpy(out.data(), ptr, out.size());
-      return ptr + out.size();
-    }
-    return ReadCharsFallback(ptr, out);
-  }
-
 
   template <typename Tag, typename T>
   PROTOBUF_NODISCARD const char* ReadRepeatedFixed(const char* ptr,
@@ -378,7 +369,6 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   const char* AppendStringFallback(const char* ptr, int size, std::string* str);
   const char* ReadStringFallback(const char* ptr, int size, std::string* str);
   const char* ReadCordFallback(const char* ptr, int size, absl::Cord* cord);
-  const char* ReadCharsFallback(const char* ptr, absl::Span<char> out);
   static bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth);
   bool StreamNext(const void** data) {
     bool res = zcis_->Next(data, &size_);
