@@ -157,11 +157,20 @@ impl<'msg> ViewProxy<'msg> for &'msg [u8] {}
 
 /// The bytes were not valid UTF-8.
 #[derive(Debug, PartialEq)]
-pub struct Utf8Error(pub(crate) ());
+pub struct Utf8Error {
+    pub(crate) inner: std::str::Utf8Error,
+}
+impl std::fmt::Display for Utf8Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        self.inner.fmt(f)
+    }
+}
+
+impl std::error::Error for Utf8Error {}
 
 impl From<std::str::Utf8Error> for Utf8Error {
-    fn from(_: std::str::Utf8Error) -> Utf8Error {
-        Utf8Error(())
+    fn from(inner: std::str::Utf8Error) -> Utf8Error {
+        Utf8Error { inner }
     }
 }
 
