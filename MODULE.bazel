@@ -21,36 +21,18 @@ bazel_dep(name = "rules_java", version = "5.3.5")
 bazel_dep(name = "rules_jvm_external", version = "6.0")
 bazel_dep(name = "rules_kotlin", version = "1.9.0")
 bazel_dep(name = "rules_pkg", version = "0.7.0")
-bazel_dep(name = "rules_python", version = "0.28.0")
+bazel_dep(name = "rules_python", version = "0.34.0")
 bazel_dep(name = "rules_rust", version = "0.45.1")
 bazel_dep(name = "platforms", version = "0.0.8")
 bazel_dep(name = "zlib", version = "1.3.1")
 bazel_dep(name = "bazel_features", version = "1.13.0", repo_name = "proto_bazel_features")
 
-SUPPORTED_PYTHON_VERSIONS = [
-    "3.8",
-    "3.9",
-    "3.10",
-    "3.11",
-    "3.12",
-]
-python = use_extension("@rules_python//python/extensions:python.bzl", "python")
-[
-    python.toolchain(
-        is_default = python_version == SUPPORTED_PYTHON_VERSIONS[-1],
-        python_version = python_version,
-    )
-    for python_version in SUPPORTED_PYTHON_VERSIONS
-]
-use_repo(python, system_python = "python_{}".format(SUPPORTED_PYTHON_VERSIONS[-1].replace(".", "_")))
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 [
     pip.parse(
         hub_name = "pip_deps",
-        python_version = python_version,
         requirements_lock = "//python:requirements.txt",
     )
-    for python_version in SUPPORTED_PYTHON_VERSIONS
 ]
 use_repo(pip, "pip_deps")
 
