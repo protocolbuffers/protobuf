@@ -100,7 +100,6 @@ jobs:
         mv ${{ steps.build-protoc.outputs.protoc }} protoc
         sudo rm -rf _build
     - name: Generate pom.xml files from the template
-      id: generate-poms
       uses: protocolbuffers/protobuf-ci/bazel-docker@v3
       with:
         image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
@@ -108,25 +107,19 @@ jobs:
         bazel-cache: java_linux/11
         bash: |
           bazel build //java/core:core_mvn-pom //java/core:lite_mvn-pom //java/kotlin-lite:kotlin-lite_mvn-pom //java/kotlin:kotlin_mvn-pom //java/util:util_mvn-pom
-          mv bazel-bin/java/core/core_mvn-pom.xml .
-          echo "core-pom=core_mvn-pom.xml" >> "$GITHUB_OUTPUT"
-          cp bazel-bin/java/core/lite_mvn-pom.xml .
-          echo "lite-pom=lite_mvn-pom.xml" >> "$GITHUB_OUTPUT"
-          cp bazel-bin/java/kotlin-lite/kotlin-lite_mvn-pom.xml .
-          echo "kotlin-lite-pom=kotlin-lite_mvn-pom.xml" >> "$GITHUB_OUTPUT"
-          cp bazel-bin/java/kotlin/kotlin_mvn-pom.xml .
-          echo "kotlin-pom=kotlin_mvn-pom.xml" >> "$GITHUB_OUTPUT"
-          cp bazel-bin/java/util/util_mvn-pom.xml .
-          echo "util-pom=util_mvn-pom.xml" >> "$GITHUB_OUTPUT"
+          mkdir -p generatedPoms
+          cp bazel-bin/java/core/core_mvn-pom.xml generatedPoms/core_mvn-pom.xml
+          cp bazel-bin/java/core/lite_mvn-pom.xml generatedPoms/lite_mvn-pom.xml
+          cp bazel-bin/java/kotlin-lite/kotlin-lite_mvn-pom.xml generatedPoms/kotlin-lite_mvn-pom.xml
+          cp bazel-bin/java/kotlin/kotlin_mvn-pom.xml generatedPoms/kotlin_mvn-pom.xml
+          cp bazel-bin/java/util/util_mvn-pom.xml generatedPoms/util_mgn-pom.xml
     - name: Copy the generated pom.xml files to the java repository
-      shell: bash
       run: |
-        mv -f ${{ steps.generate-poms.outputs.core-pom }} core/pom.xml
-        mv -f ${{ steps.generate-poms.outputs.lite-pom }} lite/pom.xml
-        mv -f ${{ steps.generate-poms.outputs.kotlin-lite-pom }} kotlin-lite/pom.xml
-        mv -f ${{ steps.generate-poms.outputs.kotlin-pom }} kotlin/pom.xml
-        mv -f ${{ steps.generate-poms.outputs.util-pom }} util/pom.xml
-      working-directory: java
+        mv -f generatedPoms/core_mvn-pom.xml java/core/pom.xml
+        mv -f generatedPoms/lite_mvn-pom.xml java/lite/pom.xml
+        mv -f generatedPoms/kotlin-lite_mvn-pom.xml java/kotlin-lite/pom.xml
+        mv -f generatedPoms/kotlin_mvn-pom.xml java/kotlin/pom.xml
+        mv -f generatedPoms/util_mvn-pom.xml java/util/pom.xml
     - name: Install snapshot version locally (using generated pom.xml)
       run: |
         mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
