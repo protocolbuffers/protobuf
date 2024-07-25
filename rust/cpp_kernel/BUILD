@@ -31,7 +31,7 @@ cc_library(
         "//src/google/protobuf/io",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/strings:string_view",
+        "@com_google_absl//absl/memory",
     ],
 )
 

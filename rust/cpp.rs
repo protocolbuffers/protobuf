@@ -9,11 +9,13 @@
 
 use crate::__internal::{Enum, Private};
 use crate::{
-    IntoProxied, Map, MapIter, MapMut, MapView, Mut, ProtoBytes, ProtoStr, ProtoString, Proxied,
-    ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
+    IntoProxied, Map, MapIter, MapMut, MapView, MessageViewInterop, Mut, OwnedMessageInterop,
+    ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
+    RepeatedMut, RepeatedView, View,
 };
 use core::fmt::Debug;
 use paste::paste;
+use std::any::TypeId;
 use std::convert::identity;
 use std::ffi::{c_int, c_void};
 use std::fmt;
@@ -774,31 +776,220 @@ impl UntypedMapIterator {
 pub struct MapNodeSizeInfoIndex(i32);
 
 #[doc(hidden)]
-pub trait MapNodeSizeInfoIndexForType {
+pub trait MapKey
+where
+    Self: Proxied,
+{
     const SIZE_INFO_INDEX: MapNodeSizeInfoIndex;
+    type FfiKey;
+
+    fn to_view<'a>(key: Self::FfiKey) -> View<'a, Self>;
+
+    unsafe fn insert(
+        m: RawMap,
+        size_info: MapNodeSizeInfo,
+        key: View<'_, Self>,
+        value: RawMessage,
+        placement_new: extern "C" fn(*mut c_void, m: RawMessage),
+    ) -> bool;
+
+    unsafe fn get(
+        m: RawMap,
+        size_info: MapNodeSizeInfo,
+        key: View<'_, Self>,
+        value: *mut RawMessage,
+    ) -> bool;
+
+    unsafe extern "C" fn iter_get(
+        iter: &mut UntypedMapIterator,
+        size_info: MapNodeSizeInfo,
+        key: *mut Self::FfiKey,
+        value: *mut RawMessage,
+    );
+
+    fn remove(m: RawMap, size_info: MapNodeSizeInfo, key: View<'_, Self>) -> bool;
 }
 
-macro_rules! generate_map_node_size_info_mapping {
-    ( $($key:ty, $index:expr;)* ) => {
+macro_rules! generate_map_key_impl {
+    ( $($key:ty, $mutable_ffi_key:ty, $to_ffi:expr, $from_ffi:expr, $index:expr;)* ) => {
+        paste! {
         $(
-        impl MapNodeSizeInfoIndexForType for $key {
+        impl MapKey for $key {
             const SIZE_INFO_INDEX: MapNodeSizeInfoIndex = MapNodeSizeInfoIndex($index);
+            type FfiKey = $mutable_ffi_key;
+
+            #[inline]
+            fn to_view<'a>(key: Self::FfiKey) -> View<'a, Self> {
+                $from_ffi(key)
+            }
+
+            #[inline]
+            unsafe fn insert(
+                m: RawMap,
+                size_info: MapNodeSizeInfo,
+                key: View<'_, Self>,
+                value: RawMessage,
+                placement_new: extern "C" fn(*mut c_void, m: RawMessage),
+            ) -> bool {
+                unsafe { [< proto2_rust_map_insert_ $key >](m, size_info, $to_ffi(key), value, placement_new) }
+            }
+
+            #[inline]
+            unsafe fn get(
+                m: RawMap,
+                size_info: MapNodeSizeInfo,
+                key: View<'_, Self>,
+                value: *mut RawMessage,
+            ) -> bool {
+                unsafe { [< proto2_rust_map_get_ $key >](m, size_info, $to_ffi(key), value) }
+            }
+
+            #[inline]
+            unsafe extern "C" fn iter_get(
+                iter: &mut UntypedMapIterator,
+                size_info: MapNodeSizeInfo,
+                key: *mut Self::FfiKey,
+                value: *mut RawMessage,
+            ) {
+                unsafe { [< proto2_rust_map_iter_get_ $key >](iter, size_info, key, value) }
+            }
+
+            #[inline]
+            fn remove(m: RawMap, size_info: MapNodeSizeInfo, key: View<'_, Self>) -> bool {
+                unsafe { [< proto2_rust_map_remove_ $key >](m, size_info, $to_ffi(key)) }
+            }
         }
         )*
+        }
     }
 }
 
 // LINT.IfChange(size_info_mapping)
-generate_map_node_size_info_mapping!(
-    i32, 0;
-    u32, 0;
-    i64, 1;
-    u64, 1;
-    bool, 2;
-    ProtoString, 3;
+generate_map_key_impl!(
+    i32, i32, identity, identity, 0;
+    u32, u32, identity, identity, 0;
+    i64, i64, identity, identity, 1;
+    u64, u64, identity, identity, 1;
+    bool, bool, identity, identity, 2;
+    ProtoString, PtrAndLen, str_to_ptrlen, ptrlen_to_str, 3;
 );
 // LINT.ThenChange(//depot/google3/third_party/protobuf/compiler/rust/message.
 // cc:size_info_mapping)
+
+pub trait MapValue: Proxied {
+    fn map_node_size_info(i: MapNodeSizeInfoIndex) -> MapNodeSizeInfo;
+    extern "C" fn placement_new(ptr: *mut std::ffi::c_void, m: RawMessage);
+}
+
+impl<Key, Message> ProxiedInMapValue<Key> for Message
+where
+    Key: Proxied + MapKey + 'static,
+    Message: Proxied + MapValue + OwnedMessageInterop,
+    for<'a> View<'a, Message>: MessageViewInterop<'a>,
+{
+    fn map_new(_private: Private) -> Map<Key, Self> {
+        unsafe { Map::from_inner(Private, InnerMap::new(proto2_rust_map_new())) }
+    }
+
+    unsafe fn map_free(_private: Private, map: &mut Map<Key, Self>) {
+        unsafe {
+            proto2_rust_map_free(
+                map.as_raw(Private),
+                TypeId::of::<Key>() == TypeId::of::<ProtoString>(),
+                Message::map_node_size_info(Key::SIZE_INFO_INDEX),
+            );
+        }
+    }
+
+    fn map_clear(mut map: Mut<'_, Map<Key, Self>>) {
+        unsafe {
+            proto2_rust_map_clear(
+                map.as_raw(Private),
+                TypeId::of::<Key>() == TypeId::of::<ProtoString>(),
+                Message::map_node_size_info(Key::SIZE_INFO_INDEX),
+            );
+        }
+    }
+
+    fn map_len(map: View<'_, Map<Key, Self>>) -> usize {
+        unsafe { proto2_rust_map_size(map.as_raw(Private)) }
+    }
+
+    fn map_insert(
+        mut map: Mut<'_, Map<Key, Self>>,
+        key: View<'_, Key>,
+        value: impl IntoProxied<Self>,
+    ) -> bool {
+        unsafe {
+            Key::insert(
+                map.as_raw(Private),
+                Message::map_node_size_info(Key::SIZE_INFO_INDEX),
+                key,
+                NonNull::new_unchecked(
+                    value.into_proxied(Private).__unstable_leak_raw_message() as *mut _
+                ),
+                Message::placement_new,
+            )
+        }
+    }
+
+    fn map_get<'a>(map: MapView<'a, Key, Self>, key: View<'_, Key>) -> Option<View<'a, Self>> {
+        let key = key;
+        let mut value = std::mem::MaybeUninit::uninit();
+        let found = unsafe {
+            Key::get(
+                map.as_raw(Private),
+                Message::map_node_size_info(Key::SIZE_INFO_INDEX),
+                key,
+                value.as_mut_ptr(),
+            )
+        };
+        if !found {
+            return None;
+        }
+        Some(unsafe {
+            View::<Message>::__unstable_wrap_raw_message_unchecked_lifetime(
+                value.assume_init().as_ptr().cast(),
+            )
+        })
+    }
+
+    fn map_remove(mut map: Mut<'_, Map<Key, Self>>, key: View<'_, Key>) -> bool {
+        Key::remove(map.as_raw(Private), Message::map_node_size_info(Key::SIZE_INFO_INDEX), key)
+    }
+
+    fn map_iter(map: MapView<'_, Key, Self>) -> MapIter<'_, Key, Self> {
+        // SAFETY:
+        // - The backing map for `map.as_raw` is valid for at least '_.
+        // - A View that is live for '_ guarantees the backing map is unmodified for '_.
+        // - The `iter` function produces an iterator that is valid for the key and
+        //   value types, and live for at least '_.
+        unsafe { MapIter::from_raw(Private, proto2_rust_map_iter(map.as_raw(Private))) }
+    }
+
+    fn map_iter_next<'a>(
+        iter: &mut MapIter<'a, Key, Self>,
+    ) -> Option<(View<'a, Key>, View<'a, Self>)> {
+        // SAFETY:
+        // - The `MapIter` API forbids the backing map from being mutated for 'a, and
+        //   guarantees that it's the correct key and value types.
+        // - The thunk is safe to call as long as the iterator isn't at the end.
+        // - The thunk always writes to key and value fields and does not read.
+        // - The thunk does not increment the iterator.
+        unsafe {
+            iter.as_raw_mut(Private).next_unchecked::<Key, Self, _, _>(
+                Key::iter_get,
+                Message::map_node_size_info(Key::SIZE_INFO_INDEX),
+                |ffi_key| Key::to_view(ffi_key),
+                |raw_msg| {
+                    View::<Message>::__unstable_wrap_raw_message_unchecked_lifetime(
+                        raw_msg.as_ptr().cast(),
+                    )
+                },
+            )
+        }
+    }
+}
 
 macro_rules! impl_map_primitives {
     (@impl $(($rust_type:ty, $cpp_type:ty) => [
@@ -814,7 +1005,7 @@ macro_rules! impl_map_primitives {
                     size_info: MapNodeSizeInfo,
                     key: $cpp_type,
                     value: RawMessage,
-                    placement_new: unsafe extern "C" fn(*mut c_void, m: RawMessage),
+                    placement_new: extern "C" fn(*mut c_void, m: RawMessage),
                 ) -> bool;
                 pub fn $get_thunk(
                     m: RawMap,
