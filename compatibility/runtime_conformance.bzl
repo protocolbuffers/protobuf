@@ -16,9 +16,11 @@ def java_runtime_conformance(name, gencode_version, tags = []):
 
     if gencode_version == "main":
         protoc = "//:protoc"
+        runtime = "//java/core"
     else:
         minor = gencode_version[gencode_version.find(".") + 1:]
         protoc = Label("@com_google_protobuf_v%s//:protoc" % minor)
+        runtime = "@com_google_protobuf_v%s//java/core" % minor
 
     gencode = [
         "v%s/protobuf_unittest/UnittestProto.java" % gencode_version,
@@ -42,7 +44,7 @@ def java_runtime_conformance(name, gencode_version, tags = []):
     native.java_library(
         name = conformance_lib_name,
         srcs = gencode,
-        deps = ["//java/core"],
+        deps = [runtime],
         tags = tags,
     )
 
