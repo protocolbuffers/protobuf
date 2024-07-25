@@ -108,19 +108,24 @@ jobs:
         bazel-cache: java_linux/11
         bash: |
           bazel build //java/core:core_mvn-pom //java/core:lite_mvn-pom //java/kotlin-lite:kotlin-lite_mvn-pom //java/kotlin:kotlin_mvn-pom //java/util:util_mvn-pom
-          cp bazel-bin/java/core/core_mvn-pom.xml .
+          mv bazel-bin/java/core/core_mvn-pom.xml .
+          echo "core-pom=core_mvn-pom.xml" >> "$GITHUB_OUTPUT"
           cp bazel-bin/java/core/lite_mvn-pom.xml .
+          echo "lite-pom=lite_mvn-pom.xml" >> "$GITHUB_OUTPUT"
           cp bazel-bin/java/kotlin-lite/kotlin-lite_mvn-pom.xml .
+          echo "kotlin-lite-pom=kotlin-lite_mvn-pom.xml" >> "$GITHUB_OUTPUT"
           cp bazel-bin/java/kotlin/kotlin_mvn-pom.xml .
+          echo "kotlin-pom=kotlin_mvn-pom.xml" >> "$GITHUB_OUTPUT"
           cp bazel-bin/java/util/util_mvn-pom.xml .
+          echo "util-pom=util_mvn-pom.xml" >> "$GITHUB_OUTPUT"
     - name: Copy the generated pom.xml files to the java repository
       shell: bash
       run: |
-        mv -f ${{ steps.generate-poms.outputs.core_mvn-pom.xml }} core/pom.xml
-        mv -f ${{ steps.generate-poms.outputs.lite_mvn-pom.xml }} lite/pom.xml
-        mv -f ${{ steps.generate-poms.outputs.kotlin-lite_mvn-pom.xml }} kotlin-lite/pom.xml
-        mv -f ${{ steps.generate-poms.outputs.kotlin_mvn-pom.xml }} kotlin/pom.xml
-        mv -f ${{ steps.generate-poms.outputs.util_mvn-pom.xml }} util/pom.xml
+        mv -f ${{ steps.generate-poms.outputs.core-pom }} core/pom.xml
+        mv -f ${{ steps.generate-poms.outputs.lite-pom }} lite/pom.xml
+        mv -f ${{ steps.generate-poms.outputs.kotlin-lite-pom }} kotlin-lite/pom.xml
+        mv -f ${{ steps.generate-poms.outputs.kotlin-pom }} kotlin/pom.xml
+        mv -f ${{ steps.generate-poms.outputs.util-pom }} util/pom.xml
       working-directory: java
     - name: Install snapshot version locally (using generated pom.xml)
       run: |
