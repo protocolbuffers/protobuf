@@ -337,9 +337,6 @@ TEST_2D(CodedStreamTest, WriteVarint64, kVarintCases, kBlockSizes) {
             memcmp(buffer_, kVarintCases_case.bytes, kVarintCases_case.size));
 }
 
-// This test causes gcc 3.3.5 (and earlier?) to give the cryptic error:
-//   "sorry, unimplemented: `method_call_expr' not supported by dump_expr"
-#if !defined(__GNUC__) || __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ > 3)
 
 int32_t kSignExtendedVarintCases[] = {0, 1, -1, 1237894, -37895138};
 
@@ -380,8 +377,6 @@ TEST_2D(CodedStreamTest, WriteVarint32SignExtended, kSignExtendedVarintCases,
 
   EXPECT_EQ(output.ByteCount(), input.ByteCount());
 }
-
-#endif
 
 
 // -------------------------------------------------------------------
