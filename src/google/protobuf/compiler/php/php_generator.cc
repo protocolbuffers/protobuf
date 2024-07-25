@@ -575,6 +575,9 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
                          " is deprecated.', E_USER_DEPRECATED);\n        ")
           : "";
 
+  std::string deprecation_trigger_getter =
+      "if ($this->^name^ !== null) {\n    ^deprecation_trigger^\n}";
+
   // Emit getter.
   if (oneof != nullptr) {
     printer->Print(
@@ -584,7 +587,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true), "number",
         IntToString(field->number()), "deprecation_trigger",
-        deprecation_trigger);
+        deprecation_trigger_getter);
   } else if (field->has_presence() && !field->message_type()) {
     printer->Print(
         "public function get^camel_name^()\n"
@@ -594,7 +597,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true), "name",
         field->name(), "default_value", DefaultForField(field),
-        "deprecation_trigger", deprecation_trigger);
+        "deprecation_trigger", deprecation_trigger_getter);
   } else {
     printer->Print(
         "public function get^camel_name^()\n"
@@ -602,7 +605,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "    ^deprecation_trigger^return $this->^name^;\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true), "name",
-        field->name(), "deprecation_trigger", deprecation_trigger);
+        field->name(), "deprecation_trigger", deprecation_trigger_getter);
   }
 
   // Emit hazzers/clear.
