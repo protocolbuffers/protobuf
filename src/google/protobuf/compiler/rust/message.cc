@@ -601,125 +601,21 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
 void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
-      for (const auto& t : kMapKeyTypes) {
-        ctx.Emit(
-            {{"map_size_info_thunk", ThunkName(ctx, msg, "size_info")},
-             {"placement_new_thunk", ThunkName(ctx, msg, "placement_new")},
-             {"map_insert",
-              absl::StrCat("proto2_rust_map_insert_", t.thunk_ident)},
-             {"map_remove",
-              absl::StrCat("proto2_rust_map_remove_", t.thunk_ident)},
-             {"map_get", absl::StrCat("proto2_rust_map_get_", t.thunk_ident)},
-             {"map_iter_get",
-              absl::StrCat("proto2_rust_map_iter_get_", t.thunk_ident)},
-             {"key_expr", t.rs_to_ffi_key_expr},
-             {"key_is_string",
-              t.thunk_ident == "ProtoString" ? "true" : "false"},
-             io::Printer::Sub("ffi_key_t", [&] { ctx.Emit(t.rs_ffi_key_t); })
-                 .WithSuffix(""),
-             io::Printer::Sub("key_t", [&] { ctx.Emit(t.rs_key_t); })
-                 .WithSuffix(""),
-             io::Printer::Sub("from_ffi_key_expr",
-                              [&] { ctx.Emit(t.rs_from_ffi_key_expr); })
-                 .WithSuffix("")},
-            R"rs(
-            impl $pb$::ProxiedInMapValue<$key_t$> for $Msg$ {
-                fn map_new(_private: $pbi$::Private) -> $pb$::Map<$key_t$, Self> {
-                    unsafe {
-                        $pb$::Map::from_inner(
-                            $pbi$::Private,
-                            $pbr$::InnerMap::new($pbi$::Private, $pbr$::proto2_rust_map_new())
-                        )
-                    }
-                }
-
-                unsafe fn map_free(_private: $pbi$::Private, map: &mut $pb$::Map<$key_t$, Self>) {
-                    use $pbr$::MapNodeSizeInfoIndexForType;
-                    unsafe { $pbr$::proto2_rust_map_free(map.as_raw($pbi$::Private), $key_is_string$, $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX)); }
-                }
-
-                fn map_clear(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>) {
-                    use $pbr$::MapNodeSizeInfoIndexForType;
-                    unsafe { $pbr$::proto2_rust_map_clear(map.as_raw($pbi$::Private), $key_is_string$, $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX)); }
-                }
-
-                fn map_len(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> usize {
-                    unsafe { $pbr$::proto2_rust_map_size(map.as_raw($pbi$::Private)) }
-                }
-
-                fn map_insert(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
-                    use $pbr$::MapNodeSizeInfoIndexForType;
-                    unsafe {
-                        $pbr$::$map_insert$(
-                            map.as_raw($pbi$::Private),
-                            $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
-                            $key_expr$,
-                            value.into_proxied($pbi$::Private).raw_msg(), $placement_new_thunk$)
-                    }
-                }
-
-                fn map_get<'a>(map: $pb$::View<'a, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
-                    use $pbr$::MapNodeSizeInfoIndexForType;
-                    let key = $key_expr$;
-                    let mut value = $std$::mem::MaybeUninit::uninit();
-                    let found = unsafe {
-                        $pbr$::$map_get$(
-                            map.as_raw($pbi$::Private),
-                            $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
-                            key,
-                            value.as_mut_ptr())
-                    };
-                    if !found {
-                        return None;
-                    }
-                    Some($Msg$View::new($pbi$::Private, unsafe { value.assume_init() }))
-                }
-
-                fn map_remove(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> bool {
-                    use $pbr$::MapNodeSizeInfoIndexForType;
-                    unsafe {
-                        $pbr$::$map_remove$(
-                            map.as_raw($pbi$::Private),
-                            $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
-                            $key_expr$)
-                    }
-                }
-
-                fn map_iter(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> $pb$::MapIter<'_, $key_t$, Self> {
-                    // SAFETY:
-                    // - The backing map for `map.as_raw` is valid for at least '_.
-                    // - A View that is live for '_ guarantees the backing map is unmodified for '_.
-                    // - The `iter` function produces an iterator that is valid for the key
-                    //   and value types, and live for at least '_.
-                    unsafe {
-                        $pb$::MapIter::from_raw(
-                            $pbi$::Private,
-                            $pbr$::proto2_rust_map_iter(map.as_raw($pbi$::Private))
-                        )
-                    }
-                }
-
-                fn map_iter_next<'a>(iter: &mut $pb$::MapIter<'a, $key_t$, Self>) -> Option<($pb$::View<'a, $key_t$>, $pb$::View<'a, Self>)> {
-                    use $pbr$::MapNodeSizeInfoIndexForType;
-                    // SAFETY:
-                    // - The `MapIter` API forbids the backing map from being mutated for 'a,
-                    //   and guarantees that it's the correct key and value types.
-                    // - The thunk is safe to call as long as the iterator isn't at the end.
-                    // - The thunk always writes to key and value fields and does not read.
-                    // - The thunk does not increment the iterator.
-                    unsafe {
-                        iter.as_raw_mut($pbi$::Private).next_unchecked::<$key_t$, Self, _, _>(
-                            $pbi$::Private,
-                            $pbr$::$map_iter_get$,
-                            $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
-                            |ffi_key| $from_ffi_key_expr$,
-                            |raw_msg| $Msg$View::new($pbi$::Private, raw_msg)
-                        )
-                    }
-                }
-            }
+      ctx.Emit({{"map_size_info_thunk", ThunkName(ctx, msg, "size_info")},
+                {"placement_new_thunk", ThunkName(ctx, msg, "placement_new")}},
+               R"rs(
+          impl $pbr$::MapValue for $Msg$ {
+              fn map_node_size_info(i: $pbr$::MapNodeSizeInfoIndex) -> $pbr$::MapNodeSizeInfo {
+                  unsafe { $map_size_info_thunk$(i) }
+              }
+              fn placement_new(ptr: *mut std::ffi::c_void, m: $pbr$::RawMessage) {
+                  unsafe { $placement_new_thunk$(ptr, m) }
+              }
+              fn new_view<'a>(m: $pbr$::RawMessage) -> <$Msg$ as $pb$::Proxied>::View<'a> {
+                  $Msg$View::new($pbi$::Private, m)
+              }
+          }
       )rs");
-      }
       return;
     case Kernel::kUpb:
       ctx.Emit(
