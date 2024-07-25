@@ -17,3 +17,27 @@ java_runtime_conformance(
     name = "java_conformance_v3.25.0",
     gencode_version = "3.25.0",
 )
+
+java_test(
+    name = "java_conformance_unittest_v3.25.0_jar",
+    size = "small",
+    test_class = "com.google.protobuf.CompatibilityTest",
+    srcs = ["CompatibilityTest.java"],
+    deps = [
+        ":libconformance_v3.25.0_lib.jar",
+        "//java/core",
+        "@maven//:junit_junit",
+    ],
+)
+
+java_test(
+    name = "java_conformance_unittest_v3.25.0",
+    size = "small",
+    test_class = "com.google.protobuf.CompatibilityTest",
+    srcs = ["CompatibilityTest.java"],
+    deps = [
+        ":conformance_v3.25.0_lib",
+        "//java/core",
+        "@maven//:junit_junit",
+    ],
+)
