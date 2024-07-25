@@ -447,6 +447,10 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
           "}\n"
           "\n");
     }
+    if (!context_->options().opensource_runtime) {
+      printer->Print(
+          "@com.google.protobuf.Internal.ProtoMethodMayReturnNull\n");
+    }
     printer->Print(
         vars,
         "public static $oneof_capitalized_name$Case forNumber(int value) {\n"
