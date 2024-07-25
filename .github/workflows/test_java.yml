@@ -113,21 +113,24 @@ jobs:
           cp bazel-bin/java/kotlin-lite/kotlin-lite_mvn-pom.xml generatedPoms/kotlin-lite_mvn-pom.xml
           cp bazel-bin/java/kotlin/kotlin_mvn-pom.xml generatedPoms/kotlin_mvn-pom.xml
           cp bazel-bin/java/util/util_mvn-pom.xml generatedPoms/util_mgn-pom.xml
-    - name: Copy the generated pom.xml files to the java repository
+    - name: Copy the generated pom.xml files to a copy of the java repository
       run: |
-        mv -f generatedPoms/core_mvn-pom.xml java/core/pom.xml
-        mv -f generatedPoms/lite_mvn-pom.xml java/lite/pom.xml
-        mv -f generatedPoms/kotlin-lite_mvn-pom.xml java/kotlin-lite/pom.xml
-        mv -f generatedPoms/kotlin_mvn-pom.xml java/kotlin/pom.xml
-        mv -f generatedPoms/util_mvn-pom.xml java/util/pom.xml
+        cp -r java testMaven
+        mv -f generatedPoms/core_mvn-pom.xml testMaven/core/pom.xml
+        mv -f generatedPoms/lite_mvn-pom.xml testMaven/lite/pom.xml
+        mv -f generatedPoms/kotlin-lite_mvn-pom.xml testMaven/kotlin-lite/pom.xml
+        mv -f generatedPoms/kotlin_mvn-pom.xml testMaven/kotlin/pom.xml
+        mv -f generatedPoms/util_mvn-pom.xml testMaven/util/pom.xml
     - name: Install snapshot version locally (using generated pom.xml)
       run: |
         mvn -e -B -Dhttps.protocols=TLSv1.2 install -Dmaven.test.skip=true
-      working-directory: java
-    - name: Clean up
-      run: |
-        sudo rm -rf _build
+      working-directory: testMaven
     - name: Validate Protobuf BOM
       uses: googleapis/java-cloud-bom/tests/validate-bom@fd56f04bb0bc581776a74031591f0b3bc5e7920a # v26.13.0
       with:
-        bom-path: java/bom/pom.xml
+        bom-path: testMaven/bom/pom.xml
+    - name: Clean up
+      run: |
+        sudo rm -rf _build
+        sudo rm -rf generatedPoms
+        sudo rm -rf testMaven
