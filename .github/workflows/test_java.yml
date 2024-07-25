@@ -112,7 +112,7 @@ jobs:
           cp bazel-bin/java/core/lite_mvn-pom.xml generatedPoms/lite_mvn-pom.xml
           cp bazel-bin/java/kotlin-lite/kotlin-lite_mvn-pom.xml generatedPoms/kotlin-lite_mvn-pom.xml
           cp bazel-bin/java/kotlin/kotlin_mvn-pom.xml generatedPoms/kotlin_mvn-pom.xml
-          cp bazel-bin/java/util/util_mvn-pom.xml generatedPoms/util_mgn-pom.xml
+          cp bazel-bin/java/util/util_mvn-pom.xml generatedPoms/util_mvn-pom.xml
           chmod -R 755 generatedPoms
     - name: Copy the generated pom.xml files to a copy of the java repository
       run: |
