@@ -233,15 +233,6 @@ where
     }
 }
 
-impl<T> IntoProxied<Repeated<T>> for Repeated<T>
-where
-    T: ProxiedInRepeated,
-{
-    fn into_proxied(self, _private: Private) -> Repeated<T> {
-        self
-    }
-}
-
 impl<'msg, T> IntoProxied<Repeated<T>> for RepeatedView<'msg, T>
 where
     T: 'msg + ProxiedInRepeated,

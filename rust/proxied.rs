@@ -239,6 +239,12 @@ pub trait IntoProxied<T: Proxied> {
     fn into_proxied(self, _private: Private) -> T;
 }
 
+impl<T: Proxied> IntoProxied<T> for T {
+    fn into_proxied(self, _private: Private) -> T {
+        self
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

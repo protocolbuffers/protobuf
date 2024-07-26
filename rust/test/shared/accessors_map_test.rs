@@ -9,6 +9,7 @@ use enums_rust_proto::{test_map_with_nested_enum, TestMapWithNestedEnum};
 use googletest::prelude::*;
 use map_unittest_rust_proto::{MapEnum, TestMap, TestMapWithMessages};
 use paste::paste;
+use protobuf::ProtoString;
 use std::collections::HashMap;
 use unittest_rust_proto::TestAllTypes;
 
@@ -156,19 +157,59 @@ fn test_bytes_and_string_copied() {
 
 #[googletest::test]
 fn test_map_setter() {
-    let mut msg = TestMap::new();
-    msg.map_string_string_mut().insert("hello", "world");
-    msg.map_string_string_mut().insert("fizz", "buzz");
+    // Set Map
+    {
+        let mut msg = TestMap::new();
+        let mut map = protobuf::Map::<ProtoString, ProtoString>::new();
+        map.as_mut().copy_from([("hello", "world"), ("fizz", "buzz")]);
+        msg.set_map_string_string(map);
+        assert_that!(
+            msg.map_string_string(),
+            unordered_elements_are![
+                eq(("hello".into(), "world".into())),
+                eq(("fizz".into(), "buzz".into()))
+            ]
+        );
+    }
 
-    let mut msg2 = TestMap::new();
-    msg2.set_map_string_string(msg.map_string_string());
-    assert_that!(
-        msg2.map_string_string(),
-        unordered_elements_are![
-            eq(("hello".into(), "world".into())),
-            eq(("fizz".into(), "buzz".into()))
-        ]
-    );
+    // Set MapView
+    {
+        let mut msg = TestMap::new();
+        let mut map = protobuf::Map::<ProtoString, ProtoString>::new();
+        map.as_mut().copy_from([("hello", "world"), ("fizz", "buzz")]);
+        msg.set_map_string_string(map.as_view());
+        assert_that!(
+            msg.map_string_string(),
+            unordered_elements_are![
+                eq(("hello".into(), "world".into())),
+                eq(("fizz".into(), "buzz".into()))
+            ]
+        );
+    }
+
+    // Set MapMut
+    {
+        let mut msg = TestMap::new();
+        let mut map = protobuf::Map::<ProtoString, ProtoString>::new();
+        map.as_mut().copy_from([("hello", "world"), ("fizz", "buzz")]);
+        msg.set_map_string_string(map.as_mut());
+        assert_that!(
+            msg.map_string_string(),
+            unordered_elements_are![
+                eq(("hello".into(), "world".into())),
+                eq(("fizz".into(), "buzz".into()))
+            ]
+        );
+
+        // The original map should remain unchanged.
+        assert_that!(
+            map.as_view(),
+            unordered_elements_are![
+                eq(("hello".into(), "world".into())),
+                eq(("fizz".into(), "buzz".into()))
+            ]
+        );
+    }
 }
 
 macro_rules! generate_map_with_msg_values_tests {

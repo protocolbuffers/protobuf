@@ -389,12 +389,6 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
         }
       }
 
-      impl $pb$::IntoProxied<$name$> for $name$ {
-        fn into_proxied(self, _: $pbi$::Private) -> Self {
-          self
-        }
-      }
-
       impl $pb$::IntoProxied<i32> for $name$ {
         fn into_proxied(self, _: $pbi$::Private) -> i32 {
           self.0

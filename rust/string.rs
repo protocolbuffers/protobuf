@@ -79,12 +79,6 @@ impl AsView for ProtoBytes {
     }
 }
 
-impl IntoProxied<ProtoBytes> for ProtoBytes {
-    fn into_proxied(self, _private: Private) -> ProtoBytes {
-        self
-    }
-}
-
 impl IntoProxied<ProtoBytes> for &[u8] {
     fn into_proxied(self, _private: Private) -> ProtoBytes {
         ProtoBytes::from(self)
@@ -235,12 +229,6 @@ impl From<&str> for ProtoString {
 impl From<&[u8]> for ProtoString {
     fn from(v: &[u8]) -> Self {
         Self { inner: InnerProtoString::from(v) }
-    }
-}
-
-impl IntoProxied<ProtoString> for ProtoString {
-    fn into_proxied(self, _private: Private) -> ProtoString {
-        self
     }
 }
 

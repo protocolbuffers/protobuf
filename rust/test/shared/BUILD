@@ -367,10 +367,14 @@ rust_test(
 rust_test(
     name = "accessors_map_cpp_test",
     srcs = ["accessors_map_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp_export": "protobuf",
+    },
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
     deps = [
+        "//rust:protobuf_cpp_export",
         "//rust/test:enums_cpp_rust_proto",
         "//rust/test:map_unittest_cpp_rust_proto",
         "//rust/test:unittest_cpp_rust_proto",
@@ -381,10 +385,14 @@ rust_test(
 rust_test(
     name = "accessors_map_upb_test",
     srcs = ["accessors_map_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb_export": "protobuf",
+    },
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
     deps = [
+        "//rust:protobuf_upb_export",
         "//rust/test:enums_upb_rust_proto",
         "//rust/test:map_unittest_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",

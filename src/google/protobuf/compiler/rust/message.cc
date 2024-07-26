@@ -287,12 +287,6 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
             $pb$::IntoProxied::into_proxied($pb$::IntoView::into_view(self), _private)
           }
         }
-
-        impl $pb$::IntoProxied<$Msg$> for $Msg$ {
-          fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
-            self
-          }
-        }
       )rs");
       return;
 
@@ -314,12 +308,6 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
         impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$Mut<'msg> {
           fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
             $pb$::IntoProxied::into_proxied($pb$::IntoView::into_view(self), _private)
-          }
-        }
-
-        impl $pb$::IntoProxied<$Msg$> for $Msg$ {
-          fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
-            self
           }
         }
       )rs");

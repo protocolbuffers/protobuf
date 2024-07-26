@@ -4,8 +4,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
-use crate::__internal::Private;
-use crate::{AsView, IntoProxied, IntoView, Proxied, Proxy, ViewProxy};
+use crate::{AsView, IntoView, Proxied, Proxy, ViewProxy};
 
 macro_rules! impl_singular_primitives {
   ($($t:ty),*) => {
@@ -34,12 +33,6 @@ macro_rules! impl_singular_primitives {
         }
 
         impl<'msg> ViewProxy<'msg> for $t {}
-
-        impl IntoProxied<$t> for $t {
-          fn into_proxied(self, _private: Private) -> $t {
-            self
-          }
-        }
 
         // ProxiedInRepeated is implemented in {cpp,upb}.rs
       )*
