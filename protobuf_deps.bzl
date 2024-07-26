@@ -64,8 +64,8 @@ def protobuf_deps():
             repo = "https://github.com/abseil/abseil-cpp",
             # TODO: use Layout::WithStaticSizes in SerialArenaChunk when we update
             # abseil to new release.
-            commit = "ebdba5af75fab91ebe9bc4daa0077f9c57c36692",  # Abseil LTS 20240722.rc1
-            sha256 = "47b0d4cd52bf817cd7ef71f819ece5f24bc2b1d65a59eae75dcad0123456d6f6",
+            commit = "7e5c339b1aa790ae03cc614a8d7626d5b4831891",  # Abseil LTS 20240722.rc2
+            sha256 = "2ad33d08a720fa3a67ec12bd8cf9846da7ed53045163d69047856cc671a0cbe5",
         )
 
     if not native.existing_rule("zlib"):
