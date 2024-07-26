@@ -80,25 +80,14 @@ jobs:
   #         # not work correctly with the toolchain in this Docker image.
   #         bazel: test --test_output=all //java:linkage_monitor --spawn_strategy=standalone --features=-layering_check
   
-  protobuf-bom:
-    name: Protobuf Maven BOM
+  protobuf-maven:
+    name: Test Maven
     runs-on: ubuntu-latest
     steps:
     - name: Checkout pending changes
       uses: protocolbuffers/protobuf-ci/checkout@v3
       with:
         ref: ${{ inputs.safe-checkout }}
-    - name: Build protoc
-      id: build-protoc
-      uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
-      with:
-        image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
-        credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-        architecture: linux-x86_64
-    - name: Move protoc into place and clean up
-      run: |
-        mv ${{ steps.build-protoc.outputs.protoc }} protoc
-        sudo rm -rf _build
     - name: Generate maven artifacts with bazel and install using maven
       uses: protocolbuffers/protobuf-ci/bazel-docker@v3
       with:
@@ -116,6 +105,3 @@ jobs:
       uses: googleapis/java-cloud-bom/tests/validate-bom@fd56f04bb0bc581776a74031591f0b3bc5e7920a # v26.13.0
       with:
         bom-path: java/bom/pom.xml
-    - name: Clean up
-      run: |
-        sudo rm -rf _build
