@@ -20,9 +20,13 @@
 #include <limits.h>
 
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <limits>
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "absl/log/absl_check.h"
@@ -33,7 +37,6 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
-#include "google/protobuf/port.h"
 
 
 // Must be included last.
