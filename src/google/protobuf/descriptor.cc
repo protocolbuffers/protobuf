@@ -1687,14 +1687,11 @@ inline Symbol FileDescriptorTables::FindNestedSymbol(
 
 Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
                                                 absl::string_view name) {
-  if (pool->mutex_ != nullptr) {
-    // Fast path: the Symbol is already cached.  This is just a hash lookup.
-    absl::ReaderMutexLock lock(pool->mutex_);
-    if (known_bad_symbols_.empty() && known_bad_files_.empty()) {
-      Symbol result = FindSymbol(name);
-      if (!result.IsNull()) return result;
-    }
+  if (known_bad_symbols_.empty() && known_bad_files_.empty()) {
+    Symbol result = FindSymbol(name);
+    if (!result.IsNull()) return result;
   }
+
   DescriptorPool::DeferredValidation deferred_validation(pool);
   Symbol result;
   {
