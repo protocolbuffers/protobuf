@@ -24,7 +24,13 @@ jobs:
       fail-fast: false
       matrix:
         os: [{ name: Linux, value: ubuntu-latest}]
-        branch: ${{ inputs.continuous-run && ['main'] || ['main', '25.x', '27.x', '28.x'] }}
+        branch: ['25.x', '27.x', '28.x']
+        presubmit-run: ${{ !inputs.continuous-run }}
+        exclude:
+          - presubmit-run: true
+        include:
+          - os: [{ name: Linux, value: ubuntu-latest}]
+            branch: ['main']
 
     name: Test staleness ${{ matrix.os.name }} ${{ matrix.branch }}
     runs-on: ${{ matrix.os.value }}
