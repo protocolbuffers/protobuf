@@ -8,6 +8,8 @@
 //! Tests covering accessors for singular bool, int32, int64, and bytes fields.
 
 use googletest::prelude::*;
+use protobuf::prelude::*;
+
 use protobuf::{Optional, ProtoBytes, ProtoStr, ProtoString};
 use std::borrow::Cow;
 use std::ffi::OsString;
@@ -916,4 +918,30 @@ fn test_ctype_stringpiece() {
     msg.set_optional_string_piece("hello");
     assert_that!(msg.optional_string_piece(), eq("hello"));
     assert_that!(msg.has_optional_string_piece(), eq(true));
+}
+
+#[googletest::test]
+fn test_msg_clear() {
+    let mut m = TestAllTypes::new();
+    m.set_optional_int32(42);
+    assert_that!(m.has_optional_int32(), eq(true));
+    m.clear();
+    assert_that!(m.has_optional_int32(), eq(false));
+}
+
+#[googletest::test]
+fn test_submsg_clear() {
+    let mut m = TestAllTypes::new();
+    let mut sub = m.optional_nested_message_mut();
+    sub.set_bb(7);
+
+    assert_that!(m.has_optional_nested_message(), eq(true));
+    assert_that!(m.optional_nested_message().bb(), eq(7));
+
+    m.optional_nested_message_mut().clear();
+
+    // .clear() on the submsg doesn't affect its presence on the parent:
+    assert_that!(m.has_optional_nested_message(), eq(true));
+    // ...but it does clear the submsg's value:
+    assert_that!(m.optional_nested_message().bb(), eq(0));
 }

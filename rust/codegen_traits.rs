@@ -11,7 +11,7 @@ use crate::{MutProxied, MutProxy, ViewProxy};
 use create::Parse;
 use read::Serialize;
 use std::fmt::Debug;
-use write::ClearAndParse;
+use write::{Clear, ClearAndParse};
 
 /// A trait that all generated owned message types implement.
 pub trait Message: MutProxied
@@ -20,8 +20,7 @@ pub trait Message: MutProxied
   // Read traits:
   + Debug + Serialize
   // Write traits:
-  // TODO: Msg should impl Clear.
-  + ClearAndParse
+  + Clear + ClearAndParse
   // Thread safety:
   + Send + Sync
   // Copy/Clone:
@@ -47,10 +46,12 @@ pub trait MessageMut<'msg>:
     // Read traits:
     + Debug + Serialize
     // Write traits:
-    // TODO: MsgMut should impl Clear and ClearAndParse.
+    // TODO: MsgMut should impl ClearAndParse.
+    + Clear
     // Thread safety:
     + Sync
-    // Copy/Clone: (Neither)
+    // Copy/Clone:
+    // (Neither)
 {
     #[doc(hidden)]
     type Message: Message;

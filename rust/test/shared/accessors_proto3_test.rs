@@ -5,9 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-/// Tests covering accessors for singular bool, int32, int64, and bytes fields
-/// on proto3.
+//! Tests covering accessors for singular bool, int32, int64, and bytes fields
+//! on proto3.
+
 use googletest::prelude::*;
+use protobuf::prelude::*;
+
 use protobuf::Optional;
 use unittest_proto3_optional_rust_proto::{test_proto3_optional, TestProto3Optional};
 use unittest_proto3_rust_proto::{test_all_types, TestAllTypes};
@@ -250,4 +253,30 @@ fn test_ctype_stringpiece() {
     assert_that!(msg.optional_string_piece(), eq(""));
     msg.set_optional_string_piece("hello");
     assert_that!(msg.optional_string_piece(), eq("hello"));
+}
+
+#[googletest::test]
+fn test_msg_clear() {
+    let mut m = TestAllTypes::new();
+    m.set_optional_int32(42);
+    assert_that!(m.optional_int32(), eq(42));
+    m.clear();
+    assert_that!(m.optional_int32(), eq(0));
+}
+
+#[googletest::test]
+fn test_submsg_clear() {
+    let mut m = TestAllTypes::new();
+    let mut sub = m.optional_nested_message_mut();
+    sub.set_bb(7);
+
+    assert_that!(m.has_optional_nested_message(), eq(true));
+    assert_that!(m.optional_nested_message().bb(), eq(7));
+
+    m.optional_nested_message_mut().clear();
+
+    // .clear() on the submsg doesn't affect its presence on the parent:
+    assert_that!(m.has_optional_nested_message(), eq(true));
+    // ...but it does clear the submsg's value:
+    assert_that!(m.optional_nested_message().bb(), eq(0));
 }

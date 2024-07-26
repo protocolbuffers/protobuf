@@ -13,10 +13,20 @@ opaque_pointee!(upb_Message);
 pub type RawMessage = NonNull<upb_Message>;
 
 extern "C" {
-    /// SAFETY: No constraints.
+    /// SAFETY:
+    /// - `mini_table` and `arena` must be valid to deref
     pub fn upb_Message_New(mini_table: *const upb_MiniTable, arena: RawArena)
     -> Option<RawMessage>;
 
+    /// SAFETY:
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `mini_table` must be the MiniTable associtaed with `m`
+    pub fn upb_Message_Clear(m: RawMessage, mini_table: *const upb_MiniTable);
+
+    /// SAFETY:
+    /// - All four arguments must be valid to deref
+    /// - `mini_table` must be the MiniTable associated with both `dst` and
+    ///   `src`
     pub fn upb_Message_DeepCopy(
         dst: RawMessage,
         src: RawMessage,
@@ -24,18 +34,29 @@ extern "C" {
         arena: RawArena,
     );
 
+    /// SAFETY:
+    /// - All three arguments must be valid to deref
+    /// - `mini_table` must be the MiniTable associated with `m`
     pub fn upb_Message_DeepClone(
         m: RawMessage,
         mini_table: *const upb_MiniTable,
         arena: RawArena,
     ) -> Option<RawMessage>;
 
+    /// SAFETY:
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `mini_table` must be the MiniTable associated with `m`
+    /// - `val` must be a pointer to legally readable memory of the correct type
+    ///   for the field described by `mini_table`
     pub fn upb_Message_SetBaseField(
         m: RawMessage,
         mini_table: *const upb_MiniTableField,
         val: *const std::ffi::c_void,
     );
 
+    /// SAFETY:
+    /// - All four arguments must be valid to deref
+    /// - `mini_table` must be the MiniTable associated with both `m1` and `m2`
     pub fn upb_Message_IsEqual(
         m1: RawMessage,
         m2: RawMessage,
@@ -43,6 +64,11 @@ extern "C" {
         options: i32,
     ) -> bool;
 
+    /// SAFETY:
+    /// - `dst`, `src`, `mini_table` and `arena` must be valid to deref
+    /// - `extreg` must be valid to deref or nullptr
+    /// - `mini_table` must be the MiniTable associated with both `dst` and
+    ///   `src`
     pub fn upb_Message_MergeFrom(
         dst: RawMessage,
         src: RawMessage,

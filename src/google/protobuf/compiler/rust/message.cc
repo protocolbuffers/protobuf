@@ -92,6 +92,28 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
   ABSL_LOG(FATAL) << "unreachable";
 }
 
+void MessageMutClear(Context& ctx, const Descriptor& msg) {
+  switch (ctx.opts().kernel) {
+    case Kernel::kCpp:
+      ctx.Emit({{"clear_thunk", ThunkName(ctx, msg, "clear")}},
+               R"rs(
+          unsafe { $clear_thunk$(self.raw_msg()) }
+        )rs");
+      return;
+    case Kernel::kUpb:
+      ctx.Emit(
+          {
+              {"minitable", UpbMinitableName(msg)},
+          },
+          R"rs(
+          unsafe {
+            $pbr$::upb_Message_Clear(self.raw_msg(), $std$::ptr::addr_of!($minitable$))
+          }
+        )rs");
+      return;
+  }
+}
+
 void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
@@ -180,6 +202,7 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
           {
               {"new_thunk", ThunkName(ctx, msg, "new")},
               {"delete_thunk", ThunkName(ctx, msg, "delete")},
+              {"clear_thunk", ThunkName(ctx, msg, "clear")},
               {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
               {"parse_thunk", ThunkName(ctx, msg, "parse")},
               {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
@@ -200,6 +223,7 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
           R"rs(
           fn $new_thunk$() -> $pbr$::RawMessage;
           fn $delete_thunk$(raw_msg: $pbr$::RawMessage);
+          fn $clear_thunk$(raw_msg: $pbr$::RawMessage);
           fn $serialize_thunk$(raw_msg: $pbr$::RawMessage, out: &mut $pbr$::SerializedData) -> bool;
           fn $parse_thunk$(raw_msg: $pbr$::RawMessage, data: $pbr$::SerializedData) -> bool;
           fn $copy_from_thunk$(dst: $pbr$::RawMessage, src: $pbr$::RawMessage);
@@ -824,6 +848,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
       {{"Msg", RsSafeName(msg.name())},
        {"Msg::new", [&] { MessageNew(ctx, msg); }},
        {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
+       {"MsgMut::clear", [&] { MessageMutClear(ctx, msg); }},
        {"Msg::clear_and_parse", [&] { MessageClearAndParse(ctx, msg); }},
        {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
        {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
@@ -977,6 +1002,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }
 
+        impl $pb$::Clear for $Msg$ {
+          fn clear(&mut self) {
+            self.as_mut().clear()
+          }
+        }
+
         impl $pb$::ClearAndParse for $Msg$ {
           fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
             self.clear_and_parse(data)
@@ -1093,6 +1124,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         impl $pb$::Serialize for $Msg$Mut<'_> {
           fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
             $pb$::AsView::as_view(self).serialize()
+          }
+        }
+
+        impl $pb$::Clear for $Msg$Mut<'_> {
+          fn clear(&mut self) {
+            $MsgMut::clear$
           }
         }
 
@@ -1312,6 +1349,7 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
        {"QualifiedMsg", cpp::QualifiedClassName(&msg)},
        {"new_thunk", ThunkName(ctx, msg, "new")},
        {"delete_thunk", ThunkName(ctx, msg, "delete")},
+       {"clear_thunk", ThunkName(ctx, msg, "clear")},
        {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
        {"parse_thunk", ThunkName(ctx, msg, "parse")},
        {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
@@ -1354,6 +1392,9 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
         extern $abi$ {
         void* $new_thunk$() { return new $QualifiedMsg$(); }
         void $delete_thunk$(void* ptr) { delete static_cast<$QualifiedMsg$*>(ptr); }
+        void $clear_thunk$(void* ptr) {
+          static_cast<$QualifiedMsg$*>(ptr)->Clear();
+        }
         bool $serialize_thunk$($QualifiedMsg$* msg, google::protobuf::rust::SerializedData* out) {
           return google::protobuf::rust::SerializeMsg(msg, out);
         }
