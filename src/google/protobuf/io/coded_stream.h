@@ -111,8 +111,8 @@
 #include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/endian.h"
 #include "google/protobuf/port.h"
-
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -1324,37 +1324,16 @@ inline bool CodedInputStream::ReadVarintSizeAsInt(int* value) {
 // static
 inline const uint8_t* CodedInputStream::ReadLittleEndian32FromArray(
     const uint8_t* buffer, uint32_t* value) {
-#if defined(ABSL_IS_LITTLE_ENDIAN) && \
-    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   memcpy(value, buffer, sizeof(*value));
+  *value = google::protobuf::internal::little_endian::ToHost(*value);
   return buffer + sizeof(*value);
-#else
-  *value = (static_cast<uint32_t>(buffer[0])) |
-           (static_cast<uint32_t>(buffer[1]) << 8) |
-           (static_cast<uint32_t>(buffer[2]) << 16) |
-           (static_cast<uint32_t>(buffer[3]) << 24);
-  return buffer + sizeof(*value);
-#endif
 }
 // static
 inline const uint8_t* CodedInputStream::ReadLittleEndian64FromArray(
     const uint8_t* buffer, uint64_t* value) {
-#if defined(ABSL_IS_LITTLE_ENDIAN) && \
-    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   memcpy(value, buffer, sizeof(*value));
+  *value = google::protobuf::internal::little_endian::ToHost(*value);
   return buffer + sizeof(*value);
-#else
-  uint32_t part0 = (static_cast<uint32_t>(buffer[0])) |
-                   (static_cast<uint32_t>(buffer[1]) << 8) |
-                   (static_cast<uint32_t>(buffer[2]) << 16) |
-                   (static_cast<uint32_t>(buffer[3]) << 24);
-  uint32_t part1 = (static_cast<uint32_t>(buffer[4])) |
-                   (static_cast<uint32_t>(buffer[5]) << 8) |
-                   (static_cast<uint32_t>(buffer[6]) << 16) |
-                   (static_cast<uint32_t>(buffer[7]) << 24);
-  *value = static_cast<uint64_t>(part0) | (static_cast<uint64_t>(part1) << 32);
-  return buffer + sizeof(*value);
-#endif
 }
 
 inline bool CodedInputStream::ReadLittleEndian32(uint32_t* value) {
