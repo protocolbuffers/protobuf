@@ -1714,6 +1714,9 @@ Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
     if (result.IsNull()) {
       // Symbol still not found, so check fallback database.
       if (pool->TryFindSymbolInFallbackDatabase(name, deferred_validation)) {
+        if (!deferred_validation.Validate()) {
+          return Symbol();
+        }
         result = FindSymbol(name);
       }
     }
