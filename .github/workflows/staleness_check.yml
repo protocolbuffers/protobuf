@@ -38,7 +38,7 @@ jobs:
       - name: Checkout ${{ matrix.branch }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
-          ref: ${{ inputs.safe-checkout || matrix.branch }}
+          ref: ${{ inputs.safe-checkout || github.head_ref || matrix.branch }}
 
       - name: Mark runs associated with commits
         if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
