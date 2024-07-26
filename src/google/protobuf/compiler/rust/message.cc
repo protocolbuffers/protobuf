@@ -1192,10 +1192,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
           $raw_arena_getter_for_message$
 
-          #[deprecated = "Prefer Msg::parse(), or use the new name 'clear_and_parse' to parse into a pre-existing message."]
-          pub fn deserialize(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
-            self.clear_and_parse(data)
-          }
           pub fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
             $Msg::clear_and_parse$
           }
