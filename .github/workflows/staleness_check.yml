@@ -25,9 +25,10 @@ jobs:
       matrix:
         os: [{ name: Linux, value: ubuntu-latest}]
         branch: ['25.x', '27.x', '28.x']
-        presubmit-run: ${{ !inputs.continuous-run }}
+        isPR:
+          - ${{ !inputs.continuous-run }}
         exclude:
-          - presubmit-run: true
+          - { isPR: true }
         include:
           - os: [{ name: Linux, value: ubuntu-latest}]
             branch: ['main']
