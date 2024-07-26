@@ -27,7 +27,7 @@ pub use extension_registry::{upb_ExtensionRegistry, RawExtensionRegistry};
 mod map;
 pub use map::{
     upb_Map, upb_Map_Clear, upb_Map_Delete, upb_Map_Get, upb_Map_Insert, upb_Map_New, upb_Map_Next,
-    upb_Map_Size, MapInsertStatus, RawMap, __rust_proto_kUpb_Map_Begin,
+    upb_Map_Size, MapInsertStatus, RawMap, UPB_MAP_BEGIN,
 };
 
 mod message;

@@ -21,9 +21,9 @@ pub enum MapInsertStatus {
     OutOfMemory = 2,
 }
 
-extern "C" {
-    pub static __rust_proto_kUpb_Map_Begin: usize;
+pub const UPB_MAP_BEGIN: usize = usize::MAX;
 
+extern "C" {
     pub fn upb_Map_New(arena: RawArena, key_type: CType, value_type: CType) -> RawMap;
     pub fn upb_Map_Size(map: RawMap) -> usize;
     pub fn upb_Map_Insert(
