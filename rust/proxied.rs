@@ -108,7 +108,7 @@ pub trait AsView {
     ///
     /// For example, the call to `.as_view()` in the following snippet
     /// wouldn't be necessary in concrete code:
-    /// ```
+    /// ```ignore
     /// fn reborrow<'a, 'b, T>(x: &'b View<'a, T>) -> View<'b, T>
     /// where 'a: 'b, T: Proxied
     /// {
@@ -136,7 +136,7 @@ pub trait IntoView<'msg>: AsView {
     /// `into_view` to explicitly perform the operation that in concrete
     /// code coercion would perform implicitly.
     ///
-    /// ```
+    /// ```ignore
     /// fn reborrow_generic_view_into_view<'a, 'b, T>(
     ///     x: View<'a, T>,
     ///     y: View<'b, T>,
@@ -182,7 +182,7 @@ pub trait IntoMut<'msg>: AsMut {
     /// `into_mut` to explicitly perform the operation that in concrete code
     /// coercion would perform implicitly.
     ///
-    /// ```
+    /// ```ignore
     /// fn reborrow_generic_mut_into_mut<'a, 'b, T>(x: Mut<'a, T>, y: Mut<'b, T>) -> [Mut<'b, T>; 2]
     /// where
     ///     T: Proxied,

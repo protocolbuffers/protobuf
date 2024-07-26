@@ -1,0 +1,20 @@
+[package]
+name = "protobuf"
+version = "4.27.3-beta.0"
+edition = "2021"
+links = "upb"
+
+[lib]
+path = "src/shared.rs"
+
+[dependencies]
+paste = "1.0.15"
+
+[dev-dependencies]
+googletest = {git = "https://github.com/google/googletest-rust.git" }
+
+[build-dependencies]
+cmake = "0.1.50"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(bzl)', 'cfg(cpp_kernel)', 'cfg(upb_kernel)'] }

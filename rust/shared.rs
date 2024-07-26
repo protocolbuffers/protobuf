@@ -56,10 +56,10 @@ pub mod __internal;
 /// Everything in `__runtime` is allowed to change without it being considered
 /// a breaking change for the protobuf library. Nothing in here should be
 /// exported in `protobuf.rs`.
-#[cfg(cpp_kernel)]
+#[cfg(all(bzl, cpp_kernel))]
 #[path = "cpp.rs"]
 pub mod __runtime;
-#[cfg(upb_kernel)]
+#[cfg(any(not(bzl), upb_kernel))]
 #[path = "upb.rs"]
 pub mod __runtime;
 
@@ -74,6 +74,18 @@ mod proto_macro;
 mod proxied;
 mod repeated;
 mod string;
+
+#[cfg(not(bzl))]
+#[path = "upb/lib.rs"]
+mod upb;
+
+#[cfg(not(bzl))]
+mod utf8;
+
+// Forces the utf8 crate to be accessible from crate::.
+#[cfg(bzl)]
+#[allow(clippy::single_component_path_imports)]
+use utf8;
 
 // If the Upb and C++ kernels are both linked into the same binary, this symbol
 // will be defined twice and cause a link error.

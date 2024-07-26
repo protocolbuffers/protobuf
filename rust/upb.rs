@@ -19,7 +19,10 @@ use std::ptr::{self, NonNull};
 use std::slice;
 use std::sync::OnceLock;
 
+#[cfg(bzl)]
 extern crate upb;
+#[cfg(not(bzl))]
+use crate::upb;
 
 // Temporarily 'pub' since a lot of gencode is directly calling any of the ffi
 // fns.

@@ -12,8 +12,8 @@
 use crate::__internal::Private;
 use crate::__runtime::{InnerProtoString, PtrAndLen, RawMessage};
 use crate::{
-    AsView, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Optional, Proxied, Proxy, View,
-    ViewProxy,
+    utf8::Utf8Chunks, AsView, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Optional, Proxied,
+    Proxy, View, ViewProxy,
 };
 use std::borrow::Cow;
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
@@ -26,7 +26,6 @@ use std::ops::{Deref, DerefMut};
 use std::ptr;
 use std::rc::Rc;
 use std::sync::Arc;
-use utf8::Utf8Chunks;
 
 pub struct ProtoBytes {
     pub(crate) inner: InnerProtoString,

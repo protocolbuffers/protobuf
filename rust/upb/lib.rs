@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 #![deny(unsafe_op_in_unsafe_fn)]
+#![cfg_attr(not(bzl), allow(unused_imports))]
 
 mod arena;
 

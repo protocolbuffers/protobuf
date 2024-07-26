@@ -28,6 +28,7 @@ rust_library(
         "text.rs",
         "wire.rs",
     ],
+    rustc_flags = ["--cfg=bzl"],
     visibility = [
         "//rust:__subpackages__",
         "//src/google/protobuf:__subpackages__",
