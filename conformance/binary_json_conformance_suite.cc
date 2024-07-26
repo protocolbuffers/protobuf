@@ -445,7 +445,10 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
       absl::StrCat(setting.ConformanceLevelToString(level), ".",
                    setting.GetSyntaxIdentifier(), ".ProtobufInput.", test_name);
 
-  suite_.RunTest(effective_test_name, request, &response);
+  if (!suite_.RunTest(effective_test_name, request, &response)) {
+    return;
+  }
+
   TestStatus test;
   test.set_name(effective_test_name);
   if (response.result_case() == ConformanceResponse::kParseError) {
@@ -641,7 +644,9 @@ void BinaryAndJsonConformanceSuiteImpl<
       setting.ConformanceLevelToString(level), ".",
       setting.GetSyntaxIdentifier(), ".JsonInput.", test_name, ".Validator");
 
-  suite_.RunTest(effective_test_name, request, &response);
+  if (!suite_.RunTest(effective_test_name, request, &response)) {
+    return;
+  }
 
   TestStatus test;
   test.set_name(effective_test_name);
@@ -689,7 +694,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::ExpectParseFailureForJson(
       absl::StrCat(setting.ConformanceLevelToString(level), ".",
                    SyntaxIdentifier(), ".JsonInput.", test_name);
 
-  suite_.RunTest(effective_test_name, request, &response);
+  if (!suite_.RunTest(effective_test_name, request, &response)) {
+    return;
+  }
 
   TestStatus test;
   test.set_name(effective_test_name);
@@ -722,7 +729,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
       absl::StrCat(setting.ConformanceLevelToString(level), ".",
                    SyntaxIdentifier(), ".", test_name, ".JsonOutput");
 
-  suite_.RunTest(effective_test_name, request, &response);
+  if (!suite_.RunTest(effective_test_name, request, &response)) {
+    return;
+  }
 
   TestStatus test;
   test.set_name(effective_test_name);
@@ -1438,7 +1447,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownOrdering() {
       conformance::BINARY_TEST, prototype, "UnknownOrdering", serialized);
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
-  suite_.RunTest(setting.GetTestName(), request, &response);
+  if (!suite_.RunTest(setting.GetTestName(), request, &response)) {
+    return;
+  }
 
   MessageType response_message;
   TestStatus test;
@@ -1447,6 +1458,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownOrdering() {
     suite_.ReportSkip(test, request, response);
     return;
   }
+
   suite_.ParseResponse(response, setting, &response_message);
 
   const UnknownFieldSet& ufs = response_message.unknown_fields();

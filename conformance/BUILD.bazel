@@ -233,6 +233,7 @@ cc_binary(
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/json",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/util:json_util",
         "//src/google/protobuf/util:type_resolver",

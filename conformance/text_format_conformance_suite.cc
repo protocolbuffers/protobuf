@@ -175,7 +175,10 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::ExpectParseFailure(
       setting.ConformanceLevelToString(level), ".",
       setting.GetSyntaxIdentifier(), ".TextFormatInput.", test_name);
 
-  suite_.RunTest(effective_test_name, request, &response);
+  if (!suite_.RunTest(effective_test_name, request, &response)) {
+    return;
+  }
+
   TestStatus test;
   test.set_name(effective_test_name);
   if (response.result_case() == ConformanceResponse::kParseError) {

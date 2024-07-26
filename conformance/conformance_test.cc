@@ -21,6 +21,7 @@
 #include "google/protobuf/util/field_comparator.h"
 #include "google/protobuf/util/message_differencer.h"
 #include "absl/container/btree_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
@@ -29,6 +30,7 @@
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance.pb.h"
 #include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/endian.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
 
@@ -41,6 +43,15 @@ using google::protobuf::util::MessageDifferencer;
 using std::string;
 
 namespace {
+
+static void ReplaceAll(std::string& input, std::string replace_word,
+                       std::string replace_by) {
+  size_t pos = input.find(replace_word);
+  while (pos != std::string::npos) {
+    input.replace(pos, replace_word.length(), replace_by);
+    pos = input.find(replace_word, pos + replace_by.length());
+  }
+}
 
 static std::string ToOctString(const std::string& binary_string) {
   std::string oct_string;
@@ -55,6 +66,52 @@ static std::string ToOctString(const std::string& binary_string) {
     oct_string.push_back('0' + low);
   }
   return oct_string;
+}
+
+// Returns full filename path of written .txt file if successful
+static std::string ProduceOctalSerialized(const std::string& request,
+                                          uint32_t len) {
+  char* len_split_bytes = static_cast<char*>(static_cast<void*>(&len));
+
+  std::string out;
+
+  std::string hex_repr;
+  for (int i = 0; i < 4; i++) {
+    auto conversion = (unsigned int)static_cast<uint8_t>(len_split_bytes[i]);
+    std::string hex = absl::StrFormat("\\x%x", conversion);
+    absl::StrAppend(&hex_repr, hex);
+  }
+
+  absl::StrAppend(&out, hex_repr);
+
+  absl::StrAppend(&out, ToOctString(request));
+
+  return out;
+}
+
+static std::string WriteToFile(const std::string& octal_serialized,
+                               const std::string& output_dir,
+                               const std::string& test_name) {
+  std::string test_name_txt = test_name;
+  ReplaceAll(test_name_txt, ".", "_");
+  absl::StrAppend(&test_name_txt, ".txt");
+  std::string full_filename;
+  if (!output_dir.empty()) {
+    full_filename = output_dir;
+    if (*output_dir.rbegin() != '/') {
+      full_filename.push_back('/');
+    }
+    absl::StrAppend(&full_filename, test_name_txt);
+  }
+  std::ofstream os{std::string(full_filename)};
+  if (os) {
+    os << octal_serialized;
+    return full_filename;
+  } else {
+    ABSL_LOG(INFO) << "Failed to open file for debugging: " << full_filename
+                   << "\n";
+    return "";
+  }
 }
 
 // Removes all newlines.
@@ -376,7 +433,10 @@ void ConformanceTestSuite::RunValidBinaryInputTest(
     const std::string& equivalent_wire_format, bool require_same_wire_format) {
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
-  RunTest(setting.GetTestName(), request, &response);
+  if (!RunTest(setting.GetTestName(), request, &response)) {
+    return;
+  }
+
   VerifyResponse(setting, equivalent_wire_format, response, true,
                  require_same_wire_format);
 }
@@ -451,7 +511,7 @@ void ConformanceTestSuite::VerifyResponse(
   }
 }
 
-void ConformanceTestSuite::RunTest(const std::string& test_name,
+bool ConformanceTestSuite::RunTest(const std::string& test_name,
                                    const ConformanceRequest& request,
                                    ConformanceResponse* response) {
   if (test_names_.insert(test_name).second == false) {
@@ -462,7 +522,43 @@ void ConformanceTestSuite::RunTest(const std::string& test_name,
   std::string serialized_response;
   request.SerializeToString(&serialized_request);
 
-  runner_->RunTest(test_name, serialized_request, &serialized_response);
+  uint32_t len = internal::little_endian::FromHost(
+      static_cast<uint32_t>(serialized_request.size()));
+
+  if (!debug_) {  // Not in debug mode. Continue.
+  } else if (debug_test_names_->erase(test_name) == 1) {
+    std::string octal = ProduceOctalSerialized(serialized_request, len);
+    std::string full_filename = WriteToFile(octal, output_dir_, test_name);
+    if (!full_filename.empty()) {
+      absl::StrAppendFormat(
+          &output_, "Produced octal serialized request file for test %s\n",
+          test_name);
+      absl::StrAppendFormat(
+          &output_,
+          "  To pipe the "
+          "serialized request directly to "
+          "the "
+          "testee run from the root of your workspace:\n    printf $("
+          "<\"%s\") | "
+          "./bazel-bin/google/protobuf/conformance/%s\n\n",
+          full_filename, testee_);
+      absl::StrAppendFormat(
+          &output_,
+          "  To inspect the wire format of the serialized request run "
+          "(Disclaimer: This may not work properly on non-Linux platforms):\n  "
+          "  "
+          "contents=$(<\"%s\"); sub=$(cut -d \\\\ -f 6- <<< "
+          "$contents) ; printf \"\\\\${sub}\" | protoscope \n\n\n",
+          full_filename);
+    }
+  } else {  // Test is not ran, as it was not asked to be debugged.
+    expected_to_fail_.erase(test_name);
+    return false;
+  }
+
+  response->set_protobuf_payload(serialized_request);
+
+  runner_->RunTest(test_name, len, serialized_request, &serialized_response);
 
   if (!response->ParseFromString(serialized_response)) {
     response->Clear();
@@ -475,6 +571,7 @@ void ConformanceTestSuite::RunTest(const std::string& test_name,
         test_name, TruncateRequest(request).ShortDebugString(),
         TruncateResponse(*response).ShortDebugString());
   }
+  return true;
 }
 
 std::string ConformanceTestSuite::WireFormatToString(WireFormat wire_format) {
@@ -511,7 +608,10 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   unexpected_failing_tests_.clear();
   unexpected_succeeding_tests_.clear();
 
-  output_ = "\nCONFORMANCE TEST BEGIN ====================================\n\n";
+  std::string mode = debug_ ? "DEBUG" : "TEST";
+  absl::StrAppendFormat(
+      &output_, "CONFORMANCE %s BEGIN ====================================\n\n",
+      mode);
 
   failure_list_filename_ = filename;
   expected_to_fail_.clear();
@@ -604,11 +704,9 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   absl::StrAppendFormat(&output_,
                         "CONFORMANCE SUITE %s: %d successes, %zu skipped, "
-                        "%d expected failures, %zu unexpected failures, %zu "
-                        "unexpected_failure_messages.\n",
+                        "%d expected failures, %zu unexpected failures.\n",
                         ok ? "PASSED" : "FAILED", successes_, skipped_.size(),
-                        expected_failures_, unexpected_failing_tests_.size(),
-                        unexpected_failure_messages_.size());
+                        expected_failures_, unexpected_failing_tests_.size());
   absl::StrAppendFormat(&output_, "\n");
 
   output->assign(output_);

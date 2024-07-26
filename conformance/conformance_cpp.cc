@@ -7,15 +7,15 @@
 
 #include <errno.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <memory>
 #include <string>
 
-#include "google/protobuf/util/json_util.h"
-#include "google/protobuf/util/type_resolver_util.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
@@ -27,12 +27,15 @@
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
 #include "google/protobuf/endian.h"
+#include "google/protobuf/json/json.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/text_format.h"
+#include "google/protobuf/util/json_util.h"
 #include "google/protobuf/util/type_resolver.h"
+#include "google/protobuf/util/type_resolver_util.h"
 #include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
@@ -241,8 +244,9 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
                           serialized_output.size()));
 
   if (verbose_) {
-    ABSL_LOG(INFO) << "conformance-cpp: request=" << request.ShortDebugString()
-                   << ", response=" << response->ShortDebugString();
+    ABSL_LOG(INFO) << "conformance-cpp: request="
+                   << google::protobuf::ShortFormat(request)
+                   << ", response=" << google::protobuf::ShortFormat(*response);
   }
   return false;
 }

@@ -15,6 +15,7 @@
 #define CONFORMANCE_CONFORMANCE_TEST_H
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -48,13 +49,14 @@ class ConformanceTestRunner {
 
   // Call to run a single conformance test.
   //
+  // "len" is the byte length of a serialized conformance.ConformanceRequest.
   // "input" is a serialized conformance.ConformanceRequest.
   // "output" should be set to a serialized conformance.ConformanceResponse.
   //
   // If there is any error in running the test itself, set "runtime_error" in
   // the response.
-  virtual void RunTest(const std::string& test_name, const std::string& input,
-                       std::string* output) = 0;
+  virtual void RunTest(const std::string& test_name, uint32_t len,
+                       const std::string& input, std::string* output) = 0;
 };
 
 // Test runner that spawns the process being tested and communicates with it
@@ -78,8 +80,8 @@ class ForkPipeRunner : public ConformanceTestRunner {
 
   ~ForkPipeRunner() override = default;
 
-  void RunTest(const std::string& test_name, const std::string& request,
-               std::string* response) override;
+  void RunTest(const std::string& test_name, uint32_t len,
+               const std::string& request, std::string* response) override;
 
  private:
   void SpawnTestProgram();
@@ -127,11 +129,14 @@ class ForkPipeRunner : public ConformanceTestRunner {
 class ConformanceTestSuite {
  public:
   ConformanceTestSuite()
-      : verbose_(false),
+      : testee_(""),
+        verbose_(false),
         performance_(false),
         enforce_recommended_(false),
         maximum_edition_(Edition::EDITION_PROTO3),
-        failure_list_flag_name_("--failure_list") {}
+        failure_list_flag_name_("--failure_list"),
+        debug_test_names_(nullptr),
+        debug_(false) {}
   virtual ~ConformanceTestSuite() = default;
 
   void SetPerformance(bool performance) { performance_ = performance; }
@@ -159,7 +164,18 @@ class ConformanceTestSuite {
   }
 
   // Sets the path of the output directory.
-  void SetOutputDir(const char* output_dir) { output_dir_ = output_dir; }
+  void SetOutputDir(const std::string& output_dir) { output_dir_ = output_dir; }
+
+  // Sets if we are running the test in debug mode.
+  void SetDebug(bool debug) { debug_ = debug; }
+
+  // Sets the testee name
+  void SetTestee(const std::string& testee) { testee_ = testee; }
+
+  // Sets the debug test names
+  void SetDebugTestNames(absl::flat_hash_set<std::string>& debug_test_names) {
+    debug_test_names_ = &debug_test_names;
+  }
 
   // Run all the conformance tests against the given test runner.
   // Test output will be stored in "output".
@@ -168,6 +184,9 @@ class ConformanceTestSuite {
   // failure list.
   // The filename here is *only* used to create/format useful error messages for
   // how to update the failure list.  We do NOT read this file at all.
+
+  // "debug_test_names" holds the list of test names that the user requested to
+  // debug.  If this is empty, we will run all the tests.
   bool RunSuite(ConformanceTestRunner* runner, std::string* output,
                 const std::string& filename,
                 conformance::FailureSet* failure_list);
@@ -271,7 +290,8 @@ class ConformanceTestSuite {
                                const std::string& equivalent_wire_format,
                                bool require_same_wire_format = false);
 
-  void RunTest(const std::string& test_name,
+  // Returns true if our runner_ ran the test and false if it did not.
+  bool RunTest(const std::string& test_name,
                const conformance::ConformanceRequest& request,
                conformance::ConformanceResponse* response);
 
@@ -280,6 +300,7 @@ class ConformanceTestSuite {
   virtual void RunSuiteImpl() = 0;
 
   ConformanceTestRunner* runner_;
+  std::string testee_;
   int successes_;
   int expected_failures_;
   bool verbose_;
@@ -290,6 +311,8 @@ class ConformanceTestSuite {
   std::string output_dir_;
   std::string failure_list_flag_name_;
   std::string failure_list_filename_;
+  absl::flat_hash_set<std::string>* debug_test_names_;
+  bool debug_;
 
   // The set of test names that are expected to fail in this run, but haven't
   // failed yet.
