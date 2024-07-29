@@ -2164,6 +2164,29 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 
 #pragma mark - Unknown Field Support
 
+- (NSData *)unknownFieldsData:(id)alwaysNil {
+  // This takes an argument so the selector can't conflict with a generated field property.
+#if defined(DEBUG) && DEBUG
+  NSAssert(alwaysNil == nil, @"Internal error");
+#endif  // DEBUG
+  NSData *result = nil;
+  GPBUnknownFieldSet *unknownFields = unknownFields_;
+  if (unknownFields) {
+    if (self.descriptor.isWireFormat) {
+      NSMutableData *mutableData =
+          [NSMutableData dataWithLength:unknownFields.serializedSizeAsMessageSet];
+      GPBCodedOutputStream *output = [[GPBCodedOutputStream alloc] initWithData:mutableData];
+      [unknownFields writeAsMessageSetTo:output];
+      [output flush];
+      [output release];
+      result = mutableData;
+    } else {
+      result = [unknownFields data];
+    }
+  }
+  return result;
+}
+
 - (GPBUnknownFieldSet *)unknownFields {
   return unknownFields_;
 }
@@ -3684,23 +3707,6 @@ id GPBGetObjectIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
   return expected;
 }
 
-NSData *GPBMessageUnknownFieldsData(GPBMessage *self) {
-  NSData *result = nil;
-  GPBUnknownFieldSet *unknownFields = self->unknownFields_;
-  if (unknownFields) {
-    if (self.descriptor.isWireFormat) {
-      NSMutableData *mutableData =
-          [NSMutableData dataWithLength:unknownFields.serializedSizeAsMessageSet];
-      GPBCodedOutputStream *output = [[GPBCodedOutputStream alloc] initWithData:mutableData];
-      [unknownFields writeAsMessageSetTo:output];
-      [output flush];
-      [output release];
-      result = mutableData;
-    } else {
-      result = [unknownFields data];
-    }
-  }
-  return result;
-}
+NSData *GPBMessageUnknownFieldsData(GPBMessage *self) { return [self unknownFieldsData:nil]; }
 
 #pragma clang diagnostic pop
