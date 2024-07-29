@@ -15,7 +15,7 @@ load(
 )
 
 # begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
+# package(default_applicable_licenses = ["//src/google/protobuf:license"])
 # end:google_only
 
 licenses(["notice"])
