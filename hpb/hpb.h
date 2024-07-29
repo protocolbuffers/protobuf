@@ -224,12 +224,13 @@ class ExtensionIdentifier : public ExtensionMiniTableProvider {
   using Extendee = ExtendeeType;
 
   constexpr explicit ExtensionIdentifier(
-      uint32_t number, const upb_MiniTableExtension* mini_table_ext)
-      : ExtensionMiniTableProvider(mini_table_ext), number_(number) {}
+      const upb_MiniTableExtension* mini_table_ext)
+      : ExtensionMiniTableProvider(mini_table_ext) {}
 
  private:
-  uint32_t number_;
-  constexpr uint32_t number() const { return number_; }
+  constexpr uint32_t number() const {
+    return upb_MiniTableExtension_Number(mini_table_ext());
+  }
   friend class PrivateAccess;
 };
 
