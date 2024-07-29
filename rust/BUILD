@@ -1,6 +1,12 @@
 # Protobuf Rust runtime packages.
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+
+# begin:github_only
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:zip.bzl", "pkg_zip")
+# end:github_only
+
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 
@@ -203,3 +209,57 @@ config_setting(
         ":rust_proto_library_kernel": "upb",
     },
 )
+
+# begin:github_only
+# pkg_files(
+#     name = "rust_protobuf_src",
+#     srcs = glob(
+#         [
+#             "*",
+#         ],
+#     ),
+#     strip_prefix = strip_prefix.from_root("rust"),
+#     visibility = ["//:__pkg__"],
+# )
+
+# pkg_files(
+#     name = "crate_root_files",
+#     srcs = glob(["cargo/**/*"]),
+#     strip_prefix = strip_prefix.from_root("rust/cargo"),
+#     visibility = ["//:__pkg__"],
+# )
+
+# pkg_filegroup(
+#     name = "rust_protobuf_src_dir",
+#     srcs = [
+#         ":rust_protobuf_src",
+#         "//rust/upb:rust_protobuf_upb_src",
+#     ],
+#     prefix = "src",
+# )
+
+# pkg_files(
+#     name = "amalgamated_upb",
+#     srcs = ["//upb:gen_amalgamation"],
+#     strip_prefix = strip_prefix.from_root(""),
+# )
+
+# pkg_filegroup(
+#     name = "rust_protobuf_libupb_src",
+#     srcs = [
+#         ":amalgamated_upb",
+#         "//upb/cmake:upb_cmake_dist",
+#     ],
+#     prefix = "libupb",
+# )
+
+# pkg_zip(
+#     name = "rust_crate",
+#     srcs = [
+#         ":crate_root_files",
+#         ":rust_protobuf_libupb_src",
+#         ":rust_protobuf_src_dir",
+#         "//:LICENSE",
+#     ],
+# )
+# end:github_only

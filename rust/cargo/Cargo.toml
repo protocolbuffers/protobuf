@@ -1,8 +1,16 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google LLC.  All rights reserved.
+
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 [package]
 name = "protobuf"
 version = "4.27.3-beta.0"
 edition = "2021"
-links = "upb"
+links = "libupb"
+license = "BSD-3-Clause"
 
 [lib]
 path = "src/shared.rs"
@@ -14,7 +22,7 @@ paste = "1.0.15"
 googletest = {git = "https://github.com/google/googletest-rust.git" }
 
 [build-dependencies]
-cmake = "0.1.50"
+cc = "1.1.6"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(bzl)', 'cfg(cpp_kernel)', 'cfg(upb_kernel)'] }

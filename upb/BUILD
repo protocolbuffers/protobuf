@@ -288,6 +288,7 @@ upb_amalgamation(
         "//upb/reflection:internal",
     ],
     strip_import_prefix = ["src"],
+    visibility = ["//rust:__pkg__"],
 )
 
 cc_library(
