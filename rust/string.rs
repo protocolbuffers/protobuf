@@ -150,11 +150,20 @@ impl<'msg> ViewProxy<'msg> for &'msg [u8] {}
 
 /// The bytes were not valid UTF-8.
 #[derive(Debug, PartialEq)]
-pub struct Utf8Error(pub(crate) ());
+pub struct Utf8Error {
+    pub(crate) inner: std::str::Utf8Error,
+}
+impl std::fmt::Display for Utf8Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        self.inner.fmt(f)
+    }
+}
+
+impl std::error::Error for Utf8Error {}
 
 impl From<std::str::Utf8Error> for Utf8Error {
-    fn from(_: std::str::Utf8Error) -> Utf8Error {
-        Utf8Error(())
+    fn from(inner: std::str::Utf8Error) -> Utf8Error {
+        Utf8Error { inner }
     }
 }
 
@@ -635,7 +644,10 @@ mod tests {
             b"\xF0\x80\x80\x80foo\xF0\x90\x80\x80bar",
             b"\xED\xA0\x80foo\xED\xBF\xBFbar",
         ] {
-            assert_eq!(test_proto_str(expect_fail).to_str(), Err(Utf8Error(())), "{expect_fail:?}");
+            assert!(
+                matches!(test_proto_str(expect_fail).to_str(), Err(Utf8Error { inner: _ })),
+                "{expect_fail:?}"
+            );
         }
     }
 
