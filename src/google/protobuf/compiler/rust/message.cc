@@ -76,11 +76,10 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       ctx.Emit({{"minitable", UpbMinitableName(msg)}},
                R"rs(
-        // SAFETY: $minitable$ is a static of a const object.
-        let mini_table = unsafe { $std$::ptr::addr_of!($minitable$) };
-        // SAFETY: $minitable$ is the one associated with raw_msg().
+        // SAFETY: `MINI_TABLE` is the one associated with `self.raw_msg()`.
         let encoded = unsafe {
-          $pbr$::wire::encode(self.raw_msg(), mini_table)
+          $pbr$::wire::encode(self.raw_msg(),
+              <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE)
         };
         //~ TODO: This discards the info we have about the reason
         //~ of the failure, we should try to keep it instead.
@@ -139,8 +138,6 @@ void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
       ctx.Emit({{"minitable", UpbMinitableName(msg)}},
                R"rs(
         let mut msg = Self::new();
-        // SAFETY: $minitable$ is a static of a const object.
-        let mini_table = unsafe { $std$::ptr::addr_of!($minitable$) };
 
         // SAFETY:
         // - `data.as_ptr()` is valid to read for `data.len()`
@@ -148,8 +145,10 @@ void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
         // - `msg.arena().raw()` is held for the same lifetime as `msg`.
         let status = unsafe {
           $pbr$::wire::decode(
-              data, msg.raw_msg(),
-              mini_table, msg.arena())
+              data,
+              msg.raw_msg(),
+              <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE,
+              msg.arena())
         };
         match status {
           Ok(_) => {
@@ -178,13 +177,12 @@ void MessageDebug(Context& ctx, const Descriptor& msg) {
       return;
 
     case Kernel::kUpb:
-      ctx.Emit({{"minitable", UpbMinitableName(msg)}},
-               R"rs(
-        let mini_table = unsafe { $std$::ptr::addr_of!($minitable$) };
+      ctx.Emit(
+          R"rs(
         let string = unsafe {
           $pbr$::debug_string(
             self.raw_msg(),
-            mini_table,
+            <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE
           )
         };
         write!(f, "{}", string)
@@ -298,7 +296,7 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
             unsafe { $pbr$::upb_Message_DeepCopy(
               dst.inner.msg,
               self.msg,
-              $std$::ptr::addr_of!($minitable$),
+              <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE,
               dst.inner.arena.raw(),
             ) };
             dst
@@ -317,11 +315,19 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
   ABSL_LOG(FATAL) << "unreachable";
 }
 
-void MessageGetMinitable(Context& ctx, const Descriptor& msg) {
+void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg) {
   if (ctx.opts().kernel == Kernel::kUpb) {
     ctx.Emit({{"minitable", UpbMinitableName(msg)}}, R"rs(
-      pub fn raw_minitable(_private: $pbi$::Private) -> *const $pbr$::upb_MiniTable {
-        unsafe { $std$::ptr::addr_of!($minitable$) }
+      unsafe impl $pbr$::AssociatedMiniTable for $Msg$ {
+        const MINI_TABLE: *const $pbr$::upb_MiniTable = unsafe { $std$::ptr::addr_of!($minitable$) };
+      }
+
+      unsafe impl $pbr$::AssociatedMiniTable for $Msg$View<'_> {
+        const MINI_TABLE: *const $pbr$::upb_MiniTable = unsafe { $std$::ptr::addr_of!($minitable$) };
+      }
+
+      unsafe impl $pbr$::AssociatedMiniTable for $Msg$Mut<'_> {
+        const MINI_TABLE: *const $pbr$::upb_MiniTable = unsafe { $std$::ptr::addr_of!($minitable$) };
       }
     )rs");
   }
@@ -345,17 +351,14 @@ void MessageMergeFrom(Context& ctx, const Descriptor& msg) {
       return;
     case Kernel::kUpb:
       ctx.Emit(
-          {
-              {"minitable", UpbMinitableName(msg)},
-          },
           R"rs(
           pub fn merge_from<'src>(&mut self, src: impl $pb$::Proxy<'src, Proxied = $Msg$>) {
             // SAFETY: self and src are both valid `$Msg$`s.
             unsafe {
               assert!(
-                $pbr$::upb_Message_MergeFrom(self.raw_msg(), 
+                $pbr$::upb_Message_MergeFrom(self.raw_msg(),
                   src.as_view().raw_msg(),
-                  $std$::ptr::addr_of!($minitable$),
+                  <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE,
                   // Use a nullptr for the ExtensionRegistry.
                   $std$::ptr::null(),
                   self.arena().raw())
@@ -481,7 +484,6 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       ctx.Emit(
           {
-              {"minitable", UpbMinitableName(msg)},
               {"new_thunk", ThunkName(ctx, msg, "new")},
           },
           R"rs(
@@ -559,9 +561,9 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
             dest: $pb$::Mut<$pb$::Repeated<Self>>,
           ) {
               // SAFETY:
-              // - Elements of `src` and `dest` have message minitable `$minitable$`.
+              // - Elements of `src` and `dest` have message minitable `MINI_TABLE`.
               unsafe {
-                $pbr$::repeated_message_copy_from(src, dest, $std$::ptr::addr_of!($minitable$));
+                $pbr$::repeated_message_copy_from(src, dest, <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE);
               }
           }
 
@@ -698,7 +700,6 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       ctx.Emit(
           {
-              {"minitable", UpbMinitableName(msg)},
               {"new_thunk", ThunkName(ctx, msg, "new")},
           },
           R"rs(
@@ -940,7 +941,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }},
        {"into_proxied_impl", [&] { IntoProxiedForMessage(ctx, msg); }},
-       {"get_upb_minitable", [&] { MessageGetMinitable(ctx, msg); }},
+       {"upb_generated_message_trait_impls",
+        [&] { UpbGeneratedMessageTraitImpls(ctx, msg); }},
        {"msg_merge_from", [&] { MessageMergeFrom(ctx, msg); }},
        {"repeated_impl", [&] { MessageProxiedInRepeated(ctx, msg); }},
        {"map_value_impl", [&] { MessageProxiedInMapValue(ctx, msg); }},
@@ -1155,8 +1157,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
           $msg_merge_from$
 
-          $get_upb_minitable$
-
           $raw_arena_getter_for_msgmut$
 
           $accessor_fns_for_muts$
@@ -1237,8 +1237,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             self.as_mut().merge_from(src);
           }
 
-          $get_upb_minitable$
-
           $accessor_fns$
         }  // impl $Msg$
 
@@ -1269,6 +1267,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             self.as_mut()
           }
         }
+
+        $upb_generated_message_trait_impls$
 
         extern "C" {
           $Msg_externs$
