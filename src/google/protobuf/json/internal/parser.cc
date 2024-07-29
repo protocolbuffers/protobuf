@@ -691,12 +691,105 @@ absl::Status ParseMapKey(const Desc<Traits>& type, Msg<Traits>& entry,
   return absl::OkStatus();
 }
 
+// Parses map entry when value is an enum name (string) and ignoring unknown
+// fields flag is set.
+// Specification says that in this case, if the enum name is unknown, we should
+// skip the map entry.
+// For example {"key1": "UNKNOWN_ENUM_VALUE"} should parse into an empty map if
+// the ignore_unknown_fields is set.
+//
+// The default implementation in ParseMapEntry will first allocate a new map
+// entry message (by calling Traits::NewMsg) and then consume the value from
+// the lexer.
+//
+// In this special case, we must do it the other way around:
+// - first consume the value from the lexer,
+// - check that this is a known enum value,
+// - and only then proceed with allocating a new map entry message.
+//
+// Note that in both cases the key is already consumed and passed in through
+// 'LocationWith<MaybeOwnedString>& key' param.
+template <typename Traits>
+absl::Status ParseMapEntryWithEnumStringValueWhenIgnoringUnknownFields(
+    JsonLexer& lex, Field<Traits> map_field, Msg<Traits>& parent_msg,
+    LocationWith<MaybeOwnedString>& key) {
+  // Parse the enum value from string, advancing the lexer.
+  absl::StatusOr<absl::optional<int32_t>> enum_value;
+  (void)Traits::WithFieldType(
+      map_field, [&lex, &enum_value](const Desc<Traits>& map_entry_desc) {
+        enum_value = ParseEnum<Traits>(lex, Traits::ValueField(map_entry_desc));
+        return absl::OkStatus();
+      });
+  RETURN_IF_ERROR(enum_value.status());
+
+  // If enum value is unknown, we'll stop here and avoid allocating a new map
+  // entry message.
+  if (!enum_value->has_value()) {
+    return absl::OkStatus();
+  }
+
+  // If the enum value is known, output the map entry with already parsed
+  // value.
+  return Traits::NewMsg(
+      map_field, parent_msg,
+      [&](const Desc<Traits>& type, Msg<Traits>& entry) -> absl::Status {
+        RETURN_IF_ERROR(ParseMapKey<Traits>(lex.options(), type, entry, key));
+
+        // This is different from the default implementation in 'ParseMapEntry'
+        // since we already parsed this value (we must not attempt to advance
+        // the lexer to parse the value here again).
+        Traits::SetEnum(Traits::ValueField(type), entry,
+                        enum_value->value_or(0));
+
+        return absl::OkStatus();
+      });
+}
+
+// ParseMapEntry implementation has a special case if:
+// * 'map_field' is a map of enums, and
+// * value that follows in 'lex' is a string (enum name), and
+// * and ignore_unknown_fields is set.
+// This function does not advance the lexer.
+template <typename Traits>
+absl::StatusOr<bool> MapEntryNeedsEnumStringValueSpecialCase(
+    JsonLexer& lex, Field<Traits> map_field) {
+  // Check if the map_field is a map of enums.
+  bool is_map_of_enums = false;
+  (void)Traits::WithFieldType(
+      map_field, [&is_map_of_enums](const Desc<Traits>& desc) {
+        is_map_of_enums = Traits::FieldType(Traits::ValueField(desc)) ==
+                          FieldDescriptor::TYPE_ENUM;
+        return absl::OkStatus();
+      });
+  if (!is_map_of_enums) {
+    return false;
+  }
+
+  // Check that the value is a string (instead of a number).
+  absl::StatusOr<JsonLexer::Kind> kind = lex.PeekKind();
+  RETURN_IF_ERROR(kind.status());
+  if (*kind != JsonLexer::kStr) {
+    return false;
+  }
+
+  // We need the special case only if we are ignoring unknown fields.
+  return lex.options().ignore_unknown_fields;
+}
+
 // Parses one map entry for 'map_field' in 'parent_msg' with already consumed
 // 'key'.
 template <typename Traits>
 absl::Status ParseMapEntry(JsonLexer& lex, Field<Traits> map_field,
                            Msg<Traits>& parent_msg,
                            LocationWith<MaybeOwnedString>& key) {
+  auto needs_special_case =
+      MapEntryNeedsEnumStringValueSpecialCase<Traits>(lex, map_field);
+  RETURN_IF_ERROR(needs_special_case.status());
+  if (*needs_special_case) {
+    return ParseMapEntryWithEnumStringValueWhenIgnoringUnknownFields<Traits>(
+        lex, map_field, parent_msg, key);
+  }
+
   return Traits::NewMsg(
       map_field, parent_msg,
       [&](const Desc<Traits>& type, Msg<Traits>& entry) -> absl::Status {

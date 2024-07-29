@@ -562,15 +562,9 @@ TEST_P(JsonTest, ParseMapWithEnumValuesProto2WithUnknownFields) {
   })json";
 
   ASSERT_OK(ToProto(message, input_json, options));
-  // With ignore_unknown_fields set, the unknown enum string value is accepted
-  // but coerced to 0-th enum value. This behavior fails the conformance test
-  // 'IgnoreUnknownEnumStringValueInMap' and it will be fixed in
-  // https://github.com/protocolbuffers/protobuf/pull/16479.
-  EXPECT_EQ(message.enum_map().size(), 5);
-  EXPECT_EQ(message.enum_map().contains("key2"), true);
-  EXPECT_EQ(message.enum_map().contains("key4"), true);
-  EXPECT_EQ(message.enum_map().at("key2"), 0);
-  EXPECT_EQ(message.enum_map().at("key4"), 0);
+  EXPECT_EQ(message.enum_map().size(), 3);
+  EXPECT_EQ(message.enum_map().contains("key2"), false);
+  EXPECT_EQ(message.enum_map().contains("key4"), false);
 }
 
 TEST_P(JsonTest, ParseMapWithEnumValuesProto3WithUnknownFields) {
@@ -588,15 +582,9 @@ TEST_P(JsonTest, ParseMapWithEnumValuesProto3WithUnknownFields) {
   })json";
 
   ASSERT_OK(ToProto(message, input_json, options));
-  // With ignore_unknown_fields set, the unknown enum string value is accepted
-  // but coerced to 0-th enum value. This behavior fails the conformance test
-  // 'IgnoreUnknownEnumStringValueInMap' and it will be fixed in
-  // https://github.com/protocolbuffers/protobuf/pull/16479.
-  EXPECT_EQ(message.map().size(), 5);
-  EXPECT_EQ(message.map().contains("key2"), true);
-  EXPECT_EQ(message.map().contains("key4"), true);
-  EXPECT_EQ(message.map().at("key2"), 0);
-  EXPECT_EQ(message.map().at("key4"), 0);
+  EXPECT_EQ(message.map().size(), 3);
+  EXPECT_EQ(message.map().contains("key2"), false);
+  EXPECT_EQ(message.map().contains("key4"), false);
 }
 
 TEST_P(JsonTest, RepeatedMapKey) {
