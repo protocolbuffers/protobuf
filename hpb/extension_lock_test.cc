@@ -54,7 +54,7 @@ void unlock_func(const void* msg) { m[absl::HashOf(msg) & 0x7].unlock(); }
   return &unlock_func;
 }
 
-void TestConcurrentExtensionAccess(::protos::ExtensionRegistry registry) {
+void TestConcurrentExtensionAccess(::hpb::ExtensionRegistry registry) {
   ::hpb::internal::upb_extension_locker_global.store(&lock_func,
                                                      std::memory_order_release);
   const std::string payload = GenerateTestData();

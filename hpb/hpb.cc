@@ -80,14 +80,8 @@ absl::Status MessageDecodeError(upb_DecodeStatus status, SourceLocation loc
 //   return absl::Status(absl::StatusCode::kUnknown, "Upb message parse error");
 // }
 // end:github_only
-}  // namespace hpb
 
-namespace protos {
 namespace internal {
-
-using ::hpb::internal::upb_extension_locker_global;
-using ::hpb::internal::UpbExtensionLocker;
-using ::hpb::internal::UpbExtensionUnlocker;
 
 upb_ExtensionRegistry* GetUpbExtensions(
     const ExtensionRegistry& extension_registry) {
@@ -188,4 +182,4 @@ absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
 
 }  // namespace internal
 
-}  // namespace protos
+}  // namespace hpb

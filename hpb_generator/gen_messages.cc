@@ -245,10 +245,9 @@ void WriteModelPublicDeclaration(
                                                       int options));
         friend absl::StatusOr<$2>(::protos::Parse<$2>(
             absl::string_view bytes,
-            const ::protos::ExtensionRegistry& extension_registry,
-            int options));
-        friend upb_Arena* ::protos::internal::GetArena<$0>($0* message);
-        friend upb_Arena* ::protos::internal::GetArena<$0>(::hpb::Ptr<$0> message);
+            const ::hpb::ExtensionRegistry& extension_registry, int options));
+        friend upb_Arena* ::hpb::internal::GetArena<$0>($0* message);
+        friend upb_Arena* ::hpb::internal::GetArena<$0>(::hpb::Ptr<$0> message);
         friend $0(::hpb::internal::MoveMessage<$0>(upb_Message* msg, upb_Arena* arena));
       )cc",
       ClassName(descriptor), MessageName(descriptor),
@@ -303,12 +302,12 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
         friend class ::hpb::Ptr<$0>;
         friend class ::hpb::Ptr<const $0>;
         static const upb_MiniTable* minitable() { return $0::minitable(); }
-        friend const upb_MiniTable* ::protos::internal::GetMiniTable<$0Proxy>(
+        friend const upb_MiniTable* ::hpb::internal::GetMiniTable<$0Proxy>(
             const $0Proxy* message);
-        friend const upb_MiniTable* ::protos::internal::GetMiniTable<$0Proxy>(
+        friend const upb_MiniTable* ::hpb::internal::GetMiniTable<$0Proxy>(
             ::hpb::Ptr<$0Proxy> message);
-        friend upb_Arena* ::protos::internal::GetArena<$2>($2* message);
-        friend upb_Arena* ::protos::internal::GetArena<$2>(::hpb::Ptr<$2> message);
+        friend upb_Arena* ::hpb::internal::GetArena<$2>($2* message);
+        friend upb_Arena* ::hpb::internal::GetArena<$2>(::hpb::Ptr<$2> message);
         static void Rebind($0Proxy& lhs, const $0Proxy& rhs) {
           lhs.msg_ = rhs.msg_;
           lhs.arena_ = rhs.arena_;
@@ -329,7 +328,7 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
          public:
           $0CProxy() = delete;
           $0CProxy(const $0* m)
-              : internal::$0Access(m->msg_, ::protos::internal::GetArena(m)) {}
+              : internal::$0Access(m->msg_, ::hpb::internal::GetArena(m)) {}
           $0CProxy($0Proxy m);
           using $0Access::GetInternalArena;
       )cc",
@@ -352,9 +351,9 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
         friend class ::hpb::Ptr<$0>;
         friend class ::hpb::Ptr<const $0>;
         static const upb_MiniTable* minitable() { return $0::minitable(); }
-        friend const upb_MiniTable* ::protos::internal::GetMiniTable<$0CProxy>(
+        friend const upb_MiniTable* ::hpb::internal::GetMiniTable<$0CProxy>(
             const $0CProxy* message);
-        friend const upb_MiniTable* ::protos::internal::GetMiniTable<$0CProxy>(
+        friend const upb_MiniTable* ::hpb::internal::GetMiniTable<$0CProxy>(
             ::hpb::Ptr<$0CProxy> message);
 
         static void Rebind($0CProxy& lhs, const $0CProxy& rhs) {
@@ -388,11 +387,11 @@ void WriteMessageImplementation(
           }
           $0::$0(const $0& from) : $0Access() {
             arena_ = owned_arena_.ptr();
-            msg_ = ($1*)::protos::internal::DeepClone(UPB_UPCAST(from.msg_), &$2, arena_);
+            msg_ = ($1*)::hpb::internal::DeepClone(UPB_UPCAST(from.msg_), &$2, arena_);
           }
           $0::$0(const CProxy& from) : $0Access() {
             arena_ = owned_arena_.ptr();
-            msg_ = ($1*)::protos::internal::DeepClone(
+            msg_ = ($1*)::hpb::internal::DeepClone(
                 ::hpb::internal::GetInternalMsg(&from), &$2, arena_);
           }
           $0::$0(const Proxy& from) : $0(static_cast<const CProxy&>(from)) {}
@@ -402,12 +401,12 @@ void WriteMessageImplementation(
           }
           $0& $0::operator=(const $3& from) {
             arena_ = owned_arena_.ptr();
-            msg_ = ($1*)::protos::internal::DeepClone(UPB_UPCAST(from.msg_), &$2, arena_);
+            msg_ = ($1*)::hpb::internal::DeepClone(UPB_UPCAST(from.msg_), &$2, arena_);
             return *this;
           }
           $0& $0::operator=(const CProxy& from) {
             arena_ = owned_arena_.ptr();
-            msg_ = ($1*)::protos::internal::DeepClone(
+            msg_ = ($1*)::hpb::internal::DeepClone(
                 ::hpb::internal::GetInternalMsg(&from), &$2, arena_);
             return *this;
           }

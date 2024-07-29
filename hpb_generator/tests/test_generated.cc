@@ -797,7 +797,7 @@ TEST(CppGeneratedCode, SetExtensionFusingFailureShouldCopy) {
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
   ASSERT_FALSE(
-      upb_Arena_Fuse(arena.ptr(), ::protos::internal::GetArena(&extension1)));
+      upb_Arena_Fuse(arena.ptr(), ::hpb::internal::GetArena(&extension1)));
   EXPECT_FALSE(::protos::HasExtension(model, theme));
   auto status = ::protos::SetExtension(model, theme, std::move(extension1));
   EXPECT_TRUE(status.ok());
@@ -965,7 +965,7 @@ TEST(CppGeneratedCode, ParseWithExtensionRegistry) {
   ::upb::Arena arena;
   auto bytes = ::protos::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
-  ::protos::ExtensionRegistry extensions(
+  ::hpb::ExtensionRegistry extensions(
       {&theme, &other_ext, &ThemeExtension::theme_extension}, arena);
   TestModel parsed_model =
       ::protos::Parse<TestModel>(bytes.value(), extensions).value();
@@ -1230,7 +1230,7 @@ TEST(CppGeneratedCode, HasExtensionAndRegistry) {
   std::string data = std::string(::protos::Serialize(&source, arena).value());
 
   // Test with ExtensionRegistry
-  ::protos::ExtensionRegistry extensions({&theme}, arena);
+  ::hpb::ExtensionRegistry extensions({&theme}, arena);
   TestModel parsed_model = ::protos::Parse<TestModel>(data, extensions).value();
   EXPECT_TRUE(::protos::HasExtension(&parsed_model, theme));
 }
