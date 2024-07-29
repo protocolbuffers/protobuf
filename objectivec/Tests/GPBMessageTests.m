@@ -63,6 +63,10 @@
 
 @end
 
+@interface NSObject (EDOValue)
+- (BOOL)edo_isEDOValueType;
+@end
+
 @interface MessageTests : GPBTestCase
 @end
 
@@ -2339,6 +2343,12 @@
   [message setOptionalInt32:1];
   XCTAssertThrowsSpecificNamed([message writeToOutputStream:output], NSException,
                                GPBCodedOutputStreamException_WriteFailed);
+}
+
+- (void)testGPBMessageIsEDOValueObject {
+  // Required for eDistantObject support. See `[GPBMessage edo_isEDOValueType]` for details.
+  GPBMessage *message = [TestAllTypes message];
+  XCTAssertTrue([message edo_isEDOValueType]);
 }
 
 @end

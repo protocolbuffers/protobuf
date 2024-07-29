@@ -930,6 +930,26 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 
 @implementation GPBMessage
 
+// By default, eDistantObject (aka EDO - https://github.com/google/eDistantObject) will pass
+// Protobuf messages by reference, which is to say the remote end is an NSProxy instance that relays
+// method invocations back to the local object. However, NSProxy does not handle class methods like
+// `+[GPBMessage descriptor]` and will crash the remote process. What this means for EarlGrey is
+// that if a test sends a Protobuf message to the app process by reference, any attempt to access
+// one of the class methods on that object will crash the app process and fail the test.
+// Passing the Protobuf message by value helps avoid issues, but is certainly not foolproof.
+// For example, if the message (or any sub message on a field (recursively)) has extension fields,
+// they will be "lost in translation" across the process boundaries, and in that the data will
+// migrate to the message's unknown fields and not be vended as extension fields any more.
+
+// Note `edo_isEDOValueType` is a special selector name that eDistantObject uses to determine if
+// a given object should be passed by value or by reference:
+// https://github.com/google/eDistantObject/blob/afdcbb02534ac7aeef1ecf793ebf84f699f8299f/Service/Sources/NSObject%2BEDOValue.h#L31
+// We do not include NSObject+EDOValue.h in this file to avoid Protobufs depending on
+// eDistantObject.
+- (BOOL)edo_isEDOValueType {
+  return YES;
+}
+
 + (void)initialize {
   Class pbMessageClass = [GPBMessage class];
   if ([self class] == pbMessageClass) {
