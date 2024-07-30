@@ -211,55 +211,55 @@ config_setting(
 )
 
 # begin:github_only
-# pkg_files(
-#     name = "rust_protobuf_src",
-#     srcs = glob(
-#         [
-#             "*",
-#         ],
-#     ),
-#     strip_prefix = strip_prefix.from_root("rust"),
-#     visibility = ["//:__pkg__"],
-# )
+pkg_files(
+    name = "rust_protobuf_src",
+    srcs = glob(
+        [
+            "*",
+        ],
+    ),
+    strip_prefix = strip_prefix.from_root("rust"),
+    visibility = ["//:__pkg__"],
+)
 
-# pkg_files(
-#     name = "crate_root_files",
-#     srcs = glob(["cargo/**/*"]),
-#     strip_prefix = strip_prefix.from_root("rust/cargo"),
-#     visibility = ["//:__pkg__"],
-# )
+pkg_files(
+    name = "crate_root_files",
+    srcs = glob(["cargo/**/*"]),
+    strip_prefix = strip_prefix.from_root("rust/cargo"),
+    visibility = ["//:__pkg__"],
+)
 
-# pkg_filegroup(
-#     name = "rust_protobuf_src_dir",
-#     srcs = [
-#         ":rust_protobuf_src",
-#         "//rust/upb:rust_protobuf_upb_src",
-#     ],
-#     prefix = "src",
-# )
+pkg_filegroup(
+    name = "rust_protobuf_src_dir",
+    srcs = [
+        ":rust_protobuf_src",
+        "//rust/upb:rust_protobuf_upb_src",
+    ],
+    prefix = "src",
+)
 
-# pkg_files(
-#     name = "amalgamated_upb",
-#     srcs = ["//upb:gen_amalgamation"],
-#     strip_prefix = strip_prefix.from_root(""),
-# )
+pkg_files(
+    name = "amalgamated_upb",
+    srcs = ["//upb:gen_amalgamation"],
+    strip_prefix = strip_prefix.from_root(""),
+)
 
-# pkg_filegroup(
-#     name = "rust_protobuf_libupb_src",
-#     srcs = [
-#         ":amalgamated_upb",
-#         "//upb/cmake:upb_cmake_dist",
-#     ],
-#     prefix = "libupb",
-# )
+pkg_filegroup(
+    name = "rust_protobuf_libupb_src",
+    srcs = [
+        ":amalgamated_upb",
+        "//upb/cmake:upb_cmake_dist",
+    ],
+    prefix = "libupb",
+)
 
-# pkg_zip(
-#     name = "rust_crate",
-#     srcs = [
-#         ":crate_root_files",
-#         ":rust_protobuf_libupb_src",
-#         ":rust_protobuf_src_dir",
-#         "//:LICENSE",
-#     ],
-# )
+pkg_zip(
+    name = "rust_crate",
+    srcs = [
+        ":crate_root_files",
+        ":rust_protobuf_libupb_src",
+        ":rust_protobuf_src_dir",
+        "//:LICENSE",
+    ],
+)
 # end:github_only
