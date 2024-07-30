@@ -8,7 +8,10 @@
 #include <string>
 
 #include "google/protobuf/descriptor.pb.h"
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_no_field_presence.pb.h"
@@ -16,6 +19,8 @@
 namespace google {
 namespace protobuf {
 namespace {
+
+using ::testing::StrEq;
 
 // Helper: checks that all fields have default (zero/empty) values.
 void CheckDefaultValues(
@@ -455,6 +460,74 @@ TEST(NoFieldPresenceTest, MergeFromIfNonzeroTest) {
   dest.MergeFrom(source);
   EXPECT_EQ(84, dest.optional_int32());
   EXPECT_EQ("test2", dest.optional_string());
+}
+
+TEST(NoFieldPresenceTest, ExtraZeroesInWireParseTest) {
+  // check extra serialized zeroes on the wire are parsed into the object.
+  proto2_nofieldpresence_unittest::ForeignMessage dest;
+  dest.set_c(42);
+  ASSERT_EQ(42, dest.c());
+
+  // ExplicitForeignMessage has the same fields as ForeignMessage, but with
+  // explicit presence instead of implicit presence.
+  proto2_nofieldpresence_unittest::ExplicitForeignMessage source;
+  source.set_c(0);
+  std::string wire = source.SerializeAsString();
+  ASSERT_THAT(wire, StrEq(absl::string_view{"\x08\x00", 2}));
+
+  // The "parse" operation clears all fields before merging from wire.
+  ASSERT_TRUE(dest.ParseFromString(wire));
+  EXPECT_EQ(0, dest.c());
+  std::string dest_data;
+  EXPECT_TRUE(dest.SerializeToString(&dest_data));
+  EXPECT_TRUE(dest_data.empty());
+}
+
+TEST(NoFieldPresenceTest, ExtraZeroesInWireMergeTest) {
+  // check explicit zeros on the wire are merged into an implicit one.
+  proto2_nofieldpresence_unittest::ForeignMessage dest;
+  dest.set_c(42);
+  ASSERT_EQ(42, dest.c());
+
+  // ExplicitForeignMessage has the same fields as ForeignMessage, but with
+  // explicit presence instead of implicit presence.
+  proto2_nofieldpresence_unittest::ExplicitForeignMessage source;
+  source.set_c(0);
+  std::string wire = source.SerializeAsString();
+  ASSERT_THAT(wire, StrEq(absl::string_view{"\x08\x00", 2}));
+
+  // TODO: b/356132170 -- Add conformance tests to ensure this behaviour is
+  //                      well-defined.
+  // As implemented, the C++ "merge" operation does not distinguish between
+  // implicit and explicit fields when reading from the wire.
+  ASSERT_TRUE(dest.MergeFromString(wire));
+  // If zero is present on the wire, the original value is overwritten, even
+  // though this is specified as an "implicit presence" field.
+  EXPECT_EQ(0, dest.c());
+  std::string dest_data;
+  EXPECT_TRUE(dest.SerializeToString(&dest_data));
+  EXPECT_TRUE(dest_data.empty());
+}
+
+TEST(NoFieldPresenceTest, ExtraZeroesInWireLastWins) {
+  // check that, when the same field is present multiple times on the wire, we
+  // always take the last one -- even if it is a zero.
+
+  absl::string_view wire{"\x08\x01\x08\x00", /*len=*/4};  // note the null-byte.
+  proto2_nofieldpresence_unittest::ForeignMessage dest;
+
+  // TODO: b/356132170 -- Add conformance tests to ensure this behaviour is
+  //                      well-defined.
+  // As implemented, the C++ "merge" operation does not distinguish between
+  // implicit and explicit fields when reading from the wire.
+  ASSERT_TRUE(dest.MergeFromString(wire));
+  // If the same field is present multiple times on the wire, "last one wins".
+  // i.e. -- the last seen field content will always overwrite, even if it's
+  // zero and the field is implicit presence.
+  EXPECT_EQ(0, dest.c());
+  std::string dest_data;
+  EXPECT_TRUE(dest.SerializeToString(&dest_data));
+  EXPECT_TRUE(dest_data.empty());
 }
 
 TEST(NoFieldPresenceTest, IsInitializedTest) {
