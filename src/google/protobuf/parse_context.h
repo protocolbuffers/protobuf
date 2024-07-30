@@ -866,7 +866,7 @@ static const char* VarintParseSlowArm(const char* p, uint64_t* out,
 // The caller must ensure that p points to at least 10 valid bytes.
 template <typename T>
 PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
-#if defined(__aarch64__) && defined(ABSL_IS_LITTLE_ENDIAN)
+#if defined(__aarch64__) && defined(ABSL_IS_LITTLE_ENDIAN) && !defined(_MSC_VER)
   // This optimization is not supported in big endian mode
   uint64_t first8;
   std::memcpy(&first8, p, sizeof(first8));
