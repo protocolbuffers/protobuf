@@ -212,6 +212,56 @@ fn test_map_setter() {
     }
 }
 
+#[test]
+fn test_map_creation_with_message_values() {
+    // Maps are usually created and owned by a parent message, but let's verify that
+    // we can successfully create and destroy them independently.
+    macro_rules! test_for_each_key {
+        ($($key_t:ty, $key:expr;)*) => {
+            $(
+                let msg = TestAllTypes::new();
+                let mut map = protobuf::Map::<$key_t, TestAllTypes>::new();
+                map.as_mut().insert($key, msg);
+                assert_that!(map.as_view().len(), eq(1));
+            )*
+        }
+    }
+
+    test_for_each_key!(
+        i32, -5;
+        u32, 13u32;
+        i64, 7;
+        u64, 11u64;
+        bool, false;
+        ProtoString, "looooooooooooooooooooooooong string";
+    );
+}
+
+#[test]
+fn test_map_clearing_with_message_values() {
+    macro_rules! test_for_each_key {
+        ($($key_t:ty, $key:expr;)*) => {
+            $(
+                let msg = TestAllTypes::new();
+                let mut map = protobuf::Map::<$key_t, TestAllTypes>::new();
+                map.as_mut().insert($key, msg);
+                assert_that!(map.as_view().len(), eq(1));
+                map.as_mut().clear();
+                assert_that!(map.as_view().len(), eq(0));
+            )*
+        }
+    }
+
+    test_for_each_key!(
+        i32, -5;
+        u32, 13u32;
+        i64, 7;
+        u64, 11u64;
+        bool, false;
+        ProtoString, "looooooooooooooooooooooooong string";
+    );
+}
+
 macro_rules! generate_map_with_msg_values_tests {
     (
         $(($k_field:ident, $k_nonzero:expr, $k_other:expr $(,)?)),*

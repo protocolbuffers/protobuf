@@ -62,6 +62,10 @@ class MapIterator;
 template <typename Enum>
 struct is_proto_enum;
 
+namespace rust {
+struct PtrAndLen;
+}  // namespace rust
+
 namespace internal {
 template <typename Key, typename T>
 class MapFieldLite;
@@ -590,6 +594,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   friend struct MapTestPeer;
   friend struct MapBenchmarkPeer;
   friend class UntypedMapIterator;
+  friend class RustMapHelper;
 
   struct NodeAndBucket {
     NodeBase* node;
@@ -924,6 +929,7 @@ class KeyMapBase : public UntypedMapBase {
   friend class TcParser;
   friend struct MapTestPeer;
   friend struct MapBenchmarkPeer;
+  friend class RustMapHelper;
 
   PROTOBUF_NOINLINE void erase_no_destroy(map_index_t b, KeyNode* node) {
     TreeIterator tree_it;
@@ -1139,6 +1145,60 @@ bool InitializeMapKey(T*, K&&, Arena*) {
 }
 
 
+// The purpose of this class is to give the Rust implementation visibility into
+// some of the internals of C++ proto maps. We need access to these internals
+// to be able to implement Rust map operations without duplicating the same
+// functionality for every message type.
+class RustMapHelper {
+ public:
+  using NodeAndBucket = UntypedMapBase::NodeAndBucket;
+  using ClearInput = UntypedMapBase::ClearInput;
+
+  template <typename Key, typename Value>
+  static constexpr MapNodeSizeInfoT SizeInfo() {
+    return Map<Key, Value>::Node::size_info();
+  }
+
+  enum {
+    kKeyIsString = UntypedMapBase::kKeyIsString,
+    kValueIsProto = UntypedMapBase::kValueIsProto,
+  };
+
+  static NodeBase* AllocNode(UntypedMapBase* m, MapNodeSizeInfoT size_info) {
+    return m->AllocNode(size_info);
+  }
+
+  static void DeallocNode(UntypedMapBase* m, NodeBase* node,
+                          MapNodeSizeInfoT size_info) {
+    return m->DeallocNode(node, size_info);
+  }
+
+  template <typename Map, typename Key>
+  static NodeAndBucket FindHelper(Map* m, Key key) {
+    return m->FindHelper(key);
+  }
+
+  template <typename Map>
+  static typename Map::KeyNode* InsertOrReplaceNode(Map* m, NodeBase* node) {
+    return m->InsertOrReplaceNode(static_cast<typename Map::KeyNode*>(node));
+  }
+
+  template <typename Map>
+  static void EraseNoDestroy(Map* m, map_index_t bucket, NodeBase* node) {
+    m->erase_no_destroy(bucket, static_cast<typename Map::KeyNode*>(node));
+  }
+
+  static void DestroyMessage(MessageLite* m) { m->DestroyInstance(false); }
+
+  static void ClearTable(UntypedMapBase* m, ClearInput input) {
+    m->ClearTable(input);
+  }
+
+  static bool IsGlobalEmptyTable(const UntypedMapBase* m) {
+    return m->num_buckets_ == kGlobalEmptyTableSize;
+  }
+};
+
 }  // namespace internal
 
 // This is the class for Map's internal value_type.
@@ -1252,6 +1312,11 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
                       internal::is_internal_map_value_type<mapped_type>>::value,
                   "We only support scalar, Message, and designated internal "
                   "mapped types.");
+    // The Rust implementation that wraps C++ protos relies on the ability to
+    // create an UntypedMapBase and cast a pointer of it to google::protobuf::Map*.
+    static_assert(
+        sizeof(Map) == sizeof(internal::UntypedMapBase),
+        "Map must not have any data members beyond what is in UntypedMapBase.");
   }
 
   template <typename P>
@@ -1702,6 +1767,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   friend class internal::TcParser;
   friend struct internal::MapTestPeer;
   friend struct internal::MapBenchmarkPeer;
+  friend class internal::RustMapHelper;
 };
 
 namespace internal {

@@ -11,6 +11,7 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
@@ -197,29 +198,28 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
       ctx.Emit(
-          {
-              {"new_thunk", ThunkName(ctx, msg, "new")},
-              {"delete_thunk", ThunkName(ctx, msg, "delete")},
-              {"clear_thunk", ThunkName(ctx, msg, "clear")},
-              {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
-              {"parse_thunk", ThunkName(ctx, msg, "parse")},
-              {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
-              {"merge_from_thunk", ThunkName(ctx, msg, "merge_from")},
-              {"repeated_new_thunk", ThunkName(ctx, msg, "repeated_new")},
-              {"repeated_free_thunk", ThunkName(ctx, msg, "repeated_free")},
-              {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
-              {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
-              {"repeated_get_mut_thunk",
-               ThunkName(ctx, msg, "repeated_get_mut")},
-              {"repeated_add_thunk", ThunkName(ctx, msg, "repeated_add")},
-              {"repeated_clear_thunk", ThunkName(ctx, msg, "repeated_clear")},
-              {"repeated_copy_from_thunk",
-               ThunkName(ctx, msg, "repeated_copy_from")},
-              {"repeated_reserve_thunk",
-               ThunkName(ctx, msg, "repeated_reserve")},
-          },
+          {{"new_thunk", ThunkName(ctx, msg, "new")},
+           {"placement_new_thunk", ThunkName(ctx, msg, "placement_new")},
+           {"delete_thunk", ThunkName(ctx, msg, "delete")},
+           {"clear_thunk", ThunkName(ctx, msg, "clear")},
+           {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
+           {"parse_thunk", ThunkName(ctx, msg, "parse")},
+           {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
+           {"merge_from_thunk", ThunkName(ctx, msg, "merge_from")},
+           {"repeated_new_thunk", ThunkName(ctx, msg, "repeated_new")},
+           {"repeated_free_thunk", ThunkName(ctx, msg, "repeated_free")},
+           {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
+           {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
+           {"repeated_get_mut_thunk", ThunkName(ctx, msg, "repeated_get_mut")},
+           {"repeated_add_thunk", ThunkName(ctx, msg, "repeated_add")},
+           {"repeated_clear_thunk", ThunkName(ctx, msg, "repeated_clear")},
+           {"repeated_copy_from_thunk",
+            ThunkName(ctx, msg, "repeated_copy_from")},
+           {"repeated_reserve_thunk", ThunkName(ctx, msg, "repeated_reserve")},
+           {"map_size_info_thunk", ThunkName(ctx, msg, "size_info")}},
           R"rs(
           fn $new_thunk$() -> $pbr$::RawMessage;
+          fn $placement_new_thunk$(ptr: *mut std::ffi::c_void, m: $pbr$::RawMessage);
           fn $delete_thunk$(raw_msg: $pbr$::RawMessage);
           fn $clear_thunk$(raw_msg: $pbr$::RawMessage);
           fn $serialize_thunk$(raw_msg: $pbr$::RawMessage, out: &mut $pbr$::SerializedData) -> bool;
@@ -235,6 +235,7 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
           fn $repeated_clear_thunk$(raw: $pbr$::RawRepeatedField);
           fn $repeated_copy_from_thunk$(dst: $pbr$::RawRepeatedField, src: $pbr$::RawRepeatedField);
           fn $repeated_reserve_thunk$(raw: $pbr$::RawRepeatedField, additional: usize);
+          fn $map_size_info_thunk$(i: $pbr$::MapNodeSizeInfoIndex) -> $pbr$::MapNodeSizeInfo;
         )rs");
       return;
 
@@ -590,19 +591,18 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
     case Kernel::kCpp:
       for (const auto& t : kMapKeyTypes) {
         ctx.Emit(
-            {{"map_new_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "new")},
-             {"map_free_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "free")},
-             {"map_clear_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "clear")},
-             {"map_size_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "size")},
-             {"map_insert_thunk",
-              RawMapThunk(ctx, msg, t.thunk_ident, "insert")},
-             {"map_get_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "get")},
-             {"map_remove_thunk",
-              RawMapThunk(ctx, msg, t.thunk_ident, "remove")},
-             {"map_iter_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "iter")},
-             {"map_iter_get_thunk",
-              RawMapThunk(ctx, msg, t.thunk_ident, "iter_get")},
+            {{"map_size_info_thunk", ThunkName(ctx, msg, "size_info")},
+             {"placement_new_thunk", ThunkName(ctx, msg, "placement_new")},
+             {"map_insert",
+              absl::StrCat("proto2_rust_map_insert_", t.thunk_ident)},
+             {"map_remove",
+              absl::StrCat("proto2_rust_map_remove_", t.thunk_ident)},
+             {"map_get", absl::StrCat("proto2_rust_map_get_", t.thunk_ident)},
+             {"map_iter_get",
+              absl::StrCat("proto2_rust_map_iter_get_", t.thunk_ident)},
              {"key_expr", t.rs_to_ffi_key_expr},
+             {"key_is_string",
+              t.thunk_ident == "ProtoString" ? "true" : "false"},
              io::Printer::Sub("ffi_key_t", [&] { ctx.Emit(t.rs_ffi_key_t); })
                  .WithSuffix(""),
              io::Printer::Sub("key_t", [&] { ctx.Emit(t.rs_key_t); })
@@ -611,47 +611,52 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                               [&] { ctx.Emit(t.rs_from_ffi_key_expr); })
                  .WithSuffix("")},
             R"rs(
-            extern "C" {
-                fn $map_new_thunk$() -> $pbr$::RawMap;
-                fn $map_free_thunk$(m: $pbr$::RawMap);
-                fn $map_clear_thunk$(m: $pbr$::RawMap);
-                fn $map_size_thunk$(m: $pbr$::RawMap) -> usize;
-                fn $map_insert_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: $pbr$::RawMessage) -> bool;
-                fn $map_get_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: *mut $pbr$::RawMessage) -> bool;
-                fn $map_remove_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: *mut $pbr$::RawMessage) -> bool;
-                fn $map_iter_thunk$(m: $pbr$::RawMap) -> $pbr$::UntypedMapIterator;
-                fn $map_iter_get_thunk$(iter: &mut $pbr$::UntypedMapIterator, key: *mut $ffi_key_t$, value: *mut $pbr$::RawMessage);
-            }
             impl $pb$::ProxiedInMapValue<$key_t$> for $Msg$ {
                 fn map_new(_private: $pbi$::Private) -> $pb$::Map<$key_t$, Self> {
                     unsafe {
                         $pb$::Map::from_inner(
                             $pbi$::Private,
-                            $pbr$::InnerMap::new($pbi$::Private, $map_new_thunk$())
+                            $pbr$::InnerMap::new($pbi$::Private, $pbr$::proto2_rust_map_new())
                         )
                     }
                 }
 
                 unsafe fn map_free(_private: $pbi$::Private, map: &mut $pb$::Map<$key_t$, Self>) {
-                    unsafe { $map_free_thunk$(map.as_raw($pbi$::Private)); }
+                    use $pbr$::MapNodeSizeInfoIndexForType;
+                    unsafe { $pbr$::proto2_rust_map_free(map.as_raw($pbi$::Private), $key_is_string$, $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX)); }
                 }
 
                 fn map_clear(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>) {
-                    unsafe { $map_clear_thunk$(map.as_raw($pbi$::Private)); }
+                    use $pbr$::MapNodeSizeInfoIndexForType;
+                    unsafe { $pbr$::proto2_rust_map_clear(map.as_raw($pbi$::Private), $key_is_string$, $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX)); }
                 }
 
                 fn map_len(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> usize {
-                    unsafe { $map_size_thunk$(map.as_raw($pbi$::Private)) }
+                    unsafe { $pbr$::proto2_rust_map_size(map.as_raw($pbi$::Private)) }
                 }
 
                 fn map_insert(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
-                    unsafe { $map_insert_thunk$(map.as_raw($pbi$::Private), $key_expr$, value.into_proxied($pbi$::Private).raw_msg()) }
+                    use $pbr$::MapNodeSizeInfoIndexForType;
+                    unsafe {
+                        $pbr$::$map_insert$(
+                            map.as_raw($pbi$::Private),
+                            $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
+                            $key_expr$,
+                            value.into_proxied($pbi$::Private).raw_msg(), $placement_new_thunk$)
+                    }
                 }
 
                 fn map_get<'a>(map: $pb$::View<'a, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
+                    use $pbr$::MapNodeSizeInfoIndexForType;
                     let key = $key_expr$;
                     let mut value = $std$::mem::MaybeUninit::uninit();
-                    let found = unsafe { $map_get_thunk$(map.as_raw($pbi$::Private), key, value.as_mut_ptr()) };
+                    let found = unsafe {
+                        $pbr$::$map_get$(
+                            map.as_raw($pbi$::Private),
+                            $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
+                            key,
+                            value.as_mut_ptr())
+                    };
                     if !found {
                         return None;
                     }
@@ -659,8 +664,13 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                 }
 
                 fn map_remove(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> bool {
-                    let mut value = $std$::mem::MaybeUninit::uninit();
-                    unsafe { $map_remove_thunk$(map.as_raw($pbi$::Private), $key_expr$, value.as_mut_ptr()) }
+                    use $pbr$::MapNodeSizeInfoIndexForType;
+                    unsafe {
+                        $pbr$::$map_remove$(
+                            map.as_raw($pbi$::Private),
+                            $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
+                            $key_expr$)
+                    }
                 }
 
                 fn map_iter(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> $pb$::MapIter<'_, $key_t$, Self> {
@@ -672,12 +682,13 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     unsafe {
                         $pb$::MapIter::from_raw(
                             $pbi$::Private,
-                            $map_iter_thunk$(map.as_raw($pbi$::Private))
+                            $pbr$::proto2_rust_map_iter(map.as_raw($pbi$::Private))
                         )
                     }
                 }
 
                 fn map_iter_next<'a>(iter: &mut $pb$::MapIter<'a, $key_t$, Self>) -> Option<($pb$::View<'a, $key_t$>, $pb$::View<'a, Self>)> {
+                    use $pbr$::MapNodeSizeInfoIndexForType;
                     // SAFETY:
                     // - The `MapIter` API forbids the backing map from being mutated for 'a,
                     //   and guarantees that it's the correct key and value types.
@@ -687,7 +698,8 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     unsafe {
                         iter.as_raw_mut($pbi$::Private).next_unchecked::<$key_t$, Self, _, _>(
                             $pbi$::Private,
-                            $map_iter_get_thunk$,
+                            $pbr$::$map_iter_get$,
+                            $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
                             |ffi_key| $from_ffi_key_expr$,
                             |raw_msg| $Msg$View::new($pbi$::Private, raw_msg)
                         )
@@ -1390,6 +1402,7 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
        {"Msg", RsSafeName(msg.name())},
        {"QualifiedMsg", cpp::QualifiedClassName(&msg)},
        {"new_thunk", ThunkName(ctx, msg, "new")},
+       {"placement_new_thunk", ThunkName(ctx, msg, "placement_new")},
        {"delete_thunk", ThunkName(ctx, msg, "delete")},
        {"clear_thunk", ThunkName(ctx, msg, "clear")},
        {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
@@ -1405,6 +1418,7 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
        {"repeated_clear_thunk", ThunkName(ctx, msg, "repeated_clear")},
        {"repeated_copy_from_thunk", ThunkName(ctx, msg, "repeated_copy_from")},
        {"repeated_reserve_thunk", ThunkName(ctx, msg, "repeated_reserve")},
+       {"map_size_info_thunk", ThunkName(ctx, msg, "size_info")},
        {"nested_msg_thunks",
         [&] {
           for (int i = 0; i < msg.nested_type_count(); ++i) {
@@ -1427,12 +1441,15 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
           }
         }}},
       R"cc(
-        //~ $abi$ is a workaround for a syntax highlight bug in VSCode. However,
-        //~ that confuses clang-format (it refuses to keep the newline after
-        //~ `$abi${`). Disabling clang-format for the block.
+        //~ $abi$ is a workaround for a syntax highlight bug in VSCode.
+        // However, ~ that confuses clang-format (it refuses to keep the
+        // newline after ~ `$abi${`). Disabling clang-format for the block.
         // clang-format off
         extern $abi$ {
         void* $new_thunk$() { return new $QualifiedMsg$(); }
+        void $placement_new_thunk$(void* ptr, $QualifiedMsg$& m) {
+          new (ptr) $QualifiedMsg$(std::move(m));
+        }
         void $delete_thunk$(void* ptr) { delete static_cast<$QualifiedMsg$*>(ptr); }
         void $clear_thunk$(void* ptr) {
           static_cast<$QualifiedMsg$*>(ptr)->Clear();
@@ -1490,89 +1507,32 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
           size_t additional) {
           field->Reserve(field->size() + additional);
         }
+        google::protobuf::internal::MapNodeSizeInfoT $map_size_info_thunk$(int32_t i) {
+          static constexpr google::protobuf::internal::MapNodeSizeInfoT size_infos[] = {)cc"
+      // LINT.IfChange(size_info_mapping)
+      R"cc(
+        google::protobuf::internal::RustMapHelper::SizeInfo<int32_t, $QualifiedMsg$>(),
+            google::protobuf::internal::RustMapHelper::SizeInfo<int64_t,
+                                                      $QualifiedMsg$>(),
+            google::protobuf::internal::RustMapHelper::SizeInfo<bool, $QualifiedMsg$>(),
+            google::protobuf::internal::RustMapHelper::SizeInfo<std::string,
+                                                      $QualifiedMsg$>()
+      )cc"
+      // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp.rs:size_info_mapping)
+      R"cc(
+        }
+        ;
+        return size_infos[i];
+        }
 
         $accessor_thunks$
 
-        $oneof_thunks$
+            $oneof_thunks$
         }  // extern $abi$
         // clang-format on
 
         $nested_msg_thunks$
       )cc");
-  for (const auto& t : kMapKeyTypes) {
-    ctx.Emit(
-        {
-            {"map_new_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "new")},
-            {"map_free_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "free")},
-            {"map_clear_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "clear")},
-            {"map_size_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "size")},
-            {"map_insert_thunk",
-             RawMapThunk(ctx, msg, t.thunk_ident, "insert")},
-            {"map_get_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "get")},
-            {"map_remove_thunk",
-             RawMapThunk(ctx, msg, t.thunk_ident, "remove")},
-            {"map_iter_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "iter")},
-            {"map_iter_get_thunk",
-             RawMapThunk(ctx, msg, t.thunk_ident, "iter_get")},
-            {"key_t", t.cc_key_t},
-            {"ffi_key_t", t.cc_ffi_key_t},
-            {"key_expr", t.cc_from_ffi_key_expr},
-            {"to_ffi_key_expr", t.cc_to_ffi_key_expr},
-            {"pkg::Msg", cpp::QualifiedClassName(&msg)},
-            {"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.
-        },
-        R"cc(
-          extern $abi$ {
-            const google::protobuf::Map<$key_t$, $pkg::Msg$>* $map_new_thunk$() {
-              return new google::protobuf::Map<$key_t$, $pkg::Msg$>();
-            }
-            void $map_free_thunk$(const google::protobuf::Map<$key_t$, $pkg::Msg$>* m) { delete m; }
-            void $map_clear_thunk$(google::protobuf::Map<$key_t$, $pkg::Msg$> * m) { m->clear(); }
-            size_t $map_size_thunk$(const google::protobuf::Map<$key_t$, $pkg::Msg$>* m) {
-              return m->size();
-            }
-            bool $map_insert_thunk$(google::protobuf::Map<$key_t$, $pkg::Msg$> * m,
-                                    $ffi_key_t$ key, $pkg::Msg$ value) {
-              auto k = $key_expr$;
-              auto it = m->find(k);
-              if (it != m->end()) {
-                return false;
-              }
-              (*m)[k] = value;
-              return true;
-            }
-            bool $map_get_thunk$(const google::protobuf::Map<$key_t$, $pkg::Msg$>* m,
-                                 $ffi_key_t$ key, const $pkg::Msg$** value) {
-              auto it = m->find($key_expr$);
-              if (it == m->end()) {
-                return false;
-              }
-              const $pkg::Msg$* cpp_value = &it->second;
-              *value = cpp_value;
-              return true;
-            }
-            bool $map_remove_thunk$(google::protobuf::Map<$key_t$, $pkg::Msg$> * m,
-                                    $ffi_key_t$ key, $pkg::Msg$ * value) {
-              auto num_removed = m->erase($key_expr$);
-              return num_removed > 0;
-            }
-            google::protobuf::internal::UntypedMapIterator $map_iter_thunk$(
-                const google::protobuf::Map<$key_t$, $pkg::Msg$>* m) {
-              return google::protobuf::internal::UntypedMapIterator::FromTyped(m->cbegin());
-            }
-            void $map_iter_get_thunk$(
-                const google::protobuf::internal::UntypedMapIterator* iter,
-                $ffi_key_t$* key, const $pkg::Msg$** value) {
-              auto typed_iter = iter->ToTyped<
-                  google::protobuf::Map<$key_t$, $pkg::Msg$>::const_iterator>();
-              const auto& cpp_key = typed_iter->first;
-              const auto& cpp_value = typed_iter->second;
-              *key = $to_ffi_key_expr$;
-              *value = &cpp_value;
-            }
-          }
-        )cc");
-  }
 }
 
 }  // namespace rust

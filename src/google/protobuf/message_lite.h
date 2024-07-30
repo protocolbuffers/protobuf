@@ -158,6 +158,7 @@ class TcParser;
 struct TcParseTableBase;
 class WireFormatLite;
 class WeakFieldMap;
+class RustMapHelper;
 
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
@@ -857,6 +858,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::UntypedMapBase;
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
+  friend class internal::RustMapHelper;
 
   template <typename Type>
   friend class Arena::InternalHelper;

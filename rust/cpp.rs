@@ -95,6 +95,11 @@ pub struct InnerProtoString {
     owned_ptr: CppStdString,
 }
 
+/// An opaque type matching MapNodeSizeInfoT from C++.
+#[doc(hidden)]
+#[repr(transparent)]
+pub struct MapNodeSizeInfo(pub i32);
+
 impl Drop for InnerProtoString {
     fn drop(&mut self) {
         // SAFETY: `self.owned_ptr` points to a valid std::string object.
@@ -690,9 +695,11 @@ impl UntypedMapIterator {
         _private: Private,
         iter_get_thunk: unsafe extern "C" fn(
             iter: &mut UntypedMapIterator,
+            size_info: MapNodeSizeInfo,
             key: *mut FfiKey,
             value: *mut FfiValue,
         ),
+        size_info: MapNodeSizeInfo,
         from_ffi_key: impl FnOnce(FfiKey) -> View<'a, K>,
         from_ffi_value: impl FnOnce(FfiValue) -> View<'a, V>,
     ) -> Option<(View<'a, K>, View<'a, V>)>
@@ -710,7 +717,7 @@ impl UntypedMapIterator {
         // - The iterator is not at the end (node is non-null).
         // - `ffi_key` and `ffi_value` are not read (as uninit) as promised by the
         //   caller.
-        unsafe { (iter_get_thunk)(self, ffi_key.as_mut_ptr(), ffi_value.as_mut_ptr()) }
+        unsafe { (iter_get_thunk)(self, size_info, ffi_key.as_mut_ptr(), ffi_value.as_mut_ptr()) }
 
         // SAFETY:
         // - The backing map is alive as promised by the caller.
@@ -733,8 +740,100 @@ impl UntypedMapIterator {
     }
 }
 
+#[doc(hidden)]
+#[repr(transparent)]
+pub struct MapNodeSizeInfoIndex(i32);
+
+#[doc(hidden)]
+pub trait MapNodeSizeInfoIndexForType {
+    const SIZE_INFO_INDEX: MapNodeSizeInfoIndex;
+}
+
+macro_rules! generate_map_node_size_info_mapping {
+    ( $($key:ty, $index:expr;)* ) => {
+        $(
+        impl MapNodeSizeInfoIndexForType for $key {
+            const SIZE_INFO_INDEX: MapNodeSizeInfoIndex = MapNodeSizeInfoIndex($index);
+        }
+        )*
+    }
+}
+
+// LINT.IfChange(size_info_mapping)
+generate_map_node_size_info_mapping!(
+    i32, 0;
+    u32, 0;
+    i64, 1;
+    u64, 1;
+    bool, 2;
+    ProtoString, 3;
+);
+// LINT.ThenChange(//depot/google3/third_party/protobuf/compiler/rust/message.
+// cc:size_info_mapping)
+
+macro_rules! impl_map_primitives {
+    (@impl $(($rust_type:ty, $cpp_type:ty) => [
+        $insert_thunk:ident,
+        $get_thunk:ident,
+        $iter_get_thunk:ident,
+        $remove_thunk:ident,
+    ]),* $(,)?) => {
+        $(
+            extern "C" {
+                pub fn $insert_thunk(
+                    m: RawMap,
+                    size_info: MapNodeSizeInfo,
+                    key: $cpp_type,
+                    value: RawMessage,
+                    placement_new: unsafe extern "C" fn(*mut c_void, m: RawMessage),
+                ) -> bool;
+                pub fn $get_thunk(
+                    m: RawMap,
+                    size_info: MapNodeSizeInfo,
+                    key: $cpp_type,
+                    value: *mut RawMessage,
+                ) -> bool;
+                pub fn $iter_get_thunk(
+                    iter: &mut UntypedMapIterator,
+                    size_info: MapNodeSizeInfo,
+                    key: *mut $cpp_type,
+                    value: *mut RawMessage,
+                );
+                pub fn $remove_thunk(m: RawMap, size_info: MapNodeSizeInfo, key: $cpp_type) -> bool;
+            }
+        )*
+    };
+    ($($rust_type:ty, $cpp_type:ty;)* $(,)?) => {
+        paste!{
+            impl_map_primitives!(@impl $(
+                    ($rust_type, $cpp_type) => [
+                    [< proto2_rust_map_insert_ $rust_type >],
+                    [< proto2_rust_map_get_ $rust_type >],
+                    [< proto2_rust_map_iter_get_ $rust_type >],
+                    [< proto2_rust_map_remove_ $rust_type >],
+                ],
+            )*);
+        }
+    };
+}
+
+impl_map_primitives!(
+    i32, i32;
+    u32, u32;
+    i64, i64;
+    u64, u64;
+    bool, bool;
+    ProtoString, PtrAndLen;
+);
+
 extern "C" {
     fn proto2_rust_thunk_UntypedMapIterator_increment(iter: &mut UntypedMapIterator);
+
+    pub fn proto2_rust_map_new() -> RawMap;
+    pub fn proto2_rust_map_free(m: RawMap, key_is_string: bool, size_info: MapNodeSizeInfo);
+    pub fn proto2_rust_map_clear(m: RawMap, key_is_string: bool, size_info: MapNodeSizeInfo);
+    pub fn proto2_rust_map_size(m: RawMap) -> usize;
+    pub fn proto2_rust_map_iter(m: RawMap) -> UntypedMapIterator;
 }
 
 macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
@@ -748,7 +847,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                 fn [< proto2_rust_thunk_Map_ $key_t _ $t _insert >](m: RawMap, key: $ffi_key_t, value: $ffi_value_t) -> bool;
                 fn [< proto2_rust_thunk_Map_ $key_t _ $t _get >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_view_t) -> bool;
                 fn [< proto2_rust_thunk_Map_ $key_t _ $t _iter >](m: RawMap) -> UntypedMapIterator;
-                fn [< proto2_rust_thunk_Map_ $key_t _ $t _iter_get >](iter: &mut UntypedMapIterator, key: *mut $ffi_key_t, value: *mut $ffi_view_t);
+                fn [< proto2_rust_thunk_Map_ $key_t _ $t _iter_get >](iter: &mut UntypedMapIterator, size_info: MapNodeSizeInfo, key: *mut $ffi_key_t, value: *mut $ffi_view_t);
                 fn [< proto2_rust_thunk_Map_ $key_t _ $t _remove >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_view_t) -> bool;
             }
 
@@ -829,6 +928,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                         iter.as_raw_mut(Private).next_unchecked::<$key_t, Self, _, _>(
                             Private,
                             [< proto2_rust_thunk_Map_ $key_t _ $t _iter_get >],
+                            MapNodeSizeInfo(0),
                             $from_ffi_key,
                             $from_ffi_value,
                         )
