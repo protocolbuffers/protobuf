@@ -17,7 +17,7 @@ use std::marker::PhantomData;
 use crate::{
     AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy, View,
     ViewProxy,
-    __internal::Private,
+    __internal::{Private, SealedInternal},
     __runtime::{InnerRepeated, InnerRepeatedMut, RawRepeatedField},
 };
 
@@ -382,6 +382,8 @@ where
     type View<'msg> = RepeatedView<'msg, T> where Repeated<T>: 'msg;
 }
 
+impl<T> SealedInternal for Repeated<T> where T: ProxiedInRepeated {}
+
 impl<T> AsView for Repeated<T>
 where
     T: ProxiedInRepeated,
@@ -411,6 +413,8 @@ where
     }
 }
 
+impl<'msg, T> SealedInternal for RepeatedView<'msg, T> where T: ProxiedInRepeated + 'msg {}
+
 impl<'msg, T> Proxy<'msg> for RepeatedView<'msg, T> where T: ProxiedInRepeated + 'msg {}
 
 impl<'msg, T> AsView for RepeatedView<'msg, T>
@@ -439,6 +443,8 @@ where
 }
 
 impl<'msg, T> ViewProxy<'msg> for RepeatedView<'msg, T> where T: ProxiedInRepeated + 'msg {}
+
+impl<'msg, T> SealedInternal for RepeatedMut<'msg, T> where T: ProxiedInRepeated + 'msg {}
 
 impl<'msg, T> Proxy<'msg> for RepeatedMut<'msg, T> where T: ProxiedInRepeated + 'msg {}
 

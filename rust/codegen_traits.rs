@@ -7,6 +7,7 @@
 
 //! Traits that are implemeted by codegen types.
 
+use crate::__internal::SealedInternal;
 use crate::{MutProxied, MutProxy, ViewProxy};
 use create::Parse;
 use read::Serialize;
@@ -14,7 +15,8 @@ use std::fmt::Debug;
 use write::{Clear, ClearAndParse};
 
 /// A trait that all generated owned message types implement.
-pub trait Message: MutProxied
+pub trait Message: SealedInternal
+  + MutProxied
   // Create traits:
   + Parse + Default
   // Read traits:
@@ -28,7 +30,8 @@ pub trait Message: MutProxied
   {}
 
 /// A trait that all generated message views implement.
-pub trait MessageView<'msg>: ViewProxy<'msg, Proxied = Self::Message>
+pub trait MessageView<'msg>: SealedInternal
+    + ViewProxy<'msg, Proxied = Self::Message>
     // Read traits:
     + Debug + Serialize
     // Thread safety:
@@ -41,8 +44,8 @@ pub trait MessageView<'msg>: ViewProxy<'msg, Proxied = Self::Message>
 }
 
 /// A trait that all generated message muts implement.
-pub trait MessageMut<'msg>:
-    MutProxy<'msg, MutProxied = Self::Message>
+pub trait MessageMut<'msg>: SealedInternal
+    + MutProxy<'msg, MutProxied = Self::Message>
     // Read traits:
     + Debug + Serialize
     // Write traits:
@@ -60,7 +63,8 @@ pub trait MessageMut<'msg>:
 /// Operations related to constructing a message. Only owned messages implement
 /// these traits.
 pub(crate) mod create {
-    pub trait Parse: Sized {
+    use super::SealedInternal;
+    pub trait Parse: SealedInternal + Sized {
         fn parse(serialized: &[u8]) -> Result<Self, crate::ParseError>;
     }
 }
@@ -69,7 +73,9 @@ pub(crate) mod create {
 /// have a `&self` receiver on an owned message). Owned messages, views, and
 /// muts all implement these traits.
 pub(crate) mod read {
-    pub trait Serialize {
+    use super::SealedInternal;
+
+    pub trait Serialize: SealedInternal {
         fn serialize(&self) -> Result<Vec<u8>, crate::SerializeError>;
     }
 }
@@ -78,12 +84,13 @@ pub(crate) mod read {
 /// self` receiver on an owned message). Owned messages and muts implement these
 /// traits.
 pub(crate) mod write {
+    use super::SealedInternal;
 
-    pub trait Clear {
+    pub trait Clear: SealedInternal {
         fn clear(&mut self);
     }
 
-    pub trait ClearAndParse {
+    pub trait ClearAndParse: SealedInternal {
         fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), crate::ParseError>;
     }
 }

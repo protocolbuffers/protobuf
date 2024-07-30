@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use crate::__internal::Private;
+use crate::__internal::{Private, SealedInternal};
 use crate::{
     AsView, IntoProxied, IntoView, ProtoBytes, ProtoStr, ProtoString, Proxied, Proxy, View,
     ViewProxy,
@@ -25,6 +25,10 @@ macro_rules! impl_cord_types {
             Borrowed(View<'a, $t>),
             Owned($t),
           }
+
+          impl SealedInternal for [< $t Cord>] {}
+
+          impl<'msg> SealedInternal for [< $t Cow>]<'msg> {}
 
           impl Proxied for [< $t Cord>] {
             type View<'msg> = [< $t Cow>]<'msg>;
