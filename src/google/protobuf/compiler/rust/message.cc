@@ -1287,8 +1287,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         $nested_in_msg$
       )rs");
 
+  ctx.printer().PrintRaw("\n");
   if (ctx.is_cpp()) {
-    ctx.printer().PrintRaw("\n");
     ctx.Emit({{"Msg", RsSafeName(msg.name())}}, R"rs(
       impl $Msg$ {
         pub fn __unstable_wrap_cpp_grant_permission_to_break(msg: $pbr$::RawMessage) -> Self {
@@ -1299,7 +1299,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           s.raw_msg()
         }
       }
-
       impl<'a> $Msg$Mut<'a> {
         //~ msg is a &mut so that the borrow checker enforces exclusivity to
         //~ prevent constructing multiple Muts/Views from the same RawMessage.
@@ -1325,9 +1324,58 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           self.msg
         }
       }
+
+      impl $pb$::OwnedMessageInterop for $Msg$ {
+        unsafe fn __unstable_take_ownership_of_raw_message(msg: $pbr$::RawMessage) -> Self {
+          Self { inner: $pbr$::MessageInner { msg } }
+        }
+
+        fn __unstable_leak_raw_message(self) -> $pbr$::RawMessage {
+          let s = std::mem::ManuallyDrop::new(self);
+          s.raw_msg()
+        }
+      }
+
+      impl<'a> $pb$::MessageMutInterop<'a> for $Msg$Mut<'a> {
+        unsafe fn __unstable_wrap_raw_message_mut(
+            msg: &'a mut $pbr$::RawMessage) -> Self {
+          Self {
+            inner: $pbr$::MutatorMessageRef::from_raw_msg($pbi$::Private, msg)
+          }
+        }
+        fn __unstable_as_raw_message_mut(&mut self) -> $pbr$::RawMessage {
+          self.raw_msg()
+        }
+      }
+
+      impl<'a> $pb$::MessageViewInterop<'a> for $Msg$View<'a> {
+        unsafe fn __unstable_wrap_raw_message(
+          msg: &'a $pbr$::RawMessage) -> Self {
+          Self::new($pbi$::Private, *msg)
+        }
+        fn __unstable_as_raw_message(&self) -> $pbr$::RawMessage {
+          self.msg
+        }
+      }
+    )rs");
+  } else {
+    ctx.Emit({{"Msg", RsSafeName(msg.name())}}, R"rs(
+      // upb kernel doesn't support any owned message or message mut interop.
+      impl $pb$::OwnedMessageInterop for $Msg$ {}
+      impl<'a> $pb$::MessageMutInterop<'a> for $Msg$Mut<'a> {}
+
+      impl<'a> $pb$::MessageViewInterop<'a> for $Msg$View<'a> {
+        unsafe fn __unstable_wrap_raw_message(
+          msg: &'a $pbr$::RawMessage) -> Self {
+          Self::new($pbi$::Private, *msg)
+        }
+        fn __unstable_as_raw_message(&self) -> $pbr$::RawMessage {
+          self.msg
+        }
+      }
     )rs");
   }
-}
+}  // NOLINT(readability/fn_size)
 
 // Generates code for a particular message in `.pb.thunk.cc`.
 void GenerateThunksCc(Context& ctx, const Descriptor& msg) {

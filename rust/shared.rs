@@ -24,6 +24,7 @@ use std::fmt;
 pub mod __public {
     pub use crate::codegen_traits::{
         create::Parse,
+        interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop},
         read::Serialize,
         write::{Clear, ClearAndParse},
         Message, MessageMut, MessageView,

@@ -8,8 +8,10 @@
 //! Traits that are implemeted by codegen types.
 
 use crate::__internal::SealedInternal;
+use crate::__runtime::RawMessage;
 use crate::{MutProxied, MutProxy, ViewProxy};
 use create::Parse;
+use interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop};
 use read::Serialize;
 use std::fmt::Debug;
 use write::{Clear, ClearAndParse};
@@ -27,7 +29,10 @@ pub trait Message: SealedInternal
   + Send + Sync
   // Copy/Clone:
   + Clone
-  {}
+  // C++ Interop:
+  + OwnedMessageInterop
+{
+}
 
 /// A trait that all generated message views implement.
 pub trait MessageView<'msg>: SealedInternal
@@ -38,6 +43,8 @@ pub trait MessageView<'msg>: SealedInternal
     + Send + Sync
     // Copy/Clone:
     + Copy + Clone
+    // C++ Interop:
+    + MessageViewInterop<'msg>
 {
     #[doc(hidden)]
     type Message: Message;
@@ -55,6 +62,8 @@ pub trait MessageMut<'msg>: SealedInternal
     + Sync
     // Copy/Clone:
     // (Neither)
+    // C++ Interop:
+    + MessageMutInterop<'msg>
 {
     #[doc(hidden)]
     type Message: Message;
@@ -92,5 +101,79 @@ pub(crate) mod write {
 
     pub trait ClearAndParse: SealedInternal {
         fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), crate::ParseError>;
+    }
+}
+
+/// Traits related to interop with C or C++.
+///
+/// These traits are deliberately not available on the prelude, as they should
+/// be used rarely and with great care.
+pub(crate) mod interop {
+    use super::{RawMessage, SealedInternal};
+
+    /// Traits related to owned message interop. Note that these trait fns
+    /// are only available on C++ kernel as upb interop of owned messages
+    /// requires more work to handle the Arena behavior.
+    pub trait OwnedMessageInterop: SealedInternal {
+        /// Drops `self` and returns the `RawMessage` that it was wrapping
+        /// without deleting it.
+        ///
+        /// The caller is responsible for ensuring the returned RawMessage is
+        /// subsequently deleted (eg by moving it into a std::unique_ptr in
+        /// C++), or else it will leak.
+        #[cfg(cpp_kernel)]
+        fn __unstable_leak_raw_message(self) -> RawMessage;
+
+        /// Takes exclusive ownership of the `raw_message`.
+        ///
+        /// # Safety
+        ///   - The underlying message must be for the same type as `Self`
+        ///   - The pointer passed in must not be used by the caller after being
+        ///     passed here (must not be read, written, or deleted)
+        #[cfg(cpp_kernel)]
+        unsafe fn __unstable_take_ownership_of_raw_message(raw_message: RawMessage) -> Self;
+    }
+
+    /// Traits related to message view interop.
+    pub trait MessageViewInterop<'msg>: SealedInternal {
+        /// Borrows `self` as an underlying `RawMessage`.
+        ///
+        /// Note that the returned Value must be used under the same constraints
+        /// as though it were a borrow of `self`: it should be treated as a
+        /// `const Message*` in C++, and not be mutated in any way, and any
+        /// mutation to the parent message may invalidate it, and it
+        /// must not be deleted.
+        fn __unstable_as_raw_message(&self) -> RawMessage;
+
+        /// Wraps the provided `RawMessage` as a MessageView.
+        ///
+        /// # Safety
+        ///   - The underlying message must be for the same type as `Self`
+        ///   - The underlying message must be alive for 'msg and not mutated
+        ///     while the wrapper is live.
+        unsafe fn __unstable_wrap_raw_message(raw: &'msg RawMessage) -> Self;
+    }
+
+    /// Traits related to message mut interop. Note that these trait fns
+    /// are only available on C++ kernel as upb interop of owned messages
+    /// requires more work to handle the Arena behavior.
+    pub trait MessageMutInterop<'msg>: SealedInternal {
+        /// Exclusive borrows `self` as a `RawMessage`.
+        ///
+        /// Note that the returned Value must be used under the same constraints
+        /// as though it were a mut borrow of `self`: it should be treated as a
+        /// non-owned `Message*` in C++. And any mutation to the parent message
+        /// may invalidate it, and it must not be deleted.
+        #[cfg(cpp_kernel)]
+        fn __unstable_as_raw_message_mut(&mut self) -> RawMessage;
+
+        /// Wraps the provided `RawMessage` as a MessageMut.
+        ///
+        /// # Safety
+        ///   - The underlying message must be for the same type as `Self`
+        ///   - The underlying message must be alive for 'msg and not read or
+        ///     mutated while the wrapper is live.
+        #[cfg(cpp_kernel)]
+        unsafe fn __unstable_wrap_raw_message_mut(raw: &'msg mut RawMessage) -> Self;
     }
 }
