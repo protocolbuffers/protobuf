@@ -31,19 +31,19 @@ jobs:
 
           # Override cases with custom images
           - config: { name: "Bazel7", flags: --noenable_bzlmod }
-            version: Bazel7
+            cache_key: Bazel7
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e"
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "Bazel7 with Bzlmod", flags: --enable_bzlmod --enable_workspace }
-            version: Bazel7bzlmod
+            cache_key: Bazel7bzlmod
             image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e"
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "TCMalloc" }
-            version: TcMalloc
+            cache_key: TcMalloc
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:1c5133455481f4d1bb8afa477029604f41f1a3c46cebe4d9958cf1af95b5c87c"
             targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "aarch64" }
-            version: TcMalloc
+            cache_key: TcMalloc
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:6.3.0-aarch64-68e662b3a56b881804dc4e9d45f949791cbc4b94"
     name: Linux ${{ matrix.config.name }}
@@ -58,7 +58,7 @@ jobs:
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: cpp_linux/${{ matrix.version }}
+          bazel-cache: cpp_linux/${{ matrix.cache_key }}
           bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }}
           exclude-targets: ${{ matrix.exclude-targets }}
 

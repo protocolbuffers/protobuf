@@ -81,4 +81,7 @@ void GPBAutocreatedDictionaryModified(GPBMessage *self, id dictionary);
 // autocreated reference to this message.
 void GPBClearMessageAutocreator(GPBMessage *self);
 
+// The data (or null) from the unknown fields of a message;
+NSData *GPBMessageUnknownFieldsData(GPBMessage *self);
+
 CF_EXTERN_C_END

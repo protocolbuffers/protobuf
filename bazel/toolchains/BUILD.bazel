@@ -8,6 +8,7 @@ bzl_library(
     visibility = ["//visibility:public"],
     deps = [
         "//bazel/private:proto_toolchain_rule_bzl",
+        "//bazel/private:toolchain_helpers_bzl",
     ],
 )
 

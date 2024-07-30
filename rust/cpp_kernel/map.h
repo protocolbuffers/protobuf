@@ -4,6 +4,10 @@
 #include <memory>
 #include <type_traits>
 
+#include "google/protobuf/map.h"
+#include "google/protobuf/message_lite.h"
+#include "rust/cpp_kernel/strings.h"
+
 namespace google {
 namespace protobuf {
 namespace rust {
@@ -74,8 +78,8 @@ auto MakeCleanup(T value) {
     return google::protobuf::internal::UntypedMapIterator::FromTyped(m->cbegin());      \
   }                                                                           \
   void proto2_rust_thunk_Map_##rust_key_ty##_##rust_value_ty##_iter_get(      \
-      const google::protobuf::internal::UntypedMapIterator* iter, ffi_key_ty* key,      \
-      ffi_view_ty* value) {                                                   \
+      const google::protobuf::internal::UntypedMapIterator* iter, int32_t,              \
+      ffi_key_ty* key, ffi_view_ty* value) {                                  \
     auto typed_iter =                                                         \
         iter->ToTyped<google::protobuf::Map<key_ty, value_ty>::const_iterator>();       \
     const auto& cpp_key = typed_iter->first;                                  \

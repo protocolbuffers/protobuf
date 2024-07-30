@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use crate::{upb_ExtensionRegistry, upb_MiniTable, Arena, RawArena, RawMessage};
+use super::{upb_ExtensionRegistry, upb_MiniTable, Arena, RawArena, RawMessage};
 
 // LINT.IfChange(encode_status)
 #[repr(C)]
@@ -56,12 +56,12 @@ pub unsafe fn encode(
     // SAFETY:
     // - `mini_table` is the one associated with `msg`.
     // - `buf` and `buf_size` are legally writable.
-    let status = upb_Encode(msg, mini_table, 0, arena.raw(), &mut buf, &mut len);
+    let status = unsafe { upb_Encode(msg, mini_table, 0, arena.raw(), &mut buf, &mut len) };
 
     if status == EncodeStatus::Ok {
         assert!(!buf.is_null()); // EncodeStatus Ok should never return NULL data, even for len=0.
         // SAFETY: upb guarantees that `buf` is valid to read for `len`.
-        Ok((*std::ptr::slice_from_raw_parts(buf, len)).to_vec())
+        Ok(unsafe { &*std::ptr::slice_from_raw_parts(buf, len) }.to_vec())
     } else {
         Err(status)
     }
@@ -87,7 +87,8 @@ pub unsafe fn decode(
     // - `mini_table` is the one associated with `msg`
     // - `buf` is legally readable for at least `buf_size` bytes.
     // - `extreg` is null.
-    let status = upb_Decode(buf, len, msg, mini_table, std::ptr::null(), options, arena.raw());
+    let status =
+        unsafe { upb_Decode(buf, len, msg, mini_table, std::ptr::null(), options, arena.raw()) };
     match status {
         DecodeStatus::Ok => Ok(()),
         _ => Err(status),

@@ -7,10 +7,10 @@
 
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
-use crate::__internal::{Enum, Private};
+use crate::__internal::{Enum, Private, SealedInternal};
 use crate::{
     IntoProxied, Map, MapIter, MapMut, MapView, Mut, ProtoBytes, ProtoStr, ProtoString, Proxied,
-    ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View, ViewProxy,
+    ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
 };
 use core::fmt::Debug;
 use std::alloc::Layout;
@@ -19,7 +19,10 @@ use std::ptr::{self, NonNull};
 use std::slice;
 use std::sync::OnceLock;
 
+#[cfg(bzl)]
 extern crate upb;
+#[cfg(not(bzl))]
+use crate::upb;
 
 // Temporarily 'pub' since a lot of gencode is directly calling any of the ffi
 // fns.
@@ -58,7 +61,10 @@ impl ScratchSpace {
     }
 }
 
+#[doc(hidden)]
 pub type SerializedData = upb::OwnedArenaBox<[u8]>;
+
+impl SealedInternal for SerializedData {}
 
 impl IntoProxied<ProtoBytes> for SerializedData {
     fn into_proxied(self, _private: Private) -> ProtoBytes {
@@ -463,7 +469,7 @@ pub fn free_enum_repeated<E: Enum + ProxiedInRepeated>(
 }
 
 /// Returns a static empty RepeatedView.
-pub fn empty_array<T: ?Sized + ProxiedInRepeated>() -> RepeatedView<'static, T> {
+pub fn empty_array<T: ProxiedInRepeated>() -> RepeatedView<'static, T> {
     // TODO: Consider creating a static empty array in C.
 
     // Use `i32` for a shared empty repeated for all repeated types in the program.
@@ -483,8 +489,8 @@ pub fn empty_array<T: ?Sized + ProxiedInRepeated>() -> RepeatedView<'static, T> 
 /// Returns a static empty MapView.
 pub fn empty_map<K, V>() -> MapView<'static, K, V>
 where
-    K: Proxied + ?Sized,
-    V: ProxiedInMapValue<K> + ?Sized,
+    K: Proxied,
+    V: ProxiedInMapValue<K>,
 {
     // TODO: Consider creating a static empty map in C.
 
@@ -678,8 +684,7 @@ pub struct RawMapIter {
 
 impl RawMapIter {
     pub fn new(_private: Private, map: RawMap) -> Self {
-        // SAFETY: __rust_proto_kUpb_Map_Begin is never modified
-        RawMapIter { map, iter: unsafe { __rust_proto_kUpb_Map_Begin } }
+        RawMapIter { map, iter: UPB_MAP_BEGIN }
     }
 
     /// # Safety

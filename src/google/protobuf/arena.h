@@ -29,6 +29,8 @@ using type_info = ::type_info;
 
 #include "absl/base/attributes.h"
 #include "absl/base/macros.h"
+#include "absl/base/optimization.h"
+#include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "absl/utility/internal/if_constexpr.h"
 #include "google/protobuf/arena_align.h"
@@ -665,6 +667,12 @@ PROTOBUF_NOINLINE void* Arena::DefaultConstruct(Arena* arena) {
 
 template <typename T>
 PROTOBUF_NOINLINE void* Arena::CopyConstruct(Arena* arena, const void* from) {
+  // If the object is larger than half a cache line, prefetch it.
+  // This way of prefetching is a little more aggressive than if we
+  // condition off a whole cache line, but benchmarks show better results.
+  if (sizeof(T) > ABSL_CACHELINE_SIZE / 2) {
+    PROTOBUF_PREFETCH_WITH_OFFSET(from, 64);
+  }
   static_assert(is_destructor_skippable<T>::value, "");
   void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
                                : ::operator new(sizeof(T));

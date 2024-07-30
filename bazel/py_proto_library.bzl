@@ -3,6 +3,7 @@
 load("@rules_python//python:py_info.bzl", "PyInfo")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
+load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 PY_PROTO_TOOLCHAIN = "@rules_python//python/proto:toolchain_type"
 
@@ -21,9 +22,6 @@ _PyProtoInfo = provider(
 
 def _filter_provider(provider, *attrs):
     return [dep[provider] for attr in attrs for dep in attr if provider in dep]
-
-def _incompatible_toolchains_enabled():
-    return getattr(proto_common, "INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION", False)
 
 def _py_proto_aspect_impl(target, ctx):
     """Generates and compiles Python code for a proto_library.
@@ -51,7 +49,7 @@ def _py_proto_aspect_impl(target, ctx):
                 proto.path,
             ))
 
-    if _incompatible_toolchains_enabled():
+    if proto_common.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION:
         toolchain = ctx.toolchains[PY_PROTO_TOOLCHAIN]
         if not toolchain:
             fail("No toolchains registered for '%s'." % PY_PROTO_TOOLCHAIN)
@@ -120,15 +118,15 @@ def _py_proto_aspect_impl(target, ctx):
 
 _py_proto_aspect = aspect(
     implementation = _py_proto_aspect_impl,
-    attrs = {} if _incompatible_toolchains_enabled() else {
+    attrs = toolchains.if_legacy_toolchain({
         "_aspect_proto_toolchain": attr.label(
             default = "//python:python_toolchain",
         ),
-    },
+    }),
     attr_aspects = ["deps"],
     required_providers = [ProtoInfo],
     provides = [_PyProtoInfo],
-    toolchains = [PY_PROTO_TOOLCHAIN] if _incompatible_toolchains_enabled() else [],
+    toolchains = toolchains.use_toolchain(PY_PROTO_TOOLCHAIN),
 )
 
 def _py_proto_library_rule(ctx):

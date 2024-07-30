@@ -315,7 +315,7 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
                           const Any& from_msg);
     ::google::protobuf::internal::ArenaStringPtr type_url_;
     ::google::protobuf::internal::ArenaStringPtr value_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::AnyMetadata _any_metadata_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };

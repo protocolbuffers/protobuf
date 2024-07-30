@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use crate::opaque_pointee::opaque_pointee;
+use super::opaque_pointee::opaque_pointee;
 use std::ptr::NonNull;
 
 opaque_pointee!(upb_MiniTable);

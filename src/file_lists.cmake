@@ -394,6 +394,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/default_value.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/map.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/repeated_field.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/singular_cord.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/singular_message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/singular_scalar.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/singular_string.cc

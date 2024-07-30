@@ -409,6 +409,7 @@ void ImmutableMessageFieldGenerator::GenerateKotlinOrNull(io::Printer* printer) 
   if (descriptor_->has_presence() &&
       descriptor_->real_containing_oneof() == nullptr) {
     printer->Print(variables_,
+                   "$kt_deprecation$\n"
                    "public val $classname$Kt.Dsl.$name$OrNull: $kt_type$?\n"
                    "  get() = $kt_dsl_builder$.$name$OrNull\n");
   }

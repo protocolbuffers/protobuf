@@ -18,31 +18,31 @@ jobs:
       matrix:
         include:
           - name: OpenJDK 8
-            version: '8'
+            cache_key: '8'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
             # TODO: b/318555165 - enable the layering check. Currently it does
             # not work correctly with the toolchain in this Docker image.
             targets: //java/... //java/internal:java_version //compatibility/... --features=-layering_check
           - name: OpenJDK 11
-            version: '11'
+            cache_key: '11'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
             targets: //java/... //java/internal:java_version //compatibility/...
           - name: OpenJDK 17
-            version: '17'
+            cache_key: '17'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
             targets: //java/... //java/internal:java_version //compatibility/...
           - name: Bazel7
-            version: 'bazel7nobzlmod'
+            cache_key: 'bazel7nobzlmod'
             image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
             targets: //java/... //java/internal:java_version //compatibility/...
             flags: --noenable_bzlmod
           - name: Bazel7 with Bzlmod
-            version: 'bazel7bzlmod'
+            cache_key: 'bazel7bzlmod'
             image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
             targets: //java/... //java/internal:java_version //compatibility/...
             flags: --enable_bzlmod --enable_workspace
           - name: aarch64
-            version: 'aarch64'
+            cache_key: 'aarch64'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17
             targets: //java/... //compatibility/... //src/google/protobuf/compiler:protoc_aarch64_test
 
@@ -58,7 +58,7 @@ jobs:
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: java_linux/${{ matrix.version }}
+          bazel-cache: java_linux/${{ matrix.cache_key }}
           bazel: test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_JAVA_VERSION
 
 # TODO restore this test (or a better one) when gRPC has rebuilt with 26.x

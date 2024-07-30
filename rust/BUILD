@@ -1,6 +1,12 @@
 # Protobuf Rust runtime packages.
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+
+# begin:github_only
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:zip.bzl", "pkg_zip")
+# end:github_only
+
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 
@@ -33,6 +39,7 @@ rust_library(
         ":use_upb_kernel": ["--cfg=upb_kernel"],
         "//conditions:default": ["--cfg=cpp_kernel"],
     }),
+    visibility = ["//visibility:public"],
     deps = select({
         ":use_upb_kernel": [":protobuf_upb"],
         "//conditions:default": [":protobuf_cpp"],
@@ -47,17 +54,21 @@ rust_library(
 #
 # shared.rs is the root of the crate and has public items re-exported in protobuf.rs for user use.
 PROTOBUF_SHARED = [
+    # go/keep-sorted start
     "codegen_traits.rs",
+    "cord.rs",
     "enum.rs",
     "internal.rs",
-    "primitive.rs",
+    "map.rs",
     "optional.rs",
+    "prelude.rs",
+    "primitive.rs",
+    "proto_macro.rs",
     "proxied.rs",
     "repeated.rs",
     "shared.rs",
     "string.rs",
-    "map.rs",
-    "proto_macro.rs",
+    # go/keep-sorted end
 ]
 
 # The Rust Protobuf runtime using the upb kernel.
@@ -72,7 +83,10 @@ rust_library(
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
-    rustc_flags = ["--cfg=upb_kernel"],
+    rustc_flags = [
+        "--cfg=upb_kernel",
+        "--cfg=bzl",
+    ],
     visibility = [
         "//rust:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -88,6 +102,7 @@ rust_test(
     crate = ":protobuf_upb",
     rustc_flags = [
         "--cfg=upb_kernel",
+        "--cfg=bzl",
     ],
     deps = [
         "@crate_index//:googletest",
@@ -131,6 +146,7 @@ rust_test(
     crate = ":protobuf_cpp",
     rustc_flags = [
         "--cfg=cpp_kernel",
+        "--cfg=bzl",
     ],
     deps = [
         "@crate_index//:googletest",
@@ -193,3 +209,57 @@ config_setting(
         ":rust_proto_library_kernel": "upb",
     },
 )
+
+# begin:github_only
+pkg_files(
+    name = "rust_protobuf_src",
+    srcs = glob(
+        [
+            "*",
+        ],
+    ),
+    strip_prefix = strip_prefix.from_root("rust"),
+    visibility = ["//:__pkg__"],
+)
+
+pkg_files(
+    name = "crate_root_files",
+    srcs = glob(["cargo/**/*"]),
+    strip_prefix = strip_prefix.from_root("rust/cargo"),
+    visibility = ["//:__pkg__"],
+)
+
+pkg_filegroup(
+    name = "rust_protobuf_src_dir",
+    srcs = [
+        ":rust_protobuf_src",
+        "//rust/upb:rust_protobuf_upb_src",
+    ],
+    prefix = "src",
+)
+
+pkg_files(
+    name = "amalgamated_upb",
+    srcs = ["//upb:gen_amalgamation"],
+    strip_prefix = strip_prefix.from_root(""),
+)
+
+pkg_filegroup(
+    name = "rust_protobuf_libupb_src",
+    srcs = [
+        ":amalgamated_upb",
+        "//upb/cmake:upb_cmake_dist",
+    ],
+    prefix = "libupb",
+)
+
+pkg_zip(
+    name = "rust_crate",
+    srcs = [
+        ":crate_root_files",
+        ":rust_protobuf_libupb_src",
+        ":rust_protobuf_src_dir",
+        "//:LICENSE",
+    ],
+)
+# end:github_only

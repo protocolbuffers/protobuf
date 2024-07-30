@@ -264,7 +264,8 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
   /**
    * Useful for implementing {@link Message.Builder#setField(Descriptors.FieldDescriptor,Object)}.
    */
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  // Avoid iterator allocation.
+  @SuppressWarnings({"ForeachList", "ForeachListWithUserVar"})
   public void setField(final T descriptor, Object value) {
     if (descriptor.isRepeated()) {
       if (!(value instanceof List)) {
@@ -274,10 +275,14 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
 
       // Wrap the contents in a new list so that the caller cannot change
       // the list's contents after setting it.
-      final List newList = new ArrayList<>();
-      newList.addAll((List) value);
-      for (final Object element : newList) {
+      List<?> list = (List<?>) value;
+      int listSize = list.size();
+      // Avoid extra allocations: no iterator, no intermediate array copy.
+      final List<Object> newList = new ArrayList<>(listSize);
+      for (int i = 0; i < listSize; i++) {
+        Object element = list.get(i);
         verifyType(descriptor, element);
+        newList.add(element);
       }
       value = newList;
     } else {
@@ -512,7 +517,8 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     }
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  // Avoid iterator allocation.
+  @SuppressWarnings({"unchecked", "ForeachList", "ForeachListWithUserVar"})
   private void mergeFromField(final Map.Entry<T, Object> entry) {
     final T descriptor = entry.getKey();
     Object otherValue = entry.getValue();
@@ -523,11 +529,16 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
         throw new IllegalStateException("Lazy fields can not be repeated");
       }
       Object value = getField(descriptor);
+      List<?> otherList = (List<?>) otherValue;
+      int otherListSize = otherList.size();
       if (value == null) {
-        value = new ArrayList<>();
+        value = new ArrayList<>(otherListSize);
       }
-      for (Object element : (List) otherValue) {
-        ((List) value).add(cloneIfMutable(element));
+      List<Object> list = (List<Object>) value;
+      // Avoid iterator allocation.
+      for (int i = 0; i < otherListSize; i++) {
+        Object element = otherList.get(i);
+        list.add(cloneIfMutable(element));
       }
       fields.put(descriptor, value);
     } else if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE) {

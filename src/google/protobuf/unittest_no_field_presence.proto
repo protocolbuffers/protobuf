@@ -92,7 +92,7 @@ message TestAllTypes {
   repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
   repeated string repeated_cord = 55 [ctype = CORD];
 
-  repeated NestedMessage repeated_lazy_message = 57 ;
+  repeated NestedMessage repeated_lazy_message = 57;
 
   oneof oneof_field {
     uint32 oneof_uint32 = 111;
@@ -110,6 +110,12 @@ message TestProto2Required {
 // that.
 message ForeignMessage {
   int32 c = 1;
+}
+
+// Same as ForeignMessage, but all fields have explicit presence.
+// It can be useful for testing explicit-implicit presence interop behaviour.
+message ExplicitForeignMessage {
+  int32 c = 1 [features.field_presence = EXPLICIT];
 }
 
 enum ForeignEnum {

@@ -567,7 +567,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
   import_map_.clear();
   // Calculate file name.
   file_ = file;
-  // In google3, devtools/python/blaze/pytype/pytype_impl.bzl uses --pyi_out to
+  // In google3, devtools/python/bazel/pytype/pytype_impl.bzl uses --pyi_out to
   // directly set the output file name.
   std::vector<std::pair<std::string, std::string> > options;
   ParseGeneratorParameter(parameter, &options);

@@ -27,7 +27,7 @@
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 
-namespace protos {
+namespace hpb {
 
 // begin:google_only
 absl::Status MessageAllocationError(SourceLocation loc) {
@@ -82,10 +82,6 @@ absl::Status MessageDecodeError(upb_DecodeStatus status, SourceLocation loc
 // end:github_only
 
 namespace internal {
-
-using ::hpb::internal::upb_extension_locker_global;
-using ::hpb::internal::UpbExtensionLocker;
-using ::hpb::internal::UpbExtensionUnlocker;
 
 upb_ExtensionRegistry* GetUpbExtensions(
     const ExtensionRegistry& extension_registry) {
@@ -186,4 +182,4 @@ absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
 
 }  // namespace internal
 
-}  // namespace protos
+}  // namespace hpb

@@ -11,6 +11,7 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
@@ -61,7 +62,7 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
       ctx.Emit({{"serialize_thunk", ThunkName(ctx, msg, "serialize")}}, R"rs(
-        let mut serialized_data = $pbr$::SerializedData::new();
+        let mut serialized_data = $pbr$::SerializedData::new($pbi$::Private);
         let success = unsafe {
           $serialize_thunk$(self.raw_msg(), &mut serialized_data)
         };
@@ -76,11 +77,10 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       ctx.Emit({{"minitable", UpbMinitableName(msg)}},
                R"rs(
-        // SAFETY: $minitable$ is a static of a const object.
-        let mini_table = unsafe { $std$::ptr::addr_of!($minitable$) };
-        // SAFETY: $minitable$ is the one associated with raw_msg().
+        // SAFETY: `MINI_TABLE` is the one associated with `self.raw_msg()`.
         let encoded = unsafe {
-          $pbr$::wire::encode(self.raw_msg(), mini_table)
+          $pbr$::wire::encode(self.raw_msg(),
+              <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE)
         };
         //~ TODO: This discards the info we have about the reason
         //~ of the failure, we should try to keep it instead.
@@ -90,6 +90,28 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
   }
 
   ABSL_LOG(FATAL) << "unreachable";
+}
+
+void MessageMutClear(Context& ctx, const Descriptor& msg) {
+  switch (ctx.opts().kernel) {
+    case Kernel::kCpp:
+      ctx.Emit({{"clear_thunk", ThunkName(ctx, msg, "clear")}},
+               R"rs(
+          unsafe { $clear_thunk$(self.raw_msg()) }
+        )rs");
+      return;
+    case Kernel::kUpb:
+      ctx.Emit(
+          {
+              {"minitable", UpbMinitableName(msg)},
+          },
+          R"rs(
+          unsafe {
+            $pbr$::upb_Message_Clear(self.raw_msg(), $std$::ptr::addr_of!($minitable$))
+          }
+        )rs");
+      return;
+  }
 }
 
 void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
@@ -117,8 +139,6 @@ void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
       ctx.Emit({{"minitable", UpbMinitableName(msg)}},
                R"rs(
         let mut msg = Self::new();
-        // SAFETY: $minitable$ is a static of a const object.
-        let mini_table = unsafe { $std$::ptr::addr_of!($minitable$) };
 
         // SAFETY:
         // - `data.as_ptr()` is valid to read for `data.len()`
@@ -126,8 +146,10 @@ void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
         // - `msg.arena().raw()` is held for the same lifetime as `msg`.
         let status = unsafe {
           $pbr$::wire::decode(
-              data, msg.raw_msg(),
-              mini_table, msg.arena())
+              data,
+              msg.raw_msg(),
+              <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE,
+              msg.arena())
         };
         match status {
           Ok(_) => {
@@ -156,13 +178,12 @@ void MessageDebug(Context& ctx, const Descriptor& msg) {
       return;
 
     case Kernel::kUpb:
-      ctx.Emit({{"minitable", UpbMinitableName(msg)}},
-               R"rs(
-        let mini_table = unsafe { $std$::ptr::addr_of!($minitable$) };
+      ctx.Emit(
+          R"rs(
         let string = unsafe {
           $pbr$::debug_string(
             self.raw_msg(),
-            mini_table,
+            <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE
           )
         };
         write!(f, "{}", string)
@@ -177,29 +198,30 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
       ctx.Emit(
-          {
-              {"new_thunk", ThunkName(ctx, msg, "new")},
-              {"delete_thunk", ThunkName(ctx, msg, "delete")},
-              {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
-              {"parse_thunk", ThunkName(ctx, msg, "parse")},
-              {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
-              {"merge_from_thunk", ThunkName(ctx, msg, "merge_from")},
-              {"repeated_new_thunk", ThunkName(ctx, msg, "repeated_new")},
-              {"repeated_free_thunk", ThunkName(ctx, msg, "repeated_free")},
-              {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
-              {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
-              {"repeated_get_mut_thunk",
-               ThunkName(ctx, msg, "repeated_get_mut")},
-              {"repeated_add_thunk", ThunkName(ctx, msg, "repeated_add")},
-              {"repeated_clear_thunk", ThunkName(ctx, msg, "repeated_clear")},
-              {"repeated_copy_from_thunk",
-               ThunkName(ctx, msg, "repeated_copy_from")},
-              {"repeated_reserve_thunk",
-               ThunkName(ctx, msg, "repeated_reserve")},
-          },
+          {{"new_thunk", ThunkName(ctx, msg, "new")},
+           {"placement_new_thunk", ThunkName(ctx, msg, "placement_new")},
+           {"delete_thunk", ThunkName(ctx, msg, "delete")},
+           {"clear_thunk", ThunkName(ctx, msg, "clear")},
+           {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
+           {"parse_thunk", ThunkName(ctx, msg, "parse")},
+           {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
+           {"merge_from_thunk", ThunkName(ctx, msg, "merge_from")},
+           {"repeated_new_thunk", ThunkName(ctx, msg, "repeated_new")},
+           {"repeated_free_thunk", ThunkName(ctx, msg, "repeated_free")},
+           {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
+           {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
+           {"repeated_get_mut_thunk", ThunkName(ctx, msg, "repeated_get_mut")},
+           {"repeated_add_thunk", ThunkName(ctx, msg, "repeated_add")},
+           {"repeated_clear_thunk", ThunkName(ctx, msg, "repeated_clear")},
+           {"repeated_copy_from_thunk",
+            ThunkName(ctx, msg, "repeated_copy_from")},
+           {"repeated_reserve_thunk", ThunkName(ctx, msg, "repeated_reserve")},
+           {"map_size_info_thunk", ThunkName(ctx, msg, "size_info")}},
           R"rs(
           fn $new_thunk$() -> $pbr$::RawMessage;
+          fn $placement_new_thunk$(ptr: *mut std::ffi::c_void, m: $pbr$::RawMessage);
           fn $delete_thunk$(raw_msg: $pbr$::RawMessage);
+          fn $clear_thunk$(raw_msg: $pbr$::RawMessage);
           fn $serialize_thunk$(raw_msg: $pbr$::RawMessage, out: &mut $pbr$::SerializedData) -> bool;
           fn $parse_thunk$(raw_msg: $pbr$::RawMessage, data: $pbr$::SerializedData) -> bool;
           fn $copy_from_thunk$(dst: $pbr$::RawMessage, src: $pbr$::RawMessage);
@@ -213,6 +235,7 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
           fn $repeated_clear_thunk$(raw: $pbr$::RawRepeatedField);
           fn $repeated_copy_from_thunk$(dst: $pbr$::RawRepeatedField, src: $pbr$::RawRepeatedField);
           fn $repeated_reserve_thunk$(raw: $pbr$::RawRepeatedField, additional: usize);
+          fn $map_size_info_thunk$(i: $pbr$::MapNodeSizeInfoIndex) -> $pbr$::MapNodeSizeInfo;
         )rs");
       return;
 
@@ -260,13 +283,7 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
 
         impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$Mut<'msg> {
           fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
-            $pb$::IntoProxied::into_proxied($pb$::ViewProxy::into_view(self), _private)
-          }
-        }
-
-        impl $pb$::IntoProxied<$Msg$> for $Msg$ {
-          fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
-            self
+            $pb$::IntoProxied::into_proxied($pb$::IntoView::into_view(self), _private)
           }
         }
       )rs");
@@ -280,7 +297,7 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
             unsafe { $pbr$::upb_Message_DeepCopy(
               dst.inner.msg,
               self.msg,
-              $std$::ptr::addr_of!($minitable$),
+              <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE,
               dst.inner.arena.raw(),
             ) };
             dst
@@ -289,13 +306,7 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
 
         impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$Mut<'msg> {
           fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
-            $pb$::IntoProxied::into_proxied($pb$::ViewProxy::into_view(self), _private)
-          }
-        }
-
-        impl $pb$::IntoProxied<$Msg$> for $Msg$ {
-          fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
-            self
+            $pb$::IntoProxied::into_proxied($pb$::IntoView::into_view(self), _private)
           }
         }
       )rs");
@@ -305,11 +316,19 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
   ABSL_LOG(FATAL) << "unreachable";
 }
 
-void MessageGetMinitable(Context& ctx, const Descriptor& msg) {
+void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg) {
   if (ctx.opts().kernel == Kernel::kUpb) {
     ctx.Emit({{"minitable", UpbMinitableName(msg)}}, R"rs(
-      pub fn raw_minitable(_private: $pbi$::Private) -> *const $pbr$::upb_MiniTable {
-        unsafe { $std$::ptr::addr_of!($minitable$) }
+      unsafe impl $pbr$::AssociatedMiniTable for $Msg$ {
+        const MINI_TABLE: *const $pbr$::upb_MiniTable = unsafe { $std$::ptr::addr_of!($minitable$) };
+      }
+
+      unsafe impl $pbr$::AssociatedMiniTable for $Msg$View<'_> {
+        const MINI_TABLE: *const $pbr$::upb_MiniTable = unsafe { $std$::ptr::addr_of!($minitable$) };
+      }
+
+      unsafe impl $pbr$::AssociatedMiniTable for $Msg$Mut<'_> {
+        const MINI_TABLE: *const $pbr$::upb_MiniTable = unsafe { $std$::ptr::addr_of!($minitable$) };
       }
     )rs");
   }
@@ -323,7 +342,7 @@ void MessageMergeFrom(Context& ctx, const Descriptor& msg) {
               {"merge_from_thunk", ThunkName(ctx, msg, "merge_from")},
           },
           R"rs(
-          pub fn merge_from<'src>(&mut self, src: impl $pb$::ViewProxy<'src, Proxied = $Msg$>) {
+          pub fn merge_from<'src>(&mut self, src: impl $pb$::Proxy<'src, Proxied = $Msg$>) {
             // SAFETY: self and src are both valid `$Msg$`s.
             unsafe {
               $merge_from_thunk$(self.raw_msg(), src.as_view().raw_msg());
@@ -333,17 +352,14 @@ void MessageMergeFrom(Context& ctx, const Descriptor& msg) {
       return;
     case Kernel::kUpb:
       ctx.Emit(
-          {
-              {"minitable", UpbMinitableName(msg)},
-          },
           R"rs(
-          pub fn merge_from<'src>(&mut self, src: impl $pb$::ViewProxy<'src, Proxied = $Msg$>) {
+          pub fn merge_from<'src>(&mut self, src: impl $pb$::Proxy<'src, Proxied = $Msg$>) {
             // SAFETY: self and src are both valid `$Msg$`s.
             unsafe {
               assert!(
-                $pbr$::upb_Message_MergeFrom(self.raw_msg(), 
+                $pbr$::upb_Message_MergeFrom(self.raw_msg(),
                   src.as_view().raw_msg(),
-                  $std$::ptr::addr_of!($minitable$),
+                  <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE,
                   // Use a nullptr for the ExtensionRegistry.
                   $std$::ptr::null(),
                   self.arena().raw())
@@ -469,7 +485,6 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       ctx.Emit(
           {
-              {"minitable", UpbMinitableName(msg)},
               {"new_thunk", ThunkName(ctx, msg, "new")},
           },
           R"rs(
@@ -547,9 +562,9 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
             dest: $pb$::Mut<$pb$::Repeated<Self>>,
           ) {
               // SAFETY:
-              // - Elements of `src` and `dest` have message minitable `$minitable$`.
+              // - Elements of `src` and `dest` have message minitable `MINI_TABLE`.
               unsafe {
-                $pbr$::repeated_message_copy_from(src, dest, $std$::ptr::addr_of!($minitable$));
+                $pbr$::repeated_message_copy_from(src, dest, <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE);
               }
           }
 
@@ -576,19 +591,18 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
     case Kernel::kCpp:
       for (const auto& t : kMapKeyTypes) {
         ctx.Emit(
-            {{"map_new_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "new")},
-             {"map_free_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "free")},
-             {"map_clear_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "clear")},
-             {"map_size_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "size")},
-             {"map_insert_thunk",
-              RawMapThunk(ctx, msg, t.thunk_ident, "insert")},
-             {"map_get_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "get")},
-             {"map_remove_thunk",
-              RawMapThunk(ctx, msg, t.thunk_ident, "remove")},
-             {"map_iter_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "iter")},
-             {"map_iter_get_thunk",
-              RawMapThunk(ctx, msg, t.thunk_ident, "iter_get")},
+            {{"map_size_info_thunk", ThunkName(ctx, msg, "size_info")},
+             {"placement_new_thunk", ThunkName(ctx, msg, "placement_new")},
+             {"map_insert",
+              absl::StrCat("proto2_rust_map_insert_", t.thunk_ident)},
+             {"map_remove",
+              absl::StrCat("proto2_rust_map_remove_", t.thunk_ident)},
+             {"map_get", absl::StrCat("proto2_rust_map_get_", t.thunk_ident)},
+             {"map_iter_get",
+              absl::StrCat("proto2_rust_map_iter_get_", t.thunk_ident)},
              {"key_expr", t.rs_to_ffi_key_expr},
+             {"key_is_string",
+              t.thunk_ident == "ProtoString" ? "true" : "false"},
              io::Printer::Sub("ffi_key_t", [&] { ctx.Emit(t.rs_ffi_key_t); })
                  .WithSuffix(""),
              io::Printer::Sub("key_t", [&] { ctx.Emit(t.rs_key_t); })
@@ -597,47 +611,52 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                               [&] { ctx.Emit(t.rs_from_ffi_key_expr); })
                  .WithSuffix("")},
             R"rs(
-            extern "C" {
-                fn $map_new_thunk$() -> $pbr$::RawMap;
-                fn $map_free_thunk$(m: $pbr$::RawMap);
-                fn $map_clear_thunk$(m: $pbr$::RawMap);
-                fn $map_size_thunk$(m: $pbr$::RawMap) -> usize;
-                fn $map_insert_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: $pbr$::RawMessage) -> bool;
-                fn $map_get_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: *mut $pbr$::RawMessage) -> bool;
-                fn $map_remove_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: *mut $pbr$::RawMessage) -> bool;
-                fn $map_iter_thunk$(m: $pbr$::RawMap) -> $pbr$::UntypedMapIterator;
-                fn $map_iter_get_thunk$(iter: &mut $pbr$::UntypedMapIterator, key: *mut $ffi_key_t$, value: *mut $pbr$::RawMessage);
-            }
             impl $pb$::ProxiedInMapValue<$key_t$> for $Msg$ {
                 fn map_new(_private: $pbi$::Private) -> $pb$::Map<$key_t$, Self> {
                     unsafe {
                         $pb$::Map::from_inner(
                             $pbi$::Private,
-                            $pbr$::InnerMap::new($pbi$::Private, $map_new_thunk$())
+                            $pbr$::InnerMap::new($pbi$::Private, $pbr$::proto2_rust_map_new())
                         )
                     }
                 }
 
                 unsafe fn map_free(_private: $pbi$::Private, map: &mut $pb$::Map<$key_t$, Self>) {
-                    unsafe { $map_free_thunk$(map.as_raw($pbi$::Private)); }
+                    use $pbr$::MapNodeSizeInfoIndexForType;
+                    unsafe { $pbr$::proto2_rust_map_free(map.as_raw($pbi$::Private), $key_is_string$, $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX)); }
                 }
 
                 fn map_clear(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>) {
-                    unsafe { $map_clear_thunk$(map.as_raw($pbi$::Private)); }
+                    use $pbr$::MapNodeSizeInfoIndexForType;
+                    unsafe { $pbr$::proto2_rust_map_clear(map.as_raw($pbi$::Private), $key_is_string$, $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX)); }
                 }
 
                 fn map_len(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> usize {
-                    unsafe { $map_size_thunk$(map.as_raw($pbi$::Private)) }
+                    unsafe { $pbr$::proto2_rust_map_size(map.as_raw($pbi$::Private)) }
                 }
 
                 fn map_insert(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
-                    unsafe { $map_insert_thunk$(map.as_raw($pbi$::Private), $key_expr$, value.into_proxied($pbi$::Private).raw_msg()) }
+                    use $pbr$::MapNodeSizeInfoIndexForType;
+                    unsafe {
+                        $pbr$::$map_insert$(
+                            map.as_raw($pbi$::Private),
+                            $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
+                            $key_expr$,
+                            value.into_proxied($pbi$::Private).raw_msg(), $placement_new_thunk$)
+                    }
                 }
 
                 fn map_get<'a>(map: $pb$::View<'a, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
+                    use $pbr$::MapNodeSizeInfoIndexForType;
                     let key = $key_expr$;
                     let mut value = $std$::mem::MaybeUninit::uninit();
-                    let found = unsafe { $map_get_thunk$(map.as_raw($pbi$::Private), key, value.as_mut_ptr()) };
+                    let found = unsafe {
+                        $pbr$::$map_get$(
+                            map.as_raw($pbi$::Private),
+                            $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
+                            key,
+                            value.as_mut_ptr())
+                    };
                     if !found {
                         return None;
                     }
@@ -645,8 +664,13 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                 }
 
                 fn map_remove(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> bool {
-                    let mut value = $std$::mem::MaybeUninit::uninit();
-                    unsafe { $map_remove_thunk$(map.as_raw($pbi$::Private), $key_expr$, value.as_mut_ptr()) }
+                    use $pbr$::MapNodeSizeInfoIndexForType;
+                    unsafe {
+                        $pbr$::$map_remove$(
+                            map.as_raw($pbi$::Private),
+                            $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
+                            $key_expr$)
+                    }
                 }
 
                 fn map_iter(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> $pb$::MapIter<'_, $key_t$, Self> {
@@ -658,12 +682,13 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     unsafe {
                         $pb$::MapIter::from_raw(
                             $pbi$::Private,
-                            $map_iter_thunk$(map.as_raw($pbi$::Private))
+                            $pbr$::proto2_rust_map_iter(map.as_raw($pbi$::Private))
                         )
                     }
                 }
 
                 fn map_iter_next<'a>(iter: &mut $pb$::MapIter<'a, $key_t$, Self>) -> Option<($pb$::View<'a, $key_t$>, $pb$::View<'a, Self>)> {
+                    use $pbr$::MapNodeSizeInfoIndexForType;
                     // SAFETY:
                     // - The `MapIter` API forbids the backing map from being mutated for 'a,
                     //   and guarantees that it's the correct key and value types.
@@ -673,7 +698,8 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     unsafe {
                         iter.as_raw_mut($pbi$::Private).next_unchecked::<$key_t$, Self, _, _>(
                             $pbi$::Private,
-                            $map_iter_get_thunk$,
+                            $pbr$::$map_iter_get$,
+                            $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
                             |ffi_key| $from_ffi_key_expr$,
                             |raw_msg| $Msg$View::new($pbi$::Private, raw_msg)
                         )
@@ -686,7 +712,6 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       ctx.Emit(
           {
-              {"minitable", UpbMinitableName(msg)},
               {"new_thunk", ThunkName(ctx, msg, "new")},
           },
           R"rs(
@@ -824,6 +849,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
       {{"Msg", RsSafeName(msg.name())},
        {"Msg::new", [&] { MessageNew(ctx, msg); }},
        {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
+       {"MsgMut::clear", [&] { MessageMutClear(ctx, msg); }},
        {"Msg::clear_and_parse", [&] { MessageClearAndParse(ctx, msg); }},
        {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
        {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
@@ -927,7 +953,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }},
        {"into_proxied_impl", [&] { IntoProxiedForMessage(ctx, msg); }},
-       {"get_upb_minitable", [&] { MessageGetMinitable(ctx, msg); }},
+       {"upb_generated_message_trait_impls",
+        [&] { UpbGeneratedMessageTraitImpls(ctx, msg); }},
        {"msg_merge_from", [&] { MessageMergeFrom(ctx, msg); }},
        {"repeated_impl", [&] { MessageProxiedInRepeated(ctx, msg); }},
        {"map_value_impl", [&] { MessageProxiedInMapValue(ctx, msg); }},
@@ -953,15 +980,39 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
         impl $pb$::Message for $Msg$ {}
 
+        impl std::default::Default for $Msg$ {
+          fn default() -> Self {
+            Self::new()
+          }
+        }
+
+        impl $pb$::Parse for $Msg$ {
+          fn parse(serialized: &[u8]) -> Result<Self, $pb$::ParseError> {
+            Self::parse(serialized)
+          }
+        }
+
         impl std::fmt::Debug for $Msg$ {
           fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             $Msg::debug$
           }
         }
 
-        impl std::default::Default for $Msg$ {
-          fn default() -> Self {
-            Self::new()
+        impl $pb$::Serialize for $Msg$ {
+          fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
+            $pb$::AsView::as_view(self).serialize()
+          }
+        }
+
+        impl $pb$::Clear for $Msg$ {
+          fn clear(&mut self) {
+            self.as_mut().clear()
+          }
+        }
+
+        impl $pb$::ClearAndParse for $Msg$ {
+          fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
+            self.clear_and_parse(data)
           }
         }
 
@@ -979,6 +1030,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           type View<'msg> = $Msg$View<'msg>;
         }
 
+        impl $pbi$::SealedInternal for $Msg$ {}
+
         impl $pb$::MutProxied for $Msg$ {
           type Mut<'msg> = $Msg$Mut<'msg>;
         }
@@ -990,11 +1043,21 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           _phantom: $Phantom$<&'msg ()>,
         }
 
-        impl $pb$::MessageView for $Msg$View<'_> {}
+        impl<'msg> $pbi$::SealedInternal for $Msg$View<'msg> {}
+
+        impl<'msg> $pb$::MessageView<'msg> for $Msg$View<'msg> {
+          type Message = $Msg$;
+        }
 
         impl std::fmt::Debug for $Msg$View<'_> {
           fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             $Msg::debug$
+          }
+        }
+
+        impl $pb$::Serialize for $Msg$View<'_> {
+          fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
+            $Msg::serialize$
           }
         }
 
@@ -1007,10 +1070,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
           fn raw_msg(&self) -> $pbr$::RawMessage {
             self.msg
-          }
-
-          pub fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
-            $Msg::serialize$
           }
 
           pub fn to_owned(&self) -> $Msg$ {
@@ -1029,13 +1088,20 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         // - `$Msg$View` does not use thread-local data.
         unsafe impl Send for $Msg$View<'_> {}
 
-        impl<'msg> $pb$::ViewProxy<'msg> for $Msg$View<'msg> {
-          type Proxied = $Msg$;
+        impl<'msg> $pb$::Proxy<'msg> for $Msg$View<'msg> {}
+        impl<'msg> $pb$::ViewProxy<'msg> for $Msg$View<'msg> {}
 
+        impl<'msg> $pb$::AsView for $Msg$View<'msg> {
+          type Proxied = $Msg$;
           fn as_view(&self) -> $pb$::View<'msg, $Msg$> {
             *self
           }
-          fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'msg: 'shorter {
+        }
+
+        impl<'msg> $pb$::IntoView<'msg> for $Msg$View<'msg> {
+          fn into_view<'shorter>(self) -> $Msg$View<'shorter>
+          where
+              'msg: 'shorter {
             self
           }
         }
@@ -1051,11 +1117,27 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           inner: $pbr$::MutatorMessageRef<'msg>,
         }
 
-        impl $pb$::MessageMut for $Msg$Mut<'_> {}
+        impl<'msg> $pbi$::SealedInternal for $Msg$Mut<'msg> {}
+
+        impl<'msg> $pb$::MessageMut<'msg> for $Msg$Mut<'msg> {
+          type Message = $Msg$;
+        }
 
         impl std::fmt::Debug for $Msg$Mut<'_> {
           fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             $Msg::debug$
+          }
+        }
+
+        impl $pb$::Serialize for $Msg$Mut<'_> {
+          fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
+            $pb$::AsView::as_view(self).serialize()
+          }
+        }
+
+        impl $pb$::Clear for $Msg$Mut<'_> {
+          fn clear(&mut self) {
+            $MsgMut::clear$
           }
         }
 
@@ -1087,17 +1169,11 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             self.inner
           }
 
-          pub fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
-            $pb$::ViewProxy::as_view(self).serialize()
-          }
-
           pub fn to_owned(&self) -> $Msg$ {
-            $pb$::ViewProxy::as_view(self).to_owned()
+            $pb$::AsView::as_view(self).to_owned()
           }
 
           $msg_merge_from$
-
-          $get_upb_minitable$
 
           $raw_arena_getter_for_msgmut$
 
@@ -1110,20 +1186,36 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         //   splitting, synchronous access of an arena is impossible.
         unsafe impl Sync for $Msg$Mut<'_> {}
 
-        impl<'msg> $pb$::MutProxy<'msg> for $Msg$Mut<'msg> {
-          fn as_mut(&mut self) -> $pb$::Mut<'_, $Msg$> {
-            $Msg$Mut { inner: self.inner }
-          }
-          fn into_mut<'shorter>(self) -> $pb$::Mut<'shorter, $Msg$> where 'msg : 'shorter { self }
-        }
+        impl<'msg> $pb$::Proxy<'msg> for $Msg$Mut<'msg> {}
+        impl<'msg> $pb$::MutProxy<'msg> for $Msg$Mut<'msg> {}
 
-        impl<'msg> $pb$::ViewProxy<'msg> for $Msg$Mut<'msg> {
+        impl<'msg> $pb$::AsView for $Msg$Mut<'msg> {
           type Proxied = $Msg$;
           fn as_view(&self) -> $pb$::View<'_, $Msg$> {
             $Msg$View { msg: self.raw_msg(), _phantom: $std$::marker::PhantomData }
           }
-          fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$> where 'msg: 'shorter {
+        }
+
+        impl<'msg> $pb$::IntoView<'msg> for $Msg$Mut<'msg> {
+          fn into_view<'shorter>(self) -> $pb$::View<'shorter, $Msg$>
+          where
+              'msg: 'shorter {
             $Msg$View { msg: self.raw_msg(), _phantom: $std$::marker::PhantomData }
+          }
+        }
+
+        impl<'msg> $pb$::AsMut for $Msg$Mut<'msg> {
+          type MutProxied = $Msg$;
+          fn as_mut(&mut self) -> $Msg$Mut<'msg> {
+            $Msg$Mut { inner: self.inner }
+          }
+        }
+
+        impl<'msg> $pb$::IntoMut<'msg> for $Msg$Mut<'msg> {
+          fn into_mut<'shorter>(self) -> $Msg$Mut<'shorter>
+          where
+              'msg: 'shorter {
+            self
           }
         }
 
@@ -1143,13 +1235,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
           $raw_arena_getter_for_message$
 
-          pub fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
-            self.as_view().serialize()
-          }
-          #[deprecated = "Prefer Msg::parse(), or use the new name 'clear_and_parse' to parse into a pre-existing message."]
-          pub fn deserialize(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
-            self.clear_and_parse(data)
-          }
           pub fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
             $Msg::clear_and_parse$
           }
@@ -1166,11 +1251,9 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             $Msg$Mut::new($pbi$::Private, &mut self.inner)
           }
 
-          pub fn merge_from<'src>(&mut self, src: impl $pb$::ViewProxy<'src, Proxied = $Msg$>) {
+          pub fn merge_from<'src>(&mut self, src: impl $pb$::Proxy<'src, Proxied = $Msg$>) {
             self.as_mut().merge_from(src);
           }
-
-          $get_upb_minitable$
 
           $accessor_fns$
         }  // impl $Msg$
@@ -1189,6 +1272,22 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }
 
+        impl $pb$::AsView for $Msg$ {
+          type Proxied = Self;
+          fn as_view(&self) -> $Msg$View {
+            self.as_view()
+          }
+        }
+
+        impl $pb$::AsMut for $Msg$ {
+          type MutProxied = Self;
+          fn as_mut(&mut self) -> $Msg$Mut {
+            self.as_mut()
+          }
+        }
+
+        $upb_generated_message_trait_impls$
+
         extern "C" {
           $Msg_externs$
 
@@ -1200,8 +1299,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         $nested_in_msg$
       )rs");
 
+  ctx.printer().PrintRaw("\n");
   if (ctx.is_cpp()) {
-    ctx.printer().PrintRaw("\n");
     ctx.Emit({{"Msg", RsSafeName(msg.name())}}, R"rs(
       impl $Msg$ {
         pub fn __unstable_wrap_cpp_grant_permission_to_break(msg: $pbr$::RawMessage) -> Self {
@@ -1212,7 +1311,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           s.raw_msg()
         }
       }
-
       impl<'a> $Msg$Mut<'a> {
         //~ msg is a &mut so that the borrow checker enforces exclusivity to
         //~ prevent constructing multiple Muts/Views from the same RawMessage.
@@ -1238,9 +1336,58 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           self.msg
         }
       }
+
+      impl $pb$::OwnedMessageInterop for $Msg$ {
+        unsafe fn __unstable_take_ownership_of_raw_message(msg: $pbr$::RawMessage) -> Self {
+          Self { inner: $pbr$::MessageInner { msg } }
+        }
+
+        fn __unstable_leak_raw_message(self) -> $pbr$::RawMessage {
+          let s = std::mem::ManuallyDrop::new(self);
+          s.raw_msg()
+        }
+      }
+
+      impl<'a> $pb$::MessageMutInterop<'a> for $Msg$Mut<'a> {
+        unsafe fn __unstable_wrap_raw_message_mut(
+            msg: &'a mut $pbr$::RawMessage) -> Self {
+          Self {
+            inner: $pbr$::MutatorMessageRef::from_raw_msg($pbi$::Private, msg)
+          }
+        }
+        fn __unstable_as_raw_message_mut(&mut self) -> $pbr$::RawMessage {
+          self.raw_msg()
+        }
+      }
+
+      impl<'a> $pb$::MessageViewInterop<'a> for $Msg$View<'a> {
+        unsafe fn __unstable_wrap_raw_message(
+          msg: &'a $pbr$::RawMessage) -> Self {
+          Self::new($pbi$::Private, *msg)
+        }
+        fn __unstable_as_raw_message(&self) -> $pbr$::RawMessage {
+          self.msg
+        }
+      }
+    )rs");
+  } else {
+    ctx.Emit({{"Msg", RsSafeName(msg.name())}}, R"rs(
+      // upb kernel doesn't support any owned message or message mut interop.
+      impl $pb$::OwnedMessageInterop for $Msg$ {}
+      impl<'a> $pb$::MessageMutInterop<'a> for $Msg$Mut<'a> {}
+
+      impl<'a> $pb$::MessageViewInterop<'a> for $Msg$View<'a> {
+        unsafe fn __unstable_wrap_raw_message(
+          msg: &'a $pbr$::RawMessage) -> Self {
+          Self::new($pbi$::Private, *msg)
+        }
+        fn __unstable_as_raw_message(&self) -> $pbr$::RawMessage {
+          self.msg
+        }
+      }
     )rs");
   }
-}
+}  // NOLINT(readability/fn_size)
 
 // Generates code for a particular message in `.pb.thunk.cc`.
 void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
@@ -1255,7 +1402,9 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
        {"Msg", RsSafeName(msg.name())},
        {"QualifiedMsg", cpp::QualifiedClassName(&msg)},
        {"new_thunk", ThunkName(ctx, msg, "new")},
+       {"placement_new_thunk", ThunkName(ctx, msg, "placement_new")},
        {"delete_thunk", ThunkName(ctx, msg, "delete")},
+       {"clear_thunk", ThunkName(ctx, msg, "clear")},
        {"serialize_thunk", ThunkName(ctx, msg, "serialize")},
        {"parse_thunk", ThunkName(ctx, msg, "parse")},
        {"copy_from_thunk", ThunkName(ctx, msg, "copy_from")},
@@ -1269,6 +1418,7 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
        {"repeated_clear_thunk", ThunkName(ctx, msg, "repeated_clear")},
        {"repeated_copy_from_thunk", ThunkName(ctx, msg, "repeated_copy_from")},
        {"repeated_reserve_thunk", ThunkName(ctx, msg, "repeated_reserve")},
+       {"map_size_info_thunk", ThunkName(ctx, msg, "size_info")},
        {"nested_msg_thunks",
         [&] {
           for (int i = 0; i < msg.nested_type_count(); ++i) {
@@ -1291,13 +1441,19 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
           }
         }}},
       R"cc(
-        //~ $abi$ is a workaround for a syntax highlight bug in VSCode. However,
-        //~ that confuses clang-format (it refuses to keep the newline after
-        //~ `$abi${`). Disabling clang-format for the block.
+        //~ $abi$ is a workaround for a syntax highlight bug in VSCode.
+        // However, ~ that confuses clang-format (it refuses to keep the
+        // newline after ~ `$abi${`). Disabling clang-format for the block.
         // clang-format off
         extern $abi$ {
         void* $new_thunk$() { return new $QualifiedMsg$(); }
+        void $placement_new_thunk$(void* ptr, $QualifiedMsg$& m) {
+          new (ptr) $QualifiedMsg$(std::move(m));
+        }
         void $delete_thunk$(void* ptr) { delete static_cast<$QualifiedMsg$*>(ptr); }
+        void $clear_thunk$(void* ptr) {
+          static_cast<$QualifiedMsg$*>(ptr)->Clear();
+        }
         bool $serialize_thunk$($QualifiedMsg$* msg, google::protobuf::rust::SerializedData* out) {
           return google::protobuf::rust::SerializeMsg(msg, out);
         }
@@ -1351,89 +1507,32 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
           size_t additional) {
           field->Reserve(field->size() + additional);
         }
+        google::protobuf::internal::MapNodeSizeInfoT $map_size_info_thunk$(int32_t i) {
+          static constexpr google::protobuf::internal::MapNodeSizeInfoT size_infos[] = {)cc"
+      // LINT.IfChange(size_info_mapping)
+      R"cc(
+        google::protobuf::internal::RustMapHelper::SizeInfo<int32_t, $QualifiedMsg$>(),
+            google::protobuf::internal::RustMapHelper::SizeInfo<int64_t,
+                                                      $QualifiedMsg$>(),
+            google::protobuf::internal::RustMapHelper::SizeInfo<bool, $QualifiedMsg$>(),
+            google::protobuf::internal::RustMapHelper::SizeInfo<std::string,
+                                                      $QualifiedMsg$>()
+      )cc"
+      // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp.rs:size_info_mapping)
+      R"cc(
+        }
+        ;
+        return size_infos[i];
+        }
 
         $accessor_thunks$
 
-        $oneof_thunks$
+            $oneof_thunks$
         }  // extern $abi$
         // clang-format on
 
         $nested_msg_thunks$
       )cc");
-  for (const auto& t : kMapKeyTypes) {
-    ctx.Emit(
-        {
-            {"map_new_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "new")},
-            {"map_free_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "free")},
-            {"map_clear_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "clear")},
-            {"map_size_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "size")},
-            {"map_insert_thunk",
-             RawMapThunk(ctx, msg, t.thunk_ident, "insert")},
-            {"map_get_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "get")},
-            {"map_remove_thunk",
-             RawMapThunk(ctx, msg, t.thunk_ident, "remove")},
-            {"map_iter_thunk", RawMapThunk(ctx, msg, t.thunk_ident, "iter")},
-            {"map_iter_get_thunk",
-             RawMapThunk(ctx, msg, t.thunk_ident, "iter_get")},
-            {"key_t", t.cc_key_t},
-            {"ffi_key_t", t.cc_ffi_key_t},
-            {"key_expr", t.cc_from_ffi_key_expr},
-            {"to_ffi_key_expr", t.cc_to_ffi_key_expr},
-            {"pkg::Msg", cpp::QualifiedClassName(&msg)},
-            {"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.
-        },
-        R"cc(
-          extern $abi$ {
-            const google::protobuf::Map<$key_t$, $pkg::Msg$>* $map_new_thunk$() {
-              return new google::protobuf::Map<$key_t$, $pkg::Msg$>();
-            }
-            void $map_free_thunk$(const google::protobuf::Map<$key_t$, $pkg::Msg$>* m) { delete m; }
-            void $map_clear_thunk$(google::protobuf::Map<$key_t$, $pkg::Msg$> * m) { m->clear(); }
-            size_t $map_size_thunk$(const google::protobuf::Map<$key_t$, $pkg::Msg$>* m) {
-              return m->size();
-            }
-            bool $map_insert_thunk$(google::protobuf::Map<$key_t$, $pkg::Msg$> * m,
-                                    $ffi_key_t$ key, $pkg::Msg$ value) {
-              auto k = $key_expr$;
-              auto it = m->find(k);
-              if (it != m->end()) {
-                return false;
-              }
-              (*m)[k] = value;
-              return true;
-            }
-            bool $map_get_thunk$(const google::protobuf::Map<$key_t$, $pkg::Msg$>* m,
-                                 $ffi_key_t$ key, const $pkg::Msg$** value) {
-              auto it = m->find($key_expr$);
-              if (it == m->end()) {
-                return false;
-              }
-              const $pkg::Msg$* cpp_value = &it->second;
-              *value = cpp_value;
-              return true;
-            }
-            bool $map_remove_thunk$(google::protobuf::Map<$key_t$, $pkg::Msg$> * m,
-                                    $ffi_key_t$ key, $pkg::Msg$ * value) {
-              auto num_removed = m->erase($key_expr$);
-              return num_removed > 0;
-            }
-            google::protobuf::internal::UntypedMapIterator $map_iter_thunk$(
-                const google::protobuf::Map<$key_t$, $pkg::Msg$>* m) {
-              return google::protobuf::internal::UntypedMapIterator::FromTyped(m->cbegin());
-            }
-            void $map_iter_get_thunk$(
-                const google::protobuf::internal::UntypedMapIterator* iter,
-                $ffi_key_t$* key, const $pkg::Msg$** value) {
-              auto typed_iter = iter->ToTyped<
-                  google::protobuf::Map<$key_t$, $pkg::Msg$>::const_iterator>();
-              const auto& cpp_key = typed_iter->first;
-              const auto& cpp_value = typed_iter->second;
-              *key = $to_ffi_key_expr$;
-              *value = &cpp_value;
-            }
-          }
-        )cc");
-  }
 }
 
 }  // namespace rust

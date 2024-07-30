@@ -4,8 +4,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
+#![deny(unsafe_op_in_unsafe_fn)]
+#![cfg_attr(not(bzl), allow(unused_imports))]
 
 mod arena;
+
 pub use arena::{upb_Arena, Arena, RawArena};
 
 mod array;
@@ -14,6 +17,9 @@ pub use array::{
     upb_Array_MutableDataPtr, upb_Array_New, upb_Array_Reserve, upb_Array_Resize, upb_Array_Set,
     upb_Array_Size, RawArray,
 };
+
+mod associated_mini_table;
+pub use associated_mini_table::AssociatedMiniTable;
 
 mod ctype;
 pub use ctype::CType;
@@ -24,13 +30,14 @@ pub use extension_registry::{upb_ExtensionRegistry, RawExtensionRegistry};
 mod map;
 pub use map::{
     upb_Map, upb_Map_Clear, upb_Map_Delete, upb_Map_Get, upb_Map_Insert, upb_Map_New, upb_Map_Next,
-    upb_Map_Size, MapInsertStatus, RawMap, __rust_proto_kUpb_Map_Begin,
+    upb_Map_Size, MapInsertStatus, RawMap, UPB_MAP_BEGIN,
 };
 
 mod message;
 pub use message::{
-    upb_Message, upb_Message_DeepClone, upb_Message_DeepCopy, upb_Message_IsEqual,
-    upb_Message_MergeFrom, upb_Message_New, upb_Message_SetBaseField, RawMessage,
+    upb_Message, upb_Message_Clear, upb_Message_DeepClone, upb_Message_DeepCopy,
+    upb_Message_IsEqual, upb_Message_MergeFrom, upb_Message_New, upb_Message_SetBaseField,
+    RawMessage,
 };
 
 mod message_value;

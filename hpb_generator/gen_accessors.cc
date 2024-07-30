@@ -222,7 +222,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
         output(
             R"cc(
               $1 $0::$2() const {
-                return ::protos::UpbStrToStringView($3_$4(msg_));
+                return ::hpb::UpbStrToStringView($3_$4(msg_));
               }
             )cc",
             class_name, CppConstType(field), resolved_field_name,
@@ -231,7 +231,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
         output(
             R"cc(
               void $0::set_$2($1 value) {
-                $4_set_$3(msg_, ::protos::UpbStrFromStringView(value, $5));
+                $4_set_$3(msg_, ::hpb::UpbStrFromStringView(value, $5));
               }
             )cc",
             class_name, CppConstType(field), resolved_field_name,
@@ -244,7 +244,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
                 if (!has_$2()) {
                   return $4::default_instance();
                 }
-                return ::protos::internal::CreateMessage<$4>(
+                return ::hpb::internal::CreateMessage<$4>(
                     (upb_Message*)($3_$5(msg_)), arena_);
               }
             )cc",
@@ -256,7 +256,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
         output(
             R"cc(
               $1 $0::mutable_$2() {
-                return ::protos::internal::CreateMessageProxy<$4>(
+                return ::hpb::internal::CreateMessageProxy<$4>(
                     (upb_Message*)($3_mutable_$5(msg_, $6)), $6);
               }
             )cc",
@@ -295,7 +295,7 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
         R"cc(
           bool $0::set_$1($2 key, $3 value) {
             upb_Message* clone = upb_Message_DeepClone(
-                ::protos::internal::PrivateAccess::GetInternalMsg(value), &$9,
+                ::hpb::internal::PrivateAccess::GetInternalMsg(value), &$9,
                 arena_);
             $6return $4_$8_set(msg_, $7, ($5*)clone, arena_);
           }
@@ -309,7 +309,7 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
         R"cc(
           bool $0::set_$1($2 key, $3 value) {
             upb_Message* clone = upb_Message_DeepClone(
-                ::protos::internal::PrivateAccess::GetInternalMsg(value), &$9,
+                ::hpb::internal::PrivateAccess::GetInternalMsg(value), &$9,
                 arena_);
             $6return $4_$8_set(msg_, $7, ($5*)clone, arena_);
           }
@@ -325,7 +325,7 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
             $5* msg_value;
             $7bool success = $4_$9_get(msg_, $8, &msg_value);
             if (success) {
-              return ::protos::internal::CreateMessage<$6>(UPB_UPCAST(msg_value), arena_);
+              return ::hpb::internal::CreateMessage<$6>(UPB_UPCAST(msg_value), arena_);
             }
             return absl::NotFoundError("");
           }
@@ -347,9 +347,8 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
     output(
         R"cc(
           bool $0::set_$1($2 key, $3 value) {
-            $5return $4_$7_set(msg_, $6,
-                               ::protos::UpbStrFromStringView(value, arena_),
-                               arena_);
+            $5return $4_$7_set(
+                msg_, $6, ::hpb::UpbStrFromStringView(value, arena_), arena_);
           }
         )cc",
         class_name, resolved_field_name, CppConstType(key), CppConstType(val),

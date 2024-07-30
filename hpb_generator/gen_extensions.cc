@@ -38,13 +38,13 @@ void WriteExtensionIdentifierHeader(const protobuf::FieldDescriptor* ext,
   if (ext->extension_scope()) {
     output(
         R"cc(
-          static const ::protos::internal::ExtensionIdentifier<$0, $1> $2;
+          static const ::hpb::internal::ExtensionIdentifier<$0, $1> $2;
         )cc",
         ContainingTypeName(ext), CppTypeParameterName(ext), ext->name());
   } else {
     output(
         R"cc(
-          extern const ::protos::internal::ExtensionIdentifier<$0, $1> $2;
+          extern const ::hpb::internal::ExtensionIdentifier<$0, $1> $2;
         )cc",
         ContainingTypeName(ext), CppTypeParameterName(ext), ext->name());
   }

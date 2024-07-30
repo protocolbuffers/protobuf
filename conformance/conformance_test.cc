@@ -9,14 +9,19 @@
 
 #include <stdarg.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <fstream>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "google/protobuf/util/field_comparator.h"
 #include "google/protobuf/util/message_differencer.h"
+#include "absl/container/btree_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
@@ -25,17 +30,28 @@
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance.pb.h"
 #include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/endian.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
+using conformance::TestStatus;
 using conformance::WireFormat;
 using google::protobuf::util::DefaultFieldComparator;
 using google::protobuf::util::MessageDifferencer;
 using std::string;
 
 namespace {
+
+static void ReplaceAll(std::string& input, std::string replace_word,
+                       std::string replace_by) {
+  size_t pos = input.find(replace_word);
+  while (pos != std::string::npos) {
+    input.replace(pos, replace_word.length(), replace_by);
+    pos = input.find(replace_word, pos + replace_by.length());
+  }
+}
 
 static std::string ToOctString(const std::string& binary_string) {
   std::string oct_string;
@@ -52,16 +68,83 @@ static std::string ToOctString(const std::string& binary_string) {
   return oct_string;
 }
 
-template <typename SetT>
-bool CheckSetEmpty(const SetT& set_to_check, absl::string_view write_to_file,
-                   absl::string_view msg, absl::string_view output_dir,
-                   std::string* output) {
+// Returns full filename path of written .txt file if successful
+static std::string ProduceOctalSerialized(const std::string& request,
+                                          uint32_t len) {
+  char* len_split_bytes = static_cast<char*>(static_cast<void*>(&len));
+
+  std::string out;
+
+  std::string hex_repr;
+  for (int i = 0; i < 4; i++) {
+    auto conversion = (unsigned int)static_cast<uint8_t>(len_split_bytes[i]);
+    std::string hex = absl::StrFormat("\\x%x", conversion);
+    absl::StrAppend(&hex_repr, hex);
+  }
+
+  absl::StrAppend(&out, hex_repr);
+
+  absl::StrAppend(&out, ToOctString(request));
+
+  return out;
+}
+
+static std::string WriteToFile(const std::string& octal_serialized,
+                               const std::string& output_dir,
+                               const std::string& test_name) {
+  std::string test_name_txt = test_name;
+  ReplaceAll(test_name_txt, ".", "_");
+  absl::StrAppend(&test_name_txt, ".txt");
+  std::string full_filename;
+  if (!output_dir.empty()) {
+    full_filename = output_dir;
+    if (*output_dir.rbegin() != '/') {
+      full_filename.push_back('/');
+    }
+    absl::StrAppend(&full_filename, test_name_txt);
+  }
+  std::ofstream os{std::string(full_filename)};
+  if (os) {
+    os << octal_serialized;
+    return full_filename;
+  } else {
+    ABSL_LOG(INFO) << "Failed to open file for debugging: " << full_filename
+                   << "\n";
+    return "";
+  }
+}
+
+// Removes all newlines.
+static void Normalize(std::string& input) {
+  input.erase(std::remove(input.begin(), input.end(), '\n'), input.end());
+}
+
+// Sets up a failure message properly for our failure lists.
+static TestStatus FormatFailureMessage(TestStatus& input) {
+  // Make copy just this once, as we need to modify it for our failure lists.
+  std::string formatted_failure_message = input.failure_message();
+  // Remove newlines
+  Normalize(formatted_failure_message);
+  // Truncate failure message if needed
+  if (formatted_failure_message.length() > 128) {
+    formatted_failure_message = formatted_failure_message.substr(0, 128);
+  }
+  TestStatus properly_formatted;
+  properly_formatted.set_name(input.name());
+  properly_formatted.set_failure_message(formatted_failure_message);
+  return properly_formatted;
+}
+
+bool CheckSetEmpty(const absl::btree_map<std::string, TestStatus>& set_to_check,
+                   absl::string_view write_to_file, absl::string_view msg,
+                   absl::string_view output_dir, std::string* output) {
   if (set_to_check.empty()) return true;
 
   absl::StrAppendFormat(output, "\n");
   absl::StrAppendFormat(output, "%s\n\n", msg);
-  for (absl::string_view v : set_to_check) {
-    absl::StrAppendFormat(output, "  %s\n", v);
+  for (const auto& pair : set_to_check) {
+    absl::StrAppendFormat(output, "  %s # %s\n", pair.first,
+                          pair.second.failure_message());
   }
   absl::StrAppendFormat(output, "\n");
 
@@ -70,19 +153,18 @@ bool CheckSetEmpty(const SetT& set_to_check, absl::string_view write_to_file,
     absl::string_view filename = write_to_file;
     if (!output_dir.empty()) {
       full_filename = std::string(output_dir);
-      if (*output_dir.rbegin() != '/') {
-        full_filename.push_back('/');
-      }
       absl::StrAppend(&full_filename, write_to_file);
       filename = full_filename;
     }
     std::ofstream os{std::string(filename)};
     if (os) {
-      for (absl::string_view v : set_to_check) {
-        os << v << "\n";
+      for (const auto& pair : set_to_check) {
+        os << pair.first << " # " << pair.second.failure_message() << "\n";
       }
     } else {
-      absl::StrAppendFormat(output, "Failed to open file: %s\n", filename);
+      absl::StrAppendFormat(output,
+                            "Failed to open file: %s\n",
+                            filename);
     }
   }
 
@@ -265,47 +347,72 @@ ConformanceResponse ConformanceTestSuite::TruncateResponse(
   return debug_response;
 }
 
-void ConformanceTestSuite::ReportSuccess(const std::string& test_name) {
-  if (expected_to_fail_.erase(test_name) != 0) {
+void ConformanceTestSuite::ReportSuccess(const TestStatus& test) {
+  if (expected_to_fail_.erase(test.name()) != 0) {
     absl::StrAppendFormat(
         &output_,
         "ERROR: test %s is in the failure list, but test succeeded.  "
         "Remove it from the failure list.\n",
-        test_name);
-    unexpected_succeeding_tests_.insert(test_name);
+        test.name());
+    unexpected_succeeding_tests_[test.name()] = test;
   }
   successes_++;
 }
 
-void ConformanceTestSuite::ReportFailure(const std::string& test_name,
+void ConformanceTestSuite::ReportFailure(TestStatus& test,
                                          ConformanceLevel level,
                                          const ConformanceRequest& request,
-                                         const ConformanceResponse& response,
-                                         absl::string_view message) {
-  if (expected_to_fail_.erase(test_name) == 1) {
-    expected_failures_++;
+                                         const ConformanceResponse& response) {
+  if (expected_to_fail_.contains(test.name())) {
+    // Make copy just this once, as we need to modify them for comparison.
+    // Failure message from the failure list.
+    string expected_failure_message =
+        expected_to_fail_[test.name()].failure_message();
+    // Actual failure message from the test run.
+    std::string actual_failure_message = test.failure_message();
+
+    Normalize(actual_failure_message);
+    if (actual_failure_message.rfind(expected_failure_message, 0) == 0) {
+      // Our failure messages match.
+      expected_failures_++;
+    } else {
+      // We want to add the test to the failure list with its correct failure
+      // message.
+      unexpected_failure_messages_[test.name()] = FormatFailureMessage(test);
+      // We want to remove the test from the failure list. That means passing
+      // to it the same failure message that was in the list.
+      TestStatus incorrect_failure_message;
+      incorrect_failure_message.set_name(test.name());
+      incorrect_failure_message.set_failure_message(
+          expected_to_fail_[test.name()].failure_message());
+
+      expected_failure_messages_[test.name()] = incorrect_failure_message;
+    }
+    expected_to_fail_.erase(test.name());
     if (!verbose_) return;
   } else if (level == RECOMMENDED && !enforce_recommended_) {
-    absl::StrAppendFormat(&output_, "WARNING, test=%s: ", test_name);
+    absl::StrAppendFormat(&output_, "WARNING, test=%s: ", test.name());
   } else {
-    absl::StrAppendFormat(&output_, "ERROR, test=%s: ", test_name);
-    unexpected_failing_tests_.insert(test_name);
+    absl::StrAppendFormat(&output_, "ERROR, test=%s: ", test.name());
+
+    unexpected_failing_tests_[test.name()] = FormatFailureMessage(test);
   }
 
-  absl::StrAppendFormat(&output_, "%s, request=%s, response=%s\n", message,
+  absl::StrAppendFormat(&output_, "%s, request=%s, response=%s\n",
+                        test.failure_message(),
                         TruncateRequest(request).ShortDebugString(),
                         TruncateResponse(response).ShortDebugString());
 }
 
-void ConformanceTestSuite::ReportSkip(const std::string& test_name,
+void ConformanceTestSuite::ReportSkip(const TestStatus& test,
                                       const ConformanceRequest& request,
                                       const ConformanceResponse& response) {
   if (verbose_) {
     absl::StrAppendFormat(
-        &output_, "SKIPPED, test=%s request=%s, response=%s\n", test_name,
+        &output_, "SKIPPED, test=%s request=%s, response=%s\n", test.name(),
         request.ShortDebugString(), response.ShortDebugString());
   }
-  skipped_.insert(test_name);
+  skipped_[test.name()] = test;
 }
 
 void ConformanceTestSuite::RunValidInputTest(
@@ -326,7 +433,10 @@ void ConformanceTestSuite::RunValidBinaryInputTest(
     const std::string& equivalent_wire_format, bool require_same_wire_format) {
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
-  RunTest(setting.GetTestName(), request, &response);
+  if (!RunTest(setting.GetTestName(), request, &response)) {
+    return;
+  }
+
   VerifyResponse(setting, equivalent_wire_format, response, true,
                  require_same_wire_format);
 }
@@ -345,22 +455,26 @@ void ConformanceTestSuite::VerifyResponse(
   ABSL_CHECK(reference_message->ParseFromString(equivalent_wire_format))
       << "Failed to parse wire data for test case: " << test_name;
 
+  TestStatus test;
+  test.set_name(test_name);
+
   switch (response.result_case()) {
     case ConformanceResponse::RESULT_NOT_SET:
-      ReportFailure(test_name, level, request, response,
-                    "Response didn't have any field in the Response.");
+      test.set_failure_message(
+          "Response didn't have any field in the Response.");
+      ReportFailure(test, level, request, response);
       return;
 
     case ConformanceResponse::kParseError:
     case ConformanceResponse::kTimeoutError:
     case ConformanceResponse::kRuntimeError:
     case ConformanceResponse::kSerializeError:
-      ReportFailure(test_name, level, request, response,
-                    "Failed to parse input or produce output.");
+      test.set_failure_message("Failed to parse input or produce output.");
+      ReportFailure(test, level, request, response);
       return;
 
     case ConformanceResponse::kSkipped:
-      ReportSkip(test_name, request, response);
+      ReportSkip(test, request, response);
       return;
 
     default:
@@ -386,20 +500,18 @@ void ConformanceTestSuite::VerifyResponse(
   } else {
     check = differencer.Compare(*reference_message, *test_message);
   }
-
   if (check) {
     if (need_report_success) {
-      ReportSuccess(test_name);
+      ReportSuccess(test);
     }
   } else {
-    ReportFailure(
-        test_name, level, request, response,
-        absl::StrCat("Output was not equivalent to reference message: ",
-                     differences));
+    test.set_failure_message(absl::StrCat(
+        "Output was not equivalent to reference message: ", differences));
+    ReportFailure(test, level, request, response);
   }
 }
 
-void ConformanceTestSuite::RunTest(const std::string& test_name,
+bool ConformanceTestSuite::RunTest(const std::string& test_name,
                                    const ConformanceRequest& request,
                                    ConformanceResponse* response) {
   if (test_names_.insert(test_name).second == false) {
@@ -410,7 +522,43 @@ void ConformanceTestSuite::RunTest(const std::string& test_name,
   std::string serialized_response;
   request.SerializeToString(&serialized_request);
 
-  runner_->RunTest(test_name, serialized_request, &serialized_response);
+  uint32_t len = internal::little_endian::FromHost(
+      static_cast<uint32_t>(serialized_request.size()));
+
+  if (!debug_) {  // Not in debug mode. Continue.
+  } else if (debug_test_names_->erase(test_name) == 1) {
+    std::string octal = ProduceOctalSerialized(serialized_request, len);
+    std::string full_filename = WriteToFile(octal, output_dir_, test_name);
+    if (!full_filename.empty()) {
+      absl::StrAppendFormat(
+          &output_, "Produced octal serialized request file for test %s\n",
+          test_name);
+      absl::StrAppendFormat(
+          &output_,
+          "  To pipe the "
+          "serialized request directly to "
+          "the "
+          "testee run from the root of your workspace:\n    printf $("
+          "<\"%s\") | "
+          "./bazel-bin/google/protobuf/conformance/%s\n\n",
+          full_filename, testee_);
+      absl::StrAppendFormat(
+          &output_,
+          "  To inspect the wire format of the serialized request run "
+          "(Disclaimer: This may not work properly on non-Linux platforms):\n  "
+          "  "
+          "contents=$(<\"%s\"); sub=$(cut -d \\\\ -f 6- <<< "
+          "$contents) ; printf \"\\\\${sub}\" | protoscope \n\n\n",
+          full_filename);
+    }
+  } else {  // Test is not ran, as it was not asked to be debugged.
+    expected_to_fail_.erase(test_name);
+    return false;
+  }
+
+  response->set_protobuf_payload(serialized_request);
+
+  runner_->RunTest(test_name, len, serialized_request, &serialized_response);
 
   if (!response->ParseFromString(serialized_response)) {
     response->Clear();
@@ -423,6 +571,7 @@ void ConformanceTestSuite::RunTest(const std::string& test_name,
         test_name, TruncateRequest(request).ShortDebugString(),
         TruncateResponse(*response).ShortDebugString());
   }
+  return true;
 }
 
 std::string ConformanceTestSuite::WireFormatToString(WireFormat wire_format) {
@@ -443,8 +592,8 @@ std::string ConformanceTestSuite::WireFormatToString(WireFormat wire_format) {
   return "";
 }
 
-void ConformanceTestSuite::AddExpectedFailedTest(const std::string& test_name) {
-  expected_to_fail_.insert(test_name);
+void ConformanceTestSuite::AddExpectedFailedTest(const TestStatus& failure) {
+  expected_to_fail_[failure.name()] = failure;
 }
 
 bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
@@ -459,46 +608,89 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   unexpected_failing_tests_.clear();
   unexpected_succeeding_tests_.clear();
 
-  output_ = "\nCONFORMANCE TEST BEGIN ====================================\n\n";
+  std::string mode = debug_ ? "DEBUG" : "TEST";
+  absl::StrAppendFormat(
+      &output_, "CONFORMANCE %s BEGIN ====================================\n\n",
+      mode);
 
   failure_list_filename_ = filename;
   expected_to_fail_.clear();
-  for (const std::string& failure : failure_list->failure()) {
+  for (const TestStatus& failure : failure_list->test()) {
     AddExpectedFailedTest(failure);
   }
   RunSuiteImpl();
 
+  if (*output_dir_.rbegin() != '/') {
+    output_dir_.push_back('/');
+  }
+
   bool ok = true;
   if (!CheckSetEmpty(
           expected_to_fail_, "nonexistent_tests.txt",
-          absl::StrCat("These tests were listed in the failure list, but they "
-                       "don't exist.  Remove them from the failure list by "
-                       "running:\n"
-                       "  ./update_failure_list.py ",
-                       failure_list_filename_,
-                       " --remove nonexistent_tests.txt"),
+          absl::StrCat(
+              "These tests were listed in the failure list, but they "
+              "don't exist.  Remove them from the failure list by "
+              "running from the root of your workspace:\n"
+              "  bazel run "
+              "//google/protobuf/conformance:update_failure_list -- ",
+              failure_list_filename_, " --remove ", output_dir_,
+              "nonexistent_tests.txt"),
           output_dir_, &output_)) {
     ok = false;
   }
   if (!CheckSetEmpty(
+          expected_failure_messages_, "expected_failure_messages.txt",
+          absl::StrCat(
+              "These tests were listed in the failure list, but their failure "
+              "messages do not match.  Remove them from the failure list "
+              "by running:\n"
+              "  bazel run ",
+              "//google/protobuf/conformance:update_failure_list -- ",
+              failure_list_filename_, " --remove ", output_dir_,
+              "expected_failure_messages.txt"),
+          output_dir_, &output_)) {
+    ok = false;
+  }
+  if (!CheckSetEmpty(
+          unexpected_failure_messages_, "unexpected_failure_messages.txt",
+          absl::StrCat(
+              "These tests failed because their failure messages did "
+              "not match.  If they can't be fixed right now, "
+              "you can add them to the failure list so the overall "
+              "suite can succeed.  Add them to the failure list by "
+              "running from the root of your workspace:\n"
+              "  bazel run "
+              "//google/protobuf/conformance:update_failure_list -- ",
+              failure_list_filename_, " --add ", output_dir_,
+              "unexpected_failure_messages.txt"),
+          output_dir_, &output_)) {
+    ok = false;
+  }
+
+  if (!CheckSetEmpty(
           unexpected_failing_tests_, "failing_tests.txt",
-          absl::StrCat("These tests failed.  If they can't be fixed right now, "
-                       "you can add them to the failure list so the overall "
-                       "suite can succeed.  Add them to the failure list by "
-                       "running:\n"
-                       "  ./update_failure_list.py ",
-                       failure_list_filename_, " --add failing_tests.txt"),
+          absl::StrCat(
+              "These tests failed.  If they can't be fixed right now, "
+              "you can add them to the failure list so the overall "
+              "suite can succeed.  Add them to the failure list by "
+              "running from the root of your workspace:\n"
+              "  bazel run "
+              "//google/protobuf/conformance:update_failure_list -- ",
+              failure_list_filename_, " --add ", output_dir_,
+              "failing_tests.txt"),
           output_dir_, &output_)) {
     ok = false;
   }
   if (!CheckSetEmpty(
           unexpected_succeeding_tests_, "succeeding_tests.txt",
-          absl::StrCat("These tests succeeded, even though they were listed in "
-                       "the failure list.  Remove them from the failure list "
-                       "by running:\n"
-                       "  ./update_failure_list.py ",
-                       failure_list_filename_,
-                       " --remove succeeding_tests.txt"),
+          absl::StrCat(
+              "These tests succeeded, even though they were listed in "
+              "the failure list.  Remove them from the failure list by running "
+              "from the root of your workspace:\n"
+              "  bazel run "
+              "//google/protobuf/conformance:update_failure_list -- ",
+              failure_list_filename_, " --remove ", output_dir_,
+              "succeeding_tests.txt"),
           output_dir_, &output_)) {
     ok = false;
   }

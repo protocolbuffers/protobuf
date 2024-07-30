@@ -4,6 +4,10 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+# begin:github_only
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
+# end:github_only
+
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
 # begin:google_only
@@ -15,6 +19,7 @@ rust_library(
     srcs = [
         "arena.rs",
         "array.rs",
+        "associated_mini_table.rs",
         "ctype.rs",
         "extension_registry.rs",
         "lib.rs",
@@ -28,6 +33,7 @@ rust_library(
         "text.rs",
         "wire.rs",
     ],
+    rustc_flags = ["--cfg=bzl"],
     visibility = [
         "//rust:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -52,3 +58,16 @@ cc_library(
         "//upb/text:debug",
     ],
 )
+
+# begin:github_only
+pkg_files(
+    name = "rust_protobuf_upb_src",
+    srcs = glob(
+        [
+            "*",
+        ],
+    ),
+    strip_prefix = strip_prefix.from_root("rust"),
+    visibility = ["//rust:__pkg__"],
+)
+# end:github_only

@@ -837,8 +837,9 @@ void ImmutableMapFieldLiteGenerator::GenerateBuilderMembers(
 
 void ImmutableMapFieldLiteGenerator::GenerateKotlinDslMembers(
     io::Printer* printer) const {
+  auto vars = printer->WithVars(variables_);
+  JvmNameContext name_ctx = {context_->options(), printer};
   printer->Print(
-      variables_,
       "/**\n"
       " * An uninstantiable, behaviorless type to represent the field in\n"
       " * generics.\n"
@@ -850,22 +851,27 @@ void ImmutableMapFieldLiteGenerator::GenerateKotlinDslMembers(
 
   WriteFieldDocComment(printer, descriptor_, context_->options(),
                        /* kdoc */ true);
-  printer->Print(
-      variables_,
+  printer->Emit(
+      {
+          {"jvm_name",
+           [&] { JvmName("get$kt_capitalized_name$Map", name_ctx); }},
+      },
       "$kt_deprecation$ public val $kt_name$: "
       "com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
-      "  @kotlin.jvm.JvmSynthetic\n"
-      "  @JvmName(\"get$kt_capitalized_name$Map\")\n"
+      "$  jvm_synthetic$"
+      "$jvm_name$"
       "  get() = com.google.protobuf.kotlin.DslMap(\n"
       "    $kt_dsl_builder$.${$$kt_property_name$Map$}$\n"
       "  )\n");
 
   WriteFieldDocComment(printer, descriptor_, context_->options(),
                        /* kdoc */ true);
-  printer->Print(
-      variables_,
-      "@JvmName(\"put$kt_capitalized_name$\")\n"
+  printer->Emit(
+      {
+          {"jvm_name", [&] { JvmName("put$kt_capitalized_name$", name_ctx); }},
+      },
+      "$jvm_name$"
       "public fun com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  .put(key: $kt_key_type$, value: $kt_value_type$) {\n"
@@ -874,10 +880,12 @@ void ImmutableMapFieldLiteGenerator::GenerateKotlinDslMembers(
 
   WriteFieldDocComment(printer, descriptor_, context_->options(),
                        /* kdoc */ true);
-  printer->Print(
-      variables_,
-      "@kotlin.jvm.JvmSynthetic\n"
-      "@JvmName(\"set$kt_capitalized_name$\")\n"
+  printer->Emit(
+      {
+          {"jvm_name", [&] { JvmName("set$kt_capitalized_name$", name_ctx); }},
+      },
+      "$jvm_synthetic$"
+      "$jvm_name$"
       "@Suppress(\"NOTHING_TO_INLINE\")\n"
       "public inline operator fun com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
@@ -887,10 +895,13 @@ void ImmutableMapFieldLiteGenerator::GenerateKotlinDslMembers(
 
   WriteFieldDocComment(printer, descriptor_, context_->options(),
                        /* kdoc */ true);
-  printer->Print(
-      variables_,
-      "@kotlin.jvm.JvmSynthetic\n"
-      "@JvmName(\"remove$kt_capitalized_name$\")\n"
+  printer->Emit(
+      {
+          {"jvm_name",
+           [&] { JvmName("remove$kt_capitalized_name$", name_ctx); }},
+      },
+      "$jvm_synthetic$"
+      "$jvm_name$"
       "public fun com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  .remove(key: $kt_key_type$) {\n"
@@ -899,10 +910,13 @@ void ImmutableMapFieldLiteGenerator::GenerateKotlinDslMembers(
 
   WriteFieldDocComment(printer, descriptor_, context_->options(),
                        /* kdoc */ true);
-  printer->Print(
-      variables_,
-      "@kotlin.jvm.JvmSynthetic\n"
-      "@JvmName(\"putAll$kt_capitalized_name$\")\n"
+  printer->Emit(
+      {
+          {"jvm_name",
+           [&] { JvmName("putAll$kt_capitalized_name$", name_ctx); }},
+      },
+      "$jvm_synthetic$"
+      "$jvm_name$"
       "public fun com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  .putAll(map: kotlin.collections.Map<$kt_key_type$, $kt_value_type$>) "
@@ -912,10 +926,13 @@ void ImmutableMapFieldLiteGenerator::GenerateKotlinDslMembers(
 
   WriteFieldDocComment(printer, descriptor_, context_->options(),
                        /* kdoc */ true);
-  printer->Print(
-      variables_,
-      "@kotlin.jvm.JvmSynthetic\n"
-      "@JvmName(\"clear$kt_capitalized_name$\")\n"
+  printer->Emit(
+      {
+          {"jvm_name",
+           [&] { JvmName("clear$kt_capitalized_name$", name_ctx); }},
+      },
+      "$jvm_synthetic$"
+      "$jvm_name$"
       "public fun com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  .clear() {\n"

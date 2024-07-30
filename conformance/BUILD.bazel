@@ -143,6 +143,7 @@ cc_library(
         ":conformance_cc_proto",
         "//src/google/protobuf",
         "//src/google/protobuf:descriptor_legacy",
+        "//src/google/protobuf:endian",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/util:differencer",
         "//src/google/protobuf/util:json_util",
@@ -232,6 +233,7 @@ cc_binary(
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/json",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/util:json_util",
         "//src/google/protobuf/util:type_resolver",
@@ -302,6 +304,11 @@ py_binary(
         "//python:_message",  # Make upb visible if we need it.
         "//python:conformance_test_py_proto",
     ],
+)
+
+py_binary(
+    name = "update_failure_list",
+    srcs = ["update_failure_list.py"],
 )
 
 inline_sh_binary(

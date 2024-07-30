@@ -13,6 +13,7 @@ cc_library(
         "default_value.cc",
         "map.cc",
         "repeated_field.cc",
+        "singular_cord.cc",
         "singular_message.cc",
         "singular_scalar.cc",
         "singular_string.cc",

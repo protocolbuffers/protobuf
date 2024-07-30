@@ -110,7 +110,7 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
   // the default instance can be constant-initialized. In the const methods, we
   // have to handle the possibility of data_ being null.
   std::string* data_;
-  mutable google::protobuf::internal::CachedSize cached_size_{};
+  google::protobuf::internal::CachedSize cached_size_{};
 };
 
 struct ImplicitWeakMessageDefaultType;

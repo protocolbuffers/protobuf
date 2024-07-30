@@ -107,9 +107,9 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                  return;
                }
                ctx.Emit({}, R"rs(
-                pub fn set_$raw_field_name$(&mut self, src: $pb$::MapView<'_, $Key$, $Value$>) {
-                  // TODO: Implement IntoProxied and avoid copying.
-                  self.$field$_mut().copy_from(src);
+                pub fn set_$raw_field_name$(&mut self, src: impl $pb$::IntoProxied<$pb$::Map<$Key$, $Value$>>) {
+                  // TODO: b/355493062 - Fix this extra copy.
+                  self.$field$_mut().copy_from(src.into_proxied($pbi$::Private).as_view());
                 }
               )rs");
              }}},

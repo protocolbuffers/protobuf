@@ -94,6 +94,15 @@ class SingularString final : public AccessorGenerator {
   void InThunkCc(Context& ctx, const FieldDescriptor& field) const override;
 };
 
+class SingularCord final : public AccessorGenerator {
+ public:
+  ~SingularCord() override = default;
+  void InMsgImpl(Context& ctx, const FieldDescriptor& field,
+                 AccessorCase accessor_case) const override;
+  void InExternC(Context& ctx, const FieldDescriptor& field) const override;
+  void InThunkCc(Context& ctx, const FieldDescriptor& field) const override;
+};
+
 class SingularMessage final : public AccessorGenerator {
  public:
   ~SingularMessage() override = default;

@@ -309,7 +309,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const JavaFeatures& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
-    mutable ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     bool legacy_closed_enum_;
     int utf8_validation_;
     PROTOBUF_TSAN_DECLARE_MEMBER

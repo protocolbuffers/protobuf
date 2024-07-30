@@ -81,7 +81,7 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
         fn $map_get_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: *mut $name$) -> bool;
         fn $map_remove_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: *mut $name$) -> bool;
         fn $map_iter_thunk$(m: $pbr$::RawMap) -> $pbr$::UntypedMapIterator;
-        fn $map_iter_get_thunk$(iter: &mut $pbr$::UntypedMapIterator, key: *mut $ffi_key_t$, value: *mut $name$);
+        fn $map_iter_get_thunk$(iter: &mut $pbr$::UntypedMapIterator, size_info: $pbr$::MapNodeSizeInfo, key: *mut $ffi_key_t$, value: *mut $name$);
       }
       impl $pb$::ProxiedInMapValue<$key_t$> for $name$ {
         fn map_new(_private: $pbi$::Private) -> $pb$::Map<$key_t$, Self> {
@@ -149,6 +149,7 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
                 iter.as_raw_mut($pbi$::Private).next_unchecked::<$key_t$, Self, _, _>(
                     $pbi$::Private,
                     $map_iter_get_thunk$,
+                    $pbr$::MapNodeSizeInfo(0),  // Ignored
                     |ffi_key| $from_ffi_key_expr$,
                     $std$::convert::identity,
                 )
@@ -389,30 +390,31 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
         }
       }
 
-      impl $pb$::IntoProxied<$name$> for $name$ {
-        fn into_proxied(self, _: $pbi$::Private) -> Self {
-          self
-        }
-      }
-
       impl $pb$::IntoProxied<i32> for $name$ {
         fn into_proxied(self, _: $pbi$::Private) -> i32 {
           self.0
         }
       }
 
+      impl $pbi$::SealedInternal for $name$ {}
+
       impl $pb$::Proxied for $name$ {
         type View<'a> = $name$;
       }
 
-      impl $pb$::ViewProxy<'_> for $name$ {
+      impl $pb$::Proxy<'_> for $name$ {}
+      impl $pb$::ViewProxy<'_> for $name$ {}
+
+      impl $pb$::AsView for $name$ {
         type Proxied = $name$;
 
         fn as_view(&self) -> $name$ {
           *self
         }
+      }
 
-        fn into_view<'shorter>(self) -> $pb$::View<'shorter, $name$> {
+      impl<'msg> $pb$::IntoView<'msg> for $name$ {
+        fn into_view<'shorter>(self) -> $name$ where 'msg: 'shorter {
           self
         }
       }

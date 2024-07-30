@@ -27,6 +27,7 @@ cc_library(
     deps = [
         ":io_win32",
         "//src/google/protobuf:arena",
+        "//src/google/protobuf:endian",
         "//src/google/protobuf:port",
         "//src/google/protobuf/stubs:lite",
         "@com_google_absl//absl/base",
@@ -208,6 +209,7 @@ cc_test(
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "@com_google_absl//absl/base",
+        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/base:log_severity",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/log:absl_check",

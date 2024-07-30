@@ -2085,6 +2085,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 - (BOOL)mergeFromData:(NSData *)data
     extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
                 error:(NSError **)errorPtr {
+  GPBBecomeVisibleToAutocreator(self);
   GPBCodedInputStream *input = [[GPBCodedInputStream alloc] initWithData:data];
   @try {
     [self mergeFromCodedInputStream:input extensionRegistry:extensionRegistry endingTag:0];
@@ -3681,6 +3682,25 @@ id GPBGetObjectIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
   GPBClearMessageAutocreator(autocreated);
   [autocreated release];
   return expected;
+}
+
+NSData *GPBMessageUnknownFieldsData(GPBMessage *self) {
+  NSData *result = nil;
+  GPBUnknownFieldSet *unknownFields = self->unknownFields_;
+  if (unknownFields) {
+    if (self.descriptor.isWireFormat) {
+      NSMutableData *mutableData =
+          [NSMutableData dataWithLength:unknownFields.serializedSizeAsMessageSet];
+      GPBCodedOutputStream *output = [[GPBCodedOutputStream alloc] initWithData:mutableData];
+      [unknownFields writeAsMessageSetTo:output];
+      [output flush];
+      [output release];
+      result = mutableData;
+    } else {
+      result = [unknownFields data];
+    }
+  }
+  return result;
 }
 
 #pragma clang diagnostic pop
