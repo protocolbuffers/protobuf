@@ -8,7 +8,7 @@
 use crate::{
     AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy, View,
     ViewProxy,
-    __internal::Private,
+    __internal::{Private, SealedInternal},
     __runtime::{InnerMap, InnerMapMut, RawMap, RawMapIter},
 };
 use std::marker::PhantomData;
@@ -72,6 +72,8 @@ unsafe impl<K: Proxied, V: ProxiedInMapValue<K>> Sync for Map<K, V> {}
 // it does not use thread-local data or similar.
 unsafe impl<K: Proxied, V: ProxiedInMapValue<K>> Send for Map<K, V> {}
 
+impl<K: Proxied, V: ProxiedInMapValue<K>> SealedInternal for Map<K, V> {}
+
 impl<K: Proxied, V: ProxiedInMapValue<K>> Drop for Map<K, V> {
     fn drop(&mut self) {
         // SAFETY:
@@ -129,6 +131,8 @@ impl<K: Proxied, V: ProxiedInMapValue<K>> AsMut for Map<K, V> {
     }
 }
 
+impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> SealedInternal for MapView<'msg, K, V> {}
+
 impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> Proxy<'msg> for MapView<'msg, K, V> {}
 
 impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> AsView for MapView<'msg, K, V> {
@@ -149,6 +153,8 @@ impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> IntoView<'msg> for MapView<'msg,
 }
 
 impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> ViewProxy<'msg> for MapView<'msg, K, V> {}
+
+impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> SealedInternal for MapMut<'msg, K, V> {}
 
 impl<'msg, K: Proxied, V: ProxiedInMapValue<K>> Proxy<'msg> for MapMut<'msg, K, V> {}
 

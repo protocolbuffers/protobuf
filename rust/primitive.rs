@@ -4,11 +4,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
+use crate::__internal::SealedInternal;
 use crate::{AsView, IntoView, Proxied, Proxy, ViewProxy};
 
 macro_rules! impl_singular_primitives {
   ($($t:ty),*) => {
       $(
+        impl SealedInternal for $t {}
+
         impl Proxied for $t {
             type View<'msg> = $t;
         }

@@ -1018,6 +1018,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           type View<'msg> = $Msg$View<'msg>;
         }
 
+        impl $pbi$::SealedInternal for $Msg$ {}
+
         impl $pb$::MutProxied for $Msg$ {
           type Mut<'msg> = $Msg$Mut<'msg>;
         }
@@ -1028,6 +1030,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           msg: $pbr$::RawMessage,
           _phantom: $Phantom$<&'msg ()>,
         }
+
+        impl<'msg> $pbi$::SealedInternal for $Msg$View<'msg> {}
 
         impl<'msg> $pb$::MessageView<'msg> for $Msg$View<'msg> {
           type Message = $Msg$;
@@ -1100,6 +1104,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         pub struct $Msg$Mut<'msg> {
           inner: $pbr$::MutatorMessageRef<'msg>,
         }
+
+        impl<'msg> $pbi$::SealedInternal for $Msg$Mut<'msg> {}
 
         impl<'msg> $pb$::MessageMut<'msg> for $Msg$Mut<'msg> {
           type Message = $Msg$;

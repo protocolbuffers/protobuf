@@ -395,6 +395,8 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
         }
       }
 
+      impl $pbi$::SealedInternal for $name$ {}
+
       impl $pb$::Proxied for $name$ {
         type View<'a> = $name$;
       }

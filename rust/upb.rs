@@ -7,7 +7,7 @@
 
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
-use crate::__internal::{Enum, Private};
+use crate::__internal::{Enum, Private, SealedInternal};
 use crate::{
     IntoProxied, Map, MapIter, MapMut, MapView, Mut, ProtoBytes, ProtoStr, ProtoString, Proxied,
     ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
@@ -63,6 +63,8 @@ impl ScratchSpace {
 
 #[doc(hidden)]
 pub type SerializedData = upb::OwnedArenaBox<[u8]>;
+
+impl SealedInternal for SerializedData {}
 
 impl IntoProxied<ProtoBytes> for SerializedData {
     fn into_proxied(self, _private: Private) -> ProtoBytes {

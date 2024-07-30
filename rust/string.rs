@@ -9,7 +9,7 @@
 #![allow(dead_code)]
 #![allow(unused)]
 
-use crate::__internal::Private;
+use crate::__internal::{Private, SealedInternal};
 use crate::__runtime::{InnerProtoString, PtrAndLen, RawMessage};
 use crate::{
     utf8::Utf8Chunks, AsView, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Optional, Proxied,
@@ -66,6 +66,8 @@ impl<const N: usize> From<&[u8; N]> for ProtoBytes {
         ProtoBytes { inner: InnerProtoString::from(v.as_ref()) }
     }
 }
+
+impl SealedInternal for ProtoBytes {}
 
 impl Proxied for ProtoBytes {
     type View<'msg> = &'msg [u8];
@@ -126,6 +128,8 @@ impl IntoProxied<ProtoBytes> for Arc<[u8]> {
         ProtoBytes::from(AsRef::<[u8]>::as_ref(&self))
     }
 }
+
+impl SealedInternal for &[u8] {}
 
 impl<'msg> Proxy<'msg> for &'msg [u8] {}
 
@@ -217,6 +221,8 @@ impl ProtoString {
     }
 }
 
+impl SealedInternal for ProtoString {}
+
 impl AsRef<[u8]> for ProtoString {
     fn as_ref(&self) -> &[u8] {
         self.inner.as_bytes()
@@ -240,6 +246,10 @@ impl From<&[u8]> for ProtoString {
         Self { inner: InnerProtoString::from(v) }
     }
 }
+
+impl SealedInternal for &str {}
+
+impl SealedInternal for &ProtoStr {}
 
 impl IntoProxied<ProtoString> for &str {
     fn into_proxied(self, _private: Private) -> ProtoString {
