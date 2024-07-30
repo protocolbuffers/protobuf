@@ -142,7 +142,7 @@ BENCHMARK(BM_add_100_ints_cpp);
 void BM_add_100_ints_upb(benchmark::State& state) {
   for (auto s : state) {
     ::protos::Arena arena;
-    auto data = ::protos::CreateMessage<benchmarks::protos::BenchData>(arena);
+    auto data = ::protos::CreateMessage<benchmarks::hpb::BenchData>(arena);
     for (int i = 0; i < 100; ++i) {
       data.add_nums(i);
     }
@@ -184,12 +184,12 @@ BENCHMARK(BM_copy_from_100_ints_cpp);
 
 void BM_copy_from_100_ints_upb(benchmark::State& state) {
   ::protos::Arena arena;
-  auto source = ::protos::CreateMessage<benchmarks::protos::BenchData>(arena);
+  auto source = ::protos::CreateMessage<benchmarks::hpb::BenchData>(arena);
   for (int i = 0; i < 100; ++i) {
     source.add_nums(i);
   }
   for (auto s : state) {
-    auto data = ::protos::CreateMessage<benchmarks::protos::BenchData>(arena);
+    auto data = ::protos::CreateMessage<benchmarks::hpb::BenchData>(arena);
     data.resize_nums(source.nums_size());
     std::copy(source.nums().begin(), source.nums().end(),
               data.mutable_nums()->begin());
@@ -228,7 +228,7 @@ BENCHMARK(BM_sum_1000_ints_cpp);
 
 void BM_sum_1000_ints_upb(benchmark::State& state) {
   ::protos::Arena arena;
-  auto data = ::protos::CreateMessage<benchmarks::protos::BenchData>(arena);
+  auto data = ::protos::CreateMessage<benchmarks::hpb::BenchData>(arena);
   for (int i = 0; i < 1000; ++i) {
     data.add_nums(i);
   }

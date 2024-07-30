@@ -15,7 +15,7 @@
 
 namespace hpb::testing {
 namespace {
-using ::hpb_unittest::protos::TestModel;
+using ::hpb_unittest::hpb::TestModel;
 
 TEST(CppGeneratedCode, InternalMoveMessage) {
   // Generate message (simulating message created in another VM/language)

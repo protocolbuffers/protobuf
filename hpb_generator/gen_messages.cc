@@ -15,13 +15,13 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/hpb/gen_accessors.h"
 #include "google/protobuf/compiler/hpb/gen_enums.h"
 #include "google/protobuf/compiler/hpb/gen_extensions.h"
 #include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/names.h"
 #include "google/protobuf/compiler/hpb/output.h"
+#include "google/protobuf/descriptor.h"
 #include "upb_generator/common.h"
 #include "upb_generator/file_layout.h"
 
@@ -217,7 +217,7 @@ void WriteModelPublicDeclaration(
     // for typetrait checking
     output("using ExtendableType = $0;\n", ClassName(descriptor));
   }
-  // Note: free function friends that are templates such as ::protos::Parse
+  // Note: free function friends that are templates such as ::hpb::Parse
   // require explicit <$2> type parameter in declaration to be able to compile
   // with gcc otherwise the compiler will fail with
   // "has not been declared within namespace" error. Even though there is a
@@ -246,9 +246,9 @@ void WriteModelPublicDeclaration(
         friend struct ::hpb::internal::PrivateAccess;
         friend Proxy;
         friend CProxy;
-        friend absl::StatusOr<$2>(::protos::Parse<$2>(absl::string_view bytes,
-                                                      int options));
-        friend absl::StatusOr<$2>(::protos::Parse<$2>(
+        friend absl::StatusOr<$2>(::hpb::Parse<$2>(absl::string_view bytes,
+                                                   int options));
+        friend absl::StatusOr<$2>(::hpb::Parse<$2>(
             absl::string_view bytes,
             const ::hpb::ExtensionRegistry& extension_registry, int options));
         friend upb_Arena* ::hpb::internal::GetArena<$0>($0* message);

@@ -17,10 +17,9 @@ namespace protobuf = ::proto2;
 
 namespace {
 
-// TODO: b/346865271 append ::hpb instead of ::protos after namespace swap
 std::string NamespaceFromPackageName(absl::string_view package_name) {
   return absl::StrCat(absl::StrReplaceAll(package_name, {{".", "::"}}),
-                      "::protos");
+                      "::hpb");
 }
 
 std::string DotsToColons(const absl::string_view name) {
@@ -38,8 +37,8 @@ std::string QualifiedFileLevelSymbol(const protobuf::FileDescriptor* file,
   if (file->package().empty()) {
     return absl::StrCat("::", name);
   }
-  // Append ::protos postfix to package name.
-  return absl::StrCat(Namespace(file->package()), "::protos::", name);
+  // Append ::hpb postfix to package name.
+  return absl::StrCat(Namespace(file->package()), "::hpb::", name);
 }
 
 std::string CppTypeInternal(const protobuf::FieldDescriptor* field,
