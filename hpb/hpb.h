@@ -308,65 +308,6 @@ class ExtensionRegistry {
   upb_ExtensionRegistry* registry_;
 };
 
-}  // namespace hpb
-
-namespace protos {
-using hpb::Arena;
-using hpb::ExtensionNotFoundError;
-using hpb::MessageAllocationError;
-using hpb::MessageDecodeError;
-using hpb::MessageEncodeError;
-using hpb::Ptr;
-using hpb::SourceLocation;
-
-template <typename T>
-typename T::Proxy CreateMessage(::hpb::Arena& arena) {
-  return typename T::Proxy(upb_Message_New(T::minitable(), arena.ptr()),
-                           arena.ptr());
-}
-
-template <typename T>
-void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
-  static_assert(!std::is_const_v<T>);
-  ::hpb::internal::DeepCopy(
-      hpb::internal::GetInternalMsg(target_message),
-      hpb::internal::GetInternalMsg(source_message), T::minitable(),
-      static_cast<upb_Arena*>(target_message->GetInternalArena()));
-}
-
-template <typename T>
-typename T::Proxy CloneMessage(Ptr<T> message, upb_Arena* arena) {
-  return ::hpb::internal::PrivateAccess::Proxy<T>(
-      ::hpb::internal::DeepClone(::hpb::internal::GetInternalMsg(message),
-                                 T::minitable(), arena),
-      arena);
-}
-
-template <typename T>
-void DeepCopy(Ptr<const T> source_message, T* target_message) {
-  static_assert(!std::is_const_v<T>);
-  DeepCopy(source_message, Ptr(target_message));
-}
-
-template <typename T>
-void DeepCopy(const T* source_message, Ptr<T> target_message) {
-  static_assert(!std::is_const_v<T>);
-  DeepCopy(Ptr(source_message), target_message);
-}
-
-template <typename T>
-void DeepCopy(const T* source_message, T* target_message) {
-  static_assert(!std::is_const_v<T>);
-  DeepCopy(Ptr(source_message), Ptr(target_message));
-}
-
-template <typename T>
-void ClearMessage(hpb::internal::PtrOrRaw<T> message) {
-  auto ptr = Ptr(message);
-  auto minitable = hpb::internal::GetMiniTable(ptr);
-  upb_Message_Clear(hpb::internal::GetInternalMsg(ptr), minitable);
-}
-
 template <typename T, typename Extendee, typename Extension,
           typename = hpb::internal::EnableIfHpbClass<T>>
 ABSL_MUST_USE_RESULT bool HasExtension(
@@ -452,7 +393,7 @@ template <typename T, typename Extension,
 absl::Status SetExtension(
     T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
     const Extension& value) {
-  return ::protos::SetExtension(Ptr(message), id, value);
+  return ::hpb::SetExtension(Ptr(message), id, value);
 }
 
 template <typename T, typename Extension,
@@ -460,8 +401,7 @@ template <typename T, typename Extension,
 absl::Status SetExtension(
     T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
     Extension&& value) {
-  return ::protos::SetExtension(Ptr(message), id,
-                                std::forward<Extension>(value));
+  return ::hpb::SetExtension(Ptr(message), id, std::forward<Extension>(value));
 }
 
 template <typename T, typename Extension,
@@ -469,7 +409,7 @@ template <typename T, typename Extension,
 absl::Status SetExtension(
     T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
     Ptr<Extension> value) {
-  return ::protos::SetExtension(Ptr(message), id, value);
+  return ::hpb::SetExtension(Ptr(message), id, value);
 }
 
 template <typename T, typename Extendee, typename Extension,
@@ -497,6 +437,65 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
     const ::hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
   return GetExtension(Ptr(message), id);
 }
+
+template <typename T>
+typename T::Proxy CreateMessage(::hpb::Arena& arena) {
+  return typename T::Proxy(upb_Message_New(T::minitable(), arena.ptr()),
+                           arena.ptr());
+}
+
+template <typename T>
+typename T::Proxy CloneMessage(Ptr<T> message, upb_Arena* arena) {
+  return ::hpb::internal::PrivateAccess::Proxy<T>(
+      ::hpb::internal::DeepClone(::hpb::internal::GetInternalMsg(message),
+                                 T::minitable(), arena),
+      arena);
+}
+
+template <typename T>
+void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
+  static_assert(!std::is_const_v<T>);
+  ::hpb::internal::DeepCopy(
+      hpb::internal::GetInternalMsg(target_message),
+      hpb::internal::GetInternalMsg(source_message), T::minitable(),
+      static_cast<upb_Arena*>(target_message->GetInternalArena()));
+}
+
+template <typename T>
+void DeepCopy(Ptr<const T> source_message, T* target_message) {
+  static_assert(!std::is_const_v<T>);
+  DeepCopy(source_message, Ptr(target_message));
+}
+
+template <typename T>
+void DeepCopy(const T* source_message, Ptr<T> target_message) {
+  static_assert(!std::is_const_v<T>);
+  DeepCopy(Ptr(source_message), target_message);
+}
+
+template <typename T>
+void DeepCopy(const T* source_message, T* target_message) {
+  static_assert(!std::is_const_v<T>);
+  DeepCopy(Ptr(source_message), Ptr(target_message));
+}
+
+template <typename T>
+void ClearMessage(hpb::internal::PtrOrRaw<T> message) {
+  auto ptr = Ptr(message);
+  auto minitable = hpb::internal::GetMiniTable(ptr);
+  upb_Message_Clear(hpb::internal::GetInternalMsg(ptr), minitable);
+}
+
+}  // namespace hpb
+
+namespace protos {
+using hpb::Arena;
+using hpb::ExtensionNotFoundError;
+using hpb::MessageAllocationError;
+using hpb::MessageDecodeError;
+using hpb::MessageEncodeError;
+using hpb::Ptr;
+using hpb::SourceLocation;
 
 template <typename T>
 ABSL_MUST_USE_RESULT bool Parse(Ptr<T> message, absl::string_view bytes) {

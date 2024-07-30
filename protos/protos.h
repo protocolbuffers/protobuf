@@ -4,7 +4,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
-
 #ifndef UPB_PROTOS_PROTOS_H_
 #define UPB_PROTOS_PROTOS_H_
 #include "google/protobuf/hpb/hpb.h"
@@ -26,5 +25,14 @@ using hpb::internal::PrivateAccess;
 using hpb::internal::Serialize;
 using hpb::internal::SetExtension;
 }  // namespace internal
+using hpb::ClearMessage;
+using hpb::CloneMessage;
+using hpb::CreateMessage;
+using hpb::DeepCopy;
+
+using hpb::ClearExtension;
+using hpb::GetExtension;
+using hpb::HasExtension;
+using hpb::SetExtension;
 }  // namespace protos
 #endif

@@ -68,13 +68,13 @@ TEST(CppGeneratedCode, MessageEnumValue) {
 
 TEST(CppGeneratedCode, ArenaConstructor) {
   ::hpb::Arena arena;
-  auto testModel = ::protos::CreateMessage<TestModel>(arena);
+  auto testModel = ::hpb::CreateMessage<TestModel>(arena);
   EXPECT_EQ(false, testModel.has_b1());
 }
 
 TEST(CppGeneratedCode, Booleans) {
   ::hpb::Arena arena;
-  auto testModel = ::protos::CreateMessage<TestModel>(arena);
+  auto testModel = ::hpb::CreateMessage<TestModel>(arena);
   EXPECT_FALSE(testModel.b1());
   testModel.set_b1(true);
   EXPECT_TRUE(testModel.b1());
@@ -88,7 +88,7 @@ TEST(CppGeneratedCode, Booleans) {
 
 TEST(CppGeneratedCode, ScalarInt32) {
   ::hpb::Arena arena;
-  auto testModel = ::protos::CreateMessage<TestModel>(arena);
+  auto testModel = ::hpb::CreateMessage<TestModel>(arena);
   // Test int32 defaults.
   EXPECT_EQ(testModel.value(), 0);
   EXPECT_FALSE(testModel.has_value());
@@ -131,7 +131,7 @@ TEST(CppGeneratedCode, Strings) {
 
 TEST(CppGeneratedCode, ScalarUInt32) {
   ::hpb::Arena arena;
-  auto testModel = ::protos::CreateMessage<TestModel>(arena);
+  auto testModel = ::hpb::CreateMessage<TestModel>(arena);
   // Test defaults.
   EXPECT_EQ(testModel.optional_uint32(), 0);
   EXPECT_FALSE(testModel.has_optional_uint32());
@@ -151,7 +151,7 @@ TEST(CppGeneratedCode, ScalarUInt32) {
 
 TEST(CppGeneratedCode, ScalarInt64) {
   ::hpb::Arena arena;
-  auto testModel = ::protos::CreateMessage<TestModel>(arena);
+  auto testModel = ::hpb::CreateMessage<TestModel>(arena);
   // Test defaults.
   EXPECT_EQ(testModel.optional_int64(), 0);
   EXPECT_FALSE(testModel.has_optional_int64());
@@ -175,7 +175,7 @@ TEST(CppGeneratedCode, ScalarInt64) {
 
 TEST(CppGeneratedCode, ScalarFloat) {
   ::hpb::Arena arena;
-  auto testModel = ::protos::CreateMessage<TestModel>(arena);
+  auto testModel = ::hpb::CreateMessage<TestModel>(arena);
   // Test defaults.
   EXPECT_EQ(testModel.optional_float(), 0.0f);
   EXPECT_FALSE(testModel.has_optional_float());
@@ -203,7 +203,7 @@ TEST(CppGeneratedCode, ScalarFloat) {
 
 TEST(CppGeneratedCode, ScalarDouble) {
   ::hpb::Arena arena;
-  auto testModel = ::protos::CreateMessage<TestModel>(arena);
+  auto testModel = ::hpb::CreateMessage<TestModel>(arena);
   // Test defaults.
   EXPECT_EQ(testModel.optional_double(), 0.0);
   EXPECT_FALSE(testModel.has_optional_double());
@@ -227,7 +227,7 @@ TEST(CppGeneratedCode, ScalarDouble) {
 
 TEST(CppGeneratedCode, Enums) {
   ::hpb::Arena arena;
-  auto testModel = ::protos::CreateMessage<TestModel>(arena);
+  auto testModel = ::hpb::CreateMessage<TestModel>(arena);
 
   // Check enum default value.
   EXPECT_EQ(TestModel_Category_IMAGES, 5);
@@ -255,7 +255,7 @@ TEST(CppGeneratedCode, Enums) {
 
 TEST(CppGeneratedCode, FieldWithDefaultValue) {
   ::hpb::Arena arena;
-  auto testModel = ::protos::CreateMessage<TestModel>(arena);
+  auto testModel = ::hpb::CreateMessage<TestModel>(arena);
 
   EXPECT_FALSE(testModel.has_int_value_with_default());
   EXPECT_EQ(testModel.int_value_with_default(), 65);
@@ -270,7 +270,7 @@ TEST(CppGeneratedCode, FieldWithDefaultValue) {
 
 TEST(CppGeneratedCode, OneOfFields) {
   ::hpb::Arena arena;
-  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
 
   EXPECT_FALSE(test_model.has_oneof_member1());
   EXPECT_FALSE(test_model.has_oneof_member2());
@@ -298,7 +298,7 @@ TEST(CppGeneratedCode, OneOfFields) {
 
 TEST(CppGeneratedCode, Messages) {
   ::hpb::Arena arena;
-  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
   EXPECT_EQ(false, test_model.has_child_model_1());
   auto child_model = test_model.child_model_1();
   EXPECT_EQ(false, child_model->has_child_b1());
@@ -322,7 +322,7 @@ TEST(CppGeneratedCode, Messages) {
 
 TEST(CppGeneratedCode, NestedMessages) {
   ::hpb::Arena arena;
-  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
   auto nested_child = test_model.nested_child_1();
   EXPECT_EQ(0, nested_child->nested_child_name().size());
   auto mutable_nested_child = test_model.mutable_nested_child_1();
@@ -333,7 +333,7 @@ TEST(CppGeneratedCode, NestedMessages) {
 
 TEST(CppGeneratedCode, RepeatedMessages) {
   ::hpb::Arena arena;
-  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
   EXPECT_EQ(0, test_model.child_models_size());
   // Should be able to clear repeated field when empty.
   test_model.mutable_child_models()->clear();
@@ -362,7 +362,7 @@ TEST(CppGeneratedCode, RepeatedMessages) {
 
 TEST(CppGeneratedCode, RepeatedScalar) {
   ::hpb::Arena arena;
-  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
   EXPECT_EQ(0, test_model.value_array_size());
   // Should be able to clear repeated field when empty.
   test_model.mutable_value_array()->clear();
@@ -383,7 +383,7 @@ TEST(CppGeneratedCode, RepeatedScalar) {
 
 TEST(CppGeneratedCode, RepeatedFieldClear) {
   ::hpb::Arena arena;
-  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
   test_model.mutable_value_array()->push_back(5);
   test_model.mutable_value_array()->push_back(16);
   test_model.mutable_value_array()->push_back(27);
@@ -394,7 +394,7 @@ TEST(CppGeneratedCode, RepeatedFieldClear) {
 
 TEST(CppGeneratedCode, RepeatedFieldProxyForScalars) {
   ::hpb::Arena arena;
-  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
   EXPECT_EQ(0, test_model.value_array().size());
   EXPECT_EQ(0, test_model.mutable_value_array()->size());
 
@@ -427,7 +427,7 @@ TEST(CppGeneratedCode, RepeatedFieldProxyForScalars) {
 
 TEST(CppGeneratedCode, RepeatedScalarIterator) {
   ::hpb::Arena arena;
-  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
   test_model.mutable_value_array()->push_back(5);
   test_model.mutable_value_array()->push_back(16);
   test_model.mutable_value_array()->push_back(27);
@@ -494,7 +494,7 @@ TEST(CppGeneratedCode, RepeatedScalarIterator) {
 
 TEST(CppGeneratedCode, RepeatedFieldProxyForStrings) {
   ::hpb::Arena arena;
-  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
   EXPECT_EQ(0, test_model.repeated_string().size());
   EXPECT_EQ(0, test_model.mutable_repeated_string()->size());
 
@@ -529,7 +529,7 @@ TEST(CppGeneratedCode, RepeatedFieldProxyForStrings) {
 
 TEST(CppGeneratedCode, RepeatedFieldProxyForMessages) {
   ::hpb::Arena arena;
-  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
   EXPECT_EQ(0, test_model.child_models().size());
   ChildModel1 child1;
   child1.set_child_str1(kTestStr1);
@@ -574,7 +574,7 @@ TEST(CppGeneratedCode, RepeatedFieldProxyForMessages) {
 
 TEST(CppGeneratedCode, EmptyRepeatedFieldProxyForMessages) {
   ::hpb::Arena arena;
-  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
   EXPECT_EQ(0, test_model.child_models().size());
   ChildModel1 child1;
   child1.set_child_str1(kTestStr1);
@@ -587,7 +587,7 @@ TEST(CppGeneratedCode, EmptyRepeatedFieldProxyForMessages) {
 
 TEST(CppGeneratedCode, RepeatedFieldProxyForMessagesIndexOperator) {
   ::hpb::Arena arena;
-  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
   EXPECT_EQ(0, test_model.child_models().size());
   ChildModel1 child1;
   child1.set_child_str1(kTestStr1);
@@ -605,7 +605,7 @@ TEST(CppGeneratedCode, RepeatedFieldProxyForMessagesIndexOperator) {
 
 TEST(CppGeneratedCode, RepeatedStrings) {
   ::hpb::Arena arena;
-  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
   EXPECT_EQ(0, test_model.repeated_string_size());
   // Should be able to clear repeated field when empty.
   test_model.mutable_repeated_string()->clear();
@@ -628,11 +628,11 @@ TEST(CppGeneratedCode, MessageMapInt32KeyMessageValue) {
   const int key_test_value = 3;
   ::hpb::Arena arena;
   ::hpb::Arena child_arena;
-  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
   EXPECT_EQ(0, test_model.child_map_size());
   test_model.clear_child_map();
   EXPECT_EQ(0, test_model.child_map_size());
-  auto child_model1 = ::protos::CreateMessage<ChildModel1>(child_arena);
+  auto child_model1 = ::hpb::CreateMessage<ChildModel1>(child_arena);
   child_model1.set_child_str1("abc");
   test_model.set_child_map(key_test_value, child_model1);
   auto map_result = test_model.get_child_map(key_test_value);
@@ -649,7 +649,7 @@ TEST(CppGeneratedCode, MessageMapInt32KeyMessageValue) {
 
 TEST(CppGeneratedCode, MessageMapStringKeyAndStringValue) {
   ::hpb::Arena arena;
-  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
   EXPECT_EQ(0, test_model.str_to_str_map_size());
   test_model.clear_str_to_str_map();
   EXPECT_EQ(0, test_model.str_to_str_map_size());
@@ -665,7 +665,7 @@ TEST(CppGeneratedCode, MessageMapStringKeyAndStringValue) {
 
 TEST(CppGeneratedCode, MessageMapStringKeyAndInt32Value) {
   ::hpb::Arena arena;
-  auto test_model = ::protos::CreateMessage<TestModel>(arena);
+  auto test_model = ::hpb::CreateMessage<TestModel>(arena);
   EXPECT_EQ(0, test_model.str_to_int_map_size());
   test_model.clear_str_to_int_map();
   EXPECT_EQ(0, test_model.str_to_int_map_size());
@@ -683,26 +683,26 @@ TEST(CppGeneratedCode, MessageMapStringKeyAndInt32Value) {
 
 TEST(CppGeneratedCode, HasExtension) {
   TestModel model;
-  EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
+  EXPECT_EQ(false, ::hpb::HasExtension(&model, theme));
 }
 
 TEST(CppGeneratedCode, HasExtensionPtr) {
   TestModel model;
-  EXPECT_EQ(false, ::protos::HasExtension(model.recursive_child(), theme));
+  EXPECT_EQ(false, ::hpb::HasExtension(model.recursive_child(), theme));
 }
 
 TEST(CppGeneratedCode, ClearExtensionWithEmptyExtension) {
   TestModel model;
-  EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
-  ::protos::ClearExtension(&model, theme);
-  EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
+  EXPECT_EQ(false, ::hpb::HasExtension(&model, theme));
+  ::hpb::ClearExtension(&model, theme);
+  EXPECT_EQ(false, ::hpb::HasExtension(&model, theme));
 }
 
 TEST(CppGeneratedCode, ClearExtensionWithEmptyExtensionPtr) {
   TestModel model;
   ::hpb::Ptr<TestModel> recursive_child = model.mutable_recursive_child();
-  ::protos::ClearExtension(recursive_child, theme);
-  EXPECT_EQ(false, ::protos::HasExtension(recursive_child, theme));
+  ::hpb::ClearExtension(recursive_child, theme);
+  EXPECT_EQ(false, ::hpb::HasExtension(recursive_child, theme));
 }
 
 TEST(CppGeneratedCode, SetExtension) {
@@ -713,12 +713,11 @@ TEST(CppGeneratedCode, SetExtension) {
     ThemeExtension extension1;
     extension1.set_ext_name("Hello World");
     prior_message = ::hpb::internal::GetInternalMsg(&extension1);
-    EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
-    EXPECT_EQ(
-        true,
-        ::protos::SetExtension(&model, theme, std::move(extension1)).ok());
+    EXPECT_EQ(false, ::hpb::HasExtension(&model, theme));
+    EXPECT_EQ(true,
+              ::hpb::SetExtension(&model, theme, std::move(extension1)).ok());
   }
-  EXPECT_EQ(true, ::protos::HasExtension(&model, theme));
+  EXPECT_EQ(true, ::hpb::HasExtension(&model, theme));
   auto ext = ::protos::GetExtension(&model, theme);
   EXPECT_TRUE(ext.ok());
   EXPECT_EQ(::hpb::internal::GetInternalMsg(*ext), prior_message);
@@ -726,20 +725,20 @@ TEST(CppGeneratedCode, SetExtension) {
 
 TEST(CppGeneratedCode, SetExtensionWithPtr) {
   ::hpb::Arena arena_model;
-  ::hpb::Ptr<TestModel> model = ::protos::CreateMessage<TestModel>(arena_model);
+  ::hpb::Ptr<TestModel> model = ::hpb::CreateMessage<TestModel>(arena_model);
   void* prior_message;
   {
     // Use a nested scope to make sure the arenas are fused correctly.
     ::hpb::Arena arena;
     ::hpb::Ptr<ThemeExtension> extension1 =
-        ::protos::CreateMessage<ThemeExtension>(arena);
+        ::hpb::CreateMessage<ThemeExtension>(arena);
     extension1->set_ext_name("Hello World");
     prior_message = ::hpb::internal::GetInternalMsg(extension1);
-    EXPECT_EQ(false, ::protos::HasExtension(model, theme));
-    auto res = ::protos::SetExtension(model, theme, extension1);
+    EXPECT_EQ(false, ::hpb::HasExtension(model, theme));
+    auto res = ::hpb::SetExtension(model, theme, extension1);
     EXPECT_EQ(true, res.ok());
   }
-  EXPECT_EQ(true, ::protos::HasExtension(model, theme));
+  EXPECT_EQ(true, ::hpb::HasExtension(model, theme));
   auto ext = ::protos::GetExtension(model, theme);
   EXPECT_TRUE(ext.ok());
   EXPECT_NE(::hpb::internal::GetInternalMsg(*ext), prior_message);
@@ -748,7 +747,7 @@ TEST(CppGeneratedCode, SetExtensionWithPtr) {
 #ifndef _MSC_VER
 TEST(CppGeneratedCode, SetExtensionShouldNotCompileForWrongType) {
   ::hpb::Arena arena;
-  ::hpb::Ptr<TestModel> model = ::protos::CreateMessage<TestModel>(arena);
+  ::hpb::Ptr<TestModel> model = ::hpb::CreateMessage<TestModel>(arena);
   ThemeExtension extension1;
   ContainerExtension extension2;
 
@@ -756,32 +755,32 @@ TEST(CppGeneratedCode, SetExtensionShouldNotCompileForWrongType) {
     return Requires<decltype(model)>(l);
   };
   EXPECT_TRUE(canSetExtension(
-      [](auto p) -> decltype(::protos::SetExtension(p, theme, extension1)) {}));
+      [](auto p) -> decltype(::hpb::SetExtension(p, theme, extension1)) {}));
   // Wrong extension value type should fail to compile.
   EXPECT_TRUE(!canSetExtension(
-      [](auto p) -> decltype(::protos::SetExtension(p, theme, extension2)) {}));
+      [](auto p) -> decltype(::hpb::SetExtension(p, theme, extension2)) {}));
   // Wrong extension id with correct extension type should fail to compile.
   EXPECT_TRUE(
-      !canSetExtension([](auto p) -> decltype(::protos::SetExtension(
+      !canSetExtension([](auto p) -> decltype(::hpb::SetExtension(
                                       p, container_ext, extension1)) {}));
 }
 #endif
 
 TEST(CppGeneratedCode, SetExtensionWithPtrSameArena) {
   ::hpb::Arena arena;
-  ::hpb::Ptr<TestModel> model = ::protos::CreateMessage<TestModel>(arena);
+  ::hpb::Ptr<TestModel> model = ::hpb::CreateMessage<TestModel>(arena);
   void* prior_message;
   {
     // Use a nested scope to make sure the arenas are fused correctly.
     ::hpb::Ptr<ThemeExtension> extension1 =
-        ::protos::CreateMessage<ThemeExtension>(arena);
+        ::hpb::CreateMessage<ThemeExtension>(arena);
     extension1->set_ext_name("Hello World");
     prior_message = ::hpb::internal::GetInternalMsg(extension1);
-    EXPECT_EQ(false, ::protos::HasExtension(model, theme));
-    auto res = ::protos::SetExtension(model, theme, extension1);
+    EXPECT_EQ(false, ::hpb::HasExtension(model, theme));
+    auto res = ::hpb::SetExtension(model, theme, extension1);
     EXPECT_EQ(true, res.ok());
   }
-  EXPECT_EQ(true, ::protos::HasExtension(model, theme));
+  EXPECT_EQ(true, ::hpb::HasExtension(model, theme));
   auto ext = ::protos::GetExtension(model, theme);
   EXPECT_TRUE(ext.ok());
   EXPECT_NE(::hpb::internal::GetInternalMsg(*ext), prior_message);
@@ -792,16 +791,16 @@ TEST(CppGeneratedCode, SetExtensionFusingFailureShouldCopy) {
   char initial_block[1000];
   hpb::Arena arena(initial_block, sizeof(initial_block));
 
-  hpb::Ptr<TestModel> model = ::protos::CreateMessage<TestModel>(arena);
+  hpb::Ptr<TestModel> model = ::hpb::CreateMessage<TestModel>(arena);
 
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
   ASSERT_FALSE(
       upb_Arena_Fuse(arena.ptr(), ::hpb::internal::GetArena(&extension1)));
-  EXPECT_FALSE(::protos::HasExtension(model, theme));
-  auto status = ::protos::SetExtension(model, theme, std::move(extension1));
+  EXPECT_FALSE(::hpb::HasExtension(model, theme));
+  auto status = ::hpb::SetExtension(model, theme, std::move(extension1));
   EXPECT_TRUE(status.ok());
-  EXPECT_TRUE(::protos::HasExtension(model, theme));
+  EXPECT_TRUE(::hpb::HasExtension(model, theme));
   EXPECT_TRUE(::protos::GetExtension(model, theme).ok());
 }
 
@@ -809,10 +808,10 @@ TEST(CppGeneratedCode, SetExtensionShouldClone) {
   TestModel model;
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
-  EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
-  EXPECT_EQ(true, ::protos::SetExtension(&model, theme, extension1).ok());
+  EXPECT_EQ(false, ::hpb::HasExtension(&model, theme));
+  EXPECT_EQ(true, ::hpb::SetExtension(&model, theme, extension1).ok());
   extension1.set_ext_name("Goodbye");
-  EXPECT_EQ(true, ::protos::HasExtension(&model, theme));
+  EXPECT_EQ(true, ::hpb::HasExtension(&model, theme));
   auto ext = ::protos::GetExtension(&model, theme);
   EXPECT_TRUE(ext.ok());
   EXPECT_EQ((*ext)->ext_name(), "Hello World");
@@ -822,12 +821,11 @@ TEST(CppGeneratedCode, SetExtensionShouldCloneConst) {
   TestModel model;
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
-  EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
-  EXPECT_EQ(
-      true,
-      ::protos::SetExtension(&model, theme, std::as_const(extension1)).ok());
+  EXPECT_EQ(false, ::hpb::HasExtension(&model, theme));
+  EXPECT_EQ(true,
+            ::hpb::SetExtension(&model, theme, std::as_const(extension1)).ok());
   extension1.set_ext_name("Goodbye");
-  EXPECT_EQ(true, ::protos::HasExtension(&model, theme));
+  EXPECT_EQ(true, ::hpb::HasExtension(&model, theme));
   auto ext = ::protos::GetExtension(&model, theme);
   EXPECT_TRUE(ext.ok());
   EXPECT_EQ((*ext)->ext_name(), "Hello World");
@@ -837,21 +835,19 @@ TEST(CppGeneratedCode, SetExtensionOnMutableChild) {
   TestModel model;
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
-  EXPECT_EQ(false,
-            ::protos::HasExtension(model.mutable_recursive_child(), theme));
-  EXPECT_EQ(true, ::protos::SetExtension(model.mutable_recursive_child(), theme,
-                                         extension1)
+  EXPECT_EQ(false, ::hpb::HasExtension(model.mutable_recursive_child(), theme));
+  EXPECT_EQ(true, ::hpb::SetExtension(model.mutable_recursive_child(), theme,
+                                      extension1)
                       .ok());
-  EXPECT_EQ(true,
-            ::protos::HasExtension(model.mutable_recursive_child(), theme));
+  EXPECT_EQ(true, ::hpb::HasExtension(model.mutable_recursive_child(), theme));
 }
 
 TEST(CppGeneratedCode, GetExtension) {
   TestModel model;
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
-  EXPECT_EQ(false, ::protos::HasExtension(&model, theme));
-  EXPECT_EQ(true, ::protos::SetExtension(&model, theme, extension1).ok());
+  EXPECT_EQ(false, ::hpb::HasExtension(&model, theme));
+  EXPECT_EQ(true, ::hpb::SetExtension(&model, theme, extension1).ok());
   EXPECT_EQ("Hello World",
             ::protos::GetExtension(&model, theme).value()->ext_name());
 }
@@ -862,10 +858,10 @@ TEST(CppGeneratedCode, GetExtensionOnMutableChild) {
   extension1.set_ext_name("Hello World");
   ::hpb::Ptr<TestModel> mutable_recursive_child =
       model.mutable_recursive_child();
-  EXPECT_EQ(false, ::protos::HasExtension(mutable_recursive_child, theme));
+  EXPECT_EQ(false, ::hpb::HasExtension(mutable_recursive_child, theme));
   EXPECT_EQ(
       true,
-      ::protos::SetExtension(mutable_recursive_child, theme, extension1).ok());
+      ::hpb::SetExtension(mutable_recursive_child, theme, extension1).ok());
   EXPECT_EQ("Hello World",
             ::protos::GetExtension(mutable_recursive_child, theme)
                 .value()
@@ -878,10 +874,10 @@ TEST(CppGeneratedCode, GetExtensionOnImmutableChild) {
   extension1.set_ext_name("Hello World");
   ::hpb::Ptr<TestModel> mutable_recursive_child =
       model.mutable_recursive_child();
-  EXPECT_EQ(false, ::protos::HasExtension(mutable_recursive_child, theme));
+  EXPECT_EQ(false, ::hpb::HasExtension(mutable_recursive_child, theme));
   EXPECT_EQ(
       true,
-      ::protos::SetExtension(mutable_recursive_child, theme, extension1).ok());
+      ::hpb::SetExtension(mutable_recursive_child, theme, extension1).ok());
   ::hpb::Ptr<const TestModel> recursive_child = model.recursive_child();
   EXPECT_EQ("Hello World",
             ::protos::GetExtension(recursive_child, theme).value()->ext_name());
@@ -899,8 +895,7 @@ TEST(CppGeneratedCode, SerializeUsingArena) {
 
 TEST(CppGeneratedCode, SerializeProxyUsingArena) {
   ::upb::Arena message_arena;
-  TestModel::Proxy model_proxy =
-      ::protos::CreateMessage<TestModel>(message_arena);
+  TestModel::Proxy model_proxy = ::hpb::CreateMessage<TestModel>(message_arena);
   model_proxy.set_str1("Hello World");
   ::upb::Arena arena;
   absl::StatusOr<absl::string_view> bytes =
@@ -926,7 +921,7 @@ TEST(CppGeneratedCode, Parse) {
   model.set_str1("Test123");
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
-  EXPECT_EQ(true, ::protos::SetExtension(&model, theme, extension1).ok());
+  EXPECT_EQ(true, ::hpb::SetExtension(&model, theme, extension1).ok());
   ::upb::Arena arena;
   auto bytes = ::protos::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
@@ -940,12 +935,11 @@ TEST(CppGeneratedCode, ParseIntoPtrToModel) {
   model.set_str1("Test123");
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
-  EXPECT_EQ(true, ::protos::SetExtension(&model, theme, extension1).ok());
+  EXPECT_EQ(true, ::hpb::SetExtension(&model, theme, extension1).ok());
   ::upb::Arena arena;
   auto bytes = ::protos::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
-  ::hpb::Ptr<TestModel> parsed_model =
-      ::protos::CreateMessage<TestModel>(arena);
+  ::hpb::Ptr<TestModel> parsed_model = ::hpb::CreateMessage<TestModel>(arena);
   EXPECT_TRUE(::protos::Parse(parsed_model, bytes.value()));
   EXPECT_EQ("Test123", parsed_model->str1());
   // Should return an extension even if we don't pass ExtensionRegistry
@@ -958,9 +952,9 @@ TEST(CppGeneratedCode, ParseWithExtensionRegistry) {
   model.set_str1("Test123");
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
-  EXPECT_EQ(true, ::protos::SetExtension(&model, theme, extension1).ok());
-  EXPECT_EQ(true, ::protos::SetExtension(
-                      &model, ThemeExtension::theme_extension, extension1)
+  EXPECT_EQ(true, ::hpb::SetExtension(&model, theme, extension1).ok());
+  EXPECT_EQ(true, ::hpb::SetExtension(&model, ThemeExtension::theme_extension,
+                                      extension1)
                       .ok());
   ::upb::Arena arena;
   auto bytes = ::protos::Serialize(&model, arena);
@@ -1129,10 +1123,10 @@ TEST(CppGeneratedCode, ClearSubMessage) {
   new_child->set_child_str1("text in child");
   ThemeExtension extension1;
   extension1.set_ext_name("name in extension");
-  EXPECT_TRUE(::protos::SetExtension(&model, theme, extension1).ok());
+  EXPECT_TRUE(::hpb::SetExtension(&model, theme, extension1).ok());
   EXPECT_TRUE(model.mutable_child_model_1()->has_child_str1());
   // Clear using Ptr<T>
-  ::protos::ClearMessage(model.mutable_child_model_1());
+  ::hpb::ClearMessage(model.mutable_child_model_1());
   EXPECT_FALSE(model.mutable_child_model_1()->has_child_str1());
 }
 
@@ -1146,14 +1140,14 @@ TEST(CppGeneratedCode, ClearMessage) {
   new_child.value()->set_child_str1("text in child");
   ThemeExtension extension1;
   extension1.set_ext_name("name in extension");
-  EXPECT_TRUE(::protos::SetExtension(&model, theme, extension1).ok());
+  EXPECT_TRUE(::hpb::SetExtension(&model, theme, extension1).ok());
   // Clear using T*
-  ::protos::ClearMessage(&model);
+  ::hpb::ClearMessage(&model);
   // Verify that scalars, repeated fields and extensions are cleared.
   EXPECT_FALSE(model.has_int64());
   EXPECT_FALSE(model.has_str2());
   EXPECT_TRUE(model.child_models().empty());
-  EXPECT_FALSE(::protos::HasExtension(&model, theme));
+  EXPECT_FALSE(::hpb::HasExtension(&model, theme));
 }
 
 TEST(CppGeneratedCode, CanInvokeClearMessageWithPtr) {
@@ -1163,7 +1157,7 @@ TEST(CppGeneratedCode, CanInvokeClearMessageWithPtr) {
   auto new_child = model.add_child_models();
   // Clear using Ptr<T>
   auto ptr = ::hpb::Ptr<TestModel>(&model);
-  ::protos::ClearMessage(ptr);
+  ::hpb::ClearMessage(ptr);
   // Successful clear
   EXPECT_FALSE(model.has_int64());
 }
@@ -1174,14 +1168,14 @@ TEST(CppGeneratedCode, CanInvokeClearMessageWithRawPtr) {
   model.set_int64(5);
   auto new_child = model.add_child_models();
   // Clear using T*
-  ::protos::ClearMessage(&model);
+  ::hpb::ClearMessage(&model);
   // Successful clear
   EXPECT_FALSE(model.has_int64());
 }
 
 template <typename T>
 bool CanCallClearMessage() {
-  return Requires<T>([](auto x) -> decltype(::protos::ClearMessage(x)) {});
+  return Requires<T>([](auto x) -> decltype(::hpb::ClearMessage(x)) {});
 }
 
 TEST(CppGeneratedCode, CannotInvokeClearMessageWithConstPtr) {
@@ -1204,13 +1198,13 @@ TEST(CppGeneratedCode, DeepCopy) {
   new_child.value()->set_child_str1("text in child");
   ThemeExtension extension1;
   extension1.set_ext_name("name in extension");
-  EXPECT_TRUE(::protos::SetExtension(&model, theme, extension1).ok());
+  EXPECT_TRUE(::hpb::SetExtension(&model, theme, extension1).ok());
   TestModel target;
   target.set_b1(true);
-  ::protos::DeepCopy(&model, &target);
+  ::hpb::DeepCopy(&model, &target);
   EXPECT_FALSE(target.b1()) << "Target was not cleared before copying content ";
   EXPECT_EQ(target.str2(), "Hello");
-  EXPECT_TRUE(::protos::HasExtension(&target, theme));
+  EXPECT_TRUE(::hpb::HasExtension(&target, theme));
 }
 
 TEST(CppGeneratedCode, HasExtensionAndRegistry) {
@@ -1223,7 +1217,7 @@ TEST(CppGeneratedCode, HasExtensionAndRegistry) {
   new_child.value()->set_child_str1("text in child");
   ThemeExtension extension1;
   extension1.set_ext_name("name in extension");
-  ASSERT_TRUE(::protos::SetExtension(&source, theme, extension1).ok());
+  ASSERT_TRUE(::hpb::SetExtension(&source, theme, extension1).ok());
 
   // Now that we have a source model with extension data, serialize.
   ::hpb::Arena arena;
@@ -1232,7 +1226,7 @@ TEST(CppGeneratedCode, HasExtensionAndRegistry) {
   // Test with ExtensionRegistry
   ::hpb::ExtensionRegistry extensions({&theme}, arena);
   TestModel parsed_model = ::protos::Parse<TestModel>(data, extensions).value();
-  EXPECT_TRUE(::protos::HasExtension(&parsed_model, theme));
+  EXPECT_TRUE(::hpb::HasExtension(&parsed_model, theme));
 }
 
 TEST(CppGeneratedCode, FieldNumberConstants) {

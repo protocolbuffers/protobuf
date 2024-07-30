@@ -36,11 +36,11 @@ std::string GenerateTestData() {
   model.set_str1("str");
   ThemeExtension extension1;
   extension1.set_ext_name("theme");
-  ABSL_CHECK_OK(::protos::SetExtension(&model, theme, extension1));
+  ABSL_CHECK_OK(::hpb::SetExtension(&model, theme, extension1));
   ThemeExtension extension2;
   extension2.set_ext_name("theme_extension");
-  ABSL_CHECK_OK(::protos::SetExtension(&model, ThemeExtension::theme_extension,
-                                       extension2));
+  ABSL_CHECK_OK(
+      ::hpb::SetExtension(&model, ThemeExtension::theme_extension, extension2));
   ::upb::Arena arena;
   auto bytes = ::protos::Serialize(&model, arena);
   ABSL_CHECK_OK(bytes);
@@ -62,7 +62,7 @@ void TestConcurrentExtensionAccess(::hpb::ExtensionRegistry registry) {
       ::protos::Parse<TestModel>(payload, registry).value();
   const auto test_main = [&] { EXPECT_EQ("str", parsed_model.str1()); };
   const auto test_theme = [&] {
-    ASSERT_TRUE(::protos::HasExtension(&parsed_model, theme));
+    ASSERT_TRUE(::hpb::HasExtension(&parsed_model, theme));
     auto ext = ::protos::GetExtension(&parsed_model, theme);
     ASSERT_OK(ext);
     EXPECT_EQ((*ext)->ext_name(), "theme");
