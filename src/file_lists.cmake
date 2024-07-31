@@ -727,7 +727,6 @@ set(libupb_hdrs
 set(protoc-gen-upb_srcs
   ${protobuf_SOURCE_DIR}/upb_generator/common.cc
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.cc
-  ${protobuf_SOURCE_DIR}/upb_generator/mangle.cc
   ${protobuf_SOURCE_DIR}/upb_generator/names.cc
   ${protobuf_SOURCE_DIR}/upb_generator/protoc-gen-upb.cc
 )
@@ -736,7 +735,6 @@ set(protoc-gen-upb_srcs
 set(protoc-gen-upb_hdrs
   ${protobuf_SOURCE_DIR}/upb_generator/common.h
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.h
-  ${protobuf_SOURCE_DIR}/upb_generator/mangle.h
   ${protobuf_SOURCE_DIR}/upb_generator/names.h
   ${protobuf_SOURCE_DIR}/upb_generator/plugin.h
 )
@@ -745,7 +743,6 @@ set(protoc-gen-upb_hdrs
 set(protoc-gen-upbdefs_srcs
   ${protobuf_SOURCE_DIR}/upb_generator/common.cc
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.cc
-  ${protobuf_SOURCE_DIR}/upb_generator/mangle.cc
   ${protobuf_SOURCE_DIR}/upb_generator/protoc-gen-upbdefs.cc
 )
 
@@ -753,7 +750,6 @@ set(protoc-gen-upbdefs_srcs
 set(protoc-gen-upbdefs_hdrs
   ${protobuf_SOURCE_DIR}/upb_generator/common.h
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.h
-  ${protobuf_SOURCE_DIR}/upb_generator/mangle.h
   ${protobuf_SOURCE_DIR}/upb_generator/plugin.h
 )
 
@@ -761,7 +757,6 @@ set(protoc-gen-upbdefs_hdrs
 set(protoc-gen-upb_minitable_srcs
   ${protobuf_SOURCE_DIR}/upb_generator/common.cc
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.cc
-  ${protobuf_SOURCE_DIR}/upb_generator/mangle.cc
   ${protobuf_SOURCE_DIR}/upb_generator/names.cc
   ${protobuf_SOURCE_DIR}/upb_generator/protoc-gen-upb_minitable-main.cc
   ${protobuf_SOURCE_DIR}/upb_generator/protoc-gen-upb_minitable.cc
@@ -771,7 +766,6 @@ set(protoc-gen-upb_minitable_srcs
 set(protoc-gen-upb_minitable_hdrs
   ${protobuf_SOURCE_DIR}/upb_generator/common.h
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.h
-  ${protobuf_SOURCE_DIR}/upb_generator/mangle.h
   ${protobuf_SOURCE_DIR}/upb_generator/names.h
   ${protobuf_SOURCE_DIR}/upb_generator/plugin.h
   ${protobuf_SOURCE_DIR}/upb_generator/protoc-gen-upb_minitable.h

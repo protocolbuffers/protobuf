@@ -13,6 +13,7 @@
 
 #include "google/protobuf/descriptor.upb_minitable.h"
 
+
 // Must be last.
 #include "upb/port/def.inc"
 

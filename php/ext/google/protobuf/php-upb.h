@@ -5014,6 +5014,7 @@ extern const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout;
 
 
 
+
 // Must be last.
 
 #ifdef __cplusplus

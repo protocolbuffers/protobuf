@@ -5416,6 +5416,7 @@ UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
 
 
 
+
 // Must be last.
 
 #ifdef __cplusplus
