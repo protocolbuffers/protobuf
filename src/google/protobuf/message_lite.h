@@ -804,10 +804,24 @@ class PROTOBUF_EXPORT MessageLite {
 
  public:
   enum ParseFlags {
+    // Merge vs. Parse:
+    // Merge: overwrites scalar fields but appends to repeated fields in the
+    //        destination; other fields in the destination remain untouched.
+    // Parse: clears all fields in the destination before calling Merge.
     kMerge = 0,
     kParse = 1,
+    // Default behaviour vs. Partial:
+    // Default: a missing required field is deemed as parsing failure.
+    // Partial: parse or merge will not give an error if input is missing
+    //          required fields.
     kMergePartial = 2,
     kParsePartial = 3,
+    // Default behaviour vs. Aliasing:
+    // Default:  when merging, pointer is followed and expanded (deep-copy).
+    // Aliasing: when merging, the destination message is allowed to retain
+    //           pointers to the original structure (shallow-copy). This mostly
+    //           is intended for use with STRING_PIECE.
+    // NOTE: STRING_PIECE is not recommended for new usage. Prefer Cords.
     kMergeWithAliasing = 4,
     kParseWithAliasing = 5,
     kMergePartialWithAliasing = 6,
