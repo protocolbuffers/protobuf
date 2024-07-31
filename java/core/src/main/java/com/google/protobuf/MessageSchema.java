@@ -700,17 +700,23 @@ final class MessageSchema<T> implements Schema<T> {
     if (repeatedFieldOffsets == null) {
       repeatedFieldOffsets = EMPTY_INT_ARRAY;
     }
-    int[] combined =
-        new int[checkInitialized.length + mapFieldPositions.length + repeatedFieldOffsets.length];
-    System.arraycopy(checkInitialized, 0, combined, 0, checkInitialized.length);
-    System.arraycopy(
-        mapFieldPositions, 0, combined, checkInitialized.length, mapFieldPositions.length);
-    System.arraycopy(
-        repeatedFieldOffsets,
-        0,
-        combined,
-        checkInitialized.length + mapFieldPositions.length,
-        repeatedFieldOffsets.length);
+    int combinedLength =
+        checkInitialized.length + mapFieldPositions.length + repeatedFieldOffsets.length;
+    int[] combined;
+    if (combinedLength > 0) {
+      combined = new int[combinedLength];
+      System.arraycopy(checkInitialized, 0, combined, 0, checkInitialized.length);
+      System.arraycopy(
+          mapFieldPositions, 0, combined, checkInitialized.length, mapFieldPositions.length);
+      System.arraycopy(
+          repeatedFieldOffsets,
+          0,
+          combined,
+          checkInitialized.length + mapFieldPositions.length,
+          repeatedFieldOffsets.length);
+    } else {
+      combined = EMPTY_INT_ARRAY;
+    }
 
     return new MessageSchema<T>(
         buffer,
