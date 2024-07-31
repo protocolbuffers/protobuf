@@ -12,11 +12,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public final class DebugFormatTest {
+public class DebugFormatTest {
 
-  private static final String REDACTED_REGEX = "\\[REDACTED\\]";
-  private static final String UNSTABLE_PREFIX_SINGLE_LINE = getUnstablePrefix(true);
-  private static final String UNSTABLE_PREFIX_MULTILINE = getUnstablePrefix(false);
+  static final String REDACTED_REGEX = "\\[REDACTED\\]";
+  static final String UNSTABLE_PREFIX_SINGLE_LINE = getUnstablePrefix(true);
+  static final String UNSTABLE_PREFIX_MULTILINE = getUnstablePrefix(false);
 
   private static String getUnstablePrefix(boolean singleLine) {
     return "";
