@@ -516,3 +516,8 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: http://buf.build/
     *   Extension: 1200-1239
+
+1.  userver
+
+    *   Website: https://userver.tech/
+    *   Extensions: 1240-1249
