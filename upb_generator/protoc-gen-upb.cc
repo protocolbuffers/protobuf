@@ -25,6 +25,7 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
@@ -45,6 +46,7 @@ namespace {
 
 struct Options {
   bool bootstrap = false;
+  bool strip_nonfunctional_codegen = false;
 };
 
 std::string SourceFilename(upb::FileDefPtr file) {
@@ -894,11 +896,14 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
   if (!options.bootstrap) {
     output("#include \"$0\"\n\n", MiniTableHeaderFilename(file));
     for (int i = 0; i < file.dependency_count(); i++) {
+      if (options.strip_nonfunctional_codegen &&
+          google::protobuf::compiler::IsKnownFeatureProto(file.dependency(i).name())) {
+        // Strip feature imports for editions codegen tests.
+        continue;
+      }
       output("#include \"$0\"\n", MiniTableHeaderFilename(file.dependency(i)));
     }
-    if (file.dependency_count() > 0) {
-      output("\n");
-    }
+    output("\n");
   }
 
   output(
@@ -1107,6 +1112,10 @@ void WriteMiniDescriptorSource(const DefPoolPair& pools, upb::FileDefPtr file,
       CApiHeaderFilename(file));
 
   for (int i = 0; i < file.dependency_count(); i++) {
+    if (options.strip_nonfunctional_codegen &&
+        google::protobuf::compiler::IsKnownFeatureProto(file.dependency(i).name())) {
+      continue;
+    }
     output("#include \"$0\"\n", CApiHeaderFilename(file.dependency(i)));
   }
 
@@ -1155,7 +1164,7 @@ bool ParseOptions(Plugin* plugin, Options* options) {
     if (pair.first == "bootstrap_upb") {
       options->bootstrap = true;
     } else if (pair.first == "experimental_strip_nonfunctional_codegen") {
-      continue;
+      options->strip_nonfunctional_codegen = true;
     } else {
       plugin->SetError(absl::Substitute("Unknown parameter: $0", pair.first));
       return false;

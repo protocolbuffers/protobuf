@@ -103,6 +103,7 @@ bootstrap_cc_library(
     visibility = ["//upb:friend_generators"],
     deps = [
         ":mangle",
+        "//src/google/protobuf:port",
         "//upb:mini_table",
         "//upb:port",
         "@com_google_absl//absl/strings",
@@ -198,6 +199,7 @@ cc_library(
         "//upb:friends",
     ],
     deps = [
+        "//src/google/protobuf:port",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -273,6 +275,7 @@ bootstrap_cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//pkg:__pkg__"],
     deps = [
+        "//src/google/protobuf/compiler:code_generator",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
@@ -313,6 +316,7 @@ bootstrap_cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//upb:friends"],
     deps = [
+        "//src/google/protobuf/compiler:code_generator",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",

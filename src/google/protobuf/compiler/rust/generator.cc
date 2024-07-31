@@ -215,6 +215,11 @@ bool RustGenerator::Generate(const FileDescriptor* file,
          {"proto_deps_h",
           [&] {
             for (int i = 0; i < file->dependency_count(); i++) {
+              if (opts->strip_nonfunctional_codegen &&
+                  IsKnownFeatureProto(file->dependency(i)->name())) {
+                // Strip feature imports for editions codegen tests.
+                continue;
+              }
               thunks_printer->Emit(
                   {{"proto_dep_h", GetHeaderFile(ctx, *file->dependency(i))}},
                   R"cc(

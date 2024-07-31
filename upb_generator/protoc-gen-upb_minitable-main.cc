@@ -50,7 +50,7 @@ void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
 bool ParseOptions(MiniTableOptions* options, Plugin* plugin) {
   for (const auto& pair : ParseGeneratorParameter(plugin->parameter())) {
     if (pair.first == "experimental_strip_nonfunctional_codegen") {
-      continue;
+      options->strip_nonfunctional_codegen = true;
     } else if (pair.first == "one_output_per_message") {
       options->one_output_per_message = true;
     } else {

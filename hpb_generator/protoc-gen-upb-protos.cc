@@ -31,8 +31,9 @@ using FileDescriptor = ::google::protobuf::FileDescriptor;
 using google::protobuf::Edition;
 
 void WriteSource(const protobuf::FileDescriptor* file, Output& output,
-                 bool fasttable_enabled);
-void WriteHeader(const protobuf::FileDescriptor* file, Output& output);
+                 bool fasttable_enabled, bool strip_feature_includes);
+void WriteHeader(const protobuf::FileDescriptor* file, Output& output,
+                 bool strip_feature_includes);
 void WriteForwardingHeader(const protobuf::FileDescriptor* file,
                            Output& output);
 void WriteMessageImplementations(const protobuf::FileDescriptor* file,
@@ -42,7 +43,8 @@ void WriteTypedefForwardingHeader(
     const std::vector<const protobuf::Descriptor*>& file_messages,
     Output& output);
 void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
-                                    Output& output);
+                                    Output& output,
+                                    bool strip_feature_includes);
 
 class Generator : public protoc::CodeGenerator {
  public:
@@ -63,6 +65,7 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
                          protoc::GeneratorContext* context,
                          std::string* error) const {
   bool fasttable_enabled = false;
+  bool strip_nonfunctional_codegen = false;
   std::vector<std::pair<std::string, std::string>> params;
   google::protobuf::compiler::ParseGeneratorParameter(parameter, &params);
 
@@ -70,7 +73,7 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
     if (pair.first == "fasttable") {
       fasttable_enabled = true;
     } else if (pair.first == "experimental_strip_nonfunctional_codegen") {
-      continue;
+      strip_nonfunctional_codegen = true;
     } else {
       *error = "Unknown parameter: " + pair.first;
       return false;
@@ -87,13 +90,13 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> header_output_stream(
       context->Open(CppHeaderFilename(file)));
   Output header_output(header_output_stream.get());
-  WriteHeader(file, header_output);
+  WriteHeader(file, header_output, strip_nonfunctional_codegen);
 
   // Write model.upb.proto.cc
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> cc_output_stream(
       context->Open(CppSourceFilename(file)));
   Output cc_output(cc_output_stream.get());
-  WriteSource(file, cc_output, fasttable_enabled);
+  WriteSource(file, cc_output, fasttable_enabled, strip_nonfunctional_codegen);
   return true;
 }
 
@@ -123,7 +126,8 @@ void WriteForwardingHeader(const protobuf::FileDescriptor* file,
   output("#endif  /* $0_UPB_FWD_H_ */\n", ToPreproc(file->name()));
 }
 
-void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
+void WriteHeader(const protobuf::FileDescriptor* file, Output& output,
+                 bool strip_feature_includes) {
   EmitFileWarning(file, output);
   output(
       R"cc(
@@ -161,7 +165,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
     output("\n");
   }
 
-  WriteHeaderMessageForwardDecls(file, output);
+  WriteHeaderMessageForwardDecls(file, output, strip_feature_includes);
   WriteStartNamespace(file, output);
 
   std::vector<const protobuf::EnumDescriptor*> this_file_enums =
@@ -190,7 +194,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
 
 // Writes a .upb.cc source file.
 void WriteSource(const protobuf::FileDescriptor* file, Output& output,
-                 bool fasttable_enabled) {
+                 bool fasttable_enabled, bool strip_feature_includes) {
   EmitFileWarning(file, output);
 
   output(
@@ -203,6 +207,11 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
       CppHeaderFilename(file));
 
   for (int i = 0; i < file->dependency_count(); i++) {
+    if (strip_feature_includes &&
+        compiler::IsKnownFeatureProto(file->dependency(i)->name())) {
+      // Strip feature imports for editions codegen tests.
+      continue;
+    }
     output("#include \"$0\"\n", CppHeaderFilename(file->dependency(i)));
   }
   output("#include \"upb/port/def.inc\"\n");
@@ -253,12 +262,18 @@ void WriteTypedefForwardingHeader(
 
 /// Writes includes for upb C minitables and fwd.h for transitive typedefs.
 void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
-                                    Output& output) {
+                                    Output& output,
+                                    bool strip_feature_includes) {
   // Import forward-declaration of types defined in this file.
   output("#include \"$0\"\n", UpbCFilename(file));
   output("#include \"$0\"\n", ForwardingHeaderFilename(file));
   // Import forward-declaration of types in dependencies.
   for (int i = 0; i < file->dependency_count(); ++i) {
+    if (strip_feature_includes &&
+        compiler::IsKnownFeatureProto(file->dependency(i)->name())) {
+      // Strip feature imports for editions codegen tests.
+      continue;
+    }
     output("#include \"$0\"\n", ForwardingHeaderFilename(file->dependency(i)));
   }
   output("\n");

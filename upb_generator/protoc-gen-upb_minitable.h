@@ -26,6 +26,7 @@ namespace generator {
 
 struct MiniTableOptions {
   bool one_output_per_message = false;
+  bool strip_nonfunctional_codegen = false;
 };
 
 void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,

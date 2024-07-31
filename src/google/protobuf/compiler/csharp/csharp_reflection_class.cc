@@ -9,8 +9,8 @@
 
 #include <sstream>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/strings/str_join.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_enum.h"
 #include "google/protobuf/compiler/csharp/csharp_field_base.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
@@ -170,10 +170,14 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
       "descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,\n");
   printer->Print("    new pbr::FileDescriptor[] { ");
   for (int i = 0; i < file_->dependency_count(); i++) {
-      printer->Print(
-      "$full_reflection_class_name$.Descriptor, ",
-      "full_reflection_class_name",
-      GetReflectionClassName(file_->dependency(i)));
+    if (options()->strip_nonfunctional_codegen &&
+        IsKnownFeatureProto(file_->dependency(i)->name())) {
+      // Strip feature imports for editions codegen tests.
+      continue;
+    }
+    printer->Print("$full_reflection_class_name$.Descriptor, ",
+                   "full_reflection_class_name",
+                   GetReflectionClassName(file_->dependency(i)));
   }
   printer->Print("},\n"
       "    new pbr::GeneratedClrTypeInfo(");
