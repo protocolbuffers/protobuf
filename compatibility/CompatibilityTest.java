@@ -1,7 +1,7 @@
 package com.google.protobuf;
 
-import protobuf_unittest.UnittestProto.Int64ParseTester;
 import protobuf_unittest.UnittestProto.TestAllTypes;
+import protobuf_unittest.UnittestProto.TestMixedFieldsAndExtensions;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,16 +11,16 @@ import org.junit.runners.JUnit4;
 public class CompatibilityTest {
     @Test
     public void testFoo() throws Exception {
-        final TestAllTypes obj = TestAllTypes.newBuilder().setOptionalInt32(1).build();
+        final TestAllTypes obj = TestAllTypes.newBuilder().setOptionalInt32(1).addRepeatedInt32(1).build();
         final byte[] serialized = obj.toByteArray();
         final TestAllTypes parsed = TestAllTypes.parseFrom(serialized);
 
         obj.toString();
         parsed.toString();
 
-        final Int64ParseTester obj2 = Int64ParseTester.newBuilder().setOptionalInt64Hifield(0).build();
+        final TestMixedFieldsAndExtensions obj2 = TestMixedFieldsAndExtensions.newBuilder().setA(1).setExtension(TestMixedFieldsAndExtensions.c, 1).build();
         final byte[] serialized2 = obj2.toByteArray();
-        final Int64ParseTester parsed2 = Int64ParseTester.parseFrom(serialized2);
+        final TestMixedFieldsAndExtensions parsed2 = TestMixedFieldsAndExtensions.parseFrom(serialized2);
         obj2.toString();
         parsed2.toString();
     }
