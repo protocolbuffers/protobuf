@@ -161,7 +161,7 @@ public class RepeatedFieldBuilderV3Test {
   }
 
   private RepeatedFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder>
-      newRepeatedFieldBuilderV3(AbstractMessage.BuilderParent parent) {
+      newRepeatedFieldBuilderV3(GeneratedMessageV3.BuilderParent parent) {
     return new RepeatedFieldBuilderV3<TestAllTypes, TestAllTypes.Builder, TestAllTypesOrBuilder>(
         Collections.<TestAllTypes>emptyList(), false, parent, false);
   }

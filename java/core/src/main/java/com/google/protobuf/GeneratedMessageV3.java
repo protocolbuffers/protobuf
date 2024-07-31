@@ -53,7 +53,7 @@ import java.util.TreeMap;
  *
  * @author kenton@google.com Kenton Varda
  */
-public abstract class GeneratedMessageV3 extends AbstractMessage implements Serializable {
+public abstract class GeneratedMessageV3 extends GeneratedMessage implements Serializable {
   private static final long serialVersionUID = 1L;
 
   /**
@@ -537,27 +537,23 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
    *
    * <p>TODO: Remove at breaking change since b/29368482 was fixed in 2020
    */
-  protected interface BuilderParent extends AbstractMessage.BuilderParent {}
+  protected interface BuilderParent extends GeneratedMessage.BuilderParent {}
 
-  /** TODO: remove this together with GeneratedMessageV3.BuilderParent. */
+  // /** TODO: remove this together with GeneratedMessageV3.BuilderParent. */
   protected abstract Message.Builder newBuilderForType(BuilderParent parent);
 
-  /** TODO: generated class should implement this directly */
   @Override
-  protected Message.Builder newBuilderForType(final AbstractMessage.BuilderParent parent) {
-    return newBuilderForType(
-        new BuilderParent() {
-          @Override
-          public void markDirty() {
-            parent.markDirty();
-          }
-        });
+  protected Message.Builder newBuilderForType(GeneratedMessage.BuilderParent parent) {
+    // if (parent instanceof GeneratedMessageV3.BuilderParent) {
+    return newBuilderForType((GeneratedMessageV3.BuilderParent) parent);
+    // } 
+    // throw new UnsupportedOperationException("Should be overridden");
   }
 
   /** Builder class for {@link GeneratedMessageV3}. */
   @SuppressWarnings("unchecked")
   public abstract static class Builder<BuilderT extends Builder<BuilderT>>
-      extends AbstractMessage.Builder<BuilderT> {
+      extends GeneratedMessage.Builder<BuilderT> {
 
     private BuilderParent builderParent;
 
@@ -913,18 +909,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       return meAsParent;
     }
 
-    /**
-     * Called when a builder or one of its nested children has changed and any parent should be
-     * notified of its invalidation.
-     */
-    protected final void onChanged() {
-      if (isClean && builderParent != null) {
-        builderParent.markDirty();
-
-        // Don't keep dispatching invalidations until build is called again.
-        isClean = false;
-      }
-    }
 
     /**
      * Gets the map field with the given field number. This method should be overridden in the
@@ -2056,7 +2040,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
    * Users should ignore this class. This class provides the implementation with access to the
    * fields of a message object using Java reflection.
    */
-  public static final class FieldAccessorTable {
+  public static final class FieldAccessorTable extends GeneratedMessage.FieldAccessorTable {
 
     /**
      * Construct a FieldAccessorTable for a particular message class. Only one FieldAccessorTable
@@ -2082,6 +2066,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
      * FieldAccessors.
      */
     public FieldAccessorTable(final Descriptor descriptor, final String[] camelCaseNames) {
+      super(descriptor, camelCaseNames);
       this.descriptor = descriptor;
       this.camelCaseNames = camelCaseNames;
       fields = new FieldAccessor[descriptor.getFields().size()];
@@ -2096,7 +2081,16 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
      * @param builderClass The builder type.
      * @return this
      */
+    @Override
+    @SuppressWarnings("unchecked")
     public FieldAccessorTable ensureFieldAccessorsInitialized(
+        Class<? extends GeneratedMessage> messageClass, Class<? extends GeneratedMessage.Builder> builderClass) {
+      // if (messageClass.isAssignableFrom(GeneratedMessageV3.class))
+      return ensureFieldAccessorsInitializedV3((Class<? extends GeneratedMessageV3>) messageClass, (Class<? extends Builder<?>>) builderClass);
+    }
+
+
+    public FieldAccessorTable ensureFieldAccessorsInitializedV3(
         Class<? extends GeneratedMessageV3> messageClass, Class<? extends Builder<?>> builderClass) {
       if (initialized) {
         return this;

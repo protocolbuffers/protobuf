@@ -325,17 +325,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
   /** TODO: remove this together with GeneratedMessage.BuilderParent. */
   protected abstract Message.Builder newBuilderForType(BuilderParent parent);
 
-  @Override
-  protected Message.Builder newBuilderForType(final AbstractMessage.BuilderParent parent) {
-    return newBuilderForType(
-        new BuilderParent() {
-          @Override
-          public void markDirty() {
-            parent.markDirty();
-          }
-        });
-  }
-
   @SuppressWarnings("unchecked")
   public abstract static class Builder<BuilderType extends Builder<BuilderType>>
       extends AbstractMessage.Builder<BuilderType> {
@@ -592,7 +581,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     }
 
     @Override
-    public final UnknownFieldSet getUnknownFields() {
+    public UnknownFieldSet getUnknownFields() {
       return unknownFields;
     }
 
@@ -1908,7 +1897,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    * Users should ignore this class. This class provides the implementation with access to the
    * fields of a message object using Java reflection.
    */
-  public static final class FieldAccessorTable {
+  public static class FieldAccessorTable {
 
     /**
      * Construct a FieldAccessorTable for a particular message class. Only one FieldAccessorTable

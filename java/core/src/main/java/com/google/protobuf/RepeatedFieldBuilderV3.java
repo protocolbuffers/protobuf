@@ -37,13 +37,14 @@ import java.util.RandomAccess;
  * @author jonp@google.com (Jon Perlow)
  */
 public class RepeatedFieldBuilderV3<
-        MType extends AbstractMessage,
-        BType extends AbstractMessage.Builder,
+        MType extends GeneratedMessageV3,
+        BType extends GeneratedMessageV3.Builder,
         IType extends MessageOrBuilder>
-    implements AbstractMessage.BuilderParent {
+    extends RepeatedFieldBuilder<MType, BType, IType>
+    implements GeneratedMessageV3.BuilderParent {
 
   // Parent to send changes to.
-  private AbstractMessage.BuilderParent parent;
+  private GeneratedMessageV3.BuilderParent parent;
 
   // List of messages. Never null. It may be immutable, in which case
   // isMessagesListMutable will be false. See note below.
@@ -104,12 +105,13 @@ public class RepeatedFieldBuilderV3<
   public RepeatedFieldBuilderV3(
       List<MType> messages,
       boolean isMessagesListMutable,
-      AbstractMessage.BuilderParent parent,
+      GeneratedMessageV3.BuilderParent parent,
       boolean isClean) {
-    this.messages = messages;
-    this.isMessagesListMutable = isMessagesListMutable;
-    this.parent = parent;
-    this.isClean = isClean;
+    super(messages, isMessagesListMutable, parent, isClean);
+    // this.messages = messages;
+    // this.isMessagesListMutable = isMessagesListMutable;
+    // this.parent = parent;
+    // this.isClean = isClean;
   }
 
   public void dispose() {
@@ -318,7 +320,7 @@ public class RepeatedFieldBuilderV3<
    * @param values the messages to add
    * @return the builder
    */
-  @CanIgnoreReturnValue
+   @CanIgnoreReturnValue
   public RepeatedFieldBuilderV3<MType, BType, IType> addAllMessages(
       Iterable<? extends MType> values) {
     for (final MType value : values) {
@@ -551,8 +553,8 @@ public class RepeatedFieldBuilderV3<
    * @param <IType> the common interface for the message and the builder
    */
   private static class MessageExternalList<
-          MType extends AbstractMessage,
-          BType extends AbstractMessage.Builder,
+          MType extends GeneratedMessageV3,
+          BType extends GeneratedMessageV3.Builder,
           IType extends MessageOrBuilder>
       extends AbstractList<MType> implements List<MType>, RandomAccess {
 
@@ -585,8 +587,8 @@ public class RepeatedFieldBuilderV3<
    * @param <IType> the common interface for the message and the builder
    */
   private static class BuilderExternalList<
-          MType extends AbstractMessage,
-          BType extends AbstractMessage.Builder,
+          MType extends GeneratedMessageV3,
+          BType extends GeneratedMessageV3.Builder,
           IType extends MessageOrBuilder>
       extends AbstractList<BType> implements List<BType>, RandomAccess {
 
@@ -619,8 +621,8 @@ public class RepeatedFieldBuilderV3<
    * @param <IType> the common interface for the message and the builder
    */
   private static class MessageOrBuilderExternalList<
-          MType extends AbstractMessage,
-          BType extends AbstractMessage.Builder,
+          MType extends GeneratedMessageV3,
+          BType extends GeneratedMessageV3.Builder,
           IType extends MessageOrBuilder>
       extends AbstractList<IType> implements List<IType>, RandomAccess {
 

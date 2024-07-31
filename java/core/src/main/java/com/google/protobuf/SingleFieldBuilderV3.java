@@ -30,13 +30,14 @@ import static com.google.protobuf.Internal.checkNotNull;
  * @author jonp@google.com (Jon Perlow)
  */
 public class SingleFieldBuilderV3<
-        MType extends AbstractMessage,
-        BType extends AbstractMessage.Builder,
+        MType extends GeneratedMessageV3,
+        BType extends GeneratedMessageV3.Builder,
         IType extends MessageOrBuilder>
-    implements AbstractMessage.BuilderParent {
+    extends SingleFieldBuilder<MType, BType, IType>
+    implements GeneratedMessageV3.BuilderParent {
 
   // Parent to send changes to.
-  private AbstractMessage.BuilderParent parent;
+  private GeneratedMessageV3.BuilderParent parent;
 
   // Invariant: one of builder or message fields must be non-null.
 
@@ -53,7 +54,8 @@ public class SingleFieldBuilderV3<
   // to dispatch dirty invalidations. See AbstractMessage.BuilderListener.
   private boolean isClean;
 
-  public SingleFieldBuilderV3(MType message, AbstractMessage.BuilderParent parent, boolean isClean) {
+  public SingleFieldBuilderV3(MType message, GeneratedMessageV3.BuilderParent parent, boolean isClean) {
+    super(message, parent, isClean);
     this.message = checkNotNull(message);
     this.parent = parent;
     this.isClean = isClean;

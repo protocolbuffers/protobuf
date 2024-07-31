@@ -3871,7 +3871,7 @@ public final class TestUtil {
    *
    * @author jonp@google.com (Jon Perlow)
    */
-  public static class MockBuilderParent implements GeneratedMessage.BuilderParent {
+  public static class MockBuilderParent implements GeneratedMessageV3.BuilderParent {
 
     private int invalidations;
 
