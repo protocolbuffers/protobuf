@@ -57,6 +57,7 @@ template <typename Key, typename T>
 class Map;
 namespace internal {
 struct RepeatedFieldBase;
+class ExtensionSet;
 }  // namespace internal
 
 namespace arena_metrics {
@@ -648,7 +649,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename>
   friend class RepeatedField;                   // For ReturnArrayMemory
   friend class internal::RepeatedPtrFieldBase;  // For ReturnArrayMemory
-  friend class internal::UntypedMapBase;        // For ReturnArenaMemory
+  friend class internal::UntypedMapBase;        // For ReturnArrayMemory
+  friend class internal::ExtensionSet;          // For ReturnArrayMemory
 
   friend struct internal::ArenaTestPeer;
 };

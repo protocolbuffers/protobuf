@@ -1601,6 +1601,10 @@ std::pair<ExtensionSet::Extension*, bool> ExtensionSet::Insert(int key) {
   return Insert(key);
 }
 
+namespace {
+constexpr bool IsPowerOfTwo(size_t n) { return (n & (n - 1)) == 0; }
+}  // namespace
+
 void ExtensionSet::GrowCapacity(size_t minimum_new_capacity) {
   if (PROTOBUF_PREDICT_FALSE(is_large())) {
     return;  // LargeMap does not have a "reserve" method.
@@ -1614,8 +1618,8 @@ void ExtensionSet::GrowCapacity(size_t minimum_new_capacity) {
     new_flat_capacity = new_flat_capacity == 0 ? 1 : new_flat_capacity * 4;
   } while (new_flat_capacity < minimum_new_capacity);
 
-  const KeyValue* begin = flat_begin();
-  const KeyValue* end = flat_end();
+  KeyValue* begin = flat_begin();
+  KeyValue* end = flat_end();
   AllocatedData new_map;
   Arena* const arena = arena_;
   if (new_flat_capacity > kMaximumFlatCapacity) {
@@ -1631,8 +1635,18 @@ void ExtensionSet::GrowCapacity(size_t minimum_new_capacity) {
     std::copy(begin, end, new_map.flat);
   }
 
-  if (arena == nullptr) {
-    DeleteFlatMap(begin, flat_capacity_);
+  // ReturnArrayMemory is more efficient with power-of-2 bytes, and
+  // sizeof(KeyValue) is a power-of-2 on 64-bit platforms. flat_capacity_ is
+  // always a power-of-2.
+  ABSL_DCHECK(IsPowerOfTwo(sizeof(KeyValue)) || sizeof(void*) != 8)
+      << sizeof(KeyValue) << " " << sizeof(void*);
+  ABSL_DCHECK(IsPowerOfTwo(flat_capacity_));
+  if (flat_capacity_ > 0) {
+    if (arena == nullptr) {
+      DeleteFlatMap(begin, flat_capacity_);
+    } else {
+      arena->ReturnArrayMemory(begin, sizeof(KeyValue) * flat_capacity_);
+    }
   }
   flat_capacity_ = new_flat_capacity;
   map_ = new_map;
