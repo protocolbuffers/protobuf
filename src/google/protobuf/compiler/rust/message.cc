@@ -1012,7 +1012,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
         impl $pb$::ClearAndParse for $Msg$ {
           fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
-            self.clear_and_parse(data)
+            $Msg::clear_and_parse$
           }
         }
 
@@ -1235,12 +1235,9 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
           $raw_arena_getter_for_message$
 
-          pub fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
-            $Msg::clear_and_parse$
-          }
           pub fn parse(data: &[u8]) -> Result<Self, $pb$::ParseError> {
             let mut msg = Self::new();
-            msg.clear_and_parse(data).map(|_| msg)
+            $pb$::ClearAndParse::clear_and_parse(&mut msg, data).map(|_| msg)
           }
 
           pub fn as_view(&self) -> $Msg$View {
