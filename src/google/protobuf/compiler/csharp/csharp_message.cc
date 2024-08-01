@@ -316,6 +316,8 @@ void MessageGenerator::Generate(io::Printer* printer) {
         "\n");
   }
 
+  GenerateNestedComparerClass(printer);
+
   if (descriptor_->extension_count() > 0) {
     printer->Print(vars,
                    "#region Extensions\n"
@@ -731,7 +733,7 @@ void MessageGenerator::GenerateMainParseLoop(io::Printer* printer,
   printer->Print("}\n");  // while
 }
 
-void MessageGenerator::GenerateComparerClass(io::Printer* printer) {
+void MessageGenerator::GenerateNestedComparerClass(io::Printer* printer) {
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["class_name"] = class_name();
   printer->Print(vars,
@@ -784,7 +786,7 @@ void MessageGenerator::GenerateComparerClass(io::Printer* printer) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     std::unique_ptr<FieldGeneratorBase> generator(
         CreateFieldGeneratorInternal(descriptor_->field(i)));
-    generator->WriteHash(printer);
+    generator->WriteHash(printer, true);
   }
   for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
     printer->Print(
