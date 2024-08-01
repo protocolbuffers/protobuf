@@ -2654,7 +2654,7 @@ class ByteSizeTest(unittest.TestCase):
 @testing_refleaks.TestCase
 class SerializationTest(unittest.TestCase):
 
-  def testSerializeEmtpyMessage(self):
+  def testSerializeEmptyMessage(self):
     first_proto = unittest_pb2.TestAllTypes()
     second_proto = unittest_pb2.TestAllTypes()
     serialized = first_proto.SerializeToString()
@@ -3203,11 +3203,11 @@ class SerializationTest(unittest.TestCase):
     self.assertEqual([1, 2, 3], proto.repeated_int32)
 
   def testInitArgsUnknownFieldName(self):
-    def InitalizeEmptyMessageWithExtraKeywordArg():
+    def InitializeEmptyMessageWithExtraKeywordArg():
       unused_proto = unittest_pb2.TestEmptyMessage(unknown='unknown')
     self._CheckRaises(
         ValueError,
-        InitalizeEmptyMessageWithExtraKeywordArg,
+        InitializeEmptyMessageWithExtraKeywordArg,
         'Protocol message TestEmptyMessage has no "unknown" field.')
 
   def testInitRequiredKwargs(self):

@@ -97,7 +97,7 @@ class PROTOBUF_EXPORT CachedSize {
   }
 
   void Set(Scalar desired) const noexcept {
-    // Avoid writing the value when it is zero. This prevents writing to gloabl
+    // Avoid writing the value when it is zero. This prevents writing to global
     // default instances, which might be in readonly memory.
     if (ABSL_PREDICT_FALSE(desired == 0)) {
       if (Get() == 0) return;
@@ -120,7 +120,7 @@ class PROTOBUF_EXPORT CachedSize {
   }
 
   void Set(Scalar desired) const noexcept {
-    // Avoid writing the value when it is zero. This prevents writing to gloabl
+    // Avoid writing the value when it is zero. This prevents writing to global
     // default instances, which might be in readonly memory.
     if (ABSL_PREDICT_FALSE(desired == 0)) {
       if (Get() == 0) return;

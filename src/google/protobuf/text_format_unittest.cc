@@ -1212,7 +1212,7 @@ TEST_F(TextFormatTest, FieldsPopulatedCorrectly) {
   }
   {
     // The address returned by the field is a string_view, which is a separate
-    // alocation. Check address directly.
+    // allocation. Check address directly.
     no_op_fields = {};
     const absl::string_view parse_string = "optional_string: \"\"";
     EXPECT_TRUE(parser.ParseFromString(parse_string, &proto));
@@ -1221,7 +1221,7 @@ TEST_F(TextFormatTest, FieldsPopulatedCorrectly) {
   }
   {
     // The address returned by the field is a string_view, which is a separate
-    // alocation. Check address directly.
+    // allocation. Check address directly.
     no_op_fields = {};
     const absl::string_view parse_string = "optional_bytes: \"\"";
     EXPECT_TRUE(parser.ParseFromString(parse_string, &proto));

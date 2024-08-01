@@ -29,7 +29,7 @@ class TimestampTest(unittest.TestCase):
         321, timestamp.to_microseconds(timestamp.from_microseconds(321))
     )
 
-  def test_timstamp_current(self):
+  def test_timestamp_current(self):
     # It is not easy to check with current time. For test coverage only.
     self.assertNotEqual(8 * 3600, timestamp.from_current_time().seconds)
 

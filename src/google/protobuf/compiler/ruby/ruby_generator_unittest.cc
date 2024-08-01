@@ -97,11 +97,11 @@ TEST(RubyGeneratorTest, Proto3ImplicitPackageTest) {
     RubyTest("/ruby_generated_pkg_implicit");
 }
 
-TEST(RubyGeneratorTest, Proto3ExplictPackageTest) {
+TEST(RubyGeneratorTest, Proto3ExplicitPackageTest) {
     RubyTest("/ruby_generated_pkg_explicit");
 }
 
-TEST(RubyGeneratorTest, Proto3ExplictLegacyPackageTest) {
+TEST(RubyGeneratorTest, Proto3ExplicitLegacyPackageTest) {
     RubyTest("/ruby_generated_pkg_explicit_legacy");
 }
 

@@ -21,7 +21,7 @@ ruby_runtime("system_ruby")
 
 register_toolchains("@system_ruby//:toolchain")
 
-# Follwing are just needed to run conformance tests, not really needed to support them via MODULE.bazel
+# Following are just needed to run conformance tests, not really needed to support them via MODULE.bazel
 
 # For testing runtime against old gencode from a previous major version.
 http_archive(

@@ -1016,7 +1016,7 @@ class LazyRepeatedPtrField {
               return ParseWithOuterContext(value, view, ctx, &prototype,
                                            maybe_uninitialized);
             })) {
-      // If this is called by eager verficiation, ctx != nullptr and logging
+      // If this is called by eager verification, ctx != nullptr and logging
       // parsing error in that case is likely redundant because the parsing will
       // fail anyway. Users who care about parsing errors would have already
       // checked the return value and others may find the error log unexpected.

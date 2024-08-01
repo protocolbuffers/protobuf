@@ -928,7 +928,7 @@ int DeleteRepeatedField(CMessage* self, const FieldDescriptor* field_descriptor,
     // arena is used, we fallback to ReleaseLast (but ABSL_DCHECK to find/fix
     // it).
     //
-    // Note that arena is likely null and ABSL_DCHECK and ReleaesLast might be
+    // Note that arena is likely null and ABSL_DCHECK and ReleaseLast might be
     // redundant. The current approach takes extra cautious path not to disrupt
     // production.
     Message* sub_message =

@@ -174,7 +174,7 @@ class PROTOBUF_EXPORT SerialArena {
                 new_list);
 
       // We need to unpoison this memory before filling it in case it has been
-      // poisoned by another santizer client.
+      // poisoned by another sanitizer client.
       PROTOBUF_UNPOISON_MEMORY_REGION(
           new_list + cached_block_length_,
           (new_size - cached_block_length_) * sizeof(CachedBlock*));

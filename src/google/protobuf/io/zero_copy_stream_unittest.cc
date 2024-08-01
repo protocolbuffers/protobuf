@@ -1179,7 +1179,7 @@ TEST(CordOutputStreamTest, ProperHintCreatesSingleFlatCord) {
   EXPECT_EQ(flat, std::string(2000, 'a'));
 }
 
-TEST(CordOutputStreamTest, SizeHintDicatesTotalSize) {
+TEST(CordOutputStreamTest, SizeHintDictatesTotalSize) {
   absl::Cord cord(std::string(500, 'a'));
   CordOutputStream output(std::move(cord), 2000);
   void* data;

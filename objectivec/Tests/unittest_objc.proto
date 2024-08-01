@@ -861,7 +861,7 @@ message BoolOnlyMessage {
 // of #imports.  Within the WKTs, references to each other are just path
 // based imports, but when reference from another proto file, they should be
 // conditional to support the framework import style.
-message WKTRefereceMessage {
+message WKTReferenceMessage {
   optional google.protobuf.Any an_any = 1;
 }
 
