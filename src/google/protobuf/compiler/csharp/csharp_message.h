@@ -45,6 +45,7 @@ class MessageGenerator : public SourceGeneratorBase {
   void GenerateWriteToBody(io::Printer* printer, bool use_write_context);
   void GenerateMergingMethods(io::Printer* printer);
   void GenerateMainParseLoop(io::Printer* printer, bool use_parse_context);
+  void GenerateComparerClass(io::Printer* printer);
 
   int GetPresenceIndex(const FieldDescriptor* descriptor);
   FieldGeneratorBase* CreateFieldGeneratorInternal(
