@@ -42,7 +42,7 @@ std::string GenerateTestData() {
   ABSL_CHECK_OK(
       ::hpb::SetExtension(&model, ThemeExtension::theme_extension, extension2));
   ::upb::Arena arena;
-  auto bytes = ::protos::Serialize(&model, arena);
+  auto bytes = ::hpb::Serialize(&model, arena);
   ABSL_CHECK_OK(bytes);
   return std::string(bytes->data(), bytes->size());
 }
@@ -75,7 +75,7 @@ void TestConcurrentExtensionAccess(::hpb::ExtensionRegistry registry) {
   };
   const auto test_serialize = [&] {
     ::upb::Arena arena;
-    EXPECT_OK(::protos::Serialize(&parsed_model, arena));
+    EXPECT_OK(::hpb::Serialize(&parsed_model, arena));
   };
   const auto test_copy_constructor = [&] {
     TestModel copy_a = parsed_model;

@@ -438,6 +438,12 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
   return GetExtension(Ptr(message), id);
 }
 
+template <typename T, typename Extension>
+constexpr uint32_t ExtensionNumber(
+    ::hpb::internal::ExtensionIdentifier<T, Extension> id) {
+  return ::hpb::internal::PrivateAccess::GetExtensionNumber(id);
+}
+
 template <typename T>
 typename T::Proxy CreateMessage(::hpb::Arena& arena) {
   return typename T::Proxy(upb_Message_New(T::minitable(), arena.ptr()),
@@ -485,17 +491,6 @@ void ClearMessage(hpb::internal::PtrOrRaw<T> message) {
   auto minitable = hpb::internal::GetMiniTable(ptr);
   upb_Message_Clear(hpb::internal::GetInternalMsg(ptr), minitable);
 }
-
-}  // namespace hpb
-
-namespace protos {
-using hpb::Arena;
-using hpb::ExtensionNotFoundError;
-using hpb::MessageAllocationError;
-using hpb::MessageDecodeError;
-using hpb::MessageEncodeError;
-using hpb::Ptr;
-using hpb::SourceLocation;
 
 template <typename T>
 ABSL_MUST_USE_RESULT bool Parse(Ptr<T> message, absl::string_view bytes) {
@@ -594,12 +589,6 @@ absl::StatusOr<absl::string_view> Serialize(Ptr<T> message, upb::Arena& arena,
                                     arena.ptr(), options);
 }
 
-template <typename T, typename Extension>
-constexpr uint32_t ExtensionNumber(
-    ::hpb::internal::ExtensionIdentifier<T, Extension> id) {
-  return ::hpb::internal::PrivateAccess::GetExtensionNumber(id);
-}
-
-}  // namespace protos
+}  // namespace hpb
 
 #endif  // PROTOBUF_HPB_HPB_H_
