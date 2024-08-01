@@ -318,6 +318,34 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
   return [group autorelease];
 }
 
+- (void)removeField:(nonnull GPBUnknownField *)field {
+  NSUInteger count = fields_.count;
+  [fields_ removeObjectIdenticalTo:field];
+  if (count == fields_.count) {
+    [NSException raise:NSInvalidArgumentException format:@"The field was not present."];
+  }
+}
+
+- (void)clearFieldNumber:(int32_t)fieldNumber {
+  CHECK_FIELD_NUMBER(fieldNumber);
+  NSMutableIndexSet *toRemove = nil;
+  NSUInteger idx = 0;
+  for (GPBUnknownField *field in fields_) {
+    if (field->number_ == fieldNumber) {
+      if (toRemove == nil) {
+        toRemove = [[NSMutableIndexSet alloc] initWithIndex:idx];
+      } else {
+        [toRemove addIndex:idx];
+      }
+    }
+    ++idx;
+  }
+  if (toRemove) {
+    [fields_ removeObjectsAtIndexes:toRemove];
+    [toRemove release];
+  }
+}
+
 #pragma mark - NSFastEnumeration protocol
 
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state
