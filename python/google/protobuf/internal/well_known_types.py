@@ -242,7 +242,7 @@ class Timestamp(object):
       Otherwise, returns a timezone-aware datetime in the input timezone.
     """
     # Using datetime.fromtimestamp for this would avoid constructing an extra
-    # timedelta object and possibly an extra datetime. Unfortuantely, that has
+    # timedelta object and possibly an extra datetime. Unfortunately, that has
     # the disadvantage of not handling the full precision (on all platforms, see
     # https://github.com/python/cpython/issues/109849) or full range (on some
     # platforms, see https://github.com/python/cpython/issues/110042) of

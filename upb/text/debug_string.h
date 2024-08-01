@@ -21,7 +21,7 @@
 extern "C" {
 #endif
 
-/* Encodes the given |msg| to a psuedo-text format: Instead of printing field
+/* Encodes the given |msg| to a pseudo-text format: Instead of printing field
  * name to value entries, it will print field number to value entries; much like
  * how unknown fields are printed in upb_TextEncode in this directory's
  * encode.h. |mt| should correspond to the |msg|'s minitable.

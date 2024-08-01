@@ -126,7 +126,7 @@ public final class RuntimeVersionTest {
   }
 
   @Test
-  public void versionValidation_differentVesionSuffixDisallowed() {
+  public void versionValidation_differentVersionSuffixDisallowed() {
     String gencodeSuffix = "-test";
     RuntimeVersion.ProtobufRuntimeVersionException thrown =
         assertThrows(

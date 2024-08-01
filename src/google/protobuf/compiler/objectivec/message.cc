@@ -348,7 +348,7 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
           }
           printer->Emit(R"objc(
             // NOTE: There are some Objective-C specific methods/properties in
-            // GPBWellKnownTypes.h that will likey be useful.
+            // GPBWellKnownTypes.h that will likely be useful.
           )objc");
           printer->Emit("\n");
         }}},

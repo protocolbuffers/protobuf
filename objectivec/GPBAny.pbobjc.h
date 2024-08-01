@@ -170,7 +170,7 @@ GPB_FINAL @interface GPBAny : GPBMessage
 @property(nonatomic, readwrite, copy, null_resettable) NSData *value;
 
 // NOTE: There are some Objective-C specific methods/properties in
-// GPBWellKnownTypes.h that will likey be useful.
+// GPBWellKnownTypes.h that will likely be useful.
 
 @end
 

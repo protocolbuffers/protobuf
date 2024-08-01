@@ -1111,7 +1111,7 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse(text, message)
     self.assertEqual(message.bytes_value, b'\x01\x02')
 
-  def testParseBadIdentifer(self):
+  def testParseBadIdentifier(self):
     self.CheckError(
         '{int32Value: 1}',
         (
