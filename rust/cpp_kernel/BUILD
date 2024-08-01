@@ -5,12 +5,14 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 cc_library(
     name = "cpp_api",
     srcs = [
+        "compare.cc",
         "debug.cc",
         "map.cc",
         "repeated.cc",
         "strings.cc",
     ],
     hdrs = [
+        "compare.h",
         "debug.h",
         "map.h",
         "rust_alloc_for_cpp_api.h",
@@ -25,6 +27,7 @@ cc_library(
         ":rust_alloc_for_cpp_api",  # buildcleaner: keep
         "//src/google/protobuf",
         "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/io",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings:string_view",

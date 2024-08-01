@@ -319,6 +319,19 @@ pub fn debug_string(_private: Private, msg: RawMessage, f: &mut fmt::Formatter<'
     write!(f, "{dbg_str}")
 }
 
+extern "C" {
+    /// # Safety
+    /// - `msg1` and `msg2` legally dereferencable MessageLite* pointers.
+    fn proto2_rust_messagelite_equals(msg1: RawMessage, msg2: RawMessage) -> bool;
+}
+
+/// # Safety
+/// - `msg1` and `msg2` legally dereferencable MessageLite* pointers.
+pub unsafe fn raw_message_equals(_private: Private, msg1: RawMessage, msg2: RawMessage) -> bool {
+    // SAFETY: Same constraints placed on caller.
+    unsafe { proto2_rust_messagelite_equals(msg1, msg2) }
+}
+
 pub type RawMapIter = UntypedMapIterator;
 
 /// The raw contents of every generated message.
