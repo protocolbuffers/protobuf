@@ -182,8 +182,9 @@ jobs:
             bazel --version;
             ruby --version;
             ./regenerate_stale_files.sh $BAZEL_FLAGS;
+            bazel build //rudy:release
             bazel build //ruby:release //:protoc ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled' || '' }} $BAZEL_FLAGS;
-            gem install bazel-bin/rudy/google-protobuf-*;
+            gem install bazel-bin/ruby/google-protobuf-*;
             bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/test_import_proto2.proto;
             bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/basic_test.proto;
             ${{ matrix.ffi == 'FFI' && 'PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }} ruby ruby/tests/basic.rb;
