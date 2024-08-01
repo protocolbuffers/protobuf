@@ -131,10 +131,16 @@ void MessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   }
 }
 
-void MessageFieldGenerator::WriteHash(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n");
+void MessageFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject = false) {
+  if (withSpecificObject) {
+    printer->Print(
+      variables_,
+      "if (obj.$has_property_check$) hash ^= obj.$property_name$.GetHashCode();\n");
+  } else {
+    printer->Print(
+      variables_,
+      "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n");
+  }
 }
 void MessageFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(

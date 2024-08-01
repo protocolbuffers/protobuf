@@ -203,12 +203,13 @@ void PrimitiveFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   printer->Print("}\n");
 }
 
-void PrimitiveFieldGenerator::WriteHash(io::Printer* printer) {
-  const char *text = "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n";
+void PrimitiveFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject = false) {
+  std::string objPrefix = withSpecificObject ? "obj." : std::string();
+  std::string text = "if (" + objPrefix + "$has_property_check$) hash ^= " + objPrefix + "$property_name$.GetHashCode();\n";
   if (descriptor_->type() == FieldDescriptor::TYPE_FLOAT) {
-    text = "if ($has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode($property_name$);\n";
+    text = "if (" + objPrefix + "$has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(" + objPrefix + "$property_name$);\n";
   } else if (descriptor_->type() == FieldDescriptor::TYPE_DOUBLE) {
-    text = "if ($has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode($property_name$);\n";
+    text = "if (" + objPrefix + "$has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(" + objPrefix + "$property_name$);\n";
   }
 	printer->Print(variables_, text);
 }

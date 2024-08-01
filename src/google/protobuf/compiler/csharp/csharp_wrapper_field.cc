@@ -132,13 +132,14 @@ void WrapperFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
     "}\n");
 }
 
-void WrapperFieldGenerator::WriteHash(io::Printer* printer) {
-  const char *text = "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n";
+void WrapperFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject = false) {
+  std::string objPrefix = withSpecificObject ? "obj." : std::string();
+  std::string text = "if (" + objPrefix + "$has_property_check$) hash ^= " + objPrefix + "$property_name$.GetHashCode();\n";
   if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_FLOAT) {
-    text = "if ($has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode($property_name$);\n";
+    text = "if (" + objPrefix + "$has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode(" + objPrefix + "$property_name$);\n";
   }
   else if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_DOUBLE) {
-    text = "if ($has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode($property_name$);\n";
+    text = "if (" + objPrefix + "$has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode(" + objPrefix + "$property_name$);\n";
   }
   printer->Print(variables_, text);
 }

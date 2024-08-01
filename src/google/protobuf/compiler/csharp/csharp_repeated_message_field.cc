@@ -99,10 +99,16 @@ void RepeatedMessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* prin
     "size += $name$_.CalculateSize(_repeated_$name$_codec);\n");
 }
 
-void RepeatedMessageFieldGenerator::WriteHash(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "hash ^= $name$_.GetHashCode();\n");
+void RepeatedMessageFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject = false) {
+  if (withSpecificObject) {
+    printer->Print(
+      variables_,
+      "hash ^= obj.$name$_.GetHashCode();\n");
+  } else {
+    printer->Print(
+      variables_,
+      "hash ^= $name$_.GetHashCode();\n");
+  }
 }
 
 void RepeatedMessageFieldGenerator::WriteEquals(io::Printer* printer) {
