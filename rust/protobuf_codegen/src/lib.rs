@@ -125,7 +125,7 @@ impl CodeGen {
                 }
             }
         }
-        cc_build.compile(&format!("{}_upb_gen_code", env!("CARGO_CRATE_NAME")));
+        cc_build.compile(&format!("{}_upb_gen_code", std::env::var("CARGO_PKG_NAME").unwrap()));
         Ok(())
     }
 
