@@ -99,7 +99,7 @@ void RepeatedMessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* prin
     "size += $name$_.CalculateSize(_repeated_$name$_codec);\n");
 }
 
-void RepeatedMessageFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject = false) {
+void RepeatedMessageFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject) {
   if (withSpecificObject) {
     printer->Print(
       variables_,

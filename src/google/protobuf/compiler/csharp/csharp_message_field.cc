@@ -131,7 +131,7 @@ void MessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   }
 }
 
-void MessageFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject = false) {
+void MessageFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject) {
   if (withSpecificObject) {
     printer->Print(
       variables_,

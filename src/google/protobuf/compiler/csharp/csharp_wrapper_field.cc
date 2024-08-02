@@ -132,7 +132,7 @@ void WrapperFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
     "}\n");
 }
 
-void WrapperFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject = false) {
+void WrapperFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject) {
   std::string objPrefix = withSpecificObject ? "obj." : std::string();
   std::string text = "if (" + objPrefix + "$has_property_check$) hash ^= " + objPrefix + "$property_name$.GetHashCode();\n";
   if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_FLOAT) {

@@ -97,7 +97,7 @@ void MapFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
     "size += $name$_.CalculateSize(_map_$name$_codec);\n");
 }
 
-void MapFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject = false) {
+void MapFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject) {
   if (withSpecificObject) {
     printer->Print(
       variables_,

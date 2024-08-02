@@ -84,7 +84,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializedSizeCode(io::Printer* pr
     "size += $name$_.CalculateSize(_repeated_$name$_codec);\n");
 }
 
-void RepeatedPrimitiveFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject = false) {
+void RepeatedPrimitiveFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject) {
   if (withSpecificObject) {
     printer->Print(
       variables_,

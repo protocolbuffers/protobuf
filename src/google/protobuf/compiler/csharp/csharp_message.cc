@@ -737,7 +737,7 @@ void MessageGenerator::GenerateNestedComparerClass(io::Printer* printer) {
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["class_name"] = class_name();
   printer->Print(vars,
-    "private class Default$class_name$Comparer",
+    "private class Default$class_name$Comparer"
     " : scg::IEqualityComparer<$class_name$> {\n"
   );
   printer->Indent();
