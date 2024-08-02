@@ -42,6 +42,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifndef UINTPTR_MAX
 Error, UINTPTR_MAX is undefined
@@ -170,6 +171,9 @@ Error, UINTPTR_MAX is undefined
 #ifdef __APPLE__
 #define UPB_SETJMP(buf) _setjmp(buf)
 #define UPB_LONGJMP(buf, val) _longjmp(buf, val)
+#elif defined(WASM_WAMR)
+#define UPB_SETJMP(buf) 0
+#define UPB_LONGJMP(buf, val) abort()
 #else
 #define UPB_SETJMP(buf) setjmp(buf)
 #define UPB_LONGJMP(buf, val) longjmp(buf, val)
