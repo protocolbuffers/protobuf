@@ -95,6 +95,7 @@ use_repo(maven, "maven")
 
 # Development dependencies
 bazel_dep(name = "googletest", version = "1.14.0", repo_name = "com_google_googletest", dev_dependency = True)
+bazel_dep(name = "rules_buf", version = "0.3.0", dev_dependency = True)
 bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
 # rules_proto are needed for @com_google_protobuf_v25.0 used in //compatibility/... tests
 bazel_dep(name = "rules_proto", version = "4.0.0", dev_dependency = True)
