@@ -33,7 +33,7 @@ __attribute__((objc_subclassing_restricted))
  *
  * Note: The instance is not linked to the message, any change will not be
  * reflected on the message the changes have to be pushed back to the message
- * with `-[GPBMessage mergeUnknownFields:error:]`.
+ * with `-[GPBMessage mergeUnknownFields:extensionRegistry:error:]`.
  **/
 - (instancetype)initFromMessage:(nonnull GPBMessage *)message;
 
