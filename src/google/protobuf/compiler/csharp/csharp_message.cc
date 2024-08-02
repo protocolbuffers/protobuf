@@ -737,6 +737,7 @@ void MessageGenerator::GenerateNestedComparerClass(io::Printer* printer) {
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["class_name"] = class_name();
   printer->Print(vars,
+    "#region Nested comparer\n"
     "private class Default$class_name$Comparer"
     " : scg::IEqualityComparer<$class_name$> {\n"
   );
@@ -780,7 +781,7 @@ void MessageGenerator::GenerateNestedComparerClass(io::Printer* printer) {
   // HashCode
   WriteGeneratedCodeAttributes(printer);
   printer->Print(vars,
-      "public override int GetHashCode($class_name$ obj) {\n"
+      "public int GetHashCode($class_name$ obj) {\n"
       "  int hash = 1;\n");
   printer->Indent();
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -805,10 +806,12 @@ void MessageGenerator::GenerateNestedComparerClass(io::Printer* printer) {
       "}\n"
       "return hash;\n");
   printer->Outdent();
-  printer->Print("}\n\n");
+  printer->Print("}\n");
 
   printer->Outdent(); // class
-  printer->Print("}\n\n");
+  printer->Print(
+    "}\n\n"
+    "#endregion\n");
 }
 
 // it's a waste of space to track presence for all values, so we only track them
