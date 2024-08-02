@@ -1484,14 +1484,12 @@ static void MergeUnknownFieldDataIntoFieldSet(GPBMessage *self, NSData *data,
   self.unknownFields = nil;
 }
 
-- (void)mergeUnknownFields:(GPBUnknownFields *)unknownFields
-         extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry {
-  NSData *data = [unknownFields serializeAsData];
-  if (![self mergeFromData:data extensionRegistry:extensionRegistry error:NULL]) {
-#if defined(DEBUG) && DEBUG
-    NSAssert(0, @"Internal error within the library, failed to parse data from unknown fields.");
-#endif
-  };
+- (BOOL)mergeUnknownFields:(GPBUnknownFields *)unknownFields
+         extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
+                     error:(NSError **)errorPtr {
+  return [self mergeFromData:[unknownFields serializeAsData]
+           extensionRegistry:extensionRegistry
+                       error:errorPtr];
 }
 
 - (BOOL)isInitialized {

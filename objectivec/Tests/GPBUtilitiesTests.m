@@ -188,7 +188,7 @@
   [group addFieldNumber:3 fixed32:0x3];
   [group addFieldNumber:2 fixed64:0x2];
   TestEmptyMessage *message = [TestEmptyMessage message];
-  [message mergeUnknownFields:ufs extensionRegistry:nil];
+  XCTAssertTrue([message mergeUnknownFields:ufs extensionRegistry:nil error:NULL]);
 
   NSString *expected = @"# --- Unknown fields ---\n"
                        @"10: 1\n"
@@ -255,7 +255,8 @@ static GPBUnknownFieldSet *UnknownFieldsSetHelper(int num) {
 static void AddUnknownFields(GPBMessage *message, int num) {
   GPBUnknownFields *ufs = [[GPBUnknownFields alloc] init];
   [ufs addFieldNumber:num varint:num];
-  [message mergeUnknownFields:ufs extensionRegistry:nil];
+  // Can't fail since it is a varint.
+  [message mergeUnknownFields:ufs extensionRegistry:nil error:NULL];
   [ufs release];
 }
 
