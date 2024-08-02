@@ -5,12 +5,15 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <cstddef>
+#include <memory>
 #include <string>
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/unittest.pb.h"
@@ -20,6 +23,7 @@ namespace google {
 namespace protobuf {
 namespace {
 
+using ::testing::Gt;
 using ::testing::StrEq;
 
 // Helper: checks that all fields have default (zero/empty) values.
@@ -439,6 +443,55 @@ TEST(NoFieldPresenceTest, DontSerializeDefaultValuesTest) {
   message.set_optional_int32(0);
   message.SerializeToString(&output);
   EXPECT_EQ(0, output.size());
+}
+
+TEST(NoFieldPresenceTest, NullMutableSerializesEmpty) {
+  // Check that, if mutable_foo() was called, but fields were not modified,
+  // nothing is serialized on the wire.
+  proto2_nofieldpresence_unittest::TestAllTypes message;
+  std::string output;
+
+  // All default values -> no output.
+  ASSERT_TRUE(message.SerializeToString(&output));
+  EXPECT_TRUE(output.empty());
+
+  // No-op mutable calls -> no output.
+  message.mutable_optional_string();
+  message.mutable_optional_bytes();
+  ASSERT_TRUE(message.SerializeToString(&output));
+  EXPECT_TRUE(output.empty());
+
+  // Assign to nonempty string -> some output.
+  *message.mutable_optional_bytes() = "bar";
+  ASSERT_TRUE(message.SerializeToString(&output));
+  EXPECT_THAT(output.size(), Gt(3));  // 3-byte-long string + tag/value + len
+}
+
+TEST(NoFieldPresenceTest, SetAllocatedAndReleaseTest) {
+  // Check that setting an empty string via set_allocated_foo behaves properly;
+  // Check that serializing after release_foo does not generate output for foo.
+  proto2_nofieldpresence_unittest::TestAllTypes message;
+  std::string output;
+
+  // All default values -> no output.
+  ASSERT_TRUE(message.SerializeToString(&output));
+  EXPECT_TRUE(output.empty());
+
+  auto allocated_bytes = std::make_unique<std::string>("test");
+  message.set_allocated_optional_bytes(allocated_bytes.release());
+  ASSERT_TRUE(message.SerializeToString(&output));
+  EXPECT_THAT(output.size(), Gt(4));  // 4-byte-long string + tag/value + len
+
+  size_t former_output_size = output.size();
+
+  auto allocated_string = std::make_unique<std::string>("");
+  message.set_allocated_optional_string(allocated_string.release());
+  ASSERT_TRUE(message.SerializeToString(&output));
+  EXPECT_EQ(former_output_size, output.size());  // empty string not serialized.
+
+  auto bytes_ptr = absl::WrapUnique(message.release_optional_bytes());
+  ASSERT_TRUE(message.SerializeToString(&output));
+  EXPECT_TRUE(output.empty());  // released fields are not serialized.
 }
 
 TEST(NoFieldPresenceTest, MergeFromIfNonzeroTest) {

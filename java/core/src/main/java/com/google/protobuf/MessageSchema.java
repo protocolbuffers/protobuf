@@ -152,7 +152,6 @@ final class MessageSchema<T> implements Schema<T> {
   private final MessageLite defaultInstance;
   private final boolean hasExtensions;
   private final boolean lite;
-  private final ProtoSyntax syntax;
   // TODO: Make both full-runtime and lite-runtime support cached field size.
   private final boolean useCachedSizeField;
 
@@ -183,7 +182,6 @@ final class MessageSchema<T> implements Schema<T> {
       int minFieldNumber,
       int maxFieldNumber,
       MessageLite defaultInstance,
-      ProtoSyntax syntax,
       boolean useCachedSizeField,
       int[] intArray,
       int checkInitialized,
@@ -199,7 +197,6 @@ final class MessageSchema<T> implements Schema<T> {
     this.maxFieldNumber = maxFieldNumber;
 
     this.lite = defaultInstance instanceof GeneratedMessageLite;
-    this.syntax = syntax;
     this.hasExtensions = extensionSchema != null && extensionSchema.hasExtensions(defaultInstance);
     this.useCachedSizeField = useCachedSizeField;
 
@@ -585,7 +582,6 @@ final class MessageSchema<T> implements Schema<T> {
         minFieldNumber,
         maxFieldNumber,
         messageInfo.getDefaultInstance(),
-        messageInfo.getSyntax(),
         /* useCachedSizeField= */ false,
         intArray,
         checkInitialized,
@@ -724,7 +720,6 @@ final class MessageSchema<T> implements Schema<T> {
         minFieldNumber,
         maxFieldNumber,
         messageInfo.getDefaultInstance(),
-        messageInfo.getSyntax(),
         /* useCachedSizeField= */ true,
         combined,
         checkInitialized.length,

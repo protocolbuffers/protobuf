@@ -95,6 +95,7 @@ jobs:
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
         bazel-cache: java_linux/11
         bash: |
+          set -ex
           bazel build //java:release
           mvn install:install-file -Dfile=bazel-bin/java/core/core_mvn-project.jar -DpomFile=bazel-bin/java/core/core_mvn-pom.xml
           mvn install:install-file -Dfile=bazel-bin/java/core/lite_mvn-project.jar -DpomFile=bazel-bin/java/core/lite_mvn-pom.xml

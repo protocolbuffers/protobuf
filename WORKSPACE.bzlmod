@@ -38,3 +38,11 @@ http_archive(
     url = "https://github.com/protocolbuffers/utf8_range/archive/d863bc33e15cba6d873c878dcca9e6fe52b2f8cb.zip",
 )
 
+# Needed for checking breaking changes from the previous release version.
+load("//:protobuf_version.bzl", "PROTOBUF_PREVIOUS_RELEASE")
+
+http_archive(
+    name = "com_google_protobuf_previous_release",
+    strip_prefix = "protobuf-" + PROTOBUF_PREVIOUS_RELEASE,
+    url = "https://github.com/protocolbuffers/protobuf/releases/download/v{0}/protobuf-{0}.tar.gz".format(PROTOBUF_PREVIOUS_RELEASE),
+)

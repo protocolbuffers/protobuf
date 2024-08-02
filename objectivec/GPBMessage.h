@@ -507,13 +507,25 @@ CF_EXTERN_C_END
  * Merges in the data from an `GPBUnknownFields`, meaning the data from the unknown fields gets
  * re-parsed so any known fields will be propertly set.
  *
- * If the intent is to replace the message's unknown fields, call `-clearUnknownFields` first.
+ * If the intent is to *replace* the message's unknown fields, call `-clearUnknownFields` first.
+ *
+ * Since the data from the GPBUnknownFields will always be well formed, this call will almost never
+ * fail. What could cause it to fail is if the GPBUnknownFields contains a field values it is
+ * and error for the message's schema - i.e.: if it contains a length delimited field where the
+ * field number for the message is defined to be a _string_ field, however the length delimited
+ * data provide is not a valid UTF8 string.
  *
  * @param unknownFields     The unknown fields to merge the data from.
  * @param extensionRegistry The extension registry to use to look up extensions, can be `nil`.
+ * @param errorPtr          An optional error pointer to fill in with a failure
+ *                          reason if the data can not be parsed. Will only be
+ *                          filled in if the data failed to be parsed.
+ *
+ * @return Boolean indicating success. errorPtr will only be fill in on failure.
  **/
-- (void)mergeUnknownFields:(GPBUnknownFields *)unknownFields
-         extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry;
+- (BOOL)mergeUnknownFields:(GPBUnknownFields *)unknownFields
+         extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
+                     error:(NSError **)errorPtr;
 
 @end
 
