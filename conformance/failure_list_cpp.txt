@@ -7,105 +7,31 @@
 # TODO: insert links to corresponding bugs tracking the issue.
 # Should we use GitHub issues or the Google-internal bug tracker?
 
-Recommended.Editions_Proto2.JsonInput.BoolFieldDoubleQuotedFalse                                                   # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.BoolFieldDoubleQuotedTrue                                                    # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.FieldNameDuplicate                                                           # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.FieldNameDuplicateDifferentCasing1                                           # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.FieldNameDuplicateDifferentCasing2                                           # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.FieldNameExtension.Validator                                                 # Expected JSON payload but got type 1
-Recommended.Editions_Proto2.JsonInput.FieldNameNotQuoted                                                           # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.IgnoreUnknownEnumStringValueInMapPart.ProtobufOutput                         # Output was not equivalent to reference message: added: map_string_nested_enum[key2]: FOO
-Recommended.Editions_Proto2.JsonInput.IgnoreUnknownEnumStringValueInMapValue.ProtobufOutput                        # Output was not equivalent to reference message: added: map_string_nested_enum[key]: FOO
-Recommended.Editions_Proto2.JsonInput.MapFieldValueIsNull                                                          # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.RepeatedFieldMessageElementIsNull                                            # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.RepeatedFieldPrimitiveElementIsNull                                          # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.RepeatedFieldTrailingComma                                                   # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.RepeatedFieldTrailingCommaWithNewlines                                       # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.RepeatedFieldTrailingCommaWithSpace                                          # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.RepeatedFieldTrailingCommaWithSpaceCommaSpace                                # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.StringFieldSingleQuoteBoth                                                   # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.StringFieldSingleQuoteKey                                                    # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.StringFieldSingleQuoteValue                                                  # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.StringFieldUppercaseEscapeLetter                                             # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.TrailingCommaInAnObject                                                      # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.TrailingCommaInAnObjectWithNewlines                                          # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.TrailingCommaInAnObjectWithSpace                                             # Should have failed to parse, but didn't.
-Recommended.Editions_Proto2.JsonInput.TrailingCommaInAnObjectWithSpaceCommaSpace                                   # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.FieldMaskNumbersDontRoundTrip.JsonOutput                                               # Should have failed to serialize, but didn't.
-Recommended.Editions_Proto3.FieldMaskPathsDontRoundTrip.JsonOutput                                                 # Should have failed to serialize, but didn't.
-Recommended.Editions_Proto3.FieldMaskTooManyUnderscore.JsonOutput                                                  # Should have failed to serialize, but didn't.
-Recommended.Editions_Proto3.JsonInput.BoolFieldDoubleQuotedFalse                                                   # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.BoolFieldDoubleQuotedTrue                                                    # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.FieldMaskInvalidCharacter                                                    # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.FieldNameDuplicate                                                           # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.FieldNameDuplicateDifferentCasing1                                           # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.FieldNameDuplicateDifferentCasing2                                           # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.FieldNameNotQuoted                                                           # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.IgnoreUnknownEnumStringValueInMapPart.ProtobufOutput                         # Output was not equivalent to reference message: added: map_string_nested_enum[key2]: FOO
-Recommended.Editions_Proto3.JsonInput.IgnoreUnknownEnumStringValueInMapValue.ProtobufOutput                        # Output was not equivalent to reference message: added: map_string_nested_enum[key]: FOO
-Recommended.Editions_Proto3.JsonInput.MapFieldValueIsNull                                                          # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.RepeatedFieldMessageElementIsNull                                            # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.RepeatedFieldPrimitiveElementIsNull                                          # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.RepeatedFieldTrailingComma                                                   # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.RepeatedFieldTrailingCommaWithNewlines                                       # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.RepeatedFieldTrailingCommaWithSpace                                          # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.RepeatedFieldTrailingCommaWithSpaceCommaSpace                                # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.StringFieldSingleQuoteBoth                                                   # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.StringFieldSingleQuoteKey                                                    # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.StringFieldSingleQuoteValue                                                  # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.StringFieldUppercaseEscapeLetter                                             # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.TrailingCommaInAnObject                                                      # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.TrailingCommaInAnObjectWithNewlines                                          # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.TrailingCommaInAnObjectWithSpace                                             # Should have failed to parse, but didn't.
-Recommended.Editions_Proto3.JsonInput.TrailingCommaInAnObjectWithSpaceCommaSpace                                   # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.BoolFieldDoubleQuotedFalse                                                            # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.BoolFieldDoubleQuotedTrue                                                             # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.FieldNameDuplicate                                                                    # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.FieldNameDuplicateDifferentCasing1                                                    # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.FieldNameDuplicateDifferentCasing2                                                    # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.FieldNameExtension.Validator                                                          # Expected JSON payload but got type 1
-Recommended.Proto2.JsonInput.FieldNameNotQuoted                                                                    # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.IgnoreUnknownEnumStringValueInMapPart.ProtobufOutput                                  # Output was not equivalent to reference message: added: map_string_nested_enum[key2]: FOO
-Recommended.Proto2.JsonInput.IgnoreUnknownEnumStringValueInMapValue.ProtobufOutput                                 # Output was not equivalent to reference message: added: map_string_nested_enum[key]: FOO
-Recommended.Proto2.JsonInput.MapFieldValueIsNull                                                                   # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.RepeatedFieldMessageElementIsNull                                                     # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.RepeatedFieldPrimitiveElementIsNull                                                   # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.RepeatedFieldTrailingComma                                                            # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.RepeatedFieldTrailingCommaWithNewlines                                                # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.RepeatedFieldTrailingCommaWithSpace                                                   # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.RepeatedFieldTrailingCommaWithSpaceCommaSpace                                         # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.StringFieldSingleQuoteBoth                                                            # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.StringFieldSingleQuoteKey                                                             # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.StringFieldSingleQuoteValue                                                           # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.StringFieldUppercaseEscapeLetter                                                      # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.TrailingCommaInAnObject                                                               # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.TrailingCommaInAnObjectWithNewlines                                                   # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.TrailingCommaInAnObjectWithSpace                                                      # Should have failed to parse, but didn't.
-Recommended.Proto2.JsonInput.TrailingCommaInAnObjectWithSpaceCommaSpace                                            # Should have failed to parse, but didn't.
-Recommended.Proto3.FieldMaskNumbersDontRoundTrip.JsonOutput                                                        # Should have failed to serialize, but didn't.
-Recommended.Proto3.FieldMaskPathsDontRoundTrip.JsonOutput                                                          # Should have failed to serialize, but didn't.
-Recommended.Proto3.FieldMaskTooManyUnderscore.JsonOutput                                                           # Should have failed to serialize, but didn't.
-Recommended.Proto3.JsonInput.BoolFieldDoubleQuotedFalse                                                            # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.BoolFieldDoubleQuotedTrue                                                             # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.FieldMaskInvalidCharacter                                                             # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.FieldNameDuplicate                                                                    # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.FieldNameDuplicateDifferentCasing1                                                    # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.FieldNameDuplicateDifferentCasing2                                                    # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.FieldNameNotQuoted                                                                    # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.IgnoreUnknownEnumStringValueInMapPart.ProtobufOutput                                  # Output was not equivalent to reference message: added: map_string_nested_enum[key2]: FOO
-Recommended.Proto3.JsonInput.IgnoreUnknownEnumStringValueInMapValue.ProtobufOutput                                 # Output was not equivalent to reference message: added: map_string_nested_enum[key]: FOO
-Recommended.Proto3.JsonInput.MapFieldValueIsNull                                                                   # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.RepeatedFieldMessageElementIsNull                                                     # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.RepeatedFieldPrimitiveElementIsNull                                                   # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.RepeatedFieldTrailingComma                                                            # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.RepeatedFieldTrailingCommaWithNewlines                                                # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.RepeatedFieldTrailingCommaWithSpace                                                   # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.RepeatedFieldTrailingCommaWithSpaceCommaSpace                                         # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.StringFieldSingleQuoteBoth                                                            # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.StringFieldSingleQuoteKey                                                             # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.StringFieldSingleQuoteValue                                                           # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.StringFieldUppercaseEscapeLetter                                                      # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.TrailingCommaInAnObject                                                               # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.TrailingCommaInAnObjectWithNewlines                                                   # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.TrailingCommaInAnObjectWithSpace                                                      # Should have failed to parse, but didn't.
-Recommended.Proto3.JsonInput.TrailingCommaInAnObjectWithSpaceCommaSpace                                            # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.BoolFieldDoubleQuotedFalse                                                                 # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.BoolFieldDoubleQuotedTrue                                                                  # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FieldNameDuplicate                                                                         # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing1                                                         # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing2                                                         # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FieldNameExtension.Validator                                                               # Expected JSON payload but got type 1
+Recommended.*.JsonInput.FieldNameNotQuoted                                                                         # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.IgnoreUnknownEnumStringValueInMapPart.ProtobufOutput                                       # Output was not equivalent to reference message: added: map_string_nested_enum[key2]: FOO
+Recommended.*.JsonInput.IgnoreUnknownEnumStringValueInMapValue.ProtobufOutput                                      # Output was not equivalent to reference message: added: map_string_nested_enum[key]: FOO
+Recommended.*.JsonInput.MapFieldValueIsNull                                                                        # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.RepeatedFieldMessageElementIsNull                                                          # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.RepeatedFieldPrimitiveElementIsNull                                                        # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.RepeatedFieldTrailingComma                                                                 # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.RepeatedFieldTrailingCommaWithNewlines                                                     # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.RepeatedFieldTrailingCommaWithSpace                                                        # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.RepeatedFieldTrailingCommaWithSpaceCommaSpace                                              # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.StringFieldSingleQuoteBoth                                                                 # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.StringFieldSingleQuoteKey                                                                  # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.StringFieldSingleQuoteValue                                                                # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.StringFieldUppercaseEscapeLetter                                                           # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.TrailingCommaInAnObject                                                                    # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.TrailingCommaInAnObjectWithNewlines                                                        # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.TrailingCommaInAnObjectWithSpace                                                           # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.TrailingCommaInAnObjectWithSpaceCommaSpace                                                 # Should have failed to parse, but didn't.
+Recommended.*.FieldMaskNumbersDontRoundTrip.JsonOutput                                                             # Should have failed to serialize, but didn't.
+Recommended.*.FieldMaskPathsDontRoundTrip.JsonOutput                                                               # Should have failed to serialize, but didn't.
+Recommended.*.FieldMaskTooManyUnderscore.JsonOutput                                                                # Should have failed to serialize, but didn't.
+Recommended.*.JsonInput.FieldMaskInvalidCharacter                                                                  # Should have failed to parse, but didn't.
