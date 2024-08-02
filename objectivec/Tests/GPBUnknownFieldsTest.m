@@ -510,6 +510,82 @@
   XCTAssertNil([ufs fields:99]);  // Not present
 }
 
+- (void)testRemoveField {
+  GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+  [ufs addFieldNumber:1 varint:1];
+  [ufs addFieldNumber:1 fixed32:1];
+  [ufs addFieldNumber:1 fixed64:1];
+  XCTAssertEqual(ufs.count, 3);
+
+  NSArray<GPBUnknownField*>* fields = [ufs fields:1];
+  XCTAssertEqual(fields.count, 3);
+  GPBUnknownField* field = fields[0];
+  XCTAssertEqual(field.number, 1);
+  XCTAssertEqual(field.type, GPBUnknownFieldTypeVarint);
+  XCTAssertEqual(field.varint, 1);
+  [ufs removeField:field];  // Remove first (varint)
+  XCTAssertEqual(ufs.count, 2);
+
+  fields = [ufs fields:1];
+  XCTAssertEqual(fields.count, 2);
+  field = fields[0];
+  XCTAssertEqual(field.number, 1);
+  XCTAssertEqual(field.type, GPBUnknownFieldTypeFixed32);
+  field = fields[1];
+  XCTAssertEqual(field.number, 1);
+  XCTAssertEqual(field.type, GPBUnknownFieldTypeFixed64);
+  [ufs removeField:field];  // Remove the second (fixed64)
+  XCTAssertEqual(ufs.count, 1);
+
+  fields = [ufs fields:1];
+  XCTAssertEqual(fields.count, 1);
+  field = fields[0];
+  XCTAssertEqual(field.number, 1);
+  XCTAssertEqual(field.type, GPBUnknownFieldTypeFixed32);
+
+  field = [[field retain] autorelease];  // Hold on to this last one.
+  [ufs removeField:field];               // Remove the last one (fixed32)
+  XCTAssertEqual(ufs.count, 0);
+
+  // Trying to remove something not in the set should fail.
+  XCTAssertThrowsSpecificNamed([ufs removeField:field], NSException, NSInvalidArgumentException);
+}
+
+- (void)testClearFieldNumber {
+  GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+  [ufs addFieldNumber:1 varint:1];
+  [ufs addFieldNumber:2 fixed32:2];
+  [ufs addFieldNumber:1 fixed64:1];
+  [ufs addFieldNumber:3 varint:3];
+  XCTAssertEqual(ufs.count, 4);
+
+  [ufs clearFieldNumber:999];  // Not present, noop.
+  XCTAssertEqual(ufs.count, 4);
+
+  [ufs clearFieldNumber:1];  // Should remove slot zero and slot two.
+  XCTAssertEqual(ufs.count, 2);
+  NSArray<GPBUnknownField*>* fields = [ufs fields:2];
+  XCTAssertEqual(fields.count, 1);
+  GPBUnknownField* field = fields[0];
+  XCTAssertEqual(field.number, 2);
+  XCTAssertEqual(field.type, GPBUnknownFieldTypeFixed32);
+  XCTAssertEqual(field.fixed32, 2);
+  fields = [ufs fields:3];
+  XCTAssertEqual(fields.count, 1);
+  field = fields[0];
+  XCTAssertEqual(field.number, 3);
+  XCTAssertEqual(field.type, GPBUnknownFieldTypeVarint);
+  XCTAssertEqual(field.varint, 3);
+
+  [ufs clearFieldNumber:2];  // Should remove slot one.
+  fields = [ufs fields:3];
+  XCTAssertEqual(fields.count, 1);
+  field = fields[0];
+  XCTAssertEqual(field.number, 3);
+  XCTAssertEqual(field.type, GPBUnknownFieldTypeVarint);
+  XCTAssertEqual(field.varint, 3);
+}
+
 - (void)testFastEnumeration {
   GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
   [ufs addFieldNumber:1 varint:1];
@@ -735,7 +811,7 @@
   [group addFieldNumber:123456 varint:5432];
 
   TestAllTypes* msg = [TestAllTypes message];
-  [msg mergeUnknownFields:ufs extensionRegistry:nil];
+  XCTAssertTrue([msg mergeUnknownFields:ufs extensionRegistry:nil error:NULL]);
   XCTAssertEqual(msg.optionalInt64, 100);
   XCTAssertEqual(msg.optionalFixed32, 200);
   XCTAssertEqual(msg.optionalFixed64, 300);
@@ -753,7 +829,7 @@
   XCTAssertEqual(varint, 5432);
 
   TestEmptyMessage* emptyMessage = [TestEmptyMessage message];
-  [emptyMessage mergeUnknownFields:ufs extensionRegistry:nil];
+  XCTAssertTrue([emptyMessage mergeUnknownFields:ufs extensionRegistry:nil error:NULL]);
   GPBUnknownFields* ufs3 = [[[GPBUnknownFields alloc] initFromMessage:emptyMessage] autorelease];
   XCTAssertEqualObjects(ufs3, ufs);  // Round trip through an empty message got us same fields back.
   XCTAssertTrue(ufs3 != ufs);        // But they are different objects.
@@ -767,7 +843,7 @@
   TestEmptyMessage* emptyMessage = [TestEmptyMessage parseFromData:allFieldsData error:NULL];
   GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] initFromMessage:emptyMessage] autorelease];
   TestAllTypes* allFields2 = [TestAllTypes message];
-  [allFields2 mergeUnknownFields:ufs extensionRegistry:nil];
+  XCTAssertTrue([allFields2 mergeUnknownFields:ufs extensionRegistry:nil error:NULL]);
   XCTAssertEqualObjects(allFields2, allFields);
 
   // Confirm that the they still all end up in unknowns when parsed into a message with extensions
@@ -815,7 +891,7 @@
   // unknown fields again.
   {
     TestAllTypes* msg = [TestAllTypes message];
-    [msg mergeUnknownFields:ufsWrongTypes extensionRegistry:nil];
+    XCTAssertTrue([msg mergeUnknownFields:ufsWrongTypes extensionRegistry:nil error:NULL]);
     GPBUnknownFields* ufs2 = [[[GPBUnknownFields alloc] initFromMessage:msg] autorelease];
     XCTAssertFalse(ufs2.empty);
     XCTAssertEqualObjects(ufs2, ufsWrongTypes);  // All back as unknown fields.
@@ -825,10 +901,37 @@
   // into unknown fields.
   {
     TestAllExtensions* msg = [TestAllExtensions message];
-    [msg mergeUnknownFields:ufsWrongTypes extensionRegistry:[UnittestRoot extensionRegistry]];
+    XCTAssertTrue([msg mergeUnknownFields:ufsWrongTypes
+                        extensionRegistry:[UnittestRoot extensionRegistry]
+                                    error:NULL]);
     GPBUnknownFields* ufs2 = [[[GPBUnknownFields alloc] initFromMessage:msg] autorelease];
     XCTAssertFalse(ufs2.empty);
     XCTAssertEqualObjects(ufs2, ufsWrongTypes);  // All back as unknown fields.
+  }
+}
+
+- (void)testMergeFailures {
+  // Valid data, pushes to the string just fine.
+  {
+    GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+    [ufs addFieldNumber:TestAllTypes_FieldNumber_OptionalString
+        lengthDelimited:DataFromCStr("abc")];
+    TestAllTypes* msg = [TestAllTypes message];
+    NSError* error = nil;
+    XCTAssertTrue([msg mergeUnknownFields:ufs extensionRegistry:nil error:&error]);
+    XCTAssertNil(error);
+    XCTAssertEqualObjects(msg.optionalString, @"abc");
+  }
+
+  // Invalid UTF-8 causes a failure when pushed to the message.
+  {
+    GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+    [ufs addFieldNumber:TestAllTypes_FieldNumber_OptionalString
+        lengthDelimited:DataFromBytes(0xC2, 0xF2, 0x0, 0x0, 0x0)];
+    TestAllTypes* msg = [TestAllTypes message];
+    NSError* error = nil;
+    XCTAssertFalse([msg mergeUnknownFields:ufs extensionRegistry:nil error:&error]);
+    XCTAssertNotNil(error);
   }
 }
 
@@ -837,7 +940,7 @@
   [ufs addFieldNumber:1 varint:0x7FFFFFFFFFFFFFFFL];
 
   TestEmptyMessage* emptyMessage = [TestEmptyMessage message];
-  [emptyMessage mergeUnknownFields:ufs extensionRegistry:nil];
+  XCTAssertTrue([emptyMessage mergeUnknownFields:ufs extensionRegistry:nil error:NULL]);
 
   GPBUnknownFields* ufsParsed =
       [[[GPBUnknownFields alloc] initFromMessage:emptyMessage] autorelease];

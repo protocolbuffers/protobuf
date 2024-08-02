@@ -131,7 +131,9 @@ const int kUnknownTypeId2 = 1550056;
   GPBUnknownFields* group = [ufs addGroupWithFieldNumber:GPBWireFormatMessageSetItem];
   [group addFieldNumber:GPBWireFormatMessageSetTypeId varint:kUnknownTypeId2];
   [group addFieldNumber:GPBWireFormatMessageSetMessage lengthDelimited:DataFromCStr("baz")];
-  [message_set mergeUnknownFields:ufs extensionRegistry:[MSetUnittestMsetRoot extensionRegistry]];
+  XCTAssertTrue([message_set mergeUnknownFields:ufs
+                              extensionRegistry:[MSetUnittestMsetRoot extensionRegistry]
+                                          error:NULL]);
 
   NSData* data = [message_set data];
 
