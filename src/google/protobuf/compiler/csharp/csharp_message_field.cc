@@ -134,27 +134,13 @@ void MessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
 void MessageFieldGenerator::WriteHash(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n");
-}
-
-void MessageFieldGenerator::WriteComparerHash(io::Printer* printer) {
-  printer->Print(
-    variables_,
     "if (obj.$has_property_check$) hash ^= obj.$property_name$.GetHashCode();\n");
 }
-
 void MessageFieldGenerator::WriteEquals(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if (!object.Equals($property_name$, other.$property_name$)) return false;\n");
-}
-
-void MessageFieldGenerator::WriteComparerEquals(io::Printer* printer) {
   printer->Print(
     variables_,
     "if (!object.Equals(x.$property_name$, y.$property_name$)) return false;\n");
 }
-
 void MessageFieldGenerator::WriteToString(io::Printer* printer) {
   variables_["field_name"] = GetFieldName(descriptor_);
   printer->Print(
