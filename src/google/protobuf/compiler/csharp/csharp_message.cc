@@ -705,7 +705,7 @@ void MessageGenerator::GenerateNestedComparerClass(io::Printer* printer) {
   printer->Print(vars,
                  "public bool Equals($class_name$ x, $class_name$ y) {\n"
                  "  if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {\n"
-                 "    return true;"
+                 "    return true;\n"
                  "  }\n"
                  "  if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {\n"
                  "    return false;\n"
