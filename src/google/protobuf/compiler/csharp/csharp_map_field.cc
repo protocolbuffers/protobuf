@@ -118,7 +118,7 @@ void MapFieldGenerator::WriteEquals(io::Printer* printer) {
 void MapFieldGenerator::WriteComparerEquals(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if (!x.$property_name$.Equals(y..$property_name$)) return false;\n");
+    "if (!x.$property_name$.Equals(y.$property_name$)) return false;\n");
 }
 
 void MapFieldGenerator::WriteToString(io::Printer* printer) {

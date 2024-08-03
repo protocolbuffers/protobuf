@@ -727,7 +727,7 @@ void MessageGenerator::GenerateNestedComparerClass(io::Printer* printer) {
   }
   if (has_extension_ranges_) {
     printer->Print(
-        "if (!Equals(x._extensions, y.._extensions)) {\n"
+        "if (!Equals(x._extensions, y._extensions)) {\n"
         "  return false;\n"
         "}\n");
   }
@@ -766,7 +766,7 @@ void MessageGenerator::GenerateNestedComparerClass(io::Printer* printer) {
   printer->Outdent();
   printer->Print("}\n");
 
-  printer->Outdent(); // class
+  printer->Outdent();
   printer->Print(
     "}\n\n"
     "#endregion\n");
