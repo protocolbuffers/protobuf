@@ -720,7 +720,7 @@ void MessageGenerator::GenerateNestedComparerClass(io::Printer* printer) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     std::unique_ptr<FieldGeneratorBase> generator(
         CreateFieldGeneratorInternal(descriptor_->field(i)));
-    generator->WriteEquals(printer);
+    generator->WriteComparerEquals(printer);
   }
   for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
     printer->Print(
@@ -748,7 +748,7 @@ void MessageGenerator::GenerateNestedComparerClass(io::Printer* printer) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     std::unique_ptr<FieldGeneratorBase> generator(
         CreateFieldGeneratorInternal(descriptor_->field(i)));
-    generator->WriteHash(printer, true);
+    generator->WriteComparerHash(printer);
   }
   for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
     printer->Print(
