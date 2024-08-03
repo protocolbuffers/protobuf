@@ -343,6 +343,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<FileDescriptorSet> _parser = new pb::MessageParser<FileDescriptorSet>(() => new FileDescriptorSet());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<FileDescriptorSet> Comparer { get; set; } = new DefaultFileDescriptorSetComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<FileDescriptorSet> Parser { get { return _parser; } }
@@ -400,25 +405,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(FileDescriptorSet other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if(!file_.Equals(other.file_)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      hash ^= file_.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -520,6 +513,37 @@ namespace Google.Protobuf.Reflection {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultFileDescriptorSetComparer : scg::IEqualityComparer<FileDescriptorSet> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(FileDescriptorSet x, FileDescriptorSet y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if(!x.file_.Equals(y.file_)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(FileDescriptorSet obj) {
+        int hash = 1;
+        hash ^= obj.file_.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -533,6 +557,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<FileDescriptorProto> _parser = new pb::MessageParser<FileDescriptorProto>(() => new FileDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<FileDescriptorProto> Comparer { get; set; } = new DefaultFileDescriptorProtoComparer();
+
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -833,49 +862,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(FileDescriptorProto other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (Name != other.Name) return false;
-      if (Package != other.Package) return false;
-      if(!dependency_.Equals(other.dependency_)) return false;
-      if(!publicDependency_.Equals(other.publicDependency_)) return false;
-      if(!weakDependency_.Equals(other.weakDependency_)) return false;
-      if(!messageType_.Equals(other.messageType_)) return false;
-      if(!enumType_.Equals(other.enumType_)) return false;
-      if(!service_.Equals(other.service_)) return false;
-      if(!extension_.Equals(other.extension_)) return false;
-      if (!object.Equals(Options, other.Options)) return false;
-      if (!object.Equals(SourceCodeInfo, other.SourceCodeInfo)) return false;
-      if (Syntax != other.Syntax) return false;
-      if (Edition != other.Edition) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasName) hash ^= Name.GetHashCode();
-      if (HasPackage) hash ^= Package.GetHashCode();
-      hash ^= dependency_.GetHashCode();
-      hash ^= publicDependency_.GetHashCode();
-      hash ^= weakDependency_.GetHashCode();
-      hash ^= messageType_.GetHashCode();
-      hash ^= enumType_.GetHashCode();
-      hash ^= service_.GetHashCode();
-      hash ^= extension_.GetHashCode();
-      if (options_ != null) hash ^= Options.GetHashCode();
-      if (sourceCodeInfo_ != null) hash ^= SourceCodeInfo.GetHashCode();
-      if (HasSyntax) hash ^= Syntax.GetHashCode();
-      if (HasEdition) hash ^= Edition.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1203,6 +1196,61 @@ namespace Google.Protobuf.Reflection {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultFileDescriptorProtoComparer : scg::IEqualityComparer<FileDescriptorProto> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(FileDescriptorProto x, FileDescriptorProto y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.Name != y.Name) return false;
+        if (x.Package != y.Package) return false;
+        if(!x.dependency_.Equals(y.dependency_)) return false;
+        if(!x.publicDependency_.Equals(y.publicDependency_)) return false;
+        if(!x.weakDependency_.Equals(y.weakDependency_)) return false;
+        if(!x.messageType_.Equals(y.messageType_)) return false;
+        if(!x.enumType_.Equals(y.enumType_)) return false;
+        if(!x.service_.Equals(y.service_)) return false;
+        if(!x.extension_.Equals(y.extension_)) return false;
+        if (!object.Equals(x.Options, y.Options)) return false;
+        if (!object.Equals(x.SourceCodeInfo, y.SourceCodeInfo)) return false;
+        if (x.Syntax != y.Syntax) return false;
+        if (x.Edition != y.Edition) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(FileDescriptorProto obj) {
+        int hash = 1;
+        if (obj.HasName) hash ^= obj.Name.GetHashCode();
+        if (obj.HasPackage) hash ^= obj.Package.GetHashCode();
+        hash ^= obj.dependency_.GetHashCode();
+        hash ^= obj.publicDependency_.GetHashCode();
+        hash ^= obj.weakDependency_.GetHashCode();
+        hash ^= obj.messageType_.GetHashCode();
+        hash ^= obj.enumType_.GetHashCode();
+        hash ^= obj.service_.GetHashCode();
+        hash ^= obj.extension_.GetHashCode();
+        if (obj.options_ != null) hash ^= obj.Options.GetHashCode();
+        if (obj.sourceCodeInfo_ != null) hash ^= obj.SourceCodeInfo.GetHashCode();
+        if (obj.HasSyntax) hash ^= obj.Syntax.GetHashCode();
+        if (obj.HasEdition) hash ^= obj.Edition.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -1216,6 +1264,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<DescriptorProto> _parser = new pb::MessageParser<DescriptorProto>(() => new DescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<DescriptorProto> Comparer { get; set; } = new DefaultDescriptorProtoComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<DescriptorProto> Parser { get { return _parser; } }
@@ -1401,43 +1454,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(DescriptorProto other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (Name != other.Name) return false;
-      if(!field_.Equals(other.field_)) return false;
-      if(!extension_.Equals(other.extension_)) return false;
-      if(!nestedType_.Equals(other.nestedType_)) return false;
-      if(!enumType_.Equals(other.enumType_)) return false;
-      if(!extensionRange_.Equals(other.extensionRange_)) return false;
-      if(!oneofDecl_.Equals(other.oneofDecl_)) return false;
-      if (!object.Equals(Options, other.Options)) return false;
-      if(!reservedRange_.Equals(other.reservedRange_)) return false;
-      if(!reservedName_.Equals(other.reservedName_)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasName) hash ^= Name.GetHashCode();
-      hash ^= field_.GetHashCode();
-      hash ^= extension_.GetHashCode();
-      hash ^= nestedType_.GetHashCode();
-      hash ^= enumType_.GetHashCode();
-      hash ^= extensionRange_.GetHashCode();
-      hash ^= oneofDecl_.GetHashCode();
-      if (options_ != null) hash ^= Options.GetHashCode();
-      hash ^= reservedRange_.GetHashCode();
-      hash ^= reservedName_.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1689,6 +1712,11 @@ namespace Google.Protobuf.Reflection {
       {
         private static readonly pb::MessageParser<ExtensionRange> _parser = new pb::MessageParser<ExtensionRange>(() => new ExtensionRange());
         private pb::UnknownFieldSet _unknownFields;
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        private scg::IEqualityComparer<ExtensionRange> Comparer { get; set; } = new DefaultExtensionRangeComparer();
+
         private int _hasBits0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1811,29 +1839,13 @@ namespace Google.Protobuf.Reflection {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public bool Equals(ExtensionRange other) {
-          if (ReferenceEquals(other, null)) {
-            return false;
-          }
-          if (ReferenceEquals(other, this)) {
-            return true;
-          }
-          if (Start != other.Start) return false;
-          if (End != other.End) return false;
-          if (!object.Equals(Options, other.Options)) return false;
-          return Equals(_unknownFields, other._unknownFields);
+          return this.Comparer.Equals(this, other);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override int GetHashCode() {
-          int hash = 1;
-          if (HasStart) hash ^= Start.GetHashCode();
-          if (HasEnd) hash ^= End.GetHashCode();
-          if (options_ != null) hash ^= Options.GetHashCode();
-          if (_unknownFields != null) {
-            hash ^= _unknownFields.GetHashCode();
-          }
-          return hash;
+          return this.Comparer.GetHashCode(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1998,6 +2010,41 @@ namespace Google.Protobuf.Reflection {
         }
         #endif
 
+        #region Nested comparer
+        private class DefaultExtensionRangeComparer : scg::IEqualityComparer<ExtensionRange> {
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public bool Equals(ExtensionRange x, ExtensionRange y) {
+            if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+              return true;
+            }
+            if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+              return false;
+            }
+            if (ReferenceEquals(x, y)) {
+              return true;
+            }
+            if (x.Start != y.Start) return false;
+            if (x.End != y.End) return false;
+            if (!object.Equals(x.Options, y.Options)) return false;
+            return Equals(x._unknownFields, y._unknownFields);
+          }
+
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public int GetHashCode(ExtensionRange obj) {
+            int hash = 1;
+            if (obj.HasStart) hash ^= obj.Start.GetHashCode();
+            if (obj.HasEnd) hash ^= obj.End.GetHashCode();
+            if (obj.options_ != null) hash ^= obj.Options.GetHashCode();
+            if (obj._unknownFields != null) {
+              hash ^= obj._unknownFields.GetHashCode();
+            }
+            return hash;
+          }
+        }
+
+        #endregion
       }
 
       /// <summary>
@@ -2013,6 +2060,11 @@ namespace Google.Protobuf.Reflection {
       {
         private static readonly pb::MessageParser<ReservedRange> _parser = new pb::MessageParser<ReservedRange>(() => new ReservedRange());
         private pb::UnknownFieldSet _unknownFields;
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        private scg::IEqualityComparer<ReservedRange> Comparer { get; set; } = new DefaultReservedRangeComparer();
+
         private int _hasBits0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -2122,27 +2174,13 @@ namespace Google.Protobuf.Reflection {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public bool Equals(ReservedRange other) {
-          if (ReferenceEquals(other, null)) {
-            return false;
-          }
-          if (ReferenceEquals(other, this)) {
-            return true;
-          }
-          if (Start != other.Start) return false;
-          if (End != other.End) return false;
-          return Equals(_unknownFields, other._unknownFields);
+          return this.Comparer.Equals(this, other);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override int GetHashCode() {
-          int hash = 1;
-          if (HasStart) hash ^= Start.GetHashCode();
-          if (HasEnd) hash ^= End.GetHashCode();
-          if (_unknownFields != null) {
-            hash ^= _unknownFields.GetHashCode();
-          }
-          return hash;
+          return this.Comparer.GetHashCode(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2276,11 +2314,93 @@ namespace Google.Protobuf.Reflection {
         }
         #endif
 
+        #region Nested comparer
+        private class DefaultReservedRangeComparer : scg::IEqualityComparer<ReservedRange> {
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public bool Equals(ReservedRange x, ReservedRange y) {
+            if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+              return true;
+            }
+            if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+              return false;
+            }
+            if (ReferenceEquals(x, y)) {
+              return true;
+            }
+            if (x.Start != y.Start) return false;
+            if (x.End != y.End) return false;
+            return Equals(x._unknownFields, y._unknownFields);
+          }
+
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public int GetHashCode(ReservedRange obj) {
+            int hash = 1;
+            if (obj.HasStart) hash ^= obj.Start.GetHashCode();
+            if (obj.HasEnd) hash ^= obj.End.GetHashCode();
+            if (obj._unknownFields != null) {
+              hash ^= obj._unknownFields.GetHashCode();
+            }
+            return hash;
+          }
+        }
+
+        #endregion
       }
 
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultDescriptorProtoComparer : scg::IEqualityComparer<DescriptorProto> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(DescriptorProto x, DescriptorProto y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.Name != y.Name) return false;
+        if(!x.field_.Equals(y.field_)) return false;
+        if(!x.extension_.Equals(y.extension_)) return false;
+        if(!x.nestedType_.Equals(y.nestedType_)) return false;
+        if(!x.enumType_.Equals(y.enumType_)) return false;
+        if(!x.extensionRange_.Equals(y.extensionRange_)) return false;
+        if(!x.oneofDecl_.Equals(y.oneofDecl_)) return false;
+        if (!object.Equals(x.Options, y.Options)) return false;
+        if(!x.reservedRange_.Equals(y.reservedRange_)) return false;
+        if(!x.reservedName_.Equals(y.reservedName_)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(DescriptorProto obj) {
+        int hash = 1;
+        if (obj.HasName) hash ^= obj.Name.GetHashCode();
+        hash ^= obj.field_.GetHashCode();
+        hash ^= obj.extension_.GetHashCode();
+        hash ^= obj.nestedType_.GetHashCode();
+        hash ^= obj.enumType_.GetHashCode();
+        hash ^= obj.extensionRange_.GetHashCode();
+        hash ^= obj.oneofDecl_.GetHashCode();
+        if (obj.options_ != null) hash ^= obj.Options.GetHashCode();
+        hash ^= obj.reservedRange_.GetHashCode();
+        hash ^= obj.reservedName_.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -2291,6 +2411,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<ExtensionRangeOptions> _parser = new pb::MessageParser<ExtensionRangeOptions>(() => new ExtensionRangeOptions());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<ExtensionRangeOptions> Comparer { get; set; } = new DefaultExtensionRangeOptionsComparer();
+
     internal pb::ExtensionSet<ExtensionRangeOptions> _extensions;
     private pb::ExtensionSet<ExtensionRangeOptions> _Extensions { get { return _extensions; } }
     private int _hasBits0;
@@ -2422,37 +2547,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(ExtensionRangeOptions other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if(!declaration_.Equals(other.declaration_)) return false;
-      if (!object.Equals(Features, other.Features)) return false;
-      if (Verification != other.Verification) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      hash ^= uninterpretedOption_.GetHashCode();
-      hash ^= declaration_.GetHashCode();
-      if (features_ != null) hash ^= Features.GetHashCode();
-      if (HasVerification) hash ^= Verification.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2679,6 +2780,11 @@ namespace Google.Protobuf.Reflection {
       {
         private static readonly pb::MessageParser<Declaration> _parser = new pb::MessageParser<Declaration>(() => new Declaration());
         private pb::UnknownFieldSet _unknownFields;
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        private scg::IEqualityComparer<Declaration> Comparer { get; set; } = new DefaultDeclarationComparer();
+
         private int _hasBits0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -2885,33 +2991,13 @@ namespace Google.Protobuf.Reflection {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public bool Equals(Declaration other) {
-          if (ReferenceEquals(other, null)) {
-            return false;
-          }
-          if (ReferenceEquals(other, this)) {
-            return true;
-          }
-          if (Number != other.Number) return false;
-          if (FullName != other.FullName) return false;
-          if (Type != other.Type) return false;
-          if (Reserved != other.Reserved) return false;
-          if (Repeated != other.Repeated) return false;
-          return Equals(_unknownFields, other._unknownFields);
+          return this.Comparer.Equals(this, other);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override int GetHashCode() {
-          int hash = 1;
-          if (HasNumber) hash ^= Number.GetHashCode();
-          if (HasFullName) hash ^= FullName.GetHashCode();
-          if (HasType) hash ^= Type.GetHashCode();
-          if (HasReserved) hash ^= Reserved.GetHashCode();
-          if (HasRepeated) hash ^= Repeated.GetHashCode();
-          if (_unknownFields != null) {
-            hash ^= _unknownFields.GetHashCode();
-          }
-          return hash;
+          return this.Comparer.GetHashCode(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3111,11 +3197,93 @@ namespace Google.Protobuf.Reflection {
         }
         #endif
 
+        #region Nested comparer
+        private class DefaultDeclarationComparer : scg::IEqualityComparer<Declaration> {
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public bool Equals(Declaration x, Declaration y) {
+            if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+              return true;
+            }
+            if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+              return false;
+            }
+            if (ReferenceEquals(x, y)) {
+              return true;
+            }
+            if (x.Number != y.Number) return false;
+            if (x.FullName != y.FullName) return false;
+            if (x.Type != y.Type) return false;
+            if (x.Reserved != y.Reserved) return false;
+            if (x.Repeated != y.Repeated) return false;
+            return Equals(x._unknownFields, y._unknownFields);
+          }
+
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public int GetHashCode(Declaration obj) {
+            int hash = 1;
+            if (obj.HasNumber) hash ^= obj.Number.GetHashCode();
+            if (obj.HasFullName) hash ^= obj.FullName.GetHashCode();
+            if (obj.HasType) hash ^= obj.Type.GetHashCode();
+            if (obj.HasReserved) hash ^= obj.Reserved.GetHashCode();
+            if (obj.HasRepeated) hash ^= obj.Repeated.GetHashCode();
+            if (obj._unknownFields != null) {
+              hash ^= obj._unknownFields.GetHashCode();
+            }
+            return hash;
+          }
+        }
+
+        #endregion
       }
 
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultExtensionRangeOptionsComparer : scg::IEqualityComparer<ExtensionRangeOptions> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(ExtensionRangeOptions x, ExtensionRangeOptions y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if(!x.uninterpretedOption_.Equals(y.uninterpretedOption_)) return false;
+        if(!x.declaration_.Equals(y.declaration_)) return false;
+        if (!object.Equals(x.Features, y.Features)) return false;
+        if (x.Verification != y.Verification) return false;
+        if (!Equals(x._extensions, y._extensions)) {
+          return false;
+        }
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(ExtensionRangeOptions obj) {
+        int hash = 1;
+        hash ^= obj.uninterpretedOption_.GetHashCode();
+        hash ^= obj.declaration_.GetHashCode();
+        if (obj.features_ != null) hash ^= obj.Features.GetHashCode();
+        if (obj.HasVerification) hash ^= obj.Verification.GetHashCode();
+        if (obj._extensions != null) {
+          hash ^= obj._extensions.GetHashCode();
+        }
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -3129,6 +3297,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<FieldDescriptorProto> _parser = new pb::MessageParser<FieldDescriptorProto>(() => new FieldDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<FieldDescriptorProto> Comparer { get; set; } = new DefaultFieldDescriptorProtoComparer();
+
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -3518,45 +3691,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(FieldDescriptorProto other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (Name != other.Name) return false;
-      if (Number != other.Number) return false;
-      if (Label != other.Label) return false;
-      if (Type != other.Type) return false;
-      if (TypeName != other.TypeName) return false;
-      if (Extendee != other.Extendee) return false;
-      if (DefaultValue != other.DefaultValue) return false;
-      if (OneofIndex != other.OneofIndex) return false;
-      if (JsonName != other.JsonName) return false;
-      if (!object.Equals(Options, other.Options)) return false;
-      if (Proto3Optional != other.Proto3Optional) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasName) hash ^= Name.GetHashCode();
-      if (HasNumber) hash ^= Number.GetHashCode();
-      if (HasLabel) hash ^= Label.GetHashCode();
-      if (HasType) hash ^= Type.GetHashCode();
-      if (HasTypeName) hash ^= TypeName.GetHashCode();
-      if (HasExtendee) hash ^= Extendee.GetHashCode();
-      if (HasDefaultValue) hash ^= DefaultValue.GetHashCode();
-      if (HasOneofIndex) hash ^= OneofIndex.GetHashCode();
-      if (HasJsonName) hash ^= JsonName.GetHashCode();
-      if (options_ != null) hash ^= Options.GetHashCode();
-      if (HasProto3Optional) hash ^= Proto3Optional.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3971,6 +4112,57 @@ namespace Google.Protobuf.Reflection {
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultFieldDescriptorProtoComparer : scg::IEqualityComparer<FieldDescriptorProto> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(FieldDescriptorProto x, FieldDescriptorProto y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.Name != y.Name) return false;
+        if (x.Number != y.Number) return false;
+        if (x.Label != y.Label) return false;
+        if (x.Type != y.Type) return false;
+        if (x.TypeName != y.TypeName) return false;
+        if (x.Extendee != y.Extendee) return false;
+        if (x.DefaultValue != y.DefaultValue) return false;
+        if (x.OneofIndex != y.OneofIndex) return false;
+        if (x.JsonName != y.JsonName) return false;
+        if (!object.Equals(x.Options, y.Options)) return false;
+        if (x.Proto3Optional != y.Proto3Optional) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(FieldDescriptorProto obj) {
+        int hash = 1;
+        if (obj.HasName) hash ^= obj.Name.GetHashCode();
+        if (obj.HasNumber) hash ^= obj.Number.GetHashCode();
+        if (obj.HasLabel) hash ^= obj.Label.GetHashCode();
+        if (obj.HasType) hash ^= obj.Type.GetHashCode();
+        if (obj.HasTypeName) hash ^= obj.TypeName.GetHashCode();
+        if (obj.HasExtendee) hash ^= obj.Extendee.GetHashCode();
+        if (obj.HasDefaultValue) hash ^= obj.DefaultValue.GetHashCode();
+        if (obj.HasOneofIndex) hash ^= obj.OneofIndex.GetHashCode();
+        if (obj.HasJsonName) hash ^= obj.JsonName.GetHashCode();
+        if (obj.options_ != null) hash ^= obj.Options.GetHashCode();
+        if (obj.HasProto3Optional) hash ^= obj.Proto3Optional.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -3984,6 +4176,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<OneofDescriptorProto> _parser = new pb::MessageParser<OneofDescriptorProto>(() => new OneofDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<OneofDescriptorProto> Comparer { get; set; } = new DefaultOneofDescriptorProtoComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<OneofDescriptorProto> Parser { get { return _parser; } }
@@ -4069,27 +4266,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(OneofDescriptorProto other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (Name != other.Name) return false;
-      if (!object.Equals(Options, other.Options)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasName) hash ^= Name.GetHashCode();
-      if (options_ != null) hash ^= Options.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4232,6 +4415,39 @@ namespace Google.Protobuf.Reflection {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultOneofDescriptorProtoComparer : scg::IEqualityComparer<OneofDescriptorProto> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(OneofDescriptorProto x, OneofDescriptorProto y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.Name != y.Name) return false;
+        if (!object.Equals(x.Options, y.Options)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(OneofDescriptorProto obj) {
+        int hash = 1;
+        if (obj.HasName) hash ^= obj.Name.GetHashCode();
+        if (obj.options_ != null) hash ^= obj.Options.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -4245,6 +4461,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<EnumDescriptorProto> _parser = new pb::MessageParser<EnumDescriptorProto>(() => new EnumDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<EnumDescriptorProto> Comparer { get; set; } = new DefaultEnumDescriptorProtoComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<EnumDescriptorProto> Parser { get { return _parser; } }
@@ -4375,33 +4596,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(EnumDescriptorProto other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (Name != other.Name) return false;
-      if(!value_.Equals(other.value_)) return false;
-      if (!object.Equals(Options, other.Options)) return false;
-      if(!reservedRange_.Equals(other.reservedRange_)) return false;
-      if(!reservedName_.Equals(other.reservedName_)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasName) hash ^= Name.GetHashCode();
-      hash ^= value_.GetHashCode();
-      if (options_ != null) hash ^= Options.GetHashCode();
-      hash ^= reservedRange_.GetHashCode();
-      hash ^= reservedName_.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4601,6 +4802,11 @@ namespace Google.Protobuf.Reflection {
       {
         private static readonly pb::MessageParser<EnumReservedRange> _parser = new pb::MessageParser<EnumReservedRange>(() => new EnumReservedRange());
         private pb::UnknownFieldSet _unknownFields;
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        private scg::IEqualityComparer<EnumReservedRange> Comparer { get; set; } = new DefaultEnumReservedRangeComparer();
+
         private int _hasBits0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -4710,27 +4916,13 @@ namespace Google.Protobuf.Reflection {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public bool Equals(EnumReservedRange other) {
-          if (ReferenceEquals(other, null)) {
-            return false;
-          }
-          if (ReferenceEquals(other, this)) {
-            return true;
-          }
-          if (Start != other.Start) return false;
-          if (End != other.End) return false;
-          return Equals(_unknownFields, other._unknownFields);
+          return this.Comparer.Equals(this, other);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override int GetHashCode() {
-          int hash = 1;
-          if (HasStart) hash ^= Start.GetHashCode();
-          if (HasEnd) hash ^= End.GetHashCode();
-          if (_unknownFields != null) {
-            hash ^= _unknownFields.GetHashCode();
-          }
-          return hash;
+          return this.Comparer.GetHashCode(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4864,11 +5056,83 @@ namespace Google.Protobuf.Reflection {
         }
         #endif
 
+        #region Nested comparer
+        private class DefaultEnumReservedRangeComparer : scg::IEqualityComparer<EnumReservedRange> {
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public bool Equals(EnumReservedRange x, EnumReservedRange y) {
+            if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+              return true;
+            }
+            if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+              return false;
+            }
+            if (ReferenceEquals(x, y)) {
+              return true;
+            }
+            if (x.Start != y.Start) return false;
+            if (x.End != y.End) return false;
+            return Equals(x._unknownFields, y._unknownFields);
+          }
+
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public int GetHashCode(EnumReservedRange obj) {
+            int hash = 1;
+            if (obj.HasStart) hash ^= obj.Start.GetHashCode();
+            if (obj.HasEnd) hash ^= obj.End.GetHashCode();
+            if (obj._unknownFields != null) {
+              hash ^= obj._unknownFields.GetHashCode();
+            }
+            return hash;
+          }
+        }
+
+        #endregion
       }
 
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultEnumDescriptorProtoComparer : scg::IEqualityComparer<EnumDescriptorProto> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(EnumDescriptorProto x, EnumDescriptorProto y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.Name != y.Name) return false;
+        if(!x.value_.Equals(y.value_)) return false;
+        if (!object.Equals(x.Options, y.Options)) return false;
+        if(!x.reservedRange_.Equals(y.reservedRange_)) return false;
+        if(!x.reservedName_.Equals(y.reservedName_)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(EnumDescriptorProto obj) {
+        int hash = 1;
+        if (obj.HasName) hash ^= obj.Name.GetHashCode();
+        hash ^= obj.value_.GetHashCode();
+        if (obj.options_ != null) hash ^= obj.Options.GetHashCode();
+        hash ^= obj.reservedRange_.GetHashCode();
+        hash ^= obj.reservedName_.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -4882,6 +5146,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<EnumValueDescriptorProto> _parser = new pb::MessageParser<EnumValueDescriptorProto>(() => new EnumValueDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<EnumValueDescriptorProto> Comparer { get; set; } = new DefaultEnumValueDescriptorProtoComparer();
+
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -4997,29 +5266,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(EnumValueDescriptorProto other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (Name != other.Name) return false;
-      if (Number != other.Number) return false;
-      if (!object.Equals(Options, other.Options)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasName) hash ^= Name.GetHashCode();
-      if (HasNumber) hash ^= Number.GetHashCode();
-      if (options_ != null) hash ^= Options.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5184,6 +5437,41 @@ namespace Google.Protobuf.Reflection {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultEnumValueDescriptorProtoComparer : scg::IEqualityComparer<EnumValueDescriptorProto> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(EnumValueDescriptorProto x, EnumValueDescriptorProto y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.Name != y.Name) return false;
+        if (x.Number != y.Number) return false;
+        if (!object.Equals(x.Options, y.Options)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(EnumValueDescriptorProto obj) {
+        int hash = 1;
+        if (obj.HasName) hash ^= obj.Name.GetHashCode();
+        if (obj.HasNumber) hash ^= obj.Number.GetHashCode();
+        if (obj.options_ != null) hash ^= obj.Options.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -5197,6 +5485,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<ServiceDescriptorProto> _parser = new pb::MessageParser<ServiceDescriptorProto>(() => new ServiceDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<ServiceDescriptorProto> Comparer { get; set; } = new DefaultServiceDescriptorProtoComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<ServiceDescriptorProto> Parser { get { return _parser; } }
@@ -5294,29 +5587,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(ServiceDescriptorProto other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (Name != other.Name) return false;
-      if(!method_.Equals(other.method_)) return false;
-      if (!object.Equals(Options, other.Options)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasName) hash ^= Name.GetHashCode();
-      hash ^= method_.GetHashCode();
-      if (options_ != null) hash ^= Options.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5471,6 +5748,41 @@ namespace Google.Protobuf.Reflection {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultServiceDescriptorProtoComparer : scg::IEqualityComparer<ServiceDescriptorProto> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(ServiceDescriptorProto x, ServiceDescriptorProto y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.Name != y.Name) return false;
+        if(!x.method_.Equals(y.method_)) return false;
+        if (!object.Equals(x.Options, y.Options)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(ServiceDescriptorProto obj) {
+        int hash = 1;
+        if (obj.HasName) hash ^= obj.Name.GetHashCode();
+        hash ^= obj.method_.GetHashCode();
+        if (obj.options_ != null) hash ^= obj.Options.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -5484,6 +5796,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<MethodDescriptorProto> _parser = new pb::MessageParser<MethodDescriptorProto>(() => new MethodDescriptorProto());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<MethodDescriptorProto> Comparer { get; set; } = new DefaultMethodDescriptorProtoComparer();
+
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -5691,35 +6008,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(MethodDescriptorProto other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (Name != other.Name) return false;
-      if (InputType != other.InputType) return false;
-      if (OutputType != other.OutputType) return false;
-      if (!object.Equals(Options, other.Options)) return false;
-      if (ClientStreaming != other.ClientStreaming) return false;
-      if (ServerStreaming != other.ServerStreaming) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasName) hash ^= Name.GetHashCode();
-      if (HasInputType) hash ^= InputType.GetHashCode();
-      if (HasOutputType) hash ^= OutputType.GetHashCode();
-      if (options_ != null) hash ^= Options.GetHashCode();
-      if (HasClientStreaming) hash ^= ClientStreaming.GetHashCode();
-      if (HasServerStreaming) hash ^= ServerStreaming.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5950,6 +6245,47 @@ namespace Google.Protobuf.Reflection {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultMethodDescriptorProtoComparer : scg::IEqualityComparer<MethodDescriptorProto> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(MethodDescriptorProto x, MethodDescriptorProto y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.Name != y.Name) return false;
+        if (x.InputType != y.InputType) return false;
+        if (x.OutputType != y.OutputType) return false;
+        if (!object.Equals(x.Options, y.Options)) return false;
+        if (x.ClientStreaming != y.ClientStreaming) return false;
+        if (x.ServerStreaming != y.ServerStreaming) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(MethodDescriptorProto obj) {
+        int hash = 1;
+        if (obj.HasName) hash ^= obj.Name.GetHashCode();
+        if (obj.HasInputType) hash ^= obj.InputType.GetHashCode();
+        if (obj.HasOutputType) hash ^= obj.OutputType.GetHashCode();
+        if (obj.options_ != null) hash ^= obj.Options.GetHashCode();
+        if (obj.HasClientStreaming) hash ^= obj.ClientStreaming.GetHashCode();
+        if (obj.HasServerStreaming) hash ^= obj.ServerStreaming.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -5960,6 +6296,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<FileOptions> _parser = new pb::MessageParser<FileOptions>(() => new FileOptions());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<FileOptions> Comparer { get; set; } = new DefaultFileOptionsComparer();
+
     internal pb::ExtensionSet<FileOptions> _extensions;
     private pb::ExtensionSet<FileOptions> _Extensions { get { return _extensions; } }
     private int _hasBits0;
@@ -6664,71 +7005,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(FileOptions other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (JavaPackage != other.JavaPackage) return false;
-      if (JavaOuterClassname != other.JavaOuterClassname) return false;
-      if (JavaMultipleFiles != other.JavaMultipleFiles) return false;
-      if (JavaGenerateEqualsAndHash != other.JavaGenerateEqualsAndHash) return false;
-      if (JavaStringCheckUtf8 != other.JavaStringCheckUtf8) return false;
-      if (OptimizeFor != other.OptimizeFor) return false;
-      if (GoPackage != other.GoPackage) return false;
-      if (CcGenericServices != other.CcGenericServices) return false;
-      if (JavaGenericServices != other.JavaGenericServices) return false;
-      if (PyGenericServices != other.PyGenericServices) return false;
-      if (Deprecated != other.Deprecated) return false;
-      if (CcEnableArenas != other.CcEnableArenas) return false;
-      if (ObjcClassPrefix != other.ObjcClassPrefix) return false;
-      if (CsharpNamespace != other.CsharpNamespace) return false;
-      if (SwiftPrefix != other.SwiftPrefix) return false;
-      if (PhpClassPrefix != other.PhpClassPrefix) return false;
-      if (PhpNamespace != other.PhpNamespace) return false;
-      if (PhpMetadataNamespace != other.PhpMetadataNamespace) return false;
-      if (RubyPackage != other.RubyPackage) return false;
-      if (!object.Equals(Features, other.Features)) return false;
-      if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasJavaPackage) hash ^= JavaPackage.GetHashCode();
-      if (HasJavaOuterClassname) hash ^= JavaOuterClassname.GetHashCode();
-      if (HasJavaMultipleFiles) hash ^= JavaMultipleFiles.GetHashCode();
-      if (HasJavaGenerateEqualsAndHash) hash ^= JavaGenerateEqualsAndHash.GetHashCode();
-      if (HasJavaStringCheckUtf8) hash ^= JavaStringCheckUtf8.GetHashCode();
-      if (HasOptimizeFor) hash ^= OptimizeFor.GetHashCode();
-      if (HasGoPackage) hash ^= GoPackage.GetHashCode();
-      if (HasCcGenericServices) hash ^= CcGenericServices.GetHashCode();
-      if (HasJavaGenericServices) hash ^= JavaGenericServices.GetHashCode();
-      if (HasPyGenericServices) hash ^= PyGenericServices.GetHashCode();
-      if (HasDeprecated) hash ^= Deprecated.GetHashCode();
-      if (HasCcEnableArenas) hash ^= CcEnableArenas.GetHashCode();
-      if (HasObjcClassPrefix) hash ^= ObjcClassPrefix.GetHashCode();
-      if (HasCsharpNamespace) hash ^= CsharpNamespace.GetHashCode();
-      if (HasSwiftPrefix) hash ^= SwiftPrefix.GetHashCode();
-      if (HasPhpClassPrefix) hash ^= PhpClassPrefix.GetHashCode();
-      if (HasPhpNamespace) hash ^= PhpNamespace.GetHashCode();
-      if (HasPhpMetadataNamespace) hash ^= PhpMetadataNamespace.GetHashCode();
-      if (HasRubyPackage) hash ^= RubyPackage.GetHashCode();
-      if (features_ != null) hash ^= Features.GetHashCode();
-      hash ^= uninterpretedOption_.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7341,6 +7624,83 @@ namespace Google.Protobuf.Reflection {
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultFileOptionsComparer : scg::IEqualityComparer<FileOptions> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(FileOptions x, FileOptions y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.JavaPackage != y.JavaPackage) return false;
+        if (x.JavaOuterClassname != y.JavaOuterClassname) return false;
+        if (x.JavaMultipleFiles != y.JavaMultipleFiles) return false;
+        if (x.JavaGenerateEqualsAndHash != y.JavaGenerateEqualsAndHash) return false;
+        if (x.JavaStringCheckUtf8 != y.JavaStringCheckUtf8) return false;
+        if (x.OptimizeFor != y.OptimizeFor) return false;
+        if (x.GoPackage != y.GoPackage) return false;
+        if (x.CcGenericServices != y.CcGenericServices) return false;
+        if (x.JavaGenericServices != y.JavaGenericServices) return false;
+        if (x.PyGenericServices != y.PyGenericServices) return false;
+        if (x.Deprecated != y.Deprecated) return false;
+        if (x.CcEnableArenas != y.CcEnableArenas) return false;
+        if (x.ObjcClassPrefix != y.ObjcClassPrefix) return false;
+        if (x.CsharpNamespace != y.CsharpNamespace) return false;
+        if (x.SwiftPrefix != y.SwiftPrefix) return false;
+        if (x.PhpClassPrefix != y.PhpClassPrefix) return false;
+        if (x.PhpNamespace != y.PhpNamespace) return false;
+        if (x.PhpMetadataNamespace != y.PhpMetadataNamespace) return false;
+        if (x.RubyPackage != y.RubyPackage) return false;
+        if (!object.Equals(x.Features, y.Features)) return false;
+        if(!x.uninterpretedOption_.Equals(y.uninterpretedOption_)) return false;
+        if (!Equals(x._extensions, y._extensions)) {
+          return false;
+        }
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(FileOptions obj) {
+        int hash = 1;
+        if (obj.HasJavaPackage) hash ^= obj.JavaPackage.GetHashCode();
+        if (obj.HasJavaOuterClassname) hash ^= obj.JavaOuterClassname.GetHashCode();
+        if (obj.HasJavaMultipleFiles) hash ^= obj.JavaMultipleFiles.GetHashCode();
+        if (obj.HasJavaGenerateEqualsAndHash) hash ^= obj.JavaGenerateEqualsAndHash.GetHashCode();
+        if (obj.HasJavaStringCheckUtf8) hash ^= obj.JavaStringCheckUtf8.GetHashCode();
+        if (obj.HasOptimizeFor) hash ^= obj.OptimizeFor.GetHashCode();
+        if (obj.HasGoPackage) hash ^= obj.GoPackage.GetHashCode();
+        if (obj.HasCcGenericServices) hash ^= obj.CcGenericServices.GetHashCode();
+        if (obj.HasJavaGenericServices) hash ^= obj.JavaGenericServices.GetHashCode();
+        if (obj.HasPyGenericServices) hash ^= obj.PyGenericServices.GetHashCode();
+        if (obj.HasDeprecated) hash ^= obj.Deprecated.GetHashCode();
+        if (obj.HasCcEnableArenas) hash ^= obj.CcEnableArenas.GetHashCode();
+        if (obj.HasObjcClassPrefix) hash ^= obj.ObjcClassPrefix.GetHashCode();
+        if (obj.HasCsharpNamespace) hash ^= obj.CsharpNamespace.GetHashCode();
+        if (obj.HasSwiftPrefix) hash ^= obj.SwiftPrefix.GetHashCode();
+        if (obj.HasPhpClassPrefix) hash ^= obj.PhpClassPrefix.GetHashCode();
+        if (obj.HasPhpNamespace) hash ^= obj.PhpNamespace.GetHashCode();
+        if (obj.HasPhpMetadataNamespace) hash ^= obj.PhpMetadataNamespace.GetHashCode();
+        if (obj.HasRubyPackage) hash ^= obj.RubyPackage.GetHashCode();
+        if (obj.features_ != null) hash ^= obj.Features.GetHashCode();
+        hash ^= obj.uninterpretedOption_.GetHashCode();
+        if (obj._extensions != null) {
+          hash ^= obj._extensions.GetHashCode();
+        }
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -7351,6 +7711,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<MessageOptions> _parser = new pb::MessageParser<MessageOptions>(() => new MessageOptions());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<MessageOptions> Comparer { get; set; } = new DefaultMessageOptionsComparer();
+
     internal pb::ExtensionSet<MessageOptions> _extensions;
     private pb::ExtensionSet<MessageOptions> _Extensions { get { return _extensions; } }
     private int _hasBits0;
@@ -7641,43 +8006,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(MessageOptions other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (MessageSetWireFormat != other.MessageSetWireFormat) return false;
-      if (NoStandardDescriptorAccessor != other.NoStandardDescriptorAccessor) return false;
-      if (Deprecated != other.Deprecated) return false;
-      if (MapEntry != other.MapEntry) return false;
-      if (DeprecatedLegacyJsonFieldConflicts != other.DeprecatedLegacyJsonFieldConflicts) return false;
-      if (!object.Equals(Features, other.Features)) return false;
-      if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasMessageSetWireFormat) hash ^= MessageSetWireFormat.GetHashCode();
-      if (HasNoStandardDescriptorAccessor) hash ^= NoStandardDescriptorAccessor.GetHashCode();
-      if (HasDeprecated) hash ^= Deprecated.GetHashCode();
-      if (HasMapEntry) hash ^= MapEntry.GetHashCode();
-      if (HasDeprecatedLegacyJsonFieldConflicts) hash ^= DeprecatedLegacyJsonFieldConflicts.GetHashCode();
-      if (features_ != null) hash ^= Features.GetHashCode();
-      hash ^= uninterpretedOption_.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -7956,6 +8291,55 @@ namespace Google.Protobuf.Reflection {
       pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 
+    #region Nested comparer
+    private class DefaultMessageOptionsComparer : scg::IEqualityComparer<MessageOptions> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(MessageOptions x, MessageOptions y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.MessageSetWireFormat != y.MessageSetWireFormat) return false;
+        if (x.NoStandardDescriptorAccessor != y.NoStandardDescriptorAccessor) return false;
+        if (x.Deprecated != y.Deprecated) return false;
+        if (x.MapEntry != y.MapEntry) return false;
+        if (x.DeprecatedLegacyJsonFieldConflicts != y.DeprecatedLegacyJsonFieldConflicts) return false;
+        if (!object.Equals(x.Features, y.Features)) return false;
+        if(!x.uninterpretedOption_.Equals(y.uninterpretedOption_)) return false;
+        if (!Equals(x._extensions, y._extensions)) {
+          return false;
+        }
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(MessageOptions obj) {
+        int hash = 1;
+        if (obj.HasMessageSetWireFormat) hash ^= obj.MessageSetWireFormat.GetHashCode();
+        if (obj.HasNoStandardDescriptorAccessor) hash ^= obj.NoStandardDescriptorAccessor.GetHashCode();
+        if (obj.HasDeprecated) hash ^= obj.Deprecated.GetHashCode();
+        if (obj.HasMapEntry) hash ^= obj.MapEntry.GetHashCode();
+        if (obj.HasDeprecatedLegacyJsonFieldConflicts) hash ^= obj.DeprecatedLegacyJsonFieldConflicts.GetHashCode();
+        if (obj.features_ != null) hash ^= obj.Features.GetHashCode();
+        hash ^= obj.uninterpretedOption_.GetHashCode();
+        if (obj._extensions != null) {
+          hash ^= obj._extensions.GetHashCode();
+        }
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -7966,6 +8350,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<FieldOptions> _parser = new pb::MessageParser<FieldOptions>(() => new FieldOptions());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<FieldOptions> Comparer { get; set; } = new DefaultFieldOptionsComparer();
+
     internal pb::ExtensionSet<FieldOptions> _extensions;
     private pb::ExtensionSet<FieldOptions> _Extensions { get { return _extensions; } }
     private int _hasBits0;
@@ -8409,57 +8798,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(FieldOptions other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (Ctype != other.Ctype) return false;
-      if (Packed != other.Packed) return false;
-      if (Jstype != other.Jstype) return false;
-      if (Lazy != other.Lazy) return false;
-      if (UnverifiedLazy != other.UnverifiedLazy) return false;
-      if (Deprecated != other.Deprecated) return false;
-      if (Weak != other.Weak) return false;
-      if (DebugRedact != other.DebugRedact) return false;
-      if (Retention != other.Retention) return false;
-      if(!targets_.Equals(other.targets_)) return false;
-      if(!editionDefaults_.Equals(other.editionDefaults_)) return false;
-      if (!object.Equals(Features, other.Features)) return false;
-      if (!object.Equals(FeatureSupport, other.FeatureSupport)) return false;
-      if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasCtype) hash ^= Ctype.GetHashCode();
-      if (HasPacked) hash ^= Packed.GetHashCode();
-      if (HasJstype) hash ^= Jstype.GetHashCode();
-      if (HasLazy) hash ^= Lazy.GetHashCode();
-      if (HasUnverifiedLazy) hash ^= UnverifiedLazy.GetHashCode();
-      if (HasDeprecated) hash ^= Deprecated.GetHashCode();
-      if (HasWeak) hash ^= Weak.GetHashCode();
-      if (HasDebugRedact) hash ^= DebugRedact.GetHashCode();
-      if (HasRetention) hash ^= Retention.GetHashCode();
-      hash ^= targets_.GetHashCode();
-      hash ^= editionDefaults_.GetHashCode();
-      if (features_ != null) hash ^= Features.GetHashCode();
-      if (featureSupport_ != null) hash ^= FeatureSupport.GetHashCode();
-      hash ^= uninterpretedOption_.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8958,6 +9303,11 @@ namespace Google.Protobuf.Reflection {
       {
         private static readonly pb::MessageParser<EditionDefault> _parser = new pb::MessageParser<EditionDefault>(() => new EditionDefault());
         private pb::UnknownFieldSet _unknownFields;
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        private scg::IEqualityComparer<EditionDefault> Comparer { get; set; } = new DefaultEditionDefaultComparer();
+
         private int _hasBits0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -9063,27 +9413,13 @@ namespace Google.Protobuf.Reflection {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public bool Equals(EditionDefault other) {
-          if (ReferenceEquals(other, null)) {
-            return false;
-          }
-          if (ReferenceEquals(other, this)) {
-            return true;
-          }
-          if (Edition != other.Edition) return false;
-          if (Value != other.Value) return false;
-          return Equals(_unknownFields, other._unknownFields);
+          return this.Comparer.Equals(this, other);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override int GetHashCode() {
-          int hash = 1;
-          if (HasEdition) hash ^= Edition.GetHashCode();
-          if (HasValue) hash ^= Value.GetHashCode();
-          if (_unknownFields != null) {
-            hash ^= _unknownFields.GetHashCode();
-          }
-          return hash;
+          return this.Comparer.GetHashCode(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9217,6 +9553,39 @@ namespace Google.Protobuf.Reflection {
         }
         #endif
 
+        #region Nested comparer
+        private class DefaultEditionDefaultComparer : scg::IEqualityComparer<EditionDefault> {
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public bool Equals(EditionDefault x, EditionDefault y) {
+            if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+              return true;
+            }
+            if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+              return false;
+            }
+            if (ReferenceEquals(x, y)) {
+              return true;
+            }
+            if (x.Edition != y.Edition) return false;
+            if (x.Value != y.Value) return false;
+            return Equals(x._unknownFields, y._unknownFields);
+          }
+
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public int GetHashCode(EditionDefault obj) {
+            int hash = 1;
+            if (obj.HasEdition) hash ^= obj.Edition.GetHashCode();
+            if (obj.HasValue) hash ^= obj.Value.GetHashCode();
+            if (obj._unknownFields != null) {
+              hash ^= obj._unknownFields.GetHashCode();
+            }
+            return hash;
+          }
+        }
+
+        #endregion
       }
 
       /// <summary>
@@ -9230,6 +9599,11 @@ namespace Google.Protobuf.Reflection {
       {
         private static readonly pb::MessageParser<FeatureSupport> _parser = new pb::MessageParser<FeatureSupport>(() => new FeatureSupport());
         private pb::UnknownFieldSet _unknownFields;
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        private scg::IEqualityComparer<FeatureSupport> Comparer { get; set; } = new DefaultFeatureSupportComparer();
+
         private int _hasBits0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -9406,31 +9780,13 @@ namespace Google.Protobuf.Reflection {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public bool Equals(FeatureSupport other) {
-          if (ReferenceEquals(other, null)) {
-            return false;
-          }
-          if (ReferenceEquals(other, this)) {
-            return true;
-          }
-          if (EditionIntroduced != other.EditionIntroduced) return false;
-          if (EditionDeprecated != other.EditionDeprecated) return false;
-          if (DeprecationWarning != other.DeprecationWarning) return false;
-          if (EditionRemoved != other.EditionRemoved) return false;
-          return Equals(_unknownFields, other._unknownFields);
+          return this.Comparer.Equals(this, other);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override int GetHashCode() {
-          int hash = 1;
-          if (HasEditionIntroduced) hash ^= EditionIntroduced.GetHashCode();
-          if (HasEditionDeprecated) hash ^= EditionDeprecated.GetHashCode();
-          if (HasDeprecationWarning) hash ^= DeprecationWarning.GetHashCode();
-          if (HasEditionRemoved) hash ^= EditionRemoved.GetHashCode();
-          if (_unknownFields != null) {
-            hash ^= _unknownFields.GetHashCode();
-          }
-          return hash;
+          return this.Comparer.GetHashCode(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9608,11 +9964,111 @@ namespace Google.Protobuf.Reflection {
         }
         #endif
 
+        #region Nested comparer
+        private class DefaultFeatureSupportComparer : scg::IEqualityComparer<FeatureSupport> {
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public bool Equals(FeatureSupport x, FeatureSupport y) {
+            if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+              return true;
+            }
+            if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+              return false;
+            }
+            if (ReferenceEquals(x, y)) {
+              return true;
+            }
+            if (x.EditionIntroduced != y.EditionIntroduced) return false;
+            if (x.EditionDeprecated != y.EditionDeprecated) return false;
+            if (x.DeprecationWarning != y.DeprecationWarning) return false;
+            if (x.EditionRemoved != y.EditionRemoved) return false;
+            return Equals(x._unknownFields, y._unknownFields);
+          }
+
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public int GetHashCode(FeatureSupport obj) {
+            int hash = 1;
+            if (obj.HasEditionIntroduced) hash ^= obj.EditionIntroduced.GetHashCode();
+            if (obj.HasEditionDeprecated) hash ^= obj.EditionDeprecated.GetHashCode();
+            if (obj.HasDeprecationWarning) hash ^= obj.DeprecationWarning.GetHashCode();
+            if (obj.HasEditionRemoved) hash ^= obj.EditionRemoved.GetHashCode();
+            if (obj._unknownFields != null) {
+              hash ^= obj._unknownFields.GetHashCode();
+            }
+            return hash;
+          }
+        }
+
+        #endregion
       }
 
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultFieldOptionsComparer : scg::IEqualityComparer<FieldOptions> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(FieldOptions x, FieldOptions y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.Ctype != y.Ctype) return false;
+        if (x.Packed != y.Packed) return false;
+        if (x.Jstype != y.Jstype) return false;
+        if (x.Lazy != y.Lazy) return false;
+        if (x.UnverifiedLazy != y.UnverifiedLazy) return false;
+        if (x.Deprecated != y.Deprecated) return false;
+        if (x.Weak != y.Weak) return false;
+        if (x.DebugRedact != y.DebugRedact) return false;
+        if (x.Retention != y.Retention) return false;
+        if(!x.targets_.Equals(y.targets_)) return false;
+        if(!x.editionDefaults_.Equals(y.editionDefaults_)) return false;
+        if (!object.Equals(x.Features, y.Features)) return false;
+        if (!object.Equals(x.FeatureSupport, y.FeatureSupport)) return false;
+        if(!x.uninterpretedOption_.Equals(y.uninterpretedOption_)) return false;
+        if (!Equals(x._extensions, y._extensions)) {
+          return false;
+        }
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(FieldOptions obj) {
+        int hash = 1;
+        if (obj.HasCtype) hash ^= obj.Ctype.GetHashCode();
+        if (obj.HasPacked) hash ^= obj.Packed.GetHashCode();
+        if (obj.HasJstype) hash ^= obj.Jstype.GetHashCode();
+        if (obj.HasLazy) hash ^= obj.Lazy.GetHashCode();
+        if (obj.HasUnverifiedLazy) hash ^= obj.UnverifiedLazy.GetHashCode();
+        if (obj.HasDeprecated) hash ^= obj.Deprecated.GetHashCode();
+        if (obj.HasWeak) hash ^= obj.Weak.GetHashCode();
+        if (obj.HasDebugRedact) hash ^= obj.DebugRedact.GetHashCode();
+        if (obj.HasRetention) hash ^= obj.Retention.GetHashCode();
+        hash ^= obj.targets_.GetHashCode();
+        hash ^= obj.editionDefaults_.GetHashCode();
+        if (obj.features_ != null) hash ^= obj.Features.GetHashCode();
+        if (obj.featureSupport_ != null) hash ^= obj.FeatureSupport.GetHashCode();
+        hash ^= obj.uninterpretedOption_.GetHashCode();
+        if (obj._extensions != null) {
+          hash ^= obj._extensions.GetHashCode();
+        }
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -9623,6 +10079,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<OneofOptions> _parser = new pb::MessageParser<OneofOptions>(() => new OneofOptions());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<OneofOptions> Comparer { get; set; } = new DefaultOneofOptionsComparer();
+
     internal pb::ExtensionSet<OneofOptions> _extensions;
     private pb::ExtensionSet<OneofOptions> _Extensions { get { return _extensions; } }
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9702,33 +10163,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(OneofOptions other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!object.Equals(Features, other.Features)) return false;
-      if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (features_ != null) hash ^= Features.GetHashCode();
-      hash ^= uninterpretedOption_.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9897,6 +10338,45 @@ namespace Google.Protobuf.Reflection {
       pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 
+    #region Nested comparer
+    private class DefaultOneofOptionsComparer : scg::IEqualityComparer<OneofOptions> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(OneofOptions x, OneofOptions y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (!object.Equals(x.Features, y.Features)) return false;
+        if(!x.uninterpretedOption_.Equals(y.uninterpretedOption_)) return false;
+        if (!Equals(x._extensions, y._extensions)) {
+          return false;
+        }
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(OneofOptions obj) {
+        int hash = 1;
+        if (obj.features_ != null) hash ^= obj.Features.GetHashCode();
+        hash ^= obj.uninterpretedOption_.GetHashCode();
+        if (obj._extensions != null) {
+          hash ^= obj._extensions.GetHashCode();
+        }
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -9907,6 +10387,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<EnumOptions> _parser = new pb::MessageParser<EnumOptions>(() => new EnumOptions());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<EnumOptions> Comparer { get; set; } = new DefaultEnumOptionsComparer();
+
     internal pb::ExtensionSet<EnumOptions> _extensions;
     private pb::ExtensionSet<EnumOptions> _Extensions { get { return _extensions; } }
     private int _hasBits0;
@@ -10093,39 +10578,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(EnumOptions other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (AllowAlias != other.AllowAlias) return false;
-      if (Deprecated != other.Deprecated) return false;
-      if (DeprecatedLegacyJsonFieldConflicts != other.DeprecatedLegacyJsonFieldConflicts) return false;
-      if (!object.Equals(Features, other.Features)) return false;
-      if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasAllowAlias) hash ^= AllowAlias.GetHashCode();
-      if (HasDeprecated) hash ^= Deprecated.GetHashCode();
-      if (HasDeprecatedLegacyJsonFieldConflicts) hash ^= DeprecatedLegacyJsonFieldConflicts.GetHashCode();
-      if (features_ != null) hash ^= Features.GetHashCode();
-      hash ^= uninterpretedOption_.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -10360,6 +10819,51 @@ namespace Google.Protobuf.Reflection {
       pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 
+    #region Nested comparer
+    private class DefaultEnumOptionsComparer : scg::IEqualityComparer<EnumOptions> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(EnumOptions x, EnumOptions y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.AllowAlias != y.AllowAlias) return false;
+        if (x.Deprecated != y.Deprecated) return false;
+        if (x.DeprecatedLegacyJsonFieldConflicts != y.DeprecatedLegacyJsonFieldConflicts) return false;
+        if (!object.Equals(x.Features, y.Features)) return false;
+        if(!x.uninterpretedOption_.Equals(y.uninterpretedOption_)) return false;
+        if (!Equals(x._extensions, y._extensions)) {
+          return false;
+        }
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(EnumOptions obj) {
+        int hash = 1;
+        if (obj.HasAllowAlias) hash ^= obj.AllowAlias.GetHashCode();
+        if (obj.HasDeprecated) hash ^= obj.Deprecated.GetHashCode();
+        if (obj.HasDeprecatedLegacyJsonFieldConflicts) hash ^= obj.DeprecatedLegacyJsonFieldConflicts.GetHashCode();
+        if (obj.features_ != null) hash ^= obj.Features.GetHashCode();
+        hash ^= obj.uninterpretedOption_.GetHashCode();
+        if (obj._extensions != null) {
+          hash ^= obj._extensions.GetHashCode();
+        }
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -10370,6 +10874,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<EnumValueOptions> _parser = new pb::MessageParser<EnumValueOptions>(() => new EnumValueOptions());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<EnumValueOptions> Comparer { get; set; } = new DefaultEnumValueOptionsComparer();
+
     internal pb::ExtensionSet<EnumValueOptions> _extensions;
     private pb::ExtensionSet<EnumValueOptions> _Extensions { get { return _extensions; } }
     private int _hasBits0;
@@ -10534,39 +11043,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(EnumValueOptions other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (Deprecated != other.Deprecated) return false;
-      if (!object.Equals(Features, other.Features)) return false;
-      if (DebugRedact != other.DebugRedact) return false;
-      if (!object.Equals(FeatureSupport, other.FeatureSupport)) return false;
-      if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasDeprecated) hash ^= Deprecated.GetHashCode();
-      if (features_ != null) hash ^= Features.GetHashCode();
-      if (HasDebugRedact) hash ^= DebugRedact.GetHashCode();
-      if (featureSupport_ != null) hash ^= FeatureSupport.GetHashCode();
-      hash ^= uninterpretedOption_.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -10810,6 +11293,51 @@ namespace Google.Protobuf.Reflection {
       pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 
+    #region Nested comparer
+    private class DefaultEnumValueOptionsComparer : scg::IEqualityComparer<EnumValueOptions> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(EnumValueOptions x, EnumValueOptions y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.Deprecated != y.Deprecated) return false;
+        if (!object.Equals(x.Features, y.Features)) return false;
+        if (x.DebugRedact != y.DebugRedact) return false;
+        if (!object.Equals(x.FeatureSupport, y.FeatureSupport)) return false;
+        if(!x.uninterpretedOption_.Equals(y.uninterpretedOption_)) return false;
+        if (!Equals(x._extensions, y._extensions)) {
+          return false;
+        }
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(EnumValueOptions obj) {
+        int hash = 1;
+        if (obj.HasDeprecated) hash ^= obj.Deprecated.GetHashCode();
+        if (obj.features_ != null) hash ^= obj.Features.GetHashCode();
+        if (obj.HasDebugRedact) hash ^= obj.DebugRedact.GetHashCode();
+        if (obj.featureSupport_ != null) hash ^= obj.FeatureSupport.GetHashCode();
+        hash ^= obj.uninterpretedOption_.GetHashCode();
+        if (obj._extensions != null) {
+          hash ^= obj._extensions.GetHashCode();
+        }
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -10820,6 +11348,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<ServiceOptions> _parser = new pb::MessageParser<ServiceOptions>(() => new ServiceOptions());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<ServiceOptions> Comparer { get; set; } = new DefaultServiceOptionsComparer();
+
     internal pb::ExtensionSet<ServiceOptions> _extensions;
     private pb::ExtensionSet<ServiceOptions> _Extensions { get { return _extensions; } }
     private int _hasBits0;
@@ -10935,35 +11468,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(ServiceOptions other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!object.Equals(Features, other.Features)) return false;
-      if (Deprecated != other.Deprecated) return false;
-      if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (features_ != null) hash ^= Features.GetHashCode();
-      if (HasDeprecated) hash ^= Deprecated.GetHashCode();
-      hash ^= uninterpretedOption_.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -11154,6 +11665,47 @@ namespace Google.Protobuf.Reflection {
       pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 
+    #region Nested comparer
+    private class DefaultServiceOptionsComparer : scg::IEqualityComparer<ServiceOptions> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(ServiceOptions x, ServiceOptions y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (!object.Equals(x.Features, y.Features)) return false;
+        if (x.Deprecated != y.Deprecated) return false;
+        if(!x.uninterpretedOption_.Equals(y.uninterpretedOption_)) return false;
+        if (!Equals(x._extensions, y._extensions)) {
+          return false;
+        }
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(ServiceOptions obj) {
+        int hash = 1;
+        if (obj.features_ != null) hash ^= obj.Features.GetHashCode();
+        if (obj.HasDeprecated) hash ^= obj.Deprecated.GetHashCode();
+        hash ^= obj.uninterpretedOption_.GetHashCode();
+        if (obj._extensions != null) {
+          hash ^= obj._extensions.GetHashCode();
+        }
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -11164,6 +11716,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<MethodOptions> _parser = new pb::MessageParser<MethodOptions>(() => new MethodOptions());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<MethodOptions> Comparer { get; set; } = new DefaultMethodOptionsComparer();
+
     internal pb::ExtensionSet<MethodOptions> _extensions;
     private pb::ExtensionSet<MethodOptions> _Extensions { get { return _extensions; } }
     private int _hasBits0;
@@ -11307,37 +11864,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(MethodOptions other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (Deprecated != other.Deprecated) return false;
-      if (IdempotencyLevel != other.IdempotencyLevel) return false;
-      if (!object.Equals(Features, other.Features)) return false;
-      if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasDeprecated) hash ^= Deprecated.GetHashCode();
-      if (HasIdempotencyLevel) hash ^= IdempotencyLevel.GetHashCode();
-      if (features_ != null) hash ^= Features.GetHashCode();
-      hash ^= uninterpretedOption_.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -11575,6 +12108,49 @@ namespace Google.Protobuf.Reflection {
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultMethodOptionsComparer : scg::IEqualityComparer<MethodOptions> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(MethodOptions x, MethodOptions y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.Deprecated != y.Deprecated) return false;
+        if (x.IdempotencyLevel != y.IdempotencyLevel) return false;
+        if (!object.Equals(x.Features, y.Features)) return false;
+        if(!x.uninterpretedOption_.Equals(y.uninterpretedOption_)) return false;
+        if (!Equals(x._extensions, y._extensions)) {
+          return false;
+        }
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(MethodOptions obj) {
+        int hash = 1;
+        if (obj.HasDeprecated) hash ^= obj.Deprecated.GetHashCode();
+        if (obj.HasIdempotencyLevel) hash ^= obj.IdempotencyLevel.GetHashCode();
+        if (obj.features_ != null) hash ^= obj.Features.GetHashCode();
+        hash ^= obj.uninterpretedOption_.GetHashCode();
+        if (obj._extensions != null) {
+          hash ^= obj._extensions.GetHashCode();
+        }
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -11593,6 +12169,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<UninterpretedOption> _parser = new pb::MessageParser<UninterpretedOption>(() => new UninterpretedOption());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<UninterpretedOption> Comparer { get; set; } = new DefaultUninterpretedOptionComparer();
+
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -11821,37 +12402,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(UninterpretedOption other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if(!name_.Equals(other.name_)) return false;
-      if (IdentifierValue != other.IdentifierValue) return false;
-      if (PositiveIntValue != other.PositiveIntValue) return false;
-      if (NegativeIntValue != other.NegativeIntValue) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(DoubleValue, other.DoubleValue)) return false;
-      if (StringValue != other.StringValue) return false;
-      if (AggregateValue != other.AggregateValue) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      hash ^= name_.GetHashCode();
-      if (HasIdentifierValue) hash ^= IdentifierValue.GetHashCode();
-      if (HasPositiveIntValue) hash ^= PositiveIntValue.GetHashCode();
-      if (HasNegativeIntValue) hash ^= NegativeIntValue.GetHashCode();
-      if (HasDoubleValue) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(DoubleValue);
-      if (HasStringValue) hash ^= StringValue.GetHashCode();
-      if (HasAggregateValue) hash ^= AggregateValue.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -12105,6 +12662,11 @@ namespace Google.Protobuf.Reflection {
       {
         private static readonly pb::MessageParser<NamePart> _parser = new pb::MessageParser<NamePart>(() => new NamePart());
         private pb::UnknownFieldSet _unknownFields;
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        private scg::IEqualityComparer<NamePart> Comparer { get; set; } = new DefaultNamePartComparer();
+
         private int _hasBits0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -12207,27 +12769,13 @@ namespace Google.Protobuf.Reflection {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public bool Equals(NamePart other) {
-          if (ReferenceEquals(other, null)) {
-            return false;
-          }
-          if (ReferenceEquals(other, this)) {
-            return true;
-          }
-          if (NamePart_ != other.NamePart_) return false;
-          if (IsExtension != other.IsExtension) return false;
-          return Equals(_unknownFields, other._unknownFields);
+          return this.Comparer.Equals(this, other);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override int GetHashCode() {
-          int hash = 1;
-          if (HasNamePart_) hash ^= NamePart_.GetHashCode();
-          if (HasIsExtension) hash ^= IsExtension.GetHashCode();
-          if (_unknownFields != null) {
-            hash ^= _unknownFields.GetHashCode();
-          }
-          return hash;
+          return this.Comparer.GetHashCode(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -12361,11 +12909,87 @@ namespace Google.Protobuf.Reflection {
         }
         #endif
 
+        #region Nested comparer
+        private class DefaultNamePartComparer : scg::IEqualityComparer<NamePart> {
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public bool Equals(NamePart x, NamePart y) {
+            if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+              return true;
+            }
+            if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+              return false;
+            }
+            if (ReferenceEquals(x, y)) {
+              return true;
+            }
+            if (x.NamePart_ != y.NamePart_) return false;
+            if (x.IsExtension != y.IsExtension) return false;
+            return Equals(x._unknownFields, y._unknownFields);
+          }
+
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public int GetHashCode(NamePart obj) {
+            int hash = 1;
+            if (obj.HasNamePart_) hash ^= obj.NamePart_.GetHashCode();
+            if (obj.HasIsExtension) hash ^= obj.IsExtension.GetHashCode();
+            if (obj._unknownFields != null) {
+              hash ^= obj._unknownFields.GetHashCode();
+            }
+            return hash;
+          }
+        }
+
+        #endregion
       }
 
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultUninterpretedOptionComparer : scg::IEqualityComparer<UninterpretedOption> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(UninterpretedOption x, UninterpretedOption y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if(!x.name_.Equals(y.name_)) return false;
+        if (x.IdentifierValue != y.IdentifierValue) return false;
+        if (x.PositiveIntValue != y.PositiveIntValue) return false;
+        if (x.NegativeIntValue != y.NegativeIntValue) return false;
+        if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(x.DoubleValue, y.DoubleValue)) return false;
+        if (x.StringValue != y.StringValue) return false;
+        if (x.AggregateValue != y.AggregateValue) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(UninterpretedOption obj) {
+        int hash = 1;
+        hash ^= obj.name_.GetHashCode();
+        if (obj.HasIdentifierValue) hash ^= obj.IdentifierValue.GetHashCode();
+        if (obj.HasPositiveIntValue) hash ^= obj.PositiveIntValue.GetHashCode();
+        if (obj.HasNegativeIntValue) hash ^= obj.NegativeIntValue.GetHashCode();
+        if (obj.HasDoubleValue) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(obj.DoubleValue);
+        if (obj.HasStringValue) hash ^= obj.StringValue.GetHashCode();
+        if (obj.HasAggregateValue) hash ^= obj.AggregateValue.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -12384,6 +13008,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<FeatureSet> _parser = new pb::MessageParser<FeatureSet>(() => new FeatureSet());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<FeatureSet> Comparer { get; set; } = new DefaultFeatureSetComparer();
+
     internal pb::ExtensionSet<FeatureSet> _extensions;
     private pb::ExtensionSet<FeatureSet> _Extensions { get { return _extensions; } }
     private int _hasBits0;
@@ -12602,41 +13231,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(FeatureSet other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (FieldPresence != other.FieldPresence) return false;
-      if (EnumType != other.EnumType) return false;
-      if (RepeatedFieldEncoding != other.RepeatedFieldEncoding) return false;
-      if (Utf8Validation != other.Utf8Validation) return false;
-      if (MessageEncoding != other.MessageEncoding) return false;
-      if (JsonFormat != other.JsonFormat) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasFieldPresence) hash ^= FieldPresence.GetHashCode();
-      if (HasEnumType) hash ^= EnumType.GetHashCode();
-      if (HasRepeatedFieldEncoding) hash ^= RepeatedFieldEncoding.GetHashCode();
-      if (HasUtf8Validation) hash ^= Utf8Validation.GetHashCode();
-      if (HasMessageEncoding) hash ^= MessageEncoding.GetHashCode();
-      if (HasJsonFormat) hash ^= JsonFormat.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -12939,6 +13540,53 @@ namespace Google.Protobuf.Reflection {
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultFeatureSetComparer : scg::IEqualityComparer<FeatureSet> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(FeatureSet x, FeatureSet y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.FieldPresence != y.FieldPresence) return false;
+        if (x.EnumType != y.EnumType) return false;
+        if (x.RepeatedFieldEncoding != y.RepeatedFieldEncoding) return false;
+        if (x.Utf8Validation != y.Utf8Validation) return false;
+        if (x.MessageEncoding != y.MessageEncoding) return false;
+        if (x.JsonFormat != y.JsonFormat) return false;
+        if (!Equals(x._extensions, y._extensions)) {
+          return false;
+        }
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(FeatureSet obj) {
+        int hash = 1;
+        if (obj.HasFieldPresence) hash ^= obj.FieldPresence.GetHashCode();
+        if (obj.HasEnumType) hash ^= obj.EnumType.GetHashCode();
+        if (obj.HasRepeatedFieldEncoding) hash ^= obj.RepeatedFieldEncoding.GetHashCode();
+        if (obj.HasUtf8Validation) hash ^= obj.Utf8Validation.GetHashCode();
+        if (obj.HasMessageEncoding) hash ^= obj.MessageEncoding.GetHashCode();
+        if (obj.HasJsonFormat) hash ^= obj.JsonFormat.GetHashCode();
+        if (obj._extensions != null) {
+          hash ^= obj._extensions.GetHashCode();
+        }
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -12955,6 +13603,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<FeatureSetDefaults> _parser = new pb::MessageParser<FeatureSetDefaults>(() => new FeatureSetDefaults());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<FeatureSetDefaults> Comparer { get; set; } = new DefaultFeatureSetDefaultsComparer();
+
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -13078,29 +13731,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(FeatureSetDefaults other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if(!defaults_.Equals(other.defaults_)) return false;
-      if (MinimumEdition != other.MinimumEdition) return false;
-      if (MaximumEdition != other.MaximumEdition) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      hash ^= defaults_.GetHashCode();
-      if (HasMinimumEdition) hash ^= MinimumEdition.GetHashCode();
-      if (HasMaximumEdition) hash ^= MaximumEdition.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -13265,6 +13902,11 @@ namespace Google.Protobuf.Reflection {
       {
         private static readonly pb::MessageParser<FeatureSetEditionDefault> _parser = new pb::MessageParser<FeatureSetEditionDefault>(() => new FeatureSetEditionDefault());
         private pb::UnknownFieldSet _unknownFields;
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        private scg::IEqualityComparer<FeatureSetEditionDefault> Comparer { get; set; } = new DefaultFeatureSetEditionDefaultComparer();
+
         private int _hasBits0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -13372,29 +14014,13 @@ namespace Google.Protobuf.Reflection {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public bool Equals(FeatureSetEditionDefault other) {
-          if (ReferenceEquals(other, null)) {
-            return false;
-          }
-          if (ReferenceEquals(other, this)) {
-            return true;
-          }
-          if (Edition != other.Edition) return false;
-          if (!object.Equals(OverridableFeatures, other.OverridableFeatures)) return false;
-          if (!object.Equals(FixedFeatures, other.FixedFeatures)) return false;
-          return Equals(_unknownFields, other._unknownFields);
+          return this.Comparer.Equals(this, other);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override int GetHashCode() {
-          int hash = 1;
-          if (HasEdition) hash ^= Edition.GetHashCode();
-          if (overridableFeatures_ != null) hash ^= OverridableFeatures.GetHashCode();
-          if (fixedFeatures_ != null) hash ^= FixedFeatures.GetHashCode();
-          if (_unknownFields != null) {
-            hash ^= _unknownFields.GetHashCode();
-          }
-          return hash;
+          return this.Comparer.GetHashCode(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -13568,11 +14194,81 @@ namespace Google.Protobuf.Reflection {
         }
         #endif
 
+        #region Nested comparer
+        private class DefaultFeatureSetEditionDefaultComparer : scg::IEqualityComparer<FeatureSetEditionDefault> {
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public bool Equals(FeatureSetEditionDefault x, FeatureSetEditionDefault y) {
+            if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+              return true;
+            }
+            if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+              return false;
+            }
+            if (ReferenceEquals(x, y)) {
+              return true;
+            }
+            if (x.Edition != y.Edition) return false;
+            if (!object.Equals(x.OverridableFeatures, y.OverridableFeatures)) return false;
+            if (!object.Equals(x.FixedFeatures, y.FixedFeatures)) return false;
+            return Equals(x._unknownFields, y._unknownFields);
+          }
+
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public int GetHashCode(FeatureSetEditionDefault obj) {
+            int hash = 1;
+            if (obj.HasEdition) hash ^= obj.Edition.GetHashCode();
+            if (obj.overridableFeatures_ != null) hash ^= obj.OverridableFeatures.GetHashCode();
+            if (obj.fixedFeatures_ != null) hash ^= obj.FixedFeatures.GetHashCode();
+            if (obj._unknownFields != null) {
+              hash ^= obj._unknownFields.GetHashCode();
+            }
+            return hash;
+          }
+        }
+
+        #endregion
       }
 
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultFeatureSetDefaultsComparer : scg::IEqualityComparer<FeatureSetDefaults> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(FeatureSetDefaults x, FeatureSetDefaults y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if(!x.defaults_.Equals(y.defaults_)) return false;
+        if (x.MinimumEdition != y.MinimumEdition) return false;
+        if (x.MaximumEdition != y.MaximumEdition) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(FeatureSetDefaults obj) {
+        int hash = 1;
+        hash ^= obj.defaults_.GetHashCode();
+        if (obj.HasMinimumEdition) hash ^= obj.MinimumEdition.GetHashCode();
+        if (obj.HasMaximumEdition) hash ^= obj.MaximumEdition.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -13587,6 +14283,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<SourceCodeInfo> _parser = new pb::MessageParser<SourceCodeInfo>(() => new SourceCodeInfo());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<SourceCodeInfo> Comparer { get; set; } = new DefaultSourceCodeInfoComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<SourceCodeInfo> Parser { get { return _parser; } }
@@ -13689,25 +14390,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(SourceCodeInfo other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if(!location_.Equals(other.location_)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      hash ^= location_.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -13822,6 +14511,11 @@ namespace Google.Protobuf.Reflection {
       {
         private static readonly pb::MessageParser<Location> _parser = new pb::MessageParser<Location>(() => new Location());
         private pb::UnknownFieldSet _unknownFields;
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        private scg::IEqualityComparer<Location> Comparer { get; set; } = new DefaultLocationComparer();
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public static pb::MessageParser<Location> Parser { get { return _parser; } }
@@ -14038,33 +14732,13 @@ namespace Google.Protobuf.Reflection {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public bool Equals(Location other) {
-          if (ReferenceEquals(other, null)) {
-            return false;
-          }
-          if (ReferenceEquals(other, this)) {
-            return true;
-          }
-          if(!path_.Equals(other.path_)) return false;
-          if(!span_.Equals(other.span_)) return false;
-          if (LeadingComments != other.LeadingComments) return false;
-          if (TrailingComments != other.TrailingComments) return false;
-          if(!leadingDetachedComments_.Equals(other.leadingDetachedComments_)) return false;
-          return Equals(_unknownFields, other._unknownFields);
+          return this.Comparer.Equals(this, other);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override int GetHashCode() {
-          int hash = 1;
-          hash ^= path_.GetHashCode();
-          hash ^= span_.GetHashCode();
-          if (HasLeadingComments) hash ^= LeadingComments.GetHashCode();
-          if (HasTrailingComments) hash ^= TrailingComments.GetHashCode();
-          hash ^= leadingDetachedComments_.GetHashCode();
-          if (_unknownFields != null) {
-            hash ^= _unknownFields.GetHashCode();
-          }
-          return hash;
+          return this.Comparer.GetHashCode(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -14238,11 +14912,81 @@ namespace Google.Protobuf.Reflection {
         }
         #endif
 
+        #region Nested comparer
+        private class DefaultLocationComparer : scg::IEqualityComparer<Location> {
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public bool Equals(Location x, Location y) {
+            if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+              return true;
+            }
+            if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+              return false;
+            }
+            if (ReferenceEquals(x, y)) {
+              return true;
+            }
+            if(!x.path_.Equals(y.path_)) return false;
+            if(!x.span_.Equals(y.span_)) return false;
+            if (x.LeadingComments != y.LeadingComments) return false;
+            if (x.TrailingComments != y.TrailingComments) return false;
+            if(!x.leadingDetachedComments_.Equals(y.leadingDetachedComments_)) return false;
+            return Equals(x._unknownFields, y._unknownFields);
+          }
+
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public int GetHashCode(Location obj) {
+            int hash = 1;
+            hash ^= obj.path_.GetHashCode();
+            hash ^= obj.span_.GetHashCode();
+            if (obj.HasLeadingComments) hash ^= obj.LeadingComments.GetHashCode();
+            if (obj.HasTrailingComments) hash ^= obj.TrailingComments.GetHashCode();
+            hash ^= obj.leadingDetachedComments_.GetHashCode();
+            if (obj._unknownFields != null) {
+              hash ^= obj._unknownFields.GetHashCode();
+            }
+            return hash;
+          }
+        }
+
+        #endregion
       }
 
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultSourceCodeInfoComparer : scg::IEqualityComparer<SourceCodeInfo> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(SourceCodeInfo x, SourceCodeInfo y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if(!x.location_.Equals(y.location_)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(SourceCodeInfo obj) {
+        int hash = 1;
+        hash ^= obj.location_.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -14258,6 +15002,11 @@ namespace Google.Protobuf.Reflection {
   {
     private static readonly pb::MessageParser<GeneratedCodeInfo> _parser = new pb::MessageParser<GeneratedCodeInfo>(() => new GeneratedCodeInfo());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<GeneratedCodeInfo> Comparer { get; set; } = new DefaultGeneratedCodeInfoComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<GeneratedCodeInfo> Parser { get { return _parser; } }
@@ -14319,25 +15068,13 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(GeneratedCodeInfo other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if(!annotation_.Equals(other.annotation_)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      hash ^= annotation_.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -14452,6 +15189,11 @@ namespace Google.Protobuf.Reflection {
       {
         private static readonly pb::MessageParser<Annotation> _parser = new pb::MessageParser<Annotation>(() => new Annotation());
         private pb::UnknownFieldSet _unknownFields;
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        private scg::IEqualityComparer<Annotation> Comparer { get; set; } = new DefaultAnnotationComparer();
+
         private int _hasBits0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -14638,33 +15380,13 @@ namespace Google.Protobuf.Reflection {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public bool Equals(Annotation other) {
-          if (ReferenceEquals(other, null)) {
-            return false;
-          }
-          if (ReferenceEquals(other, this)) {
-            return true;
-          }
-          if(!path_.Equals(other.path_)) return false;
-          if (SourceFile != other.SourceFile) return false;
-          if (Begin != other.Begin) return false;
-          if (End != other.End) return false;
-          if (Semantic != other.Semantic) return false;
-          return Equals(_unknownFields, other._unknownFields);
+          return this.Comparer.Equals(this, other);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override int GetHashCode() {
-          int hash = 1;
-          hash ^= path_.GetHashCode();
-          if (HasSourceFile) hash ^= SourceFile.GetHashCode();
-          if (HasBegin) hash ^= Begin.GetHashCode();
-          if (HasEnd) hash ^= End.GetHashCode();
-          if (HasSemantic) hash ^= Semantic.GetHashCode();
-          if (_unknownFields != null) {
-            hash ^= _unknownFields.GetHashCode();
-          }
-          return hash;
+          return this.Comparer.GetHashCode(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -14883,11 +15605,81 @@ namespace Google.Protobuf.Reflection {
         }
         #endregion
 
+        #region Nested comparer
+        private class DefaultAnnotationComparer : scg::IEqualityComparer<Annotation> {
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public bool Equals(Annotation x, Annotation y) {
+            if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+              return true;
+            }
+            if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+              return false;
+            }
+            if (ReferenceEquals(x, y)) {
+              return true;
+            }
+            if(!x.path_.Equals(y.path_)) return false;
+            if (x.SourceFile != y.SourceFile) return false;
+            if (x.Begin != y.Begin) return false;
+            if (x.End != y.End) return false;
+            if (x.Semantic != y.Semantic) return false;
+            return Equals(x._unknownFields, y._unknownFields);
+          }
+
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public int GetHashCode(Annotation obj) {
+            int hash = 1;
+            hash ^= obj.path_.GetHashCode();
+            if (obj.HasSourceFile) hash ^= obj.SourceFile.GetHashCode();
+            if (obj.HasBegin) hash ^= obj.Begin.GetHashCode();
+            if (obj.HasEnd) hash ^= obj.End.GetHashCode();
+            if (obj.HasSemantic) hash ^= obj.Semantic.GetHashCode();
+            if (obj._unknownFields != null) {
+              hash ^= obj._unknownFields.GetHashCode();
+            }
+            return hash;
+          }
+        }
+
+        #endregion
       }
 
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultGeneratedCodeInfoComparer : scg::IEqualityComparer<GeneratedCodeInfo> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(GeneratedCodeInfo x, GeneratedCodeInfo y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if(!x.annotation_.Equals(y.annotation_)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(GeneratedCodeInfo obj) {
+        int hash = 1;
+        hash ^= obj.annotation_.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   #endregion

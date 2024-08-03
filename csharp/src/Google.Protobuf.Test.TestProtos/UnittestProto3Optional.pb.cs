@@ -88,6 +88,11 @@ namespace ProtobufUnittest {
   {
     private static readonly pb::MessageParser<TestProto3Optional> _parser = new pb::MessageParser<TestProto3Optional>(() => new TestProto3Optional());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<TestProto3Optional> Comparer { get; set; } = new DefaultTestProto3OptionalComparer();
+
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -666,65 +671,13 @@ namespace ProtobufUnittest {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestProto3Optional other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (OptionalInt32 != other.OptionalInt32) return false;
-      if (OptionalInt64 != other.OptionalInt64) return false;
-      if (OptionalUint32 != other.OptionalUint32) return false;
-      if (OptionalUint64 != other.OptionalUint64) return false;
-      if (OptionalSint32 != other.OptionalSint32) return false;
-      if (OptionalSint64 != other.OptionalSint64) return false;
-      if (OptionalFixed32 != other.OptionalFixed32) return false;
-      if (OptionalFixed64 != other.OptionalFixed64) return false;
-      if (OptionalSfixed32 != other.OptionalSfixed32) return false;
-      if (OptionalSfixed64 != other.OptionalSfixed64) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(OptionalFloat, other.OptionalFloat)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(OptionalDouble, other.OptionalDouble)) return false;
-      if (OptionalBool != other.OptionalBool) return false;
-      if (OptionalString != other.OptionalString) return false;
-      if (OptionalBytes != other.OptionalBytes) return false;
-      if (OptionalCord != other.OptionalCord) return false;
-      if (!object.Equals(OptionalNestedMessage, other.OptionalNestedMessage)) return false;
-      if (!object.Equals(LazyNestedMessage, other.LazyNestedMessage)) return false;
-      if (OptionalNestedEnum != other.OptionalNestedEnum) return false;
-      if (SingularInt32 != other.SingularInt32) return false;
-      if (SingularInt64 != other.SingularInt64) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasOptionalInt32) hash ^= OptionalInt32.GetHashCode();
-      if (HasOptionalInt64) hash ^= OptionalInt64.GetHashCode();
-      if (HasOptionalUint32) hash ^= OptionalUint32.GetHashCode();
-      if (HasOptionalUint64) hash ^= OptionalUint64.GetHashCode();
-      if (HasOptionalSint32) hash ^= OptionalSint32.GetHashCode();
-      if (HasOptionalSint64) hash ^= OptionalSint64.GetHashCode();
-      if (HasOptionalFixed32) hash ^= OptionalFixed32.GetHashCode();
-      if (HasOptionalFixed64) hash ^= OptionalFixed64.GetHashCode();
-      if (HasOptionalSfixed32) hash ^= OptionalSfixed32.GetHashCode();
-      if (HasOptionalSfixed64) hash ^= OptionalSfixed64.GetHashCode();
-      if (HasOptionalFloat) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(OptionalFloat);
-      if (HasOptionalDouble) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(OptionalDouble);
-      if (HasOptionalBool) hash ^= OptionalBool.GetHashCode();
-      if (HasOptionalString) hash ^= OptionalString.GetHashCode();
-      if (HasOptionalBytes) hash ^= OptionalBytes.GetHashCode();
-      if (HasOptionalCord) hash ^= OptionalCord.GetHashCode();
-      if (optionalNestedMessage_ != null) hash ^= OptionalNestedMessage.GetHashCode();
-      if (lazyNestedMessage_ != null) hash ^= LazyNestedMessage.GetHashCode();
-      if (HasOptionalNestedEnum) hash ^= OptionalNestedEnum.GetHashCode();
-      if (SingularInt32 != 0) hash ^= SingularInt32.GetHashCode();
-      if (SingularInt64 != 0L) hash ^= SingularInt64.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1318,6 +1271,11 @@ namespace ProtobufUnittest {
       {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        private scg::IEqualityComparer<NestedMessage> Comparer { get; set; } = new DefaultNestedMessageComparer();
+
         private int _hasBits0;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1398,25 +1356,13 @@ namespace ProtobufUnittest {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public bool Equals(NestedMessage other) {
-          if (ReferenceEquals(other, null)) {
-            return false;
-          }
-          if (ReferenceEquals(other, this)) {
-            return true;
-          }
-          if (Bb != other.Bb) return false;
-          return Equals(_unknownFields, other._unknownFields);
+          return this.Comparer.Equals(this, other);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override int GetHashCode() {
-          int hash = 1;
-          if (HasBb) hash ^= Bb.GetHashCode();
-          if (_unknownFields != null) {
-            hash ^= _unknownFields.GetHashCode();
-          }
-          return hash;
+          return this.Comparer.GetHashCode(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1528,11 +1474,113 @@ namespace ProtobufUnittest {
         }
         #endif
 
+        #region Nested comparer
+        private class DefaultNestedMessageComparer : scg::IEqualityComparer<NestedMessage> {
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public bool Equals(NestedMessage x, NestedMessage y) {
+            if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+              return true;
+            }
+            if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+              return false;
+            }
+            if (ReferenceEquals(x, y)) {
+              return true;
+            }
+            if (x.Bb != y.Bb) return false;
+            return Equals(x._unknownFields, y._unknownFields);
+          }
+
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public int GetHashCode(NestedMessage obj) {
+            int hash = 1;
+            if (obj.HasBb) hash ^= obj.Bb.GetHashCode();
+            if (obj._unknownFields != null) {
+              hash ^= obj._unknownFields.GetHashCode();
+            }
+            return hash;
+          }
+        }
+
+        #endregion
       }
 
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultTestProto3OptionalComparer : scg::IEqualityComparer<TestProto3Optional> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(TestProto3Optional x, TestProto3Optional y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.OptionalInt32 != y.OptionalInt32) return false;
+        if (x.OptionalInt64 != y.OptionalInt64) return false;
+        if (x.OptionalUint32 != y.OptionalUint32) return false;
+        if (x.OptionalUint64 != y.OptionalUint64) return false;
+        if (x.OptionalSint32 != y.OptionalSint32) return false;
+        if (x.OptionalSint64 != y.OptionalSint64) return false;
+        if (x.OptionalFixed32 != y.OptionalFixed32) return false;
+        if (x.OptionalFixed64 != y.OptionalFixed64) return false;
+        if (x.OptionalSfixed32 != y.OptionalSfixed32) return false;
+        if (x.OptionalSfixed64 != y.OptionalSfixed64) return false;
+        if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(x.OptionalFloat, y.OptionalFloat)) return false;
+        if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(x.OptionalDouble, y.OptionalDouble)) return false;
+        if (x.OptionalBool != y.OptionalBool) return false;
+        if (x.OptionalString != y.OptionalString) return false;
+        if (x.OptionalBytes != y.OptionalBytes) return false;
+        if (x.OptionalCord != y.OptionalCord) return false;
+        if (!object.Equals(x.OptionalNestedMessage, y.OptionalNestedMessage)) return false;
+        if (!object.Equals(x.LazyNestedMessage, y.LazyNestedMessage)) return false;
+        if (x.OptionalNestedEnum != y.OptionalNestedEnum) return false;
+        if (x.SingularInt32 != y.SingularInt32) return false;
+        if (x.SingularInt64 != y.SingularInt64) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(TestProto3Optional obj) {
+        int hash = 1;
+        if (obj.HasOptionalInt32) hash ^= obj.OptionalInt32.GetHashCode();
+        if (obj.HasOptionalInt64) hash ^= obj.OptionalInt64.GetHashCode();
+        if (obj.HasOptionalUint32) hash ^= obj.OptionalUint32.GetHashCode();
+        if (obj.HasOptionalUint64) hash ^= obj.OptionalUint64.GetHashCode();
+        if (obj.HasOptionalSint32) hash ^= obj.OptionalSint32.GetHashCode();
+        if (obj.HasOptionalSint64) hash ^= obj.OptionalSint64.GetHashCode();
+        if (obj.HasOptionalFixed32) hash ^= obj.OptionalFixed32.GetHashCode();
+        if (obj.HasOptionalFixed64) hash ^= obj.OptionalFixed64.GetHashCode();
+        if (obj.HasOptionalSfixed32) hash ^= obj.OptionalSfixed32.GetHashCode();
+        if (obj.HasOptionalSfixed64) hash ^= obj.OptionalSfixed64.GetHashCode();
+        if (obj.HasOptionalFloat) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(obj.OptionalFloat);
+        if (obj.HasOptionalDouble) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(obj.OptionalDouble);
+        if (obj.HasOptionalBool) hash ^= obj.OptionalBool.GetHashCode();
+        if (obj.HasOptionalString) hash ^= obj.OptionalString.GetHashCode();
+        if (obj.HasOptionalBytes) hash ^= obj.OptionalBytes.GetHashCode();
+        if (obj.HasOptionalCord) hash ^= obj.OptionalCord.GetHashCode();
+        if (obj.optionalNestedMessage_ != null) hash ^= obj.OptionalNestedMessage.GetHashCode();
+        if (obj.lazyNestedMessage_ != null) hash ^= obj.LazyNestedMessage.GetHashCode();
+        if (obj.HasOptionalNestedEnum) hash ^= obj.OptionalNestedEnum.GetHashCode();
+        if (obj.SingularInt32 != 0) hash ^= obj.SingularInt32.GetHashCode();
+        if (obj.SingularInt64 != 0L) hash ^= obj.SingularInt64.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -1543,6 +1591,11 @@ namespace ProtobufUnittest {
   {
     private static readonly pb::MessageParser<TestProto3OptionalMessage> _parser = new pb::MessageParser<TestProto3OptionalMessage>(() => new TestProto3OptionalMessage());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<TestProto3OptionalMessage> Comparer { get; set; } = new DefaultTestProto3OptionalMessageComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestProto3OptionalMessage> Parser { get { return _parser; } }
@@ -1614,27 +1667,13 @@ namespace ProtobufUnittest {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestProto3OptionalMessage other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!object.Equals(NestedMessage, other.NestedMessage)) return false;
-      if (!object.Equals(OptionalNestedMessage, other.OptionalNestedMessage)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (nestedMessage_ != null) hash ^= NestedMessage.GetHashCode();
-      if (optionalNestedMessage_ != null) hash ^= OptionalNestedMessage.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1799,6 +1838,11 @@ namespace ProtobufUnittest {
       {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        private scg::IEqualityComparer<NestedMessage> Comparer { get; set; } = new DefaultNestedMessageComparer();
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public static pb::MessageParser<NestedMessage> Parser { get { return _parser; } }
@@ -1857,25 +1901,13 @@ namespace ProtobufUnittest {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public bool Equals(NestedMessage other) {
-          if (ReferenceEquals(other, null)) {
-            return false;
-          }
-          if (ReferenceEquals(other, this)) {
-            return true;
-          }
-          if (S != other.S) return false;
-          return Equals(_unknownFields, other._unknownFields);
+          return this.Comparer.Equals(this, other);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override int GetHashCode() {
-          int hash = 1;
-          if (S.Length != 0) hash ^= S.GetHashCode();
-          if (_unknownFields != null) {
-            hash ^= _unknownFields.GetHashCode();
-          }
-          return hash;
+          return this.Comparer.GetHashCode(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1987,11 +2019,75 @@ namespace ProtobufUnittest {
         }
         #endif
 
+        #region Nested comparer
+        private class DefaultNestedMessageComparer : scg::IEqualityComparer<NestedMessage> {
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public bool Equals(NestedMessage x, NestedMessage y) {
+            if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+              return true;
+            }
+            if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+              return false;
+            }
+            if (ReferenceEquals(x, y)) {
+              return true;
+            }
+            if (x.S != y.S) return false;
+            return Equals(x._unknownFields, y._unknownFields);
+          }
+
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public int GetHashCode(NestedMessage obj) {
+            int hash = 1;
+            if (obj.S.Length != 0) hash ^= obj.S.GetHashCode();
+            if (obj._unknownFields != null) {
+              hash ^= obj._unknownFields.GetHashCode();
+            }
+            return hash;
+          }
+        }
+
+        #endregion
       }
 
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultTestProto3OptionalMessageComparer : scg::IEqualityComparer<TestProto3OptionalMessage> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(TestProto3OptionalMessage x, TestProto3OptionalMessage y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (!object.Equals(x.NestedMessage, y.NestedMessage)) return false;
+        if (!object.Equals(x.OptionalNestedMessage, y.OptionalNestedMessage)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(TestProto3OptionalMessage obj) {
+        int hash = 1;
+        if (obj.nestedMessage_ != null) hash ^= obj.NestedMessage.GetHashCode();
+        if (obj.optionalNestedMessage_ != null) hash ^= obj.OptionalNestedMessage.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -2002,6 +2098,11 @@ namespace ProtobufUnittest {
   {
     private static readonly pb::MessageParser<Proto3OptionalExtensions> _parser = new pb::MessageParser<Proto3OptionalExtensions>(() => new Proto3OptionalExtensions());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<Proto3OptionalExtensions> Comparer { get; set; } = new DefaultProto3OptionalExtensionsComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<Proto3OptionalExtensions> Parser { get { return _parser; } }
@@ -2047,23 +2148,13 @@ namespace ProtobufUnittest {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(Proto3OptionalExtensions other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2153,6 +2244,35 @@ namespace ProtobufUnittest {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultProto3OptionalExtensionsComparer : scg::IEqualityComparer<Proto3OptionalExtensions> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(Proto3OptionalExtensions x, Proto3OptionalExtensions y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(Proto3OptionalExtensions obj) {
+        int hash = 1;
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
     #region Extensions
     /// <summary>Container for extensions for other messages declared in the Proto3OptionalExtensions message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

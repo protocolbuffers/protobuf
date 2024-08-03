@@ -187,6 +187,11 @@ namespace Google.Protobuf.TestProtos {
   {
     private static readonly pb::MessageParser<TestWellKnownTypes> _parser = new pb::MessageParser<TestWellKnownTypes>(() => new TestWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<TestWellKnownTypes> Comparer { get; set; } = new DefaultTestWellKnownTypesComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestWellKnownTypes> Parser { get { return _parser; } }
@@ -500,61 +505,13 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestWellKnownTypes other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!object.Equals(AnyField, other.AnyField)) return false;
-      if (!object.Equals(ApiField, other.ApiField)) return false;
-      if (!object.Equals(DurationField, other.DurationField)) return false;
-      if (!object.Equals(EmptyField, other.EmptyField)) return false;
-      if (!object.Equals(FieldMaskField, other.FieldMaskField)) return false;
-      if (!object.Equals(SourceContextField, other.SourceContextField)) return false;
-      if (!object.Equals(StructField, other.StructField)) return false;
-      if (!object.Equals(TimestampField, other.TimestampField)) return false;
-      if (!object.Equals(TypeField, other.TypeField)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.Equals(DoubleField, other.DoubleField)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.Equals(FloatField, other.FloatField)) return false;
-      if (Int64Field != other.Int64Field) return false;
-      if (Uint64Field != other.Uint64Field) return false;
-      if (Int32Field != other.Int32Field) return false;
-      if (Uint32Field != other.Uint32Field) return false;
-      if (BoolField != other.BoolField) return false;
-      if (StringField != other.StringField) return false;
-      if (BytesField != other.BytesField) return false;
-      if (!object.Equals(ValueField, other.ValueField)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (anyField_ != null) hash ^= AnyField.GetHashCode();
-      if (apiField_ != null) hash ^= ApiField.GetHashCode();
-      if (durationField_ != null) hash ^= DurationField.GetHashCode();
-      if (emptyField_ != null) hash ^= EmptyField.GetHashCode();
-      if (fieldMaskField_ != null) hash ^= FieldMaskField.GetHashCode();
-      if (sourceContextField_ != null) hash ^= SourceContextField.GetHashCode();
-      if (structField_ != null) hash ^= StructField.GetHashCode();
-      if (timestampField_ != null) hash ^= TimestampField.GetHashCode();
-      if (typeField_ != null) hash ^= TypeField.GetHashCode();
-      if (doubleField_ != null) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode(DoubleField);
-      if (floatField_ != null) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode(FloatField);
-      if (int64Field_ != null) hash ^= Int64Field.GetHashCode();
-      if (uint64Field_ != null) hash ^= Uint64Field.GetHashCode();
-      if (int32Field_ != null) hash ^= Int32Field.GetHashCode();
-      if (uint32Field_ != null) hash ^= Uint32Field.GetHashCode();
-      if (boolField_ != null) hash ^= BoolField.GetHashCode();
-      if (stringField_ != null) hash ^= StringField.GetHashCode();
-      if (bytesField_ != null) hash ^= BytesField.GetHashCode();
-      if (valueField_ != null) hash ^= ValueField.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1206,6 +1163,73 @@ namespace Google.Protobuf.TestProtos {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultTestWellKnownTypesComparer : scg::IEqualityComparer<TestWellKnownTypes> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(TestWellKnownTypes x, TestWellKnownTypes y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (!object.Equals(x.AnyField, y.AnyField)) return false;
+        if (!object.Equals(x.ApiField, y.ApiField)) return false;
+        if (!object.Equals(x.DurationField, y.DurationField)) return false;
+        if (!object.Equals(x.EmptyField, y.EmptyField)) return false;
+        if (!object.Equals(x.FieldMaskField, y.FieldMaskField)) return false;
+        if (!object.Equals(x.SourceContextField, y.SourceContextField)) return false;
+        if (!object.Equals(x.StructField, y.StructField)) return false;
+        if (!object.Equals(x.TimestampField, y.TimestampField)) return false;
+        if (!object.Equals(x.TypeField, y.TypeField)) return false;
+        if (!pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.Equals(x.DoubleField, y.DoubleField)) return false;
+        if (!pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.Equals(x.FloatField, y.FloatField)) return false;
+        if (x.Int64Field != y.Int64Field) return false;
+        if (x.Uint64Field != y.Uint64Field) return false;
+        if (x.Int32Field != y.Int32Field) return false;
+        if (x.Uint32Field != y.Uint32Field) return false;
+        if (x.BoolField != y.BoolField) return false;
+        if (x.StringField != y.StringField) return false;
+        if (x.BytesField != y.BytesField) return false;
+        if (!object.Equals(x.ValueField, y.ValueField)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(TestWellKnownTypes obj) {
+        int hash = 1;
+        if (obj.anyField_ != null) hash ^= obj.AnyField.GetHashCode();
+        if (obj.apiField_ != null) hash ^= obj.ApiField.GetHashCode();
+        if (obj.durationField_ != null) hash ^= obj.DurationField.GetHashCode();
+        if (obj.emptyField_ != null) hash ^= obj.EmptyField.GetHashCode();
+        if (obj.fieldMaskField_ != null) hash ^= obj.FieldMaskField.GetHashCode();
+        if (obj.sourceContextField_ != null) hash ^= obj.SourceContextField.GetHashCode();
+        if (obj.structField_ != null) hash ^= obj.StructField.GetHashCode();
+        if (obj.timestampField_ != null) hash ^= obj.TimestampField.GetHashCode();
+        if (obj.typeField_ != null) hash ^= obj.TypeField.GetHashCode();
+        if (obj.doubleField_ != null) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode(obj.DoubleField);
+        if (obj.floatField_ != null) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode(obj.FloatField);
+        if (obj.int64Field_ != null) hash ^= obj.Int64Field.GetHashCode();
+        if (obj.uint64Field_ != null) hash ^= obj.Uint64Field.GetHashCode();
+        if (obj.int32Field_ != null) hash ^= obj.Int32Field.GetHashCode();
+        if (obj.uint32Field_ != null) hash ^= obj.Uint32Field.GetHashCode();
+        if (obj.boolField_ != null) hash ^= obj.BoolField.GetHashCode();
+        if (obj.stringField_ != null) hash ^= obj.StringField.GetHashCode();
+        if (obj.bytesField_ != null) hash ^= obj.BytesField.GetHashCode();
+        if (obj.valueField_ != null) hash ^= obj.ValueField.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -1219,6 +1243,11 @@ namespace Google.Protobuf.TestProtos {
   {
     private static readonly pb::MessageParser<RepeatedWellKnownTypes> _parser = new pb::MessageParser<RepeatedWellKnownTypes>(() => new RepeatedWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<RepeatedWellKnownTypes> Comparer { get; set; } = new DefaultRepeatedWellKnownTypesComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<RepeatedWellKnownTypes> Parser { get { return _parser; } }
@@ -1483,59 +1512,13 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(RepeatedWellKnownTypes other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if(!anyField_.Equals(other.anyField_)) return false;
-      if(!apiField_.Equals(other.apiField_)) return false;
-      if(!durationField_.Equals(other.durationField_)) return false;
-      if(!emptyField_.Equals(other.emptyField_)) return false;
-      if(!fieldMaskField_.Equals(other.fieldMaskField_)) return false;
-      if(!sourceContextField_.Equals(other.sourceContextField_)) return false;
-      if(!structField_.Equals(other.structField_)) return false;
-      if(!timestampField_.Equals(other.timestampField_)) return false;
-      if(!typeField_.Equals(other.typeField_)) return false;
-      if(!doubleField_.Equals(other.doubleField_)) return false;
-      if(!floatField_.Equals(other.floatField_)) return false;
-      if(!int64Field_.Equals(other.int64Field_)) return false;
-      if(!uint64Field_.Equals(other.uint64Field_)) return false;
-      if(!int32Field_.Equals(other.int32Field_)) return false;
-      if(!uint32Field_.Equals(other.uint32Field_)) return false;
-      if(!boolField_.Equals(other.boolField_)) return false;
-      if(!stringField_.Equals(other.stringField_)) return false;
-      if(!bytesField_.Equals(other.bytesField_)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      hash ^= anyField_.GetHashCode();
-      hash ^= apiField_.GetHashCode();
-      hash ^= durationField_.GetHashCode();
-      hash ^= emptyField_.GetHashCode();
-      hash ^= fieldMaskField_.GetHashCode();
-      hash ^= sourceContextField_.GetHashCode();
-      hash ^= structField_.GetHashCode();
-      hash ^= timestampField_.GetHashCode();
-      hash ^= typeField_.GetHashCode();
-      hash ^= doubleField_.GetHashCode();
-      hash ^= floatField_.GetHashCode();
-      hash ^= int64Field_.GetHashCode();
-      hash ^= uint64Field_.GetHashCode();
-      hash ^= int32Field_.GetHashCode();
-      hash ^= uint32Field_.GetHashCode();
-      hash ^= boolField_.GetHashCode();
-      hash ^= stringField_.GetHashCode();
-      hash ^= bytesField_.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1841,6 +1824,71 @@ namespace Google.Protobuf.TestProtos {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultRepeatedWellKnownTypesComparer : scg::IEqualityComparer<RepeatedWellKnownTypes> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(RepeatedWellKnownTypes x, RepeatedWellKnownTypes y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if(!x.anyField_.Equals(y.anyField_)) return false;
+        if(!x.apiField_.Equals(y.apiField_)) return false;
+        if(!x.durationField_.Equals(y.durationField_)) return false;
+        if(!x.emptyField_.Equals(y.emptyField_)) return false;
+        if(!x.fieldMaskField_.Equals(y.fieldMaskField_)) return false;
+        if(!x.sourceContextField_.Equals(y.sourceContextField_)) return false;
+        if(!x.structField_.Equals(y.structField_)) return false;
+        if(!x.timestampField_.Equals(y.timestampField_)) return false;
+        if(!x.typeField_.Equals(y.typeField_)) return false;
+        if(!x.doubleField_.Equals(y.doubleField_)) return false;
+        if(!x.floatField_.Equals(y.floatField_)) return false;
+        if(!x.int64Field_.Equals(y.int64Field_)) return false;
+        if(!x.uint64Field_.Equals(y.uint64Field_)) return false;
+        if(!x.int32Field_.Equals(y.int32Field_)) return false;
+        if(!x.uint32Field_.Equals(y.uint32Field_)) return false;
+        if(!x.boolField_.Equals(y.boolField_)) return false;
+        if(!x.stringField_.Equals(y.stringField_)) return false;
+        if(!x.bytesField_.Equals(y.bytesField_)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(RepeatedWellKnownTypes obj) {
+        int hash = 1;
+        hash ^= obj.anyField_.GetHashCode();
+        hash ^= obj.apiField_.GetHashCode();
+        hash ^= obj.durationField_.GetHashCode();
+        hash ^= obj.emptyField_.GetHashCode();
+        hash ^= obj.fieldMaskField_.GetHashCode();
+        hash ^= obj.sourceContextField_.GetHashCode();
+        hash ^= obj.structField_.GetHashCode();
+        hash ^= obj.timestampField_.GetHashCode();
+        hash ^= obj.typeField_.GetHashCode();
+        hash ^= obj.doubleField_.GetHashCode();
+        hash ^= obj.floatField_.GetHashCode();
+        hash ^= obj.int64Field_.GetHashCode();
+        hash ^= obj.uint64Field_.GetHashCode();
+        hash ^= obj.int32Field_.GetHashCode();
+        hash ^= obj.uint32Field_.GetHashCode();
+        hash ^= obj.boolField_.GetHashCode();
+        hash ^= obj.stringField_.GetHashCode();
+        hash ^= obj.bytesField_.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -1851,6 +1899,11 @@ namespace Google.Protobuf.TestProtos {
   {
     private static readonly pb::MessageParser<OneofWellKnownTypes> _parser = new pb::MessageParser<OneofWellKnownTypes>(() => new OneofWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<OneofWellKnownTypes> Comparer { get; set; } = new DefaultOneofWellKnownTypesComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<OneofWellKnownTypes> Parser { get { return _parser; } }
@@ -2215,61 +2268,13 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(OneofWellKnownTypes other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!object.Equals(AnyField, other.AnyField)) return false;
-      if (!object.Equals(ApiField, other.ApiField)) return false;
-      if (!object.Equals(DurationField, other.DurationField)) return false;
-      if (!object.Equals(EmptyField, other.EmptyField)) return false;
-      if (!object.Equals(FieldMaskField, other.FieldMaskField)) return false;
-      if (!object.Equals(SourceContextField, other.SourceContextField)) return false;
-      if (!object.Equals(StructField, other.StructField)) return false;
-      if (!object.Equals(TimestampField, other.TimestampField)) return false;
-      if (!object.Equals(TypeField, other.TypeField)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.Equals(DoubleField, other.DoubleField)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.Equals(FloatField, other.FloatField)) return false;
-      if (Int64Field != other.Int64Field) return false;
-      if (Uint64Field != other.Uint64Field) return false;
-      if (Int32Field != other.Int32Field) return false;
-      if (Uint32Field != other.Uint32Field) return false;
-      if (BoolField != other.BoolField) return false;
-      if (StringField != other.StringField) return false;
-      if (BytesField != other.BytesField) return false;
-      if (OneofFieldCase != other.OneofFieldCase) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (oneofFieldCase_ == OneofFieldOneofCase.AnyField) hash ^= AnyField.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.ApiField) hash ^= ApiField.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.DurationField) hash ^= DurationField.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.EmptyField) hash ^= EmptyField.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.FieldMaskField) hash ^= FieldMaskField.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.SourceContextField) hash ^= SourceContextField.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.StructField) hash ^= StructField.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.TimestampField) hash ^= TimestampField.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.TypeField) hash ^= TypeField.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.DoubleField) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode(DoubleField);
-      if (oneofFieldCase_ == OneofFieldOneofCase.FloatField) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode(FloatField);
-      if (oneofFieldCase_ == OneofFieldOneofCase.Int64Field) hash ^= Int64Field.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.Uint64Field) hash ^= Uint64Field.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.Int32Field) hash ^= Int32Field.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.Uint32Field) hash ^= Uint32Field.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.BoolField) hash ^= BoolField.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.StringField) hash ^= StringField.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.BytesField) hash ^= BytesField.GetHashCode();
-      hash ^= (int) oneofFieldCase_;
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2857,6 +2862,73 @@ namespace Google.Protobuf.TestProtos {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultOneofWellKnownTypesComparer : scg::IEqualityComparer<OneofWellKnownTypes> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(OneofWellKnownTypes x, OneofWellKnownTypes y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (!object.Equals(x.AnyField, y.AnyField)) return false;
+        if (!object.Equals(x.ApiField, y.ApiField)) return false;
+        if (!object.Equals(x.DurationField, y.DurationField)) return false;
+        if (!object.Equals(x.EmptyField, y.EmptyField)) return false;
+        if (!object.Equals(x.FieldMaskField, y.FieldMaskField)) return false;
+        if (!object.Equals(x.SourceContextField, y.SourceContextField)) return false;
+        if (!object.Equals(x.StructField, y.StructField)) return false;
+        if (!object.Equals(x.TimestampField, y.TimestampField)) return false;
+        if (!object.Equals(x.TypeField, y.TypeField)) return false;
+        if (!pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.Equals(x.DoubleField, y.DoubleField)) return false;
+        if (!pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.Equals(x.FloatField, y.FloatField)) return false;
+        if (x.Int64Field != y.Int64Field) return false;
+        if (x.Uint64Field != y.Uint64Field) return false;
+        if (x.Int32Field != y.Int32Field) return false;
+        if (x.Uint32Field != y.Uint32Field) return false;
+        if (x.BoolField != y.BoolField) return false;
+        if (x.StringField != y.StringField) return false;
+        if (x.BytesField != y.BytesField) return false;
+        if (x.OneofFieldCase != y.OneofFieldCase) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(OneofWellKnownTypes obj) {
+        int hash = 1;
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.AnyField) hash ^= obj.AnyField.GetHashCode();
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.ApiField) hash ^= obj.ApiField.GetHashCode();
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.DurationField) hash ^= obj.DurationField.GetHashCode();
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.EmptyField) hash ^= obj.EmptyField.GetHashCode();
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.FieldMaskField) hash ^= obj.FieldMaskField.GetHashCode();
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.SourceContextField) hash ^= obj.SourceContextField.GetHashCode();
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.StructField) hash ^= obj.StructField.GetHashCode();
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.TimestampField) hash ^= obj.TimestampField.GetHashCode();
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.TypeField) hash ^= obj.TypeField.GetHashCode();
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.DoubleField) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode(obj.DoubleField);
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.FloatField) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode(obj.FloatField);
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.Int64Field) hash ^= obj.Int64Field.GetHashCode();
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.Uint64Field) hash ^= obj.Uint64Field.GetHashCode();
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.Int32Field) hash ^= obj.Int32Field.GetHashCode();
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.Uint32Field) hash ^= obj.Uint32Field.GetHashCode();
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.BoolField) hash ^= obj.BoolField.GetHashCode();
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.StringField) hash ^= obj.StringField.GetHashCode();
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.BytesField) hash ^= obj.BytesField.GetHashCode();
+        hash ^= (int) obj.oneofFieldCase_;
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -2872,6 +2944,11 @@ namespace Google.Protobuf.TestProtos {
   {
     private static readonly pb::MessageParser<MapWellKnownTypes> _parser = new pb::MessageParser<MapWellKnownTypes>(() => new MapWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<MapWellKnownTypes> Comparer { get; set; } = new DefaultMapWellKnownTypesComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<MapWellKnownTypes> Parser { get { return _parser; } }
@@ -3133,59 +3210,13 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(MapWellKnownTypes other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!AnyField.Equals(other.AnyField)) return false;
-      if (!ApiField.Equals(other.ApiField)) return false;
-      if (!DurationField.Equals(other.DurationField)) return false;
-      if (!EmptyField.Equals(other.EmptyField)) return false;
-      if (!FieldMaskField.Equals(other.FieldMaskField)) return false;
-      if (!SourceContextField.Equals(other.SourceContextField)) return false;
-      if (!StructField.Equals(other.StructField)) return false;
-      if (!TimestampField.Equals(other.TimestampField)) return false;
-      if (!TypeField.Equals(other.TypeField)) return false;
-      if (!DoubleField.Equals(other.DoubleField)) return false;
-      if (!FloatField.Equals(other.FloatField)) return false;
-      if (!Int64Field.Equals(other.Int64Field)) return false;
-      if (!Uint64Field.Equals(other.Uint64Field)) return false;
-      if (!Int32Field.Equals(other.Int32Field)) return false;
-      if (!Uint32Field.Equals(other.Uint32Field)) return false;
-      if (!BoolField.Equals(other.BoolField)) return false;
-      if (!StringField.Equals(other.StringField)) return false;
-      if (!BytesField.Equals(other.BytesField)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      hash ^= AnyField.GetHashCode();
-      hash ^= ApiField.GetHashCode();
-      hash ^= DurationField.GetHashCode();
-      hash ^= EmptyField.GetHashCode();
-      hash ^= FieldMaskField.GetHashCode();
-      hash ^= SourceContextField.GetHashCode();
-      hash ^= StructField.GetHashCode();
-      hash ^= TimestampField.GetHashCode();
-      hash ^= TypeField.GetHashCode();
-      hash ^= DoubleField.GetHashCode();
-      hash ^= FloatField.GetHashCode();
-      hash ^= Int64Field.GetHashCode();
-      hash ^= Uint64Field.GetHashCode();
-      hash ^= Int32Field.GetHashCode();
-      hash ^= Uint32Field.GetHashCode();
-      hash ^= BoolField.GetHashCode();
-      hash ^= StringField.GetHashCode();
-      hash ^= BytesField.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3491,6 +3522,71 @@ namespace Google.Protobuf.TestProtos {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultMapWellKnownTypesComparer : scg::IEqualityComparer<MapWellKnownTypes> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(MapWellKnownTypes x, MapWellKnownTypes y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (!x.AnyField.Equals(y.AnyField)) return false;
+        if (!x.ApiField.Equals(y.ApiField)) return false;
+        if (!x.DurationField.Equals(y.DurationField)) return false;
+        if (!x.EmptyField.Equals(y.EmptyField)) return false;
+        if (!x.FieldMaskField.Equals(y.FieldMaskField)) return false;
+        if (!x.SourceContextField.Equals(y.SourceContextField)) return false;
+        if (!x.StructField.Equals(y.StructField)) return false;
+        if (!x.TimestampField.Equals(y.TimestampField)) return false;
+        if (!x.TypeField.Equals(y.TypeField)) return false;
+        if (!x.DoubleField.Equals(y.DoubleField)) return false;
+        if (!x.FloatField.Equals(y.FloatField)) return false;
+        if (!x.Int64Field.Equals(y.Int64Field)) return false;
+        if (!x.Uint64Field.Equals(y.Uint64Field)) return false;
+        if (!x.Int32Field.Equals(y.Int32Field)) return false;
+        if (!x.Uint32Field.Equals(y.Uint32Field)) return false;
+        if (!x.BoolField.Equals(y.BoolField)) return false;
+        if (!x.StringField.Equals(y.StringField)) return false;
+        if (!x.BytesField.Equals(y.BytesField)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(MapWellKnownTypes obj) {
+        int hash = 1;
+        hash ^= obj.AnyField.GetHashCode();
+        hash ^= obj.ApiField.GetHashCode();
+        hash ^= obj.DurationField.GetHashCode();
+        hash ^= obj.EmptyField.GetHashCode();
+        hash ^= obj.FieldMaskField.GetHashCode();
+        hash ^= obj.SourceContextField.GetHashCode();
+        hash ^= obj.StructField.GetHashCode();
+        hash ^= obj.TimestampField.GetHashCode();
+        hash ^= obj.TypeField.GetHashCode();
+        hash ^= obj.DoubleField.GetHashCode();
+        hash ^= obj.FloatField.GetHashCode();
+        hash ^= obj.Int64Field.GetHashCode();
+        hash ^= obj.Uint64Field.GetHashCode();
+        hash ^= obj.Int32Field.GetHashCode();
+        hash ^= obj.Uint32Field.GetHashCode();
+        hash ^= obj.BoolField.GetHashCode();
+        hash ^= obj.StringField.GetHashCode();
+        hash ^= obj.BytesField.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   #endregion

@@ -72,6 +72,11 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
   {
     private static readonly pb::MessageParser<FooOptions> _parser = new pb::MessageParser<FooOptions>(() => new FooOptions());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<FooOptions> Comparer { get; set; } = new DefaultFooOptionsComparer();
+
     private pb::ExtensionSet<FooOptions> _extensions;
     private pb::ExtensionSet<FooOptions> _Extensions { get { return _extensions; } }
     private int _hasBits0;
@@ -184,33 +189,13 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(FooOptions other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (IntOpt != other.IntOpt) return false;
-      if (Foo != other.Foo) return false;
-      if (!Equals(_extensions, other._extensions)) {
-        return false;
-      }
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasIntOpt) hash ^= IntOpt.GetHashCode();
-      if (HasFoo) hash ^= Foo.GetHashCode();
-      if (_extensions != null) {
-        hash ^= _extensions.GetHashCode();
-      }
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -380,6 +365,45 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
       pb::ExtensionSet.Clear(ref _extensions, extension);
     }
 
+    #region Nested comparer
+    private class DefaultFooOptionsComparer : scg::IEqualityComparer<FooOptions> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(FooOptions x, FooOptions y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.IntOpt != y.IntOpt) return false;
+        if (x.Foo != y.Foo) return false;
+        if (!Equals(x._extensions, y._extensions)) {
+          return false;
+        }
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(FooOptions obj) {
+        int hash = 1;
+        if (obj.HasIntOpt) hash ^= obj.IntOpt.GetHashCode();
+        if (obj.HasFoo) hash ^= obj.Foo.GetHashCode();
+        if (obj._extensions != null) {
+          hash ^= obj._extensions.GetHashCode();
+        }
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   #endregion
