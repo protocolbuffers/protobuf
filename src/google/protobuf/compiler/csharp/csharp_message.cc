@@ -131,7 +131,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "{\n"
       "  get;\n"
       "  private set;\n"
-      "}"
+      "}\n\n"
   );
 
   if (has_extension_ranges_) {
@@ -441,7 +441,7 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
   WriteGeneratedCodeAttributes(printer);
   printer->Print(vars,
                  "public bool Equals($class_name$ other) {\n"
-                 "  return this.Comparer.Equals(this, other);"
+                 "  return this.Comparer.Equals(this, other);\n"
                  "}\n\n");
 
   // GetHashCode
@@ -450,7 +450,7 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
   WriteGeneratedCodeAttributes(printer);
   printer->Print(
       "public override int GetHashCode() {\n"
-      "  return this.Comparer.GetHashCode(this);"
+      "  return this.Comparer.GetHashCode(this);\n"
       "}\n\n");
 
   WriteGeneratedCodeAttributes(printer);
