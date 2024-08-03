@@ -133,7 +133,7 @@ void WrapperFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
 }
 
 void WrapperFieldGenerator::WriteHash(io::Printer* printer) {
-  std::string text = "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n";
+  const char *text = "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n";
   if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_FLOAT) {
     text = "if ($has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode($property_name$);\n";
   }
@@ -144,7 +144,7 @@ void WrapperFieldGenerator::WriteHash(io::Printer* printer) {
 }
 
 void WrapperFieldGenerator::WriteComparerHash(io::Printer* printer) {
-  std::string text = "if (obj.$has_property_check$) hash ^= obj.$property_name$.GetHashCode();\n";
+  const char *text = "if (obj.$has_property_check$) hash ^= obj.$property_name$.GetHashCode();\n";
   if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_FLOAT) {
     text = "if (obj.$has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode(obj.$property_name$);\n";
   }

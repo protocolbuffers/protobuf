@@ -140,7 +140,7 @@ void MessageFieldGenerator::WriteHash(io::Printer* printer) {
 void MessageFieldGenerator::WriteComparerHash(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if (obj.$property_name$ != null) hash ^= obj.$property_name$.GetHashCode();\n");
+    "if (obj.$has_property_check$) hash ^= obj.$property_name$.GetHashCode();\n");
 }
 
 void MessageFieldGenerator::WriteEquals(io::Printer* printer) {
@@ -152,7 +152,7 @@ void MessageFieldGenerator::WriteEquals(io::Printer* printer) {
 void MessageFieldGenerator::WriteComparerEquals(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if (!x.Equals($property_name$, y.$property_name$)) return false;\n");
+    "if (!object.Equals(x.$property_name$, y.$property_name$)) return false;\n");
 }
 
 void MessageFieldGenerator::WriteToString(io::Printer* printer) {
