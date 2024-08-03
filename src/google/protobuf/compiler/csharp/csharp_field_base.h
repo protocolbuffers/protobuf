@@ -47,10 +47,12 @@ class FieldGeneratorBase : public SourceGeneratorBase {
   virtual void GenerateSerializationCode(io::Printer* printer, bool use_write_context);
   virtual void GenerateSerializedSizeCode(io::Printer* printer) = 0;
 
-  virtual void WriteHash(io::Printer* printer, bool withSpecificObject = false) = 0;
+  virtual void WriteHash(io::Printer* printer) = 0;
   virtual void WriteEquals(io::Printer* printer) = 0;
   // Currently unused, as we use reflection to generate JSON
   virtual void WriteToString(io::Printer* printer) = 0;
+  virtual void WriteComparerHash(io::Printer* printer) = 0;
+  virtual void WriteComparerEquals(io::Printer* printer) = 0;
 
  protected:
   const FieldDescriptor* descriptor_;
