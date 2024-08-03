@@ -122,16 +122,13 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "private static readonly pb::MessageParser<$class_name$> _parser = new "
       "pb::MessageParser<$class_name$>(() => new $class_name$());\n");
 
-  printer->Print("private pb::UnknownFieldSet _unknownFields;\n");
+  printer->Print("private pb::UnknownFieldSet _unknownFields;\n\n");
 
   WriteGeneratedCodeAttributes(printer);
   printer->Print(
       vars,
-      "private scg::IEqualityComparer<$class_name$> Comparer\n"
-      "{\n"
-      "  get;\n"
-      "  private set;\n"
-      "}\n\n"
+      "private scg::IEqualityComparer<$class_name$> Comparer { get; set; } "
+      "= new Default$class_name$Comparer();\n\n"
   );
 
   if (has_extension_ranges_) {
@@ -762,7 +759,7 @@ void MessageGenerator::GenerateNestedComparerClass(io::Printer* printer) {
         "}\n");
   }
   printer->Print(
-      "if (_unknownFields != null) {\n"
+      "if (obj._unknownFields != null) {\n"
       "  hash ^= obj._unknownFields.GetHashCode();\n"
       "}\n"
       "return hash;\n");
