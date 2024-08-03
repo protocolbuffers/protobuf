@@ -214,7 +214,7 @@ void PrimitiveFieldGenerator::WriteHash(io::Printer* printer) {
 }
 
 void PrimitiveFieldGenerator::WriteEquals(io::Printer* printer) {
-  const char *text = "if (!x.$property_name$ != y.$property_name$) return false;\n";
+  const char *text = "if (x.$property_name$ != y.$property_name$) return false;\n";
   if (descriptor_->type() == FieldDescriptor::TYPE_FLOAT) {
     text = "if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(x.$property_name$, y.$property_name$)) return false;\n";
   } else if (descriptor_->type() == FieldDescriptor::TYPE_DOUBLE) {
