@@ -84,22 +84,28 @@ void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer
     "size += $name$_.CalculateSize(_repeated_$name$_codec);\n");
 }
 
-void RepeatedEnumFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject) {
-  if (withSpecificObject) {
-    printer->Print(
-      variables_,
-      "hash ^= obj.$name$_.GetHashCode();\n");
-  } else {
-    printer->Print(
-      variables_,
-      "hash ^= $name$_.GetHashCode();\n");
-  }
+void RepeatedEnumFieldGenerator::WriteHash(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "hash ^= $name$_.GetHashCode();\n");
+}
+
+void RepeatedEnumFieldGenerator::WriteComparerHash(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "hash ^= obj.$name$_.GetHashCode();\n");
 }
 
 void RepeatedEnumFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(
     variables_,
     "if(!$name$_.Equals(other.$name$_)) return false;\n");
+}
+
+void RepeatedEnumFieldGenerator::WriteComparerEquals(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if(!x.$name$_.Equals(y.$name$_)) return false;\n");
 }
 
 void RepeatedEnumFieldGenerator::WriteToString(io::Printer* printer) {

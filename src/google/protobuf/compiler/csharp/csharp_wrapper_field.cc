@@ -132,14 +132,24 @@ void WrapperFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
     "}\n");
 }
 
-void WrapperFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject) {
-  std::string objPrefix = withSpecificObject ? "obj." : std::string();
-  std::string text = "if (" + objPrefix + "$has_property_check$) hash ^= " + objPrefix + "$property_name$.GetHashCode();\n";
+void WrapperFieldGenerator::WriteHash(io::Printer* printer) {
+  std::string text = "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n";
   if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_FLOAT) {
-    text = "if (" + objPrefix + "$has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode(" + objPrefix + "$property_name$);\n";
+    text = "if ($has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode($property_name$);\n";
   }
   else if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_DOUBLE) {
-    text = "if (" + objPrefix + "$has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode(" + objPrefix + "$property_name$);\n";
+    text = "if ($has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode($property_name$);\n";
+  }
+  printer->Print(variables_, text);
+}
+
+void WrapperFieldGenerator::WriteComparerHash(io::Printer* printer) {
+  std::string text = "if (obj.$has_property_check$) hash ^= obj.$property_name$.GetHashCode();\n";
+  if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_FLOAT) {
+    text = "if (obj.$has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode(obj.$property_name$);\n";
+  }
+  else if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_DOUBLE) {
+    text = "if (obj.$has_property_check$) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode(obj.$property_name$);\n";
   }
   printer->Print(variables_, text);
 }
@@ -151,6 +161,17 @@ void WrapperFieldGenerator::WriteEquals(io::Printer* printer) {
   }
   else if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_DOUBLE) {
     text = "if (!pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.Equals($property_name$, other.$property_name$)) return false;\n";
+  }
+  printer->Print(variables_, text);
+}
+
+void WrapperFieldGenerator::WriteComparerEquals(io::Printer* printer) {
+  const char *text = "if (x.$property_name$ != y.$property_name$) return false;\n";
+  if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_FLOAT) {
+    text = "if (!pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.Equals(x.$property_name$, y.$property_name$)) return false;\n";
+  }
+  else if (descriptor_->message_type()->field(0)->type() == FieldDescriptor::TYPE_DOUBLE) {
+    text = "if (!pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.Equals(x.$property_name$, y.$property_name$)) return false;\n";
   }
   printer->Print(variables_, text);
 }

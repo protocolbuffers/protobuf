@@ -37,9 +37,11 @@ class PrimitiveFieldGenerator : public FieldGeneratorBase {
   virtual void GenerateSerializedSizeCode(io::Printer* printer) override;
   virtual void GenerateExtensionCode(io::Printer* printer) override;
 
-  virtual void WriteHash(io::Printer* printer, bool withSpecificObject = false) override;
+  virtual void WriteHash(io::Printer* printer) override;
   virtual void WriteEquals(io::Printer* printer) override;
   virtual void WriteToString(io::Printer* printer) override;
+  virtual void WriteComparerHash(io::Printer* printer) override;
+  virtual void WriteComparerEquals(io::Printer* printer) override;
 
  protected:
   bool is_value_type;

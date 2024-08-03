@@ -99,22 +99,28 @@ void RepeatedMessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* prin
     "size += $name$_.CalculateSize(_repeated_$name$_codec);\n");
 }
 
-void RepeatedMessageFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject) {
-  if (withSpecificObject) {
-    printer->Print(
-      variables_,
-      "hash ^= obj.$name$_.GetHashCode();\n");
-  } else {
-    printer->Print(
-      variables_,
-      "hash ^= $name$_.GetHashCode();\n");
-  }
+void RepeatedMessageFieldGenerator::WriteHash(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "hash ^= $name$_.GetHashCode();\n");
+}
+
+void RepeatedMessageFieldGenerator::WriteComparerHash(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "hash ^= obj.$name$_.GetHashCode();\n");
 }
 
 void RepeatedMessageFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(
     variables_,
     "if(!$name$_.Equals(other.$name$_)) return false;\n");
+}
+
+void RepeatedMessageFieldGenerator::WriteComparerEquals(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if(!x.$name$_.Equals(y.$name$_)) return false;\n");
 }
 
 void RepeatedMessageFieldGenerator::WriteToString(io::Printer* printer) {

@@ -84,21 +84,25 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializedSizeCode(io::Printer* pr
     "size += $name$_.CalculateSize(_repeated_$name$_codec);\n");
 }
 
-void RepeatedPrimitiveFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject) {
-  if (withSpecificObject) {
-    printer->Print(
-      variables_,
-      "hash ^= obj.$name$_.GetHashCode();\n");
-  } else {
-    printer->Print(
-      variables_,
-      "hash ^= $name$_.GetHashCode();\n");
-  }
+void RepeatedPrimitiveFieldGenerator::WriteHash(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "hash ^= $name$_.GetHashCode();\n");
+}
+void RepeatedPrimitiveFieldGenerator::WriteComparerHash(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "hash ^= obj.$name$_.GetHashCode();\n");
 }
 void RepeatedPrimitiveFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(
     variables_,
     "if(!$name$_.Equals(other.$name$_)) return false;\n");
+}
+void RepeatedPrimitiveFieldGenerator::WriteComparerEquals(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if(!x.$name$_.Equals(y.$name$_)) return false;\n");
 }
 void RepeatedPrimitiveFieldGenerator::WriteToString(io::Printer* printer) {
   printer->Print(variables_,

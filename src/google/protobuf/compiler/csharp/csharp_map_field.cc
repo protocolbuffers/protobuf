@@ -97,21 +97,28 @@ void MapFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
     "size += $name$_.CalculateSize(_map_$name$_codec);\n");
 }
 
-void MapFieldGenerator::WriteHash(io::Printer* printer, bool withSpecificObject) {
-  if (withSpecificObject) {
-    printer->Print(
-      variables_,
-      "hash ^= obj.$property_name$.GetHashCode();\n");
-  } else {
-    printer->Print(
-      variables_,
-      "hash ^= $property_name$.GetHashCode();\n");
-  }
+void MapFieldGenerator::WriteHash(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "hash ^= $property_name$.GetHashCode();\n");
 }
+
+void MapFieldGenerator::WriteComparerHash(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "hash ^= obj.$property_name$.GetHashCode();\n");
+}
+
 void MapFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(
     variables_,
     "if (!$property_name$.Equals(other.$property_name$)) return false;\n");
+}
+
+void MapFieldGenerator::WriteComparerEquals(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if (!x.$property_name$.Equals(y..$property_name$)) return false;\n");
 }
 
 void MapFieldGenerator::WriteToString(io::Printer* printer) {
