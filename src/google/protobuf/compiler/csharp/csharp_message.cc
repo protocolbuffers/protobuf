@@ -754,7 +754,7 @@ void MessageGenerator::GenerateNestedComparerClass(io::Printer* printer) {
   }
   if (has_extension_ranges_) {
     printer->Print(
-        "if (_extensions != null) {\n"
+        "if (obj._extensions != null) {\n"
         "  hash ^= obj._extensions.GetHashCode();\n"
         "}\n");
   }
