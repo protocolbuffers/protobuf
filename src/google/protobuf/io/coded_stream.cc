@@ -344,17 +344,36 @@ bool CodedInputStream::ReadCord(absl::Cord* output, int size) {
 }
 
 
-bool CodedInputStream::ReadLittleEndian32Fallback(uint32_t* value) {
-  uint8_t bytes[sizeof(*value)];
+bool CodedInputStream::ReadLittleEndian16Fallback(uint16_t* value) {
+  constexpr size_t kSize = sizeof(*value);
+  uint8_t bytes[kSize];
 
   const uint8_t* ptr;
-  if (BufferSize() >= static_cast<int64_t>(sizeof(*value))) {
+  if (BufferSize() >= static_cast<int64_t>(kSize)) {
     // Fast path:  Enough bytes in the buffer to read directly.
     ptr = buffer_;
-    Advance(sizeof(*value));
+    Advance(kSize);
   } else {
     // Slow path:  Had to read past the end of the buffer.
-    if (!ReadRaw(bytes, sizeof(*value))) return false;
+    if (!ReadRaw(bytes, kSize)) return false;
+    ptr = bytes;
+  }
+  ReadLittleEndian16FromArray(ptr, value);
+  return true;
+}
+
+bool CodedInputStream::ReadLittleEndian32Fallback(uint32_t* value) {
+  constexpr size_t kSize = sizeof(*value);
+  uint8_t bytes[kSize];
+
+  const uint8_t* ptr;
+  if (BufferSize() >= static_cast<int64_t>(kSize)) {
+    // Fast path:  Enough bytes in the buffer to read directly.
+    ptr = buffer_;
+    Advance(kSize);
+  } else {
+    // Slow path:  Had to read past the end of the buffer.
+    if (!ReadRaw(bytes, kSize)) return false;
     ptr = bytes;
   }
   ReadLittleEndian32FromArray(ptr, value);
@@ -362,16 +381,17 @@ bool CodedInputStream::ReadLittleEndian32Fallback(uint32_t* value) {
 }
 
 bool CodedInputStream::ReadLittleEndian64Fallback(uint64_t* value) {
-  uint8_t bytes[sizeof(*value)];
+  constexpr size_t kSize = sizeof(*value);
+  uint8_t bytes[kSize];
 
   const uint8_t* ptr;
-  if (BufferSize() >= static_cast<int64_t>(sizeof(*value))) {
+  if (BufferSize() >= static_cast<int64_t>(kSize)) {
     // Fast path:  Enough bytes in the buffer to read directly.
     ptr = buffer_;
-    Advance(sizeof(*value));
+    Advance(kSize);
   } else {
     // Slow path:  Had to read past the end of the buffer.
-    if (!ReadRaw(bytes, sizeof(*value))) return false;
+    if (!ReadRaw(bytes, kSize)) return false;
     ptr = bytes;
   }
   ReadLittleEndian64FromArray(ptr, value);
