@@ -31,11 +31,11 @@ jobs:
           - branch: ${{ !inputs.continuous-run && '27.x' }}
           - branch: ${{ !inputs.continuous-run && '28.x' }}
 
-    name: Test staleness ${{ matrix.os.name }} ${{ matrix.branch }}
+    name: Test staleness ${{ matrix.os.name }} ${{ github.head_ref && 'PR' || matrix.branch }}
     runs-on: ${{ matrix.os.value }}
     if: ${{ github.event.repository.full_name == 'protocolbuffers/protobuf' }}
     steps:
-      - name: Checkout ${{ matrix.branch }}
+      - name: Checkout ${{ github.head_ref && 'PR' || matrix.branch }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout || github.head_ref || matrix.branch }}

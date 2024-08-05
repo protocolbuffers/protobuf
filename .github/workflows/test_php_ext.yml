@@ -57,7 +57,6 @@ jobs:
           - version: "8.2"
             continuous-only: true
           - version: "8.3"
-            continuous-only: false
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Build ${{ matrix.version }}
     runs-on: ubuntu-latest
     steps:

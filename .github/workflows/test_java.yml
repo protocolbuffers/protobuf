@@ -43,7 +43,6 @@ jobs:
             cache_key: '17'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
             targets: //java/... //java/internal:java_version //compatibility/...
-            continuous-only: false
           - name: Bazel7
             cache_key: 'bazel7nobzlmod'
             image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
@@ -58,7 +57,6 @@ jobs:
             cache_key: 'aarch64'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17
             targets: //java/... //compatibility/... //src/google/protobuf/compiler:protoc_aarch64_test
-            continuous-only: false
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name }}
     runs-on: ubuntu-latest

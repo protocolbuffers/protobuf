@@ -42,15 +42,12 @@ jobs:
             # TODO Enable this once conformance tests are fixed.
             flags: --define=use_fast_cpp_protos=true --test_tag_filters=-conformance
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17
-            continuous-only: false
           - version: "3.8"
-            continuous-only: false
           - version: "3.9"
             continuous-only: true
           - version: "3.10"
             continuous-only: true
           - version: "3.11"
-            continuous-only: false
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.type }} ${{ matrix.version }}
     runs-on: ubuntu-latest

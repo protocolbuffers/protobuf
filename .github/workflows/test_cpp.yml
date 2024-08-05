@@ -141,7 +141,6 @@ jobs:
       matrix:
         include:
           - flags: -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
-            continuous-only: false
           - name: Ninja
             flags: -G Ninja -DCMAKE_CXX_STANDARD=14
             continuous-only: true
@@ -150,7 +149,6 @@ jobs:
             continuous-only: true
           - name: C++17
             flags: -DCMAKE_CXX_STANDARD=17
-            continuous-only: false
           # TODO Re-enable this.
           #- name: C++20
           #  flags: -DCMAKE_CXX_STANDARD=20
@@ -253,13 +251,11 @@ jobs:
         include:
           - name: C++14
             flags: -DCMAKE_CXX_STANDARD=14
-            continuous-only: false
           - name: C++17
             flags: -DCMAKE_CXX_STANDARD=17
             continuous-only: true
           - name: C++20
             flags: -DCMAKE_CXX_STANDARD=20
-            continuous-only: false
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux CMake GCC ${{ matrix.name }}
     runs-on: ubuntu-latest
@@ -359,7 +355,6 @@ jobs:
             os: macos-12
             cache_key: macos-12
             bazel: test //src/... //third_party/utf8_range/...
-            continuous-only: false
           - name: MacOS Bazel 7
             os: macos-12
             cache_key: macos-12-bazel7
@@ -372,12 +367,10 @@ jobs:
             # Current github runners are all Intel based, so just build/compile
             # for Apple Silicon to detect issues there.
             bazel: build --cpu=darwin_arm64 //src/... //third_party/utf8_range/...
-            continuous-only: false
           - name: Windows Bazel
             os: windows-2022
             cache_key: windows-2022
             bazel: test //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
-            continuous-only: false
           - name: Windows Bazel 7
             os: windows-2022
             cache_key: windows-2022-bazel7
@@ -446,7 +439,6 @@ jobs:
               -Dprotobuf_BUILD_SHARED_LIBS=ON
             vsversion: '2022'
             cache-prefix: windows-2022-cmake
-            continuous-only: false
           - name: Windows CMake Install
             os: windows-2022
             install-flags: -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_BUILD_TESTS=OFF
