@@ -752,7 +752,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     }
 
     @Override
-    public final UnknownFieldSet getUnknownFields() {
+    public UnknownFieldSet getUnknownFields() {
       if (unknownFieldsOrBuilder instanceof UnknownFieldSet) {
         return (UnknownFieldSet) unknownFieldsOrBuilder;
       } else {
@@ -1036,7 +1036,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       private Map.Entry<FieldDescriptor, Object> next;
       private final boolean messageSetWireFormat;
 
-      private ExtensionWriter(final boolean messageSetWireFormat) {
+      protected ExtensionWriter(final boolean messageSetWireFormat) {
         if (iter.hasNext()) {
           next = iter.next();
         }
@@ -1939,7 +1939,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    * Users should ignore this class. This class provides the implementation with access to the
    * fields of a message object using Java reflection.
    */
-  public static final class FieldAccessorTable {
+  public static class FieldAccessorTable {
 
     /**
      * Construct a FieldAccessorTable for a particular message class. Only one FieldAccessorTable
