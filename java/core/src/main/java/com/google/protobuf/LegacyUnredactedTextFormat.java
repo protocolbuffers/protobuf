@@ -13,8 +13,7 @@ public final class LegacyUnredactedTextFormat {
   /** Like {@code TextFormat.printer().printToString(message)}, but for legacy purposes. */
   static String legacyUnredactedMultilineString(MessageOrBuilder message) {
     return TextFormat.printer()
-        .setFieldReporterLevel(TextFormat.Printer.FieldReporterLevel.LEGACY_MULTILINE)
-        .printToString(message);
+        .printToString(message, TextFormat.Printer.FieldReporterLevel.LEGACY_MULTILINE);
   }
 
   /** Like {@code TextFormat.printer().printToString(fields)}, but for legacy purposes. */
@@ -29,8 +28,7 @@ public final class LegacyUnredactedTextFormat {
   static String legacyUnredactedSingleLineString(MessageOrBuilder message) {
     return TextFormat.printer()
         .emittingSingleLine(true)
-        .setFieldReporterLevel(TextFormat.Printer.FieldReporterLevel.LEGACY_SINGLE_LINE)
-        .printToString(message);
+        .printToString(message, TextFormat.Printer.FieldReporterLevel.LEGACY_SINGLE_LINE);
   }
 
   /**
