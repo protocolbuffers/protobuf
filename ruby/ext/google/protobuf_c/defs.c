@@ -147,7 +147,7 @@ VALUE DescriptorPool_add_serialized_file(VALUE _self,
  * call-seq:
  *     DescriptorPool.lookup(name) => descriptor
  *
- * Finds a Descriptor, EnumDescriptor or FieldDescriptor by name and returns it,
+ * Finds a Descriptor, EnumDescriptor, FieldDescriptor or ServiceDescriptor by name and returns it,
  * or nil if none exists with the given name.
  */
 static VALUE DescriptorPool_lookup(VALUE _self, VALUE name) {
