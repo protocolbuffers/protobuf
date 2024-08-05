@@ -49,3 +49,4 @@ set_target_properties(libprotobuf PROPERTIES
 add_library(protobuf::libprotobuf ALIAS libprotobuf)
 
 target_link_libraries(libprotobuf PRIVATE utf8_validity)
+target_link_libraries(libprotobuf PRIVATE utf8_range)
