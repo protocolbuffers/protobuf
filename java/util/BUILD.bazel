@@ -105,7 +105,6 @@ pkg_files(
         "src/test/**/*.proto",
     ]) + [
         "BUILD.bazel",
-        "pom.xml",
         "pom_template.xml",
     ],
     strip_prefix = strip_prefix.from_root(""),
