@@ -2195,7 +2195,10 @@ public final class TextFormat {
 
             if (tokenizer.lookingAtInteger()) {
               final int number = tokenizer.consumeInt32();
-              value = enumType.findValueByNumber(number);
+              value =
+                  enumType.isClosed()
+                      ? enumType.findValueByNumber(number)
+                      : enumType.findValueByNumberCreatingIfUnknown(number);
               if (value == null) {
                 String unknownValueMsg =
                     "Enum type \""
