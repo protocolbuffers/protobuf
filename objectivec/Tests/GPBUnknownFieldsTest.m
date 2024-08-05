@@ -911,16 +911,32 @@
 }
 
 - (void)testMergeFailures {
-  // Valid data, pushes to the string just fine.
+  // Valid data, pushes to the fields just fine.
   {
     GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
     [ufs addFieldNumber:TestAllTypes_FieldNumber_OptionalString
         lengthDelimited:DataFromCStr("abc")];
+    [ufs addFieldNumber:TestAllTypes_FieldNumber_RepeatedInt32Array
+        lengthDelimited:DataFromBytes(0x01, 0x02)];
+    [ufs addFieldNumber:TestAllTypes_FieldNumber_RepeatedFixed32Array
+        lengthDelimited:DataFromBytes(0x03, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00)];
+    [ufs addFieldNumber:TestAllTypes_FieldNumber_RepeatedFixed64Array
+        lengthDelimited:DataFromBytes(0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06, 0x00,
+                                      0x00, 0x00, 0x00, 0x00, 0x00, 0x00)];
     TestAllTypes* msg = [TestAllTypes message];
     NSError* error = nil;
     XCTAssertTrue([msg mergeUnknownFields:ufs extensionRegistry:nil error:&error]);
     XCTAssertNil(error);
     XCTAssertEqualObjects(msg.optionalString, @"abc");
+    XCTAssertEqual(msg.repeatedInt32Array.count, 2);
+    XCTAssertEqual([msg.repeatedInt32Array valueAtIndex:0], 1);
+    XCTAssertEqual([msg.repeatedInt32Array valueAtIndex:1], 2);
+    XCTAssertEqual(msg.repeatedFixed32Array.count, 2);
+    XCTAssertEqual([msg.repeatedFixed32Array valueAtIndex:0], 3);
+    XCTAssertEqual([msg.repeatedFixed32Array valueAtIndex:1], 4);
+    XCTAssertEqual(msg.repeatedFixed64Array.count, 2);
+    XCTAssertEqual([msg.repeatedFixed64Array valueAtIndex:0], 5);
+    XCTAssertEqual([msg.repeatedFixed64Array valueAtIndex:1], 6);
   }
 
   // Invalid UTF-8 causes a failure when pushed to the message.
@@ -928,6 +944,39 @@
     GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
     [ufs addFieldNumber:TestAllTypes_FieldNumber_OptionalString
         lengthDelimited:DataFromBytes(0xC2, 0xF2, 0x0, 0x0, 0x0)];
+    TestAllTypes* msg = [TestAllTypes message];
+    NSError* error = nil;
+    XCTAssertFalse([msg mergeUnknownFields:ufs extensionRegistry:nil error:&error]);
+    XCTAssertNotNil(error);
+  }
+
+  // Invalid packed varint causes a failure when pushed to the message.
+  {
+    GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+    [ufs addFieldNumber:TestAllTypes_FieldNumber_RepeatedInt32Array
+        lengthDelimited:DataFromBytes(0xff)];  // Invalid varint
+    TestAllTypes* msg = [TestAllTypes message];
+    NSError* error = nil;
+    XCTAssertFalse([msg mergeUnknownFields:ufs extensionRegistry:nil error:&error]);
+    XCTAssertNotNil(error);
+  }
+
+  // Invalid packed fixed32 causes a failure when pushed to the message.
+  {
+    GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+    [ufs addFieldNumber:TestAllTypes_FieldNumber_RepeatedFixed32Array
+        lengthDelimited:DataFromBytes(0x01, 0x00, 0x00)];  // Truncated fixed32
+    TestAllTypes* msg = [TestAllTypes message];
+    NSError* error = nil;
+    XCTAssertFalse([msg mergeUnknownFields:ufs extensionRegistry:nil error:&error]);
+    XCTAssertNotNil(error);
+  }
+
+  // Invalid packed fixed64 causes a failure when pushed to the message.
+  {
+    GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+    [ufs addFieldNumber:TestAllTypes_FieldNumber_RepeatedFixed64Array
+        lengthDelimited:DataFromBytes(0x01, 0x00, 0x00, 0x00, 0x00)];  // Truncated fixed64
     TestAllTypes* msg = [TestAllTypes message];
     NSError* error = nil;
     XCTAssertFalse([msg mergeUnknownFields:ufs extensionRegistry:nil error:&error]);
