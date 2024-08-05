@@ -44,19 +44,6 @@
 #     ],
 # )
 #
-# # Internally used type traits.
-# cc_library(
-#     name = "protos_traits",
-#     hdrs = [
-#         "protos_traits.h",
-#     ],
-#     copts = UPB_DEFAULT_CPPOPTS,
-#     visibility = ["//visibility:private"],
-#     deps = [
-#         "//hpb:traits",
-#     ],
-# )
-#
 # cc_library(
 #     name = "protos_internal",
 #     hdrs = ["protos_internal.h"],
