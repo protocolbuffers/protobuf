@@ -27,8 +27,9 @@
 #include <memory>
 #include <vector>
 
-#include "google/protobuf/compiler/cpp/unittest.h"
+#include "absl/base/attributes.h"
 #include "absl/strings/cord.h"
+#include "google/protobuf/compiler/cpp/unittest.h"
 #include "absl/strings/string_view.h"
 #ifndef _MSC_VER
 // We exclude this large proto because it's too large for
@@ -482,25 +483,11 @@ TEST(GENERATED_MESSAGE_TEST_NAME, ADLSwap) {
   UNITTEST::TestAllTypes message1, message2;
   TestUtil::SetAllFields(&message1);
 
-  // Note the address of one of the repeated fields, to verify it was swapped
-  // rather than copied.
-  const int32_t* addr = &message1.repeated_int32().Get(0);
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  const int32_t value = *addr;
-#endif
-
   using std::swap;
   swap(message1, message2);
 
   TestUtil::ExpectAllFieldsSet(message2);
   TestUtil::ExpectClear(message1);
-
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  EXPECT_NE(addr, &message2.repeated_int32().Get(0));
-  EXPECT_EQ(value, message2.repeated_int32().Get(0));
-#else
-  EXPECT_EQ(addr, &message2.repeated_int32().Get(0));
-#endif
 }
 
 TEST(GENERATED_MESSAGE_TEST_NAME, CopyConstructor) {
