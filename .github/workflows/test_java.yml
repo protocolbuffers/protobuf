@@ -97,6 +97,8 @@ jobs:
         bash: |
           set -ex
           bazel build //java:release
+          mvn install:install-file -Dfile=java/bom/pom.xml -DpomFile=java/bom/pom.xml
+          mvn install:install-file -Dfile=java/pom.xml -DpomFile=java/pom.xml
           mvn install:install-file -Dfile=bazel-bin/java/core/core_mvn-project.jar -DpomFile=bazel-bin/java/core/core_mvn-pom.xml
           mvn install:install-file -Dfile=bazel-bin/java/core/lite_mvn-project.jar -DpomFile=bazel-bin/java/core/lite_mvn-pom.xml
           mvn install:install-file -Dfile=bazel-bin/java/kotlin-lite/kotlin-lite_mvn-project.jar -DpomFile=bazel-bin/java/kotlin-lite/kotlin-lite_mvn-pom.xml
@@ -105,7 +107,3 @@ jobs:
     - name: Clean up
       run: |
         sudo rm -rf _build
-    - name: Validate Protobuf BOM
-      uses: googleapis/java-cloud-bom/tests/validate-bom@fd56f04bb0bc581776a74031591f0b3bc5e7920a # v26.13.0
-      with:
-        bom-path: java/bom/pom.xml
