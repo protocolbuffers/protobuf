@@ -15,10 +15,6 @@ def pyproto_test_wrapper(name, deps = []):
             "//:python_test_srcs",
             "//:python_srcs",
         ] + deps,
-        target_compatible_with = select({
-            "@system_python//:supported": [],
-            "//conditions:default": ["@platforms//:incompatible"],
-        }),
     )
 
 # end:github_only
@@ -37,10 +33,6 @@ def pyproto_test_wrapper(name, deps = []):
 #             "//third_party/py/google/protobuf/internal:" + name + "_for_deps",
 #             "//third_party/py/google/protobuf:use_upb_protos",
 #         ],
-#         target_compatible_with = select({
-#             "@platforms//os:windows": ["@platforms//:incompatible"],
-#             "//conditions:default": [],
-#         }),
 #     )
 #
 # end:google_only

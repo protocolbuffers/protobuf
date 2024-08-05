@@ -20,7 +20,6 @@ protobuf_deps()
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//bazel/private:proto_bazel_features.bzl", "proto_bazel_features")  # buildifier: disable=bzl-visibility
 load("//python/dist:python_downloads.bzl", "python_nuget_package", "python_source_archive")
-load("//python/dist:system_python.bzl", "system_python")
 
 PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.caliper:caliper:1.0-beta-3",
@@ -131,12 +130,6 @@ def protobuf_deps():
             url = "https://github.com/bazelbuild/rules_python/releases/download/0.28.0/rules_python-0.28.0.tar.gz",
         )
 
-    if not native.existing_rule("system_python"):
-        system_python(
-            name = "system_python",
-            minimum_python_version = "3.8",
-        )
-
     if not native.existing_rule("rules_jvm_external"):
         # Version 6.0 is the lowest that works with rules_kotlin 1.9.0
         http_archive(
@@ -177,33 +170,3 @@ def protobuf_deps():
             sha256 = "5766f1e599acf551aa56f49dab9ab9108269b03c557496c54acaf41f98e2b8d6",
             url = "https://github.com/bazelbuild/rules_kotlin/releases/download/v1.9.0/rules_kotlin-v1.9.0.tar.gz",
         )
-
-    # Python Downloads
-    python_source_archive(
-        name = "python-3.8.0",
-        sha256 = "f1069ad3cae8e7ec467aa98a6565a62a48ef196cb8f1455a245a08db5e1792df",
-    )
-    python_nuget_package(
-        name = "nuget_python_i686_3.8.0",
-        sha256 = "87a6481f5eef30b42ac12c93f06f73bd0b8692f26313b76a6615d1641c4e7bca",
-    )
-    python_nuget_package(
-        name = "nuget_python_x86-64_3.8.0",
-        sha256 = "96c61321ce90dd053c8a04f305a5f6cc6d91350b862db34440e4a4f069b708a0",
-    )
-    python_nuget_package(
-        name = "nuget_python_i686_3.9.0",
-        sha256 = "229abecbe49dc08fe5709e0b31e70edfb3b88f23335ebfc2904c44f940fd59b6",
-    )
-    python_nuget_package(
-        name = "nuget_python_x86-64_3.9.0",
-        sha256 = "6af58a733e7dfbfcdd50d55788134393d6ffe7ab8270effbf724bdb786558832",
-    )
-    python_nuget_package(
-        name = "nuget_python_i686_3.10.0",
-        sha256 = "e115e102eb90ce160ab0ef7506b750a8d7ecc385bde0a496f02a54337a8bc333",
-    )
-    python_nuget_package(
-        name = "nuget_python_x86-64_3.10.0",
-        sha256 = "4474c83c25625d93e772e926f95f4cd398a0abbb52793625fa30f39af3d2cc00",
-    )
