@@ -28,6 +28,8 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+TEST(Cpp, On64Bit) { EXPECT_EQ(sizeof(void*), 8); }
+
 TEST(Cpp, Iteration) {
   upb::DefPool defpool;
   upb::MessageDefPtr md(upb_test_TestMessage_getmsgdef(defpool.ptr()));
