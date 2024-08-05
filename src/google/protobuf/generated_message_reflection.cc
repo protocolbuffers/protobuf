@@ -346,17 +346,20 @@ bool Reflection::IsLazyExtension(const Message& message,
 }
 
 bool Reflection::IsLazilyVerifiedLazyField(const FieldDescriptor* field) const {
-  if (field->options().unverified_lazy()) return true;
-
-  // Message fields with [lazy=true] will be eagerly verified
-  // (go/verified-lazy).
-  return field->options().lazy() && !IsEagerlyVerifiedLazyField(field);
+  if (field->type() != FieldDescriptor::TYPE_MESSAGE || field->is_repeated()) {
+    return false;
+  }
+  return field->options().unverified_lazy();
 }
 
 bool Reflection::IsEagerlyVerifiedLazyField(
     const FieldDescriptor* field) const {
-  return (field->type() == FieldDescriptor::TYPE_MESSAGE &&
-          schema_.IsEagerlyVerifiedLazyField(field));
+  if (field->type() != FieldDescriptor::TYPE_MESSAGE) return false;
+
+  // Message fields with [lazy=true] will be eagerly verified
+  // (go/verified-lazy).
+  if (field->options().lazy() && !field->is_repeated()) return true;
+  return schema_.IsEagerlyVerifiedLazyField(field);
 }
 
 internal::field_layout::TransformValidation Reflection::GetLazyStyle(
