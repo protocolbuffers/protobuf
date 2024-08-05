@@ -50,7 +50,7 @@ macro_rules! proto_internal {
     };
 
     (@merge $msg:ident ..$expr:expr) => {
-        $msg.merge_from($expr);
+        $crate::MergeFrom::merge_from(&mut $msg, $expr);
     };
 
     // @msg rules are used to set the fields of the message. There is a lot of duplication here

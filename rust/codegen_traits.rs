@@ -14,7 +14,7 @@ use create::Parse;
 use interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop};
 use read::Serialize;
 use std::fmt::Debug;
-use write::{Clear, ClearAndParse};
+use write::{Clear, ClearAndParse, MergeFrom};
 
 /// A trait that all generated owned message types implement.
 pub trait Message: SealedInternal
@@ -24,7 +24,7 @@ pub trait Message: SealedInternal
   // Read traits:
   + Debug + Serialize
   // Write traits:
-  + Clear + ClearAndParse
+  + Clear + ClearAndParse + MergeFrom
   // Thread safety:
   + Send + Sync
   // Copy/Clone:
@@ -57,7 +57,7 @@ pub trait MessageMut<'msg>: SealedInternal
     + Debug + Serialize
     // Write traits:
     // TODO: MsgMut should impl ClearAndParse.
-    + Clear
+    + Clear + MergeFrom
     // Thread safety:
     + Sync
     // Copy/Clone:
@@ -94,6 +94,7 @@ pub(crate) mod read {
 /// traits.
 pub(crate) mod write {
     use super::SealedInternal;
+    use crate::AsView;
 
     pub trait Clear: SealedInternal {
         fn clear(&mut self);
@@ -101,6 +102,10 @@ pub(crate) mod write {
 
     pub trait ClearAndParse: SealedInternal {
         fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), crate::ParseError>;
+    }
+
+    pub trait MergeFrom: AsView + SealedInternal {
+        fn merge_from(&mut self, src: impl AsView<Proxied = Self::Proxied>);
     }
 }
 

@@ -11,6 +11,6 @@
 //! or less common items should be imported normally.
 
 pub use crate::{
-    proto, AsMut, AsView, Clear, ClearAndParse, IntoMut, IntoView, Message, MessageMut,
+    proto, AsMut, AsView, Clear, ClearAndParse, IntoMut, IntoView, MergeFrom, Message, MessageMut,
     MessageView, Parse, Serialize,
 };

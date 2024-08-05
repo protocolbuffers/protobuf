@@ -334,7 +334,7 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg) {
   }
 }
 
-void MessageMergeFrom(Context& ctx, const Descriptor& msg) {
+void MessageMutMergeFrom(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
       ctx.Emit(
@@ -342,10 +342,12 @@ void MessageMergeFrom(Context& ctx, const Descriptor& msg) {
               {"merge_from_thunk", ThunkName(ctx, msg, "merge_from")},
           },
           R"rs(
-          pub fn merge_from(&mut self, src: impl $pb$::AsView<Proxied = $Msg$>) {
-            // SAFETY: self and src are both valid `$Msg$`s.
-            unsafe {
-              $merge_from_thunk$(self.raw_msg(), src.as_view().raw_msg());
+          impl $pb$::MergeFrom for $Msg$Mut<'_> {
+            fn merge_from(&mut self, src: impl $pb$::AsView<Proxied = $Msg$>) {
+              // SAFETY: self and src are both valid `$Msg$`s.
+              unsafe {
+                $merge_from_thunk$(self.raw_msg(), src.as_view().raw_msg());
+              }
             }
           }
         )rs");
@@ -353,17 +355,19 @@ void MessageMergeFrom(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       ctx.Emit(
           R"rs(
-          pub fn merge_from(&mut self, src: impl $pb$::AsView<Proxied = $Msg$>) {
-            // SAFETY: self and src are both valid `$Msg$`s.
-            unsafe {
-              assert!(
-                $pbr$::upb_Message_MergeFrom(self.raw_msg(),
-                  src.as_view().raw_msg(),
-                  <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE,
-                  // Use a nullptr for the ExtensionRegistry.
-                  $std$::ptr::null(),
-                  self.arena().raw())
-              );
+          impl $pb$::MergeFrom for $Msg$Mut<'_> {
+            fn merge_from(&mut self, src: impl $pb$::AsView<Proxied = $Msg$>) {
+              // SAFETY: self and src are both valid `$Msg$`s.
+              unsafe {
+                assert!(
+                  $pbr$::upb_Message_MergeFrom(self.raw_msg(),
+                    src.as_view().raw_msg(),
+                    <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE,
+                    // Use a nullptr for the ExtensionRegistry.
+                    $std$::ptr::null(),
+                    self.arena().raw())
+                );
+              }
             }
           }
         )rs");
@@ -853,6 +857,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
        {"Msg::clear_and_parse", [&] { MessageClearAndParse(ctx, msg); }},
        {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
        {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
+       {"MsgMut::merge_from", [&] { MessageMutMergeFrom(ctx, msg); }},
        {"Msg_externs", [&] { MessageExterns(ctx, msg); }},
        {"accessor_fns",
         [&] {
@@ -955,7 +960,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
        {"into_proxied_impl", [&] { IntoProxiedForMessage(ctx, msg); }},
        {"upb_generated_message_trait_impls",
         [&] { UpbGeneratedMessageTraitImpls(ctx, msg); }},
-       {"msg_merge_from", [&] { MessageMergeFrom(ctx, msg); }},
        {"repeated_impl", [&] { MessageProxiedInRepeated(ctx, msg); }},
        {"map_value_impl", [&] { MessageProxiedInMapValue(ctx, msg); }},
        {"unwrap_upb",
@@ -995,6 +999,13 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         impl std::fmt::Debug for $Msg$ {
           fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             $Msg::debug$
+          }
+        }
+
+        impl $pb$::MergeFrom for $Msg$ {
+          fn merge_from<'src>(&mut self, src: impl $pb$::AsView<Proxied = Self>) {
+            let mut m = self.as_mut();
+            $pb$::MergeFrom::merge_from(&mut m, src)
           }
         }
 
@@ -1141,6 +1152,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           }
         }
 
+        $MsgMut::merge_from$
+
         #[allow(dead_code)]
         impl<'msg> $Msg$Mut<'msg> {
           #[doc(hidden)]
@@ -1172,8 +1185,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           pub fn to_owned(&self) -> $Msg$ {
             $pb$::AsView::as_view(self).to_owned()
           }
-
-          $msg_merge_from$
 
           $raw_arena_getter_for_msgmut$
 
@@ -1246,10 +1257,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
           pub fn as_mut(&mut self) -> $Msg$Mut {
             $Msg$Mut::new($pbi$::Private, &mut self.inner)
-          }
-
-          pub fn merge_from<'src>(&mut self, src: impl $pb$::Proxy<'src, Proxied = $Msg$>) {
-            self.as_mut().merge_from(src);
           }
 
           $accessor_fns$

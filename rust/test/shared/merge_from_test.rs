@@ -1,5 +1,5 @@
 use googletest::prelude::*;
-use protobuf::proto;
+use protobuf::prelude::*;
 use unittest_rust_proto::{NestedTestAllTypes, TestAllTypes};
 
 #[googletest::test]

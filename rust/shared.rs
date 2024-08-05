@@ -26,7 +26,7 @@ pub mod __public {
         create::Parse,
         interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop},
         read::Serialize,
-        write::{Clear, ClearAndParse},
+        write::{Clear, ClearAndParse, MergeFrom},
         Message, MessageMut, MessageView,
     };
     pub use crate::cord::{ProtoBytesCow, ProtoStringCow};
