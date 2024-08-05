@@ -342,7 +342,7 @@ void MessageMergeFrom(Context& ctx, const Descriptor& msg) {
               {"merge_from_thunk", ThunkName(ctx, msg, "merge_from")},
           },
           R"rs(
-          pub fn merge_from<'src>(&mut self, src: impl $pb$::Proxy<'src, Proxied = $Msg$>) {
+          pub fn merge_from(&mut self, src: impl $pb$::AsView<Proxied = $Msg$>) {
             // SAFETY: self and src are both valid `$Msg$`s.
             unsafe {
               $merge_from_thunk$(self.raw_msg(), src.as_view().raw_msg());
@@ -353,7 +353,7 @@ void MessageMergeFrom(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       ctx.Emit(
           R"rs(
-          pub fn merge_from<'src>(&mut self, src: impl $pb$::Proxy<'src, Proxied = $Msg$>) {
+          pub fn merge_from(&mut self, src: impl $pb$::AsView<Proxied = $Msg$>) {
             // SAFETY: self and src are both valid `$Msg$`s.
             unsafe {
               assert!(
