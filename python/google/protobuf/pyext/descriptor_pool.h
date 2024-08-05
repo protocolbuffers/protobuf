@@ -32,7 +32,7 @@ struct CMessageClass;
 // "Methods" that interacts with this DescriptorPool are in the cdescriptor_pool
 // namespace.
 typedef struct PyDescriptorPool {
-  PyObject_HEAD;
+  PyObject_HEAD
 
   // The C++ pool containing Descriptors.
   const DescriptorPool* pool;

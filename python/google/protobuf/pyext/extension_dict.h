@@ -25,7 +25,7 @@ class FieldDescriptor;
 namespace python {
 
 typedef struct ExtensionDict {
-  PyObject_HEAD;
+  PyObject_HEAD
 
   // Strong, owned reference to the parent message. Never NULL.
   CMessage* parent;
