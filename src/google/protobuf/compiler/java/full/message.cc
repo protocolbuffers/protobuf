@@ -804,8 +804,7 @@ void ImmutableMessageGenerator::GenerateDescriptorMethods(
         "  switch (number) {\n");
     printer->Indent();
     printer->Indent();
-    for (int i = 0; i < map_fields.size(); ++i) {
-      const FieldDescriptor* field = map_fields[i];
+    for (const auto& field : map_fields) {
       const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
       printer->Print(
           "case $number$:\n"
