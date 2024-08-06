@@ -153,6 +153,7 @@ struct DescriptorTable;
 class DescriptorPoolExtensionFinder;
 class ExtensionSet;
 class LazyField;
+class LazyRepeatedPtrField;
 class RepeatedPtrFieldBase;
 class TcParser;
 struct TcParseTableBase;
@@ -866,6 +867,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::DescriptorPoolExtensionFinder;
   friend class internal::ExtensionSet;
   friend class internal::LazyField;
+  friend class internal::LazyRepeatedPtrField;
   friend class internal::SwapFieldHelper;
   friend class internal::TcParser;
   friend struct internal::TcParseTableBase;

@@ -1058,6 +1058,7 @@ class PROTOBUF_EXPORT Reflection final {
   void MaybePoisonAfterClear(Message& root) const;
 
   friend class FastReflectionBase;
+  friend class FastReflectionMessageAdder;
   friend class FastReflectionMessageMutator;
   friend class internal::ReflectionVisit;
   friend bool internal::IsDescendant(Message& root, const Message& message);

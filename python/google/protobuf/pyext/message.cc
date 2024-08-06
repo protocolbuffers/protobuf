@@ -2574,6 +2574,13 @@ PyObject* GetFieldValue(CMessage* self,
     }
   } else if (field_descriptor->is_repeated()) {
     if (field_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      const auto* reflection = self->message->GetReflection();
+      if (MessageReflectionFriend::IsLazyField(reflection, *self->message,
+                                               field_descriptor)) {
+        // Force eager parsing.
+        (void)reflection->GetMutableRepeatedFieldRef<Message>(self->message,
+                                                              field_descriptor);
+      }
       CMessageClass* message_class = message_factory::GetMessageClass(
           GetFactoryForMessage(self), field_descriptor->message_type());
       if (message_class == nullptr) {

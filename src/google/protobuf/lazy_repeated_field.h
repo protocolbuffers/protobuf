@@ -19,6 +19,7 @@
 #include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
+#include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
@@ -117,10 +118,14 @@ class LazyRepeatedPtrField {
            state == LogicalState::kClearExposed;
   }
 
+  // Whether the unparsed data can be directly used for serialization.
+  bool CanBeTriviallySerialized() const;
+
   // Get and Mutable trigger parsing.
   template <typename Element>
   const RepeatedPtrField<Element>& Get(const Element* default_instance,
                                        Arena* arena) const {
+    ScopedCheckInvariants invariants(this);
     return *reinterpret_cast<const RepeatedPtrField<Element>*>(
         GetGeneric(ByTemplate<Element>(default_instance), arena, nullptr));
   }
@@ -128,6 +133,7 @@ class LazyRepeatedPtrField {
   template <typename Element>
   RepeatedPtrField<Element>* Mutable(const Element* default_instance,
                                      Arena* arena) {
+    ScopedCheckInvariants invariants(this);
     return reinterpret_cast<RepeatedPtrField<Element>*>(
         MutableGeneric(ByTemplate<Element>(default_instance), arena, nullptr));
   }
@@ -223,6 +229,7 @@ class LazyRepeatedPtrField {
   const char* _InternalParse(const MessageLite* prototype, Arena* arena,
                              const char* ptr, ParseContext* ctx,
                              TagType expected_tag) {
+    ScopedCheckInvariants invariants(this);
     // If this message is eagerly-verified lazy, kEager mode likely suggests
     // that previous verification has failed and we fall back to eager-parsing
     // (either to initialize the message to match eager field or to fix false
@@ -233,6 +240,7 @@ class LazyRepeatedPtrField {
     // lazy and eager parsing.
     if (ctx->lazy_parse_mode() == ParseContext::kEager ||
         ctx->AliasingEnabled()) {
+      // if (true) {
       auto* value = MutableByPrototype(prototype, arena, ctx);
       ptr = ParseToRepeatedMessage<TagType>(ptr, ctx, prototype, expected_tag,
                                             value);
@@ -241,13 +249,26 @@ class LazyRepeatedPtrField {
 
     switch (GetLogicalState()) {
       case LogicalState::kParseRequired: {
-        return ParseToCord<TagType>(ptr, ctx, prototype, arena, expected_tag);
+        auto res =
+            ParseToCord<TagType>(ptr, ctx, prototype, arena, expected_tag);
+        return res;
       } break;
 
       case LogicalState::kClear: {
         // Clear/Fresh have empty unparsed data; so this is the equivalent
         // of setting it to the passed in bytes.
-        return ParseToCord<TagType>(ptr, ctx, prototype, arena, expected_tag);
+        auto res =
+            ParseToCord<TagType>(ptr, ctx, prototype, arena, expected_tag);
+        // (void)GetByPrototype(prototype, arena, ctx);
+        // (void)MutableByPrototype(prototype, arena, ctx);
+        // if (unparsed_.Size() == 3265) {
+        //   std::string tmp;
+        //   absl::CopyCordToString(unparsed_.AsCord(), &tmp);
+        //   LOG(FATAL) << "!!!3265" << "res=" << (void*)res
+        //              << "ElementT=" << prototype->GetTypeName()
+        //              << absl::CEscape(tmp);
+        // }
+        return res;
       } break;
 
         // Pointers exposed.
@@ -273,7 +294,9 @@ class LazyRepeatedPtrField {
                                    const char* ptr, ParseContext* ctx,
                                    TagType expected_tag,
                                    absl::string_view data) {
-    ABSL_DCHECK(ptr != nullptr);
+    ScopedCheckInvariants invariants(this);
+    // return ptr;  // TODO: delete this.
+    ABSL_CHECK(ptr != nullptr);
     if (ctx->lazy_parse_mode() == ParseContext::kLazy ||
         ctx->lazy_eager_verify_func() == nullptr) {
       return ptr;
@@ -300,7 +323,9 @@ class LazyRepeatedPtrField {
     (void)GetByPrototype(prototype, arena, ctx);
 
     // If eager parsing still fails, don't bother restoring the parse mode.
-    if (HasParsingError()) return nullptr;
+    if (HasParsingError()) {
+      return nullptr;
+    }
 
     // Unverified lazy fields may miss parsing errors on eager parsing. If it's
     // certain, just mark error and return.
@@ -308,7 +333,7 @@ class LazyRepeatedPtrField {
       auto raw = raw_.load(std::memory_order_relaxed);
       raw.set_status(RawState::kParseError);
       raw_.store(raw, std::memory_order_relaxed);
-      ABSL_DCHECK(HasParsingError());
+      ABSL_CHECK(HasParsingError());
       return nullptr;
     }
 
@@ -353,11 +378,7 @@ class LazyRepeatedPtrField {
     // Move ptr back to the start of the tag.
     size_t tag_size = TagSizeInternal<TagType>(expected_tag);
     ptr -= tag_size;
-    if (ctx->parent_missing_required_fields()) {
-      SetNeedsParseMaybeUninitialized();
-    } else {
-      SetNeedsParse();
-    }
+    bool needs_parse_is_set = false;
     do {
       std::string tmp;
       // Append the tag.
@@ -367,7 +388,7 @@ class LazyRepeatedPtrField {
           ptr2, [&tmp, &taglen_size, ctx, ptr2](const char* p) {
             // At this moment length is read and p points to the start of
             // the payload.
-            ABSL_DCHECK(p - ptr2 > 0 && p - ptr2 <= 5) << p - ptr2;
+            ABSL_CHECK(p - ptr2 > 0 && p - ptr2 <= 5) << p - ptr2;
             // Append the length.
             tmp.append(absl::string_view(ptr2, p - ptr2));
             taglen_size = tmp.size();
@@ -375,7 +396,7 @@ class LazyRepeatedPtrField {
           });
       if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
       const auto tmp_size = tmp.size();
-      ABSL_DCHECK_GE(tmp_size, taglen_size);
+      ABSL_CHECK_GE(tmp_size, taglen_size);
       if (unparsed_.IsCord()) {
         unparsed_.AsCord().Append(tmp);
       } else if (arena != nullptr &&
@@ -386,6 +407,13 @@ class LazyRepeatedPtrField {
         unparsed_.AppendToArray(tmp);
       } else {
         unparsed_.UpgradeToCord(arena).Append(tmp);
+      }
+      if (!needs_parse_is_set) {
+        needs_parse_is_set = true;
+        SetNeedsParse();
+        if (ctx->parent_missing_required_fields()) {
+          SetNeedsParseMaybeUninitialized();
+        }
       }
       if (tmp_size > taglen_size) {
         ptr = _InternalParseVerify<TagType>(
@@ -451,11 +479,11 @@ class LazyRepeatedPtrField {
     auto raw = raw_.load(std::memory_order_acquire);
     switch (raw.status()) {
       case RawState::kParseError:
-        ABSL_DCHECK_NE(raw.value(), nullptr);
+        ABSL_CHECK_NE(raw.value(), nullptr);
         return LogicalState::kDirty;
       case RawState::kCleared:
-        ABSL_DCHECK(unparsed_.IsEmpty());
-        ABSL_DCHECK(raw.value() == nullptr || raw.value()->empty())
+        ABSL_CHECK(unparsed_.IsEmpty());
+        ABSL_CHECK(raw.value() == nullptr || raw.value()->empty())
             << (raw.value() == nullptr
                     ? "nullptr"
                     : absl::StrCat("non-empty:", raw.value()->size()));
@@ -465,13 +493,13 @@ class LazyRepeatedPtrField {
       case RawState::kNeedsParseMaybeUninitialized:
         // There is no SetEncoded, so unparsed_ is always from _InternalParse,
         // which can't be empty.
-        ABSL_DCHECK(!unparsed_.IsEmpty());
-        ABSL_DCHECK(raw.value() == nullptr || raw.value()->empty());
+        ABSL_CHECK(!unparsed_.IsEmpty());
+        ABSL_CHECK(raw.value() == nullptr || raw.value()->empty());
         return LogicalState::kParseRequired;
       default:
-        ABSL_DCHECK(raw.status() == RawState::kIsParsed ||
+        ABSL_CHECK(raw.status() == RawState::kIsParsed ||
                    raw.status() == RawState::kIsParsedMaybeUninitialized);
-        ABSL_DCHECK(raw.value() != nullptr);
+        ABSL_CHECK(raw.value() != nullptr);
         // Only other Initialized state was kParseError which is handled above.
         if (unparsed_.IsEmpty()) {
           return LogicalState::kDirty;
@@ -482,6 +510,19 @@ class LazyRepeatedPtrField {
   }
 
  private:
+  class ScopedCheckInvariants {
+   public:
+    // explicit ScopedCheckInvariants(const LazyRepeatedPtrField* self) {}
+    explicit ScopedCheckInvariants(const LazyRepeatedPtrField* self)
+        : self_(self) {
+      (void)self_->GetLogicalState();
+    }
+    ~ScopedCheckInvariants() { (void)self_->GetLogicalState(); }
+
+   private:
+    const LazyRepeatedPtrField* self_;
+  };
+
   // Values that can be kept in `MessageState`'s status bits.
   // TODO: Deduplicate with LazyField.
   enum class RawState {
@@ -532,8 +573,7 @@ class LazyRepeatedPtrField {
     constexpr explicit MessageState(RawState state) : raw_(ToUint32(state)) {}
     MessageState(const RepeatedPtrFieldBase* message, RawState state)
         : raw_(reinterpret_cast<uintptr_t>(message) | ToUint32(state)) {
-      ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(message) & ToUint32(state),
-                     0u);
+      ABSL_CHECK_EQ(reinterpret_cast<uintptr_t>(message) & ToUint32(state), 0u);
     }
 
     const RepeatedPtrFieldBase* value() const {
@@ -560,7 +600,7 @@ class LazyRepeatedPtrField {
       return static_cast<uint32_t>(status);
     }
     static inline RawState ToRawState(uint32_t status) {
-      ABSL_DCHECK_LE(status, ToUint32(RawState::kMaxState));
+      ABSL_CHECK_LE(status, ToUint32(RawState::kMaxState));
       return static_cast<RawState>(status);
     }
 
@@ -596,7 +636,7 @@ class LazyRepeatedPtrField {
     }
 
     const MessageLite& Default() const {
-      ABSL_DCHECK(default_instance_ != nullptr);
+      ABSL_CHECK(default_instance_ != nullptr);
       return *reinterpret_cast<const MessageLite*>(default_instance_);
     }
 
@@ -639,7 +679,7 @@ class LazyRepeatedPtrField {
         delete reinterpret_cast<const RepeatedPtrField<MessageLite>*>(
             new_raw.value());
       }
-      ABSL_DCHECK(!old_raw.NeedsParse());
+      ABSL_CHECK(!old_raw.NeedsParse());
       return old_raw;
     }
   }
@@ -654,7 +694,7 @@ class LazyRepeatedPtrField {
       return DoParse(old_raw.mutable_value(), strategy.Default(), arena, ctx,
                      false);
     }
-    ABSL_DCHECK(old_raw.value() == nullptr);
+    ABSL_CHECK(old_raw.value() == nullptr);
     return MessageState(Arena::Create<RepeatedPtrFieldBase>(arena),
                         RawState::kIsParsed);
   }
@@ -674,7 +714,7 @@ class LazyRepeatedPtrField {
                                        ParseContext* ctx) {
     auto raw = ExclusiveInitWithoutStore(strategy, arena, ctx);
     unparsed_.Clear();
-    ABSL_DCHECK(raw.value() != nullptr);
+    ABSL_CHECK(raw.value() != nullptr);
     raw.set_status(RawState::kIsParsed);
     raw_.store(raw, std::memory_order_relaxed);
     return raw.mutable_value();
@@ -688,16 +728,16 @@ class LazyRepeatedPtrField {
 
   void SetNeedsParseMaybeUninitialized() {
     auto raw = raw_.load(std::memory_order_relaxed);
-    ABSL_DCHECK(raw.status() == RawState::kNeedsParse ||
-                raw.status() == RawState::kNeedsParseMaybeUninitialized);
+    ABSL_CHECK(raw.status() == RawState::kNeedsParse ||
+               raw.status() == RawState::kNeedsParseMaybeUninitialized);
     raw.set_status(RawState::kNeedsParseMaybeUninitialized);
     raw_.store(raw, std::memory_order_relaxed);
   }
 
   void SetParseNotRequiredMaybeUninitialized() {
     auto raw = raw_.load(std::memory_order_relaxed);
-    ABSL_DCHECK(raw.status() == RawState::kIsParsed ||
-                raw.status() == RawState::kIsParsedMaybeUninitialized);
+    ABSL_CHECK(raw.status() == RawState::kIsParsed ||
+               raw.status() == RawState::kIsParsedMaybeUninitialized);
     raw.set_status(RawState::kIsParsedMaybeUninitialized);
     raw_.store(raw, std::memory_order_relaxed);
   }
@@ -787,20 +827,20 @@ class LazyRepeatedPtrField {
     Tag tag() const { return static_cast<Tag>(value_ & kTagBits); }
 
     bool IsCord() const {
-      ABSL_DCHECK_EQ(static_cast<bool>(value_ & kTagCord),
-                     static_cast<bool>(tag() == kTagCord));
+      ABSL_CHECK_EQ(static_cast<bool>(value_ & kTagCord),
+                    static_cast<bool>(tag() == kTagCord));
       return (value_ & kTagCord) != 0u;
     }
 
     bool IsArray() const {
-      ABSL_DCHECK_EQ(static_cast<bool>(value_ & kTagArray),
-                     static_cast<bool>(tag() == kTagArray));
+      ABSL_CHECK_EQ(static_cast<bool>(value_ & kTagArray),
+                    static_cast<bool>(tag() == kTagArray));
       return (value_ & kTagArray) != 0u;
     }
 
     // Requires: IsCord()
     absl::Cord& AsCord() const {
-      ABSL_DCHECK(IsCord());
+      ABSL_CHECK(IsCord());
       return *reinterpret_cast<absl::Cord*>(value_ & kRemoveMask);
     }
 
@@ -821,14 +861,14 @@ class LazyRepeatedPtrField {
 
     // Requires: input array is the untagged value.
     ArraySizeType GetArraySize(const char* array) const {
-      ABSL_DCHECK_EQ(array, reinterpret_cast<char*>(value_ - kTagArray));
+      ABSL_CHECK_EQ(array, reinterpret_cast<char*>(value_ - kTagArray));
       ArraySizeType size;
       memcpy(&size, array, sizeof(size));
       return size;
     }
 
     void SetArraySize(void* array, ArraySizeType size) const {
-      ABSL_DCHECK_EQ(array, reinterpret_cast<void*>(value_ - kTagArray));
+      ABSL_CHECK_EQ(array, reinterpret_cast<void*>(value_ - kTagArray));
       memcpy(array, &size, sizeof(ArraySizeType));
     }
 
@@ -878,7 +918,7 @@ class LazyRepeatedPtrField {
       return Visit([] { return true; },
                    [](const auto& cord) { return cord.empty(); },
                    [](auto view) {
-                     ABSL_DCHECK(!view.empty());
+                     ABSL_CHECK(!view.empty());
                      return false;
                    });
     }
@@ -923,7 +963,7 @@ class LazyRepeatedPtrField {
         // Memset uninit data to avoid UB later.
         memset(array + view.size(), '\0', kMaxArraySize - view.size());
       }
-      ABSL_DCHECK_EQ(view, AsStringView());
+      ABSL_CHECK_EQ(view, AsStringView());
     }
 
     // Initialize the value as an array copied from `cord`. The tailing bytes
@@ -943,11 +983,11 @@ class LazyRepeatedPtrField {
     // uninitialized.
     // Ignores existing value.
     char* InitAsArray(Arena* arena, ArraySizeType size) {
-      ABSL_DCHECK(arena != nullptr);
+      ABSL_CHECK(arena != nullptr);
       // Allocate max allowed capacity.
       // TODO: improve this to reduce waste when the size is small.
       void* c = arena->AllocateAligned(kMaxArraySize + sizeof(ArraySizeType));
-      ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(c) & kTagBits, uintptr_t{0});
+      ABSL_CHECK_EQ(reinterpret_cast<uintptr_t>(c) & kTagBits, uintptr_t{0});
       value_ = reinterpret_cast<uintptr_t>(c) | kTagArray;
       SetArraySize(c, size);
       return static_cast<char*>(c) + sizeof(ArraySizeType);
@@ -979,7 +1019,7 @@ class LazyRepeatedPtrField {
     }
 
     void TransferHeapOwnershipToArena(Arena* arena) {
-      ABSL_DCHECK(tag() == kTagCord || tag() == kTagEmpty);
+      ABSL_CHECK(tag() == kTagCord || tag() == kTagEmpty);
       if (IsCord()) arena->Own(&AsCord());
     }
 
@@ -1070,6 +1110,22 @@ inline LazyRepeatedPtrField::~LazyRepeatedPtrField() {
   const auto* value = raw_.load(std::memory_order_relaxed).value();
   delete reinterpret_cast<const RepeatedPtrField<MessageLite>*>(value);
   unparsed_.Destroy();
+}
+
+// TODO: Deduplicate with LazyField.
+inline bool LazyRepeatedPtrField::CanBeTriviallySerialized() const {
+  switch (GetLogicalState()) {
+    case LogicalState::kParseRequired:
+    case LogicalState::kClear:
+    case LogicalState::kClearExposed:
+    case LogicalState::kNoParseRequired:
+      return true;
+    case LogicalState::kDirty:
+      return false;
+  }
+  // Required for certain compiler configurations.
+  internal::Unreachable();
+  return false;
 }
 
 // TODO: Deduplicate with LazyField.

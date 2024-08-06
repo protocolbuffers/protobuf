@@ -92,9 +92,9 @@ inline bool ParseWithOuterContextImpl(const T& input, ParseContext* ctx,
                                          set_missing_required);
   }
 
-  ABSL_DCHECK(!ctx->AliasingEnabled());
+  ABSL_CHECK(!ctx->AliasingEnabled());
   // set_missing_required => ctx == nullptr
-  ABSL_DCHECK(!set_missing_required);
+  ABSL_CHECK(!set_missing_required);
 
   // Create local context with depth.
   const char* ptr;
@@ -133,16 +133,27 @@ class ByPrototype {
 
 const RepeatedPtrFieldBase* LazyRepeatedPtrField::GetByPrototype(
     const MessageLite* prototype, Arena* arena, ParseContext* ctx) const {
+  ScopedCheckInvariants invariants(this);
   return GetGeneric(ByPrototype(prototype), arena, ctx);
 }
 
 RepeatedPtrFieldBase* LazyRepeatedPtrField::MutableByPrototype(
     const MessageLite* prototype, Arena* arena, ParseContext* ctx) {
+  ScopedCheckInvariants invariants(this);
   return MutableGeneric(ByPrototype(prototype), arena, ctx);
 }
 
 void LazyRepeatedPtrField::Clear() {
-  PerformTransition([](ExclusiveTxn& txn) {
+  ScopedCheckInvariants invariants(this);
+  // TODO: returning kIsParsed* to avoid mutating on clean. Test only.
+  // auto raw = raw_.load(std::memory_order_acquire);
+  // auto old = raw.status();
+  // RawState new_state = RawState::kCleared;
+  // if (old == RawState::kIsParsed ||
+  //     old == RawState::kIsParsedMaybeUninitialized) {
+  //   new_state = old;
+  // }
+  PerformTransition([&](ExclusiveTxn& txn) {
     auto* value = txn.mutable_value();
     if (value != nullptr) value->Clear<GenericTypeHandler<MessageLite>>();
     return RawState::kCleared;
@@ -152,6 +163,7 @@ void LazyRepeatedPtrField::Clear() {
 bool LazyRepeatedPtrField::IsEagerSerializeSafe(const MessageLite* prototype,
                                                 int32_t number,
                                                 Arena* arena) const {
+  ScopedCheckInvariants invariants(this);
   // "prototype" may be null if it is for dynamic messages. This is ok as
   // dynamic extensions won't be lazy as they lack verify functions any way.
   if (prototype == nullptr) return false;
@@ -193,6 +205,8 @@ void LazyRepeatedPtrField::swap_atomics(std::atomic<MessageState>& lhs,
 
 void LazyRepeatedPtrField::Swap(LazyRepeatedPtrField* lhs, Arena* lhs_arena,
                                 LazyRepeatedPtrField* rhs, Arena* rhs_arena) {
+  ScopedCheckInvariants invariants_l(lhs);
+  ScopedCheckInvariants invariants_r(rhs);
   static auto reallocate = [](LazyRepeatedPtrField* f, Arena* arena,
                               bool cleanup_old) {
     auto raw = f->raw_.load(std::memory_order_relaxed);
@@ -262,6 +276,8 @@ void LazyRepeatedPtrField::Swap(LazyRepeatedPtrField* lhs, Arena* lhs_arena,
 void LazyRepeatedPtrField::InternalSwap(
     LazyRepeatedPtrField* PROTOBUF_RESTRICT lhs,
     LazyRepeatedPtrField* PROTOBUF_RESTRICT rhs) {
+  ScopedCheckInvariants invariants_l(lhs);
+  ScopedCheckInvariants invariants_r(lhs);
   using std::swap;  // Enable ADL with fallback
   swap_atomics(lhs->raw_, rhs->raw_);
   swap(lhs->unparsed_, rhs->unparsed_);

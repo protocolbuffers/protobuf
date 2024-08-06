@@ -89,14 +89,14 @@ void VerifyConsistency(LazyRepeatedPtrField::LogicalState state,
                        const RepeatedPtrFieldBase* value,
                        const MessageLite* prototype, const absl::Cord& unparsed,
                        io::EpsCopyOutputStream* stream) {
-#ifndef NDEBUG
+  // #ifndef NDEBUG
   if (stream != nullptr && !stream->ShouldCheckConsistency()) return;
   if (state != LazyRepeatedPtrField::LogicalState::kNoParseRequired) return;
 
-  RepeatedPtrField<Message> unparsed_msg;
+  RepeatedPtrField<Message> parsed_from_unparsed;
   if (!LazyRepeatedPtrField::ParseWithOuterContext(
-          reinterpret_cast<RepeatedPtrFieldBase*>(&unparsed_msg), unparsed,
-          nullptr, prototype, /*set_missing_required=*/false)) {
+          reinterpret_cast<RepeatedPtrFieldBase*>(&parsed_from_unparsed),
+          unparsed, nullptr, prototype, /*set_missing_required=*/false)) {
     // Bail out on parse failure as it can result in false positive
     // inconsistency and ABSL_CHECK failure. Warn instead.
     ABSL_LOG(WARNING)
@@ -106,6 +106,8 @@ void VerifyConsistency(LazyRepeatedPtrField::LogicalState state,
   }
 
   const auto* msgs = reinterpret_cast<const RepeatedPtrField<Message>*>(value);
+  ABSL_CHECK_EQ(parsed_from_unparsed.size(), msgs->size())
+      << "ElementT=" << prototype->GetTypeName();
   // Eagerly parse all lazy fields to eliminate non-canonical wireformat data.
   for (int i = 0; i < msgs->size(); i++) {
     // Clone a new one from the original to eagerly parse all lazy
@@ -114,17 +116,25 @@ void VerifyConsistency(LazyRepeatedPtrField::LogicalState state,
     std::unique_ptr<Message> clone(msg.New());
     clone->CopyFrom(msg);
     EagerParseLazyFieldIgnoreUnparsed(*clone);
-    EagerParseLazyFieldIgnoreUnparsed(*unparsed_msg.Mutable(i));
-    ABSL_DCHECK_EQ(DeterministicSerialization(*clone),
-                   DeterministicSerialization(unparsed_msg.Get(i)))
-        << "RepeatedPtrField<" << msg.GetTypeName() << ">(" << i << ")"
-        << ": likely mutated via getters + const_cast\n"
-        << "unparsed:\n"
-        << EscapeEncoded(DeterministicSerialization(unparsed_msg.Get(i)))
+    EagerParseLazyFieldIgnoreUnparsed(*parsed_from_unparsed.Mutable(i));
+    const auto& clone_str = DeterministicSerialization(*clone);
+    const auto& parsed_from_unparsed_str =
+        DeterministicSerialization(parsed_from_unparsed.Get(i));
+    std::string unparsed_str;
+    absl::CopyCordToString(unparsed, &unparsed_str);
+    ABSL_CHECK(clone_str == parsed_from_unparsed_str)
+        << "clone vs parsed_from_unparsed_str vs unparsed size:"
+        << clone_str.size() << "; " << parsed_from_unparsed_str.size() << "; "
+        << unparsed.size() << "\nRepeatedPtrField<" << msg.GetTypeName() << ">("
+        << i << ")" << ": likely mutated via getters + const_cast\n"
         << "\nmessage:\n"
-        << EscapeEncoded(DeterministicSerialization(*clone));
+        << EscapeEncoded(clone_str) << "\nparsed_from_unparsed:\n"
+        << EscapeEncoded(parsed_from_unparsed_str) << "\nunparsed:\n"
+        << EscapeEncoded(unparsed_str) << "\nmessage dbgstr:\n"
+        << clone->DebugString() << "\nparsed_from_unparsed dbgstr:\n"
+        << parsed_from_unparsed.Get(i).DebugString();
   }
-#endif  // !NDEBUG
+  // #endif  // !NDEBUG
 }
 
 }  // namespace
@@ -133,6 +143,8 @@ LazyRepeatedPtrField::LazyRepeatedPtrField(Arena* arena,
                                            const LazyRepeatedPtrField& rhs,
                                            Arena* rhs_arena)
     : raw_(MessageState(RawState::kCleared)) {
+  ScopedCheckInvariants invariants(this);
+  ScopedCheckInvariants invariants_r(&rhs);
   switch (rhs.GetLogicalState()) {
     case LogicalState::kClear:
     case LogicalState::kClearExposed:
@@ -176,11 +188,13 @@ LazyRepeatedPtrField::LazyRepeatedPtrField(Arena* arena,
 
 const RepeatedPtrFieldBase* LazyRepeatedPtrField::GetDynamic(
     const Descriptor* type, MessageFactory* factory, Arena* arena) const {
+  ScopedCheckInvariants invariants(this);
   return GetGeneric(ByFactory(type, factory), arena, nullptr);
 }
 
 RepeatedPtrFieldBase* LazyRepeatedPtrField::MutableDynamic(
     const Descriptor* type, MessageFactory* factory, Arena* arena) {
+  ScopedCheckInvariants invariants(this);
   return MutableGeneric(ByFactory(type, factory), arena, nullptr);
 }
 
@@ -210,6 +224,7 @@ size_t LazyRepeatedPtrField::SpaceUsedExcludingSelfLong() const {
 template <typename Input>
 bool LazyRepeatedPtrField::MergeFrom(const MessageLite* prototype,
                                      const Input& data, Arena* arena) {
+  ScopedCheckInvariants invariants(this);
   switch (GetLogicalState()) {
     case LogicalState::kParseRequired: {
       unparsed_.UpgradeToCord(arena).Append(data);
@@ -217,7 +232,7 @@ bool LazyRepeatedPtrField::MergeFrom(const MessageLite* prototype,
     }
     case LogicalState::kClear: {
       size_t num_bytes = data.size();
-      ABSL_DCHECK(num_bytes > 0);
+      ABSL_CHECK(num_bytes > 0);
       if (arena == nullptr || num_bytes > kMaxArraySize || unparsed_.IsCord()) {
         unparsed_.SetCord(arena, data);
       } else {
@@ -268,11 +283,11 @@ void LazyRepeatedPtrField::MergeMaybeUninitializedState(
 void LazyRepeatedPtrField::MergeFrom(const MessageLite* prototype,
                                      const LazyRepeatedPtrField& other,
                                      Arena* arena, Arena* other_arena) {
-#ifndef NDEBUG
+  // #ifndef NDEBUG
   VerifyConsistency(other.GetLogicalState(),
                     other.raw_.load(std::memory_order_relaxed).value(),
                     prototype, other.unparsed_.ForceAsCord(), nullptr);
-#endif  // !NDEBUG
+  // #endif  // !NDEBUG
   switch (other.GetLogicalState()) {
     case LogicalState::kClear:
     case LogicalState::kClearExposed:
@@ -297,7 +312,7 @@ void LazyRepeatedPtrField::MergeFrom(const MessageLite* prototype,
       auto* value = MutableByPrototype(prototype, arena);
       value->MergeFrom<MessageLite>(*other_value);
       // No need to merge uninitialized state.
-      ABSL_DCHECK(GetLogicalState() == LogicalState::kDirty);
+      ABSL_CHECK(GetLogicalState() == LogicalState::kDirty);
       return;
     }
   }
@@ -306,11 +321,12 @@ void LazyRepeatedPtrField::MergeFrom(const MessageLite* prototype,
 uint8_t* LazyRepeatedPtrField::InternalWrite(
     const MessageLite* prototype, int32_t number, uint8_t* target,
     io::EpsCopyOutputStream* stream) const {
-#ifndef NDEBUG
+  ScopedCheckInvariants invariants(this);
+  // #ifndef NDEBUG
   VerifyConsistency(GetLogicalState(),
                     raw_.load(std::memory_order_relaxed).value(), prototype,
                     unparsed_.ForceAsCord(), stream);
-#endif  // !NDEBUG
+  // #endif  // !NDEBUG
   switch (GetLogicalState()) {
     case LogicalState::kClear:
     case LogicalState::kClearExposed:

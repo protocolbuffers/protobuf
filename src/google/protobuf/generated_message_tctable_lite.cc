@@ -438,12 +438,27 @@ const char* TcParser::LazyMessage(PROTOBUF_TC_PARAM_DECL) {
   return nullptr;
 }
 
+template <typename TagType>
+const char* TcParser::LazyRepeatedMessage(PROTOBUF_TC_PARAM_DECL) {
+  ABSL_LOG(FATAL) << "Unimplemented";
+  return nullptr;
+}
+
 PROTOBUF_NOINLINE const char* TcParser::FastMlS1(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return LazyMessage<uint8_t>(PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastMlS2(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return LazyMessage<uint16_t>(PROTOBUF_TC_PARAM_PASS);
+}
+
+PROTOBUF_NOINLINE const char* TcParser::FastMlR1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return LazyRepeatedMessage<uint8_t>(PROTOBUF_TC_PARAM_PASS);
+}
+
+PROTOBUF_NOINLINE const char* TcParser::FastMlR2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return LazyRepeatedMessage<uint16_t>(
+      PROTOBUF_TC_PARAM_PASS);
 }
 
 template <typename TagType, bool group_coding, bool aux_is_table>

@@ -1566,6 +1566,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   if (HasLazyFields(file_, options_, &scc_analyzer_)) {
     ABSL_CHECK(!options_.opensource_runtime);
     IncludeFile("third_party/protobuf/lazy_field.h", p);
+    IncludeFile("third_party/protobuf/lazy_repeated_field.h", p);
   }
   if (ShouldVerify(file_, options_, &scc_analyzer_)) {
     IncludeFile("third_party/protobuf/wire_format_verify.h", p);

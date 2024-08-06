@@ -173,6 +173,12 @@ std::string IntTypeName(const Options& options, absl::string_view type) {
   return absl::StrCat("::", type, "_t");
 }
 
+bool IsLazyRepeatedEnabled(const FieldDescriptor* field,
+                           const Options& options) {
+  return (options.allow_lazy_repeated &&  // !options.bootstrap &&
+          field->is_repeated() && !field->is_map() && !field->is_extension());
+}
+
 
 
 }  // namespace
