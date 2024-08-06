@@ -14,6 +14,17 @@ load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 licenses(["notice"])
 
 bzl_library(
+    name = "hpb_proto_library_bzl",
+    srcs = ["hpb_proto_library.bzl"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//bazel:upb_proto_library_bzl",
+        "@bazel_skylib//lib:paths",
+        "@bazel_tools//tools/cpp:toolchain_utils.bzl",
+    ],
+)
+
+bzl_library(
     name = "upb_cc_proto_library_bzl",
     srcs = ["upb_cc_proto_library.bzl"],
     visibility = ["//visibility:public"],
