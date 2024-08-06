@@ -12,13 +12,13 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/hpb/gen_accessors.h"
 #include "google/protobuf/compiler/hpb/gen_enums.h"
 #include "google/protobuf/compiler/hpb/gen_extensions.h"
 #include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/names.h"
 #include "google/protobuf/compiler/hpb/output.h"
+#include "google/protobuf/descriptor.h"
 #include "upb_generator/common.h"
 #include "upb_generator/file_layout.h"
 #include "upb_generator/names.h"
@@ -86,8 +86,8 @@ void WriteRepeatedFieldsInMessageHeader(const protobuf::Descriptor* desc,
     output(
         R"cc(
           $1 $2(size_t index) const;
-          const ::protos::RepeatedField<const $4>::CProxy $2() const;
-          ::hpb::Ptr<::protos::RepeatedField<$4>> mutable_$2();
+          const ::hpb::RepeatedField<const $4>::CProxy $2() const;
+          ::hpb::Ptr<::hpb::RepeatedField<$4>> mutable_$2();
           absl::StatusOr<$0> add_$2();
           $0 mutable_$2(size_t index) const;
         )cc",
@@ -101,8 +101,8 @@ void WriteRepeatedFieldsInMessageHeader(const protobuf::Descriptor* desc,
     output(
         R"cc(
           $0 $1(size_t index) const;
-          const ::protos::RepeatedField<$0>::CProxy $1() const;
-          ::hpb::Ptr<::protos::RepeatedField<$0>> mutable_$1();
+          const ::hpb::RepeatedField<$0>::CProxy $1() const;
+          ::hpb::Ptr<::hpb::RepeatedField<$0>> mutable_$1();
           bool add_$1($0 val);
           void set_$1(size_t index, $0 val);
           bool resize_$1(size_t len);
@@ -112,8 +112,8 @@ void WriteRepeatedFieldsInMessageHeader(const protobuf::Descriptor* desc,
     output(
         R"cc(
           $0 $1(size_t index) const;
-          const ::protos::RepeatedField<$0>::CProxy $1() const;
-          ::hpb::Ptr<::protos::RepeatedField<$0>> mutable_$1();
+          const ::hpb::RepeatedField<$0>::CProxy $1() const;
+          ::hpb::Ptr<::hpb::RepeatedField<$0>> mutable_$1();
           bool add_$1($0 val);
           void set_$1(size_t index, $0 val);
           bool resize_$1(size_t len);
@@ -172,15 +172,15 @@ void WriteRepeatedMessageAccessor(const protobuf::Descriptor* message,
       upbc_name);
   output(
       R"cc(
-        const ::protos::RepeatedField<const $1>::CProxy $0::$2() const {
+        const ::hpb::RepeatedField<const $1>::CProxy $0::$2() const {
           size_t size;
           const upb_Array* arr = _$3_$4_$5(msg_, &size);
-          return ::protos::RepeatedField<const $1>::CProxy(arr, arena_);
+          return ::hpb::RepeatedField<const $1>::CProxy(arr, arena_);
         };
-        ::hpb::Ptr<::protos::RepeatedField<$1>> $0::mutable_$2() {
+        ::hpb::Ptr<::hpb::RepeatedField<$1>> $0::mutable_$2() {
           size_t size;
           upb_Array* arr = _$3_$4_$6(msg_, &size, arena_);
-          return ::protos::RepeatedField<$1>::Proxy(arr, arena_);
+          return ::hpb::RepeatedField<$1>::Proxy(arr, arena_);
         }
       )cc",
       class_name,                                              // $0
@@ -238,15 +238,15 @@ void WriteRepeatedStringAccessor(const protobuf::Descriptor* message,
       MessageName(message), upbc_name);
   output(
       R"cc(
-        const ::protos::RepeatedField<$1>::CProxy $0::$2() const {
+        const ::hpb::RepeatedField<$1>::CProxy $0::$2() const {
           size_t size;
           const upb_Array* arr = _$3_$4_$5(msg_, &size);
-          return ::protos::RepeatedField<$1>::CProxy(arr, arena_);
+          return ::hpb::RepeatedField<$1>::CProxy(arr, arena_);
         };
-        ::hpb::Ptr<::protos::RepeatedField<$1>> $0::mutable_$2() {
+        ::hpb::Ptr<::hpb::RepeatedField<$1>> $0::mutable_$2() {
           size_t size;
           upb_Array* arr = _$3_$4_$6(msg_, &size, arena_);
-          return ::protos::RepeatedField<$1>::Proxy(arr, arena_);
+          return ::hpb::RepeatedField<$1>::Proxy(arr, arena_);
         }
       )cc",
       class_name,                                              // $0
@@ -302,15 +302,15 @@ void WriteRepeatedScalarAccessor(const protobuf::Descriptor* message,
       MessageName(message), upbc_name);
   output(
       R"cc(
-        const ::protos::RepeatedField<$1>::CProxy $0::$2() const {
+        const ::hpb::RepeatedField<$1>::CProxy $0::$2() const {
           size_t size;
           const upb_Array* arr = _$3_$4_$5(msg_, &size);
-          return ::protos::RepeatedField<$1>::CProxy(arr, arena_);
+          return ::hpb::RepeatedField<$1>::CProxy(arr, arena_);
         };
-        ::hpb::Ptr<::protos::RepeatedField<$1>> $0::mutable_$2() {
+        ::hpb::Ptr<::hpb::RepeatedField<$1>> $0::mutable_$2() {
           size_t size;
           upb_Array* arr = _$3_$4_$6(msg_, &size, arena_);
-          return ::protos::RepeatedField<$1>::Proxy(arr, arena_);
+          return ::hpb::RepeatedField<$1>::Proxy(arr, arena_);
         }
       )cc",
       class_name,                                              // $0

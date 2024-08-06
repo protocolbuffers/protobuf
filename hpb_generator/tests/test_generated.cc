@@ -433,8 +433,7 @@ TEST(CppGeneratedCode, RepeatedScalarIterator) {
   test_model.mutable_value_array()->push_back(27);
   int sum = 0;
   // Access by value.
-  const ::protos::RepeatedField<int32_t>::CProxy rep1 =
-      test_model.value_array();
+  const ::hpb::RepeatedField<int32_t>::CProxy rep1 = test_model.value_array();
   for (auto i : rep1) {
     sum += i;
   }
@@ -479,13 +478,13 @@ TEST(CppGeneratedCode, RepeatedScalarIterator) {
   EXPECT_EQ(it[2], 27);
   // ValueProxy.
   sum = 0;
-  for (::protos::RepeatedField<int32_t>::ValueCProxy c :
+  for (::hpb::RepeatedField<int32_t>::ValueCProxy c :
        test_model.value_array()) {
     sum += c;
   }
   EXPECT_EQ(sum, 5 + 16 + 27);
   sum = 0;
-  for (::protos::RepeatedField<int32_t>::ValueProxy c :
+  for (::hpb::RepeatedField<int32_t>::ValueProxy c :
        *test_model.mutable_value_array()) {
     sum += c;
   }

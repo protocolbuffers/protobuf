@@ -8,4 +8,7 @@
 #ifndef UPB_PROTOS_REPEATED_FIELD_H_
 #define UPB_PROTOS_REPEATED_FIELD_H_
 #include "google/protobuf/hpb/repeated_field.h"
+namespace protos {
+using hpb::RepeatedField;
+}
 #endif

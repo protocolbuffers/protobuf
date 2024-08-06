@@ -24,7 +24,7 @@
 #include "upb/message/copy.h"
 #include "upb/message/message.h"
 
-namespace protos {
+namespace hpb {
 namespace internal {
 
 // Shared implementation of repeated fields for absl::string_view and
@@ -296,6 +296,6 @@ class RepeatedField {
                          internal::RepeatedFieldProxy<T>>>;
 };
 
-}  // namespace protos
+}  // namespace hpb
 
 #endif  // PROTOBUF_HPB_REPEATED_FIELD_H_

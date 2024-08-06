@@ -23,7 +23,7 @@
 
 using ::testing::ElementsAre;
 
-namespace protos {
+namespace hpb {
 namespace internal {
 
 template <typename T>
@@ -455,4 +455,4 @@ TEST(StringIteratorTest, IteratorBasedAlgorithmsWork) {
 
 }  // namespace
 }  // namespace internal
-}  // namespace protos
+}  // namespace hpb

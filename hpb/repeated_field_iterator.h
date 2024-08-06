@@ -20,7 +20,7 @@
 #include "upb/message/array.h"
 #include "upb/message/message.h"
 
-namespace protos {
+namespace hpb {
 namespace internal {
 
 // TODO: Implement std iterator for messages
@@ -365,6 +365,6 @@ struct MessageIteratorPolicy {
 };
 
 }  // namespace internal
-}  // namespace protos
+}  // namespace hpb
 
 #endif  // PROTOBUF_HPB_REPEATED_FIELD_ITERATOR_H_
