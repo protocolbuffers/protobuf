@@ -117,6 +117,9 @@ class LazyRepeatedPtrField {
            state == LogicalState::kClearExposed;
   }
 
+  // Whether the unparsed data can be directly used for serialization.
+  bool CanBeTriviallySerialized() const;
+
   // Get and Mutable trigger parsing.
   template <typename Element>
   const RepeatedPtrField<Element>& Get(const Element* default_instance,
@@ -1070,6 +1073,22 @@ inline LazyRepeatedPtrField::~LazyRepeatedPtrField() {
   const auto* value = raw_.load(std::memory_order_relaxed).value();
   delete reinterpret_cast<const RepeatedPtrField<MessageLite>*>(value);
   unparsed_.Destroy();
+}
+
+// TODO: Deduplicate with LazyField.
+inline bool LazyRepeatedPtrField::CanBeTriviallySerialized() const {
+  switch (GetLogicalState()) {
+    case LogicalState::kParseRequired:
+    case LogicalState::kClear:
+    case LogicalState::kClearExposed:
+    case LogicalState::kNoParseRequired:
+      return true;
+    case LogicalState::kDirty:
+      return false;
+  }
+  // Required for certain compiler configurations.
+  internal::Unreachable();
+  return false;
 }
 
 // TODO: Deduplicate with LazyField.

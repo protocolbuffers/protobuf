@@ -356,7 +356,7 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGt)                \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMd)                \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMt)                \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastMl)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMl)                \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_END_GROUP()                     \
   PROTOBUF_TC_PARSE_FUNCTION_X(MessageSetWireFormatParseLoopLite) \
   PROTOBUF_TC_PARSE_FUNCTION_X(MessageSetWireFormatParseLoop)     \
@@ -704,6 +704,10 @@ class PROTOBUF_EXPORT TcParser final {
       PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastMlS2(
       PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastMlR1(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastMlR2(
+      PROTOBUF_TC_PARAM_DECL);
 
   // NOTE: Do not dedup RefAt by having one call the other with a const_cast. It
   // causes ICEs of gcc 7.5.
@@ -855,6 +859,9 @@ class PROTOBUF_EXPORT TcParser final {
       PROTOBUF_TC_PARAM_DECL);
   template <typename TagType>
   PROTOBUF_CC static inline const char* LazyMessage(PROTOBUF_TC_PARAM_DECL);
+  template <typename TagType>
+  PROTOBUF_CC static inline const char* LazyRepeatedMessage(
+      PROTOBUF_TC_PARAM_DECL);
 
   template <typename TagType>
   PROTOBUF_CC static const char* FastEndGroupImpl(PROTOBUF_TC_PARAM_DECL);
@@ -1089,6 +1096,7 @@ class PROTOBUF_EXPORT TcParser final {
   PROTOBUF_CC static const char* MpRepeatedMessageOrGroup(
       PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_CC static const char* MpLazyMessage(PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_CC static const char* MpLazyRepeatedMessage(PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE
   PROTOBUF_CC static const char* MpFallback(PROTOBUF_TC_PARAM_DECL);
   template <bool is_split>

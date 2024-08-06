@@ -144,7 +144,7 @@ EnumRangeInfo GetEnumRangeInfo(const FieldDescriptor* field,
 // We can't trust the `lazy=true` annotation.
 bool HasLazyRep(const FieldDescriptor* field,
                 const TailCallTableInfo::FieldOptions& options) {
-  return field->type() == field->TYPE_MESSAGE && !field->is_repeated() &&
+  return field->type() == field->TYPE_MESSAGE && !field->is_map() &&
          options.lazy_opt != 0;
 }
 
@@ -249,11 +249,11 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
       }
       break;
     case FieldDescriptor::TYPE_MESSAGE:
-      picked =
-          (HasLazyRep(field, options) ? PROTOBUF_PICK_SINGLE_FUNCTION(kFastMl)
-           : options.use_direct_tcparser_table
-               ? PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMt)
-               : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMd));
+      picked = (HasLazyRep(field, options)
+                    ? PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMl)
+                : options.use_direct_tcparser_table
+                    ? PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMt)
+                    : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMd));
       break;
     case FieldDescriptor::TYPE_GROUP:
       picked = (options.use_direct_tcparser_table
