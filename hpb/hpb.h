@@ -43,7 +43,6 @@ class Ptr final {
 
   // Implicit conversions
   Ptr(T* m) : p_(m) {}                // NOLINT
-  Ptr(const Proxy<T>* p) : p_(*p) {}  // NOLINT
   Ptr(Proxy<T> p) : p_(p) {}          // NOLINT
   Ptr(const Ptr& m) = default;
 
