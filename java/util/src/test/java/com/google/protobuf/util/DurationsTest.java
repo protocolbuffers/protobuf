@@ -10,6 +10,7 @@ package com.google.protobuf.util;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.protobuf.util.Durations.toSecondsAsDouble;
+import static com.google.protobuf.util.Timestamps.NANOS_PER_SECOND;
 import static org.junit.Assert.fail;
 
 import com.google.common.collect.Lists;
@@ -509,6 +510,12 @@ public class DurationsTest {
       Durations.toNanos(duration(315576000000L, 999999999));
       fail("Expected an ArithmeticException to be thrown");
     } catch (ArithmeticException expected) {
+    }
+
+    try {
+      Durations.normalizedDuration(9223372036854775807L, 2 * NANOS_PER_SECOND);
+      fail("Expected an IllegalArgumentException to be thrown");
+    } catch (IllegalArgumentException expected) {
     }
 
     try {
