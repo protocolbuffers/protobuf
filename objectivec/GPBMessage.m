@@ -79,7 +79,10 @@ NSString *const GPBMessageExceptionMessageTooLarge =
   // be protected with an @synchronized(self) block (that way the code also doesn't have to
   // worry about throws).
   NSMutableData *unknownFieldData_;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   GPBUnknownFieldSet *unknownFields_;
+#pragma clang diagnostic pop
 
   NSMutableDictionary *extensionMap_;
   // Readonly access to autocreatedExtensionMap_ is protected via readOnlyLock_.
@@ -1106,6 +1109,8 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
   self->autocreatorExtension_ = nil;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 GPB_NOINLINE
 static void MergeUnknownFieldDataIntoFieldSet(GPBMessage *self, NSData *data,
                                               GPBUnknownFieldSet *targetSet) {
@@ -1151,6 +1156,7 @@ static void MergeUnknownFieldDataIntoFieldSet(GPBMessage *self, NSData *data,
     [decodeInto release];
   }
 }
+#pragma clang diagnostic pop
 
 @implementation GPBMessage
 
@@ -1481,7 +1487,14 @@ static void MergeUnknownFieldDataIntoFieldSet(GPBMessage *self, NSData *data,
 }
 
 - (void)clearUnknownFields {
-  self.unknownFields = nil;
+  [unknownFieldData_ release];
+  unknownFieldData_ = nil;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  [unknownFields_ release];
+  unknownFields_ = nil;
+#pragma clang diagnostic pop
+  GPBBecomeVisibleToAutocreator(self);
 }
 
 - (BOOL)mergeUnknownFields:(GPBUnknownFields *)unknownFields
@@ -3149,6 +3162,8 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
   // need to guard against is concurrent r/o access, so we can grab the values (and retain them)
   // so we have a version to compare against safely incase the second access causes the transform
   // between internal states.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   GPBUnknownFieldSet *selfUnknownFields;
   NSData *selfUnknownFieldData;
   @synchronized(self) {
@@ -3161,6 +3176,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
     otherUnknownFields = [otherMsg->unknownFields_ retain];
     otherUnknownFieldData = [otherMsg->unknownFieldData_ retain];
   }
+#pragma clang diagnostic pop
 #if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   if (selfUnknownFields) {
     NSAssert(selfUnknownFieldData == nil, @"Internal error both unknown states were set");
@@ -3189,6 +3205,8 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
     result = [selfUnknownFields isEqual:otherUnknownFields];
   } else {
     // At this point, we're done to one have a set/nothing, and the other having data/nothing.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     GPBUnknownFieldSet *theSet = selfUnknownFields ? selfUnknownFields : otherUnknownFields;
     NSData *theData = selfUnknownFieldData ? selfUnknownFieldData : otherUnknownFieldData;
     if (theSet) {
@@ -3204,6 +3222,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
       // It was a data/nothing and nothing, so they equal if the other didn't have data.
       result = theData == nil;
     }
+#pragma clang diagnostic pop
   }
 
   [selfUnknownFields release];
@@ -4015,7 +4034,10 @@ id GPBGetObjectIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
 NSData *GPBMessageUnknownFieldsData(GPBMessage *self) {
   NSData *result = nil;
   @synchronized(self) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     GPBUnknownFieldSet *unknownFields = self->unknownFields_;
+#pragma clang diagnostic pop
     if (unknownFields) {
 #if defined(DEBUG) && DEBUG
       NSCAssert(self->unknownFieldData_ == nil, @"Internal error both unknown states were set");

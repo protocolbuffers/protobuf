@@ -494,6 +494,8 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state, int32_t
   --state_.recursionDepth;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)readUnknownGroup:(int32_t)fieldNumber message:(GPBUnknownFieldSet *)message {
   CheckRecursionLimit(&state_);
   ++state_.recursionDepth;
@@ -502,6 +504,7 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state, int32_t
                                      GPBWireFormatMakeTag(fieldNumber, GPBWireFormatEndGroup));
   --state_.recursionDepth;
 }
+#pragma clang diagnostic pop
 
 - (void)readMessage:(GPBMessage *)message
     extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {

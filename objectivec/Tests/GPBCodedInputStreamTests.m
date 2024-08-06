@@ -305,7 +305,10 @@
   // skipping as expected (this covers the tags within a group also).
   GPBCodedInputStream* input1 = [GPBCodedInputStream streamWithData:rawBytes];
   GPBCodedInputStream* input2 = [GPBCodedInputStream streamWithData:rawBytes];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   GPBUnknownFieldSet* unknownFields = [[[GPBUnknownFieldSet alloc] init] autorelease];
+#pragma clang diagnostic pop
 
   NSUInteger idx = 0;
   while (YES) {

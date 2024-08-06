@@ -55,8 +55,8 @@ CF_EXTERN_C_END
  *       exist in two places, you don't want a sub message to be a property
  *       property of two other messages.
  *
- * @note While the class support NSSecureCoding, if the message has any
- *       extensions, they will end up reloaded in @c unknownFields as there is
+ * @note While the class supports NSSecureCoding, if the message has any
+ *       extensions, they will end up reloaded in the unknown fields as there is
  *       no way for the @c NSCoding plumbing to pass through a
  *       @c GPBExtensionRegistry. To support extensions, instead of passing the
  *       calls off to the Message, simple store the result of @c data, and then
@@ -73,7 +73,9 @@ CF_EXTERN_C_END
 /**
  * The set of unknown fields for this message.
  **/
-@property(nonatomic, copy, nullable) GPBUnknownFieldSet *unknownFields;
+@property(nonatomic, copy, nullable) GPBUnknownFieldSet *unknownFields __attribute__((
+    deprecated("Use GPBUnknownFields and the -initFromMessage: initializer and "
+               "mergeUnknownFields:extensionRegistry:error: to add the data back to a message.")));
 
 /**
  * Whether the message, along with all submessages, have the required fields
