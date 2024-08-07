@@ -85,91 +85,91 @@ final class ExtensionSchemaFull extends ExtensionSchema<FieldDescriptor> {
           }
         case FLOAT:
           {
-            List<Float> list = new ArrayList<Float>();
+            List<Float> list = new FloatArrayList();
             reader.readFloatList(list);
             value = list;
             break;
           }
         case INT64:
           {
-            List<Long> list = new ArrayList<Long>();
+            List<Long> list = new LongArrayList();
             reader.readInt64List(list);
             value = list;
             break;
           }
         case UINT64:
           {
-            List<Long> list = new ArrayList<Long>();
+            List<Long> list = new LongArrayList();
             reader.readUInt64List(list);
             value = list;
             break;
           }
         case INT32:
           {
-            List<Integer> list = new ArrayList<Integer>();
+            List<Integer> list = new IntArrayList();
             reader.readInt32List(list);
             value = list;
             break;
           }
         case FIXED64:
           {
-            List<Long> list = new ArrayList<Long>();
+            List<Long> list = new LongArrayList();
             reader.readFixed64List(list);
             value = list;
             break;
           }
         case FIXED32:
           {
-            List<Integer> list = new ArrayList<Integer>();
+            List<Integer> list = new IntArrayList();
             reader.readFixed32List(list);
             value = list;
             break;
           }
         case BOOL:
           {
-            List<Boolean> list = new ArrayList<Boolean>();
+            List<Boolean> list = new BooleanArrayList();
             reader.readBoolList(list);
             value = list;
             break;
           }
         case UINT32:
           {
-            List<Integer> list = new ArrayList<Integer>();
+            List<Integer> list = new IntArrayList();
             reader.readUInt32List(list);
             value = list;
             break;
           }
         case SFIXED32:
           {
-            List<Integer> list = new ArrayList<Integer>();
+            List<Integer> list = new IntArrayList();
             reader.readSFixed32List(list);
             value = list;
             break;
           }
         case SFIXED64:
           {
-            List<Long> list = new ArrayList<Long>();
+            List<Long> list = new LongArrayList();
             reader.readSFixed64List(list);
             value = list;
             break;
           }
         case SINT32:
           {
-            List<Integer> list = new ArrayList<Integer>();
+            List<Integer> list = new IntArrayList();
             reader.readSInt32List(list);
             value = list;
             break;
           }
         case SINT64:
           {
-            List<Long> list = new ArrayList<Long>();
+            List<Long> list = new LongArrayList();
             reader.readSInt64List(list);
             value = list;
             break;
           }
         case ENUM:
           {
-            List<Integer> list = new ArrayList<Integer>();
+            List<Integer> list = new IntArrayList();
             reader.readEnumList(list);
             List<EnumValueDescriptor> enumList = new ArrayList<EnumValueDescriptor>();
             for (int number : list) {
