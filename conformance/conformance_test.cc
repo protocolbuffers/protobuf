@@ -24,6 +24,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
@@ -43,6 +44,42 @@ using google::protobuf::util::MessageDifferencer;
 using std::string;
 
 namespace {
+
+static void AbortInvalidWildcard(const std::string& test_name) {
+  ABSL_LOG(FATAL) << "Invalid wildcard in test name from the failure "
+                     "list (wildcards must take "
+                     "up the whole of a section): "
+                  << test_name;
+}
+
+static bool ContainsWildcard(const std::string& test_name) {
+  return absl::StrContains(test_name, '*');
+}
+
+static void CheckInvalidWildcard(const std::string& test_name) {
+  string test_name_copy = test_name;
+  while (ContainsWildcard(test_name_copy)) {
+    auto index = test_name_copy.find('*');
+    if (index != test_name_copy.length() - 1 && index != 0) {
+      if (test_name_copy[index - 1] != '.' ||
+          test_name_copy[index + 1] != '.') {
+        AbortInvalidWildcard(test_name);
+      }
+    } else if (index == 0) {  // Wildcard at beginning of test name, check only
+                              // right side
+      if (test_name_copy[index + 1] != '.') {
+        AbortInvalidWildcard(test_name);
+      }
+    } else if (index ==
+               test_name_copy.length() -
+                   1) {  // Wildcard at end of test name, check only left side
+      if (test_name_copy[index - 1] != '.') {
+        AbortInvalidWildcard(test_name);
+      }
+    }
+    test_name_copy = test_name_copy.substr(index + 1);
+  }
+}
 
 static void ReplaceAll(std::string& input, std::string replace_word,
                        std::string replace_by) {
@@ -120,7 +157,7 @@ static void Normalize(std::string& input) {
 }
 
 // Sets up a failure message properly for our failure lists.
-static TestStatus FormatFailureMessage(TestStatus& input) {
+static TestStatus FormatFailureMessage(const TestStatus& input) {
   // Make copy just this once, as we need to modify it for our failure lists.
   std::string formatted_failure_message = input.failure_message();
   // Remove newlines
@@ -159,7 +196,10 @@ bool CheckSetEmpty(const absl::btree_map<std::string, TestStatus>& set_to_check,
     std::ofstream os{std::string(filename)};
     if (os) {
       for (const auto& pair : set_to_check) {
-        os << pair.first << " # " << pair.second.failure_message() << "\n";
+        string name = pair.second.wildcarded_equivalent().empty()
+                          ? pair.first
+                          : pair.second.wildcarded_equivalent();
+        os << name << " # " << pair.second.failure_message() << "\n";
       }
     } else {
       absl::StrAppendFormat(output,
@@ -175,6 +215,10 @@ bool CheckSetEmpty(const absl::btree_map<std::string, TestStatus>& set_to_check,
 
 namespace google {
 namespace protobuf {
+
+void FailureListTrieNode::AddChild(const std::string& data) {
+  children_.push_back(std::make_unique<FailureListTrieNode>(data));
+}
 
 ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
     ConformanceLevel level, conformance::WireFormat input_format,
@@ -348,13 +392,25 @@ ConformanceResponse ConformanceTestSuite::TruncateResponse(
 }
 
 void ConformanceTestSuite::ReportSuccess(const TestStatus& test) {
-  if (expected_to_fail_.erase(test.name()) != 0) {
+  if (expected_to_fail_.contains(test.name())) {
     absl::StrAppendFormat(
         &output_,
         "ERROR: test %s is in the failure list, but test succeeded.  "
         "Remove it from the failure list.\n",
         test.name());
-    unexpected_succeeding_tests_[test.name()] = test;
+    unexpected_succeeding_tests_[test.name()] = expected_to_fail_[test.name()];
+    expected_to_fail_.erase(test.name());
+  } else if (expected_to_fail_wildcarded_.contains(test.name())) {
+    absl::StrAppendFormat(
+        &output_,
+        "ERROR: test %s (expanded from wildcarded: %s) is in the "
+        "failure list, but test succeeded.  "
+        "Remove the wildcarded equivalent from the failure list.\n",
+        test.name(),
+        expected_to_fail_wildcarded_[test.name()].wildcarded_equivalent());
+    unexpected_succeeding_tests_wildcarded_[test.name()] =
+        expected_to_fail_wildcarded_[test.name()];
+    expected_to_fail_wildcarded_.erase(test.name());
   }
   successes_++;
 }
@@ -363,11 +419,18 @@ void ConformanceTestSuite::ReportFailure(TestStatus& test,
                                          ConformanceLevel level,
                                          const ConformanceRequest& request,
                                          const ConformanceResponse& response) {
-  if (expected_to_fail_.contains(test.name())) {
+  bool expected_to_fail_contains_test = expected_to_fail_.contains(test.name());
+  bool expected_to_fail_wildcarded_contains_test =
+      expected_to_fail_wildcarded_.contains(test.name());
+  if (expected_to_fail_contains_test ||
+      expected_to_fail_wildcarded_contains_test) {
     // Make copy just this once, as we need to modify them for comparison.
     // Failure message from the failure list.
     string expected_failure_message =
-        expected_to_fail_[test.name()].failure_message();
+        expected_to_fail_contains_test
+            ? expected_to_fail_[test.name()].failure_message()
+            : expected_to_fail_wildcarded_[test.name()].failure_message();
+
     // Actual failure message from the test run.
     std::string actual_failure_message = test.failure_message();
 
@@ -383,12 +446,22 @@ void ConformanceTestSuite::ReportFailure(TestStatus& test,
       // to it the same failure message that was in the list.
       TestStatus incorrect_failure_message;
       incorrect_failure_message.set_name(test.name());
-      incorrect_failure_message.set_failure_message(
-          expected_to_fail_[test.name()].failure_message());
+      incorrect_failure_message.set_failure_message(expected_failure_message);
 
-      expected_failure_messages_[test.name()] = incorrect_failure_message;
+      if (expected_to_fail_wildcarded_contains_test) {
+        incorrect_failure_message.set_wildcarded_equivalent(
+            expected_to_fail_wildcarded_[test.name()].wildcarded_equivalent());
+      }
+
+      if (expected_to_fail_contains_test) {
+        expected_failure_messages_[test.name()] = incorrect_failure_message;
+      } else {
+        expected_failure_messages_wildcarded_[test.name()] =
+            incorrect_failure_message;
+      }
     }
     expected_to_fail_.erase(test.name());
+    expected_to_fail_wildcarded_.erase(test.name());
     if (!verbose_) return;
   } else if (level == RECOMMENDED && !enforce_recommended_) {
     absl::StrAppendFormat(&output_, "WARNING, test=%s: ", test.name());
@@ -518,6 +591,24 @@ bool ConformanceTestSuite::RunTest(const std::string& test_name,
     ABSL_LOG(FATAL) << "Duplicated test name: " << test_name;
   }
 
+  string wildcarded_equivalent;
+  // In essence, find what wildcarded test names expand to.
+  if (root_->WalkDownMatch(test_name, wildcarded_equivalent)) {
+    if (!expected_to_fail_.contains(test_name)) {
+      unmatched_wildcards_.erase(wildcarded_equivalent);
+      string saved_message = saved_failure_messages_[wildcarded_equivalent];
+      TestStatus expansion;
+      expansion.set_name(test_name);
+      expansion.set_wildcarded_equivalent(wildcarded_equivalent);
+      expansion.set_failure_message(saved_message);
+      expected_to_fail_wildcarded_[test_name] = expansion;
+    } else {
+      ABSL_LOG(FATAL) << "Duplicated test name  " << test_name
+                      << "  in failure list from wildcard:  "
+                      << wildcarded_equivalent;
+    }
+  }
+
   std::string serialized_request;
   std::string serialized_response;
   request.SerializeToString(&serialized_request);
@@ -597,8 +688,81 @@ std::string ConformanceTestSuite::WireFormatToString(WireFormat wire_format) {
   return "";
 }
 
+void FailureListTrieNode::Insert(const std::string& test_name) {
+  while (true) {
+    string section = test_name.substr(0, test_name.find('.'));
+
+    // Extracted last section -> no more '.' -> test_name_copy will be equal to
+    // section
+    if (test_name == section) {
+      AddChild(section);
+      return;
+    }
+    string test_name_copy = test_name.substr(section.length() + 1);
+    for (auto&& child : children_) {
+      if (child->data_ == section) {
+        return child->Insert(test_name_copy);
+      }
+    }
+    // No match
+    AddChild(section);
+    return children_.back()->Insert(test_name_copy);
+  }
+}
+
+bool FailureListTrieNode::WalkDownMatch(const string& test_name,
+                                        string& wildcarded_equivalent) {
+  string test_name_copy = test_name;
+  while (true) {
+    string section = test_name_copy.substr(0, test_name_copy.find('.'));
+    if (section != test_name_copy) {
+      test_name_copy = test_name_copy.substr(section.length() + 1);
+    }
+
+    for (auto&& child : children_) {
+      if (child->data_ == section || child->data_ == "*") {
+        string appended = child->data_ == "*" ? "*" : section;
+        // Extracted last section -> no more '.' -> test_name_copy will be
+        // equal to section
+        if (test_name_copy == section) {
+          absl::StrAppend(&wildcarded_equivalent, appended);
+          return true;
+        } else {
+          string wildcarded_send_down =
+              absl::StrCat(wildcarded_equivalent, appended, ".");
+          if (child->WalkDownMatch(test_name_copy, wildcarded_send_down)) {
+            wildcarded_equivalent = wildcarded_send_down;
+            return true;
+          }
+        }
+      }
+    }
+    // No match
+    wildcarded_equivalent = "";
+    return false;
+  }
+}
+
+void ConformanceTestSuite::CheckDuplicates(const std::string& test_name) {
+  string wild;
+  if (expected_to_fail_.contains(test_name)) {
+    ABSL_LOG(FATAL) << "Duplicated test name in failure list: " << test_name;
+  } else if (root_->WalkDownMatch(test_name, wild)) {
+    ABSL_LOG(FATAL) << "Duplicated test name " << test_name
+                    << " in failure list from wildcard: " << wild;
+  }
+}
+
 void ConformanceTestSuite::AddExpectedFailedTest(const TestStatus& failure) {
-  expected_to_fail_[failure.name()] = failure;
+  CheckDuplicates(failure.name());
+  if (!ContainsWildcard(failure.name())) {
+    expected_to_fail_[failure.name()] = failure;
+  } else {
+    CheckInvalidWildcard(failure.name());
+    root_->Insert(failure.name());
+    unmatched_wildcards_[failure.name()] = failure;
+    saved_failure_messages_[failure.name()] = failure.failure_message();
+  }
 }
 
 bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
@@ -606,6 +770,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
                                     const std::string& filename,
                                     conformance::FailureSet* failure_list) {
   runner_ = runner;
+  root_ = std::make_unique<FailureListTrieNode>("dummy");
   successes_ = 0;
   expected_failures_ = 0;
   skipped_.clear();
@@ -644,12 +809,28 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
           output_dir_, &output_)) {
     ok = false;
   }
+
+  // Equivalent of expected_to_fail_ but for wildcarded test names.
+  if (!CheckSetEmpty(
+          unmatched_wildcards_, "unmatched_wildcards.txt",
+          absl::StrCat(
+              "These wildcarded test names were listed in the failure list, "
+              "but they didn't match any test name.  Remove them from the "
+              "failure list by running from the root of your workspace:\n"
+              "  bazel run "
+              "//google/protobuf/conformance:update_failure_list -- ",
+              failure_list_filename_, " --remove ", output_dir_,
+              "unmatched_wildcards.txt"),
+          output_dir_, &output_)) {
+    ok = false;
+  }
+
   if (!CheckSetEmpty(
           expected_failure_messages_, "expected_failure_messages.txt",
           absl::StrCat(
-              "These tests were listed in the failure list, but their failure "
-              "messages do not match.  Remove them from the failure list "
-              "by running:\n"
+              "These tests were listed in the failure list, but their "
+              "failure messages do not match.  Remove them from the failure "
+              "list by running:\n"
               "  bazel run ",
               "//google/protobuf/conformance:update_failure_list -- ",
               failure_list_filename_, " --remove ", output_dir_,
@@ -657,6 +838,24 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
           output_dir_, &output_)) {
     ok = false;
   }
+
+  // Equivalent of expected_failure_messages_ but for wildcarded test names.
+  if (!CheckSetEmpty(
+          expected_failure_messages_wildcarded_,
+          "expected_failure_messages_wildcarded.txt",
+          absl::StrCat(
+              "These tests (expanded from wildcard(s)) were listed in the "
+              "failure list, but their failure "
+              "messages do not match.  Remove their wildcarded equivalent "
+              "from the failure list by running:\n"
+              "  bazel run ",
+              "//google/protobuf/conformance:update_failure_list -- ",
+              failure_list_filename_, " --remove ", output_dir_,
+              "expected_failure_messages_wildcarded.txt"),
+          output_dir_, &output_)) {
+    ok = false;
+  }
+
   if (!CheckSetEmpty(
           unexpected_failure_messages_, "unexpected_failure_messages.txt",
           absl::StrCat(
@@ -691,12 +890,29 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
           unexpected_succeeding_tests_, "succeeding_tests.txt",
           absl::StrCat(
               "These tests succeeded, even though they were listed in "
-              "the failure list.  Remove them from the failure list by running "
-              "from the root of your workspace:\n"
+              "the failure list.  Remove them from the failure list by "
+              "running from the root of your workspace:\n"
               "  bazel run "
               "//google/protobuf/conformance:update_failure_list -- ",
               failure_list_filename_, " --remove ", output_dir_,
               "succeeding_tests.txt"),
+          output_dir_, &output_)) {
+    ok = false;
+  }
+
+  // Equivalent of unexpected_succeeding_tests_ but for wildcarded test names.
+  if (!CheckSetEmpty(
+          unexpected_succeeding_tests_wildcarded_,
+          "succeeding_tests_wildcarded.txt",
+          absl::StrCat(
+              "These tests (expanded from wildcard(s)) succeeded, even "
+              "though they were listed in the failure list.  Remove their "
+              "wildcarded equivalent from the failure list by running from the"
+              "root of your workspace:\n"
+              "  bazel run "
+              "//google/protobuf/conformance:update_failure_list -- ",
+              failure_list_filename_, " --remove ", output_dir_,
+              "succeeding_tests_wildcarded.txt"),
           output_dir_, &output_)) {
     ok = false;
   }

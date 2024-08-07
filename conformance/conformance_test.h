@@ -99,6 +99,27 @@ class ForkPipeRunner : public ConformanceTestRunner {
   std::string current_test_name_;
 };
 
+class FailureListTrieNode {
+ public:
+  std::string data_;
+  std::vector<std::unique_ptr<FailureListTrieNode>> children_;
+
+  FailureListTrieNode() : data_("") {}
+  explicit FailureListTrieNode(std::string data) : data_(data) {}
+
+  void AddChild(const std::string& data);
+
+  void Insert(const std::string& test_name);
+
+  // Returns true if 'test_name' matches a wildcarded equivalent (this class
+  // is intended for wildcarded test names, but exact test names can also be
+  // matched) starting from this node. If it does, 'wildcarded_equivalent' is
+  // set to its wildcarded equivalent. Returns false if no match is found, and
+  // expect 'wildcarded_equivalent' to be empty.
+  bool WalkDownMatch(const std::string& test_name,
+                     std::string& wildcarded_equivalent);
+};
+
 // Class representing the test suite itself.  To run it, implement your own
 // class derived from ConformanceTestRunner, class derived from
 // ConformanceTestSuite and then write code like:
@@ -294,9 +315,14 @@ class ConformanceTestSuite {
 
   void AddExpectedFailedTest(const conformance::TestStatus& failure);
 
+  // Will halt run of the test suite if we have duplicated test names in the
+  // failure list (from wildcarded test names as well).
+  void CheckDuplicates(const std::string& test_name);
+
   virtual void RunSuiteImpl() = 0;
 
   ConformanceTestRunner* runner_;
+  std::unique_ptr<FailureListTrieNode> root_;
   std::string testee_;
   int successes_;
   int expected_failures_;
@@ -318,11 +344,22 @@ class ConformanceTestSuite {
   // failed yet.
   absl::btree_map<std::string, conformance::TestStatus> expected_to_fail_;
 
+  // The set of test names (expanded from wildcard(s)) that are expected to fail
+  // in this run, but haven't failed yet.
+  absl::btree_map<std::string, conformance::TestStatus>
+      expected_to_fail_wildcarded_;
+
   // The set of tests that failed because their failure message did not match
   // the actual failure message. These are failure messages that may need to be
   // removed from our failure lists.
   absl::btree_map<std::string, conformance::TestStatus>
       expected_failure_messages_;
+
+  // The set of tests (expanded from wildcard(s)) that failed because their
+  // failure message did not match the actual failure message. These are failure
+  // messages that may need to be removed from our failure lists.
+  absl::btree_map<std::string, conformance::TestStatus>
+      expected_failure_messages_wildcarded_;
 
   // The set of test names that have been run.  Used to ensure that there are no
   // duplicate names in the suite.
@@ -338,14 +375,26 @@ class ConformanceTestSuite {
   absl::btree_map<std::string, conformance::TestStatus>
       unexpected_succeeding_tests_;
 
+  // The set of tests (expanded from wildcard(s)) that succeeded, but weren't
+  // expected to: They were present in our failure lists, but managed to
+  // succeed.
+  absl::btree_map<std::string, conformance::TestStatus>
+      unexpected_succeeding_tests_wildcarded_;
+
   // The set of tests that failed because their failure message did not match
   // the actual failure message. These are failure messages that may need to be
   // added to our failure lists.
   absl::btree_map<std::string, conformance::TestStatus>
       unexpected_failure_messages_;
 
+  // The set of test names (wildcarded) that did not match any actual test name.
+  absl::btree_map<std::string, conformance::TestStatus> unmatched_wildcards_;
+
   // The set of tests that the testee opted out of;
   absl::btree_map<std::string, conformance::TestStatus> skipped_;
+
+  // Allows us to remove from unmatched_wildcards_.
+  absl::btree_map<std::string, std::string> saved_failure_messages_;
 };
 
 }  // namespace protobuf
