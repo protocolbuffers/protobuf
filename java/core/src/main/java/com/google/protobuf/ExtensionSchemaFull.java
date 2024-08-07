@@ -16,12 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings("unchecked")
 final class ExtensionSchemaFull extends ExtensionSchema<FieldDescriptor> {
 
   private static final long EXTENSION_FIELD_OFFSET = getExtensionsFieldOffset();
 
-  private static <T> long getExtensionsFieldOffset() {
+  private static long getExtensionsFieldOffset() {
     try {
       Field field = GeneratedMessage.ExtendableMessage.class.getDeclaredField("extensions");
       return UnsafeUtil.objectFieldOffset(field);
@@ -36,6 +35,7 @@ final class ExtensionSchemaFull extends ExtensionSchema<FieldDescriptor> {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public FieldSet<FieldDescriptor> getExtensions(Object message) {
     return (FieldSet<FieldDescriptor>) UnsafeUtil.getObject(message, EXTENSION_FIELD_OFFSET);
   }
@@ -289,6 +289,7 @@ final class ExtensionSchemaFull extends ExtensionSchema<FieldDescriptor> {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   void serializeExtension(Writer writer, Map.Entry<?, ?> extension) throws IOException {
     FieldDescriptor descriptor = (FieldDescriptor) extension.getKey();
     if (descriptor.isRepeated()) {
