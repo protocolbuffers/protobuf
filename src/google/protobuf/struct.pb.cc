@@ -517,7 +517,7 @@ PROTOBUF_NOINLINE void Struct::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // map<string, .google.protobuf.Value> fields = 1;
-             {
+            {
               total_size +=
                   1 * ::google::protobuf::internal::FromIntSize(this_._internal_fields_size());
               for (const auto& entry : this_._internal_fields()) {
@@ -1190,7 +1190,7 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.Value values = 1;
-             {
+            {
               total_size += 1UL * this_._internal_values_size();
               for (const auto& msg : this_._internal_values()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);

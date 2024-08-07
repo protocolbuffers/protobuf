@@ -286,7 +286,7 @@ PROTOBUF_NOINLINE void FieldMask::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated string paths = 1;
-             {
+            {
               total_size +=
                   1 * ::google::protobuf::internal::FromIntSize(this_._internal_paths().size());
               for (int i = 0, n = this_._internal_paths().size(); i < n; ++i) {

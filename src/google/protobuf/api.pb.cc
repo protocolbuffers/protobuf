@@ -567,21 +567,21 @@ PROTOBUF_NOINLINE void Api::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.Method methods = 2;
-             {
+            {
               total_size += 1UL * this_._internal_methods_size();
               for (const auto& msg : this_._internal_methods()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated .google.protobuf.Option options = 3;
-             {
+            {
               total_size += 1UL * this_._internal_options_size();
               for (const auto& msg : this_._internal_options()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated .google.protobuf.Mixin mixins = 6;
-             {
+            {
               total_size += 1UL * this_._internal_mixins_size();
               for (const auto& msg : this_._internal_mixins()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -987,7 +987,7 @@ PROTOBUF_NOINLINE void Method::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.Option options = 6;
-             {
+            {
               total_size += 1UL * this_._internal_options_size();
               for (const auto& msg : this_._internal_options()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
