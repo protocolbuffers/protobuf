@@ -14,7 +14,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <limits>
 #include <memory>
 #include <string>
 #include <utility>
@@ -29,6 +28,7 @@
 #include "google/protobuf/compiler/cpp/message_layout_helper.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -186,7 +186,9 @@ class MessageGenerator {
   int HasWordIndex(const FieldDescriptor* field) const;
   std::vector<uint32_t> RequiredFieldsBitMask() const;
 
-  // Helper function to reduce nesting levels of deep Emit calls.
+  // Helper functions to reduce nesting levels of deep Emit calls.
+  void EmitCheckAndUpdateByteSizeForField(const FieldDescriptor* field,
+                                          io::Printer* p) const;
   void EmitUpdateByteSizeForField(const FieldDescriptor* field, io::Printer* p,
                                   int& cached_has_word_index) const;
 

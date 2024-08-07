@@ -929,7 +929,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated string file_to_generate = 1;
-             {
+            {
               total_size +=
                   1 * ::google::protobuf::internal::FromIntSize(this_._internal_file_to_generate().size());
               for (int i = 0, n = this_._internal_file_to_generate().size(); i < n; ++i) {
@@ -938,14 +938,14 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
               }
             }
             // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-             {
+            {
               total_size += 1UL * this_._internal_proto_file_size();
               for (const auto& msg : this_._internal_proto_file()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
-             {
+            {
               total_size += 2UL * this_._internal_source_file_descriptors_size();
               for (const auto& msg : this_._internal_source_file_descriptors()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -1653,7 +1653,7 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-             {
+            {
               total_size += 1UL * this_._internal_file_size();
               for (const auto& msg : this_._internal_file()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);

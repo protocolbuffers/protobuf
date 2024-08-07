@@ -25,6 +25,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/functional/any_invocable.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
@@ -222,22 +223,42 @@ bool ShouldEmitNonDefaultCheck(const FieldDescriptor* field) {
 // considered non-default (will be sent over the wire), for message types
 // without true field presence. Should only be called if
 // !HasHasbit(field).
-bool MayEmitIfNonDefaultCheck(io::Printer* p, const std::string& prefix,
-                              const FieldDescriptor* field) {
+void MayEmitIfNonDefaultCheck(io::Printer* p, const std::string& prefix,
+                              const FieldDescriptor* field,
+                              absl::AnyInvocable<void()> emit_body) {
   ABSL_CHECK(!HasHasbit(field));
-  if (!ShouldEmitNonDefaultCheck(field)) return false;
 
-  // SUBTLE: |format| must be a raw string without newline.
-  // io::Printer::Emit treats the format string as a "raw string" if it doesn't
-  // contain multiple lines. Note that a string of the form "\n($condition$)\n"
-  // (i.e. newline characters are present; there is only one non-empty line)
-  // will still be treated as a multi-line string.
-  //
-  // io::Printer::Emit will print a newline if the input is a multi-line string.
-  // In this case, we prefer to let the caller handle if-statement braces.
-  p->Emit({{"condition", [&] { EmitNonDefaultCheck(p, prefix, field); }}},
-          /*format=*/"if ($condition$)");
-  return true;
+  if (ShouldEmitNonDefaultCheck(field)) {
+    p->Emit(
+        {
+            {"condition", [&] { EmitNonDefaultCheck(p, prefix, field); }},
+            {"emit_body", [&] { emit_body(); }},
+        },
+        R"cc(
+          if ($condition$) {
+            $emit_body$;
+          }
+        )cc");
+  } else {
+    // In repeated fields, the same variable name may be emitted multiple
+    // times, hence the need for emitting braces even when the if condition is
+    // not necessary, so that the code looks like:
+    // {
+    //   int tmpvar = ...;
+    //   total += tmpvar;
+    // }
+    // {
+    //   int tmpvar = ...;
+    //   total += tmpvar;
+    // }
+    p->Emit({{"emit_body", [&] { emit_body(); }}},
+            R"cc(
+              {
+                //~ Force newline.
+                $emit_body$;
+              }
+            )cc");
+  }
 }
 
 bool HasInternalHasMethod(const FieldDescriptor* field) {
@@ -1213,13 +1234,42 @@ class AccessorVerifier {
 
 }  // namespace
 
+void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
+    const FieldDescriptor* field, io::Printer* p) const {
+  absl::AnyInvocable<void()> emit_body = [&] {
+    field_generators_.get(field).GenerateByteSize(p);
+  };
+
+  if (!HasHasbit(field)) {
+    MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body));
+    return;
+  }
+  if (field->options().weak()) {
+    p->Emit({{"emit_body", [&] { emit_body(); }}},
+            R"cc(
+              if (has_$name$()) {
+                $emit_body$;
+              }
+            )cc");
+    return;
+  }
+
+  int has_bit_index = has_bit_indices_[field->index()];
+  p->Emit({{"mask",
+            absl::StrFormat("0x%08xu", uint32_t{1} << (has_bit_index % 32))},
+           {"emit_body", [&] { emit_body(); }}},
+          R"cc(
+            if (cached_has_bits & $mask$) {
+              $emit_body$;
+            }
+          )cc");
+}
+
 void MessageGenerator::EmitUpdateByteSizeForField(
     const FieldDescriptor* field, io::Printer* p,
     int& cached_has_word_index) const {
   p->Emit(
       {{"comment", [&] { PrintFieldComment(Formatter{p}, field, options_); }},
-       {"update_byte_size_for_field",
-        [&] { field_generators_.get(field).GenerateByteSize(p); }},
        {"update_cached_has_bits",
         [&] {
           if (!HasHasbit(field) || field->options().weak()) return;
@@ -1234,31 +1284,12 @@ void MessageGenerator::EmitUpdateByteSizeForField(
                     cached_has_bits = this_.$has_bits$[$index$];
                   )cc");
         }},
-       {"check_if_field_present",
-        [&] {
-          if (!HasHasbit(field)) {
-            MayEmitIfNonDefaultCheck(p, "this_.", field);
-            return;
-          }
-
-          if (field->options().weak()) {
-            p->Emit("if (has_$name$())");
-            return;
-          }
-
-          int has_bit_index = has_bit_indices_[field->index()];
-          p->Emit(
-              {{"mask", absl::StrFormat("0x%08xu",
-                                        uint32_t{1} << (has_bit_index % 32))}},
-              "if (cached_has_bits & $mask$)");
-        }}},
+       {"check_and_update_byte_size_for_field",
+        [&]() { EmitCheckAndUpdateByteSizeForField(field, p); }}},
       R"cc(
         $comment$;
         $update_cached_has_bits$;
-        $check_if_field_present$ {
-          //~ Force newline.
-          $update_byte_size_for_field$;
-        }
+        $check_and_update_byte_size_for_field$;
       )cc");
 }
 
@@ -4007,16 +4038,9 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         } else if (field->is_optional() && !HasHasbit(field)) {
           // Merge semantics without true field presence: primitive fields are
           // merged only if non-zero (numeric) or non-empty (string).
-          bool emitted_check = MayEmitIfNonDefaultCheck(p, "from.", field);
-          if (emitted_check) {
-            p->Emit(" {\n");
-            p->Indent();
-          }
-          generator.GenerateMergingCode(p);
-          if (emitted_check) {
-            p->Outdent();
-            p->Emit("}\n");
-          }
+          MayEmitIfNonDefaultCheck(p, "from.", field, /*emit_body=*/[&]() {
+            generator.GenerateMergingCode(p);
+          });
         } else if (field->options().weak() ||
                    cached_has_word_index != HasWordIndex(field)) {
           // Check hasbit, not using cached bits.
@@ -4283,16 +4307,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
           }
         )cc");
   } else if (field->is_optional()) {
-    bool emitted_check = MayEmitIfNonDefaultCheck(p, "this_.", field);
-    if (emitted_check) {
-      p->Emit(" {\n");
-      p->Indent();
-    }
-    emit_body();
-    if (emitted_check) {
-      p->Outdent();
-      p->Emit("}\n");
-    }
+    MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body));
   } else {
     emit_body();
   }

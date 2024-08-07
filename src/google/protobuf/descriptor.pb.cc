@@ -2779,7 +2779,7 @@ PROTOBUF_NOINLINE void FileDescriptorSet::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.FileDescriptorProto file = 1;
-             {
+            {
               total_size += 1UL * this_._internal_file_size();
               for (const auto& msg : this_._internal_file()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -3265,7 +3265,7 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated string dependency = 3;
-             {
+            {
               total_size +=
                   1 * ::google::protobuf::internal::FromIntSize(this_._internal_dependency().size());
               for (int i = 0, n = this_._internal_dependency().size(); i < n; ++i) {
@@ -3274,35 +3274,35 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
               }
             }
             // repeated .google.protobuf.DescriptorProto message_type = 4;
-             {
+            {
               total_size += 1UL * this_._internal_message_type_size();
               for (const auto& msg : this_._internal_message_type()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
-             {
+            {
               total_size += 1UL * this_._internal_enum_type_size();
               for (const auto& msg : this_._internal_enum_type()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated .google.protobuf.ServiceDescriptorProto service = 6;
-             {
+            {
               total_size += 1UL * this_._internal_service_size();
               for (const auto& msg : this_._internal_service()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated .google.protobuf.FieldDescriptorProto extension = 7;
-             {
+            {
               total_size += 1UL * this_._internal_extension_size();
               for (const auto& msg : this_._internal_extension()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated int32 public_dependency = 10;
-             {
+            {
               std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
                   this_._internal_public_dependency());
               std::size_t tag_size = std::size_t{1} *
@@ -3310,7 +3310,7 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
               total_size += tag_size + data_size;
             }
             // repeated int32 weak_dependency = 11;
-             {
+            {
               std::size_t data_size = ::_pbi::WireFormatLite::Int32Size(
                   this_._internal_weak_dependency());
               std::size_t tag_size = std::size_t{1} *
@@ -4414,56 +4414,56 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.FieldDescriptorProto field = 2;
-             {
+            {
               total_size += 1UL * this_._internal_field_size();
               for (const auto& msg : this_._internal_field()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated .google.protobuf.DescriptorProto nested_type = 3;
-             {
+            {
               total_size += 1UL * this_._internal_nested_type_size();
               for (const auto& msg : this_._internal_nested_type()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
-             {
+            {
               total_size += 1UL * this_._internal_enum_type_size();
               for (const auto& msg : this_._internal_enum_type()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
-             {
+            {
               total_size += 1UL * this_._internal_extension_range_size();
               for (const auto& msg : this_._internal_extension_range()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated .google.protobuf.FieldDescriptorProto extension = 6;
-             {
+            {
               total_size += 1UL * this_._internal_extension_size();
               for (const auto& msg : this_._internal_extension()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
-             {
+            {
               total_size += 1UL * this_._internal_oneof_decl_size();
               for (const auto& msg : this_._internal_oneof_decl()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;
-             {
+            {
               total_size += 1UL * this_._internal_reserved_range_size();
               for (const auto& msg : this_._internal_reserved_range()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated string reserved_name = 10;
-             {
+            {
               total_size +=
                   1 * ::google::protobuf::internal::FromIntSize(this_._internal_reserved_name().size());
               for (int i = 0, n = this_._internal_reserved_name().size(); i < n; ++i) {
@@ -5205,14 +5205,14 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
-             {
+            {
               total_size += 1UL * this_._internal_declaration_size();
               for (const auto& msg : this_._internal_declaration()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-             {
+            {
               total_size += 2UL * this_._internal_uninterpreted_option_size();
               for (const auto& msg : this_._internal_uninterpreted_option()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -6673,21 +6673,21 @@ PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
-             {
+            {
               total_size += 1UL * this_._internal_value_size();
               for (const auto& msg : this_._internal_value()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
-             {
+            {
               total_size += 1UL * this_._internal_reserved_range_size();
               for (const auto& msg : this_._internal_reserved_range()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated string reserved_name = 5;
-             {
+            {
               total_size +=
                   1 * ::google::protobuf::internal::FromIntSize(this_._internal_reserved_name().size());
               for (int i = 0, n = this_._internal_reserved_name().size(); i < n; ++i) {
@@ -7340,7 +7340,7 @@ PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.MethodDescriptorProto method = 2;
-             {
+            {
               total_size += 1UL * this_._internal_method_size();
               for (const auto& msg : this_._internal_method()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -8422,7 +8422,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-             {
+            {
               total_size += 2UL * this_._internal_uninterpreted_option_size();
               for (const auto& msg : this_._internal_uninterpreted_option()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -8973,7 +8973,7 @@ PROTOBUF_NOINLINE void MessageOptions::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-             {
+            {
               total_size += 2UL * this_._internal_uninterpreted_option_size();
               for (const auto& msg : this_._internal_uninterpreted_option()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -10107,7 +10107,7 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
-             {
+            {
               std::size_t data_size =
                   ::_pbi::WireFormatLite::EnumSize(this_._internal_targets());
               std::size_t tag_size = std::size_t{2} *
@@ -10115,14 +10115,14 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
               total_size += data_size + tag_size;
             }
             // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
-             {
+            {
               total_size += 2UL * this_._internal_edition_defaults_size();
               for (const auto& msg : this_._internal_edition_defaults()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
             // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-             {
+            {
               total_size += 2UL * this_._internal_uninterpreted_option_size();
               for (const auto& msg : this_._internal_uninterpreted_option()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -10521,7 +10521,7 @@ PROTOBUF_NOINLINE void OneofOptions::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-             {
+            {
               total_size += 2UL * this_._internal_uninterpreted_option_size();
               for (const auto& msg : this_._internal_uninterpreted_option()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -10877,7 +10877,7 @@ PROTOBUF_NOINLINE void EnumOptions::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-             {
+            {
               total_size += 2UL * this_._internal_uninterpreted_option_size();
               for (const auto& msg : this_._internal_uninterpreted_option()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -11274,7 +11274,7 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-             {
+            {
               total_size += 2UL * this_._internal_uninterpreted_option_size();
               for (const auto& msg : this_._internal_uninterpreted_option()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -11632,7 +11632,7 @@ PROTOBUF_NOINLINE void ServiceOptions::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-             {
+            {
               total_size += 2UL * this_._internal_uninterpreted_option_size();
               for (const auto& msg : this_._internal_uninterpreted_option()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -11996,7 +11996,7 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-             {
+            {
               total_size += 2UL * this_._internal_uninterpreted_option_size();
               for (const auto& msg : this_._internal_uninterpreted_option()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -12681,7 +12681,7 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
-             {
+            {
               total_size += 1UL * this_._internal_name_size();
               for (const auto& msg : this_._internal_name()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -13735,7 +13735,7 @@ PROTOBUF_NOINLINE void FeatureSetDefaults::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault defaults = 1;
-             {
+            {
               total_size += 1UL * this_._internal_defaults_size();
               for (const auto& msg : this_._internal_defaults()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -14088,21 +14088,21 @@ PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated int32 path = 1 [packed = true];
-             {
+            {
               total_size +=
                   ::_pbi::WireFormatLite::Int32SizeWithPackedTagSize(
                       this_._internal_path(), 1,
                       this_._impl_._path_cached_byte_size_);
             }
             // repeated int32 span = 2 [packed = true];
-             {
+            {
               total_size +=
                   ::_pbi::WireFormatLite::Int32SizeWithPackedTagSize(
                       this_._internal_span(), 1,
                       this_._impl_._span_cached_byte_size_);
             }
             // repeated string leading_detached_comments = 6;
-             {
+            {
               total_size +=
                   1 * ::google::protobuf::internal::FromIntSize(this_._internal_leading_detached_comments().size());
               for (int i = 0, n = this_._internal_leading_detached_comments().size(); i < n; ++i) {
@@ -14356,7 +14356,7 @@ PROTOBUF_NOINLINE void SourceCodeInfo::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
-             {
+            {
               total_size += 1UL * this_._internal_location_size();
               for (const auto& msg : this_._internal_location()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -14668,7 +14668,7 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated int32 path = 1 [packed = true];
-             {
+            {
               total_size +=
                   ::_pbi::WireFormatLite::Int32SizeWithPackedTagSize(
                       this_._internal_path(), 1,
@@ -14937,7 +14937,7 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
            {
             // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
-             {
+            {
               total_size += 1UL * this_._internal_annotation_size();
               for (const auto& msg : this_._internal_annotation()) {
                 total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
