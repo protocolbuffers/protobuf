@@ -514,7 +514,7 @@ void ConformanceTestSuite::VerifyResponse(
 bool ConformanceTestSuite::RunTest(const std::string& test_name,
                                    const ConformanceRequest& request,
                                    ConformanceResponse* response) {
-  if (test_names_.insert(test_name).second == false) {
+  if (test_names_ran_.insert(test_name).second == false) {
     ABSL_LOG(FATAL) << "Duplicated test name: " << test_name;
   }
 
@@ -525,35 +525,40 @@ bool ConformanceTestSuite::RunTest(const std::string& test_name,
   uint32_t len = internal::little_endian::FromHost(
       static_cast<uint32_t>(serialized_request.size()));
 
-  if (!debug_) {  // Not in debug mode. Continue.
-  } else if (debug_test_names_->erase(test_name) == 1) {
-    std::string octal = ProduceOctalSerialized(serialized_request, len);
-    std::string full_filename = WriteToFile(octal, output_dir_, test_name);
-    if (!full_filename.empty()) {
-      absl::StrAppendFormat(
-          &output_, "Produced octal serialized request file for test %s\n",
-          test_name);
-      absl::StrAppendFormat(
-          &output_,
-          "  To pipe the "
-          "serialized request directly to "
-          "the "
-          "testee run from the root of your workspace:\n    printf $("
-          "<\"%s\") | "
-          "./bazel-bin/google/protobuf/conformance/%s\n\n",
-          full_filename, testee_);
-      absl::StrAppendFormat(
-          &output_,
-          "  To inspect the wire format of the serialized request run "
-          "(Disclaimer: This may not work properly on non-Linux platforms):\n  "
-          "  "
-          "contents=$(<\"%s\"); sub=$(cut -d \\\\ -f 6- <<< "
-          "$contents) ; printf \"\\\\${sub}\" | protoscope \n\n\n",
-          full_filename);
+  if (isolated_) {
+    if (names_to_test_.erase(test_name) ==
+        0) {  // Tests were asked to be run in isolated mode, but this test was
+              // not asked to be run.
+      expected_to_fail_.erase(test_name);
+      return false;
     }
-  } else {  // Test is not ran, as it was not asked to be debugged.
-    expected_to_fail_.erase(test_name);
-    return false;
+    if (debug_) {
+      std::string octal = ProduceOctalSerialized(serialized_request, len);
+      std::string full_filename = WriteToFile(octal, output_dir_, test_name);
+      if (!full_filename.empty()) {
+        absl::StrAppendFormat(
+            &output_, "Produced octal serialized request file for test %s\n",
+            test_name);
+        absl::StrAppendFormat(
+            &output_,
+            "  To pipe the "
+            "serialized request directly to "
+            "the "
+            "testee run from the root of your workspace:\n    printf $("
+            "<\"%s\") | %s\n\n",
+            full_filename, testee_);
+        absl::StrAppendFormat(
+            &output_,
+            "  To inspect the wire format of the serialized request with "
+            "protoscope run "
+            "(Disclaimer: This may not work properly on non-Linux "
+            "platforms):\n  "
+            "  "
+            "contents=$(<\"%s\"); sub=$(cut -d \\\\ -f 6- <<< "
+            "$contents) ; printf \"\\\\${sub}\" | protoscope \n\n\n",
+            full_filename);
+      }
+    }
   }
 
   response->set_protobuf_payload(serialized_request);
@@ -604,7 +609,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   successes_ = 0;
   expected_failures_ = 0;
   skipped_.clear();
-  test_names_.clear();
+  test_names_ran_.clear();
   unexpected_failing_tests_.clear();
   unexpected_succeeding_tests_.clear();
 
@@ -618,6 +623,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   for (const TestStatus& failure : failure_list->test()) {
     AddExpectedFailedTest(failure);
   }
+
   RunSuiteImpl();
 
   if (*output_dir_.rbegin() != '/') {
