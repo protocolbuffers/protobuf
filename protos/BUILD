@@ -54,16 +54,6 @@
 #     ],
 # )
 #
-# cc_library(
-#     name = "protos_extension_lock",
-#     hdrs = ["protos_extension_lock.h"],
-#     copts = UPB_DEFAULT_CPPOPTS,
-#     visibility = ["//visibility:public"],
-#     deps = [
-#         "//hpb:extension_lock",
-#     ],
-# )
-#
 # # Common support code for C++ generated code.
 # cc_library(
 #     name = "generated_protos_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
