@@ -16,6 +16,7 @@
 #include <utility>
 
 #include "absl/base/optimization.h"
+#include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
