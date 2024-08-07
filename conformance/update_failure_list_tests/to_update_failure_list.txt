@@ -1,0 +1,34 @@
+# to_update_failure_list.txt is updated by update_failure_list_test.sh and makes sure that it's equal in content to golden_failure_list.txt.
+
+Recommended.Editions_Proto2.JsonInput.BoolFieldDoubleQuotedFalse                                 # Should have failed to parse, but didn't.
+Recommended.Editions_Proto2.JsonInput.BoolFieldDoubleQuotedTrue                                                    # Should have failed to parse, but didn't.
+Recommended.Editions_Proto2.JsonInput.FieldNameDuplicate                                                                        # Should have failed to parse, but didn't.
+Recommended.Editions_Proto2.JsonInput.FieldNameDuplicateDifferentCasing2                                           # Should have failed to parse, but didn't.
+Recommended.Editions_Proto2.JsonInput.FieldNameExtension.Validator       # Expected JSON payload but got type 1
+Recommended.Editions_Proto2.JsonInput.FieldNameNotQuoted                                                           # Should have failed to parse, but didn't.
+Recommended.Editions_Proto2.JsonInput.IgnoreUnknownEnumStringValueInMapPart.ProtobufOutput                         # Output was not equivalent to reference message: added: map_string_nested_enum[key2]: FOO
+Recommended.Editions_Proto3.JsonInput.BoolFieldDoubleQuotedFalse                                                   # Should have failed to parse, but didn't.
+Recommended.Editions_Proto3.JsonInput.BoolFieldDoubleQuotedTrue                                                    # Should have failed to parse, but didn't.
+Recommended.Editions_Proto3.JsonInput.FieldMaskInvalidCharacter                                # Should have failed to parse, but didn't.
+Recommended.Editions_Proto3.JsonInput.FieldNameDuplicate                                                           # Should have failed to parse, but didn't.
+Recommended.Editions_Proto3.JsonInput.FieldNameDuplicateDifferentCasing1                                           # Should have failed to parse, but didn't.
+Recommended.Editions_Proto3.JsonInput.FieldNameDuplicateDifferentCasing2                                           # Should have failed to parse, but didn't.
+Recommended.Editions_Proto3.JsonInput.FieldNameNotQuoted                                                           # Should have failed to parse, but didn't.
+Recommended.Editions_Proto3.JsonInput.IgnoreUnknownEnumStringValueInMapPart.ProtobufOutput                         # Output was not equivalent to reference message: added: map_string_nested_enum[key2]: FOO
+Recommended.Proto2.JsonInput.BoolFieldDoubleQuotedTrue                                                             # Should have failed to parse, but didn't.
+Recommended.Proto2.JsonInput.FieldNameDuplicate                                                   # Should have failed to parse, but didn't.
+Recommended.Proto2.JsonInput.FieldNameDuplicateDifferentCasing1                                                    # Should have failed to parse, but didn't.
+Recommended.Proto2.JsonInput.MapFieldValueIsNull                                                                   # Should have failed to parse, but didn't.
+Recommended.Proto2.JsonInput.RepeatedFieldMessageElementIsNull                                                     # Should have failed to parse, but didn't.
+Recommended.Proto2.JsonInput.RepeatedFieldPrimitiveElementIsNull                                              # Should have failed to parse, but didn't.
+Recommended.Proto3.FieldMaskNumbersDontRoundTrip.JsonOutput                                                        # Should have failed to serialize, but didn't.
+Recommended.Proto3.FieldMaskPathsDontRoundTrip.JsonOutput                                                          # Should have failed to serialize, but didn't.
+Recommended.Proto3.FieldMaskTooManyUnderscore.JsonOutput         # Should have failed to serialize, but didn't.
+Recommended.Proto3.JsonInput.BoolFieldDoubleQuotedFalse                                                            # Should have failed to parse, but didn't.
+Recommended.Proto3.JsonInput.BoolFieldDoubleQuotedTrue                                                                             # Should have failed to parse, but didn't.
+Recommended.Proto3.JsonInput.FieldMaskInvalidCharacter                                                             # Should have failed to parse, but didn't.
+Recommended.Proto3.JsonInput.FieldNameDuplicate                                                                    # Should have failed to parse, but didn't.
+Recommended.Proto3.JsonInput.FieldNameDuplicateDifferentCasing1                      # Should have failed to parse, but didn't.
+Recommended.Proto3.JsonInput.FieldNameDuplicateDifferentCasing2                                                    # Should have failed to parse, but didn't.
+Recommended.Proto3.JsonInput.FieldNameNotQuoted                                                                    # Should have failed to parse, but didn't.
+Recommended.Proto3.JsonInput.RepeatedFieldMessageElementIsNull                                                     # Should have failed to parse, but didn't.
