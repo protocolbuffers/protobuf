@@ -16,13 +16,16 @@ Pod::Spec.new do |s|
   s.source_files = 'src/google/protobuf/*.{h,cc,inc}',
                    'src/google/protobuf/stubs/*.{h,cc}',
                    'src/google/protobuf/io/*.{h,cc}',
-                   'src/google/protobuf/util/*.{h,cc}'
+                   'src/google/protobuf/util/*.{h,cc}',
+                   'third_party/utf8_range/utf8_range.{h,c,cc}',
+                   'third_party/utf8_range/utf8_validity.{h,c,cc}'
 
   # Excluding all the tests in the directories above
   s.exclude_files = 'src/google/**/*_test.{h,cc,inc}',
                     'src/google/**/*_unittest.{h,cc}',
                     'src/google/protobuf/test_util*.{h,cc}',
                     'src/google/protobuf/map_lite_test_util.{h,cc}',
+                    'src/google/protobuf/map_probe_benchmark.cc',
                     'src/google/protobuf/map_test_util*.{h,cc,inc}',
                     'src/google/protobuf/reflection_tester.{h,cc}'
 
@@ -42,7 +45,9 @@ Pod::Spec.new do |s|
     # Do not let src/google/protobuf/stubs/time.h override system API
     'USE_HEADERMAP' => 'NO',
     'ALWAYS_SEARCH_USER_PATHS' => 'NO',
-    'HEADER_SEARCH_PATHS' => '"$(PODS_TARGET_SRCROOT)/src"'
+    'HEADER_SEARCH_PATHS' => '"$(PODS_TARGET_SRCROOT)/src" "$(PODS_TARGET_SRCROOT)/third_party/utf8_range"'
   }
+
+  s.dependency 'abseil', '1.20240116.1'
 
 end
