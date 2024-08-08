@@ -20,19 +20,6 @@
 # licenses(["notice"])
 #
 # cc_library(
-#     name = "repeated_field",
-#     hdrs = [
-#         "repeated_field.h",
-#         "repeated_field_iterator.h",
-#     ],
-#     copts = UPB_DEFAULT_CPPOPTS,
-#     visibility = ["//visibility:public"],
-#     deps = [
-#         "//hpb:repeated_field",
-#     ],
-# )
-#
-# cc_library(
 #     name = "protos",
 #     hdrs = [
 #         "protos.h",
