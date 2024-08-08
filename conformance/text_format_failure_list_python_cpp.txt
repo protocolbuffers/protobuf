@@ -70,3 +70,4 @@ Required.Proto3.TextFormatInput.StringLiteralBasicEscapesBytes.ProtobufOutput   
 Required.Proto3.TextFormatInput.StringLiteralBasicEscapesBytes.TextFormatOutput                                    # Output was not equivalent to reference message: modified: optional_bytes: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\t
 Required.Proto3.TextFormatInput.StringLiteralBasicEscapesString.ProtobufOutput                                     # Output was not equivalent to reference message: modified: optional_string: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\
 Required.Proto3.TextFormatInput.StringLiteralBasicEscapesString.TextFormatOutput                                   # Output was not equivalent to reference message: modified: optional_string: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\
+
