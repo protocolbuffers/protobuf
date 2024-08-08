@@ -5,8 +5,8 @@ load(
 )
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load(
-    "//protos/bazel:upb_cc_proto_library.bzl",
-    "upb_cc_proto_library",
+    "//hpb/bazel:hpb_proto_library.bzl",
+    "hpb_proto_library",
 )
 load(
     "//rust:defs.bzl",
@@ -34,7 +34,7 @@ rust_upb_proto_library(
     deps = [":bench_data_proto"],
 )
 
-upb_cc_proto_library(
+hpb_proto_library(
     name = "bench_data_upb_cc_proto",
     deps = [":bench_data_proto"],
 )
