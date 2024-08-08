@@ -22,7 +22,7 @@ jobs:
           - { name: ASAN, flags: --config=asan, runner: ubuntu-22-4core }
           - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-22-4core }
           - { name: TSAN, flags: --config=tsan, runner: ubuntu-22-4core }
-          - { name: UBSAN, flags: --config=ubsan }
+          - { name: UBSAN, flags: --config=ubsan, runner: ubuntu-22-4core }
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
         include:
           # Set defaults
