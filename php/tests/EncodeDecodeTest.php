@@ -205,6 +205,56 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("a", $m->getRepeatedField()[0]->getValue());
     }
 
+    public function testDecodeEnumMapWithUnknownStringValueThrows()
+    {
+        $this->expectException(Exception::class);
+
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"map_int32_enum\":{\"1\": \"UNKNOWN_ENUM\"}}");
+    }
+
+    public function testDecodeEnumMapWithUnknownStringValueIgnored()
+    {
+        $m = new TestMessage();
+        $m->mergeFromJsonString(
+          "{\"map_int32_enum\":{
+            \"1\": \"ONE\",
+            \"2\": \"UNKNOWN_ENUM\",
+            \"3\": \"ZERO\"
+          }}",
+          true
+        );
+
+        $this->assertSame(TestEnum::ONE, $m->getMapInt32Enum()["1"]);
+        $this->assertSame(TestEnum::ZERO, $m->getMapInt32Enum()["3"]);
+        $this->assertFalse($m->getMapInt32Enum()->offsetExists(2));
+    }
+
+    public function testDecodeRepeatedEnumWithUnknownStringValueThrows()
+    {
+        $this->expectException(Exception::class);
+
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"repeated_enum\":[\"UNKNOWN_ENUM\"]}");
+    }
+
+    public function testDecodeRepeatedEnumWithUnknownStringValueIgnored()
+    {
+        $m = new TestMessage();
+        $m->mergeFromJsonString(
+          "{\"repeated_enum\":[
+            \"ONE\",
+            \"UNKNOWN_ENUM\",
+            \"ZERO\"
+          ]}",
+          true
+        );
+
+        $this->assertSame(2, count($m->getRepeatedEnum()));
+        $this->assertSame(TestEnum::ONE, $m->getRepeatedEnum()[0]);
+        $this->assertSame(TestEnum::ZERO, $m->getRepeatedEnum()[1]);
+    }
+
     public function testDecodeMapStringValue()
     {
         $m = new TestStringValue();
