@@ -236,6 +236,7 @@ int ForkPipeRunner::Run(int argc, char *argv[],
   Edition maximum_edition = EDITION_UNKNOWN;
   std::string output_dir;
   bool verbose = false;
+  bool isolated = false;
 
   for (int arg = 1; arg < argc; ++arg) {
     if (strcmp(argv[arg], "--performance") == 0) {
@@ -287,6 +288,10 @@ int ForkPipeRunner::Run(int argc, char *argv[],
     UsageError();
   }
 
+  if (!names_to_test.empty()) {
+    isolated = true;
+  }
+
   bool all_ok = true;
   for (ConformanceTestSuite *suite : suites) {
     string failure_list_filename;
@@ -306,6 +311,7 @@ int ForkPipeRunner::Run(int argc, char *argv[],
     suite->SetDebug(debug);
     suite->SetNamesToTest(names_to_test);
     suite->SetTestee(program);
+    suite->SetIsolated(isolated);
 
     ForkPipeRunner runner(program, program_args, performance);
 

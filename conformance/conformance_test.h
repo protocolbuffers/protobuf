@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
@@ -161,14 +162,14 @@ class ConformanceTestSuite {
   // Sets if we are running the test in debug mode.
   void SetDebug(bool debug) { debug_ = debug; }
 
-  // Sets the testee name
+  // Sets if we are running ONLY the tests provided in the 'names_to_test_' set.
+  void SetIsolated(bool isolated) { isolated_ = isolated; }
+
+  // Sets the file path of the testee.
   void SetTestee(const std::string& testee) { testee_ = testee; }
 
   // Sets the names of tests to ONLY be run isolated from all the others.
   void SetNamesToTest(absl::flat_hash_set<std::string> names_to_test) {
-    if (!names_to_test.empty()) {
-      isolated_ = true;
-    }
     names_to_test_ = std::move(names_to_test);
   }
 
