@@ -12,6 +12,7 @@ permissions:
   contents: read
 
 jobs:
+  # This job should be run on presubmit, if any continuous-only tests are added we will need to input test-type above
   linux:
     name: Linux
     runs-on: ubuntu-latest
