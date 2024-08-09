@@ -12,14 +12,11 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
-#include <string>
-#include <utility>
 #include <vector>
 
 #include "absl/container/fixed_array.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
-#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
@@ -27,7 +24,9 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/wire_format.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // Must come last:
 #include "google/protobuf/port_def.inc"
@@ -373,7 +372,7 @@ absl::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor) {
 }
 
 uint32_t RecodeTagForFastParsing(uint32_t tag) {
-  ABSL_DCHECK_LE(tag, 0x3FFF);
+  ABSL_DCHECK_LE(tag, 0x3FFFu);
   // Construct the varint-coded tag. If it is more than 7 bits, we need to
   // shift the high bits and add a continue bit.
   if (uint32_t hibits = tag & 0xFFFFFF80) {
@@ -423,7 +422,7 @@ void PopulateFastFields(
     important_fields |= uint32_t{1} << fast_idx;
   }
 
-  for (int i = 0; i < field_entries.size(); ++i) {
+  for (size_t i = 0; i < field_entries.size(); ++i) {
     const auto& entry = field_entries[i];
     const auto& options = fields[i];
     if (!IsFieldEligibleForFastParsing(entry, options, message_options)) {
@@ -606,7 +605,6 @@ TailCallTableInfo::NumToEntryTable MakeNumToEntryTable(
 
 uint16_t MakeTypeCardForField(
     const FieldDescriptor* field, bool has_hasbit,
-    const TailCallTableInfo::MessageOptions& message_options,
     const TailCallTableInfo::FieldOptions& options,
     cpp::Utf8CheckMode utf8_check_mode) {
   uint16_t type_card;
@@ -898,9 +896,8 @@ TailCallTableInfo::TailCallTableInfo(
     auto& entry = field_entries.back();
     entry.utf8_check_mode =
         cpp::GetUtf8CheckMode(field, message_options.is_lite);
-    entry.type_card =
-        MakeTypeCardForField(field, entry.hasbit_idx >= 0, message_options,
-                             options, entry.utf8_check_mode);
+    entry.type_card = MakeTypeCardForField(field, entry.hasbit_idx >= 0,
+                                           options, entry.utf8_check_mode);
 
     if (field->type() == FieldDescriptor::TYPE_MESSAGE ||
         field->type() == FieldDescriptor::TYPE_GROUP) {
