@@ -506,3 +506,8 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://square.github.io/wire/
     *   Extensions: 1190
+
+1.  userver
+
+    *   Website: https://userver.tech/
+    *   Extensions: 1191
