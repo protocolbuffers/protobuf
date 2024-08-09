@@ -6,7 +6,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-"""Tests proto_time_util APIs."""
+"""Tests proto Timestamp APIs."""
 
 import datetime
 import unittest
@@ -17,7 +17,7 @@ from google.protobuf.internal import well_known_types_test_pb2
 from google.protobuf import timestamp_pb2
 
 
-class ProtoTimeUtilTest(unittest.TestCase):
+class TimestampTest(unittest.TestCase):
 
   def test_timestamp_integer_conversion(self):
     self.assertEqual(1, timestamp.to_nanoseconds(timestamp.from_nanoseconds(1)))
