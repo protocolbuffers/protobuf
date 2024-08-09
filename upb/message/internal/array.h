@@ -127,6 +127,11 @@ UPB_INLINE void UPB_PRIVATE(_upb_Array_Set)(struct upb_Array* array, size_t i,
 }
 
 UPB_API_INLINE size_t upb_Array_Size(const struct upb_Array* arr) {
+#ifdef WASM_WAMR
+  if (!arr) {
+    return 0;
+  }
+#endif
   return arr->UPB_ONLYBITS(size);
 }
 
