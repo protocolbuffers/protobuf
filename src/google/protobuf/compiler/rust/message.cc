@@ -1306,15 +1306,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
   ctx.printer().PrintRaw("\n");
   if (ctx.is_cpp()) {
     ctx.Emit({{"Msg", RsSafeName(msg.name())}}, R"rs(
-      impl $Msg$ {
-        pub fn __unstable_wrap_cpp_grant_permission_to_break(msg: $pbr$::RawMessage) -> Self {
-          Self { inner: $pbr$::MessageInner { msg } }
-        }
-        pub fn __unstable_leak_cpp_repr_grant_permission_to_break(self) -> $pbr$::RawMessage {
-          let s = std::mem::ManuallyDrop::new(self);
-          s.raw_msg()
-        }
-      }
       impl<'a> $Msg$Mut<'a> {
         //~ msg is a &mut so that the borrow checker enforces exclusivity to
         //~ prevent constructing multiple Muts/Views from the same RawMessage.
