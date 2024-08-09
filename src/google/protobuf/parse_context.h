@@ -635,7 +635,7 @@ inline const char* VarintParseSlow(const char* p, uint32_t res, uint64_t* out) {
   return tmp.first;
 }
 
-#ifdef __aarch64__
+#if defined(__aarch64__) && !defined(_MSC_VER)
 // Generally, speaking, the ARM-optimized Varint decode algorithm is to extract
 // and concatenate all potentially valid data bits, compute the actual length
 // of the Varint, and mask off the data bits which are not actually part of the
@@ -866,7 +866,7 @@ static const char* VarintParseSlowArm(const char* p, uint64_t* out,
 // The caller must ensure that p points to at least 10 valid bytes.
 template <typename T>
 PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
-#if defined(__aarch64__) && defined(ABSL_IS_LITTLE_ENDIAN)
+#if defined(__aarch64__) && defined(ABSL_IS_LITTLE_ENDIAN) && !defined(_MSC_VER)
   // This optimization is not supported in big endian mode
   uint64_t first8;
   std::memcpy(&first8, p, sizeof(first8));
