@@ -108,6 +108,11 @@ namespace Google.Protobuf.WellKnownTypes {
   {
     private static readonly pb::MessageParser<Duration> _parser = new pb::MessageParser<Duration>(() => new Duration());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<Duration> Comparer { get; set; } = new DefaultDurationComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<Duration> Parser { get { return _parser; } }
@@ -192,27 +197,13 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(Duration other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (Seconds != other.Seconds) return false;
-      if (Nanos != other.Nanos) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (Seconds != 0L) hash ^= Seconds.GetHashCode();
-      if (Nanos != 0) hash ^= Nanos.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -346,6 +337,39 @@ namespace Google.Protobuf.WellKnownTypes {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultDurationComparer : scg::IEqualityComparer<Duration> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(Duration x, Duration y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.Seconds != y.Seconds) return false;
+        if (x.Nanos != y.Nanos) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(Duration obj) {
+        int hash = 1;
+        if (obj.Seconds != 0L) hash ^= obj.Seconds.GetHashCode();
+        if (obj.Nanos != 0) hash ^= obj.Nanos.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   #endregion

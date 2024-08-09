@@ -47,6 +47,11 @@ namespace LegacyFeaturesUnittest {
   {
     private static readonly pb::MessageParser<TestEditionsMessage> _parser = new pb::MessageParser<TestEditionsMessage>(() => new TestEditionsMessage());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<TestEditionsMessage> Comparer { get; set; } = new DefaultTestEditionsMessageComparer();
+
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -147,27 +152,13 @@ namespace LegacyFeaturesUnittest {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestEditionsMessage other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (RequiredField != other.RequiredField) return false;
-      if (!object.Equals(DelimitedField, other.DelimitedField)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasRequiredField) hash ^= RequiredField.GetHashCode();
-      if (HasDelimitedField) hash ^= DelimitedField.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -312,6 +303,39 @@ namespace LegacyFeaturesUnittest {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultTestEditionsMessageComparer : scg::IEqualityComparer<TestEditionsMessage> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(TestEditionsMessage x, TestEditionsMessage y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.RequiredField != y.RequiredField) return false;
+        if (!object.Equals(x.DelimitedField, y.DelimitedField)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(TestEditionsMessage obj) {
+        int hash = 1;
+        if (obj.HasRequiredField) hash ^= obj.RequiredField.GetHashCode();
+        if (obj.HasDelimitedField) hash ^= obj.DelimitedField.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   #endregion

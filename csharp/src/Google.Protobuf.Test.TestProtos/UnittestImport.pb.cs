@@ -67,6 +67,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   {
     private static readonly pb::MessageParser<ImportMessage> _parser = new pb::MessageParser<ImportMessage>(() => new ImportMessage());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<ImportMessage> Comparer { get; set; } = new DefaultImportMessageComparer();
+
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -142,25 +147,13 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(ImportMessage other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (D != other.D) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasD) hash ^= D.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -272,6 +265,37 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultImportMessageComparer : scg::IEqualityComparer<ImportMessage> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(ImportMessage x, ImportMessage y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.D != y.D) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(ImportMessage obj) {
+        int hash = 1;
+        if (obj.HasD) hash ^= obj.D.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   #endregion

@@ -122,7 +122,14 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "private static readonly pb::MessageParser<$class_name$> _parser = new "
       "pb::MessageParser<$class_name$>(() => new $class_name$());\n");
 
-  printer->Print("private pb::UnknownFieldSet _unknownFields;\n");
+  printer->Print("private pb::UnknownFieldSet _unknownFields;\n\n");
+
+  WriteGeneratedCodeAttributes(printer);
+  printer->Print(
+      vars,
+      "private scg::IEqualityComparer<$class_name$> Comparer { get; set; } "
+      "= new Default$class_name$Comparer();\n\n"
+  );
 
   if (has_extension_ranges_) {
     if (IsDescriptorProto(descriptor_->file())) {
@@ -316,6 +323,8 @@ void MessageGenerator::Generate(io::Printer* printer) {
         "\n");
   }
 
+  GenerateNestedComparerClass(printer);
+
   if (descriptor_->extension_count() > 0) {
     printer->Print(vars,
                    "#region Extensions\n"
@@ -429,34 +438,8 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
   WriteGeneratedCodeAttributes(printer);
   printer->Print(vars,
                  "public bool Equals($class_name$ other) {\n"
-                 "  if (ReferenceEquals(other, null)) {\n"
-                 "    return false;\n"
-                 "  }\n"
-                 "  if (ReferenceEquals(other, this)) {\n"
-                 "    return true;\n"
-                 "  }\n");
-  printer->Indent();
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    std::unique_ptr<FieldGeneratorBase> generator(
-        CreateFieldGeneratorInternal(descriptor_->field(i)));
-    generator->WriteEquals(printer);
-  }
-  for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
-    printer->Print(
-        "if ($property_name$Case != other.$property_name$Case) return false;\n",
-        "property_name",
-        UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), true));
-  }
-  if (has_extension_ranges_) {
-    printer->Print(
-        "if (!Equals(_extensions, other._extensions)) {\n"
-        "  return false;\n"
-        "}\n");
-  }
-  printer->Outdent();
-  printer->Print(
-      "  return Equals(_unknownFields, other._unknownFields);\n"
-      "}\n\n");
+                 "  return this.Comparer.Equals(this, other);\n"
+                 "}\n\n");
 
   // GetHashCode
   // Start with a non-zero value to easily distinguish between null and "empty"
@@ -464,31 +447,8 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
   WriteGeneratedCodeAttributes(printer);
   printer->Print(
       "public override int GetHashCode() {\n"
-      "  int hash = 1;\n");
-  printer->Indent();
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    std::unique_ptr<FieldGeneratorBase> generator(
-        CreateFieldGeneratorInternal(descriptor_->field(i)));
-    generator->WriteHash(printer);
-  }
-  for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
-    printer->Print(
-        "hash ^= (int) $name$Case_;\n", "name",
-        UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), false));
-  }
-  if (has_extension_ranges_) {
-    printer->Print(
-        "if (_extensions != null) {\n"
-        "  hash ^= _extensions.GetHashCode();\n"
-        "}\n");
-  }
-  printer->Print(
-      "if (_unknownFields != null) {\n"
-      "  hash ^= _unknownFields.GetHashCode();\n"
-      "}\n"
-      "return hash;\n");
-  printer->Outdent();
-  printer->Print("}\n\n");
+      "  return this.Comparer.GetHashCode(this);\n"
+      "}\n\n");
 
   WriteGeneratedCodeAttributes(printer);
   printer->Print(
@@ -729,6 +689,87 @@ void MessageGenerator::GenerateMainParseLoop(io::Printer* printer,
   printer->Print("}\n");  // switch
   printer->Outdent();
   printer->Print("}\n");  // while
+}
+
+void MessageGenerator::GenerateNestedComparerClass(io::Printer* printer) {
+  absl::flat_hash_map<absl::string_view, std::string> vars;
+  vars["class_name"] = class_name();
+  printer->Print(vars,
+    "#region Nested comparer\n"
+    "private class Default$class_name$Comparer"
+    " : scg::IEqualityComparer<$class_name$> {\n"
+  );
+  printer->Indent();
+
+  WriteGeneratedCodeAttributes(printer);
+  printer->Print(vars,
+                 "public bool Equals($class_name$ x, $class_name$ y) {\n"
+                 "  if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {\n"
+                 "    return true;\n"
+                 "  }\n"
+                 "  if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {\n"
+                 "    return false;\n"
+                 "  }\n"
+                 "  if (ReferenceEquals(x, y)) {\n"
+                 "    return true;\n"
+                 "  }\n");
+  printer->Indent();
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    std::unique_ptr<FieldGeneratorBase> generator(
+        CreateFieldGeneratorInternal(descriptor_->field(i)));
+    generator->WriteEquals(printer);
+  }
+  for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
+    printer->Print(
+        "if (x.$property_name$Case != y.$property_name$Case) return false;\n",
+        "property_name",
+        UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), true));
+  }
+  if (has_extension_ranges_) {
+    printer->Print(
+        "if (!Equals(x._extensions, y._extensions)) {\n"
+        "  return false;\n"
+        "}\n");
+  }
+  printer->Outdent();
+  printer->Print(
+      "  return Equals(x._unknownFields, y._unknownFields);\n"
+      "}\n\n");
+  
+  // HashCode
+  WriteGeneratedCodeAttributes(printer);
+  printer->Print(vars,
+      "public int GetHashCode($class_name$ obj) {\n"
+      "  int hash = 1;\n");
+  printer->Indent();
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    std::unique_ptr<FieldGeneratorBase> generator(
+        CreateFieldGeneratorInternal(descriptor_->field(i)));
+    generator->WriteHash(printer);
+  }
+  for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
+    printer->Print(
+        "hash ^= (int) obj.$name$Case_;\n", "name",
+        UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), false));
+  }
+  if (has_extension_ranges_) {
+    printer->Print(
+        "if (obj._extensions != null) {\n"
+        "  hash ^= obj._extensions.GetHashCode();\n"
+        "}\n");
+  }
+  printer->Print(
+      "if (obj._unknownFields != null) {\n"
+      "  hash ^= obj._unknownFields.GetHashCode();\n"
+      "}\n"
+      "return hash;\n");
+  printer->Outdent();
+  printer->Print("}\n");
+
+  printer->Outdent();
+  printer->Print(
+    "}\n\n"
+    "#endregion\n");
 }
 
 // it's a waste of space to track presence for all values, so we only track them

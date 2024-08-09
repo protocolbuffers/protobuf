@@ -87,13 +87,13 @@ void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer
 void RepeatedEnumFieldGenerator::WriteHash(io::Printer* printer) {
   printer->Print(
     variables_,
-    "hash ^= $name$_.GetHashCode();\n");
+    "hash ^= obj.$name$_.GetHashCode();\n");
 }
 
 void RepeatedEnumFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if(!$name$_.Equals(other.$name$_)) return false;\n");
+    "if(!x.$name$_.Equals(y.$name$_)) return false;\n");
 }
 
 void RepeatedEnumFieldGenerator::WriteToString(io::Printer* printer) {

@@ -247,6 +247,11 @@ namespace Google.Protobuf.WellKnownTypes {
   {
     private static readonly pb::MessageParser<FieldMask> _parser = new pb::MessageParser<FieldMask>(() => new FieldMask());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<FieldMask> Comparer { get; set; } = new DefaultFieldMaskComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<FieldMask> Parser { get { return _parser; } }
@@ -307,25 +312,13 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(FieldMask other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if(!paths_.Equals(other.paths_)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      hash ^= paths_.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -427,6 +420,37 @@ namespace Google.Protobuf.WellKnownTypes {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultFieldMaskComparer : scg::IEqualityComparer<FieldMask> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(FieldMask x, FieldMask y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if(!x.paths_.Equals(y.paths_)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(FieldMask obj) {
+        int hash = 1;
+        hash ^= obj.paths_.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   #endregion

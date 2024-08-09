@@ -273,6 +273,11 @@ namespace ProtobufTestMessages.Proto3 {
   {
     private static readonly pb::MessageParser<TestAllTypesProto3> _parser = new pb::MessageParser<TestAllTypesProto3>(() => new TestAllTypesProto3());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<TestAllTypesProto3> Comparer { get; set; } = new DefaultTestAllTypesProto3Comparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestAllTypesProto3> Parser { get { return _parser; } }
@@ -2415,327 +2420,13 @@ namespace ProtobufTestMessages.Proto3 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestAllTypesProto3 other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (OptionalInt32 != other.OptionalInt32) return false;
-      if (OptionalInt64 != other.OptionalInt64) return false;
-      if (OptionalUint32 != other.OptionalUint32) return false;
-      if (OptionalUint64 != other.OptionalUint64) return false;
-      if (OptionalSint32 != other.OptionalSint32) return false;
-      if (OptionalSint64 != other.OptionalSint64) return false;
-      if (OptionalFixed32 != other.OptionalFixed32) return false;
-      if (OptionalFixed64 != other.OptionalFixed64) return false;
-      if (OptionalSfixed32 != other.OptionalSfixed32) return false;
-      if (OptionalSfixed64 != other.OptionalSfixed64) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(OptionalFloat, other.OptionalFloat)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(OptionalDouble, other.OptionalDouble)) return false;
-      if (OptionalBool != other.OptionalBool) return false;
-      if (OptionalString != other.OptionalString) return false;
-      if (OptionalBytes != other.OptionalBytes) return false;
-      if (!object.Equals(OptionalNestedMessage, other.OptionalNestedMessage)) return false;
-      if (!object.Equals(OptionalForeignMessage, other.OptionalForeignMessage)) return false;
-      if (OptionalNestedEnum != other.OptionalNestedEnum) return false;
-      if (OptionalForeignEnum != other.OptionalForeignEnum) return false;
-      if (OptionalAliasedEnum != other.OptionalAliasedEnum) return false;
-      if (OptionalStringPiece != other.OptionalStringPiece) return false;
-      if (OptionalCord != other.OptionalCord) return false;
-      if (!object.Equals(RecursiveMessage, other.RecursiveMessage)) return false;
-      if(!repeatedInt32_.Equals(other.repeatedInt32_)) return false;
-      if(!repeatedInt64_.Equals(other.repeatedInt64_)) return false;
-      if(!repeatedUint32_.Equals(other.repeatedUint32_)) return false;
-      if(!repeatedUint64_.Equals(other.repeatedUint64_)) return false;
-      if(!repeatedSint32_.Equals(other.repeatedSint32_)) return false;
-      if(!repeatedSint64_.Equals(other.repeatedSint64_)) return false;
-      if(!repeatedFixed32_.Equals(other.repeatedFixed32_)) return false;
-      if(!repeatedFixed64_.Equals(other.repeatedFixed64_)) return false;
-      if(!repeatedSfixed32_.Equals(other.repeatedSfixed32_)) return false;
-      if(!repeatedSfixed64_.Equals(other.repeatedSfixed64_)) return false;
-      if(!repeatedFloat_.Equals(other.repeatedFloat_)) return false;
-      if(!repeatedDouble_.Equals(other.repeatedDouble_)) return false;
-      if(!repeatedBool_.Equals(other.repeatedBool_)) return false;
-      if(!repeatedString_.Equals(other.repeatedString_)) return false;
-      if(!repeatedBytes_.Equals(other.repeatedBytes_)) return false;
-      if(!repeatedNestedMessage_.Equals(other.repeatedNestedMessage_)) return false;
-      if(!repeatedForeignMessage_.Equals(other.repeatedForeignMessage_)) return false;
-      if(!repeatedNestedEnum_.Equals(other.repeatedNestedEnum_)) return false;
-      if(!repeatedForeignEnum_.Equals(other.repeatedForeignEnum_)) return false;
-      if(!repeatedStringPiece_.Equals(other.repeatedStringPiece_)) return false;
-      if(!repeatedCord_.Equals(other.repeatedCord_)) return false;
-      if(!packedInt32_.Equals(other.packedInt32_)) return false;
-      if(!packedInt64_.Equals(other.packedInt64_)) return false;
-      if(!packedUint32_.Equals(other.packedUint32_)) return false;
-      if(!packedUint64_.Equals(other.packedUint64_)) return false;
-      if(!packedSint32_.Equals(other.packedSint32_)) return false;
-      if(!packedSint64_.Equals(other.packedSint64_)) return false;
-      if(!packedFixed32_.Equals(other.packedFixed32_)) return false;
-      if(!packedFixed64_.Equals(other.packedFixed64_)) return false;
-      if(!packedSfixed32_.Equals(other.packedSfixed32_)) return false;
-      if(!packedSfixed64_.Equals(other.packedSfixed64_)) return false;
-      if(!packedFloat_.Equals(other.packedFloat_)) return false;
-      if(!packedDouble_.Equals(other.packedDouble_)) return false;
-      if(!packedBool_.Equals(other.packedBool_)) return false;
-      if(!packedNestedEnum_.Equals(other.packedNestedEnum_)) return false;
-      if(!unpackedInt32_.Equals(other.unpackedInt32_)) return false;
-      if(!unpackedInt64_.Equals(other.unpackedInt64_)) return false;
-      if(!unpackedUint32_.Equals(other.unpackedUint32_)) return false;
-      if(!unpackedUint64_.Equals(other.unpackedUint64_)) return false;
-      if(!unpackedSint32_.Equals(other.unpackedSint32_)) return false;
-      if(!unpackedSint64_.Equals(other.unpackedSint64_)) return false;
-      if(!unpackedFixed32_.Equals(other.unpackedFixed32_)) return false;
-      if(!unpackedFixed64_.Equals(other.unpackedFixed64_)) return false;
-      if(!unpackedSfixed32_.Equals(other.unpackedSfixed32_)) return false;
-      if(!unpackedSfixed64_.Equals(other.unpackedSfixed64_)) return false;
-      if(!unpackedFloat_.Equals(other.unpackedFloat_)) return false;
-      if(!unpackedDouble_.Equals(other.unpackedDouble_)) return false;
-      if(!unpackedBool_.Equals(other.unpackedBool_)) return false;
-      if(!unpackedNestedEnum_.Equals(other.unpackedNestedEnum_)) return false;
-      if (!MapInt32Int32.Equals(other.MapInt32Int32)) return false;
-      if (!MapInt64Int64.Equals(other.MapInt64Int64)) return false;
-      if (!MapUint32Uint32.Equals(other.MapUint32Uint32)) return false;
-      if (!MapUint64Uint64.Equals(other.MapUint64Uint64)) return false;
-      if (!MapSint32Sint32.Equals(other.MapSint32Sint32)) return false;
-      if (!MapSint64Sint64.Equals(other.MapSint64Sint64)) return false;
-      if (!MapFixed32Fixed32.Equals(other.MapFixed32Fixed32)) return false;
-      if (!MapFixed64Fixed64.Equals(other.MapFixed64Fixed64)) return false;
-      if (!MapSfixed32Sfixed32.Equals(other.MapSfixed32Sfixed32)) return false;
-      if (!MapSfixed64Sfixed64.Equals(other.MapSfixed64Sfixed64)) return false;
-      if (!MapInt32Float.Equals(other.MapInt32Float)) return false;
-      if (!MapInt32Double.Equals(other.MapInt32Double)) return false;
-      if (!MapBoolBool.Equals(other.MapBoolBool)) return false;
-      if (!MapStringString.Equals(other.MapStringString)) return false;
-      if (!MapStringBytes.Equals(other.MapStringBytes)) return false;
-      if (!MapStringNestedMessage.Equals(other.MapStringNestedMessage)) return false;
-      if (!MapStringForeignMessage.Equals(other.MapStringForeignMessage)) return false;
-      if (!MapStringNestedEnum.Equals(other.MapStringNestedEnum)) return false;
-      if (!MapStringForeignEnum.Equals(other.MapStringForeignEnum)) return false;
-      if (OneofUint32 != other.OneofUint32) return false;
-      if (!object.Equals(OneofNestedMessage, other.OneofNestedMessage)) return false;
-      if (OneofString != other.OneofString) return false;
-      if (OneofBytes != other.OneofBytes) return false;
-      if (OneofBool != other.OneofBool) return false;
-      if (OneofUint64 != other.OneofUint64) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(OneofFloat, other.OneofFloat)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(OneofDouble, other.OneofDouble)) return false;
-      if (OneofEnum != other.OneofEnum) return false;
-      if (OneofNullValue != other.OneofNullValue) return false;
-      if (OptionalBoolWrapper != other.OptionalBoolWrapper) return false;
-      if (OptionalInt32Wrapper != other.OptionalInt32Wrapper) return false;
-      if (OptionalInt64Wrapper != other.OptionalInt64Wrapper) return false;
-      if (OptionalUint32Wrapper != other.OptionalUint32Wrapper) return false;
-      if (OptionalUint64Wrapper != other.OptionalUint64Wrapper) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.Equals(OptionalFloatWrapper, other.OptionalFloatWrapper)) return false;
-      if (!pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.Equals(OptionalDoubleWrapper, other.OptionalDoubleWrapper)) return false;
-      if (OptionalStringWrapper != other.OptionalStringWrapper) return false;
-      if (OptionalBytesWrapper != other.OptionalBytesWrapper) return false;
-      if(!repeatedBoolWrapper_.Equals(other.repeatedBoolWrapper_)) return false;
-      if(!repeatedInt32Wrapper_.Equals(other.repeatedInt32Wrapper_)) return false;
-      if(!repeatedInt64Wrapper_.Equals(other.repeatedInt64Wrapper_)) return false;
-      if(!repeatedUint32Wrapper_.Equals(other.repeatedUint32Wrapper_)) return false;
-      if(!repeatedUint64Wrapper_.Equals(other.repeatedUint64Wrapper_)) return false;
-      if(!repeatedFloatWrapper_.Equals(other.repeatedFloatWrapper_)) return false;
-      if(!repeatedDoubleWrapper_.Equals(other.repeatedDoubleWrapper_)) return false;
-      if(!repeatedStringWrapper_.Equals(other.repeatedStringWrapper_)) return false;
-      if(!repeatedBytesWrapper_.Equals(other.repeatedBytesWrapper_)) return false;
-      if (!object.Equals(OptionalDuration, other.OptionalDuration)) return false;
-      if (!object.Equals(OptionalTimestamp, other.OptionalTimestamp)) return false;
-      if (!object.Equals(OptionalFieldMask, other.OptionalFieldMask)) return false;
-      if (!object.Equals(OptionalStruct, other.OptionalStruct)) return false;
-      if (!object.Equals(OptionalAny, other.OptionalAny)) return false;
-      if (!object.Equals(OptionalValue, other.OptionalValue)) return false;
-      if (OptionalNullValue != other.OptionalNullValue) return false;
-      if(!repeatedDuration_.Equals(other.repeatedDuration_)) return false;
-      if(!repeatedTimestamp_.Equals(other.repeatedTimestamp_)) return false;
-      if(!repeatedFieldmask_.Equals(other.repeatedFieldmask_)) return false;
-      if(!repeatedStruct_.Equals(other.repeatedStruct_)) return false;
-      if(!repeatedAny_.Equals(other.repeatedAny_)) return false;
-      if(!repeatedValue_.Equals(other.repeatedValue_)) return false;
-      if(!repeatedListValue_.Equals(other.repeatedListValue_)) return false;
-      if (Fieldname1 != other.Fieldname1) return false;
-      if (FieldName2 != other.FieldName2) return false;
-      if (FieldName3 != other.FieldName3) return false;
-      if (FieldName4 != other.FieldName4) return false;
-      if (Field0Name5 != other.Field0Name5) return false;
-      if (Field0Name6 != other.Field0Name6) return false;
-      if (FieldName7 != other.FieldName7) return false;
-      if (FieldName8 != other.FieldName8) return false;
-      if (FieldName9 != other.FieldName9) return false;
-      if (FieldName10 != other.FieldName10) return false;
-      if (FIELDNAME11 != other.FIELDNAME11) return false;
-      if (FIELDName12 != other.FIELDName12) return false;
-      if (FieldName13 != other.FieldName13) return false;
-      if (FieldName14 != other.FieldName14) return false;
-      if (FieldName15 != other.FieldName15) return false;
-      if (FieldName16 != other.FieldName16) return false;
-      if (FieldName17 != other.FieldName17) return false;
-      if (FieldName18 != other.FieldName18) return false;
-      if (OneofFieldCase != other.OneofFieldCase) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (OptionalInt32 != 0) hash ^= OptionalInt32.GetHashCode();
-      if (OptionalInt64 != 0L) hash ^= OptionalInt64.GetHashCode();
-      if (OptionalUint32 != 0) hash ^= OptionalUint32.GetHashCode();
-      if (OptionalUint64 != 0UL) hash ^= OptionalUint64.GetHashCode();
-      if (OptionalSint32 != 0) hash ^= OptionalSint32.GetHashCode();
-      if (OptionalSint64 != 0L) hash ^= OptionalSint64.GetHashCode();
-      if (OptionalFixed32 != 0) hash ^= OptionalFixed32.GetHashCode();
-      if (OptionalFixed64 != 0UL) hash ^= OptionalFixed64.GetHashCode();
-      if (OptionalSfixed32 != 0) hash ^= OptionalSfixed32.GetHashCode();
-      if (OptionalSfixed64 != 0L) hash ^= OptionalSfixed64.GetHashCode();
-      if (OptionalFloat != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(OptionalFloat);
-      if (OptionalDouble != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(OptionalDouble);
-      if (OptionalBool != false) hash ^= OptionalBool.GetHashCode();
-      if (OptionalString.Length != 0) hash ^= OptionalString.GetHashCode();
-      if (OptionalBytes.Length != 0) hash ^= OptionalBytes.GetHashCode();
-      if (optionalNestedMessage_ != null) hash ^= OptionalNestedMessage.GetHashCode();
-      if (optionalForeignMessage_ != null) hash ^= OptionalForeignMessage.GetHashCode();
-      if (OptionalNestedEnum != global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum.Foo) hash ^= OptionalNestedEnum.GetHashCode();
-      if (OptionalForeignEnum != global::ProtobufTestMessages.Proto3.ForeignEnum.ForeignFoo) hash ^= OptionalForeignEnum.GetHashCode();
-      if (OptionalAliasedEnum != global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.AliasedEnum.AliasFoo) hash ^= OptionalAliasedEnum.GetHashCode();
-      if (OptionalStringPiece.Length != 0) hash ^= OptionalStringPiece.GetHashCode();
-      if (OptionalCord.Length != 0) hash ^= OptionalCord.GetHashCode();
-      if (recursiveMessage_ != null) hash ^= RecursiveMessage.GetHashCode();
-      hash ^= repeatedInt32_.GetHashCode();
-      hash ^= repeatedInt64_.GetHashCode();
-      hash ^= repeatedUint32_.GetHashCode();
-      hash ^= repeatedUint64_.GetHashCode();
-      hash ^= repeatedSint32_.GetHashCode();
-      hash ^= repeatedSint64_.GetHashCode();
-      hash ^= repeatedFixed32_.GetHashCode();
-      hash ^= repeatedFixed64_.GetHashCode();
-      hash ^= repeatedSfixed32_.GetHashCode();
-      hash ^= repeatedSfixed64_.GetHashCode();
-      hash ^= repeatedFloat_.GetHashCode();
-      hash ^= repeatedDouble_.GetHashCode();
-      hash ^= repeatedBool_.GetHashCode();
-      hash ^= repeatedString_.GetHashCode();
-      hash ^= repeatedBytes_.GetHashCode();
-      hash ^= repeatedNestedMessage_.GetHashCode();
-      hash ^= repeatedForeignMessage_.GetHashCode();
-      hash ^= repeatedNestedEnum_.GetHashCode();
-      hash ^= repeatedForeignEnum_.GetHashCode();
-      hash ^= repeatedStringPiece_.GetHashCode();
-      hash ^= repeatedCord_.GetHashCode();
-      hash ^= packedInt32_.GetHashCode();
-      hash ^= packedInt64_.GetHashCode();
-      hash ^= packedUint32_.GetHashCode();
-      hash ^= packedUint64_.GetHashCode();
-      hash ^= packedSint32_.GetHashCode();
-      hash ^= packedSint64_.GetHashCode();
-      hash ^= packedFixed32_.GetHashCode();
-      hash ^= packedFixed64_.GetHashCode();
-      hash ^= packedSfixed32_.GetHashCode();
-      hash ^= packedSfixed64_.GetHashCode();
-      hash ^= packedFloat_.GetHashCode();
-      hash ^= packedDouble_.GetHashCode();
-      hash ^= packedBool_.GetHashCode();
-      hash ^= packedNestedEnum_.GetHashCode();
-      hash ^= unpackedInt32_.GetHashCode();
-      hash ^= unpackedInt64_.GetHashCode();
-      hash ^= unpackedUint32_.GetHashCode();
-      hash ^= unpackedUint64_.GetHashCode();
-      hash ^= unpackedSint32_.GetHashCode();
-      hash ^= unpackedSint64_.GetHashCode();
-      hash ^= unpackedFixed32_.GetHashCode();
-      hash ^= unpackedFixed64_.GetHashCode();
-      hash ^= unpackedSfixed32_.GetHashCode();
-      hash ^= unpackedSfixed64_.GetHashCode();
-      hash ^= unpackedFloat_.GetHashCode();
-      hash ^= unpackedDouble_.GetHashCode();
-      hash ^= unpackedBool_.GetHashCode();
-      hash ^= unpackedNestedEnum_.GetHashCode();
-      hash ^= MapInt32Int32.GetHashCode();
-      hash ^= MapInt64Int64.GetHashCode();
-      hash ^= MapUint32Uint32.GetHashCode();
-      hash ^= MapUint64Uint64.GetHashCode();
-      hash ^= MapSint32Sint32.GetHashCode();
-      hash ^= MapSint64Sint64.GetHashCode();
-      hash ^= MapFixed32Fixed32.GetHashCode();
-      hash ^= MapFixed64Fixed64.GetHashCode();
-      hash ^= MapSfixed32Sfixed32.GetHashCode();
-      hash ^= MapSfixed64Sfixed64.GetHashCode();
-      hash ^= MapInt32Float.GetHashCode();
-      hash ^= MapInt32Double.GetHashCode();
-      hash ^= MapBoolBool.GetHashCode();
-      hash ^= MapStringString.GetHashCode();
-      hash ^= MapStringBytes.GetHashCode();
-      hash ^= MapStringNestedMessage.GetHashCode();
-      hash ^= MapStringForeignMessage.GetHashCode();
-      hash ^= MapStringNestedEnum.GetHashCode();
-      hash ^= MapStringForeignEnum.GetHashCode();
-      if (HasOneofUint32) hash ^= OneofUint32.GetHashCode();
-      if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) hash ^= OneofNestedMessage.GetHashCode();
-      if (HasOneofString) hash ^= OneofString.GetHashCode();
-      if (HasOneofBytes) hash ^= OneofBytes.GetHashCode();
-      if (HasOneofBool) hash ^= OneofBool.GetHashCode();
-      if (HasOneofUint64) hash ^= OneofUint64.GetHashCode();
-      if (HasOneofFloat) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(OneofFloat);
-      if (HasOneofDouble) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(OneofDouble);
-      if (HasOneofEnum) hash ^= OneofEnum.GetHashCode();
-      if (HasOneofNullValue) hash ^= OneofNullValue.GetHashCode();
-      if (optionalBoolWrapper_ != null) hash ^= OptionalBoolWrapper.GetHashCode();
-      if (optionalInt32Wrapper_ != null) hash ^= OptionalInt32Wrapper.GetHashCode();
-      if (optionalInt64Wrapper_ != null) hash ^= OptionalInt64Wrapper.GetHashCode();
-      if (optionalUint32Wrapper_ != null) hash ^= OptionalUint32Wrapper.GetHashCode();
-      if (optionalUint64Wrapper_ != null) hash ^= OptionalUint64Wrapper.GetHashCode();
-      if (optionalFloatWrapper_ != null) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode(OptionalFloatWrapper);
-      if (optionalDoubleWrapper_ != null) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode(OptionalDoubleWrapper);
-      if (optionalStringWrapper_ != null) hash ^= OptionalStringWrapper.GetHashCode();
-      if (optionalBytesWrapper_ != null) hash ^= OptionalBytesWrapper.GetHashCode();
-      hash ^= repeatedBoolWrapper_.GetHashCode();
-      hash ^= repeatedInt32Wrapper_.GetHashCode();
-      hash ^= repeatedInt64Wrapper_.GetHashCode();
-      hash ^= repeatedUint32Wrapper_.GetHashCode();
-      hash ^= repeatedUint64Wrapper_.GetHashCode();
-      hash ^= repeatedFloatWrapper_.GetHashCode();
-      hash ^= repeatedDoubleWrapper_.GetHashCode();
-      hash ^= repeatedStringWrapper_.GetHashCode();
-      hash ^= repeatedBytesWrapper_.GetHashCode();
-      if (optionalDuration_ != null) hash ^= OptionalDuration.GetHashCode();
-      if (optionalTimestamp_ != null) hash ^= OptionalTimestamp.GetHashCode();
-      if (optionalFieldMask_ != null) hash ^= OptionalFieldMask.GetHashCode();
-      if (optionalStruct_ != null) hash ^= OptionalStruct.GetHashCode();
-      if (optionalAny_ != null) hash ^= OptionalAny.GetHashCode();
-      if (optionalValue_ != null) hash ^= OptionalValue.GetHashCode();
-      if (OptionalNullValue != global::Google.Protobuf.WellKnownTypes.NullValue.NullValue) hash ^= OptionalNullValue.GetHashCode();
-      hash ^= repeatedDuration_.GetHashCode();
-      hash ^= repeatedTimestamp_.GetHashCode();
-      hash ^= repeatedFieldmask_.GetHashCode();
-      hash ^= repeatedStruct_.GetHashCode();
-      hash ^= repeatedAny_.GetHashCode();
-      hash ^= repeatedValue_.GetHashCode();
-      hash ^= repeatedListValue_.GetHashCode();
-      if (Fieldname1 != 0) hash ^= Fieldname1.GetHashCode();
-      if (FieldName2 != 0) hash ^= FieldName2.GetHashCode();
-      if (FieldName3 != 0) hash ^= FieldName3.GetHashCode();
-      if (FieldName4 != 0) hash ^= FieldName4.GetHashCode();
-      if (Field0Name5 != 0) hash ^= Field0Name5.GetHashCode();
-      if (Field0Name6 != 0) hash ^= Field0Name6.GetHashCode();
-      if (FieldName7 != 0) hash ^= FieldName7.GetHashCode();
-      if (FieldName8 != 0) hash ^= FieldName8.GetHashCode();
-      if (FieldName9 != 0) hash ^= FieldName9.GetHashCode();
-      if (FieldName10 != 0) hash ^= FieldName10.GetHashCode();
-      if (FIELDNAME11 != 0) hash ^= FIELDNAME11.GetHashCode();
-      if (FIELDName12 != 0) hash ^= FIELDName12.GetHashCode();
-      if (FieldName13 != 0) hash ^= FieldName13.GetHashCode();
-      if (FieldName14 != 0) hash ^= FieldName14.GetHashCode();
-      if (FieldName15 != 0) hash ^= FieldName15.GetHashCode();
-      if (FieldName16 != 0) hash ^= FieldName16.GetHashCode();
-      if (FieldName17 != 0) hash ^= FieldName17.GetHashCode();
-      if (FieldName18 != 0) hash ^= FieldName18.GetHashCode();
-      hash ^= (int) oneofFieldCase_;
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5580,6 +5271,11 @@ namespace ProtobufTestMessages.Proto3 {
       {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        private scg::IEqualityComparer<NestedMessage> Comparer { get; set; } = new DefaultNestedMessageComparer();
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public static pb::MessageParser<NestedMessage> Parser { get { return _parser; } }
@@ -5651,27 +5347,13 @@ namespace ProtobufTestMessages.Proto3 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public bool Equals(NestedMessage other) {
-          if (ReferenceEquals(other, null)) {
-            return false;
-          }
-          if (ReferenceEquals(other, this)) {
-            return true;
-          }
-          if (A != other.A) return false;
-          if (!object.Equals(Corecursive, other.Corecursive)) return false;
-          return Equals(_unknownFields, other._unknownFields);
+          return this.Comparer.Equals(this, other);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override int GetHashCode() {
-          int hash = 1;
-          if (A != 0) hash ^= A.GetHashCode();
-          if (corecursive_ != null) hash ^= Corecursive.GetHashCode();
-          if (_unknownFields != null) {
-            hash ^= _unknownFields.GetHashCode();
-          }
-          return hash;
+          return this.Comparer.GetHashCode(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5814,11 +5496,377 @@ namespace ProtobufTestMessages.Proto3 {
         }
         #endif
 
+        #region Nested comparer
+        private class DefaultNestedMessageComparer : scg::IEqualityComparer<NestedMessage> {
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public bool Equals(NestedMessage x, NestedMessage y) {
+            if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+              return true;
+            }
+            if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+              return false;
+            }
+            if (ReferenceEquals(x, y)) {
+              return true;
+            }
+            if (x.A != y.A) return false;
+            if (!object.Equals(x.Corecursive, y.Corecursive)) return false;
+            return Equals(x._unknownFields, y._unknownFields);
+          }
+
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public int GetHashCode(NestedMessage obj) {
+            int hash = 1;
+            if (obj.A != 0) hash ^= obj.A.GetHashCode();
+            if (obj.corecursive_ != null) hash ^= obj.Corecursive.GetHashCode();
+            if (obj._unknownFields != null) {
+              hash ^= obj._unknownFields.GetHashCode();
+            }
+            return hash;
+          }
+        }
+
+        #endregion
       }
 
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultTestAllTypesProto3Comparer : scg::IEqualityComparer<TestAllTypesProto3> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(TestAllTypesProto3 x, TestAllTypesProto3 y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.OptionalInt32 != y.OptionalInt32) return false;
+        if (x.OptionalInt64 != y.OptionalInt64) return false;
+        if (x.OptionalUint32 != y.OptionalUint32) return false;
+        if (x.OptionalUint64 != y.OptionalUint64) return false;
+        if (x.OptionalSint32 != y.OptionalSint32) return false;
+        if (x.OptionalSint64 != y.OptionalSint64) return false;
+        if (x.OptionalFixed32 != y.OptionalFixed32) return false;
+        if (x.OptionalFixed64 != y.OptionalFixed64) return false;
+        if (x.OptionalSfixed32 != y.OptionalSfixed32) return false;
+        if (x.OptionalSfixed64 != y.OptionalSfixed64) return false;
+        if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(x.OptionalFloat, y.OptionalFloat)) return false;
+        if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(x.OptionalDouble, y.OptionalDouble)) return false;
+        if (x.OptionalBool != y.OptionalBool) return false;
+        if (x.OptionalString != y.OptionalString) return false;
+        if (x.OptionalBytes != y.OptionalBytes) return false;
+        if (!object.Equals(x.OptionalNestedMessage, y.OptionalNestedMessage)) return false;
+        if (!object.Equals(x.OptionalForeignMessage, y.OptionalForeignMessage)) return false;
+        if (x.OptionalNestedEnum != y.OptionalNestedEnum) return false;
+        if (x.OptionalForeignEnum != y.OptionalForeignEnum) return false;
+        if (x.OptionalAliasedEnum != y.OptionalAliasedEnum) return false;
+        if (x.OptionalStringPiece != y.OptionalStringPiece) return false;
+        if (x.OptionalCord != y.OptionalCord) return false;
+        if (!object.Equals(x.RecursiveMessage, y.RecursiveMessage)) return false;
+        if(!x.repeatedInt32_.Equals(y.repeatedInt32_)) return false;
+        if(!x.repeatedInt64_.Equals(y.repeatedInt64_)) return false;
+        if(!x.repeatedUint32_.Equals(y.repeatedUint32_)) return false;
+        if(!x.repeatedUint64_.Equals(y.repeatedUint64_)) return false;
+        if(!x.repeatedSint32_.Equals(y.repeatedSint32_)) return false;
+        if(!x.repeatedSint64_.Equals(y.repeatedSint64_)) return false;
+        if(!x.repeatedFixed32_.Equals(y.repeatedFixed32_)) return false;
+        if(!x.repeatedFixed64_.Equals(y.repeatedFixed64_)) return false;
+        if(!x.repeatedSfixed32_.Equals(y.repeatedSfixed32_)) return false;
+        if(!x.repeatedSfixed64_.Equals(y.repeatedSfixed64_)) return false;
+        if(!x.repeatedFloat_.Equals(y.repeatedFloat_)) return false;
+        if(!x.repeatedDouble_.Equals(y.repeatedDouble_)) return false;
+        if(!x.repeatedBool_.Equals(y.repeatedBool_)) return false;
+        if(!x.repeatedString_.Equals(y.repeatedString_)) return false;
+        if(!x.repeatedBytes_.Equals(y.repeatedBytes_)) return false;
+        if(!x.repeatedNestedMessage_.Equals(y.repeatedNestedMessage_)) return false;
+        if(!x.repeatedForeignMessage_.Equals(y.repeatedForeignMessage_)) return false;
+        if(!x.repeatedNestedEnum_.Equals(y.repeatedNestedEnum_)) return false;
+        if(!x.repeatedForeignEnum_.Equals(y.repeatedForeignEnum_)) return false;
+        if(!x.repeatedStringPiece_.Equals(y.repeatedStringPiece_)) return false;
+        if(!x.repeatedCord_.Equals(y.repeatedCord_)) return false;
+        if(!x.packedInt32_.Equals(y.packedInt32_)) return false;
+        if(!x.packedInt64_.Equals(y.packedInt64_)) return false;
+        if(!x.packedUint32_.Equals(y.packedUint32_)) return false;
+        if(!x.packedUint64_.Equals(y.packedUint64_)) return false;
+        if(!x.packedSint32_.Equals(y.packedSint32_)) return false;
+        if(!x.packedSint64_.Equals(y.packedSint64_)) return false;
+        if(!x.packedFixed32_.Equals(y.packedFixed32_)) return false;
+        if(!x.packedFixed64_.Equals(y.packedFixed64_)) return false;
+        if(!x.packedSfixed32_.Equals(y.packedSfixed32_)) return false;
+        if(!x.packedSfixed64_.Equals(y.packedSfixed64_)) return false;
+        if(!x.packedFloat_.Equals(y.packedFloat_)) return false;
+        if(!x.packedDouble_.Equals(y.packedDouble_)) return false;
+        if(!x.packedBool_.Equals(y.packedBool_)) return false;
+        if(!x.packedNestedEnum_.Equals(y.packedNestedEnum_)) return false;
+        if(!x.unpackedInt32_.Equals(y.unpackedInt32_)) return false;
+        if(!x.unpackedInt64_.Equals(y.unpackedInt64_)) return false;
+        if(!x.unpackedUint32_.Equals(y.unpackedUint32_)) return false;
+        if(!x.unpackedUint64_.Equals(y.unpackedUint64_)) return false;
+        if(!x.unpackedSint32_.Equals(y.unpackedSint32_)) return false;
+        if(!x.unpackedSint64_.Equals(y.unpackedSint64_)) return false;
+        if(!x.unpackedFixed32_.Equals(y.unpackedFixed32_)) return false;
+        if(!x.unpackedFixed64_.Equals(y.unpackedFixed64_)) return false;
+        if(!x.unpackedSfixed32_.Equals(y.unpackedSfixed32_)) return false;
+        if(!x.unpackedSfixed64_.Equals(y.unpackedSfixed64_)) return false;
+        if(!x.unpackedFloat_.Equals(y.unpackedFloat_)) return false;
+        if(!x.unpackedDouble_.Equals(y.unpackedDouble_)) return false;
+        if(!x.unpackedBool_.Equals(y.unpackedBool_)) return false;
+        if(!x.unpackedNestedEnum_.Equals(y.unpackedNestedEnum_)) return false;
+        if (!x.MapInt32Int32.Equals(y.MapInt32Int32)) return false;
+        if (!x.MapInt64Int64.Equals(y.MapInt64Int64)) return false;
+        if (!x.MapUint32Uint32.Equals(y.MapUint32Uint32)) return false;
+        if (!x.MapUint64Uint64.Equals(y.MapUint64Uint64)) return false;
+        if (!x.MapSint32Sint32.Equals(y.MapSint32Sint32)) return false;
+        if (!x.MapSint64Sint64.Equals(y.MapSint64Sint64)) return false;
+        if (!x.MapFixed32Fixed32.Equals(y.MapFixed32Fixed32)) return false;
+        if (!x.MapFixed64Fixed64.Equals(y.MapFixed64Fixed64)) return false;
+        if (!x.MapSfixed32Sfixed32.Equals(y.MapSfixed32Sfixed32)) return false;
+        if (!x.MapSfixed64Sfixed64.Equals(y.MapSfixed64Sfixed64)) return false;
+        if (!x.MapInt32Float.Equals(y.MapInt32Float)) return false;
+        if (!x.MapInt32Double.Equals(y.MapInt32Double)) return false;
+        if (!x.MapBoolBool.Equals(y.MapBoolBool)) return false;
+        if (!x.MapStringString.Equals(y.MapStringString)) return false;
+        if (!x.MapStringBytes.Equals(y.MapStringBytes)) return false;
+        if (!x.MapStringNestedMessage.Equals(y.MapStringNestedMessage)) return false;
+        if (!x.MapStringForeignMessage.Equals(y.MapStringForeignMessage)) return false;
+        if (!x.MapStringNestedEnum.Equals(y.MapStringNestedEnum)) return false;
+        if (!x.MapStringForeignEnum.Equals(y.MapStringForeignEnum)) return false;
+        if (x.OneofUint32 != y.OneofUint32) return false;
+        if (!object.Equals(x.OneofNestedMessage, y.OneofNestedMessage)) return false;
+        if (x.OneofString != y.OneofString) return false;
+        if (x.OneofBytes != y.OneofBytes) return false;
+        if (x.OneofBool != y.OneofBool) return false;
+        if (x.OneofUint64 != y.OneofUint64) return false;
+        if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(x.OneofFloat, y.OneofFloat)) return false;
+        if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(x.OneofDouble, y.OneofDouble)) return false;
+        if (x.OneofEnum != y.OneofEnum) return false;
+        if (x.OneofNullValue != y.OneofNullValue) return false;
+        if (x.OptionalBoolWrapper != y.OptionalBoolWrapper) return false;
+        if (x.OptionalInt32Wrapper != y.OptionalInt32Wrapper) return false;
+        if (x.OptionalInt64Wrapper != y.OptionalInt64Wrapper) return false;
+        if (x.OptionalUint32Wrapper != y.OptionalUint32Wrapper) return false;
+        if (x.OptionalUint64Wrapper != y.OptionalUint64Wrapper) return false;
+        if (!pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.Equals(x.OptionalFloatWrapper, y.OptionalFloatWrapper)) return false;
+        if (!pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.Equals(x.OptionalDoubleWrapper, y.OptionalDoubleWrapper)) return false;
+        if (x.OptionalStringWrapper != y.OptionalStringWrapper) return false;
+        if (x.OptionalBytesWrapper != y.OptionalBytesWrapper) return false;
+        if(!x.repeatedBoolWrapper_.Equals(y.repeatedBoolWrapper_)) return false;
+        if(!x.repeatedInt32Wrapper_.Equals(y.repeatedInt32Wrapper_)) return false;
+        if(!x.repeatedInt64Wrapper_.Equals(y.repeatedInt64Wrapper_)) return false;
+        if(!x.repeatedUint32Wrapper_.Equals(y.repeatedUint32Wrapper_)) return false;
+        if(!x.repeatedUint64Wrapper_.Equals(y.repeatedUint64Wrapper_)) return false;
+        if(!x.repeatedFloatWrapper_.Equals(y.repeatedFloatWrapper_)) return false;
+        if(!x.repeatedDoubleWrapper_.Equals(y.repeatedDoubleWrapper_)) return false;
+        if(!x.repeatedStringWrapper_.Equals(y.repeatedStringWrapper_)) return false;
+        if(!x.repeatedBytesWrapper_.Equals(y.repeatedBytesWrapper_)) return false;
+        if (!object.Equals(x.OptionalDuration, y.OptionalDuration)) return false;
+        if (!object.Equals(x.OptionalTimestamp, y.OptionalTimestamp)) return false;
+        if (!object.Equals(x.OptionalFieldMask, y.OptionalFieldMask)) return false;
+        if (!object.Equals(x.OptionalStruct, y.OptionalStruct)) return false;
+        if (!object.Equals(x.OptionalAny, y.OptionalAny)) return false;
+        if (!object.Equals(x.OptionalValue, y.OptionalValue)) return false;
+        if (x.OptionalNullValue != y.OptionalNullValue) return false;
+        if(!x.repeatedDuration_.Equals(y.repeatedDuration_)) return false;
+        if(!x.repeatedTimestamp_.Equals(y.repeatedTimestamp_)) return false;
+        if(!x.repeatedFieldmask_.Equals(y.repeatedFieldmask_)) return false;
+        if(!x.repeatedStruct_.Equals(y.repeatedStruct_)) return false;
+        if(!x.repeatedAny_.Equals(y.repeatedAny_)) return false;
+        if(!x.repeatedValue_.Equals(y.repeatedValue_)) return false;
+        if(!x.repeatedListValue_.Equals(y.repeatedListValue_)) return false;
+        if (x.Fieldname1 != y.Fieldname1) return false;
+        if (x.FieldName2 != y.FieldName2) return false;
+        if (x.FieldName3 != y.FieldName3) return false;
+        if (x.FieldName4 != y.FieldName4) return false;
+        if (x.Field0Name5 != y.Field0Name5) return false;
+        if (x.Field0Name6 != y.Field0Name6) return false;
+        if (x.FieldName7 != y.FieldName7) return false;
+        if (x.FieldName8 != y.FieldName8) return false;
+        if (x.FieldName9 != y.FieldName9) return false;
+        if (x.FieldName10 != y.FieldName10) return false;
+        if (x.FIELDNAME11 != y.FIELDNAME11) return false;
+        if (x.FIELDName12 != y.FIELDName12) return false;
+        if (x.FieldName13 != y.FieldName13) return false;
+        if (x.FieldName14 != y.FieldName14) return false;
+        if (x.FieldName15 != y.FieldName15) return false;
+        if (x.FieldName16 != y.FieldName16) return false;
+        if (x.FieldName17 != y.FieldName17) return false;
+        if (x.FieldName18 != y.FieldName18) return false;
+        if (x.OneofFieldCase != y.OneofFieldCase) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(TestAllTypesProto3 obj) {
+        int hash = 1;
+        if (obj.OptionalInt32 != 0) hash ^= obj.OptionalInt32.GetHashCode();
+        if (obj.OptionalInt64 != 0L) hash ^= obj.OptionalInt64.GetHashCode();
+        if (obj.OptionalUint32 != 0) hash ^= obj.OptionalUint32.GetHashCode();
+        if (obj.OptionalUint64 != 0UL) hash ^= obj.OptionalUint64.GetHashCode();
+        if (obj.OptionalSint32 != 0) hash ^= obj.OptionalSint32.GetHashCode();
+        if (obj.OptionalSint64 != 0L) hash ^= obj.OptionalSint64.GetHashCode();
+        if (obj.OptionalFixed32 != 0) hash ^= obj.OptionalFixed32.GetHashCode();
+        if (obj.OptionalFixed64 != 0UL) hash ^= obj.OptionalFixed64.GetHashCode();
+        if (obj.OptionalSfixed32 != 0) hash ^= obj.OptionalSfixed32.GetHashCode();
+        if (obj.OptionalSfixed64 != 0L) hash ^= obj.OptionalSfixed64.GetHashCode();
+        if (obj.OptionalFloat != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(obj.OptionalFloat);
+        if (obj.OptionalDouble != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(obj.OptionalDouble);
+        if (obj.OptionalBool != false) hash ^= obj.OptionalBool.GetHashCode();
+        if (obj.OptionalString.Length != 0) hash ^= obj.OptionalString.GetHashCode();
+        if (obj.OptionalBytes.Length != 0) hash ^= obj.OptionalBytes.GetHashCode();
+        if (obj.optionalNestedMessage_ != null) hash ^= obj.OptionalNestedMessage.GetHashCode();
+        if (obj.optionalForeignMessage_ != null) hash ^= obj.OptionalForeignMessage.GetHashCode();
+        if (obj.OptionalNestedEnum != global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum.Foo) hash ^= obj.OptionalNestedEnum.GetHashCode();
+        if (obj.OptionalForeignEnum != global::ProtobufTestMessages.Proto3.ForeignEnum.ForeignFoo) hash ^= obj.OptionalForeignEnum.GetHashCode();
+        if (obj.OptionalAliasedEnum != global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.AliasedEnum.AliasFoo) hash ^= obj.OptionalAliasedEnum.GetHashCode();
+        if (obj.OptionalStringPiece.Length != 0) hash ^= obj.OptionalStringPiece.GetHashCode();
+        if (obj.OptionalCord.Length != 0) hash ^= obj.OptionalCord.GetHashCode();
+        if (obj.recursiveMessage_ != null) hash ^= obj.RecursiveMessage.GetHashCode();
+        hash ^= obj.repeatedInt32_.GetHashCode();
+        hash ^= obj.repeatedInt64_.GetHashCode();
+        hash ^= obj.repeatedUint32_.GetHashCode();
+        hash ^= obj.repeatedUint64_.GetHashCode();
+        hash ^= obj.repeatedSint32_.GetHashCode();
+        hash ^= obj.repeatedSint64_.GetHashCode();
+        hash ^= obj.repeatedFixed32_.GetHashCode();
+        hash ^= obj.repeatedFixed64_.GetHashCode();
+        hash ^= obj.repeatedSfixed32_.GetHashCode();
+        hash ^= obj.repeatedSfixed64_.GetHashCode();
+        hash ^= obj.repeatedFloat_.GetHashCode();
+        hash ^= obj.repeatedDouble_.GetHashCode();
+        hash ^= obj.repeatedBool_.GetHashCode();
+        hash ^= obj.repeatedString_.GetHashCode();
+        hash ^= obj.repeatedBytes_.GetHashCode();
+        hash ^= obj.repeatedNestedMessage_.GetHashCode();
+        hash ^= obj.repeatedForeignMessage_.GetHashCode();
+        hash ^= obj.repeatedNestedEnum_.GetHashCode();
+        hash ^= obj.repeatedForeignEnum_.GetHashCode();
+        hash ^= obj.repeatedStringPiece_.GetHashCode();
+        hash ^= obj.repeatedCord_.GetHashCode();
+        hash ^= obj.packedInt32_.GetHashCode();
+        hash ^= obj.packedInt64_.GetHashCode();
+        hash ^= obj.packedUint32_.GetHashCode();
+        hash ^= obj.packedUint64_.GetHashCode();
+        hash ^= obj.packedSint32_.GetHashCode();
+        hash ^= obj.packedSint64_.GetHashCode();
+        hash ^= obj.packedFixed32_.GetHashCode();
+        hash ^= obj.packedFixed64_.GetHashCode();
+        hash ^= obj.packedSfixed32_.GetHashCode();
+        hash ^= obj.packedSfixed64_.GetHashCode();
+        hash ^= obj.packedFloat_.GetHashCode();
+        hash ^= obj.packedDouble_.GetHashCode();
+        hash ^= obj.packedBool_.GetHashCode();
+        hash ^= obj.packedNestedEnum_.GetHashCode();
+        hash ^= obj.unpackedInt32_.GetHashCode();
+        hash ^= obj.unpackedInt64_.GetHashCode();
+        hash ^= obj.unpackedUint32_.GetHashCode();
+        hash ^= obj.unpackedUint64_.GetHashCode();
+        hash ^= obj.unpackedSint32_.GetHashCode();
+        hash ^= obj.unpackedSint64_.GetHashCode();
+        hash ^= obj.unpackedFixed32_.GetHashCode();
+        hash ^= obj.unpackedFixed64_.GetHashCode();
+        hash ^= obj.unpackedSfixed32_.GetHashCode();
+        hash ^= obj.unpackedSfixed64_.GetHashCode();
+        hash ^= obj.unpackedFloat_.GetHashCode();
+        hash ^= obj.unpackedDouble_.GetHashCode();
+        hash ^= obj.unpackedBool_.GetHashCode();
+        hash ^= obj.unpackedNestedEnum_.GetHashCode();
+        hash ^= obj.MapInt32Int32.GetHashCode();
+        hash ^= obj.MapInt64Int64.GetHashCode();
+        hash ^= obj.MapUint32Uint32.GetHashCode();
+        hash ^= obj.MapUint64Uint64.GetHashCode();
+        hash ^= obj.MapSint32Sint32.GetHashCode();
+        hash ^= obj.MapSint64Sint64.GetHashCode();
+        hash ^= obj.MapFixed32Fixed32.GetHashCode();
+        hash ^= obj.MapFixed64Fixed64.GetHashCode();
+        hash ^= obj.MapSfixed32Sfixed32.GetHashCode();
+        hash ^= obj.MapSfixed64Sfixed64.GetHashCode();
+        hash ^= obj.MapInt32Float.GetHashCode();
+        hash ^= obj.MapInt32Double.GetHashCode();
+        hash ^= obj.MapBoolBool.GetHashCode();
+        hash ^= obj.MapStringString.GetHashCode();
+        hash ^= obj.MapStringBytes.GetHashCode();
+        hash ^= obj.MapStringNestedMessage.GetHashCode();
+        hash ^= obj.MapStringForeignMessage.GetHashCode();
+        hash ^= obj.MapStringNestedEnum.GetHashCode();
+        hash ^= obj.MapStringForeignEnum.GetHashCode();
+        if (obj.HasOneofUint32) hash ^= obj.OneofUint32.GetHashCode();
+        if (obj.oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) hash ^= obj.OneofNestedMessage.GetHashCode();
+        if (obj.HasOneofString) hash ^= obj.OneofString.GetHashCode();
+        if (obj.HasOneofBytes) hash ^= obj.OneofBytes.GetHashCode();
+        if (obj.HasOneofBool) hash ^= obj.OneofBool.GetHashCode();
+        if (obj.HasOneofUint64) hash ^= obj.OneofUint64.GetHashCode();
+        if (obj.HasOneofFloat) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(obj.OneofFloat);
+        if (obj.HasOneofDouble) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(obj.OneofDouble);
+        if (obj.HasOneofEnum) hash ^= obj.OneofEnum.GetHashCode();
+        if (obj.HasOneofNullValue) hash ^= obj.OneofNullValue.GetHashCode();
+        if (obj.optionalBoolWrapper_ != null) hash ^= obj.OptionalBoolWrapper.GetHashCode();
+        if (obj.optionalInt32Wrapper_ != null) hash ^= obj.OptionalInt32Wrapper.GetHashCode();
+        if (obj.optionalInt64Wrapper_ != null) hash ^= obj.OptionalInt64Wrapper.GetHashCode();
+        if (obj.optionalUint32Wrapper_ != null) hash ^= obj.OptionalUint32Wrapper.GetHashCode();
+        if (obj.optionalUint64Wrapper_ != null) hash ^= obj.OptionalUint64Wrapper.GetHashCode();
+        if (obj.optionalFloatWrapper_ != null) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableSingleEqualityComparer.GetHashCode(obj.OptionalFloatWrapper);
+        if (obj.optionalDoubleWrapper_ != null) hash ^= pbc::ProtobufEqualityComparers.BitwiseNullableDoubleEqualityComparer.GetHashCode(obj.OptionalDoubleWrapper);
+        if (obj.optionalStringWrapper_ != null) hash ^= obj.OptionalStringWrapper.GetHashCode();
+        if (obj.optionalBytesWrapper_ != null) hash ^= obj.OptionalBytesWrapper.GetHashCode();
+        hash ^= obj.repeatedBoolWrapper_.GetHashCode();
+        hash ^= obj.repeatedInt32Wrapper_.GetHashCode();
+        hash ^= obj.repeatedInt64Wrapper_.GetHashCode();
+        hash ^= obj.repeatedUint32Wrapper_.GetHashCode();
+        hash ^= obj.repeatedUint64Wrapper_.GetHashCode();
+        hash ^= obj.repeatedFloatWrapper_.GetHashCode();
+        hash ^= obj.repeatedDoubleWrapper_.GetHashCode();
+        hash ^= obj.repeatedStringWrapper_.GetHashCode();
+        hash ^= obj.repeatedBytesWrapper_.GetHashCode();
+        if (obj.optionalDuration_ != null) hash ^= obj.OptionalDuration.GetHashCode();
+        if (obj.optionalTimestamp_ != null) hash ^= obj.OptionalTimestamp.GetHashCode();
+        if (obj.optionalFieldMask_ != null) hash ^= obj.OptionalFieldMask.GetHashCode();
+        if (obj.optionalStruct_ != null) hash ^= obj.OptionalStruct.GetHashCode();
+        if (obj.optionalAny_ != null) hash ^= obj.OptionalAny.GetHashCode();
+        if (obj.optionalValue_ != null) hash ^= obj.OptionalValue.GetHashCode();
+        if (obj.OptionalNullValue != global::Google.Protobuf.WellKnownTypes.NullValue.NullValue) hash ^= obj.OptionalNullValue.GetHashCode();
+        hash ^= obj.repeatedDuration_.GetHashCode();
+        hash ^= obj.repeatedTimestamp_.GetHashCode();
+        hash ^= obj.repeatedFieldmask_.GetHashCode();
+        hash ^= obj.repeatedStruct_.GetHashCode();
+        hash ^= obj.repeatedAny_.GetHashCode();
+        hash ^= obj.repeatedValue_.GetHashCode();
+        hash ^= obj.repeatedListValue_.GetHashCode();
+        if (obj.Fieldname1 != 0) hash ^= obj.Fieldname1.GetHashCode();
+        if (obj.FieldName2 != 0) hash ^= obj.FieldName2.GetHashCode();
+        if (obj.FieldName3 != 0) hash ^= obj.FieldName3.GetHashCode();
+        if (obj.FieldName4 != 0) hash ^= obj.FieldName4.GetHashCode();
+        if (obj.Field0Name5 != 0) hash ^= obj.Field0Name5.GetHashCode();
+        if (obj.Field0Name6 != 0) hash ^= obj.Field0Name6.GetHashCode();
+        if (obj.FieldName7 != 0) hash ^= obj.FieldName7.GetHashCode();
+        if (obj.FieldName8 != 0) hash ^= obj.FieldName8.GetHashCode();
+        if (obj.FieldName9 != 0) hash ^= obj.FieldName9.GetHashCode();
+        if (obj.FieldName10 != 0) hash ^= obj.FieldName10.GetHashCode();
+        if (obj.FIELDNAME11 != 0) hash ^= obj.FIELDNAME11.GetHashCode();
+        if (obj.FIELDName12 != 0) hash ^= obj.FIELDName12.GetHashCode();
+        if (obj.FieldName13 != 0) hash ^= obj.FieldName13.GetHashCode();
+        if (obj.FieldName14 != 0) hash ^= obj.FieldName14.GetHashCode();
+        if (obj.FieldName15 != 0) hash ^= obj.FieldName15.GetHashCode();
+        if (obj.FieldName16 != 0) hash ^= obj.FieldName16.GetHashCode();
+        if (obj.FieldName17 != 0) hash ^= obj.FieldName17.GetHashCode();
+        if (obj.FieldName18 != 0) hash ^= obj.FieldName18.GetHashCode();
+        hash ^= (int) obj.oneofFieldCase_;
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -5829,6 +5877,11 @@ namespace ProtobufTestMessages.Proto3 {
   {
     private static readonly pb::MessageParser<ForeignMessage> _parser = new pb::MessageParser<ForeignMessage>(() => new ForeignMessage());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<ForeignMessage> Comparer { get; set; } = new DefaultForeignMessageComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<ForeignMessage> Parser { get { return _parser; } }
@@ -5887,25 +5940,13 @@ namespace ProtobufTestMessages.Proto3 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(ForeignMessage other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (C != other.C) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (C != 0) hash ^= C.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6017,6 +6058,37 @@ namespace ProtobufTestMessages.Proto3 {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultForeignMessageComparer : scg::IEqualityComparer<ForeignMessage> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(ForeignMessage x, ForeignMessage y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.C != y.C) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(ForeignMessage obj) {
+        int hash = 1;
+        if (obj.C != 0) hash ^= obj.C.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -6027,6 +6099,11 @@ namespace ProtobufTestMessages.Proto3 {
   {
     private static readonly pb::MessageParser<NullHypothesisProto3> _parser = new pb::MessageParser<NullHypothesisProto3>(() => new NullHypothesisProto3());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<NullHypothesisProto3> Comparer { get; set; } = new DefaultNullHypothesisProto3Comparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<NullHypothesisProto3> Parser { get { return _parser; } }
@@ -6072,23 +6149,13 @@ namespace ProtobufTestMessages.Proto3 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(NullHypothesisProto3 other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6178,6 +6245,35 @@ namespace ProtobufTestMessages.Proto3 {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultNullHypothesisProto3Comparer : scg::IEqualityComparer<NullHypothesisProto3> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(NullHypothesisProto3 x, NullHypothesisProto3 y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(NullHypothesisProto3 obj) {
+        int hash = 1;
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -6188,6 +6284,11 @@ namespace ProtobufTestMessages.Proto3 {
   {
     private static readonly pb::MessageParser<EnumOnlyProto3> _parser = new pb::MessageParser<EnumOnlyProto3>(() => new EnumOnlyProto3());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<EnumOnlyProto3> Comparer { get; set; } = new DefaultEnumOnlyProto3Comparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<EnumOnlyProto3> Parser { get { return _parser; } }
@@ -6233,23 +6334,13 @@ namespace ProtobufTestMessages.Proto3 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(EnumOnlyProto3 other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6352,6 +6443,35 @@ namespace ProtobufTestMessages.Proto3 {
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultEnumOnlyProto3Comparer : scg::IEqualityComparer<EnumOnlyProto3> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(EnumOnlyProto3 x, EnumOnlyProto3 y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(EnumOnlyProto3 obj) {
+        int hash = 1;
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   #endregion

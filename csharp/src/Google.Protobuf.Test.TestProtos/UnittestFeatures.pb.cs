@@ -118,6 +118,11 @@ namespace Pb {
   {
     private static readonly pb::MessageParser<TestMessage> _parser = new pb::MessageParser<TestMessage>(() => new TestMessage());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<TestMessage> Comparer { get; set; } = new DefaultTestMessageComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestMessage> Parser { get { return _parser; } }
@@ -163,23 +168,13 @@ namespace Pb {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestMessage other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -282,6 +277,11 @@ namespace Pb {
       {
         private static readonly pb::MessageParser<Nested> _parser = new pb::MessageParser<Nested>(() => new Nested());
         private pb::UnknownFieldSet _unknownFields;
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        private scg::IEqualityComparer<Nested> Comparer { get; set; } = new DefaultNestedComparer();
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public static pb::MessageParser<Nested> Parser { get { return _parser; } }
@@ -327,23 +327,13 @@ namespace Pb {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public bool Equals(Nested other) {
-          if (ReferenceEquals(other, null)) {
-            return false;
-          }
-          if (ReferenceEquals(other, this)) {
-            return true;
-          }
-          return Equals(_unknownFields, other._unknownFields);
+          return this.Comparer.Equals(this, other);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override int GetHashCode() {
-          int hash = 1;
-          if (_unknownFields != null) {
-            hash ^= _unknownFields.GetHashCode();
-          }
-          return hash;
+          return this.Comparer.GetHashCode(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -433,6 +423,35 @@ namespace Pb {
         }
         #endif
 
+        #region Nested comparer
+        private class DefaultNestedComparer : scg::IEqualityComparer<Nested> {
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public bool Equals(Nested x, Nested y) {
+            if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+              return true;
+            }
+            if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+              return false;
+            }
+            if (ReferenceEquals(x, y)) {
+              return true;
+            }
+            return Equals(x._unknownFields, y._unknownFields);
+          }
+
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+          [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+          public int GetHashCode(Nested obj) {
+            int hash = 1;
+            if (obj._unknownFields != null) {
+              hash ^= obj._unknownFields.GetHashCode();
+            }
+            return hash;
+          }
+        }
+
+        #endregion
         #region Extensions
         /// <summary>Container for extensions for other messages declared in the Nested message type.</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -448,6 +467,35 @@ namespace Pb {
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultTestMessageComparer : scg::IEqualityComparer<TestMessage> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(TestMessage x, TestMessage y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(TestMessage obj) {
+        int hash = 1;
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
     #region Extensions
     /// <summary>Container for extensions for other messages declared in the TestMessage message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -468,6 +516,11 @@ namespace Pb {
   {
     private static readonly pb::MessageParser<TestFeatures> _parser = new pb::MessageParser<TestFeatures>(() => new TestFeatures());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<TestFeatures> Comparer { get; set; } = new DefaultTestFeaturesComparer();
+
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -963,55 +1016,13 @@ namespace Pb {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestFeatures other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (FileFeature != other.FileFeature) return false;
-      if (ExtensionRangeFeature != other.ExtensionRangeFeature) return false;
-      if (MessageFeature != other.MessageFeature) return false;
-      if (FieldFeature != other.FieldFeature) return false;
-      if (OneofFeature != other.OneofFeature) return false;
-      if (EnumFeature != other.EnumFeature) return false;
-      if (EnumEntryFeature != other.EnumEntryFeature) return false;
-      if (ServiceFeature != other.ServiceFeature) return false;
-      if (MethodFeature != other.MethodFeature) return false;
-      if (MultipleFeature != other.MultipleFeature) return false;
-      if (BoolFieldFeature != other.BoolFieldFeature) return false;
-      if (SourceFeature != other.SourceFeature) return false;
-      if (SourceFeature2 != other.SourceFeature2) return false;
-      if (RemovedFeature != other.RemovedFeature) return false;
-      if (FutureFeature != other.FutureFeature) return false;
-      if (LegacyFeature != other.LegacyFeature) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasFileFeature) hash ^= FileFeature.GetHashCode();
-      if (HasExtensionRangeFeature) hash ^= ExtensionRangeFeature.GetHashCode();
-      if (HasMessageFeature) hash ^= MessageFeature.GetHashCode();
-      if (HasFieldFeature) hash ^= FieldFeature.GetHashCode();
-      if (HasOneofFeature) hash ^= OneofFeature.GetHashCode();
-      if (HasEnumFeature) hash ^= EnumFeature.GetHashCode();
-      if (HasEnumEntryFeature) hash ^= EnumEntryFeature.GetHashCode();
-      if (HasServiceFeature) hash ^= ServiceFeature.GetHashCode();
-      if (HasMethodFeature) hash ^= MethodFeature.GetHashCode();
-      if (HasMultipleFeature) hash ^= MultipleFeature.GetHashCode();
-      if (HasBoolFieldFeature) hash ^= BoolFieldFeature.GetHashCode();
-      if (HasSourceFeature) hash ^= SourceFeature.GetHashCode();
-      if (HasSourceFeature2) hash ^= SourceFeature2.GetHashCode();
-      if (HasRemovedFeature) hash ^= RemovedFeature.GetHashCode();
-      if (HasFutureFeature) hash ^= FutureFeature.GetHashCode();
-      if (HasLegacyFeature) hash ^= LegacyFeature.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1453,6 +1464,67 @@ namespace Pb {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultTestFeaturesComparer : scg::IEqualityComparer<TestFeatures> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(TestFeatures x, TestFeatures y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.FileFeature != y.FileFeature) return false;
+        if (x.ExtensionRangeFeature != y.ExtensionRangeFeature) return false;
+        if (x.MessageFeature != y.MessageFeature) return false;
+        if (x.FieldFeature != y.FieldFeature) return false;
+        if (x.OneofFeature != y.OneofFeature) return false;
+        if (x.EnumFeature != y.EnumFeature) return false;
+        if (x.EnumEntryFeature != y.EnumEntryFeature) return false;
+        if (x.ServiceFeature != y.ServiceFeature) return false;
+        if (x.MethodFeature != y.MethodFeature) return false;
+        if (x.MultipleFeature != y.MultipleFeature) return false;
+        if (x.BoolFieldFeature != y.BoolFieldFeature) return false;
+        if (x.SourceFeature != y.SourceFeature) return false;
+        if (x.SourceFeature2 != y.SourceFeature2) return false;
+        if (x.RemovedFeature != y.RemovedFeature) return false;
+        if (x.FutureFeature != y.FutureFeature) return false;
+        if (x.LegacyFeature != y.LegacyFeature) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(TestFeatures obj) {
+        int hash = 1;
+        if (obj.HasFileFeature) hash ^= obj.FileFeature.GetHashCode();
+        if (obj.HasExtensionRangeFeature) hash ^= obj.ExtensionRangeFeature.GetHashCode();
+        if (obj.HasMessageFeature) hash ^= obj.MessageFeature.GetHashCode();
+        if (obj.HasFieldFeature) hash ^= obj.FieldFeature.GetHashCode();
+        if (obj.HasOneofFeature) hash ^= obj.OneofFeature.GetHashCode();
+        if (obj.HasEnumFeature) hash ^= obj.EnumFeature.GetHashCode();
+        if (obj.HasEnumEntryFeature) hash ^= obj.EnumEntryFeature.GetHashCode();
+        if (obj.HasServiceFeature) hash ^= obj.ServiceFeature.GetHashCode();
+        if (obj.HasMethodFeature) hash ^= obj.MethodFeature.GetHashCode();
+        if (obj.HasMultipleFeature) hash ^= obj.MultipleFeature.GetHashCode();
+        if (obj.HasBoolFieldFeature) hash ^= obj.BoolFieldFeature.GetHashCode();
+        if (obj.HasSourceFeature) hash ^= obj.SourceFeature.GetHashCode();
+        if (obj.HasSourceFeature2) hash ^= obj.SourceFeature2.GetHashCode();
+        if (obj.HasRemovedFeature) hash ^= obj.RemovedFeature.GetHashCode();
+        if (obj.HasFutureFeature) hash ^= obj.FutureFeature.GetHashCode();
+        if (obj.HasLegacyFeature) hash ^= obj.LegacyFeature.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   #endregion

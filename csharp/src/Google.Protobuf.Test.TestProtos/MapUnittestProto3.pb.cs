@@ -185,6 +185,11 @@ namespace Google.Protobuf.TestProtos {
   {
     private static readonly pb::MessageParser<TestMap> _parser = new pb::MessageParser<TestMap>(() => new TestMap());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<TestMap> Comparer { get; set; } = new DefaultTestMapComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestMap> Parser { get { return _parser; } }
@@ -434,57 +439,13 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestMap other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!MapInt32Int32.Equals(other.MapInt32Int32)) return false;
-      if (!MapInt64Int64.Equals(other.MapInt64Int64)) return false;
-      if (!MapUint32Uint32.Equals(other.MapUint32Uint32)) return false;
-      if (!MapUint64Uint64.Equals(other.MapUint64Uint64)) return false;
-      if (!MapSint32Sint32.Equals(other.MapSint32Sint32)) return false;
-      if (!MapSint64Sint64.Equals(other.MapSint64Sint64)) return false;
-      if (!MapFixed32Fixed32.Equals(other.MapFixed32Fixed32)) return false;
-      if (!MapFixed64Fixed64.Equals(other.MapFixed64Fixed64)) return false;
-      if (!MapSfixed32Sfixed32.Equals(other.MapSfixed32Sfixed32)) return false;
-      if (!MapSfixed64Sfixed64.Equals(other.MapSfixed64Sfixed64)) return false;
-      if (!MapInt32Float.Equals(other.MapInt32Float)) return false;
-      if (!MapInt32Double.Equals(other.MapInt32Double)) return false;
-      if (!MapBoolBool.Equals(other.MapBoolBool)) return false;
-      if (!MapStringString.Equals(other.MapStringString)) return false;
-      if (!MapInt32Bytes.Equals(other.MapInt32Bytes)) return false;
-      if (!MapInt32Enum.Equals(other.MapInt32Enum)) return false;
-      if (!MapInt32ForeignMessage.Equals(other.MapInt32ForeignMessage)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      hash ^= MapInt32Int32.GetHashCode();
-      hash ^= MapInt64Int64.GetHashCode();
-      hash ^= MapUint32Uint32.GetHashCode();
-      hash ^= MapUint64Uint64.GetHashCode();
-      hash ^= MapSint32Sint32.GetHashCode();
-      hash ^= MapSint64Sint64.GetHashCode();
-      hash ^= MapFixed32Fixed32.GetHashCode();
-      hash ^= MapFixed64Fixed64.GetHashCode();
-      hash ^= MapSfixed32Sfixed32.GetHashCode();
-      hash ^= MapSfixed64Sfixed64.GetHashCode();
-      hash ^= MapInt32Float.GetHashCode();
-      hash ^= MapInt32Double.GetHashCode();
-      hash ^= MapBoolBool.GetHashCode();
-      hash ^= MapStringString.GetHashCode();
-      hash ^= MapInt32Bytes.GetHashCode();
-      hash ^= MapInt32Enum.GetHashCode();
-      hash ^= MapInt32ForeignMessage.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -778,6 +739,69 @@ namespace Google.Protobuf.TestProtos {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultTestMapComparer : scg::IEqualityComparer<TestMap> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(TestMap x, TestMap y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (!x.MapInt32Int32.Equals(y.MapInt32Int32)) return false;
+        if (!x.MapInt64Int64.Equals(y.MapInt64Int64)) return false;
+        if (!x.MapUint32Uint32.Equals(y.MapUint32Uint32)) return false;
+        if (!x.MapUint64Uint64.Equals(y.MapUint64Uint64)) return false;
+        if (!x.MapSint32Sint32.Equals(y.MapSint32Sint32)) return false;
+        if (!x.MapSint64Sint64.Equals(y.MapSint64Sint64)) return false;
+        if (!x.MapFixed32Fixed32.Equals(y.MapFixed32Fixed32)) return false;
+        if (!x.MapFixed64Fixed64.Equals(y.MapFixed64Fixed64)) return false;
+        if (!x.MapSfixed32Sfixed32.Equals(y.MapSfixed32Sfixed32)) return false;
+        if (!x.MapSfixed64Sfixed64.Equals(y.MapSfixed64Sfixed64)) return false;
+        if (!x.MapInt32Float.Equals(y.MapInt32Float)) return false;
+        if (!x.MapInt32Double.Equals(y.MapInt32Double)) return false;
+        if (!x.MapBoolBool.Equals(y.MapBoolBool)) return false;
+        if (!x.MapStringString.Equals(y.MapStringString)) return false;
+        if (!x.MapInt32Bytes.Equals(y.MapInt32Bytes)) return false;
+        if (!x.MapInt32Enum.Equals(y.MapInt32Enum)) return false;
+        if (!x.MapInt32ForeignMessage.Equals(y.MapInt32ForeignMessage)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(TestMap obj) {
+        int hash = 1;
+        hash ^= obj.MapInt32Int32.GetHashCode();
+        hash ^= obj.MapInt64Int64.GetHashCode();
+        hash ^= obj.MapUint32Uint32.GetHashCode();
+        hash ^= obj.MapUint64Uint64.GetHashCode();
+        hash ^= obj.MapSint32Sint32.GetHashCode();
+        hash ^= obj.MapSint64Sint64.GetHashCode();
+        hash ^= obj.MapFixed32Fixed32.GetHashCode();
+        hash ^= obj.MapFixed64Fixed64.GetHashCode();
+        hash ^= obj.MapSfixed32Sfixed32.GetHashCode();
+        hash ^= obj.MapSfixed64Sfixed64.GetHashCode();
+        hash ^= obj.MapInt32Float.GetHashCode();
+        hash ^= obj.MapInt32Double.GetHashCode();
+        hash ^= obj.MapBoolBool.GetHashCode();
+        hash ^= obj.MapStringString.GetHashCode();
+        hash ^= obj.MapInt32Bytes.GetHashCode();
+        hash ^= obj.MapInt32Enum.GetHashCode();
+        hash ^= obj.MapInt32ForeignMessage.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -788,6 +812,11 @@ namespace Google.Protobuf.TestProtos {
   {
     private static readonly pb::MessageParser<TestMapSubmessage> _parser = new pb::MessageParser<TestMapSubmessage>(() => new TestMapSubmessage());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<TestMapSubmessage> Comparer { get; set; } = new DefaultTestMapSubmessageComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestMapSubmessage> Parser { get { return _parser; } }
@@ -846,25 +875,13 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestMapSubmessage other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!object.Equals(TestMap, other.TestMap)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (testMap_ != null) hash ^= TestMap.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -985,6 +1002,37 @@ namespace Google.Protobuf.TestProtos {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultTestMapSubmessageComparer : scg::IEqualityComparer<TestMapSubmessage> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(TestMapSubmessage x, TestMapSubmessage y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (!object.Equals(x.TestMap, y.TestMap)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(TestMapSubmessage obj) {
+        int hash = 1;
+        if (obj.testMap_ != null) hash ^= obj.TestMap.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -995,6 +1043,11 @@ namespace Google.Protobuf.TestProtos {
   {
     private static readonly pb::MessageParser<TestMessageMap> _parser = new pb::MessageParser<TestMessageMap>(() => new TestMessageMap());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<TestMessageMap> Comparer { get; set; } = new DefaultTestMessageMapComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestMessageMap> Parser { get { return _parser; } }
@@ -1052,25 +1105,13 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestMessageMap other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!MapInt32Message.Equals(other.MapInt32Message)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      hash ^= MapInt32Message.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1172,6 +1213,37 @@ namespace Google.Protobuf.TestProtos {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultTestMessageMapComparer : scg::IEqualityComparer<TestMessageMap> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(TestMessageMap x, TestMessageMap y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (!x.MapInt32Message.Equals(y.MapInt32Message)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(TestMessageMap obj) {
+        int hash = 1;
+        hash ^= obj.MapInt32Message.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -1185,6 +1257,11 @@ namespace Google.Protobuf.TestProtos {
   {
     private static readonly pb::MessageParser<TestSameTypeMap> _parser = new pb::MessageParser<TestSameTypeMap>(() => new TestSameTypeMap());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<TestSameTypeMap> Comparer { get; set; } = new DefaultTestSameTypeMapComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestSameTypeMap> Parser { get { return _parser; } }
@@ -1254,27 +1331,13 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestSameTypeMap other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!Map1.Equals(other.Map1)) return false;
-      if (!Map2.Equals(other.Map2)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      hash ^= Map1.GetHashCode();
-      hash ^= Map2.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1388,6 +1451,39 @@ namespace Google.Protobuf.TestProtos {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultTestSameTypeMapComparer : scg::IEqualityComparer<TestSameTypeMap> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(TestSameTypeMap x, TestSameTypeMap y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (!x.Map1.Equals(y.Map1)) return false;
+        if (!x.Map2.Equals(y.Map2)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(TestSameTypeMap obj) {
+        int hash = 1;
+        hash ^= obj.Map1.GetHashCode();
+        hash ^= obj.Map2.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
@@ -1398,6 +1494,11 @@ namespace Google.Protobuf.TestProtos {
   {
     private static readonly pb::MessageParser<TestArenaMap> _parser = new pb::MessageParser<TestArenaMap>(() => new TestArenaMap());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<TestArenaMap> Comparer { get; set; } = new DefaultTestArenaMapComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestArenaMap> Parser { get { return _parser; } }
@@ -1623,53 +1724,13 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestArenaMap other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!MapInt32Int32.Equals(other.MapInt32Int32)) return false;
-      if (!MapInt64Int64.Equals(other.MapInt64Int64)) return false;
-      if (!MapUint32Uint32.Equals(other.MapUint32Uint32)) return false;
-      if (!MapUint64Uint64.Equals(other.MapUint64Uint64)) return false;
-      if (!MapSint32Sint32.Equals(other.MapSint32Sint32)) return false;
-      if (!MapSint64Sint64.Equals(other.MapSint64Sint64)) return false;
-      if (!MapFixed32Fixed32.Equals(other.MapFixed32Fixed32)) return false;
-      if (!MapFixed64Fixed64.Equals(other.MapFixed64Fixed64)) return false;
-      if (!MapSfixed32Sfixed32.Equals(other.MapSfixed32Sfixed32)) return false;
-      if (!MapSfixed64Sfixed64.Equals(other.MapSfixed64Sfixed64)) return false;
-      if (!MapInt32Float.Equals(other.MapInt32Float)) return false;
-      if (!MapInt32Double.Equals(other.MapInt32Double)) return false;
-      if (!MapBoolBool.Equals(other.MapBoolBool)) return false;
-      if (!MapInt32Enum.Equals(other.MapInt32Enum)) return false;
-      if (!MapInt32ForeignMessage.Equals(other.MapInt32ForeignMessage)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      hash ^= MapInt32Int32.GetHashCode();
-      hash ^= MapInt64Int64.GetHashCode();
-      hash ^= MapUint32Uint32.GetHashCode();
-      hash ^= MapUint64Uint64.GetHashCode();
-      hash ^= MapSint32Sint32.GetHashCode();
-      hash ^= MapSint64Sint64.GetHashCode();
-      hash ^= MapFixed32Fixed32.GetHashCode();
-      hash ^= MapFixed64Fixed64.GetHashCode();
-      hash ^= MapSfixed32Sfixed32.GetHashCode();
-      hash ^= MapSfixed64Sfixed64.GetHashCode();
-      hash ^= MapInt32Float.GetHashCode();
-      hash ^= MapInt32Double.GetHashCode();
-      hash ^= MapBoolBool.GetHashCode();
-      hash ^= MapInt32Enum.GetHashCode();
-      hash ^= MapInt32ForeignMessage.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1939,6 +2000,65 @@ namespace Google.Protobuf.TestProtos {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultTestArenaMapComparer : scg::IEqualityComparer<TestArenaMap> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(TestArenaMap x, TestArenaMap y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (!x.MapInt32Int32.Equals(y.MapInt32Int32)) return false;
+        if (!x.MapInt64Int64.Equals(y.MapInt64Int64)) return false;
+        if (!x.MapUint32Uint32.Equals(y.MapUint32Uint32)) return false;
+        if (!x.MapUint64Uint64.Equals(y.MapUint64Uint64)) return false;
+        if (!x.MapSint32Sint32.Equals(y.MapSint32Sint32)) return false;
+        if (!x.MapSint64Sint64.Equals(y.MapSint64Sint64)) return false;
+        if (!x.MapFixed32Fixed32.Equals(y.MapFixed32Fixed32)) return false;
+        if (!x.MapFixed64Fixed64.Equals(y.MapFixed64Fixed64)) return false;
+        if (!x.MapSfixed32Sfixed32.Equals(y.MapSfixed32Sfixed32)) return false;
+        if (!x.MapSfixed64Sfixed64.Equals(y.MapSfixed64Sfixed64)) return false;
+        if (!x.MapInt32Float.Equals(y.MapInt32Float)) return false;
+        if (!x.MapInt32Double.Equals(y.MapInt32Double)) return false;
+        if (!x.MapBoolBool.Equals(y.MapBoolBool)) return false;
+        if (!x.MapInt32Enum.Equals(y.MapInt32Enum)) return false;
+        if (!x.MapInt32ForeignMessage.Equals(y.MapInt32ForeignMessage)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(TestArenaMap obj) {
+        int hash = 1;
+        hash ^= obj.MapInt32Int32.GetHashCode();
+        hash ^= obj.MapInt64Int64.GetHashCode();
+        hash ^= obj.MapUint32Uint32.GetHashCode();
+        hash ^= obj.MapUint64Uint64.GetHashCode();
+        hash ^= obj.MapSint32Sint32.GetHashCode();
+        hash ^= obj.MapSint64Sint64.GetHashCode();
+        hash ^= obj.MapFixed32Fixed32.GetHashCode();
+        hash ^= obj.MapFixed64Fixed64.GetHashCode();
+        hash ^= obj.MapSfixed32Sfixed32.GetHashCode();
+        hash ^= obj.MapSfixed64Sfixed64.GetHashCode();
+        hash ^= obj.MapInt32Float.GetHashCode();
+        hash ^= obj.MapInt32Double.GetHashCode();
+        hash ^= obj.MapBoolBool.GetHashCode();
+        hash ^= obj.MapInt32Enum.GetHashCode();
+        hash ^= obj.MapInt32ForeignMessage.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -1953,6 +2073,11 @@ namespace Google.Protobuf.TestProtos {
   {
     private static readonly pb::MessageParser<MessageContainingEnumCalledType> _parser = new pb::MessageParser<MessageContainingEnumCalledType>(() => new MessageContainingEnumCalledType());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<MessageContainingEnumCalledType> Comparer { get; set; } = new DefaultMessageContainingEnumCalledTypeComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<MessageContainingEnumCalledType> Parser { get { return _parser; } }
@@ -2010,25 +2135,13 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(MessageContainingEnumCalledType other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!Type.Equals(other.Type)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      hash ^= Type.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2142,6 +2255,37 @@ namespace Google.Protobuf.TestProtos {
     }
     #endregion
 
+    #region Nested comparer
+    private class DefaultMessageContainingEnumCalledTypeComparer : scg::IEqualityComparer<MessageContainingEnumCalledType> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(MessageContainingEnumCalledType x, MessageContainingEnumCalledType y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (!x.Type.Equals(y.Type)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(MessageContainingEnumCalledType obj) {
+        int hash = 1;
+        hash ^= obj.Type.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -2155,6 +2299,11 @@ namespace Google.Protobuf.TestProtos {
   {
     private static readonly pb::MessageParser<MessageContainingMapCalledEntry> _parser = new pb::MessageParser<MessageContainingMapCalledEntry>(() => new MessageContainingMapCalledEntry());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<MessageContainingMapCalledEntry> Comparer { get; set; } = new DefaultMessageContainingMapCalledEntryComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<MessageContainingMapCalledEntry> Parser { get { return _parser; } }
@@ -2212,25 +2361,13 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(MessageContainingMapCalledEntry other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (!Entry.Equals(other.Entry)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      hash ^= Entry.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2332,6 +2469,37 @@ namespace Google.Protobuf.TestProtos {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultMessageContainingMapCalledEntryComparer : scg::IEqualityComparer<MessageContainingMapCalledEntry> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(MessageContainingMapCalledEntry x, MessageContainingMapCalledEntry y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (!x.Entry.Equals(y.Entry)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(MessageContainingMapCalledEntry obj) {
+        int hash = 1;
+        hash ^= obj.Entry.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   #endregion

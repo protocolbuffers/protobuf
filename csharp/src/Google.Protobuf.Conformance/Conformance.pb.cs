@@ -120,6 +120,11 @@ namespace Conformance {
   {
     private static readonly pb::MessageParser<TestStatus> _parser = new pb::MessageParser<TestStatus>(() => new TestStatus());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<TestStatus> Comparer { get; set; } = new DefaultTestStatusComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestStatus> Parser { get { return _parser; } }
@@ -191,27 +196,13 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestStatus other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (Name != other.Name) return false;
-      if (FailureMessage != other.FailureMessage) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (Name.Length != 0) hash ^= Name.GetHashCode();
-      if (FailureMessage.Length != 0) hash ^= FailureMessage.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -345,6 +336,39 @@ namespace Conformance {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultTestStatusComparer : scg::IEqualityComparer<TestStatus> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(TestStatus x, TestStatus y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.Name != y.Name) return false;
+        if (x.FailureMessage != y.FailureMessage) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(TestStatus obj) {
+        int hash = 1;
+        if (obj.Name.Length != 0) hash ^= obj.Name.GetHashCode();
+        if (obj.FailureMessage.Length != 0) hash ^= obj.FailureMessage.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -360,6 +384,11 @@ namespace Conformance {
   {
     private static readonly pb::MessageParser<FailureSet> _parser = new pb::MessageParser<FailureSet>(() => new FailureSet());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<FailureSet> Comparer { get; set; } = new DefaultFailureSetComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<FailureSet> Parser { get { return _parser; } }
@@ -417,25 +446,13 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(FailureSet other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if(!test_.Equals(other.test_)) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      hash ^= test_.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -537,6 +554,37 @@ namespace Conformance {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultFailureSetComparer : scg::IEqualityComparer<FailureSet> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(FailureSet x, FailureSet y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if(!x.test_.Equals(y.test_)) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(FailureSet obj) {
+        int hash = 1;
+        hash ^= obj.test_.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -554,6 +602,11 @@ namespace Conformance {
   {
     private static readonly pb::MessageParser<ConformanceRequest> _parser = new pb::MessageParser<ConformanceRequest>(() => new ConformanceRequest());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<ConformanceRequest> Comparer { get; set; } = new DefaultConformanceRequestComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<ConformanceRequest> Parser { get { return _parser; } }
@@ -832,43 +885,13 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(ConformanceRequest other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (ProtobufPayload != other.ProtobufPayload) return false;
-      if (JsonPayload != other.JsonPayload) return false;
-      if (JspbPayload != other.JspbPayload) return false;
-      if (TextPayload != other.TextPayload) return false;
-      if (RequestedOutputFormat != other.RequestedOutputFormat) return false;
-      if (MessageType != other.MessageType) return false;
-      if (TestCategory != other.TestCategory) return false;
-      if (!object.Equals(JspbEncodingOptions, other.JspbEncodingOptions)) return false;
-      if (PrintUnknownFields != other.PrintUnknownFields) return false;
-      if (PayloadCase != other.PayloadCase) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasProtobufPayload) hash ^= ProtobufPayload.GetHashCode();
-      if (HasJsonPayload) hash ^= JsonPayload.GetHashCode();
-      if (HasJspbPayload) hash ^= JspbPayload.GetHashCode();
-      if (HasTextPayload) hash ^= TextPayload.GetHashCode();
-      if (RequestedOutputFormat != global::Conformance.WireFormat.Unspecified) hash ^= RequestedOutputFormat.GetHashCode();
-      if (MessageType.Length != 0) hash ^= MessageType.GetHashCode();
-      if (TestCategory != global::Conformance.TestCategory.UnspecifiedTest) hash ^= TestCategory.GetHashCode();
-      if (jspbEncodingOptions_ != null) hash ^= JspbEncodingOptions.GetHashCode();
-      if (PrintUnknownFields != false) hash ^= PrintUnknownFields.GetHashCode();
-      hash ^= (int) payloadCase_;
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1168,6 +1191,55 @@ namespace Conformance {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultConformanceRequestComparer : scg::IEqualityComparer<ConformanceRequest> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(ConformanceRequest x, ConformanceRequest y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.ProtobufPayload != y.ProtobufPayload) return false;
+        if (x.JsonPayload != y.JsonPayload) return false;
+        if (x.JspbPayload != y.JspbPayload) return false;
+        if (x.TextPayload != y.TextPayload) return false;
+        if (x.RequestedOutputFormat != y.RequestedOutputFormat) return false;
+        if (x.MessageType != y.MessageType) return false;
+        if (x.TestCategory != y.TestCategory) return false;
+        if (!object.Equals(x.JspbEncodingOptions, y.JspbEncodingOptions)) return false;
+        if (x.PrintUnknownFields != y.PrintUnknownFields) return false;
+        if (x.PayloadCase != y.PayloadCase) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(ConformanceRequest obj) {
+        int hash = 1;
+        if (obj.HasProtobufPayload) hash ^= obj.ProtobufPayload.GetHashCode();
+        if (obj.HasJsonPayload) hash ^= obj.JsonPayload.GetHashCode();
+        if (obj.HasJspbPayload) hash ^= obj.JspbPayload.GetHashCode();
+        if (obj.HasTextPayload) hash ^= obj.TextPayload.GetHashCode();
+        if (obj.RequestedOutputFormat != global::Conformance.WireFormat.Unspecified) hash ^= obj.RequestedOutputFormat.GetHashCode();
+        if (obj.MessageType.Length != 0) hash ^= obj.MessageType.GetHashCode();
+        if (obj.TestCategory != global::Conformance.TestCategory.UnspecifiedTest) hash ^= obj.TestCategory.GetHashCode();
+        if (obj.jspbEncodingOptions_ != null) hash ^= obj.JspbEncodingOptions.GetHashCode();
+        if (obj.PrintUnknownFields != false) hash ^= obj.PrintUnknownFields.GetHashCode();
+        hash ^= (int) obj.payloadCase_;
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -1181,6 +1253,11 @@ namespace Conformance {
   {
     private static readonly pb::MessageParser<ConformanceResponse> _parser = new pb::MessageParser<ConformanceResponse>(() => new ConformanceResponse());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<ConformanceResponse> Comparer { get; set; } = new DefaultConformanceResponseComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<ConformanceResponse> Parser { get { return _parser; } }
@@ -1561,43 +1638,13 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(ConformanceResponse other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (ParseError != other.ParseError) return false;
-      if (SerializeError != other.SerializeError) return false;
-      if (TimeoutError != other.TimeoutError) return false;
-      if (RuntimeError != other.RuntimeError) return false;
-      if (ProtobufPayload != other.ProtobufPayload) return false;
-      if (JsonPayload != other.JsonPayload) return false;
-      if (Skipped != other.Skipped) return false;
-      if (JspbPayload != other.JspbPayload) return false;
-      if (TextPayload != other.TextPayload) return false;
-      if (ResultCase != other.ResultCase) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (HasParseError) hash ^= ParseError.GetHashCode();
-      if (HasSerializeError) hash ^= SerializeError.GetHashCode();
-      if (HasTimeoutError) hash ^= TimeoutError.GetHashCode();
-      if (HasRuntimeError) hash ^= RuntimeError.GetHashCode();
-      if (HasProtobufPayload) hash ^= ProtobufPayload.GetHashCode();
-      if (HasJsonPayload) hash ^= JsonPayload.GetHashCode();
-      if (HasSkipped) hash ^= Skipped.GetHashCode();
-      if (HasJspbPayload) hash ^= JspbPayload.GetHashCode();
-      if (HasTextPayload) hash ^= TextPayload.GetHashCode();
-      hash ^= (int) resultCase_;
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1888,6 +1935,55 @@ namespace Conformance {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultConformanceResponseComparer : scg::IEqualityComparer<ConformanceResponse> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(ConformanceResponse x, ConformanceResponse y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.ParseError != y.ParseError) return false;
+        if (x.SerializeError != y.SerializeError) return false;
+        if (x.TimeoutError != y.TimeoutError) return false;
+        if (x.RuntimeError != y.RuntimeError) return false;
+        if (x.ProtobufPayload != y.ProtobufPayload) return false;
+        if (x.JsonPayload != y.JsonPayload) return false;
+        if (x.Skipped != y.Skipped) return false;
+        if (x.JspbPayload != y.JspbPayload) return false;
+        if (x.TextPayload != y.TextPayload) return false;
+        if (x.ResultCase != y.ResultCase) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(ConformanceResponse obj) {
+        int hash = 1;
+        if (obj.HasParseError) hash ^= obj.ParseError.GetHashCode();
+        if (obj.HasSerializeError) hash ^= obj.SerializeError.GetHashCode();
+        if (obj.HasTimeoutError) hash ^= obj.TimeoutError.GetHashCode();
+        if (obj.HasRuntimeError) hash ^= obj.RuntimeError.GetHashCode();
+        if (obj.HasProtobufPayload) hash ^= obj.ProtobufPayload.GetHashCode();
+        if (obj.HasJsonPayload) hash ^= obj.JsonPayload.GetHashCode();
+        if (obj.HasSkipped) hash ^= obj.Skipped.GetHashCode();
+        if (obj.HasJspbPayload) hash ^= obj.JspbPayload.GetHashCode();
+        if (obj.HasTextPayload) hash ^= obj.TextPayload.GetHashCode();
+        hash ^= (int) obj.resultCase_;
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   /// <summary>
@@ -1901,6 +1997,11 @@ namespace Conformance {
   {
     private static readonly pb::MessageParser<JspbEncodingConfig> _parser = new pb::MessageParser<JspbEncodingConfig>(() => new JspbEncodingConfig());
     private pb::UnknownFieldSet _unknownFields;
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    private scg::IEqualityComparer<JspbEncodingConfig> Comparer { get; set; } = new DefaultJspbEncodingConfigComparer();
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<JspbEncodingConfig> Parser { get { return _parser; } }
@@ -1962,25 +2063,13 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(JspbEncodingConfig other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (UseJspbArrayAnyFormat != other.UseJspbArrayAnyFormat) return false;
-      return Equals(_unknownFields, other._unknownFields);
+      return this.Comparer.Equals(this, other);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
-      int hash = 1;
-      if (UseJspbArrayAnyFormat != false) hash ^= UseJspbArrayAnyFormat.GetHashCode();
-      if (_unknownFields != null) {
-        hash ^= _unknownFields.GetHashCode();
-      }
-      return hash;
+      return this.Comparer.GetHashCode(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2092,6 +2181,37 @@ namespace Conformance {
     }
     #endif
 
+    #region Nested comparer
+    private class DefaultJspbEncodingConfigComparer : scg::IEqualityComparer<JspbEncodingConfig> {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public bool Equals(JspbEncodingConfig x, JspbEncodingConfig y) {
+        if (ReferenceEquals(x, null) && ReferenceEquals(y, null)) {
+          return true;
+        }
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) {
+          return false;
+        }
+        if (ReferenceEquals(x, y)) {
+          return true;
+        }
+        if (x.UseJspbArrayAnyFormat != y.UseJspbArrayAnyFormat) return false;
+        return Equals(x._unknownFields, y._unknownFields);
+      }
+
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+      [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+      public int GetHashCode(JspbEncodingConfig obj) {
+        int hash = 1;
+        if (obj.UseJspbArrayAnyFormat != false) hash ^= obj.UseJspbArrayAnyFormat.GetHashCode();
+        if (obj._unknownFields != null) {
+          hash ^= obj._unknownFields.GetHashCode();
+        }
+        return hash;
+      }
+    }
+
+    #endregion
   }
 
   #endregion

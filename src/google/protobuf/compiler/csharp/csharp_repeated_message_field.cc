@@ -102,13 +102,13 @@ void RepeatedMessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* prin
 void RepeatedMessageFieldGenerator::WriteHash(io::Printer* printer) {
   printer->Print(
     variables_,
-    "hash ^= $name$_.GetHashCode();\n");
+    "hash ^= obj.$name$_.GetHashCode();\n");
 }
 
 void RepeatedMessageFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if(!$name$_.Equals(other.$name$_)) return false;\n");
+    "if(!x.$name$_.Equals(y.$name$_)) return false;\n");
 }
 
 void RepeatedMessageFieldGenerator::WriteToString(io::Printer* printer) {
