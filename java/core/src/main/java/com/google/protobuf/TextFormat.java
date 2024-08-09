@@ -534,7 +534,12 @@ public final class TextFormat {
           break;
 
         case ENUM:
-          generator.print(((EnumValueDescriptor) value).getName());
+          if (((EnumValueDescriptor) value).getIndex() == -1) {
+            // Unknown enum value, print the number instead of the name.
+            generator.print(Integer.toString(((EnumValueDescriptor) value).getNumber()));
+          } else {
+            generator.print(((EnumValueDescriptor) value).getName());
+          }
           break;
 
         case MESSAGE:
@@ -2195,7 +2200,10 @@ public final class TextFormat {
 
             if (tokenizer.lookingAtInteger()) {
               final int number = tokenizer.consumeInt32();
-              value = enumType.findValueByNumber(number);
+              value =
+                  enumType.isClosed()
+                      ? enumType.findValueByNumber(number)
+                      : enumType.findValueByNumberCreatingIfUnknown(number);
               if (value == null) {
                 String unknownValueMsg =
                     "Enum type \""
