@@ -38,7 +38,7 @@ typedef struct {
   upb_Arena* arena_;
 } upb_String;
 
-// Initialize an already-allocted upb_String object.
+// Initialize an already-allocated upb_String object.
 UPB_INLINE bool upb_String_Init(upb_String* s, upb_Arena* a) {
   static const int kDefaultCapacity = 16;
 

@@ -222,7 +222,7 @@ static int test_manual(const struct ftab *ftab)
     }
     for (int i = 0; i < sizeof(neg)/sizeof(neg[0]); ++i) {
         if (ftab->func(neg[i].data, neg[i].len) == 0) {
-            printf("FAILED negitive test: ");
+            printf("FAILED negative test: ");
             print_test(neg[i].data, neg[i].len);
             return -1;
         }
@@ -256,7 +256,7 @@ static int test_manual(const struct ftab *ftab)
         while (buf_len >= 1 && buf[buf_len-1] <= 0x7F)
             --buf_len;
         if (buf_len && ftab->func(buf, buf_len-1) == 0) {
-            printf("FAILED negitive test: ");
+            printf("FAILED negative test: ");
             print_test(buf, buf_len);
             return -1;
         }

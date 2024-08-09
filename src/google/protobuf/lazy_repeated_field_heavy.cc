@@ -100,7 +100,7 @@ void VerifyConsistency(LazyRepeatedPtrField::LogicalState state,
     // Bail out on parse failure as it can result in false positive
     // inconsistency and ABSL_CHECK failure. Warn instead.
     ABSL_LOG(WARNING)
-        << "Verify skipped due to parse falure: RepeatedPtrField of "
+        << "Verify skipped due to parse failure: RepeatedPtrField of "
         << prototype->GetTypeName();
     return;
   }
@@ -326,7 +326,7 @@ uint8_t* LazyRepeatedPtrField::InternalWrite(
             [] { return true; },
             [&](const auto& cord) {
               // `set_missing_required = false` to avoid checking require fields
-              // (simialr to Message::ParsePartial*).
+              // (similar to Message::ParsePartial*).
               return ParseWithOuterContext(
                   reinterpret_cast<RepeatedPtrFieldBase*>(&value), cord,
                   /*ctx=*/nullptr, prototype, /*set_missing_required=*/false);

@@ -1601,7 +1601,7 @@ TEST(MessageDifferencerTest, RepeatedFieldSmartSetTest) {
   protobuf_unittest::TestField elem1_1, elem2_1, elem3_1;
   protobuf_unittest::TestField elem1_2, elem2_2, elem3_2;
 
-  // Only one field is different for each pair of elememts
+  // Only one field is different for each pair of elements
   elem1_1.set_a(1);
   elem1_2.set_a(0);
   elem1_1.set_b(1);
@@ -1708,7 +1708,7 @@ TEST(MessageDifferencerTest, RepeatedFieldSmartSet_MultipleMatches) {
   protobuf_unittest::TestField elem1_1, elem2_1, elem3_1;
   protobuf_unittest::TestField elem2_2, elem3_2;
 
-  // Only one field is different for each pair of elememts
+  // Only one field is different for each pair of elements
   elem1_1.set_a(1);
   elem1_1.set_b(1);
   elem1_1.set_c(1);
@@ -3534,7 +3534,7 @@ TEST_F(ComparisonTest, AllThreeTest) {
       Run());
 }
 
-TEST_F(ComparisonTest, SandwhichTest) {
+TEST_F(ComparisonTest, SandwichTest) {
   proto1_.clear_optional_int64();
   proto1_.clear_optional_uint32();
 
