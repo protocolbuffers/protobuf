@@ -14,7 +14,6 @@ edition = "2023";
 
 package protobuf_editions_test;
 
-import "net/proto/proto1_features.proto";
 import "google/protobuf/java_features.proto";
 import "google/protobuf/cpp_features.proto";
 import "google/protobuf/editions/proto/editions_transform_proto3.proto";
@@ -24,14 +23,11 @@ option features.utf8_validation = NONE;
 option java_api_version = 1;
 option java_multiple_files = true;
 
-message EmptyMessage {
-}
+message EmptyMessage {}
 
-message EmptyMessage2 {
-}
+message EmptyMessage2 {}
 
-service EmptyService {
-}
+service EmptyService {}
 
 service BasicService {
   rpc BasicMethod(EmptyMessage) returns (EmptyMessage) {}
@@ -61,13 +57,11 @@ message UnformattedMessage {
 
 message ParentMessage {
   message ExtendedMessage {
-    extensions 536860000 to 536869999 [
-      declaration = {
-        number: 536860000
-        full_name: ".protobuf_editions_test.extension"
-        type: ".protobuf_editions_test.EmptyMessage"
-      }
-    ];
+    extensions 536860000 to 536869999 [declaration = {
+      number: 536860000
+      full_name: ".protobuf_editions_test.extension"
+      type: ".protobuf_editions_test.EmptyMessage"
+    }];
   }
 }
 
@@ -79,10 +73,8 @@ message TestMessage {
   string string_field = 1;
   map<string, string> string_map_field = 7;
   repeated int32 int_field = 8;
-  repeated int32 int_field_packed = 9 [
-    features.repeated_field_encoding = PACKED,
-    features.(pb.proto1).legacy_packed = true
-  ];
+  repeated int32 int_field_packed = 9
+      [features.repeated_field_encoding = PACKED];
 
   repeated int32 int_field_unpacked = 10;
   repeated int32 options_strip_beginning = 4 [
@@ -91,33 +83,27 @@ message TestMessage {
     deprecated = false
   ];
 
-  repeated int32 options_strip_middle = 5 [
-    debug_redact = true,
-    deprecated = false
-  ];
+  repeated int32 options_strip_middle = 5
+      [debug_redact = true, deprecated = false];
 
-  repeated int32 options_strip_end = 6 [
-    debug_redact = true,
-    deprecated = false
-  ];
+  repeated int32 options_strip_end = 6
+      [debug_redact = true, deprecated = false];
 
   message OptionalGroup {
     int32 a = 17;
   }
 
-  OptionalGroup optionalgroup = 16 [
-    features.message_encoding = DELIMITED
-  ];
+  OptionalGroup optionalgroup = 16 [features.message_encoding = DELIMITED];
 }
 
 enum TestEnum {
   option features.enum_type = CLOSED;
 
-  FOO = 1; // Non-zero default
+  FOO = 1;  // Non-zero default
 
   BAR = 2;
   BAZ = 3;
-  NEG = -1; // Intentionally negative.
+  NEG = -1;  // Intentionally negative.
 }
 
 message TestOpenEnumMessage {
