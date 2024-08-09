@@ -107,7 +107,7 @@ public final class Durations {
    */
   @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static boolean isValid(long seconds, int nanos) {
-    if (seconds < DURATION_SECONDS_MIN || seconds > DURATION_SECONDS_MAX) {
+    if (!isValidSeconds(seconds)) {
       return false;
     }
     if (nanos < -999999999L || nanos >= NANOS_PER_SECOND) {
@@ -117,6 +117,13 @@ public final class Durations {
       if (seconds > 0 || nanos > 0) {
         return false;
       }
+    }
+    return true;
+  }
+
+  private static boolean isValidSeconds(long seconds) {
+    if (seconds < DURATION_SECONDS_MIN || seconds > DURATION_SECONDS_MAX) {
+      return false;
     }
     return true;
   }
@@ -460,6 +467,15 @@ public final class Durations {
   }
 
   static Duration normalizedDuration(long seconds, int nanos) {
+    if (!isValidSeconds(seconds)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Duration is not valid. See proto definition for valid values. "
+                  + "Seconds (%s) must be in range [-315,576,000,000, +315,576,000,000]. "
+                  + "Nanos (%s) must be in range [-999,999,999, +999,999,999]. "
+                  + "Nanos must have the same sign as seconds",
+              seconds, nanos));
+    }
     if (nanos <= -NANOS_PER_SECOND || nanos >= NANOS_PER_SECOND) {
       seconds = checkedAdd(seconds, nanos / NANOS_PER_SECOND);
       nanos %= NANOS_PER_SECOND;
