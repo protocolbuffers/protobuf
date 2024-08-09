@@ -48,6 +48,7 @@ PROTOC_EXPORT std::string Namespace(const EnumDescriptor* d);
 //   Baz_Moo
 PROTOC_EXPORT std::string ClassName(const Descriptor* descriptor);
 PROTOC_EXPORT std::string ClassName(const EnumDescriptor* enum_descriptor);
+PROTOC_EXPORT std::string EnumName(const EnumDescriptor* descriptor);
 
 // Returns the fully qualified C++ name.
 //
