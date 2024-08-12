@@ -516,7 +516,7 @@ mod tests {
     use crate::{ProtoBytes, ProtoStr, ProtoString};
     use googletest::prelude::*;
 
-    #[googletest::test]
+    #[gtest]
     fn test_proxied_scalar() {
         let mut map: Map<i32, i64> = Map::new();
         let mut map_mut = map.as_mut();
@@ -542,7 +542,7 @@ mod tests {
         assert_that!(map_view_4.is_empty(), eq(false));
     }
 
-    #[googletest::test]
+    #[gtest]
     fn test_proxied_str() {
         let mut map: Map<ProtoString, ProtoString> = Map::new();
         let mut map_mut = map.as_mut();
@@ -567,7 +567,7 @@ mod tests {
         assert_that!(map_view_4.is_empty(), eq(false));
     }
 
-    #[googletest::test]
+    #[gtest]
     fn test_proxied_iter() {
         let mut map: Map<i32, ProtoString> = Map::new();
         let mut map_mut = map.as_mut();
@@ -614,7 +614,7 @@ mod tests {
         );
     }
 
-    #[googletest::test]
+    #[gtest]
     fn test_overwrite_insert() {
         let mut map: Map<i32, ProtoString> = Map::new();
         let mut map_mut = map.as_mut();
@@ -624,7 +624,7 @@ mod tests {
         assert_that!(map.as_mut(), unordered_elements_are![eq((0, ProtoStr::from_str("buzz"))),]);
     }
 
-    #[googletest::test]
+    #[gtest]
     fn test_extend() {
         let mut map: Map<i32, ProtoString> = Map::new();
         let mut map_mut = map.as_mut();
@@ -661,7 +661,7 @@ mod tests {
         );
     }
 
-    #[googletest::test]
+    #[gtest]
     fn test_copy_from() {
         let mut map: Map<i32, ProtoString> = Map::new();
         let mut map_mut = map.as_mut();
@@ -692,7 +692,7 @@ mod tests {
         );
     }
 
-    #[googletest::test]
+    #[gtest]
     fn test_all_maps_can_be_constructed() {
         macro_rules! gen_proto_values {
             ($key_t:ty, $($value_t:ty),*) => {
@@ -714,7 +714,7 @@ mod tests {
         gen_proto_keys!(i32, u32, i64, u64, bool, ProtoString);
     }
 
-    #[googletest::test]
+    #[gtest]
     fn test_dbg() {
         let mut map = Map::<i32, f64>::new();
         assert_that!(format!("{:?}", map.as_view()), eq("MapView(\"i32\", \"f64\")"));

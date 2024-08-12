@@ -606,6 +606,7 @@ unsafe impl Sync for ProtoBytes {}
 #[cfg(test)]
 mod tests {
     use super::*;
+    use googletest::prelude::*;
 
     // TODO: Add unit tests
 
@@ -620,7 +621,7 @@ mod tests {
     // UTF-8 test cases copied from:
     // https://github.com/rust-lang/rust/blob/e8ee0b7/library/core/tests/str_lossy.rs
 
-    #[googletest::test]
+    #[gtest]
     fn proto_str_debug() {
         assert_eq!(&format!("{:?}", test_proto_str(b"Hello There")), "\"Hello There\"");
         assert_eq!(
@@ -632,7 +633,7 @@ mod tests {
         );
     }
 
-    #[googletest::test]
+    #[gtest]
     fn proto_str_display() {
         assert_eq!(&test_proto_str(b"Hello There").to_string(), "Hello There");
         assert_eq!(
@@ -641,7 +642,7 @@ mod tests {
         );
     }
 
-    #[googletest::test]
+    #[gtest]
     fn proto_str_to_rust_str() {
         assert_eq!(test_proto_str(b"hello").to_str(), Ok("hello"));
         assert_eq!(test_proto_str("ศไทย中华Việt Nam".as_bytes()).to_str(), Ok("ศไทย中华Việt Nam"));
@@ -661,7 +662,7 @@ mod tests {
         }
     }
 
-    #[googletest::test]
+    #[gtest]
     fn proto_str_to_cow() {
         assert_eq!(test_proto_str(b"hello").to_cow_lossy(), Cow::Borrowed("hello"));
         assert_eq!(
@@ -683,12 +684,12 @@ mod tests {
         }
     }
 
-    #[googletest::test]
+    #[gtest]
     fn proto_str_utf8_chunks() {
         macro_rules! assert_chunks {
             ($bytes:expr, $($chunks:expr),* $(,)?) => {
                 let bytes = $bytes;
-                let chunks: &[Result<&str, &[u8]>] = &[$($chunks),*];
+                let chunks: &[std::result::Result<&str, &[u8]>] = &[$($chunks),*];
                 let s = test_proto_str(bytes);
                 let mut got_chunks = s.utf8_chunks();
                 let mut expected_chars = chunks.iter().copied();
@@ -762,7 +763,7 @@ mod tests {
         );
     }
 
-    #[googletest::test]
+    #[gtest]
     fn proto_str_chars() {
         macro_rules! assert_chars {
             ($bytes:expr, $chars:expr) => {

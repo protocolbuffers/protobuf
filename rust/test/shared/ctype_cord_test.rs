@@ -9,7 +9,7 @@ use googletest::prelude::*;
 
 use unittest_rust_proto::{TestAllTypes, TestCord};
 
-#[googletest::test]
+#[gtest]
 fn test_string_cord() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.has_optional_cord(), eq(false));
@@ -23,7 +23,7 @@ fn test_string_cord() {
     assert_that!(msg2.optional_cord(), eq("hello"));
 }
 
-#[googletest::test]
+#[gtest]
 fn test_bytes_cord() {
     let mut msg = TestCord::new();
     assert_that!(msg.has_optional_bytes_cord(), eq(false));

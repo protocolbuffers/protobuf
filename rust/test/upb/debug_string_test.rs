@@ -13,7 +13,7 @@ use unittest_rust_proto::{
     test_all_types::NestedMessage as NestedMessageProto2, TestAllTypes as TestAllTypesProto2,
 };
 
-#[googletest::test]
+#[gtest]
 fn test_debug_string() {
     let mut msg = proto!(TestAllTypesProto2 {
         optional_int32: 42,

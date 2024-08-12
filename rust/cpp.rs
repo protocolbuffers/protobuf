@@ -1019,14 +1019,14 @@ mod tests {
         (content.as_mut_ptr(), content.len())
     }
 
-    #[googletest::test]
+    #[gtest]
     fn test_serialized_data_roundtrip() {
         let (ptr, len) = allocate_byte_array(b"Hello world");
         let serialized_data = SerializedData { data: NonNull::new(ptr).unwrap(), len };
         assert_that!(&*serialized_data, eq(b"Hello world"));
     }
 
-    #[googletest::test]
+    #[gtest]
     fn test_empty_string() {
         let empty_str: String = RustStringRawParts { data: std::ptr::null(), len: 0 }.into();
         assert_that!(empty_str, eq(""));

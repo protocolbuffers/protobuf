@@ -1,5 +1,5 @@
 {
-  "checksum": "b4edbf28ea96b685a90948d9efaa14d55f0f01e27b5d774b3ecd6eff3c231517",
+  "checksum": "ca8913cc78d0ec771c537fae8d8e7b4505ab91bd61ddc886cc66dbeb264ff626",
   "crates": {
     "aho-corasick 1.1.2": {
       "name": "aho-corasick",
@@ -123,7 +123,7 @@
         "deps": {
           "common": [
             {
-              "id": "googletest 0.11.0",
+              "id": "googletest 0.12.0",
               "target": "googletest"
             }
           ],
@@ -145,15 +145,15 @@
       "license_ids": [],
       "license_file": null
     },
-    "googletest 0.11.0": {
+    "googletest 0.12.0": {
       "name": "googletest",
-      "version": "0.11.0",
+      "version": "0.12.0",
       "package_url": "https://github.com/google/googletest-rust",
       "repository": {
         "Git": {
           "remote": "https://github.com/google/googletest-rust",
           "commitish": {
-            "Rev": "471d4a2a8e8bc74f6d7d9c8eecb4d4e3157b2a9f"
+            "Rev": "b407f3b5774defb8917d714bfb7af485e117d621"
           },
           "strip_prefix": "googletest"
         }
@@ -194,7 +194,7 @@
         "proc_macro_deps": {
           "common": [
             {
-              "id": "googletest_macro 0.11.0",
+              "id": "googletest_macro 0.12.0",
               "target": "googletest_macro"
             },
             {
@@ -204,7 +204,7 @@
           ],
           "selects": {}
         },
-        "version": "0.11.0"
+        "version": "0.12.0"
       },
       "license": "Apache-2.0",
       "license_ids": [
@@ -212,15 +212,15 @@
       ],
       "license_file": "LICENSE"
     },
-    "googletest_macro 0.11.0": {
+    "googletest_macro 0.12.0": {
       "name": "googletest_macro",
-      "version": "0.11.0",
+      "version": "0.12.0",
       "package_url": "https://github.com/google/googletest-rust",
       "repository": {
         "Git": {
           "remote": "https://github.com/google/googletest-rust",
           "commitish": {
-            "Rev": "471d4a2a8e8bc74f6d7d9c8eecb4d4e3157b2a9f"
+            "Rev": "b407f3b5774defb8917d714bfb7af485e117d621"
           },
           "strip_prefix": "googletest_macro"
         }
@@ -258,7 +258,7 @@
           "selects": {}
         },
         "edition": "2021",
-        "version": "0.11.0"
+        "version": "0.12.0"
       },
       "license": "Apache-2.0",
       "license_ids": [
@@ -1092,7 +1092,7 @@
     ]
   },
   "direct_deps": [
-    "googletest 0.11.0",
+    "googletest 0.12.0",
     "paste 1.0.14"
   ],
   "direct_dev_deps": []

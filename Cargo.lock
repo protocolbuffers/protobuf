@@ -27,8 +27,8 @@ dependencies = [
 
 [[package]]
 name = "googletest"
-version = "0.11.0"
-source = "git+https://github.com/google/googletest-rust?rev=471d4a2a8e8bc74f6d7d9c8eecb4d4e3157b2a9f#471d4a2a8e8bc74f6d7d9c8eecb4d4e3157b2a9f"
+version = "0.12.0"
+source = "git+https://github.com/google/googletest-rust?rev=b407f3b5774defb8917d714bfb7af485e117d621#b407f3b5774defb8917d714bfb7af485e117d621"
 dependencies = [
  "googletest_macro",
  "num-traits",
@@ -38,8 +38,8 @@ dependencies = [
 
 [[package]]
 name = "googletest_macro"
-version = "0.11.0"
-source = "git+https://github.com/google/googletest-rust?rev=471d4a2a8e8bc74f6d7d9c8eecb4d4e3157b2a9f#471d4a2a8e8bc74f6d7d9c8eecb4d4e3157b2a9f"
+version = "0.12.0"
+source = "git+https://github.com/google/googletest-rust?rev=b407f3b5774defb8917d714bfb7af485e117d621#b407f3b5774defb8917d714bfb7af485e117d621"
 dependencies = [
  "quote",
  "syn",
