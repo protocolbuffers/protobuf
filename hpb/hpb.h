@@ -182,11 +182,6 @@ auto* GetInternalMsg(T&& message) {
 }
 
 template <typename T>
-T CreateMessage() {
-  return T();
-}
-
-template <typename T>
 typename T::Proxy CreateMessageProxy(upb_Message* msg, upb_Arena* arena) {
   return typename T::Proxy(msg, arena);
 }
