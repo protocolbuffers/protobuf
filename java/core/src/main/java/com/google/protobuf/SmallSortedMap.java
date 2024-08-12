@@ -108,7 +108,6 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
   // time it is requested and reused henceforth.
   private volatile EntrySet lazyEntrySet;
   private Map<K, V> overflowEntriesDescending;
-  private volatile DescendingEntrySet lazyDescendingEntrySet;
 
   private SmallSortedMap() {
     this.overflowEntries = Collections.emptyMap();
@@ -338,10 +337,12 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
   }
 
   Set<Map.Entry<K, V>> descendingEntrySet() {
-    if (lazyDescendingEntrySet == null) {
-      lazyDescendingEntrySet = new DescendingEntrySet();
-    }
-    return lazyDescendingEntrySet;
+    // Optimisation note: Many java.util.Map implementations would, here, cache the return value in
+    // a field, to avoid allocations for future calls to this method. But for us, descending
+    // iteration is rare, SmallSortedMaps are very common, and the entry set is only useful for
+    // iteration, which allocates anyway. The extra memory cost of the field (4-8 bytes) isn't worth
+    // it. See b/357002010.
+    return new DescendingEntrySet();
   }
 
   /** @throws UnsupportedOperationException if {@link #makeImmutable()} has has been called. */
