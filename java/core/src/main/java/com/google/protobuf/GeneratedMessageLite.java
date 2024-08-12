@@ -360,8 +360,8 @@ public abstract class GeneratedMessageLite<
     return dynamicMethod(MethodToInvoke.BUILD_MESSAGE_INFO);
   }
 
-  private static Map<Object, GeneratedMessageLite<?, ?>> defaultInstanceMap =
-      new ConcurrentHashMap<Object, GeneratedMessageLite<?, ?>>();
+  private static Map<Class<?>, GeneratedMessageLite<?, ?>> defaultInstanceMap =
+      new ConcurrentHashMap<>();
 
   @SuppressWarnings("unchecked")
   static <T extends GeneratedMessageLite<?, ?>> T getDefaultInstance(Class<T> clazz) {
