@@ -240,6 +240,8 @@
   }
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 // Helper to make an unknown field set with something in it.
 static GPBUnknownFieldSet *UnknownFieldsSetHelper(int num) {
   GPBUnknownFieldSet *result = [[[GPBUnknownFieldSet alloc] init] autorelease];
@@ -250,6 +252,7 @@ static GPBUnknownFieldSet *UnknownFieldsSetHelper(int num) {
 
   return result;
 }
+#pragma clang diagnostic pop
 
 // Helper to add an unknown field data to messages.
 static void AddUnknownFields(GPBMessage *message, int num) {
@@ -269,6 +272,9 @@ static BOOL HasUnknownFields(GPBMessage *message) {
 
 - (void)testDropMessageUnknownFieldsRecursively {
   TestAllExtensions *message = [TestAllExtensions message];
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
   // Give it unknownFields.
   message.unknownFields = UnknownFieldsSetHelper(777);
@@ -412,10 +418,15 @@ static BOOL HasUnknownFields(GPBMessage *message) {
     XCTAssertFalse(HasUnknownFields(repeatedNestedMessage));
     XCTAssertNil(repeatedNestedMessage.unknownFields);
   }
+
+#pragma clang diagnostic pop
 }
 
 - (void)testDropMessageUnknownFieldsRecursively_Maps {
   TestMap *message = [TestMap message];
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
   {
     ForeignMessage *foreignMessage = [ForeignMessage message];
@@ -466,6 +477,8 @@ static BOOL HasUnknownFields(GPBMessage *message) {
     XCTAssertFalse(HasUnknownFields(foreignMessage));
     XCTAssertNil(foreignMessage.unknownFields);
   }
+
+#pragma clang diagnostic pop
 }
 
 @end

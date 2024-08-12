@@ -55,8 +55,8 @@ CF_EXTERN_C_END
  *       exist in two places, you don't want a sub message to be a property
  *       property of two other messages.
  *
- * @note While the class support NSSecureCoding, if the message has any
- *       extensions, they will end up reloaded in @c unknownFields as there is
+ * @note While the class supports NSSecureCoding, if the message has any
+ *       extensions, they will end up reloaded in the unknown fields as there is
  *       no way for the @c NSCoding plumbing to pass through a
  *       @c GPBExtensionRegistry. To support extensions, instead of passing the
  *       calls off to the Message, simple store the result of @c data, and then
@@ -73,7 +73,9 @@ CF_EXTERN_C_END
 /**
  * The set of unknown fields for this message.
  **/
-@property(nonatomic, copy, nullable) GPBUnknownFieldSet *unknownFields;
+@property(nonatomic, copy, nullable) GPBUnknownFieldSet *unknownFields __attribute__((
+    deprecated("Use GPBUnknownFields and the -initFromMessage: initializer and "
+               "mergeUnknownFields:extensionRegistry:error: to add the data back to a message.")));
 
 /**
  * Whether the message, along with all submessages, have the required fields
@@ -510,10 +512,11 @@ CF_EXTERN_C_END
  * If the intent is to *replace* the message's unknown fields, call `-clearUnknownFields` first.
  *
  * Since the data from the GPBUnknownFields will always be well formed, this call will almost never
- * fail. What could cause it to fail is if the GPBUnknownFields contains a field values it is
- * and error for the message's schema - i.e.: if it contains a length delimited field where the
+ * fail. What could cause it to fail is if the GPBUnknownFields contains a field value that is
+ * an error for the message's schema - i.e.: if it contains a length delimited field where the
  * field number for the message is defined to be a _string_ field, however the length delimited
- * data provide is not a valid UTF8 string.
+ * data provide is not a valid UTF8 string, or if the field is a _packed_ number field, but the
+ * data provided is not a valid for that field.
  *
  * @param unknownFields     The unknown fields to merge the data from.
  * @param extensionRegistry The extension registry to use to look up extensions, can be `nil`.

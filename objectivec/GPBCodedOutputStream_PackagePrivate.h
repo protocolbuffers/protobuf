@@ -21,8 +21,11 @@ size_t GPBComputeFixed32Size(int32_t fieldNumber, uint32_t value) __attribute__(
 size_t GPBComputeBoolSize(int32_t fieldNumber, BOOL value) __attribute__((const));
 size_t GPBComputeStringSize(int32_t fieldNumber, NSString *value) __attribute__((const));
 size_t GPBComputeGroupSize(int32_t fieldNumber, GPBMessage *value) __attribute__((const));
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 size_t GPBComputeUnknownGroupSize(int32_t fieldNumber, GPBUnknownFieldSet *value)
     __attribute__((const));
+#pragma clang diagnostic pop
 size_t GPBComputeMessageSize(int32_t fieldNumber, GPBMessage *value) __attribute__((const));
 size_t GPBComputeBytesSize(int32_t fieldNumber, NSData *value) __attribute__((const));
 size_t GPBComputeUInt32Size(int32_t fieldNumber, uint32_t value) __attribute__((const));
@@ -43,7 +46,10 @@ size_t GPBComputeFixed32SizeNoTag(uint32_t value) __attribute__((const));
 size_t GPBComputeBoolSizeNoTag(BOOL value) __attribute__((const));
 size_t GPBComputeStringSizeNoTag(NSString *value) __attribute__((const));
 size_t GPBComputeGroupSizeNoTag(GPBMessage *value) __attribute__((const));
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 size_t GPBComputeUnknownGroupSizeNoTag(GPBUnknownFieldSet *value) __attribute__((const));
+#pragma clang diagnostic pop
 size_t GPBComputeMessageSizeNoTag(GPBMessage *value) __attribute__((const));
 size_t GPBComputeBytesSizeNoTag(NSData *value) __attribute__((const));
 size_t GPBComputeUInt32SizeNoTag(int32_t value) __attribute__((const));
