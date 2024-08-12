@@ -101,6 +101,37 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(4, $deprecationCount);
     }
 
+    /**
+     * @runInSeparateProcess
+     */
+    public function testDeprecatedInt32FieldGetterDoesNotThrowWarning()
+    {
+        set_error_handler(function ($errno, $errstr) {
+            throw new Exception('Should not be thrown: ' . $errstr);
+        });
+
+        // does not throw warning
+        $message = new TestMessage();
+        $this->assertEquals(0, $message->getDeprecatedOptionalInt32());
+    }
+
+    /**
+     * @runInSeparateProcess
+     */
+    public function testDeprecatedFieldGetterThrowsWarningWithValue()
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('deprecated_optional_int32 is deprecated');
+
+        $message = new TestMessage(['deprecated_optional_int32' => 1]);
+
+        set_error_handler(function ($errno, $errstr) {
+            throw new Exception($errstr);
+        });
+
+        $message->getDeprecatedOptionalInt32();
+    }
+
     #########################################################
     # Test optional int32 field.
     #########################################################

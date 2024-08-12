@@ -574,6 +574,17 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
           ? absl::StrCat("@trigger_error('", field->name(),
                          " is deprecated.', E_USER_DEPRECATED);\n        ")
           : "";
+  std::string deprecation_trigger_with_conditional =
+      (field->options().deprecated())
+          ? absl::StrCat("if ($this->", field->name(),
+                         " !== ",
+                         field->is_repeated() || field->real_containing_oneof()
+                         || field->has_presence()
+                           ? "null"
+                           : DefaultForField(field),
+                         ") {\n            ", deprecation_trigger,
+                         "}\n        ")
+          : "";
 
   // Emit getter.
   if (oneof != nullptr) {
@@ -584,7 +595,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true), "number",
         IntToString(field->number()), "deprecation_trigger",
-        deprecation_trigger);
+        deprecation_trigger_with_conditional);
   } else if (field->has_presence() && !field->message_type()) {
     printer->Print(
         "public function get^camel_name^()\n"
@@ -594,7 +605,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true), "name",
         field->name(), "default_value", DefaultForField(field),
-        "deprecation_trigger", deprecation_trigger);
+        "deprecation_trigger", deprecation_trigger_with_conditional);
   } else {
     printer->Print(
         "public function get^camel_name^()\n"
@@ -602,7 +613,8 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "    ^deprecation_trigger^return $this->^name^;\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true), "name",
-        field->name(), "deprecation_trigger", deprecation_trigger);
+        field->name(), "deprecation_trigger",
+        deprecation_trigger_with_conditional);
   }
 
   // Emit hazzers/clear.
@@ -642,7 +654,8 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "$this->readWrapperValue(\"^field_name^\");\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true), "field_name",
-        field->name(), "deprecation_trigger", deprecation_trigger);
+        field->name(), "deprecation_trigger",
+        deprecation_trigger_with_conditional);
   }
 
   // Generate setter.
