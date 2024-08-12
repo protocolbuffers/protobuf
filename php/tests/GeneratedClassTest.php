@@ -101,35 +101,42 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(4, $deprecationCount);
     }
 
-    /**
-     * @runInSeparateProcess
-     */
     public function testDeprecatedInt32FieldGetterDoesNotThrowWarning()
     {
-        set_error_handler(function ($errno, $errstr) {
-            throw new Exception('Should not be thrown: ' . $errstr);
-        });
+        // temporarily change error handler to capture the deprecated errors
+        $deprecationCount = 0;
+        set_error_handler(function ($errno, $errstr) use (&$deprecationCount) {
+            if ($errstr === 'deprecated_optional_int32 is deprecated.') {
+                $deprecationCount++;
+            }
+        }, E_USER_DEPRECATED);
 
         // does not throw warning
         $message = new TestMessage();
-        $this->assertEquals(0, $message->getDeprecatedOptionalInt32());
+        $message->getDeprecatedOptionalInt32();
+
+        restore_error_handler();
+
+        $this->assertEquals(0, $deprecationCount);
     }
 
-    /**
-     * @runInSeparateProcess
-     */
     public function testDeprecatedFieldGetterThrowsWarningWithValue()
     {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('deprecated_optional_int32 is deprecated');
-
         $message = new TestMessage(['deprecated_optional_int32' => 1]);
 
-        set_error_handler(function ($errno, $errstr) {
-            throw new Exception($errstr);
-        });
+        // temporarily change error handler to capture the deprecated errors
+        $deprecationCount = 0;
+        set_error_handler(function ($errno, $errstr) use (&$deprecationCount) {
+            if ($errstr === 'deprecated_optional_int32 is deprecated.') {
+                $deprecationCount++;
+            }
+        }, E_USER_DEPRECATED);
 
         $message->getDeprecatedOptionalInt32();
+
+        restore_error_handler();
+
+        $this->assertEquals(1, $deprecationCount);
     }
 
     #########################################################
