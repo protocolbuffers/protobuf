@@ -131,8 +131,8 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output,
   EmitFileWarning(file, output);
   output(
       R"cc(
-#ifndef $0_UPB_PROTO_H_
-#define $0_UPB_PROTO_H_
+#ifndef $0_HPB_PROTO_H_
+#define $0_HPB_PROTO_H_
 
 #include "protos/protos.h"
 #include "protos/protos_internal.h"
@@ -189,7 +189,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output,
   output("\n#include \"upb/port/undef.inc\"\n\n");
   // End of "C" section.
 
-  output("#endif  /* $0_UPB_PROTO_H_ */\n", ToPreproc(file->name()));
+  output("#endif  /* $0_HPB_PROTO_H_ */\n", ToPreproc(file->name()));
 }
 
 // Writes a .upb.cc source file.
