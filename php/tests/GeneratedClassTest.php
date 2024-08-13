@@ -150,6 +150,7 @@ class GeneratedClassTest extends TestBase
 
         $this->assertEquals(4, $deprecationCount);
     }
+
     public function testDeprecatedFieldWarningsOnSerialize()
     {
         set_error_handler(function ($errno, $errstr) {
@@ -160,6 +161,9 @@ class GeneratedClassTest extends TestBase
 
         $message = new TestMessage();
         $message->serializeToJsonString();
+
+        restore_error_handler();
+
         $this->assertTrue(true, 'No deprecation warning on serialize');
     }
 
