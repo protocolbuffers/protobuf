@@ -118,6 +118,11 @@ class GeneratedClassTest extends TestBase
         $message->getDeprecatedInt32Value(); // wrapped field
         $message->getDeprecatedOneofInt32(); // oneof field
         $message->getDeprecatedOneof(); // oneof field
+        $message->getDeprecatedRepeatedInt32(); // repeated field
+        $message->getDeprecatedMapInt32Int32(); // map field
+        $message->getDeprecatedAny(); // any field
+        $message->getDeprecatedMessage(); // message field
+        $message->getDeprecatedEnum(); // enum field
 
         restore_error_handler();
 
@@ -130,6 +135,11 @@ class GeneratedClassTest extends TestBase
             'deprecated_optional_int32' => 1,
             'deprecated_int32_value' => new \Google\Protobuf\Int32Value(['value' => 1]),
             'deprecated_oneof_int32' => 1,
+            'deprecated_repeated_int32' => [1],
+            'deprecated_map_int32_int32' => [1 => 1],
+            'deprecated_any' => new \Google\Protobuf\Any(['type_url' => 'foo', 'value' => 'bar']),
+            'deprecated_message' => new TestMessage(),
+            'deprecated_enum' => 1,
         ]);
 
         // temporarily change error handler to capture the deprecated errors
@@ -141,14 +151,21 @@ class GeneratedClassTest extends TestBase
         }, E_USER_DEPRECATED);
 
         $message->getDeprecatedOptionalInt32();
-        $message->getDeprecatedInt32ValueUnwrapped(); // wrapped field
+        $message->getDeprecatedInt32ValueUnwrapped(); // wrapped field unwrapped
         $message->getDeprecatedInt32Value(); // wrapped field
         $message->getDeprecatedOneofInt32(); // oneof field
-        $message->getDeprecatedOneof(); // oneof field (never warns, regardless)
+        $message->getDeprecatedRepeatedInt32(); // repeated field
+        $message->getDeprecatedMapInt32Int32(); // map field
+        $message->getDeprecatedAny(); // any field
+        $message->getDeprecatedMessage(); // message field
+        $message->getDeprecatedEnum(); // enum field
+
+        // oneof field (should never warn)
+        $message->getDeprecatedOneof();
 
         restore_error_handler();
 
-        $this->assertEquals(4, $deprecationCount);
+        $this->assertEquals(9, $deprecationCount);
     }
 
     public function testDeprecatedFieldWarningsOnSerialize()
