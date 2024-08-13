@@ -127,26 +127,28 @@ upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
   upb_FindUnknownRet ret;
 
   const char* ptr = upb_Message_GetUnknown(msg, &size);
-  upb_EpsCopyInputStream stream;
-  upb_EpsCopyInputStream_Init(&stream, &ptr, size, true);
+  if (ptr != NULL) {
+    upb_EpsCopyInputStream stream;
+    upb_EpsCopyInputStream_Init(&stream, &ptr, size, true);
 
-  while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
-    uint32_t tag;
-    const char* unknown_begin = ptr;
-    ptr = upb_WireReader_ReadTag(ptr, &tag);
-    if (!ptr) return upb_FindUnknownRet_ParseError();
-    if (field_number == upb_WireReader_GetFieldNumber(tag)) {
-      ret.status = kUpb_FindUnknown_Ok;
-      ret.ptr = upb_EpsCopyInputStream_GetAliasedPtr(&stream, unknown_begin);
+    while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
+      uint32_t tag;
+      const char* unknown_begin = ptr;
+      ptr = upb_WireReader_ReadTag(ptr, &tag);
+      if (!ptr) return upb_FindUnknownRet_ParseError();
+      if (field_number == upb_WireReader_GetFieldNumber(tag)) {
+        ret.status = kUpb_FindUnknown_Ok;
+        ret.ptr = upb_EpsCopyInputStream_GetAliasedPtr(&stream, unknown_begin);
+        ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
+        // Because we know that the input is a flat buffer, it is safe to
+        // perform pointer arithmetic on aliased pointers.
+        ret.len = upb_EpsCopyInputStream_GetAliasedPtr(&stream, ptr) - ret.ptr;
+        return ret;
+      }
+
       ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
-      // Because we know that the input is a flat buffer, it is safe to perform
-      // pointer arithmetic on aliased pointers.
-      ret.len = upb_EpsCopyInputStream_GetAliasedPtr(&stream, ptr) - ret.ptr;
-      return ret;
+      if (!ptr) return upb_FindUnknownRet_ParseError();
     }
-
-    ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, &stream);
-    if (!ptr) return upb_FindUnknownRet_ParseError();
   }
   ret.status = kUpb_FindUnknown_NotPresent;
   ret.ptr = NULL;
