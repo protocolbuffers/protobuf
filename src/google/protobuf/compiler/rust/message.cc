@@ -1315,61 +1315,61 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
   if (ctx.is_cpp()) {
     ctx.Emit({{"Msg", RsSafeName(msg.name())}}, R"rs(
       impl<'a> $Msg$Mut<'a> {
-        //~ msg is a &mut so that the borrow checker enforces exclusivity to
-        //~ prevent constructing multiple Muts/Views from the same RawMessage.
-        pub fn __unstable_wrap_cpp_grant_permission_to_break(
-            msg: &'a mut $pbr$::RawMessage) -> Self {
+        pub unsafe fn __unstable_wrap_cpp_grant_permission_to_break(
+            msg: &'a mut *mut std::ffi::c_void) -> Self {
           Self {
-            inner: $pbr$::MutatorMessageRef::from_raw_msg($pbi$::Private, msg)
+            inner: $pbr$::MutatorMessageRef::wrap_raw(
+                $pbi$::Private,
+                $pbr$::RawMessage::new(*msg as *mut _).unwrap())
           }
         }
-        pub fn __unstable_cpp_repr_grant_permission_to_break(self) -> $pbr$::RawMessage {
-          self.raw_msg()
+        pub fn __unstable_cpp_repr_grant_permission_to_break(self) -> *mut std::ffi::c_void {
+          self.raw_msg().as_ptr() as *mut _
         }
       }
 
       impl<'a> $Msg$View<'a> {
-        //~ msg is a & so that the caller can claim the message is live for the
-        //~ corresponding lifetime.
         pub fn __unstable_wrap_cpp_grant_permission_to_break(
-          msg: &'a $pbr$::RawMessage) -> Self {
-          Self::new($pbi$::Private, *msg)
+          msg: &'a *const std::ffi::c_void) -> Self {
+          Self::new($pbi$::Private, $pbr$::RawMessage::new(*msg as *mut _).unwrap())
         }
-        pub fn __unstable_cpp_repr_grant_permission_to_break(self) -> $pbr$::RawMessage {
-          self.msg
+        pub fn __unstable_cpp_repr_grant_permission_to_break(self) -> *const std::ffi::c_void {
+          self.msg.as_ptr() as *const _
         }
       }
 
       impl $pb$::OwnedMessageInterop for $Msg$ {
-        unsafe fn __unstable_take_ownership_of_raw_message(msg: $pbr$::RawMessage) -> Self {
-          Self { inner: $pbr$::MessageInner { msg } }
+        unsafe fn __unstable_take_ownership_of_raw_message(msg: *mut std::ffi::c_void) -> Self {
+          Self { inner: $pbr$::MessageInner { msg: $pbr$::RawMessage::new(msg as *mut _).unwrap() } }
         }
 
-        fn __unstable_leak_raw_message(self) -> $pbr$::RawMessage {
+        fn __unstable_leak_raw_message(self) -> *mut std::ffi::c_void {
           let s = std::mem::ManuallyDrop::new(self);
-          s.raw_msg()
+          s.raw_msg().as_ptr() as *mut _
         }
       }
 
       impl<'a> $pb$::MessageMutInterop<'a> for $Msg$Mut<'a> {
         unsafe fn __unstable_wrap_raw_message_mut(
-            msg: &'a mut $pbr$::RawMessage) -> Self {
+            msg: &'a mut *mut std::ffi::c_void) -> Self {
           Self {
-            inner: $pbr$::MutatorMessageRef::from_raw_msg($pbi$::Private, msg)
+            inner: $pbr$::MutatorMessageRef::wrap_raw(
+                $pbi$::Private,
+                $pbr$::RawMessage::new(*msg as *mut _).unwrap())
           }
         }
-        fn __unstable_as_raw_message_mut(&mut self) -> $pbr$::RawMessage {
-          self.raw_msg()
+        fn __unstable_as_raw_message_mut(&mut self) -> *mut std::ffi::c_void {
+          self.raw_msg().as_ptr() as *mut _
         }
       }
 
       impl<'a> $pb$::MessageViewInterop<'a> for $Msg$View<'a> {
         unsafe fn __unstable_wrap_raw_message(
-          msg: &'a $pbr$::RawMessage) -> Self {
-          Self::new($pbi$::Private, *msg)
+          msg: &'a *const std::ffi::c_void) -> Self {
+          Self::new($pbi$::Private, $pbr$::RawMessage::new(*msg as *mut _).unwrap())
         }
-        fn __unstable_as_raw_message(&self) -> $pbr$::RawMessage {
-          self.msg
+        fn __unstable_as_raw_message(&self) -> *const std::ffi::c_void {
+          self.msg.as_ptr() as *const _
         }
       }
     )rs");
@@ -1381,11 +1381,11 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
       impl<'a> $pb$::MessageViewInterop<'a> for $Msg$View<'a> {
         unsafe fn __unstable_wrap_raw_message(
-          msg: &'a $pbr$::RawMessage) -> Self {
-          Self::new($pbi$::Private, *msg)
+          msg: &'a *const std::ffi::c_void) -> Self {
+          Self::new($pbi$::Private, $pbr$::RawMessage::new(*msg as *mut _).unwrap())
         }
-        fn __unstable_as_raw_message(&self) -> $pbr$::RawMessage {
-          self.msg
+        fn __unstable_as_raw_message(&self) -> *const std::ffi::c_void {
+          self.msg.as_ptr() as *const _
         }
       }
     )rs");

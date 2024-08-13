@@ -365,6 +365,12 @@ impl<'msg> MutatorMessageRef<'msg> {
         MutatorMessageRef { msg: msg.msg, _phantom: PhantomData }
     }
 
+    /// # Safety
+    /// - The underlying pointer must be sound and live for the lifetime 'msg.
+    pub unsafe fn wrap_raw(_private: Private, raw: RawMessage) -> Self {
+        MutatorMessageRef { msg: raw, _phantom: PhantomData }
+    }
+
     pub fn from_parent(
         _private: Private,
         _parent_msg: MutatorMessageRef<'msg>,
