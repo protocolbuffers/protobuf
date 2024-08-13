@@ -585,6 +585,12 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
                          ") {\n            ", deprecation_trigger,
                          "}\n        ")
           : "";
+  std::string deprecation_trigger_with_conditional_oneof =
+      (field->options().deprecated())
+          ? absl::StrCat("if ($this->hasOneof(", field->number(),
+                         ")) {\n            ", deprecation_trigger,
+                         "}\n        ")
+          : "";
 
   // Emit getter.
   if (oneof != nullptr) {
@@ -595,7 +601,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true), "number",
         IntToString(field->number()), "deprecation_trigger",
-        deprecation_trigger_with_conditional);
+        deprecation_trigger_with_conditional_oneof);
   } else if (field->has_presence() && !field->message_type()) {
     printer->Print(
         "public function get^camel_name^()\n"
@@ -626,12 +632,12 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true), "number",
         IntToString(field->number()), "deprecation_trigger",
-        deprecation_trigger);
+        deprecation_trigger_with_conditional_oneof);
   } else if (field->has_presence()) {
     printer->Print(
         "public function has^camel_name^()\n"
         "{\n"
-        "    ^deprecation_trigger^return isset($this->^name^);\n"
+        "    ^deprecation_trigger_with_conditional^return isset($this->^name^);\n"
         "}\n\n"
         "public function clear^camel_name^()\n"
         "{\n"
@@ -639,7 +645,9 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true), "name",
         field->name(), "default_value", DefaultForField(field),
-        "deprecation_trigger", deprecation_trigger);
+        "deprecation_trigger", deprecation_trigger,
+        "deprecation_trigger_with_conditional",
+        deprecation_trigger_with_conditional);
   }
 
   // For wrapper types, generate an additional getXXXUnwrapped getter

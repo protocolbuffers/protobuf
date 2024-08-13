@@ -101,12 +101,12 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(4, $deprecationCount);
     }
 
-    public function testDeprecatedInt32FieldGetterDoesNotThrowWarning()
+    public function testDeprecatedFieldGetterDoesNotThrowWarning()
     {
         // temporarily change error handler to capture the deprecated errors
         $deprecationCount = 0;
         set_error_handler(function ($errno, $errstr) use (&$deprecationCount) {
-            if ($errstr === 'deprecated_optional_int32 is deprecated.') {
+            if (false !== strpos($errstr, ' is deprecated.')) {
                 $deprecationCount++;
             }
         }, E_USER_DEPRECATED);
@@ -114,6 +114,10 @@ class GeneratedClassTest extends TestBase
         // does not throw warning
         $message = new TestMessage();
         $message->getDeprecatedOptionalInt32();
+        $message->getDeprecatedInt32ValueUnwrapped(); // wrapped field
+        $message->getDeprecatedInt32Value(); // wrapped field
+        $message->getDeprecatedOneofInt32(); // oneof field
+        $message->getDeprecatedOneof(); // oneof field
 
         restore_error_handler();
 
@@ -122,21 +126,41 @@ class GeneratedClassTest extends TestBase
 
     public function testDeprecatedFieldGetterThrowsWarningWithValue()
     {
-        $message = new TestMessage(['deprecated_optional_int32' => 1]);
+        $message = new TestMessage([
+            'deprecated_optional_int32' => 1,
+            'deprecated_int32_value' => new \Google\Protobuf\Int32Value(['value' => 1]),
+            'deprecated_oneof_int32' => 1,
+        ]);
 
         // temporarily change error handler to capture the deprecated errors
         $deprecationCount = 0;
         set_error_handler(function ($errno, $errstr) use (&$deprecationCount) {
-            if ($errstr === 'deprecated_optional_int32 is deprecated.') {
+            if (false !== strpos($errstr, ' is deprecated.')) {
                 $deprecationCount++;
             }
         }, E_USER_DEPRECATED);
 
         $message->getDeprecatedOptionalInt32();
+        $message->getDeprecatedInt32ValueUnwrapped(); // wrapped field
+        $message->getDeprecatedInt32Value(); // wrapped field
+        $message->getDeprecatedOneofInt32(); // oneof field
+        $message->getDeprecatedOneof(); // oneof field (never warns, regardless)
 
         restore_error_handler();
 
-        $this->assertEquals(1, $deprecationCount);
+        $this->assertEquals(4, $deprecationCount);
+    }
+    public function testDeprecatedFieldWarningsOnSerialize()
+    {
+        set_error_handler(function ($errno, $errstr) {
+            if (false !== strpos($errstr, ' is deprecated.')) {
+                throw new \Exception($errstr);
+            }
+        }, E_USER_DEPRECATED);
+
+        $message = new TestMessage();
+        $message->serializeToJsonString();
+        $this->assertTrue(true, 'No deprecation warning on serialize');
     }
 
     #########################################################

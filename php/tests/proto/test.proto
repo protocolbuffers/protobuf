@@ -150,6 +150,12 @@ message TestMessage {
 
   // deprecated field
   int32 deprecated_optional_int32 = 125 [deprecated=true];
+  // deprecated wrapped field
+  google.protobuf.Int32Value deprecated_int32_value = 126 [deprecated=true];
+  // deprecated oneof field
+  oneof deprecated_oneof {
+    int32  deprecated_oneof_int32 = 127 [deprecated=true];
+  }
 }
 
 enum TestEnum {
