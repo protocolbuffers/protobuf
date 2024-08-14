@@ -27,6 +27,7 @@ java_test(
         ":libconformance_v3.25.0_lib.jar",
         "//java/core",
         "@maven//:junit_junit",
+        "@maven//:com_google_truth_truth",
     ],
 )
 
@@ -39,5 +40,6 @@ java_test(
         ":conformance_v3.25.0_lib",
         "//java/core",
         "@maven//:junit_junit",
+        "@maven//:com_google_truth_truth",
     ],
 )
