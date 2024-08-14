@@ -85,8 +85,7 @@ public abstract class GeneratedMessageV3
    */
   @Deprecated
   public interface ExtendableMessageOrBuilder<MessageT extends ExtendableMessage<MessageT>>
-    extends GeneratedMessage.ExtendableMessageOrBuilder<GeneratedMessageV3>, MessageOrBuilder {}
-
+    extends GeneratedMessage.ExtendableMessageOrBuilder<GeneratedMessageV3> {}
   /**
    * Stub for GeneratedMessageV3.ExtendableMessage wrapping GeneratedMessage.ExtendableMessage for
    * compatibility with older gencode.
