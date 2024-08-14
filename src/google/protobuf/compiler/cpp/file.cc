@@ -657,7 +657,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
         GetBootstrapBasename(options_, basename, &basename);
       }
       p->Emit({{"name", basename}}, R"(
-        #include "$name$.proto.h"
+        #include "$name$.pb.h"
       )");
     }
   }
