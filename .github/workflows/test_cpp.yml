@@ -38,7 +38,7 @@ jobs:
         include:
           # Set defaults
           - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:3d959f731dc5c54af4865c31ee2bd581ec40028adcdf4c038f3122581f595191
-          - targets: //pkg/... //src/... @com_google_protobuf_examples//... //third_party/utf8_range/...
+          - targets: //pkg/... //src/... @com_google_protobuf_examples//... //third_party/utf8_range/... //conformance:conformance_framework_tests
 
           # Override cases with custom images
           - config: { name: "Bazel7", flags: --noenable_bzlmod }
@@ -93,7 +93,7 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:${{ matrix.version }}-6.3.0-63dd26c0c7a808d92673a3e52e848189d4ab0f17
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/gcc-${{ matrix.version }}
-          bazel: test //pkg/... //src/... @com_google_protobuf_examples//... //third_party/utf8_range/...
+          bazel: test //pkg/... //src/... @com_google_protobuf_examples//... //third_party/utf8_range/... //conformance:conformance_framework_tests
 
   linux-release:
     strategy:
@@ -355,11 +355,11 @@ jobs:
           - name: MacOS Bazel
             os: macos-12
             cache_key: macos-12
-            bazel: test //src/... //third_party/utf8_range/...
+            bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
           - name: MacOS Bazel 7
             os: macos-12
             cache_key: macos-12-bazel7
-            bazel: test //src/... //third_party/utf8_range/...
+            bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
             bazel_version: '7.1.2'
             continuous-only: true
           - name: MacOS Apple Silicon (build only) Bazel
@@ -367,7 +367,7 @@ jobs:
             cache_key: macos-12-arm
             # Current github runners are all Intel based, so just build/compile
             # for Apple Silicon to detect issues there.
-            bazel: build --cpu=darwin_arm64 //src/... //third_party/utf8_range/...
+            bazel: build --cpu=darwin_arm64 //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
           - name: Windows Bazel
             os: windows-2022
             cache_key: windows-2022

@@ -134,9 +134,11 @@ cc_library(
     srcs = [
         "conformance_test.cc",
         "conformance_test_runner.cc",
+        "failure_list_trie_node.cc",
     ],
     hdrs = [
         "conformance_test.h",
+        "failure_list_trie_node.h",
     ],
     includes = ["."],
     deps = [
@@ -152,9 +154,31 @@ cc_library(
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:optional",
     ],
+)
+
+cc_test(
+    name = "failure_list_trie_node_test",
+    srcs = ["failure_list_trie_node_test.cc"],
+    deps = [
+        ":conformance_test",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+# Add more meta-testing here. This is not to be confused with a conformance test itself.
+test_suite(
+    name = "conformance_framework_tests",
+    tests = ["failure_list_trie_node_test"],
 )
 
 cc_library(

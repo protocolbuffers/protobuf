@@ -26,6 +26,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance.pb.h"
+#include "failure_list_trie_node.h"
 #include "google/protobuf/descriptor.h"
 
 namespace conformance {
@@ -293,11 +294,15 @@ class ConformanceTestSuite {
                const conformance::ConformanceRequest& request,
                conformance::ConformanceResponse* response);
 
-  void AddExpectedFailedTest(const conformance::TestStatus& failure);
+  // Will return false if an entry from the failure list was either a
+  // duplicate of an already added one to the trie or it contained invalid
+  // wildcards; otherwise, returns true.
+  bool AddExpectedFailedTest(const conformance::TestStatus& failure);
 
   virtual void RunSuiteImpl() = 0;
 
   ConformanceTestRunner* runner_;
+  FailureListTrieNode failure_list_root_;
   std::string testee_;
   int successes_;
   int expected_failures_;
@@ -315,8 +320,8 @@ class ConformanceTestSuite {
   // will be run and this bool will be set to true.
   bool isolated_ = false;
 
-  // The set of test names that are expected to fail in this run, but haven't
-  // failed yet.
+  // The set of test names (expanded from wildcard(s) and non-expanded) that are
+  // expected to fail in this run, but haven't failed yet.
   absl::btree_map<std::string, conformance::TestStatus> expected_to_fail_;
 
   // The set of tests that failed because their failure message did not match
@@ -345,8 +350,22 @@ class ConformanceTestSuite {
   absl::btree_map<std::string, conformance::TestStatus>
       unexpected_failure_messages_;
 
+  // The set of test names (wildcarded or not) from the failure list that did
+  // not match any actual test name.
+  absl::btree_map<std::string, conformance::TestStatus> unmatched_;
+
   // The set of tests that the testee opted out of;
   absl::btree_map<std::string, conformance::TestStatus> skipped_;
+
+  // Allows us to remove from unmatched_.
+  absl::btree_map<std::string, std::string> saved_failure_messages_;
+
+  // If a failure list entry served as a match for more than 'max_matches_',
+  // those will be added here for removal.
+  absl::btree_map<std::string, conformance::TestStatus> exceeded_max_matches_;
+
+  // Keeps track of how many tests matched to each failure list entry.
+  absl::btree_map<std::string, int> number_of_matches_;
 };
 
 }  // namespace protobuf

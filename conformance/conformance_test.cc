@@ -24,11 +24,13 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance.pb.h"
+#include "failure_list_trie_node.h"
 #include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/endian.h"
 #include "google/protobuf/message.h"
@@ -120,7 +122,7 @@ static void Normalize(std::string& input) {
 }
 
 // Sets up a failure message properly for our failure lists.
-static TestStatus FormatFailureMessage(TestStatus& input) {
+static TestStatus FormatFailureMessage(const TestStatus& input) {
   // Make copy just this once, as we need to modify it for our failure lists.
   std::string formatted_failure_message = input.failure_message();
   // Remove newlines
@@ -159,7 +161,12 @@ bool CheckSetEmpty(const absl::btree_map<std::string, TestStatus>& set_to_check,
     std::ofstream os{std::string(filename)};
     if (os) {
       for (const auto& pair : set_to_check) {
-        os << pair.first << " # " << pair.second.failure_message() << "\n";
+        // Additions will not have a 'matched_name' while removals will.
+        string potential_add_or_removal = pair.second.matched_name().empty()
+                                              ? pair.first
+                                              : pair.second.matched_name();
+        os << potential_add_or_removal << " # " << pair.second.failure_message()
+           << "\n";
       }
     } else {
       absl::StrAppendFormat(output,
@@ -175,6 +182,8 @@ bool CheckSetEmpty(const absl::btree_map<std::string, TestStatus>& set_to_check,
 
 namespace google {
 namespace protobuf {
+
+constexpr int kMaximumWildcardExpansions = 5;
 
 ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
     ConformanceLevel level, conformance::WireFormat input_format,
@@ -348,14 +357,16 @@ ConformanceResponse ConformanceTestSuite::TruncateResponse(
 }
 
 void ConformanceTestSuite::ReportSuccess(const TestStatus& test) {
-  if (expected_to_fail_.erase(test.name()) != 0) {
-    absl::StrAppendFormat(
-        &output_,
-        "ERROR: test %s is in the failure list, but test succeeded.  "
-        "Remove it from the failure list.\n",
-        test.name());
-    unexpected_succeeding_tests_[test.name()] = test;
+  if (expected_to_fail_.contains(test.name())) {
+    absl::StrAppendFormat(&output_,
+                          "ERROR: test %s (matched to %s) is in the failure "
+                          "list, but test succeeded.  "
+                          "Remove its match from the failure list.\n",
+                          test.name(),
+                          expected_to_fail_[test.name()].matched_name());
+    unexpected_succeeding_tests_[test.name()] = expected_to_fail_[test.name()];
   }
+  expected_to_fail_.erase(test.name());
   successes_++;
 }
 
@@ -383,8 +394,9 @@ void ConformanceTestSuite::ReportFailure(TestStatus& test,
       // to it the same failure message that was in the list.
       TestStatus incorrect_failure_message;
       incorrect_failure_message.set_name(test.name());
-      incorrect_failure_message.set_failure_message(
-          expected_to_fail_[test.name()].failure_message());
+      incorrect_failure_message.set_failure_message(expected_failure_message);
+      incorrect_failure_message.set_matched_name(
+          expected_to_fail_[test.name()].matched_name());
 
       expected_failure_messages_[test.name()] = incorrect_failure_message;
     }
@@ -518,6 +530,29 @@ bool ConformanceTestSuite::RunTest(const std::string& test_name,
     ABSL_LOG(FATAL) << "Duplicated test name: " << test_name;
   }
 
+  // In essence, find what wildcarded test names expand to or direct matches
+  // (without wildcards).
+  if (auto result = failure_list_root_.WalkDownMatch(test_name);
+      result.has_value()) {
+    string matched_equivalent = result.value();
+    unmatched_.erase(matched_equivalent);
+    TestStatus expansion;
+    expansion.set_name(test_name);
+    expansion.set_matched_name(matched_equivalent);
+    expansion.set_failure_message(saved_failure_messages_[matched_equivalent]);
+    expected_to_fail_[test_name] = expansion;
+
+    if (number_of_matches_.contains(matched_equivalent)) {
+      if (number_of_matches_[matched_equivalent] > kMaximumWildcardExpansions &&
+          !exceeded_max_matches_.contains(matched_equivalent)) {
+        exceeded_max_matches_[matched_equivalent] = expansion;
+      }
+      number_of_matches_[matched_equivalent]++;
+    } else {
+      number_of_matches_[matched_equivalent] = 1;
+    }
+  }
+
   std::string serialized_request;
   std::string serialized_response;
   request.SerializeToString(&serialized_request);
@@ -597,8 +632,17 @@ std::string ConformanceTestSuite::WireFormatToString(WireFormat wire_format) {
   return "";
 }
 
-void ConformanceTestSuite::AddExpectedFailedTest(const TestStatus& failure) {
-  expected_to_fail_[failure.name()] = failure;
+bool ConformanceTestSuite::AddExpectedFailedTest(
+    const TestStatus& expected_failure) {
+  absl::Status attempt = failure_list_root_.Insert(expected_failure.name());
+  if (!attempt.ok()) {
+    absl::StrAppend(&output_, attempt.message(), "\n\n");
+    return false;
+  }
+  unmatched_[expected_failure.name()] = expected_failure;
+  saved_failure_messages_[expected_failure.name()] =
+      expected_failure.failure_message();
+  return true;
 }
 
 bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
@@ -606,6 +650,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
                                     const std::string& filename,
                                     conformance::FailureSet* failure_list) {
   runner_ = runner;
+  failure_list_root_ = FailureListTrieNode("root");
   successes_ = 0;
   expected_failures_ = 0;
   skipped_.clear();
@@ -620,8 +665,11 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   failure_list_filename_ = filename;
   expected_to_fail_.clear();
-  for (const TestStatus& failure : failure_list->test()) {
-    AddExpectedFailedTest(failure);
+  for (const TestStatus& expected_failure : failure_list->test()) {
+    if (!AddExpectedFailedTest(expected_failure)) {
+      output->assign(output_);
+      return false;
+    }
   }
 
   RunSuiteImpl();
@@ -632,24 +680,26 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   bool ok = true;
   if (!CheckSetEmpty(
-          expected_to_fail_, "nonexistent_tests.txt",
+          unmatched_, "unmatched.txt",
           absl::StrCat(
-              "These tests were listed in the failure list, but they "
-              "don't exist.  Remove them from the failure list by "
-              "running from the root of your workspace:\n"
+              "These test names were listed in the failure list, but they "
+              "didn't match any actual test name.  Remove them from the "
+              "failure list by running from the root of your workspace:\n"
               "  bazel run "
               "//google/protobuf/conformance:update_failure_list -- ",
               failure_list_filename_, " --remove ", output_dir_,
-              "nonexistent_tests.txt"),
+              "unmatched.txt"),
           output_dir_, &output_)) {
     ok = false;
   }
+
   if (!CheckSetEmpty(
           expected_failure_messages_, "expected_failure_messages.txt",
           absl::StrCat(
-              "These tests were listed in the failure list, but their failure "
-              "messages do not match.  Remove them from the failure list "
-              "by running:\n"
+              "These tests (either expanded from wildcard(s) or direct "
+              "matches) were listed in the failure list, but their "
+              "failure messages do not match.  Remove their match from the "
+              "failure list by running from the root of your workspace:\n"
               "  bazel run ",
               "//google/protobuf/conformance:update_failure_list -- ",
               failure_list_filename_, " --remove ", output_dir_,
@@ -657,10 +707,42 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
           output_dir_, &output_)) {
     ok = false;
   }
+
+  if (!CheckSetEmpty(
+          unexpected_succeeding_tests_, "succeeding_tests.txt",
+          absl::StrCat(
+              "These tests succeeded, even though they were listed in "
+              "the failure list (expanded from wildcard(s) or direct matches). "
+              " Remove their match from the failure list by "
+              "running from the root of your workspace:\n"
+              "  bazel run "
+              "//google/protobuf/conformance:update_failure_list -- ",
+              failure_list_filename_, " --remove ", output_dir_,
+              "succeeding_tests.txt"),
+          output_dir_, &output_)) {
+    ok = false;
+  }
+
+  if (!CheckSetEmpty(
+          exceeded_max_matches_, "exceeded_max_matches.txt",
+          absl::StrFormat(
+              "These failure list entries served as matches to too many test "
+              "names exceeding the max amount of %d.  "
+              "Remove them from the failure list by running from the root of "
+              "your workspace:\n"
+              "  bazel run "
+              "//google/protobuf/conformance:update_failure_list -- %s "
+              "--remove %sexceeded_max_matches.txt",
+              kMaximumWildcardExpansions, failure_list_filename_, output_dir_),
+          output_dir_, &output_)) {
+    ok = false;
+  }
+
   if (!CheckSetEmpty(
           unexpected_failure_messages_, "unexpected_failure_messages.txt",
           absl::StrCat(
-              "These tests failed because their failure messages did "
+              "These tests (expanded from wildcard(s) or direct matches from "
+              "the failure list) failed because their failure messages did "
               "not match.  If they can't be fixed right now, "
               "you can add them to the failure list so the overall "
               "suite can succeed.  Add them to the failure list by "
@@ -684,19 +766,6 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
               "//google/protobuf/conformance:update_failure_list -- ",
               failure_list_filename_, " --add ", output_dir_,
               "failing_tests.txt"),
-          output_dir_, &output_)) {
-    ok = false;
-  }
-  if (!CheckSetEmpty(
-          unexpected_succeeding_tests_, "succeeding_tests.txt",
-          absl::StrCat(
-              "These tests succeeded, even though they were listed in "
-              "the failure list.  Remove them from the failure list by running "
-              "from the root of your workspace:\n"
-              "  bazel run "
-              "//google/protobuf/conformance:update_failure_list -- ",
-              failure_list_filename_, " --remove ", output_dir_,
-              "succeeding_tests.txt"),
           output_dir_, &output_)) {
     ok = false;
   }
