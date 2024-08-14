@@ -44,29 +44,6 @@
 #     ],
 # )
 #
-# cc_library(
-#     name = "protos_internal",
-#     hdrs = ["protos_internal.h"],
-#     copts = UPB_DEFAULT_CPPOPTS,
-#     visibility = ["//visibility:public"],
-#     deps = [
-#         "//hpb:internal",
-#     ],
-# )
-#
-# # Common support code for C++ generated code.
-# cc_library(
-#     name = "generated_protos_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-#     hdrs = [
-#         "protos_internal.h",
-#     ],
-#     copts = UPB_DEFAULT_CPPOPTS,
-#     visibility = ["//visibility:public"],
-#     deps = [
-#         "//hpb:generated_protos_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-#     ],
-# )
-#
 # upb_cc_proto_library_copts(
 #     name = "upb_cc_proto_library_copts__for_generated_code_only_do_not_use",
 #     copts = UPB_DEFAULT_CPPOPTS,

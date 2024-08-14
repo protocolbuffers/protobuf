@@ -134,8 +134,8 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output,
 #ifndef $0_HPB_PROTO_H_
 #define $0_HPB_PROTO_H_
 
+#include "google/protobuf/hpb/internal.h"
 #include "protos/protos.h"
-#include "protos/protos_internal.h"
 #include "protos/repeated_field.h"
 
 #include "absl/strings/string_view.h"
