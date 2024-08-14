@@ -7,10 +7,6 @@
 
 # begin:google_only
 # load(
-#     "//hpb/bazel:upb_cc_proto_library.bzl",
-#     "upb_cc_proto_library_copts",
-# )
-# load(
 #     "//upb/bazel:build_defs.bzl",
 #     "UPB_DEFAULT_CPPOPTS",
 # )
@@ -30,11 +26,4 @@
 #         "//hpb",
 #     ],
 # )
-#
-# upb_cc_proto_library_copts(
-#     name = "upb_cc_proto_library_copts__for_generated_code_only_do_not_use",
-#     copts = UPB_DEFAULT_CPPOPTS,
-#     visibility = ["//visibility:public"],
-# )
-#
 # end:google_only

@@ -147,9 +147,9 @@ cc_test(
 )
 
 upb_cc_proto_library_copts(
-    name = "upb_cc_proto_library_copts__for_generated_code_only_do_not_use",
+    name = "upb_cc_proto_library_copts",
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//visibility:public"],
+    visibility = ["//hpb/bazel:__pkg__"],
 )
 
 cc_test(
