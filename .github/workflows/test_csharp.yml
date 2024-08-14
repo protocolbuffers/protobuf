@@ -12,6 +12,8 @@ permissions:
   contents: read
 
 jobs:
+  # All C# jobs are currently run on presubmit
+  # If you wish to add continuous-only jobs you will need to import test-type above
   linux:
     name: Linux
     runs-on: ubuntu-latest

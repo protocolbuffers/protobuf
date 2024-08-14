@@ -3,10 +3,21 @@ name: Ruby Tests
 on:
   workflow_call:
     inputs:
+      continuous-run:
+        required: true
+        description: "Boolean string denoting whether this run is continuous --
+          empty string for presubmit, non-empty string for continuous."
+        type: string
       safe-checkout:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
+      continuous-prefix:
+        required: true
+        description: "The string continuous-only tests should be prefixed with when displaying test
+          results."
+        type: string
+
 
 permissions:
   contents: read
@@ -20,22 +31,24 @@ jobs:
           # Test both FFI and Native implementations on the highest and lowest
           # Ruby versions for CRuby and JRuby, but only on Bazel 5.x.
           - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: NATIVE }
-          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI }
-          - { name: Ruby 3.1, ruby: ruby-3.1.0 }
-          - { name: Ruby 3.2, ruby: ruby-3.2.0 }
+          - { name: Ruby 3.0, ruby: ruby-3.0.2, ffi: FFI, continuous-only: true }
+          - { name: Ruby 3.1, ruby: ruby-3.1.0, continuous-only: true }
+          - { name: Ruby 3.2, ruby: ruby-3.2.0, continuous-only: true }
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: NATIVE }
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
           - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI }
 
-    name: Linux ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name }} ${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:{0}-6.3.0-9848710ff1370795ee7517570a20b81e140112ec', matrix.ruby) }}
@@ -45,6 +58,7 @@ jobs:
 # Useful tool for troubleshooting, but the action introduces flakes as well,
 # e.g. https://github.com/actions/upload-artifact/issues/569
 #      - name: Archive log artifacts
+#        if: ${{ matrix.presubmit || inputs.test-type == 'continuous' }}
 #        uses: actions/upload-artifact@v4
 #        with:
 #          name: test-logs-${{ matrix.ruby }}_${{ matrix.ffi || 'NATIVE' }}
@@ -121,29 +135,33 @@ jobs:
         # Ruby versions for CRuby, but only on Bazel 5.x.
         # Quote versions numbers otherwise 3.0 will render as 3
         - { version: "3.0", ffi: NATIVE }
-        - { version: "3.0", ffi: FFI }
-        - { version: "3.1" }
-        - { version: "3.2" }
+        - { version: "3.0", ffi: FFI, continuous-only: true }
+        - { version: "3.1", continuous-only: true }
+        - { version: "3.2", continuous-only: true }
         - { version: "3.3", ffi: NATIVE }
         - { version: "3.3", ffi: FFI }
 
-    name: MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: macos-12
     steps:
       - name: Checkout pending changes
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Pin Ruby version
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: ruby/setup-ruby@961f85197f92e4842e3cb92a4f97bd8e010cdbaf # v1.165.0
         with:
           ruby-version: ${{ matrix.version }}
 
       - name: Validate version
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         run: ruby --version | grep ${{ matrix.version }} || (echo "Invalid Ruby version - $(ruby --version)" && exit 1)
 
       - name: Run tests
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -165,7 +183,9 @@ jobs:
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
           - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI }
-    name: Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
+    name: (Continuous) Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
+    # None of these ruby gem tests should be run on presubmit
+    if: ${{ inputs.continuous-run }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes

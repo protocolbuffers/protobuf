@@ -3,9 +3,19 @@ name: Bazel Tests
 on:
   workflow_call:
     inputs:
+      continuous-run:
+        required: true
+        description: "Boolean string denoting whether this run is continuous --
+          empty string for presubmit, non-empty string for continuous."
+        type: string
       safe-checkout:
         required: true
         description: "The SHA key for the commit we want to run over"
+        type: string
+      continuous-prefix:
+        required: true
+        description: "The string continuous-only tests should be prefixed with when displaying test
+        results."
         type: string
 
 permissions:
@@ -24,26 +34,30 @@ jobs:
             bazelversion: '6.4.0'
             # Not running Bazel 6 with bzlmod, because it doesn't support use_repo_rule in rules_jvm_external
             bzlmod: false
+            continuous-only: true
     runs-on: ${{ matrix.runner }}-latest
-    name: Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }}
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }}
     steps:
       - name: Checkout pending changes
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Windows startup flags
-        if: runner.os == 'Windows'
+        if: ${{ runner.os == 'Windows' && (!matrix.continuous-only || inputs.continuous-run) }}
         working-directory: examples
         shell: bash
         run: echo "startup --output_user_root=C:/ --windows_enable_symlinks" >> .bazelrc
 
       - name: Configure Bazel version
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         working-directory: examples
         shell: bash
         run: echo "${{ matrix.bazelversion }}" > .bazelversion
 
       - name: Run tests
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
