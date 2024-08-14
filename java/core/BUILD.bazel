@@ -299,7 +299,6 @@ proto_library(
 java_proto_library(
     name = "generic_test_protos_java_proto",
     visibility = [
-        "//java:__subpackages__",
         # Public visibility for gencode runtime tests.
         "//visibility:public"
     ],
@@ -309,7 +308,6 @@ java_proto_library(
 java_proto_library(
     name = "lite_test_protos_java_proto",
     visibility = [
-        "//java:__subpackages__",
         # Public visibility for gencode runtime tests.
         "//visibility:public"
     ],
@@ -319,7 +317,6 @@ java_proto_library(
 java_proto_library(
     name = "java_test_protos_java_proto",
     visibility = [
-        "//java:__subpackages__",
         # Public visibility for gencode runtime tests.
         "//visibility:public"
     ],
