@@ -197,6 +197,12 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
   self = [super init];
   if (self) {
     fields_ = [[NSMutableArray alloc] init];
+    // This shouldn't happen with the annotations, but just incase something claiming nonnull
+    // does return nil, block it.
+    if (!message) {
+      [self release];
+      [NSException raise:NSInvalidArgumentException format:@"Message cannot be nil"];
+    }
     NSData *data = GPBMessageUnknownFieldsData(message);
     if (data) {
       GPBCodedInputStream *input = [[GPBCodedInputStream alloc] initWithData:data];
