@@ -255,7 +255,7 @@ jobs:
 
   # This test depends on all blocking tests and indicates whether they all suceeded.
   all-blocking-tests:
-    name: All Blocking Tests
+    name: All Blocking Tests${{ github.event_name == 'pull_request_target' && ' (fork)' || ''}}
     needs: [set-vars, validate-yaml, bazel, cpp, java, python, ruby, php, php-ext, csharp, objectivec, rust, upb, staleness]
     runs-on: ubuntu-latest
     steps:
