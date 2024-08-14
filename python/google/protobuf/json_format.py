@@ -43,6 +43,16 @@ _INT64_TYPES = frozenset([
     descriptor.FieldDescriptor.CPPTYPE_INT64,
     descriptor.FieldDescriptor.CPPTYPE_UINT64,
 ])
+# the proto3 JSON mapping outputs 64 bit integer types
+# as strings, because the maximum integer in Javascript
+# is `2^53 - 1` and thus integers between `2^53`-`2^64`
+# would overflow. This `str` function is separated out
+# so if an upstream user wants to patch in `int` they can,
+# which will technically violate the proto3 mapping but
+# will still be accepted by `Parse` and for integers of
+# reasonable size produces a less "surprising" result.
+_INT64_CONVERTER = str
+
 _FLOAT_TYPES = frozenset([
     descriptor.FieldDescriptor.CPPTYPE_FLOAT,
     descriptor.FieldDescriptor.CPPTYPE_DOUBLE,
@@ -307,7 +317,7 @@ class _Printer(object):
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_BOOL:
       return bool(value)
     elif field.cpp_type in _INT64_TYPES:
-      return str(value)
+      return _INT64_CONVERTER(value)
     elif field.cpp_type in _FLOAT_TYPES:
       if math.isinf(value):
         if value < 0.0:
