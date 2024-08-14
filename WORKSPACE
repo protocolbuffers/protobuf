@@ -234,10 +234,7 @@ http_archive(
     sha256 = "7beed9c511d632cff7c22ac0094dd7720e550153039d5da7e059bcceb488474a",
 )
 
-# Needed as a dependency of @com_google_protobuf_v25.x, which was before
-# utf8_range was merged in.
-http_archive(
-    name = "utf8_range",
-    strip_prefix = "utf8_range-d863bc33e15cba6d873c878dcca9e6fe52b2f8cb",
-    url = "https://github.com/protocolbuffers/utf8_range/archive/d863bc33e15cba6d873c878dcca9e6fe52b2f8cb.zip",
-)
+load("@com_google_protobuf_v25.0//:protobuf_deps.bzl", protobuf_v25_deps="protobuf_deps")
+
+# Needed as a dependency of @com_google_protobuf_v25.x
+protobuf_v25_deps()
