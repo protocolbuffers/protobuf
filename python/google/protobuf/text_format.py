@@ -668,7 +668,8 @@ def Parse(text,
           allow_unknown_extension=False,
           allow_field_number=False,
           descriptor_pool=None,
-          allow_unknown_field=False):
+          allow_unknown_field=False,
+          allow_unknown_enum=False):
   """Parses a text representation of a protocol message into a message.
 
   NOTE: for historical reasons this function does not clear the input
@@ -706,6 +707,8 @@ def Parse(text,
     allow_unknown_field: if True, skip over unknown field and keep
       parsing. Avoid to use this option if possible. It may hide some
       errors (e.g. spelling error on field name)
+    allow_unknown_enum: If True, unknown enum values are allowed and are
+      interpreted as the default enum value.
 
   Returns:
     Message: The same message passed as argument.
@@ -718,7 +721,8 @@ def Parse(text,
                     allow_unknown_extension,
                     allow_field_number,
                     descriptor_pool=descriptor_pool,
-                    allow_unknown_field=allow_unknown_field)
+                    allow_unknown_field=allow_unknown_field,
+                    allow_unknown_enum=allow_unknown_enum)
 
 
 def Merge(text,
@@ -726,7 +730,8 @@ def Merge(text,
           allow_unknown_extension=False,
           allow_field_number=False,
           descriptor_pool=None,
-          allow_unknown_field=False):
+          allow_unknown_field=False,
+          allow_unknown_enum=False):
   """Parses a text representation of a protocol message into a message.
 
   Like Parse(), but allows repeated values for a non-repeated field, and uses
@@ -743,6 +748,8 @@ def Merge(text,
     allow_unknown_field: if True, skip over unknown field and keep
       parsing. Avoid to use this option if possible. It may hide some
       errors (e.g. spelling error on field name)
+    allow_unknown_enum: If True, unknown enum values are allowed and are
+      interpreted as the default enum value.
 
   Returns:
     Message: The same message passed as argument.
@@ -756,7 +763,8 @@ def Merge(text,
       allow_unknown_extension,
       allow_field_number,
       descriptor_pool=descriptor_pool,
-      allow_unknown_field=allow_unknown_field)
+      allow_unknown_field=allow_unknown_field,
+      allow_unknown_enum=allow_unknown_enum)
 
 
 def ParseLines(lines,
@@ -764,7 +772,8 @@ def ParseLines(lines,
                allow_unknown_extension=False,
                allow_field_number=False,
                descriptor_pool=None,
-               allow_unknown_field=False):
+               allow_unknown_field=False,
+               allow_unknown_enum=False):
   """Parses a text representation of a protocol message into a message.
 
   See Parse() for caveats.
@@ -779,6 +788,8 @@ def ParseLines(lines,
     allow_unknown_field: if True, skip over unknown field and keep
       parsing. Avoid to use this option if possible. It may hide some
       errors (e.g. spelling error on field name)
+    allow_unknown_enum: If True, unknown enum values are allowed and are
+      interpreted as the default enum value.
 
   Returns:
     The same message passed as argument.
@@ -789,7 +800,8 @@ def ParseLines(lines,
   parser = _Parser(allow_unknown_extension,
                    allow_field_number,
                    descriptor_pool=descriptor_pool,
-                   allow_unknown_field=allow_unknown_field)
+                   allow_unknown_field=allow_unknown_field,
+                   allow_unknown_enum=allow_unknown_enum)
   return parser.ParseLines(lines, message)
 
 
@@ -798,7 +810,8 @@ def MergeLines(lines,
                allow_unknown_extension=False,
                allow_field_number=False,
                descriptor_pool=None,
-               allow_unknown_field=False):
+               allow_unknown_field=False,
+               allow_unknown_enum=False):
   """Parses a text representation of a protocol message into a message.
 
   See Merge() for more details.
@@ -813,6 +826,8 @@ def MergeLines(lines,
     allow_unknown_field: if True, skip over unknown field and keep
       parsing. Avoid to use this option if possible. It may hide some
       errors (e.g. spelling error on field name)
+    allow_unknown_enum: If True, unknown enum values are allowed and are
+      interpreted as the default enum value.
 
   Returns:
     The same message passed as argument.
@@ -823,7 +838,8 @@ def MergeLines(lines,
   parser = _Parser(allow_unknown_extension,
                    allow_field_number,
                    descriptor_pool=descriptor_pool,
-                   allow_unknown_field=allow_unknown_field)
+                   allow_unknown_field=allow_unknown_field,
+                   allow_unknown_enum=allow_unknown_enum)
   return parser.MergeLines(lines, message)
 
 
@@ -834,11 +850,13 @@ class _Parser(object):
                allow_unknown_extension=False,
                allow_field_number=False,
                descriptor_pool=None,
-               allow_unknown_field=False):
+               allow_unknown_field=False,
+               allow_unknown_enum=False):
     self.allow_unknown_extension = allow_unknown_extension
     self.allow_field_number = allow_field_number
     self.descriptor_pool = descriptor_pool
     self.allow_unknown_field = allow_unknown_field
+    self.allow_unknown_enum = allow_unknown_enum
 
   def ParseLines(self, lines, message):
     """Parses a text representation of a protocol message into a message."""
@@ -1138,7 +1156,8 @@ class _Parser(object):
     elif field.type == descriptor.FieldDescriptor.TYPE_BYTES:
       value = tokenizer.ConsumeByteString()
     elif field.type == descriptor.FieldDescriptor.TYPE_ENUM:
-      value = tokenizer.ConsumeEnum(field)
+      value = tokenizer.ConsumeEnum(field,
+                                    allow_unknown_enum=self.allow_unknown_enum)
     else:
       raise RuntimeError('Unknown field type %d' % field.type)
 
@@ -1576,9 +1595,10 @@ class Tokenizer(object):
     self.NextToken()
     return result
 
-  def ConsumeEnum(self, field):
+  def ConsumeEnum(self, field, allow_unknown_enum=False):
     try:
-      result = ParseEnum(field, self.token)
+      result = ParseEnum(field, self.token,
+                         allow_unknown_enum=allow_unknown_enum)
     except ValueError as e:
       raise self.ParseError(str(e))
     self.NextToken()
@@ -1829,7 +1849,7 @@ def ParseBool(text):
     raise ValueError('Expected "true" or "false".')
 
 
-def ParseEnum(field, value):
+def ParseEnum(field, value, allow_unknown_enum=False):
   """Parse an enum value.
 
   The value can be specified by a number (the enum value), or by
@@ -1838,6 +1858,8 @@ def ParseEnum(field, value):
   Args:
     field: Enum field descriptor.
     value: String value.
+    allow_unknown_enum: If true, unknown enum values are allowed and are
+      interpreted as the default enum value.
 
   Returns:
     Enum value number.
@@ -1851,9 +1873,13 @@ def ParseEnum(field, value):
   except ValueError:
     # Identifier.
     enum_value = enum_descriptor.values_by_name.get(value, None)
-    if enum_value is None:
+    if enum_value is None and not allow_unknown_enum:
       raise ValueError('Enum type "%s" has no value named %s.' %
                        (enum_descriptor.full_name, value))
+    elif enum_value is None and allow_unknown_enum:
+      warnings.warn(
+          'Enum value "%s" is not known. Using default enum value 0.' % value)
+      return 0
   else:
     if not field.enum_type.is_closed:
       return number
