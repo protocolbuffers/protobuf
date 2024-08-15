@@ -30,8 +30,8 @@ import static com.google.protobuf.Internal.checkNotNull;
  * @author jonp@google.com (Jon Perlow)
  */
 public class SingleFieldBuilder<
-        MType extends GeneratedMessage,
-        BType extends GeneratedMessage.Builder,
+        MType extends AbstractMessage,
+        BType extends AbstractMessage.Builder,
         IType extends MessageOrBuilder>
     implements GeneratedMessage.BuilderParent {
 

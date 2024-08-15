@@ -19,15 +19,15 @@ import java.util.List;
  */
 @Deprecated
 public class RepeatedFieldBuilderV3<
-        MType extends GeneratedMessage,
-        BType extends GeneratedMessage.Builder,
+        MType extends AbstractMessage,
+        BType extends AbstractMessage.Builder,
         IType extends MessageOrBuilder>
     extends RepeatedFieldBuilder<MType, BType, IType> {
 
   public RepeatedFieldBuilderV3(
       List<MType> messages,
       boolean isMessagesListMutable,
-      GeneratedMessage.BuilderParent parent,
+      AbstractMessage.BuilderParent parent,
       boolean isClean) {
     super(messages, isMessagesListMutable, parent, isClean);
   }

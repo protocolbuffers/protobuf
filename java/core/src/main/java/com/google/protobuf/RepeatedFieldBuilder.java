@@ -37,8 +37,8 @@ import java.util.RandomAccess;
  * @author jonp@google.com (Jon Perlow)
  */
 public class RepeatedFieldBuilder<
-        MType extends GeneratedMessage,
-        BType extends GeneratedMessage.Builder,
+        MType extends AbstractMessage,
+        BType extends AbstractMessage.Builder,
         IType extends MessageOrBuilder>
     implements GeneratedMessage.BuilderParent {
 
@@ -551,8 +551,8 @@ public class RepeatedFieldBuilder<
    * @param <IType> the common interface for the message and the builder
    */
   private static class MessageExternalList<
-          MType extends GeneratedMessage,
-          BType extends GeneratedMessage.Builder,
+          MType extends AbstractMessage,
+          BType extends AbstractMessage.Builder,
           IType extends MessageOrBuilder>
       extends AbstractList<MType> implements List<MType>, RandomAccess {
 
@@ -585,8 +585,8 @@ public class RepeatedFieldBuilder<
    * @param <IType> the common interface for the message and the builder
    */
   private static class BuilderExternalList<
-          MType extends GeneratedMessage,
-          BType extends GeneratedMessage.Builder,
+          MType extends AbstractMessage,
+          BType extends AbstractMessage.Builder,
           IType extends MessageOrBuilder>
       extends AbstractList<BType> implements List<BType>, RandomAccess {
 
@@ -619,8 +619,8 @@ public class RepeatedFieldBuilder<
    * @param <IType> the common interface for the message and the builder
    */
   private static class MessageOrBuilderExternalList<
-          MType extends GeneratedMessage,
-          BType extends GeneratedMessage.Builder,
+          MType extends AbstractMessage,
+          BType extends AbstractMessage.Builder,
           IType extends MessageOrBuilder>
       extends AbstractList<IType> implements List<IType>, RandomAccess {
 

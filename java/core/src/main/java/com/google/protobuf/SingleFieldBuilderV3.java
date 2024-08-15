@@ -16,13 +16,13 @@ package com.google.protobuf;
  */
 @Deprecated
 public class SingleFieldBuilderV3<
-        MType extends GeneratedMessage,
-        BType extends GeneratedMessage.Builder,
+        MType extends AbstractMessage,
+        BType extends AbstractMessage.Builder,
         IType extends MessageOrBuilder>
     extends SingleFieldBuilder<MType, BType, IType> {
 
   public SingleFieldBuilderV3(
-      MType message, GeneratedMessage.BuilderParent parent, boolean isClean) {
+    MType message, AbstractMessage.BuilderParent parent, boolean isClean) {
     super(message, parent, isClean);
   }
 }
