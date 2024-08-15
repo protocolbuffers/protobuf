@@ -177,15 +177,6 @@ bool RustGenerator::Generate(const FileDescriptor* file,
       {"Phantom", "::__std::marker::PhantomData"},
   });
 
-  // On upb we need to enable this feature to be able to have const pointers to
-  // upb_MiniTables while using the upb C minitable codegen. This
-  // feature appears that it'll imminently be considered stabilized
-  // (https://github.com/rust-lang/rust/issues/128183), and if we emit the
-  // MiniTables as const directly in .rs rather than using the upb minitable .h
-  // this could be avoided regardless.
-  if (ctx.is_upb() && file == &rust_generator_context.primary_file()) {
-    ctx.Emit("#![feature(const_refs_to_static)]\n");
-  }
 
   ctx.Emit({{"kernel", KernelRsName(ctx.opts().kernel)}}, R"rs(
     extern crate protobuf_$kernel$ as __pb;

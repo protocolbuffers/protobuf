@@ -80,7 +80,7 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
         // SAFETY: `MINI_TABLE` is the one associated with `self.raw_msg()`.
         let encoded = unsafe {
           $pbr$::wire::encode(self.raw_msg(),
-              <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE)
+              <Self as $pbr$::AssociatedMiniTable>::mini_table())
         };
         //~ TODO: This discards the info we have about the reason
         //~ of the failure, we should try to keep it instead.
@@ -102,12 +102,11 @@ void MessageMutClear(Context& ctx, const Descriptor& msg) {
       return;
     case Kernel::kUpb:
       ctx.Emit(
-          {
-              {"minitable", UpbMinitableName(msg)},
-          },
           R"rs(
           unsafe {
-            $pbr$::upb_Message_Clear(self.raw_msg(), $std$::ptr::addr_of!($minitable$))
+            $pbr$::upb_Message_Clear(
+                self.raw_msg(),
+                <Self as $pbr$::AssociatedMiniTable>::mini_table())
           }
         )rs");
       return;
@@ -148,7 +147,7 @@ void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
           $pbr$::wire::decode(
               data,
               msg.raw_msg(),
-              <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE,
+              <Self as $pbr$::AssociatedMiniTable>::mini_table(),
               msg.arena())
         };
         match status {
@@ -183,7 +182,7 @@ void MessageDebug(Context& ctx, const Descriptor& msg) {
         let string = unsafe {
           $pbr$::debug_string(
             self.raw_msg(),
-            <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE
+            <Self as $pbr$::AssociatedMiniTable>::mini_table()
           )
         };
         write!(f, "{}", string)
@@ -297,7 +296,7 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
             unsafe { $pbr$::upb_Message_DeepCopy(
               dst.inner.msg,
               self.msg,
-              <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE,
+              <Self as $pbr$::AssociatedMiniTable>::mini_table(),
               dst.inner.arena.raw(),
             ) };
             dst
@@ -319,16 +318,25 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
 void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg) {
   if (ctx.opts().kernel == Kernel::kUpb) {
     ctx.Emit({{"minitable", UpbMinitableName(msg)}}, R"rs(
-      unsafe impl $pbr$::AssociatedMiniTable for $Msg$ {
-        const MINI_TABLE: *const $pbr$::upb_MiniTable = unsafe { $std$::ptr::addr_of!($minitable$) };
+      impl $pbr$::AssociatedMiniTable for $Msg$ {
+        #[inline(always)]
+        unsafe fn mini_table() -> *const $pbr$::upb_MiniTable {
+          $std$::ptr::addr_of!($minitable$)
+        }
       }
 
-      unsafe impl $pbr$::AssociatedMiniTable for $Msg$View<'_> {
-        const MINI_TABLE: *const $pbr$::upb_MiniTable = unsafe { $std$::ptr::addr_of!($minitable$) };
+      impl $pbr$::AssociatedMiniTable for $Msg$View<'_> {
+        #[inline(always)]
+        unsafe fn mini_table() -> *const $pbr$::upb_MiniTable {
+          $std$::ptr::addr_of!($minitable$)
+        }
       }
 
-      unsafe impl $pbr$::AssociatedMiniTable for $Msg$Mut<'_> {
-        const MINI_TABLE: *const $pbr$::upb_MiniTable = unsafe { $std$::ptr::addr_of!($minitable$) };
+      impl $pbr$::AssociatedMiniTable for $Msg$Mut<'_> {
+        #[inline(always)]
+        unsafe fn mini_table() -> *const $pbr$::upb_MiniTable {
+          $std$::ptr::addr_of!($minitable$)
+        }
       }
     )rs");
   }
@@ -362,7 +370,7 @@ void MessageMutMergeFrom(Context& ctx, const Descriptor& msg) {
                 assert!(
                   $pbr$::upb_Message_MergeFrom(self.raw_msg(),
                     src.as_view().raw_msg(),
-                    <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE,
+                    <Self as $pbr$::AssociatedMiniTable>::mini_table(),
                     // Use a nullptr for the ExtensionRegistry.
                     $std$::ptr::null(),
                     self.arena().raw())
@@ -568,7 +576,7 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
               // SAFETY:
               // - Elements of `src` and `dest` have message minitable `MINI_TABLE`.
               unsafe {
-                $pbr$::repeated_message_copy_from(src, dest, <Self as $pbr$::AssociatedMiniTable>::MINI_TABLE);
+                $pbr$::repeated_message_copy_from(src, dest, <Self as $pbr$::AssociatedMiniTable>::mini_table());
               }
           }
 

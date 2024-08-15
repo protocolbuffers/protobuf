@@ -16,15 +16,20 @@ use super::upb_MiniTable;
 /// passed in as a parameter, which is referred to as 'the associated MiniTable
 /// for the upb_Message instance' in safety comments.
 ///
-/// This trait is a way to statically associate a MiniTable with Rust types
+/// This trait is a way to associate a MiniTable with Rust types
 /// which hold upb_Message* to simplify ensuring the upb C invariants
 /// are maintained.
 ///
-/// SAFETY:
-/// - The MiniTable pointer must be from Protobuf code generation and follow the
-///   corresponding invariants associated with upb's C API (the pointer should
-///   always have the same non-null value, the underlying pointee should never
-///   be modified and should have 'static lifetime).
-pub unsafe trait AssociatedMiniTable {
-    const MINI_TABLE: *const upb_MiniTable;
+/// Note that this would prefer to be a `const MINI_TABLE: *const upb_MiniTable`
+/// to statically associate a single MiniTable, but as long as the MiniTable is
+/// an extern "C" we cannot do that without the unstable `const_refs_to_static`.
+/// After that feature is stabilized (or if we move the MiniTable generation to
+/// .rs) this will be switched.
+pub trait AssociatedMiniTable {
+    /// SAFETY:
+    /// - The MiniTable pointer must be from Protobuf code generation and follow
+    ///   the corresponding invariants associated with upb's C API (the pointer
+    ///   should always have the same non-null value, the underlying pointee
+    ///   should never be modified and should have 'static lifetime).
+    unsafe fn mini_table() -> *const upb_MiniTable;
 }
