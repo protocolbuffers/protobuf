@@ -662,6 +662,37 @@
   XCTAssertEqual(loop, 10);
 }
 
+- (void)testAddCopyOfField {
+  GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
+  [ufs addFieldNumber:1 varint:10];
+  [ufs addFieldNumber:2 fixed32:11];
+  [ufs addFieldNumber:3 fixed64:12];
+  [ufs addFieldNumber:4 lengthDelimited:DataFromCStr("foo")];
+  GPBUnknownFields* group = [ufs addGroupWithFieldNumber:5];
+  [group addFieldNumber:10 varint:100];
+  GPBUnknownFields* subGroup = [group addGroupWithFieldNumber:100];
+  [subGroup addFieldNumber:50 varint:50];
+
+  GPBUnknownFields* ufs2 = [[[GPBUnknownFields alloc] init] autorelease];
+  for (GPBUnknownField* field in ufs) {
+    GPBUnknownField* field2 = [ufs2 addCopyOfField:field];
+    XCTAssertEqualObjects(field, field2);
+    if (field.type == GPBUnknownFieldTypeGroup) {
+      // Group does a copy because the `.group` value is mutable.
+      XCTAssertTrue(field != field2);        // Pointer comparison.
+      XCTAssertTrue(group != field2.group);  // Pointer comparison.
+      XCTAssertEqualObjects(group, field2.group);
+      GPBUnknownFields* subGroupAdded = [field2.group firstGroup:100];
+      XCTAssertTrue(subGroupAdded != subGroup);  // Pointer comparison.
+      XCTAssertEqualObjects(subGroupAdded, subGroup);
+    } else {
+      // All other types are immutable, so they use the same object.
+      XCTAssertTrue(field == field2);  // Pointer comparision.
+    }
+  }
+  XCTAssertEqualObjects(ufs, ufs2);
+}
+
 - (void)testDescriptions {
   // Exercise description for completeness.
   GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
