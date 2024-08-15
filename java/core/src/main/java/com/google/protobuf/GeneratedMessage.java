@@ -1563,7 +1563,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       }
     }
 
-    protected final void mergeExtensionFields(final ExtendableMessage<?> other) {
+    protected void mergeExtensionFields(final ExtendableMessage<?> other) {
       if (other.extensions != null) {
         ensureExtensionsIsMutable();
         extensions.mergeFrom(other.extensions);

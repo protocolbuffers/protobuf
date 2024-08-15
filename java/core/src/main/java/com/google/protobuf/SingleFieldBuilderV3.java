@@ -25,4 +25,31 @@ public class SingleFieldBuilderV3<
     MType message, AbstractMessage.BuilderParent parent, boolean isClean) {
     super(message, parent, isClean);
   }
+
+  /* Returns SingleFieldBuilderV3 instead of SingleFieldBuilder.
+  * 
+  * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+  * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
+  * SingleFieldBuilder.setMessage instead of SingleFieldBuilderV3.setMessage.
+  */
+  @Deprecated
+  @Override
+  public SingleFieldBuilderV3<MType, BType, IType> setMessage(MType message) {
+    super.setMessage(message);
+    return this;
+  }
+
+  @Deprecated
+  @Override
+  public SingleFieldBuilderV3<MType, BType, IType> mergeFrom(MType value) {
+    super.mergeFrom(value);
+    return this;
+  }
+
+  @Deprecated
+  @Override
+  public SingleFieldBuilderV3<MType, BType, IType> clear() {
+    super.clear();
+    return this;
+  }
 }

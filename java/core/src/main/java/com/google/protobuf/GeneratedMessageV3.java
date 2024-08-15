@@ -154,6 +154,11 @@ public abstract class GeneratedMessageV3
       return super.clone();
     }
 
+    @Override
+    public BuilderT clear() {
+      return super.clear();
+    }
+
     // Support old gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
@@ -482,6 +487,11 @@ public abstract class GeneratedMessageV3
     @Override
     public BuilderT addRepeatedField(final FieldDescriptor field, final Object value) {
       return super.addRepeatedField(field, value);
+    }
+
+    @Override
+    protected void mergeExtensionFields(final ExtendableMessage<?> other) {
+      super.mergeExtensionFields(other);
     }
   }
 
