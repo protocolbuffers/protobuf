@@ -9,6 +9,9 @@ package com.google.protobuf;
 
 import com.google.protobuf.AbstractMessage.BuilderParent;
 import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.OneofDescriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage.Builder.BuilderParentImpl;
 
 import com.google.protobuf.GeneratedMessage.Builder.BuilderParentImpl;
@@ -128,6 +131,83 @@ public abstract class GeneratedMessageV3
       }
       return meAsParent;
     }
+
+    // Support old gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Override
+    public BuilderT setUnknownFields(final UnknownFieldSet unknownFields) {
+      return super.setUnknownFields(unknownFields);
+    }
+
+    // Support old gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Override
+    public BuilderT mergeUnknownFields(final UnknownFieldSet unknownFields) {
+      return super.mergeUnknownFields(unknownFields);
+    }
+
+    // Support old gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Deprecated
+    @Override
+    public BuilderT clone() {
+      return super.clone();
+    }
+
+    // Support old gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Deprecated
+    @Override
+    public BuilderT setField(final FieldDescriptor field, final Object value) {
+      return super.setField(field, value);
+    }
+
+    // Support old gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Deprecated
+    @Override
+    public BuilderT clearField(final FieldDescriptor field) {
+      return super.clearField(field);
+    }
+
+    // Support old gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Deprecated
+    @Override
+    public BuilderT clearOneof(final OneofDescriptor oneof) {
+      return super.clearOneof(oneof);
+    }
+
+    // Support old gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24    @Deprecated
+    @Override
+    public int getRepeatedFieldCount(final FieldDescriptor field) {
+      return super.getRepeatedFieldCount(field);
+    }
+    // Support old gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Deprecated
+    @Override
+    public Object getRepeatedField(final FieldDescriptor field, final int index) {
+      return super.getRepeatedField(field, index);
+    }
+
+    // Support old gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Deprecated
+    @Override
+    public BuilderT setRepeatedField(
+        final FieldDescriptor field, final int index, final Object value) {
+      return super.setRepeatedField(field, index, value);
+    }
+
+    // Support old gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Deprecated
+    @Override
+    public BuilderT addRepeatedField(final FieldDescriptor field, final Object value) {
+      return super.addRepeatedField(field, value);
+    }
   }
 
   /**
@@ -229,7 +309,7 @@ public abstract class GeneratedMessageV3
     protected ExtendableBuilder(BuilderParent parent) {
       super(parent);
     }
-
+    
     // Support old gencode override method removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
