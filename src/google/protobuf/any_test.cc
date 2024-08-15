@@ -5,9 +5,14 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <limits.h>
+
+#include <cstdlib>
+#include <string>
+#include <utility>
+
 #include "google/protobuf/any.pb.h"
 #include <gtest/gtest.h>
-#include "absl/strings/str_cat.h"
 #include "google/protobuf/any_test.pb.h"
 #include "google/protobuf/unittest.pb.h"
 

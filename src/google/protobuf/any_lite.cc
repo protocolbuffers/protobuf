@@ -5,12 +5,16 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <cstdlib>
+#include <string>
+
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/any.h"
-#include "google/protobuf/arenastring.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/message_lite.h"
 
 namespace google {
 namespace protobuf {
