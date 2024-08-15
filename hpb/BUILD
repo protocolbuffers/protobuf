@@ -77,8 +77,6 @@ cc_library(
     ],
     compatible_with = ["//buildenv/target:non_prod"],
     copts = UPB_DEFAULT_CPPOPTS,
-    # TODO: update visibility back to private once upb/protos gets removed
-    visibility = ["//protos:__subpackages__"],
 )
 
 cc_library(
