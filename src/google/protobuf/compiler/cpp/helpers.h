@@ -1101,11 +1101,12 @@ void GenerateUtf8CheckCodeForCord(io::Printer* p, const FieldDescriptor* field,
                                   absl::string_view parameters);
 
 inline bool ShouldGenerateExternSpecializations(const Options& options) {
-  // For OSS we omit the specializations to reduce codegen size.
-  // Some compilers can't handle that much input in a single translation unit.
-  // These specializations are just a link size optimization and do not affect
-  // correctness or performance, so it is ok to omit them.
-  return !options.opensource_runtime;
+  // This is required for proto.h headers, but otherwise in open source we omit
+  // the specializations to reduce codegen size. Some compilers can't handle
+  // that much input in a single translation unit. As long as proto.h is not
+  // enabled, these specializations are just a link size optimization and do
+  // not affect correctness or performance, so it is ok to omit them.
+  return options.proto_h || !options.opensource_runtime;
 }
 
 struct OneOfRangeImpl {
