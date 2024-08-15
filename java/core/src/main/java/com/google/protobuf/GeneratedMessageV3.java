@@ -295,10 +295,10 @@ public abstract class GeneratedMessageV3
    */
   @Deprecated
   public abstract static class ExtendableBuilder<
-          MessageT extends GeneratedMessageV3.ExtendableMessage<MessageT>,
-          BuilderT extends GeneratedMessageV3.ExtendableBuilder<MessageT, BuilderT>>
-      extends GeneratedMessageV3.Builder<BuilderT>  // Extends GeneratedMessage.ExtendableBuilder via Builder
-      implements GeneratedMessageV3.ExtendableMessageOrBuilder<MessageT> {
+          MessageT extends ExtendableMessage<MessageT>,
+          BuilderT extends ExtendableBuilder<MessageT, BuilderT>>
+      extends Builder<BuilderT>  // Extends GeneratedMessage.ExtendableBuilder via Builder
+      implements ExtendableMessageOrBuilder<MessageT> {
     
     @Deprecated
     protected ExtendableBuilder() {
@@ -312,6 +312,7 @@ public abstract class GeneratedMessageV3
     
     // Support old gencode override method removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    // and removed from GeneratedMessage in https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     public <T> BuilderT setExtension(
         final GeneratedMessage.GeneratedExtension extension, final T value) {
@@ -320,6 +321,7 @@ public abstract class GeneratedMessageV3
 
     // Support old gencode override method removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    // and removed from GeneratedMessage.ExtendableBuilder in https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     public <T> BuilderT setExtension(
         final GeneratedMessage.GeneratedExtension extension,
@@ -330,6 +332,7 @@ public abstract class GeneratedMessageV3
 
     // Support old gencode override method removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    // and removed from GeneratedMessage.ExtendableBuilder in https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     public <T> BuilderT addExtension(
         final GeneratedMessage.GeneratedExtension extension, final T value) {
@@ -338,6 +341,7 @@ public abstract class GeneratedMessageV3
 
     // Support old gencode override method removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    // and removed from GeneratedMessage.ExtendableBuilder in https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     public <T> BuilderT clearExtension(
         final GeneratedMessage.GeneratedExtension extension) {
