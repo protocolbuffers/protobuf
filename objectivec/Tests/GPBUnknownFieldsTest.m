@@ -683,25 +683,30 @@
   [ufs addFieldNumber:3 fixed64:3];
   [ufs addFieldNumber:4 lengthDelimited:DataFromCStr("foo")];
   GPBUnknownFields* group = [ufs addGroupWithFieldNumber:5];
+  [group addFieldNumber:10 varint:10];
+  GPBUnknownFields* subGroup = [group addGroupWithFieldNumber:100];
+  [subGroup addFieldNumber:20 varint:20];
 
   GPBUnknownFields* ufs2 = [[ufs copy] autorelease];
   XCTAssertTrue(ufs != ufs2);        // Different objects
   XCTAssertEqualObjects(ufs, ufs2);  // Equal contents
-  // All the actual field objects should be the same since they are immutable.
+  // All field objects but the group should be the same since they are immutable.
   XCTAssertTrue([[ufs fields:1] firstObject] == [[ufs2 fields:1] firstObject]);  // Same object
   XCTAssertTrue([[ufs fields:2] firstObject] == [[ufs2 fields:2] firstObject]);  // Same object
   XCTAssertTrue([[ufs fields:3] firstObject] == [[ufs2 fields:3] firstObject]);  // Same object
   XCTAssertTrue([[ufs fields:4] firstObject] == [[ufs2 fields:4] firstObject]);  // Same object
   XCTAssertTrue([[ufs fields:4] firstObject].lengthDelimited ==
-                [[ufs2 fields:4] firstObject].lengthDelimited);                  // Same object
-  XCTAssertTrue([[ufs fields:5] firstObject] == [[ufs2 fields:5] firstObject]);  // Same object
-  XCTAssertTrue(group == [[ufs2 fields:5] firstObject].group);                   // Same object
-
-  // Now force copies on the fields to confirm that is not making new objects either.
-  for (GPBUnknownField* field in ufs) {
-    GPBUnknownField* field2 = [[field copy] autorelease];
-    XCTAssertTrue(field == field2);  // Same object (since they aren't mutable).
-  }
+                [[ufs2 fields:4] firstObject].lengthDelimited);  // Same object
+  // Since the group holds another `GPBUnknownFields` object (which is mutable), it will be a
+  // different object.
+  XCTAssertTrue([[ufs fields:5] firstObject] != [[ufs2 fields:5] firstObject]);
+  XCTAssertTrue(group != [[ufs2 fields:5] firstObject].group);
+  XCTAssertEqualObjects(group, [[ufs2 fields:5] firstObject].group);
+  // And confirm that copy went deep so the nested group also is a different object.
+  GPBUnknownFields* groupCopied = [[ufs2 fields:5] firstObject].group;
+  XCTAssertTrue([[group fields:100] firstObject] != [[groupCopied fields:100] firstObject]);
+  XCTAssertTrue(subGroup != [[groupCopied fields:100] firstObject].group);
+  XCTAssertEqualObjects(subGroup, [[groupCopied fields:100] firstObject].group);
 }
 
 - (void)testInvalidFieldNumbers {
