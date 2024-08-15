@@ -18,9 +18,12 @@
 #include <cstdint>
 #include <type_traits>
 
+#include "absl/log/absl_check.h"
 #include "absl/types/span.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 
 // Must come last:
 #include "google/protobuf/port_def.inc"

@@ -13,10 +13,11 @@
 #include <cstdlib>
 #include <string>
 #include <type_traits>
-#include <utility>
 
 #include "absl/base/optimization.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/cord.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/map.h"
@@ -27,6 +28,7 @@
 #include "google/protobuf/raw_ptr.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
+#include "google/protobuf/serial_arena.h"
 #include "google/protobuf/wire_format_lite.h"
 
 // Must come last:
