@@ -156,6 +156,26 @@ void RepeatedPtrFieldBase::MergeFrom<std::string>(
   }
 }
 
+  ABSL_DCHECK_NE(&from, this);
+  int new_size = current_size_ + from.current_size_;
+  auto dst = reinterpret_cast<StringPieceField**>(InternalReserve(new_size));
+  auto src = reinterpret_cast<StringPieceField* const*>(from.elements());
+  auto end = src + from.current_size_;
+  auto end_assign = src + std::min(ClearedCount(), from.current_size_);
+  for (; src < end_assign; ++dst, ++src) {
+    (*dst)->MergeFrom(**src);
+  }
+  Arena* const arena = arena_;
+  for (; src < end; ++dst, ++src) {
+    *dst = Arena::Create<StringPieceField>(arena);
+    (*dst)->MergeFrom(**src);
+  }
+  ExchangeCurrentSize(new_size);
+  if (new_size > allocated_size()) {
+    rep()->allocated_size = new_size;
+  }
+}
+
 
 int RepeatedPtrFieldBase::MergeIntoClearedMessages(
     const RepeatedPtrFieldBase& from) {
