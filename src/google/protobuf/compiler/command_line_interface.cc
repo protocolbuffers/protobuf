@@ -1596,7 +1596,7 @@ bool CommandLineInterface::ParseInputFiles(
     // exclusively reading from descriptor sets, we can eliminate this failure
     // condition.
     for (const auto& input_file : input_files_) {
-      descriptor_pool->AddUnusedImportTrackFile(input_file);
+      descriptor_pool->AddDirectInputFile(input_file);
     }
   }
 
@@ -1643,7 +1643,7 @@ bool CommandLineInterface::ParseInputFiles(
       }
     }
   }
-  descriptor_pool->ClearUnusedImportTrackFiles();
+  descriptor_pool->ClearDirectInputFiles();
   return result;
 }
 

@@ -1551,6 +1551,54 @@ TEST_F(CommandLineInterfaceTest, Plugin_DeprecatedEdition) {
       "edition 99997_TEST_ONLY.");
 }
 
+TEST_F(CommandLineInterfaceTest, Plugin_DeprecatedFeature) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("google/protobuf/unittest_features.proto",
+                 pb::TestFeatures::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    import "google/protobuf/unittest_features.proto";
+    package foo;
+    option features.(pb.test).removed_feature = VALUE9;
+  )schema");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectWarningSubstring(
+      "foo.proto:4:5: warning: Feature pb.TestFeatures.removed_feature has "
+      "been deprecated in edition 2023: Custom feature deprecation warning\n");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_TransitiveDeprecatedFeature) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("google/protobuf/unittest_features.proto",
+                 pb::TestFeatures::descriptor()->file()->DebugString());
+  CreateTempFile("unused.proto",
+                 R"schema(
+    edition = "2023";
+    import "google/protobuf/unittest_features.proto";
+    package foo;
+    option features.(pb.test).removed_feature = VALUE9;
+    message Foo {}
+  )schema");
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    import "unused.proto";
+    package foo;
+    message Bar {
+      Foo foo = 1;
+    }
+  )schema");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
 TEST_F(CommandLineInterfaceTest, Plugin_FutureEdition) {
   CreateTempFile("foo.proto", R"schema(
     edition = "2023";
