@@ -323,6 +323,16 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
   return [group autorelease];
 }
 
+- (GPBUnknownField *)addCopyOfField:(nonnull GPBUnknownField *)field {
+  if (field->type_ == GPBUnknownFieldTypeLegacy) {
+    [NSException raise:NSInternalInconsistencyException
+                format:@"GPBUnknownField is the wrong type"];
+  }
+  GPBUnknownField *result = [field copy];
+  [fields_ addObject:result];
+  return [result autorelease];
+}
+
 - (void)removeField:(nonnull GPBUnknownField *)field {
   NSUInteger count = fields_.count;
   [fields_ removeObjectIdenticalTo:field];
