@@ -9,6 +9,10 @@ package com.google.protobuf;
 
 import com.google.protobuf.AbstractMessage.BuilderParent;
 import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.GeneratedMessage.Builder.BuilderParentImpl;
+
+import com.google.protobuf.GeneratedMessage.Builder.BuilderParentImpl;
+
 import java.util.List;
 
 /**
@@ -48,6 +52,25 @@ public abstract class GeneratedMessageV3
     throw new UnsupportedOperationException("Should be overridden in gencode.");
   }
 
+  @Deprecated
+  protected interface BuilderParent extends AbstractMessage.BuilderParent {}
+
+  @Deprecated
+  protected abstract Message.Builder newBuilderForType(BuilderParent parent);
+
+  // Support old gencode method removed in
+  // https://github.com/protocolbuffers/protobuf/commit/787447430fc9a69c071393e85a380b664d261ab4
+  @Override
+  protected Message.Builder newBuilderForType(final AbstractMessage.BuilderParent parent) {
+    return newBuilderForType(
+        new BuilderParent() {
+          @Override
+          public void markDirty() {
+            parent.markDirty();
+          }
+        });
+  }
+
   /**
    * Stub for GeneratedMessageV3.Builder wrapping GeneratedMessage.Builder for compatibility with
    * older gencode.
@@ -64,15 +87,47 @@ public abstract class GeneratedMessageV3
           BuilderT extends GeneratedMessage.ExtendableBuilder<GeneratedMessageV3, BuilderT>>
       extends GeneratedMessage.ExtendableBuilder<GeneratedMessageV3, BuilderT> {
 
-     @Deprecated
-     protected Builder() {
-       super(null);
-     }
+    private BuilderParentImpl meAsParent;
 
-     @Deprecated
-     protected Builder(BuilderParent builderParent) {
-       super(builderParent);
-     }
+    @Deprecated
+    protected Builder() {
+      super(null);
+    }
+
+    @Deprecated
+    protected Builder(BuilderParent builderParent) {
+      super(builderParent);
+    }
+
+    /* Returns GeneratedMessageV3.FieldAccessorTable instead of GeneratedMessage.FieldAccessorTable.
+     *
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
+     * GeneratedMessage.FieldAccessorTable instead of GeneratedMessageV3.FieldAccessorTable.
+     */
+    @Deprecated
+    @Override
+    protected FieldAccessorTable internalGetFieldAccessorTable() {
+      throw new UnsupportedOperationException("Should be overridden in gencode.");
+    }
+
+    private class BuilderParentImpl extends GeneratedMessage.Builder.BuilderParentImpl
+        implements BuilderParent {}
+
+    /* Returns GeneratedMessageV3.Builder.BuilderParent instead of GeneratedMessage.ExtendableMessage.Builder.BuilderParent.
+     *
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
+     * GeneratedMessage.Builder.BuilderParent instead of GeneratedMessageV3.Builder.BuilderParent.
+     */
+    @Deprecated
+    @Override
+    protected BuilderParent getParentForChildren() {
+      if (meAsParent == null) {
+        meAsParent = new BuilderParentImpl();
+      }
+      return meAsParent;
+    }
   }
 
   /**
@@ -241,7 +296,7 @@ public abstract class GeneratedMessageV3
      * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
      * GeneratedMessage.ensureFieldAccessorsInitialized instead of GeneratedMessageV3.ensureFieldAccessorsInitialized.
      */
-    @Deprecated()
+    @Deprecated
     @Override
     public FieldAccessorTable ensureFieldAccessorsInitialized(
         Class<? extends GeneratedMessage> messageClass,
