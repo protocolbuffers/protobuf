@@ -141,7 +141,7 @@ BENCHMARK(BM_add_100_ints_cpp);
 
 void BM_add_100_ints_upb(benchmark::State& state) {
   for (auto s : state) {
-    ::protos::Arena arena;
+    ::hpb::Arena arena;
     auto data = ::protos::CreateMessage<benchmarks::protos::BenchData>(arena);
     for (int i = 0; i < 100; ++i) {
       data.add_nums(i);
@@ -183,7 +183,7 @@ void BM_copy_from_100_ints_cpp(benchmark::State& state) {
 BENCHMARK(BM_copy_from_100_ints_cpp);
 
 void BM_copy_from_100_ints_upb(benchmark::State& state) {
-  ::protos::Arena arena;
+  ::hpb::Arena arena;
   auto source = ::protos::CreateMessage<benchmarks::protos::BenchData>(arena);
   for (int i = 0; i < 100; ++i) {
     source.add_nums(i);
@@ -227,7 +227,7 @@ void BM_sum_1000_ints_cpp(benchmark::State& state) {
 BENCHMARK(BM_sum_1000_ints_cpp);
 
 void BM_sum_1000_ints_upb(benchmark::State& state) {
-  ::protos::Arena arena;
+  ::hpb::Arena arena;
   auto data = ::protos::CreateMessage<benchmarks::protos::BenchData>(arena);
   for (int i = 0; i < 1000; ++i) {
     data.add_nums(i);
