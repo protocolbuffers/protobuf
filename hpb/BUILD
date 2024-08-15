@@ -54,6 +54,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":extension_lock",
+        "//hpb:ptr",
+        "//hpb/internal:template_help",
         "//upb:base",
         "//upb:mem",
         "//upb:message",
@@ -181,5 +183,12 @@ cc_test(
 cc_library(
     name = "requires",
     hdrs = ["requires.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "ptr",
+    hdrs = ["ptr.h"],
+    compatible_with = ["//buildenv/target:non_prod"],
     visibility = ["//visibility:public"],
 )
