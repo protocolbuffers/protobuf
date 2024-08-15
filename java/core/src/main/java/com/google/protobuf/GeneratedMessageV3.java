@@ -184,6 +184,7 @@ public abstract class GeneratedMessageV3
     public int getRepeatedFieldCount(final FieldDescriptor field) {
       return super.getRepeatedFieldCount(field);
     }
+
     // Support old gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
@@ -220,7 +221,33 @@ public abstract class GeneratedMessageV3
    */
   @Deprecated
   public interface ExtendableMessageOrBuilder<MessageT extends ExtendableMessage<MessageT>>
-    extends GeneratedMessage.ExtendableMessageOrBuilder<GeneratedMessageV3> {}
+    extends GeneratedMessage.ExtendableMessageOrBuilder<GeneratedMessageV3> {
+    
+    // Support method removed from GeneratedMessage.ExtendableMessageOrBuilder in
+    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    @Deprecated
+    <T> boolean hasExtension(
+      GeneratedExtension<MessageT, T> extension);
+
+    // Support method removed from GeneratedMessage.ExtendableMessageOrBuilder in
+    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    @Deprecated
+    <T> int getExtensionCount(
+      GeneratedExtension<MessageT, List<T>> extension);
+
+    // Support method removed from GeneratedMessage.ExtendableMessageOrBuilder in
+    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    @Deprecated
+    <T> T getExtension(
+      GeneratedExtension<MessageT, T> extension);
+   
+    // Support method removed from GeneratedMessage.ExtendableMessageOrBuilder in
+    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    @Deprecated
+    <T> T getExtension(
+      GeneratedExtension<MessageT, List<T>> extension,
+      int index);
+  }
   /**
    * Stub for GeneratedMessageV3.ExtendableMessage wrapping GeneratedMessage.ExtendableMessage for
    * compatibility with older gencode.
@@ -242,6 +269,42 @@ public abstract class GeneratedMessageV3
     @Deprecated
     protected ExtendableMessage(ExtendableBuilder<MessageT, ?> builder) {
       super(builder);
+    }
+
+    // Support method removed from GeneratedMessage.ExtendableMessage in
+    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    @Deprecated
+    @Override
+    public final <T> boolean hasExtension(
+        final GeneratedExtension<MessageT, T> extension) {
+      return hasExtension((ExtensionLite<MessageT, T>) extension);
+    }
+    
+    // Support method removed from GeneratedMessage.ExtendableMessage in
+    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    @Deprecated
+    @Override
+    public final <T> int getExtensionCount(
+        final GeneratedExtension<MessageT, List<T>> extension) {
+      return getExtensionCount((ExtensionLite<MessageT, List<T>>) extension);
+    }
+
+    // Support method removed from GeneratedMessage.ExtendableMessage in
+    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    @Deprecated
+    @Override
+    public final <T> T getExtension(
+        final GeneratedExtension<MessageT, T> extension) {
+      return getExtension((ExtensionLite<MessageT, T>) extension);
+    }
+
+    // Support method removed from GeneratedMessage.ExtendableMessage in
+    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    @Deprecated
+    @Override
+    public final <T> T getExtension(
+        final GeneratedExtension<MessageT, List<T>> extension, final int index) {
+      return getExtension((ExtensionLite<MessageT, List<T>>) extension, index);
     }
 
     /* Returns GeneratedMessageV3.FieldAccessorTable instead of GeneratedMessage.FieldAccessorTable.
@@ -310,18 +373,52 @@ public abstract class GeneratedMessageV3
       super(parent);
     }
     
-    // Support old gencode override method removed in
-    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
-    // and removed from GeneratedMessage in https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    // Support method removed from GeneratedMessage.ExtendableBuilder in
+    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    @Deprecated
+    @Override
+    public final <T> boolean hasExtension(
+        final GeneratedExtension<MessageT, T> extension) {
+      return hasExtension((ExtensionLite<MessageT, T>) extension);
+    }
+    
+    // Support method removed from GeneratedMessage.ExtendableBuilder in
+    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    @Deprecated
+    @Override
+    public final <T> int getExtensionCount(
+        final GeneratedExtension<MessageT, List<T>> extension) {
+      return getExtensionCount((ExtensionLite<MessageT, List<T>>) extension);
+    }
+
+    // Support method removed from GeneratedMessage.ExtendableBuilder in
+    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    @Deprecated
+    @Override
+    public final <T> T getExtension(
+        final GeneratedExtension<MessageT, T> extension) {
+      return getExtension((ExtensionLite<MessageT, T>) extension);
+    }
+
+    // Support method removed from GeneratedMessage.ExtendableBuilder in
+    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    @Deprecated
+    @Override
+    public final <T> T getExtension(
+        final GeneratedExtension<MessageT, List<T>> extension, final int index) {
+      return getExtension((ExtensionLite<MessageT, List<T>>) extension, index);
+    }
+
+    // Support method removed from GeneratedMessage.ExtendableBuilder in
+    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     public <T> BuilderT setExtension(
         final GeneratedMessage.GeneratedExtension extension, final T value) {
       return setExtension((ExtensionLite<GeneratedMessageV3, T>) extension, value);
     }
 
-    // Support old gencode override method removed in
-    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
-    // and removed from GeneratedMessage.ExtendableBuilder in https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    // Support method removed from GeneratedMessage.ExtendableBuilder in
+    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     public <T> BuilderT setExtension(
         final GeneratedMessage.GeneratedExtension extension,
@@ -330,18 +427,16 @@ public abstract class GeneratedMessageV3
       return setExtension((ExtensionLite<GeneratedMessageV3, List<T>>) extension, index, value);
     }
 
-    // Support old gencode override method removed in
-    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
-    // and removed from GeneratedMessage.ExtendableBuilder in https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    // Support method removed from GeneratedMessage.ExtendableBuilder in
+    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     public <T> BuilderT addExtension(
         final GeneratedMessage.GeneratedExtension extension, final T value) {
       return addExtension((ExtensionLite<GeneratedMessageV3, List<T>>) extension, value);
     }
 
-    // Support old gencode override method removed in
-    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
-    // and removed from GeneratedMessage.ExtendableBuilder in https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    // Support method removed from GeneratedMessage.ExtendableBuilder in
+    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     public <T> BuilderT clearExtension(
         final GeneratedMessage.GeneratedExtension extension) {
