@@ -87,7 +87,7 @@ public abstract class GeneratedMessageV3
    */
   @Deprecated
   public abstract static class Builder<
-          BuilderT extends GeneratedMessage.ExtendableBuilder<GeneratedMessageV3, BuilderT>>
+          BuilderT extends Builder<BuilderT>>
       extends GeneratedMessage.ExtendableBuilder<GeneratedMessageV3, BuilderT> {
 
     private BuilderParentImpl meAsParent;
@@ -342,6 +342,47 @@ public abstract class GeneratedMessageV3
     public <T> BuilderT clearExtension(
         final GeneratedMessage.GeneratedExtension extension) {
       return clearExtension((ExtensionLite<GeneratedMessageV3, T>) extension);
+    }
+
+    // Support old gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Deprecated
+    @Override
+    public BuilderT setField(final FieldDescriptor field, final Object value) {
+      return super.setField(field, value);
+    }
+
+    // Support old gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Deprecated
+    @Override
+    public BuilderT clearField(final FieldDescriptor field) {
+      return super.clearField(field);
+    }
+
+    // // Support old gencode method override removed in
+    // // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    // @Deprecated
+    // @Override
+    // public BuilderT clearOneof(final OneofDescriptor oneof) {
+    //   return super.clearOneof(oneof);
+    // }
+
+    // Support old gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Deprecated
+    @Override
+    public BuilderT setRepeatedField(
+        final FieldDescriptor field, final int index, final Object value) {
+      return super.setRepeatedField(field, index, value);
+    }
+
+    // Support old gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Deprecated
+    @Override
+    public BuilderT addRepeatedField(final FieldDescriptor field, final Object value) {
+      return super.addRepeatedField(field, value);
     }
   }
 
