@@ -165,9 +165,17 @@
     case GPBUnknownFieldTypeFixed32:
     case GPBUnknownFieldTypeFixed64:
     case GPBUnknownFieldTypeLengthDelimited:
-    case GPBUnknownFieldTypeGroup:
       // In these modes, the object isn't mutable, so just return self.
       return [self retain];
+    case GPBUnknownFieldTypeGroup: {
+      // The `GPBUnknownFields` for the group is mutable, so a new instance of this object and
+      // the group is needed.
+      GPBUnknownFields *copyGroup = [storage_.group copyWithZone:zone];
+      GPBUnknownField *copy = [[GPBUnknownField allocWithZone:zone] initWithNumber:number_
+                                                                             group:copyGroup];
+      [copyGroup release];
+      return copy;
+    }
     case GPBUnknownFieldTypeLegacy: {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
