@@ -162,6 +162,48 @@ rust_library(
     deps = [":protobuf_cpp"],
 )
 
+alias(
+    name = "protobuf_gtest_matchers",
+    actual = select({
+        ":use_upb_kernel": ":protobuf_gtest_matchers_upb",
+        "//conditions:default": ":protobuf_gtest_matchers_cpp",
+    }),
+)
+
+rust_library(
+    name = "protobuf_gtest_matchers_cpp",
+    testonly = True,
+    srcs = ["gtest_matchers.rs"],
+    aliases = {
+        "//rust:protobuf_cpp": "protobuf",
+    },
+    visibility = [
+        "//rust:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        ":protobuf_cpp",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_library(
+    name = "protobuf_gtest_matchers_upb",
+    testonly = True,
+    srcs = ["gtest_matchers.rs"],
+    aliases = {
+        "//rust:protobuf_upb": "protobuf",
+    },
+    visibility = [
+        "//rust:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        ":protobuf_upb",
+        "@crate_index//:googletest",
+    ],
+)
+
 rust_library(
     name = "utf8",
     srcs = ["utf8.rs"],

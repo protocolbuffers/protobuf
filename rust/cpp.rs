@@ -9,19 +9,19 @@
 
 use crate::__internal::{Enum, Private};
 use crate::{
-    IntoProxied, Map, MapIter, Mut, ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue,
-    ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View, MapMut, MapView,
+    IntoProxied, Map, MapIter, MapMut, MapView, Mut, ProtoBytes, ProtoStr, ProtoString, Proxied,
+    ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
 };
-use paste::paste;
-use std::fmt;
-use std::slice;
-use std::convert::identity;
 use core::fmt::Debug;
+use paste::paste;
+use std::convert::identity;
+use std::ffi::{c_int, c_void};
+use std::fmt;
 use std::marker::PhantomData;
+use std::mem::{ManuallyDrop, MaybeUninit};
 use std::ops::Deref;
 use std::ptr::{self, NonNull};
-use std::ffi::{c_int, c_void};
-use std::mem::{ManuallyDrop, MaybeUninit};
+use std::slice;
 
 /// Defines a set of opaque, unique, non-accessible pointees.
 ///
@@ -339,14 +339,8 @@ pub fn debug_string(msg: RawMessage, f: &mut fmt::Formatter<'_>) -> fmt::Result 
 extern "C" {
     /// # Safety
     /// - `msg1` and `msg2` legally dereferencable MessageLite* pointers.
-    fn proto2_rust_messagelite_equals(msg1: RawMessage, msg2: RawMessage) -> bool;
-}
-
-/// # Safety
-/// - `msg1` and `msg2` legally dereferencable MessageLite* pointers.
-pub unsafe fn raw_message_equals(msg1: RawMessage, msg2: RawMessage) -> bool {
-    // SAFETY: Same constraints placed on caller.
-    unsafe { proto2_rust_messagelite_equals(msg1, msg2) }
+    #[link_name = "proto2_rust_messagelite_equals"]
+    pub fn raw_message_equals(msg1: RawMessage, msg2: RawMessage) -> bool;
 }
 
 pub type RawMapIter = UntypedMapIterator;
