@@ -61,7 +61,7 @@ public abstract class GeneratedMessageV3
   @Deprecated
   protected abstract Message.Builder newBuilderForType(BuilderParent parent);
 
-  // Support old gencode method removed in
+  // Gencode method removed in
   // https://github.com/protocolbuffers/protobuf/commit/787447430fc9a69c071393e85a380b664d261ab4
   @Override
   protected Message.Builder newBuilderForType(final AbstractMessage.BuilderParent parent) {
@@ -132,7 +132,7 @@ public abstract class GeneratedMessageV3
       return meAsParent;
     }
 
-    // Support old gencode method override removed in
+    // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
     @Override
@@ -140,7 +140,7 @@ public abstract class GeneratedMessageV3
       return super.setUnknownFields(unknownFields);
     }
 
-    // Support old gencode method override removed in
+    // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
     @Override
@@ -148,7 +148,7 @@ public abstract class GeneratedMessageV3
       return super.mergeUnknownFields(unknownFields);
     }
 
-    // Support old gencode method override removed in
+    // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
     @Override
@@ -163,7 +163,7 @@ public abstract class GeneratedMessageV3
       return super.clear();
     }
 
-    // Support old gencode method override removed in
+    // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
     @Override
@@ -171,7 +171,7 @@ public abstract class GeneratedMessageV3
       return super.setField(field, value);
     }
 
-    // Support old gencode method override removed in
+    // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
     @Override
@@ -179,7 +179,7 @@ public abstract class GeneratedMessageV3
       return super.clearField(field);
     }
 
-    // Support old gencode method override removed in
+    // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
     @Override
@@ -187,15 +187,15 @@ public abstract class GeneratedMessageV3
       return super.clearOneof(oneof);
     }
 
-    // Support old gencode method override removed in
-    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24    @Deprecated
+    // Gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
     @Override
     public int getRepeatedFieldCount(final FieldDescriptor field) {
       return super.getRepeatedFieldCount(field);
     }
 
-    // Support old gencode method override removed in
+    // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
     @Override
@@ -203,7 +203,7 @@ public abstract class GeneratedMessageV3
       return super.getRepeatedField(field, index);
     }
 
-    // Support old gencode method override removed in
+    // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
     @Override
@@ -212,7 +212,7 @@ public abstract class GeneratedMessageV3
       return super.setRepeatedField(field, index, value);
     }
 
-    // Support old gencode method override removed in
+    // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
     @Override
@@ -233,25 +233,25 @@ public abstract class GeneratedMessageV3
   public interface ExtendableMessageOrBuilder<MessageT extends ExtendableMessage<MessageT>>
     extends GeneratedMessage.ExtendableMessageOrBuilder<GeneratedMessageV3> {
     
-    // Support method removed from GeneratedMessage.ExtendableMessageOrBuilder in
+    // Method removed from GeneratedMessage.ExtendableMessageOrBuilder in
     // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     <T> boolean hasExtension(
       GeneratedExtension<MessageT, T> extension);
 
-    // Support method removed from GeneratedMessage.ExtendableMessageOrBuilder in
+    // Method removed from GeneratedMessage.ExtendableMessageOrBuilder in
     // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     <T> int getExtensionCount(
       GeneratedExtension<MessageT, List<T>> extension);
 
-    // Support method removed from GeneratedMessage.ExtendableMessageOrBuilder in
+    // Method removed from GeneratedMessage.ExtendableMessageOrBuilder in
     // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     <T> T getExtension(
       GeneratedExtension<MessageT, T> extension);
    
-    // Support method removed from GeneratedMessage.ExtendableMessageOrBuilder in
+    // Method removed from GeneratedMessage.ExtendableMessageOrBuilder in
     // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     <T> T getExtension(
@@ -281,7 +281,7 @@ public abstract class GeneratedMessageV3
       super(builder);
     }
 
-    // Support method removed from GeneratedMessage.ExtendableMessage in
+    // Method removed from GeneratedMessage.ExtendableMessage in
     // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     @Override
@@ -290,7 +290,7 @@ public abstract class GeneratedMessageV3
       return hasExtension((ExtensionLite<MessageT, T>) extension);
     }
     
-    // Support method removed from GeneratedMessage.ExtendableMessage in
+    // Method removed from GeneratedMessage.ExtendableMessage in
     // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     @Override
@@ -299,7 +299,7 @@ public abstract class GeneratedMessageV3
       return getExtensionCount((ExtensionLite<MessageT, List<T>>) extension);
     }
 
-    // Support method removed from GeneratedMessage.ExtendableMessage in
+    // Method removed from GeneratedMessage.ExtendableMessage in
     // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     @Override
@@ -308,7 +308,7 @@ public abstract class GeneratedMessageV3
       return getExtension((ExtensionLite<MessageT, T>) extension);
     }
 
-    // Support method removed from GeneratedMessage.ExtendableMessage in
+    // Method removed from GeneratedMessage.ExtendableMessage in
     // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     @Override
@@ -383,7 +383,7 @@ public abstract class GeneratedMessageV3
       super(parent);
     }
     
-    // Support method removed from GeneratedMessage.ExtendableBuilder in
+    // Method removed from GeneratedMessage.ExtendableBuilder in
     // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     @Override
@@ -392,7 +392,7 @@ public abstract class GeneratedMessageV3
       return hasExtension((ExtensionLite<MessageT, T>) extension);
     }
     
-    // Support method removed from GeneratedMessage.ExtendableBuilder in
+    // Method removed from GeneratedMessage.ExtendableBuilder in
     // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     @Override
@@ -401,7 +401,7 @@ public abstract class GeneratedMessageV3
       return getExtensionCount((ExtensionLite<MessageT, List<T>>) extension);
     }
 
-    // Support method removed from GeneratedMessage.ExtendableBuilder in
+    // Method removed from GeneratedMessage.ExtendableBuilder in
     // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     @Override
@@ -410,7 +410,7 @@ public abstract class GeneratedMessageV3
       return getExtension((ExtensionLite<MessageT, T>) extension);
     }
 
-    // Support method removed from GeneratedMessage.ExtendableBuilder in
+    // Method removed from GeneratedMessage.ExtendableBuilder in
     // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     @Override
@@ -419,7 +419,7 @@ public abstract class GeneratedMessageV3
       return getExtension((ExtensionLite<MessageT, List<T>>) extension, index);
     }
 
-    // Support method removed from GeneratedMessage.ExtendableBuilder in
+    // Method removed from GeneratedMessage.ExtendableBuilder in
     // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     public <T> BuilderT setExtension(
@@ -427,7 +427,7 @@ public abstract class GeneratedMessageV3
       return setExtension((ExtensionLite<GeneratedMessageV3, T>) extension, value);
     }
 
-    // Support method removed from GeneratedMessage.ExtendableBuilder in
+    // Method removed from GeneratedMessage.ExtendableBuilder in
     // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     public <T> BuilderT setExtension(
@@ -437,7 +437,7 @@ public abstract class GeneratedMessageV3
       return setExtension((ExtensionLite<GeneratedMessageV3, List<T>>) extension, index, value);
     }
 
-    // Support method removed from GeneratedMessage.ExtendableBuilder in
+    // Method removed from GeneratedMessage.ExtendableBuilder in
     // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     public <T> BuilderT addExtension(
@@ -445,7 +445,7 @@ public abstract class GeneratedMessageV3
       return addExtension((ExtensionLite<GeneratedMessageV3, List<T>>) extension, value);
     }
 
-    // Support method removed from GeneratedMessage.ExtendableBuilder in
+    // Method removed from GeneratedMessage.ExtendableBuilder in
     // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
     @Deprecated
     public <T> BuilderT clearExtension(
@@ -453,7 +453,7 @@ public abstract class GeneratedMessageV3
       return clearExtension((ExtensionLite<GeneratedMessageV3, T>) extension);
     }
 
-    // Support old gencode method override removed in
+    // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
     @Override
@@ -461,7 +461,7 @@ public abstract class GeneratedMessageV3
       return super.setField(field, value);
     }
 
-    // Support old gencode method override removed in
+    // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
     @Override
@@ -469,7 +469,7 @@ public abstract class GeneratedMessageV3
       return super.clearField(field);
     }
 
-    // // Support old gencode method override removed in
+    // // Gencode method override removed in
     // // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     // @Deprecated
     // @Override
@@ -477,7 +477,7 @@ public abstract class GeneratedMessageV3
     //   return super.clearOneof(oneof);
     // }
 
-    // Support old gencode method override removed in
+    // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
     @Override
@@ -486,7 +486,7 @@ public abstract class GeneratedMessageV3
       return super.setRepeatedField(field, index, value);
     }
 
-    // Support old gencode method override removed in
+    // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
     @Override
