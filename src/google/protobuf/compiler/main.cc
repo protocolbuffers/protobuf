@@ -10,7 +10,7 @@
 #include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/csharp/csharp_generator.h"
 #include "google/protobuf/compiler/java/generator.h"
-#include "google/protobuf/compiler/java/kotlin_generator.h"
+#include "google/protobuf/compiler/kotlin/generator.h"
 #include "google/protobuf/compiler/objectivec/generator.h"
 #include "google/protobuf/compiler/php/php_generator.h"
 #include "google/protobuf/compiler/python/generator.h"

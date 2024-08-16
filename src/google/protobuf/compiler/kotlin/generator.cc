@@ -5,14 +5,20 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/compiler/java/kotlin_generator.h"
+#include "google/protobuf/compiler/kotlin/generator.h"
+
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/file.h"
-#include "google/protobuf/compiler/java/generator.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/options.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
