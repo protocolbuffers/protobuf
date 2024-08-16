@@ -31,4 +31,51 @@ public class RepeatedFieldBuilderV3<
       boolean isClean) {
     super(messages, isMessagesListMutable, parent, isClean);
   }
+
+  /* Returns RepeatedFieldBuilderV3 instead of RepeatedFieldBuilder.
+  *
+  * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+  * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
+  * SingleFieldBuilder.setMessage instead of SingleFieldBuilderV3.setMessage.
+  */
+  @Deprecated
+  @Override
+  public RepeatedFieldBuilderV3<MType, BType, IType> setMessage(int index, MType message) {
+    super.setMessage(index, message);
+    return this;
+  }
+
+  /* Returns RepeatedFieldBuilderV3 instead of RepeatedFieldBuilder.
+  *
+  * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+  * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
+  * SingleFieldBuilder.setMessage instead of SingleFieldBuilderV3.setMessage.
+  */
+  public RepeatedFieldBuilderV3<MType, BType, IType> addMessage(MType message) {
+    super.addMessage(message);
+    return this;
+  }
+
+  /* Returns RepeatedFieldBuilderV3 instead of RepeatedFieldBuilder.
+  *
+  * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+  * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
+  * SingleFieldBuilder.setMessage instead of SingleFieldBuilderV3.setMessage.
+  */
+  public RepeatedFieldBuilderV3<MType, BType, IType> addMessage(int index, MType message) {
+    super.addMessage(index, message);
+    return this;
+  }
+
+  /* Returns RepeatedFieldBuilderV3 instead of RepeatedFieldBuilder.
+  *
+  * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+  * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
+  * SingleFieldBuilder.setMessage instead of SingleFieldBuilderV3.setMessage.
+  */
+  public RepeatedFieldBuilderV3<MType, BType, IType> addAllMessages(
+      Iterable<? extends MType> values) {
+    super.addAllMessages(values);
+    return this;
+  }
 }
