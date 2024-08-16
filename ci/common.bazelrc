@@ -33,6 +33,17 @@ build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
 # Abseil passes nullptr to memcmp with 0 size
 build:ubsan --copt=-fno-sanitize=nonnull-attribute
 
+# Check for common warnings to allow for strict downstream warning checks.
+build --copt=-Wundef
+build --copt=-Wpointer-arith
+# Build currently fails under:
+# build --copt=-Wshadow
+# build --copt=-Wredundant-decls
+# build --copt=-Wall
+# build --copt=-Wextra
+# build --copt=-Wimplicit-fallthrough
+# build --copt=-Wcast-qual
+
 # Workaround Bazel 7 remote cache issues.
 # See https://github.com/bazelbuild/bazel/issues/20161
 build --experimental_remote_cache_eviction_retries=5
