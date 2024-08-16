@@ -1545,15 +1545,6 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
             ::$proto_ns$::internal::WeakFieldMap _weak_field_map_;
           )cc");
         }},
-       {"any_metadata",
-        [&] {
-          // Generate _any_metadata_ for the Any type.
-          if (!IsAnyMessage(descriptor_)) return;
-
-          p->Emit(R"cc(
-            ::$proto_ns$::internal::AnyMetadata _any_metadata_;
-          )cc");
-        }},
        {"union_impl",
         [&] {
           // Only create the _impl_ field if it contains data.
@@ -1587,7 +1578,6 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
           $cached_size_if_no_hasbits$;
           $oneof_case$;
           $weak_field_map$;
-          $any_metadata$;
           //~ For detecting when concurrent accessor calls cause races.
           PROTOBUF_TSAN_DECLARE_MEMBER
         };
@@ -1597,84 +1587,196 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
   ABSL_DCHECK(!need_to_emit_cached_size);
 }
 
+void MessageGenerator::GenerateAnyMethods(io::Printer* p) const {
+  p->Emit(
+      {{"internal_any_methods",
+        [&] {
+          p->Emit(R"cc(
+            bool InternalPackFrom(const ::$proto_ns$::MessageLite& message,
+                                  ::absl::string_view type_url_prefix,
+                                  ::absl::string_view type_name) {
+              _internal_set_type_url(::$proto_ns$::internal::GetTypeUrl(
+                  type_name, type_url_prefix));
+              return message.$serialize_value$(_internal_mutable_value());
+            }
+            bool InternalUnpackTo(::absl::string_view type_name,
+                                  MessageLite* message) const {
+              if (!InternalIs(type_name)) {
+                return false;
+              }
+
+              return message->$parse_value$(_internal_value());
+            }
+            bool InternalIs(::absl::string_view type_name) const {
+              return ::$proto_ns$::internal::EndsWithTypeName(
+                  _internal_type_url(), type_name);
+            }
+          )cc");
+        }},
+       {"common_any_methods",
+        [&] {
+          p->Emit(R"cc(
+            template <typename T>
+            bool Is() const {
+              return InternalIs(
+                  ::$proto_ns$::internal::AnyMetadata::GetFullMessageName<T>());
+            }
+            static bool ParseAnyTypeUrl(::absl::string_view type_url,
+                                        std::string* full_type_name);
+          )cc");
+        }},
+       {"descriptor_any_methods",
+        [&] {
+          if (HasDescriptorMethods(descriptor_->file(), options_)) {
+            p->Emit(
+                R"cc(
+                  bool PackFrom(const ::$proto_ns$::Message& message) {
+                    $DCHK$_NE(&message, this);
+                    return InternalPackFrom(
+                        message,
+                        ::$proto_ns$::internal::kTypeGoogleApisComPrefix,
+                        message.GetTypeName());
+                  }
+                  bool PackFrom(const ::$proto_ns$::Message& message,
+                                ::absl::string_view type_url_prefix) {
+                    $DCHK$_NE(&message, this);
+                    return InternalPackFrom(message, type_url_prefix, message.GetTypeName());
+                  }
+                  bool UnpackTo(::$proto_ns$::Message* message) const {
+                    return InternalUnpackTo(message->GetTypeName(), message);
+                  }
+                  static bool GetAnyFieldDescriptors(
+                      const ::$proto_ns$::Message& message,
+                      const ::$proto_ns$::FieldDescriptor** type_url_field,
+                      const ::$proto_ns$::FieldDescriptor** value_field);
+                  template <
+                      typename T,
+                      class = typename std::enable_if<!std::is_convertible<
+                          T, const ::$proto_ns$::Message&>::value>::type>
+                  bool PackFrom(const T& message) {
+                    return PackFrom<T>(message, ::$proto_ns$::internal::kTypeGoogleApisComPrefix);
+                  }
+                  template <
+                      typename T,
+                      class = typename std::enable_if<!std::is_convertible<
+                          T, const ::$proto_ns$::Message&>::value>::type>
+                  bool PackFrom(const T& message,
+                                ::absl::string_view type_url_prefix) {
+                    return InternalPackFrom(
+                        message, type_url_prefix,
+                        ::$proto_ns$::internal::AnyMetadata::GetFullMessageName<
+                            T>());
+                  }
+                  template <
+                      typename T,
+                      class = typename std::enable_if<!std::is_convertible<
+                          T, const ::$proto_ns$::Message&>::value>::type>
+                  bool UnpackTo(T* message) const {
+                    if (!Is<T>()) {
+                      return false;
+                    }
+                    return message->$parse_value$(_internal_value());
+                  }
+                )cc");
+          } else {
+            p->Emit(
+                R"cc(
+                  //~ When compiled without descriptors, the full class
+                  //~ definition of google::protobuf::Message is not available.
+                  //~ However, users can optionally link in the full message
+                  //~ implementation by specifying any.cc as a translation unit
+                  //~ to be linked. In addition, because google::protobuf::Message does
+                  //~ not implement T::FullMessageName(), we cannot use
+                  //~ templated implementations and must fall back to
+                  //~ message.GetTypeName().
+                  //~
+                  //~ A somewhat hacky workaround is to define a helper function
+                  //~ in AnyMetadata and only specify the implementation in
+                  //~ any.cc. When user wants to use google::protobuf::Message, any.cc is
+                  //~ specified and full implementation can be found by linker.
+                  //~ When user wants to use google::protobuf::MessageLite, any.cc is not
+                  //~ included and code is not generated for this overload.
+                  bool PackFrom(const ::$proto_ns$::Message& message) {
+                    return ::$proto_ns$::internal::AnyMetadata::PackFromHelper(
+                        message,
+                        ::$proto_ns$::internal::kTypeGoogleApisComPrefix,
+                        [this](const ::$proto_ns$::MessageLite& message,
+                               ::absl::string_view type_url_prefix,
+                               ::absl::string_view type_name) -> bool {
+                          return InternalPackFrom(message, type_url_prefix,
+                                                  type_name);
+                        });
+                  }
+                  bool PackFrom(const ::$proto_ns$::Message& message,
+                                ::absl::string_view type_url_prefix) {
+                    return ::$proto_ns$::internal::AnyMetadata::PackFromHelper(
+                        message, type_url_prefix,
+                        [this](const ::$proto_ns$::MessageLite& message,
+                               ::absl::string_view type_url_prefix,
+                               ::absl::string_view type_name) -> bool {
+                          return InternalPackFrom(message, type_url_prefix,
+                                                  type_name);
+                        });
+                  }
+                  bool UnpackTo(::$proto_ns$::Message* message) const {
+                    return ::$proto_ns$::internal::AnyMetadata::UnpackToHelper(
+                        message,
+                        [this](::absl::string_view type_name,
+                               ::$proto_ns$::MessageLite* message) -> bool {
+                          return InternalUnpackTo(type_name, message);
+                        });
+                  }
+
+                  template <typename T>
+                  bool PackFrom(const T& message) {
+                    return InternalPackFrom(
+                        message,
+                        ::$proto_ns$::internal::kTypeGoogleApisComPrefix,
+                        ::$proto_ns$::internal::AnyMetadata::GetFullMessageName<
+                            T>());
+                  }
+                  template <typename T>
+                  bool PackFrom(const T& message,
+                                ::absl::string_view type_url_prefix) {
+                    return InternalPackFrom(
+                        message, type_url_prefix,
+                        ::$proto_ns$::internal::AnyMetadata::GetFullMessageName<
+                            T>());
+                  }
+                  template <typename T>
+                  bool UnpackTo(T* message) const {
+                    return InternalUnpackTo(
+                        ::$proto_ns$::internal::AnyMetadata::GetFullMessageName<
+                            T>(),
+                        message);
+                  }
+                )cc");
+          }
+        }}},
+      R"cc(
+        private:
+        $internal_any_methods$;
+
+        public:
+        $common_any_methods$;
+        $descriptor_any_methods$;
+      )cc");
+}
+
 void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
   ABSL_DCHECK(IsAnyMessage(descriptor_));
 
-  p->Emit({{"any_methods",
-            [&] {
-              if (HasDescriptorMethods(descriptor_->file(), options_)) {
-                p->Emit(
-                    R"cc(
-                      bool PackFrom(const ::$proto_ns$::Message& message) {
-                        $DCHK$_NE(&message, this);
-                        return $any_metadata$.PackFrom(GetArena(), message);
-                      }
-                      bool PackFrom(const ::$proto_ns$::Message& message,
-                                    ::absl::string_view type_url_prefix) {
-                        $DCHK$_NE(&message, this);
-                        return $any_metadata$.PackFrom(GetArena(), message, type_url_prefix);
-                      }
-                      bool UnpackTo(::$proto_ns$::Message* message) const {
-                        return $any_metadata$.UnpackTo(message);
-                      }
-                      static bool GetAnyFieldDescriptors(
-                          const ::$proto_ns$::Message& message,
-                          const ::$proto_ns$::FieldDescriptor** type_url_field,
-                          const ::$proto_ns$::FieldDescriptor** value_field);
-                      template <
-                          typename T,
-                          class = typename std::enable_if<!std::is_convertible<
-                              T, const ::$proto_ns$::Message&>::value>::type>
-                      bool PackFrom(const T& message) {
-                        return $any_metadata$.PackFrom<T>(GetArena(), message);
-                      }
-                      template <
-                          typename T,
-                          class = typename std::enable_if<!std::is_convertible<
-                              T, const ::$proto_ns$::Message&>::value>::type>
-                      bool PackFrom(const T& message,
-                                    ::absl::string_view type_url_prefix) {
-                        return $any_metadata$.PackFrom<T>(GetArena(), message, type_url_prefix);
-                      }
-                      template <
-                          typename T,
-                          class = typename std::enable_if<!std::is_convertible<
-                              T, const ::$proto_ns$::Message&>::value>::type>
-                      bool UnpackTo(T* message) const {
-                        return $any_metadata$.UnpackTo<T>(message);
-                      }
-                    )cc");
-              } else {
-                p->Emit(
-                    R"cc(
-                      template <typename T>
-                      bool PackFrom(const T& message) {
-                        return $any_metadata$.PackFrom(GetArena(), message);
-                      }
-                      template <typename T>
-                      bool PackFrom(const T& message,
-                                    ::absl::string_view type_url_prefix) {
-                        return $any_metadata$.PackFrom(GetArena(), message, type_url_prefix);
-                      }
-                      template <typename T>
-                      bool UnpackTo(T* message) const {
-                        return $any_metadata$.UnpackTo(message);
-                      }
-                    )cc");
-              }
-            }}},
+  constexpr absl::string_view kSerializeValueMethod = "SerializeToString";
+  constexpr absl::string_view kParseValueMethod = "ParseFromString";
+
+  p->Emit({{"serialize_value", [&] { p->Emit(kSerializeValueMethod); }},
+           {"parse_value", [&] { p->Emit(kParseValueMethod); }},
+           {"any_methods", [&] { GenerateAnyMethods(p); }}},
           R"cc(
             // implements Any
             // -----------------------------------------------
 
             $any_methods$;
-
-            template <typename T>
-            bool Is() const {
-              return $any_metadata$.Is<T>();
-            }
-            static bool ParseAnyTypeUrl(::absl::string_view type_url,
-                                        std::string* full_type_name);
           )cc");
 }
 
@@ -2787,13 +2889,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
     }
   };
 
-  auto init_any_metadata = [&] {
-    if (IsAnyMessage(descriptor_)) {
-      separator();
-      p->Emit("_any_metadata_{&type_url_, &value_}");
-    }
-  };
-
   // Initialization order of the various fields inside `_impl_(...)`
   init_extensions();
   init_inlined_string_indices();
@@ -2804,7 +2899,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
   init_cached_size_if_no_hasbits();
   init_oneof_cases();
   init_weak_field_map();
-  init_any_metadata();
 }
 
 void MessageGenerator::GenerateSharedConstructorCode(io::Printer* p) {

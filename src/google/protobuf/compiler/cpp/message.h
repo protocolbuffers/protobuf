@@ -158,6 +158,12 @@ class MessageGenerator {
   void GenerateFieldClear(const FieldDescriptor* field, bool is_inline,
                           io::Printer* p);
 
+  // Helpers for GenerateAnyMethodDefinition().
+  //
+  // Generate more templated implementations if descriptor methods are
+  // available; otherwise generate a bare-bones implementation.
+  void GenerateAnyMethods(io::Printer* p) const;
+
   // Returns true if any of the fields needs an `arena` variable containing
   // the current message's arena, reducing `GetArena()` call churn.
   bool RequiresArena(GeneratorFunction function) const;

@@ -7,6 +7,7 @@
 
 #include "google/protobuf/any.h"
 
+#include "absl/functional/any_invocable.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_util.h"
@@ -34,6 +35,20 @@ bool AnyMetadata::UnpackTo(Message* message) const {
     return false;
   }
   return message->ParseFromString(value_->Get());
+}
+
+bool AnyMetadata::PackFromHelper(
+    const Message& message, absl::string_view type_url_prefix,
+    absl::AnyInvocable<bool(const MessageLite&, absl::string_view,
+                            absl::string_view)>
+        internal_pack_from) {
+  return internal_pack_from(message, type_url_prefix, message.GetTypeName());
+}
+
+bool AnyMetadata::UnpackToHelper(
+    Message* message, absl::AnyInvocable<bool(absl::string_view, MessageLite*)>
+                          internal_unpack_to) {
+  return internal_unpack_to(message->GetTypeName(), message);
 }
 
 bool GetAnyFieldDescriptors(const Message& message,

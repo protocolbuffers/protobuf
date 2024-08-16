@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "absl/functional/any_invocable.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/arenastring.h"
@@ -35,6 +36,10 @@ PROTOBUF_EXPORT extern const char kTypeGoogleProdComPrefix[];
 
 std::string GetTypeUrl(absl::string_view message_name,
                        absl::string_view type_url_prefix);
+
+// Returns true if |type_url| ends with |type_name| and is "well formed".
+// This is an implementation detail.
+bool EndsWithTypeName(absl::string_view type_url, absl::string_view type_name);
 
 // Helper class used to implement google::protobuf::Any.
 class PROTOBUF_EXPORT AnyMetadata {
@@ -93,6 +98,28 @@ class PROTOBUF_EXPORT AnyMetadata {
   bool Is() const {
     return InternalIs(T::FullMessageName());
   }
+
+  // A convenience wrapper that lets AnyMetadata to call FullMessageName.
+  // T::FullMessageName() is normally a private static method, but access is
+  // granted to AnyMetadata as a friend class.
+  template <typename T>
+  static absl::string_view GetFullMessageName() {
+    return T::FullMessageName();
+  }
+
+  // A static helper function with the full implementation in any.cc.
+  // This avoids the implementation from being linked in lite implementations.
+  static bool PackFromHelper(
+      const Message& message, absl::string_view type_url_prefix,
+      absl::AnyInvocable<bool(const MessageLite&, absl::string_view,
+                              absl::string_view)>
+          internal_pack_from);
+  // A static helper function with the full implementation in any.cc.
+  // This avoids the implementation from being linked in lite implementations.
+  static bool UnpackToHelper(
+      Message* message,
+      absl::AnyInvocable<bool(absl::string_view, MessageLite*)>
+          internal_unpack_to);
 
  private:
   bool InternalPackFrom(Arena* arena, const MessageLite& message,
