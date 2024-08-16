@@ -494,9 +494,10 @@ public abstract class GeneratedMessageV3
       return super.addRepeatedField(field, value);
     }
 
-    @Override
+    /* Stub for reference from generated code */
     @Deprecated
-    protected final void mergeExtensionFields(final ExtendableMessage other) {
+    // @Override // TODO: Why does Override annotation not work?
+    protected final void mergeExtensionFields(final ExtendableMessage<?> other) {
       super.mergeExtensionFields(other);
     }
   }
