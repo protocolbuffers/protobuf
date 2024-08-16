@@ -110,6 +110,23 @@ __attribute__((objc_subclassing_restricted))
 - (nonnull GPBUnknownFields *)addGroupWithFieldNumber:(int32_t)fieldNumber;
 
 /**
+ * Add the copy of the given unknown field.
+ *
+ * This can be useful from processing one `GPBUnknownFields` to create another.
+ *
+ * NOTE: If the field being copied is an Group, this instance added is new and thus
+ * the `.group` of that result is also new, so if you intent is to modify the group
+ * it *must* be fetched out of the result.
+ *
+ * It is a programming error to call this when the `type` is a legacy field.
+ *
+ * @param field The field to add.
+ *
+ * @return The autoreleased field that was added.
+ **/
+- (GPBUnknownField *)addCopyOfField:(nonnull GPBUnknownField *)field;
+
+/**
  * Removes the given field from the set.
  *
  * It is a programming error to attempt to remove a field that is not in this collection.

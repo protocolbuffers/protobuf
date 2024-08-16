@@ -197,6 +197,12 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
   self = [super init];
   if (self) {
     fields_ = [[NSMutableArray alloc] init];
+    // This shouldn't happen with the annotations, but just incase something claiming nonnull
+    // does return nil, block it.
+    if (!message) {
+      [self release];
+      [NSException raise:NSInvalidArgumentException format:@"Message cannot be nil"];
+    }
     NSData *data = GPBMessageUnknownFieldsData(message);
     if (data) {
       GPBCodedInputStream *input = [[GPBCodedInputStream alloc] initWithData:data];
@@ -222,9 +228,8 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-  GPBUnknownFields *copy = [[GPBUnknownFields alloc] init];
-  // Fields are r/o in this api, so just copy the array.
-  copy->fields_ = [fields_ mutableCopyWithZone:zone];
+  GPBUnknownFields *copy = [[GPBUnknownFields allocWithZone:zone] init];
+  copy->fields_ = [[NSMutableArray allocWithZone:zone] initWithArray:fields_ copyItems:YES];
   return copy;
 }
 
@@ -316,6 +321,16 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
   [fields_ addObject:field];
   [field release];
   return [group autorelease];
+}
+
+- (GPBUnknownField *)addCopyOfField:(nonnull GPBUnknownField *)field {
+  if (field->type_ == GPBUnknownFieldTypeLegacy) {
+    [NSException raise:NSInternalInconsistencyException
+                format:@"GPBUnknownField is the wrong type"];
+  }
+  GPBUnknownField *result = [field copy];
+  [fields_ addObject:result];
+  return [result autorelease];
 }
 
 - (void)removeField:(nonnull GPBUnknownField *)field {
