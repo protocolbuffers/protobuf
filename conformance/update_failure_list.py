@@ -53,7 +53,11 @@ with open(args.filename) as in_file:
   existing_list = in_file.read()
 
 with open(args.filename, 'w') as f:
-  for line in existing_list.splitlines(True):
+  split_lines = existing_list.splitlines(True)
+  # Make sure that we have one newline for potential tests that have to be
+  # added at the end.
+  split_lines[-1] = split_lines[-1].rstrip() + '\n'
+  for line in split_lines:
     test = line.split('#')[0].strip()
     # As long as the tests we are adding appear lexicographically before our
     # read test, put them first followed by our read test.
