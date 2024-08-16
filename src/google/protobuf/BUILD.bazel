@@ -488,6 +488,7 @@ cc_library(
         "arenaz_sampler.cc",
         "extension_set.cc",
         "generated_enum_util.cc",
+        "generated_message_table.cc",
         "generated_message_tctable_lite.cc",
         "generated_message_util.cc",
         "implicit_weak_message.cc",
