@@ -79,6 +79,8 @@ cc_library(
         "//src/google/protobuf:port",
         "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
