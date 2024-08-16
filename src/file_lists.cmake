@@ -348,7 +348,6 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/helpers.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/internal_helpers.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/kotlin_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/enum.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/enum_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/extension.cc
@@ -364,6 +363,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/name_resolver.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/shared_code_generator.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/kotlin/generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/enum.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/enum_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/extension.cc
@@ -478,7 +478,6 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/helpers.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/internal_helpers.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/kotlin_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/enum.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/enum_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/lite/extension.h
@@ -496,6 +495,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/options.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/shared_code_generator.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/kotlin/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/enum.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/enum_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/extension.h
