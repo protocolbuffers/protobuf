@@ -134,6 +134,7 @@ public abstract class GeneratedMessageV3
 
     // Support old gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Deprecated
     @Override
     public BuilderT setUnknownFields(final UnknownFieldSet unknownFields) {
       return super.setUnknownFields(unknownFields);
@@ -141,6 +142,7 @@ public abstract class GeneratedMessageV3
 
     // Support old gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Deprecated
     @Override
     public BuilderT mergeUnknownFields(final UnknownFieldSet unknownFields) {
       return super.mergeUnknownFields(unknownFields);
@@ -154,6 +156,8 @@ public abstract class GeneratedMessageV3
       return super.clone();
     }
 
+    /* Returns GeneratedMessageV3.Builder instead of GeneratedMessage.Builder.*/
+    @Deprecated
     @Override
     public BuilderT clear() {
       return super.clear();
@@ -185,6 +189,7 @@ public abstract class GeneratedMessageV3
 
     // Support old gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24    @Deprecated
+    @Deprecated
     @Override
     public int getRepeatedFieldCount(final FieldDescriptor field) {
       return super.getRepeatedFieldCount(field);
@@ -490,7 +495,8 @@ public abstract class GeneratedMessageV3
     }
 
     @Override
-    protected void mergeExtensionFields(final ExtendableMessage<?> other) {
+    @Deprecated
+    protected final void mergeExtensionFields(final ExtendableMessage other) {
       super.mergeExtensionFields(other);
     }
   }
