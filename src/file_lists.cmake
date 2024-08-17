@@ -40,6 +40,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_enum_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_bases.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_reflection.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_table_gen.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_full.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_gen.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_lite.cc
@@ -129,6 +130,8 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_enum_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_bases.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_reflection.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_table.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_table_gen.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_decl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_gen.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_impl.h
@@ -250,6 +253,7 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set_inl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_enum_util.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_table.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_decl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_impl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_util.h
@@ -1013,6 +1017,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/feature_resolver_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_enum_util_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_reflection_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_table_gen_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_lite_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/has_bits_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/inlined_string_field_unittest.cc
