@@ -173,7 +173,7 @@ class MessageReflectionFriend;
 namespace expr {
 class CelMapReflectionFriend;  // field_backed_map_impl.cc
 class SudoMapReflectionFriend;
-}
+}  // namespace expr
 
 namespace internal {
 class MapFieldPrinterHelper;  // text_format.cc
@@ -624,6 +624,25 @@ class PROTOBUF_EXPORT Reflection final {
 
     ScratchSpace(const ScratchSpace&) = delete;
     ScratchSpace& operator=(const ScratchSpace&) = delete;
+
+    // Tests whether the absl::string_view is a view of the scratch space.
+    //
+    // Example:
+    //  ScratchSpace scratch;
+    //  absl::string_view value = reflection->GetStringView(message, field,
+    //                                                      scratch);
+    //  if (scratch.Holds(value)) {
+    //    // Data underlying the view is located in the scratch space and is
+    //    // valid as long as the scratch space is valid and not re-used. If
+    //    // we cannot guarantee this, then we need to make a copy.
+    //  } else {
+    //    // Data underlying the view is owned by the message and is valid as
+    //    // long as the message is alive and the field is not mutated.
+    //  }
+    bool Holds(absl::string_view string) const {
+      return buffer_ != nullptr && string.data() >= buffer_->data() &&
+             string.data() + string.size() <= buffer_->data() + buffer_->size();
+    }
 
    private:
     friend class Reflection;

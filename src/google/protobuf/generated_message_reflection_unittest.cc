@@ -30,6 +30,7 @@
 #include "absl/flags/flag.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
+#include "absl/strings/cord_test_helpers.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
@@ -175,12 +176,23 @@ TEST(GeneratedMessageReflectionTest, GetStringView) {
   const Reflection* reflection = message.GetReflection();
   Reflection::ScratchSpace scratch;
 
-  EXPECT_EQ("115",
-            reflection->GetStringView(message, F("optional_string"), scratch));
-  EXPECT_EQ("124", reflection->GetStringView(
-                       message, F("optional_string_piece"), scratch));
-  EXPECT_EQ("125",
-            reflection->GetStringView(message, F("optional_cord"), scratch));
+  absl::string_view value;
+
+  value = reflection->GetStringView(message, F("optional_string"), scratch);
+  EXPECT_EQ("115", value);
+  EXPECT_FALSE(scratch.Holds(value));
+  value =
+      reflection->GetStringView(message, F("optional_string_piece"), scratch);
+  EXPECT_EQ("124", value);
+  EXPECT_FALSE(scratch.Holds(value));
+  value = reflection->GetStringView(message, F("optional_cord"), scratch);
+  EXPECT_EQ("125", value);
+  EXPECT_FALSE(scratch.Holds(value));
+  reflection->SetString(&message, F("optional_cord"),
+                        absl::MakeFragmentedCord({"Hello", " ", "World!"}));
+  value = reflection->GetStringView(message, F("optional_cord"), scratch);
+  EXPECT_EQ("Hello World!", value);
+  EXPECT_TRUE(scratch.Holds(value));
 }
 
 TEST(GeneratedMessageReflectionTest, GetStringViewWithExtensions) {
