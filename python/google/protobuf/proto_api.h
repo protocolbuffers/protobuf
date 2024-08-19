@@ -45,6 +45,8 @@ struct PyProto_API {
 
   // Operations on Messages.
 
+  virtual Message* NewCppMessage(PyObject* msg) const = 0;
+
   // If the passed object is a Python Message, returns its internal pointer.
   // Otherwise, returns NULL with an exception set.
   virtual const Message* GetMessagePointer(PyObject* msg) const = 0;
