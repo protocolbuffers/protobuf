@@ -11,6 +11,8 @@ load(
 )
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
+load("//bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
+load("//bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 load("test_plugin_injection.bzl", "inject_plugin_paths")
@@ -29,6 +31,18 @@ proto_library(
 cc_proto_library(
     name = "plugin_cc_proto",
     visibility = ["//visibility:public"],
+    deps = [":plugin_proto"],
+)
+
+upb_c_proto_library(
+    name = "plugin_upb_c_proto",
+    visibility = ["//upb_generator:__subpackages__"],
+    deps = [":plugin_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "plugin_upb_reflection_proto",
+    visibility = ["//upb_generator:__subpackages__"],
     deps = [":plugin_proto"],
 )
 

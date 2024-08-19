@@ -59,9 +59,7 @@ upb_minitable_proto_library(
 
 bootstrap_upb_proto_library(
     name = "plugin_upb_proto",
-    base_dir = "",
-    # TODO: Export 'net/proto2/proto/descriptor.upb.h' and remove "-layering_check".
-    features = ["-layering_check"],
+    bootstrap_hdr = "plugin_bootstrap.h",
     google3_src_files = [
         "net/proto2/compiler/proto/profile.proto",
         "third_party/protobuf/compiler/plugin.proto",
@@ -234,10 +232,10 @@ cc_library(
     deps = [
         ":code_generator_request_upb_proto",
         ":code_generator_request_upb_proto_reflection",
-        ":plugin_upb_proto",
-        ":plugin_upb_proto_reflection",
+        "//src/google/protobuf:descriptor_upb_c_proto",
+        "//src/google/protobuf/compiler:plugin_upb_c_proto",
+        "//src/google/protobuf/compiler:plugin_upb_reflection_proto",
         "//upb:base",
-        "//upb:descriptor_upb_proto",
         "//upb:json",
         "//upb:mem",
         "//upb:message",
@@ -281,6 +279,7 @@ bootstrap_cc_library(
         "//upb:mini_table",
         "//upb:port",
         "//upb:wire_reader",
+        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
@@ -400,7 +399,7 @@ cc_library(
         ":common",
         ":file_layout",
         ":plugin",
-        "//upb:descriptor_upb_proto",
+        "//src/google/protobuf:descriptor_upb_c_proto",
         "//upb:reflection",
         "//upb/util:def_to_proto",
     ],

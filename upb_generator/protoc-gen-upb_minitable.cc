@@ -488,7 +488,7 @@ void WriteExtension(const DefPoolPair& pools, upb::FieldDefPtr ext,
 }  // namespace
 
 void WriteMiniTableHeader(const DefPoolPair& pools, upb::FileDefPtr file,
-                          Output& output) {
+                          const MiniTableOptions& options, Output& output) {
   EmitFileWarning(file.name(), output);
   output(
       "#ifndef $0_UPB_MINITABLE_H_\n"
@@ -500,8 +500,9 @@ void WriteMiniTableHeader(const DefPoolPair& pools, upb::FileDefPtr file,
     if (i == 0) {
       output("/* Public Imports. */\n");
     }
-    output("#include \"$0\"\n",
-           MiniTableHeaderFilename(file.public_dependency(i)));
+    output(
+        "#include \"$0\"\n",
+        MiniTableHeaderFilename(file.public_dependency(i), options.bootstrap));
     if (i == file.public_dependency_count() - 1) {
       output("\n");
     }
@@ -560,7 +561,7 @@ void WriteMiniTableSourceIncludes(upb::FileDefPtr file,
       "#include <stddef.h>\n"
       "#include \"upb/generated_code_support.h\"\n"
       "#include \"$0\"\n",
-      MiniTableHeaderFilename(file));
+      MiniTableHeaderFilename(file, options.bootstrap));
 
   for (int i = 0; i < file.dependency_count(); i++) {
     if (options.strip_nonfunctional_codegen &&
@@ -568,7 +569,8 @@ void WriteMiniTableSourceIncludes(upb::FileDefPtr file,
       // Strip feature imports for editions codegen tests.
       continue;
     }
-    output("#include \"$0\"\n", MiniTableHeaderFilename(file.dependency(i)));
+    output("#include \"$0\"\n",
+           MiniTableHeaderFilename(file.dependency(i), options.bootstrap));
   }
 
   output(

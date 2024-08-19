@@ -35,8 +35,9 @@ absl::string_view ToStringView(upb_StringView str) {
 void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
                   const MiniTableOptions& options, Plugin* plugin) {
   Output h_output;
-  WriteMiniTableHeader(pools, file, h_output);
-  plugin->AddOutputFile(MiniTableHeaderFilename(file), h_output.output());
+  WriteMiniTableHeader(pools, file, options, h_output);
+  plugin->AddOutputFile(MiniTableHeaderFilename(file, false),
+                        h_output.output());
 
   Output c_output;
   WriteMiniTableSource(pools, file, options, c_output);
@@ -49,7 +50,9 @@ void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
 
 bool ParseOptions(MiniTableOptions* options, Plugin* plugin) {
   for (const auto& pair : ParseGeneratorParameter(plugin->parameter())) {
-    if (pair.first == "experimental_strip_nonfunctional_codegen") {
+    if (pair.first == "bootstrap_stage") {
+      options->bootstrap = true;
+    } else if (pair.first == "experimental_strip_nonfunctional_codegen") {
       options->strip_nonfunctional_codegen = true;
     } else if (pair.first == "one_output_per_message") {
       options->one_output_per_message = true;

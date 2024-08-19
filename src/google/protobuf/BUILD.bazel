@@ -6,6 +6,9 @@ load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
+load("//bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
+load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
+load("//bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
 
@@ -221,6 +224,24 @@ proto_library(
         "//:__pkg__",
         "//pkg:__pkg__",
     ],
+)
+
+upb_c_proto_library(
+    name = "descriptor_upb_c_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":descriptor_proto"],
+)
+
+upb_minitable_proto_library(
+    name = "descriptor_upb_minitable_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":descriptor_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "descriptor_upb_reflection_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":descriptor_proto"],
 )
 
 proto_library(

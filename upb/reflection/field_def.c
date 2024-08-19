@@ -591,7 +591,7 @@ static bool _upb_FieldDef_InferLegacyFeatures(
   }
 
 // begin:google_only
-// #ifndef UPB_BOOTSTRAP_STAGE0
+// #if UPB_BOOTSTRAP_STAGE != 0
 //   if (syntax == kUpb_Syntax_Proto3 &&
 //       UPB_DESC(FieldOptions_has_enforce_utf8)(options) &&
 //       !UPB_DESC(FieldOptions_enforce_utf8)(options)) {

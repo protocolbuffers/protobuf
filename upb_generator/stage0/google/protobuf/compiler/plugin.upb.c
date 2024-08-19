@@ -1,8 +1,8 @@
 #include <stddef.h>
 #include "upb/generated_code_support.h"
-#include "google/protobuf/compiler/plugin.upb.h"
+#include "upb_generator/plugin_bootstrap.h"
 
-#include "google/protobuf/descriptor.upb.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 static upb_Arena* upb_BootstrapArena() {
   static upb_Arena* arena = NULL;
   if (!arena) arena = upb_Arena_New();

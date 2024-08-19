@@ -47,8 +47,8 @@ genrule(
 genrule(
     name = "copy_protos",
     srcs = [
-        "//upb:descriptor_upb_proto",
-        "//upb:descriptor_upb_minitable_proto",
+        "//src/google/protobuf:descriptor_upb_c_proto",
+        "//src/google/protobuf:descriptor_upb_minitable_proto",
     ],
     outs = [
         "generated-in/google/protobuf/descriptor.upb.h",

@@ -6,6 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -17,10 +18,12 @@
 #include <utility>
 #include <vector>
 
+#include "absl/base/macros.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
+#include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
@@ -31,7 +34,6 @@
 #include "upb/base/string_view.h"
 #include "upb/mini_table/field.h"
 #include "upb/reflection/def.hpp"
-#include "upb/wire/types.h"
 #include "upb_generator/common.h"
 #include "upb_generator/file_layout.h"
 #include "upb_generator/names.h"
@@ -45,7 +47,7 @@ namespace generator {
 namespace {
 
 struct Options {
-  bool bootstrap = false;
+  int bootstrap_stage = -1;  // -1 means not bootstrapped.
   bool strip_nonfunctional_codegen = false;
 };
 
@@ -55,7 +57,7 @@ std::string SourceFilename(upb::FileDefPtr file) {
 
 std::string MessageMiniTableRef(upb::MessageDefPtr descriptor,
                                 const Options& options) {
-  if (options.bootstrap) {
+  if (options.bootstrap_stage == 0) {
     return absl::StrCat(MessageInitName(descriptor), "()");
   } else {
     return absl::StrCat("&", MessageInitName(descriptor));
@@ -68,7 +70,7 @@ std::string EnumInitName(upb::EnumDefPtr descriptor) {
 
 std::string EnumMiniTableRef(upb::EnumDefPtr descriptor,
                              const Options& options) {
-  if (options.bootstrap) {
+  if (options.bootstrap_stage == 0) {
     return absl::StrCat(EnumInitName(descriptor), "()");
   } else {
     return absl::StrCat("&", EnumInitName(descriptor));
@@ -887,21 +889,26 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
     if (i == 0) {
       output("/* Public Imports. */\n");
     }
-    output("#include \"$0\"\n", CApiHeaderFilename(file.public_dependency(i)));
+    output("#include \"$0\"\n",
+           CApiHeaderFilename(file.public_dependency(i),
+                              options.bootstrap_stage >= 0));
   }
   if (file.public_dependency_count() > 0) {
     output("\n");
   }
 
-  if (!options.bootstrap) {
-    output("#include \"$0\"\n\n", MiniTableHeaderFilename(file));
+  if (options.bootstrap_stage != 0) {
+    output("#include \"$0\"\n\n",
+           MiniTableHeaderFilename(file, options.bootstrap_stage >= 0));
     for (int i = 0; i < file.dependency_count(); i++) {
       if (options.strip_nonfunctional_codegen &&
           google::protobuf::compiler::IsKnownFeatureProto(file.dependency(i).name())) {
         // Strip feature imports for editions codegen tests.
         continue;
       }
-      output("#include \"$0\"\n", MiniTableHeaderFilename(file.dependency(i)));
+      output("#include \"$0\"\n",
+             MiniTableHeaderFilename(file.dependency(i),
+                                     options.bootstrap_stage >= 0));
     }
     output("\n");
   }
@@ -915,7 +922,7 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
       "#endif\n"
       "\n");
 
-  if (options.bootstrap) {
+  if (options.bootstrap_stage == 0) {
     for (auto message : this_file_messages) {
       output("extern const upb_MiniTable* $0();\n", MessageInitName(message));
     }
@@ -1005,7 +1012,7 @@ std::string FieldInitializer(upb::FieldDefPtr field,
                              const upb_MiniTableField* field64,
                              const upb_MiniTableField* field32,
                              const Options& options) {
-  if (options.bootstrap) {
+  if (options.bootstrap_stage == 0) {
     ABSL_CHECK(!field.is_extension());
     return absl::Substitute(
         "*upb_MiniTable_FindFieldByNumber($0, $1)",
@@ -1034,7 +1041,7 @@ std::string FieldInitializerStrong(const DefPoolPair& pools,
                                    upb::FieldDefPtr field,
                                    const Options& options) {
   std::string ret = FieldInitializer(pools, field, options);
-  if (!options.bootstrap && field.IsSubMessage()) {
+  if (options.bootstrap_stage != 0 && field.IsSubMessage()) {
     ret += ";\n" + StrongReference(field);
   }
   return ret;
@@ -1109,14 +1116,16 @@ void WriteMiniDescriptorSource(const DefPoolPair& pools, upb::FileDefPtr file,
       "#include <stddef.h>\n"
       "#include \"upb/generated_code_support.h\"\n"
       "#include \"$0\"\n\n",
-      CApiHeaderFilename(file));
+      CApiHeaderFilename(file, options.bootstrap_stage >= 0));
 
   for (int i = 0; i < file.dependency_count(); i++) {
     if (options.strip_nonfunctional_codegen &&
         google::protobuf::compiler::IsKnownFeatureProto(file.dependency(i).name())) {
       continue;
     }
-    output("#include \"$0\"\n", CApiHeaderFilename(file.dependency(i)));
+    output(
+        "#include \"$0\"\n",
+        CApiHeaderFilename(file.dependency(i), options.bootstrap_stage >= 0));
   }
 
   output(
@@ -1143,9 +1152,9 @@ void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
                   const Options& options, Plugin* plugin) {
   Output h_output;
   WriteHeader(pools, file, options, h_output);
-  plugin->AddOutputFile(CApiHeaderFilename(file), h_output.output());
+  plugin->AddOutputFile(CApiHeaderFilename(file, false), h_output.output());
 
-  if (options.bootstrap) {
+  if (options.bootstrap_stage == 0) {
     Output c_output;
     WriteMiniDescriptorSource(pools, file, options, c_output);
     plugin->AddOutputFile(SourceFilename(file), c_output.output());
@@ -1161,8 +1170,11 @@ void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
 
 bool ParseOptions(Plugin* plugin, Options* options) {
   for (const auto& pair : ParseGeneratorParameter(plugin->parameter())) {
-    if (pair.first == "bootstrap_upb") {
-      options->bootstrap = true;
+    if (pair.first == "bootstrap_stage") {
+      if (!absl::SimpleAtoi(pair.second, &options->bootstrap_stage)) {
+        plugin->SetError(absl::Substitute("Bad stage: $0", pair.second));
+        return false;
+      }
     } else if (pair.first == "experimental_strip_nonfunctional_codegen") {
       options->strip_nonfunctional_codegen = true;
     } else {
