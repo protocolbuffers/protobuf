@@ -924,13 +924,15 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
 
   if (options.bootstrap_stage == 0) {
     for (auto message : this_file_messages) {
-      output("extern const upb_MiniTable* $0();\n", MessageInitName(message));
+      output("extern const upb_MiniTable* $0(void);\n",
+             MessageInitName(message));
     }
     for (auto message : forward_messages) {
-      output("extern const upb_MiniTable* $0();\n", MessageInitName(message));
+      output("extern const upb_MiniTable* $0(void);\n",
+             MessageInitName(message));
     }
     for (auto enumdesc : this_file_enums) {
-      output("extern const upb_MiniTableEnum* $0();\n", EnumInit(enumdesc));
+      output("extern const upb_MiniTableEnum* $0(void);\n", EnumInit(enumdesc));
     }
     output("\n");
   }
