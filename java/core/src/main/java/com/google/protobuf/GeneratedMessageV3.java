@@ -184,7 +184,7 @@ public abstract class GeneratedMessageV3
       return super.addRepeatedField(field, value);
     }
 
-        // Gencode method override removed in
+    // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
     @Override
@@ -598,7 +598,7 @@ public abstract class GeneratedMessageV3
      * 
      * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
      * (5.x). Users should update gencode to >= 4.26.x which uses
-     * GeneratedMessage.FieldAccessorTable instead.
+     * GeneratedMessage.ensureFieldAccessorsInitialized() instead.
      */
     @Deprecated
     @Override

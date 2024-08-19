@@ -35,8 +35,8 @@ public class RepeatedFieldBuilderV3<
   /* Returns RepeatedFieldBuilderV3 instead of RepeatedFieldBuilder.
   *
   * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
-  * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
-  * SingleFieldBuilder.setMessage instead of SingleFieldBuilderV3.setMessage.
+  * (5.x). Users should update gencode to >= 4.26.x which uses
+  * RepeatedFieldBuilder.setMessage() instead.
   */
   @Deprecated
   @Override
@@ -47,8 +47,8 @@ public class RepeatedFieldBuilderV3<
   /* Returns RepeatedFieldBuilderV3 instead of RepeatedFieldBuilder.
   *
   * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
-  * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
-  * SingleFieldBuilder.setMessage instead of SingleFieldBuilderV3.setMessage.
+  * (5.x). Users should update gencode to >= 4.26.x which uses
+  * RepeatedFieldBuilder.addMessage() instead.
   */
   public RepeatedFieldBuilderV3<MType, BType, IType> addMessage(MType message) {
     return (RepeatedFieldBuilderV3<MType, BType, IType>) super.addMessage(message);
@@ -57,8 +57,8 @@ public class RepeatedFieldBuilderV3<
   /* Returns RepeatedFieldBuilderV3 instead of RepeatedFieldBuilder.
   *
   * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
-  * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
-  * SingleFieldBuilder.setMessage instead of SingleFieldBuilderV3.setMessage.
+  * (5.x). Users should update gencode to >= 4.26.x which uses
+  * RepeatedFieldBuilder.addMessage() instead.
   */
   public RepeatedFieldBuilderV3<MType, BType, IType> addMessage(int index, MType message) {
     return (RepeatedFieldBuilderV3<MType, BType, IType>) super.addMessage(index, message);
@@ -67,8 +67,8 @@ public class RepeatedFieldBuilderV3<
   /* Returns RepeatedFieldBuilderV3 instead of RepeatedFieldBuilder.
   *
   * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
-  * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
-  * SingleFieldBuilder.setMessage instead of SingleFieldBuilderV3.setMessage.
+  * (5.x). Users should update gencode to >= 4.26.x which uses
+  * RepeatedFieldBuilder.addAllMessages() instead.
   */
   public RepeatedFieldBuilderV3<MType, BType, IType> addAllMessages(
       Iterable<? extends MType> values) {
