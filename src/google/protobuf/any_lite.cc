@@ -30,6 +30,12 @@ std::string GetTypeUrl(absl::string_view message_name,
   }
 }
 
+bool EndsWithTypeName(absl::string_view type_url, absl::string_view type_name) {
+  return type_url.size() > type_name.size() &&
+         type_url[type_url.size() - type_name.size() - 1] == '/' &&
+         absl::EndsWith(type_url, type_name);
+}
+
 const char kAnyFullTypeName[] = "google.protobuf.Any";
 const char kTypeGoogleApisComPrefix[] = "type.googleapis.com/";
 const char kTypeGoogleProdComPrefix[] = "type.googleprod.com/";
@@ -50,10 +56,7 @@ bool AnyMetadata::InternalUnpackTo(absl::string_view type_name,
 }
 
 bool AnyMetadata::InternalIs(absl::string_view type_name) const {
-  absl::string_view type_url = type_url_->Get();
-  return type_url.size() >= type_name.size() + 1 &&
-         type_url[type_url.size() - type_name.size() - 1] == '/' &&
-         absl::EndsWith(type_url, type_name);
+  return EndsWithTypeName(type_url_->Get(), type_name);
 }
 
 bool ParseAnyTypeUrl(absl::string_view type_url, std::string* url_prefix,
