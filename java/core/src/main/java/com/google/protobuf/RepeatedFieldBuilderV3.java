@@ -41,8 +41,7 @@ public class RepeatedFieldBuilderV3<
   @Deprecated
   @Override
   public RepeatedFieldBuilderV3<MType, BType, IType> setMessage(int index, MType message) {
-    super.setMessage(index, message);
-    return this;
+    return (RepeatedFieldBuilderV3<MType, BType, IType>) super.setMessage(index, message);
   }
 
   /* Returns RepeatedFieldBuilderV3 instead of RepeatedFieldBuilder.
@@ -52,8 +51,7 @@ public class RepeatedFieldBuilderV3<
   * SingleFieldBuilder.setMessage instead of SingleFieldBuilderV3.setMessage.
   */
   public RepeatedFieldBuilderV3<MType, BType, IType> addMessage(MType message) {
-    super.addMessage(message);
-    return this;
+    return (RepeatedFieldBuilderV3<MType, BType, IType>) super.addMessage(message);
   }
 
   /* Returns RepeatedFieldBuilderV3 instead of RepeatedFieldBuilder.
@@ -63,8 +61,7 @@ public class RepeatedFieldBuilderV3<
   * SingleFieldBuilder.setMessage instead of SingleFieldBuilderV3.setMessage.
   */
   public RepeatedFieldBuilderV3<MType, BType, IType> addMessage(int index, MType message) {
-    super.addMessage(index, message);
-    return this;
+    return (RepeatedFieldBuilderV3<MType, BType, IType>) super.addMessage(index, message);
   }
 
   /* Returns RepeatedFieldBuilderV3 instead of RepeatedFieldBuilder.
@@ -75,7 +72,6 @@ public class RepeatedFieldBuilderV3<
   */
   public RepeatedFieldBuilderV3<MType, BType, IType> addAllMessages(
       Iterable<? extends MType> values) {
-    super.addAllMessages(values);
-    return this;
+    return (RepeatedFieldBuilderV3<MType, BType, IType>) super.addAllMessages(values);
   }
 }

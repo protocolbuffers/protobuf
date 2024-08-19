@@ -48,8 +48,7 @@ public class SingleFieldBuilderV3<
   @Deprecated
   @Override
   public SingleFieldBuilderV3<MType, BType, IType> mergeFrom(MType value) {
-    super.mergeFrom(value);
-    return this;
+    return (SingleFieldBuilderV3<MType, BType, IType>) super.mergeFrom(value);
   }
 
   /* Returns SingleFieldBuilderV3 instead of SingleFieldBuilder.
@@ -61,7 +60,6 @@ public class SingleFieldBuilderV3<
   @Deprecated
   @Override
   public SingleFieldBuilderV3<MType, BType, IType> clear() {
-    super.clear();
-    return this;
+    return (SingleFieldBuilderV3<MType, BType, IType>) super.clear();
   }
 }

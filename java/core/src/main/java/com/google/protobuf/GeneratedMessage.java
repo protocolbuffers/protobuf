@@ -752,7 +752,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     }
 
     @Override
-    public UnknownFieldSet getUnknownFields() {
+    public final UnknownFieldSet getUnknownFields() {
       if (unknownFieldsOrBuilder instanceof UnknownFieldSet) {
         return (UnknownFieldSet) unknownFieldsOrBuilder;
       } else {
@@ -803,7 +803,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
      * Implementation of {@link BuilderParent} for giving to our children. This small inner class
      * makes it so we don't publicly expose the BuilderParent methods.
      */
-    protected class BuilderParentImpl implements BuilderParent {
+    private class BuilderParentImpl implements BuilderParent {
 
       @Override
       public void markDirty() {

@@ -11,11 +11,6 @@ import com.google.protobuf.AbstractMessage.BuilderParent;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
-import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.GeneratedMessage.Builder.BuilderParentImpl;
-
-import com.google.protobuf.GeneratedMessage.Builder.BuilderParentImpl;
-
 import java.util.List;
 
 /**
@@ -25,8 +20,7 @@ import java.util.List;
  * inheritance" for GeneratedMessageV3.ExtendableMessage subclass.
  *
  * @deprecated This class is deprecated, and slated for removal in the next Java breaking change
- *     (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses GeneratedMessage
- *     instead of GeneratedMessageV3.
+ *     (5.x). Users should update gencode to >= 4.26.x which uses GeneratedMessage instead.
  */
 @Deprecated
 public abstract class GeneratedMessageV3
@@ -43,11 +37,11 @@ public abstract class GeneratedMessageV3
     super(builder);
   }
 
-  /* Returns GeneratedMessageV3.FieldAccessorTable instead of GeneratedMessage.FieldAccessorTable.
+  /* Overrides abstract GeneratedMessage.internalGetFieldAccessorTable().
   * 
   * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
-  * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
-  * GeneratedMessage.internalGetFieldAccessorTable instead of GeneratedMessageV3.internalGetFieldAccessorTable.
+  * (5.x). Users should update gencode to >= 4.26.x which uses 
+  * GeneratedMessage.internalGetFieldAccessorTable() instead.
   */
   @Deprecated
   @Override
@@ -61,8 +55,13 @@ public abstract class GeneratedMessageV3
   @Deprecated
   protected abstract Message.Builder newBuilderForType(BuilderParent parent);
 
-  // Gencode method removed in
-  // https://github.com/protocolbuffers/protobuf/commit/787447430fc9a69c071393e85a380b664d261ab4
+  /* Removed from GeneratedMessage in
+   * https://github.com/protocolbuffers/protobuf/commit/787447430fc9a69c071393e85a380b664d261ab4
+   * 
+   * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+   * (5.x). Users should update gencode to >= 4.26.x which no longer uses this method.
+   */
+  @Deprecated
   @Override
   protected Message.Builder newBuilderForType(final AbstractMessage.BuilderParent parent) {
     return newBuilderForType(
@@ -82,8 +81,7 @@ public abstract class GeneratedMessageV3
    * "multiple inheritance" for GeneratedMessageV3.ExtendableBuilder subclass.
    *
    * @deprecated This class is deprecated, and slated for removal in the next Java breaking change
-   *     (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
-   *     GeneratedMessage.ExtendableBuilder instead of GeneratedMessageV3.ExtendableBuilder.
+   *     (5.x). Users should update gencode to >= 4.26.x which uses GeneratedMessage.Builder instead.
    */
   @Deprecated
   public abstract static class Builder<
@@ -102,52 +100,6 @@ public abstract class GeneratedMessageV3
       super(builderParent);
     }
 
-    /* Returns GeneratedMessageV3.FieldAccessorTable instead of GeneratedMessage.FieldAccessorTable.
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
-     * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
-     * GeneratedMessage.FieldAccessorTable instead of GeneratedMessageV3.FieldAccessorTable.
-     */
-    @Deprecated
-    @Override
-    protected FieldAccessorTable internalGetFieldAccessorTable() {
-      throw new UnsupportedOperationException("Should be overridden in gencode.");
-    }
-
-    private class BuilderParentImpl extends GeneratedMessage.Builder.BuilderParentImpl
-        implements BuilderParent {}
-
-    /* Returns GeneratedMessageV3.Builder.BuilderParent instead of GeneratedMessage.ExtendableMessage.Builder.BuilderParent.
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
-     * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
-     * GeneratedMessage.Builder.BuilderParent instead of GeneratedMessageV3.Builder.BuilderParent.
-     */
-    @Deprecated
-    @Override
-    protected BuilderParent getParentForChildren() {
-      if (meAsParent == null) {
-        meAsParent = new BuilderParentImpl();
-      }
-      return meAsParent;
-    }
-
-    // Gencode method override removed in
-    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
-    @Deprecated
-    @Override
-    public BuilderT setUnknownFields(final UnknownFieldSet unknownFields) {
-      return super.setUnknownFields(unknownFields);
-    }
-
-    // Gencode method override removed in
-    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
-    @Deprecated
-    @Override
-    public BuilderT mergeUnknownFields(final UnknownFieldSet unknownFields) {
-      return super.mergeUnknownFields(unknownFields);
-    }
-
     // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
     @Deprecated
@@ -161,6 +113,18 @@ public abstract class GeneratedMessageV3
     @Override
     public BuilderT clear() {
       return super.clear();
+    }
+
+    /* Overrides abstract GeneratedMessage.Builder.internalGetFieldAccessorTable().
+     *
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which overrides
+     * GeneratedMessage.Builder.internalGetFieldAccessorTable() instead.
+     */
+    @Deprecated
+    @Override
+    protected FieldAccessorTable internalGetFieldAccessorTable() {
+      throw new UnsupportedOperationException("Should be overridden in gencode.");
     }
 
     // Gencode method override removed in
@@ -219,6 +183,45 @@ public abstract class GeneratedMessageV3
     public BuilderT addRepeatedField(final FieldDescriptor field, final Object value) {
       return super.addRepeatedField(field, value);
     }
+
+        // Gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Deprecated
+    @Override
+    public BuilderT setUnknownFields(final UnknownFieldSet unknownFields) {
+      return super.setUnknownFields(unknownFields);
+    }
+
+    // Gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Deprecated
+    @Override
+    public BuilderT mergeUnknownFields(final UnknownFieldSet unknownFields) {
+      return super.mergeUnknownFields(unknownFields);
+    }
+
+    @Deprecated
+    private class BuilderParentImpl implements BuilderParent {
+      @Override
+      public void markDirty() {
+        onChanged();
+      }
+    }
+
+    /* Returns GeneratedMessageV3.Builder.BuilderParent instead of GeneratedMessage.Builder.BuilderParent.
+     *
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which uses
+     * GeneratedMessage.Builder.getParentForChildren() instead.
+     */
+    @Deprecated
+    @Override
+    protected BuilderParent getParentForChildren() {
+      if (meAsParent == null) {
+        meAsParent = new BuilderParentImpl();
+      }
+      return meAsParent;
+    }
   }
 
   /**
@@ -226,33 +229,50 @@ public abstract class GeneratedMessageV3
    * compatibility with older gencode.
    *
    * @deprecated This class is deprecated, and slated for removal in the next Java breaking change
-   *     (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
-   *     GeneratedMessage.ExtendableMessageOrBuilder instead of GeneratedMessageV3.ExtendableMessageOrBuilder.
+   *     (5.x). Users should update gencode to >= 4.26.x which uses
+   *     GeneratedMessage.ExtendableMessageOrBuilder.
    */
   @Deprecated
   public interface ExtendableMessageOrBuilder<MessageT extends ExtendableMessage<MessageT>>
     extends GeneratedMessage.ExtendableMessageOrBuilder<GeneratedMessageV3> {
     
-    // Method removed from GeneratedMessage.ExtendableMessageOrBuilder in
-    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+
+    /* Removed from GeneratedMessage.ExtendableMessageOrBuilder in
+     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+     * 
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
+     */
     @Deprecated
     <T> boolean hasExtension(
       GeneratedExtension<MessageT, T> extension);
 
-    // Method removed from GeneratedMessage.ExtendableMessageOrBuilder in
-    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    /* Removed from GeneratedMessage.ExtendableMessageOrBuilder in
+     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+     * 
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
+     */
     @Deprecated
     <T> int getExtensionCount(
       GeneratedExtension<MessageT, List<T>> extension);
 
-    // Method removed from GeneratedMessage.ExtendableMessageOrBuilder in
-    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    /* Removed from GeneratedMessage.ExtendableMessageOrBuilder in
+     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+     * 
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
+     */
     @Deprecated
     <T> T getExtension(
       GeneratedExtension<MessageT, T> extension);
    
-    // Method removed from GeneratedMessage.ExtendableMessageOrBuilder in
-    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    /* Removed from GeneratedMessage.ExtendableMessageOrBuilder in
+     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+     * 
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
+     */
     @Deprecated
     <T> T getExtension(
       GeneratedExtension<MessageT, List<T>> extension,
@@ -263,8 +283,8 @@ public abstract class GeneratedMessageV3
    * compatibility with older gencode.
    *
    * @deprecated This class is deprecated, and slated for removal in the next Java breaking change
-   *     (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
-   *     GeneratedMessage.FieldAccessorTable instead of GeneratedMessageV3.FieldAccessorTable.
+   *     (5.x). Users should update gencode to >= 4.26.x which uses
+   *     GeneratedMessage.ExtendableMessage.
    */
   @Deprecated
   public abstract static class ExtendableMessage<MessageT extends ExtendableMessage<MessageT>>
@@ -281,8 +301,12 @@ public abstract class GeneratedMessageV3
       super(builder);
     }
 
-    // Method removed from GeneratedMessage.ExtendableMessage in
-    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    /* Removed from GeneratedMessage.ExtendableMessage in
+     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+     * 
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
+     */
     @Deprecated
     @Override
     public final <T> boolean hasExtension(
@@ -290,8 +314,12 @@ public abstract class GeneratedMessageV3
       return hasExtension((ExtensionLite<MessageT, T>) extension);
     }
     
-    // Method removed from GeneratedMessage.ExtendableMessage in
-    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    /* Removed from GeneratedMessage.ExtendableMessage in
+     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+     * 
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
+     */
     @Deprecated
     @Override
     public final <T> int getExtensionCount(
@@ -299,8 +327,12 @@ public abstract class GeneratedMessageV3
       return getExtensionCount((ExtensionLite<MessageT, List<T>>) extension);
     }
 
-    // Method removed from GeneratedMessage.ExtendableMessage in
-    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    /* Removed from GeneratedMessage.ExtendableMessage in
+     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+     * 
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
+     */
     @Deprecated
     @Override
     public final <T> T getExtension(
@@ -308,8 +340,12 @@ public abstract class GeneratedMessageV3
       return getExtension((ExtensionLite<MessageT, T>) extension);
     }
 
-    // Method removed from GeneratedMessage.ExtendableMessage in
-    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    /* Removed from GeneratedMessage.ExtendableMessage in
+     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+     * 
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
+     */
     @Deprecated
     @Override
     public final <T> T getExtension(
@@ -317,12 +353,12 @@ public abstract class GeneratedMessageV3
       return getExtension((ExtensionLite<MessageT, List<T>>) extension, index);
     }
 
-    /* Returns GeneratedMessageV3.FieldAccessorTable instead of GeneratedMessage.FieldAccessorTable.
-    * 
-    * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
-    * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
-    * GeneratedMessage.internalGetFieldAccessorTable instead of GeneratedMessageV3.internalGetFieldAccessorTable.
-    */
+    /* Overrides abstract GeneratedMessage.ExtendableMessage.internalGetFieldAccessorTable().
+     *
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which overrides
+     * GeneratedMessage.ExtendableMessage.internalGetFieldAccessorTable() instead.
+     */
     @Deprecated
     @Override
     protected FieldAccessorTable internalGetFieldAccessorTable() {
@@ -334,9 +370,8 @@ public abstract class GeneratedMessageV3
      * GeneratedMessage.ExtendableMessage.ExtensionWriter for compatibility with older gencode.
      *
      * @deprecated This class is deprecated, and slated for removal in the next Java breaking change
-     *     (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
-     *     GeneratedMessage.ExtendableMessage.ExtensionWriter instead of
-     *     GeneratedMessageV3.ExtendableMessage.ExtensionWriter.
+     *     (5.x). Users should update gencode to >= 4.26.x which uses
+     *     GeneratedMessage.ExtendableMessage.ExtensionWriter instead.
      */
     @Deprecated
     protected class ExtensionWriter extends GeneratedMessage.ExtendableMessage.ExtensionWriter {
@@ -348,8 +383,8 @@ public abstract class GeneratedMessageV3
     /* Returns GeneratedMessageV3.ExtendableMessage.ExtensionWriter instead of GeneratedMessage.ExtendableMessage.ExtensionWriter.
      * 
      * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
-     * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
-     * GeneratedMessage.ExtendableMessage.ExtensionWriter instead of GeneratedMessageV3.ExtendableMessage.ExtensionWriter.
+     * (5.x). Users should update gencode to >= 4.26.x which uses
+     * GeneratedMessage.ExtendableMessage.ExtensionWriter instead.
      */
     @Deprecated
     @Override
@@ -363,8 +398,8 @@ public abstract class GeneratedMessageV3
    * compatibility with older gencode.
    *
    * @deprecated This class is deprecated, and slated for removal in the next Java breaking change
-   *     (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
-   *     GeneratedMessage.ExtendableBuilder instead of GeneratedMessageV3.ExtendableBuilder.
+   *     (5.x). Users should update gencode to >= 4.26.x which uses
+   *     GeneratedMessage.ExtendableBuilder instead.
    */
   @Deprecated
   public abstract static class ExtendableBuilder<
@@ -383,8 +418,13 @@ public abstract class GeneratedMessageV3
       super(parent);
     }
     
-    // Method removed from GeneratedMessage.ExtendableBuilder in
-    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+
+    /* Removed from GeneratedMessage.ExtendableBuilder in
+     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+     * 
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
+     */
     @Deprecated
     @Override
     public final <T> boolean hasExtension(
@@ -392,8 +432,12 @@ public abstract class GeneratedMessageV3
       return hasExtension((ExtensionLite<MessageT, T>) extension);
     }
     
-    // Method removed from GeneratedMessage.ExtendableBuilder in
-    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    /* Removed from GeneratedMessage.ExtendableBuilder in
+     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+     * 
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
+     */
     @Deprecated
     @Override
     public final <T> int getExtensionCount(
@@ -401,8 +445,12 @@ public abstract class GeneratedMessageV3
       return getExtensionCount((ExtensionLite<MessageT, List<T>>) extension);
     }
 
-    // Method removed from GeneratedMessage.ExtendableBuilder in
-    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    /* Removed from GeneratedMessage.ExtendableBuilder in
+     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+     * 
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
+     */
     @Deprecated
     @Override
     public final <T> T getExtension(
@@ -410,8 +458,12 @@ public abstract class GeneratedMessageV3
       return getExtension((ExtensionLite<MessageT, T>) extension);
     }
 
-    // Method removed from GeneratedMessage.ExtendableBuilder in
-    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    /* Removed from GeneratedMessage.ExtendableBuilder in
+     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+     * 
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
+     */
     @Deprecated
     @Override
     public final <T> T getExtension(
@@ -419,16 +471,24 @@ public abstract class GeneratedMessageV3
       return getExtension((ExtensionLite<MessageT, List<T>>) extension, index);
     }
 
-    // Method removed from GeneratedMessage.ExtendableBuilder in
-    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    /* Removed from GeneratedMessage.ExtendableBuilder in
+     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+     * 
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
+     */
     @Deprecated
     public <T> BuilderT setExtension(
         final GeneratedMessage.GeneratedExtension extension, final T value) {
       return setExtension((ExtensionLite<GeneratedMessageV3, T>) extension, value);
     }
 
-    // Method removed from GeneratedMessage.ExtendableBuilder in
-    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    /* Removed from GeneratedMessage.ExtendableBuilder in
+     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+     * 
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
+     */
     @Deprecated
     public <T> BuilderT setExtension(
         final GeneratedMessage.GeneratedExtension extension,
@@ -437,16 +497,24 @@ public abstract class GeneratedMessageV3
       return setExtension((ExtensionLite<GeneratedMessageV3, List<T>>) extension, index, value);
     }
 
-    // Method removed from GeneratedMessage.ExtendableBuilder in
-    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    /* Removed from GeneratedMessage.ExtendableBuilder in
+     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+     * 
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
+     */
     @Deprecated
     public <T> BuilderT addExtension(
         final GeneratedMessage.GeneratedExtension extension, final T value) {
       return addExtension((ExtensionLite<GeneratedMessageV3, List<T>>) extension, value);
     }
 
-    // Method removed from GeneratedMessage.ExtendableBuilder in
-    // https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+    /* Removed from GeneratedMessage.ExtendableBuilder in
+     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
+     * 
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
+     */
     @Deprecated
     public <T> BuilderT clearExtension(
         final GeneratedMessage.GeneratedExtension extension) {
@@ -469,13 +537,13 @@ public abstract class GeneratedMessageV3
       return super.clearField(field);
     }
 
-    // // Gencode method override removed in
-    // // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
-    // @Deprecated
-    // @Override
-    // public BuilderT clearOneof(final OneofDescriptor oneof) {
-    //   return super.clearOneof(oneof);
-    // }
+    // Gencode method override removed in
+    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    @Deprecated
+    @Override
+    public BuilderT clearOneof(final OneofDescriptor oneof) {
+      return super.clearOneof(oneof);
+    }
 
     // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
@@ -502,13 +570,12 @@ public abstract class GeneratedMessageV3
     }
   }
 
-    /**
+  /*
    * Stub for GeneratedMessageV3.FieldAccessorTable wrapping GeneratedMessage.FieldAccessorTable for compatibility with
    * older gencode.
    *
    * @deprecated This class is deprecated, and slated for removal in the next Java breaking change
-   *     (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
-   *     GeneratedMessage.FieldAccessorTable instead of GeneratedMessageV3.FieldAccessorTable.
+   *     (5.x). Users should update gencode to >= 4.26.x which uses GeneratedMessage.FieldAccessorTable instead.
    */
   @Deprecated
   public static final class FieldAccessorTable extends GeneratedMessage.FieldAccessorTable {
@@ -530,8 +597,8 @@ public abstract class GeneratedMessageV3
     /* Returns GeneratedMessageV3.FieldAccessorTable instead of GeneratedMessage.FieldAccessorTable.
      * 
      * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
-     * (5.x in 2025 Q1). Users should update gencode to >= 4.26.x which uses
-     * GeneratedMessage.ensureFieldAccessorsInitialized instead of GeneratedMessageV3.ensureFieldAccessorsInitialized.
+     * (5.x). Users should update gencode to >= 4.26.x which uses
+     * GeneratedMessage.FieldAccessorTable instead.
      */
     @Deprecated
     @Override
