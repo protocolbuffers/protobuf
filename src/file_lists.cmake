@@ -687,6 +687,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/reflection/def.hpp
   ${protobuf_SOURCE_DIR}/upb/reflection/def_pool.h
   ${protobuf_SOURCE_DIR}/upb/reflection/def_type.h
+  ${protobuf_SOURCE_DIR}/upb/reflection/descriptor_bootstrap.h
   ${protobuf_SOURCE_DIR}/upb/reflection/enum_def.h
   ${protobuf_SOURCE_DIR}/upb/reflection/enum_reserved_range.h
   ${protobuf_SOURCE_DIR}/upb/reflection/enum_value_def.h
@@ -741,6 +742,7 @@ set(protoc-gen-upb_hdrs
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.h
   ${protobuf_SOURCE_DIR}/upb_generator/names.h
   ${protobuf_SOURCE_DIR}/upb_generator/plugin.h
+  ${protobuf_SOURCE_DIR}/upb_generator/plugin_bootstrap.h
 )
 
 # @//pkg:protoc-gen-upbdefs
@@ -755,6 +757,7 @@ set(protoc-gen-upbdefs_hdrs
   ${protobuf_SOURCE_DIR}/upb_generator/common.h
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.h
   ${protobuf_SOURCE_DIR}/upb_generator/plugin.h
+  ${protobuf_SOURCE_DIR}/upb_generator/plugin_bootstrap.h
 )
 
 # @//pkg:protoc-gen-upb_minitable
@@ -772,6 +775,7 @@ set(protoc-gen-upb_minitable_hdrs
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.h
   ${protobuf_SOURCE_DIR}/upb_generator/names.h
   ${protobuf_SOURCE_DIR}/upb_generator/plugin.h
+  ${protobuf_SOURCE_DIR}/upb_generator/plugin_bootstrap.h
   ${protobuf_SOURCE_DIR}/upb_generator/protoc-gen-upb_minitable.h
 )
 
