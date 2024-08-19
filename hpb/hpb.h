@@ -16,6 +16,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/hpb/internal/internal.h"
+#include "google/protobuf/hpb/internal/message_lock.h"
 #include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/ptr.h"
 #include "upb/base/status.hpp"
@@ -140,12 +141,6 @@ bool HasExtensionOrUnknown(const upb_Message* msg,
 
 bool GetOrPromoteExtension(upb_Message* msg, const upb_MiniTableExtension* eid,
                            upb_Arena* arena, upb_MessageValue* value);
-
-void DeepCopy(upb_Message* target, const upb_Message* source,
-              const upb_MiniTable* mini_table, upb_Arena* arena);
-
-upb_Message* DeepClone(const upb_Message* source,
-                       const upb_MiniTable* mini_table, upb_Arena* arena);
 
 absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
                            const upb_MiniTableExtension* ext,
@@ -327,15 +322,15 @@ typename T::Proxy CreateMessage(::hpb::Arena& arena) {
 template <typename T>
 typename T::Proxy CloneMessage(Ptr<T> message, upb_Arena* arena) {
   return ::hpb::internal::PrivateAccess::Proxy<T>(
-      ::hpb::internal::DeepClone(::hpb::internal::GetInternalMsg(message),
-                                 T::minitable(), arena),
+      ::hpb::internal::LockedDeepClone(::hpb::internal::GetInternalMsg(message),
+                                       T::minitable(), arena),
       arena);
 }
 
 template <typename T>
 void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
   static_assert(!std::is_const_v<T>);
-  ::hpb::internal::DeepCopy(
+  ::hpb::internal::LockedDeepCopy(
       hpb::internal::GetInternalMsg(target_message),
       hpb::internal::GetInternalMsg(source_message), T::minitable(),
       static_cast<upb_Arena*>(target_message->GetInternalArena()));

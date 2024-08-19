@@ -68,7 +68,7 @@
 # upb_c_proto_library(
 #     name = "test_model_upb_proto",
 #     visibility = [
-#         "//hpb:__pkg__",
+#         "//hpb:__subpackages__",
 #         "//protos:__pkg__",
 #     ],
 #     deps = [":test_model_proto"],
@@ -77,7 +77,7 @@
 # upb_cc_proto_library(
 #     name = "test_model_upb_cc_proto",
 #     visibility = [
-#         "//hpb:__pkg__",
+#         "//hpb:__subpackages__",
 #         "//protos:__pkg__",
 #     ],
 #     deps = [":test_model_proto"],

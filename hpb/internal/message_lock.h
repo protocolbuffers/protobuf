@@ -10,7 +10,19 @@
 
 #include <atomic>
 
+#include "upb/mini_table/message.h"
+
+class upb_Message;
+class upb_MiniTable;
+class upb_Arena;
+
 namespace hpb::internal {
+
+upb_Message* LockedDeepClone(const upb_Message* source,
+                             const upb_MiniTable* mini_table, upb_Arena* arena);
+
+void LockedDeepCopy(upb_Message* target, const upb_Message* source,
+                    const upb_MiniTable* mini_table, upb_Arena* arena);
 
 // TODO: Temporary locking api for cross-language
 // concurrency issue around extension api that uses lazy promotion
@@ -26,6 +38,29 @@ using UpbExtensionLocker = UpbExtensionUnlocker (*)(const void*);
 // TODO: Expose as function instead of global.
 extern std::atomic<UpbExtensionLocker> upb_extension_locker_global;
 
+/**
+ * MessageLock(msg) acquires lock on msg when constructed and releases it when
+ * destroyed.
+ */
+class MessageLock {
+ public:
+  explicit MessageLock(const upb_Message* msg) : msg_(msg) {
+    UpbExtensionLocker locker =
+        upb_extension_locker_global.load(std::memory_order_acquire);
+    unlocker_ = (locker != nullptr) ? locker(msg) : nullptr;
+  }
+  MessageLock(const MessageLock&) = delete;
+  void operator=(const MessageLock&) = delete;
+  ~MessageLock() {
+    if (unlocker_ != nullptr) {
+      unlocker_(msg_);
+    }
+  }
+
+ private:
+  const upb_Message* msg_;
+  UpbExtensionUnlocker unlocker_;
+};
 }  // namespace hpb::internal
 
 #endif  // PROTOBUF_HPB_EXTENSION_LOCK_H_
