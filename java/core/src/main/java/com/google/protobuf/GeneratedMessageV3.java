@@ -384,7 +384,7 @@ public abstract class GeneratedMessageV3
      * 
      * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
      * (5.x). Users should update gencode to >= 4.26.x which uses
-     * GeneratedMessage.ExtendableMessage.ExtensionWriter instead.
+     * GeneratedMessage.ExtendableMessage.newExtensionWriter() instead.
      */
     @Deprecated
     @Override
@@ -396,7 +396,7 @@ public abstract class GeneratedMessageV3
      * 
      * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
      * (5.x). Users should update gencode to >= 4.26.x which uses
-     * GeneratedMessage.ExtendableMessage.ExtensionWriter instead.
+     * GeneratedMessage.ExtendableMessage.newMessageSetExtensionWriter() instead.
      */
     @Deprecated
     @Override
@@ -574,10 +574,16 @@ public abstract class GeneratedMessageV3
       return super.addRepeatedField(field, value);
     }
 
+
+    @Override
+    protected void foo() {
+      super.foo();
+    }
+
     /* Stub for reference from generated code */
     @Deprecated
     // @Override // TODO: Why does Override annotation not work?
-    protected final void mergeExtensionFields(final ExtendableMessage<?> other) {
+    protected void mergeExtensionFields(final ExtendableMessage<?> other) {
       super.mergeExtensionFields(other);
     }
   }

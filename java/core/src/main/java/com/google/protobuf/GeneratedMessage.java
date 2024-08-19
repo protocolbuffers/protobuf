@@ -1309,7 +1309,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
     /** Set the value of an extension. */
     public final <T> BuilderT setExtension(
-        final ExtensionLite<MessageT, T> extensionLite, final T value) {
+        final ExtensionLite<? extends MessageT, T> extensionLite, final T value) {
       Extension<MessageT, T> extension = checkNotLite(extensionLite);
 
       verifyExtensionContainingType(extension);
@@ -1561,6 +1561,10 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       } else {
         return super.newBuilderForField(field);
       }
+    }
+
+    protected void foo() {
+      return;
     }
 
     protected void mergeExtensionFields(final ExtendableMessage<?> other) {

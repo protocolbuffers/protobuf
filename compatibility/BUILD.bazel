@@ -6,6 +6,9 @@
 
 load("//compatibility:runtime_conformance.bzl", "java_runtime_conformance")
 
+package(
+    default_visibility = ["//visibility:public"],
+)
 # main gencode builds with main runtime as a proof of concept.
 java_runtime_conformance(
     name = "java_conformance_main",
@@ -26,10 +29,12 @@ java_test(
     deps = [
         ":libconformance_v3.25.0_lib.jar",
         "//java/core",
+        "//java/core:test_util",
         "@maven//:junit_junit",
         "@maven//:com_google_truth_truth",
     ],
 )
+
 
 java_test(
     name = "java_conformance_unittest_v3.25.0",
@@ -39,6 +44,7 @@ java_test(
     deps = [
         ":conformance_v3.25.0_lib",
         "//java/core",
+        "//java/core:test_util",
         "@maven//:junit_junit",
         "@maven//:com_google_truth_truth",
     ],

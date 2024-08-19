@@ -229,9 +229,8 @@ crate_repositories()
 # For testing runtime against old gencode from a previous major version.
 http_archive(
     name = "com_google_protobuf_v25.0",
-    strip_prefix = "protobuf-25.0",
-    url = "https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz",
-    sha256 = "7beed9c511d632cff7c22ac0094dd7720e550153039d5da7e059bcceb488474a",
+    strip_prefix = "protobuf-b43602626257300eadd9adabc1db5d8ae4dce89a", # 25.x commit with public visibility for //java/core test java_proto_library 
+    url = "https://github.com/protocolbuffers/protobuf/archive/b43602626257300eadd9adabc1db5d8ae4dce89a.zip",
 )
 
 load("@com_google_protobuf_v25.0//:protobuf_deps.bzl", protobuf_v25_deps="protobuf_deps")
