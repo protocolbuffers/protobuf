@@ -198,3 +198,14 @@ crates_repository(
 
 load("@crate_index//:defs.bzl", "crate_repositories")
 crate_repositories()
+
+# For testing previous major version against latest runtime.
+http_archive(
+    name = "com_google_protobuf_head",
+    strip_prefix = "protobuf-35aa857de8e99174c9a4c23e9b9e4cb64785f5f0",
+    url = "https://github.com/protocolbuffers/protobuf/archive/35aa857de8e99174c9a4c23e9b9e4cb64785f5f0.zip",
+)
+
+# Load protobuf_deps from head.
+load("@com_google_protobuf_head//:protobuf_deps.bzl", protobuf_head_deps="protobuf_deps")
+protobuf_head_deps()
