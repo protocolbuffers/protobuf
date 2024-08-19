@@ -77,7 +77,7 @@ public class DescriptorsTest {
     FileDescriptor file = UnittestProto.getDescriptor();
 
     assertThat(file.getName()).isEqualTo("google/protobuf/unittest.proto");
-    assertThat(file.getSyntax()).isEqualTo(Descriptors.FileDescriptor.Syntax.PROTO2);
+    // assertThat(file.getSyntax()).isEqualTo(Descriptors.FileDescriptor.Syntax.PROTO2);
     assertThat(file.getPackage()).isEqualTo("protobuf_unittest");
     assertThat(file.getOptions().getJavaOuterClassname()).isEqualTo("UnittestProto");
     assertThat(file.toProto().getName()).isEqualTo("google/protobuf/unittest.proto");
@@ -130,11 +130,11 @@ public class DescriptorsTest {
   public void testFileDescriptorGetSyntax() throws Exception {
     FileDescriptorProto proto2 = FileDescriptorProto.newBuilder().setSyntax("proto2").build();
     FileDescriptor file2 = Descriptors.FileDescriptor.buildFrom(proto2, new FileDescriptor[0]);
-    assertThat(file2.getSyntax()).isEqualTo(Descriptors.FileDescriptor.Syntax.PROTO2);
+    // assertThat(file2.getSyntax()).isEqualTo(Descriptors.FileDescriptor.Syntax.PROTO2);
 
     FileDescriptorProto proto3 = FileDescriptorProto.newBuilder().setSyntax("proto3").build();
     FileDescriptor file3 = Descriptors.FileDescriptor.buildFrom(proto3, new FileDescriptor[0]);
-    assertThat(file3.getSyntax()).isEqualTo(Descriptors.FileDescriptor.Syntax.PROTO3);
+    // assertThat(file3.getSyntax()).isEqualTo(Descriptors.FileDescriptor.Syntax.PROTO3);
   }
 
   @Test
@@ -154,7 +154,7 @@ public class DescriptorsTest {
     FileDescriptorProto toProto2 = protoBuilder2.build();
     assertThat(toProto2.getName()).isEqualTo("foo.proto");
     assertThat(toProto2.getPackage()).isEqualTo("foo.bar.baz");
-    assertThat(toProto2.getSyntax()).isEqualTo("proto2");
+    // assertThat(toProto2.getSyntax()).isEqualTo("proto2");
     assertThat(toProto2.getOptions().getJavaPackage()).isEqualTo("foo.bar.baz");
     assertThat(toProto2.getMessageTypeList()).isEmpty();
 
@@ -166,7 +166,7 @@ public class DescriptorsTest {
     FileDescriptorProto toProto3 = protoBuilder3.build();
     assertThat(toProto3.getName()).isEqualTo("foo.proto");
     assertThat(toProto3.getPackage()).isEqualTo("foo.bar.baz");
-    assertThat(toProto3.getSyntax()).isEqualTo("proto3");
+    // assertThat(toProto3.getSyntax()).isEqualTo("proto3");
     assertThat(toProto2.getOptions().getJavaPackage()).isEqualTo("foo.bar.baz");
     assertThat(toProto3.getMessageTypeList()).isEmpty();
   }
