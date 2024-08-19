@@ -55,6 +55,7 @@ cc_library(
     deps = [
         ":extension_lock",
         "//hpb:ptr",
+        "//hpb/internal",
         "//hpb/internal:template_help",
         "//upb:base",
         "//upb:mem",
