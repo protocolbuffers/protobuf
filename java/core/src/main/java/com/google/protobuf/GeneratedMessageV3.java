@@ -391,6 +391,18 @@ public abstract class GeneratedMessageV3
     protected ExtensionWriter newExtensionWriter() {
       return new ExtensionWriter(false);
     }
+
+    /* Returns GeneratedMessageV3.ExtendableMessage.ExtensionWriter instead of GeneratedMessage.ExtendableMessage.ExtensionWriter.
+     * 
+     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+     * (5.x). Users should update gencode to >= 4.26.x which uses
+     * GeneratedMessage.ExtendableMessage.ExtensionWriter instead.
+     */
+    @Deprecated
+    @Override
+    protected ExtensionWriter newMessageSetExtensionWriter() {
+      return new ExtensionWriter(true);
+    }
   }
 
   /**
