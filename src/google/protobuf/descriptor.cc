@@ -8922,11 +8922,12 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
         new UnknownFieldSet());
     switch ((*iter)->type()) {
       case FieldDescriptor::TYPE_MESSAGE: {
-        std::string* outstr =
-            parent_unknown_fields->AddLengthDelimited((*iter)->number());
-        ABSL_CHECK(unknown_fields->SerializeToString(outstr))
+        std::string outstr;
+        ABSL_CHECK(unknown_fields->SerializeToString(&outstr))
             << "Unexpected failure while serializing option submessage "
             << debug_msg_name << "\".";
+        parent_unknown_fields->AddLengthDelimited((*iter)->number(),
+                                                  std::move(outstr));
         break;
       }
 
