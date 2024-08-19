@@ -27,5 +27,6 @@ cc_library(
     deps = [
         "//upb:mem",
         "//upb:message",
+        "//upb:mini_table",
     ],
 )

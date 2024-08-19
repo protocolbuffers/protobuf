@@ -141,12 +141,6 @@ bool HasExtensionOrUnknown(const upb_Message* msg,
 bool GetOrPromoteExtension(upb_Message* msg, const upb_MiniTableExtension* eid,
                            upb_Arena* arena, upb_MessageValue* value);
 
-void DeepCopy(upb_Message* target, const upb_Message* source,
-              const upb_MiniTable* mini_table, upb_Arena* arena);
-
-upb_Message* DeepClone(const upb_Message* source,
-                       const upb_MiniTable* mini_table, upb_Arena* arena);
-
 absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
                            const upb_MiniTableExtension* ext,
                            upb_Message* extension, upb_Arena* extension_arena);

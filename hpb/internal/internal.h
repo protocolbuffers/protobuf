@@ -6,6 +6,7 @@
 
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/message.h"
 
 namespace hpb::internal {
 
@@ -47,6 +48,12 @@ template <typename T>
 typename T::CProxy CreateMessage(const upb_Message* msg, upb_Arena* arena) {
   return PrivateAccess::CProxy<T>(msg, arena);
 }
+
+upb_Message* DeepClone(const upb_Message* source,
+                       const upb_MiniTable* mini_table, upb_Arena* arena);
+
+void DeepCopy(upb_Message* target, const upb_Message* source,
+              const upb_MiniTable* mini_table, upb_Arena* arena);
 
 }  // namespace hpb::internal
 
