@@ -147,7 +147,7 @@ void WriteRepeatedMessageAccessor(const protobuf::Descriptor* message,
         absl::StatusOr<$1> $0::add_$2() {
           auto new_msg = $3_add_$6(msg_, $5);
           if (!new_msg) {
-            return ::protos::MessageAllocationError();
+            return ::hpb::MessageAllocationError();
           }
           return ::hpb::internal::CreateMessageProxy<$4>((upb_Message*)new_msg, $5);
         }
