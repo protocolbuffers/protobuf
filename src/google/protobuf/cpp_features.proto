@@ -27,10 +27,10 @@ message CppFeatures {
     feature_support = {
       edition_introduced: EDITION_2023,
       edition_deprecated: EDITION_2023,
-      deprecation_warning: "The legacy closed enum treatment in C++ is "
+      deprecation_warning: "The legacy closed enum behavior in C++ is "
                            "deprecated and is scheduled to be removed in "
-                           "edition 2025.  Mark enum type on the enum "
-                           "definitions themselves rather than on fields.",
+                           "edition 2025.  See http://protobuf.dev/programming-guides/enum/#cpp for "
+                           "more information",
     },
     edition_defaults = { edition: EDITION_LEGACY, value: "true" },
     edition_defaults = { edition: EDITION_PROTO3, value: "false" }

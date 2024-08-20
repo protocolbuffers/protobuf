@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/message_lite.h"

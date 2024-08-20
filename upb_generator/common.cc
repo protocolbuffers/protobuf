@@ -75,12 +75,36 @@ std::string FileLayoutName(upb::FileDefPtr file) {
   return ToCIdent(file.name()) + "_upb_file_layout";
 }
 
-std::string CApiHeaderFilename(upb::FileDefPtr file) {
+bool HasFilename(upb::FileDefPtr file, absl::string_view filename) {
+  return file.name() == filename;
+}
+
+bool IsDescriptorProto(upb::FileDefPtr file) {
+  return HasFilename(file, "net/proto2/proto/descriptor.proto") ||
+         HasFilename(file, "google/protobuf/descriptor.proto");
+}
+
+std::string CApiHeaderFilename(upb::FileDefPtr file, bool bootstrap) {
+  if (bootstrap) {
+    if (IsDescriptorProto(file)) {
+      return "upb/reflection/descriptor_bootstrap.h";
+    } else {
+      return "upb_generator/plugin_bootstrap.h";
+    }
+  }
   return StripExtension(file.name()) + ".upb.h";
 }
 
-std::string MiniTableHeaderFilename(upb::FileDefPtr file) {
-  return StripExtension(file.name()) + ".upb_minitable.h";
+std::string MiniTableHeaderFilename(upb::FileDefPtr file, bool bootstrap) {
+  std::string base;
+  if (bootstrap) {
+    if (IsDescriptorProto(file)) {
+      base = "upb/reflection/stage1/";
+    } else {
+      base = "upb_generator/stage1/";
+    }
+  }
+  return base + StripExtension(file.name()) + ".upb_minitable.h";
 }
 
 std::string EnumInit(upb::EnumDefPtr descriptor) {

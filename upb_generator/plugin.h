@@ -17,26 +17,13 @@
 #include <io.h>
 #endif
 
-// begin:google_only
-// #ifndef UPB_BOOTSTRAP_STAGE0
-// #include "google/protobuf/descriptor.upb.h"
-// #include "google/protobuf/compiler/plugin.upb.h"
-// #else
-// #include "google/protobuf/compiler/plugin.upb.h"
-// #include "google/protobuf/descriptor.upb.h"
-// #endif
-// end:google_only
-
-// begin:github_only
-#include "google/protobuf/compiler/plugin.upb.h"
-#include "google/protobuf/descriptor.upb.h"
-// end:github_only
-
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "upb/reflection/def.hpp"
+#include "upb/reflection/descriptor_bootstrap.h"
+#include "upb_generator/plugin_bootstrap.h"
 
 // Must be last.
 #include "upb/port/def.inc"

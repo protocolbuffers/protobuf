@@ -106,7 +106,7 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
   private boolean isImmutable;
   // The EntrySet is a stateless view of the Map. It's initialized the first
   // time it is requested and reused henceforth.
-  private EntrySet lazyEntrySet;
+  private volatile EntrySet lazyEntrySet;
   private Map<K, V> overflowEntriesDescending;
 
   private SmallSortedMap() {

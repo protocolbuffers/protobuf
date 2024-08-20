@@ -15,6 +15,9 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/hpb/internal/internal.h"
+#include "google/protobuf/hpb/internal/template_help.h"
+#include "google/protobuf/hpb/ptr.h"
 #include "upb/base/status.hpp"
 #include "upb/mem/arena.hpp"
 #include "upb/message/copy.h"
@@ -25,63 +28,6 @@
 namespace hpb {
 class ExtensionRegistry;
 using Arena = ::upb::Arena;
-
-template <typename T>
-using Proxy = std::conditional_t<std::is_const<T>::value,
-                                 typename std::remove_const_t<T>::CProxy,
-                                 typename T::Proxy>;
-
-// Provides convenient access to Proxy and CProxy message types.
-//
-// Using rebinding and handling of const, Ptr<Message> and Ptr<const Message>
-// allows copying const with T* const and avoids using non-copyable Proxy types
-// directly.
-template <typename T>
-class Ptr final {
- public:
-  Ptr() = delete;
-
-  // Implicit conversions
-  Ptr(T* m) : p_(m) {}                // NOLINT
-  Ptr(const Proxy<T>* p) : p_(*p) {}  // NOLINT
-  Ptr(Proxy<T> p) : p_(p) {}          // NOLINT
-  Ptr(const Ptr& m) = default;
-
-  Ptr& operator=(Ptr v) & {
-    Proxy<T>::Rebind(p_, v.p_);
-    return *this;
-  }
-
-  Proxy<T> operator*() const { return p_; }
-  Proxy<T>* operator->() const {
-    return const_cast<Proxy<T>*>(std::addressof(p_));
-  }
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wclass-conversion"
-#endif
-  template <typename U = T, std::enable_if_t<!std::is_const<U>::value, int> = 0>
-  operator Ptr<const T>() const {
-    Proxy<const T> p(p_);
-    return Ptr<const T>(&p);
-  }
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
- private:
-  Ptr(upb_Message* msg, upb_Arena* arena) : p_(msg, arena) {}  // NOLINT
-
-  friend class Ptr<const T>;
-  friend typename T::Access;
-
-  Proxy<T> p_;
-};
-
-// Suppress -Wctad-maybe-unsupported with our manual deduction guide
-template <typename T>
-Ptr(T* m) -> Ptr<T>;
 
 // TODO: b/354766950 - Move upb-specific chunks out of hpb header
 inline absl::string_view UpbStrToStringView(upb_StringView str) {
@@ -124,78 +70,6 @@ absl::Status MessageEncodeError(upb_EncodeStatus status,
                                 SourceLocation loc = SourceLocation::current());
 
 namespace internal {
-template <typename T>
-struct RemovePtr;
-
-template <typename T>
-struct RemovePtr<Ptr<T>> {
-  using type = T;
-};
-
-template <typename T>
-struct RemovePtr<T*> {
-  using type = T;
-};
-
-template <typename T>
-using RemovePtrT = typename RemovePtr<T>::type;
-
-template <typename T, typename U = RemovePtrT<T>,
-          typename = std::enable_if_t<!std::is_const_v<U>>>
-using PtrOrRaw = T;
-
-template <typename T>
-using EnableIfHpbClass = std::enable_if_t<
-    std::is_base_of<typename T::Access, T>::value &&
-    std::is_base_of<typename T::Access, typename T::ExtendableType>::value>;
-
-template <typename T>
-using EnableIfMutableProto = std::enable_if_t<!std::is_const<T>::value>;
-
-struct PrivateAccess {
-  template <typename T>
-  static auto* GetInternalMsg(T&& message) {
-    return message->msg();
-  }
-  template <typename T>
-  static auto Proxy(upb_Message* p, upb_Arena* arena) {
-    return typename T::Proxy(p, arena);
-  }
-  template <typename T>
-  static auto CProxy(const upb_Message* p, upb_Arena* arena) {
-    return typename T::CProxy(p, arena);
-  }
-  template <typename T>
-  static auto CreateMessage(upb_Arena* arena) {
-    return typename T::Proxy(upb_Message_New(T::minitable(), arena), arena);
-  }
-
-  template <typename ExtensionId>
-  static constexpr uint32_t GetExtensionNumber(const ExtensionId& id) {
-    return id.number();
-  }
-};
-
-template <typename T>
-auto* GetInternalMsg(T&& message) {
-  return PrivateAccess::GetInternalMsg(std::forward<T>(message));
-}
-
-template <typename T>
-T CreateMessage() {
-  return T();
-}
-
-template <typename T>
-typename T::Proxy CreateMessageProxy(upb_Message* msg, upb_Arena* arena) {
-  return typename T::Proxy(msg, arena);
-}
-
-template <typename T>
-typename T::CProxy CreateMessage(const upb_Message* msg, upb_Arena* arena) {
-  return PrivateAccess::CProxy<T>(msg, arena);
-}
-
 class ExtensionMiniTableProvider {
  public:
   constexpr explicit ExtensionMiniTableProvider(

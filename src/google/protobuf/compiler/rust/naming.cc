@@ -78,37 +78,47 @@ std::string RawMapThunk(Context& ctx, const EnumDescriptor& desc,
 namespace {
 
 template <typename T>
-std::string FieldPrefix(Context& ctx, const T& field) {
-  // NOTE: When ctx.is_upb(), this functions outputs must match the symbols
-  // that the upbc plugin generates exactly. Failure to do so correctly results
-  // in a link-time failure.
-  absl::string_view prefix = ctx.is_cpp() ? "proto2_rust_thunk_" : "";
-  std::string thunk_prefix = absl::StrCat(
-      prefix, GetUnderscoreDelimitedFullName(ctx, *field.containing_type()));
-  return thunk_prefix;
-}
-
-template <typename T>
-std::string ThunkName(Context& ctx, const T& field, absl::string_view op) {
-  std::string thunkName = FieldPrefix(ctx, field);
+std::string ThunkNameUpb(Context& ctx, const T& field, absl::string_view op) {
+  ABSL_CHECK(ctx.is_upb());
 
   absl::string_view format;
-  if (ctx.is_upb() && op == "get") {
+
+  // NOTE: this function's outputs must match the symbols
+  // that the upbc plugin generates exactly. Failure to do so correctly
+  // will result in a link-time failure.
+  if (op == "get") {
     // upb getter is simply the field name (no "get" in the name).
     format = "_$1";
-  } else if (ctx.is_upb() && op == "get_mut") {
+  } else if (op == "get_mut") {
     // same as above, with with `mutable` prefix
     format = "_mutable_$1";
-  } else if (ctx.is_upb() && op == "case") {
-    // some upb functions are in the order x_op compared to has/set/clear which
-    // are in the other order e.g. op_x.
+  } else if (op == "case") {
+    // some upb functions are in the order x_op compared to has/set/clear
+    // which are in the other order e.g. op_x.
     format = "_$1_$0";
   } else {
     format = "_$0_$1";
   }
+  return absl::StrCat(
+      GetUnderscoreDelimitedFullName(ctx, *field.containing_type()),
+      absl::Substitute(format, op, field.name()));
+}
 
-  absl::SubstituteAndAppend(&thunkName, format, op, field.name());
-  return thunkName;
+template <typename T>
+std::string ThunkNameCpp(Context& ctx, const T& field, absl::string_view op) {
+  ABSL_CHECK(ctx.is_cpp());
+  return absl::StrCat("proto2_rust_thunk_",
+                      UnderscoreDelimitFullName(ctx, field.full_name()), "_",
+                      op);
+}
+
+template <typename T>
+std::string ThunkName(Context& ctx, const T& field, absl::string_view op) {
+  if (ctx.is_upb()) {
+    return ThunkNameUpb(ctx, field, op);
+  } else {
+    return ThunkNameCpp(ctx, field, op);
+  }
 }
 
 std::string ThunkMapOrRepeated(Context& ctx, const FieldDescriptor& field,
@@ -117,7 +127,6 @@ std::string ThunkMapOrRepeated(Context& ctx, const FieldDescriptor& field,
     return ThunkName<FieldDescriptor>(ctx, field, op);
   }
 
-  std::string thunkName = absl::StrCat("_", FieldPrefix(ctx, field));
   absl::string_view format;
   if (op == "get") {
     format = field.is_map() ? "_$1_upb_map" : "_$1_upb_array";
@@ -127,6 +136,8 @@ std::string ThunkMapOrRepeated(Context& ctx, const FieldDescriptor& field,
     return ThunkName<FieldDescriptor>(ctx, field, op);
   }
 
+  std::string thunkName = absl::StrCat(
+      "_", GetUnderscoreDelimitedFullName(ctx, *field.containing_type()));
   absl::SubstituteAndAppend(&thunkName, format, op, field.name());
   return thunkName;
 }
@@ -148,7 +159,7 @@ std::string ThunkName(Context& ctx, const OneofDescriptor& field,
 
 std::string ThunkName(Context& ctx, const Descriptor& msg,
                       absl::string_view op) {
-  absl::string_view prefix = ctx.is_cpp() ? "proto2_rust_thunk_" : "";
+  absl::string_view prefix = ctx.is_cpp() ? "proto2_rust_thunk_Message_" : "";
   return absl::StrCat(prefix, GetUnderscoreDelimitedFullName(ctx, msg), "_",
                       op);
 }

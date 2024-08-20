@@ -18,13 +18,13 @@
 extern "C" {
 #endif
 
-extern const upb_MiniTable* google__protobuf__compiler__Version_msg_init();
-extern const upb_MiniTable* google__protobuf__compiler__CodeGeneratorRequest_msg_init();
-extern const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse_msg_init();
-extern const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse__File_msg_init();
-extern const upb_MiniTable* google__protobuf__FileDescriptorProto_msg_init();
-extern const upb_MiniTable* google__protobuf__GeneratedCodeInfo_msg_init();
-extern const upb_MiniTableEnum* google_protobuf_compiler_CodeGeneratorResponse_Feature_enum_init();
+extern const upb_MiniTable* google__protobuf__compiler__Version_msg_init(void);
+extern const upb_MiniTable* google__protobuf__compiler__CodeGeneratorRequest_msg_init(void);
+extern const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse_msg_init(void);
+extern const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse__File_msg_init(void);
+extern const upb_MiniTable* google__protobuf__FileDescriptorProto_msg_init(void);
+extern const upb_MiniTable* google__protobuf__GeneratedCodeInfo_msg_init(void);
+extern const upb_MiniTableEnum* google_protobuf_compiler_CodeGeneratorResponse_Feature_enum_init(void);
 
 typedef struct google_protobuf_compiler_Version { upb_Message UPB_PRIVATE(base); } google_protobuf_compiler_Version;
 typedef struct google_protobuf_compiler_CodeGeneratorRequest { upb_Message UPB_PRIVATE(base); } google_protobuf_compiler_CodeGeneratorRequest;

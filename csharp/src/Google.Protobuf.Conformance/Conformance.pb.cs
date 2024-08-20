@@ -25,34 +25,35 @@ namespace Conformance {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Ch1jb25mb3JtYW5jZS9jb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2Ui",
-            "MwoKVGVzdFN0YXR1cxIMCgRuYW1lGAEgASgJEhcKD2ZhaWx1cmVfbWVzc2Fn",
-            "ZRgCIAEoCSI5CgpGYWlsdXJlU2V0EiUKBHRlc3QYAiADKAsyFy5jb25mb3Jt",
-            "YW5jZS5UZXN0U3RhdHVzSgQIARACIuMCChJDb25mb3JtYW5jZVJlcXVlc3QS",
-            "GgoQcHJvdG9idWZfcGF5bG9hZBgBIAEoDEgAEhYKDGpzb25fcGF5bG9hZBgC",
-            "IAEoCUgAEhYKDGpzcGJfcGF5bG9hZBgHIAEoCUgAEhYKDHRleHRfcGF5bG9h",
-            "ZBgIIAEoCUgAEjgKF3JlcXVlc3RlZF9vdXRwdXRfZm9ybWF0GAMgASgOMhcu",
-            "Y29uZm9ybWFuY2UuV2lyZUZvcm1hdBIUCgxtZXNzYWdlX3R5cGUYBCABKAkS",
-            "MAoNdGVzdF9jYXRlZ29yeRgFIAEoDjIZLmNvbmZvcm1hbmNlLlRlc3RDYXRl",
-            "Z29yeRI+ChVqc3BiX2VuY29kaW5nX29wdGlvbnMYBiABKAsyHy5jb25mb3Jt",
-            "YW5jZS5Kc3BiRW5jb2RpbmdDb25maWcSHAoUcHJpbnRfdW5rbm93bl9maWVs",
-            "ZHMYCSABKAhCCQoHcGF5bG9hZCL6AQoTQ29uZm9ybWFuY2VSZXNwb25zZRIV",
-            "CgtwYXJzZV9lcnJvchgBIAEoCUgAEhkKD3NlcmlhbGl6ZV9lcnJvchgGIAEo",
-            "CUgAEhcKDXRpbWVvdXRfZXJyb3IYCSABKAlIABIXCg1ydW50aW1lX2Vycm9y",
-            "GAIgASgJSAASGgoQcHJvdG9idWZfcGF5bG9hZBgDIAEoDEgAEhYKDGpzb25f",
-            "cGF5bG9hZBgEIAEoCUgAEhEKB3NraXBwZWQYBSABKAlIABIWCgxqc3BiX3Bh",
-            "eWxvYWQYByABKAlIABIWCgx0ZXh0X3BheWxvYWQYCCABKAlIAEIICgZyZXN1",
-            "bHQiNwoSSnNwYkVuY29kaW5nQ29uZmlnEiEKGXVzZV9qc3BiX2FycmF5X2Fu",
-            "eV9mb3JtYXQYASABKAgqUAoKV2lyZUZvcm1hdBIPCgtVTlNQRUNJRklFRBAA",
-            "EgwKCFBST1RPQlVGEAESCAoESlNPThACEggKBEpTUEIQAxIPCgtURVhUX0ZP",
-            "Uk1BVBAEKo8BCgxUZXN0Q2F0ZWdvcnkSFAoQVU5TUEVDSUZJRURfVEVTVBAA",
-            "Eg8KC0JJTkFSWV9URVNUEAESDQoJSlNPTl9URVNUEAISJAogSlNPTl9JR05P",
-            "UkVfVU5LTk9XTl9QQVJTSU5HX1RFU1QQAxINCglKU1BCX1RFU1QQBBIUChBU",
-            "RVhUX0ZPUk1BVF9URVNUEAVCLwofY29tLmdvb2dsZS5wcm90b2J1Zi5jb25m",
-            "b3JtYW5jZaICC0NvbmZvcm1hbmNlYgZwcm90bzM="));
+            "SQoKVGVzdFN0YXR1cxIMCgRuYW1lGAEgASgJEhcKD2ZhaWx1cmVfbWVzc2Fn",
+            "ZRgCIAEoCRIUCgxtYXRjaGVkX25hbWUYAyABKAkiOQoKRmFpbHVyZVNldBIl",
+            "CgR0ZXN0GAIgAygLMhcuY29uZm9ybWFuY2UuVGVzdFN0YXR1c0oECAEQAiLj",
+            "AgoSQ29uZm9ybWFuY2VSZXF1ZXN0EhoKEHByb3RvYnVmX3BheWxvYWQYASAB",
+            "KAxIABIWCgxqc29uX3BheWxvYWQYAiABKAlIABIWCgxqc3BiX3BheWxvYWQY",
+            "ByABKAlIABIWCgx0ZXh0X3BheWxvYWQYCCABKAlIABI4ChdyZXF1ZXN0ZWRf",
+            "b3V0cHV0X2Zvcm1hdBgDIAEoDjIXLmNvbmZvcm1hbmNlLldpcmVGb3JtYXQS",
+            "FAoMbWVzc2FnZV90eXBlGAQgASgJEjAKDXRlc3RfY2F0ZWdvcnkYBSABKA4y",
+            "GS5jb25mb3JtYW5jZS5UZXN0Q2F0ZWdvcnkSPgoVanNwYl9lbmNvZGluZ19v",
+            "cHRpb25zGAYgASgLMh8uY29uZm9ybWFuY2UuSnNwYkVuY29kaW5nQ29uZmln",
+            "EhwKFHByaW50X3Vua25vd25fZmllbGRzGAkgASgIQgkKB3BheWxvYWQi+gEK",
+            "E0NvbmZvcm1hbmNlUmVzcG9uc2USFQoLcGFyc2VfZXJyb3IYASABKAlIABIZ",
+            "Cg9zZXJpYWxpemVfZXJyb3IYBiABKAlIABIXCg10aW1lb3V0X2Vycm9yGAkg",
+            "ASgJSAASFwoNcnVudGltZV9lcnJvchgCIAEoCUgAEhoKEHByb3RvYnVmX3Bh",
+            "eWxvYWQYAyABKAxIABIWCgxqc29uX3BheWxvYWQYBCABKAlIABIRCgdza2lw",
+            "cGVkGAUgASgJSAASFgoManNwYl9wYXlsb2FkGAcgASgJSAASFgoMdGV4dF9w",
+            "YXlsb2FkGAggASgJSABCCAoGcmVzdWx0IjcKEkpzcGJFbmNvZGluZ0NvbmZp",
+            "ZxIhChl1c2VfanNwYl9hcnJheV9hbnlfZm9ybWF0GAEgASgIKlAKCldpcmVG",
+            "b3JtYXQSDwoLVU5TUEVDSUZJRUQQABIMCghQUk9UT0JVRhABEggKBEpTT04Q",
+            "AhIICgRKU1BCEAMSDwoLVEVYVF9GT1JNQVQQBCqPAQoMVGVzdENhdGVnb3J5",
+            "EhQKEFVOU1BFQ0lGSUVEX1RFU1QQABIPCgtCSU5BUllfVEVTVBABEg0KCUpT",
+            "T05fVEVTVBACEiQKIEpTT05fSUdOT1JFX1VOS05PV05fUEFSU0lOR19URVNU",
+            "EAMSDQoJSlNQQl9URVNUEAQSFAoQVEVYVF9GT1JNQVRfVEVTVBAFQi8KH2Nv",
+            "bS5nb29nbGUucHJvdG9idWYuY29uZm9ybWFuY2WiAgtDb25mb3JtYW5jZWIG",
+            "cHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Conformance.WireFormat), typeof(global::Conformance.TestCategory), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.TestStatus), global::Conformance.TestStatus.Parser, new[]{ "Name", "FailureMessage" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.TestStatus), global::Conformance.TestStatus.Parser, new[]{ "Name", "FailureMessage", "MatchedName" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.FailureSet), global::Conformance.FailureSet.Parser, new[]{ "Test" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "JspbPayload", "TextPayload", "RequestedOutputFormat", "MessageType", "TestCategory", "JspbEncodingOptions", "PrintUnknownFields" }, new[]{ "Payload" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "TimeoutError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped", "JspbPayload", "TextPayload" }, new[]{ "Result" }, null, null, null),
@@ -149,6 +150,7 @@ namespace Conformance {
     public TestStatus(TestStatus other) : this() {
       name_ = other.name_;
       failureMessage_ = other.failureMessage_;
+      matchedName_ = other.matchedName_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -182,6 +184,22 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "matched_name" field.</summary>
+    public const int MatchedNameFieldNumber = 3;
+    private string matchedName_ = "";
+    /// <summary>
+    /// What an actual test name matched to in a failure list. Can be wildcarded or
+    /// an exact match without wildcards.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string MatchedName {
+      get { return matchedName_; }
+      set {
+        matchedName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -199,6 +217,7 @@ namespace Conformance {
       }
       if (Name != other.Name) return false;
       if (FailureMessage != other.FailureMessage) return false;
+      if (MatchedName != other.MatchedName) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -208,6 +227,7 @@ namespace Conformance {
       int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (FailureMessage.Length != 0) hash ^= FailureMessage.GetHashCode();
+      if (MatchedName.Length != 0) hash ^= MatchedName.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -234,6 +254,10 @@ namespace Conformance {
         output.WriteRawTag(18);
         output.WriteString(FailureMessage);
       }
+      if (MatchedName.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(MatchedName);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -252,6 +276,10 @@ namespace Conformance {
         output.WriteRawTag(18);
         output.WriteString(FailureMessage);
       }
+      if (MatchedName.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(MatchedName);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -267,6 +295,9 @@ namespace Conformance {
       }
       if (FailureMessage.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(FailureMessage);
+      }
+      if (MatchedName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(MatchedName);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -285,6 +316,9 @@ namespace Conformance {
       }
       if (other.FailureMessage.Length != 0) {
         FailureMessage = other.FailureMessage;
+      }
+      if (other.MatchedName.Length != 0) {
+        MatchedName = other.MatchedName;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -313,6 +347,10 @@ namespace Conformance {
             FailureMessage = input.ReadString();
             break;
           }
+          case 26: {
+            MatchedName = input.ReadString();
+            break;
+          }
         }
       }
     #endif
@@ -338,6 +376,10 @@ namespace Conformance {
           }
           case 18: {
             FailureMessage = input.ReadString();
+            break;
+          }
+          case 26: {
+            MatchedName = input.ReadString();
             break;
           }
         }

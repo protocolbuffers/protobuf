@@ -52,14 +52,30 @@ inline WireFormatLite::CppType cpp_type(FieldType type) {
 
 // Registry stuff.
 
+struct ExtensionInfoKey {
+  const MessageLite* message;
+  int number;
+};
+
 struct ExtensionEq {
+  using is_transparent = void;
   bool operator()(const ExtensionInfo& lhs, const ExtensionInfo& rhs) const {
+    return lhs.message == rhs.message && lhs.number == rhs.number;
+  }
+  bool operator()(const ExtensionInfo& lhs, const ExtensionInfoKey& rhs) const {
+    return lhs.message == rhs.message && lhs.number == rhs.number;
+  }
+  bool operator()(const ExtensionInfoKey& lhs, const ExtensionInfo& rhs) const {
     return lhs.message == rhs.message && lhs.number == rhs.number;
   }
 };
 
 struct ExtensionHasher {
+  using is_transparent = void;
   std::size_t operator()(const ExtensionInfo& info) const {
+    return absl::HashOf(info.message, info.number);
+  }
+  std::size_t operator()(const ExtensionInfoKey& info) const {
     return absl::HashOf(info.message, info.number);
   }
 };
@@ -85,7 +101,7 @@ const ExtensionInfo* FindRegisteredExtension(const MessageLite* extendee,
                                              int number) {
   if (!global_registry) return nullptr;
 
-  ExtensionInfo info;
+  ExtensionInfoKey info;
   info.message = extendee;
   info.number = number;
 

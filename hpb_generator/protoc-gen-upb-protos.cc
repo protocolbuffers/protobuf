@@ -13,14 +13,14 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/compiler/plugin.h"
-#include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/hpb/gen_enums.h"
 #include "google/protobuf/compiler/hpb/gen_extensions.h"
 #include "google/protobuf/compiler/hpb/gen_messages.h"
 #include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/names.h"
 #include "google/protobuf/compiler/hpb/output.h"
+#include "google/protobuf/compiler/plugin.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google::protobuf::hpb_generator {
 namespace {
@@ -131,12 +131,13 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output,
   EmitFileWarning(file, output);
   output(
       R"cc(
-#ifndef $0_UPB_PROTO_H_
-#define $0_UPB_PROTO_H_
+#ifndef $0_HPB_PROTO_H_
+#define $0_HPB_PROTO_H_
+
+#include "google/protobuf/hpb/internal.h"
+#include "google/protobuf/hpb/repeated_field.h"
 
 #include "protos/protos.h"
-#include "protos/protos_internal.h"
-#include "protos/repeated_field.h"
 
 #include "absl/strings/string_view.h"
 #include "absl/status/statusor.h"
@@ -189,7 +190,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output,
   output("\n#include \"upb/port/undef.inc\"\n\n");
   // End of "C" section.
 
-  output("#endif  /* $0_UPB_PROTO_H_ */\n", ToPreproc(file->name()));
+  output("#endif  /* $0_HPB_PROTO_H_ */\n", ToPreproc(file->name()));
 }
 
 // Writes a .upb.cc source file.

@@ -1,0 +1,19 @@
+cc_library(
+    name = "kotlin",
+    srcs = ["generator.cc"],
+    hdrs = ["generator.h"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler/java",
+        "//src/google/protobuf/compiler/java:helpers",
+        "//src/google/protobuf/io:printer",
+        "@com_google_absl//absl/strings",
+    ],
+)

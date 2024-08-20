@@ -3898,7 +3898,7 @@ TEST(CustomOptions, UnusedImportError) {
       &file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
 
-  pool.AddUnusedImportTrackFile("custom_options_import.proto", true);
+  pool.AddDirectInputFile("custom_options_import.proto", true);
   ASSERT_TRUE(TextFormat::ParseFromString(
       "name: \"custom_options_import.proto\" "
       "package: \"protobuf_unittest\" "
@@ -6330,22 +6330,22 @@ TEST_F(ValidationErrorTest, AllowEnumAlias) {
 }
 
 TEST_F(ValidationErrorTest, UnusedImportWarning) {
-  pool_.AddUnusedImportTrackFile("bar.proto");
+  pool_.AddDirectInputFile("bar.proto");
   BuildFile(
       "name: \"bar.proto\" "
       "message_type { name: \"Bar\" }");
 
-  pool_.AddUnusedImportTrackFile("base.proto");
+  pool_.AddDirectInputFile("base.proto");
   BuildFile(
       "name: \"base.proto\" "
       "message_type { name: \"Base\" }");
 
-  pool_.AddUnusedImportTrackFile("baz.proto");
+  pool_.AddDirectInputFile("baz.proto");
   BuildFile(
       "name: \"baz.proto\" "
       "message_type { name: \"Baz\" }");
 
-  pool_.AddUnusedImportTrackFile("public.proto");
+  pool_.AddDirectInputFile("public.proto");
   BuildFile(
       "name: \"public.proto\" "
       "dependency: \"bar.proto\""
@@ -6360,7 +6360,7 @@ TEST_F(ValidationErrorTest, UnusedImportWarning) {
   //   optional Base base = 1;
   // }
   //
-  pool_.AddUnusedImportTrackFile("forward.proto");
+  pool_.AddDirectInputFile("forward.proto");
   BuildFileWithWarnings(
       "name: \"forward.proto\""
       "dependency: \"base.proto\""
@@ -6391,7 +6391,7 @@ TEST_F(ValidationErrorTest, SamePackageUnusedImportError) {
     message_type { name: "Bar" }
   )pb");
 
-  pool_.AddUnusedImportTrackFile("import.proto", true);
+  pool_.AddDirectInputFile("import.proto", true);
   BuildFileWithErrors(R"pb(
                         name: "import.proto"
                         package: "protobuf_unittest"
@@ -7344,7 +7344,7 @@ TEST_F(ValidationErrorTest, UnusedImportWithOtherError) {
       "  name: 'Bar'"
       "}");
 
-  pool_.AddUnusedImportTrackFile("foo.proto", true);
+  pool_.AddDirectInputFile("foo.proto", true);
   BuildFileWithErrors(
       "name: 'foo.proto' "
       "dependency: 'bar.proto' "
@@ -10866,6 +10866,7 @@ TEST_F(FeaturesTest, InvalidGroupLabel) {
 }
 
 TEST_F(FeaturesTest, DeprecatedFeature) {
+  pool_.AddDirectInputFile("foo.proto");
   BuildDescriptorMessagesInTestPool();
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   BuildFileWithWarnings(
@@ -10875,8 +10876,11 @@ TEST_F(FeaturesTest, DeprecatedFeature) {
         edition: EDITION_2023
         dependency: "google/protobuf/unittest_features.proto"
         options {
-          features {
-            [pb.test] { removed_feature: VALUE9 }
+          uninterpreted_option {
+            name { name_part: "features" is_extension: false }
+            name { name_part: "pb.test" is_extension: true }
+            name { name_part: "removed_feature" is_extension: false }
+            identifier_value: "VALUE9"
           }
         }
       )pb",
@@ -10888,6 +10892,68 @@ TEST_F(FeaturesTest, DeprecatedFeature) {
 
   EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).removed_feature(),
             pb::VALUE9);
+}
+
+TEST_F(FeaturesTest, IgnoreDeprecatedFeature) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  BuildFileWithWarnings(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        dependency: "google/protobuf/unittest_features.proto"
+        options {
+          uninterpreted_option {
+            name { name_part: "features" is_extension: false }
+            name { name_part: "pb.test" is_extension: true }
+            name { name_part: "removed_feature" is_extension: false }
+            identifier_value: "VALUE9"
+          }
+        }
+      )pb",
+      "");
+}
+
+TEST_F(FeaturesTest, IgnoreTransitiveFeature) {
+  pool_.AddDirectInputFile("bar.proto");
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  BuildFileWithWarnings(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        dependency: "google/protobuf/unittest_features.proto"
+        options {
+          uninterpreted_option {
+            name { name_part: "features" is_extension: false }
+            name { name_part: "pb.test" is_extension: true }
+            name { name_part: "removed_feature" is_extension: false }
+            identifier_value: "VALUE9"
+          }
+        }
+        message_type { name: "Foo" }
+      )pb",
+      "");
+  BuildFileWithWarnings(
+      R"pb(
+        name: "bar.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        dependency: "foo.proto"
+        message_type {
+          name: "Bar"
+          field {
+            name: "bar"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_MESSAGE
+            type_name: ".Foo"
+          }
+        }
+      )pb",
+      "");
 }
 
 TEST_F(FeaturesTest, RemovedFeature) {

@@ -25,6 +25,7 @@ namespace upb {
 namespace generator {
 
 struct MiniTableOptions {
+  bool bootstrap = false;
   bool one_output_per_message = false;
   bool strip_nonfunctional_codegen = false;
 };
@@ -36,7 +37,7 @@ void WriteMiniTableMultipleSources(const DefPoolPair& pools,
                                    const MiniTableOptions& options,
                                    Plugin* plugin);
 void WriteMiniTableHeader(const DefPoolPair& pools, upb::FileDefPtr file,
-                          Output& output);
+                          const MiniTableOptions& options, Output& output);
 
 }  // namespace generator
 }  // namespace upb

@@ -5,12 +5,16 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <cstdlib>
+#include <string>
+
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/any.h"
-#include "google/protobuf/arenastring.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/message_lite.h"
 
 namespace google {
 namespace protobuf {
@@ -24,6 +28,12 @@ std::string GetTypeUrl(absl::string_view message_name,
   } else {
     return absl::StrCat(type_url_prefix, "/", message_name);
   }
+}
+
+bool EndsWithTypeName(absl::string_view type_url, absl::string_view type_name) {
+  return type_url.size() > type_name.size() &&
+         type_url[type_url.size() - type_name.size() - 1] == '/' &&
+         absl::EndsWith(type_url, type_name);
 }
 
 const char kAnyFullTypeName[] = "google.protobuf.Any";
@@ -46,10 +56,7 @@ bool AnyMetadata::InternalUnpackTo(absl::string_view type_name,
 }
 
 bool AnyMetadata::InternalIs(absl::string_view type_name) const {
-  absl::string_view type_url = type_url_->Get();
-  return type_url.size() >= type_name.size() + 1 &&
-         type_url[type_url.size() - type_name.size() - 1] == '/' &&
-         absl::EndsWith(type_url, type_name);
+  return EndsWithTypeName(type_url_->Get(), type_name);
 }
 
 bool ParseAnyTypeUrl(absl::string_view type_url, std::string* url_prefix,

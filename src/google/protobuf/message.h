@@ -154,6 +154,9 @@ namespace field_layout {
 enum TransformValidation : uint16_t;
 }  // namespace field_layout
 
+namespace v2 {
+class V2TableGenTester;
+}  // namespace v2
 }  // namespace internal
 class UnknownFieldSet;  // unknown_field_set.h
 namespace io {
@@ -1133,6 +1136,8 @@ class PROTOBUF_EXPORT Reflection final {
                                  bool is_string) const;
 
   friend class MapReflectionTester;
+  friend class internal::v2::V2TableGenTester;
+
   // Returns true if key is in map. Returns false if key is not in map field.
   bool ContainsMapKey(const Message& message, const FieldDescriptor* field,
                       const MapKey& key) const;

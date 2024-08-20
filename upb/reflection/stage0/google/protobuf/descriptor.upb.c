@@ -1,6 +1,6 @@
 #include <stddef.h>
 #include "upb/generated_code_support.h"
-#include "google/protobuf/descriptor.upb.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 
 static upb_Arena* upb_BootstrapArena() {
   static upb_Arena* arena = NULL;

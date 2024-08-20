@@ -2370,11 +2370,23 @@ class PROTOBUF_EXPORT DescriptorPool {
   // lazy descriptor initialization behavior.
   bool InternalIsFileLoaded(absl::string_view filename) const;
 
-  // Add a file to unused_import_track_files_. DescriptorBuilder will log
-  // warnings or errors for those files if there is any unused import.
+  // Add a file to to apply more strict checks to.
+  // - unused imports will log either warnings or errors.
+  // - deprecated features will log warnings.
+  void AddDirectInputFile(absl::string_view file_name,
+                          bool unused_import_is_error = false);
+  void ClearDirectInputFiles();
+
+#if !defined(PROTOBUF_FUTURE_RENAME_ADD_UNUSED_IMPORT) && !defined(SWIG)
+  ABSL_DEPRECATED("Use AddDirectInputFile")
   void AddUnusedImportTrackFile(absl::string_view file_name,
-                                bool is_error = false);
-  void ClearUnusedImportTrackFiles();
+                                bool is_error = false) {
+    AddDirectInputFile(file_name, is_error);
+  }
+  ABSL_DEPRECATED("Use AddDirectInputFile")
+  void ClearUnusedImportTrackFiles() { ClearDirectInputFiles(); }
+#endif  // !PROTOBUF_FUTURE_RENAME_ADD_UNUSED_IMPORT && !SWIG
+
 
  private:
   friend class Descriptor;
@@ -2476,9 +2488,9 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool deprecated_legacy_json_field_conflicts_;
   mutable bool build_started_ = false;
 
-  // Set of files to track for unused imports. The bool value when true means
-  // unused imports are treated as errors (and as warnings when false).
-  absl::flat_hash_map<std::string, bool> unused_import_track_files_;
+  // Set of files to track for additional validation. The bool value when true
+  // means unused imports are treated as errors (and as warnings when false).
+  absl::flat_hash_map<std::string, bool> direct_input_files_;
 
   // Specification of defaults to use for feature resolution.  This defaults to
   // just the global and C++ features, but can be overridden for other runtimes.

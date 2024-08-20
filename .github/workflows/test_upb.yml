@@ -3,10 +3,21 @@ name: μpb Tests
 on:
   workflow_call:
     inputs:
+      continuous-run:
+        required: true
+        description: "Boolean string denoting whether this run is continuous --
+          empty string for presubmit, non-empty string for continuous."
+        type: string
       safe-checkout:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
+      continuous-prefix:
+        required: true
+        description: "The string continuous-only tests should be prefixed with when displaying test
+          results."
+        type: string
+
 
 permissions:
   contents: read
@@ -17,24 +28,26 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         config:
-          - { name: "Bazel 7", bazel_version: "7.1.1" }
+          - { name: "Bazel 7", bazel_version: "7.1.1", continuous-only: true }
           - { name: "Fastbuild" }
-          - { name: "Optimized", flags: "-c opt" }
+          - { name: "Optimized", flags: "-c opt", continuous-only: true }
           - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/...", runner: ubuntu-22-4core }
-          - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/... -//lua/..." }
+          - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/... -//lua/...", continuous-only: true }
           - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-//benchmarks:benchmark -//python/..." }
           # TODO: Add 32-bit ASAN test
           # TODO: Restore the FastTable tests
 
-    name: ${{ matrix.config.name }}
+    name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
 
     steps:
       - name: Checkout pending changes
+        if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
+        if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:${{ matrix.config.bazel_version || '6.3.0' }}-75f2a85ece6526cc3d54087018c0f1097d78d42b
@@ -161,8 +174,6 @@ jobs:
           path: python/requirements.txt
 
   test_wheels:
-    name: Test Wheels
-    needs: build_wheels
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
@@ -175,22 +186,24 @@ jobs:
           - { os: macos-12, python-version: "3.8", architecture: x64, type: 'binary' }
           - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'binary' }
           - { os: macos-13, python-version: "3.12", architecture: x64, type: 'binary' }
-          - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'source' }
-          - { os: macos-12, python-version: "3.8", architecture: x64, type: 'source' }
-          - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'source' }
-          - { os: macos-13, python-version: "3.12", architecture: x64, type: 'source' }
+          - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'source', continuous-only: true }
+          - { os: macos-12, python-version: "3.8", architecture: x64, type: 'source', continuous-only: true }
+          - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'source', continuous-only: true }
+          - { os: macos-13, python-version: "3.12", architecture: x64, type: 'source', continuous-only: true }
 
           # Windows uses the full API up until Python 3.10.
-          - { os: windows-2019, python-version: "3.8", architecture: x86, type: 'binary' }
-          - { os: windows-2019, python-version: "3.9", architecture: x86, type: 'binary' }
-          - { os: windows-2019, python-version: "3.10", architecture: x86, type: 'binary' }
-          - { os: windows-2019, python-version: "3.11", architecture: x86, type: 'binary' }
-          - { os: windows-2019, python-version: "3.12", architecture: x86, type: 'binary' }
+          - { os: windows-2019, python-version: "3.8", architecture: x86, type: 'binary', continuous-only: true }
+          - { os: windows-2019, python-version: "3.9", architecture: x86, type: 'binary', continuous-only: true }
+          - { os: windows-2019, python-version: "3.10", architecture: x86, type: 'binary', continuous-only: true }
+          - { os: windows-2019, python-version: "3.11", architecture: x86, type: 'binary', continuous-only: true }
+          - { os: windows-2019, python-version: "3.12", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.8", architecture: x64, type: 'binary' }
-          - { os: windows-2019, python-version: "3.9", architecture: x64, type: 'binary' }
-          - { os: windows-2019, python-version: "3.10", architecture: x64, type: 'binary' }
-          - { os: windows-2019, python-version: "3.11", architecture: x64, type: 'binary' }
+          - { os: windows-2019, python-version: "3.9", architecture: x64, type: 'binary', continuous-only: true }
+          - { os: windows-2019, python-version: "3.10", architecture: x64, type: 'binary', continuous-only: true }
+          - { os: windows-2019, python-version: "3.11", architecture: x64, type: 'binary', continuous-only: true }
           - { os: windows-2019, python-version: "3.12", architecture: x64, type: 'binary' }
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Test Wheels Python ${{ matrix.python-version }} ${{ matrix.os }} ${{ matrix.architecture }} ${{ matrix.type }}
+    needs: build_wheels
     runs-on: ${{ matrix.os }}
     if: ${{ github.event_name != 'pull_request_target' }}
     defaults:
@@ -198,20 +211,24 @@ jobs:
         shell: bash
     steps:
       - name: Download Wheels
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: actions/download-artifact@v3
         with:
           name: python-wheels
           path: wheels
       - name: Download Requirements
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: actions/download-artifact@v3
         with:
           name: requirements
           path: requirements
       - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ matrix.architecture }}
       - name: Setup Python venv
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         run: |
           python -m pip install --upgrade pip
           python -m venv env
@@ -221,24 +238,28 @@ jobs:
       - name: Install tzdata
         run: pip install tzdata
         # Only needed on Windows, Linux ships with tzdata.
-        if: ${{ contains(matrix.os, 'windows') }}
+        if: ${{ contains(matrix.os, 'windows') && (!matrix.continuous-only || inputs.continuous-run) }}
       - name: Install requirements
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         run: pip install -r requirements/requirements.txt
       - name: Install Protobuf Binary Wheel
+        if: ${{ matrix.type == 'binary' && (!matrix.continuous-only || inputs.continuous-run) }}
         run: pip install -vvv --no-index --find-links wheels protobuf
-        if: ${{ matrix.type == 'binary' }}
       - name: Install Protobuf Source Wheel
+        if: ${{ matrix.type == 'source' && (!matrix.continuous-only || inputs.continuous-run) }}
         run: |
           cd wheels
           tar -xzvf *.tar.gz
           cd protobuf-*/
           pip install .
-        if: ${{ matrix.type == 'source' }}
       - name: Test that module is importable
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         run: python -v -c 'from google._upb import _message; assert "google._upb._message.MessageMeta" in str(_message.MessageMeta)'
       - name: Install Protobuf Test Wheel
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         run: pip install -vvv --no-index --find-links wheels protobuftests
       - name: Run the unit tests
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         run: |
           TESTS=$(pip show -f protobuftests | grep pb_unit_tests.*py$ | sed 's,/,.,g' | sed 's,\\,.,g' | sed -E 's,.py$,,g')
           for test in $TESTS; do

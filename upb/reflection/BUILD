@@ -29,9 +29,7 @@ load(
 
 bootstrap_upb_proto_library(
     name = "descriptor_upb_proto",
-    base_dir = "",
-    # TODO: Export 'net/proto2/proto/descriptor.upb.h' and remove "-layering_check".
-    features = ["-layering_check"],
+    bootstrap_hdr = "descriptor_bootstrap.h",
     google3_src_files = ["net/proto2/proto/descriptor.proto"],
     google3_src_rules = ["//net/proto2/proto:descriptor_proto_source"],
     oss_src_files = ["google/protobuf/descriptor.proto"],

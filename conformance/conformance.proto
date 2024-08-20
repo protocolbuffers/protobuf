@@ -63,6 +63,9 @@ enum TestCategory {
 message TestStatus {
   string name = 1;
   string failure_message = 2;
+  // What an actual test name matched to in a failure list. Can be wildcarded or
+  // an exact match without wildcards.
+  string matched_name = 3;
 }
 
 // The conformance runner will request a list of failures as the first request.

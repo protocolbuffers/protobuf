@@ -54,6 +54,9 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":extension_lock",
+        "//hpb:ptr",
+        "//hpb/internal",
+        "//hpb/internal:template_help",
         "//upb:base",
         "//upb:mem",
         "//upb:message",
@@ -77,8 +80,6 @@ cc_library(
     ],
     compatible_with = ["//buildenv/target:non_prod"],
     copts = UPB_DEFAULT_CPPOPTS,
-    # TODO: update visibility back to private once upb/protos gets removed
-    visibility = ["//protos:__subpackages__"],
 )
 
 cc_library(
@@ -116,13 +117,13 @@ cc_library(
 
 # Common support code for C++ generated code.
 cc_library(
-    name = "generated_protos_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+    name = "generated_hpb_support",
     hdrs = [
         "internal.h",
     ],
     compatible_with = ["//buildenv/target:non_prod"],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//visibility:public"],
+    visibility = ["//hpb/bazel:__pkg__"],
     deps = [
         ":hpb",
         ":internal",
@@ -147,9 +148,9 @@ cc_test(
 )
 
 upb_cc_proto_library_copts(
-    name = "upb_cc_proto_library_copts__for_generated_code_only_do_not_use",
+    name = "upb_cc_proto_library_copts",
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//visibility:public"],
+    visibility = ["//hpb/bazel:__pkg__"],
 )
 
 cc_test(
@@ -183,5 +184,12 @@ cc_test(
 cc_library(
     name = "requires",
     hdrs = ["requires.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "ptr",
+    hdrs = ["ptr.h"],
+    compatible_with = ["//buildenv/target:non_prod"],
     visibility = ["//visibility:public"],
 )

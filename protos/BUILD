@@ -7,10 +7,6 @@
 
 # begin:google_only
 # load(
-#     "//hpb/bazel:upb_cc_proto_library.bzl",
-#     "upb_cc_proto_library_copts",
-# )
-# load(
 #     "//upb/bazel:build_defs.bzl",
 #     "UPB_DEFAULT_CPPOPTS",
 # )
@@ -18,19 +14,6 @@
 # package(default_applicable_licenses = ["//upb:license"])
 #
 # licenses(["notice"])
-#
-# cc_library(
-#     name = "repeated_field",
-#     hdrs = [
-#         "repeated_field.h",
-#         "repeated_field_iterator.h",
-#     ],
-#     copts = UPB_DEFAULT_CPPOPTS,
-#     visibility = ["//visibility:public"],
-#     deps = [
-#         "//hpb:repeated_field",
-#     ],
-# )
 #
 # cc_library(
 #     name = "protos",
@@ -43,34 +26,4 @@
 #         "//hpb",
 #     ],
 # )
-#
-# cc_library(
-#     name = "protos_internal",
-#     hdrs = ["protos_internal.h"],
-#     copts = UPB_DEFAULT_CPPOPTS,
-#     visibility = ["//visibility:public"],
-#     deps = [
-#         "//hpb:internal",
-#     ],
-# )
-#
-# # Common support code for C++ generated code.
-# cc_library(
-#     name = "generated_protos_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-#     hdrs = [
-#         "protos_internal.h",
-#     ],
-#     copts = UPB_DEFAULT_CPPOPTS,
-#     visibility = ["//visibility:public"],
-#     deps = [
-#         "//hpb:generated_protos_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-#     ],
-# )
-#
-# upb_cc_proto_library_copts(
-#     name = "upb_cc_proto_library_copts__for_generated_code_only_do_not_use",
-#     copts = UPB_DEFAULT_CPPOPTS,
-#     visibility = ["//visibility:public"],
-# )
-#
 # end:google_only

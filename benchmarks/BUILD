@@ -74,7 +74,6 @@ cc_test(
         "//:protobuf",
         "//src/google/protobuf/json",
         "//upb:base",
-        "//upb:descriptor_upb_proto",
         "//upb:json",
         "//upb:mem",
         "//upb:reflection",

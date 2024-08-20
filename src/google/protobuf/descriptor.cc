@@ -1382,14 +1382,17 @@ class DescriptorPool::DeferredValidation {
                 DescriptorPool::ErrorCollector::NAME, error);
           }
         }
-        for (const auto& warning : results.warnings) {
-          if (error_collector_ == nullptr) {
-            ABSL_LOG(WARNING)
-                << info.filename << " " << info.full_name << ": " << warning;
-          } else {
-            error_collector_->RecordWarning(
-                info.filename, info.full_name, info.proto,
-                DescriptorPool::ErrorCollector::NAME, warning);
+        if (pool_->direct_input_files_.find(file->name()) !=
+            pool_->direct_input_files_.end()) {
+          for (const auto& warning : results.warnings) {
+            if (error_collector_ == nullptr) {
+              ABSL_LOG(WARNING)
+                  << info.filename << " " << info.full_name << ": " << warning;
+            } else {
+              error_collector_->RecordWarning(
+                  info.filename, info.full_name, info.proto,
+                  DescriptorPool::ErrorCollector::NAME, warning);
+            }
           }
         }
       }
@@ -2132,9 +2135,9 @@ void DescriptorPool::InternalDontEnforceDependencies() {
   enforce_dependencies_ = false;
 }
 
-void DescriptorPool::AddUnusedImportTrackFile(absl::string_view file_name,
-                                              bool is_error) {
-  unused_import_track_files_[file_name] = is_error;
+void DescriptorPool::AddDirectInputFile(absl::string_view file_name,
+                                        bool is_error) {
+  direct_input_files_[file_name] = is_error;
 }
 
 bool DescriptorPool::IsReadyForCheckingDescriptorExtDecl(
@@ -2155,9 +2158,7 @@ bool DescriptorPool::IsReadyForCheckingDescriptorExtDecl(
 }
 
 
-void DescriptorPool::ClearUnusedImportTrackFiles() {
-  unused_import_track_files_.clear();
-}
+void DescriptorPool::ClearDirectInputFiles() { direct_input_files_.clear(); }
 
 bool DescriptorPool::InternalIsFileLoaded(absl::string_view filename) const {
   absl::MutexLockMaybe lock(mutex_);
@@ -6022,8 +6023,8 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
       // Add to unused_dependency_ to track unused imported files.
       // Note: do not track unused imported files for public import.
       if (pool_->enforce_dependencies_ &&
-          (pool_->unused_import_track_files_.find(proto.name()) !=
-           pool_->unused_import_track_files_.end()) &&
+          (pool_->direct_input_files_.find(proto.name()) !=
+           pool_->direct_input_files_.end()) &&
           (dependency->public_dependency_count() == 0)) {
         unused_dependency_.insert(dependency);
       }
@@ -9593,9 +9594,8 @@ void DescriptorBuilder::LogUnusedDependency(const FileDescriptorProto& proto,
   (void)result;  // Parameter is used by Google-internal code.
 
   if (!unused_dependency_.empty()) {
-    auto itr = pool_->unused_import_track_files_.find(proto.name());
-    bool is_error =
-        itr != pool_->unused_import_track_files_.end() && itr->second;
+    auto itr = pool_->direct_input_files_.find(proto.name());
+    bool is_error = itr != pool_->direct_input_files_.end() && itr->second;
     for (const auto* unused : unused_dependency_) {
       auto make_error = [&] {
         return absl::StrCat("Import ", unused->name(), " is unused.");

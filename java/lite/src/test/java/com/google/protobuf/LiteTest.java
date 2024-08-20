@@ -31,6 +31,7 @@ import com.google.protobuf.UnittestLite.TestAllTypesLiteOrBuilder;
 import com.google.protobuf.UnittestLite.TestHugeFieldNumbersLite;
 import com.google.protobuf.UnittestLite.TestNestedExtensionLite;
 import com.google.protobuf.testing.Proto3TestingLite.Proto3MessageLite;
+import map_lite_test.MapTestProto.MapContainer;
 import map_lite_test.MapTestProto.TestMap;
 import map_lite_test.MapTestProto.TestMap.MessageValue;
 import protobuf_unittest.NestedExtensionLite;
