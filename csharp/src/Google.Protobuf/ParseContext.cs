@@ -23,7 +23,7 @@ namespace Google.Protobuf
     [SecuritySafeCritical]
     public ref struct ParseContext
     {
-        internal const int DefaultRecursionLimit = 100;
+        internal const int DefaultRecursionLimit = 500;
         internal const int DefaultSizeLimit = int.MaxValue;
 
         internal ReadOnlySpan<byte> buffer;
