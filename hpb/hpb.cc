@@ -14,7 +14,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/hpb/extension_lock.h"
+#include "google/protobuf/hpb/internal/message_lock.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/copy.h"

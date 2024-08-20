@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/hpb/extension_lock.h"
+#include "google/protobuf/hpb/internal/message_lock.h"
 
 #include <atomic>
 

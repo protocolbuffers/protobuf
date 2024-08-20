@@ -53,9 +53,9 @@ cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":extension_lock",
         "//hpb:ptr",
         "//hpb/internal",
+        "//hpb/internal:message_lock",
         "//hpb/internal:template_help",
         "//upb:base",
         "//upb:mem",
@@ -96,22 +96,6 @@ cc_library(
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings:str_format",
-    ],
-)
-
-cc_library(
-    name = "extension_lock",
-    srcs = ["extension_lock.cc"],
-    hdrs = [
-        "extension_lock.h",
-    ],
-    compatible_with = ["//buildenv/target:non_prod"],
-    copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//upb:friends"],
-    deps = [
-        "//upb:message",
-        "@com_google_absl//absl/base:core_headers",
-        "@com_google_absl//absl/synchronization",
     ],
 )
 
@@ -161,21 +145,6 @@ cc_test(
         "//hpb",
         "//upb:message",
         "@com_google_absl//absl/strings:string_view",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "extension_lock_test",
-    srcs = ["extension_lock_test.cc"],
-    deps = [
-        "//hpb",
-        "//hpb:extension_lock",
-        "//src/google/protobuf/compiler/hpb/tests:test_model_upb_cc_proto",
-        "//upb:mem",
-        "@com_google_absl//absl/hash",
-        "@com_google_absl//absl/log:absl_check",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

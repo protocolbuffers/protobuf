@@ -5,6 +5,11 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load(
+    "//upb/bazel:build_defs.bzl",
+    "UPB_DEFAULT_CPPOPTS",
+)
+
 # begin:google_only
 # package(default_applicable_licenses = ["//src/google/protobuf:license"])
 # end:google_only
@@ -27,5 +32,43 @@ cc_library(
     deps = [
         "//upb:mem",
         "//upb:message",
+    ],
+)
+
+cc_library(
+    name = "message_lock",
+    srcs = ["message_lock.cc"],
+    hdrs = [
+        "message_lock.h",
+    ],
+    compatible_with = ["//buildenv/target:non_prod"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    visibility = ["//upb:friends"],
+    deps = [
+        "//upb:mem",
+        "//upb:message",
+        "//upb:message_copy",
+        "//upb:message_promote",
+        "//upb:mini_table",
+        "//upb:wire",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/synchronization",
+    ],
+)
+
+cc_test(
+    name = "message_lock_test",
+    srcs = ["message_lock_test.cc"],
+    deps = [
+        "//hpb",
+        "//hpb/internal:message_lock",
+        "//src/google/protobuf/compiler/hpb/tests:test_model_upb_cc_proto",
+        "//upb:mem",
+        "@com_google_absl//absl/hash",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
