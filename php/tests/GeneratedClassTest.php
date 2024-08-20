@@ -113,6 +113,7 @@ class GeneratedClassTest extends TestBase
 
         // does not throw warning
         $message = new TestMessage();
+        $message->getDeprecatedInt32();
         $message->getDeprecatedOptionalInt32();
         $message->getDeprecatedInt32ValueUnwrapped(); // wrapped field
         $message->getDeprecatedInt32Value(); // wrapped field
@@ -132,6 +133,7 @@ class GeneratedClassTest extends TestBase
     public function testDeprecatedFieldGetterThrowsWarningWithValue()
     {
         $message = new TestMessage([
+            'deprecated_int32' => 1,
             'deprecated_optional_int32' => 1,
             'deprecated_int32_value' => new \Google\Protobuf\Int32Value(['value' => 1]),
             'deprecated_oneof_int32' => 1,
@@ -150,6 +152,7 @@ class GeneratedClassTest extends TestBase
             }
         }, E_USER_DEPRECATED);
 
+        $message->getDeprecatedInt32();
         $message->getDeprecatedOptionalInt32();
         $message->getDeprecatedInt32ValueUnwrapped(); // wrapped field unwrapped
         $message->getDeprecatedInt32Value(); // wrapped field
@@ -165,7 +168,7 @@ class GeneratedClassTest extends TestBase
 
         restore_error_handler();
 
-        $this->assertEquals(9, $deprecationCount);
+        $this->assertEquals(10, $deprecationCount);
     }
 
     public function testDeprecatedFieldWarningsOnSerialize()

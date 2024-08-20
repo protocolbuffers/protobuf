@@ -227,7 +227,7 @@ std::string DeprecatedConditionalForField(const FieldDescriptor* field) {
     return absl::StrCat("$this->hasOneof(", field->number(), ")");
   }
   if (field->has_presence()) {
-    return absl::StrCat("$this->", field->name(), " !== null");
+    return absl::StrCat("isset($this->", field->name(), ")");
   }
   return absl::StrCat("$this->", field->name(), " !== ",
                       field->has_presence() ? "null" : DefaultForField(field));

@@ -149,23 +149,25 @@ message TestMessage {
   map<string, google.protobuf.Struct> map_string_struct = 124;
 
   // deprecated field
-  int32 deprecated_optional_int32 = 125 [deprecated=true];
+  int32 deprecated_int32 = 125 [deprecated=true];
+  // deprecated optional field
+  optional int32 deprecated_optional_int32 = 126 [deprecated=true];
   // deprecated wrapped field
-  google.protobuf.Int32Value deprecated_int32_value = 126 [deprecated=true];
+  google.protobuf.Int32Value deprecated_int32_value = 127 [deprecated=true];
   // deprecated oneof
   oneof deprecated_oneof {
-    int32  deprecated_oneof_int32 = 127 [deprecated=true];
+    int32  deprecated_oneof_int32 = 128 [deprecated=true];
   }
   // deprecated repeated field
-  repeated int32 deprecated_repeated_int32 = 128 [deprecated = true];
+  repeated int32 deprecated_repeated_int32 = 129 [deprecated = true];
   // deprecated map
-  map<int32, int32> deprecated_map_int32_int32 = 129 [deprecated = true];
+  map<int32, int32> deprecated_map_int32_int32 = 130 [deprecated = true];
   // deprecated any
-  google.protobuf.Any deprecated_any = 130 [deprecated = true];
+  google.protobuf.Any deprecated_any = 131 [deprecated = true];
   // deprecated message
-  TestMessage deprecated_message = 131 [deprecated = true];
+  TestMessage deprecated_message = 132 [deprecated = true];
   // deprecated enum
-  NestedEnum deprecated_enum = 132 [deprecated = true];
+  NestedEnum deprecated_enum = 133 [deprecated = true];
 }
 
 enum TestEnum {
