@@ -181,8 +181,6 @@ inline int AlignOffset(int offset) { return AlignTo(offset, kSafeAlignment); }
 
 class DynamicMessage final : public Message {
  public:
-  explicit DynamicMessage(const DynamicMessageFactory::TypeInfo* type_info);
-
   // This should only be used by GetPrototypeNoLock() to avoid dead lock.
   DynamicMessage(DynamicMessageFactory::TypeInfo* type_info, bool lock_factory);
   DynamicMessage(const DynamicMessage&) = delete;
@@ -201,8 +199,6 @@ class DynamicMessage final : public Message {
   void CrossLinkPrototypes();
 
   // implements Message ----------------------------------------------
-
-  Message* New(Arena* arena) const PROTOBUF_FINAL;
 
   const ClassData* GetClassData() const PROTOBUF_FINAL;
 
@@ -237,6 +233,7 @@ class DynamicMessage final : public Message {
     return reinterpret_cast<const uint8_t*>(this) + offset;
   }
 
+  static void* NewImpl(const void* prototype, void* mem, Arena* arena);
   static void DeleteImpl(void* ptr, bool free_memory);
 
   void* MutableRaw(int i);
@@ -250,7 +247,6 @@ class DynamicMessage final : public Message {
 };
 
 struct DynamicMessageFactory::TypeInfo {
-  int size;
   int has_bits_offset;
   int oneof_case_offset;
   int extensions_offset;
@@ -272,8 +268,8 @@ struct DynamicMessageFactory::TypeInfo {
           nullptr,  // on_demand_register_arena_dtor
           &DynamicMessage::IsInitializedImpl,
           &DynamicMessage::MergeImpl,
+          internal::MessageCreator(),  // to be filled later
           &DynamicMessage::DeleteImpl,
-          DynamicMessage::GetNewImpl<DynamicMessage>(),
           DynamicMessage::ClearImpl,
           DynamicMessage::ByteSizeLongImpl,
           DynamicMessage::_InternalSerializeImpl,
@@ -306,13 +302,6 @@ struct DynamicMessageFactory::TypeInfo {
     }
   }
 };
-
-DynamicMessage::DynamicMessage(const DynamicMessageFactory::TypeInfo* type_info)
-    : Message(type_info->class_data.base()),
-      type_info_(type_info),
-      cached_byte_size_(0) {
-  SharedCtor(true);
-}
 
 DynamicMessage::DynamicMessage(const DynamicMessageFactory::TypeInfo* type_info,
                                Arena* arena)
@@ -472,7 +461,7 @@ bool DynamicMessage::is_prototype() const {
 #if defined(__cpp_lib_destroying_delete) && defined(__cpp_sized_deallocation)
 void DynamicMessage::operator delete(DynamicMessage* msg,
                                      std::destroying_delete_t) {
-  const size_t size = msg->type_info_->size;
+  const size_t size = msg->type_info_->class_data.allocation_size();
   msg->~DynamicMessage();
   ::operator delete(msg, size);
 }
@@ -574,9 +563,16 @@ DynamicMessage::~DynamicMessage() {
   }
 }
 
+void* DynamicMessage::NewImpl(const void* prototype, void* mem, Arena* arena) {
+  const auto* type_info =
+      static_cast<const DynamicMessage*>(prototype)->type_info_;
+  memset(mem, 0, type_info->class_data.allocation_size());
+  return new (mem) DynamicMessage(type_info, arena);
+}
+
 void DynamicMessage::DeleteImpl(void* ptr, bool free_memory) {
   auto* msg = static_cast<DynamicMessage*>(ptr);
-  const size_t size = msg->type_info_->size;
+  const size_t size = msg->type_info_->class_data.allocation_size();
   msg->~DynamicMessage();
   if (free_memory) {
     internal::SizedDelete(ptr, size);
@@ -604,18 +600,6 @@ void DynamicMessage::CrossLinkPrototypes() {
       *reinterpret_cast<const Message**>(field_ptr) =
           factory->GetPrototypeNoLock(field->message_type());
     }
-  }
-}
-
-Message* DynamicMessage::New(Arena* arena) const {
-  if (arena != nullptr) {
-    void* new_base = Arena::CreateArray<char>(arena, type_info_->size);
-    memset(new_base, 0, type_info_->size);
-    return new (new_base) DynamicMessage(type_info_, arena);
-  } else {
-    void* new_base = operator new(type_info_->size);
-    memset(new_base, 0, type_info_->size);
-    return new (new_base) DynamicMessage(type_info_);
   }
 }
 
@@ -751,9 +735,8 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
 
   type_info->weak_field_map_offset = -1;
 
-  // Align the final size to make sure no clever allocators think that
-  // alignment is not necessary.
-  type_info->size = size;
+  type_info->class_data.message_creator =
+      internal::MessageCreator(DynamicMessage::NewImpl, size);
 
   // Construct the reflection object.
 
@@ -787,7 +770,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       PROTOBUF_FIELD_OFFSET(DynamicMessage, _internal_metadata_),
       type_info->extensions_offset,
       type_info->oneof_case_offset,
-      type_info->size,
+      static_cast<int>(type_info->class_data.allocation_size()),
       type_info->weak_field_map_offset,
       nullptr,  // inlined_string_indices_
       0,        // inlined_string_donated_offset_

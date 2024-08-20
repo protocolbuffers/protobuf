@@ -10,6 +10,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -391,6 +392,13 @@ inline void Version::SharedDtor() {
   _impl_.~Impl_();
 }
 
+inline void* Version::PlacementNew_(const void*, void* mem,
+                                        ::google::protobuf::Arena* arena) {
+  return ::new (mem) Version(arena);
+}
+constexpr auto Version::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Version));
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -401,9 +409,9 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Version::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<Version>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Version>(),
-            ::google::protobuf::Message::GetNewImpl<Version>(),
             ::google::protobuf::Message::GetClearImpl<Version>(), &Version::ByteSizeLong,
                 &Version::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -725,6 +733,32 @@ inline void CodeGeneratorRequest::SharedDtor() {
   _impl_.~Impl_();
 }
 
+inline void* CodeGeneratorRequest::PlacementNew_(const void*, void* mem,
+                                        ::google::protobuf::Arena* arena) {
+  return ::new (mem) CodeGeneratorRequest(arena);
+}
+constexpr auto CodeGeneratorRequest::InternalNewImpl_() {
+  constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.file_to_generate_) +
+          decltype(CodeGeneratorRequest::_impl_.file_to_generate_)::
+              InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.proto_file_) +
+          decltype(CodeGeneratorRequest::_impl_.proto_file_)::
+              InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.source_file_descriptors_) +
+          decltype(CodeGeneratorRequest::_impl_.source_file_descriptors_)::
+              InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+  });
+  if (arena_bits.has_value()) {
+    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorRequest), *arena_bits);
+  } else {
+    return ::google::protobuf::internal::MessageCreator(&CodeGeneratorRequest::PlacementNew_,
+                                 sizeof(CodeGeneratorRequest));
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -735,9 +769,9 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             CodeGeneratorRequest::IsInitializedImpl,
             &CodeGeneratorRequest::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<CodeGeneratorRequest>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<CodeGeneratorRequest>(),
-            ::google::protobuf::Message::GetNewImpl<CodeGeneratorRequest>(),
             ::google::protobuf::Message::GetClearImpl<CodeGeneratorRequest>(), &CodeGeneratorRequest::ByteSizeLong,
                 &CodeGeneratorRequest::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1114,6 +1148,13 @@ inline void CodeGeneratorResponse_File::SharedDtor() {
   _impl_.~Impl_();
 }
 
+inline void* CodeGeneratorResponse_File::PlacementNew_(const void*, void* mem,
+                                        ::google::protobuf::Arena* arena) {
+  return ::new (mem) CodeGeneratorResponse_File(arena);
+}
+constexpr auto CodeGeneratorResponse_File::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorResponse_File));
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -1124,9 +1165,9 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &CodeGeneratorResponse_File::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<CodeGeneratorResponse_File>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<CodeGeneratorResponse_File>(),
-            ::google::protobuf::Message::GetNewImpl<CodeGeneratorResponse_File>(),
             ::google::protobuf::Message::GetClearImpl<CodeGeneratorResponse_File>(), &CodeGeneratorResponse_File::ByteSizeLong,
                 &CodeGeneratorResponse_File::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1458,6 +1499,24 @@ inline void CodeGeneratorResponse::SharedDtor() {
   _impl_.~Impl_();
 }
 
+inline void* CodeGeneratorResponse::PlacementNew_(const void*, void* mem,
+                                        ::google::protobuf::Arena* arena) {
+  return ::new (mem) CodeGeneratorResponse(arena);
+}
+constexpr auto CodeGeneratorResponse::InternalNewImpl_() {
+  constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.file_) +
+          decltype(CodeGeneratorResponse::_impl_.file_)::
+              InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+  });
+  if (arena_bits.has_value()) {
+    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorResponse), *arena_bits);
+  } else {
+    return ::google::protobuf::internal::MessageCreator(&CodeGeneratorResponse::PlacementNew_,
+                                 sizeof(CodeGeneratorResponse));
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -1468,9 +1527,9 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &CodeGeneratorResponse::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<CodeGeneratorResponse>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<CodeGeneratorResponse>(),
-            ::google::protobuf::Message::GetNewImpl<CodeGeneratorResponse>(),
             ::google::protobuf::Message::GetClearImpl<CodeGeneratorResponse>(), &CodeGeneratorResponse::ByteSizeLong,
                 &CodeGeneratorResponse::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE

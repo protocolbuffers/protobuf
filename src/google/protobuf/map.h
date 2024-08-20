@@ -1625,6 +1625,10 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     return SpaceUsedInternal() + internal::SpaceUsedInValues(this);
   }
 
+  static constexpr size_t InternalGetArenaOffset(internal::InternalVisibility) {
+    return PROTOBUF_FIELD_OFFSET(Map, alloc_);
+  }
+
  private:
   struct Rank1 {};
   struct Rank0 : Rank1 {};

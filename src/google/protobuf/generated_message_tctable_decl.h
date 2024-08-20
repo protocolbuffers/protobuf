@@ -428,8 +428,6 @@ struct alignas(uint64_t) TcParseTableBase {
         : message_default_p(msg) {}
     constexpr FieldAux(const TcParseTableBase* table) : table(table) {}
     constexpr FieldAux(MapAuxInfo map_info) : map_info(map_info) {}
-    constexpr FieldAux(void (*create_in_arena)(Arena*, void*))
-        : create_in_arena(create_in_arena) {}
     constexpr FieldAux(LazyEagerVerifyFnType verify_func)
         : verify_func(verify_func) {}
     struct {
@@ -441,7 +439,6 @@ struct alignas(uint64_t) TcParseTableBase {
     const uint32_t* enum_data;
     const TcParseTableBase* table;
     MapAuxInfo map_info;
-    void (*create_in_arena)(Arena*, void*);
     LazyEagerVerifyFnType verify_func;
 
     const MessageLite* message_default() const {

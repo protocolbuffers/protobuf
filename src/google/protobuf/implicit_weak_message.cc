@@ -69,8 +69,9 @@ constexpr MessageLite::ClassDataLite<1> ImplicitWeakMessage::class_data_ = {
         nullptr,  // on_demand_register_arena_dtor
         nullptr,  // is_initialized (always true)
         MergeImpl,
+        internal::MessageCreator(NewImpl<ImplicitWeakMessage>,
+                                 sizeof(ImplicitWeakMessage)),
         GetDeleteImpl<ImplicitWeakMessage>(),
-        GetNewImpl<ImplicitWeakMessage>(),
         &ClearImpl,
         &ByteSizeLongImpl,
         &_InternalSerializeImpl,
