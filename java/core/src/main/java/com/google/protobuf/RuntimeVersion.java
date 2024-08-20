@@ -37,6 +37,14 @@ public final class RuntimeVersion {
   public static final int PATCH = OSS_PATCH;
   public static final String SUFFIX = OSS_SUFFIX;
 
+  private static final int MAX_WARNING_COUNT = 20;
+
+  @SuppressWarnings("NonFinalStaticField")
+  static int majorWarningLoggedCount = 0;
+
+  @SuppressWarnings("NonFinalStaticField")
+  static int minorWarningLoggedCount = 0;
+
   private static final String VERSION_STRING = versionString(MAJOR, MINOR, PATCH, SUFFIX);
   private static final Logger logger = Logger.getLogger(RuntimeVersion.class.getName());
 
@@ -86,13 +94,14 @@ public final class RuntimeVersion {
 
     // Check that runtime major version is the same as the gencode major version.
     if (major != MAJOR) {
-      if (major == MAJOR - 1) {
+      if (major == MAJOR - 1 && majorWarningLoggedCount < MAX_WARNING_COUNT) {
         logger.warning(
             String.format(
                 " Protobuf gencode version %s is exactly one major version older than the runtime"
                     + " version %s at %s. Please update the gencode to avoid compatibility"
                     + " violations in the next runtime release.",
                 gencodeVersionString, VERSION_STRING, location));
+        majorWarningLoggedCount++;
       } else {
         throw new ProtobufRuntimeVersionException(
             String.format(
@@ -109,12 +118,13 @@ public final class RuntimeVersion {
               "Detected incompatible Protobuf Gencode/Runtime versions when loading %s: gencode %s,"
                   + " runtime %s. Runtime version cannot be older than the linked gencode version.",
               location, gencodeVersionString, VERSION_STRING));
-    } else if (MINOR > minor || PATCH > patch) {
+    } else if ((MINOR > minor || PATCH > patch) && minorWarningLoggedCount < MAX_WARNING_COUNT) {
       logger.warning(
           String.format(
               " Protobuf gencode version %s is older than the runtime version %s at %s. Please"
                   + " avoid checked-in Protobuf gencode that can be obsolete.",
               gencodeVersionString, VERSION_STRING, location));
+      minorWarningLoggedCount++;
     }
 
     // Check that runtime version suffix is the same as the gencode version suffix.
