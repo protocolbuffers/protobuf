@@ -383,13 +383,14 @@ inline void Version::SharedCtor(::_pb::Arena* arena) {
 }
 Version::~Version() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.Version)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void Version::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.suffix_.Destroy();
-  _impl_.~Impl_();
+inline void Version::SharedDtor(MessageLite& self) {
+  Version& this_ = static_cast<Version&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.suffix_.Destroy();
+  this_._impl_.~Impl_();
 }
 
 inline void* Version::PlacementNew_(const void*, void* mem,
@@ -411,7 +412,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &Version::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<Version>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<Version>(),
+            &Version::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<Version>(), &Version::ByteSizeLong,
                 &Version::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -723,14 +724,15 @@ inline void CodeGeneratorRequest::SharedCtor(::_pb::Arena* arena) {
 }
 CodeGeneratorRequest::~CodeGeneratorRequest() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorRequest)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void CodeGeneratorRequest::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.parameter_.Destroy();
-  delete _impl_.compiler_version_;
-  _impl_.~Impl_();
+inline void CodeGeneratorRequest::SharedDtor(MessageLite& self) {
+  CodeGeneratorRequest& this_ = static_cast<CodeGeneratorRequest&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.parameter_.Destroy();
+  delete this_._impl_.compiler_version_;
+  this_._impl_.~Impl_();
 }
 
 inline void* CodeGeneratorRequest::PlacementNew_(const void*, void* mem,
@@ -771,7 +773,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &CodeGeneratorRequest::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<CodeGeneratorRequest>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<CodeGeneratorRequest>(),
+            &CodeGeneratorRequest::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<CodeGeneratorRequest>(), &CodeGeneratorRequest::ByteSizeLong,
                 &CodeGeneratorRequest::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1136,16 +1138,17 @@ inline void CodeGeneratorResponse_File::SharedCtor(::_pb::Arena* arena) {
 }
 CodeGeneratorResponse_File::~CodeGeneratorResponse_File() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorResponse.File)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void CodeGeneratorResponse_File::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.name_.Destroy();
-  _impl_.insertion_point_.Destroy();
-  _impl_.content_.Destroy();
-  delete _impl_.generated_code_info_;
-  _impl_.~Impl_();
+inline void CodeGeneratorResponse_File::SharedDtor(MessageLite& self) {
+  CodeGeneratorResponse_File& this_ = static_cast<CodeGeneratorResponse_File&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.name_.Destroy();
+  this_._impl_.insertion_point_.Destroy();
+  this_._impl_.content_.Destroy();
+  delete this_._impl_.generated_code_info_;
+  this_._impl_.~Impl_();
 }
 
 inline void* CodeGeneratorResponse_File::PlacementNew_(const void*, void* mem,
@@ -1167,7 +1170,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &CodeGeneratorResponse_File::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<CodeGeneratorResponse_File>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<CodeGeneratorResponse_File>(),
+            &CodeGeneratorResponse_File::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<CodeGeneratorResponse_File>(), &CodeGeneratorResponse_File::ByteSizeLong,
                 &CodeGeneratorResponse_File::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1490,13 +1493,14 @@ inline void CodeGeneratorResponse::SharedCtor(::_pb::Arena* arena) {
 }
 CodeGeneratorResponse::~CodeGeneratorResponse() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorResponse)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void CodeGeneratorResponse::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.error_.Destroy();
-  _impl_.~Impl_();
+inline void CodeGeneratorResponse::SharedDtor(MessageLite& self) {
+  CodeGeneratorResponse& this_ = static_cast<CodeGeneratorResponse&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.error_.Destroy();
+  this_._impl_.~Impl_();
 }
 
 inline void* CodeGeneratorResponse::PlacementNew_(const void*, void* mem,
@@ -1529,7 +1533,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &CodeGeneratorResponse::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<CodeGeneratorResponse>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<CodeGeneratorResponse>(),
+            &CodeGeneratorResponse::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<CodeGeneratorResponse>(), &CodeGeneratorResponse::ByteSizeLong,
                 &CodeGeneratorResponse::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE

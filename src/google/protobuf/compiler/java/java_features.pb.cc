@@ -186,12 +186,13 @@ inline void JavaFeatures::SharedCtor(::_pb::Arena* arena) {
 }
 JavaFeatures::~JavaFeatures() {
   // @@protoc_insertion_point(destructor:pb.JavaFeatures)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void JavaFeatures::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.~Impl_();
+inline void JavaFeatures::SharedDtor(MessageLite& self) {
+  JavaFeatures& this_ = static_cast<JavaFeatures&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.~Impl_();
 }
 
 inline void* JavaFeatures::PlacementNew_(const void*, void* mem,
@@ -213,7 +214,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &JavaFeatures::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<JavaFeatures>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<JavaFeatures>(),
+            &JavaFeatures::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<JavaFeatures>(), &JavaFeatures::ByteSizeLong,
                 &JavaFeatures::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE

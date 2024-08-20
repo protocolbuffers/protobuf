@@ -234,7 +234,7 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(Version* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -470,7 +470,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorResponse_File* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -722,7 +722,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorResponse* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -1003,7 +1003,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorRequest* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;

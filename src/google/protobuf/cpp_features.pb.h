@@ -218,7 +218,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(CppFeatures* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;

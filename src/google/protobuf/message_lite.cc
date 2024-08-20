@@ -47,7 +47,12 @@ namespace protobuf {
 
 void MessageLite::DestroyInstance(bool free_memory) {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  _class_data_->delete_message(this, free_memory);
+  const size_t size = _class_data_->allocation_size();
+  void* const ptr = this;
+  _class_data_->destroy_message(*this);
+  if (free_memory) {
+    internal::SizedDelete(ptr, size);
+  }
 #else   // PROTOBUF_CUSTOM_VTABLE
   ABSL_DCHECK(!free_memory);
   this->~MessageLite();

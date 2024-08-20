@@ -186,12 +186,13 @@ inline void CppFeatures::SharedCtor(::_pb::Arena* arena) {
 }
 CppFeatures::~CppFeatures() {
   // @@protoc_insertion_point(destructor:pb.CppFeatures)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void CppFeatures::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.~Impl_();
+inline void CppFeatures::SharedDtor(MessageLite& self) {
+  CppFeatures& this_ = static_cast<CppFeatures&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.~Impl_();
 }
 
 inline void* CppFeatures::PlacementNew_(const void*, void* mem,
@@ -213,7 +214,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &CppFeatures::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<CppFeatures>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<CppFeatures>(),
+            &CppFeatures::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<CppFeatures>(), &CppFeatures::ByteSizeLong,
                 &CppFeatures::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE

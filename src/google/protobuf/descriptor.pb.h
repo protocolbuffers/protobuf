@@ -825,7 +825,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(UninterpretedOption_NamePart* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -1035,7 +1035,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(SourceCodeInfo_Location* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -1317,7 +1317,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(GeneratedCodeInfo_Annotation* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -1594,7 +1594,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(FieldOptions_FeatureSupport* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -1830,7 +1830,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(FieldOptions_EditionDefault* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -2045,7 +2045,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(FeatureSet* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -2602,7 +2602,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(ExtensionRangeOptions_Declaration* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -2857,7 +2857,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(EnumDescriptorProto_EnumReservedRange* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -3061,7 +3061,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(DescriptorProto_ReservedRange* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -3270,7 +3270,7 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(UninterpretedOption* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -3564,7 +3564,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(SourceCodeInfo* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -3761,7 +3761,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(GeneratedCodeInfo* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -3963,7 +3963,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(FeatureSetDefaults_FeatureSetEditionDefault* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -4193,7 +4193,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(ServiceOptions* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -4605,7 +4605,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(OneofOptions* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -5004,7 +5004,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(MethodOptions* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -5449,7 +5449,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(MessageOptions* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -5913,7 +5913,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(FileOptions* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -6639,7 +6639,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(FieldOptions* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -7301,7 +7301,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(FeatureSetDefaults* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -7530,7 +7530,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(ExtensionRangeOptions* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -7981,7 +7981,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(EnumValueOptions* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -8423,7 +8423,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(EnumOptions* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -8861,7 +8861,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(OneofDescriptorProto* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -9080,7 +9080,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(MethodDescriptorProto* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -9363,7 +9363,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(FieldDescriptorProto* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -9778,7 +9778,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(EnumValueDescriptorProto* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -10010,7 +10010,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(DescriptorProto_ExtensionRange* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -10236,7 +10236,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(ServiceDescriptorProto* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -10474,7 +10474,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(EnumDescriptorProto* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -10756,7 +10756,7 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(DescriptorProto* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -11134,7 +11134,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(FileDescriptorProto* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;
@@ -11561,7 +11561,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(FileDescriptorSet* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;

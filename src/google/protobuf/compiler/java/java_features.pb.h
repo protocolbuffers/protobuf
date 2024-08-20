@@ -217,7 +217,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(JavaFeatures* other);
  private:
   friend class ::google::protobuf::internal::AnyMetadata;

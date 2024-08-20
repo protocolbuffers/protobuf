@@ -2648,12 +2648,13 @@ inline void FileDescriptorSet::SharedCtor(::_pb::Arena* arena) {
 }
 FileDescriptorSet::~FileDescriptorSet() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileDescriptorSet)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void FileDescriptorSet::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.~Impl_();
+inline void FileDescriptorSet::SharedDtor(MessageLite& self) {
+  FileDescriptorSet& this_ = static_cast<FileDescriptorSet&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.~Impl_();
 }
 
 inline void* FileDescriptorSet::PlacementNew_(const void*, void* mem,
@@ -2686,7 +2687,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &FileDescriptorSet::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<FileDescriptorSet>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<FileDescriptorSet>(),
+            &FileDescriptorSet::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<FileDescriptorSet>(), &FileDescriptorSet::ByteSizeLong,
                 &FileDescriptorSet::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2931,17 +2932,18 @@ inline void FileDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 }
 FileDescriptorProto::~FileDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileDescriptorProto)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void FileDescriptorProto::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.name_.Destroy();
-  _impl_.package_.Destroy();
-  _impl_.syntax_.Destroy();
-  delete _impl_.options_;
-  delete _impl_.source_code_info_;
-  _impl_.~Impl_();
+inline void FileDescriptorProto::SharedDtor(MessageLite& self) {
+  FileDescriptorProto& this_ = static_cast<FileDescriptorProto&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.name_.Destroy();
+  this_._impl_.package_.Destroy();
+  this_._impl_.syntax_.Destroy();
+  delete this_._impl_.options_;
+  delete this_._impl_.source_code_info_;
+  this_._impl_.~Impl_();
 }
 
 inline void* FileDescriptorProto::PlacementNew_(const void*, void* mem,
@@ -2998,7 +3000,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &FileDescriptorProto::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<FileDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<FileDescriptorProto>(),
+            &FileDescriptorProto::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<FileDescriptorProto>(), &FileDescriptorProto::ByteSizeLong,
                 &FileDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -3592,13 +3594,14 @@ inline void DescriptorProto_ExtensionRange::SharedCtor(::_pb::Arena* arena) {
 }
 DescriptorProto_ExtensionRange::~DescriptorProto_ExtensionRange() {
   // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto.ExtensionRange)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void DescriptorProto_ExtensionRange::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  delete _impl_.options_;
-  _impl_.~Impl_();
+inline void DescriptorProto_ExtensionRange::SharedDtor(MessageLite& self) {
+  DescriptorProto_ExtensionRange& this_ = static_cast<DescriptorProto_ExtensionRange&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  delete this_._impl_.options_;
+  this_._impl_.~Impl_();
 }
 
 inline void* DescriptorProto_ExtensionRange::PlacementNew_(const void*, void* mem,
@@ -3620,7 +3623,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &DescriptorProto_ExtensionRange::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<DescriptorProto_ExtensionRange>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<DescriptorProto_ExtensionRange>(),
+            &DescriptorProto_ExtensionRange::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<DescriptorProto_ExtensionRange>(), &DescriptorProto_ExtensionRange::ByteSizeLong,
                 &DescriptorProto_ExtensionRange::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -3888,12 +3891,13 @@ inline void DescriptorProto_ReservedRange::SharedCtor(::_pb::Arena* arena) {
 }
 DescriptorProto_ReservedRange::~DescriptorProto_ReservedRange() {
   // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto.ReservedRange)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void DescriptorProto_ReservedRange::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.~Impl_();
+inline void DescriptorProto_ReservedRange::SharedDtor(MessageLite& self) {
+  DescriptorProto_ReservedRange& this_ = static_cast<DescriptorProto_ReservedRange&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.~Impl_();
 }
 
 inline void* DescriptorProto_ReservedRange::PlacementNew_(const void*, void* mem,
@@ -3915,7 +3919,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &DescriptorProto_ReservedRange::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<DescriptorProto_ReservedRange>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<DescriptorProto_ReservedRange>(),
+            &DescriptorProto_ReservedRange::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<DescriptorProto_ReservedRange>(), &DescriptorProto_ReservedRange::ByteSizeLong,
                 &DescriptorProto_ReservedRange::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -4176,14 +4180,15 @@ inline void DescriptorProto::SharedCtor(::_pb::Arena* arena) {
 }
 DescriptorProto::~DescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void DescriptorProto::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.name_.Destroy();
-  delete _impl_.options_;
-  _impl_.~Impl_();
+inline void DescriptorProto::SharedDtor(MessageLite& self) {
+  DescriptorProto& this_ = static_cast<DescriptorProto&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.name_.Destroy();
+  delete this_._impl_.options_;
+  this_._impl_.~Impl_();
 }
 
 inline void* DescriptorProto::PlacementNew_(const void*, void* mem,
@@ -4244,7 +4249,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &DescriptorProto::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<DescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<DescriptorProto>(),
+            &DescriptorProto::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<DescriptorProto>(), &DescriptorProto::ByteSizeLong,
                 &DescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -4770,14 +4775,15 @@ inline void ExtensionRangeOptions_Declaration::SharedCtor(::_pb::Arena* arena) {
 }
 ExtensionRangeOptions_Declaration::~ExtensionRangeOptions_Declaration() {
   // @@protoc_insertion_point(destructor:google.protobuf.ExtensionRangeOptions.Declaration)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void ExtensionRangeOptions_Declaration::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.full_name_.Destroy();
-  _impl_.type_.Destroy();
-  _impl_.~Impl_();
+inline void ExtensionRangeOptions_Declaration::SharedDtor(MessageLite& self) {
+  ExtensionRangeOptions_Declaration& this_ = static_cast<ExtensionRangeOptions_Declaration&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.full_name_.Destroy();
+  this_._impl_.type_.Destroy();
+  this_._impl_.~Impl_();
 }
 
 inline void* ExtensionRangeOptions_Declaration::PlacementNew_(const void*, void* mem,
@@ -4799,7 +4805,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &ExtensionRangeOptions_Declaration::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<ExtensionRangeOptions_Declaration>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<ExtensionRangeOptions_Declaration>(),
+            &ExtensionRangeOptions_Declaration::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<ExtensionRangeOptions_Declaration>(), &ExtensionRangeOptions_Declaration::ByteSizeLong,
                 &ExtensionRangeOptions_Declaration::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -5133,13 +5139,14 @@ inline void ExtensionRangeOptions::SharedCtor(::_pb::Arena* arena) {
 }
 ExtensionRangeOptions::~ExtensionRangeOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.ExtensionRangeOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void ExtensionRangeOptions::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  delete _impl_.features_;
-  _impl_.~Impl_();
+inline void ExtensionRangeOptions::SharedDtor(MessageLite& self) {
+  ExtensionRangeOptions& this_ = static_cast<ExtensionRangeOptions&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  delete this_._impl_.features_;
+  this_._impl_.~Impl_();
 }
 
 inline void* ExtensionRangeOptions::PlacementNew_(const void*, void* mem,
@@ -5179,7 +5186,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &ExtensionRangeOptions::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<ExtensionRangeOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<ExtensionRangeOptions>(),
+            &ExtensionRangeOptions::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<ExtensionRangeOptions>(), &ExtensionRangeOptions::ByteSizeLong,
                 &ExtensionRangeOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -5542,18 +5549,19 @@ inline void FieldDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 }
 FieldDescriptorProto::~FieldDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldDescriptorProto)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void FieldDescriptorProto::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.name_.Destroy();
-  _impl_.extendee_.Destroy();
-  _impl_.type_name_.Destroy();
-  _impl_.default_value_.Destroy();
-  _impl_.json_name_.Destroy();
-  delete _impl_.options_;
-  _impl_.~Impl_();
+inline void FieldDescriptorProto::SharedDtor(MessageLite& self) {
+  FieldDescriptorProto& this_ = static_cast<FieldDescriptorProto&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.name_.Destroy();
+  this_._impl_.extendee_.Destroy();
+  this_._impl_.type_name_.Destroy();
+  this_._impl_.default_value_.Destroy();
+  this_._impl_.json_name_.Destroy();
+  delete this_._impl_.options_;
+  this_._impl_.~Impl_();
 }
 
 inline void* FieldDescriptorProto::PlacementNew_(const void*, void* mem,
@@ -5575,7 +5583,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &FieldDescriptorProto::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<FieldDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<FieldDescriptorProto>(),
+            &FieldDescriptorProto::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<FieldDescriptorProto>(), &FieldDescriptorProto::ByteSizeLong,
                 &FieldDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -6077,14 +6085,15 @@ inline void OneofDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 }
 OneofDescriptorProto::~OneofDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.OneofDescriptorProto)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void OneofDescriptorProto::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.name_.Destroy();
-  delete _impl_.options_;
-  _impl_.~Impl_();
+inline void OneofDescriptorProto::SharedDtor(MessageLite& self) {
+  OneofDescriptorProto& this_ = static_cast<OneofDescriptorProto&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.name_.Destroy();
+  delete this_._impl_.options_;
+  this_._impl_.~Impl_();
 }
 
 inline void* OneofDescriptorProto::PlacementNew_(const void*, void* mem,
@@ -6106,7 +6115,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &OneofDescriptorProto::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<OneofDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<OneofDescriptorProto>(),
+            &OneofDescriptorProto::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<OneofDescriptorProto>(), &OneofDescriptorProto::ByteSizeLong,
                 &OneofDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -6354,12 +6363,13 @@ inline void EnumDescriptorProto_EnumReservedRange::SharedCtor(::_pb::Arena* aren
 }
 EnumDescriptorProto_EnumReservedRange::~EnumDescriptorProto_EnumReservedRange() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void EnumDescriptorProto_EnumReservedRange::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.~Impl_();
+inline void EnumDescriptorProto_EnumReservedRange::SharedDtor(MessageLite& self) {
+  EnumDescriptorProto_EnumReservedRange& this_ = static_cast<EnumDescriptorProto_EnumReservedRange&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.~Impl_();
 }
 
 inline void* EnumDescriptorProto_EnumReservedRange::PlacementNew_(const void*, void* mem,
@@ -6381,7 +6391,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &EnumDescriptorProto_EnumReservedRange::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<EnumDescriptorProto_EnumReservedRange>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<EnumDescriptorProto_EnumReservedRange>(),
+            &EnumDescriptorProto_EnumReservedRange::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<EnumDescriptorProto_EnumReservedRange>(), &EnumDescriptorProto_EnumReservedRange::ByteSizeLong,
                 &EnumDescriptorProto_EnumReservedRange::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -6632,14 +6642,15 @@ inline void EnumDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 }
 EnumDescriptorProto::~EnumDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumDescriptorProto)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void EnumDescriptorProto::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.name_.Destroy();
-  delete _impl_.options_;
-  _impl_.~Impl_();
+inline void EnumDescriptorProto::SharedDtor(MessageLite& self) {
+  EnumDescriptorProto& this_ = static_cast<EnumDescriptorProto&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.name_.Destroy();
+  delete this_._impl_.options_;
+  this_._impl_.~Impl_();
 }
 
 inline void* EnumDescriptorProto::PlacementNew_(const void*, void* mem,
@@ -6680,7 +6691,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &EnumDescriptorProto::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<EnumDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<EnumDescriptorProto>(),
+            &EnumDescriptorProto::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<EnumDescriptorProto>(), &EnumDescriptorProto::ByteSizeLong,
                 &EnumDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -7044,14 +7055,15 @@ inline void EnumValueDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 }
 EnumValueDescriptorProto::~EnumValueDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumValueDescriptorProto)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void EnumValueDescriptorProto::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.name_.Destroy();
-  delete _impl_.options_;
-  _impl_.~Impl_();
+inline void EnumValueDescriptorProto::SharedDtor(MessageLite& self) {
+  EnumValueDescriptorProto& this_ = static_cast<EnumValueDescriptorProto&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.name_.Destroy();
+  delete this_._impl_.options_;
+  this_._impl_.~Impl_();
 }
 
 inline void* EnumValueDescriptorProto::PlacementNew_(const void*, void* mem,
@@ -7073,7 +7085,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &EnumValueDescriptorProto::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<EnumValueDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<EnumValueDescriptorProto>(),
+            &EnumValueDescriptorProto::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<EnumValueDescriptorProto>(), &EnumValueDescriptorProto::ByteSizeLong,
                 &EnumValueDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -7369,14 +7381,15 @@ inline void ServiceDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 }
 ServiceDescriptorProto::~ServiceDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.ServiceDescriptorProto)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void ServiceDescriptorProto::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.name_.Destroy();
-  delete _impl_.options_;
-  _impl_.~Impl_();
+inline void ServiceDescriptorProto::SharedDtor(MessageLite& self) {
+  ServiceDescriptorProto& this_ = static_cast<ServiceDescriptorProto&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.name_.Destroy();
+  delete this_._impl_.options_;
+  this_._impl_.~Impl_();
 }
 
 inline void* ServiceDescriptorProto::PlacementNew_(const void*, void* mem,
@@ -7409,7 +7422,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &ServiceDescriptorProto::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<ServiceDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<ServiceDescriptorProto>(),
+            &ServiceDescriptorProto::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<ServiceDescriptorProto>(), &ServiceDescriptorProto::ByteSizeLong,
                 &ServiceDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -7725,16 +7738,17 @@ inline void MethodDescriptorProto::SharedCtor(::_pb::Arena* arena) {
 }
 MethodDescriptorProto::~MethodDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.MethodDescriptorProto)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void MethodDescriptorProto::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.name_.Destroy();
-  _impl_.input_type_.Destroy();
-  _impl_.output_type_.Destroy();
-  delete _impl_.options_;
-  _impl_.~Impl_();
+inline void MethodDescriptorProto::SharedDtor(MessageLite& self) {
+  MethodDescriptorProto& this_ = static_cast<MethodDescriptorProto&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.name_.Destroy();
+  this_._impl_.input_type_.Destroy();
+  this_._impl_.output_type_.Destroy();
+  delete this_._impl_.options_;
+  this_._impl_.~Impl_();
 }
 
 inline void* MethodDescriptorProto::PlacementNew_(const void*, void* mem,
@@ -7756,7 +7770,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &MethodDescriptorProto::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<MethodDescriptorProto>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<MethodDescriptorProto>(),
+            &MethodDescriptorProto::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<MethodDescriptorProto>(), &MethodDescriptorProto::ByteSizeLong,
                 &MethodDescriptorProto::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -8163,23 +8177,24 @@ inline void FileOptions::SharedCtor(::_pb::Arena* arena) {
 }
 FileOptions::~FileOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void FileOptions::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.java_package_.Destroy();
-  _impl_.java_outer_classname_.Destroy();
-  _impl_.go_package_.Destroy();
-  _impl_.objc_class_prefix_.Destroy();
-  _impl_.csharp_namespace_.Destroy();
-  _impl_.swift_prefix_.Destroy();
-  _impl_.php_class_prefix_.Destroy();
-  _impl_.php_namespace_.Destroy();
-  _impl_.php_metadata_namespace_.Destroy();
-  _impl_.ruby_package_.Destroy();
-  delete _impl_.features_;
-  _impl_.~Impl_();
+inline void FileOptions::SharedDtor(MessageLite& self) {
+  FileOptions& this_ = static_cast<FileOptions&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.java_package_.Destroy();
+  this_._impl_.java_outer_classname_.Destroy();
+  this_._impl_.go_package_.Destroy();
+  this_._impl_.objc_class_prefix_.Destroy();
+  this_._impl_.csharp_namespace_.Destroy();
+  this_._impl_.swift_prefix_.Destroy();
+  this_._impl_.php_class_prefix_.Destroy();
+  this_._impl_.php_namespace_.Destroy();
+  this_._impl_.php_metadata_namespace_.Destroy();
+  this_._impl_.ruby_package_.Destroy();
+  delete this_._impl_.features_;
+  this_._impl_.~Impl_();
 }
 
 inline void* FileOptions::PlacementNew_(const void*, void* mem,
@@ -8215,7 +8230,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &FileOptions::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<FileOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<FileOptions>(),
+            &FileOptions::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<FileOptions>(), &FileOptions::ByteSizeLong,
                 &FileOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -8998,13 +9013,14 @@ inline void MessageOptions::SharedCtor(::_pb::Arena* arena) {
 }
 MessageOptions::~MessageOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.MessageOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void MessageOptions::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  delete _impl_.features_;
-  _impl_.~Impl_();
+inline void MessageOptions::SharedDtor(MessageLite& self) {
+  MessageOptions& this_ = static_cast<MessageOptions&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  delete this_._impl_.features_;
+  this_._impl_.~Impl_();
 }
 
 inline void* MessageOptions::PlacementNew_(const void*, void* mem,
@@ -9040,7 +9056,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &MessageOptions::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<MessageOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<MessageOptions>(),
+            &MessageOptions::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<MessageOptions>(), &MessageOptions::ByteSizeLong,
                 &MessageOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -9423,13 +9439,14 @@ inline void FieldOptions_EditionDefault::SharedCtor(::_pb::Arena* arena) {
 }
 FieldOptions_EditionDefault::~FieldOptions_EditionDefault() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldOptions.EditionDefault)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void FieldOptions_EditionDefault::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.value_.Destroy();
-  _impl_.~Impl_();
+inline void FieldOptions_EditionDefault::SharedDtor(MessageLite& self) {
+  FieldOptions_EditionDefault& this_ = static_cast<FieldOptions_EditionDefault&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.value_.Destroy();
+  this_._impl_.~Impl_();
 }
 
 inline void* FieldOptions_EditionDefault::PlacementNew_(const void*, void* mem,
@@ -9451,7 +9468,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &FieldOptions_EditionDefault::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<FieldOptions_EditionDefault>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<FieldOptions_EditionDefault>(),
+            &FieldOptions_EditionDefault::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<FieldOptions_EditionDefault>(), &FieldOptions_EditionDefault::ByteSizeLong,
                 &FieldOptions_EditionDefault::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -9705,13 +9722,14 @@ inline void FieldOptions_FeatureSupport::SharedCtor(::_pb::Arena* arena) {
 }
 FieldOptions_FeatureSupport::~FieldOptions_FeatureSupport() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldOptions.FeatureSupport)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void FieldOptions_FeatureSupport::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.deprecation_warning_.Destroy();
-  _impl_.~Impl_();
+inline void FieldOptions_FeatureSupport::SharedDtor(MessageLite& self) {
+  FieldOptions_FeatureSupport& this_ = static_cast<FieldOptions_FeatureSupport&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.deprecation_warning_.Destroy();
+  this_._impl_.~Impl_();
 }
 
 inline void* FieldOptions_FeatureSupport::PlacementNew_(const void*, void* mem,
@@ -9733,7 +9751,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &FieldOptions_FeatureSupport::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<FieldOptions_FeatureSupport>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<FieldOptions_FeatureSupport>(),
+            &FieldOptions_FeatureSupport::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<FieldOptions_FeatureSupport>(), &FieldOptions_FeatureSupport::ByteSizeLong,
                 &FieldOptions_FeatureSupport::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -10054,14 +10072,15 @@ inline void FieldOptions::SharedCtor(::_pb::Arena* arena) {
 }
 FieldOptions::~FieldOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void FieldOptions::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  delete _impl_.features_;
-  delete _impl_.feature_support_;
-  _impl_.~Impl_();
+inline void FieldOptions::SharedDtor(MessageLite& self) {
+  FieldOptions& this_ = static_cast<FieldOptions&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  delete this_._impl_.features_;
+  delete this_._impl_.feature_support_;
+  this_._impl_.~Impl_();
 }
 
 inline void* FieldOptions::PlacementNew_(const void*, void* mem,
@@ -10105,7 +10124,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &FieldOptions::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<FieldOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<FieldOptions>(),
+            &FieldOptions::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<FieldOptions>(), &FieldOptions::ByteSizeLong,
                 &FieldOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -10675,13 +10694,14 @@ inline void OneofOptions::SharedCtor(::_pb::Arena* arena) {
 }
 OneofOptions::~OneofOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.OneofOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void OneofOptions::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  delete _impl_.features_;
-  _impl_.~Impl_();
+inline void OneofOptions::SharedDtor(MessageLite& self) {
+  OneofOptions& this_ = static_cast<OneofOptions&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  delete this_._impl_.features_;
+  this_._impl_.~Impl_();
 }
 
 inline void* OneofOptions::PlacementNew_(const void*, void* mem,
@@ -10717,7 +10737,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &OneofOptions::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<OneofOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<OneofOptions>(),
+            &OneofOptions::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<OneofOptions>(), &OneofOptions::ByteSizeLong,
                 &OneofOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -11011,13 +11031,14 @@ inline void EnumOptions::SharedCtor(::_pb::Arena* arena) {
 }
 EnumOptions::~EnumOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void EnumOptions::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  delete _impl_.features_;
-  _impl_.~Impl_();
+inline void EnumOptions::SharedDtor(MessageLite& self) {
+  EnumOptions& this_ = static_cast<EnumOptions&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  delete this_._impl_.features_;
+  this_._impl_.~Impl_();
 }
 
 inline void* EnumOptions::PlacementNew_(const void*, void* mem,
@@ -11053,7 +11074,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &EnumOptions::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<EnumOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<EnumOptions>(),
+            &EnumOptions::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<EnumOptions>(), &EnumOptions::ByteSizeLong,
                 &EnumOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -11419,14 +11440,15 @@ inline void EnumValueOptions::SharedCtor(::_pb::Arena* arena) {
 }
 EnumValueOptions::~EnumValueOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumValueOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void EnumValueOptions::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  delete _impl_.features_;
-  delete _impl_.feature_support_;
-  _impl_.~Impl_();
+inline void EnumValueOptions::SharedDtor(MessageLite& self) {
+  EnumValueOptions& this_ = static_cast<EnumValueOptions&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  delete this_._impl_.features_;
+  delete this_._impl_.feature_support_;
+  this_._impl_.~Impl_();
 }
 
 inline void* EnumValueOptions::PlacementNew_(const void*, void* mem,
@@ -11462,7 +11484,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &EnumValueOptions::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<EnumValueOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<EnumValueOptions>(),
+            &EnumValueOptions::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<EnumValueOptions>(), &EnumValueOptions::ByteSizeLong,
                 &EnumValueOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -11835,13 +11857,14 @@ inline void ServiceOptions::SharedCtor(::_pb::Arena* arena) {
 }
 ServiceOptions::~ServiceOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.ServiceOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void ServiceOptions::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  delete _impl_.features_;
-  _impl_.~Impl_();
+inline void ServiceOptions::SharedDtor(MessageLite& self) {
+  ServiceOptions& this_ = static_cast<ServiceOptions&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  delete this_._impl_.features_;
+  this_._impl_.~Impl_();
 }
 
 inline void* ServiceOptions::PlacementNew_(const void*, void* mem,
@@ -11877,7 +11900,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &ServiceOptions::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<ServiceOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<ServiceOptions>(),
+            &ServiceOptions::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<ServiceOptions>(), &ServiceOptions::ByteSizeLong,
                 &ServiceOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -12199,13 +12222,14 @@ inline void MethodOptions::SharedCtor(::_pb::Arena* arena) {
 }
 MethodOptions::~MethodOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.MethodOptions)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void MethodOptions::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  delete _impl_.features_;
-  _impl_.~Impl_();
+inline void MethodOptions::SharedDtor(MessageLite& self) {
+  MethodOptions& this_ = static_cast<MethodOptions&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  delete this_._impl_.features_;
+  this_._impl_.~Impl_();
 }
 
 inline void* MethodOptions::PlacementNew_(const void*, void* mem,
@@ -12241,7 +12265,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &MethodOptions::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<MethodOptions>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<MethodOptions>(),
+            &MethodOptions::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<MethodOptions>(), &MethodOptions::ByteSizeLong,
                 &MethodOptions::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -12577,13 +12601,14 @@ inline void UninterpretedOption_NamePart::SharedCtor(::_pb::Arena* arena) {
 }
 UninterpretedOption_NamePart::~UninterpretedOption_NamePart() {
   // @@protoc_insertion_point(destructor:google.protobuf.UninterpretedOption.NamePart)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void UninterpretedOption_NamePart::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.name_part_.Destroy();
-  _impl_.~Impl_();
+inline void UninterpretedOption_NamePart::SharedDtor(MessageLite& self) {
+  UninterpretedOption_NamePart& this_ = static_cast<UninterpretedOption_NamePart&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.name_part_.Destroy();
+  this_._impl_.~Impl_();
 }
 
 inline void* UninterpretedOption_NamePart::PlacementNew_(const void*, void* mem,
@@ -12605,7 +12630,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &UninterpretedOption_NamePart::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<UninterpretedOption_NamePart>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<UninterpretedOption_NamePart>(),
+            &UninterpretedOption_NamePart::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<UninterpretedOption_NamePart>(), &UninterpretedOption_NamePart::ByteSizeLong,
                 &UninterpretedOption_NamePart::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -12872,15 +12897,16 @@ inline void UninterpretedOption::SharedCtor(::_pb::Arena* arena) {
 }
 UninterpretedOption::~UninterpretedOption() {
   // @@protoc_insertion_point(destructor:google.protobuf.UninterpretedOption)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void UninterpretedOption::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.identifier_value_.Destroy();
-  _impl_.string_value_.Destroy();
-  _impl_.aggregate_value_.Destroy();
-  _impl_.~Impl_();
+inline void UninterpretedOption::SharedDtor(MessageLite& self) {
+  UninterpretedOption& this_ = static_cast<UninterpretedOption&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.identifier_value_.Destroy();
+  this_._impl_.string_value_.Destroy();
+  this_._impl_.aggregate_value_.Destroy();
+  this_._impl_.~Impl_();
 }
 
 inline void* UninterpretedOption::PlacementNew_(const void*, void* mem,
@@ -12913,7 +12939,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &UninterpretedOption::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<UninterpretedOption>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<UninterpretedOption>(),
+            &UninterpretedOption::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<UninterpretedOption>(), &UninterpretedOption::ByteSizeLong,
                 &UninterpretedOption::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -13309,12 +13335,13 @@ inline void FeatureSet::SharedCtor(::_pb::Arena* arena) {
 }
 FeatureSet::~FeatureSet() {
   // @@protoc_insertion_point(destructor:google.protobuf.FeatureSet)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void FeatureSet::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.~Impl_();
+inline void FeatureSet::SharedDtor(MessageLite& self) {
+  FeatureSet& this_ = static_cast<FeatureSet&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.~Impl_();
 }
 
 inline void* FeatureSet::PlacementNew_(const void*, void* mem,
@@ -13346,7 +13373,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &FeatureSet::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<FeatureSet>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<FeatureSet>(),
+            &FeatureSet::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<FeatureSet>(), &FeatureSet::ByteSizeLong,
                 &FeatureSet::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -13705,14 +13732,15 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedCtor(::_pb::Arena
 }
 FeatureSetDefaults_FeatureSetEditionDefault::~FeatureSetDefaults_FeatureSetEditionDefault() {
   // @@protoc_insertion_point(destructor:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  delete _impl_.overridable_features_;
-  delete _impl_.fixed_features_;
-  _impl_.~Impl_();
+inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor(MessageLite& self) {
+  FeatureSetDefaults_FeatureSetEditionDefault& this_ = static_cast<FeatureSetDefaults_FeatureSetEditionDefault&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  delete this_._impl_.overridable_features_;
+  delete this_._impl_.fixed_features_;
+  this_._impl_.~Impl_();
 }
 
 inline void* FeatureSetDefaults_FeatureSetEditionDefault::PlacementNew_(const void*, void* mem,
@@ -13734,7 +13762,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<FeatureSetDefaults_FeatureSetEditionDefault>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<FeatureSetDefaults_FeatureSetEditionDefault>(),
+            &FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<FeatureSetDefaults_FeatureSetEditionDefault>(), &FeatureSetDefaults_FeatureSetEditionDefault::ByteSizeLong,
                 &FeatureSetDefaults_FeatureSetEditionDefault::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -14041,12 +14069,13 @@ inline void FeatureSetDefaults::SharedCtor(::_pb::Arena* arena) {
 }
 FeatureSetDefaults::~FeatureSetDefaults() {
   // @@protoc_insertion_point(destructor:google.protobuf.FeatureSetDefaults)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void FeatureSetDefaults::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.~Impl_();
+inline void FeatureSetDefaults::SharedDtor(MessageLite& self) {
+  FeatureSetDefaults& this_ = static_cast<FeatureSetDefaults&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.~Impl_();
 }
 
 inline void* FeatureSetDefaults::PlacementNew_(const void*, void* mem,
@@ -14079,7 +14108,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &FeatureSetDefaults::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<FeatureSetDefaults>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<FeatureSetDefaults>(),
+            &FeatureSetDefaults::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<FeatureSetDefaults>(), &FeatureSetDefaults::ByteSizeLong,
                 &FeatureSetDefaults::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -14367,14 +14396,15 @@ inline void SourceCodeInfo_Location::SharedCtor(::_pb::Arena* arena) {
 }
 SourceCodeInfo_Location::~SourceCodeInfo_Location() {
   // @@protoc_insertion_point(destructor:google.protobuf.SourceCodeInfo.Location)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void SourceCodeInfo_Location::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.leading_comments_.Destroy();
-  _impl_.trailing_comments_.Destroy();
-  _impl_.~Impl_();
+inline void SourceCodeInfo_Location::SharedDtor(MessageLite& self) {
+  SourceCodeInfo_Location& this_ = static_cast<SourceCodeInfo_Location&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.leading_comments_.Destroy();
+  this_._impl_.trailing_comments_.Destroy();
+  this_._impl_.~Impl_();
 }
 
 inline void* SourceCodeInfo_Location::PlacementNew_(const void*, void* mem,
@@ -14415,7 +14445,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &SourceCodeInfo_Location::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<SourceCodeInfo_Location>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<SourceCodeInfo_Location>(),
+            &SourceCodeInfo_Location::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<SourceCodeInfo_Location>(), &SourceCodeInfo_Location::ByteSizeLong,
                 &SourceCodeInfo_Location::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -14739,12 +14769,13 @@ inline void SourceCodeInfo::SharedCtor(::_pb::Arena* arena) {
 }
 SourceCodeInfo::~SourceCodeInfo() {
   // @@protoc_insertion_point(destructor:google.protobuf.SourceCodeInfo)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void SourceCodeInfo::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.~Impl_();
+inline void SourceCodeInfo::SharedDtor(MessageLite& self) {
+  SourceCodeInfo& this_ = static_cast<SourceCodeInfo&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.~Impl_();
 }
 
 inline void* SourceCodeInfo::PlacementNew_(const void*, void* mem,
@@ -14777,7 +14808,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &SourceCodeInfo::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<SourceCodeInfo>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<SourceCodeInfo>(),
+            &SourceCodeInfo::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<SourceCodeInfo>(), &SourceCodeInfo::ByteSizeLong,
                 &SourceCodeInfo::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -15000,13 +15031,14 @@ inline void GeneratedCodeInfo_Annotation::SharedCtor(::_pb::Arena* arena) {
 }
 GeneratedCodeInfo_Annotation::~GeneratedCodeInfo_Annotation() {
   // @@protoc_insertion_point(destructor:google.protobuf.GeneratedCodeInfo.Annotation)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void GeneratedCodeInfo_Annotation::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.source_file_.Destroy();
-  _impl_.~Impl_();
+inline void GeneratedCodeInfo_Annotation::SharedDtor(MessageLite& self) {
+  GeneratedCodeInfo_Annotation& this_ = static_cast<GeneratedCodeInfo_Annotation&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.source_file_.Destroy();
+  this_._impl_.~Impl_();
 }
 
 inline void* GeneratedCodeInfo_Annotation::PlacementNew_(const void*, void* mem,
@@ -15039,7 +15071,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &GeneratedCodeInfo_Annotation::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<GeneratedCodeInfo_Annotation>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<GeneratedCodeInfo_Annotation>(),
+            &GeneratedCodeInfo_Annotation::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<GeneratedCodeInfo_Annotation>(), &GeneratedCodeInfo_Annotation::ByteSizeLong,
                 &GeneratedCodeInfo_Annotation::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -15356,12 +15388,13 @@ inline void GeneratedCodeInfo::SharedCtor(::_pb::Arena* arena) {
 }
 GeneratedCodeInfo::~GeneratedCodeInfo() {
   // @@protoc_insertion_point(destructor:google.protobuf.GeneratedCodeInfo)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void GeneratedCodeInfo::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.~Impl_();
+inline void GeneratedCodeInfo::SharedDtor(MessageLite& self) {
+  GeneratedCodeInfo& this_ = static_cast<GeneratedCodeInfo&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.~Impl_();
 }
 
 inline void* GeneratedCodeInfo::PlacementNew_(const void*, void* mem,
@@ -15394,7 +15427,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &GeneratedCodeInfo::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<GeneratedCodeInfo>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<GeneratedCodeInfo>(),
+            &GeneratedCodeInfo::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<GeneratedCodeInfo>(), &GeneratedCodeInfo::ByteSizeLong,
                 &GeneratedCodeInfo::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE

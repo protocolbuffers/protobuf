@@ -87,6 +87,10 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 
   static void MergeImpl(MessageLite&, const MessageLite&);
 
+  static void DestroyImpl(MessageLite& msg) {
+    static_cast<ImplicitWeakMessage&>(msg).~ImplicitWeakMessage();
+  }
+
   static void ClearImpl(MessageLite& msg) {
     static_cast<ImplicitWeakMessage&>(msg).Clear();
   }
