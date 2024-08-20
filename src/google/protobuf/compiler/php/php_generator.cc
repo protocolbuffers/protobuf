@@ -220,7 +220,7 @@ std::string DefaultForField(const FieldDescriptor* field) {
 }
 
 std::string DeprecatedConditionalForField(const FieldDescriptor* field) {
-  if (field->is_repeated() || field->is_map()) {
+  if (field->is_repeated()) {
     return absl::StrCat("$this->", field->name(), "->count() !== 0");
   }
   if (field->real_containing_oneof() != nullptr) {
