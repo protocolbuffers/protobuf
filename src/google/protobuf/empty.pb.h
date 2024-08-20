@@ -142,7 +142,7 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
 
   // implements Message ----------------------------------------------
 
-  Empty* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
+  Empty* New(::google::protobuf::Arena* arena = nullptr) const {
     return ::google::protobuf::internal::ZeroFieldsBase::DefaultConstruct<Empty>(arena);
   }
   using ::google::protobuf::internal::ZeroFieldsBase::CopyFrom;
@@ -170,6 +170,9 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ZeroFieldsBase::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::internal::ZeroFieldsBase::ClassDataFull _class_data_;
 
  public:

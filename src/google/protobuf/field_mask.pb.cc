@@ -10,6 +10,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -161,6 +162,24 @@ inline void FieldMask::SharedDtor() {
   _impl_.~Impl_();
 }
 
+inline void* FieldMask::PlacementNew_(const void*, void* mem,
+                                        ::google::protobuf::Arena* arena) {
+  return ::new (mem) FieldMask(arena);
+}
+constexpr auto FieldMask::InternalNewImpl_() {
+  constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      PROTOBUF_FIELD_OFFSET(FieldMask, _impl_.paths_) +
+          decltype(FieldMask::_impl_.paths_)::
+              InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+  });
+  if (arena_bits.has_value()) {
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FieldMask), *arena_bits);
+  } else {
+    return ::google::protobuf::internal::MessageCreator(&FieldMask::PlacementNew_,
+                                 sizeof(FieldMask));
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -171,9 +190,9 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &FieldMask::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<FieldMask>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<FieldMask>(),
-            ::google::protobuf::Message::GetNewImpl<FieldMask>(),
             ::google::protobuf::Message::GetClearImpl<FieldMask>(), &FieldMask::ByteSizeLong,
                 &FieldMask::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE

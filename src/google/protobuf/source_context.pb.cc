@@ -10,6 +10,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -164,6 +165,13 @@ inline void SourceContext::SharedDtor() {
   _impl_.~Impl_();
 }
 
+inline void* SourceContext::PlacementNew_(const void*, void* mem,
+                                        ::google::protobuf::Arena* arena) {
+  return ::new (mem) SourceContext(arena);
+}
+constexpr auto SourceContext::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SourceContext));
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -174,9 +182,9 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &SourceContext::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<SourceContext>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<SourceContext>(),
-            ::google::protobuf::Message::GetNewImpl<SourceContext>(),
             ::google::protobuf::Message::GetClearImpl<SourceContext>(), &SourceContext::ByteSizeLong,
                 &SourceContext::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE

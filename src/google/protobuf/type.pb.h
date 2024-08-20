@@ -276,7 +276,7 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Option* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
+  Option* New(::google::protobuf::Arena* arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Option>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -332,6 +332,9 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -486,7 +489,7 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Field* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
+  Field* New(::google::protobuf::Arena* arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Field>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -542,6 +545,9 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -868,7 +874,7 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  EnumValue* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
+  EnumValue* New(::google::protobuf::Arena* arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<EnumValue>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -924,6 +930,9 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -1091,7 +1100,7 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Type* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
+  Type* New(::google::protobuf::Arena* arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Type>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -1147,6 +1156,9 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -1393,7 +1405,7 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Enum* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
+  Enum* New(::google::protobuf::Arena* arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Enum>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -1449,6 +1461,9 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
