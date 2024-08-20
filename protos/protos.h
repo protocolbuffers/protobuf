@@ -25,10 +25,7 @@ using hpb::internal::PrivateAccess;
 using hpb::internal::Serialize;
 using hpb::internal::SetExtension;
 }  // namespace internal
-using hpb::ClearMessage;
-using hpb::CloneMessage;
 using hpb::CreateMessage;
-using hpb::DeepCopy;
 using hpb::Parse;
 using hpb::Serialize;
 

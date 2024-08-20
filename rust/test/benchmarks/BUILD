@@ -48,6 +48,7 @@ cc_test(
         ":bench_data_upb_cc_proto",
         ":benchmarks",
         ":proto_benchmarks_cpp",  # build_cleaner: keep
+        "//hpb",
         "//hpb:repeated_field",
         "//protos",
         "//src/google/protobuf:protobuf_lite",
@@ -69,6 +70,7 @@ cc_test(
         ":bench_data_upb_cc_proto",
         ":benchmarks",
         ":proto_benchmarks_upb",  # build_cleaner: keep
+        "//hpb",
         "//hpb:repeated_field",
         "//protos",
         "//src/google/protobuf:protobuf_lite",
