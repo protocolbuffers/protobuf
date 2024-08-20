@@ -32,6 +32,7 @@ cc_library(
     deps = [
         ":hpb",
         ":traits",
+        "//hpb/backend/upb:interop",
         "//upb:base",
         "//upb:mem",
         "//upb:message",
@@ -51,9 +52,12 @@ cc_library(
     ],
     compatible_with = ["//buildenv/target:non_prod"],
     copts = UPB_DEFAULT_CPPOPTS,
+    defines = ["HPB_BACKEND_UPB"],
     visibility = ["//visibility:public"],
     deps = [
         "//hpb:ptr",
+        "//hpb/backend/upb",
+        "//hpb/backend/upb:interop",
         "//hpb/internal",
         "//hpb/internal:message_lock",
         "//hpb/internal:template_help",

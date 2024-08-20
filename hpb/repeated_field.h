@@ -15,6 +15,7 @@
 #include <type_traits>
 
 #include "absl/strings/string_view.h"
+#include "google/protobuf/hpb/backend/upb/interop.h"
 #include "google/protobuf/hpb/hpb.h"
 #include "google/protobuf/hpb/repeated_field_iterator.h"
 #include "google/protobuf/hpb/traits.h"
@@ -120,7 +121,7 @@ class RepeatedFieldProxy
     upb_MessageValue message_value;
     message_value.msg_val = upb_Message_DeepClone(
         ::hpb::internal::PrivateAccess::GetInternalMsg(&t),
-        ::hpb::internal::GetMiniTable(&t), this->arena_);
+        ::hpb::interop::upb::GetMiniTable(&t), this->arena_);
     upb_Array_Append(this->arr_, message_value, this->arena_);
   }
 

@@ -15,6 +15,7 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/hpb/backend/upb/interop.h"
 #include "google/protobuf/hpb/internal/internal.h"
 #include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/ptr.h"
@@ -24,6 +25,12 @@
 #include "upb/mini_table/extension.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
+
+#ifdef HPB_BACKEND_UPB
+#include "google/protobuf/hpb/backend/upb/upb.h"
+#else
+#error hpb backend must be specified
+#endif
 
 namespace hpb {
 class ExtensionRegistry;
@@ -118,16 +125,6 @@ upb_Arena* GetArena(T* message) {
   return static_cast<upb_Arena*>(message->GetInternalArena());
 }
 
-template <typename T>
-const upb_MiniTable* GetMiniTable(const T*) {
-  return T::minitable();
-}
-
-template <typename T>
-const upb_MiniTable* GetMiniTable(Ptr<T>) {
-  return T::minitable();
-}
-
 upb_ExtensionRegistry* GetUpbExtensions(
     const ExtensionRegistry& extension_registry);
 
@@ -156,6 +153,10 @@ absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
                           const upb_Message* extension);
 
 }  // namespace internal
+
+#ifdef HPB_BACKEND_UPB
+namespace backend = ::hpb::internal::backend::upb;
+#endif
 
 class ExtensionRegistry {
  public:
@@ -361,20 +362,18 @@ void DeepCopy(const T* source_message, T* target_message) {
 
 template <typename T>
 void ClearMessage(hpb::internal::PtrOrRaw<T> message) {
-  auto ptr = Ptr(message);
-  auto minitable = hpb::internal::GetMiniTable(ptr);
-  upb_Message_Clear(hpb::internal::GetInternalMsg(ptr), minitable);
+  backend::ClearMessage(message);
 }
 
 template <typename T>
 ABSL_MUST_USE_RESULT bool Parse(Ptr<T> message, absl::string_view bytes) {
   static_assert(!std::is_const_v<T>);
   upb_Message_Clear(::hpb::internal::GetInternalMsg(message),
-                    ::hpb::internal::GetMiniTable(message));
+                    ::hpb::interop::upb::GetMiniTable(message));
   auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
   return upb_Decode(bytes.data(), bytes.size(),
                     ::hpb::internal::GetInternalMsg(message),
-                    ::hpb::internal::GetMiniTable(message),
+                    ::hpb::interop::upb::GetMiniTable(message),
                     /* extreg= */ nullptr, /* options= */ 0,
                     arena) == kUpb_DecodeStatus_Ok;
 }
@@ -385,11 +384,11 @@ ABSL_MUST_USE_RESULT bool Parse(
     const ::hpb::ExtensionRegistry& extension_registry) {
   static_assert(!std::is_const_v<T>);
   upb_Message_Clear(::hpb::internal::GetInternalMsg(message),
-                    ::hpb::internal::GetMiniTable(message));
+                    ::hpb::interop::upb::GetMiniTable(message));
   auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
   return upb_Decode(bytes.data(), bytes.size(),
                     ::hpb::internal::GetInternalMsg(message),
-                    ::hpb::internal::GetMiniTable(message),
+                    ::hpb::interop::upb::GetMiniTable(message),
                     /* extreg= */
                     ::hpb::internal::GetUpbExtensions(extension_registry),
                     /* options= */ 0, arena) == kUpb_DecodeStatus_Ok;
@@ -407,11 +406,11 @@ template <typename T>
 ABSL_MUST_USE_RESULT bool Parse(T* message, absl::string_view bytes) {
   static_assert(!std::is_const_v<T>);
   upb_Message_Clear(::hpb::internal::GetInternalMsg(message),
-                    ::hpb::internal::GetMiniTable(message));
+                    ::hpb::interop::upb::GetMiniTable(message));
   auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
   return upb_Decode(bytes.data(), bytes.size(),
                     ::hpb::internal::GetInternalMsg(message),
-                    ::hpb::internal::GetMiniTable(message),
+                    ::hpb::interop::upb::GetMiniTable(message),
                     /* extreg= */ nullptr, /* options= */ 0,
                     arena) == kUpb_DecodeStatus_Ok;
 }
@@ -422,7 +421,7 @@ absl::StatusOr<T> Parse(absl::string_view bytes, int options = 0) {
   auto* arena = static_cast<upb_Arena*>(message.GetInternalArena());
   upb_DecodeStatus status =
       upb_Decode(bytes.data(), bytes.size(), message.msg(),
-                 ::hpb::internal::GetMiniTable(&message),
+                 ::hpb::interop::upb::GetMiniTable(&message),
                  /* extreg= */ nullptr, /* options= */ 0, arena);
   if (status == kUpb_DecodeStatus_Ok) {
     return message;
@@ -438,7 +437,7 @@ absl::StatusOr<T> Parse(absl::string_view bytes,
   auto* arena = static_cast<upb_Arena*>(message.GetInternalArena());
   upb_DecodeStatus status =
       upb_Decode(bytes.data(), bytes.size(), message.msg(),
-                 ::hpb::internal::GetMiniTable(&message),
+                 ::hpb::interop::upb::GetMiniTable(&message),
                  ::hpb::internal::GetUpbExtensions(extension_registry),
                  /* options= */ 0, arena);
   if (status == kUpb_DecodeStatus_Ok) {
@@ -451,7 +450,7 @@ template <typename T>
 absl::StatusOr<absl::string_view> Serialize(const T* message, upb::Arena& arena,
                                             int options = 0) {
   return ::hpb::internal::Serialize(::hpb::internal::GetInternalMsg(message),
-                                    ::hpb::internal::GetMiniTable(message),
+                                    ::hpb::interop::upb::GetMiniTable(message),
                                     arena.ptr(), options);
 }
 
@@ -459,7 +458,7 @@ template <typename T>
 absl::StatusOr<absl::string_view> Serialize(Ptr<T> message, upb::Arena& arena,
                                             int options = 0) {
   return ::hpb::internal::Serialize(::hpb::internal::GetInternalMsg(message),
-                                    ::hpb::internal::GetMiniTable(message),
+                                    ::hpb::interop::upb::GetMiniTable(message),
                                     arena.ptr(), options);
 }
 
