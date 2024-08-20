@@ -6,12 +6,6 @@
 
 use conformance_rust_proto::{ConformanceRequest, ConformanceResponse, WireFormat};
 
-#[cfg(cpp_kernel)]
-use protobuf_cpp as protobuf;
-
-#[cfg(upb_kernel)]
-use protobuf_upb as protobuf;
-
 use protobuf::prelude::*;
 use protobuf::Optional::{Set, Unset};
 use protobuf::ParseError;
