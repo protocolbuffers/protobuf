@@ -307,9 +307,9 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
         friend class ::hpb::Ptr<$0>;
         friend class ::hpb::Ptr<const $0>;
         static const upb_MiniTable* minitable() { return $0::minitable(); }
-        friend const upb_MiniTable* ::hpb::internal::GetMiniTable<$0Proxy>(
+        friend const upb_MiniTable* ::hpb::interop::upb::GetMiniTable<$0Proxy>(
             const $0Proxy* message);
-        friend const upb_MiniTable* ::hpb::internal::GetMiniTable<$0Proxy>(
+        friend const upb_MiniTable* ::hpb::interop::upb::GetMiniTable<$0Proxy>(
             ::hpb::Ptr<$0Proxy> message);
         friend upb_Arena* ::hpb::internal::GetArena<$2>($2* message);
         friend upb_Arena* ::hpb::internal::GetArena<$2>(::hpb::Ptr<$2> message);
@@ -356,9 +356,9 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
         friend class ::hpb::Ptr<$0>;
         friend class ::hpb::Ptr<const $0>;
         static const upb_MiniTable* minitable() { return $0::minitable(); }
-        friend const upb_MiniTable* ::hpb::internal::GetMiniTable<$0CProxy>(
+        friend const upb_MiniTable* ::hpb::interop::upb::GetMiniTable<$0CProxy>(
             const $0CProxy* message);
-        friend const upb_MiniTable* ::hpb::internal::GetMiniTable<$0CProxy>(
+        friend const upb_MiniTable* ::hpb::interop::upb::GetMiniTable<$0CProxy>(
             ::hpb::Ptr<$0CProxy> message);
 
         static void Rebind($0CProxy& lhs, const $0CProxy& rhs) {

@@ -16,7 +16,6 @@ using hpb::internal::DeepCopy;
 using hpb::internal::ExtensionIdentifier;
 using hpb::internal::GetArena;
 using hpb::internal::GetInternalMsg;
-using hpb::internal::GetMiniTable;
 using hpb::internal::GetOrPromoteExtension;
 using hpb::internal::GetUpbExtensions;
 using hpb::internal::HasExtensionOrUnknown;

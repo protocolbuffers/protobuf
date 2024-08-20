@@ -120,7 +120,7 @@ class RepeatedFieldProxy
     upb_MessageValue message_value;
     message_value.msg_val = upb_Message_DeepClone(
         ::hpb::internal::PrivateAccess::GetInternalMsg(&t),
-        ::hpb::internal::GetMiniTable(&t), this->arena_);
+        ::hpb::interop::upb::GetMiniTable(&t), this->arena_);
     upb_Array_Append(this->arr_, message_value, this->arena_);
   }
 

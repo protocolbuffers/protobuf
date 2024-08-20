@@ -57,6 +57,7 @@ cc_library(
         "//hpb:ptr",
         "//hpb/internal",
         "//hpb/internal:template_help",
+        "//hpb/interop:upb",
         "//upb:base",
         "//upb:mem",
         "//upb:message",
