@@ -121,6 +121,7 @@ Single-value arguments:
 - `LANGUAGE` — A single value: cpp or python. Determines what kind of source files are being generated.
 - `OUT_VAR` — Name of a CMake variable that will be filled with the paths to the generated source files.
 - `EXPORT_MACRO` — Name of a macro that is applied to all generated Protobuf message classes and extern variables. It can, for example, be used to declare DLL exports.
+- `PROTOC_EXE` — Command name, path, or CMake executable used to run protoc commands. Defaults to `protobuf::protoc`.
 - `PROTOC_OUT_DIR` — Output directory of generated source files. Defaults to `CMAKE_CURRENT_BINARY_DIR`.
 - `PLUGIN` — An optional plugin executable. This could, for example, be the path to `grpc_cpp_plugin`.
 - `PLUGIN_OPTIONS` — Additional options provided to the plugin, such as `generate_mock_code=true` for the gRPC cpp plugin.
