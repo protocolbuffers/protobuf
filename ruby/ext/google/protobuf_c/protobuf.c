@@ -7,8 +7,6 @@
 
 #include "protobuf.h"
 
-#include <ruby/version.h>
-
 #include "defs.h"
 #include "map.h"
 #include "message.h"

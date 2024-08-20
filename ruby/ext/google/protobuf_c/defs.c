@@ -7,7 +7,6 @@
 
 #include <ctype.h>
 #include <errno.h>
-#include <ruby/version.h>
 
 #include "convert.h"
 #include "message.h"
