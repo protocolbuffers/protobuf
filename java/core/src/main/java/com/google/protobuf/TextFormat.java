@@ -111,19 +111,33 @@ public final class TextFormat {
 
   /** Printer instance which escapes non-ASCII characters. */
   public static Printer printer() {
-    return Printer.DEFAULT;
+    return Printer.DEFAULT_TEXT_FORMAT;
+  }
+
+  /** Printer instance which escapes non-ASCII characters and prints in the debug format. */
+  public static Printer debugFormatPrinter() {
+    return Printer.DEFAULT_DEBUG_FORMAT;
   }
 
   /** Helper class for converting protobufs to text. */
   public static final class Printer {
 
-    // Printer instance which escapes non-ASCII characters.
-    private static final Printer DEFAULT =
+    // Printer instance which escapes non-ASCII characters and prints in the text format.
+    private static final Printer DEFAULT_TEXT_FORMAT =
         new Printer(
             true,
             TypeRegistry.getEmptyTypeRegistry(),
             ExtensionRegistryLite.getEmptyRegistry(),
             false,
+            false);
+
+    // Printer instance which escapes non-ASCII characters and prints in the debug format.
+    private static final Printer DEFAULT_DEBUG_FORMAT =
+        new Printer(
+            true,
+            TypeRegistry.getEmptyTypeRegistry(),
+            ExtensionRegistryLite.getEmptyRegistry(),
+            true,
             false);
 
     /**

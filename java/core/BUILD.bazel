@@ -549,6 +549,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/Proto2ExtensionLookupSchemaTest.java",
     "src/test/java/com/google/protobuf/Proto2SchemaTest.java",
     "src/test/java/com/google/protobuf/Proto2UnknownEnumValueTest.java",
+    "src/test/java/com/google/protobuf/ProtobufToStringOutputTest.java",
     "src/test/java/com/google/protobuf/RepeatedFieldBuilderTest.java",
     "src/test/java/com/google/protobuf/ServiceTest.java",
     "src/test/java/com/google/protobuf/SingleFieldBuilderTest.java",
