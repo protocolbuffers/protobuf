@@ -8,8 +8,9 @@
 use googletest::prelude::*;
 use protobuf_cpp::prelude::*;
 
-use protobuf_cpp::__runtime::{PtrAndLen, RawMessage};
+use protobuf_cpp::__runtime::PtrAndLen;
 use protobuf_cpp::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop};
+use std::ffi::c_void;
 use unittest_rust_proto::{TestAllExtensions, TestAllTypes, TestAllTypesMut, TestAllTypesView};
 
 macro_rules! proto_assert_eq {
@@ -26,14 +27,14 @@ macro_rules! proto_assert_eq {
 // Helper functions invoking C++ Protobuf APIs directly in C++.
 // Defined in `test_utils.cc`.
 extern "C" {
-    fn TakeOwnershipAndGetOptionalInt32(msg: RawMessage) -> i32;
-    fn DeserializeTestAllTypes(data: *const u8, len: usize) -> RawMessage;
-    fn MutateTestAllTypes(msg: RawMessage);
-    fn SerializeTestAllTypes(msg: RawMessage) -> protobuf_cpp::__runtime::SerializedData;
-    fn DeleteTestAllTypes(msg: RawMessage);
+    fn TakeOwnershipAndGetOptionalInt32(msg: *mut c_void) -> i32;
+    fn DeserializeTestAllTypes(data: *const u8, len: usize) -> *mut c_void;
+    fn MutateTestAllTypes(msg: *mut c_void);
+    fn SerializeTestAllTypes(msg: *const c_void) -> protobuf_cpp::__runtime::SerializedData;
+    fn DeleteTestAllTypes(msg: *mut c_void);
 
-    fn NewWithExtension() -> RawMessage;
-    fn GetBytesExtension(msg: RawMessage) -> PtrAndLen;
+    fn NewWithExtension() -> *mut c_void;
+    fn GetBytesExtension(msg: *const c_void) -> PtrAndLen;
 }
 
 #[gtest]
@@ -113,7 +114,8 @@ fn deserialize_in_cpp_into_view() {
     let data = msg1.serialize().unwrap();
 
     let raw_msg = unsafe { DeserializeTestAllTypes((*data).as_ptr(), data.len()) };
-    let msg2 = unsafe { TestAllTypesView::__unstable_wrap_raw_message(&raw_msg) };
+    let const_msg = raw_msg as *const _;
+    let msg2 = unsafe { TestAllTypesView::__unstable_wrap_raw_message(&const_msg) };
 
     proto_assert_eq!(msg1, msg2);
 
