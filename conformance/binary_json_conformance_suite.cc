@@ -36,8 +36,6 @@
 #include "google/protobuf/endian.h"
 #include "google/protobuf/json/json.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
-#include "google/protobuf/test_messages_proto2.pb.h"
-#include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unknown_field_set.h"

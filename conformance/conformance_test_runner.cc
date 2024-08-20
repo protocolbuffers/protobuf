@@ -55,7 +55,6 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "conformance/conformance.pb.h"
-#include "conformance/conformance.pb.h"
 #include "conformance_test.h"
 #include "google/protobuf/endian.h"
 

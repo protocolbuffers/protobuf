@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "google/protobuf/any.pb.h"
 #include "google/protobuf/source_context.pb.h"
 #include "google/protobuf/type.pb.h"
 #include "google/protobuf/wrappers.pb.h"

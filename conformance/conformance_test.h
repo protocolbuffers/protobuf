@@ -25,7 +25,6 @@
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "conformance/conformance.pb.h"
-#include "conformance/conformance.pb.h"
 #include "failure_list_trie_node.h"
 #include "google/protobuf/descriptor.h"
 

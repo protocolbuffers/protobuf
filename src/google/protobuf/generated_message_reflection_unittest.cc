@@ -38,7 +38,6 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3.pb.h"

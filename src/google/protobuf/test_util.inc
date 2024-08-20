@@ -19,6 +19,7 @@
 #include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/unittest_import.pb.h"
 
 namespace google {
 namespace protobuf {
