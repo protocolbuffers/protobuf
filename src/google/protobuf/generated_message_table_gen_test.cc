@@ -1,9 +1,11 @@
 #include "google/protobuf/generated_message_table_gen.h"
 
 #include <cctype>
+#include <cstddef>
 #include <cstdint>
 #include <string>
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/algorithm/container.h"
 #include "absl/log/absl_check.h"
@@ -174,6 +176,53 @@ INSTANTIATE_TEST_SUITE_P(
       absl::c_replace_if(name, [](char c) { return !std::isalnum(c); }, '_');
       return name;
     });
+
+TEST(MessageTableTest, AssertNoPaddingSimpleMessageTable) {
+  // Between header and field_entries.
+  EXPECT_EQ(offsetof(MessageTable<1>, field_entries), sizeof(MessageTableBase));
+  EXPECT_EQ(offsetof(MessageTable<2>, field_entries), sizeof(MessageTableBase));
+}
+
+// Evaluates to true if FIELD1 and FIELD2 are adjacent without padding (with
+// OFFSET in between).
+#define EXPECT_BACK_TO_BACK(TYPE, FIELD1, OFFSET, FIELD2) \
+  EXPECT_EQ((offsetof(TYPE, FIELD1) + OFFSET), offsetof(TYPE, FIELD2))
+
+TEST(MessageTableTest, AssertNoPaddingMessageTableWithoutAuxEntry) {
+  // header, field_entries, aux_header should be back to back.
+  using table1_t = MessageTable<1, true>;
+  EXPECT_BACK_TO_BACK(table1_t, header, sizeof(MessageTableBase),
+                      field_entries);
+  EXPECT_BACK_TO_BACK(table1_t, field_entries, sizeof(FieldEntry), aux_header);
+
+  using table2_t = MessageTable<2, true>;
+  EXPECT_BACK_TO_BACK(table2_t, header, sizeof(MessageTableBase),
+                      field_entries);
+  EXPECT_BACK_TO_BACK(table2_t, field_entries, 2 * sizeof(FieldEntry),
+                      aux_header);
+}
+
+TEST(MessageTableTest, AssertNoPaddingMessageTable) {
+  // header, field_entries, aux_header, aux_entries should be back to back.
+  // offsetof macro doesn't work with T<a, b>. Alias the type here.
+  using table1_t = MessageTable<1, true, 1>;
+  EXPECT_BACK_TO_BACK(table1_t, header, sizeof(MessageTableBase),
+                      field_entries);
+  EXPECT_BACK_TO_BACK(table1_t, field_entries, sizeof(FieldEntry), aux_header);
+  EXPECT_BACK_TO_BACK(table1_t, aux_header, sizeof(MessageTableAux),
+                      aux_entries);
+
+  using table2_t = MessageTable<2, true, 2>;
+  EXPECT_BACK_TO_BACK(table2_t, header, sizeof(MessageTableBase),
+                      field_entries);
+  EXPECT_BACK_TO_BACK(table2_t, field_entries, 2 * sizeof(FieldEntry),
+                      aux_header);
+  EXPECT_BACK_TO_BACK(table2_t, aux_header, sizeof(MessageTableAux),
+                      aux_entries);
+}
+
+#undef EXPECT_BACK_TO_BACK
+
 
 }  // namespace
 }  // namespace v2
