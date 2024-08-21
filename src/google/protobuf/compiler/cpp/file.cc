@@ -236,7 +236,8 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
              NamespaceOpener ns(ProtobufNamespace(options_), p);
              p->Emit(R"cc(
                namespace internal {
-               class AnyMetadata;
+               template <typename T>
+               ::absl::string_view GetAnyMessageName();
                }  // namespace internal
              )cc");
            }},

@@ -39,7 +39,8 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-class AnyMetadata;
+template <typename T>
+::absl::string_view GetAnyMessageName();
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -829,7 +830,9 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final
   void SharedDtor();
   void InternalSwap(UninterpretedOption_NamePart* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.UninterpretedOption.NamePart"; }
 
  protected:
@@ -1040,7 +1043,9 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final
   void SharedDtor();
   void InternalSwap(SourceCodeInfo_Location* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.SourceCodeInfo.Location"; }
 
  protected:
@@ -1323,7 +1328,9 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final
   void SharedDtor();
   void InternalSwap(GeneratedCodeInfo_Annotation* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.GeneratedCodeInfo.Annotation"; }
 
  protected:
@@ -1601,7 +1608,9 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final
   void SharedDtor();
   void InternalSwap(FieldOptions_FeatureSupport* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldOptions.FeatureSupport"; }
 
  protected:
@@ -1838,7 +1847,9 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final
   void SharedDtor();
   void InternalSwap(FieldOptions_EditionDefault* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldOptions.EditionDefault"; }
 
  protected:
@@ -2054,7 +2065,9 @@ class PROTOBUF_EXPORT FeatureSet final
   void SharedDtor();
   void InternalSwap(FeatureSet* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSet"; }
 
  protected:
@@ -2612,7 +2625,9 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final
   void SharedDtor();
   void InternalSwap(ExtensionRangeOptions_Declaration* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ExtensionRangeOptions.Declaration"; }
 
  protected:
@@ -2868,7 +2883,9 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final
   void SharedDtor();
   void InternalSwap(EnumDescriptorProto_EnumReservedRange* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumDescriptorProto.EnumReservedRange"; }
 
  protected:
@@ -3073,7 +3090,9 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final
   void SharedDtor();
   void InternalSwap(DescriptorProto_ReservedRange* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto.ReservedRange"; }
 
  protected:
@@ -3283,7 +3302,9 @@ class PROTOBUF_EXPORT UninterpretedOption final
   void SharedDtor();
   void InternalSwap(UninterpretedOption* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.UninterpretedOption"; }
 
  protected:
@@ -3578,7 +3599,9 @@ class PROTOBUF_EXPORT SourceCodeInfo final
   void SharedDtor();
   void InternalSwap(SourceCodeInfo* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.SourceCodeInfo"; }
 
  protected:
@@ -3776,7 +3799,9 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final
   void SharedDtor();
   void InternalSwap(GeneratedCodeInfo* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.GeneratedCodeInfo"; }
 
  protected:
@@ -3979,7 +4004,9 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final
   void SharedDtor();
   void InternalSwap(FeatureSetDefaults_FeatureSetEditionDefault* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault"; }
 
  protected:
@@ -4210,7 +4237,9 @@ class PROTOBUF_EXPORT ServiceOptions final
   void SharedDtor();
   void InternalSwap(ServiceOptions* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ServiceOptions"; }
 
  protected:
@@ -4623,7 +4652,9 @@ class PROTOBUF_EXPORT OneofOptions final
   void SharedDtor();
   void InternalSwap(OneofOptions* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.OneofOptions"; }
 
  protected:
@@ -5023,7 +5054,9 @@ class PROTOBUF_EXPORT MethodOptions final
   void SharedDtor();
   void InternalSwap(MethodOptions* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.MethodOptions"; }
 
  protected:
@@ -5469,7 +5502,9 @@ class PROTOBUF_EXPORT MessageOptions final
   void SharedDtor();
   void InternalSwap(MessageOptions* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.MessageOptions"; }
 
  protected:
@@ -5934,7 +5969,9 @@ class PROTOBUF_EXPORT FileOptions final
   void SharedDtor();
   void InternalSwap(FileOptions* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FileOptions"; }
 
  protected:
@@ -6661,7 +6698,9 @@ class PROTOBUF_EXPORT FieldOptions final
   void SharedDtor();
   void InternalSwap(FieldOptions* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldOptions"; }
 
  protected:
@@ -7324,7 +7363,9 @@ class PROTOBUF_EXPORT FeatureSetDefaults final
   void SharedDtor();
   void InternalSwap(FeatureSetDefaults* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSetDefaults"; }
 
  protected:
@@ -7554,7 +7595,9 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final
   void SharedDtor();
   void InternalSwap(ExtensionRangeOptions* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ExtensionRangeOptions"; }
 
  protected:
@@ -8006,7 +8049,9 @@ class PROTOBUF_EXPORT EnumValueOptions final
   void SharedDtor();
   void InternalSwap(EnumValueOptions* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumValueOptions"; }
 
  protected:
@@ -8449,7 +8494,9 @@ class PROTOBUF_EXPORT EnumOptions final
   void SharedDtor();
   void InternalSwap(EnumOptions* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumOptions"; }
 
  protected:
@@ -8888,7 +8935,9 @@ class PROTOBUF_EXPORT OneofDescriptorProto final
   void SharedDtor();
   void InternalSwap(OneofDescriptorProto* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.OneofDescriptorProto"; }
 
  protected:
@@ -9108,7 +9157,9 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
   void SharedDtor();
   void InternalSwap(MethodDescriptorProto* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.MethodDescriptorProto"; }
 
  protected:
@@ -9392,7 +9443,9 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
   void SharedDtor();
   void InternalSwap(FieldDescriptorProto* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldDescriptorProto"; }
 
  protected:
@@ -9808,7 +9861,9 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final
   void SharedDtor();
   void InternalSwap(EnumValueDescriptorProto* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumValueDescriptorProto"; }
 
  protected:
@@ -10041,7 +10096,9 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final
   void SharedDtor();
   void InternalSwap(DescriptorProto_ExtensionRange* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto.ExtensionRange"; }
 
  protected:
@@ -10268,7 +10325,9 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final
   void SharedDtor();
   void InternalSwap(ServiceDescriptorProto* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ServiceDescriptorProto"; }
 
  protected:
@@ -10507,7 +10566,9 @@ class PROTOBUF_EXPORT EnumDescriptorProto final
   void SharedDtor();
   void InternalSwap(EnumDescriptorProto* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumDescriptorProto"; }
 
  protected:
@@ -10790,7 +10851,9 @@ class PROTOBUF_EXPORT DescriptorProto final
   void SharedDtor();
   void InternalSwap(DescriptorProto* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto"; }
 
  protected:
@@ -11169,7 +11232,9 @@ class PROTOBUF_EXPORT FileDescriptorProto final
   void SharedDtor();
   void InternalSwap(FileDescriptorProto* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FileDescriptorProto"; }
 
  protected:
@@ -11597,7 +11662,9 @@ class PROTOBUF_EXPORT FileDescriptorSet final
   void SharedDtor();
   void InternalSwap(FileDescriptorSet* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FileDescriptorSet"; }
 
  protected:
