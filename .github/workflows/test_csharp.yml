@@ -76,7 +76,8 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: |
-            dotnet build .
+            false
+            echo "It still got here"
             dotnet build csharp/src/Google.Protobuf.sln
             dotnet test cshar/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
 
