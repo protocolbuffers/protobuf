@@ -235,10 +235,9 @@ pub trait MutProxy<'msg>: SealedInternal + Proxy<'msg> + AsMut + IntoMut<'msg> {
 /// of `IntoProxied` is to allow setting arbitrary values on Protobuf fields
 /// with the minimal number of copies.
 ///
-/// This trait must not be implemented on types outside the Protobuf codegen and
-/// runtime. We expect it to change in backwards incompatible ways in the
-/// future.
-pub trait IntoProxied<T: Proxied> {
+/// This trait must not be used outside the Protobuf codegen and runtime. We
+/// expect it to change in backwards incompatible ways in the future.
+pub trait IntoProxied<T: Proxied>: SealedInternal {
     fn into_proxied(self, _private: Private) -> T;
 }
 
