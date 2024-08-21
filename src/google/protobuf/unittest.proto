@@ -1853,27 +1853,3 @@ message TestMessageWithManyRepeatedPtrFields {
   repeated string repeated_string_31 = 31;
   repeated string repeated_string_32 = 32;
 }
-
-message MessageCreatorZeroInit {
-  optional int32 i = 1;
-  optional double d = 2;
-  optional MessageCreatorZeroInit m = 3;
-  oneof one {
-    string os = 10;
-    string oc = 11 [ctype=CORD];
-    fixed64 of = 12;
-    MessageCreatorZeroInit ol = 13 [lazy=true];
-  }
-}
-
-message MessageCreatorMemcpy {
-  optional string s = 1;
-  repeated int32 i = 2 [packed=true];
-  optional MessageCreatorMemcpy m = 3 [lazy=true];
-  map<int32, int32> m2 = 4;
-}
-
-message MessageCreatorFunc {
-  // This one is ArenaDtorNeeds::kRequired so we must run the constructor.
-  optional string c = 3 [ctype=CORD];
-}

@@ -19,16 +19,12 @@
 #include <climits>
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <iosfwd>
-#include <new>
 #include <string>
 #include <type_traits>
 
 #include "absl/base/attributes.h"
-#include "absl/base/casts.h"
 #include "absl/log/absl_check.h"
-#include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
@@ -69,67 +65,6 @@ class ZeroCopyOutputStream;
 
 }  // namespace io
 namespace internal {
-
-class MessageCreator {
- public:
-  using Func = void* (*)(const void*, void*, Arena*);
-
-  // Use -1/0/1 to be able to use <0, ==0, >0
-  enum Tag : int8_t {
-    kFunc = -1,
-    kZeroInit = 0,
-    kMemcpy = 1,
-  };
-
-  constexpr MessageCreator()
-      : allocation_size_(), tag_(), arena_bits_(uintptr_t{}) {}
-
-  static constexpr MessageCreator ZeroInit(uint32_t allocation_size,
-                                           uintptr_t arena_bits = 0) {
-    MessageCreator out;
-    out.allocation_size_ = allocation_size;
-    out.tag_ = kZeroInit;
-    out.arena_bits_ = arena_bits;
-    return out;
-  }
-  static constexpr MessageCreator CopyInit(uint32_t allocation_size,
-                                           uintptr_t arena_bits = 0) {
-    MessageCreator out;
-    out.allocation_size_ = allocation_size;
-    out.tag_ = kMemcpy;
-    out.arena_bits_ = arena_bits;
-    return out;
-  }
-  constexpr MessageCreator(Func func, uint32_t allocation_size)
-      : allocation_size_(allocation_size), tag_(kFunc), func_(func) {}
-
-  // Template for testing.
-  template <bool test_call = false, typename MessageLite>
-  MessageLite* New(const MessageLite* prototype_for_func,
-                   const MessageLite* prototype_for_copy, Arena* arena) const;
-
-  template <bool test_call = false, typename MessageLite>
-  MessageLite* PlacementNew(const MessageLite* prototype_for_func,
-                            const MessageLite* prototype_for_copy, void* mem,
-                            Arena* arena) const;
-
-  Tag tag() const { return tag_; }
-
-  uint32_t allocation_size() const { return allocation_size_; }
-
-  uintptr_t arena_bits() const {
-    ABSL_DCHECK_NE(+tag(), +kFunc);
-    return arena_bits_;
-  }
-
- private:
-  uint32_t allocation_size_;
-  Tag tag_;
-  union {
-    Func func_;
-    uintptr_t arena_bits_;
-  };
-};
 
 // Allow easy change to regular int on platforms where the atomic might have a
 // perf impact.
@@ -313,7 +248,13 @@ class PROTOBUF_EXPORT MessageLite {
 
   // Construct a new instance on the arena. Ownership is passed to the caller
   // if arena is a nullptr.
-  MessageLite* New(Arena* arena) const;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  MessageLite* New(Arena* arena) const {
+    return static_cast<MessageLite*>(_class_data_->new_message(this, arena));
+  }
+#else
+  virtual MessageLite* New(Arena* arena) const = 0;
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Returns the arena, if any, that directly owns this message and its internal
   // memory (Arena::Own is different in that the arena doesn't directly own the
@@ -614,25 +555,16 @@ class PROTOBUF_EXPORT MessageLite {
     return static_cast<T*>(Arena::DefaultConstruct<T>(arena));
   }
 
+#if defined(PROTOBUF_CUSTOM_VTABLE)
   template <typename T>
-  static void* NewImpl(const void*, void* mem, Arena* arena) {
-    return ::new (mem) T(arena);
+  static void* NewImpl(const void* prototype, Arena* arena) {
+    return static_cast<const T*>(prototype)->New(arena);
   }
   template <typename T>
-  static constexpr internal::MessageCreator GetNewImpl() {
-#if defined(__cpp_if_constexpr)
-    if constexpr (internal::EnableCustomNewFor<T>()) {
-#else
-    // Equally valid code, but might be more work for the compiler
-    if (internal::EnableCustomNewFor<T>()) {
-#endif
-      return T::InternalNewImpl_();
-    } else {
-      return internal::MessageCreator(&T::PlacementNew_, sizeof(T));
-    }
+  static constexpr auto GetNewImpl() {
+    return NewImpl<T>;
   }
 
-#if defined(PROTOBUF_CUSTOM_VTABLE)
   template <typename T>
   static void DeleteImpl(void* msg, bool free_memory) {
     static_cast<T*>(msg)->~T();
@@ -654,6 +586,8 @@ class PROTOBUF_EXPORT MessageLite {
 #else   // PROTOBUF_CUSTOM_VTABLE
   // When custom vtables are off we avoid instantiating the functions because we
   // will not use them anyway. Less work for the compiler.
+  template <typename T>
+  using GetNewImpl = std::nullptr_t;
   template <typename T>
   using GetDeleteImpl = std::nullptr_t;
   template <typename T>
@@ -698,7 +632,7 @@ class PROTOBUF_EXPORT MessageLite {
   // We could save more data by omitting any optional pointer that would
   // otherwise be null. We can have some metadata in ClassData telling us if we
   // have them and their offset.
-  friend internal::MessageCreator;
+  using NewMessageF = void* (*)(const void* prototype, Arena* arena);
   using DeleteMessageF = void (*)(void* msg, bool free_memory);
   struct ClassData {
     const MessageLite* prototype;
@@ -706,9 +640,9 @@ class PROTOBUF_EXPORT MessageLite {
     void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
     bool (*is_initialized)(const MessageLite&);
     void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
-    internal::MessageCreator message_creator;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     DeleteMessageF delete_message;
+    NewMessageF new_message;
     void (*clear)(MessageLite&);
     size_t (*byte_size_long)(const MessageLite&);
     uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
@@ -732,14 +666,12 @@ class PROTOBUF_EXPORT MessageLite {
                         bool (*is_initialized)(const MessageLite&),
                         void (*merge_to_from)(MessageLite& to,
                                               const MessageLite& from_msg),
-                        internal::MessageCreator message_creator,
                         uint32_t cached_size_offset, bool is_lite)
         : prototype(prototype),
           tc_table(tc_table),
           on_demand_register_arena_dtor(on_demand_register_arena_dtor),
           is_initialized(is_initialized),
           merge_to_from(merge_to_from),
-          message_creator(message_creator),
           cached_size_offset(cached_size_offset),
           is_lite(is_lite) {}
 #endif  // !PROTOBUF_CUSTOM_VTABLE
@@ -752,8 +684,8 @@ class PROTOBUF_EXPORT MessageLite {
         void (*on_demand_register_arena_dtor)(MessageLite&, Arena&),
         bool (*is_initialized)(const MessageLite&),
         void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
-        internal::MessageCreator message_creator,  //
-        DeleteMessageF delete_message,             //
+        DeleteMessageF delete_message,  //
+        NewMessageF new_message,        //
         void (*clear)(MessageLite&),
         size_t (*byte_size_long)(const MessageLite&),
         uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
@@ -764,9 +696,9 @@ class PROTOBUF_EXPORT MessageLite {
           on_demand_register_arena_dtor(on_demand_register_arena_dtor),
           is_initialized(is_initialized),
           merge_to_from(merge_to_from),
-          message_creator(message_creator),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           delete_message(delete_message),
+          new_message(new_message),
           clear(clear),
           byte_size_long(byte_size_long),
           serialize(serialize),
@@ -778,18 +710,6 @@ class PROTOBUF_EXPORT MessageLite {
     const ClassDataFull& full() const {
       ABSL_DCHECK(!is_lite);
       return *static_cast<const ClassDataFull*>(this);
-    }
-
-    MessageLite* New(Arena* arena) const {
-      return message_creator.New(prototype, prototype, arena);
-    }
-
-    MessageLite* PlacementNew(void* mem, Arena* arena) const {
-      return message_creator.PlacementNew(prototype, prototype, mem, arena);
-    }
-
-    uint32_t allocation_size() const {
-      return message_creator.allocation_size();
     }
   };
   template <size_t N>
@@ -953,7 +873,6 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
   friend class internal::RustMapHelper;
-  friend struct internal::TcParseTableBase;
 
   template <typename Type>
   friend class Arena::InternalHelper;
@@ -1158,122 +1077,6 @@ T* OnShutdownDelete(T* p) {
 inline void AssertDownCast(const MessageLite& from, const MessageLite& to) {
   ABSL_DCHECK(TypeId::Get(from) == TypeId::Get(to))
       << "Cannot downcast " << from.GetTypeName() << " to " << to.GetTypeName();
-}
-
-template <bool test_call, typename MessageLite>
-PROTOBUF_ALWAYS_INLINE inline MessageLite* MessageCreator::PlacementNew(
-    const MessageLite* prototype_for_func,
-    const MessageLite* prototype_for_copy, void* mem, Arena* arena) const {
-  const Tag as_tag = tag();
-  // When the feature is not enabled we skip the `as_tag` check since it is
-  // unnecessary. Except for testing, where we want to test the copy logic even
-  // when we can't use it for real messages.
-  constexpr bool kMustBeFunc = !test_call && !internal::EnableCustomNew();
-  static_assert(kFunc < 0 && !(kZeroInit < 0) && !(kMemcpy < 0),
-                "Only kFunc must be the only negative value");
-  if (ABSL_PREDICT_FALSE(kMustBeFunc || as_tag < 0)) {
-    PROTOBUF_DEBUG_COUNTER("MessageCreator.Func").Inc();
-    return static_cast<MessageLite*>(func_(prototype_for_func, mem, arena));
-  }
-
-  char* dst = static_cast<char*>(mem);
-  const size_t size = allocation_size_;
-  const char* src = reinterpret_cast<const char*>(prototype_for_copy);
-
-  // These are a bit more efficient than calling normal memset/memcpy because:
-  //  - We know the minimum size is 16. We have a fallback for when it is not.
-  //  - We can "underflow" the buffer because those are the MessageLite bytes
-  //    we will set later.
-#ifndef PROTO2_OPENSOURCE
-  // This manual handling shows a 1.85% improvement in the parsing
-  // microbenchmark.
-  // TODO: Verify this is still the case.
-#endif  // !PROTO2_OPENSOUCE
-  if (as_tag == kZeroInit) {
-    // Make sure the input is really all zeros.
-    ABSL_DCHECK(std::all_of(src + sizeof(MessageLite), src + size,
-                            [](auto c) { return c == 0; }));
-
-    if (sizeof(MessageLite) != 16) {
-      memset(dst, 0, size);
-    } else if (size <= 32) {
-      memset(dst + size - 16, 0, 16);
-    } else if (size <= 64) {
-      memset(dst + 16, 0, 16);
-      memset(dst + size - 32, 0, 32);
-    } else {
-      for (size_t offset = 16; offset + 64 < size; offset += 64) {
-        absl::PrefetchToLocalCacheForWrite(dst + offset + 64);
-        memset(dst + offset, 0, 64);
-      }
-      memset(dst + size - 64, 0, 64);
-    }
-  } else {
-    ABSL_DCHECK_EQ(+as_tag, +kMemcpy);
-
-    if (sizeof(MessageLite) != 16) {
-      memcpy(dst, src, size);
-    } else if (size <= 32) {
-      memcpy(dst + size - 16, src + size - 16, 16);
-    } else if (size <= 64) {
-      memcpy(dst + 16, src + 16, 16);
-      memcpy(dst + size - 32, src + size - 32, 32);
-    } else {
-      for (size_t offset = 16; offset + 64 < size; offset += 64) {
-        absl::PrefetchToLocalCache(src + offset + 64);
-        absl::PrefetchToLocalCacheForWrite(dst + offset + 64);
-        memcpy(dst + offset, src + offset, 64);
-      }
-      memcpy(dst + size - 64, src + size - 64, 64);
-    }
-  }
-
-  if (arena_bits() != 0) {
-    if (as_tag == kZeroInit) {
-      PROTOBUF_DEBUG_COUNTER("MessageCreator.ZeroArena").Inc();
-    } else {
-      PROTOBUF_DEBUG_COUNTER("MessageCreator.McpyArena").Inc();
-    }
-  } else {
-    if (as_tag == kZeroInit) {
-      PROTOBUF_DEBUG_COUNTER("MessageCreator.Zero").Inc();
-    } else {
-      PROTOBUF_DEBUG_COUNTER("MessageCreator.Mcpy").Inc();
-    }
-  }
-
-  if (internal::PerformDebugChecks() || arena != nullptr) {
-    if (uintptr_t offsets = arena_bits()) {
-      do {
-        const size_t offset = absl::countr_zero(offsets) * sizeof(Arena*);
-        ABSL_DCHECK_LE(offset + sizeof(Arena*), size);
-        // Verify we are overwriting a null pointer. If we are not, there is a
-        // bug somewhere.
-        ABSL_DCHECK_EQ(*reinterpret_cast<Arena**>(dst + offset), nullptr);
-        memcpy(dst + offset, &arena, sizeof(arena));
-        offsets &= offsets - 1;
-      } while (offsets != 0);
-    }
-  }
-
-  // The second memcpy overwrites part of the first, but the compiler should
-  // avoid the double-write. It's easier than trying to avoid the overlap.
-  memcpy(dst, static_cast<const void*>(prototype_for_copy),
-         sizeof(MessageLite));
-  memcpy(dst + PROTOBUF_FIELD_OFFSET(MessageLite, _internal_metadata_), &arena,
-         sizeof(arena));
-  return Launder(reinterpret_cast<MessageLite*>(mem));
-}
-
-template <bool test_call, typename MessageLite>
-PROTOBUF_ALWAYS_INLINE inline MessageLite* MessageCreator::New(
-    const MessageLite* prototype_for_func,
-    const MessageLite* prototype_for_copy, Arena* arena) const {
-  return PlacementNew<test_call>(prototype_for_func, prototype_for_copy,
-                                 arena != nullptr
-                                     ? arena->AllocateAligned(allocation_size_)
-                                     : ::operator new(allocation_size_),
-                                 arena);
 }
 
 }  // namespace internal

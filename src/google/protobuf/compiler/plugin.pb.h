@@ -192,7 +192,7 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Version* New(::google::protobuf::Arena* arena = nullptr) const {
+  Version* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<Version>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -248,9 +248,6 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -428,7 +425,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorResponse_File* New(::google::protobuf::Arena* arena = nullptr) const {
+  CodeGeneratorResponse_File* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorResponse_File>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -484,9 +481,6 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -680,7 +674,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorResponse* New(::google::protobuf::Arena* arena = nullptr) const {
+  CodeGeneratorResponse* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorResponse>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -736,9 +730,6 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -956,7 +947,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
 
   // implements Message ----------------------------------------------
 
-  CodeGeneratorRequest* New(::google::protobuf::Arena* arena = nullptr) const {
+  CodeGeneratorRequest* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<CodeGeneratorRequest>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -1017,9 +1008,6 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:

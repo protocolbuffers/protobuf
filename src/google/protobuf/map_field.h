@@ -406,10 +406,6 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     return internal::ToIntSize(SpaceUsedExcludingSelfLong());
   }
 
-  static constexpr size_t InternalGetArenaOffset(internal::InternalVisibility) {
-    return PROTOBUF_FIELD_OFFSET(MapFieldBase, payload_);
-  }
-
  protected:
   // Gets the size of space used by map field.
   size_t SpaceUsedExcludingSelfNoLock() const {
@@ -611,12 +607,6 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
   }
 
   void InternalSwap(TypeDefinedMapFieldBase* other);
-
-  static constexpr size_t InternalGetArenaOffsetAlt(
-      internal::InternalVisibility access) {
-    return PROTOBUF_FIELD_OFFSET(TypeDefinedMapFieldBase, map_) +
-           decltype(map_)::InternalGetArenaOffset(access);
-  }
 
  protected:
   friend struct MapFieldTestPeer;

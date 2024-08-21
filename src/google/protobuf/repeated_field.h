@@ -443,11 +443,6 @@ class RepeatedField final
   // This is public due to it being called by generated code.
   inline void InternalSwap(RepeatedField* other);
 
-  static constexpr size_t InternalGetArenaOffset(internal::InternalVisibility) {
-    return PROTOBUF_FIELD_OFFSET(RepeatedField, soo_rep_) +
-           PROTOBUF_FIELD_OFFSET(internal::ShortSooRep, arena_and_size);
-  }
-
  private:
   using InternalArenaConstructable_ = void;
   // We use std::max in order to share template instantiations between

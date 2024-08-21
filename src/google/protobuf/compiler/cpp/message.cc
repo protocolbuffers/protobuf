@@ -1388,17 +1388,12 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
           $decl_verify_func$;
 
          private:
-          friend class ::$proto_ns$::MessageLite;
-          friend struct ::$tablename$;
-
           $parse_decls$;
           $decl_annotate$;
 
           const $superclass$::ClassData* GetClassData() const PROTOBUF_FINAL;
-          static void* PlacementNew_(const void*, void* mem,
-                                     ::$proto_ns$::Arena* arena);
-          static constexpr auto InternalNewImpl_();
           static const $superclass$::ClassDataFull _class_data_;
+          friend struct ::$tablename$;
         };
       )cc");
 }
@@ -2138,7 +2133,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           // implements Message ----------------------------------------------
 
-          $classname$* New(::$proto_ns$::Arena* arena = nullptr) const {
+          $classname$* New(::$proto_ns$::Arena* arena = nullptr) const PROTOBUF_FINAL {
             return $superclass$::DefaultConstruct<$classname$>(arena);
           }
           $generated_methods$;
@@ -2163,9 +2158,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           }
           $arena_dtor$;
           const $superclass$::ClassData* GetClassData() const PROTOBUF_FINAL;
-          static void* PlacementNew_(const void*, void* mem,
-                                     ::$proto_ns$::Arena* arena);
-          static constexpr auto InternalNewImpl_();
           static const $superclass$::$classdata_type$ _class_data_;
 
          public:
@@ -3795,176 +3787,12 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
   format("}\n");
 }
 
-MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp(
-    io::Printer* arena_emitter) const {
-  size_t arena_seeding_count = 0;
-  NewOpRequirements op;
-  if (IsBootstrapProto(options_, descriptor_->file())) {
-    // To simplify bootstrapping we always use a function for these types.
-    // It makes it easier to change the ABI of the `MessageCreator` class.
-    op.needs_to_run_constructor = true;
-    return op;
-  }
-
-  if (NeedsArenaDestructor() == ArenaDtorNeeds::kRequired) {
-    // We can't skip the ArenaDtor for these messages.
-    op.needs_to_run_constructor = true;
-  }
-
-  if (descriptor_->extension_range_count() > 0) {
-    op.needs_arena_seeding = true;
-    ++arena_seeding_count;
-    if (arena_emitter) {
-      arena_emitter->Emit(R"cc(
-        PROTOBUF_FIELD_OFFSET($classname$, $extensions$) +
-            decltype($classname$::$extensions$)::InternalGetArenaOffset(
-                $superclass$::internal_visibility()),
-      )cc");
-    }
-  }
-
-  if (num_weak_fields_ != 0) {
-    op.needs_to_run_constructor = true;
-  }
-
-  for (const FieldDescriptor* field : FieldRange(descriptor_)) {
-    const auto print_arena_offset = [&](absl::string_view suffix = "") {
-      ++arena_seeding_count;
-      if (arena_emitter) {
-        arena_emitter->Emit(
-            {{"field", FieldMemberName(field, false)}, {"suffix", suffix}},
-            R"cc(
-              PROTOBUF_FIELD_OFFSET($classname$, $field$) +
-                  decltype($classname$::$field$)::
-                      InternalGetArenaOffset$suffix$(
-                          $superclass$::internal_visibility()),
-            )cc");
-      }
-    };
-    if (ShouldSplit(field, options_)) {
-      op.needs_memcpy = true;
-    } else if (field->real_containing_oneof() != nullptr) {
-      /* nothing to do */
-    } else if (field->is_map()) {
-      op.needs_arena_seeding = true;
-      // MapField contains an internal vtable pointer we need to copy.
-      op.needs_memcpy = true;
-      print_arena_offset();
-      // Non-lite maps currently have more than one arena pointer in them. Print
-      // both.
-      if (HasDescriptorMethods(descriptor_->file(), options_)) {
-        print_arena_offset("Alt");
-      }
-    } else if (field->is_repeated()) {
-      op.needs_arena_seeding = true;
-      print_arena_offset();
-    } else {
-      const auto& generator = field_generators_.get(field);
-      if (generator.has_trivial_zero_default()) {
-        /* nothing to do */
-      } else {
-        switch (field->cpp_type()) {
-          case FieldDescriptor::CPPTYPE_INT32:
-          case FieldDescriptor::CPPTYPE_INT64:
-          case FieldDescriptor::CPPTYPE_UINT32:
-          case FieldDescriptor::CPPTYPE_UINT64:
-          case FieldDescriptor::CPPTYPE_DOUBLE:
-          case FieldDescriptor::CPPTYPE_FLOAT:
-          case FieldDescriptor::CPPTYPE_BOOL:
-          case FieldDescriptor::CPPTYPE_ENUM:
-            op.needs_memcpy = true;
-            break;
-
-          case FieldDescriptor::CPPTYPE_STRING:
-            switch (internal::cpp::EffectiveStringCType(field)) {
-              case FieldOptions::STRING_PIECE:
-                op.needs_arena_seeding = true;
-                print_arena_offset();
-                break;
-              case FieldOptions::CORD:
-                // Cord fields are currently rejected above because of ArenaDtor
-                // requirements.
-                ABSL_CHECK(op.needs_to_run_constructor);
-                break;
-              case FieldOptions::STRING:
-                op.needs_memcpy = true;
-                break;
-              default:
-                ABSL_LOG(FATAL);
-            }
-            break;
-          case FieldDescriptor::CPPTYPE_MESSAGE:
-            ABSL_LOG(FATAL) << "Message should be zero initializable.";
-            break;
-        }
-      }
-    }
-  }
-
-  // If we are going to generate too many arena seeding offsets, we can skip the
-  // attempt because we know it will fail at compile time and fallback to
-  // placement new. The arena seeding code can handle up to an offset of
-  // `63 * sizeof(Arena*)`.
-  // This prevents generating huge lists that have to be run during constant
-  // evaluation to just fail anyway. The actual upper bound is smaller than
-  // this, but any reasonable value is enough to prevent long compile times for
-  // big messages.
-  if (arena_seeding_count >= 64) {
-    op.needs_to_run_constructor = true;
-  }
-
-  return op;
-}
-
 void MessageGenerator::GenerateClassData(io::Printer* p) {
-  const auto new_op = GetNewOp(nullptr);
-  // Always generate PlacementNew_ because we might need it for different
-  // reasons. EnableCustomNewFor<T> might be false in this compiler, or the
-  // object might be too large for arena seeding.
-  // We mark `inline` to avoid library bloat if the function is unused.
-  p->Emit(R"cc(
-    inline void* $classname$::PlacementNew_(const void*, void* mem,
-                                            ::$proto_ns$::Arena* arena) {
-      return ::new (mem) $classname$(arena);
-    }
-  )cc");
-  if (new_op.needs_to_run_constructor) {
-    p->Emit(R"cc(
-      constexpr auto $classname$::InternalNewImpl_() {
-        return $pbi$::MessageCreator(&$classname$::PlacementNew_,
-                                     sizeof($classname$));
-      }
-    )cc");
-  } else if (new_op.needs_arena_seeding) {
-    p->Emit({{"copy_type", new_op.needs_memcpy ? "CopyInit" : "ZeroInit"},
-             {"arena_offsets", [&] { GetNewOp(p); }}},
-            R"cc(
-              constexpr auto $classname$::InternalNewImpl_() {
-                constexpr auto arena_bits = $pbi$::EncodePlacementArenaOffsets({
-                    $arena_offsets$,
-                });
-                if (arena_bits.has_value()) {
-                  return $pbi$::MessageCreator::$copy_type$(sizeof($classname$), *arena_bits);
-                } else {
-                  return $pbi$::MessageCreator(&$classname$::PlacementNew_,
-                                               sizeof($classname$));
-                }
-              }
-            )cc");
-  } else {
-    p->Emit({{"copy_type", new_op.needs_memcpy ? "CopyInit" : "ZeroInit"},
-             {"arena_offsets", [&] { GetNewOp(p); }}},
-            R"cc(
-              constexpr auto $classname$::InternalNewImpl_() {
-                return $pbi$::MessageCreator::$copy_type$(sizeof($classname$));
-              }
-            )cc");
-  }
-
   auto vars = p->WithVars(
       {{"default_instance",
         absl::StrCat("&", DefaultInstanceName(descriptor_, options_),
                      "._instance")}});
+
   const auto on_demand_register_arena_dtor = [&] {
     if (NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand) {
       p->Emit(R"cc(
@@ -4054,9 +3882,9 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                       $on_demand_register_arena_dtor$,
                       $is_initialized$,
                       &$classname$::MergeImpl,
-                      $superclass$::GetNewImpl<$classname$>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
                       $superclass$::GetDeleteImpl<$classname$>(),
+                      $superclass$::GetNewImpl<$classname$>(),
                       $custom_vtable_methods$,
 #endif  // PROTOBUF_CUSTOM_VTABLE
                       PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
@@ -4092,9 +3920,9 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                       $on_demand_register_arena_dtor$,
                       $is_initialized$,
                       &$classname$::MergeImpl,
-                      $superclass$::GetNewImpl<$classname$>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
                       $superclass$::GetDeleteImpl<$classname$>(),
+                      $superclass$::GetNewImpl<$classname$>(),
                       $custom_vtable_methods$,
 #endif  // PROTOBUF_CUSTOM_VTABLE
                       PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),

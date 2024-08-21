@@ -490,6 +490,10 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
                     )cc");
                 break;
               }
+              case TailCallTableInfo::kCreateInArena:
+                format("{::_pbi::TcParser::CreateInArenaStorageCb<$1$>},\n",
+                       QualifiedClassName(aux_entry.desc, options_));
+                break;
             }
           }
         }

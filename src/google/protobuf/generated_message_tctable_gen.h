@@ -112,6 +112,7 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     kEnumValidator,
     kNumericOffset,
     kMapAuxInfo,
+    kCreateInArena,
   };
   struct AuxEntry {
     AuxType type;

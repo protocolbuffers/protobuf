@@ -64,15 +64,6 @@ void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
   data->merge_to_from(*this, other);
 }
 
-MessageLite* MessageLite::New(Arena* arena) const {
-  auto* data = GetClassData();
-  // The `instance->New()` expression requires using the actual instance
-  // instead of the prototype for the inner function call.
-  // Certain custom instances have special per-instance state that needs to be
-  // copied.
-  return data->message_creator.New(this, data->prototype, arena);
-}
-
 bool MessageLite::IsInitialized() const {
   auto* data = GetClassData();
   return data->is_initialized != nullptr ? data->is_initialized(*this) : true;

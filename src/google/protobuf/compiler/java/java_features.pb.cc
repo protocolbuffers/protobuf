@@ -10,7 +10,6 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/extension_set.h"
-#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -194,13 +193,6 @@ inline void JavaFeatures::SharedDtor() {
   _impl_.~Impl_();
 }
 
-inline void* JavaFeatures::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
-  return ::new (mem) JavaFeatures(arena);
-}
-constexpr auto JavaFeatures::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(JavaFeatures));
-}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -211,9 +203,9 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &JavaFeatures::MergeImpl,
-            ::google::protobuf::Message::GetNewImpl<JavaFeatures>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<JavaFeatures>(),
+            ::google::protobuf::Message::GetNewImpl<JavaFeatures>(),
             ::google::protobuf::Message::GetClearImpl<JavaFeatures>(), &JavaFeatures::ByteSizeLong,
                 &JavaFeatures::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE

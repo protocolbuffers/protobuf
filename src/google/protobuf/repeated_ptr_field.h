@@ -535,10 +535,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Gets the Arena on which this RepeatedPtrField stores its elements.
   inline Arena* GetArena() const { return arena_; }
 
-  static constexpr size_t InternalGetArenaOffset(internal::InternalVisibility) {
-    return PROTOBUF_FIELD_OFFSET(RepeatedPtrFieldBase, arena_);
-  }
-
  private:
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
@@ -1228,8 +1224,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   void InternalSwap(RepeatedPtrField* PROTOBUF_RESTRICT other) {
     internal::RepeatedPtrFieldBase::InternalSwap(other);
   }
-
-  using RepeatedPtrFieldBase::InternalGetArenaOffset;
 
 
  private:

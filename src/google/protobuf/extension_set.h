@@ -531,10 +531,6 @@ class PROTOBUF_EXPORT ExtensionSet {
   // as .dll.
   int SpaceUsedExcludingSelf() const;
 
-  static constexpr size_t InternalGetArenaOffset(internal::InternalVisibility) {
-    return PROTOBUF_FIELD_OFFSET(ExtensionSet, arena_);
-  }
-
  private:
   template <typename Type>
   friend class PrimitiveTypeTraits;
