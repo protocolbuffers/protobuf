@@ -810,7 +810,7 @@ MessageLite* ExtensionSet::AddMessage(int number, FieldType type,
 
   return reinterpret_cast<internal::RepeatedPtrFieldBase*>(
              extension->repeated_message_value)
-      ->AddMessage(&prototype);
+      ->AddFromPtototype<internal::GenericTypeHandler<MessageLite>>(&prototype);
 }
 
 // Defined in extension_set_heavy.cc.

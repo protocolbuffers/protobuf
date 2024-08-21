@@ -262,21 +262,28 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // trivially destructible.
   template <typename T>
   PROTOBUF_NDEBUG_INLINE static T* CreateArray(Arena* arena,
-                                               size_t num_elements) {
+                                               size_t num_elements,
+                                               size_t align = alignof(T)) {
     static_assert(std::is_trivial<T>::value,
                   "CreateArray requires a trivially constructible type");
     static_assert(std::is_trivially_destructible<T>::value,
                   "CreateArray requires a trivially destructible type");
     ABSL_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))
         << "Requested size is too large to fit into size_t.";
+    ABSL_CHECK_LE(align, alignof(std::max_align_t));
+    void* alloc = nullptr;
     if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
-      return new T[num_elements];
+      // NOTE: Allocating char[], not T[], because `new char[]` is special in
+      // that it guarantees the most strict alignment possible, so as to satisfy
+      // any possible `align` passed by client.
+      alloc = new char[num_elements * sizeof(T)];
     } else {
       // We count on compiler to realize that if sizeof(T) is a multiple of
       // 8 AlignUpTo can be elided.
-      return static_cast<T*>(
-          arena->AllocateAlignedForArray(sizeof(T) * num_elements, alignof(T)));
+      alloc = arena->AllocateAlignedForArray(sizeof(T) * num_elements, align);
     }
+    ABSL_CHECK_EQ(reinterpret_cast<uintptr_t>(alloc) % align, 0);
+    return static_cast<T*>(alloc);
   }
 
   // The following are routines are for monitoring. They will approximate the
