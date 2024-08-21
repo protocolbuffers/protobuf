@@ -376,7 +376,10 @@ protobuf_java_library(
         "src/test/java/com/google/protobuf/TestUtil.java",
         "src/test/java/com/google/protobuf/TestUtilLite.java",
     ],
-    visibility = ["//java:__subpackages__", "//compatibility:__subpackages__"],
+    visibility = [
+        "//compatibility:__subpackages__",
+        "//java:__subpackages__",
+    ],
     deps = [
         ":core",
         ":generic_test_protos_java_proto",
@@ -441,20 +444,78 @@ junit_tests(
 )
 
 java_test(
-    name = "v25.x_generated_message_test",
+    name = "v25_generated_message_test",
     size = "small",
-    test_class = "com.google.protobuf.GeneratedMessageTest",
     srcs = ["src/test/java/com/google/protobuf/GeneratedMessageTest.java"],
+    test_class = "com.google.protobuf.GeneratedMessageTest",
     deps = [
-        # Use v25.x gencode jars to test binary compatibility
-        "@com_google_protobuf_v25.0//java/core:generic_test_protos_java_proto", # libgeneric_test_protos-speed.jar
-        "@com_google_protobuf_v25.0//java/core:java_test_protos_java_proto", # libjava_test_protos-speed.jar
         ":core",
         ":test_util",
-        "@maven//:junit_junit",
+        "@com_google_protobuf_v25//java/core:generic_test_protos_java_proto",
+        "@com_google_protobuf_v25//java/core:java_test_protos_java_proto",
         "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
     ],
 )
+
+java_test(
+    name = "v25_generated_message_test_srcjar",
+    size = "small",
+    srcs = ["src/test/java/com/google/protobuf/GeneratedMessageTest.java"],
+    test_class = "com.google.protobuf.GeneratedMessageTest",
+    deps = [
+        ":core",
+        ":v25_gencode-src.jar",
+        ":test_util",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+    ],
+)
+
+# TODO: Try removing getRepeatedField getRepeatedFieldCount shims
+# TODO: Sanity check dropping a ncessary shim.
+java_test(
+    name = "v25_generated_message_test_jar",
+    size = "small",
+    srcs = ["src/test/java/com/google/protobuf/GeneratedMessageTest.java"],
+    test_class = "com.google.protobuf.GeneratedMessageTest",
+    deps = [
+        ":core",
+        "@com_google_protobuf_v25//java/core:libjava_test_protos-speed.jar",
+        "@com_google_protobuf_v25//java/core:libgeneric_test_protos-speed.jar",
+        "@com_google_protobuf_v25//java/core:liblite_test_protos-speed.jar",
+        ":test_util",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+    ],
+)
+
+# # TODO: Add all core_tests
+# junit_tests(
+#     name = "v25_core_tests_jar",
+#     size = "small",
+#     srcs = glob(
+#         ["src/test/java/**/*.java"],
+#         exclude = [
+#             # Exclusions from :core_tests
+#             "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
+#             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
+#             "src/test/java/com/google/protobuf/TestUtil.java",
+#             "src/test/java/com/google/protobuf/TestUtilLite.java",
+#         ],
+#     ),
+#     data = ["//src/google/protobuf:testdata"],
+#     deps = [
+#         ":core",
+#         ":lib25.0_gencode.jar",
+#         ":test_util",
+#         "@maven//:com_google_guava_guava",
+#         "@maven//:com_google_truth_truth",
+#         "@maven//:junit_junit",
+#         "@maven//:org_mockito_mockito_core",
+#     ],
+# )
+
 
 # The UTF-8 validation tests are much slower than the other tests, so they get
 # their own test target with a longer timeout.
