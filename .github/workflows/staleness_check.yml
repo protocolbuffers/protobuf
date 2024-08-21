@@ -64,9 +64,10 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: staleness
           bash: >
+            bazel build //nothing
             echo "Please run ./regenerate_stale_files.sh to regenerate stale files";
             if [[ -z $COMMIT_TRIGGERED_RUN || -z $MAIN_RUN ]]; then
-            bazel quey 'attr(tags, "staleness_test", //...)' | xargs bazel test $BAZEL_FLAGS;
+            bazel query 'attr(tags, "staleness_test", //...)' | xargs bazel test $BAZEL_FLAGS;
             else
-            bazel quey 'attr(tags, "staleness_test", //...)';
+            bazel query 'attr(tags, "staleness_test", //...)';
             fi
