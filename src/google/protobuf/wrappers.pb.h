@@ -166,7 +166,7 @@ class PROTOBUF_EXPORT UInt64Value final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  UInt64Value* New(::google::protobuf::Arena* arena = nullptr) const {
+  UInt64Value* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<UInt64Value>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -222,9 +222,6 @@ class PROTOBUF_EXPORT UInt64Value final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -355,7 +352,7 @@ class PROTOBUF_EXPORT UInt32Value final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  UInt32Value* New(::google::protobuf::Arena* arena = nullptr) const {
+  UInt32Value* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<UInt32Value>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -411,9 +408,6 @@ class PROTOBUF_EXPORT UInt32Value final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -544,7 +538,7 @@ class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  StringValue* New(::google::protobuf::Arena* arena = nullptr) const {
+  StringValue* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<StringValue>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -600,9 +594,6 @@ class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -739,7 +730,7 @@ class PROTOBUF_EXPORT Int64Value final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Int64Value* New(::google::protobuf::Arena* arena = nullptr) const {
+  Int64Value* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<Int64Value>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -795,9 +786,6 @@ class PROTOBUF_EXPORT Int64Value final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -928,7 +916,7 @@ class PROTOBUF_EXPORT Int32Value final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Int32Value* New(::google::protobuf::Arena* arena = nullptr) const {
+  Int32Value* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<Int32Value>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -984,9 +972,6 @@ class PROTOBUF_EXPORT Int32Value final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -1117,7 +1102,7 @@ class PROTOBUF_EXPORT FloatValue final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  FloatValue* New(::google::protobuf::Arena* arena = nullptr) const {
+  FloatValue* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<FloatValue>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -1173,9 +1158,6 @@ class PROTOBUF_EXPORT FloatValue final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -1306,7 +1288,7 @@ class PROTOBUF_EXPORT DoubleValue final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  DoubleValue* New(::google::protobuf::Arena* arena = nullptr) const {
+  DoubleValue* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<DoubleValue>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -1362,9 +1344,6 @@ class PROTOBUF_EXPORT DoubleValue final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -1495,7 +1474,7 @@ class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  BytesValue* New(::google::protobuf::Arena* arena = nullptr) const {
+  BytesValue* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<BytesValue>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -1551,9 +1530,6 @@ class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -1690,7 +1666,7 @@ class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  BoolValue* New(::google::protobuf::Arena* arena = nullptr) const {
+  BoolValue* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<BoolValue>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -1746,9 +1722,6 @@ class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:

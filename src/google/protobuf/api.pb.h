@@ -150,7 +150,7 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Mixin* New(::google::protobuf::Arena* arena = nullptr) const {
+  Mixin* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<Mixin>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -206,9 +206,6 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -363,7 +360,7 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Method* New(::google::protobuf::Arena* arena = nullptr) const {
+  Method* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<Method>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -419,9 +416,6 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -649,7 +643,7 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Api* New(::google::protobuf::Arena* arena = nullptr) const {
+  Api* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
     return ::google::protobuf::Message::DefaultConstruct<Api>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -705,9 +699,6 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
-  static void* PlacementNew_(const void*, void* mem,
-                             ::google::protobuf::Arena* arena);
-  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:

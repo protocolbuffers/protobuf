@@ -10,7 +10,6 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/extension_set.h"
-#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -527,32 +526,6 @@ inline void Type::SharedDtor() {
   _impl_.~Impl_();
 }
 
-inline void* Type::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
-  return ::new (mem) Type(arena);
-}
-constexpr auto Type::InternalNewImpl_() {
-  constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
-      PROTOBUF_FIELD_OFFSET(Type, _impl_.fields_) +
-          decltype(Type::_impl_.fields_)::
-              InternalGetArenaOffset(
-                  ::google::protobuf::Message::internal_visibility()),
-      PROTOBUF_FIELD_OFFSET(Type, _impl_.oneofs_) +
-          decltype(Type::_impl_.oneofs_)::
-              InternalGetArenaOffset(
-                  ::google::protobuf::Message::internal_visibility()),
-      PROTOBUF_FIELD_OFFSET(Type, _impl_.options_) +
-          decltype(Type::_impl_.options_)::
-              InternalGetArenaOffset(
-                  ::google::protobuf::Message::internal_visibility()),
-  });
-  if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Type), *arena_bits);
-  } else {
-    return ::google::protobuf::internal::MessageCreator(&Type::PlacementNew_,
-                                 sizeof(Type));
-  }
-}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -563,9 +536,9 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Type::MergeImpl,
-            ::google::protobuf::Message::GetNewImpl<Type>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Type>(),
+            ::google::protobuf::Message::GetNewImpl<Type>(),
             ::google::protobuf::Message::GetClearImpl<Type>(), &Type::ByteSizeLong,
                 &Type::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -985,24 +958,6 @@ inline void Field::SharedDtor() {
   _impl_.~Impl_();
 }
 
-inline void* Field::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
-  return ::new (mem) Field(arena);
-}
-constexpr auto Field::InternalNewImpl_() {
-  constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
-      PROTOBUF_FIELD_OFFSET(Field, _impl_.options_) +
-          decltype(Field::_impl_.options_)::
-              InternalGetArenaOffset(
-                  ::google::protobuf::Message::internal_visibility()),
-  });
-  if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Field), *arena_bits);
-  } else {
-    return ::google::protobuf::internal::MessageCreator(&Field::PlacementNew_,
-                                 sizeof(Field));
-  }
-}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -1013,9 +968,9 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Field::MergeImpl,
-            ::google::protobuf::Message::GetNewImpl<Field>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Field>(),
+            ::google::protobuf::Message::GetNewImpl<Field>(),
             ::google::protobuf::Message::GetClearImpl<Field>(), &Field::ByteSizeLong,
                 &Field::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1480,28 +1435,6 @@ inline void Enum::SharedDtor() {
   _impl_.~Impl_();
 }
 
-inline void* Enum::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
-  return ::new (mem) Enum(arena);
-}
-constexpr auto Enum::InternalNewImpl_() {
-  constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
-      PROTOBUF_FIELD_OFFSET(Enum, _impl_.enumvalue_) +
-          decltype(Enum::_impl_.enumvalue_)::
-              InternalGetArenaOffset(
-                  ::google::protobuf::Message::internal_visibility()),
-      PROTOBUF_FIELD_OFFSET(Enum, _impl_.options_) +
-          decltype(Enum::_impl_.options_)::
-              InternalGetArenaOffset(
-                  ::google::protobuf::Message::internal_visibility()),
-  });
-  if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Enum), *arena_bits);
-  } else {
-    return ::google::protobuf::internal::MessageCreator(&Enum::PlacementNew_,
-                                 sizeof(Enum));
-  }
-}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -1512,9 +1445,9 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Enum::MergeImpl,
-            ::google::protobuf::Message::GetNewImpl<Enum>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Enum>(),
+            ::google::protobuf::Message::GetNewImpl<Enum>(),
             ::google::protobuf::Message::GetClearImpl<Enum>(), &Enum::ByteSizeLong,
                 &Enum::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1888,24 +1821,6 @@ inline void EnumValue::SharedDtor() {
   _impl_.~Impl_();
 }
 
-inline void* EnumValue::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
-  return ::new (mem) EnumValue(arena);
-}
-constexpr auto EnumValue::InternalNewImpl_() {
-  constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
-      PROTOBUF_FIELD_OFFSET(EnumValue, _impl_.options_) +
-          decltype(EnumValue::_impl_.options_)::
-              InternalGetArenaOffset(
-                  ::google::protobuf::Message::internal_visibility()),
-  });
-  if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumValue), *arena_bits);
-  } else {
-    return ::google::protobuf::internal::MessageCreator(&EnumValue::PlacementNew_,
-                                 sizeof(EnumValue));
-  }
-}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -1916,9 +1831,9 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &EnumValue::MergeImpl,
-            ::google::protobuf::Message::GetNewImpl<EnumValue>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<EnumValue>(),
+            ::google::protobuf::Message::GetNewImpl<EnumValue>(),
             ::google::protobuf::Message::GetClearImpl<EnumValue>(), &EnumValue::ByteSizeLong,
                 &EnumValue::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -2200,13 +2115,6 @@ inline void Option::SharedDtor() {
   _impl_.~Impl_();
 }
 
-inline void* Option::PlacementNew_(const void*, void* mem,
-                                        ::google::protobuf::Arena* arena) {
-  return ::new (mem) Option(arena);
-}
-constexpr auto Option::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Option));
-}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -2217,9 +2125,9 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Option::MergeImpl,
-            ::google::protobuf::Message::GetNewImpl<Option>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Option>(),
+            ::google::protobuf::Message::GetNewImpl<Option>(),
             ::google::protobuf::Message::GetClearImpl<Option>(), &Option::ByteSizeLong,
                 &Option::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
