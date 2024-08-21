@@ -444,36 +444,21 @@ junit_tests(
 )
 
 java_test(
-    name = "v25_generated_message_test",
-    size = "small",
-    srcs = ["src/test/java/com/google/protobuf/GeneratedMessageTest.java"],
-    test_class = "com.google.protobuf.GeneratedMessageTest",
-    deps = [
-        ":core",
-        ":test_util",
-        "@com_google_protobuf_v25//java/core:generic_test_protos_java_proto",
-        "@com_google_protobuf_v25//java/core:java_test_protos_java_proto",
-        "@maven//:com_google_truth_truth",
-        "@maven//:junit_junit",
-    ],
-)
-
-java_test(
     name = "v25_generated_message_test_srcjar",
     size = "small",
     srcs = ["src/test/java/com/google/protobuf/GeneratedMessageTest.java"],
     test_class = "com.google.protobuf.GeneratedMessageTest",
     deps = [
         ":core",
-        ":v25_gencode-src.jar",
+        "@com_google_protobuf_v25//java/core:testdata/java_test_protos-speed.srcjar",
+        "@com_google_protobuf_v25//java/core:testdata/generic_test_protos-speed.srcjar",
+        "@com_google_protobuf_v25//java/core:testdata/lite_test_protos-speed.srcjar",
         ":test_util",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
     ],
 )
 
-# TODO: Try removing getRepeatedField getRepeatedFieldCount shims
-# TODO: Sanity check dropping a ncessary shim.
 java_test(
     name = "v25_generated_message_test_jar",
     size = "small",
@@ -481,40 +466,39 @@ java_test(
     test_class = "com.google.protobuf.GeneratedMessageTest",
     deps = [
         ":core",
-        "@com_google_protobuf_v25//java/core:libjava_test_protos-speed.jar",
-        "@com_google_protobuf_v25//java/core:libgeneric_test_protos-speed.jar",
-        "@com_google_protobuf_v25//java/core:liblite_test_protos-speed.jar",
+        "@com_google_protobuf_v25//java/core:testdata/libjava_test_protos-speed.jar",
+        "@com_google_protobuf_v25//java/core:testdata/libgeneric_test_protos-speed.jar",
+        "@com_google_protobuf_v25//java/core:testdata/liblite_test_protos-speed.jar",
         ":test_util",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
     ],
 )
 
-# # TODO: Add all core_tests
-# junit_tests(
-#     name = "v25_core_tests_jar",
-#     size = "small",
-#     srcs = glob(
-#         ["src/test/java/**/*.java"],
-#         exclude = [
-#             # Exclusions from :core_tests
-#             "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
-#             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
-#             "src/test/java/com/google/protobuf/TestUtil.java",
-#             "src/test/java/com/google/protobuf/TestUtilLite.java",
-#         ],
-#     ),
-#     data = ["//src/google/protobuf:testdata"],
-#     deps = [
-#         ":core",
-#         ":lib25.0_gencode.jar",
-#         ":test_util",
-#         "@maven//:com_google_guava_guava",
-#         "@maven//:com_google_truth_truth",
-#         "@maven//:junit_junit",
-#         "@maven//:org_mockito_mockito_core",
-#     ],
-# )
+junit_tests(
+    name = "v25_core_tests_jar",
+    size = "small",
+    srcs = glob(
+        ["src/test/java/**/*.java"],
+        exclude = [
+            # Exclusions from :core_tests
+            "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
+            "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
+            "src/test/java/com/google/protobuf/TestUtil.java",
+            "src/test/java/com/google/protobuf/TestUtilLite.java",
+        ],
+    ),
+    data = ["//src/google/protobuf:testdata"],
+    deps = [
+        ":core",
+        ":lib25.0_gencode.jar",
+        ":test_util",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+        "@maven//:org_mockito_mockito_core",
+    ],
+)
 
 
 # The UTF-8 validation tests are much slower than the other tests, so they get

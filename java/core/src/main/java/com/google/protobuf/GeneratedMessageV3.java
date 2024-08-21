@@ -37,17 +37,18 @@ public abstract class GeneratedMessageV3
     super(builder);
   }
 
-  /* Overrides abstract GeneratedMessage.internalGetFieldAccessorTable().
-  * 
-  * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
-  * (5.x). Users should update gencode to >= 4.26.x which uses 
-  * GeneratedMessage.internalGetFieldAccessorTable() instead.
-  */
-  @Deprecated
-  @Override
-  protected FieldAccessorTable internalGetFieldAccessorTable() {
-    throw new UnsupportedOperationException("Should be overridden in gencode.");
-  }
+  // TODO: Restore this shim
+  // /* Overrides abstract GeneratedMessage.internalGetFieldAccessorTable().
+  // * 
+  // * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+  // * (5.x). Users should update gencode to >= 4.26.x which uses 
+  // * GeneratedMessage.internalGetFieldAccessorTable() instead.
+  // */
+  // @Deprecated
+  // @Override
+  // protected FieldAccessorTable internalGetFieldAccessorTable() {
+  //   throw new UnsupportedOperationException("Should be overridden in gencode.");
+  // }
 
   @Deprecated
   protected interface BuilderParent extends AbstractMessage.BuilderParent {}
@@ -151,21 +152,21 @@ public abstract class GeneratedMessageV3
       return super.clearOneof(oneof);
     }
 
-    // Gencode method override removed in
-    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
-    @Deprecated
-    @Override
-    public int getRepeatedFieldCount(final FieldDescriptor field) {
-      return super.getRepeatedFieldCount(field);
-    }
+    // // Gencode method override removed in
+    // // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    // @Deprecated
+    // @Override
+    // public int getRepeatedFieldCount(final FieldDescriptor field) {
+    //   return super.getRepeatedFieldCount(field);
+    // }
 
-    // Gencode method override removed in
-    // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
-    @Deprecated
-    @Override
-    public Object getRepeatedField(final FieldDescriptor field, final int index) {
-      return super.getRepeatedField(field, index);
-    }
+    // // Gencode method override removed in
+    // // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
+    // @Deprecated
+    // @Override
+    // public Object getRepeatedField(final FieldDescriptor field, final int index) {
+    //   return super.getRepeatedField(field, index);
+    // }
 
     // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
