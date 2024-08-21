@@ -450,9 +450,9 @@ java_test(
     test_class = "com.google.protobuf.GeneratedMessageTest",
     deps = [
         ":core",
-        "@com_google_protobuf_v25//java/core:testdata/java_test_protos-speed.srcjar",
-        "@com_google_protobuf_v25//java/core:testdata/generic_test_protos-speed.srcjar",
-        "@com_google_protobuf_v25//java/core:testdata/lite_test_protos-speed.srcjar",
+        "//compatibility:testdata/java_test_protos-speed.srcjar",
+        "//compatibility:testdata/generic_test_protos-speed.srcjar",
+        "//compatibility:testdata/lite_test_protos-speed.srcjar",
         ":test_util",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
@@ -498,6 +498,16 @@ junit_tests(
         "@maven//:junit_junit",
         "@maven//:org_mockito_mockito_core",
     ],
+)
+
+java_library(
+    name = "binjars"
+    srcs= [
+        "//compatibility:testdata/java_test_protos-speed.srcjar",
+        "//compatibility:testdata/generic_test_protos-speed.srcjar",
+        "//compatibility:testdata/lite_test_protos-speed.srcjar",
+    ]
+    deps = ["@com_google_protobuf_v25//java/core:core"]
 )
 
 
