@@ -124,24 +124,6 @@ alias(
 )
 
 alias(
-    name = "descriptor_upb_proto",
-    actual = "//upb/reflection:descriptor_upb_proto",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "descriptor_upb_minitable_proto",
-    actual = "//upb/reflection:descriptor_upb_minitable_proto",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "descriptor_upb_proto_reflection",
-    actual = "//upb/reflection:descriptor_upb_proto_reflection",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     actual = "//upb/reflection:generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     visibility = ["//visibility:public"],
@@ -261,7 +243,6 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
-        ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
         ":mem",
@@ -286,6 +267,7 @@ upb_amalgamation(
         "//upb/message:types",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
+        "//upb/reflection:descriptor_upb_proto",
         "//upb/reflection:internal",
     ],
     strip_import_prefix = ["src"],
@@ -308,7 +290,6 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
-        ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
         ":json",
@@ -335,6 +316,7 @@ upb_amalgamation(
         "//upb/message:types",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
+        "//upb/reflection:descriptor_upb_proto",
         "//upb/reflection:internal",
     ],
     prefix = "php-",
@@ -358,7 +340,6 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
-        ":descriptor_upb_proto",
         ":eps_copy_input_stream",
         ":generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
         ":json",
@@ -384,6 +365,7 @@ upb_amalgamation(
         "//upb/message:types",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
+        "//upb/reflection:descriptor_upb_proto",
         "//upb/reflection:internal",
     ],
     prefix = "ruby-",
