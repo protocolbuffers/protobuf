@@ -71,8 +71,8 @@ std::string RawMapThunk(Context& ctx, const Descriptor& msg,
 
 std::string RawMapThunk(Context& ctx, const EnumDescriptor& desc,
                         absl::string_view key_t, absl::string_view op) {
-  return absl::StrCat("proto2_rust_thunk_Map_", key_t, "_",
-                      GetUnderscoreDelimitedFullName(ctx, *&desc), "_", op);
+  // Enums are always 32 bits.
+  return absl::StrCat("proto2_rust_thunk_Map_", key_t, "_i32_", op);
 }
 
 namespace {

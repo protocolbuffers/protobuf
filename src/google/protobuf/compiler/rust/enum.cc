@@ -72,56 +72,45 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
                               [&] { ctx.Emit(t.rs_from_ffi_key_expr); })
                  .WithSuffix("")},
             R"rs(
-      extern "C" {
-        fn $map_new_thunk$() -> $pbr$::RawMap;
-        fn $map_free_thunk$(m: $pbr$::RawMap);
-        fn $map_clear_thunk$(m: $pbr$::RawMap);
-        fn $map_size_thunk$(m: $pbr$::RawMap) -> usize;
-        fn $map_insert_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: $name$) -> bool;
-        fn $map_get_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: *mut $name$) -> bool;
-        fn $map_remove_thunk$(m: $pbr$::RawMap, key: $ffi_key_t$, value: *mut $name$) -> bool;
-        fn $map_iter_thunk$(m: $pbr$::RawMap) -> $pbr$::UntypedMapIterator;
-        fn $map_iter_get_thunk$(iter: &mut $pbr$::UntypedMapIterator, size_info: $pbr$::MapNodeSizeInfo, key: *mut $ffi_key_t$, value: *mut $name$);
-      }
       impl $pb$::ProxiedInMapValue<$key_t$> for $name$ {
         fn map_new(_private: $pbi$::Private) -> $pb$::Map<$key_t$, Self> {
             unsafe {
                 $pb$::Map::from_inner(
                     $pbi$::Private,
-                    $pbr$::InnerMap::new($pbi$::Private, $map_new_thunk$())
+                    $pbr$::InnerMap::new($pbi$::Private, $pbr$::$map_new_thunk$())
                 )
             }
         }
 
         unsafe fn map_free(_private: $pbi$::Private, map: &mut $pb$::Map<$key_t$, Self>) {
-            unsafe { $map_free_thunk$(map.as_raw($pbi$::Private)); }
+            unsafe { $pbr$::$map_free_thunk$(map.as_raw($pbi$::Private)); }
         }
 
         fn map_clear(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>) {
-            unsafe { $map_clear_thunk$(map.as_raw($pbi$::Private)); }
+            unsafe { $pbr$::$map_clear_thunk$(map.as_raw($pbi$::Private)); }
         }
 
         fn map_len(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> usize {
-            unsafe { $map_size_thunk$(map.as_raw($pbi$::Private)) }
+            unsafe { $pbr$::$map_size_thunk$(map.as_raw($pbi$::Private)) }
         }
 
         fn map_insert(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
-            unsafe { $map_insert_thunk$(map.as_raw($pbi$::Private), $to_ffi_key_expr$, value.into_proxied($pbi$::Private)) }
+            unsafe { $pbr$::$map_insert_thunk$(map.as_raw($pbi$::Private), $to_ffi_key_expr$, value.into_proxied($pbi$::Private).0) }
         }
 
         fn map_get<'a>(map: $pb$::View<'a, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
             let key = $to_ffi_key_expr$;
             let mut value = $std$::mem::MaybeUninit::uninit();
-            let found = unsafe { $map_get_thunk$(map.as_raw($pbi$::Private), key, value.as_mut_ptr()) };
+            let found = unsafe { $pbr$::$map_get_thunk$(map.as_raw($pbi$::Private), key, value.as_mut_ptr()) };
             if !found {
                 return None;
             }
-            Some(unsafe { value.assume_init() })
+            Some(unsafe { $name$(value.assume_init()) })
         }
 
         fn map_remove(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> bool {
             let mut value = $std$::mem::MaybeUninit::uninit();
-            unsafe { $map_remove_thunk$(map.as_raw($pbi$::Private), $to_ffi_key_expr$, value.as_mut_ptr()) }
+            unsafe { $pbr$::$map_remove_thunk$(map.as_raw($pbi$::Private), $to_ffi_key_expr$, value.as_mut_ptr()) }
         }
 
         fn map_iter(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> $pb$::MapIter<'_, $key_t$, Self> {
@@ -133,7 +122,7 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
             unsafe {
                 $pb$::MapIter::from_raw(
                     $pbi$::Private,
-                    $map_iter_thunk$(map.as_raw($pbi$::Private))
+                    $pbr$::$map_iter_thunk$(map.as_raw($pbi$::Private))
                 )
             }
         }
@@ -148,10 +137,10 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
             unsafe {
                 iter.as_raw_mut($pbi$::Private).next_unchecked::<$key_t$, Self, _, _>(
                     $pbi$::Private,
-                    $map_iter_get_thunk$,
+                    $pbr$::$map_iter_get_thunk$,
                     $pbr$::MapNodeSizeInfo(0),  // Ignored
                     |ffi_key| $from_ffi_key_expr$,
-                    $std$::convert::identity,
+                    |value| $name$(value),
                 )
             }
         }
@@ -494,21 +483,6 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
 
       $impl_proxied_in_map$
       )rs");
-}
-
-void GenerateEnumThunksCc(Context& ctx, const EnumDescriptor& desc) {
-  ctx.Emit(
-      {
-          {"cpp_t", cpp::QualifiedClassName(&desc)},
-          {"rs_t", UnderscoreDelimitFullName(ctx, desc.full_name())},
-          {"abi", "\"C\""},  // Workaround for syntax highlight bug in VSCode.
-      },
-      R"cc(
-        extern $abi$ {
-          __PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(
-              $cpp_t$, $rs_t$, $cpp_t$, $cpp_t$, value, cpp_value)
-        }
-      )cc");
 }
 
 }  // namespace rust

@@ -258,7 +258,6 @@ bool RustGenerator::Generate(const FileDescriptor* file,
       thunks_ctx.Emit({{"enum", enum_.full_name()}}, R"cc(
         // $enum$
       )cc");
-      GenerateEnumThunksCc(thunks_ctx, enum_);
       thunks_ctx.printer().PrintRaw("\n");
     }
   }

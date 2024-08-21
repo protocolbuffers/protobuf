@@ -868,15 +868,15 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
     ($key_t:ty, $ffi_key_t:ty, $to_ffi_key:expr, $from_ffi_key:expr, for $($t:ty, $ffi_view_t:ty, $ffi_value_t:ty, $to_ffi_value:expr, $from_ffi_value:expr;)*) => {
         paste! { $(
             extern "C" {
-                fn [< proto2_rust_thunk_Map_ $key_t _ $t _new >]() -> RawMap;
-                fn [< proto2_rust_thunk_Map_ $key_t _ $t _free >](m: RawMap);
-                fn [< proto2_rust_thunk_Map_ $key_t _ $t _clear >](m: RawMap);
-                fn [< proto2_rust_thunk_Map_ $key_t _ $t _size >](m: RawMap) -> usize;
-                fn [< proto2_rust_thunk_Map_ $key_t _ $t _insert >](m: RawMap, key: $ffi_key_t, value: $ffi_value_t) -> bool;
-                fn [< proto2_rust_thunk_Map_ $key_t _ $t _get >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_view_t) -> bool;
-                fn [< proto2_rust_thunk_Map_ $key_t _ $t _iter >](m: RawMap) -> UntypedMapIterator;
-                fn [< proto2_rust_thunk_Map_ $key_t _ $t _iter_get >](iter: &mut UntypedMapIterator, size_info: MapNodeSizeInfo, key: *mut $ffi_key_t, value: *mut $ffi_view_t);
-                fn [< proto2_rust_thunk_Map_ $key_t _ $t _remove >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_view_t) -> bool;
+                pub fn [< proto2_rust_thunk_Map_ $key_t _ $t _new >]() -> RawMap;
+                pub fn [< proto2_rust_thunk_Map_ $key_t _ $t _free >](m: RawMap);
+                pub fn [< proto2_rust_thunk_Map_ $key_t _ $t _clear >](m: RawMap);
+                pub fn [< proto2_rust_thunk_Map_ $key_t _ $t _size >](m: RawMap) -> usize;
+                pub fn [< proto2_rust_thunk_Map_ $key_t _ $t _insert >](m: RawMap, key: $ffi_key_t, value: $ffi_value_t) -> bool;
+                pub fn [< proto2_rust_thunk_Map_ $key_t _ $t _get >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_view_t) -> bool;
+                pub fn [< proto2_rust_thunk_Map_ $key_t _ $t _iter >](m: RawMap) -> UntypedMapIterator;
+                pub fn [< proto2_rust_thunk_Map_ $key_t _ $t _iter_get >](iter: &mut UntypedMapIterator, size_info: MapNodeSizeInfo, key: *mut $ffi_key_t, value: *mut $ffi_view_t);
+                pub fn [< proto2_rust_thunk_Map_ $key_t _ $t _remove >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_view_t) -> bool;
             }
 
             impl ProxiedInMapValue<$key_t> for $t {
