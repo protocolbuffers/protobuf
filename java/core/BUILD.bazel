@@ -550,9 +550,9 @@ genrule(
         "//java/core:lite_test_protos_java_proto",
     ],
     outs = [
-        "java_test_protos-speed.srcjar",
-        "generic_test_protos-speed.srcjar",
-        "lite_test_protos-speed.srcjar",
+        "testdata/java_test_protos-speed.srcjar",
+        "testdata/generic_test_protos-speed.srcjar",
+        "testdata/lite_test_protos-speed.srcjar",
     ],
     visibility = [
         "//visibility:public",
@@ -560,17 +560,17 @@ genrule(
     cmd = """
           for location in $(locations //java/core:java_test_protos_java_proto); do
             if [[ $$(basename $$location) == 'java_test_protos-speed-src.jar' ]]; then
-              cp $$location $(location java_test_protos-speed.srcjar);
+              cp $$location $(location testdata/java_test_protos-speed.srcjar);
             fi
           done;
           for location in $(locations //java/core:generic_test_protos_java_proto); do
             if [[ $$(basename $$location) == 'generic_test_protos-speed-src.jar' ]]; then
-              cp $$location $(location generic_test_protos-speed.srcjar);
+              cp $$location $(location testdata/generic_test_protos-speed.srcjar);
             fi
           done;
           for location in $(locations //java/core:lite_test_protos_java_proto); do
             if [[ $$(basename $$location) == 'lite_test_protos-speed-src.jar' ]]; then
-              cp $$location $(location lite_test_protos-speed.srcjar);
+              cp $$location $(location testdata/lite_test_protos-speed.srcjar);
             fi
           done;
           """,
@@ -584,9 +584,9 @@ genrule(
         "//java/core:lite_test_protos_java_proto",
     ],
     outs = [
-        "libjava_test_protos-speed.jar",
-        "libgeneric_test_protos-speed.jar",
-        "liblite_test_protos-speed.jar",
+        "testdata/libjava_test_protos-speed.jar",
+        "testdata/libgeneric_test_protos-speed.jar",
+        "testdata/liblite_test_protos-speed.jar",
     ],
     visibility = [
         "//visibility:public",
@@ -594,17 +594,17 @@ genrule(
     cmd = """
           for location in $(locations //java/core:java_test_protos_java_proto); do
             if [[ $$(basename $$location) == 'libjava_test_protos-speed.jar' ]]; then
-              cp $$location $(location libjava_test_protos-speed.jar);
+              cp $$location $(location testdata/libjava_test_protos-speed.jar);
             fi
           done;
           for location in $(locations //java/core:generic_test_protos_java_proto); do
             if [[ $$(basename $$location) == 'libgeneric_test_protos-speed.jar' ]]; then
-              cp $$location $(location libgeneric_test_protos-speed.jar);
+              cp $$location $(location testdata/libgeneric_test_protos-speed.jar);
             fi
           done;
           for location in $(locations //java/core:lite_test_protos_java_proto); do
             if [[ $$(basename $$location) == 'liblite_test_protos-speed.jar' ]]; then
-              cp $$location $(location liblite_test_protos-speed.jar);
+              cp $$location $(location testdata/liblite_test_protos-speed.jar);
             fi
           done;
           """,
