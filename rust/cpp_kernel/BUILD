@@ -8,6 +8,7 @@ cc_library(
         "compare.cc",
         "debug.cc",
         "map.cc",
+        "message.cc",
         "repeated.cc",
         "strings.cc",
     ],
