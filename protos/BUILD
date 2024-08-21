@@ -24,7 +24,6 @@
 #     visibility = ["//visibility:public"],
 #     deps = [
 #         "//hpb",
-#         "//hpb/backend/upb:interop",
 #     ],
 # )
 # end:google_only

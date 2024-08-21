@@ -6,7 +6,6 @@
 // https://developers.google.com/open-source/licenses/bsd
 #ifndef UPB_PROTOS_PROTOS_H_
 #define UPB_PROTOS_PROTOS_H_
-#include "google/protobuf/hpb/backend/upb/interop.h"
 #include "google/protobuf/hpb/hpb.h"
 namespace protos {
 namespace internal {
@@ -18,7 +17,6 @@ using hpb::internal::GetInternalMsg;
 using hpb::internal::PrivateAccess;
 using hpb::internal::Serialize;
 using hpb::internal::SetExtension;
-using hpb::interop::upb::GetMiniTable;
 }  // namespace internal
 using hpb::Parse;
 using hpb::Serialize;
