@@ -110,7 +110,6 @@ jobs:
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
         bazel-cache: java_linux/11
         bash: |
-          set -ex
           bazel build //java:release
           mvn install:install-file -Dfile=java/bom/pom.xml -DpomFile=java/bom/pom.xml
           mvn install:install-file -Dfile=java/pom.xml -DpomFile=java/pom.xml
