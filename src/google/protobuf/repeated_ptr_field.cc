@@ -16,9 +16,9 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
+#include <new>
 #include <string>
 
-#include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/message_lite.h"
@@ -36,11 +36,10 @@ namespace internal {
 void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   ABSL_DCHECK(extend_amount > 0);
   constexpr size_t ptr_size = sizeof(rep()->elements[0]);
-  int capacity = Capacity();
-  int new_capacity = capacity + extend_amount;
+  int new_capacity = capacity_ + extend_amount;
   Arena* arena = GetArena();
   new_capacity = internal::CalculateReserveSize<void*, kRepHeaderSize>(
-      capacity, new_capacity);
+      capacity_, new_capacity);
   ABSL_CHECK_LE(
       static_cast<int64_t>(new_capacity),
       static_cast<int64_t>(
@@ -64,7 +63,7 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
     memcpy(new_rep, old_rep,
            old_rep->allocated_size * ptr_size + kRepHeaderSize);
 
-    size_t old_size = capacity * ptr_size + kRepHeaderSize;
+    size_t old_size = capacity_ * ptr_size + kRepHeaderSize;
     if (arena == nullptr) {
       internal::SizedDelete(old_rep, old_size);
     } else {
@@ -74,12 +73,12 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
 
   tagged_rep_or_elem_ =
       reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(new_rep) + 1);
-  capacity_proxy_ = new_capacity - kSSOCapacity;
+  capacity_ = new_capacity;
   return &new_rep->elements[current_size_];
 }
 
-void RepeatedPtrFieldBase::Reserve(int capacity) {
-  int delta = capacity - Capacity();
+void RepeatedPtrFieldBase::Reserve(int new_capacity) {
+  int delta = new_capacity - capacity_;
   if (delta > 0) {
     InternalExtend(delta);
   }
@@ -91,14 +90,6 @@ void RepeatedPtrFieldBase::DestroyProtos() {
   // TODO:  Eliminate this store when invoked from the destructor,
   // since it is dead.
   tagged_rep_or_elem_ = nullptr;
-}
-
-void* RepeatedPtrFieldBase::AddMessageLite(ElementFactory factory) {
-  return AddInternal(factory);
-}
-
-void* RepeatedPtrFieldBase::AddString() {
-  return AddInternal([](Arena* arena) { return NewStringElement(arena); });
 }
 
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {
@@ -221,10 +212,6 @@ void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
   if (new_size > allocated_size()) {
     rep()->allocated_size = new_size;
   }
-}
-
-void* NewStringElement(Arena* arena) {
-  return Arena::Create<std::string>(arena);
 }
 
 }  // namespace internal
