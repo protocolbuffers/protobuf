@@ -2805,9 +2805,10 @@ public final class Descriptors {
       }
       boolean hasPossibleUnknownJavaFeature =
           !unresolvedFeatures.getUnknownFields().isEmpty()
-              && unresolvedFeatures
-                  .getUnknownFields()
-                  .hasField(JavaFeaturesProto.java_.getNumber());
+              && (unresolvedFeatures
+                      .getUnknownFields()
+                      .hasField(JavaFeaturesProto.java_.getNumber())
+              );
       if (hasPossibleCustomJavaFeature || hasPossibleUnknownJavaFeature) {
         ExtensionRegistry registry = ExtensionRegistry.newInstance();
         registry.add(JavaFeaturesProto.java_);
