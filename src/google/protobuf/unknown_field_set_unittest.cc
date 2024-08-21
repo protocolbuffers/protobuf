@@ -20,7 +20,6 @@
 #include "google/protobuf/stubs/callback.h"
 #include "google/protobuf/stubs/common.h"
 #include <gmock/gmock.h>
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_set.h"
 #include "absl/functional/bind_front.h"

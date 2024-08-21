@@ -41,7 +41,7 @@ pub use message_value::{upb_MessageValue, upb_MutableMessageValue};
 
 mod mini_table;
 pub use mini_table::{
-    upb_MiniTable, upb_MiniTableField, upb_MiniTable_FindFieldByNumber,
+    upb_MiniTable, upb_MiniTableField, upb_MiniTable_FindFieldByNumber, upb_MiniTable_SubMessage,
     upb_MiniTable_GetFieldByIndex, RawMiniTable, RawMiniTableField,
 };
 
