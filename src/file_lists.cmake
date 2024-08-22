@@ -760,6 +760,7 @@ set(protoc-gen-upbdefs_hdrs
 set(protoc-gen-upb_minitable_srcs
   ${protobuf_SOURCE_DIR}/upb_generator/common.cc
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/minitable/fasttable.cc
   ${protobuf_SOURCE_DIR}/upb_generator/minitable/generator.cc
   ${protobuf_SOURCE_DIR}/upb_generator/minitable/main.cc
   ${protobuf_SOURCE_DIR}/upb_generator/names.cc
