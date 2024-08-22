@@ -59,3 +59,8 @@ extern "C" int32_t TakeOwnershipAndGetOptionalInt32(
   delete msg;
   return i;
 }
+
+extern "C" const void* GetConstStaticTestAllTypes() {
+  static const auto* msg = new protobuf_unittest::TestAllTypes;
+  return msg;
+}

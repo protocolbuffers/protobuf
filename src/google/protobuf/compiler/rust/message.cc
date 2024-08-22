@@ -1339,6 +1339,14 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
                 $pbr$::RawMessage::new(*msg as *mut _).unwrap())
           }
         }
+        unsafe fn __unstable_wrap_raw_message_mut_unchecked_lifetime(
+            msg: *mut std::ffi::c_void) -> Self {
+          Self {
+            inner: $pbr$::MutatorMessageRef::wrap_raw(
+                $pbi$::Private,
+                $pbr$::RawMessage::new(msg as *mut _).unwrap())
+          }
+        }
         fn __unstable_as_raw_message_mut(&mut self) -> *mut std::ffi::c_void {
           self.raw_msg().as_ptr() as *mut _
         }
@@ -1348,6 +1356,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         unsafe fn __unstable_wrap_raw_message(
           msg: &'a *const std::ffi::c_void) -> Self {
           Self::new($pbi$::Private, $pbr$::RawMessage::new(*msg as *mut _).unwrap())
+        }
+        unsafe fn __unstable_wrap_raw_message_unchecked_lifetime(
+          msg: *const std::ffi::c_void) -> Self {
+          Self::new($pbi$::Private, $pbr$::RawMessage::new(msg as *mut _).unwrap())
         }
         fn __unstable_as_raw_message(&self) -> *const std::ffi::c_void {
           self.msg.as_ptr() as *const _
@@ -1364,6 +1376,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         unsafe fn __unstable_wrap_raw_message(
           msg: &'a *const std::ffi::c_void) -> Self {
           Self::new($pbi$::Private, $pbr$::RawMessage::new(*msg as *mut _).unwrap())
+        }
+        unsafe fn __unstable_wrap_raw_message_unchecked_lifetime(
+          msg: *const std::ffi::c_void) -> Self {
+          Self::new($pbi$::Private, $pbr$::RawMessage::new(msg as *mut _).unwrap())
         }
         fn __unstable_as_raw_message(&self) -> *const std::ffi::c_void {
           self.msg.as_ptr() as *const _

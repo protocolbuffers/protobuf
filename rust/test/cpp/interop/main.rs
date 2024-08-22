@@ -35,6 +35,8 @@ extern "C" {
 
     fn NewWithExtension() -> *mut c_void;
     fn GetBytesExtension(msg: *const c_void) -> PtrAndLen;
+
+    fn GetConstStaticTestAllTypes() -> *const c_void;
 }
 
 #[gtest]
@@ -137,4 +139,15 @@ fn smuggle_extension() {
     let bytes =
         unsafe { GetBytesExtension(msg2.as_mut().__unstable_as_raw_message_mut()).as_ref() };
     assert_eq!(bytes, b"smuggled");
+}
+
+#[gtest]
+fn view_of_const_static() {
+    let view: TestAllTypesView<'static> = unsafe {
+        TestAllTypesView::__unstable_wrap_raw_message_unchecked_lifetime(
+            GetConstStaticTestAllTypes(),
+        )
+    };
+    assert_eq!(view.optional_int64(), 0);
+    assert_eq!(view.default_int32(), 41);
 }

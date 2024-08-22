@@ -150,15 +150,41 @@ pub(crate) mod interop {
         /// must not be deleted.
         fn __unstable_as_raw_message(&self) -> *const c_void;
 
-        /// Wraps the provided pointer as a MessageView. This takes a ref
-        /// of a pointer so that a stack variable's lifetime can be used
-        /// to help make the borrow checker safer.
+        /// Wraps the provided pointer as a MessageView.
+        ///
+        /// This takes a ref of a pointer so that a stack variable's lifetime
+        /// can be used for a safe lifetime; under most cases this is
+        /// the correct lifetime and this should be used as:
+        /// ```
+        /// fn called_from_cpp(msg: *const c_void) {
+        ///   // `msg` is known live for the current stack frame, so view's
+        ///   // lifetime is also tied to the current stack frame here:
+        ///   let view = unsafe { __unstable_wrap_raw_message(&msg); }
+        ///   do_something_with_view(view);
+        /// }
+        /// ```
         ///
         /// # Safety
         ///   - The underlying message must be for the same type as `Self`
         ///   - The underlying message must be alive for 'msg and not mutated
         ///     while the wrapper is live.
         unsafe fn __unstable_wrap_raw_message(raw: &'msg *const c_void) -> Self;
+
+        /// Wraps the provided pointer as a MessageView.
+        ///
+        /// Unlike `__unstable_wrap_raw_message` this has no constraints
+        /// on lifetime: the caller has a free choice for the lifetime.
+        ///
+        /// As this is much easier to get the lifetime wrong than
+        /// `__unstable_wrap_raw_message`, prefer using that wherever
+        /// your lifetime can be tied to a stack lifetime, and only use this one
+        /// if its not possible (e.g. with a 'static lifetime).
+        ///
+        /// # Safety
+        ///   - The underlying message must be for the same type as `Self`
+        ///   - The underlying message must be alive for the caller-chosen 'msg
+        ///     and not mutated while the wrapper is live.
+        unsafe fn __unstable_wrap_raw_message_unchecked_lifetime(raw: *const c_void) -> Self;
     }
 
     /// Traits related to message mut interop. Note that these trait fns
@@ -176,11 +202,39 @@ pub(crate) mod interop {
 
         /// Wraps the provided C++ pointer as a MessageMut.
         ///
+        /// This takes a ref of a pointer so that a stack variable's lifetime
+        /// can be used for a safe lifetime; under most cases this is
+        /// the correct lifetime and this should be used as:
+        /// ```
+        /// fn called_from_cpp(msg: *mut c_void) {
+        ///   // `msg` is known live for the current stack frame, so mut's
+        ///   // lifetime is also tied to the current stack frame here:
+        ///   let m = unsafe { __unstable_wrap_raw_message_mut(&mut msg); }
+        ///   do_something_with_mut(m);
+        /// }
+        ///
         /// # Safety
         ///   - The underlying message must be for the same type as `Self`
         ///   - The underlying message must be alive for 'msg and not read or
         ///     mutated while the wrapper is live.
         #[cfg(cpp_kernel)]
         unsafe fn __unstable_wrap_raw_message_mut(raw: &'msg mut *mut c_void) -> Self;
+
+        /// Wraps the provided pointer as a MessageMut.
+        ///
+        /// Unlike `__unstable_wrap_raw_message_mut` this has no constraints
+        /// on lifetime: the caller has a free choice for the lifetime.
+        ///
+        /// As this is much easier to get the lifetime wrong than
+        /// `__unstable_wrap_raw_message_mut`, prefer using that wherever
+        /// the lifetime can be tied to a stack lifetime, and only use this one
+        /// if its not possible (e.g. with a 'static lifetime).
+        ///
+        /// # Safety
+        ///   - The underlying message must be for the same type as `Self`
+        ///   - The underlying message must be alive for the caller-chosen 'msg
+        ///     and not mutated while the wrapper is live.
+        #[cfg(cpp_kernel)]
+        unsafe fn __unstable_wrap_raw_message_mut_unchecked_lifetime(raw: *mut c_void) -> Self;
     }
 }
