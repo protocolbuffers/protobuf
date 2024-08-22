@@ -1037,6 +1037,7 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
   def testPrintAllFieldsPointy(self):
     message = unittest_pb2.TestAllTypes()
     test_util.SetAllFields(message)
+    print(message)
     self.CompareToGoldenFile(
         self.RemoveRedundantZeros(text_format.MessageToString(
             message, pointy_brackets=True)),

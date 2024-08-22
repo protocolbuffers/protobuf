@@ -560,7 +560,7 @@ bool WireFormat::ParseAndMergeField(
       }
 
       case FieldDescriptor::TYPE_BYTES: {
-        if (internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD) {
+        if (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
           absl::Cord value;
           if (!WireFormatLite::ReadBytes(input, &value)) return false;
           message_reflection->SetString(message, field, value);
@@ -1003,7 +1003,7 @@ const char* WireFormat::_InternalParseAndMergeField(
     case FieldDescriptor::TYPE_BYTES: {
       int size = ReadSize(&ptr);
       if (ptr == nullptr) return nullptr;
-      if (internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD) {
+      if (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
         absl::Cord value;
         ptr = ctx->ReadCord(ptr, size, &value);
         if (ptr == nullptr) return nullptr;
@@ -1425,7 +1425,7 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
       }
 
       case FieldDescriptor::TYPE_BYTES: {
-        if (internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD) {
+        if (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
           absl::Cord value = message_reflection->GetCord(message, field);
           target = stream->WriteString(field->number(), value, target);
           break;
@@ -1726,7 +1726,7 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
     // instead of copying.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: {
-      if (internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD) {
+      if (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
         for (size_t j = 0; j < count; j++) {
           absl::Cord value = message_reflection->GetCord(message, field);
           data_size += WireFormatLite::StringSize(value);

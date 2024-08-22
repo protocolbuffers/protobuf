@@ -7519,7 +7519,7 @@ TEST_F(FeaturesTest, Proto2Features) {
         name: "cord"
         number: 8
         label: LABEL_OPTIONAL
-        type: TYPE_STRING
+        type: TYPE_BYTES
         options { ctype: CORD }
       }
       field {
@@ -7604,6 +7604,8 @@ TEST_F(FeaturesTest, Proto2Features) {
 
   EXPECT_EQ(message->FindFieldByName("str")->cpp_string_type(),
             FieldDescriptor::CppStringType::kString);
+  EXPECT_EQ(message->FindFieldByName("cord")->cpp_string_type(),
+            FieldDescriptor::CppStringType::kCord);
 
   // Check round-trip consistency.
   FileDescriptorProto proto;

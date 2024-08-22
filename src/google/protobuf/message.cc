@@ -477,9 +477,11 @@ const internal::RepeatedFieldAccessor* Reflection::RepeatedFieldAccessor(
     HANDLE_PRIMITIVE_TYPE(ENUM, int32_t)
 #undef HANDLE_PRIMITIVE_TYPE
     case FieldDescriptor::CPPTYPE_STRING:
-      switch (field->options().ctype()) {
-        default:
-        case FieldOptions::STRING:
+      switch (field->cpp_string_type()) {
+        case FieldDescriptor::CppStringType::kCord:
+          ABSL_LOG(FATAL) << "Repeated cords are not supported.";
+        case FieldDescriptor::CppStringType::kView:
+        case FieldDescriptor::CppStringType::kString:
           return GetSingleton<internal::RepeatedPtrFieldStringAccessor>();
       }
       break;
