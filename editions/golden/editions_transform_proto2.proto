@@ -114,7 +114,6 @@ enum TestEnum {
   option features.enum_type = CLOSED;
 
   FOO = 1; // Non-zero default
-
   BAR = 2;
   BAZ = 3;
   NEG = -1; // Intentionally negative.
