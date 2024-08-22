@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
@@ -18,6 +19,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
@@ -314,6 +316,57 @@ bool ObjectiveCGenerator::GenerateAll(
 
   // -----------------------------------------------------------------
 
+  // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
+  // error cases, so it seems to be ok to use as a back door for warnings.
+
+  // This is a way to turn off these warnings, the intent is that if you find
+  // this then you also did as asked and filed an issue so the need for the
+  // generation option is known. But it allows you to keep your builds quiet
+  // after opening the issue. The value of the environment variable should be
+  // a comma separated list of the names of the options to suppress their usage
+  // warning.
+  char* options_warnings_suppressions_cstr =
+      getenv("GPB_OBJC_SUPPRESS_DEPRECATED_OPTIONS_WARNINGS");
+  const absl::string_view options_warnings_suppressions =
+      options_warnings_suppressions_cstr != nullptr
+          ? options_warnings_suppressions_cstr
+          : "";
+  if (generation_options.headers_use_forward_declarations &&
+      !absl::StrContains(options_warnings_suppressions,
+                         "headers_use_forward_declarations")) {
+    std::cerr << "WARNING: headers_use_forward_declarations is enabled, this "
+                 "is deprecated and will be removed in the future. If you have "
+                 "a need for enabling it please file an issue at "
+                 "https://github.com/protocolbuffers/protobuf/issues with "
+                 "your use case."
+              << std::endl;
+    std::cerr.flush();
+  }
+  if (!generation_options.generate_minimal_imports &&
+      !absl::StrContains(options_warnings_suppressions,
+                         "generate_minimal_imports")) {
+    std::cerr << "WARNING: generate_minimal_imports is disabled, this is "
+                 "deprecated and will be removed in the future. If you have a "
+                 "need for disabling it please file an issue at "
+                 "https://github.com/protocolbuffers/protobuf/issues with "
+                 "your use case."
+              << std::endl;
+    std::cerr.flush();
+  }
+  if (!generation_options.strip_custom_options &&
+      !absl::StrContains(options_warnings_suppressions,
+                         "strip_custom_options")) {
+    std::cerr << "WARNING: strip_custom_options is disabled, this is deprecated"
+                 "and will be removed in the future. If you have a need for "
+                 "disabling it please file an issue at "
+                 "https://github.com/protocolbuffers/protobuf/issues with "
+                 "your use case."
+              << std::endl;
+    std::cerr.flush();
+  }
+
+  // -----------------------------------------------------------------
+
   // These are not official generation options and could be removed/changed in
   // the future and doing that won't count as a breaking change.
   bool headers_only = getenv("GPB_OBJC_HEADERS_ONLY") != nullptr;
@@ -417,7 +470,7 @@ bool ObjectiveCGenerator::GenerateAll(
         }
       }
     }  // if (!headers_only && skip_impls.count(file->name()) == 0)
-  }    // for(file : files)
+  }  // for(file : files)
 
   return true;
 }
