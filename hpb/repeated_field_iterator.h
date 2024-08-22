@@ -14,6 +14,7 @@
 #include <type_traits>
 
 #include "absl/strings/string_view.h"
+#include "google/protobuf/hpb/backend/upb/interop.h"
 #include "google/protobuf/hpb/hpb.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
@@ -354,8 +355,8 @@ struct MessageIteratorPolicy {
     void AddOffset(ptrdiff_t offset) { arr += offset; }
     auto Get() const {
       if constexpr (std::is_const_v<T>) {
-        return ::hpb::internal::CreateMessage<typename std::remove_const_t<T>>(
-            *arr, arena);
+        return ::hpb::interop::upb::MakeCHandle<
+            typename std::remove_const_t<T>>(*arr, arena);
       } else {
         return ::hpb::internal::CreateMessageProxy<T>(*arr, arena);
       }

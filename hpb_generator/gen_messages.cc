@@ -450,7 +450,7 @@ void WriteMessageImplementation(
     output(
         R"cc(
           ::hpb::Ptr<const $0> $0::default_instance() {
-            return ::hpb::internal::CreateMessage<$0>(
+            return ::hpb::interop::upb::MakeCHandle<$0>(
                 (upb_Message *)_$0_default_instance_.msg,
                 _$0_default_instance_.arena);
           }

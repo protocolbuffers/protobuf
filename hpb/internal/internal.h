@@ -43,11 +43,6 @@ typename T::Proxy CreateMessageProxy(upb_Message* msg, upb_Arena* arena) {
   return typename T::Proxy(msg, arena);
 }
 
-template <typename T>
-typename T::CProxy CreateMessage(const upb_Message* msg, upb_Arena* arena) {
-  return PrivateAccess::CProxy<T>(msg, arena);
-}
-
 }  // namespace hpb::internal
 
 #endif  // GOOGLE_PROTOBUF_HPB_INTERNAL_INTERNAL_H__

@@ -301,7 +301,7 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
     return ExtensionNotFoundError(
         upb_MiniTableExtension_Number(id.mini_table_ext()));
   }
-  return Ptr<const Extension>(::hpb::internal::CreateMessage<Extension>(
+  return Ptr<const Extension>(::hpb::interop::upb::MakeCHandle<Extension>(
       (upb_Message*)value.msg_val, ::hpb::internal::GetArena(message)));
 }
 

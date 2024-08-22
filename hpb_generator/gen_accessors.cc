@@ -244,7 +244,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
                 if (!has_$2()) {
                   return $4::default_instance();
                 }
-                return ::hpb::internal::CreateMessage<$4>(
+                return ::hpb::interop::upb::MakeCHandle<$4>(
                     (upb_Message*)($3_$5(msg_)), arena_);
               }
             )cc",
@@ -325,7 +325,7 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
             $5* msg_value;
             $7bool success = $4_$9_get(msg_, $8, &msg_value);
             if (success) {
-              return ::hpb::internal::CreateMessage<$6>(UPB_UPCAST(msg_value), arena_);
+              return ::hpb::interop::upb::MakeCHandle<$6>(UPB_UPCAST(msg_value), arena_);
             }
             return absl::NotFoundError("");
           }

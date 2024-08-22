@@ -101,7 +101,7 @@ class RepeatedFieldProxy
   // T::CProxy [] operator specialization.
   typename T::CProxy operator[](size_t n) const {
     upb_MessageValue message_value = upb_Array_Get(this->arr_, n);
-    return ::hpb::internal::CreateMessage<typename std::remove_const_t<T>>(
+    return ::hpb::interop::upb::MakeCHandle<typename std::remove_const_t<T>>(
         (upb_Message*)message_value.msg_val, this->arena_);
   }
 

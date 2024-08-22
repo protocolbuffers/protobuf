@@ -135,7 +135,7 @@ void WriteRepeatedMessageAccessor(const protobuf::Descriptor* message,
           size_t len;
           auto* ptr = $3_$5(msg_, &len);
           assert(index < len);
-          return ::hpb::internal::CreateMessage<$4>(
+          return ::hpb::interop::upb::MakeCHandle<$4>(
               (upb_Message*)*(ptr + index), arena_);
         }
       )cc",
