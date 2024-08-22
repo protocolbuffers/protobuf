@@ -40,7 +40,7 @@ bootstrap_upb_proto_library(
 
 upb_proto_reflection_library(
     name = "descriptor_upb_proto_reflection",
-    visibility = ["//visibility:public"],
+    visibility = ["//upb:friends"],
     deps = ["//:descriptor_proto"],
 )
 
