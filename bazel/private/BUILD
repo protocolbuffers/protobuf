@@ -91,3 +91,18 @@ native_bool_flag(
     result = False,
     visibility = ["//bazel:__subpackages__"],
 )
+
+bzl_library(
+    name = "proto_lang_toolchain_experimental_bzl",
+    srcs = [
+        "proto_lang_toolchain_experimental.bzl",
+    ],
+    visibility = ["//tools/proto/toolchains:__subpackages__"],
+    deps = [
+        ":toolchain_helpers_bzl",
+        "//bazel/common:proto_common_bzl",
+        "//bazel/common:proto_info_bzl",
+        "//bazel/common:proto_lang_toolchain_info_bzl",
+        "@proto_bazel_features//:features",
+    ],
+)
