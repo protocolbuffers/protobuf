@@ -7,6 +7,26 @@ load("//compatibility:runtime_conformance.bzl", "java_runtime_conformance")
 # To add more test cases in Java, use java_runtime_conformance as below, and add
 # the corresponding http_archive in the WORKSPACE file for the version.
 
+java_library(
+    name = "v25_test_protos_srcjar",
+    testonly = True,
+    srcs = glob([
+        "v3.25.0/*.srcjar",
+    ]),
+    visibility = ["//java/core:__pkg__"],
+    deps = ["//java/core"],
+)
+
+java_library(
+    name = "v25_test_protos_jar",
+    testonly = True,
+    srcs = glob([
+        "v3.25.0/*.srcjar",
+    ]),
+    visibility = ["//java/core:__pkg__"],
+    deps = ["@com_google_protobuf_v25.0//java/core"],
+)
+
 # main gencode builds with main runtime as a proof of concept.
 java_runtime_conformance(
     name = "java_conformance_main",
