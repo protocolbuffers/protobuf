@@ -256,7 +256,7 @@ cc_dist_library(
     ],
     tags = ["manual"],
     deps = [
-        "//upb_generator:protoc-gen-upb_minitable_lib_lib",
+        "//upb_generator/minitable:generator_with_main",
     ],
 )
 

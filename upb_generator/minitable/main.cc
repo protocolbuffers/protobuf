@@ -15,8 +15,8 @@
 #include "upb/reflection/def.hpp"
 #include "upb_generator/common.h"
 #include "upb_generator/file_layout.h"
+#include "upb_generator/minitable/generator.h"
 #include "upb_generator/plugin.h"
-#include "upb_generator/protoc-gen-upb_minitable.h"
 
 // Must be last.
 #include "upb/port/def.inc"

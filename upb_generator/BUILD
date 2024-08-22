@@ -76,7 +76,6 @@ bootstrap_upb_proto_library(
     ],
     oss_strip_prefix = "third_party/protobuf/github/bootstrap/src",
     proto_lib_deps = ["//:compiler_plugin_proto"],
-    visibility = ["//upb:friends"],
     deps = ["//upb/reflection:descriptor_upb_proto"],
 )
 
@@ -295,80 +294,6 @@ proto_lang_toolchain(
     plugin = ":protoc-gen-upb_stage1",
     plugin_format_flag = "--plugin=protoc-gen-upb=%s",
     progress_message = "Generating upb protos",
-    runtime = "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-    visibility = ["//visibility:public"],
-)
-
-bootstrap_cc_library(
-    name = "protoc-gen-upb_minitable_lib",
-    srcs = ["protoc-gen-upb_minitable.cc"],
-    hdrs = ["protoc-gen-upb_minitable.h"],
-    bootstrap_deps = [
-        ":common",
-        ":file_layout",
-        ":names",
-        ":plugin",
-        ":plugin_upb_proto",
-        "//upb/reflection:descriptor_upb_proto",
-        "//upb/reflection:reflection",
-    ],
-    copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//upb:friends"],
-    deps = [
-        "//src/google/protobuf/compiler:code_generator",
-        "//upb:base",
-        "//upb:mem",
-        "//upb:mini_table",
-        "//upb:port",
-        "//upb:wire_reader",
-        "//upb/mini_table:internal",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/strings",
-    ],
-)
-
-bootstrap_cc_binary(
-    name = "protoc-gen-upb_minitable",
-    bootstrap_deps = [
-        ":protoc-gen-upb_minitable_lib_lib",
-    ],
-    copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//visibility:public"],
-)
-
-# TODO: This wrapper lib is a hack that we need because of how CcInfo works in Bazel 6.
-# In Bazel 7, our cmake dependency scraping works fine with cc_binary.
-bootstrap_cc_library(
-    name = "protoc-gen-upb_minitable_lib_lib",
-    srcs = ["protoc-gen-upb_minitable-main.cc"],
-    bootstrap_deps = [
-        ":file_layout",
-        ":common",
-        ":plugin",
-        ":protoc-gen-upb_minitable_lib",
-        "//upb/reflection:reflection",
-    ],
-    copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//pkg:__pkg__"],
-    deps = [
-        "//upb:base",
-        "//upb:port",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/strings",
-    ],
-)
-
-proto_lang_toolchain(
-    name = "protoc-gen-upb_minitable_toolchain",
-    command_line = "--upb_minitable_out=$(OUT)",
-    output_files = "multiple",
-    plugin = ":protoc-gen-upb_minitable_stage1",
-    plugin_format_flag = "--plugin=protoc-gen-upb_minitable=%s",
-    progress_message = "Generating upb minitables",
     runtime = "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     visibility = ["//visibility:public"],
 )

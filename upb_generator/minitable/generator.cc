@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "upb_generator/protoc-gen-upb_minitable.h"
+#include "upb_generator/minitable/generator.h"
 
 #include <string.h>
 

@@ -36,7 +36,6 @@ bootstrap_upb_proto_library(
     oss_src_rules = ["//:descriptor_proto_srcs"],
     oss_strip_prefix = "third_party/protobuf/github/bootstrap/src",
     proto_lib_deps = ["//:descriptor_proto"],
-    visibility = ["//visibility:public"],
 )
 
 upb_proto_reflection_library(
