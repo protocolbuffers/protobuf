@@ -14,7 +14,11 @@ load(
 
 bootstrap_cc_library(
     name = "generator",
-    srcs = ["generator.cc"],
+    srcs = [
+        "fasttable.cc",
+        "fasttable.h",
+        "generator.cc",
+    ],
     hdrs = ["generator.h"],
     bootstrap_deps = [
         "//upb_generator:common",
