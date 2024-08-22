@@ -745,7 +745,7 @@ set(protoc-gen-upb_hdrs
 set(protoc-gen-upbdefs_srcs
   ${protobuf_SOURCE_DIR}/upb_generator/common.cc
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.cc
-  ${protobuf_SOURCE_DIR}/upb_generator/protoc-gen-upbdefs.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/reflection/generator.cc
 )
 
 # @//pkg:protoc-gen-upbdefs
