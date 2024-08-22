@@ -443,6 +443,16 @@ junit_tests(
     ],
 )
 
+java_library(
+    name = "v25_test_protos_srcjar",
+    srcs = [
+        "//compatibility:v3.25.0_srcjar",
+    ],
+    testonly = True,
+    deps = ["//java/core:core"],
+)
+
+# Tests source compatibility against v25 gencode compiled against current runtime 
 java_test(
     name = "v25_generated_message_test_srcjar",
     size = "small",
@@ -450,48 +460,67 @@ java_test(
     test_class = "com.google.protobuf.GeneratedMessageTest",
     deps = [
         ":core",
-        "//compatibility:testdata/java_test_protos-speed.srcjar",
-        "//compatibility:testdata/generic_test_protos-speed.srcjar",
-        "//compatibility:testdata/lite_test_protos-speed.srcjar",
+        ":v25_test_protos_srcjar",
         ":test_util",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
     ],
 )
 
+java_library(
+    name = "v25_test_protos_jar",
+    srcs = [
+        "//compatibility:v3.25.0_srcjar",
+    ],
+    testonly = True,
+    deps = ["@com_google_protobuf_v25//java/core:core"],
+)
+
+# Tests binary compatibility against v25 gencode jar compiled against v25 runtime 
 java_test(
     name = "v25_generated_message_test_jar",
     size = "small",
     srcs = ["src/test/java/com/google/protobuf/GeneratedMessageTest.java"],
-    test_class = "com.google.protobuf.GeneratedMessageTest",
     deps = [
         ":core",
-        "@com_google_protobuf_v25//java/core:testdata/libjava_test_protos-speed.jar",
-        "@com_google_protobuf_v25//java/core:testdata/libgeneric_test_protos-speed.jar",
-        "@com_google_protobuf_v25//java/core:testdata/liblite_test_protos-speed.jar",
+        ":v25_test_protos_jar",
+        # "//compatibility:v3.25.0/libjava_test_protos-speed.jar",
+        # "//compatibility:v3.25.0/libgeneric_test_protos-speed.jar",
+        # "//compatibility:v3.25.0/liblite_test_protos-speed.jar",
         ":test_util",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
     ],
 )
 
+# Tests binary compatibility against v25 gencode compiled against v25 runtime 
 junit_tests(
     name = "v25_core_tests_jar",
     size = "small",
     srcs = glob(
         ["src/test/java/**/*.java"],
         exclude = [
-            # Exclusions from :core_tests
+            # Depends on unittest_delimited.proto added in v4.27.x
+            "src/test/java/com/google/protobuf/TextFormatTest.java",
+            # Depends on editions APIs added in v4.26.x.
+            "src/test/java/com/google/protobuf/DescriptorsTest.java",
+            # TODO: Version skew?
+            # "src/test/java/com/google/protobuf/CodedOutputStreamTest.java",
+            # Excluded in core_tests
             "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
             "src/test/java/com/google/protobuf/TestUtil.java",
             "src/test/java/com/google/protobuf/TestUtilLite.java",
+            "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
         ],
     ),
-    data = ["//src/google/protobuf:testdata"],
+    test_prefix = "v25",
     deps = [
         ":core",
-        ":lib25.0_gencode.jar",
+        ":v25_test_protos_jar",
+        # "//compatibility:v3.25.0/libjava_test_protos-speed.jar",
+        # "//compatibility:v3.25.0/libgeneric_test_protos-speed.jar",
+        # "//compatibility:v3.25.0/liblite_test_protos-speed.jar",
         ":test_util",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_truth_truth",
@@ -500,14 +529,39 @@ junit_tests(
     ],
 )
 
-java_library(
-    name = "binjars"
-    srcs= [
-        "//compatibility:testdata/java_test_protos-speed.srcjar",
-        "//compatibility:testdata/generic_test_protos-speed.srcjar",
-        "//compatibility:testdata/lite_test_protos-speed.srcjar",
-    ]
-    deps = ["@com_google_protobuf_v25//java/core:core"]
+junit_tests(
+    name = "v25_core_tests_srcjar",
+    size = "small",
+    srcs = glob(
+        ["src/test/java/**/*.java"],
+        exclude = [
+            # Depends on unittest_delimited.proto added in v4.27.x
+            "src/test/java/com/google/protobuf/TextFormatTest.java",
+            # Depends on editions APIs added in v4.26.x.
+            "src/test/java/com/google/protobuf/DescriptorsTest.java",
+            # TODO: Version skew?
+            # "src/test/java/com/google/protobuf/CodedOutputStreamTest.java",
+            # Excluded in core_tests
+            "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
+            "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
+            "src/test/java/com/google/protobuf/TestUtil.java",
+            "src/test/java/com/google/protobuf/TestUtilLite.java",
+            "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
+        ],
+    ),
+    test_prefix = "v25SrcJar",
+    deps = [
+        ":core",
+        ":v25_test_protos_srcjar",
+        # "//compatibility:v3.25.0/libjava_test_protos-speed.jar",
+        # "//compatibility:v3.25.0/libgeneric_test_protos-speed.jar",
+        # "//compatibility:v3.25.0/liblite_test_protos-speed.jar",
+        ":test_util",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+        "@maven//:org_mockito_mockito_core",
+    ],
 )
 
 

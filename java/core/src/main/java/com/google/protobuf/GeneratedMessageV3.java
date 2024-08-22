@@ -11,6 +11,8 @@ import com.google.protobuf.AbstractMessage.BuilderParent;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
+import com.google.protobuf.GeneratedMessage.UnusedPrivateParameter;
+
 import java.util.List;
 
 /**
@@ -37,18 +39,43 @@ public abstract class GeneratedMessageV3
     super(builder);
   }
 
-  // TODO: Restore this shim
-  // /* Overrides abstract GeneratedMessage.internalGetFieldAccessorTable().
-  // * 
-  // * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
-  // * (5.x). Users should update gencode to >= 4.26.x which uses 
-  // * GeneratedMessage.internalGetFieldAccessorTable() instead.
-  // */
-  // @Deprecated
-  // @Override
-  // protected FieldAccessorTable internalGetFieldAccessorTable() {
-  //   throw new UnsupportedOperationException("Should be overridden in gencode.");
-  // }
+  /* Overrides abstract GeneratedMessage.internalGetFieldAccessorTable().
+  * 
+  * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+  * (5.x). Users should update gencode to >= 4.26.x which uses 
+  * GeneratedMessage.internalGetFieldAccessorTable() instead.
+  */
+  @Deprecated
+  @Override
+  protected FieldAccessorTable internalGetFieldAccessorTable() {
+    throw new UnsupportedOperationException("Should be overridden in gencode.");
+  }
+
+  /**
+   * 
+   * 
+  * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+  * (5.x). Users should update gencode to >= 4.26.x which uses 
+  * GeneratedMessage.UnusedPrivateParameter instead.*/
+  @Deprecated 
+  protected static final class UnusedPrivateParameter {
+    static final UnusedPrivateParameter INSTANCE = new UnusedPrivateParameter();
+
+    private UnusedPrivateParameter() {}
+  }
+
+
+  /**
+   *
+   * 
+  * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+  * (5.x). Users should update gencode to >= 4.26.x which overrides 
+  * GeneratedMessage.newInstance() instead.*/
+  @Deprecated
+  @SuppressWarnings({"unused"})
+  protected Object newInstance(UnusedPrivateParameter unused) {
+    throw new UnsupportedOperationException("This method must be overridden by the subclass.");
+  }
 
   @Deprecated
   protected interface BuilderParent extends AbstractMessage.BuilderParent {}
@@ -151,22 +178,6 @@ public abstract class GeneratedMessageV3
     public BuilderT clearOneof(final OneofDescriptor oneof) {
       return super.clearOneof(oneof);
     }
-
-    // // Gencode method override removed in
-    // // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
-    // @Deprecated
-    // @Override
-    // public int getRepeatedFieldCount(final FieldDescriptor field) {
-    //   return super.getRepeatedFieldCount(field);
-    // }
-
-    // // Gencode method override removed in
-    // // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
-    // @Deprecated
-    // @Override
-    // public Object getRepeatedField(final FieldDescriptor field, final int index) {
-    //   return super.getRepeatedField(field, index);
-    // }
 
     // Gencode method override removed in
     // https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
@@ -492,8 +503,8 @@ public abstract class GeneratedMessageV3
      */
     @Deprecated
     public <T> BuilderT setExtension(
-        final GeneratedMessage.GeneratedExtension extension, final T value) {
-      return setExtension((ExtensionLite<GeneratedMessageV3, T>) extension, value);
+        final GeneratedMessage.GeneratedExtension<MessageT, T> extension, final T value) {
+      return setExtension((ExtensionLite<MessageT, T>) extension, value);
     }
 
     /* Removed from GeneratedMessage.ExtendableBuilder in
@@ -504,10 +515,10 @@ public abstract class GeneratedMessageV3
      */
     @Deprecated
     public <T> BuilderT setExtension(
-        final GeneratedMessage.GeneratedExtension extension,
+        final GeneratedMessage.GeneratedExtension<MessageT, List<T>> extension,
         final int index,
         final T value) {
-      return setExtension((ExtensionLite<GeneratedMessageV3, List<T>>) extension, index, value);
+      return setExtension((ExtensionLite<MessageT, List<T>>) extension, index, value);
     }
 
     /* Removed from GeneratedMessage.ExtendableBuilder in
@@ -518,8 +529,8 @@ public abstract class GeneratedMessageV3
      */
     @Deprecated
     public <T> BuilderT addExtension(
-        final GeneratedMessage.GeneratedExtension extension, final T value) {
-      return addExtension((ExtensionLite<GeneratedMessageV3, List<T>>) extension, value);
+        final GeneratedMessage.GeneratedExtension<MessageT, List<T>> extension, final T value) {
+      return addExtension((ExtensionLite<MessageT, List<T>>) extension, value);
     }
 
     /* Removed from GeneratedMessage.ExtendableBuilder in
@@ -530,8 +541,8 @@ public abstract class GeneratedMessageV3
      */
     @Deprecated
     public <T> BuilderT clearExtension(
-        final GeneratedMessage.GeneratedExtension extension) {
-      return clearExtension((ExtensionLite<GeneratedMessageV3, T>) extension);
+        final GeneratedMessage.GeneratedExtension<MessageT, T> extension) {
+      return clearExtension((ExtensionLite<MessageT, T>) extension);
     }
 
     // Gencode method override removed in

@@ -45,11 +45,12 @@ def junit_tests(name, srcs, data = [], deps = [], package_name = "com.google.pro
         deps = deps,
         resources = data,
         data = data,
+        testonly=True,
     )
     test_names = []
     prefix = name.replace("-", "_") + "TestSuite"
     for src in srcs:
-        test_name = name + "_" + src.rsplit("/", 1)[1].split(".")[0]
+        test_name = src.rsplit("/", 1)[1].split(".")[0]
         if not test_name.endswith("Test") or test_name.startswith("Abstract"):
             continue
         if test_prefix:

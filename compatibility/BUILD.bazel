@@ -9,6 +9,26 @@ load("//compatibility:runtime_conformance.bzl", "java_runtime_conformance")
 package(
     default_visibility = ["//visibility:public"],
 )
+
+# exports_files(
+#     glob(["v3.25.0/*.srcjar"]) + 
+#     glob(["v3.25.0/*.jar"])
+# )
+
+filegroup(
+    name = "v3.25.0_srcjar",
+    srcs = glob(["v3.25.0/*.srcjar"]),
+    testonly = True,
+    visibility= ["//java/core:__pkg__"],
+)
+
+filegroup(
+    name = "v3.25.0_jar",
+    srcs = glob(["v3.25.0/*.jar"]),
+    testonly = True,
+    visibility= ["//java/core:__pkg__"],
+)
+
 # main gencode builds with main runtime as a proof of concept.
 java_runtime_conformance(
     name = "java_conformance_main",

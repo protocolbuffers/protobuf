@@ -7,6 +7,8 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.Internal.checkNotNull;
+
 /**
  * Stub for SingleFieldBuilderV3 wrapping SingleFieldBuilder for compatibility with older gencode.
  *
@@ -18,48 +20,173 @@ package com.google.protobuf;
 public class SingleFieldBuilderV3<
         MType extends AbstractMessage,
         BType extends AbstractMessage.Builder,
-        IType extends MessageOrBuilder>
-    extends SingleFieldBuilder<MType, BType, IType> {
+        IType extends MessageOrBuilder> 
+  implements AbstractMessage.BuilderParent {
 
+  private AbstractMessage.BuilderParent parent;
+
+  private BType builder;
+
+  private MType message;
+
+  private boolean isClean;
+
+  @Deprecated
   public SingleFieldBuilderV3(
     MType message, AbstractMessage.BuilderParent parent, boolean isClean) {
-    super(message, parent, isClean);
+    this.message = checkNotNull(message);
+    this.parent = parent;
+    this.isClean = isClean;
   }
 
-  /* Returns SingleFieldBuilderV3 instead of SingleFieldBuilder.
-  *
+  /*
+  * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+  * (5.x). Users should update gencode to >= 4.26.x which uses
+  * SingleFieldBuilder.dispose() instead.
+  */
+  @Deprecated
+  public void dispose() {
+    parent = null;
+  }
+  
+  /*
+  * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+  * (5.x). Users should update gencode to >= 4.26.x which uses
+  * SingleFieldBuilder.getMessage() instead.
+  */
+  @Deprecated
+  @SuppressWarnings("unchecked")
+  public MType getMessage() {
+    if (message == null) {
+      message = (MType) builder.buildPartial();
+    }
+    return message;
+  }
+
+  /*
+  * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+  * (5.x). Users should update gencode to >= 4.26.x which uses
+  * SingleFieldBuilder.build() instead.
+  */
+  @Deprecated
+  public MType build() {
+    isClean = true;
+    return getMessage();
+  }
+
+  /*
+  * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+  * (5.x). Users should update gencode to >= 4.26.x which uses
+  * SingleFieldBuilder.getbuilder() instead.
+  */
+  @Deprecated
+  @SuppressWarnings("unchecked")
+  public BType getBuilder() {
+    if (builder == null) {
+      builder = (BType) message.newBuilderForType(this);
+      builder.mergeFrom(message);
+      builder.markClean();
+    }
+    return builder;
+  }
+
+  /*
+  * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+  * (5.x). Users should update gencode to >= 4.26.x which uses
+  * SingleFieldBuilder.getMessageOrBuilder() instead.
+  */
+  @Deprecated
+  @SuppressWarnings("unchecked")
+  public IType getMessageOrBuilder() {
+    if (builder != null) {
+      return (IType) builder;
+    } else {
+      return (IType) message;
+    }
+  }
+
+  /*
   * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
   * (5.x). Users should update gencode to >= 4.26.x which uses
   * SingleFieldBuilder.setMessage() instead.
   */
   @Deprecated
-  @Override
+  @CanIgnoreReturnValue
   public SingleFieldBuilderV3<MType, BType, IType> setMessage(MType message) {
-    super.setMessage(message);
+    this.message = checkNotNull(message);
+    if (builder != null) {
+      builder.dispose();
+      builder = null;
+    }
+    onChanged();
     return this;
   }
-
-  /* Returns SingleFieldBuilderV3 instead of SingleFieldBuilder.
-  *
+  
+  /*
   * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
   * (5.x). Users should update gencode to >= 4.26.x which uses
   * SingleFieldBuilder.mergeFrom() instead.
   */
   @Deprecated
-  @Override
+  @CanIgnoreReturnValue
   public SingleFieldBuilderV3<MType, BType, IType> mergeFrom(MType value) {
-    return (SingleFieldBuilderV3<MType, BType, IType>) super.mergeFrom(value);
+    if (builder == null && message == message.getDefaultInstanceForType()) {
+      message = value;
+    } else {
+      getBuilder().mergeFrom(value);
+    }
+    onChanged();
+    return this;
   }
 
-  /* Returns SingleFieldBuilderV3 instead of SingleFieldBuilder.
-  *
+  /*
   * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
   * (5.x). Users should update gencode to >= 4.26.x which uses
   * SingleFieldBuilder.clear() instead.
   */
   @Deprecated
-  @Override
+  @SuppressWarnings("unchecked")
+  @CanIgnoreReturnValue
   public SingleFieldBuilderV3<MType, BType, IType> clear() {
-    return (SingleFieldBuilderV3<MType, BType, IType>) super.clear();
+    message =
+        (MType)
+            (message != null
+                ? message.getDefaultInstanceForType()
+                : builder.getDefaultInstanceForType());
+    if (builder != null) {
+      builder.dispose();
+      builder = null;
+    }
+    onChanged();
+    isClean = true;
+    return this;
+  }
+
+  /*
+  * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+  * (5.x). Users should update gencode to >= 4.26.x which uses
+  * SingleFieldBuilder.onChanged() instead.
+  */
+  @Deprecated
+  private void onChanged() {
+    if (builder != null) {
+      message = null;
+    }
+    if (isClean && parent != null) {
+      parent.markDirty();
+
+      isClean = false;
+    }
+  }
+
+  /*
+  * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+  * (5.x). Users should update gencode to >= 4.26.x which uses
+  * SingleFieldBuilder.markDirty() instead.
+  */
+  @Deprecated
+  @Override
+  public void markDirty() {
+    onChanged();
   }
 }
