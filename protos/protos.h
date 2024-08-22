@@ -24,7 +24,6 @@ typename T::CProxy CreateMessage(const upb_Message* msg, upb_Arena* arena) {
 using hpb::Parse;
 using hpb::Serialize;
 
-using hpb::ExtensionNumber;
 using hpb::GetExtension;
 using hpb::HasExtension;
 using hpb::SetExtension;

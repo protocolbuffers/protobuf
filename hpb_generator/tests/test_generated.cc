@@ -1234,7 +1234,7 @@ TEST(CppGeneratedCode, FieldNumberConstants) {
 }
 
 TEST(CppGeneratedCode, ExtensionFieldNumberConstant) {
-  EXPECT_EQ(12003, ::protos::ExtensionNumber(ThemeExtension::theme_extension));
+  EXPECT_EQ(12003, ::hpb::ExtensionNumber(ThemeExtension::theme_extension));
 }
 
 TEST(CppGeneratedCode, ClearConstMessageShouldFailForConstChild) {
