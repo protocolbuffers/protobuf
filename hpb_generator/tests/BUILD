@@ -12,8 +12,8 @@
 #     "cc_proto_library",
 # )
 # load(
-#     "//hpb/bazel:upb_cc_proto_library.bzl",
-#     "upb_cc_proto_library",
+#     "//hpb/bazel:hpb_proto_library.bzl",
+#     "hpb_proto_library",
 # )
 # load(
 #     "//bazel:upb_proto_library.bzl",
@@ -74,8 +74,8 @@
 #     deps = [":test_model_proto"],
 # )
 #
-# upb_cc_proto_library(
-#     name = "test_model_upb_cc_proto",
+# hpb_proto_library(
+#     name = "test_model_hpb_proto",
 #     visibility = [
 #         "//hpb:__subpackages__",
 #         "//protos:__pkg__",
@@ -83,21 +83,21 @@
 #     deps = [":test_model_proto"],
 # )
 #
-# upb_cc_proto_library(
-#     name = "naming_conflict_upb_cc_proto",
+# hpb_proto_library(
+#     name = "naming_conflict_hpb_proto",
 #     visibility = ["//visibility:private"],
 #     deps = [":naming_conflict_proto"],
 # )
 #
-# upb_cc_proto_library(
-#     name = "no_package_upb_cc_proto",
+# hpb_proto_library(
+#     name = "no_package_hpb_proto",
 #     deps = [
 #         ":no_package_proto",
 #     ],
 # )
 #
-# upb_cc_proto_library(
-#     name = "no_package_enum_user_upb_cc_proto",
+# hpb_proto_library(
+#     name = "no_package_enum_user_hpb_proto",
 #     deps = [
 #         ":no_package_enum_user_proto",
 #     ],
@@ -117,7 +117,7 @@
 #     ],
 # )
 #
-# upb_cc_proto_library(
+# hpb_proto_library(
 #     name = "legacy_name_test_proto",
 #     visibility = ["//visibility:private"],
 #     deps = [":legacy_name_proto"],
@@ -130,7 +130,7 @@
 #     ],
 # )
 #
-# upb_cc_proto_library(
+# hpb_proto_library(
 #     name = "basic_test_editions_proto",
 #     visibility = ["//visibility:private"],
 #     deps = [":basic_editions_proto"],
@@ -147,10 +147,10 @@
 #         # google_only_begin_legacy_marker
 #         ":legacy_name_test_proto",
 #         # google_only_end_legacy_marker
-#         ":no_package_upb_cc_proto",
-#         ":test_model_upb_cc_proto",
+#         ":no_package_hpb_proto",
+#         ":test_model_hpb_proto",
 #         ":test_model_upb_proto",
-#         ":naming_conflict_upb_cc_proto",
+#         ":naming_conflict_hpb_proto",
 #         "@com_google_googletest//:gtest", "@com_google_googletest//:gtest_main",
 #         "@com_google_absl//absl/status:statusor",
 #         "@com_google_absl//absl/strings",
