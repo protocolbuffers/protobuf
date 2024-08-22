@@ -72,11 +72,10 @@ jobs:
         shell: bash
 
       - name: Run tests
-        uses: deannagarcia/protobuf-ci/bash@set-ex-test
+        uses: protocolbuffers/protobuf-ci/bash@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: |
-            false || true
             dotnet build csharp/src/Google.Protobuf.sln
             dotnet test cshar/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj
 
