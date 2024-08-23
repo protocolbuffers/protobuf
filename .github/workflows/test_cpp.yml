@@ -214,24 +214,26 @@ jobs:
             -DCMAKE_CXX_STANDARD=14
             -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
 
+  # This test should always be skipped on presubmit
   linux-cmake-examples:
-    name: Linux CMake Examples
-    # Skip this test on presubmit
-    if: ${{ inputs.continuous-run }}
+    name: ${{ inputs.continuous-prefix }} Linux CMake Examples
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
+        if: ${{ inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup sccache
+        if: ${{ inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: linux-cmake-examples
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       - name: Run tests
+        if: ${{ inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-63dd26c0c7a808d92673a3e52e848189d4ab0f17

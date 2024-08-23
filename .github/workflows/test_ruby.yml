@@ -168,6 +168,7 @@ jobs:
           bazel-cache: ruby_macos/${{ matrix.version }}
           bazel: test //ruby/... --test_env=KOKORO_RUBY_VERSION=${{ matrix.version }} --test_env=BAZEL=true ${{ matrix.ffi == 'FFI' && '--//ruby:ffi=enabled --test_env=PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }}
 
+  # This test should always be skipped on presubmit
   test_ruby_gems:
     strategy:
       fail-fast: false
@@ -183,16 +184,16 @@ jobs:
           - { name: Ruby 3.3, ruby: ruby-3.3.0, ffi: FFI }
           - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: NATIVE }
           - { name: JRuby 9.4, ruby: jruby-9.4.6.0, ffi: FFI }
-    name: (Continuous) Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
-    # None of these ruby gem tests should be run on presubmit
-    if: ${{ inputs.continuous-run }}
+    name: ${{ inputs.continuous-prefix }} Install ${{ matrix.name }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
+        if: ${{ inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
+        if: ${{ inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:${{ matrix.ruby }}-6.3.0-9848710ff1370795ee7517570a20b81e140112ec
