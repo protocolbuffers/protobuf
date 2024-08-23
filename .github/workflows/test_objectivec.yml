@@ -91,7 +91,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cocoapods/${{ matrix.XCODE }}
           bash: |
-            ./regenerate_stale_files.sh $BAZEL_FLAGS --xcode_version="${{ matrix.XCODE }}"
+            ./regenerate_stale_files.sh $BAZEL_FLAGS --copt="-Wno-deprecated-non-prototype" --xcode_version="${{ matrix.XCODE }}"
             pod lib lint --verbose \
               --configuration=${{ matrix.CONFIGURATION }} \
               --platforms=${{ matrix.PLATFORM }} \

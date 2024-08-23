@@ -1,6 +1,6 @@
 build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
 
-build --copt="-Werror" --copt="-Wno-sign-compare" --copt="-Wno-sign-conversion" --copt="-Wno-error=sign-conversion"  --copt="-Wno-deprecated-declarations" --copt="-Wno-error=deprecated-non-prototype"
+build --copt="-Werror" --copt="-Wno-sign-compare" --copt="-Wno-sign-conversion" --copt="-Wno-error=sign-conversion"  --copt="-Wno-deprecated-declarations"
 
 
 build:dbg --compilation_mode=dbg
