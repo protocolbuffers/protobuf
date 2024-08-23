@@ -202,4 +202,4 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_macos/${{ matrix.version }}
-          bazel: test //php:conformance_test_c --copt="-Wno-deprecated-non-prototype" --action_env=PATH --test_env=PATH
+          bazel: test //php:conformance_test_c --action_env=PATH --test_env=PATH
