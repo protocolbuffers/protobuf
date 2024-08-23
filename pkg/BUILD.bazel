@@ -230,7 +230,7 @@ cc_dist_library(
     ],
     tags = ["manual"],
     deps = [
-        "//upb_generator:protoc-gen-upb_lib",
+        "//upb_generator/c:generator_with_main",
     ],
 )
 

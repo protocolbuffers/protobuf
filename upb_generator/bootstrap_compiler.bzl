@@ -44,7 +44,7 @@ def _stage_visibility(stage, visibility):
 
 def _upbc(generator, stage):
     if generator == "upb":
-        return "//upb_generator:protoc-gen-upb" + _stages[stage]
+        return "//upb_generator/c:protoc-gen-upb" + _stages[stage]
     else:
         return "//upb_generator/minitable:protoc-gen-upb_minitable" + _stages[stage]
 

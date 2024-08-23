@@ -12,6 +12,12 @@ load(
     "bootstrap_cc_library",
 )
 
+# begin:google_only
+# package(default_applicable_licenses = ["//upb:license"])
+# end:google_only
+
+licenses(["notice"])
+
 bootstrap_cc_library(
     name = "generator",
     srcs = [
