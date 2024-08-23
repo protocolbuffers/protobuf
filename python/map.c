@@ -259,16 +259,6 @@ static Py_ssize_t PyUpb_MapContainer_Length(PyObject* _self) {
   return map ? upb_Map_Size(map) : 0;
 }
 
-static PyUpb_MapContainer* PyUpb_MapContainer_Check(PyObject* _self) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
-  if (!PyObject_TypeCheck(_self, state->message_map_container_type) &&
-      !PyObject_TypeCheck(_self, state->scalar_map_container_type)) {
-    PyErr_Format(PyExc_TypeError, "Expected protobuf map, but got %R", _self);
-    return NULL;
-  }
-  return (PyUpb_MapContainer*)_self;
-}
-
 int PyUpb_Message_InitMapAttributes(PyObject* map, PyObject* value,
                                     const upb_FieldDef* f);
 
