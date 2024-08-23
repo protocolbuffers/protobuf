@@ -228,7 +228,8 @@ upb_MessageValue Convert_RubyToUpb(VALUE value, const char* name,
           ret.uint64_val = NUM2ULL(value);
           break;
         default:
-          break;
+          rb_raise(cTypeError, "Convert_RubyToUpb(): Unexpected type %d",
+                   (int)type_info.type);
       }
       break;
     default:
