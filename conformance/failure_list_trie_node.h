@@ -24,11 +24,11 @@ namespace protobuf {
 // Example of what the trie might look like in practice:
 //
 //                             (root)
-//                            /      \
+//                            /      |
 //                "Recommended"   "Required"
-//                      /               \
+//                      /               |
 //                 "Proto2"             "*"
-//                 /       \               \
+//                 /      |               |
 //          "JsonInput" "ProtobufInput"  "JsonInput"
 //
 //

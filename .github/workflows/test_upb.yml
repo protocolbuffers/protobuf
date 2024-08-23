@@ -72,7 +72,10 @@ jobs:
           image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-63dd26c0c7a808d92673a3e52e848189d4ab0f17"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-gcc"
-          bazel: test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
+          bazel: >-
+            test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 -c opt
+            --copt="-Wno-error=maybe-uninitialized" --copt="-Wno-error=attributes"
+            //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
 
   windows:
     strategy:

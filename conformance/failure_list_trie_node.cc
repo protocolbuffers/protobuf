@@ -15,7 +15,8 @@ namespace google {
 namespace protobuf {
 
 absl::Status FailureListTrieNode::Insert(absl::string_view test_name) {
-  if (auto result = WalkDownMatch(test_name); result.has_value()) {
+  auto result = WalkDownMatch(test_name);
+  if (result.has_value()) {
     return absl::AlreadyExistsError(
         absl::StrFormat("Test name  %s  already exists in the trie  FROM  %s",
                         test_name, result.value()));
@@ -74,7 +75,8 @@ absl::optional<std::string> FailureListTrieNode::WalkDownMatch(
           return std::string(appended);
         }
       } else {
-        if (auto result = child->WalkDownMatch(to_match); result.has_value()) {
+        auto result = child->WalkDownMatch(to_match);
+        if (result.has_value()) {
           return absl::StrCat(appended, ".", result.value());
         }
       }

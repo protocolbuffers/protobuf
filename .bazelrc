@@ -1,5 +1,7 @@
 build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
 
+build --copt="-Werror" --copt="-Wno-sign-compare" --copt="-Wno-sign-conversion" --copt="-Wno-error=sign-conversion"
+
 build:dbg --compilation_mode=dbg
 
 build:opt --compilation_mode=opt

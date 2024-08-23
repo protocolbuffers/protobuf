@@ -1070,6 +1070,7 @@ cc_test(
     name = "string_view_test",
     srcs = ["string_view_test.cc"],
     deps = [
+        ":port",
         ":protobuf",
         ":unittest_string_view_cc_proto",
         "@com_google_absl//absl/strings:string_view",

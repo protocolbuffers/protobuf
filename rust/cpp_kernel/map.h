@@ -116,7 +116,7 @@ auto MakeCleanup(T value) {
   __PB_RUST_EXPOSE_SCALAR_MAP_METHODS(                                      \
       std::string, ProtoString, google::protobuf::rust::PtrAndLen,                    \
       std::string(key.ptr, key.len),                                        \
-      google::protobuf::rust::PtrAndLen(cpp_key.data(), cpp_key.size()), value_ty,    \
+      (google::protobuf::rust::PtrAndLen{cpp_key.data(), cpp_key.size()}), value_ty,  \
       rust_value_ty, ffi_view_ty, ffi_value_ty, to_cpp_value, to_ffi_value);
 
 #endif  // GOOGLE_PROTOBUF_RUST_CPP_KERNEL_MAP_H__

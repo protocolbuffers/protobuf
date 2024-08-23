@@ -531,8 +531,8 @@ bool ConformanceTestSuite::RunTest(const std::string& test_name,
 
   // In essence, find what wildcarded test names expand to or direct matches
   // (without wildcards).
-  if (auto result = failure_list_root_.WalkDownMatch(test_name);
-      result.has_value()) {
+  auto result = failure_list_root_.WalkDownMatch(test_name);
+  if (result.has_value()) {
     string matched_equivalent = result.value();
     unmatched_.erase(matched_equivalent);
     TestStatus expansion;

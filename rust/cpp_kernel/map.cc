@@ -108,7 +108,7 @@ void IterGet(const internal::UntypedMapIterator* iter,
   internal::NodeBase* node = iter->node_;
   if constexpr (std::is_same<Key, PtrAndLen>::value) {
     const std::string* s = static_cast<const std::string*>(node->GetVoidKey());
-    *key = PtrAndLen(s->data(), s->size());
+    *key = PtrAndLen{s->data(), s->size()};
   } else {
     *key = *static_cast<const Key*>(node->GetVoidKey());
   }
@@ -219,10 +219,10 @@ __PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(int64_t, i64, int64_t,
 __PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(
     std::string, ProtoBytes, google::protobuf::rust::PtrAndLen, std::string*,
     std::move(*value),
-    google::protobuf::rust::PtrAndLen(cpp_value.data(), cpp_value.size()));
+    (google::protobuf::rust::PtrAndLen{cpp_value.data(), cpp_value.size()}));
 __PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(
     std::string, ProtoString, google::protobuf::rust::PtrAndLen, std::string*,
     std::move(*value),
-    google::protobuf::rust::PtrAndLen(cpp_value.data(), cpp_value.size()));
+    (google::protobuf::rust::PtrAndLen{cpp_value.data(), cpp_value.size()}));
 
 }  // extern "C"

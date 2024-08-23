@@ -446,14 +446,14 @@ TEST_P(DescriptorDatabaseTest, ConflictingExtensionError) {
       "            extendee: \".Foo\" }");
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Simple, DescriptorDatabaseTest,
     testing::Values(&SimpleDescriptorDatabaseTestCase::New));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MemoryConserving, DescriptorDatabaseTest,
     testing::Values(&EncodedDescriptorDatabaseTestCase::New));
-INSTANTIATE_TEST_CASE_P(Pool, DescriptorDatabaseTest,
-                        testing::Values(&DescriptorPoolDatabaseTestCase::New));
+INSTANTIATE_TEST_SUITE_P(Pool, DescriptorDatabaseTest,
+                         testing::Values(&DescriptorPoolDatabaseTestCase::New));
 
 TEST(EncodedDescriptorDatabaseExtraTest, FindNameOfFileContainingSymbol) {
   // Create two files, one of which is in two parts.
