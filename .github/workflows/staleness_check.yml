@@ -59,12 +59,11 @@ jobs:
         # In branches where automatic updates work as post-submits, we don't want to run staleness
         # tests along with user changes.  Any stale files will be automatically fixed in a follow-up
         # commit.
-        uses: protocolbuffers/protobuf-ci/bazel@v3
+        uses: deannagarcia/protobuf-ci/bazel@set-ex-test
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: staleness
           bash: >
-            echo "Pipe test:" | grep "foo";
             echo "Please run ./regenerate_stale_files.sh to regenerate stale files";
             if [[ -z $COMMIT_TRIGGERED_RUN || -z $MAIN_RUN ]]; then
             bazel query 'attr(tags, "staleness_test", //...)' | xargs bazel test $BAZEL_FLAGS;
