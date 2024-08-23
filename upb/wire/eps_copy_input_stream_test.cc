@@ -281,7 +281,7 @@ TEST(EpsCopyInputStreamTest, ZeroSize) {
 // }
 //
 // // Test with:
-// //  $ blaze run --config=fuzztest third_party/upb:eps_copy_input_stream_test \
+// //  $ bazel run --config=fuzztest third_party/upb:eps_copy_input_stream_test
 // //   -- --gunit_fuzz=
 // FUZZ_TEST(EpsCopyFuzzTest, TestAgainstFakeStream)
 //     .WithDomains(ArbitraryEpsCopyTestScript());
