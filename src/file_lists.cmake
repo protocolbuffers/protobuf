@@ -728,10 +728,10 @@ set(libupb_hdrs
 
 # @//pkg:protoc-gen-upb
 set(protoc-gen-upb_srcs
+  ${protobuf_SOURCE_DIR}/upb_generator/c/generator.cc
   ${protobuf_SOURCE_DIR}/upb_generator/common.cc
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.cc
   ${protobuf_SOURCE_DIR}/upb_generator/names.cc
-  ${protobuf_SOURCE_DIR}/upb_generator/protoc-gen-upb.cc
 )
 
 # @//pkg:protoc-gen-upb
