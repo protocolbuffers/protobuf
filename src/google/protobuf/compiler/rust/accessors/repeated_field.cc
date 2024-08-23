@@ -13,6 +13,7 @@
 #include "google/protobuf/compiler/rust/accessors/generator.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
+#include "google/protobuf/compiler/rust/upb_helpers.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -110,12 +111,13 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                return;
              }
              if (ctx.is_upb()) {
-               ctx.Emit({{"field_number", field.number()}}, R"rs(
+               ctx.Emit({{"field_index", UpbMiniTableFieldIndex(field)}},
+                        R"rs(
                     pub fn set_$raw_field_name$(&mut self, src: impl $pb$::IntoProxied<$pb$::Repeated<$RsType$>>) {
                       let minitable_field = unsafe {
-                        $pbr$::upb_MiniTable_FindFieldByNumber(
+                        $pbr$::upb_MiniTable_GetFieldByIndex(
                           <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                          $field_number$
+                          $field_index$
                         )
                       };
                       let val = src.into_proxied($pbi$::Private);

@@ -34,19 +34,15 @@ pub use map::{
 };
 
 mod message;
-pub use message::{
-    upb_Message, upb_Message_Clear, upb_Message_DeepClone, upb_Message_DeepCopy,
-    upb_Message_IsEqual, upb_Message_MergeFrom, upb_Message_New, upb_Message_SetBaseField,
-    RawMessage,
-};
+pub use message::*;
 
 mod message_value;
 pub use message_value::{upb_MessageValue, upb_MutableMessageValue};
 
 mod mini_table;
 pub use mini_table::{
-    upb_MiniTable, upb_MiniTableField, upb_MiniTable_FindFieldByNumber, RawMiniTable,
-    RawMiniTableField,
+    upb_MiniTable, upb_MiniTableField, upb_MiniTable_FindFieldByNumber,
+    upb_MiniTable_GetFieldByIndex, RawMiniTable, RawMiniTableField,
 };
 
 mod opaque_pointee;

@@ -19,4 +19,9 @@ extern "C" {
         m: *const upb_MiniTable,
         number: u32,
     ) -> *const upb_MiniTableField;
+
+    pub fn upb_MiniTable_GetFieldByIndex(
+        m: *const upb_MiniTable,
+        number: u32,
+    ) -> *const upb_MiniTableField;
 }

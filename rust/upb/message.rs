@@ -13,17 +13,22 @@ opaque_pointee!(upb_Message);
 pub type RawMessage = NonNull<upb_Message>;
 
 extern "C" {
-    /// SAFETY:
+    /// # Safety
     /// - `mini_table` and `arena` must be valid to deref
     pub fn upb_Message_New(mini_table: *const upb_MiniTable, arena: RawArena)
     -> Option<RawMessage>;
 
-    /// SAFETY:
+    /// # Safety
     /// - `m` and `mini_table` must be valid to deref
-    /// - `mini_table` must be the MiniTable associtaed with `m`
+    /// - `mini_table` must be the MiniTable associated with `m`
     pub fn upb_Message_Clear(m: RawMessage, mini_table: *const upb_MiniTable);
 
-    /// SAFETY:
+    /// # Safety
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `f` must be a field associated with `f`
+    pub fn upb_Message_ClearBaseField(m: RawMessage, f: *const upb_MiniTableField);
+
+    /// # Safety
     /// - All four arguments must be valid to deref
     /// - `mini_table` must be the MiniTable associated with both `dst` and
     ///   `src`
@@ -34,7 +39,7 @@ extern "C" {
         arena: RawArena,
     );
 
-    /// SAFETY:
+    /// # Safety
     /// - All three arguments must be valid to deref
     /// - `mini_table` must be the MiniTable associated with `m`
     pub fn upb_Message_DeepClone(
@@ -43,18 +48,86 @@ extern "C" {
         arena: RawArena,
     ) -> Option<RawMessage>;
 
-    /// SAFETY:
+    /// # Safety
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `f` must be a field associated with `f`
+    pub fn upb_Message_GetBool(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableField,
+        default_val: bool,
+    ) -> bool;
+
+    /// # Safety
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `f` must be a field associated with `m`
+    pub fn upb_Message_GetInt32(
+        m: RawMessage,
+        f: *const upb_MiniTableField,
+        default_val: i32,
+    ) -> i32;
+
+    /// # Safety
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `f` must be a field associated with `m`
+    pub fn upb_Message_GetInt64(
+        m: RawMessage,
+        f: *const upb_MiniTableField,
+        default_val: i64,
+    ) -> i64;
+
+    /// # Safety
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `f` must be a field associated with `m`
+    pub fn upb_Message_GetUInt32(
+        m: RawMessage,
+        f: *const upb_MiniTableField,
+        default_val: u32,
+    ) -> u32;
+
+    /// # Safety
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `f` must be a field associated with `m`
+    pub fn upb_Message_GetUInt64(
+        m: RawMessage,
+        f: *const upb_MiniTableField,
+        default_val: u64,
+    ) -> u64;
+
+    /// # Safety
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `f` must be a field associated with `m`
+    pub fn upb_Message_GetFloat(
+        m: RawMessage,
+        f: *const upb_MiniTableField,
+        default_val: f32,
+    ) -> f32;
+
+    /// # Safety
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `f` must be a field associated with `m`
+    pub fn upb_Message_GetDouble(
+        m: RawMessage,
+        f: *const upb_MiniTableField,
+        default_val: f64,
+    ) -> f64;
+
+    /// # Safety
     /// - `m` and `mini_table` must be valid to deref
     /// - `mini_table` must be the MiniTable associated with `m`
+    pub fn upb_Message_HasBaseField(m: RawMessage, mini_table: *const upb_MiniTableField) -> bool;
+
+    /// # Safety
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `f` must be a field associated with `m`
     /// - `val` must be a pointer to legally readable memory of the correct type
     ///   for the field described by `mini_table`
     pub fn upb_Message_SetBaseField(
         m: RawMessage,
-        mini_table: *const upb_MiniTableField,
+        f: *const upb_MiniTableField,
         val: *const std::ffi::c_void,
     );
 
-    /// SAFETY:
+    /// # Safety
     /// - All four arguments must be valid to deref
     /// - `mini_table` must be the MiniTable associated with both `m1` and `m2`
     pub fn upb_Message_IsEqual(
@@ -64,7 +137,7 @@ extern "C" {
         options: i32,
     ) -> bool;
 
-    /// SAFETY:
+    /// # Safety
     /// - `dst`, `src`, `mini_table` and `arena` must be valid to deref
     /// - `extreg` must be valid to deref or nullptr
     /// - `mini_table` must be the MiniTable associated with both `dst` and
@@ -76,4 +149,43 @@ extern "C" {
         extreg: *const upb_ExtensionRegistry,
         arena: RawArena,
     ) -> bool;
+
+    /// # Safety
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `f` must be a field associated with `f`
+    pub fn upb_Message_SetBaseFieldBool(
+        m: RawMessage,
+        mini_table: *const upb_MiniTableField,
+        val: bool,
+    );
+
+    /// # Safety
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `f` must be a field associated with `m`
+    pub fn upb_Message_SetBaseFieldInt32(m: RawMessage, f: *const upb_MiniTableField, val: i32);
+
+    /// # Safety
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `f` must be a field associated with `m`
+    pub fn upb_Message_SetBaseFieldInt64(m: RawMessage, f: *const upb_MiniTableField, val: i64);
+
+    /// # Safety
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `f` must be a field associated with `m`
+    pub fn upb_Message_SetBaseFieldUInt32(m: RawMessage, f: *const upb_MiniTableField, val: u32);
+
+    /// # Safety
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `f` must be a field associated with `m`
+    pub fn upb_Message_SetBaseFieldUInt64(m: RawMessage, f: *const upb_MiniTableField, val: u64);
+
+    /// # Safety
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `f` must be a field associated with `m`
+    pub fn upb_Message_SetBaseFieldFloat(m: RawMessage, f: *const upb_MiniTableField, val: f32);
+
+    /// # Safety
+    /// - `m` and `mini_table` must be valid to deref
+    /// - `f` must be a field associated with `m`
+    pub fn upb_Message_SetBaseFieldDouble(m: RawMessage, f: *const upb_MiniTableField, val: f64);
 }

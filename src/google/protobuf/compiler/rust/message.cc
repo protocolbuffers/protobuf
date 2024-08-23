@@ -21,18 +21,14 @@
 #include "google/protobuf/compiler/rust/enum.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/compiler/rust/oneof.h"
+#include "google/protobuf/compiler/rust/upb_helpers.h"
 #include "google/protobuf/descriptor.h"
-#include "upb_generator/mangle.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
 namespace {
-
-std::string UpbMinitableName(const Descriptor& msg) {
-  return upb::generator::MessageInit(msg.full_name());
-}
 
 void MessageNew(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
@@ -75,7 +71,7 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
       return;
 
     case Kernel::kUpb:
-      ctx.Emit({{"minitable", UpbMinitableName(msg)}},
+      ctx.Emit({{"minitable", UpbMiniTableName(msg)}},
                R"rs(
         // SAFETY: `MINI_TABLE` is the one associated with `self.raw_msg()`.
         let encoded = unsafe {
@@ -132,8 +128,8 @@ void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
       return;
 
     case Kernel::kUpb:
-      ctx.Emit({{"minitable", UpbMinitableName(msg)}},
-               R"rs(
+      ctx.Emit(
+          R"rs(
         let mut msg = Self::new();
 
         // SAFETY:
@@ -227,7 +223,7 @@ void MessageExterns(Context& ctx, const Descriptor& msg) {
       ctx.Emit(
           {
               {"new_thunk", ThunkName(ctx, msg, "new")},
-              {"minitable", UpbMinitableName(msg)},
+              {"minitable", UpbMiniTableName(msg)},
           },
           R"rs(
           fn $new_thunk$(arena: $pbr$::RawArena) -> $pbr$::RawMessage;
@@ -274,7 +270,7 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
       return;
 
     case Kernel::kUpb:
-      ctx.Emit({{"minitable", UpbMinitableName(msg)}}, R"rs(
+      ctx.Emit(R"rs(
         impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$View<'msg> {
           fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
             let dst = $Msg$::new();
@@ -302,7 +298,7 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
 
 void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg) {
   if (ctx.opts().kernel == Kernel::kUpb) {
-    ctx.Emit({{"minitable", UpbMinitableName(msg)}}, R"rs(
+    ctx.Emit({{"minitable", UpbMiniTableName(msg)}}, R"rs(
       impl $pbr$::AssociatedMiniTable for $Msg$ {
         #[inline(always)]
         unsafe fn mini_table() -> *const $pbr$::upb_MiniTable {
