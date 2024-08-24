@@ -17,7 +17,6 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/message_lite.h"
 
-
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
@@ -120,7 +119,7 @@ void UntypedMapBase::ClearTable(const ClearInput input) {
   ABSL_DCHECK_NE(num_buckets_, kGlobalEmptyTableSize);
 
   if (alloc_.arena() == nullptr) {
-      const auto loop = [this, input](auto destroy_node) {
+    const auto loop = [this, input](auto destroy_node) {
       const TableEntryPtr* table = table_;
       for (map_index_t b = index_of_first_non_null_, end = num_buckets_;
            b < end; ++b) {
