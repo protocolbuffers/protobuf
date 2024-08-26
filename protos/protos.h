@@ -15,7 +15,6 @@ using hpb::internal::GetArena;
 using hpb::internal::GetInternalMsg;
 using hpb::internal::PrivateAccess;
 using hpb::internal::Serialize;
-using hpb::internal::SetExtension;
 }  // namespace internal
 using hpb::Serialize;
 
