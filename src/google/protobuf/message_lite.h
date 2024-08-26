@@ -190,6 +190,12 @@ inline int ToIntSize(size_t size) {
   return static_cast<int>(size);
 }
 
+#if defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
+using GetTypeNameReturnType = absl::string_view;
+#else
+using GetTypeNameReturnType = std::string;
+#endif
+
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference. This empty string is aligned with a
 // minimum alignment of 8 bytes to match the requirement of ArenaStringPtr.
@@ -240,7 +246,7 @@ class PROTOBUF_EXPORT MessageLite {
   // Basic Operations ------------------------------------------------
 
   // Get the name of this message type, e.g. "foo.bar.BazProto".
-  std::string GetTypeName() const;
+  internal::GetTypeNameReturnType GetTypeName() const;
 
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.
