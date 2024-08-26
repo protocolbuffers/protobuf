@@ -162,7 +162,7 @@ class Proto2Test {
       .isEqualTo(TestUtil.getAllSetBuilder().build())
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testGetters() {
     testAllTypes {
@@ -183,7 +183,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testDefaultGetters() {
     testAllTypes {
@@ -194,7 +194,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testRepeatedGettersAndSetters() {
     testAllTypes {
@@ -276,7 +276,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHazzers() {
     testAllTypes {
@@ -307,7 +307,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testClears() {
     testAllTypes {
@@ -496,7 +496,7 @@ class Proto2Test {
       .isEqualTo(TestUtil.getAllExtensionsSet())
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testExtensionGetters() {
     testAllExtensions {
@@ -519,7 +519,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testRepeatedExtensionGettersAndSetters() {
     testAllExtensions {
@@ -600,7 +600,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testExtensionContains() {
     testAllExtensions {
@@ -631,7 +631,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testExtensionClears() {
     testAllExtensions {
@@ -713,7 +713,7 @@ class Proto2Test {
       )
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testMapGettersAndSetters() {
     val intMap = testIntIntMap {
@@ -765,7 +765,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testMapRemove() {
     val intMap = testIntIntMap {
@@ -793,7 +793,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testMapClear() {
     val intMap = testIntIntMap {
@@ -887,7 +887,7 @@ class Proto2Test {
     assertThat(interface_ {}).isEqualTo(Interface.newBuilder().build())
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHardKeywordGettersAndSetters() {
     hardKeywordsAllTypesProto2 {
@@ -917,7 +917,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHardKeywordHazzers() {
     hardKeywordsAllTypesProto2 {
@@ -932,7 +932,7 @@ class Proto2Test {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHardKeywordClears() {
     hardKeywordsAllTypesProto2 {

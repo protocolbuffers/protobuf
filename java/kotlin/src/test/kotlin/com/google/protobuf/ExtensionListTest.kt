@@ -45,7 +45,7 @@ class ExtensionListTest {
     val extensionList =
       ExtensionList<Int, ExampleExtensibleMessage>(
         TestProto.repeatedExtension,
-        mutableListOf(1, 2, 3)
+        mutableListOf(1, 2, 3),
       )
     assertThat(extensionList is MutableList<*>).isFalse()
   }
@@ -56,7 +56,7 @@ class ExtensionListTest {
     val extensionList =
       ExtensionList<Int, ExampleExtensibleMessage>(
         TestProto.repeatedExtension,
-        mutableListOf(1, 2, 3)
+        mutableListOf(1, 2, 3),
       )
     val extensionListAsJavaUtil = extensionList as java.util.List<Int>
     assertFailsWith<UnsupportedOperationException> { extensionListAsJavaUtil.add(4) }
@@ -68,7 +68,7 @@ class ExtensionListTest {
     val extensionList =
       ExtensionList<Int, ExampleExtensibleMessage>(
         TestProto.repeatedExtension,
-        mutableListOf(1, 2, 3)
+        mutableListOf(1, 2, 3),
       )
     val iterator = extensionList.iterator() as java.util.Iterator<Int>
     iterator.next()
@@ -82,7 +82,7 @@ class ExtensionListTest {
     val extensionList =
       ExtensionList<Int, ExampleExtensibleMessage>(
         TestProto.repeatedExtension,
-        mutableListOf(1, 2, 3)
+        mutableListOf(1, 2, 3),
       )
     val iterator = extensionList.listIterator() as java.util.ListIterator<Int>
     iterator.next()
@@ -96,7 +96,7 @@ class ExtensionListTest {
     val extensionList =
       ExtensionList<Int, ExampleExtensibleMessage>(
         TestProto.repeatedExtension,
-        mutableListOf(1, 2, 3)
+        mutableListOf(1, 2, 3),
       )
     val iterator = extensionList.listIterator(1) as java.util.ListIterator<Int>
     iterator.next()
@@ -119,15 +119,15 @@ class ExtensionListTest {
       .addEqualityGroup(
         ExtensionList<Int, ExampleExtensibleMessage>(TestProto.repeatedExtension, listOf(1, 2)),
         ExtensionList<Int, ExampleExtensibleMessage>(TestProto.differentExtension, listOf(1, 2)),
-        listOf(1, 2)
+        listOf(1, 2),
       )
       .addEqualityGroup(
         ExtensionList<Int, ExampleExtensibleMessage>(TestProto.repeatedExtension, listOf(2, 2)),
-        listOf(2, 2)
+        listOf(2, 2),
       )
       .addEqualityGroup(
         ExtensionList<Int, ExampleExtensibleMessage>(TestProto.repeatedExtension, emptyList()),
-        emptyList<Int>()
+        emptyList<Int>(),
       )
       .testEquals()
   }
