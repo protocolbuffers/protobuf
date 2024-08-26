@@ -725,27 +725,17 @@ class PROTOBUF_EXPORT ExtensionSet {
     const FieldDescriptor* descriptor;
   };
 
-  // The Extension struct is small enough to be passed by value, so we use it
-  // directly as the value type in mappings rather than use pointers.  We use
+  // The Extension struct is small enough to be passed by value so we use it
+  // directly as the value type in mappings rather than use pointers. We use
   // sorted maps rather than hash-maps because we expect most ExtensionSets will
-  // only contain a small number of extension.  Also, we want AppendToList and
-  // deterministic serialization to order fields by field number.
+  // only contain a small number of extensions, and we want AppendToList and
+  // deterministic serialization to order fields by field number. In flat mode,
+  // the number of elements is small enough that linear search is faster than
+  // binary search.
 
   struct KeyValue {
     int first;
     Extension second;
-
-    struct FirstComparator {
-      bool operator()(const KeyValue& lhs, const KeyValue& rhs) const {
-        return lhs.first < rhs.first;
-      }
-      bool operator()(const KeyValue& lhs, int key) const {
-        return lhs.first < key;
-      }
-      bool operator()(int key, const KeyValue& rhs) const {
-        return key < rhs.first;
-      }
-    };
   };
 
   using LargeMap = absl::btree_map<int, Extension>;

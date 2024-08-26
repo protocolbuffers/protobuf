@@ -1239,9 +1239,9 @@ uint8_t* ExtensionSet::_InternalSerializeImpl(
     return target;
   }
   const KeyValue* end = flat_end();
-  for (const KeyValue* it = std::lower_bound(
-           flat_begin(), end, start_field_number, KeyValue::FirstComparator());
-       it != end && it->first < end_field_number; ++it) {
+  const KeyValue* it = flat_begin();
+  while (it != end && it->first < start_field_number) ++it;
+  for (; it != end && it->first < end_field_number; ++it) {
     target = it->second.InternalSerializeFieldWithCachedSizesToArray(
         extendee, this, it->first, target, stream);
   }
@@ -1566,9 +1566,11 @@ const ExtensionSet::Extension* ExtensionSet::FindOrNull(int key) const {
   if (flat_size_ == 0) {
     return nullptr;
   } else if (PROTOBUF_PREDICT_TRUE(!is_large())) {
-    auto it = std::lower_bound(flat_begin(), flat_end() - 1, key,
-                               KeyValue::FirstComparator());
-    return it->first == key ? &it->second : nullptr;
+    for (auto it = flat_begin(), end = flat_end();
+         it != end && it->first <= key; ++it) {
+      if (it->first == key) return &it->second;
+    }
+    return nullptr;
   } else {
     return FindOrNullInLargeMap(key);
   }
@@ -1601,10 +1603,9 @@ std::pair<ExtensionSet::Extension*, bool> ExtensionSet::Insert(int key) {
     return {&maybe.first->second, maybe.second};
   }
   KeyValue* end = flat_end();
-  KeyValue* it =
-      std::lower_bound(flat_begin(), end, key, KeyValue::FirstComparator());
-  if (it != end && it->first == key) {
-    return {&it->second, false};
+  KeyValue* it = flat_begin();
+  for (; it != end && it->first <= key; ++it) {
+    if (it->first == key) return {&it->second, false};
   }
   if (flat_size_ < flat_capacity_) {
     std::copy_backward(it, end, end + 1);
@@ -1681,11 +1682,12 @@ void ExtensionSet::Erase(int key) {
     return;
   }
   KeyValue* end = flat_end();
-  KeyValue* it =
-      std::lower_bound(flat_begin(), end, key, KeyValue::FirstComparator());
-  if (it != end && it->first == key) {
-    std::copy(it + 1, end, it);
-    --flat_size_;
+  for (KeyValue* it = flat_begin(); it != end && it->first <= key; ++it) {
+    if (it->first == key) {
+      std::copy(it + 1, end, it);
+      --flat_size_;
+      return;
+    }
   }
 }
 
