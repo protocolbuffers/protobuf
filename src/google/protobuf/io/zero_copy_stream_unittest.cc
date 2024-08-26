@@ -62,6 +62,7 @@
 #include "google/protobuf/io/gzip_stream.h"
 #endif
 
+#include "google/protobuf/test_util.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -557,10 +558,9 @@ std::string IoTest::Uncompress(const std::string& data) {
 TEST_F(IoTest, CompressionOptions) {
   // Some ad-hoc testing of compression options.
 
-  std::string golden_filename =
-      TestUtil::GetTestDataPath("google/protobuf/testdata/golden_message");
-  std::string golden;
-  ABSL_CHECK_OK(File::GetContents(golden_filename, &golden, true));
+  protobuf_unittest::TestAllTypes message;
+  TestUtil::SetAllFields(&message);
+  std::string golden = message.SerializeAsString();
 
   GzipOutputStream::Options options;
   std::string gzip_compressed = Compress(golden, options);

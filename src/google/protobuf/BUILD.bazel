@@ -1615,7 +1615,6 @@ cc_test(
         "message_unittest.inc",
         "message_unittest_legacy_apis.inc",
     ],
-    data = [":testdata"],
     deps = [
         ":arena",
         ":cc_lite_test_protos",
@@ -1648,7 +1647,6 @@ cc_test(
         "edition_message_unittest.cc",
         "message_unittest.inc",
     ],
-    data = [":testdata"],
     deps = [
         ":arena",
         ":cc_test_protos",

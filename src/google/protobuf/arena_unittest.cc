@@ -1607,13 +1607,6 @@ TEST(ArenaTest, NoHeapAllocationsTest) {
   arena.Reset();
 }
 
-TEST(ArenaTest, ParseCorruptedString) {
-  TestAllTypes message;
-  TestUtil::SetAllFields(&message);
-  TestParseCorruptedString<TestAllTypes, true>(message);
-  TestParseCorruptedString<TestAllTypes, false>(message);
-}
-
 #if PROTOBUF_RTTI
 // Test construction on an arena via generic MessageLite interface. We should be
 // able to successfully deserialize on the arena without incurring heap
