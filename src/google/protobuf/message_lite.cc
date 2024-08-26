@@ -630,7 +630,7 @@ bool MessageLite::AppendPartialToCord(absl::Cord* output) const {
   const size_t size = ByteSizeLong();
   const size_t total_size = size + output->size();
   if (size > INT_MAX) {
-    ABSL_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB.";
+    ABSL_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB: " << size;
     return false;
   }
 
