@@ -888,7 +888,7 @@ TEST(CppGeneratedCode, SerializeUsingArena) {
   ::upb::Arena arena;
   absl::StatusOr<absl::string_view> bytes = ::hpb::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
-  TestModel parsed_model = ::protos::Parse<TestModel>(bytes.value()).value();
+  TestModel parsed_model = ::hpb::Parse<TestModel>(bytes.value()).value();
   EXPECT_EQ("Hello World", parsed_model.str1());
 }
 
@@ -900,7 +900,7 @@ TEST(CppGeneratedCode, SerializeProxyUsingArena) {
   absl::StatusOr<absl::string_view> bytes =
       ::hpb::Serialize(&model_proxy, arena);
   EXPECT_EQ(true, bytes.ok());
-  TestModel parsed_model = ::protos::Parse<TestModel>(bytes.value()).value();
+  TestModel parsed_model = ::hpb::Parse<TestModel>(bytes.value()).value();
   EXPECT_EQ("Hello World", parsed_model.str1());
 }
 
@@ -911,7 +911,7 @@ TEST(CppGeneratedCode, SerializeNestedMessageUsingArena) {
   ::hpb::Ptr<const TestModel> child = model.recursive_child();
   absl::StatusOr<absl::string_view> bytes = ::hpb::Serialize(child, arena);
   EXPECT_EQ(true, bytes.ok());
-  TestModel parsed_model = ::protos::Parse<TestModel>(bytes.value()).value();
+  TestModel parsed_model = ::hpb::Parse<TestModel>(bytes.value()).value();
   EXPECT_EQ("Hello World", parsed_model.str1());
 }
 
@@ -924,7 +924,7 @@ TEST(CppGeneratedCode, Parse) {
   ::upb::Arena arena;
   auto bytes = ::hpb::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
-  TestModel parsed_model = ::protos::Parse<TestModel>(bytes.value()).value();
+  TestModel parsed_model = ::hpb::Parse<TestModel>(bytes.value()).value();
   EXPECT_EQ("Test123", parsed_model.str1());
   EXPECT_EQ(true, ::protos::GetExtension(&parsed_model, theme).ok());
 }
@@ -939,7 +939,7 @@ TEST(CppGeneratedCode, ParseIntoPtrToModel) {
   auto bytes = ::hpb::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
   ::hpb::Ptr<TestModel> parsed_model = ::hpb::CreateMessage<TestModel>(arena);
-  EXPECT_TRUE(::protos::Parse(parsed_model, bytes.value()));
+  EXPECT_TRUE(::hpb::Parse(parsed_model, bytes.value()));
   EXPECT_EQ("Test123", parsed_model->str1());
   // Should return an extension even if we don't pass ExtensionRegistry
   // by promoting unknown.
@@ -961,7 +961,7 @@ TEST(CppGeneratedCode, ParseWithExtensionRegistry) {
   ::hpb::ExtensionRegistry extensions(
       {&theme, &other_ext, &ThemeExtension::theme_extension}, arena);
   TestModel parsed_model =
-      ::protos::Parse<TestModel>(bytes.value(), extensions).value();
+      ::hpb::Parse<TestModel>(bytes.value(), extensions).value();
   EXPECT_EQ("Test123", parsed_model.str1());
   EXPECT_EQ(true, ::protos::GetExtension(&parsed_model, theme).ok());
   EXPECT_EQ(true, ::protos::GetExtension(&parsed_model,
@@ -985,14 +985,14 @@ TEST(CppGeneratedCode, SharedPointer) {
   std::shared_ptr<TestModel> model = std::make_shared<TestModel>();
   ::upb::Arena arena;
   auto bytes = ::hpb::Serialize(model.get(), arena);
-  EXPECT_TRUE(::protos::Parse(model.get(), bytes.value()));
+  EXPECT_TRUE(::hpb::Parse(model.get(), bytes.value()));
 }
 
 TEST(CppGeneratedCode, UniquePointer) {
   auto model = std::make_unique<TestModel>();
   ::upb::Arena arena;
   auto bytes = ::hpb::Serialize(model.get(), arena);
-  EXPECT_TRUE(::protos::Parse(model.get(), bytes.value()));
+  EXPECT_TRUE(::hpb::Parse(model.get(), bytes.value()));
 }
 
 TEST(CppGeneratedCode, Assignment) {
@@ -1224,7 +1224,7 @@ TEST(CppGeneratedCode, HasExtensionAndRegistry) {
 
   // Test with ExtensionRegistry
   ::hpb::ExtensionRegistry extensions({&theme}, arena);
-  TestModel parsed_model = ::protos::Parse<TestModel>(data, extensions).value();
+  TestModel parsed_model = ::hpb::Parse<TestModel>(data, extensions).value();
   EXPECT_TRUE(::hpb::HasExtension(&parsed_model, theme));
 }
 
