@@ -186,7 +186,8 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
 ExtensionSet::~ExtensionSet() {
   // Deletes all allocated extensions.
   if (arena_ == nullptr) {
-    ForEach([](int /* number */, Extension& ext) { ext.Free(); });
+    ForEach([](int /* number */, Extension& ext) { ext.Free(); },
+            PrefetchNta{});
     if (PROTOBUF_PREDICT_FALSE(is_large())) {
       delete map_.large;
     } else {
@@ -225,7 +226,7 @@ bool ExtensionSet::HasLazy(int number) const {
 
 int ExtensionSet::NumExtensions() const {
   int result = 0;
-  ForEach([&result](int /* number */, const Extension& ext) {
+  ForEachNoPrefetch([&result](int /* number */, const Extension& ext) {
     if (!ext.is_cleared) {
       ++result;
     }
@@ -917,7 +918,7 @@ void ExtensionSet::SwapElements(int number, int index1, int index2) {
 // ===================================================================
 
 void ExtensionSet::Clear() {
-  ForEach([](int /* number */, Extension& ext) { ext.Clear(); });
+  ForEach([](int /* number */, Extension& ext) { ext.Clear(); }, Prefetch{});
 }
 
 namespace {
@@ -966,9 +967,11 @@ void ExtensionSet::MergeFrom(const MessageLite* extendee,
                                other.map_.large->end()));
     }
   }
-  other.ForEach([extendee, this, &other](int number, const Extension& ext) {
-    this->InternalExtensionMergeFrom(extendee, number, ext, other.arena_);
-  });
+  other.ForEach(
+      [extendee, this, &other](int number, const Extension& ext) {
+        this->InternalExtensionMergeFrom(extendee, number, ext, other.arena_);
+      },
+      Prefetch{});
 }
 
 void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
@@ -1252,19 +1255,23 @@ uint8_t* ExtensionSet::InternalSerializeMessageSetWithCachedSizesToArray(
     const MessageLite* extendee, uint8_t* target,
     io::EpsCopyOutputStream* stream) const {
   const ExtensionSet* extension_set = this;
-  ForEach([&target, extendee, stream, extension_set](int number,
-                                                     const Extension& ext) {
-    target = ext.InternalSerializeMessageSetItemWithCachedSizesToArray(
-        extendee, extension_set, number, target, stream);
-  });
+  ForEach(
+      [&target, extendee, stream, extension_set](int number,
+                                                 const Extension& ext) {
+        target = ext.InternalSerializeMessageSetItemWithCachedSizesToArray(
+            extendee, extension_set, number, target, stream);
+      },
+      Prefetch{});
   return target;
 }
 
 size_t ExtensionSet::ByteSize() const {
   size_t total_size = 0;
-  ForEach([&total_size](int number, const Extension& ext) {
-    total_size += ext.ByteSize(number);
-  });
+  ForEach(
+      [&total_size](int number, const Extension& ext) {
+        total_size += ext.ByteSize(number);
+      },
+      Prefetch{});
   return total_size;
 }
 
@@ -1489,6 +1496,16 @@ int ExtensionSet::Extension::GetSize() const {
 
   ABSL_LOG(FATAL) << "Can't get here.";
   return 0;
+}
+
+const void* ExtensionSet::Extension::PrefetchPtr() const {
+  // We don't want to prefetch invalid/null pointers so if there isn't a pointer
+  // to prefetch, then return `this`. We use bitwise operators so we can cmov
+  // and avoid branching.
+  return is_repeated | ((type >= WireFormatLite::TYPE_STRING) &
+                        (type <= WireFormatLite::TYPE_BYTES))
+             ? prefetch_ptr
+             : this;
 }
 
 // This function deletes all allocated objects. This function should be only
@@ -1931,9 +1948,11 @@ size_t ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
 
 size_t ExtensionSet::MessageSetByteSize() const {
   size_t total_size = 0;
-  ForEach([&total_size](int number, const Extension& ext) {
-    total_size += ext.MessageSetItemByteSize(number);
-  });
+  ForEach(
+      [&total_size](int number, const Extension& ext) {
+        total_size += ext.MessageSetItemByteSize(number);
+      },
+      Prefetch{});
   return total_size;
 }
 

@@ -28,6 +28,7 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "absl/base/call_once.h"
+#include "absl/base/prefetch.h"
 #include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/internal_visibility.h"
@@ -666,6 +667,7 @@ class PROTOBUF_EXPORT ExtensionSet {
     size_t MessageSetItemByteSize(int number) const;
     void Clear();
     int GetSize() const;
+    const void* PrefetchPtr() const;
     void Free();
     size_t SpaceUsedExcludingSelfLong() const;
     bool IsInitialized(const ExtensionSet* ext_set, const MessageLite* extendee,
@@ -682,6 +684,7 @@ class PROTOBUF_EXPORT ExtensionSet {
       double double_value;
       bool bool_value;
       int enum_value;
+      void* prefetch_ptr;  // For prefetching all pointer-based values.
       std::string* string_value;
       MessageLite* message_value;
       LazyMessageExtension* lazymessage_value;
@@ -772,32 +775,93 @@ class PROTOBUF_EXPORT ExtensionSet {
     return PROTOBUF_PREDICT_FALSE(is_large()) ? map_.large->size() : flat_size_;
   }
 
+  // For use as `PrefetchFunctor`s in `ForEach`.
+  struct Prefetch {
+    void operator()(const void* ptr) const { absl::PrefetchToLocalCache(ptr); }
+  };
+  struct PrefetchNta {
+    void operator()(const void* ptr) const {
+      absl::PrefetchToLocalCacheNta(ptr);
+    }
+  };
+
+  template <typename Iterator, typename KeyValueFunctor,
+            typename PrefetchFunctor>
+  static KeyValueFunctor ForEachPrefetchImpl(Iterator it, Iterator end,
+                                             KeyValueFunctor func,
+                                             PrefetchFunctor prefetch_func) {
+    // Note: based on arena's ChunkList::Cleanup().
+    // Prefetch distance 16 performs better than 8 in load tests.
+    constexpr int kPrefetchDistance = 16;
+    Iterator prefetch = it;
+    // Prefetch the first kPrefetchDistance extensions.
+    for (int i = 0; prefetch != end && i < kPrefetchDistance; ++prefetch, ++i) {
+      prefetch_func(prefetch->second.PrefetchPtr());
+    }
+    // For the middle extensions, call func and then prefetch the extension
+    // kPrefetchDistance after the current one.
+    for (; prefetch != end; ++it, ++prefetch) {
+      func(it->first, it->second);
+      prefetch_func(prefetch->second.PrefetchPtr());
+    }
+    // Call func on the rest without prefetching.
+    for (; it != end; ++it) func(it->first, it->second);
+    return std::move(func);
+  }
+
   // Similar to std::for_each.
   // Each Iterator is decomposed into ->first and ->second fields, so
   // that the KeyValueFunctor can be agnostic vis-a-vis KeyValue-vs-std::pair.
+  // Applies a functor to the <int, Extension&> pairs in sorted order and
+  // prefetches ahead.
+  template <typename KeyValueFunctor, typename PrefetchFunctor>
+  KeyValueFunctor ForEach(KeyValueFunctor func, PrefetchFunctor prefetch_func) {
+    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+      return ForEachPrefetchImpl(map_.large->begin(), map_.large->end(),
+                                 std::move(func), std::move(prefetch_func));
+    }
+    return ForEachPrefetchImpl(flat_begin(), flat_end(), std::move(func),
+                               std::move(prefetch_func));
+  }
+  // As above, but const.
+  template <typename KeyValueFunctor, typename PrefetchFunctor>
+  KeyValueFunctor ForEach(KeyValueFunctor func,
+                          PrefetchFunctor prefetch_func) const {
+    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+      return ForEachPrefetchImpl(map_.large->begin(), map_.large->end(),
+                                 std::move(func), std::move(prefetch_func));
+    }
+    return ForEachPrefetchImpl(flat_begin(), flat_end(), std::move(func),
+                               std::move(prefetch_func));
+  }
+
+  // As above, but without prefetching. This is for use in cases where we never
+  // use the pointed-to extension values in `func`.
   template <typename Iterator, typename KeyValueFunctor>
-  static KeyValueFunctor ForEach(Iterator begin, Iterator end,
-                                 KeyValueFunctor func) {
+  static KeyValueFunctor ForEachNoPrefetch(Iterator begin, Iterator end,
+                                           KeyValueFunctor func) {
     for (Iterator it = begin; it != end; ++it) func(it->first, it->second);
     return std::move(func);
   }
 
   // Applies a functor to the <int, Extension&> pairs in sorted order.
   template <typename KeyValueFunctor>
-  KeyValueFunctor ForEach(KeyValueFunctor func) {
+  KeyValueFunctor ForEachNoPrefetch(KeyValueFunctor func) {
     if (PROTOBUF_PREDICT_FALSE(is_large())) {
-      return ForEach(map_.large->begin(), map_.large->end(), std::move(func));
+      return ForEachNoPrefetch(map_.large->begin(), map_.large->end(),
+                               std::move(func));
     }
-    return ForEach(flat_begin(), flat_end(), std::move(func));
+    return ForEachNoPrefetch(flat_begin(), flat_end(), std::move(func));
   }
 
-  // Applies a functor to the <int, const Extension&> pairs in sorted order.
+  // As above, but const.
   template <typename KeyValueFunctor>
-  KeyValueFunctor ForEach(KeyValueFunctor func) const {
+  KeyValueFunctor ForEachNoPrefetch(KeyValueFunctor func) const {
     if (PROTOBUF_PREDICT_FALSE(is_large())) {
-      return ForEach(map_.large->begin(), map_.large->end(), std::move(func));
+      return ForEachNoPrefetch(map_.large->begin(), map_.large->end(),
+                               std::move(func));
     }
-    return ForEach(flat_begin(), flat_end(), std::move(func));
+    return ForEachNoPrefetch(flat_begin(), flat_end(), std::move(func));
   }
 
   // Merges existing Extension from other_extension
