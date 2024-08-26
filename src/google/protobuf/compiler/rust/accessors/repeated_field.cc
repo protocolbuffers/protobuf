@@ -76,7 +76,6 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                         $pb$::RepeatedMut::from_inner(
                           $pbi$::Private,
                           $pbr$::InnerRepeatedMut::new(
-                            $pbi$::Private,
                             $getter_mut_thunk$(
                               self.raw_msg(),
                               /* optional size pointer */ std::ptr::null(),
@@ -95,7 +94,6 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                           $pb$::RepeatedMut::from_inner(
                             $pbi$::Private,
                             $pbr$::InnerRepeatedMut::new(
-                              $pbi$::Private,
                               $getter_mut_thunk$(self.raw_msg()),
                             ),
                           )

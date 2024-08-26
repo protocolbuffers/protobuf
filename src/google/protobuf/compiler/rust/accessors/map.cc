@@ -87,7 +87,7 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                         $getter_mut_thunk$(self.raw_msg(),
                                            self.arena().raw())
                       };
-                      let inner = $pbr$::InnerMapMut::new($pbi$::Private,
+                      let inner = $pbr$::InnerMapMut::new(
                         raw, self.arena());
                       unsafe { $pb$::MapMut::from_inner($pbi$::Private, inner) }
                     })rs");
@@ -95,7 +95,7 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                  ctx.Emit({}, R"rs(
                     pub fn $field$_mut(&mut self)
                       -> $pb$::MapMut<'_, $Key$, $Value$> {
-                      let inner = $pbr$::InnerMapMut::new($pbi$::Private,
+                      let inner = $pbr$::InnerMapMut::new(
                         unsafe { $getter_mut_thunk$(self.raw_msg()) });
                       unsafe { $pb$::MapMut::from_inner($pbi$::Private, inner) }
                     })rs");

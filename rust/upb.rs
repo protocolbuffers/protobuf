@@ -12,12 +12,12 @@ use crate::{
     IntoProxied, Map, MapIter, MapMut, MapView, Mut, ProtoBytes, ProtoStr, ProtoString, Proxied,
     ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
 };
+use std::slice;
 use core::fmt::Debug;
 use std::alloc::Layout;
-use std::mem::{size_of, ManuallyDrop, MaybeUninit};
-use std::ptr::{self, NonNull};
-use std::slice;
 use std::sync::OnceLock;
+use std::ptr::{self, NonNull};
+use std::mem::{size_of, ManuallyDrop, MaybeUninit};
 
 #[cfg(bzl)]
 extern crate upb;
@@ -53,9 +53,10 @@ const UPB_SCRATCH_SPACE_BYTES: usize = 65_536;
 /// view, we can allocate a large block and refer to that when dealing
 /// with readonly access.
 #[repr(C, align(8))] // align to UPB_MALLOC_ALIGN = 8
+#[doc(hidden)]
 pub struct ScratchSpace([u8; UPB_SCRATCH_SPACE_BYTES]);
 impl ScratchSpace {
-    pub fn zeroed_block(_private: Private) -> RawMessage {
+    pub fn zeroed_block() -> RawMessage {
         static ZEROED_BLOCK: ScratchSpace = ScratchSpace([0; UPB_SCRATCH_SPACE_BYTES]);
         NonNull::from(&ZEROED_BLOCK).cast()
     }
@@ -74,6 +75,7 @@ impl IntoProxied<ProtoBytes> for SerializedData {
 
 /// The raw contents of every generated message.
 #[derive(Debug)]
+#[doc(hidden)]
 pub struct MessageInner {
     pub msg: RawMessage,
     pub arena: Arena,
@@ -105,6 +107,7 @@ pub struct MessageInner {
 ///   cannot be `Clone` but *can* reborrow itself with `.as_mut()`, which
 ///   converts `&'b mut Mut<'a, T>` to `Mut<'b, T>`.
 #[derive(Clone, Copy, Debug)]
+#[doc(hidden)]
 pub struct MutatorMessageRef<'msg> {
     msg: RawMessage,
     arena: &'msg Arena,
@@ -113,15 +116,11 @@ pub struct MutatorMessageRef<'msg> {
 impl<'msg> MutatorMessageRef<'msg> {
     #[doc(hidden)]
     #[allow(clippy::needless_pass_by_ref_mut)] // Sound construction requires mutable access.
-    pub fn new(_private: Private, msg: &'msg mut MessageInner) -> Self {
+    pub fn new(msg: &'msg mut MessageInner) -> Self {
         MutatorMessageRef { msg: msg.msg, arena: &msg.arena }
     }
 
-    pub fn from_parent(
-        _private: Private,
-        parent_msg: MutatorMessageRef<'msg>,
-        message_field_ptr: RawMessage,
-    ) -> Self {
+    pub fn from_parent(parent_msg: MutatorMessageRef<'msg>, message_field_ptr: RawMessage) -> Self {
         MutatorMessageRef { msg: message_field_ptr, arena: parent_msg.arena }
     }
 
@@ -129,7 +128,7 @@ impl<'msg> MutatorMessageRef<'msg> {
         self.msg
     }
 
-    pub fn arena(&self, _private: Private) -> &Arena {
+    pub fn arena(&self) -> &Arena {
         self.arena
     }
 }
@@ -150,6 +149,7 @@ fn copy_bytes_in_arena<'msg>(arena: &'msg Arena, val: &'msg [u8]) -> &'msg [u8] 
 }
 
 /// Kernel-specific owned `string` and `bytes` field type.
+#[doc(hidden)]
 pub struct InnerProtoString(OwnedArenaBox<[u8]>);
 
 impl InnerProtoString {
@@ -158,7 +158,7 @@ impl InnerProtoString {
     }
 
     #[doc(hidden)]
-    pub fn into_raw_parts(self, _private: Private) -> (PtrAndLen, Arena) {
+    pub fn into_raw_parts(self) -> (PtrAndLen, Arena) {
         let (data_ptr, arena) = self.0.into_parts();
         (unsafe { data_ptr.as_ref().into() }, arena)
     }
@@ -178,6 +178,7 @@ impl From<&[u8]> for InnerProtoString {
 
 /// The raw type-erased version of an owned `Repeated`.
 #[derive(Debug)]
+#[doc(hidden)]
 pub struct InnerRepeated {
     raw: RawRepeatedField,
     arena: Arena,
@@ -185,7 +186,7 @@ pub struct InnerRepeated {
 
 impl InnerRepeated {
     pub fn as_mut(&mut self) -> InnerRepeatedMut<'_> {
-        InnerRepeatedMut::new(Private, self.raw, &self.arena)
+        InnerRepeatedMut::new(self.raw, &self.arena)
     }
 
     pub fn raw(&self) -> RawRepeatedField {
@@ -198,13 +199,14 @@ impl InnerRepeated {
 
     /// # Safety
     /// - `raw` must be a valid `RawRepeatedField`
-    pub unsafe fn from_raw_parts(_: Private, raw: RawRepeatedField, arena: Arena) -> Self {
+    pub unsafe fn from_raw_parts(raw: RawRepeatedField, arena: Arena) -> Self {
         Self { raw, arena }
     }
 }
 
 /// The raw type-erased pointer version of `RepeatedMut`.
 #[derive(Clone, Copy, Debug)]
+#[doc(hidden)]
 pub struct InnerRepeatedMut<'msg> {
     pub(crate) raw: RawRepeatedField,
     arena: &'msg Arena,
@@ -212,7 +214,7 @@ pub struct InnerRepeatedMut<'msg> {
 
 impl<'msg> InnerRepeatedMut<'msg> {
     #[doc(hidden)]
-    pub fn new(_private: Private, raw: RawRepeatedField, arena: &'msg Arena) -> Self {
+    pub fn new(raw: RawRepeatedField, arena: &'msg Arena) -> Self {
         InnerRepeatedMut { raw, arena }
     }
 }
@@ -415,11 +417,10 @@ pub unsafe fn repeated_message_copy_from<T: ProxiedInRepeated>(
 
 /// Cast a `RepeatedView<SomeEnum>` to `RepeatedView<i32>`.
 pub fn cast_enum_repeated_view<E: Enum + ProxiedInRepeated>(
-    private: Private,
     repeated: RepeatedView<E>,
 ) -> RepeatedView<i32> {
     // SAFETY: Reading an enum array as an i32 array is sound.
-    unsafe { RepeatedView::from_raw(private, repeated.as_raw(Private)) }
+    unsafe { RepeatedView::from_raw(Private, repeated.as_raw(Private)) }
 }
 
 /// Cast a `RepeatedMut<SomeEnum>` to `RepeatedMut<i32>`.
@@ -427,7 +428,6 @@ pub fn cast_enum_repeated_view<E: Enum + ProxiedInRepeated>(
 /// Writing an unknown value is sound because all enums
 /// are representationally open.
 pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
-    private: Private,
     repeated: RepeatedMut<E>,
 ) -> RepeatedMut<i32> {
     // SAFETY:
@@ -435,36 +435,32 @@ pub fn cast_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
     // - No shared mutation is possible through the output.
     unsafe {
         let InnerRepeatedMut { arena, raw, .. } = repeated.inner;
-        RepeatedMut::from_inner(private, InnerRepeatedMut { arena, raw })
+        RepeatedMut::from_inner(Private, InnerRepeatedMut { arena, raw })
     }
 }
 
 /// Cast a `RepeatedMut<SomeEnum>` to `RepeatedMut<i32>` and call
 /// repeated_reserve.
 pub fn reserve_enum_repeated_mut<E: Enum + ProxiedInRepeated>(
-    private: Private,
     repeated: RepeatedMut<E>,
     additional: usize,
 ) {
-    let int_repeated = cast_enum_repeated_mut(private, repeated);
+    let int_repeated = cast_enum_repeated_mut(repeated);
     ProxiedInRepeated::repeated_reserve(int_repeated, additional);
 }
 
-pub fn new_enum_repeated<E: Enum + ProxiedInRepeated>(_: Private) -> Repeated<E> {
+pub fn new_enum_repeated<E: Enum + ProxiedInRepeated>() -> Repeated<E> {
     let arena = Arena::new();
     // SAFETY:
     // - `upb_Array_New` is unsafe but assumed to be sound when called on a valid
     //   arena.
     unsafe {
         let raw = upb_Array_New(arena.raw(), upb::CType::Int32);
-        Repeated::from_inner(Private, InnerRepeated::from_raw_parts(Private, raw, arena))
+        Repeated::from_inner(Private, InnerRepeated::from_raw_parts(raw, arena))
     }
 }
 
-pub fn free_enum_repeated<E: Enum + ProxiedInRepeated>(
-    _private: Private,
-    _repeated: &mut Repeated<E>,
-) {
+pub fn free_enum_repeated<E: Enum + ProxiedInRepeated>(_repeated: &mut Repeated<E>) {
     // No-op: the memory will be dropped by the arena.
 }
 
@@ -528,13 +524,14 @@ impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
 }
 
 #[derive(Debug)]
+#[doc(hidden)]
 pub struct InnerMap {
     pub(crate) raw: RawMap,
     arena: Arena,
 }
 
 impl InnerMap {
-    pub fn new(_private: Private, raw: RawMap, arena: Arena) -> Self {
+    pub fn new(raw: RawMap, arena: Arena) -> Self {
         Self { raw, arena }
     }
 
@@ -544,6 +541,7 @@ impl InnerMap {
 }
 
 #[derive(Clone, Copy, Debug)]
+#[doc(hidden)]
 pub struct InnerMapMut<'msg> {
     pub(crate) raw: RawMap,
     arena: &'msg Arena,
@@ -551,17 +549,17 @@ pub struct InnerMapMut<'msg> {
 
 #[doc(hidden)]
 impl<'msg> InnerMapMut<'msg> {
-    pub fn new(_private: Private, raw: RawMap, arena: &'msg Arena) -> Self {
+    pub fn new(raw: RawMap, arena: &'msg Arena) -> Self {
         InnerMapMut { raw, arena }
     }
 
     #[doc(hidden)]
-    pub fn as_raw(&self, _private: Private) -> RawMap {
+    pub fn as_raw(&self) -> RawMap {
         self.raw
     }
 
     #[doc(hidden)]
-    pub fn raw_arena(&self, _private: Private) -> RawArena {
+    pub fn raw_arena(&self) -> RawArena {
         self.arena.raw()
     }
 }
@@ -638,7 +636,7 @@ impl UpbTypeConversions for ProtoBytes {
         // SAFETY: The arena memory is not freed due to `ManuallyDrop`.
         let parent_arena = ManuallyDrop::new(unsafe { Arena::from_raw(raw_parent_arena) });
 
-        let (view, arena) = val.inner.into_raw_parts(Private);
+        let (view, arena) = val.inner.into_raw_parts();
         parent_arena.fuse(&arena);
 
         upb_MessageValue { str_val: view }
@@ -676,6 +674,7 @@ impl UpbTypeConversions for ProtoString {
     }
 }
 
+#[doc(hidden)]
 pub struct RawMapIter {
     // TODO: Replace this `RawMap` with the const type.
     map: RawMap,
@@ -683,17 +682,14 @@ pub struct RawMapIter {
 }
 
 impl RawMapIter {
-    pub fn new(_private: Private, map: RawMap) -> Self {
+    pub fn new(map: RawMap) -> Self {
         RawMapIter { map, iter: UPB_MAP_BEGIN }
     }
 
     /// # Safety
     /// - `self.map` must be valid, and remain valid while the return value is
     ///   in use.
-    pub unsafe fn next_unchecked(
-        &mut self,
-        _private: Private,
-    ) -> Option<(upb_MessageValue, upb_MessageValue)> {
+    pub unsafe fn next_unchecked(&mut self) -> Option<(upb_MessageValue, upb_MessageValue)> {
         let mut key = MaybeUninit::uninit();
         let mut value = MaybeUninit::uninit();
         // SAFETY: the `map` is valid as promised by the caller
@@ -768,7 +764,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                 fn map_iter(map: View<'_, Map<$key_t, Self>>) -> MapIter<'_, $key_t, Self> {
                     // SAFETY: View<Map<'_,..>> guarantees its RawMap outlives '_.
                     unsafe {
-                        MapIter::from_raw(Private, RawMapIter::new(Private, map.as_raw(Private)))
+                        MapIter::from_raw(Private, RawMapIter::new(map.as_raw(Private)))
                     }
                 }
 
@@ -776,7 +772,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     iter: &mut MapIter<'a, $key_t, Self>
                 ) -> Option<(View<'a, $key_t>, View<'a, Self>)> {
                     // SAFETY: MapIter<'a, ..> guarantees its RawMapIter outlives 'a.
-                    unsafe { iter.as_raw_mut(Private).next_unchecked(Private) }
+                    unsafe { iter.as_raw_mut(Private).next_unchecked() }
                         // SAFETY: MapIter<K, V> returns key and values message values
                         //         with the variants for K and V active.
                         .map(|(k, v)| unsafe {(

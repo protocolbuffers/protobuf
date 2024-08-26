@@ -46,8 +46,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
               //~ Note that a nullptr received from upb manifests as Option::None
               match submsg {
                 //~ TODO:(b/304357029)
-                None => $msg_type$View::new($pbi$::Private,
-                        $pbr$::ScratchSpace::zeroed_block($pbi$::Private)),
+                None => $msg_type$View::new($pbi$::Private, $pbr$::ScratchSpace::zeroed_block()),
                 Some(field) => $msg_type$View::new($pbi$::Private, field),
               }
         )rs");
@@ -118,8 +117,8 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   // parent message's arena.
                   let mut msg = val.into_proxied($pbi$::Private);
                   self.as_mutator_message_ref($pbi$::Private)
-                    .arena($pbi$::Private)
-                    .fuse(msg.as_mutator_message_ref($pbi$::Private).arena($pbi$::Private));
+                    .arena()
+                    .fuse(msg.as_mutator_message_ref($pbi$::Private).arena());
 
                   unsafe {
                     $set_allocated_thunk$(self.as_mutator_message_ref($pbi$::Private).msg(),

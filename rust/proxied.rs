@@ -239,6 +239,7 @@ pub trait MutProxy<'msg>: SealedInternal + Proxy<'msg> + AsMut + IntoMut<'msg> {
 /// runtime. We expect it to change in backwards incompatible ways in the
 /// future.
 pub trait IntoProxied<T: Proxied> {
+    #[doc(hidden)]
     fn into_proxied(self, _private: Private) -> T;
 }
 

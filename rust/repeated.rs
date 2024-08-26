@@ -5,7 +5,6 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use std::fmt::{self, Debug};
 use std::iter;
 use std::iter::FusedIterator;
 /// Repeated scalar fields are implemented around the runtime-specific
@@ -13,6 +12,7 @@ use std::iter::FusedIterator;
 /// runtime-specific representation of a repeated scalar (`upb_Array*` on upb,
 /// and `RepeatedField<T>*` on cpp).
 use std::marker::PhantomData;
+use std::fmt::{self, Debug};
 
 use crate::{
     AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy, View,
@@ -352,7 +352,7 @@ impl<T: ProxiedInRepeated> Repeated<T> {
     pub fn new() -> Self {
         T::repeated_new(Private)
     }
-
+    #[doc(hidden)]
     pub fn from_inner(_private: Private, inner: InnerRepeated) -> Self {
         Self { inner, _phantom: PhantomData }
     }

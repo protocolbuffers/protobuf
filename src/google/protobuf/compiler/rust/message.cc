@@ -58,7 +58,7 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
       ctx.Emit({}, R"rs(
-        let mut serialized_data = $pbr$::SerializedData::new($pbi$::Private);
+        let mut serialized_data = $pbr$::SerializedData::new();
         let success = unsafe {
           $pbr$::proto2_rust_Message_serialize(self.raw_msg(), &mut serialized_data)
         };
@@ -165,7 +165,7 @@ void MessageDebug(Context& ctx, const Descriptor& msg) {
     case Kernel::kCpp:
       ctx.Emit({},
                R"rs(
-        $pbr$::debug_string($pbi$::Private, self.raw_msg(), f)
+        $pbr$::debug_string(self.raw_msg(), f)
       )rs");
       return;
 
@@ -387,8 +387,7 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
             // - The thunk returns an unaliased and valid `RepeatedPtrField*`
             unsafe {
               $pb$::Repeated::from_inner($pbi$::Private,
-                $pbr$::InnerRepeated::from_raw($pbi$::Private,
-                  $repeated_new_thunk$()
+                $pbr$::InnerRepeated::from_raw($repeated_new_thunk$()
                 )
               )
             }
@@ -481,11 +480,12 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
           fn repeated_new(_private: $pbi$::Private) -> $pb$::Repeated<Self> {
             let arena = $pbr$::Arena::new();
             unsafe {
-              $pb$::Repeated::from_inner($pbi$::Private, $pbr$::InnerRepeated::from_raw_parts(
+              $pb$::Repeated::from_inner(
                   $pbi$::Private,
-                  $pbr$::upb_Array_New(arena.raw(), $pbr$::CType::Message),
-                  arena,
-              ))
+                  $pbr$::InnerRepeated::from_raw_parts(
+                      $pbr$::upb_Array_New(arena.raw(), $pbr$::CType::Message),
+                      arena,
+                  ))
             }
           }
 
@@ -605,7 +605,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     unsafe {
                         $pb$::Map::from_inner(
                             $pbi$::Private,
-                            $pbr$::InnerMap::new($pbi$::Private, $pbr$::proto2_rust_map_new())
+                            $pbr$::InnerMap::new($pbr$::proto2_rust_map_new())
                         )
                     }
                 }
@@ -686,7 +686,6 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     // - The thunk does not increment the iterator.
                     unsafe {
                         iter.as_raw_mut($pbi$::Private).next_unchecked::<$key_t$, Self, _, _>(
-                            $pbi$::Private,
                             $pbr$::$map_iter_get$,
                             $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
                             |ffi_key| $from_ffi_key_expr$,
@@ -718,9 +717,10 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                   raw_parent_arena: $pbr$::RawArena,
                   mut val: Self) -> $pbr$::upb_MessageValue {
                   // SAFETY: The arena memory is not freed due to `ManuallyDrop`.
-                  let parent_arena = core::mem::ManuallyDrop::new(unsafe { $pbr$::Arena::from_raw(raw_parent_arena) });
+                  let parent_arena = core::mem::ManuallyDrop::new(
+                      unsafe { $pbr$::Arena::from_raw(raw_parent_arena) });
 
-                  parent_arena.fuse(val.as_mutator_message_ref($pbi$::Private).arena($pbi$::Private));
+                  parent_arena.fuse(val.as_mutator_message_ref($pbi$::Private).arena());
                   $pbr$::upb_MessageValue { msg_val: Some(val.raw_msg()) }
                 }
 
@@ -749,7 +749,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
 
                     $pb$::Map::from_inner(
                         $pbi$::Private,
-                        $pbr$::InnerMap::new($pbi$::Private, raw, arena))
+                        $pbr$::InnerMap::new(raw, arena))
                 }
 
                 unsafe fn map_free(_private: $pbi$::Private, _map: &mut $pb$::Map<$key_t$, Self>) {
@@ -769,7 +769,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                 }
 
                 fn map_insert(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
-                    let arena = map.inner($pbi$::Private).raw_arena($pbi$::Private);
+                    let arena = map.inner($pbi$::Private).raw_arena();
                     unsafe {
                         $pbr$::upb_Map_InsertAndReturnIfInserted(
                             map.as_raw($pbi$::Private),
@@ -805,7 +805,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                 fn map_iter(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> $pb$::MapIter<'_, $key_t$, Self> {
                     // SAFETY: View<Map<'_,..>> guarantees its RawMap outlives '_.
                     unsafe {
-                        $pb$::MapIter::from_raw($pbi$::Private, $pbr$::RawMapIter::new($pbi$::Private, map.as_raw($pbi$::Private)))
+                        $pb$::MapIter::from_raw($pbi$::Private, $pbr$::RawMapIter::new(map.as_raw($pbi$::Private)))
                     }
                 }
 
@@ -813,7 +813,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     iter: &mut $pb$::MapIter<'a, $key_t$, Self>
                 ) -> Option<($pb$::View<'a, $key_t$>, $pb$::View<'a, Self>)> {
                     // SAFETY: MapIter<'a, ..> guarantees its RawMapIter outlives 'a.
-                    unsafe { iter.as_raw_mut($pbi$::Private).next_unchecked($pbi$::Private) }
+                    unsafe { iter.as_raw_mut($pbi$::Private).next_unchecked() }
                         // SAFETY: MapIter<K, V> returns key and values message values
                         //         with the variants for K and V active.
                         .map(|(k, v)| unsafe {(
@@ -917,7 +917,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           if (ctx.is_upb()) {
             ctx.Emit({}, R"rs(
                   fn arena(&self) -> &$pbr$::Arena {
-                    self.inner.arena($pbi$::Private)
+                    self.inner.arena()
                   }
                   )rs");
           }
@@ -950,15 +950,13 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
        {"unwrap_upb",
         [&] {
           if (ctx.is_upb()) {
-            ctx.Emit(
-                ".unwrap_or_else(||$pbr$::ScratchSpace::zeroed_block($pbi$::"
-                "Private))");
+            ctx.Emit(".unwrap_or_else(||$pbr$::ScratchSpace::zeroed_block())");
           }
         }},
        {"upb_arena",
         [&] {
           if (ctx.is_upb()) {
-            ctx.Emit(", inner.msg_ref().arena($pbi$::Private).raw()");
+            ctx.Emit(", inner.msg_ref().arena().raw()");
           }
         }}},
       R"rs(
@@ -1148,20 +1146,20 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
                      msg: $pbr$::RawMessage)
             -> Self {
             Self {
-              inner: $pbr$::MutatorMessageRef::from_parent(
-                       $pbi$::Private, parent, msg)
+              inner: $pbr$::MutatorMessageRef::from_parent(parent, msg)
             }
           }
 
           #[doc(hidden)]
           pub fn new(_private: $pbi$::Private, msg: &'msg mut $pbr$::MessageInner) -> Self {
-            Self{ inner: $pbr$::MutatorMessageRef::new(_private, msg) }
+            Self{ inner: $pbr$::MutatorMessageRef::new(msg) }
           }
 
           fn raw_msg(&self) -> $pbr$::RawMessage {
             self.inner.msg()
           }
 
+          #[doc(hidden)]
           pub fn as_mutator_message_ref(&mut self, _private: $pbi$::Private)
             -> $pbr$::MutatorMessageRef<'msg> {
             self.inner
@@ -1225,8 +1223,9 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             self.inner.msg
           }
 
+          #[doc(hidden)]
           pub fn as_mutator_message_ref(&mut self, _private: $pbi$::Private) -> $pbr$::MutatorMessageRef {
-            $pbr$::MutatorMessageRef::new($pbi$::Private, &mut self.inner)
+            $pbr$::MutatorMessageRef::new(&mut self.inner)
           }
 
           $raw_arena_getter_for_message$
@@ -1296,7 +1295,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             msg: &'a mut *mut std::ffi::c_void) -> Self {
           Self {
             inner: $pbr$::MutatorMessageRef::wrap_raw(
-                $pbi$::Private,
                 $pbr$::RawMessage::new(*msg as *mut _).unwrap())
           }
         }
@@ -1331,7 +1329,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             msg: &'a mut *mut std::ffi::c_void) -> Self {
           Self {
             inner: $pbr$::MutatorMessageRef::wrap_raw(
-                $pbi$::Private,
                 $pbr$::RawMessage::new(*msg as *mut _).unwrap())
           }
         }
@@ -1339,7 +1336,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             msg: *mut std::ffi::c_void) -> Self {
           Self {
             inner: $pbr$::MutatorMessageRef::wrap_raw(
-                $pbi$::Private,
                 $pbr$::RawMessage::new(msg as *mut _).unwrap())
           }
         }
