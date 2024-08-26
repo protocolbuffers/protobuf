@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use crate::{
-    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy, View,
+    AsMut, AsView, IntoMut, IntoProxied, IntoView, MutProxied, MutProxy, Proxied, Proxy, View,
     ViewProxy,
     __internal::{Private, SealedInternal},
     __runtime::{InnerMap, InnerMapMut, RawMap, RawMapIter},
@@ -93,17 +93,13 @@ where
     /// - After `map_free`, no other methods on the input are safe to call.
     unsafe fn map_free(_private: Private, map: &mut Map<K, Self>);
 
-    fn map_clear(map: Mut<'_, Map<K, Self>>);
-    fn map_len(map: View<'_, Map<K, Self>>) -> usize;
-    fn map_insert(
-        map: Mut<'_, Map<K, Self>>,
-        key: View<'_, K>,
-        value: impl IntoProxied<Self>,
-    ) -> bool;
-    fn map_get<'a>(map: View<'a, Map<K, Self>>, key: View<'_, K>) -> Option<View<'a, Self>>;
-    fn map_remove(map: Mut<'_, Map<K, Self>>, key: View<'_, K>) -> bool;
+    fn map_clear(map: MapMut<K, Self>);
+    fn map_len(map: MapView<K, Self>) -> usize;
+    fn map_insert(map: MapMut<K, Self>, key: View<'_, K>, value: impl IntoProxied<Self>) -> bool;
+    fn map_get<'a>(map: MapView<'a, K, Self>, key: View<'_, K>) -> Option<View<'a, Self>>;
+    fn map_remove(map: MapMut<K, Self>, key: View<'_, K>) -> bool;
 
-    fn map_iter(map: View<'_, Map<K, Self>>) -> MapIter<'_, K, Self>;
+    fn map_iter(map: MapView<K, Self>) -> MapIter<K, Self>;
     fn map_iter_next<'a>(iter: &mut MapIter<'a, K, Self>) -> Option<(View<'a, K>, View<'a, Self>)>;
 }
 
@@ -361,7 +357,7 @@ where
     /// Returns an iterator visiting all key-value pairs in arbitrary order.
     ///
     /// The iterator element type is `(View<K>, View<V>)`.
-    pub fn iter(&self) -> MapIter<'_, K, V> {
+    pub fn iter(&self) -> MapIter<K, V> {
         self.into_iter()
     }
 

@@ -86,19 +86,19 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
             unsafe { $pbr$::$map_free_thunk$(map.as_raw($pbi$::Private)); }
         }
 
-        fn map_clear(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>) {
+        fn map_clear(mut map: $pb$::MapMut<$key_t$, Self>) {
             unsafe { $pbr$::$map_clear_thunk$(map.as_raw($pbi$::Private)); }
         }
 
-        fn map_len(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> usize {
+        fn map_len(map: $pb$::MapView<$key_t$, Self>) -> usize {
             unsafe { $pbr$::$map_size_thunk$(map.as_raw($pbi$::Private)) }
         }
 
-        fn map_insert(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
+        fn map_insert(mut map: $pb$::MapMut<$key_t$, Self>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
             unsafe { $pbr$::$map_insert_thunk$(map.as_raw($pbi$::Private), $to_ffi_key_expr$, value.into_proxied($pbi$::Private).0) }
         }
 
-        fn map_get<'a>(map: $pb$::View<'a, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
+        fn map_get<'a>(map: $pb$::MapView<'a, $key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
             let key = $to_ffi_key_expr$;
             let mut value = $std$::mem::MaybeUninit::uninit();
             let found = unsafe { $pbr$::$map_get_thunk$(map.as_raw($pbi$::Private), key, value.as_mut_ptr()) };
@@ -108,12 +108,12 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
             Some(unsafe { $name$(value.assume_init()) })
         }
 
-        fn map_remove(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> bool {
+        fn map_remove(mut map: $pb$::MapMut<$key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> bool {
             let mut value = $std$::mem::MaybeUninit::uninit();
             unsafe { $pbr$::$map_remove_thunk$(map.as_raw($pbi$::Private), $to_ffi_key_expr$, value.as_mut_ptr()) }
         }
 
-        fn map_iter(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> $pb$::MapIter<'_, $key_t$, Self> {
+        fn map_iter(map: $pb$::MapView<$key_t$, Self>) -> $pb$::MapIter<$key_t$, Self> {
             // SAFETY:
             // - The backing map for `map.as_raw` is valid for at least '_.
             // - A View that is live for '_ guarantees the backing map is unmodified for '_.
@@ -170,19 +170,19 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
               // No-op: the memory will be dropped by the arena.
           }
 
-          fn map_clear(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>) {
+          fn map_clear(mut map: $pb$::MapMut<$key_t$, Self>) {
               unsafe {
                   $pbr$::upb_Map_Clear(map.as_raw($pbi$::Private));
               }
           }
 
-          fn map_len(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> usize {
+          fn map_len(map: $pb$::MapView<$key_t$, Self>) -> usize {
               unsafe {
                   $pbr$::upb_Map_Size(map.as_raw($pbi$::Private))
               }
           }
 
-          fn map_insert(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
+          fn map_insert(mut map: $pb$::MapMut<$key_t$, Self>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
               let arena = map.inner($pbi$::Private).raw_arena();
               unsafe {
                   $pbr$::upb_Map_InsertAndReturnIfInserted(
@@ -194,7 +194,7 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
               }
           }
 
-          fn map_get<'a>(map: $pb$::View<'a, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
+          fn map_get<'a>(map: $pb$::MapView<'a, $key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
               let mut val = $std$::mem::MaybeUninit::uninit();
               let found = unsafe {
                   $pbr$::upb_Map_Get(
@@ -208,7 +208,7 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
               Some($name$(unsafe { val.assume_init().int32_val }))
           }
 
-          fn map_remove(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> bool {
+          fn map_remove(mut map: $pb$::MapMut<$key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> bool {
               let mut val = $std$::mem::MaybeUninit::uninit();
               unsafe {
                   $pbr$::upb_Map_Delete(
@@ -217,7 +217,7 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
                       val.as_mut_ptr())
               }
           }
-          fn map_iter(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> $pb$::MapIter<'_, $key_t$, Self> {
+          fn map_iter(map: $pb$::MapView<$key_t$, Self>) -> $pb$::MapIter<$key_t$, Self> {
               // SAFETY: View<Map<'_,..>> guarantees its RawMap outlives '_.
               unsafe {
                   $pb$::MapIter::from_raw($pbi$::Private, $pbr$::RawMapIter::new(map.as_raw($pbi$::Private)))

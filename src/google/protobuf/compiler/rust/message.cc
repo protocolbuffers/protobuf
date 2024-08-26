@@ -615,16 +615,16 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     unsafe { $pbr$::proto2_rust_map_free(map.as_raw($pbi$::Private), $key_is_string$, $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX)); }
                 }
 
-                fn map_clear(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>) {
+                fn map_clear(mut map: $pb$::MapMut<$key_t$, Self>) {
                     use $pbr$::MapNodeSizeInfoIndexForType;
                     unsafe { $pbr$::proto2_rust_map_clear(map.as_raw($pbi$::Private), $key_is_string$, $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX)); }
                 }
 
-                fn map_len(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> usize {
+                fn map_len(map: $pb$::MapView<$key_t$, Self>) -> usize {
                     unsafe { $pbr$::proto2_rust_map_size(map.as_raw($pbi$::Private)) }
                 }
 
-                fn map_insert(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
+                fn map_insert(mut map: $pb$::MapMut<$key_t$, Self>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
                     use $pbr$::MapNodeSizeInfoIndexForType;
                     unsafe {
                         $pbr$::$map_insert$(
@@ -635,7 +635,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     }
                 }
 
-                fn map_get<'a>(map: $pb$::View<'a, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
+                fn map_get<'a>(map: $pb$::MapView<'a, $key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
                     use $pbr$::MapNodeSizeInfoIndexForType;
                     let key = $key_expr$;
                     let mut value = $std$::mem::MaybeUninit::uninit();
@@ -652,7 +652,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     Some($Msg$View::new($pbi$::Private, unsafe { value.assume_init() }))
                 }
 
-                fn map_remove(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> bool {
+                fn map_remove(mut map: $pb$::MapMut<$key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> bool {
                     use $pbr$::MapNodeSizeInfoIndexForType;
                     unsafe {
                         $pbr$::$map_remove$(
@@ -662,7 +662,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     }
                 }
 
-                fn map_iter(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> $pb$::MapIter<'_, $key_t$, Self> {
+                fn map_iter(map: $pb$::MapView<$key_t$, Self>) -> $pb$::MapIter<$key_t$, Self> {
                     // SAFETY:
                     // - The backing map for `map.as_raw` is valid for at least '_.
                     // - A View that is live for '_ guarantees the backing map is unmodified for '_.
@@ -756,19 +756,19 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     // No-op: the memory will be dropped by the arena.
                 }
 
-                fn map_clear(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>) {
+                fn map_clear(mut map: $pb$::MapMut<$key_t$, Self>) {
                     unsafe {
                         $pbr$::upb_Map_Clear(map.as_raw($pbi$::Private));
                     }
                 }
 
-                fn map_len(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> usize {
+                fn map_len(map: $pb$::MapView<$key_t$, Self>) -> usize {
                     unsafe {
                         $pbr$::upb_Map_Size(map.as_raw($pbi$::Private))
                     }
                 }
 
-                fn map_insert(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
+                fn map_insert(mut map: $pb$::MapMut<$key_t$, Self>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
                     let arena = map.inner($pbi$::Private).raw_arena();
                     unsafe {
                         $pbr$::upb_Map_InsertAndReturnIfInserted(
@@ -780,7 +780,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     }
                 }
 
-                fn map_get<'a>(map: $pb$::View<'a, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
+                fn map_get<'a>(map: $pb$::MapView<'a, $key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
                     let mut val = $std$::mem::MaybeUninit::uninit();
                     let found = unsafe {
                         $pbr$::upb_Map_Get(
@@ -794,7 +794,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     Some(unsafe { <Self as $pbr$::UpbTypeConversions>::from_message_value(val.assume_init()) })
                 }
 
-                fn map_remove(mut map: $pb$::Mut<'_, $pb$::Map<$key_t$, Self>>, key: $pb$::View<'_, $key_t$>) -> bool {
+                fn map_remove(mut map: $pb$::MapMut<$key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> bool {
                     unsafe {
                         $pbr$::upb_Map_Delete(
                             map.as_raw($pbi$::Private),
@@ -802,8 +802,8 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                             $std$::ptr::null_mut())
                     }
                 }
-                fn map_iter(map: $pb$::View<'_, $pb$::Map<$key_t$, Self>>) -> $pb$::MapIter<'_, $key_t$, Self> {
-                    // SAFETY: View<Map<'_,..>> guarantees its RawMap outlives '_.
+                fn map_iter(map: $pb$::MapView<$key_t$, Self>) -> $pb$::MapIter<$key_t$, Self> {
+                    // SAFETY: MapView<'_,..>> guarantees its RawMap outlives '_.
                     unsafe {
                         $pb$::MapIter::from_raw($pbi$::Private, $pbr$::RawMapIter::new(map.as_raw($pbi$::Private)))
                     }

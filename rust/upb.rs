@@ -717,19 +717,19 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     // No-op: the memory will be dropped by the arena.
                 }
 
-                fn map_clear(mut map: Mut<'_, Map<$key_t, Self>>) {
+                fn map_clear(mut map: MapMut<$key_t, Self>) {
                     unsafe {
                         upb_Map_Clear(map.as_raw(Private));
                     }
                 }
 
-                fn map_len(map: View<'_, Map<$key_t, Self>>) -> usize {
+                fn map_len(map: MapView<$key_t, Self>) -> usize {
                     unsafe {
                         upb_Map_Size(map.as_raw(Private))
                     }
                 }
 
-                fn map_insert(mut map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>, value: impl IntoProxied<Self>) -> bool {
+                fn map_insert(mut map: MapMut<$key_t, Self>, key: View<'_, $key_t>, value: impl IntoProxied<Self>) -> bool {
                     let arena = map.raw_arena(Private);
                     unsafe {
                         upb_Map_InsertAndReturnIfInserted(
@@ -741,7 +741,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     }
                 }
 
-                fn map_get<'a>(map: View<'a, Map<$key_t, Self>>, key: View<'_, $key_t>) -> Option<View<'a, Self>> {
+                fn map_get<'a>(map: MapView<'a, $key_t, Self>, key: View<'_, $key_t>) -> Option<View<'a, Self>> {
                     let mut val = MaybeUninit::uninit();
                     let found = unsafe {
                         upb_Map_Get(map.as_raw(Private), <$key_t as UpbTypeConversions>::to_message_value(key),
@@ -753,7 +753,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     Some(unsafe { <$t as UpbTypeConversions>::from_message_value(val.assume_init()) })
                 }
 
-                fn map_remove(mut map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>) -> bool {
+                fn map_remove(mut map: MapMut<$key_t, Self>, key: View<'_, $key_t>) -> bool {
                     unsafe {
                         upb_Map_Delete(map.as_raw(Private),
                             <$key_t as UpbTypeConversions>::to_message_value(key),
@@ -761,7 +761,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     }
                 }
 
-                fn map_iter(map: View<'_, Map<$key_t, Self>>) -> MapIter<'_, $key_t, Self> {
+                fn map_iter(map: MapView<$key_t, Self>) -> MapIter<$key_t, Self> {
                     // SAFETY: View<Map<'_,..>> guarantees its RawMap outlives '_.
                     unsafe {
                         MapIter::from_raw(Private, RawMapIter::new(map.as_raw(Private)))

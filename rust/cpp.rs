@@ -10,7 +10,7 @@
 use crate::__internal::{Enum, Private};
 use crate::{
     IntoProxied, Map, MapIter, Mut, ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue,
-    ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
+    ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View, MapMut, MapView,
 };
 use paste::paste;
 use std::fmt;
@@ -906,21 +906,21 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                 }
 
 
-                fn map_clear(mut map: Mut<'_, Map<$key_t, Self>>) {
+                fn map_clear(mut map: MapMut<$key_t, Self>) {
                     unsafe { [< proto2_rust_thunk_Map_ $key_t _ $t _clear >](map.as_raw(Private)); }
                 }
 
-                fn map_len(map: View<'_, Map<$key_t, Self>>) -> usize {
+                fn map_len(map: MapView<$key_t, Self>) -> usize {
                     unsafe { [< proto2_rust_thunk_Map_ $key_t _ $t _size >](map.as_raw(Private)) }
                 }
 
-                fn map_insert(mut map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>, value: impl IntoProxied<Self>) -> bool {
+                fn map_insert(mut map: MapMut<$key_t, Self>, key: View<'_, $key_t>, value: impl IntoProxied<Self>) -> bool {
                     let ffi_key = $to_ffi_key(key);
                     let ffi_value = $to_ffi_value(value.into_proxied(Private));
                     unsafe { [< proto2_rust_thunk_Map_ $key_t _ $t _insert >](map.as_raw(Private), ffi_key, ffi_value) }
                 }
 
-                fn map_get<'a>(map: View<'a, Map<$key_t, Self>>, key: View<'_, $key_t>) -> Option<View<'a, Self>> {
+                fn map_get<'a>(map: MapView<'a, $key_t, Self>, key: View<'_, $key_t>) -> Option<View<'a, Self>> {
                     let ffi_key = $to_ffi_key(key);
                     let mut ffi_value = MaybeUninit::uninit();
                     let found = unsafe { [< proto2_rust_thunk_Map_ $key_t _ $t _get >](map.as_raw(Private), ffi_key, ffi_value.as_mut_ptr()) };
@@ -932,13 +932,13 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     Some($from_ffi_value(unsafe { ffi_value.assume_init() }))
                 }
 
-                fn map_remove(mut map: Mut<'_, Map<$key_t, Self>>, key: View<'_, $key_t>) -> bool {
+                fn map_remove(mut map: MapMut<$key_t, Self>, key: View<'_, $key_t>) -> bool {
                     let ffi_key = $to_ffi_key(key);
                     let mut ffi_value = MaybeUninit::uninit();
                     unsafe { [< proto2_rust_thunk_Map_ $key_t _ $t _remove >](map.as_raw(Private), ffi_key, ffi_value.as_mut_ptr()) }
                 }
 
-                fn map_iter(map: View<'_, Map<$key_t, Self>>) -> MapIter<'_, $key_t, Self> {
+                fn map_iter(map: MapView<$key_t, Self>) -> MapIter<$key_t, Self> {
                     // SAFETY:
                     // - The backing map for `map.as_raw` is valid for at least '_.
                     // - A View that is live for '_ guarantees the backing map is unmodified for '_.
