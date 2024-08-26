@@ -16,10 +16,6 @@ using hpb::internal::GetInternalMsg;
 using hpb::internal::PrivateAccess;
 using hpb::internal::Serialize;
 using hpb::internal::SetExtension;
-template <typename T>
-typename T::CProxy CreateMessage(const upb_Message* msg, upb_Arena* arena) {
-  return hpb::interop::upb::MakeCHandle<T>(msg, arena);
-}
 }  // namespace internal
 using hpb::Serialize;
 
