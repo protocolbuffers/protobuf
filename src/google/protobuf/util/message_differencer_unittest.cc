@@ -1594,6 +1594,178 @@ TEST(MessageDifferencerTest, RepeatedFieldSmartListTest) {
       diff_report);
 }
 
+TEST(MessageDifferencerTest, RepeatedFieldSmartSetNewTest) {
+  // Create the testing protos
+  protobuf_unittest::TestDiffMessage msg1;
+  protobuf_unittest::TestDiffMessage msg2;
+
+  msg1.add_rw("a");
+  msg1.add_rw("d");
+  msg1.add_rw("f");
+  msg1.add_rw("g");
+  msg1.add_rw("h");
+  msg1.add_rw("i");
+  msg1.add_rw("j");
+  msg1.add_rw("l");
+
+  msg2.add_rw("b");
+  msg2.add_rw("c");
+  msg2.add_rw("d");
+  msg2.add_rw("e");
+  msg2.add_rw("f");
+  msg2.add_rw("h");
+  msg2.add_rw("i");
+  msg2.add_rw("k");
+  msg2.add_rw("l");
+
+  // Compare
+  // 1: a,    d,    f, g, h, i, j, l
+  // 2: b, c, d, e, f,    h, i, k, l
+  std::string diff_report;
+  util::MessageDifferencer differencer;
+  differencer.ReportDifferencesToString(&diff_report);
+  differencer.set_repeated_field_comparison(
+      util::MessageDifferencer::AS_SMART_SET);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ(
+      "modified: rw[0]: \"a\" -> \"b\"\n"
+      "added: rw[1]: \"c\"\n"
+      "moved: rw[1] -> rw[2] : \"d\"\n"
+      "added: rw[3]: \"e\"\n"
+      "moved: rw[2] -> rw[4] : \"f\"\n"
+      "deleted: rw[3]: \"g\"\n"
+      "moved: rw[4] -> rw[5] : \"h\"\n"
+      "moved: rw[5] -> rw[6] : \"i\"\n"
+      "modified: rw[6] -> rw[7]: \"j\" -> \"k\"\n"
+      "moved: rw[7] -> rw[8] : \"l\"\n",
+      diff_report);
+
+  // Compare two sub messages
+  msg1.Clear();
+  msg2.Clear();
+  msg1.add_rm()->set_w("a");
+  msg1.add_rm()->set_w("d");
+  msg1.add_rm()->set_w("f");
+  msg1.add_rm()->set_w("g");
+  msg1.add_rm()->set_w("h");
+  msg1.add_rm()->set_w("i");
+  msg1.add_rm()->set_w("j");
+  msg1.add_rm()->set_w("l");
+
+  msg2.add_rm()->set_w("b");
+  msg2.add_rm()->set_w("c");
+  msg2.add_rm()->set_w("d");
+  msg2.add_rm()->set_w("e");
+  msg2.add_rm()->set_w("f");
+  msg2.add_rm()->set_w("h");
+  msg2.add_rm()->set_w("i");
+  msg2.add_rm()->set_w("k");
+  msg2.add_rm()->set_w("l");
+
+  differencer.ReportDifferencesToString(&diff_report);
+  differencer.set_repeated_field_comparison(
+      util::MessageDifferencer::AS_SMART_SET);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ(
+      "modified: rm[0].w: \"a\" -> \"b\"\n"
+      "added: rm[1]: { w: \"c\" }\n"
+      "moved: rm[1] -> rm[2] : { w: \"d\" }\n"
+      "added: rm[3]: { w: \"e\" }\n"
+      "moved: rm[2] -> rm[4] : { w: \"f\" }\n"
+      "deleted: rm[3]: { w: \"g\" }\n"
+      "moved: rm[4] -> rm[5] : { w: \"h\" }\n"
+      "moved: rm[5] -> rm[6] : { w: \"i\" }\n"
+      "modified: rm[6].w -> rm[7].w: \"j\" -> \"k\"\n"
+      "moved: rm[7] -> rm[8] : { w: \"l\" }\n",
+      diff_report);
+}
+
+TEST(MessageDifferencerTest, RepeatedFieldSmartListNewTest) {
+  // Create the testing protos
+  protobuf_unittest::TestDiffMessage msg1;
+  protobuf_unittest::TestDiffMessage msg2;
+
+  msg1.add_rw("a");
+  msg1.add_rw("d");
+  msg1.add_rw("f");
+  msg1.add_rw("g");
+  msg1.add_rw("h");
+  msg1.add_rw("i");
+  msg1.add_rw("j");
+  msg1.add_rw("l");
+
+  msg2.add_rw("b");
+  msg2.add_rw("c");
+  msg2.add_rw("d");
+  msg2.add_rw("e");
+  msg2.add_rw("f");
+  msg2.add_rw("h");
+  msg2.add_rw("i");
+  msg2.add_rw("k");
+  msg2.add_rw("l");
+
+  // Compare
+  // 1: a,    d,    f, g, h, i, j, l
+  // 2: b, c, d, e, f,    h, i, k, l
+  std::string diff_report;
+  util::MessageDifferencer differencer;
+  differencer.ReportDifferencesToString(&diff_report);
+  differencer.set_repeated_field_comparison(
+      util::MessageDifferencer::AS_SMART_LIST);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ(
+      "modified: rw[0]: \"a\" -> \"b\"\n"
+      "added: rw[1]: \"c\"\n"
+      "moved: rw[1] -> rw[2] : \"d\"\n"
+      "added: rw[3]: \"e\"\n"
+      "moved: rw[2] -> rw[4] : \"f\"\n"
+      "deleted: rw[3]: \"g\"\n"
+      "moved: rw[4] -> rw[5] : \"h\"\n"
+      "moved: rw[5] -> rw[6] : \"i\"\n"
+      "modified: rw[6] -> rw[7]: \"j\" -> \"k\"\n"
+      "moved: rw[7] -> rw[8] : \"l\"\n",
+      diff_report);
+
+  // Compare two sub messages
+  msg1.Clear();
+  msg2.Clear();
+  msg1.add_rm()->set_w("a");
+  msg1.add_rm()->set_w("d");
+  msg1.add_rm()->set_w("f");
+  msg1.add_rm()->set_w("g");
+  msg1.add_rm()->set_w("h");
+  msg1.add_rm()->set_w("i");
+  msg1.add_rm()->set_w("j");
+  msg1.add_rm()->set_w("l");
+
+  msg2.add_rm()->set_w("b");
+  msg2.add_rm()->set_w("c");
+  msg2.add_rm()->set_w("d");
+  msg2.add_rm()->set_w("e");
+  msg2.add_rm()->set_w("f");
+  msg2.add_rm()->set_w("h");
+  msg2.add_rm()->set_w("i");
+  msg2.add_rm()->set_w("k");
+  msg2.add_rm()->set_w("l");
+
+  differencer.ReportDifferencesToString(&diff_report);
+  differencer.set_repeated_field_comparison(
+      util::MessageDifferencer::AS_SMART_LIST);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ(
+      "modified: rm[0].w: \"a\" -> \"b\"\n"
+      "added: rm[1]: { w: \"c\" }\n"
+      "moved: rm[1] -> rm[2] : { w: \"d\" }\n"
+      "added: rm[3]: { w: \"e\" }\n"
+      "moved: rm[2] -> rm[4] : { w: \"f\" }\n"
+      "deleted: rm[3]: { w: \"g\" }\n"
+      "moved: rm[4] -> rm[5] : { w: \"h\" }\n"
+      "moved: rm[5] -> rm[6] : { w: \"i\" }\n"
+      "modified: rm[6].w -> rm[7].w: \"j\" -> \"k\"\n"
+      "moved: rm[7] -> rm[8] : { w: \"l\" }\n",
+      diff_report);
+}
+
 TEST(MessageDifferencerTest, RepeatedFieldSmartSetTest) {
   // Create the testing protos
   protobuf_unittest::TestDiffMessage msg1;
