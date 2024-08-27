@@ -3449,11 +3449,12 @@ BinaryAndJsonConformanceSuiteImpl<MessageType>::GetFieldForOneofType(
 template <typename MessageType>
 std::string BinaryAndJsonConformanceSuiteImpl<MessageType>::SyntaxIdentifier()
     const {
-  if (std::is_same<MessageType, TestAllTypesProto2>::value) {
+  if constexpr (std::is_same<MessageType, TestAllTypesProto2>::value) {
     return "Proto2";
-  } else if (std::is_same<MessageType, TestAllTypesProto3>::value) {
+  } else if constexpr (std::is_same<MessageType, TestAllTypesProto3>::value) {
     return "Proto3";
-  } else if (std::is_same<MessageType, TestAllTypesProto2Editions>::value) {
+  } else if constexpr (std::is_same<MessageType,
+                                    TestAllTypesProto2Editions>::value) {
     return "Editions_Proto2";
   } else {
     return "Editions_Proto3";

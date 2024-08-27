@@ -21,6 +21,7 @@ COPTS = select({
         "-Woverloaded-virtual",
         "-Wno-sign-compare",
         "-Wno-nonnull",
+        "-Werror",
     ],
 })
 
