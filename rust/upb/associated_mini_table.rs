@@ -25,11 +25,12 @@ use super::upb_MiniTable;
 /// an extern "C" we cannot do that without the unstable `const_refs_to_static`.
 /// After that feature is stabilized (or if we move the MiniTable generation to
 /// .rs) this will be switched.
-pub trait AssociatedMiniTable {
-    /// SAFETY:
-    /// - The MiniTable pointer must be from Protobuf code generation and follow
-    ///   the corresponding invariants associated with upb's C API (the pointer
-    ///   should always have the same non-null value, the underlying pointee
-    ///   should never be modified and should have 'static lifetime).
-    unsafe fn mini_table() -> *const upb_MiniTable;
+///
+/// SAFETY:
+/// - The MiniTable pointer must be from Protobuf code generation and follow the
+///   corresponding invariants associated with upb's C API (the pointer should
+///   always have the same non-null value, the underlying pointee should never
+///   be modified and should have 'static lifetime).
+pub unsafe trait AssociatedMiniTable {
+    fn mini_table() -> *const upb_MiniTable;
 }

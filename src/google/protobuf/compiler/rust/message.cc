@@ -299,23 +299,23 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
 void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg) {
   if (ctx.opts().kernel == Kernel::kUpb) {
     ctx.Emit({{"minitable", UpbMiniTableName(msg)}}, R"rs(
-      impl $pbr$::AssociatedMiniTable for $Msg$ {
+      unsafe impl $pbr$::AssociatedMiniTable for $Msg$ {
         #[inline(always)]
-        unsafe fn mini_table() -> *const $pbr$::upb_MiniTable {
+        fn mini_table() -> *const $pbr$::upb_MiniTable {
           $std$::ptr::addr_of!($minitable$)
         }
       }
 
-      impl $pbr$::AssociatedMiniTable for $Msg$View<'_> {
+      unsafe impl $pbr$::AssociatedMiniTable for $Msg$View<'_> {
         #[inline(always)]
-        unsafe fn mini_table() -> *const $pbr$::upb_MiniTable {
+        fn mini_table() -> *const $pbr$::upb_MiniTable {
           $std$::ptr::addr_of!($minitable$)
         }
       }
 
-      impl $pbr$::AssociatedMiniTable for $Msg$Mut<'_> {
+      unsafe impl $pbr$::AssociatedMiniTable for $Msg$Mut<'_> {
         #[inline(always)]
-        unsafe fn mini_table() -> *const $pbr$::upb_MiniTable {
+        fn mini_table() -> *const $pbr$::upb_MiniTable {
           $std$::ptr::addr_of!($minitable$)
         }
       }
