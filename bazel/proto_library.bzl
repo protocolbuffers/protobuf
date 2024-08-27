@@ -9,7 +9,7 @@ Macro of proto_library rule.
 """
 
 load("@proto_bazel_features//:features.bzl", "bazel_features")
-load("//bazel/private:proto_library_rule.bzl", _proto_library = "proto_library")
+load("//bazel/private:bazel_proto_library_rule.bzl", _proto_library = "proto_library")
 
 def proto_library(**kwattrs):
     # This condition causes Starlark rules to be used only on Bazel >=7.0.0
