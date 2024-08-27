@@ -16,6 +16,9 @@
 #ifndef _WIN32
 #include <errno.h>
 #include <signal.h>
+#ifdef __QNX__
+#define FD_SETSIZE 1000
+#endif
 #include <sys/select.h>
 #include <sys/wait.h>
 #endif

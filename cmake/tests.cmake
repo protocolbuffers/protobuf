@@ -115,6 +115,9 @@ target_link_libraries(tests
   ${protobuf_ABSL_USED_TEST_TARGETS}
   GTest::gmock_main
 )
+if(QNX)
+  target_link_libraries(tests socket)
+endif()
 
 add_executable(fake_plugin ${fake_plugin_files} ${common_test_files})
 target_include_directories(fake_plugin PRIVATE ${ABSL_ROOT_DIR})
