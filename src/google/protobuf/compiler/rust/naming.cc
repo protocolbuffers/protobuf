@@ -16,6 +16,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
@@ -211,6 +212,39 @@ std::string RsTypePath(Context& ctx, const FieldDescriptor& field) {
       return GetFullyQualifiedPath(ctx, *field.enum_type());
   }
   ABSL_LOG(FATAL) << "Unsupported field type: " << field.type_name();
+  return "";
+}
+
+std::string RsViewType(Context& ctx, const FieldDescriptor& field,
+                       absl::string_view lifetime) {
+  switch (GetRustFieldType(field)) {
+    case RustFieldType::BOOL:
+    case RustFieldType::INT32:
+    case RustFieldType::INT64:
+    case RustFieldType::UINT32:
+    case RustFieldType::UINT64:
+    case RustFieldType::FLOAT:
+    case RustFieldType::DOUBLE:
+    case RustFieldType::ENUM:
+      // The View type of all scalars and enums can be spelled as the type
+      // itself.
+      return RsTypePath(ctx, field);
+    case RustFieldType::BYTES:
+      return absl::StrFormat("&%s [u8]", lifetime);
+    case RustFieldType::STRING:
+      return absl::StrFormat("&%s ::__pb::ProtoStr", lifetime);
+    case RustFieldType::MESSAGE:
+      if (lifetime.empty()) {
+        return absl::StrFormat(
+            "%sView", GetFullyQualifiedPath(ctx, *field.message_type()));
+      } else {
+        return absl::StrFormat(
+            "%sView<%s>", GetFullyQualifiedPath(ctx, *field.message_type()),
+            lifetime);
+      }
+  }
+  ABSL_LOG(FATAL) << "Unsupported field type: " << field.type_name();
+  return "";
 }
 
 std::string RustModuleForContainingType(Context& ctx,

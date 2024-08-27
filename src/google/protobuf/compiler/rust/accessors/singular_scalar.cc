@@ -13,6 +13,7 @@
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 #include "google/protobuf/compiler/rust/accessors/default_value.h"
 #include "google/protobuf/compiler/rust/accessors/generator.h"
+#include "google/protobuf/compiler/rust/accessors/with_presence.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/compiler/rust/upb_helpers.h"
@@ -58,6 +59,10 @@ std::string UpbCTypeNameForFunctions(const FieldDescriptor& field) {
 
 void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                                AccessorCase accessor_case) const {
+  if (field.has_presence()) {
+    WithPresenceAccessorsInMsgImpl(ctx, field, accessor_case);
+  }
+
   std::string field_name = FieldNameWithCollisionAvoidance(field);
 
   ctx.Emit(
@@ -100,19 +105,6 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   )rs");
              }
            }},
-          {"getter_opt",
-           [&] {
-             if (!field.has_presence()) return;
-             ctx.Emit(R"rs(
-                  pub fn $raw_field_name$_opt($view_self$) -> $pb$::Optional<$Scalar$> {
-                    if self.has_$raw_field_name$() {
-                      $pb$::Optional::Set(self.$field$())
-                    } else {
-                      $pb$::Optional::Unset($default_value$)
-                    }
-                  }
-                  )rs");
-           }},
           {"setter",
            [&] {
              if (accessor_case == AccessorCase::VIEW) return;
@@ -140,64 +132,23 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 )rs");
              }
            }},
-          {"hazzer",
-           [&] {
-             if (!field.has_presence()) return;
-             if (ctx.is_cpp()) {
-               ctx.Emit(R"rs(
-                  pub fn has_$raw_field_name$($view_self$) -> bool {
-                    unsafe { $hazzer_thunk$(self.raw_msg()) }
-                  })rs");
-             } else {
-               ctx.Emit(R"rs(
-                  pub fn has_$raw_field_name$($view_self$) -> bool {
-                    unsafe {
-                      let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
-                      let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                          mt, $upb_mt_field_index$);
-                      $pbr$::upb_Message_HasBaseField(self.raw_msg(), f)
-                    }
-                  })rs");
-             }
-           }},
-          {"clearer",
-           [&] {
-             if (accessor_case == AccessorCase::VIEW) return;
-             if (!field.has_presence()) return;
-             if (ctx.is_cpp()) {
-               ctx.Emit(R"rs(
-                    pub fn clear_$raw_field_name$(&mut self) {
-                      unsafe { $clearer_thunk$(self.raw_msg()) }
-                    })rs");
-             } else {
-               ctx.Emit(R"rs(
-                    pub fn clear_$raw_field_name$(&mut self) {
-                      unsafe {
-                        let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
-                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                            mt, $upb_mt_field_index$);
-                        $pbr$::upb_Message_ClearBaseField(self.raw_msg(), f);
-                      }
-                    })rs");
-             }
-           }},
           {"getter_thunk", ThunkName(ctx, field, "get")},
           {"setter_thunk", ThunkName(ctx, field, "set")},
-          {"clearer_thunk", ThunkName(ctx, field, "clear")},
       },
       R"rs(
           $getter$
-          $getter_opt$
           $setter$
-          $hazzer$
-          $clearer$
         )rs");
 }
 
 void SingularScalar::InExternC(Context& ctx,
                                const FieldDescriptor& field) const {
-  // Only cpp kernel uses thunks.
+  // Only cpp kernel uses thunks for singular scalars.
   if (ctx.is_upb()) return;
+
+  if (field.has_presence()) {
+    WithPresenceAccessorsInExternC(ctx, field);
+  }
 
   // In order to soundly pass a Rust type to C/C++ as a function argument,
   // the types must be FFI-compatible.
@@ -207,21 +158,9 @@ void SingularScalar::InExternC(Context& ctx,
   // Upb defines enum thunks as taking `int32_t`, and so we can pass Rust enums
   // directly to thunks without any cast.
   ctx.Emit({{"Scalar", RsTypePath(ctx, field)},
-            {"hazzer_thunk", ThunkName(ctx, field, "has")},
             {"getter_thunk", ThunkName(ctx, field, "get")},
-            {"setter_thunk", ThunkName(ctx, field, "set")},
-            {"clearer_thunk", ThunkName(ctx, field, "clear")},
-            {"with_presence_fields_thunks",
-             [&] {
-               if (field.has_presence()) {
-                 ctx.Emit(R"rs(
-                  fn $hazzer_thunk$(raw_msg: $pbr$::RawMessage) -> bool;
-                  fn $clearer_thunk$(raw_msg: $pbr$::RawMessage);
-                )rs");
-               }
-             }}},
+            {"setter_thunk", ThunkName(ctx, field, "set")}},
            R"rs(
-          $with_presence_fields_thunks$
           fn $getter_thunk$(raw_msg: $pbr$::RawMessage) -> $Scalar$;
           fn $setter_thunk$(raw_msg: $pbr$::RawMessage, val: $Scalar$);
         )rs");
@@ -229,6 +168,10 @@ void SingularScalar::InExternC(Context& ctx,
 
 void SingularScalar::InThunkCc(Context& ctx,
                                const FieldDescriptor& field) const {
+  if (field.has_presence()) {
+    WithPresenceAccessorsInThunkCc(ctx, field);
+  }
+
   std::string scalar;
   auto enum_ = field.enum_type();
   if (enum_ != nullptr) {
@@ -245,23 +188,12 @@ void SingularScalar::InThunkCc(Context& ctx,
   ctx.Emit({{"field", cpp::FieldName(&field)},
             {"Scalar", scalar},
             {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
-            {"hazzer_thunk", ThunkName(ctx, field, "has")},
             {"getter_thunk", ThunkName(ctx, field, "get")},
-            {"setter_thunk", ThunkName(ctx, field, "set")},
-            {"clearer_thunk", ThunkName(ctx, field, "clear")},
-            {"with_presence_fields_thunks",
-             [&] {
-               if (!field.has_presence()) return;
-               ctx.Emit(R"cc(
-                 bool $hazzer_thunk$($QualifiedMsg$* msg) {
-                   return msg->has_$field$();
-                 }
-                 void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
-               )cc");
-             }}},
+            {"setter_thunk", ThunkName(ctx, field, "set")}},
            R"cc(
-             $with_presence_fields_thunks$;
-             $Scalar$ $getter_thunk$($QualifiedMsg$* msg) { return msg->$field$(); }
+             $Scalar$ $getter_thunk$($QualifiedMsg$* msg) {
+               return msg->$field$();
+             }
              void $setter_thunk$($QualifiedMsg$* msg, $Scalar$ val) {
                msg->set_$field$(val);
              }

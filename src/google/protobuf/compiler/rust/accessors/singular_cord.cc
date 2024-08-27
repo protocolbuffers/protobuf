@@ -11,6 +11,7 @@
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
 #include "google/protobuf/compiler/rust/accessors/generator.h"
+#include "google/protobuf/compiler/rust/accessors/with_presence.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"
@@ -22,17 +23,19 @@ namespace rust {
 
 void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                              AccessorCase accessor_case) const {
+  if (field.has_presence()) {
+    WithPresenceAccessorsInMsgImpl(ctx, field, accessor_case);
+  }
+
   std::string field_name = FieldNameWithCollisionAvoidance(field);
   bool is_string_type = field.type() == FieldDescriptor::TYPE_STRING;
   ctx.Emit(
       {{"field", RsSafeName(field_name)},
        {"raw_field_name", field_name},
-       {"hazzer_thunk", ThunkName(ctx, field, "has")},
        {"borrowed_getter_thunk", ThunkName(ctx, field, "get_cord_borrowed")},
        {"owned_getter_thunk", ThunkName(ctx, field, "get_cord_owned")},
        {"is_flat_thunk", ThunkName(ctx, field, "cord_is_flat")},
        {"setter_thunk", ThunkName(ctx, field, "set")},
-       {"clearer_thunk", ThunkName(ctx, field, "clear")},
        {"getter_thunk", ThunkName(ctx, field, "get")},
        {"proxied_type", RsTypePath(ctx, field)},
        {"borrowed_type",
@@ -159,36 +162,20 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 $setter_impl$
               }
             )rs");
-        }},
-       {"hazzer",
-        [&] {
-          if (!field.has_presence()) return;
-          ctx.Emit({}, R"rs(
-                pub fn has_$raw_field_name$($view_self$) -> bool {
-                  unsafe { $hazzer_thunk$(self.raw_msg()) }
-                })rs");
-        }},
-       {"clearer",
-        [&] {
-          if (accessor_case == AccessorCase::VIEW) return;
-          if (!field.has_presence()) return;
-          ctx.Emit({}, R"rs(
-                pub fn clear_$raw_field_name$(&mut self) {
-                  unsafe { $clearer_thunk$(self.raw_msg()) }
-                })rs");
         }}},
       R"rs(
         $getter$
         $setter$
-        $hazzer$
-        $clearer$
       )rs");
 }
 
 void SingularCord::InExternC(Context& ctx, const FieldDescriptor& field) const {
+  if (field.has_presence()) {
+    WithPresenceAccessorsInExternC(ctx, field);
+  }
+
   ctx.Emit(
-      {{"hazzer_thunk", ThunkName(ctx, field, "has")},
-       {"borrowed_getter_thunk", ThunkName(ctx, field, "get_cord_borrowed")},
+      {{"borrowed_getter_thunk", ThunkName(ctx, field, "get_cord_borrowed")},
        {"owned_getter_thunk", ThunkName(ctx, field, "get_cord_owned")},
        {"is_flat_thunk", ThunkName(ctx, field, "cord_is_flat")},
        {"getter_thunk", ThunkName(ctx, field, "get")},
@@ -205,7 +192,6 @@ void SingularCord::InExternC(Context& ctx, const FieldDescriptor& field) const {
             )rs");
           }
         }},
-       {"clearer_thunk", ThunkName(ctx, field, "clear")},
        {"getter_thunks",
         [&] {
           if (ctx.is_cpp()) {
@@ -219,47 +205,26 @@ void SingularCord::InExternC(Context& ctx, const FieldDescriptor& field) const {
              fn $getter_thunk$(raw_msg: $pbr$::RawMessage) -> $pbr$::PtrAndLen;
            )rs");
           }
-        }},
-       {"with_presence_fields_thunks",
-        [&] {
-          if (field.has_presence()) {
-            ctx.Emit(R"rs(
-                     fn $hazzer_thunk$(raw_msg: $pbr$::RawMessage) -> bool;
-                     fn $clearer_thunk$(raw_msg: $pbr$::RawMessage);
-                   )rs");
-          }
         }}},
       R"rs(
-          $with_presence_fields_thunks$
           $getter_thunks$
           $setter$
         )rs");
 }
 
 void SingularCord::InThunkCc(Context& ctx, const FieldDescriptor& field) const {
+  if (field.has_presence()) {
+    WithPresenceAccessorsInThunkCc(ctx, field);
+  }
+
   ctx.Emit(
       {{"field", cpp::FieldName(&field)},
        {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
-       {"hazzer_thunk", ThunkName(ctx, field, "has")},
        {"setter_thunk", ThunkName(ctx, field, "set")},
-       {"clearer_thunk", ThunkName(ctx, field, "clear")},
        {"borrowed_getter_thunk", ThunkName(ctx, field, "get_cord_borrowed")},
        {"owned_getter_thunk", ThunkName(ctx, field, "get_cord_owned")},
-       {"is_flat_thunk", ThunkName(ctx, field, "cord_is_flat")},
-       {"with_presence_fields_thunks",
-        [&] {
-          if (field.has_presence()) {
-            ctx.Emit(R"cc(
-              bool $hazzer_thunk$($QualifiedMsg$* msg) {
-                return msg->has_$field$();
-              }
-              void $clearer_thunk$($QualifiedMsg$* msg) { msg->clear_$field$(); }
-            )cc");
-          }
-        }}},
+       {"is_flat_thunk", ThunkName(ctx, field, "cord_is_flat")}},
       R"cc(
-        $with_presence_fields_thunks$;
-
         bool $is_flat_thunk$($QualifiedMsg$* msg) {
           const absl::Cord& cord = msg->$field$();
           return cord.TryFlat().has_value();

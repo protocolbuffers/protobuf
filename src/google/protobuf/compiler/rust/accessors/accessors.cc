@@ -65,6 +65,7 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
   }
 
   ABSL_LOG(FATAL) << "Unexpected field type: " << field.type();
+  return nullptr;
 }
 
 }  // namespace
