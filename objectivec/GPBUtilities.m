@@ -206,6 +206,14 @@ void GPBCheckRuntimeVersionSupport(int32_t objcRuntimeVersion) {
                        @" supports back to %d!",
                        objcRuntimeVersion, GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION];
   }
+#if defined(DEBUG) && DEBUG
+  if (objcRuntimeVersion < GOOGLE_PROTOBUF_OBJC_VERSION) {
+    // This is a version we haven't generated for yet.
+    NSLog(@"WARNING: Code from generated Objective-C proto from an older version of the library is "
+          @"being used. Please regenerate with the current version as the code will stop working "
+          @"in a future release.");
+  }
+#endif
 }
 
 void GPBRuntimeMatchFailure(void) {

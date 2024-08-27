@@ -1196,18 +1196,19 @@ static void MergeUnknownFieldDataIntoFieldSet(GPBMessage *self, NSData *data,
 + (GPBDescriptor *)descriptor {
   // This is thread safe because it is called from +initialize.
   static GPBDescriptor *descriptor = NULL;
-  static GPBFileDescriptor *fileDescriptor = NULL;
+  static GPBFileDescription fileDescription = {
+      .package = "internal", .prefix = "", .syntax = GPBFileSyntaxProto2};
   if (!descriptor) {
-    fileDescriptor = [[GPBFileDescriptor alloc] initWithPackage:@"internal"
-                                                         syntax:GPBFileSyntaxProto2];
-
-    descriptor = [GPBDescriptor allocDescriptorForClass:[GPBMessage class]
-                                              rootClass:Nil
-                                                   file:fileDescriptor
-                                                 fields:NULL
-                                             fieldCount:0
-                                            storageSize:0
-                                                  flags:0];
+    descriptor = [GPBDescriptor
+        allocDescriptorForClass:[GPBMessage class]
+                    messageName:@"GPBMessage"
+                fileDescription:&fileDescription
+                         fields:NULL
+                     fieldCount:0
+                    storageSize:0
+                          flags:(GPBDescriptorInitializationFlag_UsesClassRefs |
+                                 GPBDescriptorInitializationFlag_Proto3OptionalKnown |
+                                 GPBDescriptorInitializationFlag_ClosedEnumSupportKnown)];
   }
   return descriptor;
 }

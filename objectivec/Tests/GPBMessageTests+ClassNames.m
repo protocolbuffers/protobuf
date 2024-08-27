@@ -14,6 +14,9 @@
 #import "GPBMessage.h"
 #import "GPBRootObject_PackagePrivate.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 // Support classes for tests using old class name (vs classrefs) interfaces.
 GPB_FINAL @interface MessageLackingClazzRoot : GPBRootObject
 @end
@@ -106,6 +109,8 @@ typedef struct MessageLackingClazz_storage_ {
   return registry;
 }
 @end
+
+#pragma clang diagnostic pop
 
 @interface MessageClassNameTests : GPBTestCase
 @end
