@@ -10,6 +10,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -151,6 +152,13 @@ inline void Duration::SharedDtor() {
   _impl_.~Impl_();
 }
 
+inline void* Duration::PlacementNew_(const void*, void* mem,
+                                        ::google::protobuf::Arena* arena) {
+  return ::new (mem) Duration(arena);
+}
+constexpr auto Duration::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Duration));
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -161,9 +169,9 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Duration::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<Duration>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Duration>(),
-            ::google::protobuf::Message::GetNewImpl<Duration>(),
             ::google::protobuf::Message::GetClearImpl<Duration>(), &Duration::ByteSizeLong,
                 &Duration::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE

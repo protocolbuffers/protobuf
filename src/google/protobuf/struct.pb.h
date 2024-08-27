@@ -187,7 +187,7 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  ListValue* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
+  ListValue* New(::google::protobuf::Arena* arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<ListValue>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -243,6 +243,9 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -380,7 +383,7 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Struct* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
+  Struct* New(::google::protobuf::Arena* arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Struct>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -436,6 +439,9 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:
@@ -519,6 +525,9 @@ class Struct_FieldsEntry_DoNotUse final
 
 
  private:
+  friend class ::google::protobuf::MessageLite;
+  friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
+
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
       1, 2, 1,
@@ -526,8 +535,10 @@ class Struct_FieldsEntry_DoNotUse final
       _table_;
 
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
-  friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
 };
 // -------------------------------------------------------------------
 
@@ -617,7 +628,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Value* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
+  Value* New(::google::protobuf::Arena* arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Value>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -673,6 +684,9 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:

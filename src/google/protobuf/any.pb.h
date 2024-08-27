@@ -190,7 +190,7 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  Any* New(::google::protobuf::Arena* arena = nullptr) const PROTOBUF_FINAL {
+  Any* New(::google::protobuf::Arena* arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Any>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -246,6 +246,9 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
     *this = ::std::move(from);
   }
   const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
   static const ::google::protobuf::Message::ClassDataFull _class_data_;
 
  public:

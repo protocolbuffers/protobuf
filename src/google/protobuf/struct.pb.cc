@@ -10,6 +10,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -244,6 +245,13 @@ bool NullValue_IsValid(int value) {
               Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse() : SuperType() {}
               Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* arena) : SuperType(arena) {}
 #endif  // PROTOBUF_CUSTOM_VTABLE
+              inline void* Struct_FieldsEntry_DoNotUse::PlacementNew_(const void*, void* mem,
+                                                      ::google::protobuf::Arena* arena) {
+                return ::new (mem) Struct_FieldsEntry_DoNotUse(arena);
+              }
+              constexpr auto Struct_FieldsEntry_DoNotUse::InternalNewImpl_() {
+                return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Struct_FieldsEntry_DoNotUse));
+              }
               PROTOBUF_CONSTINIT
               PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
               const ::google::protobuf::MessageLite::ClassDataFull
@@ -254,9 +262,9 @@ bool NullValue_IsValid(int value) {
                           nullptr,  // OnDemandRegisterArenaDtor
                           nullptr,  // IsInitialized
                           &Struct_FieldsEntry_DoNotUse::MergeImpl,
+                          ::google::protobuf::Message::GetNewImpl<Struct_FieldsEntry_DoNotUse>(),
               #if defined(PROTOBUF_CUSTOM_VTABLE)
                           ::google::protobuf::Message::GetDeleteImpl<Struct_FieldsEntry_DoNotUse>(),
-                          ::google::protobuf::Message::GetNewImpl<Struct_FieldsEntry_DoNotUse>(),
                           ::google::protobuf::Message::ClearImpl, ::google::protobuf::Message::ByteSizeLongImpl,
                               ::google::protobuf::Message::_InternalSerializeImpl,
               #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -371,6 +379,28 @@ inline void Struct::SharedDtor() {
   _impl_.~Impl_();
 }
 
+inline void* Struct::PlacementNew_(const void*, void* mem,
+                                        ::google::protobuf::Arena* arena) {
+  return ::new (mem) Struct(arena);
+}
+constexpr auto Struct::InternalNewImpl_() {
+  constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      PROTOBUF_FIELD_OFFSET(Struct, _impl_.fields_) +
+          decltype(Struct::_impl_.fields_)::
+              InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+      PROTOBUF_FIELD_OFFSET(Struct, _impl_.fields_) +
+          decltype(Struct::_impl_.fields_)::
+              InternalGetArenaOffsetAlt(
+                  ::google::protobuf::Message::internal_visibility()),
+  });
+  if (arena_bits.has_value()) {
+    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Struct), *arena_bits);
+  } else {
+    return ::google::protobuf::internal::MessageCreator(&Struct::PlacementNew_,
+                                 sizeof(Struct));
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -381,9 +411,9 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Struct::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<Struct>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Struct>(),
-            ::google::protobuf::Message::GetNewImpl<Struct>(),
             ::google::protobuf::Message::GetClearImpl<Struct>(), &Struct::ByteSizeLong,
                 &Struct::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -430,7 +460,7 @@ const ::_pbi::TcParseTable<0, 1, 2, 37, 2> Struct::_table_ = {
         decltype(Struct()._impl_.fields_)>(
         1, 0, 0, 9,
         11)},
-    {::_pbi::TcParser::CreateInArenaStorageCb<::google::protobuf::Value>},
+    {::_pbi::TcParser::GetTable<::google::protobuf::Value>()},
   }}, {{
     "\26\6\0\0\0\0\0\0"
     "google.protobuf.Struct"
@@ -715,6 +745,13 @@ void Value::clear_kind() {
 }
 
 
+inline void* Value::PlacementNew_(const void*, void* mem,
+                                        ::google::protobuf::Arena* arena) {
+  return ::new (mem) Value(arena);
+}
+constexpr auto Value::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Value));
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -725,9 +762,9 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &Value::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<Value>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Value>(),
-            ::google::protobuf::Message::GetNewImpl<Value>(),
             ::google::protobuf::Message::GetClearImpl<Value>(), &Value::ByteSizeLong,
                 &Value::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1065,6 +1102,24 @@ inline void ListValue::SharedDtor() {
   _impl_.~Impl_();
 }
 
+inline void* ListValue::PlacementNew_(const void*, void* mem,
+                                        ::google::protobuf::Arena* arena) {
+  return ::new (mem) ListValue(arena);
+}
+constexpr auto ListValue::InternalNewImpl_() {
+  constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      PROTOBUF_FIELD_OFFSET(ListValue, _impl_.values_) +
+          decltype(ListValue::_impl_.values_)::
+              InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+  });
+  if (arena_bits.has_value()) {
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(ListValue), *arena_bits);
+  } else {
+    return ::google::protobuf::internal::MessageCreator(&ListValue::PlacementNew_,
+                                 sizeof(ListValue));
+  }
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -1075,9 +1130,9 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &ListValue::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<ListValue>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<ListValue>(),
-            ::google::protobuf::Message::GetNewImpl<ListValue>(),
             ::google::protobuf::Message::GetClearImpl<ListValue>(), &ListValue::ByteSizeLong,
                 &ListValue::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
