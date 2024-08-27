@@ -28,7 +28,6 @@
 #include <iterator>
 #include <limits>
 #include <memory>
-#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -36,7 +35,6 @@
 #include "absl/base/dynamic_annotations.h"
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
-#include "absl/log/absl_log.h"
 #include "absl/meta/type_traits.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/arena.h"
@@ -79,7 +77,7 @@ constexpr int RepeatedFieldLowerClampLimit() {
 // overflows when multiplied by 2 (which is undefined behavior). Sizes above
 // this will clamp to the maximum int value instead of following exponential
 // growth when growing a repeated field.
-constexpr int kRepeatedFieldUpperClampLimit =
+inline constexpr int kRepeatedFieldUpperClampLimit =
     (std::numeric_limits<int>::max() / 2) + 1;
 
 template <typename Element>
