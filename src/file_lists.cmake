@@ -399,6 +399,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/singular_scalar.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/singular_string.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/unsupported_field.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/with_presence.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/context.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/crate_mapping.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/enum.cc
@@ -528,6 +529,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/accessors.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/default_value.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/generator.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/accessors/with_presence.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/context.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/crate_mapping.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/rust/enum.h
