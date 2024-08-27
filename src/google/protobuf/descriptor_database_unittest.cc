@@ -18,7 +18,6 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/test_textproto.h"
