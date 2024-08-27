@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google Inc.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+#
 """A Starlark implementation of the proto_toolchain rule."""
 
 load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
