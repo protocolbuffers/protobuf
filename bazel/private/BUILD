@@ -1,14 +1,5 @@
-# Copyright (c) 2009-2021, Google LLC
-# All rights reserved.
-#
-# Use of this source code is governed by a BSD-style
-# license that can be found in the LICENSE file or at
-# https://developers.google.com/open-source/licenses/bsd
-
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("//bazel/private:native_bool_flag.bzl", "native_bool_flag")
-
-licenses(["notice"])
 
 toolchain_type(
     name = "proto_toolchain_type",
@@ -45,9 +36,24 @@ bzl_library(
     ],
     visibility = ["//bazel:__subpackages__"],
     deps = [
-        ":toolchain_helpers_bzl",
         "//bazel/common:proto_common_bzl",
         "//bazel/common:proto_lang_toolchain_info_bzl",
+        "//bazel/private:toolchain_helpers_bzl",
+    ],
+)
+
+bzl_library(
+    name = "proto_lang_toolchain_rule_bzl",
+    srcs = [
+        "proto_lang_toolchain_rule.bzl",
+    ],
+    visibility = ["//bazel:__subpackages__"],
+    deps = [
+        ":toolchain_helpers_bzl",
+        "//bazel/common:proto_common_bzl",
+        "//bazel/common:proto_info_bzl",
+        "//bazel/common:proto_lang_toolchain_info_bzl",
+        "@proto_bazel_features//:features",
     ],
 )
 
@@ -67,7 +73,7 @@ native_bool_flag(
     name = "experimental_proto_descriptor_sets_include_source_info",
     flag = "experimental_proto_descriptor_sets_include_source_info",
     match_value = "true",
-    visibility = ["//visibility:public"],
+    visibility = ["//bazel:__subpackages__"],
 )
 
 native_bool_flag(
@@ -75,7 +81,7 @@ native_bool_flag(
     flag = "strict_proto_deps",
     match_value = "off",
     result = False,
-    visibility = ["//visibility:public"],
+    visibility = ["//bazel:__subpackages__"],
 )
 
 native_bool_flag(
@@ -83,5 +89,5 @@ native_bool_flag(
     flag = "strict_public_imports",
     match_value = "off",
     result = False,
-    visibility = ["//visibility:public"],
+    visibility = ["//bazel:__subpackages__"],
 )
