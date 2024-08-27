@@ -7,13 +7,16 @@
 
 #include <string>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
+#include "google/protobuf/compiler/rust/accessors/default_value.h"
 #include "google/protobuf/compiler/rust/accessors/generator.h"
 #include "google/protobuf/compiler/rust/accessors/with_presence.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
+#include "google/protobuf/compiler/rust/upb_helpers.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -38,6 +41,8 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
        {"setter_thunk", ThunkName(ctx, field, "set")},
        {"getter_thunk", ThunkName(ctx, field, "get")},
        {"proxied_type", RsTypePath(ctx, field)},
+       {"default_value", DefaultValue(ctx, field)},
+       {"upb_mt_field_index", UpbMiniTableFieldIndex(field)},
        {"borrowed_type",
         [&] {
           if (is_string_type) {
@@ -52,13 +57,13 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
             ctx.Emit(R"rs(
                 $pb$::ProtoStringCow::Borrowed(
                   // SAFETY: The runtime doesn't require ProtoStr to be UTF-8.
-                  unsafe { $pb$::ProtoStr::from_utf8_unchecked(view) }
+                  unsafe { $pb$::ProtoStr::from_utf8_unchecked(view.as_ref()) }
                 )
               )rs");
           } else {
             ctx.Emit(R"rs(
                 $pb$::ProtoBytesCow::Borrowed(
-                  view
+                  unsafe { view.as_ref() }
                 )
                )rs");
           }
@@ -95,7 +100,7 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
             ctx.Emit(R"rs(
                   let cord_is_flat = unsafe { $is_flat_thunk$(self.raw_msg()) };
                   if cord_is_flat {
-                    let view = unsafe { $borrowed_getter_thunk$(self.raw_msg()).as_ref() };
+                    let view = unsafe { $borrowed_getter_thunk$(self.raw_msg()) };
                     return $transform_borrowed$;
                   }
 
@@ -106,7 +111,13 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 )rs");
           } else {
             ctx.Emit(R"rs(
-                let view = unsafe { $getter_thunk$(self.raw_msg()).as_ref() };
+                let view = unsafe {
+                  let f = $pbr$::upb_MiniTable_GetFieldByIndex(
+                      <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                      $upb_mt_field_index$);
+                  $pbr$::upb_Message_GetString(
+                      self.raw_msg(), f, ($default_value$).into())
+                };
                 $transform_borrowed$
               )rs");
           }
@@ -145,10 +156,13 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
               parent_arena.fuse(&arena);
 
               unsafe {
-                $setter_thunk$(
+                let f = $pbr$::upb_MiniTable_GetFieldByIndex(
+                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                          $upb_mt_field_index$);
+                $pbr$::upb_Message_SetBaseFieldString(
                   self.as_mutator_message_ref($pbi$::Private).msg(),
-                  view
-                );
+                  f,
+                  view);
               }
             )rs");
           }
@@ -170,6 +184,8 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
 }
 
 void SingularCord::InExternC(Context& ctx, const FieldDescriptor& field) const {
+  if (ctx.is_upb()) return;
+
   if (field.has_presence()) {
     WithPresenceAccessorsInExternC(ctx, field);
   }
@@ -213,6 +229,8 @@ void SingularCord::InExternC(Context& ctx, const FieldDescriptor& field) const {
 }
 
 void SingularCord::InThunkCc(Context& ctx, const FieldDescriptor& field) const {
+  ABSL_CHECK(ctx.is_cpp());
+
   if (field.has_presence()) {
     WithPresenceAccessorsInThunkCc(ctx, field);
   }

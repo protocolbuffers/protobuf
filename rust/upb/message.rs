@@ -6,7 +6,9 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use super::opaque_pointee::opaque_pointee;
-use super::{upb_ExtensionRegistry, upb_MiniTable, upb_MiniTableField, RawArena, StringView};
+use super::{
+    upb_ExtensionRegistry, upb_MiniTable, upb_MiniTableField, RawArena, RawArray, StringView,
+};
 use std::ptr::NonNull;
 
 opaque_pointee!(upb_Message);
@@ -120,6 +122,11 @@ extern "C" {
         default_val: StringView,
     ) -> StringView;
 
+    /// Gets the const upb_Message* that is assigned to the field.
+    ///
+    /// This may return None which must be treated the same as if it returned
+    /// Some of a valid RawMessage that is was the default message instance.
+    ///
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a message-typed field associated with `m`
@@ -128,6 +135,11 @@ extern "C" {
         f: *const upb_MiniTableField,
     ) -> Option<RawMessage>;
 
+    /// Gets or creates a mutable upb_Message* assigned to the corresponding
+    /// field in the message.
+    ///
+    /// This will only return None if the Arena allocation fails.
+    ///
     /// # Safety
     /// - All arguments must be valid to deref
     /// - `mini_table` must be the MiniTable associated with `m`
@@ -138,6 +150,30 @@ extern "C" {
         f: *const upb_MiniTableField,
         arena: RawArena,
     ) -> Option<RawMessage>;
+
+    /// Gets the const upb_Array* that is assigned to the field.
+    ///
+    /// This may return None which must be treated the same as if it returned
+    /// Some of a valid RawArray that is empty.
+    ///
+    /// # Safety
+    /// - `m` and `f` must be valid to deref
+    /// - `f` must be a repeated field associated with `m`
+    pub fn upb_Message_GetArray(m: RawMessage, f: *const upb_MiniTableField) -> Option<RawArray>;
+
+    /// Gets or creates a mutable upb_Array* assigned to the corresponding field
+    /// in the message.
+    ///
+    /// This will only return None if the Arena allocation fails.
+    ///
+    /// # Safety
+    /// - `m` and `f` must be valid to deref
+    /// - `f` must be a repeated field associated with `m`
+    pub fn upb_Message_GetOrCreateMutableArray(
+        m: RawMessage,
+        f: *const upb_MiniTableField,
+        arena: RawArena,
+    ) -> Option<RawArray>;
 
     /// # Safety
     /// - `m` and `f` must be valid to deref

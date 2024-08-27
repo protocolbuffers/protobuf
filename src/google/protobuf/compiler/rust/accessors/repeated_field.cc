@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
@@ -33,17 +34,19 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"view_self", ViewReceiver(accessor_case)},
           {"getter_thunk", ThunkName(ctx, field, "get")},
           {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
+          {"upb_mt_field_index", UpbMiniTableFieldIndex(field)},
           {"getter",
            [&] {
              if (ctx.is_upb()) {
                ctx.Emit({}, R"rs(
                     pub fn $field$($view_self$) -> $pb$::RepeatedView<$view_lifetime$, $RsType$> {
                       unsafe {
-                        $getter_thunk$(
-                          self.raw_msg(),
-                          /* optional size pointer */ std::ptr::null(),
-                        ) }
-                        .map_or_else(
+                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
+                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                          $upb_mt_field_index$);
+                        $pbr$::upb_Message_GetArray(
+                          self.raw_msg(), f)
+                      }.map_or_else(
                           $pbr$::empty_array::<$RsType$>,
                           |raw| unsafe {
                             $pb$::RepeatedView::from_raw($pbi$::Private, raw)
@@ -73,15 +76,18 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                ctx.Emit({}, R"rs(
                     pub fn $field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $RsType$> {
                       unsafe {
+                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
+                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                          $upb_mt_field_index$);
+                        let raw_array = $pbr$::upb_Message_GetOrCreateMutableArray(
+                              self.raw_msg(),
+                              f,
+                              self.arena().raw(),
+                            ).unwrap();
                         $pb$::RepeatedMut::from_inner(
                           $pbi$::Private,
                           $pbr$::InnerRepeatedMut::new(
-                            $getter_mut_thunk$(
-                              self.raw_msg(),
-                              /* optional size pointer */ std::ptr::null(),
-                              self.arena().raw(),
-                            ),
-                            self.arena(),
+                            raw_array, self.arena(),
                           ),
                         )
                       }
@@ -109,13 +115,12 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                return;
              }
              if (ctx.is_upb()) {
-               ctx.Emit({{"field_index", UpbMiniTableFieldIndex(field)}},
-                        R"rs(
+               ctx.Emit(R"rs(
                     pub fn set_$raw_field_name$(&mut self, src: impl $pb$::IntoProxied<$pb$::Repeated<$RsType$>>) {
                       let minitable_field = unsafe {
                         $pbr$::upb_MiniTable_GetFieldByIndex(
                           <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                          $field_index$
+                          $upb_mt_field_index$
                         )
                       };
                       let val = src.into_proxied($pbi$::Private);
@@ -155,6 +160,8 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
 
 void RepeatedField::InExternC(Context& ctx,
                               const FieldDescriptor& field) const {
+  if (ctx.is_upb()) return;
+
   ctx.Emit({{"getter_thunk", ThunkName(ctx, field, "get")},
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
             {"move_setter_thunk", ThunkName(ctx, field, "move_set")},
@@ -219,6 +226,8 @@ const char* CppRepeatedContainerType(const FieldDescriptor& field) {
 
 void RepeatedField::InThunkCc(Context& ctx,
                               const FieldDescriptor& field) const {
+  ABSL_CHECK(ctx.is_cpp());
+
   ctx.Emit({{"field", cpp::FieldName(&field)},
             {"ElementType", CppElementType(field)},
             {"ContainerType", CppRepeatedContainerType(field)},
