@@ -447,14 +447,14 @@ TEST_P(DescriptorDatabaseTest, ConflictingExtensionError) {
       "            extendee: \".Foo\" }");
 }
 
-INSTANTIATE_TEST_SUITE_P(
+INSTANTIATE_TEST_CASE_P(
     Simple, DescriptorDatabaseTest,
     testing::Values(&SimpleDescriptorDatabaseTestCase::New));
-INSTANTIATE_TEST_SUITE_P(
+INSTANTIATE_TEST_CASE_P(
     MemoryConserving, DescriptorDatabaseTest,
     testing::Values(&EncodedDescriptorDatabaseTestCase::New));
-INSTANTIATE_TEST_SUITE_P(Pool, DescriptorDatabaseTest,
-                         testing::Values(&DescriptorPoolDatabaseTestCase::New));
+INSTANTIATE_TEST_CASE_P(Pool, DescriptorDatabaseTest,
+                        testing::Values(&DescriptorPoolDatabaseTestCase::New));
 
 #endif  // GTEST_HAS_PARAM_TEST
 
