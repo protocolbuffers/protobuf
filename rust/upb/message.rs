@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use super::opaque_pointee::opaque_pointee;
-use super::{upb_ExtensionRegistry, upb_MiniTable, upb_MiniTableField, RawArena};
+use super::{upb_ExtensionRegistry, upb_MiniTable, upb_MiniTableField, RawArena, StringView};
 use std::ptr::NonNull;
 
 opaque_pointee!(upb_Message);
@@ -113,6 +113,15 @@ extern "C" {
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
+    /// - `f` must be a string or bytes field associated with `m`
+    pub fn upb_Message_GetString(
+        m: RawMessage,
+        f: *const upb_MiniTableField,
+        default_val: StringView,
+    ) -> StringView;
+
+    /// # Safety
+    /// - `m` and `f` must be valid to deref
     /// - `f` must be a message-typed field associated with `m`
     pub fn upb_Message_GetMessage(
         m: RawMessage,
@@ -203,6 +212,15 @@ extern "C" {
     /// - `m` and `f` must be valid to deref
     /// - `f` must be an f64 field associated with `m`
     pub fn upb_Message_SetBaseFieldDouble(m: RawMessage, f: *const upb_MiniTableField, val: f64);
+
+    /// # Safety
+    /// - `m` and `f` must be valid to deref
+    /// - `f` must be an string or bytes field associated with `m`
+    pub fn upb_Message_SetBaseFieldString(
+        m: RawMessage,
+        f: *const upb_MiniTableField,
+        val: StringView,
+    );
 
     /// # Safety
     /// - `m` and `f` must be valid to deref

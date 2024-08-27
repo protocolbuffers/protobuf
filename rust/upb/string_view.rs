@@ -48,3 +48,9 @@ impl From<&[u8]> for StringView {
         Self { ptr: slice.as_ptr(), len: slice.len() }
     }
 }
+
+impl<const N: usize> From<&[u8; N]> for StringView {
+    fn from(slice: &[u8; N]) -> Self {
+        Self { ptr: slice.as_ptr(), len: N }
+    }
+}

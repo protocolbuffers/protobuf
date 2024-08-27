@@ -7,13 +7,16 @@
 
 #include <string>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
+#include "google/protobuf/compiler/rust/accessors/default_value.h"
 #include "google/protobuf/compiler/rust/accessors/generator.h"
 #include "google/protobuf/compiler/rust/accessors/with_presence.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
+#include "google/protobuf/compiler/rust/upb_helpers.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -34,16 +37,18 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"raw_field_name", field_name},
           {"getter_thunk", ThunkName(ctx, field, "get")},
           {"setter_thunk", ThunkName(ctx, field, "set")},
+          {"default_value", DefaultValue(ctx, field)},
+          {"upb_mt_field_index", UpbMiniTableFieldIndex(field)},
           {"proxied_type", RsTypePath(ctx, field)},
           io::Printer::Sub("transform_view",
                            [&] {
                              if (field.type() == FieldDescriptor::TYPE_STRING) {
                                ctx.Emit(R"rs(
               // SAFETY: The runtime doesn't require ProtoStr to be UTF-8.
-              unsafe { $pb$::ProtoStr::from_utf8_unchecked(view) }
+              unsafe { $pb$::ProtoStr::from_utf8_unchecked(str_view.as_ref()) }
             )rs");
                              } else {
-                               ctx.Emit("view");
+                               ctx.Emit("unsafe { str_view.as_ref() }");
                              }
                            })
               .WithSuffix(""),  // This lets `$transform_view$,` work.
@@ -51,11 +56,25 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"view_self", ViewReceiver(accessor_case)},
           {"getter",
            [&] {
-             ctx.Emit(R"rs(
-                pub fn $field$($view_self$) -> $pb$::View<$view_lifetime$, $proxied_type$> {
-                  let view = unsafe { $getter_thunk$(self.raw_msg()).as_ref() };
-                  $transform_view$
-                })rs");
+             if (ctx.is_cpp()) {
+               ctx.Emit(R"rs(
+                  pub fn $field$($view_self$) -> $pb$::View<$view_lifetime$, $proxied_type$> {
+                    let str_view = unsafe { $getter_thunk$(self.raw_msg()) };
+                    $transform_view$
+                  })rs");
+             } else {
+               ctx.Emit(R"rs(
+                  pub fn $field$($view_self$) -> $pb$::View<$view_lifetime$, $proxied_type$> {
+                    let str_view = unsafe {
+                      let f = $pbr$::upb_MiniTable_GetFieldByIndex(
+                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                          $upb_mt_field_index$);
+                      $pbr$::upb_Message_GetString(
+                          self.raw_msg(), f, ($default_value$).into())
+                    };
+                    $transform_view$
+                  })rs");
+             }
            }},
           {"setter_impl",
            [&] {
@@ -82,10 +101,13 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 parent_arena.fuse(&arena);
 
                 unsafe {
-                  $setter_thunk$(
+                  let f = $pbr$::upb_MiniTable_GetFieldByIndex(
+                            <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                            $upb_mt_field_index$);
+                  $pbr$::upb_Message_SetBaseFieldString(
                     self.as_mutator_message_ref($pbi$::Private).msg(),
-                    view
-                  );
+                    f,
+                    view);
                 }
               )rs");
              }
@@ -109,6 +131,8 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
 
 void SingularString::InExternC(Context& ctx,
                                const FieldDescriptor& field) const {
+  if (ctx.is_upb()) return;
+
   if (field.has_presence()) {
     WithPresenceAccessorsInExternC(ctx, field);
   }
@@ -138,6 +162,8 @@ void SingularString::InExternC(Context& ctx,
 
 void SingularString::InThunkCc(Context& ctx,
                                const FieldDescriptor& field) const {
+  ABSL_CHECK(ctx.is_cpp());
+
   if (field.has_presence()) {
     WithPresenceAccessorsInThunkCc(ctx, field);
   }
