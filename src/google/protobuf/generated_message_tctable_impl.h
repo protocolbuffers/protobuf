@@ -822,11 +822,6 @@ class PROTOBUF_EXPORT TcParser final {
     };
   }
 
-  template <typename T>
-  static void CreateInArenaStorageCb(Arena* arena, void* p) {
-    Arena::CreateInArenaStorage(static_cast<T*>(p), arena);
-  }
-
  private:
   // Optimized small tag varint parser for int32/int64
   template <typename FieldType>

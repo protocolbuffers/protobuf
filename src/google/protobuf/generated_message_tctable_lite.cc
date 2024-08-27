@@ -357,7 +357,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastEndG2(PROTOBUF_TC_PARAM_DECL) {
 
 inline PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::NewMessage(
     const TcParseTableBase* table, Arena* arena) {
-  return table->default_instance()->New(arena);
+  return table->class_data->New(arena);
 }
 
 MessageLite* TcParser::AddMessage(const TcParseTableBase* table,
@@ -2522,7 +2522,7 @@ PROTOBUF_ALWAYS_INLINE inline void TcParser::InitializeMapNodeEntry(
                                   map.arena());
       break;
     case MapTypeCard::kMessage:
-      aux[1].create_in_arena(map.arena(), reinterpret_cast<MessageLite*>(obj));
+      aux[1].table->class_data->PlacementNew(obj, map.arena());
       break;
     default:
       Unreachable();

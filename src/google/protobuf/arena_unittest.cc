@@ -528,7 +528,6 @@ class DispatcherTestProto : public Message {
       : Message(nullptr, nullptr) {
     ABSL_LOG(FATAL);
   }
-  DispatcherTestProto* New(Arena*) const PROTOBUF_FINAL { ABSL_LOG(FATAL); }
   const ClassData* GetClassData() const PROTOBUF_FINAL { ABSL_LOG(FATAL); }
 };
 // We use a specialization to inject behavior for the test.

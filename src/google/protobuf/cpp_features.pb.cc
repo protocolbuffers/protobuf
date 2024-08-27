@@ -10,6 +10,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -193,6 +194,13 @@ inline void CppFeatures::SharedDtor() {
   _impl_.~Impl_();
 }
 
+inline void* CppFeatures::PlacementNew_(const void*, void* mem,
+                                        ::google::protobuf::Arena* arena) {
+  return ::new (mem) CppFeatures(arena);
+}
+constexpr auto CppFeatures::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(CppFeatures));
+}
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::google::protobuf::MessageLite::ClassDataFull
@@ -203,9 +211,9 @@ const ::google::protobuf::MessageLite::ClassDataFull
             nullptr,  // OnDemandRegisterArenaDtor
             nullptr,  // IsInitialized
             &CppFeatures::MergeImpl,
+            ::google::protobuf::Message::GetNewImpl<CppFeatures>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<CppFeatures>(),
-            ::google::protobuf::Message::GetNewImpl<CppFeatures>(),
             ::google::protobuf::Message::GetClearImpl<CppFeatures>(), &CppFeatures::ByteSizeLong,
                 &CppFeatures::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE

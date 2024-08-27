@@ -103,10 +103,6 @@ class MapEntry : public Message {
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
-  Message* New(Arena* arena) const PROTOBUF_FINAL {
-    return Arena::Create<Derived>(arena);
-  }
-
   struct _Internal;
 
  protected:
