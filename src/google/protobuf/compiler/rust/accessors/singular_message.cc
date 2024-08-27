@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
@@ -14,6 +15,7 @@
 #include "google/protobuf/compiler/rust/accessors/with_presence.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
+#include "google/protobuf/compiler/rust/upb_helpers.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -40,19 +42,25 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"getter_thunk", ThunkName(ctx, field, "get")},
           {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
           {"set_allocated_thunk", ThunkName(ctx, field, "set")},
+          {"upb_mt_field_index", UpbMiniTableFieldIndex(field)},
           {
               "getter_body",
               [&] {
                 if (ctx.is_upb()) {
                   ctx.Emit({}, R"rs(
-              let submsg = unsafe { $getter_thunk$(self.raw_msg()) };
+              let submsg = unsafe {
+                let f = $pbr$::upb_MiniTable_GetFieldByIndex(
+                            <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                            $upb_mt_field_index$);
+                $pbr$::upb_Message_GetMessage(self.raw_msg(), f)
+              };
               //~ For upb, getters return null if the field is unset, so we need
               //~ to check for null and return the default instance manually.
               //~ Note that a nullptr received from upb manifests as Option::None
               match submsg {
                 //~ TODO:(b/304357029)
                 None => $msg_type$View::new($pbi$::Private, $pbr$::ScratchSpace::zeroed_block()),
-                Some(field) => $msg_type$View::new($pbi$::Private, field),
+                Some(sub_raw_msg) => $msg_type$View::new($pbi$::Private, sub_raw_msg),
               }
         )rs");
                 } else {
@@ -84,7 +92,10 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              } else {
                ctx.Emit({}, R"rs(
                   let raw_msg = unsafe {
-                    $getter_mut_thunk$(self.raw_msg(), self.arena().raw())
+                    let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
+                    let f = $pbr$::upb_MiniTable_GetFieldByIndex(mt, $upb_mt_field_index$);
+                    $pbr$::upb_Message_GetOrCreateMutableMessage(
+                        self.raw_msg(), mt, f, self.arena().raw()).unwrap()
                   };
                   $msg_type$Mut::from_parent($pbi$::Private,
                     self.as_mutator_message_ref($pbi$::Private), raw_msg)
@@ -116,7 +127,12 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     .fuse(msg.as_mutator_message_ref($pbi$::Private).arena());
 
                   unsafe {
-                    $set_allocated_thunk$(self.as_mutator_message_ref($pbi$::Private).msg(),
+                    let f = $pbr$::upb_MiniTable_GetFieldByIndex(
+                              <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                              $upb_mt_field_index$);
+                    $pbr$::upb_Message_SetBaseFieldMessage(
+                      self.as_mutator_message_ref($pbi$::Private).msg(),
+                      f,
                       msg.as_mutator_message_ref($pbi$::Private).msg());
                   }
                 )rs");
@@ -153,6 +169,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
 
 void SingularMessage::InExternC(Context& ctx,
                                 const FieldDescriptor& field) const {
+  if (ctx.is_upb()) return;
   if (field.has_presence()) {
     WithPresenceAccessorsInExternC(ctx, field);
   }
@@ -198,6 +215,7 @@ void SingularMessage::InExternC(Context& ctx,
 
 void SingularMessage::InThunkCc(Context& ctx,
                                 const FieldDescriptor& field) const {
+  ABSL_CHECK(ctx.is_cpp());
   if (field.has_presence()) {
     WithPresenceAccessorsInThunkCc(ctx, field);
   }
