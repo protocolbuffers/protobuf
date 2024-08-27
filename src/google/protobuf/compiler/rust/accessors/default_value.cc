@@ -20,6 +20,7 @@
 #include "google/protobuf/compiler/rust/rust_field_type.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/strtod.h"
+#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {
@@ -86,7 +87,8 @@ std::string DefaultValue(Context& ctx, const FieldDescriptor& field) {
     case RustFieldType::MESSAGE:
       ABSL_LOG(FATAL) << "Messages can't have defaults: " << field.type_name();
   }
-  ABSL_LOG(FATAL) << "unreachable";
+  ABSL_LOG(ERROR) << "unreachable";
+  internal::Unreachable();
 }
 
 }  // namespace rust

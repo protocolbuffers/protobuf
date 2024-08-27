@@ -28,6 +28,7 @@
 #include "google/protobuf/compiler/rust/rust_field_type.h"
 #include "google/protobuf/compiler/rust/rust_keywords.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -211,8 +212,8 @@ std::string RsTypePath(Context& ctx, const FieldDescriptor& field) {
     case RustFieldType::ENUM:
       return GetFullyQualifiedPath(ctx, *field.enum_type());
   }
-  ABSL_LOG(FATAL) << "Unsupported field type: " << field.type_name();
-  return "";
+  ABSL_LOG(ERROR) << "Unknown field type: " << field.type_name();
+  internal::Unreachable();
 }
 
 std::string RsViewType(Context& ctx, const FieldDescriptor& field,
@@ -244,7 +245,7 @@ std::string RsViewType(Context& ctx, const FieldDescriptor& field,
       }
   }
   ABSL_LOG(FATAL) << "Unsupported field type: " << field.type_name();
-  return "";
+  internal::Unreachable();
 }
 
 std::string RustModuleForContainingType(Context& ctx,
