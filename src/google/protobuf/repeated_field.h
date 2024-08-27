@@ -858,7 +858,7 @@ inline void RepeatedField<Element>::Add(Element value) {
 
   // The below helps the compiler optimize dense loops.
   // Note: we can't call functions in PROTOBUF_ASSUME so use local variables.
-  ABSL_ATTRIBUTE_UNUSED const int final_is_soo = this->is_soo();
+  ABSL_ATTRIBUTE_UNUSED const bool final_is_soo = this->is_soo();
   PROTOBUF_ASSUME(is_soo == final_is_soo);
   ABSL_ATTRIBUTE_UNUSED const int final_size = size(is_soo);
   PROTOBUF_ASSUME(new_size == final_size);
@@ -898,7 +898,7 @@ inline void RepeatedField<Element>::AddForwardIterator(Iter begin, Iter end) {
 
   // The below helps the compiler optimize dense loops.
   // Note: we can't call functions in PROTOBUF_ASSUME so use local variables.
-  ABSL_ATTRIBUTE_UNUSED const int final_is_soo = this->is_soo();
+  ABSL_ATTRIBUTE_UNUSED const bool final_is_soo = this->is_soo();
   PROTOBUF_ASSUME(is_soo == final_is_soo);
   ABSL_ATTRIBUTE_UNUSED const int final_size = size(is_soo);
   PROTOBUF_ASSUME(new_size == final_size);
