@@ -167,26 +167,28 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-  private:
-  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
+                private:
+                static void Clear(MessageLite& msg);
+                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+                static ::uint8_t* _InternalSerialize(
+                    const MessageLite& msg, ::uint8_t* target,
+                    ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-  public:
-  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-    return _InternalSerialize(*this, target, stream);
-  }
+                public:
+                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
+                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+                ::uint8_t* _InternalSerialize(
+                    ::uint8_t* target,
+                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+                  return _InternalSerialize(*this, target, stream);
+                }
   #else   // PROTOBUF_CUSTOM_VTABLE
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+                ::size_t ByteSizeLong() const final;
+                ::uint8_t* _InternalSerialize(
+                    ::uint8_t* target,
+                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -380,26 +382,28 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-  private:
-  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
+                private:
+                static void Clear(MessageLite& msg);
+                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+                static ::uint8_t* _InternalSerialize(
+                    const MessageLite& msg, ::uint8_t* target,
+                    ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-  public:
-  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-    return _InternalSerialize(*this, target, stream);
-  }
+                public:
+                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
+                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+                ::uint8_t* _InternalSerialize(
+                    ::uint8_t* target,
+                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+                  return _InternalSerialize(*this, target, stream);
+                }
   #else   // PROTOBUF_CUSTOM_VTABLE
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+                ::size_t ByteSizeLong() const final;
+                ::uint8_t* _InternalSerialize(
+                    ::uint8_t* target,
+                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -666,26 +670,28 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-  private:
-  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  static ::uint8_t* _InternalSerialize(
-      const MessageLite& msg, ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream);
+                private:
+                static void Clear(MessageLite& msg);
+                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+                static ::uint8_t* _InternalSerialize(
+                    const MessageLite& msg, ::uint8_t* target,
+                    ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-  public:
-  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-    return _InternalSerialize(*this, target, stream);
-  }
+                public:
+                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
+                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+                ::uint8_t* _InternalSerialize(
+                    ::uint8_t* target,
+                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+                  return _InternalSerialize(*this, target, stream);
+                }
   #else   // PROTOBUF_CUSTOM_VTABLE
-  ::size_t ByteSizeLong() const final;
-  ::uint8_t* _InternalSerialize(
-      ::uint8_t* target,
-      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
+                ::size_t ByteSizeLong() const final;
+                ::uint8_t* _InternalSerialize(
+                    ::uint8_t* target,
+                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -889,6 +895,7 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
 
 // string name = 1;
 inline void Api::clear_name() {
+  Api& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
 }
@@ -945,8 +952,9 @@ inline int Api::methods_size() const {
   return _internal_methods_size();
 }
 inline void Api::clear_methods() {
+  Api& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.methods_.Clear();
+  this_._impl_.methods_.Clear();
 }
 inline ::google::protobuf::Method* Api::mutable_methods(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1033,6 +1041,7 @@ Api::_internal_mutable_options() {
 
 // string version = 4;
 inline void Api::clear_version() {
+  Api& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.version_.ClearToEmpty();
 }
@@ -1180,8 +1189,9 @@ inline int Api::mixins_size() const {
   return _internal_mixins_size();
 }
 inline void Api::clear_mixins() {
+  Api& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.mixins_.Clear();
+  this_._impl_.mixins_.Clear();
 }
 inline ::google::protobuf::Mixin* Api::mutable_mixins(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1223,8 +1233,9 @@ Api::_internal_mutable_mixins() {
 
 // .google.protobuf.Syntax syntax = 7;
 inline void Api::clear_syntax() {
+  Api& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.syntax_ = 0;
+  this_._impl_.syntax_ = 0;
 }
 inline ::google::protobuf::Syntax Api::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.syntax)
@@ -1249,6 +1260,7 @@ inline void Api::_internal_set_syntax(::google::protobuf::Syntax value) {
 
 // string name = 1;
 inline void Method::clear_name() {
+  Method& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
 }
@@ -1299,6 +1311,7 @@ inline void Method::set_allocated_name(std::string* value) {
 
 // string request_type_url = 2;
 inline void Method::clear_request_type_url() {
+  Method& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.request_type_url_.ClearToEmpty();
 }
@@ -1349,8 +1362,9 @@ inline void Method::set_allocated_request_type_url(std::string* value) {
 
 // bool request_streaming = 3;
 inline void Method::clear_request_streaming() {
+  Method& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.request_streaming_ = false;
+  this_._impl_.request_streaming_ = false;
 }
 inline bool Method::request_streaming() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.request_streaming)
@@ -1371,6 +1385,7 @@ inline void Method::_internal_set_request_streaming(bool value) {
 
 // string response_type_url = 4;
 inline void Method::clear_response_type_url() {
+  Method& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.response_type_url_.ClearToEmpty();
 }
@@ -1421,8 +1436,9 @@ inline void Method::set_allocated_response_type_url(std::string* value) {
 
 // bool response_streaming = 5;
 inline void Method::clear_response_streaming() {
+  Method& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.response_streaming_ = false;
+  this_._impl_.response_streaming_ = false;
 }
 inline bool Method::response_streaming() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.response_streaming)
@@ -1488,8 +1504,9 @@ Method::_internal_mutable_options() {
 
 // .google.protobuf.Syntax syntax = 7;
 inline void Method::clear_syntax() {
+  Method& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.syntax_ = 0;
+  this_._impl_.syntax_ = 0;
 }
 inline ::google::protobuf::Syntax Method::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.syntax)
@@ -1514,6 +1531,7 @@ inline void Method::_internal_set_syntax(::google::protobuf::Syntax value) {
 
 // string name = 1;
 inline void Mixin::clear_name() {
+  Mixin& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
 }
@@ -1564,6 +1582,7 @@ inline void Mixin::set_allocated_name(std::string* value) {
 
 // string root = 2;
 inline void Mixin::clear_root() {
+  Mixin& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.root_.ClearToEmpty();
 }
