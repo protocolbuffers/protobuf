@@ -7,7 +7,8 @@
 
 use super::opaque_pointee::opaque_pointee;
 use super::{
-    upb_ExtensionRegistry, upb_MiniTable, upb_MiniTableField, RawArena, RawArray, StringView,
+    upb_ExtensionRegistry, upb_MiniTable, upb_MiniTableField, RawArena, RawArray, RawMap,
+    StringView,
 };
 use std::ptr::NonNull;
 
@@ -168,12 +169,38 @@ extern "C" {
     ///
     /// # Safety
     /// - `m` and `f` must be valid to deref
-    /// - `f` must be a repeated field associated with `m`
+    /// - `f` must be a map field associated with `m`
     pub fn upb_Message_GetOrCreateMutableArray(
         m: RawMessage,
         f: *const upb_MiniTableField,
         arena: RawArena,
     ) -> Option<RawArray>;
+
+    /// Gets the const upb_Map* that is assigned to the field.
+    ///
+    /// This may return None which must be treated the same as if it returned
+    /// Some of a valid RawMap that is empty.
+    ///
+    /// # Safety
+    /// - `m` and `f` must be valid to deref
+    /// - `f` must be a repeated field associated with `m`
+    pub fn upb_Message_GetMap(m: RawMessage, f: *const upb_MiniTableField) -> Option<RawMap>;
+
+    /// Gets or creates a mutable upb_Map* assigned to the corresponding field
+    /// in the message.
+    ///
+    /// This will only return None if the Arena allocation fails.
+    ///
+    /// # Safety
+    /// - `m` and `f` must be valid to deref
+    /// - `map_entry_mini_table` must be the MiniTable associated with `f`
+    /// - `f` must be a map field associated with `m`
+    pub fn upb_Message_GetOrCreateMutableMap(
+        m: RawMessage,
+        map_entry_mini_table: *const upb_MiniTable,
+        f: *const upb_MiniTableField,
+        arena: RawArena,
+    ) -> Option<RawMap>;
 
     /// # Safety
     /// - `m` and `f` must be valid to deref
@@ -266,4 +293,12 @@ extern "C" {
         f: *const upb_MiniTableField,
         val: RawMessage,
     );
+
+    /// Returns the field number of which oneof field is set, or 0 if none are.
+    /// `f` is any arbitrary field contained within the oneof.
+    ///
+    /// # Safety
+    /// - `m` and `f` must be valid to deref
+    /// - `f` must be a field within a oneof associated with `m`
+    pub fn upb_Message_WhichOneofFieldNumber(m: RawMessage, f: *const upb_MiniTableField) -> u32;
 }

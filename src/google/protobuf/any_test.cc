@@ -45,9 +45,9 @@ TEST(AnyTest, TestPackAndUnpack) {
 }
 
 TEST(AnyTest, TestPackFromSerializationExceedsSizeLimit) {
-#if defined(_MSC_VER) && defined(_M_IX86)
-  GTEST_SKIP() << "This toolchain can't allocate that much memory.";
-#endif
+  if (std::string().max_size() < INT_MAX) {
+    GTEST_SKIP() << "This toolchain can't allocate that much memory.";
+  }
   protobuf_unittest::TestAny submessage;
   submessage.mutable_text()->resize(INT_MAX, 'a');
   protobuf_unittest::TestAny message;
