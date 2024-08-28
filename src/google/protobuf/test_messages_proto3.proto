@@ -16,6 +16,13 @@ syntax = "proto3";
 
 package protobuf_test_messages.proto3;
 
+// copybara:strip_begin
+// TODO: b/319288438 - Remove this once gbigint API is released.
+import "javascript/apps/jspb/gbigint_options.proto";
+
+option (jspb.use_gbigint_for_64bit_ints) = true;
+// copybara:strip_end
+
 option java_package = "com.google.protobuf_test_messages.proto3";
 option objc_class_prefix = "Proto3";
 
