@@ -412,7 +412,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             ::google::protobuf::Message::GetNewImpl<Version>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Version>(),
-            ::google::protobuf::Message::GetClearImpl<Version>(), &Version::ByteSizeLong,
+            &Version::Clear, &Version::ByteSizeLong,
                 &Version::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Version, _impl_._cached_size_),
@@ -482,24 +482,30 @@ const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
   }},
 };
 
-PROTOBUF_NOINLINE void Version::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.Version)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    void Version::Clear(MessageLite& base) {
+      Version& this_ = static_cast<Version&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+    void Version::Clear() {
+      Version& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+            // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.Version)
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  cached_has_bits = _impl_._has_bits_[0];
+  cached_has_bits = this_._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    _impl_.suffix_.ClearNonDefaultToEmpty();
+    this_._impl_.suffix_.ClearNonDefaultToEmpty();
   }
   if (cached_has_bits & 0x0000000eu) {
-    ::memset(&_impl_.major_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.patch_) -
-        reinterpret_cast<char*>(&_impl_.major_)) + sizeof(_impl_.patch_));
+    ::memset(&this_._impl_.major_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&this_._impl_.patch_) -
+        reinterpret_cast<char*>(&this_._impl_.major_)) + sizeof(_impl_.patch_));
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -662,12 +668,14 @@ class CodeGeneratorRequest::_Internal {
 };
 
 void CodeGeneratorRequest::clear_proto_file() {
+  CodeGeneratorRequest& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.proto_file_.Clear();
+  this_._impl_.proto_file_.Clear();
 }
 void CodeGeneratorRequest::clear_source_file_descriptors() {
+  CodeGeneratorRequest& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.source_file_descriptors_.Clear();
+  this_._impl_.source_file_descriptors_.Clear();
 }
 CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -772,7 +780,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             ::google::protobuf::Message::GetNewImpl<CodeGeneratorRequest>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<CodeGeneratorRequest>(),
-            ::google::protobuf::Message::GetClearImpl<CodeGeneratorRequest>(), &CodeGeneratorRequest::ByteSizeLong,
+            &CodeGeneratorRequest::Clear, &CodeGeneratorRequest::ByteSizeLong,
                 &CodeGeneratorRequest::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._cached_size_),
@@ -852,28 +860,34 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
   }},
 };
 
-PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorRequest)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    void CodeGeneratorRequest::Clear(MessageLite& base) {
+      CodeGeneratorRequest& this_ = static_cast<CodeGeneratorRequest&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+    void CodeGeneratorRequest::Clear() {
+      CodeGeneratorRequest& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+            // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorRequest)
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.file_to_generate_.Clear();
-  _impl_.proto_file_.Clear();
-  _impl_.source_file_descriptors_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
+  this_._impl_.file_to_generate_.Clear();
+  this_._impl_.proto_file_.Clear();
+  this_._impl_.source_file_descriptors_.Clear();
+  cached_has_bits = this_._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.parameter_.ClearNonDefaultToEmpty();
+      this_._impl_.parameter_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      ABSL_DCHECK(_impl_.compiler_version_ != nullptr);
-      _impl_.compiler_version_->Clear();
+      ABSL_DCHECK(this_._impl_.compiler_version_ != nullptr);
+      this_._impl_.compiler_version_->Clear();
     }
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -1080,6 +1094,7 @@ class CodeGeneratorResponse_File::_Internal {
 };
 
 void CodeGeneratorResponse_File::clear_generated_code_info() {
+  CodeGeneratorResponse_File& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.generated_code_info_ != nullptr) _impl_.generated_code_info_->Clear();
   _impl_._has_bits_[0] &= ~0x00000008u;
@@ -1168,7 +1183,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             ::google::protobuf::Message::GetNewImpl<CodeGeneratorResponse_File>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<CodeGeneratorResponse_File>(),
-            ::google::protobuf::Message::GetClearImpl<CodeGeneratorResponse_File>(), &CodeGeneratorResponse_File::ByteSizeLong,
+            &CodeGeneratorResponse_File::Clear, &CodeGeneratorResponse_File::ByteSizeLong,
                 &CodeGeneratorResponse_File::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._cached_size_),
@@ -1240,31 +1255,37 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
   }},
 };
 
-PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse.File)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    void CodeGeneratorResponse_File::Clear(MessageLite& base) {
+      CodeGeneratorResponse_File& this_ = static_cast<CodeGeneratorResponse_File&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+    void CodeGeneratorResponse_File::Clear() {
+      CodeGeneratorResponse_File& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+            // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse.File)
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  cached_has_bits = _impl_._has_bits_[0];
+  cached_has_bits = this_._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearNonDefaultToEmpty();
+      this_._impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.insertion_point_.ClearNonDefaultToEmpty();
+      this_._impl_.insertion_point_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000004u) {
-      _impl_.content_.ClearNonDefaultToEmpty();
+      this_._impl_.content_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000008u) {
-      ABSL_DCHECK(_impl_.generated_code_info_ != nullptr);
-      _impl_.generated_code_info_->Clear();
+      ABSL_DCHECK(this_._impl_.generated_code_info_ != nullptr);
+      this_._impl_.generated_code_info_->Clear();
     }
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -1530,7 +1551,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             ::google::protobuf::Message::GetNewImpl<CodeGeneratorResponse>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<CodeGeneratorResponse>(),
-            ::google::protobuf::Message::GetClearImpl<CodeGeneratorResponse>(), &CodeGeneratorResponse::ByteSizeLong,
+            &CodeGeneratorResponse::Clear, &CodeGeneratorResponse::ByteSizeLong,
                 &CodeGeneratorResponse::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._cached_size_),
@@ -1609,25 +1630,31 @@ const ::_pbi::TcParseTable<3, 5, 1, 60, 2> CodeGeneratorResponse::_table_ = {
   }},
 };
 
-PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
-// @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse)
-  ::google::protobuf::internal::TSanWrite(&_impl_);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    void CodeGeneratorResponse::Clear(MessageLite& base) {
+      CodeGeneratorResponse& this_ = static_cast<CodeGeneratorResponse&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+    void CodeGeneratorResponse::Clear() {
+      CodeGeneratorResponse& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+            // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse)
+  ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.file_.Clear();
-  cached_has_bits = _impl_._has_bits_[0];
+  this_._impl_.file_.Clear();
+  cached_has_bits = this_._impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    _impl_.error_.ClearNonDefaultToEmpty();
+    this_._impl_.error_.ClearNonDefaultToEmpty();
   }
   if (cached_has_bits & 0x0000000eu) {
-    ::memset(&_impl_.supported_features_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.maximum_edition_) -
-        reinterpret_cast<char*>(&_impl_.supported_features_)) + sizeof(_impl_.maximum_edition_));
+    ::memset(&this_._impl_.supported_features_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&this_._impl_.maximum_edition_) -
+        reinterpret_cast<char*>(&this_._impl_.supported_features_)) + sizeof(_impl_.maximum_edition_));
   }
-  _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  this_._impl_._has_bits_.Clear();
+  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
