@@ -717,7 +717,7 @@ TEST(CppGeneratedCode, SetExtension) {
               ::hpb::SetExtension(&model, theme, std::move(extension1)).ok());
   }
   EXPECT_EQ(true, ::hpb::HasExtension(&model, theme));
-  auto ext = ::protos::GetExtension(&model, theme);
+  auto ext = hpb::GetExtension(&model, theme);
   EXPECT_TRUE(ext.ok());
   EXPECT_EQ(::hpb::internal::GetInternalMsg(*ext), prior_message);
 }
@@ -738,7 +738,7 @@ TEST(CppGeneratedCode, SetExtensionWithPtr) {
     EXPECT_EQ(true, res.ok());
   }
   EXPECT_EQ(true, ::hpb::HasExtension(model, theme));
-  auto ext = ::protos::GetExtension(model, theme);
+  auto ext = hpb::GetExtension(model, theme);
   EXPECT_TRUE(ext.ok());
   EXPECT_NE(::hpb::internal::GetInternalMsg(*ext), prior_message);
 }
@@ -780,7 +780,7 @@ TEST(CppGeneratedCode, SetExtensionWithPtrSameArena) {
     EXPECT_EQ(true, res.ok());
   }
   EXPECT_EQ(true, ::hpb::HasExtension(model, theme));
-  auto ext = ::protos::GetExtension(model, theme);
+  auto ext = hpb::GetExtension(model, theme);
   EXPECT_TRUE(ext.ok());
   EXPECT_NE(::hpb::internal::GetInternalMsg(*ext), prior_message);
 }
@@ -800,7 +800,7 @@ TEST(CppGeneratedCode, SetExtensionFusingFailureShouldCopy) {
   auto status = ::hpb::SetExtension(model, theme, std::move(extension1));
   EXPECT_TRUE(status.ok());
   EXPECT_TRUE(::hpb::HasExtension(model, theme));
-  EXPECT_TRUE(::protos::GetExtension(model, theme).ok());
+  EXPECT_TRUE(hpb::GetExtension(model, theme).ok());
 }
 
 TEST(CppGeneratedCode, SetExtensionShouldClone) {
@@ -811,7 +811,7 @@ TEST(CppGeneratedCode, SetExtensionShouldClone) {
   EXPECT_EQ(true, ::hpb::SetExtension(&model, theme, extension1).ok());
   extension1.set_ext_name("Goodbye");
   EXPECT_EQ(true, ::hpb::HasExtension(&model, theme));
-  auto ext = ::protos::GetExtension(&model, theme);
+  auto ext = hpb::GetExtension(&model, theme);
   EXPECT_TRUE(ext.ok());
   EXPECT_EQ((*ext)->ext_name(), "Hello World");
 }
@@ -825,7 +825,7 @@ TEST(CppGeneratedCode, SetExtensionShouldCloneConst) {
             ::hpb::SetExtension(&model, theme, std::as_const(extension1)).ok());
   extension1.set_ext_name("Goodbye");
   EXPECT_EQ(true, ::hpb::HasExtension(&model, theme));
-  auto ext = ::protos::GetExtension(&model, theme);
+  auto ext = hpb::GetExtension(&model, theme);
   EXPECT_TRUE(ext.ok());
   EXPECT_EQ((*ext)->ext_name(), "Hello World");
 }
@@ -848,7 +848,7 @@ TEST(CppGeneratedCode, GetExtension) {
   EXPECT_EQ(false, ::hpb::HasExtension(&model, theme));
   EXPECT_EQ(true, ::hpb::SetExtension(&model, theme, extension1).ok());
   EXPECT_EQ("Hello World",
-            ::protos::GetExtension(&model, theme).value()->ext_name());
+            hpb::GetExtension(&model, theme).value()->ext_name());
 }
 
 TEST(CppGeneratedCode, GetExtensionOnMutableChild) {
@@ -861,10 +861,9 @@ TEST(CppGeneratedCode, GetExtensionOnMutableChild) {
   EXPECT_EQ(
       true,
       ::hpb::SetExtension(mutable_recursive_child, theme, extension1).ok());
-  EXPECT_EQ("Hello World",
-            ::protos::GetExtension(mutable_recursive_child, theme)
-                .value()
-                ->ext_name());
+  EXPECT_EQ(
+      "Hello World",
+      hpb::GetExtension(mutable_recursive_child, theme).value()->ext_name());
 }
 
 TEST(CppGeneratedCode, GetExtensionOnImmutableChild) {
@@ -879,7 +878,7 @@ TEST(CppGeneratedCode, GetExtensionOnImmutableChild) {
       ::hpb::SetExtension(mutable_recursive_child, theme, extension1).ok());
   ::hpb::Ptr<const TestModel> recursive_child = model.recursive_child();
   EXPECT_EQ("Hello World",
-            ::protos::GetExtension(recursive_child, theme).value()->ext_name());
+            hpb::GetExtension(recursive_child, theme).value()->ext_name());
 }
 
 TEST(CppGeneratedCode, SerializeUsingArena) {
@@ -926,7 +925,7 @@ TEST(CppGeneratedCode, Parse) {
   EXPECT_EQ(true, bytes.ok());
   TestModel parsed_model = ::hpb::Parse<TestModel>(bytes.value()).value();
   EXPECT_EQ("Test123", parsed_model.str1());
-  EXPECT_EQ(true, ::protos::GetExtension(&parsed_model, theme).ok());
+  EXPECT_EQ(true, hpb::GetExtension(&parsed_model, theme).ok());
 }
 
 TEST(CppGeneratedCode, ParseIntoPtrToModel) {
@@ -943,7 +942,7 @@ TEST(CppGeneratedCode, ParseIntoPtrToModel) {
   EXPECT_EQ("Test123", parsed_model->str1());
   // Should return an extension even if we don't pass ExtensionRegistry
   // by promoting unknown.
-  EXPECT_EQ(true, ::protos::GetExtension(parsed_model, theme).ok());
+  EXPECT_EQ(true, hpb::GetExtension(parsed_model, theme).ok());
 }
 
 TEST(CppGeneratedCode, ParseWithExtensionRegistry) {
@@ -963,14 +962,14 @@ TEST(CppGeneratedCode, ParseWithExtensionRegistry) {
   TestModel parsed_model =
       ::hpb::Parse<TestModel>(bytes.value(), extensions).value();
   EXPECT_EQ("Test123", parsed_model.str1());
-  EXPECT_EQ(true, ::protos::GetExtension(&parsed_model, theme).ok());
-  EXPECT_EQ(true, ::protos::GetExtension(&parsed_model,
-                                         ThemeExtension::theme_extension)
-                      .ok());
-  EXPECT_EQ("Hello World", ::protos::GetExtension(
-                               &parsed_model, ThemeExtension::theme_extension)
-                               .value()
-                               ->ext_name());
+  EXPECT_EQ(true, hpb::GetExtension(&parsed_model, theme).ok());
+  EXPECT_EQ(
+      true,
+      hpb::GetExtension(&parsed_model, ThemeExtension::theme_extension).ok());
+  EXPECT_EQ("Hello World",
+            hpb::GetExtension(&parsed_model, ThemeExtension::theme_extension)
+                .value()
+                ->ext_name());
 }
 
 TEST(CppGeneratedCode, NameCollisions) {

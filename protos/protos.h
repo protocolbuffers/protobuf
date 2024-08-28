@@ -18,7 +18,6 @@ using hpb::internal::Serialize;
 using hpb::internal::SetExtension;
 }  // namespace internal
 
-using hpb::GetExtension;
 
 using hpb::Arena;
 using hpb::Ptr;
