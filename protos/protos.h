@@ -19,7 +19,6 @@ using hpb::internal::SetExtension;
 }  // namespace internal
 
 using hpb::GetExtension;
-using hpb::HasExtension;
 
 using hpb::Arena;
 using hpb::Ptr;
