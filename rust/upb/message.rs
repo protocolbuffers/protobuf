@@ -266,4 +266,12 @@ extern "C" {
         f: *const upb_MiniTableField,
         val: RawMessage,
     );
+
+    /// Returns the field number of which oneof field is set, or 0 if none are.
+    /// `f` is any arbitrary field contained within the oneof.
+    ///
+    /// # Safety
+    /// - `m` and `f` must be valid to deref
+    /// - `f` must be a field within a oneof associated with `m`
+    pub fn upb_Message_WhichOneofFieldNumber(m: RawMessage, f: *const upb_MiniTableField) -> u32;
 }
