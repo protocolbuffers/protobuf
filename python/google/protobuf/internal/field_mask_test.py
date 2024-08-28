@@ -9,10 +9,12 @@
 
 import unittest
 
-from google.protobuf import field_mask_pb2
+from google.protobuf import descriptor
+from google.protobuf import field_mask as field_mask_nextgen
 from google.protobuf.internal import field_mask
 from google.protobuf.internal import test_util
-from google.protobuf import descriptor
+
+from google.protobuf import field_mask_pb2
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
 
@@ -371,6 +373,46 @@ class FieldMaskTest(unittest.TestCase):
         ValueError,
         'Fail to parse FieldMask: Path name foo_bar must not contain "_"s.',
         field_mask._CamelCaseToSnakeCase, 'foo_bar')
+
+  def test_field_mask_nextgen(self):
+    mask_msg = field_mask_pb2.FieldMask()
+    mask_msg.paths.append('foo')
+    self.assertEqual('foo', field_mask_nextgen.to_json_string(mask_msg))
+
+    msg = field_mask_nextgen.from_json_string('fooBar,barQuz')
+    self.assertEqual(['foo_bar', 'bar_quz'], msg.paths)
+
+    msg_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
+    msg = field_mask_nextgen.all_fields_from_descriptor(msg_descriptor)
+    self.assertEqual(79, len(msg.paths))
+    self.assertTrue(
+        field_mask_nextgen.is_valid_for_descriptor(msg, msg_descriptor)
+    )
+
+    mask1 = field_mask_nextgen.from_json_string('foo,bar,foo')
+    mask2 = field_mask_nextgen.canonical_form_from_mask(mask1)
+    self.assertEqual('bar,foo', field_mask_nextgen.to_json_string(mask2))
+
+    mask1 = field_mask_nextgen.from_json_string('foo,baz.bb')
+    mask2 = field_mask_nextgen.from_json_string('baz.bb,quz')
+    union_mask = field_mask_nextgen.union(mask1, mask2)
+    intersect_mask = field_mask_nextgen.intersect(mask1, mask2)
+    self.assertEqual(
+        'baz.bb,foo,quz', field_mask_nextgen.to_json_string(union_mask)
+    )
+    self.assertEqual(
+        'baz.bb', field_mask_nextgen.to_json_string(intersect_mask)
+    )
+
+    new_msg = unittest_pb2.TestOneof2()
+    dst = unittest_pb2.TestOneof2()
+    dst.foo_message.moo_int = 1
+    mask = field_mask_nextgen.from_json_string(
+        'fooMessage,fooLazyMessage.mooInt'
+    )
+    field_mask_nextgen.merge_message(mask, new_msg, dst)
+    self.assertIn('foo_message', dst)
+    self.assertNotIn('foo_lazy_message', dst)
 
 
 if __name__ == '__main__':
