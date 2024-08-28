@@ -16,6 +16,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/hpb/backend/upb/interop.h"
+#include "google/protobuf/hpb/extension.h"
 #include "google/protobuf/hpb/internal/internal.h"
 #include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/ptr.h"
@@ -77,43 +78,6 @@ absl::Status MessageEncodeError(upb_EncodeStatus status,
                                 SourceLocation loc = SourceLocation::current());
 
 namespace internal {
-class ExtensionMiniTableProvider {
- public:
-  constexpr explicit ExtensionMiniTableProvider(
-      const upb_MiniTableExtension* mini_table_ext)
-      : mini_table_ext_(mini_table_ext) {}
-  const upb_MiniTableExtension* mini_table_ext() const {
-    return mini_table_ext_;
-  }
-
- private:
-  const upb_MiniTableExtension* mini_table_ext_;
-};
-
-// -------------------------------------------------------------------
-// ExtensionIdentifier
-// This is the type of actual extension objects.  E.g. if you have:
-//   extend Foo {
-//     optional MyExtension bar = 1234;
-//   }
-// then "bar" will be defined in C++ as:
-//   ExtensionIdentifier<Foo, MyExtension> bar(&namespace_bar_ext);
-template <typename ExtendeeType, typename ExtensionType>
-class ExtensionIdentifier : public ExtensionMiniTableProvider {
- public:
-  using Extension = ExtensionType;
-  using Extendee = ExtendeeType;
-
-  constexpr explicit ExtensionIdentifier(
-      const upb_MiniTableExtension* mini_table_ext)
-      : ExtensionMiniTableProvider(mini_table_ext) {}
-
- private:
-  constexpr uint32_t number() const {
-    return upb_MiniTableExtension_Number(mini_table_ext());
-  }
-  friend class PrivateAccess;
-};
 
 template <typename T>
 upb_Arena* GetArena(Ptr<T> message) {
@@ -124,9 +88,6 @@ template <typename T>
 upb_Arena* GetArena(T* message) {
   return static_cast<upb_Arena*>(message->GetInternalArena());
 }
-
-upb_ExtensionRegistry* GetUpbExtensions(
-    const ExtensionRegistry& extension_registry);
 
 absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
                                             const upb_MiniTable* mini_table,
@@ -157,31 +118,6 @@ absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
 #ifdef HPB_BACKEND_UPB
 namespace backend = ::hpb::internal::backend::upb;
 #endif
-
-class ExtensionRegistry {
- public:
-  ExtensionRegistry(
-      const std::vector<const internal::ExtensionMiniTableProvider*>&
-          extensions,
-      const upb::Arena& arena)
-      : registry_(upb_ExtensionRegistry_New(arena.ptr())) {
-    if (registry_) {
-      for (const auto& ext_provider : extensions) {
-        const auto* ext = ext_provider->mini_table_ext();
-        bool success = upb_ExtensionRegistry_AddArray(registry_, &ext, 1);
-        if (!success) {
-          registry_ = nullptr;
-          break;
-        }
-      }
-    }
-  }
-
- private:
-  friend upb_ExtensionRegistry* ::hpb::internal::GetUpbExtensions(
-      const ExtensionRegistry& extension_registry);
-  upb_ExtensionRegistry* registry_;
-};
 
 template <typename T, typename Extendee, typename Extension,
           typename = hpb::internal::EnableIfHpbClass<T>>

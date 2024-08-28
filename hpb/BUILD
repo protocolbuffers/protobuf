@@ -21,28 +21,6 @@ load(
 licenses(["notice"])
 
 cc_library(
-    name = "repeated_field",
-    hdrs = [
-        "repeated_field.h",
-        "repeated_field_iterator.h",
-    ],
-    compatible_with = ["//buildenv/target:non_prod"],
-    copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":hpb",
-        ":traits",
-        "//hpb/backend/upb:interop",
-        "//upb:base",
-        "//upb:mem",
-        "//upb:message",
-        "//upb:message_copy",
-        "@com_google_absl//absl/base:core_headers",
-        "@com_google_absl//absl/strings",
-    ],
-)
-
-cc_library(
     name = "hpb",
     srcs = [
         "hpb.cc",
@@ -55,6 +33,7 @@ cc_library(
     defines = ["HPB_BACKEND_UPB"],
     visibility = ["//visibility:public"],
     deps = [
+        "//hpb:extension",
         "//hpb:ptr",
         "//hpb/backend/upb",
         "//hpb/backend/upb:interop",
@@ -73,6 +52,28 @@ cc_library(
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_library(
+    name = "repeated_field",
+    hdrs = [
+        "repeated_field.h",
+        "repeated_field_iterator.h",
+    ],
+    compatible_with = ["//buildenv/target:non_prod"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":hpb",
+        ":traits",
+        "//hpb/backend/upb:interop",
+        "//upb:base",
+        "//upb:mem",
+        "//upb:message",
+        "//upb:message_copy",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -165,4 +166,16 @@ cc_library(
     hdrs = ["ptr.h"],
     compatible_with = ["//buildenv/target:non_prod"],
     visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "extension",
+    srcs = ["extension.cc"],
+    hdrs = ["extension.h"],
+    compatible_with = ["//buildenv/target:non_prod"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//upb:mem",
+        "//upb:mini_table",
+    ],
 )

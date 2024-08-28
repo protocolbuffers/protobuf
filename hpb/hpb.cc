@@ -83,11 +83,6 @@ absl::Status MessageDecodeError(upb_DecodeStatus status, SourceLocation loc
 
 namespace internal {
 
-upb_ExtensionRegistry* GetUpbExtensions(
-    const ExtensionRegistry& extension_registry) {
-  return extension_registry.registry_;
-}
-
 /**
  * MessageLock(msg) acquires lock on msg when constructed and releases it when
  * destroyed.
