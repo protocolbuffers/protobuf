@@ -270,7 +270,7 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof,
 }
 
 void GenerateOneofExternC(Context& ctx, const OneofDescriptor& oneof) {
-  if (ctx.is_upb()) return;
+  ABSL_CHECK(ctx.is_cpp());
 
   ctx.Emit(
       {

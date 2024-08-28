@@ -100,9 +100,8 @@ void WithPresenceAccessorsInMsgImpl(Context& ctx, const FieldDescriptor& field,
 
 void WithPresenceAccessorsInExternC(Context& ctx,
                                     const FieldDescriptor& field) {
+  ABSL_CHECK(ctx.is_cpp());
   ABSL_CHECK(field.has_presence());
-
-  if (ctx.is_upb()) return;
 
   ctx.Emit(
       {

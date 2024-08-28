@@ -39,11 +39,16 @@ void MessageNew(Context& ctx, const Descriptor& msg) {
       return;
 
     case Kernel::kUpb:
-      ctx.Emit({{"new_thunk", ThunkName(ctx, msg, "new")}}, R"rs(
+      ctx.Emit(R"rs(
         let arena = $pbr$::Arena::new();
+        let raw_msg = unsafe {
+            $pbr$::upb_Message_New(
+                <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                arena.raw()).unwrap()
+        };
         Self {
           inner: $pbr$::MessageInner {
-            msg: unsafe { $new_thunk$(arena.raw()) },
+            msg: raw_msg,
             arena,
           }
         }
@@ -186,55 +191,35 @@ void MessageDebug(Context& ctx, const Descriptor& msg) {
   ABSL_LOG(FATAL) << "unreachable";
 }
 
-void MessageExterns(Context& ctx, const Descriptor& msg) {
-  switch (ctx.opts().kernel) {
-    case Kernel::kCpp:
-      ctx.Emit(
-          {{"new_thunk", ThunkName(ctx, msg, "new")},
-           {"placement_new_thunk", ThunkName(ctx, msg, "placement_new")},
-           {"repeated_new_thunk", ThunkName(ctx, msg, "repeated_new")},
-           {"repeated_free_thunk", ThunkName(ctx, msg, "repeated_free")},
-           {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
-           {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
-           {"repeated_get_mut_thunk", ThunkName(ctx, msg, "repeated_get_mut")},
-           {"repeated_add_thunk", ThunkName(ctx, msg, "repeated_add")},
-           {"repeated_clear_thunk", ThunkName(ctx, msg, "repeated_clear")},
-           {"repeated_copy_from_thunk",
-            ThunkName(ctx, msg, "repeated_copy_from")},
-           {"repeated_reserve_thunk", ThunkName(ctx, msg, "repeated_reserve")},
-           {"map_size_info_thunk", ThunkName(ctx, msg, "size_info")}},
-          R"rs(
-          fn $new_thunk$() -> $pbr$::RawMessage;
-          fn $placement_new_thunk$(ptr: *mut std::ffi::c_void, m: $pbr$::RawMessage);
-          fn $repeated_new_thunk$() -> $pbr$::RawRepeatedField;
-          fn $repeated_free_thunk$(raw: $pbr$::RawRepeatedField);
-          fn $repeated_len_thunk$(raw: $pbr$::RawRepeatedField) -> usize;
-          fn $repeated_add_thunk$(raw: $pbr$::RawRepeatedField) -> $pbr$::RawMessage;
-          fn $repeated_get_thunk$(raw: $pbr$::RawRepeatedField, index: usize) -> $pbr$::RawMessage;
-          fn $repeated_get_mut_thunk$(raw: $pbr$::RawRepeatedField, index: usize) -> $pbr$::RawMessage;
-          fn $repeated_clear_thunk$(raw: $pbr$::RawRepeatedField);
-          fn $repeated_copy_from_thunk$(dst: $pbr$::RawRepeatedField, src: $pbr$::RawRepeatedField);
-          fn $repeated_reserve_thunk$(raw: $pbr$::RawRepeatedField, additional: usize);
-          fn $map_size_info_thunk$(i: $pbr$::MapNodeSizeInfoIndex) -> $pbr$::MapNodeSizeInfo;
-        )rs");
-      return;
-
-    case Kernel::kUpb:
-      ctx.Emit(
-          {
-              {"new_thunk", ThunkName(ctx, msg, "new")},
-              {"minitable", UpbMiniTableName(msg)},
-          },
-          R"rs(
-          fn $new_thunk$(arena: $pbr$::RawArena) -> $pbr$::RawMessage;
-          /// Opaque wrapper for this message's MiniTable. The only valid way to
-          /// reference this static is with `std::ptr::addr_of!(..)`.
-          static $minitable$: $pbr$::upb_MiniTable;
-      )rs");
-      return;
-  }
-
-  ABSL_LOG(FATAL) << "unreachable";
+void CppMessageExterns(Context& ctx, const Descriptor& msg) {
+  ABSL_CHECK(ctx.is_cpp());
+  ctx.Emit(
+      {{"new_thunk", ThunkName(ctx, msg, "new")},
+       {"placement_new_thunk", ThunkName(ctx, msg, "placement_new")},
+       {"repeated_new_thunk", ThunkName(ctx, msg, "repeated_new")},
+       {"repeated_free_thunk", ThunkName(ctx, msg, "repeated_free")},
+       {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
+       {"repeated_get_thunk", ThunkName(ctx, msg, "repeated_get")},
+       {"repeated_get_mut_thunk", ThunkName(ctx, msg, "repeated_get_mut")},
+       {"repeated_add_thunk", ThunkName(ctx, msg, "repeated_add")},
+       {"repeated_clear_thunk", ThunkName(ctx, msg, "repeated_clear")},
+       {"repeated_copy_from_thunk", ThunkName(ctx, msg, "repeated_copy_from")},
+       {"repeated_reserve_thunk", ThunkName(ctx, msg, "repeated_reserve")},
+       {"map_size_info_thunk", ThunkName(ctx, msg, "size_info")}},
+      R"rs(
+      fn $new_thunk$() -> $pbr$::RawMessage;
+      fn $placement_new_thunk$(ptr: *mut std::ffi::c_void, m: $pbr$::RawMessage);
+      fn $repeated_new_thunk$() -> $pbr$::RawRepeatedField;
+      fn $repeated_free_thunk$(raw: $pbr$::RawRepeatedField);
+      fn $repeated_len_thunk$(raw: $pbr$::RawRepeatedField) -> usize;
+      fn $repeated_add_thunk$(raw: $pbr$::RawRepeatedField) -> $pbr$::RawMessage;
+      fn $repeated_get_thunk$(raw: $pbr$::RawRepeatedField, index: usize) -> $pbr$::RawMessage;
+      fn $repeated_get_mut_thunk$(raw: $pbr$::RawRepeatedField, index: usize) -> $pbr$::RawMessage;
+      fn $repeated_clear_thunk$(raw: $pbr$::RawRepeatedField);
+      fn $repeated_copy_from_thunk$(dst: $pbr$::RawRepeatedField, src: $pbr$::RawRepeatedField);
+      fn $repeated_reserve_thunk$(raw: $pbr$::RawRepeatedField, additional: usize);
+      fn $map_size_info_thunk$(i: $pbr$::MapNodeSizeInfoIndex) -> $pbr$::MapNodeSizeInfo;
+    )rs");
 }
 
 void MessageDrop(Context& ctx, const Descriptor& msg) {
@@ -244,7 +229,7 @@ void MessageDrop(Context& ctx, const Descriptor& msg) {
     return;
   }
 
-  ctx.Emit({}, R"rs(
+  ctx.Emit(R"rs(
     unsafe { $pbr$::proto2_rust_Message_delete(self.raw_msg()); }
   )rs");
 }
@@ -252,7 +237,7 @@ void MessageDrop(Context& ctx, const Descriptor& msg) {
 void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
-      ctx.Emit({}, R"rs(
+      ctx.Emit(R"rs(
         impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$View<'msg> {
           fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
             let dst = $Msg$::new();
@@ -843,7 +828,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
        {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
        {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
        {"MsgMut::merge_from", [&] { MessageMutMergeFrom(ctx, msg); }},
-       {"Msg_externs", [&] { MessageExterns(ctx, msg); }},
        {"accessor_fns",
         [&] {
           for (int i = 0; i < msg.field_count(); ++i) {
@@ -852,18 +836,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
             GenerateOneofAccessors(ctx, *msg.real_oneof_decl(i),
                                    AccessorCase::OWNED);
-          }
-        }},
-       {"accessor_externs",
-        [&] {
-          for (int i = 0; i < msg.field_count(); ++i) {
-            GenerateAccessorExternC(ctx, *msg.field(i));
-          }
-        }},
-       {"oneof_externs",
-        [&] {
-          for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
-            GenerateOneofExternC(ctx, *msg.real_oneof_decl(i));
           }
         }},
        {"nested_in_msg",
@@ -1276,16 +1248,44 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
         $upb_generated_message_trait_impls$
 
-        extern "C" {
-          $Msg_externs$
-
-          $accessor_externs$
-
-          $oneof_externs$
-        }  // extern "C" for $Msg$
-
         $nested_in_msg$
       )rs");
+
+  if (ctx.is_cpp()) {
+    ctx.Emit(
+        {
+            {"message_externs", [&] { CppMessageExterns(ctx, msg); }},
+            {"accessor_externs",
+             [&] {
+               for (int i = 0; i < msg.field_count(); ++i) {
+                 GenerateAccessorExternC(ctx, *msg.field(i));
+               }
+             }},
+            {"oneof_externs",
+             [&] {
+               for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
+                 GenerateOneofExternC(ctx, *msg.real_oneof_decl(i));
+               }
+             }},
+        },
+        R"rs(
+        extern "C" {
+          $message_externs$
+          $accessor_externs$
+          $oneof_externs$
+        }
+    )rs");
+  } else {
+    ctx.Emit({{"minitable_symbol_name", UpbMiniTableName(msg)}},
+             R"rs(
+          extern "C" {
+            /// Opaque static extern for this message's MiniTable, generated
+            /// by the upb C MiniTable codegen. The only valid way to
+            /// reference this static is with `std::ptr::addr_of!(..)`.
+            static $minitable_symbol_name$: $pbr$::upb_MiniTable;
+          }
+      )rs");
+  }
 
   ctx.printer().PrintRaw("\n");
   if (ctx.is_cpp()) {

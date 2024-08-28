@@ -160,7 +160,7 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
 
 void RepeatedField::InExternC(Context& ctx,
                               const FieldDescriptor& field) const {
-  if (ctx.is_upb()) return;
+  ABSL_CHECK(ctx.is_cpp());
 
   ctx.Emit({{"getter_thunk", ThunkName(ctx, field, "get")},
             {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},

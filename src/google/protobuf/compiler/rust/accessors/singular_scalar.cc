@@ -143,8 +143,7 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
 
 void SingularScalar::InExternC(Context& ctx,
                                const FieldDescriptor& field) const {
-  // Only cpp kernel uses thunks for singular scalars.
-  if (ctx.is_upb()) return;
+  ABSL_CHECK(ctx.is_cpp());
 
   if (field.has_presence()) {
     WithPresenceAccessorsInExternC(ctx, field);
@@ -168,6 +167,8 @@ void SingularScalar::InExternC(Context& ctx,
 
 void SingularScalar::InThunkCc(Context& ctx,
                                const FieldDescriptor& field) const {
+  ABSL_CHECK(ctx.is_cpp());
+
   if (field.has_presence()) {
     WithPresenceAccessorsInThunkCc(ctx, field);
   }

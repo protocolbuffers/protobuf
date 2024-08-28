@@ -169,7 +169,8 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
 
 void SingularMessage::InExternC(Context& ctx,
                                 const FieldDescriptor& field) const {
-  if (ctx.is_upb()) return;
+  ABSL_CHECK(ctx.is_cpp());
+
   if (field.has_presence()) {
     WithPresenceAccessorsInExternC(ctx, field);
   }

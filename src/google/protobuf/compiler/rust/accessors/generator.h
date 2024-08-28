@@ -48,6 +48,7 @@ class AccessorGenerator {
     ctx.printer().PrintRaw("\n");
   }
   void GenerateExternC(Context& ctx, const FieldDescriptor& field) const {
+    ABSL_CHECK(ctx.is_cpp());
     InExternC(ctx, field);
     ctx.printer().PrintRaw("\n");
   }

@@ -144,7 +144,7 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
 }
 
 void Map::InExternC(Context& ctx, const FieldDescriptor& field) const {
-  if (ctx.is_upb()) return;
+  ABSL_CHECK(ctx.is_cpp());
 
   ctx.Emit(
       {
