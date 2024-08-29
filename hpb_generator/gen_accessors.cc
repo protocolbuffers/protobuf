@@ -256,7 +256,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
         output(
             R"cc(
               $1 $0::mutable_$2() {
-                return ::hpb::internal::CreateMessageProxy<$4>(
+                return hpb::interop::upb::MakeHandle<$4>(
                     (upb_Message*)($3_mutable_$5(msg_, $6)), $6);
               }
             )cc",

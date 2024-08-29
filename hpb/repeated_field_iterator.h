@@ -358,7 +358,7 @@ struct MessageIteratorPolicy {
         return ::hpb::interop::upb::MakeCHandle<
             typename std::remove_const_t<T>>(*arr, arena);
       } else {
-        return ::hpb::internal::CreateMessageProxy<T>(*arr, arena);
+        return hpb::interop::upb::MakeHandle<T>(*arr, arena);
       }
     }
     auto Index() const { return arr; }

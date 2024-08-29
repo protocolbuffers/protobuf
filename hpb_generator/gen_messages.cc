@@ -298,8 +298,7 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
         $0Proxy(upb_Message* msg, upb_Arena* arena)
             : internal::$0Access(($1*)msg, arena) {}
         friend $0::Proxy(::hpb::CreateMessage<$0>(::hpb::Arena& arena));
-        friend $0::Proxy(::hpb::internal::CreateMessageProxy<$0>(upb_Message*,
-                                                                 upb_Arena*));
+        friend $0::Proxy(hpb::interop::upb::MakeHandle<$0>(upb_Message*, upb_Arena*));
         friend struct ::hpb::internal::PrivateAccess;
         friend class RepeatedFieldProxy;
         friend class $0CProxy;

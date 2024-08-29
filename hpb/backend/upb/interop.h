@@ -43,11 +43,25 @@ const upb_MiniTable* GetMiniTable(Ptr<T>) {
  *
  * The upb message must not be mutated directly while the handle is alive.
  *
+ * T must match actual type of `msg`.
  * TODO: b/361596328 - revisit GetArena for CHandles
+ * TODO: b/362743843 - consider passing in MiniTable to ensure match
  */
 template <typename T>
 typename T::CProxy MakeCHandle(const upb_Message* msg, upb_Arena* arena) {
   return hpb::internal::PrivateAccess::CProxy<T>(msg, arena);
+}
+
+/**
+ * Creates a Handle to a mutable upb message.
+ *
+ * The supplied arena must outlive the hpb handle.
+ * All messages reachable from from the upb message must
+ * outlive the hpb handle.
+ */
+template <typename T>
+typename T::Proxy MakeHandle(upb_Message* msg, upb_Arena* arena) {
+  return typename T::Proxy(msg, arena);
 }
 
 }  // namespace hpb::interop::upb

@@ -110,8 +110,7 @@ class RepeatedFieldProxy
   template <int&... DeductionBlocker, bool b = !kIsConst,
             typename = std::enable_if_t<b>>
   typename T::Proxy operator[](size_t n) {
-    return ::hpb::internal::CreateMessageProxy<T>(this->GetMessage(n),
-                                                  this->arena_);
+    return hpb::interop::upb::MakeHandle<T>(this->GetMessage(n), this->arena_);
   }
 
   // Mutable message reference specialization.

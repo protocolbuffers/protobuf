@@ -38,11 +38,6 @@ auto* GetInternalMsg(T&& message) {
   return PrivateAccess::GetInternalMsg(std::forward<T>(message));
 }
 
-template <typename T>
-typename T::Proxy CreateMessageProxy(upb_Message* msg, upb_Arena* arena) {
-  return typename T::Proxy(msg, arena);
-}
-
 }  // namespace hpb::internal
 
 #endif  // GOOGLE_PROTOBUF_HPB_INTERNAL_INTERNAL_H__
