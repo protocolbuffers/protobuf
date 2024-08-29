@@ -10,7 +10,6 @@
 
 #include <string>
 
-#include "absl/strings/string_view.h"
 #include "google/protobuf/json/internal/lexer.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/util/type_resolver.h"
@@ -18,9 +17,10 @@
 namespace google {
 namespace protobuf {
 namespace json_internal {
-// Internal version of google::protobuf::util::JsonStringToMessage; see json_util.h for
+// Internal version of google::protobuf::util::JsonStreamToMessage; see json_util.h for
 // details.
-absl::Status JsonStringToMessage(absl::string_view input, Message* message,
+absl::Status JsonStreamToMessage(io::ZeroCopyInputStream* input,
+                                 Message* message,
                                  json_internal::ParseOptions options);
 // Internal version of google::protobuf::util::JsonToBinaryStream; see json_util.h for
 // details.

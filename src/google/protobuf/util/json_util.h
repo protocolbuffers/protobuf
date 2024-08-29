@@ -25,6 +25,7 @@ using JsonOptions ABSL_DEPRECATED("use JsonPrintOptions instead") =
 using ::google::protobuf::json::BinaryToJsonStream;
 using ::google::protobuf::json::BinaryToJsonString;
 
+using ::google::protobuf::json::JsonStreamToMessage;
 using ::google::protobuf::json::JsonStringToMessage;
 using ::google::protobuf::json::JsonToBinaryStream;
 
