@@ -32,13 +32,11 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"RsType", RsTypePath(ctx, field)},
           {"view_lifetime", ViewLifetime(accessor_case)},
           {"view_self", ViewReceiver(accessor_case)},
-          {"getter_thunk", ThunkName(ctx, field, "get")},
-          {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
           {"upb_mt_field_index", UpbMiniTableFieldIndex(field)},
           {"getter",
            [&] {
              if (ctx.is_upb()) {
-               ctx.Emit({}, R"rs(
+               ctx.Emit(R"rs(
                     pub fn $field$($view_self$) -> $pb$::RepeatedView<$view_lifetime$, $RsType$> {
                       unsafe {
                         let f = $pbr$::upb_MiniTable_GetFieldByIndex(
@@ -55,7 +53,7 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     }
                   )rs");
              } else {
-               ctx.Emit({}, R"rs(
+               ctx.Emit({{"getter_thunk", ThunkName(ctx, field, "get")}}, R"rs(
                     pub fn $field$($view_self$) -> $pb$::RepeatedView<$view_lifetime$, $RsType$> {
                       unsafe {
                         $pb$::RepeatedView::from_raw(
@@ -94,7 +92,9 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     }
                   )rs");
              } else {
-               ctx.Emit({}, R"rs(
+               ctx.Emit(
+                   {{"getter_mut_thunk", ThunkName(ctx, field, "get_mut")}},
+                   R"rs(
                       pub fn $field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $RsType$> {
                         unsafe {
                           $pb$::RepeatedMut::from_inner(
@@ -108,7 +108,6 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     )rs");
              }
            }},
-          {"move_setter_thunk", ThunkName(ctx, field, "move_set")},
           {"setter",
            [&] {
              if (accessor_case == AccessorCase::VIEW) {
@@ -137,7 +136,9 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     }
                   )rs");
              } else {
-               ctx.Emit({}, R"rs(
+               ctx.Emit(
+                   {{"move_setter_thunk", ThunkName(ctx, field, "move_set")}},
+                   R"rs(
                       pub fn set_$raw_field_name$(&mut self, src: impl $pb$::IntoProxied<$pb$::Repeated<$RsType$>>) {
                         // Prevent the memory from being deallocated. The setter
                         // transfers ownership of the memory to the parent message.

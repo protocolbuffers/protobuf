@@ -35,8 +35,6 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
       {
           {"field", RsSafeName(field_name)},
           {"raw_field_name", field_name},
-          {"getter_thunk", ThunkName(ctx, field, "get")},
-          {"setter_thunk", ThunkName(ctx, field, "set")},
           {"default_value", DefaultValue(ctx, field)},
           {"upb_mt_field_index", UpbMiniTableFieldIndex(field)},
           {"proxied_type", RsTypePath(ctx, field)},
@@ -57,7 +55,8 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"getter",
            [&] {
              if (ctx.is_cpp()) {
-               ctx.Emit(R"rs(
+               ctx.Emit({{"getter_thunk", ThunkName(ctx, field, "get")}},
+                        R"rs(
                   pub fn $field$($view_self$) -> $pb$::View<$view_lifetime$, $proxied_type$> {
                     let str_view = unsafe { $getter_thunk$(self.raw_msg()) };
                     $transform_view$
@@ -79,7 +78,8 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"setter_impl",
            [&] {
              if (ctx.is_cpp()) {
-               ctx.Emit(R"rs(
+               ctx.Emit({{"setter_thunk", ThunkName(ctx, field, "set")}},
+                        R"rs(
                 let s = val.into_proxied($pbi$::Private);
                 unsafe {
                   $setter_thunk$(
@@ -115,8 +115,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"setter",
            [&] {
              if (accessor_case == AccessorCase::VIEW) return;
-             ctx.Emit({},
-                      R"rs(
+             ctx.Emit(R"rs(
               pub fn set_$raw_field_name$(&mut self, val: impl $pb$::IntoProxied<$proxied_type$>) {
                 $setter_impl$
               }

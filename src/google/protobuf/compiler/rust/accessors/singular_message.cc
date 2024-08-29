@@ -39,15 +39,12 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"raw_field_name", field_name},
           {"view_lifetime", ViewLifetime(accessor_case)},
           {"view_self", ViewReceiver(accessor_case)},
-          {"getter_thunk", ThunkName(ctx, field, "get")},
-          {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
-          {"set_allocated_thunk", ThunkName(ctx, field, "set")},
           {"upb_mt_field_index", UpbMiniTableFieldIndex(field)},
           {
               "getter_body",
               [&] {
                 if (ctx.is_upb()) {
-                  ctx.Emit({}, R"rs(
+                  ctx.Emit(R"rs(
               let submsg = unsafe {
                 let f = $pbr$::upb_MiniTable_GetFieldByIndex(
                             <Self as $pbr$::AssociatedMiniTable>::mini_table(),
@@ -64,7 +61,8 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
               }
         )rs");
                 } else {
-                  ctx.Emit({}, R"rs(
+                  ctx.Emit({{"getter_thunk", ThunkName(ctx, field, "get")}},
+                           R"rs(
               //~ For C++ kernel, getters automatically return the
               //~ default_instance if the field is unset.
               let submsg = unsafe { $getter_thunk$(self.raw_msg()) };
@@ -75,7 +73,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           },
           {"getter",
            [&] {
-             ctx.Emit({}, R"rs(
+             ctx.Emit(R"rs(
                 pub fn $field$($view_self$) -> $msg_type$View<$view_lifetime$> {
                   $getter_body$
                 }
@@ -84,7 +82,9 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"getter_mut_body",
            [&] {
              if (ctx.is_cpp()) {
-               ctx.Emit({}, R"rs(
+               ctx.Emit(
+                   {{"getter_mut_thunk", ThunkName(ctx, field, "get_mut")}},
+                   R"rs(
                   let raw_msg = unsafe { $getter_mut_thunk$(self.raw_msg()) };
                   $msg_type$Mut::from_parent($pbi$::Private,
                   self.as_mutator_message_ref($pbi$::Private), raw_msg)
@@ -117,7 +117,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
            [&] {
              if (accessor_case == AccessorCase::VIEW) return;
              if (ctx.is_upb()) {
-               ctx.Emit({}, R"rs(
+               ctx.Emit(R"rs(
                   // The message and arena are dropped after the setter. The
                   // memory remains allocated as we fuse the arena with the
                   // parent message's arena.
@@ -137,7 +137,8 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   }
                 )rs");
              } else {
-               ctx.Emit({}, R"rs(
+               ctx.Emit({{"set_allocated_thunk", ThunkName(ctx, field, "set")}},
+                        R"rs(
                   // Prevent the memory from being deallocated. The setter
                   // transfers ownership of the memory to the parent message.
                   let mut msg = std::mem::ManuallyDrop::new(val.into_proxied($pbi$::Private));

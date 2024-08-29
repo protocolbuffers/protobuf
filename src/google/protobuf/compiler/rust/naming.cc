@@ -77,86 +77,20 @@ std::string RawMapThunk(Context& ctx, const EnumDescriptor& desc,
   return absl::StrCat("proto2_rust_thunk_Map_", key_t, "_i32_", op);
 }
 
-namespace {
-
-template <typename T>
-std::string ThunkNameUpb(Context& ctx, const T& field, absl::string_view op) {
-  ABSL_CHECK(ctx.is_upb());
-
-  absl::string_view format;
-
-  // NOTE: this function's outputs must match the symbols
-  // that the upbc plugin generates exactly. Failure to do so correctly
-  // will result in a link-time failure.
-  if (op == "get") {
-    // upb getter is simply the field name (no "get" in the name).
-    format = "_$1";
-  } else if (op == "get_mut") {
-    // same as above, with with `mutable` prefix
-    format = "_mutable_$1";
-  } else if (op == "case") {
-    // some upb functions are in the order x_op compared to has/set/clear
-    // which are in the other order e.g. op_x.
-    format = "_$1_$0";
-  } else {
-    format = "_$0_$1";
-  }
-  return absl::StrCat(
-      GetUnderscoreDelimitedFullName(ctx, *field.containing_type()),
-      absl::Substitute(format, op, field.name()));
-}
-
-template <typename T>
-std::string ThunkNameCpp(Context& ctx, const T& field, absl::string_view op) {
+std::string ThunkName(Context& ctx, const FieldDescriptor& field,
+                      absl::string_view op) {
   ABSL_CHECK(ctx.is_cpp());
   return absl::StrCat("proto2_rust_thunk_",
                       UnderscoreDelimitFullName(ctx, field.full_name()), "_",
                       op);
 }
 
-template <typename T>
-std::string ThunkName(Context& ctx, const T& field, absl::string_view op) {
-  if (ctx.is_upb()) {
-    return ThunkNameUpb(ctx, field, op);
-  } else {
-    return ThunkNameCpp(ctx, field, op);
-  }
-}
-
-std::string ThunkMapOrRepeated(Context& ctx, const FieldDescriptor& field,
-                               absl::string_view op) {
-  if (!ctx.is_upb()) {
-    return ThunkName<FieldDescriptor>(ctx, field, op);
-  }
-
-  absl::string_view format;
-  if (op == "get") {
-    format = field.is_map() ? "_$1_upb_map" : "_$1_upb_array";
-  } else if (op == "get_mut") {
-    format = field.is_map() ? "_$1_mutable_upb_map" : "_$1_mutable_upb_array";
-  } else {
-    return ThunkName<FieldDescriptor>(ctx, field, op);
-  }
-
-  std::string thunkName = absl::StrCat(
-      "_", GetUnderscoreDelimitedFullName(ctx, *field.containing_type()));
-  absl::SubstituteAndAppend(&thunkName, format, op, field.name());
-  return thunkName;
-}
-
-}  // namespace
-
-std::string ThunkName(Context& ctx, const FieldDescriptor& field,
-                      absl::string_view op) {
-  if (field.is_map() || field.is_repeated()) {
-    return ThunkMapOrRepeated(ctx, field, op);
-  }
-  return ThunkName<FieldDescriptor>(ctx, field, op);
-}
-
 std::string ThunkName(Context& ctx, const OneofDescriptor& field,
                       absl::string_view op) {
-  return ThunkName<OneofDescriptor>(ctx, field, op);
+  ABSL_CHECK(ctx.is_cpp());
+  return absl::StrCat("proto2_rust_thunk_",
+                      UnderscoreDelimitFullName(ctx, field.full_name()), "_",
+                      op);
 }
 
 std::string ThunkName(Context& ctx, const Descriptor& msg,

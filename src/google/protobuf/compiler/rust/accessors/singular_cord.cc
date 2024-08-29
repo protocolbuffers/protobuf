@@ -32,72 +32,72 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
 
   std::string field_name = FieldNameWithCollisionAvoidance(field);
   bool is_string_type = field.type() == FieldDescriptor::TYPE_STRING;
-  ctx.Emit(
-      {{"field", RsSafeName(field_name)},
-       {"raw_field_name", field_name},
-       {"borrowed_getter_thunk", ThunkName(ctx, field, "get_cord_borrowed")},
-       {"owned_getter_thunk", ThunkName(ctx, field, "get_cord_owned")},
-       {"is_flat_thunk", ThunkName(ctx, field, "cord_is_flat")},
-       {"setter_thunk", ThunkName(ctx, field, "set")},
-       {"getter_thunk", ThunkName(ctx, field, "get")},
-       {"proxied_type", RsTypePath(ctx, field)},
-       {"default_value", DefaultValue(ctx, field)},
-       {"upb_mt_field_index", UpbMiniTableFieldIndex(field)},
-       {"borrowed_type",
-        [&] {
-          if (is_string_type) {
-            ctx.Emit("$pb$::ProtoStr");
-          } else {
-            ctx.Emit("[u8]");
-          }
-        }},
-       {"transform_borrowed",
-        [&] {
-          if (is_string_type) {
-            ctx.Emit(R"rs(
+  ctx.Emit({{"field", RsSafeName(field_name)},
+            {"raw_field_name", field_name},
+            {"proxied_type", RsTypePath(ctx, field)},
+            {"default_value", DefaultValue(ctx, field)},
+            {"upb_mt_field_index", UpbMiniTableFieldIndex(field)},
+            {"borrowed_type",
+             [&] {
+               if (is_string_type) {
+                 ctx.Emit("$pb$::ProtoStr");
+               } else {
+                 ctx.Emit("[u8]");
+               }
+             }},
+            {"transform_borrowed",
+             [&] {
+               if (is_string_type) {
+                 ctx.Emit(R"rs(
                 $pb$::ProtoStringCow::Borrowed(
                   // SAFETY: The runtime doesn't require ProtoStr to be UTF-8.
                   unsafe { $pb$::ProtoStr::from_utf8_unchecked(view.as_ref()) }
                 )
               )rs");
-          } else {
-            ctx.Emit(R"rs(
+               } else {
+                 ctx.Emit(R"rs(
                 $pb$::ProtoBytesCow::Borrowed(
                   unsafe { view.as_ref() }
                 )
                )rs");
-          }
-        }},
-       {"transform_owned",
-        [&] {
-          if (is_string_type) {
-            ctx.Emit(R"rs(
+               }
+             }},
+            {"transform_owned",
+             [&] {
+               if (is_string_type) {
+                 ctx.Emit(R"rs(
                 $pb$::ProtoStringCow::Owned(
                   $pb$::ProtoString::from_inner($pbi$::Private, inner)
                 )
               )rs");
-          } else {
-            ctx.Emit(R"rs(
+               } else {
+                 ctx.Emit(R"rs(
                 $pb$::ProtoBytesCow::Owned(
                   $pb$::ProtoBytes::from_inner($pbi$::Private, inner)
                 )
               )rs");
-          }
-        }},
-       {"view_lifetime", ViewLifetime(accessor_case)},
-       {"view_type",
-        [&] {
-          if (is_string_type) {
-            ctx.Emit("$pb$::ProtoStringCow<$view_lifetime$>");
-          } else {
-            ctx.Emit("$pb$::ProtoBytesCow<$view_lifetime$>");
-          }
-        }},
-       {"view_self", ViewReceiver(accessor_case)},
-       {"getter_impl",
-        [&] {
-          if (ctx.is_cpp()) {
-            ctx.Emit(R"rs(
+               }
+             }},
+            {"view_lifetime", ViewLifetime(accessor_case)},
+            {"view_type",
+             [&] {
+               if (is_string_type) {
+                 ctx.Emit("$pb$::ProtoStringCow<$view_lifetime$>");
+               } else {
+                 ctx.Emit("$pb$::ProtoBytesCow<$view_lifetime$>");
+               }
+             }},
+            {"view_self", ViewReceiver(accessor_case)},
+            {"getter_impl",
+             [&] {
+               if (ctx.is_cpp()) {
+                 ctx.Emit(
+                     {{"is_flat_thunk", ThunkName(ctx, field, "cord_is_flat")},
+                      {"borrowed_getter_thunk",
+                       ThunkName(ctx, field, "get_cord_borrowed")},
+                      {"owned_getter_thunk",
+                       ThunkName(ctx, field, "get_cord_owned")}},
+                     R"rs(
                   let cord_is_flat = unsafe { $is_flat_thunk$(self.raw_msg()) };
                   if cord_is_flat {
                     let view = unsafe { $borrowed_getter_thunk$(self.raw_msg()) };
@@ -109,8 +109,8 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
 
                   $transform_owned$
                 )rs");
-          } else {
-            ctx.Emit(R"rs(
+               } else {
+                 ctx.Emit(R"rs(
                 let view = unsafe {
                   let f = $pbr$::upb_MiniTable_GetFieldByIndex(
                       <Self as $pbr$::AssociatedMiniTable>::mini_table(),
@@ -120,21 +120,21 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 };
                 $transform_borrowed$
               )rs");
-          }
-        }},
-       {"getter",
-        [&] {
-          ctx.Emit(R"rs(
+               }
+             }},
+            {"getter",
+             [&] {
+               ctx.Emit(R"rs(
                 pub fn $field$($view_self$) -> $view_type$ {
                   $getter_impl$
                 }
             )rs");
-        }},
-       {"setter_impl",
-        [&] {
-          if (ctx.is_cpp()) {
-            ctx.Emit({},
-                     R"rs(
+             }},
+            {"setter_impl",
+             [&] {
+               if (ctx.is_cpp()) {
+                 ctx.Emit({{"setter_thunk", ThunkName(ctx, field, "set")}},
+                          R"rs(
               let s = val.into_proxied($pbi$::Private);
               unsafe {
                 $setter_thunk$(
@@ -143,8 +143,8 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 );
               }
             )rs");
-          } else {
-            ctx.Emit(R"rs(
+               } else {
+                 ctx.Emit(R"rs(
               let s = val.into_proxied($pbi$::Private);
               let (view, arena) =
                 s.into_inner($pbi$::Private).into_raw_parts();
@@ -165,19 +165,19 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   view);
               }
             )rs");
-          }
-        }},
-       {"setter",
-        [&] {
-          if (accessor_case == AccessorCase::VIEW) return;
-          ctx.Emit({},
-                   R"rs(
+               }
+             }},
+            {"setter",
+             [&] {
+               if (accessor_case == AccessorCase::VIEW) return;
+               ctx.Emit({},
+                        R"rs(
               pub fn set_$raw_field_name$(&mut self, val: impl $pb$::IntoProxied<$proxied_type$>) {
                 $setter_impl$
               }
             )rs");
-        }}},
-      R"rs(
+             }}},
+           R"rs(
         $getter$
         $setter$
       )rs");
@@ -217,7 +217,7 @@ void SingularCord::InExternC(Context& ctx, const FieldDescriptor& field) const {
              fn $owned_getter_thunk$(raw_msg: $pbr$::RawMessage) -> $pbr$::CppStdString;
            )rs");
           } else {
-            ctx.Emit(R"rs(
+            ctx.Emit({{"getter_thunk", ThunkName(ctx, field, "get")}}, R"rs(
              fn $getter_thunk$(raw_msg: $pbr$::RawMessage) -> $pbr$::PtrAndLen;
            )rs");
           }

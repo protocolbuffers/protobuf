@@ -71,14 +71,13 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"raw_field_name", field_name},  // Never r# prefixed
           {"view_self", ViewReceiver(accessor_case)},
           {"Scalar", RsTypePath(ctx, field)},
-          {"hazzer_thunk", ThunkName(ctx, field, "has")},
           {"default_value", DefaultValue(ctx, field)},
           {"upb_mt_field_index", UpbMiniTableFieldIndex(field)},
           {"upb_fn_type_name", UpbCTypeNameForFunctions(field)},
           {"getter",
            [&] {
              if (ctx.is_cpp()) {
-               ctx.Emit(R"rs(
+               ctx.Emit({{"getter_thunk", ThunkName(ctx, field, "get")}}, R"rs(
                     pub fn $field$($view_self$) -> $Scalar$ {
                       unsafe { $getter_thunk$(self.raw_msg()) }
                     }
@@ -109,7 +108,7 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
            [&] {
              if (accessor_case == AccessorCase::VIEW) return;
              if (ctx.is_cpp()) {
-               ctx.Emit(R"rs(
+               ctx.Emit({{"setter_thunk", ThunkName(ctx, field, "set")}}, R"rs(
                   pub fn set_$raw_field_name$(&mut self, val: $Scalar$) {
                     unsafe { $setter_thunk$(self.raw_msg(), val) }
                   }
@@ -132,8 +131,6 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 )rs");
              }
            }},
-          {"getter_thunk", ThunkName(ctx, field, "get")},
-          {"setter_thunk", ThunkName(ctx, field, "set")},
       },
       R"rs(
           $getter$
