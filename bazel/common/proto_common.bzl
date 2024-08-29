@@ -147,9 +147,6 @@ def _compile(
         of the command line.
       additional_tools: (list[File]) Additional tools to add to the action.
       additional_inputs: (Depset[File]) Additional input files to add to the action.
-      additional_proto_lang_toolchain_info: (list[ProtoLangToolchainInfo]) Additional proto lang
-        toolchain info for invoking multiple plugins in a single protoc invocation. For example,
-        this is needed for plugin insertion points.
       resource_set: (func) A callback function that is passed to the created action.
         See `ctx.actions.run`, `resource_set` parameter for full definition of
         the callback.
@@ -190,10 +187,6 @@ def _compile(
     if proto_lang_toolchain_info.plugin:
         tools.append(proto_lang_toolchain_info.plugin)
         args.add(proto_lang_toolchain_info.plugin.executable, format = proto_lang_toolchain_info.plugin_format_flag)
-
-    if additional_proto_lang_toolchain_info != None:
-        tools.append(additional_proto_lang_toolchain_info.plugin)
-        args.add(additional_proto_lang_toolchain_info.plugin.executable, format = additional_proto_lang_toolchain_info.plugin_format_flag)
 
     # Protoc searches for .protos -I paths in order they are given and then
     # uses the path within the directory as the package.
