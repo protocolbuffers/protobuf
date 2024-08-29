@@ -224,10 +224,9 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
 void CordFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (field_->default_value_string().empty()) {
-    format("this_.$field$.Clear();\n");
+    format("$field$.Clear();\n");
   } else {
-    format(
-        "this_.$field$ = ::absl::string_view($default$, $default_length$);\n");
+    format("$field$ = ::absl::string_view($default$, $default_length$);\n");
   }
 }
 
