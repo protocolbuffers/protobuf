@@ -115,7 +115,8 @@ inline bool CodeGeneratorResponse_Feature_Parse(absl::string_view name, CodeGene
 
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT Version final : public ::google::protobuf::Message
+class PROTOC_EXPORT Version final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.Version) */ {
  public:
   inline Version() : Version(nullptr) {}
@@ -353,7 +354,8 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf::Message
+class PROTOC_EXPORT CodeGeneratorResponse_File final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse.File) */ {
  public:
   inline CodeGeneratorResponse_File() : CodeGeneratorResponse_File(nullptr) {}
@@ -607,7 +609,8 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
 };
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Message
+class PROTOC_EXPORT CodeGeneratorResponse final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse) */ {
  public:
   inline CodeGeneratorResponse() : CodeGeneratorResponse(nullptr) {}
@@ -885,7 +888,8 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
 };
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Message
+class PROTOC_EXPORT CodeGeneratorRequest final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorRequest) */ {
  public:
   inline CodeGeneratorRequest() : CodeGeneratorRequest(nullptr) {}

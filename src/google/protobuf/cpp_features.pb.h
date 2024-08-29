@@ -99,7 +99,8 @@ inline bool CppFeatures_StringType_Parse(absl::string_view name, CppFeatures_Str
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT CppFeatures final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:pb.CppFeatures) */ {
  public:
   inline CppFeatures() : CppFeatures(nullptr) {}

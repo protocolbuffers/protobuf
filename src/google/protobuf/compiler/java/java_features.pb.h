@@ -98,7 +98,8 @@ inline bool JavaFeatures_Utf8Validation_Parse(absl::string_view name, JavaFeatur
 
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
+class PROTOC_EXPORT JavaFeatures final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:pb.JavaFeatures) */ {
  public:
   inline JavaFeatures() : JavaFeatures(nullptr) {}
