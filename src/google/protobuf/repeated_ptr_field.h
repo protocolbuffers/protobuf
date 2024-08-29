@@ -456,13 +456,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     // Now perform a copy if we're on an arena.
     Arena* arena = GetArena();
 
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-    auto* new_result = copy<TypeHandler>(result);
-    if (arena == nullptr) delete result;
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-    auto* new_result = (arena == nullptr) ? result : copy<TypeHandler>(result);
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
-    return new_result;
+    if (internal::DebugHardenForceCopyInRelease()) {
+      auto* new_result = copy<TypeHandler>(result);
+      if (arena == nullptr) delete result;
+      return new_result;
+    } else {
+      return (arena == nullptr) ? result : copy<TypeHandler>(result);
+    }
   }
 
   // Releases and returns the last element, but does not do out-of-arena copy.
@@ -1437,27 +1437,27 @@ inline void RepeatedPtrField<Element>::ExtractSubrange(int start, int num,
   if (elements != nullptr) {
     Arena* arena = GetArena();
     auto* extracted = data() + start;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-    // Always copy.
-    for (int i = 0; i < num; ++i) {
-      elements[i] = copy<TypeHandler>(extracted[i]);
-    }
-    if (arena == nullptr) {
-      for (int i = 0; i < num; ++i) {
-        delete extracted[i];
-      }
-    }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-    // If we're on an arena, we perform a copy for each element so that the
-    // returned elements are heap-allocated. Otherwise, just forward it.
-    if (arena != nullptr) {
+    if (internal::DebugHardenForceCopyInRelease()) {
+      // Always copy.
       for (int i = 0; i < num; ++i) {
         elements[i] = copy<TypeHandler>(extracted[i]);
       }
+      if (arena == nullptr) {
+        for (int i = 0; i < num; ++i) {
+          delete extracted[i];
+        }
+      }
     } else {
-      memcpy(elements, extracted, num * sizeof(Element*));
+      // If we're on an arena, we perform a copy for each element so that the
+      // returned elements are heap-allocated. Otherwise, just forward it.
+      if (arena != nullptr) {
+        for (int i = 0; i < num; ++i) {
+          elements[i] = copy<TypeHandler>(extracted[i]);
+        }
+      } else {
+        memcpy(elements, extracted, num * sizeof(Element*));
+      }
     }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   }
   CloseGap(start, num);
 }

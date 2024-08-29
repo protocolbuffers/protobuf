@@ -1613,17 +1613,17 @@ inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::release_comp
   _impl_._has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::compiler::Version* released = _impl_.compiler_version_;
   _impl_.compiler_version_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::unsafe_arena_release_compiler_version() {
@@ -1924,17 +1924,17 @@ inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::releas
   _impl_._has_bits_[0] &= ~0x00000008u;
   ::google::protobuf::GeneratedCodeInfo* released = _impl_.generated_code_info_;
   _impl_.generated_code_info_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::GeneratedCodeInfo* CodeGeneratorResponse_File::unsafe_arena_release_generated_code_info() {

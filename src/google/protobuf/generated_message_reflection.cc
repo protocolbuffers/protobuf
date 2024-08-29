@@ -78,7 +78,6 @@ namespace protobuf {
 namespace {
 bool IsMapFieldInApi(const FieldDescriptor* field) { return field->is_map(); }
 
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
 Message* MaybeForceCopy(Arena* arena, Message* msg) {
   if (arena != nullptr || msg == nullptr) return msg;
 
@@ -87,7 +86,6 @@ Message* MaybeForceCopy(Arena* arena, Message* msg) {
   delete msg;
   return copy;
 }
-#endif  // PROTOBUF_FORCE_COPY_IN_RELEASE
 }  // anonymous namespace
 
 namespace internal {
@@ -1546,11 +1544,11 @@ Message* Reflection::ReleaseLast(Message* message,
                      ->ReleaseLast<GenericTypeHandler<Message>>();
     }
   }
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  return MaybeForceCopy(message->GetArena(), released);
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  return released;
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (internal::DebugHardenForceCopyInRelease()) {
+    return MaybeForceCopy(message->GetArena(), released);
+  } else {
+    return released;
+  }
 }
 
 Message* Reflection::UnsafeArenaReleaseLast(
@@ -2454,9 +2452,9 @@ Message* Reflection::ReleaseMessage(Message* message,
                                     const FieldDescriptor* field,
                                     MessageFactory* factory) const {
   Message* released = UnsafeArenaReleaseMessage(message, field, factory);
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  released = MaybeForceCopy(message->GetArena(), released);
-#endif  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (internal::DebugHardenForceCopyInRelease()) {
+    released = MaybeForceCopy(message->GetArena(), released);
+  }
   if (message->GetArena() != nullptr && released != nullptr) {
     Message* copy_from_arena = released->New();
     copy_from_arena->CopyFrom(*released);

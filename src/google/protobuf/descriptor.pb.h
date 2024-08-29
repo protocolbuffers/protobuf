@@ -12314,17 +12314,17 @@ inline ::google::protobuf::FileOptions* FileDescriptorProto::release_options() {
   _impl_._has_bits_[0] &= ~0x00000008u;
   ::google::protobuf::FileOptions* released = _impl_.options_;
   _impl_.options_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::FileOptions* FileDescriptorProto::unsafe_arena_release_options() {
@@ -12411,17 +12411,17 @@ inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::release_source_c
   _impl_._has_bits_[0] &= ~0x00000010u;
   ::google::protobuf::SourceCodeInfo* released = _impl_.source_code_info_;
   _impl_.source_code_info_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::unsafe_arena_release_source_code_info() {
@@ -12672,17 +12672,17 @@ inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::ExtensionRangeOptions* released = _impl_.options_;
   _impl_.options_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::unsafe_arena_release_options() {
@@ -13207,17 +13207,17 @@ inline ::google::protobuf::MessageOptions* DescriptorProto::release_options() {
   _impl_._has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::MessageOptions* released = _impl_.options_;
   _impl_.options_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::MessageOptions* DescriptorProto::unsafe_arena_release_options() {
@@ -13758,17 +13758,17 @@ inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::release_features()
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
   _impl_.features_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::FeatureSet* ExtensionRangeOptions::unsafe_arena_release_features() {
@@ -14367,17 +14367,17 @@ inline ::google::protobuf::FieldOptions* FieldDescriptorProto::release_options()
   _impl_._has_bits_[0] &= ~0x00000020u;
   ::google::protobuf::FieldOptions* released = _impl_.options_;
   _impl_.options_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::FieldOptions* FieldDescriptorProto::unsafe_arena_release_options() {
@@ -14569,17 +14569,17 @@ inline ::google::protobuf::OneofOptions* OneofDescriptorProto::release_options()
   _impl_._has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::OneofOptions* released = _impl_.options_;
   _impl_.options_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::OneofOptions* OneofDescriptorProto::unsafe_arena_release_options() {
@@ -14854,17 +14854,17 @@ inline ::google::protobuf::EnumOptions* EnumDescriptorProto::release_options() {
   _impl_._has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::EnumOptions* released = _impl_.options_;
   _impl_.options_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::EnumOptions* EnumDescriptorProto::unsafe_arena_release_options() {
@@ -15171,17 +15171,17 @@ inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::release_o
   _impl_._has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::EnumValueOptions* released = _impl_.options_;
   _impl_.options_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::unsafe_arena_release_options() {
@@ -15394,17 +15394,17 @@ inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::release_optio
   _impl_._has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::ServiceOptions* released = _impl_.options_;
   _impl_.options_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::unsafe_arena_release_options() {
@@ -15711,17 +15711,17 @@ inline ::google::protobuf::MethodOptions* MethodDescriptorProto::release_options
   _impl_._has_bits_[0] &= ~0x00000008u;
   ::google::protobuf::MethodOptions* released = _impl_.options_;
   _impl_.options_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::MethodOptions* MethodDescriptorProto::unsafe_arena_release_options() {
@@ -16852,17 +16852,17 @@ inline ::google::protobuf::FeatureSet* FileOptions::release_features() {
   _impl_._has_bits_[0] &= ~0x00000400u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
   _impl_.features_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::FeatureSet* FileOptions::unsafe_arena_release_features() {
@@ -17148,17 +17148,17 @@ inline ::google::protobuf::FeatureSet* MessageOptions::release_features() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
   _impl_.features_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::FeatureSet* MessageOptions::unsafe_arena_release_features() {
@@ -17933,17 +17933,17 @@ inline ::google::protobuf::FeatureSet* FieldOptions::release_features() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
   _impl_.features_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::FeatureSet* FieldOptions::unsafe_arena_release_features() {
@@ -18030,17 +18030,17 @@ inline ::google::protobuf::FieldOptions_FeatureSupport* FieldOptions::release_fe
   _impl_._has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::FieldOptions_FeatureSupport* released = _impl_.feature_support_;
   _impl_.feature_support_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::FieldOptions_FeatureSupport* FieldOptions::unsafe_arena_release_feature_support() {
@@ -18181,17 +18181,17 @@ inline ::google::protobuf::FeatureSet* OneofOptions::release_features() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
   _impl_.features_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::FeatureSet* OneofOptions::unsafe_arena_release_features() {
@@ -18419,17 +18419,17 @@ inline ::google::protobuf::FeatureSet* EnumOptions::release_features() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
   _impl_.features_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::FeatureSet* EnumOptions::unsafe_arena_release_features() {
@@ -18599,17 +18599,17 @@ inline ::google::protobuf::FeatureSet* EnumValueOptions::release_features() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
   _impl_.features_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::FeatureSet* EnumValueOptions::unsafe_arena_release_features() {
@@ -18725,17 +18725,17 @@ inline ::google::protobuf::FieldOptions_FeatureSupport* EnumValueOptions::releas
   _impl_._has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::FieldOptions_FeatureSupport* released = _impl_.feature_support_;
   _impl_.feature_support_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::FieldOptions_FeatureSupport* EnumValueOptions::unsafe_arena_release_feature_support() {
@@ -18876,17 +18876,17 @@ inline ::google::protobuf::FeatureSet* ServiceOptions::release_features() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
   _impl_.features_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::FeatureSet* ServiceOptions::unsafe_arena_release_features() {
@@ -19115,17 +19115,17 @@ inline ::google::protobuf::FeatureSet* MethodOptions::release_features() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.features_;
   _impl_.features_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::FeatureSet* MethodOptions::unsafe_arena_release_features() {
@@ -19942,17 +19942,17 @@ inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefau
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::FeatureSet* released = _impl_.overridable_features_;
   _impl_.overridable_features_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefault::unsafe_arena_release_overridable_features() {
@@ -20039,17 +20039,17 @@ inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefau
   _impl_._has_bits_[0] &= ~0x00000002u;
   ::google::protobuf::FeatureSet* released = _impl_.fixed_features_;
   _impl_.fixed_features_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::FeatureSet* FeatureSetDefaults_FeatureSetEditionDefault::unsafe_arena_release_fixed_features() {

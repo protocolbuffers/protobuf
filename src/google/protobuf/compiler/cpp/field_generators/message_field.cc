@@ -233,17 +233,17 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $clear_hasbit$;
           $Submsg$* released = $cast_field_$;
           $field_$ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-          auto* old = reinterpret_cast<$pb$::MessageLite*>(released);
-          released = $pbi$::DuplicateIfNonNull(released);
-          if (GetArena() == nullptr) {
-            delete old;
-          }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-          if (GetArena() != nullptr) {
+          if ($pbi$::DebugHardenForceCopyInRelease()) {
+            auto* old = reinterpret_cast<$pb$::MessageLite*>(released);
             released = $pbi$::DuplicateIfNonNull(released);
+            if (GetArena() == nullptr) {
+              delete old;
+            }
+          } else {
+            if (GetArena() != nullptr) {
+              released = $pbi$::DuplicateIfNonNull(released);
+            }
           }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
           return released;
         }
         inline $Submsg$* $Msg$::unsafe_arena_release_$name$() {

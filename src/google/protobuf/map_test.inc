@@ -46,6 +46,7 @@
 #include "google/protobuf/map_proto2_unittest.pb.h"
 #include "google/protobuf/map_proto3_unittest.pb.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/test_util2.h"
@@ -3263,9 +3264,9 @@ TEST(GeneratedMapFieldReflectionTest, ReleaseLast) {
   std::vector<const Message*> release_last =
       MapTestUtil::GetMapEntriesFromRelease(&message);
   MapTestUtil::ExpectMapsSize(message, 1);
-#ifndef PROTOBUF_FORCE_COPY_IN_RELEASE
-  EXPECT_TRUE(expect_last == release_last);
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (!internal::DebugHardenForceCopyInRelease()) {
+    EXPECT_TRUE(expect_last == release_last);
+  }
   for (std::vector<const Message*>::iterator it = release_last.begin();
        it != release_last.end(); ++it) {
     delete *it;
