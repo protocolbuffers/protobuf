@@ -1124,17 +1124,17 @@ inline ::google::protobuf::SourceContext* Api::release_source_context() {
   _impl_._has_bits_[0] &= ~0x00000001u;
   ::google::protobuf::SourceContext* released = _impl_.source_context_;
   _impl_.source_context_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
-  released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-  if (GetArena() == nullptr) {
-    delete old;
-  }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArena() != nullptr) {
+  if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
+    auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    if (GetArena() == nullptr) {
+      delete old;
+    }
+  } else {
+    if (GetArena() != nullptr) {
+      released = ::google::protobuf::internal::DuplicateIfNonNull(released);
+    }
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 }
 inline ::google::protobuf::SourceContext* Api::unsafe_arena_release_source_context() {
