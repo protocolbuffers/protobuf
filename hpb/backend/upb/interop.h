@@ -53,7 +53,7 @@ typename T::CProxy MakeCHandle(const upb_Message* msg, upb_Arena* arena) {
 }
 
 /**
- * Creates a Handle to a mutable upb message.
+ * Creates a mutable Handle to a upb message.
  *
  * The supplied arena must outlive the hpb handle.
  * All messages reachable from from the upb message must
@@ -62,6 +62,14 @@ typename T::CProxy MakeCHandle(const upb_Message* msg, upb_Arena* arena) {
 template <typename T>
 typename T::Proxy MakeHandle(upb_Message* msg, upb_Arena* arena) {
   return typename T::Proxy(msg, arena);
+}
+
+/**
+ * Same as MakeHandle, but constructs a blank upb_Message.
+ */
+template <typename T>
+typename T::Proxy MakeHandle(upb_Arena* arena) {
+  return typename T::Proxy(upb_Message_New(T::minitable(), arena), arena);
 }
 
 }  // namespace hpb::interop::upb
