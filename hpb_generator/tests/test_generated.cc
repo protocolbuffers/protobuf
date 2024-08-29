@@ -795,7 +795,7 @@ TEST(CppGeneratedCode, SetExtensionFusingFailureShouldCopy) {
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
   ASSERT_FALSE(
-      upb_Arena_Fuse(arena.ptr(), ::hpb::internal::GetArena(&extension1)));
+      upb_Arena_Fuse(arena.ptr(), hpb::interop::upb::GetArena(&extension1)));
   EXPECT_FALSE(::hpb::HasExtension(model, theme));
   auto status = ::hpb::SetExtension(model, theme, std::move(extension1));
   EXPECT_TRUE(status.ok());

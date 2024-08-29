@@ -28,6 +28,16 @@ const upb_MiniTable* GetMiniTable(Ptr<T>) {
   return T::minitable();
 }
 
+template <typename T>
+upb_Arena* GetArena(Ptr<T> message) {
+  return static_cast<upb_Arena*>(message->GetInternalArena());
+}
+
+template <typename T>
+upb_Arena* GetArena(T* message) {
+  return static_cast<upb_Arena*>(message->GetInternalArena());
+}
+
 /**
  * Creates a const Handle to a upb message.
  *

@@ -251,8 +251,8 @@ void WriteModelPublicDeclaration(
         friend absl::StatusOr<$2>(::hpb::Parse<$2>(
             absl::string_view bytes,
             const ::hpb::ExtensionRegistry& extension_registry, int options));
-        friend upb_Arena* ::hpb::internal::GetArena<$0>($0* message);
-        friend upb_Arena* ::hpb::internal::GetArena<$0>(::hpb::Ptr<$0> message);
+        friend upb_Arena* hpb::interop::upb::GetArena<$0>($0* message);
+        friend upb_Arena* hpb::interop::upb::GetArena<$0>(::hpb::Ptr<$0> message);
         friend $0(::hpb::internal::MoveMessage<$0>(upb_Message* msg, upb_Arena* arena));
       )cc",
       ClassName(descriptor), MessageName(descriptor),
@@ -310,8 +310,8 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
             const $0Proxy* message);
         friend const upb_MiniTable* ::hpb::interop::upb::GetMiniTable<$0Proxy>(
             ::hpb::Ptr<$0Proxy> message);
-        friend upb_Arena* ::hpb::internal::GetArena<$2>($2* message);
-        friend upb_Arena* ::hpb::internal::GetArena<$2>(::hpb::Ptr<$2> message);
+        friend upb_Arena* hpb::interop::upb::GetArena<$2>($2* message);
+        friend upb_Arena* hpb::interop::upb::GetArena<$2>(::hpb::Ptr<$2> message);
         static void Rebind($0Proxy& lhs, const $0Proxy& rhs) {
           lhs.msg_ = rhs.msg_;
           lhs.arena_ = rhs.arena_;
@@ -332,7 +332,7 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
          public:
           $0CProxy() = delete;
           $0CProxy(const $0* m)
-              : internal::$0Access(m->msg_, ::hpb::internal::GetArena(m)) {}
+              : internal::$0Access(m->msg_, hpb::interop::upb::GetArena(m)) {}
           $0CProxy($0Proxy m);
           using $0Access::GetInternalArena;
       )cc",

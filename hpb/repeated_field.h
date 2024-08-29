@@ -131,7 +131,7 @@ class RepeatedFieldProxy
     upb_MessageValue message_value;
     message_value.msg_val =
         ::hpb::internal::PrivateAccess::GetInternalMsg(&msg);
-    upb_Arena_Fuse(::hpb::internal::GetArena(&msg), this->arena_);
+    upb_Arena_Fuse(hpb::interop::upb::GetArena(&msg), this->arena_);
     upb_Array_Append(this->arr_, message_value, this->arena_);
     T moved_msg = std::move(msg);
   }

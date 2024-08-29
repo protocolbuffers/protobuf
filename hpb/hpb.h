@@ -79,16 +79,6 @@ absl::Status MessageEncodeError(upb_EncodeStatus status,
 
 namespace internal {
 
-template <typename T>
-upb_Arena* GetArena(Ptr<T> message) {
-  return static_cast<upb_Arena*>(message->GetInternalArena());
-}
-
-template <typename T>
-upb_Arena* GetArena(T* message) {
-  return static_cast<upb_Arena*>(message->GetInternalArena());
-}
-
 absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
                                             const upb_MiniTable* mini_table,
                                             upb_Arena* arena, int options);
@@ -232,13 +222,13 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
   upb_MessageValue value;
   const bool ok = ::hpb::internal::GetOrPromoteExtension(
       const_cast<upb_Message*>(::hpb::internal::GetInternalMsg(message)),
-      id.mini_table_ext(), ::hpb::internal::GetArena(message), &value);
+      id.mini_table_ext(), hpb::interop::upb::GetArena(message), &value);
   if (!ok) {
     return ExtensionNotFoundError(
         upb_MiniTableExtension_Number(id.mini_table_ext()));
   }
   return Ptr<const Extension>(::hpb::interop::upb::MakeCHandle<Extension>(
-      (upb_Message*)value.msg_val, ::hpb::internal::GetArena(message)));
+      (upb_Message*)value.msg_val, hpb::interop::upb::GetArena(message)));
 }
 
 template <typename T, typename Extendee, typename Extension,
