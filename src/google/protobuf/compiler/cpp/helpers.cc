@@ -1169,6 +1169,17 @@ bool HasMapFields(const FileDescriptor* file) {
   return false;
 }
 
+bool HasV2Table(const Descriptor* descriptor) {
+  return false;
+}
+
+bool HasV2Table(const FileDescriptor* file) {
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    if (HasV2Table(file->message_type(i))) return true;
+  }
+  return false;
+}
+
 static bool HasEnumDefinitions(const Descriptor* message_type) {
   if (message_type->enum_type_count() > 0) return true;
   for (int i = 0; i < message_type->nested_type_count(); ++i) {

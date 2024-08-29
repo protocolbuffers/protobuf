@@ -1366,7 +1366,9 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
         }},
        {"decl_annotate", [&] { GenerateAnnotationDecl(p); }},
        {"parse_decls",
-        [&] { parse_function_generator_->GenerateDataDecls(p); }}},
+        [&] {
+          parse_function_generator_->GenerateDataDecls(p);
+        }}},
       R"cc(
         class $classname$ final
             : public ::$proto_ns$::internal::MapEntry<
@@ -2026,7 +2028,10 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             )cc");
           }
         }},
-       {"decl_data", [&] { parse_function_generator_->GenerateDataDecls(p); }},
+       {"decl_data",
+        [&] {
+          parse_function_generator_->GenerateDataDecls(p);
+        }},
        {"post_loop_handler",
         [&] {
           if (!NeedsPostLoopHandler(descriptor_, options_)) return;
@@ -4040,6 +4045,9 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             {"is_initialized", is_initialized},
             {"pin_weak_descriptor", pin_weak_descriptor},
             {"custom_vtable_methods", custom_vtable_methods},
+            {"v2_msg_table",
+             [&] {
+             }},
             {"tracker_on_get_metadata",
              [&] {
                if (HasTracker(descriptor_, options_)) {
@@ -4071,6 +4079,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
                       PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                       false,
+                      $v2_msg_table$,
                   },
                   &$classname$::kDescriptorMethods,
                   &$desc_table$,
@@ -4090,6 +4099,9 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
             {"is_initialized", is_initialized},
             {"custom_vtable_methods", custom_vtable_methods},
+            {"v2_msg_table",
+             [&] {
+             }},
         },
         R"cc(
           PROTOBUF_CONSTINIT
@@ -4109,6 +4121,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
                       PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
                       true,
+                      $v2_msg_table$,
                   },
                   "$full_name$",
           };

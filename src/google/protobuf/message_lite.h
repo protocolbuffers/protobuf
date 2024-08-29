@@ -68,6 +68,13 @@ class ZeroCopyInputStream;
 class ZeroCopyOutputStream;
 
 }  // namespace io
+
+namespace compiler {
+namespace cpp {
+class MessageTableTester;
+}  // namespace cpp
+}  // namespace compiler
+
 namespace internal {
 
 class MessageCreator {
@@ -712,15 +719,15 @@ class PROTOBUF_EXPORT MessageLite {
     // In normal mode we have the small constructor to avoid the cost in
     // codegen.
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
-    constexpr ClassData(const MessageLite* prototype,
-                        const internal::TcParseTableBase* tc_table,
-                        void (*on_demand_register_arena_dtor)(MessageLite&,
-                                                              Arena&),
-                        bool (*is_initialized)(const MessageLite&),
-                        void (*merge_to_from)(MessageLite& to,
-                                              const MessageLite& from_msg),
-                        internal::MessageCreator message_creator,
-                        uint32_t cached_size_offset, bool is_lite)
+    constexpr ClassData(
+        const MessageLite* prototype,
+        const internal::TcParseTableBase* tc_table,
+        void (*on_demand_register_arena_dtor)(MessageLite&, Arena&),
+        bool (*is_initialized)(const MessageLite&),
+        void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
+        internal::MessageCreator message_creator, uint32_t cached_size_offset,
+        bool is_lite
+        )
         : prototype(prototype),
           tc_table(tc_table),
           on_demand_register_arena_dtor(on_demand_register_arena_dtor),
@@ -728,7 +735,9 @@ class PROTOBUF_EXPORT MessageLite {
           merge_to_from(merge_to_from),
           message_creator(message_creator),
           cached_size_offset(cached_size_offset),
-          is_lite(is_lite) {}
+          is_lite(is_lite)
+    {
+    }
 #endif  // !PROTOBUF_CUSTOM_VTABLE
 
     // But we always provide the full constructor even in normal mode to make
@@ -745,7 +754,8 @@ class PROTOBUF_EXPORT MessageLite {
         size_t (*byte_size_long)(const MessageLite&),
         uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
                               io::EpsCopyOutputStream* stream),
-        uint32_t cached_size_offset, bool is_lite)
+        uint32_t cached_size_offset, bool is_lite
+        )
         : prototype(prototype),
           tc_table(tc_table),
           on_demand_register_arena_dtor(on_demand_register_arena_dtor),
@@ -759,7 +769,8 @@ class PROTOBUF_EXPORT MessageLite {
           serialize(serialize),
 #endif  // PROTOBUF_CUSTOM_VTABLE
           cached_size_offset(cached_size_offset),
-          is_lite(is_lite) {
+          is_lite(is_lite)
+    {
     }
 
     const ClassDataFull& full() const {
@@ -930,6 +941,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class Message;
   friend class Reflection;
   friend class TypeId;
+  friend class compiler::cpp::MessageTableTester;
   friend class internal::DescriptorPoolExtensionFinder;
   friend class internal::ExtensionSet;
   friend class internal::LazyField;
@@ -956,6 +968,13 @@ class PROTOBUF_EXPORT MessageLite {
   // Runs the destructor for this instance and deletes the memory via
   // `operator delete`
   void DeleteInstance();
+
+  // For tests that need to inspect private _oneof_case_. It is the callers
+  // responsibility to ensure T has the right member.
+  template <typename T>
+  static uint32_t GetOneofCaseOffsetForTesting() {
+    return offsetof(T, _impl_._oneof_case_);
+  }
 
   template <typename T, const void* ptr = T::_raw_default_instance_>
   static constexpr auto GetStrongPointerForTypeImpl(int) {
