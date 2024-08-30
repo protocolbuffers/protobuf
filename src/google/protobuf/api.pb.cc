@@ -254,12 +254,10 @@ class Api::_Internal {
 };
 
 void Api::clear_options() {
-  Api& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.options_.Clear();
+  _impl_.options_.Clear();
 }
 void Api::clear_source_context() {
-  Api& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
   _impl_._has_bits_[0] &= ~0x00000001u;
@@ -376,7 +374,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             ::google::protobuf::Message::GetNewImpl<Api>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Api>(),
-            &Api::Clear, &Api::ByteSizeLong,
+            ::google::protobuf::Message::GetClearImpl<Api>(), &Api::ByteSizeLong,
                 &Api::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Api, _impl_._cached_size_),
@@ -469,32 +467,26 @@ const ::_pbi::TcParseTable<3, 7, 4, 39, 2> Api::_table_ = {
   }},
 };
 
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    void Api::Clear(MessageLite& base) {
-      Api& this_ = static_cast<Api&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-    void Api::Clear() {
-      Api& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
-            // @@protoc_insertion_point(message_clear_start:google.protobuf.Api)
-  ::google::protobuf::internal::TSanWrite(&this_._impl_);
+PROTOBUF_NOINLINE void Api::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Api)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  this_._impl_.methods_.Clear();
-  this_._impl_.options_.Clear();
-  this_._impl_.mixins_.Clear();
-  this_._impl_.name_.ClearToEmpty();
-  this_._impl_.version_.ClearToEmpty();
-  cached_has_bits = this_._impl_._has_bits_[0];
+  _impl_.methods_.Clear();
+  _impl_.options_.Clear();
+  _impl_.mixins_.Clear();
+  _impl_.name_.ClearToEmpty();
+  _impl_.version_.ClearToEmpty();
+  cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    ABSL_DCHECK(this_._impl_.source_context_ != nullptr);
-    this_._impl_.source_context_->Clear();
+    ABSL_DCHECK(_impl_.source_context_ != nullptr);
+    _impl_.source_context_->Clear();
   }
-  this_._impl_.syntax_ = 0;
-  this_._impl_._has_bits_.Clear();
-  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _impl_.syntax_ = 0;
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -729,9 +721,8 @@ class Method::_Internal {
 };
 
 void Method::clear_options() {
-  Method& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.options_.Clear();
+  _impl_.options_.Clear();
 }
 Method::Method(::google::protobuf::Arena* arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -836,7 +827,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             ::google::protobuf::Message::GetNewImpl<Method>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Method>(),
-            &Method::Clear, &Method::ByteSizeLong,
+            ::google::protobuf::Message::GetClearImpl<Method>(), &Method::ByteSizeLong,
                 &Method::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Method, _impl_._cached_size_),
@@ -927,27 +918,21 @@ const ::_pbi::TcParseTable<3, 7, 1, 68, 2> Method::_table_ = {
   }},
 };
 
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    void Method::Clear(MessageLite& base) {
-      Method& this_ = static_cast<Method&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-    void Method::Clear() {
-      Method& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
-            // @@protoc_insertion_point(message_clear_start:google.protobuf.Method)
-  ::google::protobuf::internal::TSanWrite(&this_._impl_);
+PROTOBUF_NOINLINE void Method::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Method)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  this_._impl_.options_.Clear();
-  this_._impl_.name_.ClearToEmpty();
-  this_._impl_.request_type_url_.ClearToEmpty();
-  this_._impl_.response_type_url_.ClearToEmpty();
-  ::memset(&this_._impl_.request_streaming_, 0, static_cast<::size_t>(
-      reinterpret_cast<char*>(&this_._impl_.syntax_) -
-      reinterpret_cast<char*>(&this_._impl_.request_streaming_)) + sizeof(_impl_.syntax_));
-  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _impl_.options_.Clear();
+  _impl_.name_.ClearToEmpty();
+  _impl_.request_type_url_.ClearToEmpty();
+  _impl_.response_type_url_.ClearToEmpty();
+  ::memset(&_impl_.request_streaming_, 0, static_cast<::size_t>(
+      reinterpret_cast<char*>(&_impl_.syntax_) -
+      reinterpret_cast<char*>(&_impl_.request_streaming_)) + sizeof(_impl_.syntax_));
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -1227,7 +1212,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             ::google::protobuf::Message::GetNewImpl<Mixin>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Mixin>(),
-            &Mixin::Clear, &Mixin::ByteSizeLong,
+            ::google::protobuf::Message::GetClearImpl<Mixin>(), &Mixin::ByteSizeLong,
                 &Mixin::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Mixin, _impl_._cached_size_),
@@ -1286,22 +1271,16 @@ const ::_pbi::TcParseTable<1, 2, 0, 38, 2> Mixin::_table_ = {
   }},
 };
 
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    void Mixin::Clear(MessageLite& base) {
-      Mixin& this_ = static_cast<Mixin&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-    void Mixin::Clear() {
-      Mixin& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
-            // @@protoc_insertion_point(message_clear_start:google.protobuf.Mixin)
-  ::google::protobuf::internal::TSanWrite(&this_._impl_);
+PROTOBUF_NOINLINE void Mixin::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Mixin)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  this_._impl_.name_.ClearToEmpty();
-  this_._impl_.root_.ClearToEmpty();
-  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _impl_.name_.ClearToEmpty();
+  _impl_.root_.ClearToEmpty();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)

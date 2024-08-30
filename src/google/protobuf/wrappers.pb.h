@@ -183,28 +183,26 @@ class PROTOBUF_EXPORT UInt64Value final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -374,28 +372,26 @@ class PROTOBUF_EXPORT UInt32Value final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -565,28 +561,26 @@ class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -762,28 +756,26 @@ class PROTOBUF_EXPORT Int64Value final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -953,28 +945,26 @@ class PROTOBUF_EXPORT Int32Value final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -1144,28 +1134,26 @@ class PROTOBUF_EXPORT FloatValue final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -1335,28 +1323,26 @@ class PROTOBUF_EXPORT DoubleValue final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -1526,28 +1512,26 @@ class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -1723,28 +1707,26 @@ class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -1837,9 +1819,8 @@ class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
 
 // double value = 1;
 inline void DoubleValue::clear_value() {
-  DoubleValue& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.value_ = 0;
+  _impl_.value_ = 0;
 }
 inline double DoubleValue::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.DoubleValue.value)
@@ -1864,9 +1845,8 @@ inline void DoubleValue::_internal_set_value(double value) {
 
 // float value = 1;
 inline void FloatValue::clear_value() {
-  FloatValue& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.value_ = 0;
+  _impl_.value_ = 0;
 }
 inline float FloatValue::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FloatValue.value)
@@ -1891,9 +1871,8 @@ inline void FloatValue::_internal_set_value(float value) {
 
 // int64 value = 1;
 inline void Int64Value::clear_value() {
-  Int64Value& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.value_ = ::int64_t{0};
+  _impl_.value_ = ::int64_t{0};
 }
 inline ::int64_t Int64Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Int64Value.value)
@@ -1918,9 +1897,8 @@ inline void Int64Value::_internal_set_value(::int64_t value) {
 
 // uint64 value = 1;
 inline void UInt64Value::clear_value() {
-  UInt64Value& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.value_ = ::uint64_t{0u};
+  _impl_.value_ = ::uint64_t{0u};
 }
 inline ::uint64_t UInt64Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.UInt64Value.value)
@@ -1945,9 +1923,8 @@ inline void UInt64Value::_internal_set_value(::uint64_t value) {
 
 // int32 value = 1;
 inline void Int32Value::clear_value() {
-  Int32Value& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.value_ = 0;
+  _impl_.value_ = 0;
 }
 inline ::int32_t Int32Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Int32Value.value)
@@ -1972,9 +1949,8 @@ inline void Int32Value::_internal_set_value(::int32_t value) {
 
 // uint32 value = 1;
 inline void UInt32Value::clear_value() {
-  UInt32Value& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.value_ = 0u;
+  _impl_.value_ = 0u;
 }
 inline ::uint32_t UInt32Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.UInt32Value.value)
@@ -1999,9 +1975,8 @@ inline void UInt32Value::_internal_set_value(::uint32_t value) {
 
 // bool value = 1;
 inline void BoolValue::clear_value() {
-  BoolValue& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.value_ = false;
+  _impl_.value_ = false;
 }
 inline bool BoolValue::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.BoolValue.value)
@@ -2026,7 +2001,6 @@ inline void BoolValue::_internal_set_value(bool value) {
 
 // string value = 1;
 inline void StringValue::clear_value() {
-  StringValue& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.ClearToEmpty();
 }
@@ -2081,7 +2055,6 @@ inline void StringValue::set_allocated_value(std::string* value) {
 
 // bytes value = 1;
 inline void BytesValue::clear_value() {
-  BytesValue& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.ClearToEmpty();
 }

@@ -293,28 +293,26 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -508,28 +506,26 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -895,28 +891,26 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -1123,28 +1117,26 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -1430,28 +1422,26 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -1636,7 +1626,6 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
 
 // string name = 1;
 inline void Type::clear_name() {
-  Type& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
 }
@@ -1693,9 +1682,8 @@ inline int Type::fields_size() const {
   return _internal_fields_size();
 }
 inline void Type::clear_fields() {
-  Type& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.fields_.Clear();
+  _impl_.fields_.Clear();
 }
 inline ::google::protobuf::Field* Type::mutable_fields(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1743,9 +1731,8 @@ inline int Type::oneofs_size() const {
   return _internal_oneofs_size();
 }
 inline void Type::clear_oneofs() {
-  Type& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.oneofs_.Clear();
+  _impl_.oneofs_.Clear();
 }
 inline std::string* Type::add_oneofs() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1808,9 +1795,8 @@ inline int Type::options_size() const {
   return _internal_options_size();
 }
 inline void Type::clear_options() {
-  Type& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.options_.Clear();
+  _impl_.options_.Clear();
 }
 inline ::google::protobuf::Option* Type::mutable_options(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1943,9 +1929,8 @@ inline void Type::set_allocated_source_context(::google::protobuf::SourceContext
 
 // .google.protobuf.Syntax syntax = 6;
 inline void Type::clear_syntax() {
-  Type& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.syntax_ = 0;
+  _impl_.syntax_ = 0;
 }
 inline ::google::protobuf::Syntax Type::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.syntax)
@@ -1966,7 +1951,6 @@ inline void Type::_internal_set_syntax(::google::protobuf::Syntax value) {
 
 // string edition = 7;
 inline void Type::clear_edition() {
-  Type& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.edition_.ClearToEmpty();
 }
@@ -2021,9 +2005,8 @@ inline void Type::set_allocated_edition(std::string* value) {
 
 // .google.protobuf.Field.Kind kind = 1;
 inline void Field::clear_kind() {
-  Field& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.kind_ = 0;
+  _impl_.kind_ = 0;
 }
 inline ::google::protobuf::Field_Kind Field::kind() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.kind)
@@ -2044,9 +2027,8 @@ inline void Field::_internal_set_kind(::google::protobuf::Field_Kind value) {
 
 // .google.protobuf.Field.Cardinality cardinality = 2;
 inline void Field::clear_cardinality() {
-  Field& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.cardinality_ = 0;
+  _impl_.cardinality_ = 0;
 }
 inline ::google::protobuf::Field_Cardinality Field::cardinality() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.cardinality)
@@ -2067,9 +2049,8 @@ inline void Field::_internal_set_cardinality(::google::protobuf::Field_Cardinali
 
 // int32 number = 3;
 inline void Field::clear_number() {
-  Field& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.number_ = 0;
+  _impl_.number_ = 0;
 }
 inline ::int32_t Field::number() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.number)
@@ -2090,7 +2071,6 @@ inline void Field::_internal_set_number(::int32_t value) {
 
 // string name = 4;
 inline void Field::clear_name() {
-  Field& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
 }
@@ -2141,7 +2121,6 @@ inline void Field::set_allocated_name(std::string* value) {
 
 // string type_url = 6;
 inline void Field::clear_type_url() {
-  Field& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.type_url_.ClearToEmpty();
 }
@@ -2192,9 +2171,8 @@ inline void Field::set_allocated_type_url(std::string* value) {
 
 // int32 oneof_index = 7;
 inline void Field::clear_oneof_index() {
-  Field& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.oneof_index_ = 0;
+  _impl_.oneof_index_ = 0;
 }
 inline ::int32_t Field::oneof_index() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.oneof_index)
@@ -2215,9 +2193,8 @@ inline void Field::_internal_set_oneof_index(::int32_t value) {
 
 // bool packed = 8;
 inline void Field::clear_packed() {
-  Field& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.packed_ = false;
+  _impl_.packed_ = false;
 }
 inline bool Field::packed() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.packed)
@@ -2244,9 +2221,8 @@ inline int Field::options_size() const {
   return _internal_options_size();
 }
 inline void Field::clear_options() {
-  Field& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.options_.Clear();
+  _impl_.options_.Clear();
 }
 inline ::google::protobuf::Option* Field::mutable_options(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2288,7 +2264,6 @@ Field::_internal_mutable_options() {
 
 // string json_name = 10;
 inline void Field::clear_json_name() {
-  Field& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.json_name_.ClearToEmpty();
 }
@@ -2339,7 +2314,6 @@ inline void Field::set_allocated_json_name(std::string* value) {
 
 // string default_value = 11;
 inline void Field::clear_default_value() {
-  Field& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.default_value_.ClearToEmpty();
 }
@@ -2394,7 +2368,6 @@ inline void Field::set_allocated_default_value(std::string* value) {
 
 // string name = 1;
 inline void Enum::clear_name() {
-  Enum& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
 }
@@ -2451,9 +2424,8 @@ inline int Enum::enumvalue_size() const {
   return _internal_enumvalue_size();
 }
 inline void Enum::clear_enumvalue() {
-  Enum& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.enumvalue_.Clear();
+  _impl_.enumvalue_.Clear();
 }
 inline ::google::protobuf::EnumValue* Enum::mutable_enumvalue(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2501,9 +2473,8 @@ inline int Enum::options_size() const {
   return _internal_options_size();
 }
 inline void Enum::clear_options() {
-  Enum& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.options_.Clear();
+  _impl_.options_.Clear();
 }
 inline ::google::protobuf::Option* Enum::mutable_options(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2636,9 +2607,8 @@ inline void Enum::set_allocated_source_context(::google::protobuf::SourceContext
 
 // .google.protobuf.Syntax syntax = 5;
 inline void Enum::clear_syntax() {
-  Enum& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.syntax_ = 0;
+  _impl_.syntax_ = 0;
 }
 inline ::google::protobuf::Syntax Enum::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.syntax)
@@ -2659,7 +2629,6 @@ inline void Enum::_internal_set_syntax(::google::protobuf::Syntax value) {
 
 // string edition = 6;
 inline void Enum::clear_edition() {
-  Enum& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.edition_.ClearToEmpty();
 }
@@ -2714,7 +2683,6 @@ inline void Enum::set_allocated_edition(std::string* value) {
 
 // string name = 1;
 inline void EnumValue::clear_name() {
-  EnumValue& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
 }
@@ -2765,9 +2733,8 @@ inline void EnumValue::set_allocated_name(std::string* value) {
 
 // int32 number = 2;
 inline void EnumValue::clear_number() {
-  EnumValue& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.number_ = 0;
+  _impl_.number_ = 0;
 }
 inline ::int32_t EnumValue::number() const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValue.number)
@@ -2794,9 +2761,8 @@ inline int EnumValue::options_size() const {
   return _internal_options_size();
 }
 inline void EnumValue::clear_options() {
-  EnumValue& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.options_.Clear();
+  _impl_.options_.Clear();
 }
 inline ::google::protobuf::Option* EnumValue::mutable_options(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2842,7 +2808,6 @@ EnumValue::_internal_mutable_options() {
 
 // string name = 1;
 inline void Option::clear_name() {
-  Option& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
 }

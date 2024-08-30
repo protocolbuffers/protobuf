@@ -159,28 +159,26 @@ class PROTOBUF_EXPORT SourceContext final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -279,7 +277,6 @@ class PROTOBUF_EXPORT SourceContext final : public ::google::protobuf::Message
 
 // string file_name = 1;
 inline void SourceContext::clear_file_name() {
-  SourceContext& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.file_name_.ClearToEmpty();
 }

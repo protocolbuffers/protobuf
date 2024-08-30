@@ -193,7 +193,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             ::google::protobuf::Message::GetNewImpl<FieldMask>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<FieldMask>(),
-            &FieldMask::Clear, &FieldMask::ByteSizeLong,
+            ::google::protobuf::Message::GetClearImpl<FieldMask>(), &FieldMask::ByteSizeLong,
                 &FieldMask::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._cached_size_),
@@ -245,21 +245,15 @@ const ::_pbi::TcParseTable<0, 1, 0, 39, 2> FieldMask::_table_ = {
   }},
 };
 
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    void FieldMask::Clear(MessageLite& base) {
-      FieldMask& this_ = static_cast<FieldMask&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-    void FieldMask::Clear() {
-      FieldMask& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
-            // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldMask)
-  ::google::protobuf::internal::TSanWrite(&this_._impl_);
+PROTOBUF_NOINLINE void FieldMask::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.FieldMask)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  this_._impl_.paths_.Clear();
-  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _impl_.paths_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)

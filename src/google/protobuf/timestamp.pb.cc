@@ -172,7 +172,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             ::google::protobuf::Message::GetNewImpl<Timestamp>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Timestamp>(),
-            &Timestamp::Clear, &Timestamp::ByteSizeLong,
+            ::google::protobuf::Message::GetClearImpl<Timestamp>(), &Timestamp::ByteSizeLong,
                 &Timestamp::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._cached_size_),
@@ -227,23 +227,17 @@ const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Timestamp::_table_ = {
   }},
 };
 
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    void Timestamp::Clear(MessageLite& base) {
-      Timestamp& this_ = static_cast<Timestamp&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-    void Timestamp::Clear() {
-      Timestamp& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
-            // @@protoc_insertion_point(message_clear_start:google.protobuf.Timestamp)
-  ::google::protobuf::internal::TSanWrite(&this_._impl_);
+PROTOBUF_NOINLINE void Timestamp::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Timestamp)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  ::memset(&this_._impl_.seconds_, 0, static_cast<::size_t>(
-      reinterpret_cast<char*>(&this_._impl_.nanos_) -
-      reinterpret_cast<char*>(&this_._impl_.seconds_)) + sizeof(_impl_.nanos_));
-  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  ::memset(&_impl_.seconds_, 0, static_cast<::size_t>(
+      reinterpret_cast<char*>(&_impl_.nanos_) -
+      reinterpret_cast<char*>(&_impl_.seconds_)) + sizeof(_impl_.nanos_));
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)

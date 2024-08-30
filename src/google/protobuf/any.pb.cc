@@ -209,7 +209,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             ::google::protobuf::Message::GetNewImpl<Any>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<Any>(),
-            &Any::Clear, &Any::ByteSizeLong,
+            ::google::protobuf::Message::GetClearImpl<Any>(), &Any::ByteSizeLong,
                 &Any::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(Any, _impl_._cached_size_),
@@ -267,22 +267,16 @@ const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
   }},
 };
 
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    void Any::Clear(MessageLite& base) {
-      Any& this_ = static_cast<Any&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-    void Any::Clear() {
-      Any& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
-            // @@protoc_insertion_point(message_clear_start:google.protobuf.Any)
-  ::google::protobuf::internal::TSanWrite(&this_._impl_);
+PROTOBUF_NOINLINE void Any::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Any)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  this_._impl_.type_url_.ClearToEmpty();
-  this_._impl_.value_.ClearToEmpty();
-  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _impl_.type_url_.ClearToEmpty();
+  _impl_.value_.ClearToEmpty();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
