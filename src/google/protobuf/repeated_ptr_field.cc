@@ -185,6 +185,8 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
   }
   Arena* arena = GetArena();
   for (; src < end; ++src, ++dst) {
+    auto next = src + 1;
+    if (next < end) absl::PrefetchToLocalCache(*next);
     *dst = copy_fn(arena, *src);
   }
   ExchangeCurrentSize(new_size);
