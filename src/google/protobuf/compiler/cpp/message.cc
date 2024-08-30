@@ -1368,12 +1368,12 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
       R"cc(
         class $classname$ final
             : public ::$proto_ns$::internal::MapEntry<
-                  $classname$, $key_cpp$, $val_cpp$,
+                  $key_cpp$, $val_cpp$,
                   ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,
                   ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> {
          public:
           using SuperType = ::$proto_ns$::internal::MapEntry<
-              $classname$, $key_cpp$, $val_cpp$,
+              $key_cpp$, $val_cpp$,
               ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,
               ::$proto_ns$::internal::WireFormatLite::$val_wire_type$>;
           $classname$();

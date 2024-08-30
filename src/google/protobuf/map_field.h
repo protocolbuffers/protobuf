@@ -26,7 +26,6 @@
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/map.h"
-#include "google/protobuf/map_entry.h"
 #include "google/protobuf/map_field_lite.h"
 #include "google/protobuf/map_type_handler.h"
 #include "google/protobuf/message.h"
@@ -656,9 +655,6 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
   typedef MapTypeHandler<kKeyFieldType_, Key> KeyTypeHandler;
   typedef MapTypeHandler<kValueFieldType_, T> ValueTypeHandler;
 
-  // Define message type for internal repeated field.
-  typedef Derived EntryType;
-
  public:
   typedef Map<Key, T> MapType;
   static constexpr WireFormatLite::FieldType kKeyFieldType = kKeyFieldType_;
@@ -676,12 +672,6 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
   MapField(InternalVisibility, Arena* arena, const MapField& from)
       : MapField(arena) {
     this->MergeFromImpl(*this, from);
-  }
-
-  // Used in the implementation of parsing. Caller should take the ownership iff
-  // arena_ is nullptr.
-  EntryType* NewEntry() const {
-    return Arena::Create<EntryType>(this->arena());
   }
 
  private:
@@ -711,14 +701,6 @@ bool AllAreInitialized(const TypeDefinedMapFieldBase<Key, T>& field) {
   }
   return true;
 }
-
-template <typename T, typename Key, typename Value,
-          WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType>
-struct MapEntryToMapField<
-    MapEntry<T, Key, Value, kKeyFieldType, kValueFieldType>> {
-  typedef MapField<T, Key, Value, kKeyFieldType, kValueFieldType> MapFieldType;
-};
 
 class PROTOBUF_EXPORT DynamicMapField final
     : public TypeDefinedMapFieldBase<MapKey, MapValueRef> {
