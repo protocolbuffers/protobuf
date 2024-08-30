@@ -22,6 +22,11 @@ namespace json_internal {
 // details.
 absl::Status JsonStringToMessage(absl::string_view input, Message* message,
                                  json_internal::ParseOptions options);
+// Internal version of google::protobuf::util::JsonStreamToMessage; see json_util.h for
+// details.
+absl::Status JsonStreamToMessage(io::ZeroCopyInputStream* input,
+                                 Message* message,
+                                 json_internal::ParseOptions options);
 // Internal version of google::protobuf::util::JsonToBinaryStream; see json_util.h for
 // details.
 absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
