@@ -360,10 +360,11 @@ inline PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::NewMessage(
   return table->class_data->New(arena);
 }
 
+// DO NOT SUBMIT: Redo via `field.AddMessage()`, and remove `NewMessage()`.
 MessageLite* TcParser::AddMessage(const TcParseTableBase* table,
                                   RepeatedPtrFieldBase& field) {
   return static_cast<MessageLite*>(field.AddInternal(
-      [table](Arena* arena) { return NewMessage(table, arena); }));
+      [table](Arena* arena, void*& ptr) { ptr = NewMessage(table, arena); }));
 }
 
 template <typename TagType, bool group_coding, bool aux_is_table>

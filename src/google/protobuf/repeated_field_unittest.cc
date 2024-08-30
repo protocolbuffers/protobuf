@@ -19,7 +19,6 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
-#include <functional>
 #include <iterator>
 #include <limits>
 #include <list>
@@ -34,7 +33,6 @@
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
-#include "absl/random/random.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
