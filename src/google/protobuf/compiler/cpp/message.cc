@@ -278,7 +278,8 @@ void CollectMapInfo(
   vars["key_cpp"] = PrimitiveTypeName(options, key->cpp_type());
   switch (val->cpp_type()) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      vars["val_cpp"] = FieldMessageTypeName(val, options);
+      vars["val_cpp"] =
+          absl::StrCat("::", ProtobufNamespace(options), "::Message");
       break;
     case FieldDescriptor::CPPTYPE_ENUM:
       vars["val_cpp"] = ClassName(val->enum_type(), true);
