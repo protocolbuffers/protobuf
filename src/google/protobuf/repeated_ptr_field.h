@@ -917,7 +917,11 @@ class GenericTypeHandler<std::string> {
       delete value;
     }
   }
-  static inline void Clear(std::string* value) { value->clear(); }
+  static inline void Clear(std::string* value) {
+    if (value != nullptr) {
+      value->clear();
+    }
+  }
   static inline void Merge(const std::string& from, std::string* to) {
     *to = from;
   }
