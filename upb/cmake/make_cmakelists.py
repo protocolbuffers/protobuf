@@ -238,6 +238,8 @@ class BuildFileFunctions(object):
   def alias(self, **kwargs):
     pass
 
+  def package(self, **kwargs):
+    pass
 
 class Converter(object):
   def __init__(self):

@@ -7,9 +7,7 @@
 
 load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_CPPOPTS")
 
-# begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
-# end:google_only
+package(default_applicable_licenses = ["//:license"])
 
 licenses(["notice"])
 

@@ -10,9 +10,7 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix
 
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
-# begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
-# end:google_only
+package(default_applicable_licenses = ["//:license"])
 
 rust_library(
     name = "upb",

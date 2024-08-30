@@ -1,6 +1,7 @@
 # Bazel (https://bazel.build/) BUILD file for Protobuf.
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@rules_license//rules:license.bzl", "license")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
@@ -16,6 +17,12 @@ exports_files([
     "LICENSE",
     "PrivacyInfo.xcprivacy",
 ])
+
+license(
+    name = "license",
+    package_name = "protobuf",
+    license_text = ":LICENSE",
+)
 
 ################################################################################
 # Well Known Types Proto Library Rules

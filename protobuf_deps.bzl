@@ -178,6 +178,16 @@ def protobuf_deps():
             url = "https://github.com/bazelbuild/rules_kotlin/releases/download/v1.9.0/rules_kotlin-v1.9.0.tar.gz",
         )
 
+    if not native.existing_rule("rules_license"):
+        http_archive(
+            name = "rules_license",
+            urls = [
+                "https://mirror.bazel.build/github.com/bazelbuild/rules_license/releases/download/0.0.8/rules_license-0.0.8.tar.gz",
+                "https://github.com/bazelbuild/rules_license/releases/download/0.0.8/rules_license-0.0.8.tar.gz",
+            ],
+            sha256 = "241b06f3097fd186ff468832150d6cc142247dc42a32aaefb56d0099895fd229",
+        )
+
     # Python Downloads
     python_source_archive(
         name = "python-3.8.0",

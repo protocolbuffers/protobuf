@@ -54,6 +54,11 @@ bazel_dep(
 )
 
 bazel_dep(
+    name = "rules_license",
+    version = "0.0.8",
+)
+
+bazel_dep(
     name = "rules_pkg",
     version = "0.7.0",
 )

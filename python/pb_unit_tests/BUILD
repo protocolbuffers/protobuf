@@ -11,9 +11,7 @@ load("@pip_deps//:requirements.bzl", "requirement")
 
 load(":pyproto_test_wrapper.bzl", "pyproto_test_wrapper")
 
-# begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
-# end:google_only
+package(default_applicable_licenses = ["//:license"])
 
 licenses(["notice"])
 

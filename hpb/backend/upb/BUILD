@@ -6,7 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 # begin:google_only
-# package(default_applicable_licenses = ["//src/google/protobuf:license"])
+# package(default_applicable_licenses = ["//:license"])
 # end:google_only
 
 cc_library(

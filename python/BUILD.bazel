@@ -20,9 +20,7 @@ build_targets(name = "python")
 licenses(["notice"])
 
 package(
-    # begin:google_only
-    #     default_applicable_licenses = ["//upb:license"],
-    # end:google_only
+    default_applicable_licenses = ["//:license"],
     default_visibility = ["//python/dist:__pkg__"],
 )
 

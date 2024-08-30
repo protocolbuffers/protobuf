@@ -1,6 +1,8 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("//bazel/private:native_bool_flag.bzl", "native_bool_flag")
 
+package(default_applicable_licenses = ["//:license"])
+
 toolchain_type(
     name = "proto_toolchain_type",
 )

@@ -12,7 +12,6 @@ load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 # begin:google_only
 # load("//tools/build_defs/kotlin/native:rules.bzl", "kt_native_interop_hint")
-# load("//tools/build_defs/license:license.bzl", "license")
 # end:google_only
 
 # begin:github_only
@@ -22,14 +21,7 @@ load(
 )
 # end:github_only
 
-# begin:google_only
-# package(default_applicable_licenses = [":license"])
-#
-# license(
-#     name = "license",
-#     package_name = "upb",
-# )
-# end:google_only
+package(default_applicable_licenses = ["//:license"])
 
 licenses(["notice"])
 
