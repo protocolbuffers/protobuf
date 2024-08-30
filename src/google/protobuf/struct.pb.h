@@ -505,12 +505,12 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
 
 class Struct_FieldsEntry_DoNotUse final
     : public ::google::protobuf::internal::MapEntry<
-          Struct_FieldsEntry_DoNotUse, std::string, ::google::protobuf::Value,
+          std::string, ::google::protobuf::Value,
           ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
           ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE> {
  public:
   using SuperType = ::google::protobuf::internal::MapEntry<
-      Struct_FieldsEntry_DoNotUse, std::string, ::google::protobuf::Value,
+      std::string, ::google::protobuf::Value,
       ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
       ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>;
   Struct_FieldsEntry_DoNotUse();
