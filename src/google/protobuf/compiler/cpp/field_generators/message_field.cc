@@ -322,8 +322,8 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
   p->Emit(
       R"cc(
-        $DCHK$(this_.$field_$ != nullptr);
-        this_.$field_$->Clear();
+        $DCHK$($field_$ != nullptr);
+        $field_$->Clear();
       )cc");
 }
 
@@ -872,9 +872,9 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 
 void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
   if (should_split()) {
-    p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+    p->Emit("$field_$.ClearIfNotDefault();\n");
   } else {
-    p->Emit("this_.$field_$.Clear();\n");
+    p->Emit("$field_$.Clear();\n");
   }
 }
 

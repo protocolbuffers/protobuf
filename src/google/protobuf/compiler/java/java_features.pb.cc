@@ -214,7 +214,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             ::google::protobuf::Message::GetNewImpl<JavaFeatures>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
             ::google::protobuf::Message::GetDeleteImpl<JavaFeatures>(),
-            &JavaFeatures::Clear, &JavaFeatures::ByteSizeLong,
+            ::google::protobuf::Message::GetClearImpl<JavaFeatures>(), &JavaFeatures::ByteSizeLong,
                 &JavaFeatures::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
             PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
@@ -269,27 +269,21 @@ const ::_pbi::TcParseTable<1, 2, 1, 0, 2> JavaFeatures::_table_ = {
   }},
 };
 
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    void JavaFeatures::Clear(MessageLite& base) {
-      JavaFeatures& this_ = static_cast<JavaFeatures&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-    void JavaFeatures::Clear() {
-      JavaFeatures& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
-            // @@protoc_insertion_point(message_clear_start:pb.JavaFeatures)
-  ::google::protobuf::internal::TSanWrite(&this_._impl_);
+PROTOBUF_NOINLINE void JavaFeatures::Clear() {
+// @@protoc_insertion_point(message_clear_start:pb.JavaFeatures)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  cached_has_bits = this_._impl_._has_bits_[0];
+  cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
-    ::memset(&this_._impl_.legacy_closed_enum_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&this_._impl_.utf8_validation_) -
-        reinterpret_cast<char*>(&this_._impl_.legacy_closed_enum_)) + sizeof(_impl_.utf8_validation_));
+    ::memset(&_impl_.legacy_closed_enum_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.utf8_validation_) -
+        reinterpret_cast<char*>(&_impl_.legacy_closed_enum_)) + sizeof(_impl_.utf8_validation_));
   }
-  this_._impl_._has_bits_.Clear();
-  this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)

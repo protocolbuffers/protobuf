@@ -89,7 +89,7 @@ class Map : public FieldGeneratorBase {
 
   void GenerateClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      this_.$field_$.Clear();
+      $field_$.Clear();
     )cc");
   }
 

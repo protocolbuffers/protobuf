@@ -209,28 +209,26 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -447,28 +445,26 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -701,28 +697,26 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   bool IsInitialized() const {
     return true;
   }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -984,28 +978,26 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   static bool IsInitializedImpl(const MessageLite& msg);
 
   public:
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-                private:
-                static void Clear(MessageLite& msg);
-                static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-                static ::uint8_t* _InternalSerialize(
-                    const MessageLite& msg, ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream);
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
 
-                public:
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); };
-                ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const {
-                  return _InternalSerialize(*this, target, stream);
-                }
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
   #else   // PROTOBUF_CUSTOM_VTABLE
-                ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
-                ::size_t ByteSizeLong() const final;
-                ::uint8_t* _InternalSerialize(
-                    ::uint8_t* target,
-                    ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
   int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
@@ -1189,9 +1181,8 @@ inline bool Version::has_major() const {
   return value;
 }
 inline void Version::clear_major() {
-  Version& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.major_ = 0;
+  _impl_.major_ = 0;
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline ::int32_t Version::major() const {
@@ -1218,9 +1209,8 @@ inline bool Version::has_minor() const {
   return value;
 }
 inline void Version::clear_minor() {
-  Version& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.minor_ = 0;
+  _impl_.minor_ = 0;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline ::int32_t Version::minor() const {
@@ -1247,9 +1237,8 @@ inline bool Version::has_patch() const {
   return value;
 }
 inline void Version::clear_patch() {
-  Version& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.patch_ = 0;
+  _impl_.patch_ = 0;
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline ::int32_t Version::patch() const {
@@ -1276,7 +1265,6 @@ inline bool Version::has_suffix() const {
   return value;
 }
 inline void Version::clear_suffix() {
-  Version& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.suffix_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
@@ -1354,9 +1342,8 @@ inline int CodeGeneratorRequest::file_to_generate_size() const {
   return _internal_file_to_generate_size();
 }
 inline void CodeGeneratorRequest::clear_file_to_generate() {
-  CodeGeneratorRequest& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.file_to_generate_.Clear();
+  _impl_.file_to_generate_.Clear();
 }
 inline std::string* CodeGeneratorRequest::add_file_to_generate() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1417,7 +1404,6 @@ inline bool CodeGeneratorRequest::has_parameter() const {
   return value;
 }
 inline void CodeGeneratorRequest::clear_parameter() {
-  CodeGeneratorRequest& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.parameter_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
@@ -1580,7 +1566,6 @@ inline bool CodeGeneratorRequest::has_compiler_version() const {
   return value;
 }
 inline void CodeGeneratorRequest::clear_compiler_version() {
-  CodeGeneratorRequest& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.compiler_version_ != nullptr) _impl_.compiler_version_->Clear();
   _impl_._has_bits_[0] &= ~0x00000002u;
@@ -1680,7 +1665,6 @@ inline bool CodeGeneratorResponse_File::has_name() const {
   return value;
 }
 inline void CodeGeneratorResponse_File::clear_name() {
-  CodeGeneratorResponse_File& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
@@ -1752,7 +1736,6 @@ inline bool CodeGeneratorResponse_File::has_insertion_point() const {
   return value;
 }
 inline void CodeGeneratorResponse_File::clear_insertion_point() {
-  CodeGeneratorResponse_File& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.insertion_point_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
@@ -1824,7 +1807,6 @@ inline bool CodeGeneratorResponse_File::has_content() const {
   return value;
 }
 inline void CodeGeneratorResponse_File::clear_content() {
-  CodeGeneratorResponse_File& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.content_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000004u;
@@ -1991,7 +1973,6 @@ inline bool CodeGeneratorResponse::has_error() const {
   return value;
 }
 inline void CodeGeneratorResponse::clear_error() {
-  CodeGeneratorResponse& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.error_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
@@ -2063,9 +2044,8 @@ inline bool CodeGeneratorResponse::has_supported_features() const {
   return value;
 }
 inline void CodeGeneratorResponse::clear_supported_features() {
-  CodeGeneratorResponse& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.supported_features_ = ::uint64_t{0u};
+  _impl_.supported_features_ = ::uint64_t{0u};
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline ::uint64_t CodeGeneratorResponse::supported_features() const {
@@ -2092,9 +2072,8 @@ inline bool CodeGeneratorResponse::has_minimum_edition() const {
   return value;
 }
 inline void CodeGeneratorResponse::clear_minimum_edition() {
-  CodeGeneratorResponse& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.minimum_edition_ = 0;
+  _impl_.minimum_edition_ = 0;
   _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline ::int32_t CodeGeneratorResponse::minimum_edition() const {
@@ -2121,9 +2100,8 @@ inline bool CodeGeneratorResponse::has_maximum_edition() const {
   return value;
 }
 inline void CodeGeneratorResponse::clear_maximum_edition() {
-  CodeGeneratorResponse& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.maximum_edition_ = 0;
+  _impl_.maximum_edition_ = 0;
   _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline ::int32_t CodeGeneratorResponse::maximum_edition() const {
@@ -2152,9 +2130,8 @@ inline int CodeGeneratorResponse::file_size() const {
   return _internal_file_size();
 }
 inline void CodeGeneratorResponse::clear_file() {
-  CodeGeneratorResponse& this_ PROTOBUF_UNUSED = *this;
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  this_._impl_.file_.Clear();
+  _impl_.file_.Clear();
 }
 inline ::google::protobuf::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::mutable_file(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
