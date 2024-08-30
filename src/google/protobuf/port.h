@@ -64,7 +64,10 @@ inline PROTOBUF_ALWAYS_INLINE void StrongPointer() {
 template <typename T>
 inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
   static constexpr auto ptr = T::template GetStrongPointerForType<T>();
-  return StrongPointer<decltype(ptr), ptr>();
+  // This is identical to the implementation of StrongPointer() above, but it
+  // has to be explicitly inlined here or else Clang 19 will raise an error in
+  // some configurations.
+  asm(".reloc ., BFD_RELOC_NONE, %p0" ::"Ws"(ptr));
 }
 #else   // .reloc
 // Portable fallback. It usually generates a single LEA instruction or
