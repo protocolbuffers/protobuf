@@ -10,7 +10,7 @@ load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVari
 
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:rustc.bzl", "rustc_compile_action")
-load("//bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library_aspect")
+load("//bazel:upb_minitable_proto_library.bzl", "UpbMinitableCcInfo", "upb_minitable_proto_library_aspect")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 
@@ -323,7 +323,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
     )
 
     if is_upb:
-        thunks_cc_info = target[UpbWrappedCcInfo].cc_info_with_thunks
+        thunks_cc_info = target[UpbMinitableCcInfo].cc_info
     else:
         dep_cc_infos = []
         for dep in proto_deps:
@@ -371,7 +371,7 @@ def _make_proto_library_aspect(is_upb):
     return aspect(
         implementation = (_rust_upb_proto_aspect_impl if is_upb else _rust_cc_proto_aspect_impl),
         attr_aspects = ["deps"],
-        requires = ([upb_proto_library_aspect] if is_upb else [cc_proto_aspect]),
+        requires = ([upb_minitable_proto_library_aspect] if is_upb else [cc_proto_aspect]),
         attrs = {
             "_cc_toolchain": attr.label(
                 doc = (
