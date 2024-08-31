@@ -4,10 +4,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-# begin:github_only
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
-# end:github_only
-
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
 package(default_applicable_licenses = ["//:license"])
@@ -57,7 +54,6 @@ cc_library(
     ],
 )
 
-# begin:github_only
 pkg_files(
     name = "rust_protobuf_upb_src",
     srcs = glob(
@@ -68,4 +64,3 @@ pkg_files(
     strip_prefix = strip_prefix.from_root("rust"),
     visibility = ["//rust:__pkg__"],
 )
-# end:github_only

@@ -4,26 +4,3 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
-
-# begin:google_only
-# load(
-#     "//upb/bazel:build_defs.bzl",
-#     "UPB_DEFAULT_CPPOPTS",
-# )
-#
-# package(default_applicable_licenses = ["//:license"])
-#
-# licenses(["notice"])
-#
-# cc_library(
-#     name = "protos",
-#     hdrs = [
-#         "protos.h",
-#     ],
-#     copts = UPB_DEFAULT_CPPOPTS,
-#     visibility = ["//visibility:public"],
-#     deps = [
-#         "//hpb",
-#     ],
-# )
-# end:google_only

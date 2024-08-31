@@ -51,19 +51,13 @@ inline upb_StringView UpbStrFromStringView(absl::string_view str,
   return upb_StringView_FromDataAndSize(buffer, str_size);
 }
 
-// begin:github_only
-// // This type exists to work around an absl type that has not yet been
-// // released.
-// struct SourceLocation {
-//   static SourceLocation current() { return {}; }
-//   absl::string_view file_name() { return "<unknown>"; }
-//   int line() { return 0; }
-// };
-// end:github_only
-
-// begin:google_only
-using SourceLocation = absl::SourceLocation;
-// end:google_only
+// This type exists to work around an absl type that has not yet been
+// released.
+struct SourceLocation {
+  static SourceLocation current() { return {}; }
+  absl::string_view file_name() { return "<unknown>"; }
+  int line() { return 0; }
+};
 
 absl::Status MessageAllocationError(
     SourceLocation loc = SourceLocation::current());

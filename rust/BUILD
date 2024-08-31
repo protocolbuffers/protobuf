@@ -1,12 +1,8 @@
 # Protobuf Rust runtime packages.
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-
-# begin:github_only
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("@rules_pkg//pkg:zip.bzl", "pkg_zip")
-# end:github_only
-
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 
@@ -210,7 +206,6 @@ config_setting(
     },
 )
 
-# begin:github_only
 pkg_files(
     name = "rust_protobuf_src",
     srcs = glob(
@@ -262,4 +257,3 @@ pkg_zip(
         "//:LICENSE",
     ],
 )
-# end:github_only

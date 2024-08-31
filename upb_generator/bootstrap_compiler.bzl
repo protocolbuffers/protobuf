@@ -1,12 +1,9 @@
 """Macros that implement bootstrapping for the upb code generator."""
 
-# begin:github_only
 load(
     "//bazel:upb_minitable_proto_library.bzl",
     "upb_minitable_proto_library",
 )
-# end:github_only
-
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_proto_library",
@@ -19,24 +16,15 @@ load(
 _stages = ["_stage0", "_stage1", ""]
 _protoc = "//:protoc"
 
-# begin:google_only
-# _is_google3 = True
-# _extra_proto_path = ""
-# end:google_only
-
-# begin:github_only
 _is_google3 = False
 _extra_proto_path = "-I$$(dirname $(location @com_google_protobuf//:descriptor_proto_srcs))/../.. "
-# end:github_only
 
 # This visibility is used automatically for anything used by the bootstrapping process.
 _bootstrap_visibility = [
     "//upb_generator:__subpackages__",
     "//upb/reflection:__pkg__",
-    # begin:github_only
     "//upb:__pkg__",  # For the amalgamations.
     "//python/dist:__pkg__",  # For the Python source package.
-    # end:github_only
 ]
 
 def _stage_visibility(stage, visibility):
@@ -153,7 +141,6 @@ def _generate_stage1_proto(name, src_files, src_rules, generator, kwargs):
         **kwargs
     )
 
-# begin:github_only
 def _cmake_staleness_test(name, src_files, proto_lib_deps, **kwargs):
     upb_minitable_proto_library(
         name = name + "_minitable",
@@ -188,8 +175,6 @@ def _cmake_staleness_test(name, src_files, proto_lib_deps, **kwargs):
         generated_pattern = "generated_sources/%s",
         tags = ["manual"],
     )
-
-# end:github_only
 
 def bootstrap_upb_proto_library(
         name,
@@ -285,7 +270,4 @@ def bootstrap_upb_proto_library(
         **kwargs
     )
 
-    # begin:github_only
     _cmake_staleness_test(name, src_files, proto_lib_deps, **kwargs)
-
-# end:github_only

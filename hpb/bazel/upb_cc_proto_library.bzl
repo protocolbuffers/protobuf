@@ -13,24 +13,8 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
 load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 
-# begin:google_only
-#
-# def upb_use_cpp_toolchain():
-#     # TODO: We shouldn't need to add this to the result of use_cpp_toolchain().
-#     return [
-#         config_common.toolchain_type(
-#             "@bazel_tools//tools/cpp:cc_runtimes_toolchain_type",
-#             mandatory = False,
-#         ),
-#     ] + use_cpp_toolchain()
-#
-# end:google_only
-
-# begin:github_only
 def upb_use_cpp_toolchain():
     return use_cpp_toolchain()
-
-# end:github_only
 
 # Generic support code #########################################################
 
@@ -79,16 +63,6 @@ def _cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos):
     Returns:
       CcInfo provider for this compilation.
     """
-
-    # begin:google_only
-    #     cc_runtimes_toolchain = ctx.toolchains["@bazel_tools//tools/cpp:cc_runtimes_toolchain_type"]
-    #     if cc_runtimes_toolchain:
-    #         dep_ccinfos += [
-    #             target[CcInfo]
-    #             for target in cc_runtimes_toolchain.cc_runtimes_info.runtimes
-    #         ]
-    #
-    # end:google_only
 
     compilation_contexts = [info.compilation_context for info in dep_ccinfos]
     linking_contexts = [info.linking_context for info in dep_ccinfos]

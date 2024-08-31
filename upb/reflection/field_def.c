@@ -590,20 +590,6 @@ static bool _upb_FieldDef_InferLegacyFeatures(
     ret = true;
   }
 
-// begin:google_only
-// #if UPB_BOOTSTRAP_STAGE != 0
-//   if (syntax == kUpb_Syntax_Proto3 &&
-//       UPB_DESC(FieldOptions_has_enforce_utf8)(options) &&
-//       !UPB_DESC(FieldOptions_enforce_utf8)(options)) {
-//     int val = UPB_DESC(FeatureSet_UNVERIFIED);
-//     UPB_DESC(FeatureSet_set_utf8_validation(features, val));
-//     ret = true;
-//   }
-// #endif
-//   // clang-format off
-// end:google_only
-  // clang-format on
-
   return ret;
 }
 

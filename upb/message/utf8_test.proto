@@ -21,7 +21,7 @@ message TestUtf8RepeatedProto3String {
   repeated string data = 1;
 }
 
-// begin:google_only
+// copybara:strip_begin(enforce_utf8 option is not respected in OSS)
 message TestUtf8Proto3StringMixed {
   optional string data = 1;
 
@@ -45,4 +45,4 @@ message TestUtf8Proto3StringEnforceUtf8FalseMixed {
   // handle the mix.
   optional string other_data = 2;
 }
-// end:google_only
+// copybara:strip_end

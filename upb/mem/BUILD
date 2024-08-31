@@ -53,7 +53,6 @@ cc_test(
     ],
 )
 
-# begin:github_only
 filegroup(
     name = "source_files",
     srcs = glob(
@@ -68,9 +67,7 @@ filegroup(
         "//upb/cmake:__pkg__",
     ],
 )
-# end:github_only
 
-# begin:github_only
 filegroup(
     name = "test_srcs",
     srcs = glob(
@@ -80,4 +77,3 @@ filegroup(
     ),
     visibility = ["//upb:__pkg__"],
 )
-# end:github_only

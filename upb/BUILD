@@ -8,18 +8,11 @@
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_python//python:defs.bzl", "py_binary")
 load("//bazel/private:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
-
-# begin:google_only
-# load("//tools/build_defs/kotlin/native:rules.bzl", "kt_native_interop_hint")
-# end:google_only
-
-# begin:github_only
 load(
     "//upb/bazel:amalgamation.bzl",
     "upb_amalgamation",
 )
-# end:github_only
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -224,8 +217,6 @@ alias(
 )
 
 # Amalgamation #################################################################
-
-# begin:github_only
 
 upb_amalgamation(
     name = "gen_amalgamation",
@@ -433,50 +424,3 @@ filegroup(
     ],
     visibility = ["//pkg:__pkg__"],
 )
-# end:github_only
-
-# begin:google_only
-#
-# py_binary(
-#     name = "update_check_runs",
-#     srcs = ["update_check_runs.py"],
-#     main = "update_check_runs.py",
-#     deps = [
-#         "//third_party/py/absl:app",
-#         "//third_party/py/absl/flags",
-#     ],
-# )
-#
-# kt_native_interop_hint(
-#     name = "upb_kotlin_native_hint",
-#     compatible_with = ["//buildenv/target:non_prod"],
-#     headers_to_exclude = glob([
-#         "**/*.hpp",
-#     ]),
-#     kotlin_package = "upb",
-#     no_string_conversion = [
-#         "_upb_MiniTable_Build",
-#         "upb_Decode",
-#         "upb_StringView_FromDataAndSize",
-#     ],
-#     strict_enums = [
-#         "upb_CType",
-#         "upb_DecodeStatus",
-#         "upb_EncodeStatus",
-#         "upb_FieldType",
-#         "upb_FindUnknown_Status",
-#         "upb_GetExtension_Status",
-#         "upb_GetExtensionAsBytes_Status",
-#         "upb_Label",
-#         "upb_MapInsertStatus",
-#         "upb_UnknownToMessage_Status",
-#         "upb_WireType",
-#     ],
-#     visibility = [
-#         "//third_party/bazel_rules/rules_kotlin/kotlin/native:__subpackages__",
-#         "//third_party/kotlin/protobuf:__subpackages__",
-#         "//upb:__subpackages__",
-#     ],
-# )
-#
-# end:google_only

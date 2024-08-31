@@ -1164,9 +1164,7 @@ void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
     // TODO: remove once we can figure out how to make both Blaze
     // and Bazel happy with header-only libraries.
 
-    // begin:github_only
     plugin->AddOutputFile(SourceFilename(file), "\n");
-    // end:github_only
   }
 }
 

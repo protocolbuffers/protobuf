@@ -29,57 +29,25 @@
 
 namespace hpb {
 
-// begin:google_only
 absl::Status MessageAllocationError(SourceLocation loc) {
-  return absl::Status(absl::StatusCode::kInternal,
-                      "Upb message allocation error", loc);
+  return absl::Status(absl::StatusCode::kUnknown,
+                      "Upb message allocation error");
 }
 
-absl::Status ExtensionNotFoundError(int extension_number, SourceLocation loc) {
-  return absl::Status(
-      absl::StatusCode::kInternal,
-      absl::StrFormat("Extension %d not found", extension_number), loc);
+absl::Status ExtensionNotFoundError(int ext_number, SourceLocation loc) {
+  return absl::Status(absl::StatusCode::kUnknown,
+                      absl::StrFormat("Extension %d not found", ext_number));
 }
 
-absl::Status MessageEncodeError(upb_EncodeStatus status, SourceLocation loc) {
-  return absl::Status(absl::StatusCode::kInternal,
-                      absl::StrFormat("Upb message encoding error %d", status),
-                      loc
-
-  );
+absl::Status MessageEncodeError(upb_EncodeStatus s, SourceLocation loc) {
+  return absl::Status(absl::StatusCode::kUnknown, "Encoding error");
 }
 
 absl::Status MessageDecodeError(upb_DecodeStatus status, SourceLocation loc
 
 ) {
-  return absl::Status(absl::StatusCode::kInternal,
-                      absl::StrFormat("Upb message parse error %d", status), loc
-
-  );
+  return absl::Status(absl::StatusCode::kUnknown, "Upb message parse error");
 }
-// end:google_only
-
-// begin:github_only
-// absl::Status MessageAllocationError(SourceLocation loc) {
-//   return absl::Status(absl::StatusCode::kUnknown,
-//                       "Upb message allocation error");
-// }
-//
-// absl::Status ExtensionNotFoundError(int ext_number, SourceLocation loc) {
-//   return absl::Status(absl::StatusCode::kUnknown,
-//                       absl::StrFormat("Extension %d not found", ext_number));
-// }
-//
-// absl::Status MessageEncodeError(upb_EncodeStatus s, SourceLocation loc) {
-//   return absl::Status(absl::StatusCode::kUnknown, "Encoding error");
-// }
-//
-// absl::Status MessageDecodeError(upb_DecodeStatus status, SourceLocation loc
-//
-// ) {
-//   return absl::Status(absl::StatusCode::kUnknown, "Upb message parse error");
-// }
-// end:github_only
 
 namespace internal {
 

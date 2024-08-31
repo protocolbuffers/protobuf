@@ -54,13 +54,6 @@ static void _upb_TextEncode_Field(txtenc* e, upb_MessageValue val,
   const char* name = upb_FieldDef_Name(f);
 
   if (ctype == kUpb_CType_Message) {
-// begin:google_only
-//     // TODO: Turn this into a feature check and opensource it.
-//     if (_upb_FieldDef_IsGroupLike(f)) {
-//       const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
-//       name = upb_MessageDef_Name(m);
-//     }
-// end:google_only
     if (is_ext) {
       UPB_PRIVATE(_upb_TextEncode_Printf)(e, "[%s] {", full);
     } else {

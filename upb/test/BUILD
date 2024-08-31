@@ -324,7 +324,6 @@ cc_test(
     ],
 )
 
-# begin:github_only
 filegroup(
     name = "test_srcs",
     srcs = glob(
@@ -355,4 +354,3 @@ filegroup(
     ),
     visibility = ["//upb:__pkg__"],
 )
-# end:github_only
