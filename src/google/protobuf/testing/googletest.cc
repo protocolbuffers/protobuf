@@ -216,6 +216,7 @@ std::string GetCapturedTestStdout() {
 
   close(1);
   dup2(original_stdout_, 1);
+  close(original_stdout_);
   original_stdout_ = -1;
 
   std::string result;
@@ -231,6 +232,7 @@ std::string GetCapturedTestStderr() {
 
   close(2);
   dup2(original_stderr_, 2);
+  close(original_stderr_);
   original_stderr_ = -1;
 
   std::string result;
