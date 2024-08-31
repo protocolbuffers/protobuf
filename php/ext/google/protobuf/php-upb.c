@@ -330,10 +330,6 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #define UPB_DEPRECATED
 #endif
 
-// begin:google_only
-// #define UPB_IS_GOOGLE3
-// end:google_only
-
 #if defined(UPB_IS_GOOGLE3) && \
     (!defined(UPB_BOOTSTRAP_STAGE) || UPB_BOOTSTRAP_STAGE != 0)
 #define UPB_DESC(sym) proto2_##sym
@@ -346,6 +342,7 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #define UPB_DESC_MINITABLE(sym) &google__protobuf__##sym##_msg_init
 #endif
 
+#undef UPB_IS_GOOGLE3
 
 // Linker arrays combine elements from multiple translation units into a single
 // array that can be iterated over at runtime.
@@ -14349,20 +14346,6 @@ static bool _upb_FieldDef_InferLegacyFeatures(
     UPB_DESC(FeatureSet_set_repeated_field_encoding(features, val));
     ret = true;
   }
-
-// begin:google_only
-// #if UPB_BOOTSTRAP_STAGE != 0
-//   if (syntax == kUpb_Syntax_Proto3 &&
-//       UPB_DESC(FieldOptions_has_enforce_utf8)(options) &&
-//       !UPB_DESC(FieldOptions_enforce_utf8)(options)) {
-//     int val = UPB_DESC(FeatureSet_UNVERIFIED);
-//     UPB_DESC(FeatureSet_set_utf8_validation(features, val));
-//     ret = true;
-//   }
-// #endif
-//   // clang-format off
-// end:google_only
-  // clang-format on
 
   return ret;
 }
