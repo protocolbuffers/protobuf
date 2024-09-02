@@ -26,3 +26,11 @@ bzl_library(
         "@proto_bazel_features//:features",
     ],
 )
+
+filegroup(
+    name = "bazel_osx_p4deps",
+    srcs = glob(["**"]),
+    visibility = [
+        "//bazel:__pkg__",
+    ],
+)

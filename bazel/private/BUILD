@@ -32,6 +32,22 @@ bzl_library(
 )
 
 bzl_library(
+    name = "bazel_proto_library_rule_bzl",
+    srcs = [
+        "bazel_proto_library_rule.bzl",
+    ],
+    visibility = ["//bazel:__subpackages__"],
+    deps = [
+        "//bazel/common:proto_common_bzl",
+        "//bazel/common:proto_info_bzl",
+        "//bazel/private:toolchain_helpers_bzl",
+        "@bazel_skylib//lib:paths",
+        "@bazel_skylib//rules:common_settings",
+        "@proto_bazel_features//:features",
+    ],
+)
+
+bzl_library(
     name = "proto_toolchain_rule_bzl",
     srcs = [
         "proto_toolchain_rule.bzl",
@@ -92,4 +108,12 @@ native_bool_flag(
     match_value = "off",
     result = False,
     visibility = ["//bazel:__subpackages__"],
+)
+
+filegroup(
+    name = "bazel_osx_p4deps",
+    srcs = glob(["**"]),
+    visibility = [
+        "//bazel:__pkg__",
+    ],
 )
