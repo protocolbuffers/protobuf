@@ -327,7 +327,8 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
                  "${$get$capitalized_name$Builder$}$() {\n"
                  "  $set_has_field_bit_builder$\n"
                  "  $on_changed$\n"
-                 "  return get$capitalized_name$FieldBuilder().getBuilder();\n"
+                 "  return "
+                 "internalGet$capitalized_name$FieldBuilder().getBuilder();\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
@@ -351,7 +352,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
       variables_,
       "private com.google.protobuf.SingleFieldBuilder<\n"
       "    $type$, $type$.Builder, $type$OrBuilder> \n"
-      "    get$capitalized_name$FieldBuilder() {\n"
+      "    internalGet$capitalized_name$FieldBuilder() {\n"
       "  if ($name$Builder_ == null) {\n"
       "    $name$Builder_ = new com.google.protobuf.SingleFieldBuilder<\n"
       "        $type$, $type$.Builder, $type$OrBuilder>(\n"
@@ -366,7 +367,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
 void ImmutableMessageFieldGenerator::GenerateFieldBuilderInitializationCode(
     io::Printer* printer) const {
-  printer->Print(variables_, "get$capitalized_name$FieldBuilder();\n");
+  printer->Print(variables_, "internalGet$capitalized_name$FieldBuilder();\n");
 }
 
 void ImmutableMessageFieldGenerator::GenerateInitializationCode(
@@ -409,13 +410,15 @@ void ImmutableMessageFieldGenerator::GenerateBuilderParsingCode(
   if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
                    "input.readGroup($number$,\n"
-                   "    get$capitalized_name$FieldBuilder().getBuilder(),\n"
+                   "    "
+                   "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
                    "    extensionRegistry);\n"
                    "$set_has_field_bit_builder$\n");
   } else {
     printer->Print(variables_,
                    "input.readMessage(\n"
-                   "    get$capitalized_name$FieldBuilder().getBuilder(),\n"
+                   "    "
+                   "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
                    "    extensionRegistry);\n"
                    "$set_has_field_bit_builder$\n");
   }
@@ -632,11 +635,13 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
 
       "return this;\n", Semantic::kSet);
 
+  // $type$.Builder getFieldBuilder
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
                  "$deprecation$public $type$.Builder "
                  "${$get$capitalized_name$Builder$}$() {\n"
-                 "  return get$capitalized_name$FieldBuilder().getBuilder();\n"
+                 "  return "
+                 "internalGet$capitalized_name$FieldBuilder().getBuilder();\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -655,12 +660,14 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderMembers(
       "  }\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
+
+  // SingleFieldBuilder internalGetFieldFieldBuilder
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(
       variables_,
       "private com.google.protobuf.SingleFieldBuilder<\n"
       "    $type$, $type$.Builder, $type$OrBuilder> \n"
-      "    ${$get$capitalized_name$FieldBuilder$}$() {\n"
+      "    ${$internalGet$capitalized_name$FieldBuilder$}$() {\n"
       "  if ($name$Builder_ == null) {\n"
       "    if (!($has_oneof_case_message$)) {\n"
       "      $oneof_name$_ = $type$.getDefaultInstance();\n"
@@ -708,13 +715,15 @@ void ImmutableMessageOneofFieldGenerator::GenerateBuilderParsingCode(
   if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
                    "input.readGroup($number$,\n"
-                   "    get$capitalized_name$FieldBuilder().getBuilder(),\n"
+                   "    "
+                   "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
                    "    extensionRegistry);\n"
                    "$set_oneof_case_message$;\n");
   } else {
     printer->Print(variables_,
                    "input.readMessage(\n"
-                   "    get$capitalized_name$FieldBuilder().getBuilder(),\n"
+                   "    "
+                   "internalGet$capitalized_name$FieldBuilder().getBuilder(),\n"
                    "    extensionRegistry);\n"
                    "$set_oneof_case_message$;\n");
   }
@@ -1092,7 +1101,9 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       variables_,
       "$deprecation$public $type$.Builder ${$get$capitalized_name$Builder$}$(\n"
       "    int index) {\n"
-      "  return get$capitalized_name$FieldBuilder().getBuilder(index);\n"
+      "  return "
+      "internalGet$capitalized_name$FieldBuilder().getBuilder(index);"
+      "\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
@@ -1129,7 +1140,8 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  "$deprecation$public $type$.Builder "
                  "${$add$capitalized_name$Builder$}$() {\n"
-                 "  return get$capitalized_name$FieldBuilder().addBuilder(\n"
+                 "  return "
+                 "internalGet$capitalized_name$FieldBuilder().addBuilder(\n"
                  "      $type$.getDefaultInstance());\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
@@ -1140,40 +1152,42 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       variables_,
       "$deprecation$public $type$.Builder ${$add$capitalized_name$Builder$}$(\n"
       "    int index) {\n"
-      "  return get$capitalized_name$FieldBuilder().addBuilder(\n"
+      "  return "
+      "internalGet$capitalized_name$FieldBuilder().addBuilder(\n"
       "      index, $type$.getDefaultInstance());\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
   // List<Field.Builder> getRepeatedFieldBuilderList()
   WriteFieldDocComment(printer, descriptor_, context_->options());
-  printer->Print(
-      variables_,
-      "$deprecation$public java.util.List<$type$.Builder> \n"
-      "     ${$get$capitalized_name$BuilderList$}$() {\n"
-      "  return get$capitalized_name$FieldBuilder().getBuilderList();\n"
-      "}\n"
-      "private com.google.protobuf.RepeatedFieldBuilder<\n"
-      "    $type$, $type$.Builder, $type$OrBuilder> \n"
-      "    get$capitalized_name$FieldBuilder() {\n"
-      "  if ($name$Builder_ == null) {\n"
-      "    $name$Builder_ = new "
-      "com.google.protobuf.RepeatedFieldBuilder<\n"
-      "        $type$, $type$.Builder, $type$OrBuilder>(\n"
-      "            $name$_,\n"
-      "            $get_mutable_bit_builder$,\n"
-      "            getParentForChildren(),\n"
-      "            isClean());\n"
-      "    $name$_ = null;\n"
-      "  }\n"
-      "  return $name$Builder_;\n"
-      "}\n");
+  printer->Print(variables_,
+                 "$deprecation$public java.util.List<$type$.Builder> \n"
+                 "     ${$get$capitalized_name$BuilderList$}$() {\n"
+                 "  return "
+                 "internalGet$capitalized_name$FieldBuilder()."
+                 "getBuilderList();\n"
+                 "}\n"
+                 "private com.google.protobuf.RepeatedFieldBuilder<\n"
+                 "    $type$, $type$.Builder, $type$OrBuilder> \n"
+                 "    internalGet$capitalized_name$FieldBuilder() {\n"
+                 "  if ($name$Builder_ == null) {\n"
+                 "    $name$Builder_ = new "
+                 "com.google.protobuf.RepeatedFieldBuilder<\n"
+                 "        $type$, $type$.Builder, $type$OrBuilder>(\n"
+                 "            $name$_,\n"
+                 "            $get_mutable_bit_builder$,\n"
+                 "            getParentForChildren(),\n"
+                 "            isClean());\n"
+                 "    $name$_ = null;\n"
+                 "  }\n"
+                 "  return $name$Builder_;\n"
+                 "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 }
 
 void RepeatedImmutableMessageFieldGenerator::
     GenerateFieldBuilderInitializationCode(io::Printer* printer) const {
-  printer->Print(variables_, "get$capitalized_name$FieldBuilder();\n");
+  printer->Print(variables_, "internalGet$capitalized_name$FieldBuilder();\n");
 }
 
 void RepeatedImmutableMessageFieldGenerator::GenerateInitializationCode(
@@ -1221,7 +1235,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateMergingCode(
       "    $name$Builder_ = \n"
       "      com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders "
       "?\n"
-      "         get$capitalized_name$FieldBuilder() : null;\n"
+      "         internalGet$capitalized_name$FieldBuilder() : null;\n"
       "  } else {\n"
       "    $name$Builder_.addAllMessages(other.$name$_);\n"
       "  }\n"
