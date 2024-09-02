@@ -362,7 +362,7 @@ jobs:
             os: macos-12
             cache_key: macos-12-bazel7
             bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
-            bazel_version: '7.1.2'
+            bazel_version: '7.3.1'
             continuous-only: true
           - name: MacOS Apple Silicon (build only) Bazel
             os: macos-12
@@ -378,7 +378,7 @@ jobs:
             os: windows-2022
             cache_key: windows-2022-bazel7
             bazel: test //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
-            bazel_version: '7.1.2'
+            bazel_version: '7.3.1'
             continuous-only: true
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
@@ -395,7 +395,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.bazel }}
           bazel-cache: cpp_${{ matrix.cache_key }}
-          version: ${{ matrix.bazel_version || '6.3.0' }}
+          version: ${{ matrix.bazel_version || '6.5.0' }}
 
   non-linux-cmake:
     strategy:

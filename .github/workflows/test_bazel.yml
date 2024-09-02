@@ -27,11 +27,11 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ ubuntu, windows, macos ]
-        bazelversion: [ '7.1.2' ]
+        bazelversion: [ '7.3.1' ]
         bzlmod: [true, false ]
         include:
           - runner: ubuntu
-            bazelversion: '6.4.0'
+            bazelversion: '6.5.0'
             # Not running Bazel 6 with bzlmod, because it doesn't support use_repo_rule in rules_jvm_external
             bzlmod: false
             continuous-only: true
