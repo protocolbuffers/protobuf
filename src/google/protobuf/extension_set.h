@@ -673,15 +673,10 @@ class PROTOBUF_EXPORT ExtensionSet {
 
     // The order of these fields packs Extension into 24 bytes when using 8
     // byte alignment. Consider this when adding or removing fields here.
-    union {
-      int32_t int32_t_value;
-      int64_t int64_t_value;
-      uint32_t uint32_t_value;
-      uint64_t uint64_t_value;
-      float float_value;
-      double double_value;
-      bool bool_value;
-      int enum_value;
+
+    // We need a separate named union for pointer values to allow for
+    // prefetching the pointer without undefined behavior.
+    union Pointer {
       std::string* string_value;
       MessageLite* message_value;
       LazyMessageExtension* lazymessage_value;
@@ -696,6 +691,18 @@ class PROTOBUF_EXPORT ExtensionSet {
       RepeatedField<int>* repeated_enum_value;
       RepeatedPtrField<std::string>* repeated_string_value;
       RepeatedPtrField<MessageLite>* repeated_message_value;
+    };
+
+    union {
+      int32_t int32_t_value;
+      int64_t int64_t_value;
+      uint32_t uint32_t_value;
+      uint64_t uint64_t_value;
+      float float_value;
+      double double_value;
+      bool bool_value;
+      int enum_value;
+      Pointer ptr;
     };
 
     FieldType type;
