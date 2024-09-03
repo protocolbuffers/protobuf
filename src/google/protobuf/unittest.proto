@@ -201,6 +201,13 @@ enum ForeignEnum {
   FOREIGN_LARGE = 123456;  // Large enough to escape the Boxed Integer cache.
 }
 
+enum TestDeprecatedEnum {
+  option deprecated = true;
+  TEST_DEPRECATED_ENUM_UNSPECIFIED = 0;
+  TEST_DEPRECATED_ENUM_VALUE1 = 1;
+  TEST_DEPRECATED_ENUM_VALUE2 = 2;
+}
+
 message TestReservedFields {
   reserved 2, 15, 9 to 11;
   reserved "bar", "baz";
