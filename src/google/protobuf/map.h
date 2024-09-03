@@ -470,12 +470,9 @@ class UntypedMapIterator {
   // are updated to be correct also, but those fields can become stale
   // if the underlying map is modified.  When those fields are needed they
   // are rechecked, and updated if necessary.
-  UntypedMapIterator() : node_(nullptr), m_(nullptr), bucket_index_(0) {}
 
-  explicit UntypedMapIterator(const UntypedMapBase* m);
-
-  UntypedMapIterator(NodeBase* n, const UntypedMapBase* m, map_index_t index)
-      : node_(n), m_(m), bucket_index_(index) {}
+  // We do not provide any constructors for this type. We need it to be a
+  // trivial type to ensure that we can safely share it with Rust.
 
   // Advance through buckets, looking for the first that isn't empty.
   // If nothing non-empty is found then leave node_ == nullptr.
@@ -523,6 +520,8 @@ class UntypedMapIterator {
 };
 
 // These properties are depended upon by Rust FFI.
+static_assert(std::is_trivial<UntypedMapIterator>::value,
+              "UntypedMapIterator must be a trivial type.");
 static_assert(std::is_trivially_copyable<UntypedMapIterator>::value,
               "UntypedMapIterator must be trivially copyable.");
 static_assert(std::is_trivially_destructible<UntypedMapIterator>::value,
@@ -583,11 +582,11 @@ class PROTOBUF_EXPORT UntypedMapBase {
   }
   size_type size() const { return num_elements_; }
   bool empty() const { return size() == 0; }
+  UntypedMapIterator begin() const;
 
-  UntypedMapIterator begin() const { return UntypedMapIterator(this); }
   // We make this a static function to reduce the cost in MapField.
   // All the end iterators are singletons anyway.
-  static UntypedMapIterator EndIterator() { return {}; }
+  static UntypedMapIterator EndIterator() { return {nullptr, nullptr, 0}; }
 
  protected:
   friend class TcParser;
@@ -799,18 +798,21 @@ class PROTOBUF_EXPORT UntypedMapBase {
   Allocator alloc_;
 };
 
-inline UntypedMapIterator::UntypedMapIterator(const UntypedMapBase* m) : m_(m) {
-  if (m_->index_of_first_non_null_ == m_->num_buckets_) {
-    bucket_index_ = 0;
-    node_ = nullptr;
+inline UntypedMapIterator UntypedMapBase::begin() const {
+  map_index_t bucket_index;
+  NodeBase* node;
+  if (index_of_first_non_null_ == num_buckets_) {
+    bucket_index = 0;
+    node = nullptr;
   } else {
-    bucket_index_ = m_->index_of_first_non_null_;
-    TableEntryPtr entry = m_->table_[bucket_index_];
-    node_ = PROTOBUF_PREDICT_TRUE(TableEntryIsList(entry))
-                ? TableEntryToNode(entry)
-                : TableEntryToTree(entry)->begin()->second;
-    PROTOBUF_ASSUME(node_ != nullptr);
+    bucket_index = index_of_first_non_null_;
+    TableEntryPtr entry = table_[bucket_index];
+    node = PROTOBUF_PREDICT_TRUE(internal::TableEntryIsList(entry))
+               ? TableEntryToNode(entry)
+               : TableEntryToTree(entry)->begin()->second;
+    PROTOBUF_ASSUME(node != nullptr);
   }
+  return UntypedMapIterator{node, this, bucket_index};
 }
 
 inline void UntypedMapIterator::SearchFrom(map_index_t start_bucket) {
@@ -1350,9 +1352,10 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     using pointer = const value_type*;
     using reference = const value_type&;
 
-    const_iterator() {}
+    const_iterator() : BaseIt{nullptr, nullptr, 0} {}
     const_iterator(const const_iterator&) = default;
     const_iterator& operator=(const const_iterator&) = default;
+    explicit const_iterator(BaseIt it) : BaseIt(it) {}
 
     reference operator*() const { return static_cast<Node*>(this->node_)->kv; }
     pointer operator->() const { return &(operator*()); }
@@ -1376,7 +1379,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
 
    private:
     using BaseIt::BaseIt;
-    explicit const_iterator(const BaseIt& base) : BaseIt(base) {}
     friend class Map;
     friend class internal::UntypedMapIterator;
     friend class internal::TypeDefinedMapFieldBase<Key, T>;
@@ -1392,9 +1394,10 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     using pointer = value_type*;
     using reference = value_type&;
 
-    iterator() {}
+    iterator() : BaseIt{nullptr, nullptr, 0} {}
     iterator(const iterator&) = default;
     iterator& operator=(const iterator&) = default;
+    explicit iterator(BaseIt it) : BaseIt(it) {}
 
     reference operator*() const { return static_cast<Node*>(this->node_)->kv; }
     pointer operator->() const { return &(operator*()); }
@@ -1426,10 +1429,12 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     friend class Map;
   };
 
-  iterator begin() ABSL_ATTRIBUTE_LIFETIME_BOUND { return iterator(this); }
+  iterator begin() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return iterator(Base::begin());
+  }
   iterator end() ABSL_ATTRIBUTE_LIFETIME_BOUND { return iterator(); }
   const_iterator begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return const_iterator(this);
+    return const_iterator(Base::begin());
   }
   const_iterator end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_iterator();
@@ -1483,7 +1488,8 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   template <typename K = key_type>
   iterator find(const key_arg<K>& key) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     auto res = this->FindHelper(TS::ToView(key));
-    return iterator(static_cast<Node*>(res.node), this, res.bucket);
+    return iterator(internal::UntypedMapIterator{static_cast<Node*>(res.node),
+                                                 this, res.bucket});
   }
 
   template <typename K = key_type>
@@ -1687,8 +1693,9 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     internal::map_index_t b = p.bucket;
     // Case 1: key was already present.
     if (p.node != nullptr)
-      return std::make_pair(
-          iterator(static_cast<Node*>(p.node), this, p.bucket), false);
+      return std::make_pair(iterator(internal::UntypedMapIterator{
+                                static_cast<Node*>(p.node), this, p.bucket}),
+                            false);
     // Case 2: insert.
     if (this->ResizeIfLoadIsOutOfRange(this->num_elements_ + 1)) {
       b = this->BucketNumber(TS::ToView(k));
@@ -1715,7 +1722,8 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
 
     this->InsertUnique(b, node);
     ++this->num_elements_;
-    return std::make_pair(iterator(node, this, b), true);
+    return std::make_pair(iterator(internal::UntypedMapIterator{node, this, b}),
+                          true);
   }
 
   // A helper function to perform an assignment of `mapped_type`.
