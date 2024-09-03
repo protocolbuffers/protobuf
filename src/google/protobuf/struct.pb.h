@@ -42,7 +42,8 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-class AnyMetadata;
+template <typename T>
+::absl::string_view GetAnyMessageName();
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -233,7 +234,9 @@ class PROTOBUF_EXPORT ListValue final
   void SharedDtor();
   void InternalSwap(ListValue* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ListValue"; }
 
  protected:
@@ -430,7 +433,9 @@ class PROTOBUF_EXPORT Struct final
   void SharedDtor();
   void InternalSwap(Struct* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Struct"; }
 
  protected:
@@ -676,7 +681,9 @@ class PROTOBUF_EXPORT Value final
   void SharedDtor();
   void InternalSwap(Value* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Value"; }
 
  protected:

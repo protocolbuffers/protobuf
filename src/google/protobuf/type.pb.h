@@ -41,7 +41,8 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-class AnyMetadata;
+template <typename T>
+::absl::string_view GetAnyMessageName();
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -322,7 +323,9 @@ class PROTOBUF_EXPORT Option final
   void SharedDtor();
   void InternalSwap(Option* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Option"; }
 
  protected:
@@ -536,7 +539,9 @@ class PROTOBUF_EXPORT Field final
   void SharedDtor();
   void InternalSwap(Field* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Field"; }
 
  protected:
@@ -922,7 +927,9 @@ class PROTOBUF_EXPORT EnumValue final
   void SharedDtor();
   void InternalSwap(EnumValue* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumValue"; }
 
  protected:
@@ -1149,7 +1156,9 @@ class PROTOBUF_EXPORT Type final
   void SharedDtor();
   void InternalSwap(Type* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Type"; }
 
  protected:
@@ -1455,7 +1464,9 @@ class PROTOBUF_EXPORT Enum final
   void SharedDtor();
   void InternalSwap(Enum* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Enum"; }
 
  protected:

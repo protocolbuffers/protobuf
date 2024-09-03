@@ -40,7 +40,8 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-class AnyMetadata;
+template <typename T>
+::absl::string_view GetAnyMessageName();
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -196,7 +197,9 @@ class PROTOBUF_EXPORT Mixin final
   void SharedDtor();
   void InternalSwap(Mixin* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Mixin"; }
 
  protected:
@@ -410,7 +413,9 @@ class PROTOBUF_EXPORT Method final
   void SharedDtor();
   void InternalSwap(Method* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Method"; }
 
  protected:
@@ -697,7 +702,9 @@ class PROTOBUF_EXPORT Api final
   void SharedDtor();
   void InternalSwap(Api* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Api"; }
 
  protected:
