@@ -36,6 +36,15 @@ impl ProtoBytes {
     // must not be called by a user.
     #[doc(hidden)]
     pub fn into_inner(self, _private: Private) -> InnerProtoString {
+        // We're in an opted-out third_party crate so shouldn't trigger presubmit here.
+        unsafe {
+            let x = 5;
+            let y = &x as *const _;
+            let _ = *y;
+        }
+        // This crate is opted-in for Clippy so should trigger.
+        let x = 5;
+        if x + 1 == x + 1 {}
         self.inner
     }
 
