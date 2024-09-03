@@ -110,7 +110,8 @@ inline bool NullValue_Parse(absl::string_view name, NullValue* value) {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT ListValue final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.ListValue) */ {
  public:
   inline ListValue() : ListValue(nullptr) {}
@@ -306,7 +307,8 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Struct final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Struct) */ {
  public:
   inline Struct() : Struct(nullptr) {}
@@ -542,7 +544,8 @@ class Struct_FieldsEntry_DoNotUse final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Value final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Value) */ {
  public:
   inline Value() : Value(nullptr) {}
