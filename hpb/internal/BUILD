@@ -26,7 +26,9 @@ cc_library(
     name = "internal",
     hdrs = ["internal.h"],
     compatible_with = ["//buildenv/target:non_prod"],
-    visibility = ["//hpb:__subpackages__"],
+    visibility = [
+        "//hpb:__subpackages__",
+    ],
     deps = [
         "//upb:mem",
         "//upb:message",
