@@ -37,8 +37,8 @@ public final class ProtobufToStringOutputTest extends DebugFormatTest {
   }
 
   @Test
-  public void toStringFormat_testDebugFormat() {
-    ProtobufToStringOutput.callWithDebugFormat(
+  public void runWithDebugFormat_testDebugFormat() {
+    ProtobufToStringOutput.runWithDebugFormat(
         () ->
             assertThat(message.toString())
                 .matches(
@@ -52,8 +52,44 @@ public final class ProtobufToStringOutputTest extends DebugFormatTest {
   }
 
   @Test
-  public void toStringFormat_testTextFormat() {
-    ProtobufToStringOutput.callWithTextFormat(
+  public void callWithDebugFormatWithoutException_testDebugFormat() {
+    String protoStr =
+        ProtobufToStringOutput.callWithDebugFormatWithoutException(
+            () -> {
+              return message.toString();
+            });
+    assertThat(protoStr)
+        .matches(
+            String.format(
+                "%soptional_redacted_string: %s\n"
+                    + "optional_unredacted_string: \"foo\"\n"
+                    + "optional_redacted_message \\{\n"
+                    + "  %s\n"
+                    + "\\}\n",
+                UNSTABLE_PREFIX_MULTILINE, REDACTED_REGEX, REDACTED_REGEX));
+  }
+
+  @Test
+  public void callWithDebugFormatWithException_testDebugFormat() throws Exception {
+    String protoStr =
+        ProtobufToStringOutput.callWithDebugFormatWithoutException(
+            () -> {
+              return message.toString();
+            });
+    assertThat(protoStr)
+        .matches(
+            String.format(
+                "%soptional_redacted_string: %s\n"
+                    + "optional_unredacted_string: \"foo\"\n"
+                    + "optional_redacted_message \\{\n"
+                    + "  %s\n"
+                    + "\\}\n",
+                UNSTABLE_PREFIX_MULTILINE, REDACTED_REGEX, REDACTED_REGEX));
+  }
+
+  @Test
+  public void runWithTextFormat_testTextFormat() {
+    ProtobufToStringOutput.runWithTextFormat(
         () -> {
           assertThat(message.toString())
               .matches(
@@ -66,8 +102,40 @@ public final class ProtobufToStringOutputTest extends DebugFormatTest {
   }
 
   @Test
-  public void toStringFormat_testProtoWrapperWithDebugFormat() {
-    ProtobufToStringOutput.callWithDebugFormat(
+  public void callWithDebugFormatWithoutException_testTextFormat() {
+    String protoStr =
+        ProtobufToStringOutput.callWithTextFormatWithoutException(
+            () -> {
+              return message.toString();
+            });
+    assertThat(protoStr)
+        .matches(
+            "optional_redacted_string: \"bar\"\n"
+                + "optional_unredacted_string: \"foo\"\n"
+                + "optional_redacted_message \\{\n"
+                + "  optional_unredacted_nested_string: \"foobar\"\n"
+                + "\\}\n");
+  }
+
+  @Test
+  public void callWithDebugFormatWithException_testTextFormat() throws Exception {
+    String protoStr =
+        ProtobufToStringOutput.callWithTextFormatWithoutException(
+            () -> {
+              return message.toString();
+            });
+    assertThat(protoStr)
+        .matches(
+            "optional_redacted_string: \"bar\"\n"
+                + "optional_unredacted_string: \"foo\"\n"
+                + "optional_redacted_message \\{\n"
+                + "  optional_unredacted_nested_string: \"foobar\"\n"
+                + "\\}\n");
+  }
+
+  @Test
+  public void runWithDebugFormat_testProtoWrapperWithDebugFormat() {
+    ProtobufToStringOutput.runWithDebugFormat(
         () -> {
           ArrayList<RedactedFields> list = new ArrayList<>();
           list.add(message);
@@ -85,8 +153,50 @@ public final class ProtobufToStringOutputTest extends DebugFormatTest {
   }
 
   @Test
-  public void toStringFormat_testProtoWrapperWithTextFormat() {
-    ProtobufToStringOutput.callWithTextFormat(
+  public void callWithDebugFormatWithoutException_testProtoWrapperWithDebugFormat() {
+    ArrayList<RedactedFields> list = new ArrayList<>();
+    list.add(message);
+    String objStr =
+        ProtobufToStringOutput.callWithDebugFormatWithoutException(
+            () -> {
+              return list.toString();
+            });
+    assertThat(objStr)
+        .matches(
+            String.format(
+                "\\[%soptional_redacted_string: %s\n"
+                    + "optional_unredacted_string: \"foo\"\n"
+                    + "optional_redacted_message \\{\n"
+                    + "  %s\n"
+                    + "\\}\n"
+                    + "\\]",
+                UNSTABLE_PREFIX_MULTILINE, REDACTED_REGEX, REDACTED_REGEX));
+  }
+
+  @Test
+  public void callWithDebugFormatWithException_testProtoWrapperWithDebugFormat() throws Exception {
+    ArrayList<RedactedFields> list = new ArrayList<>();
+    list.add(message);
+    String objStr =
+        ProtobufToStringOutput.callWithDebugFormatWithoutException(
+            () -> {
+              return list.toString();
+            });
+    assertThat(objStr)
+        .matches(
+            String.format(
+                "\\[%soptional_redacted_string: %s\n"
+                    + "optional_unredacted_string: \"foo\"\n"
+                    + "optional_redacted_message \\{\n"
+                    + "  %s\n"
+                    + "\\}\n"
+                    + "\\]",
+                UNSTABLE_PREFIX_MULTILINE, REDACTED_REGEX, REDACTED_REGEX));
+  }
+
+  @Test
+  public void runWithTextFormat_testProtoWrapperWithTextFormat() {
+    ProtobufToStringOutput.runWithTextFormat(
         () -> {
           ArrayList<RedactedFields> list = new ArrayList<>();
           list.add(message);
@@ -99,5 +209,43 @@ public final class ProtobufToStringOutputTest extends DebugFormatTest {
                       + "\\}\n"
                       + "\\]");
         });
+  }
+
+  @Test
+  public void callWithDebugFormatWithoutException_testProtoWrapperWithTextFormat() {
+    ArrayList<RedactedFields> list = new ArrayList<>();
+    list.add(message);
+    String objStr =
+        ProtobufToStringOutput.callWithTextFormatWithoutException(
+            () -> {
+              return list.toString();
+            });
+    assertThat(objStr)
+        .matches(
+            "\\[optional_redacted_string: \"bar\"\n"
+                + "optional_unredacted_string: \"foo\"\n"
+                + "optional_redacted_message \\{\n"
+                + "  optional_unredacted_nested_string: \"foobar\"\n"
+                + "\\}\n"
+                + "\\]");
+  }
+
+  @Test
+  public void callWithDebugFormatWithException_testProtoWrapperWithTextFormat() throws Exception {
+    ArrayList<RedactedFields> list = new ArrayList<>();
+    list.add(message);
+    String objStr =
+        ProtobufToStringOutput.callWithTextFormatWithoutException(
+            () -> {
+              return list.toString();
+            });
+    assertThat(objStr)
+        .matches(
+            "\\[optional_redacted_string: \"bar\"\n"
+                + "optional_unredacted_string: \"foo\"\n"
+                + "optional_redacted_message \\{\n"
+                + "  optional_unredacted_nested_string: \"foobar\"\n"
+                + "\\}\n"
+                + "\\]");
   }
 }
