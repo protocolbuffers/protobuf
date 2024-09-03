@@ -46,7 +46,8 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-class AnyMetadata;
+template <typename T>
+::absl::string_view GetAnyMessageName();
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -238,7 +239,9 @@ class PROTOC_EXPORT Version final
   void SharedDtor();
   void InternalSwap(Version* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.Version"; }
 
  protected:
@@ -475,7 +478,9 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final
   void SharedDtor();
   void InternalSwap(CodeGeneratorResponse_File* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse.File"; }
 
  protected:
@@ -728,7 +733,9 @@ class PROTOC_EXPORT CodeGeneratorResponse final
   void SharedDtor();
   void InternalSwap(CodeGeneratorResponse* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse"; }
 
  protected:
@@ -1010,7 +1017,9 @@ class PROTOC_EXPORT CodeGeneratorRequest final
   void SharedDtor();
   void InternalSwap(CodeGeneratorRequest* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorRequest"; }
 
  protected:
