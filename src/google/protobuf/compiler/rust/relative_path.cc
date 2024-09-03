@@ -7,7 +7,6 @@
 
 #include "google/protobuf/compiler/rust/relative_path.h"
 
-#include <iostream>
 #include <string>
 #include <vector>
 
