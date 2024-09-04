@@ -28,7 +28,6 @@
 #include <iterator>
 #include <limits>
 #include <memory>
-#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -36,7 +35,6 @@
 #include "absl/base/dynamic_annotations.h"
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
-#include "absl/log/absl_log.h"
 #include "absl/meta/type_traits.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/arena.h"
@@ -45,7 +43,6 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
-
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -79,7 +76,11 @@ constexpr int RepeatedFieldLowerClampLimit() {
 // overflows when multiplied by 2 (which is undefined behavior). Sizes above
 // this will clamp to the maximum int value instead of following exponential
 // growth when growing a repeated field.
+#if defined(__cpp_inline_variables)
+inline constexpr int kRepeatedFieldUpperClampLimit =
+#else
 constexpr int kRepeatedFieldUpperClampLimit =
+#endif
     (std::numeric_limits<int>::max() / 2) + 1;
 
 template <typename Element>

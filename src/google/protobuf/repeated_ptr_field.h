@@ -26,8 +26,8 @@
 #include <cstdint>
 #include <iterator>
 #include <limits>
+#include <new>
 #include <string>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -39,7 +39,6 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
-
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -92,7 +91,7 @@ struct IsMovable
 // Do not use this struct - it exists for internal use only.
 template <typename T>
 struct ArenaOffsetHelper {
-  constexpr static size_t value = offsetof(T, arena_);
+  static constexpr size_t value = offsetof(T, arena_);
 };
 
 // This is the common base class for RepeatedPtrFields.  It deals only in void*
@@ -102,11 +101,16 @@ struct ArenaOffsetHelper {
 // but may have a template argument called TypeHandler.  Its signature is:
 //   class TypeHandler {
 //    public:
-//     typedef MyType Type;
-//     static Type* New();
-//     static Type* NewFromPrototype(const Type* prototype,
-//                                       Arena* arena);
-//     static void Delete(Type*);
+//     using Type = MyType;
+//     using Movable = ...;
+//
+//     static Type*(*)(Arena*) GetNewFunc();
+//     static void GetArena(Type* value);
+//
+//     static Type* New(Arena* arena);
+//     static Type* New(Arena* arena, Type&& value);
+//     static Type* NewFromPrototype(const Type* prototype, Arena* arena);
+//     static void Delete(Type*, Arena* arena);
 //     static void Clear(Type*);
 //     static void Merge(const Type& from, Type* to);
 //
@@ -145,7 +149,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   ~RepeatedPtrFieldBase() {
 #ifndef NDEBUG
-    // Try to trigger segfault / asan failure in non-opt builds. If arena_
+    // Try to trigger segfault / asan failure in non-opt builds if arena_
     // lifetime has ended before the destructor.
     if (arena_) (void)arena_->SpaceAllocated();
 #endif
@@ -318,9 +322,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   void CopyFrom(const RepeatedPtrFieldBase& other) {
     if (&other == this) return;
-    RepeatedPtrFieldBase::Clear<TypeHandler>();
+    Clear<TypeHandler>();
     if (other.empty()) return;
-    RepeatedPtrFieldBase::MergeFrom<typename TypeHandler::Type>(other);
+    MergeFrom<typename TypeHandler::Type>(other);
   }
 
   void CloseGap(int start, int num);
@@ -808,10 +812,13 @@ PROTOBUF_EXPORT void InternalOutOfLineDeleteMessageLite(MessageLite* message);
 template <typename GenericType>
 class GenericTypeHandler {
  public:
-  typedef GenericType Type;
+  using Type = GenericType;
   using Movable = IsMovable<GenericType>;
 
   static constexpr auto GetNewFunc() { return Arena::DefaultConstruct<Type>; }
+  static inline Arena* GetArena(GenericType* value) {
+    return Arena::InternalGetArena(value);
+  }
 
   static inline GenericType* New(Arena* arena) {
     return static_cast<GenericType*>(Arena::DefaultConstruct<Type>(arena));
@@ -837,10 +844,6 @@ class GenericTypeHandler {
     delete value;
 #endif
   }
-  static inline Arena* GetArena(GenericType* value) {
-    return Arena::InternalGetArena(value);
-  }
-
   static inline void Clear(GenericType* value) { value->Clear(); }
   static void Merge(const GenericType& from, GenericType* to);
   static inline size_t SpaceUsedLong(const GenericType& value) {
@@ -887,10 +890,11 @@ PROTOBUF_EXPORT void* NewStringElement(Arena* arena);
 template <>
 class GenericTypeHandler<std::string> {
  public:
-  typedef std::string Type;
+  using Type = std::string;
   using Movable = IsMovable<Type>;
 
   static constexpr auto GetNewFunc() { return NewStringElement; }
+  static inline Arena* GetArena(std::string*) { return nullptr; }
 
   static PROTOBUF_NOINLINE std::string* New(Arena* arena) {
     return Arena::Create<std::string>(arena);
@@ -902,7 +906,6 @@ class GenericTypeHandler<std::string> {
                                               Arena* arena) {
     return New(arena);
   }
-  static inline Arena* GetArena(std::string*) { return nullptr; }
   static inline void Delete(std::string* value, Arena* arena) {
     if (arena == nullptr) {
       delete value;
