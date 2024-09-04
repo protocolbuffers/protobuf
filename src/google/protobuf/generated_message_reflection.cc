@@ -779,11 +779,7 @@ void SwapFieldHelper::SwapMessage(const Reflection* r, Message* lhs,
 
   if (*lhs_sub == *rhs_sub) return;
 
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  if (lhs_arena != nullptr && lhs_arena == rhs_arena) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-  if (lhs_arena == rhs_arena) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+  if (internal::CanUseInternalSwap(lhs_arena, rhs_arena)) {
     std::swap(*lhs_sub, *rhs_sub);
     return;
   }
@@ -1084,11 +1080,7 @@ void Reflection::Swap(Message* lhs, Message* rhs) const {
 
   // Check that both messages are in the same arena (or both on the heap). We
   // need to copy all data if not, due to ownership semantics.
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  if (lhs_arena == nullptr || lhs_arena != rhs_arena) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-  if (lhs_arena != rhs_arena) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+  if (!internal::CanUseInternalSwap(lhs_arena, rhs_arena)) {
     // One of the two is guaranteed to have an arena.  Switch things around
     // to guarantee that lhs has an arena.
     Arena* arena = lhs_arena;
@@ -1100,12 +1092,12 @@ void Reflection::Swap(Message* lhs, Message* rhs) const {
     Message* temp = lhs->New(arena);
     temp->MergeFrom(*rhs);
     rhs->CopyFrom(*lhs);
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    lhs->CopyFrom(*temp);
-    if (arena == nullptr) delete temp;
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    Swap(lhs, temp);
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (internal::DebugHardenForceCopyInSwap()) {
+      lhs->CopyFrom(*temp);
+      if (arena == nullptr) delete temp;
+    } else {
+      Swap(lhs, temp);
+    }
     return;
   }
 

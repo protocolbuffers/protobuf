@@ -1097,11 +1097,7 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
 }
 
 void ExtensionSet::Swap(const MessageLite* extendee, ExtensionSet* other) {
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  if (arena_ != nullptr && arena_ == other->arena_) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-  if (arena_ == other->arena_) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+  if (internal::CanUseInternalSwap(arena_, other->arena_)) {
     InternalSwap(other);
   } else {
     // TODO: We maybe able to optimize a case where we are

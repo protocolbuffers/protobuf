@@ -419,10 +419,10 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
 }
 
 void GenericSwap(Message* lhs, Message* rhs) {
-#ifndef PROTOBUF_FORCE_COPY_IN_SWAP
-  ABSL_DCHECK(lhs->GetArena() != rhs->GetArena());
-  ABSL_DCHECK(lhs->GetArena() != nullptr || rhs->GetArena() != nullptr);
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+  if (!internal::DebugHardenForceCopyInSwap()) {
+    ABSL_DCHECK(lhs->GetArena() != rhs->GetArena());
+    ABSL_DCHECK(lhs->GetArena() != nullptr || rhs->GetArena() != nullptr);
+  }
   // At least one of these must have an arena, so make `rhs` point to it.
   Arena* arena = rhs->GetArena();
   if (arena == nullptr) {
@@ -436,13 +436,13 @@ void GenericSwap(Message* lhs, Message* rhs) {
   tmp->CheckTypeAndMergeFrom(*lhs);
   lhs->Clear();
   lhs->CheckTypeAndMergeFrom(*rhs);
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  rhs->Clear();
-  rhs->CheckTypeAndMergeFrom(*tmp);
-  if (arena == nullptr) delete tmp;
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-  rhs->GetReflection()->Swap(tmp, rhs);
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+  if (internal::DebugHardenForceCopyInSwap()) {
+    rhs->Clear();
+    rhs->CheckTypeAndMergeFrom(*tmp);
+    if (arena == nullptr) delete tmp;
+  } else {
+    rhs->GetReflection()->Swap(tmp, rhs);
+  }
 }
 
 }  // namespace internal

@@ -762,11 +762,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final
   friend void swap(UninterpretedOption_NamePart& a, UninterpretedOption_NamePart& b) { a.Swap(&b); }
   inline void Swap(UninterpretedOption_NamePart* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -980,11 +976,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final
   friend void swap(SourceCodeInfo_Location& a, SourceCodeInfo_Location& b) { a.Swap(&b); }
   inline void Swap(SourceCodeInfo_Location* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -1265,11 +1257,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final
   friend void swap(GeneratedCodeInfo_Annotation& a, GeneratedCodeInfo_Annotation& b) { a.Swap(&b); }
   inline void Swap(GeneratedCodeInfo_Annotation* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -1545,11 +1533,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final
   friend void swap(FieldOptions_FeatureSupport& a, FieldOptions_FeatureSupport& b) { a.Swap(&b); }
   inline void Swap(FieldOptions_FeatureSupport* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -1784,11 +1768,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final
   friend void swap(FieldOptions_EditionDefault& a, FieldOptions_EditionDefault& b) { a.Swap(&b); }
   inline void Swap(FieldOptions_EditionDefault* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -1997,11 +1977,7 @@ class PROTOBUF_EXPORT FeatureSet final
   friend void swap(FeatureSet& a, FeatureSet& b) { a.Swap(&b); }
   inline void Swap(FeatureSet* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -2562,11 +2538,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final
   friend void swap(ExtensionRangeOptions_Declaration& a, ExtensionRangeOptions_Declaration& b) { a.Swap(&b); }
   inline void Swap(ExtensionRangeOptions_Declaration* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -2820,11 +2792,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final
   friend void swap(EnumDescriptorProto_EnumReservedRange& a, EnumDescriptorProto_EnumReservedRange& b) { a.Swap(&b); }
   inline void Swap(EnumDescriptorProto_EnumReservedRange* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -3027,11 +2995,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final
   friend void swap(DescriptorProto_ReservedRange& a, DescriptorProto_ReservedRange& b) { a.Swap(&b); }
   inline void Swap(DescriptorProto_ReservedRange* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -3234,11 +3198,7 @@ class PROTOBUF_EXPORT UninterpretedOption final
   friend void swap(UninterpretedOption& a, UninterpretedOption& b) { a.Swap(&b); }
   inline void Swap(UninterpretedOption* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -3536,11 +3496,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final
   friend void swap(SourceCodeInfo& a, SourceCodeInfo& b) { a.Swap(&b); }
   inline void Swap(SourceCodeInfo* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -3736,11 +3692,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final
   friend void swap(GeneratedCodeInfo& a, GeneratedCodeInfo& b) { a.Swap(&b); }
   inline void Swap(GeneratedCodeInfo* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -3936,11 +3888,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final
   friend void swap(FeatureSetDefaults_FeatureSetEditionDefault& a, FeatureSetDefaults_FeatureSetEditionDefault& b) { a.Swap(&b); }
   inline void Swap(FeatureSetDefaults_FeatureSetEditionDefault* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -4169,11 +4117,7 @@ class PROTOBUF_EXPORT ServiceOptions final
   friend void swap(ServiceOptions& a, ServiceOptions& b) { a.Swap(&b); }
   inline void Swap(ServiceOptions* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -4584,11 +4528,7 @@ class PROTOBUF_EXPORT OneofOptions final
   friend void swap(OneofOptions& a, OneofOptions& b) { a.Swap(&b); }
   inline void Swap(OneofOptions* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -4986,11 +4926,7 @@ class PROTOBUF_EXPORT MethodOptions final
   friend void swap(MethodOptions& a, MethodOptions& b) { a.Swap(&b); }
   inline void Swap(MethodOptions* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -5434,11 +5370,7 @@ class PROTOBUF_EXPORT MessageOptions final
   friend void swap(MessageOptions& a, MessageOptions& b) { a.Swap(&b); }
   inline void Swap(MessageOptions* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -5901,11 +5833,7 @@ class PROTOBUF_EXPORT FileOptions final
   friend void swap(FileOptions& a, FileOptions& b) { a.Swap(&b); }
   inline void Swap(FileOptions* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -6630,11 +6558,7 @@ class PROTOBUF_EXPORT FieldOptions final
   friend void swap(FieldOptions& a, FieldOptions& b) { a.Swap(&b); }
   inline void Swap(FieldOptions* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -7295,11 +7219,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final
   friend void swap(FeatureSetDefaults& a, FeatureSetDefaults& b) { a.Swap(&b); }
   inline void Swap(FeatureSetDefaults* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -7527,11 +7447,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final
   friend void swap(ExtensionRangeOptions& a, ExtensionRangeOptions& b) { a.Swap(&b); }
   inline void Swap(ExtensionRangeOptions* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -7981,11 +7897,7 @@ class PROTOBUF_EXPORT EnumValueOptions final
   friend void swap(EnumValueOptions& a, EnumValueOptions& b) { a.Swap(&b); }
   inline void Swap(EnumValueOptions* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -8426,11 +8338,7 @@ class PROTOBUF_EXPORT EnumOptions final
   friend void swap(EnumOptions& a, EnumOptions& b) { a.Swap(&b); }
   inline void Swap(EnumOptions* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -8867,11 +8775,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final
   friend void swap(OneofDescriptorProto& a, OneofDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(OneofDescriptorProto* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -9089,11 +8993,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
   friend void swap(MethodDescriptorProto& a, MethodDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(MethodDescriptorProto* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -9375,11 +9275,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
   friend void swap(FieldDescriptorProto& a, FieldDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(FieldDescriptorProto* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -9793,11 +9689,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final
   friend void swap(EnumValueDescriptorProto& a, EnumValueDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(EnumValueDescriptorProto* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -10028,11 +9920,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final
   friend void swap(DescriptorProto_ExtensionRange& a, DescriptorProto_ExtensionRange& b) { a.Swap(&b); }
   inline void Swap(DescriptorProto_ExtensionRange* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -10257,11 +10145,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final
   friend void swap(ServiceDescriptorProto& a, ServiceDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(ServiceDescriptorProto* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -10498,11 +10382,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final
   friend void swap(EnumDescriptorProto& a, EnumDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(EnumDescriptorProto* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -10783,11 +10663,7 @@ class PROTOBUF_EXPORT DescriptorProto final
   friend void swap(DescriptorProto& a, DescriptorProto& b) { a.Swap(&b); }
   inline void Swap(DescriptorProto* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -11164,11 +11040,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final
   friend void swap(FileDescriptorProto& a, FileDescriptorProto& b) { a.Swap(&b); }
   inline void Swap(FileDescriptorProto* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -11594,11 +11466,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final
   friend void swap(FileDescriptorSet& a, FileDescriptorSet& b) { a.Swap(&b); }
   inline void Swap(FileDescriptorSet* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);

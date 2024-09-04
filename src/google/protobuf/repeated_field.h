@@ -1074,11 +1074,7 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
   if (this == other) return;
   Arena* arena = GetArena();
   Arena* other_arena = other->GetArena();
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  if (arena != nullptr && arena == other_arena) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-  if (arena == other_arena) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+  if (internal::CanUseInternalSwap(arena, other_arena)) {
     InternalSwap(other);
   } else {
     RepeatedField<Element> temp(other_arena);

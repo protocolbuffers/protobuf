@@ -355,12 +355,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   PROTOBUF_NDEBUG_INLINE void Swap(RepeatedPtrFieldBase* other) {
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena())
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena())
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
-    {
+    if (internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       SwapFallback<TypeHandler>(other);
@@ -512,11 +507,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   PROTOBUF_NOINLINE void SwapFallback(RepeatedPtrFieldBase* other) {
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    ABSL_DCHECK(GetArena() == nullptr || other->GetArena() != GetArena());
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    ABSL_DCHECK(other->GetArena() != GetArena());
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    ABSL_DCHECK(!internal::CanUseInternalSwap(GetArena(), other->GetArena()));
 
     // Copy semantics in this case. We try to improve efficiency by placing the
     // temporary on |other|'s arena so that messages are copied twice rather

@@ -27,11 +27,12 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/repeated_ptr_field.h"
 
 // Must be included last.
 // clang-format off
 #include "google/protobuf/port_def.inc"
-#include "google/protobuf/repeated_ptr_field.h"
 // clang-format on
 
 namespace google {
@@ -222,13 +223,13 @@ void LazyRepeatedPtrField::Swap(LazyRepeatedPtrField* lhs, Arena* lhs_arena,
     if (cleanup_old) old_unparsed.Destroy();
   };
   static auto take_ownership = [](LazyRepeatedPtrField* f, Arena* arena) {
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    reallocate(f, arena, true);
-#else
-    arena->Own(reinterpret_cast<RepeatedPtrField<MessageLite>*>(
-        f->raw_.load(std::memory_order_relaxed).mutable_value()));
-    f->unparsed_.TransferHeapOwnershipToArena(arena);
-#endif
+    if (internal::DebugHardenForceCopyInSwap()) {
+      reallocate(f, arena, true);
+    } else {
+      arena->Own(reinterpret_cast<RepeatedPtrField<MessageLite>*>(
+          f->raw_.load(std::memory_order_relaxed).mutable_value()));
+      f->unparsed_.TransferHeapOwnershipToArena(arena);
+    }
   };
 
   using std::swap;  // Enable ADL with fallback
@@ -239,12 +240,10 @@ void LazyRepeatedPtrField::Swap(LazyRepeatedPtrField* lhs, Arena* lhs_arena,
   // arena is actually on the opposite message.  Now we straighten out our
   // ownership by forcing reallocations/ownership changes as needed.
   if (lhs_arena == rhs_arena) {
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (lhs_arena == nullptr) {
+    if (internal::DebugHardenForceCopyInSwap() && lhs_arena == nullptr) {
       reallocate(lhs, lhs_arena, true);
       reallocate(rhs, rhs_arena, true);
     }
-#endif
   } else {
     if (lhs_arena == nullptr) {
       take_ownership(rhs, rhs_arena);

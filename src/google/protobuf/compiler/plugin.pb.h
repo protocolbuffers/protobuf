@@ -176,11 +176,7 @@ class PROTOC_EXPORT Version final
   friend void swap(Version& a, Version& b) { a.Swap(&b); }
   inline void Swap(Version* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -415,11 +411,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final
   friend void swap(CodeGeneratorResponse_File& a, CodeGeneratorResponse_File& b) { a.Swap(&b); }
   inline void Swap(CodeGeneratorResponse_File* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -670,11 +662,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final
   friend void swap(CodeGeneratorResponse& a, CodeGeneratorResponse& b) { a.Swap(&b); }
   inline void Swap(CodeGeneratorResponse* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
@@ -949,11 +937,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final
   friend void swap(CodeGeneratorRequest& a, CodeGeneratorRequest& b) { a.Swap(&b); }
   inline void Swap(CodeGeneratorRequest* other) {
     if (other == this) return;
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() != nullptr && GetArena() == other->GetArena()) {
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetArena() == other->GetArena()) {
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
