@@ -50,11 +50,6 @@ inline absl::string_view ProtobufNamespace(const Options& opts) {
   return opts.opensource_runtime ? kOssNs : kGoogle3Ns;
 }
 
-inline std::string MacroPrefix(const Options& options) {
-  // Constants are different in the internal and external version.
-  return options.opensource_runtime ? "GOOGLE_PROTOBUF" : "GOOGLE_PROTOBUF";
-}
-
 inline std::string DeprecatedAttribute(const Options&,
                                        const FieldDescriptor* d) {
   return d->options().deprecated() ? "[[deprecated]] " : "";
@@ -582,25 +577,7 @@ inline std::string IncludeGuard(const FileDescriptor* file,
     case GeneratedFileType::kProtoStaticReflectionH:
       extension = ".proto.static_reflection.h";
   }
-  std::string filename_identifier =
-      FilenameIdentifier(absl::StrCat(file->name(), extension));
-
-  if (IsWellKnownMessage(file)) {
-    // For well-known messages we need third_party/protobuf and net/proto2 to
-    // have distinct include guards, because some source files include both and
-    // both need to be defined (the third_party copies will be in the
-    // google::protobuf_opensource namespace).
-    return absl::StrCat(MacroPrefix(options), "_INCLUDED_",
-                        filename_identifier);
-  } else {
-    // Ideally this case would use distinct include guards for opensource and
-    // google3 protos also.  (The behavior of "first #included wins" is not
-    // ideal).  But unfortunately some legacy code includes both and depends on
-    // the identical include guards to avoid compile errors.
-    //
-    // We should clean this up so that this case can be removed.
-    return absl::StrCat("GOOGLE_PROTOBUF_INCLUDED_", filename_identifier);
-  }
+  return FilenameIdentifier(absl::StrCat(file->name(), extension));
 }
 
 // Returns the OptimizeMode for this file, furthermore it updates a status

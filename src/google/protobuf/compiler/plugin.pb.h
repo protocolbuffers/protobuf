@@ -3,8 +3,8 @@
 // source: google/protobuf/compiler/plugin.proto
 // Protobuf C++ Version: 5.29.0-dev
 
-#ifndef GOOGLE_PROTOBUF_INCLUDED_google_2fprotobuf_2fcompiler_2fplugin_2eproto_2epb_2eh
-#define GOOGLE_PROTOBUF_INCLUDED_google_2fprotobuf_2fcompiler_2fplugin_2eproto_2epb_2eh
+#ifndef google_2fprotobuf_2fcompiler_2fplugin_2eproto_2epb_2eh
+#define google_2fprotobuf_2fcompiler_2fplugin_2eproto_2epb_2eh
 
 #include <limits>
 #include <string>
@@ -2211,4 +2211,4 @@ inline const EnumDescriptor* GetEnumDescriptor<::google::protobuf::compiler::Cod
 
 #include "google/protobuf/port_undef.inc"
 
-#endif  // GOOGLE_PROTOBUF_INCLUDED_google_2fprotobuf_2fcompiler_2fplugin_2eproto_2epb_2eh
+#endif  // google_2fprotobuf_2fcompiler_2fplugin_2eproto_2epb_2eh

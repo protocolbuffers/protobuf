@@ -3,8 +3,8 @@
 // source: google/protobuf/compiler/java/java_features.proto
 // Protobuf C++ Version: 5.29.0-dev
 
-#ifndef GOOGLE_PROTOBUF_INCLUDED_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_2epb_2eh
-#define GOOGLE_PROTOBUF_INCLUDED_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_2epb_2eh
+#ifndef google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_2epb_2eh
+#define google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_2epb_2eh
 
 #include <limits>
 #include <string>
@@ -428,4 +428,4 @@ inline const EnumDescriptor* GetEnumDescriptor<::pb::JavaFeatures_Utf8Validation
 
 #include "google/protobuf/port_undef.inc"
 
-#endif  // GOOGLE_PROTOBUF_INCLUDED_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_2epb_2eh
+#endif  // google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto_2epb_2eh
