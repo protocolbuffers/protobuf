@@ -603,6 +603,7 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/text/internal/encode.c
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto.c
   ${protobuf_SOURCE_DIR}/upb/util/required_fields.c
+  ${protobuf_SOURCE_DIR}/upb/wire/byte_size.c
   ${protobuf_SOURCE_DIR}/upb/wire/decode.c
   ${protobuf_SOURCE_DIR}/upb/wire/encode.c
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.c
@@ -720,6 +721,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/text/options.h
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto.h
   ${protobuf_SOURCE_DIR}/upb/util/required_fields.h
+  ${protobuf_SOURCE_DIR}/upb/wire/byte_size.h
   ${protobuf_SOURCE_DIR}/upb/wire/decode.h
   ${protobuf_SOURCE_DIR}/upb/wire/encode.h
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.h
@@ -1001,6 +1003,7 @@ set(upb_test_files
   ${protobuf_SOURCE_DIR}/upb/test/test_mini_table_oneof.cc
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_test.cc
   ${protobuf_SOURCE_DIR}/upb/util/required_fields_test.cc
+  ${protobuf_SOURCE_DIR}/upb/wire/byte_size_test.cc
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream_test.cc
 )
 
