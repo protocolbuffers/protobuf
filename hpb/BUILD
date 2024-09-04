@@ -170,3 +170,13 @@ cc_library(
         "//upb:mini_table",
     ],
 )
+
+cc_library(
+    name = "arena",
+    hdrs = ["arena.h"],
+    defines = ["HPB_BACKEND_UPB"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//upb:mem",
+    ],
+)
