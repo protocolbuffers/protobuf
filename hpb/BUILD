@@ -26,7 +26,6 @@ cc_library(
     hdrs = [
         "hpb.h",
     ],
-    compatible_with = ["//buildenv/target:non_prod"],
     copts = UPB_DEFAULT_CPPOPTS,
     defines = ["HPB_BACKEND_UPB"],
     visibility = ["//visibility:public"],
@@ -59,7 +58,6 @@ cc_library(
         "repeated_field.h",
         "repeated_field_iterator.h",
     ],
-    compatible_with = ["//buildenv/target:non_prod"],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
@@ -81,14 +79,12 @@ cc_library(
     hdrs = [
         "traits.h",
     ],
-    compatible_with = ["//buildenv/target:non_prod"],
     copts = UPB_DEFAULT_CPPOPTS,
 )
 
 cc_library(
     name = "internal",
     hdrs = ["internal.h"],
-    compatible_with = ["//buildenv/target:non_prod"],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//upb:friends"],
     deps = [
@@ -108,7 +104,6 @@ cc_library(
     hdrs = [
         "internal.h",
     ],
-    compatible_with = ["//buildenv/target:non_prod"],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//hpb/bazel:__pkg__"],
     deps = [
@@ -162,7 +157,6 @@ cc_library(
 cc_library(
     name = "ptr",
     hdrs = ["ptr.h"],
-    compatible_with = ["//buildenv/target:non_prod"],
     visibility = ["//visibility:public"],
 )
 
@@ -170,7 +164,6 @@ cc_library(
     name = "extension",
     srcs = ["extension.cc"],
     hdrs = ["extension.h"],
-    compatible_with = ["//buildenv/target:non_prod"],
     visibility = ["//visibility:public"],
     deps = [
         "//upb:mem",

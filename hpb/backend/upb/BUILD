@@ -10,7 +10,6 @@ package(default_applicable_licenses = ["//:license"])
 cc_library(
     name = "upb",
     hdrs = ["upb.h"],
-    compatible_with = ["//buildenv/target:non_prod"],
     visibility = ["//upb:friends"],
     deps = [
         ":interop",
@@ -24,7 +23,6 @@ cc_library(
 cc_library(
     name = "interop",
     hdrs = ["interop.h"],
-    compatible_with = ["//buildenv/target:non_prod"],
     visibility = [
         "//hpb:__subpackages__",
     ],

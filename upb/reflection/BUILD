@@ -23,6 +23,8 @@ load(
     "bootstrap_upb_proto_library",
 )
 
+package(default_applicable_licenses = ["//:license"])
+
 bootstrap_upb_proto_library(
     name = "descriptor_upb_proto",
     bootstrap_hdr = "descriptor_bootstrap.h",

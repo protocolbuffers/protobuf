@@ -4,6 +4,8 @@ load(
     "UPB_DEFAULT_CPPOPTS",
 )
 
+package(default_applicable_licenses = ["//:license"])
+
 cc_library(
     name = "mini_descriptor",
     srcs = [
