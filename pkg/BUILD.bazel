@@ -218,6 +218,7 @@ cc_dist_library(
         "//upb/text",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
+        "//upb/wire:byte_size",
     ],
 )
 
