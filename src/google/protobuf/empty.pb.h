@@ -3,8 +3,8 @@
 // source: google/protobuf/empty.proto
 // Protobuf C++ Version: 5.29.0-dev
 
-#ifndef GOOGLE_PROTOBUF_INCLUDED_google_2fprotobuf_2fempty_2eproto_2epb_2eh
-#define GOOGLE_PROTOBUF_INCLUDED_google_2fprotobuf_2fempty_2eproto_2epb_2eh
+#ifndef google_2fprotobuf_2fempty_2eproto_2epb_2eh
+#define google_2fprotobuf_2fempty_2eproto_2epb_2eh
 
 #include <limits>
 #include <string>
@@ -242,4 +242,4 @@ class PROTOBUF_EXPORT Empty final
 
 #include "google/protobuf/port_undef.inc"
 
-#endif  // GOOGLE_PROTOBUF_INCLUDED_google_2fprotobuf_2fempty_2eproto_2epb_2eh
+#endif  // google_2fprotobuf_2fempty_2eproto_2epb_2eh

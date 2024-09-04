@@ -3,8 +3,8 @@
 // source: google/protobuf/source_context.proto
 // Protobuf C++ Version: 5.29.0-dev
 
-#ifndef GOOGLE_PROTOBUF_INCLUDED_google_2fprotobuf_2fsource_5fcontext_2eproto_2epb_2eh
-#define GOOGLE_PROTOBUF_INCLUDED_google_2fprotobuf_2fsource_5fcontext_2eproto_2epb_2eh
+#ifndef google_2fprotobuf_2fsource_5fcontext_2eproto_2epb_2eh
+#define google_2fprotobuf_2fsource_5fcontext_2eproto_2epb_2eh
 
 #include <limits>
 #include <string>
@@ -342,4 +342,4 @@ inline void SourceContext::set_allocated_file_name(std::string* value) {
 
 #include "google/protobuf/port_undef.inc"
 
-#endif  // GOOGLE_PROTOBUF_INCLUDED_google_2fprotobuf_2fsource_5fcontext_2eproto_2epb_2eh
+#endif  // google_2fprotobuf_2fsource_5fcontext_2eproto_2epb_2eh
