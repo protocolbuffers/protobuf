@@ -24,7 +24,9 @@ cc_library(
 cc_library(
     name = "internal",
     hdrs = ["internal.h"],
-    visibility = ["//hpb:__subpackages__"],
+    visibility = [
+        "//hpb:__subpackages__",
+    ],
     deps = [
         "//upb:mem",
         "//upb:message",
