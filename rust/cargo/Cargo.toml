@@ -11,6 +11,7 @@ version = "4.27.3-beta.0"
 edition = "2021"
 links = "libupb"
 license = "BSD-3-Clause"
+rust-version = "1.74"
 
 [lib]
 path = "src/shared.rs"
