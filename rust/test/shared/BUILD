@@ -466,9 +466,53 @@ rust_test(
     srcs = ["proto_macro_test.rs"],
     aliases = {
         "//rust:protobuf_upb": "protobuf",
+        "//rust:protobuf_gtest_matchers_upb": "protobuf_gtest_matchers",
     },
     deps = [
+        "//rust:protobuf_gtest_matchers_upb",
         "//rust:protobuf_upb",
+        "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "gtest_matchers_cpp_test",
+    srcs = ["gtest_matchers_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp": "protobuf",
+        "//rust:protobuf_gtest_matchers_cpp": "protobuf_gtest_matchers",
+    },
+    proc_macro_deps = [
+        "@crate_index//:paste",
+    ],
+    deps = [
+        "//rust:protobuf_cpp",
+        "//rust:protobuf_gtest_matchers_cpp",
+        "//rust/test:unittest_cpp_rust_proto",
+        "//rust/test:unittest_edition_cpp_rust_proto",
+        "//rust/test:unittest_proto3_cpp_rust_proto",
+        "//rust/test:unittest_proto3_optional_cpp_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "gtest_matchers_upb_test",
+    srcs = ["gtest_matchers_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb": "protobuf",
+        "//rust:protobuf_gtest_matchers_upb": "protobuf_gtest_matchers",
+    },
+    proc_macro_deps = [
+        "@crate_index//:paste",
+    ],
+    deps = [
+        "//rust:protobuf_gtest_matchers_upb",
+        "//rust:protobuf_upb",
+        "//rust/test:unittest_edition_upb_rust_proto",
+        "//rust/test:unittest_proto3_optional_upb_rust_proto",
+        "//rust/test:unittest_proto3_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],

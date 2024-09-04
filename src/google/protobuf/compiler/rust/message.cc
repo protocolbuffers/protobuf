@@ -1357,6 +1357,30 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           self.msg.as_ptr() as *const _
         }
       }
+
+      impl $pbi$::MatcherEq for $Msg$ {
+        fn matches(&self, o: &Self) -> bool {
+          $pbi$::MatcherEq::matches(
+            &$pb$::AsView::as_view(self),
+            &$pb$::AsView::as_view(o))
+        }
+      }
+
+      impl<'a> $pbi$::MatcherEq for $Msg$Mut<'a> {
+        fn matches(&self, o: &Self) -> bool {
+          $pbi$::MatcherEq::matches(
+            &$pb$::AsView::as_view(self),
+            &$pb$::AsView::as_view(o))
+        }
+      }
+
+      impl<'a> $pbi$::MatcherEq for $Msg$View<'a> {
+        fn matches(&self, o: &Self) -> bool {
+          unsafe {
+            $pbr$::raw_message_equals(self.msg, o.msg)
+          }
+        }
+      }
     )rs");
   } else {
     ctx.Emit({{"Msg", RsSafeName(msg.name())}}, R"rs(
@@ -1375,6 +1399,34 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         }
         fn __unstable_as_raw_message(&self) -> *const std::ffi::c_void {
           self.msg.as_ptr() as *const _
+        }
+      }
+
+      impl $pbi$::MatcherEq for $Msg$ {
+        fn matches(&self, o: &Self) -> bool {
+          $pbi$::MatcherEq::matches(
+            &$pb$::AsView::as_view(self),
+            &$pb$::AsView::as_view(o))
+        }
+      }
+
+      impl<'a> $pbi$::MatcherEq for $Msg$Mut<'a> {
+        fn matches(&self, o: &Self) -> bool {
+          $pbi$::MatcherEq::matches(
+            &$pb$::AsView::as_view(self),
+            &$pb$::AsView::as_view(o))
+        }
+      }
+
+      impl<'a> $pbi$::MatcherEq for $Msg$View<'a> {
+        fn matches(&self, o: &Self) -> bool {
+          unsafe {
+            $pbr$::upb_Message_IsEqual(
+                self.msg,
+                o.msg,
+                <$Msg$ as $pbr$::AssociatedMiniTable>::mini_table(),
+                0)
+          }
         }
       }
     )rs");
