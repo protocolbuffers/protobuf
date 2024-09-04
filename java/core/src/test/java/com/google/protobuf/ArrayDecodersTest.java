@@ -164,6 +164,86 @@ public class ArrayDecodersTest {
   }
 
   @Test
+  public void testDecodePackedFixed32List_negativeSize() {
+    try {
+      ArrayDecoders.decodePackedFixed32List(
+          packedSizeBytesNoTag(-1), 0, new IntArrayList(), registers);
+      assertWithMessage("should throw an exception").fail();
+    } catch (InvalidProtocolBufferException expected) {
+    }
+  }
+
+  @Test
+  public void testDecodePackedFixed32List_2gb_beyondEndOfArray() {
+    try {
+      ArrayDecoders.decodePackedFixed32List(
+          packedSizeBytesNoTag(2_000_000_000), 0, new IntArrayList(), registers);
+      assertWithMessage("should throw an exception").fail();
+    } catch (InvalidProtocolBufferException expected) {
+    }
+  }
+
+  @Test
+  public void testDecodePackedFixed64List_negativeSize() {
+    try {
+      ArrayDecoders.decodePackedFixed64List(
+          packedSizeBytesNoTag(-1), 0, new LongArrayList(), registers);
+      assertWithMessage("should throw an exception").fail();
+    } catch (InvalidProtocolBufferException expected) {
+    }
+  }
+
+  @Test
+  public void testDecodePackedFloatList_negativeSize() {
+    try {
+      ArrayDecoders.decodePackedFloatList(
+          packedSizeBytesNoTag(-1), 0, new FloatArrayList(), registers);
+      assertWithMessage("should throw an exception").fail();
+    } catch (InvalidProtocolBufferException expected) {
+    }
+  }
+
+  @Test
+  public void testDecodePackedDoubleList_negativeSize() {
+    try {
+      ArrayDecoders.decodePackedDoubleList(
+          packedSizeBytesNoTag(-1), 0, new DoubleArrayList(), registers);
+      assertWithMessage("should throw an exception").fail();
+    } catch (InvalidProtocolBufferException expected) {
+    }
+  }
+
+  @Test
+  public void testDecodePackedBoolList_negativeSize() {
+    try {
+      ArrayDecoders.decodePackedBoolList(
+          packedSizeBytesNoTag(-1), 0, new BooleanArrayList(), registers);
+      assertWithMessage("should throw an exception").fail();
+    } catch (InvalidProtocolBufferException expected) {
+    }
+  }
+
+  @Test
+  public void testDecodePackedSInt32List_negativeSize() {
+    try {
+      ArrayDecoders.decodePackedSInt32List(
+          packedSizeBytesNoTag(-1), 0, new IntArrayList(), registers);
+      assertWithMessage("should throw an exception").fail();
+    } catch (InvalidProtocolBufferException expected) {
+    }
+  }
+
+  @Test
+  public void testDecodePackedSInt64List_negativeSize() {
+    try {
+      ArrayDecoders.decodePackedSInt64List(
+          packedSizeBytesNoTag(-1), 0, new LongArrayList(), registers);
+      assertWithMessage("should throw an exception").fail();
+    } catch (InvalidProtocolBufferException expected) {
+    }
+  }
+
+  @Test
   public void testException_decodeHugeField() {
     byte[] badBytes =
         new byte[] {
@@ -202,6 +282,21 @@ public class ArrayDecodersTest {
           TAG, badBytesList, 0, badBytes.length, new ProtobufArrayList<>(), registers);
       assertWithMessage("should throw an exception").fail();
     } catch (InvalidProtocolBufferException expected) {
+    }
+  }
+
+  // Encodes a single -1 varint.
+  // For use when testing decoding of packed primitive lists.
+  // -1 is not a proper byte size for a list.
+  private static byte[] packedSizeBytesNoTag(int size) {
+    try {
+      ByteString.Output byteStringOutput = ByteString.newOutput();
+      CodedOutputStream codedOutput = CodedOutputStream.newInstance(byteStringOutput);
+      codedOutput.writeInt32NoTag(size);
+      codedOutput.flush();
+      return byteStringOutput.toByteString().toByteArray();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 

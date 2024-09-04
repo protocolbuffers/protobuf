@@ -169,8 +169,7 @@ final class FloatArrayList extends AbstractProtobufList<Float>
   public void addFloat(float element) {
     ensureIsMutable();
     if (size == array.length) {
-      // Resize to 1.5x the size
-      int length = ((size * 3) / 2) + 1;
+      int length = growSize(array.length);
       float[] newArray = new float[length];
 
       System.arraycopy(array, 0, newArray, 0, size);
@@ -191,8 +190,7 @@ final class FloatArrayList extends AbstractProtobufList<Float>
       // Shift everything over to make room
       System.arraycopy(array, index, array, index + 1, size - index);
     } else {
-      // Resize to 1.5x the size
-      int length = ((size * 3) / 2) + 1;
+      int length = growSize(array.length);
       float[] newArray = new float[length];
 
       // Copy the first part directly
@@ -252,6 +250,26 @@ final class FloatArrayList extends AbstractProtobufList<Float>
     size--;
     modCount++;
     return value;
+  }
+
+  /** Ensures the backing array can fit at least minCapacity elements. */
+  void ensureCapacity(int minCapacity) {
+    if (minCapacity <= array.length) {
+      return;
+    }
+    // To avoid quadratic copying when calling .addAllFoo(List) in a loop, we must not size to
+    // exactly the requested capacity, but must exponentially grow instead. This is similar
+    // behaviour to ArrayList.
+    int n = array.length;
+    while (n < minCapacity) {
+      n = growSize(n);
+    }
+    array = Arrays.copyOf(array, n);
+  }
+
+  private static int growSize(int previousSize) {
+    // Resize to 1.5x the size
+    return ((previousSize * 3) / 2) + 1;
   }
 
   /**
