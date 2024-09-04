@@ -1,3 +1,5 @@
 """cc_proto_library rule"""
 
-cc_proto_library = native.cc_proto_library
+load("//bazel/private:bazel_cc_proto_library.bzl", _cc_proto_library = "cc_proto_library")
+
+cc_proto_library = _cc_proto_library
