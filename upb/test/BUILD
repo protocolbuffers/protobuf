@@ -14,6 +14,7 @@ load(
     "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
+load("//search/frodo:build_defs.bzl", "proto_and_frodo_library")
 load(
     "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_CPPOPTS",
@@ -35,6 +36,13 @@ cc_library(
 proto_library(
     name = "empty_proto",
     srcs = ["empty.proto"],
+    cc_api_version = 2,
+)
+
+proto_and_frodo_library(
+    name = "empty_frodo_proto",
+    srcs = ["empty.proto"],
+    frodo_cc_api_version = 2,
 )
 
 upb_proto_reflection_library(
