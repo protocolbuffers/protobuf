@@ -8,7 +8,7 @@ load("//bazel/private:upb_proto_library_internal/rule.bzl", "upb_proto_rule_impl
 
 UpbWrappedCcInfo = provider(
     "Provider for cc_info for protos",
-    fields = ["cc_info", "cc_info_with_thunks"],
+    fields = ["cc_info"],
 )
 
 _UpbWrappedGeneratedSrcsInfo = provider(
