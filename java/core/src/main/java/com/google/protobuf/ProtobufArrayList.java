@@ -52,8 +52,7 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
     ensureIsMutable();
 
     if (size == array.length) {
-      // Resize to 1.5x the size
-      int length = ((size * 3) / 2) + 1;
+      int length = growSize(size);
       E[] newArray = Arrays.copyOf(array, length);
 
       array = newArray;
@@ -63,6 +62,11 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
     modCount++;
 
     return true;
+  }
+
+  private static int growSize(int previousSize) {
+    // Resize to 1.5x the size
+    return ((previousSize * 3) / 2) + 1;
   }
 
   @Override
@@ -77,8 +81,7 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
       // Shift everything over to make room
       System.arraycopy(array, index, array, index + 1, size - index);
     } else {
-      // Resize to 1.5x the size
-      int length = ((size * 3) / 2) + 1;
+      int length = growSize(size);
       E[] newArray = createArray(length);
 
       // Copy the first part directly
@@ -130,6 +133,21 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
   @Override
   public int size() {
     return size;
+  }
+
+  /** Ensures the backing array can fit at least minCapacity elements. */
+  void ensureCapacity(int minCapacity) {
+    if (minCapacity <= array.length) {
+      return;
+    }
+    // To avoid quadratic copying when calling .addAllFoo(List) in a loop, we must not size to
+    // exactly the requested capacity, but must exponentially grow instead. This is similar
+    // behaviour to ArrayList.
+    int n = size;
+    while (n < minCapacity) {
+      n = growSize(n);
+    }
+    array = Arrays.copyOf(array, n);
   }
 
   @SuppressWarnings("unchecked")

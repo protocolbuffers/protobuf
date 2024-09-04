@@ -340,8 +340,14 @@ public abstract class AbstractMessageLite<
 
     // We check nulls as we iterate to avoid iterating over values twice.
     private static <T> void addAllCheckingNulls(Iterable<T> values, List<? super T> list) {
-      if (list instanceof ArrayList && values instanceof Collection) {
-        ((ArrayList<T>) list).ensureCapacity(list.size() + ((Collection<T>) values).size());
+      if (values instanceof Collection) {
+        int growth = ((Collection<T>) values).size();
+        if (list instanceof ArrayList) {
+          ((ArrayList<T>) list).ensureCapacity(list.size() + growth);
+        }
+        if (list instanceof ProtobufArrayList) {
+          ((ProtobufArrayList<T>) list).ensureCapacity(list.size() + growth);
+        }
       }
       int begin = list.size();
       if (values instanceof List && values instanceof RandomAccess) {
