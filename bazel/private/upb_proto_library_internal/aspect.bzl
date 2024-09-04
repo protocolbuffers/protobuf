@@ -13,7 +13,6 @@ GeneratedSrcsInfo = provider(
     fields = {
         "srcs": "list of srcs",
         "hdrs": "list of hdrs",
-        "thunks": "Experimental, do not use. List of srcs defining C API. Incompatible with hdrs.",
     },
 )
 
@@ -47,7 +46,6 @@ def _merge_generated_srcs(srcs):
     return GeneratedSrcsInfo(
         srcs = _concat_lists([s.srcs for s in srcs]),
         hdrs = _concat_lists([s.hdrs for s in srcs]),
-        thunks = _concat_lists([s.thunks for s in srcs]),
     )
 
 def _get_implicit_weak_field_sources(ctx, proto_info):
@@ -96,11 +94,10 @@ def _get_feature_configuration(ctx, cc_toolchain, proto_info):
 
 def _generate_srcs_list(ctx, generator, proto_info):
     if len(proto_info.direct_sources) == 0:
-        return GeneratedSrcsInfo(srcs = [], hdrs = [], thunks = [], includes = [])
+        return GeneratedSrcsInfo(srcs = [], hdrs = [], includes = [])
 
     ext = "." + generator
     srcs = []
-    thunks = []
     hdrs = proto_common.declare_generated_files(
         ctx.actions,
         extension = ext + ".h",
@@ -115,27 +112,10 @@ def _generate_srcs_list(ctx, generator, proto_info):
             extension = ext + ".c",
             proto_info = proto_info,
         )
-    if generator == "upb":
-        thunks = proto_common.declare_generated_files(
-            ctx.actions,
-            extension = ext + ".thunks.c",
-            proto_info = proto_info,
-        )
-        ctx.actions.run_shell(
-            inputs = hdrs,
-            outputs = thunks,
-            command = " && ".join([
-                "sed 's/UPB_INLINE //' {} > {}".format(hdr.path, thunk.path)
-                for (hdr, thunk) in zip(hdrs, thunks)
-            ]),
-            progress_message = "Generating thunks for upb protos API for: " + ctx.label.name,
-            mnemonic = "GenUpbProtosThunks",
-        )
 
     return GeneratedSrcsInfo(
         srcs = srcs,
         hdrs = hdrs,
-        thunks = thunks,
     )
 
 def _generate_upb_protos(ctx, generator, proto_info, feature_configuration):
@@ -162,9 +142,7 @@ def _generate_upb_protos(ctx, generator, proto_info, feature_configuration):
 
     return srcs
 
-def _generate_name(ctx, generator, thunks = False):
-    if thunks:
-        return ctx.rule.attr.name + "." + generator + ".thunks"
+def _generate_name(ctx, generator):
     return ctx.rule.attr.name + "." + generator
 
 def _get_dep_cc_infos(target, ctx, generator, cc_provider, dep_cc_provider):
@@ -195,24 +173,9 @@ def _compile_upb_protos(ctx, files, generator, dep_ccinfos, cc_provider, proto_i
         dep_ccinfos = dep_ccinfos,
     )
 
-    if files.thunks:
-        cc_info_with_thunks = cc_library_func(
-            ctx = ctx,
-            name = _generate_name(ctx, generator, files.thunks),
-            hdrs = [],
-            srcs = files.thunks,
-            includes = [output_dir(ctx, proto_info)],
-            copts = ctx.attr._copts[UpbProtoLibraryCoptsInfo].copts,
-            dep_ccinfos = dep_ccinfos + [cc_info],
-        )
-        return cc_provider(
-            cc_info = cc_info,
-            cc_info_with_thunks = cc_info_with_thunks,
-        )
-    else:
-        return cc_provider(
-            cc_info = cc_info,
-        )
+    return cc_provider(
+        cc_info = cc_info,
+    )
 
 _GENERATORS = ["upb", "upbdefs", "upb_minitable"]
 
@@ -223,7 +186,7 @@ def _get_hint_providers(ctx, generator):
     possible_owners = []
     for generator in _GENERATORS:
         possible_owners.append(ctx.label.relative(_generate_name(ctx, generator)))
-        possible_owners.append(ctx.label.relative(_generate_name(ctx, generator, thunks = True)))
+        possible_owners.append(ctx.label.relative(_generate_name(ctx, generator)))
 
     if hasattr(cc_common, "CcSharedLibraryHintInfo"):
         return [cc_common.CcSharedLibraryHintInfo(owners = possible_owners)]
