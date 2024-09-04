@@ -501,6 +501,7 @@ std::vector<Sub> ClassVars(const Descriptor* desc, Options opts) {
       {"Msg", ClassName(desc, false)},
       {"pkg::Msg", QualifiedClassName(desc, opts)},
       {"pkg.Msg", desc->full_name()},
+      {"deprecated", desc->options().deprecated() ? "[[deprecated]]" : ""},
 
       // Old-style names, to be removed once all usages are gone in this and
       // other files.
@@ -1550,15 +1551,6 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
             ::$proto_ns$::internal::WeakFieldMap _weak_field_map_;
           )cc");
         }},
-       {"any_metadata",
-        [&] {
-          // Generate _any_metadata_ for the Any type.
-          if (!IsAnyMessage(descriptor_)) return;
-
-          p->Emit(R"cc(
-            ::$proto_ns$::internal::AnyMetadata _any_metadata_;
-          )cc");
-        }},
        {"union_impl",
         [&] {
           // Only create the _impl_ field if it contains data.
@@ -1592,7 +1584,6 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
           $cached_size_if_no_hasbits$;
           $oneof_case$;
           $weak_field_map$;
-          $any_metadata$;
           //~ For detecting when concurrent accessor calls cause races.
           PROTOBUF_TSAN_DECLARE_MEMBER
         };
@@ -1605,82 +1596,95 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
 void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
   ABSL_DCHECK(IsAnyMessage(descriptor_));
 
-  p->Emit({{"any_methods",
-            [&] {
-              if (HasDescriptorMethods(descriptor_->file(), options_)) {
-                p->Emit(
-                    R"cc(
-                      bool PackFrom(const ::$proto_ns$::Message& message) {
-                        $DCHK$_NE(&message, this);
-                        return $any_metadata$.PackFrom(GetArena(), message);
-                      }
-                      bool PackFrom(const ::$proto_ns$::Message& message,
-                                    ::absl::string_view type_url_prefix) {
-                        $DCHK$_NE(&message, this);
-                        return $any_metadata$.PackFrom(GetArena(), message, type_url_prefix);
-                      }
-                      bool UnpackTo(::$proto_ns$::Message* message) const {
-                        return $any_metadata$.UnpackTo(message);
-                      }
-                      static bool GetAnyFieldDescriptors(
-                          const ::$proto_ns$::Message& message,
-                          const ::$proto_ns$::FieldDescriptor** type_url_field,
-                          const ::$proto_ns$::FieldDescriptor** value_field);
-                      template <
-                          typename T,
-                          class = typename std::enable_if<!std::is_convertible<
-                              T, const ::$proto_ns$::Message&>::value>::type>
-                      bool PackFrom(const T& message) {
-                        return $any_metadata$.PackFrom<T>(GetArena(), message);
-                      }
-                      template <
-                          typename T,
-                          class = typename std::enable_if<!std::is_convertible<
-                              T, const ::$proto_ns$::Message&>::value>::type>
-                      bool PackFrom(const T& message,
-                                    ::absl::string_view type_url_prefix) {
-                        return $any_metadata$.PackFrom<T>(GetArena(), message, type_url_prefix);
-                      }
-                      template <
-                          typename T,
-                          class = typename std::enable_if<!std::is_convertible<
-                              T, const ::$proto_ns$::Message&>::value>::type>
-                      bool UnpackTo(T* message) const {
-                        return $any_metadata$.UnpackTo<T>(message);
-                      }
-                    )cc");
-              } else {
-                p->Emit(
-                    R"cc(
-                      template <typename T>
-                      bool PackFrom(const T& message) {
-                        return $any_metadata$.PackFrom(GetArena(), message);
-                      }
-                      template <typename T>
-                      bool PackFrom(const T& message,
-                                    ::absl::string_view type_url_prefix) {
-                        return $any_metadata$.PackFrom(GetArena(), message, type_url_prefix);
-                      }
-                      template <typename T>
-                      bool UnpackTo(T* message) const {
-                        return $any_metadata$.UnpackTo(message);
-                      }
-                    )cc");
-              }
-            }}},
-          R"cc(
-            // implements Any
-            // -----------------------------------------------
+  p->Emit(
+      {{"any_methods",
+        [&] {
+          if (HasDescriptorMethods(descriptor_->file(), options_)) {
+            p->Emit(
+                R"cc(
+                  bool PackFrom(const ::$proto_ns$::Message& message) {
+                    $DCHK$_NE(&message, this);
+                    return ::$proto_ns$::internal::InternalPackFrom(
+                        message, mutable_type_url(), _internal_mutable_value());
+                  }
+                  bool PackFrom(const ::$proto_ns$::Message& message,
+                                ::absl::string_view type_url_prefix) {
+                    $DCHK$_NE(&message, this);
+                    return ::$proto_ns$::internal::InternalPackFrom(
+                        message, type_url_prefix, mutable_type_url(),
+                        _internal_mutable_value());
+                  }
+                  bool UnpackTo(::$proto_ns$::Message* message) const {
+                    return ::$proto_ns$::internal::InternalUnpackTo(
+                        _internal_type_url(), _internal_value(), message);
+                  }
+                  static bool GetAnyFieldDescriptors(
+                      const ::$proto_ns$::Message& message,
+                      const ::$proto_ns$::FieldDescriptor** type_url_field,
+                      const ::$proto_ns$::FieldDescriptor** value_field);
+                  template <
+                      typename T,
+                      class = typename std::enable_if<!std::is_convertible<
+                          T, const ::$proto_ns$::Message&>::value>::type>
+                  bool PackFrom(const T& message) {
+                    return ::$proto_ns$::internal::InternalPackFrom<T>(
+                        message, mutable_type_url(), _internal_mutable_value());
+                  }
+                  template <
+                      typename T,
+                      class = typename std::enable_if<!std::is_convertible<
+                          T, const ::$proto_ns$::Message&>::value>::type>
+                  bool PackFrom(const T& message,
+                                ::absl::string_view type_url_prefix) {
+                    return ::$proto_ns$::internal::InternalPackFrom<T>(
+                        message, type_url_prefix, mutable_type_url(),
+                        _internal_mutable_value());
+                  }
+                  template <
+                      typename T,
+                      class = typename std::enable_if<!std::is_convertible<
+                          T, const ::$proto_ns$::Message&>::value>::type>
+                  bool UnpackTo(T* message) const {
+                    return ::$proto_ns$::internal::InternalUnpackTo<T>(
+                        _internal_type_url(), _internal_value(), message);
+                  }
+                )cc");
+          } else {
+            p->Emit(
+                R"cc(
+                  template <typename T>
+                  bool PackFrom(const T& message) {
+                    return ::$proto_ns$::internal::InternalPackFrom(
+                        message, mutable_type_url(), _internal_mutable_value());
+                  }
+                  template <typename T>
+                  bool PackFrom(const T& message,
+                                ::absl::string_view type_url_prefix) {
+                    return ::$proto_ns$::internal::InternalPackFrom(
+                        message, type_url_prefix, mutable_type_url(),
+                        _internal_mutable_value());
+                  }
+                  template <typename T>
+                  bool UnpackTo(T* message) const {
+                    return ::$proto_ns$::internal::InternalUnpackTo(
+                        _internal_type_url(), _internal_value(), message);
+                  }
+                )cc");
+          }
+        }}},
+      R"cc(
+        // implements Any
+        // -----------------------------------------------
 
-            $any_methods$;
+        $any_methods$;
 
-            template <typename T>
-            bool Is() const {
-              return $any_metadata$.Is<T>();
-            }
-            static bool ParseAnyTypeUrl(::absl::string_view type_url,
-                                        std::string* full_type_name);
-          )cc");
+        template <typename T>
+        bool Is() const {
+          return ::$proto_ns$::internal::InternalIs<T>(_internal_type_url());
+        }
+        static bool ParseAnyTypeUrl(::absl::string_view type_url,
+                                    std::string* full_type_name);
+      )cc");
 }
 
 void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
@@ -2060,7 +2064,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                   )cc");
         }}},
       R"cc(
-        class $dllexport_decl $$classname$ final : public $superclass$
+        class $dllexport_decl $$deprecated $$classname$ final
+            : public $superclass$
         /* @@protoc_insertion_point(class_definition:$full_name$) */ {
          public:
           inline $classname$() : $classname$(nullptr) {}
@@ -2145,10 +2150,16 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           $generated_methods$;
           $internal_field_number$;
           $decl_non_simple_base$;
-          //~ Friend AnyMetadata so that it can call this FullMessageName()
-          //~ method.
+          //~ Friend the template function GetAnyMessageName<T>() so that it can
+          //~ call this FullMessageName() method.
+          //~ NOTE: parentheses around the symbol GetAnyMessageName is required
+          //~       for compiler to resolve the symbol correctly and interpret
+          //~       it as a function (instead of trying to find the symbol under
+          //~       the absl::string_view namespace).
          private:
-          friend class ::$proto_ns$::internal::AnyMetadata;
+          template <typename T>
+          friend ::absl::string_view(
+              ::$proto_ns$::internal::GetAnyMessageName)();
           static ::absl::string_view FullMessageName() { return "$full_name$"; }
           $decl_annotate$;
 
@@ -2795,13 +2806,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
     }
   };
 
-  auto init_any_metadata = [&] {
-    if (IsAnyMessage(descriptor_)) {
-      separator();
-      p->Emit("_any_metadata_{&type_url_, &value_}");
-    }
-  };
-
   // Initialization order of the various fields inside `_impl_(...)`
   init_extensions();
   init_inlined_string_indices();
@@ -2812,7 +2816,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
   init_cached_size_if_no_hasbits();
   init_oneof_cases();
   init_weak_field_map();
-  init_any_metadata();
 }
 
 void MessageGenerator::GenerateSharedConstructorCode(io::Printer* p) {

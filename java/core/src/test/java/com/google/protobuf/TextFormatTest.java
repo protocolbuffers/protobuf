@@ -65,11 +65,6 @@ public class TextFormatTest {
       "\\\"A string with \\' characters \\n and \\r newlines "
           + "and \\t tabs and \\001 slashes \\\\";
 
-  private static final String ALL_FIELDS_SET_TEXT =
-      TestUtil.readTextFromFile("text_format_unittest_data_oneof_implemented.txt");
-  private static final String ALL_EXTENSIONS_SET_TEXT =
-      TestUtil.readTextFromFile("text_format_unittest_extensions_data.txt");
-
   private static final String EXOTIC_TEXT =
       ""
           + "repeated_int32: -1\n"
@@ -145,12 +140,7 @@ public class TextFormatTest {
   public void testPrintMessage() throws Exception {
     String javaText = TextFormat.printer().printToString(TestUtil.getAllSet());
 
-    // Java likes to add a trailing ".0" to floats and doubles.  C printf
-    // (with %g format) does not.  Our golden files are used for both
-    // C++ and Java TextFormat classes, so we need to conform.
-    javaText = javaText.replace(".0\n", "\n");
-
-    assertThat(javaText).isEqualTo(ALL_FIELDS_SET_TEXT);
+    assertThat(javaText).isEqualTo(TestUtil.ALL_FIELDS_SET_TEXT);
   }
 
   @Test
@@ -165,12 +155,7 @@ public class TextFormatTest {
   public void testPrintMessageBuilder() throws Exception {
     String javaText = TextFormat.printer().printToString(TestUtil.getAllSetBuilder());
 
-    // Java likes to add a trailing ".0" to floats and doubles.  C printf
-    // (with %g format) does not.  Our golden files are used for both
-    // C++ and Java TextFormat classes, so we need to conform.
-    javaText = javaText.replace(".0\n", "\n");
-
-    assertThat(javaText).isEqualTo(ALL_FIELDS_SET_TEXT);
+    assertThat(javaText).isEqualTo(TestUtil.ALL_FIELDS_SET_TEXT);
   }
 
   /** Print TestAllExtensions and compare with golden file. */
@@ -178,12 +163,7 @@ public class TextFormatTest {
   public void testPrintExtensions() throws Exception {
     String javaText = TextFormat.printer().printToString(TestUtil.getAllExtensionsSet());
 
-    // Java likes to add a trailing ".0" to floats and doubles.  C printf
-    // (with %g format) does not.  Our golden files are used for both
-    // C++ and Java TextFormat classes, so we need to conform.
-    javaText = javaText.replace(".0\n", "\n");
-
-    assertThat(javaText).isEqualTo(ALL_EXTENSIONS_SET_TEXT);
+    assertThat(javaText).isEqualTo(TestUtil.ALL_EXTENSIONS_SET_TEXT);
   }
 
   // Creates an example unknown field set.
@@ -359,13 +339,13 @@ public class TextFormatTest {
   @Test
   public void testMerge() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-    TextFormat.merge(ALL_FIELDS_SET_TEXT, builder);
+    TextFormat.merge(TestUtil.ALL_FIELDS_SET_TEXT, builder);
     TestUtil.assertAllFieldsSet(builder.build());
   }
 
   @Test
   public void testParse() throws Exception {
-    TestUtil.assertAllFieldsSet(TextFormat.parse(ALL_FIELDS_SET_TEXT, TestAllTypes.class));
+    TestUtil.assertAllFieldsSet(TextFormat.parse(TestUtil.ALL_FIELDS_SET_TEXT, TestAllTypes.class));
   }
 
   @Test
@@ -405,14 +385,15 @@ public class TextFormatTest {
   @Test
   public void testMergeReader() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-    TextFormat.merge(new StringReader(ALL_FIELDS_SET_TEXT), builder);
+    TextFormat.merge(new StringReader(TestUtil.ALL_FIELDS_SET_TEXT), builder);
     TestUtil.assertAllFieldsSet(builder.build());
   }
 
   @Test
   public void testMergeExtensions() throws Exception {
     TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
-    TextFormat.merge(ALL_EXTENSIONS_SET_TEXT, TestUtil.getFullExtensionRegistry(), builder);
+    TextFormat.merge(
+        TestUtil.ALL_EXTENSIONS_SET_TEXT, TestUtil.getFullExtensionRegistry(), builder);
     TestUtil.assertAllExtensionsSet(builder.build());
   }
 
@@ -420,7 +401,9 @@ public class TextFormatTest {
   public void testParseExtensions() throws Exception {
     TestUtil.assertAllExtensionsSet(
         TextFormat.parse(
-            ALL_EXTENSIONS_SET_TEXT, TestUtil.getFullExtensionRegistry(), TestAllExtensions.class));
+            TestUtil.ALL_EXTENSIONS_SET_TEXT,
+            TestUtil.getFullExtensionRegistry(),
+            TestAllExtensions.class));
   }
 
   @Test

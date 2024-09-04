@@ -227,8 +227,12 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
                                   flags:(GPBDescriptorInitializationFlags)flags
     __attribute__((deprecated("Please use a newer version of protoc to regenerate your sources. "
                               "Support for this version will go away in the future.")));
-- (void)setupContainingMessageClassName:(const char *)msgClassName;
-- (void)setupMessageClassNameSuffix:(NSString *)suffix;
+- (void)setupContainingMessageClassName:(const char *)msgClassName
+    __attribute__((deprecated("Please use a newer version of protoc to regenerate your sources. "
+                              "Support for this version will go away in the future.")));
+- (void)setupMessageClassNameSuffix:(NSString *)suffix
+    __attribute__((deprecated("Please use a newer version of protoc to regenerate your sources. "
+                              "Support for this version will go away in the future.")));
 
 @end
 

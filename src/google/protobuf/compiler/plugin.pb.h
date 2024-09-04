@@ -46,7 +46,8 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-class AnyMetadata;
+template <typename T>
+::absl::string_view GetAnyMessageName();
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -115,7 +116,8 @@ inline bool CodeGeneratorResponse_Feature_Parse(absl::string_view name, CodeGene
 
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT Version final : public ::google::protobuf::Message
+class PROTOC_EXPORT Version final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.Version) */ {
  public:
   inline Version() : Version(nullptr) {}
@@ -237,7 +239,9 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(Version* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.Version"; }
 
  protected:
@@ -351,7 +355,8 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf::Message
+class PROTOC_EXPORT CodeGeneratorResponse_File final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse.File) */ {
  public:
   inline CodeGeneratorResponse_File() : CodeGeneratorResponse_File(nullptr) {}
@@ -473,7 +478,9 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   void SharedDtor();
   void InternalSwap(CodeGeneratorResponse_File* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse.File"; }
 
  protected:
@@ -603,7 +610,8 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
 };
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Message
+class PROTOC_EXPORT CodeGeneratorResponse final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse) */ {
  public:
   inline CodeGeneratorResponse() : CodeGeneratorResponse(nullptr) {}
@@ -725,7 +733,9 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   void SharedDtor();
   void InternalSwap(CodeGeneratorResponse* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse"; }
 
  protected:
@@ -879,7 +889,8 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
 };
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Message
+class PROTOC_EXPORT CodeGeneratorRequest final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorRequest) */ {
  public:
   inline CodeGeneratorRequest() : CodeGeneratorRequest(nullptr) {}
@@ -1006,7 +1017,9 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   void SharedDtor();
   void InternalSwap(CodeGeneratorRequest* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorRequest"; }
 
  protected:

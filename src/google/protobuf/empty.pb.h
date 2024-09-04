@@ -39,7 +39,8 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-class AnyMetadata;
+template <typename T>
+::absl::string_view GetAnyMessageName();
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -66,7 +67,8 @@ namespace protobuf {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFieldsBase
+class PROTOBUF_EXPORT Empty final
+    : public ::google::protobuf::internal::ZeroFieldsBase
 /* @@protoc_insertion_point(class_definition:google.protobuf.Empty) */ {
  public:
   inline Empty() : Empty(nullptr) {}
@@ -159,7 +161,9 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
     return true;
   }
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Empty"; }
 
  protected:

@@ -38,7 +38,8 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-class AnyMetadata;
+template <typename T>
+::absl::string_view GetAnyMessageName();
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -89,7 +90,8 @@ namespace protobuf {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UInt64Value final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT UInt64Value final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.UInt64Value) */ {
  public:
   inline UInt64Value() : UInt64Value(nullptr) {}
@@ -211,7 +213,9 @@ class PROTOBUF_EXPORT UInt64Value final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(UInt64Value* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.UInt64Value"; }
 
  protected:
@@ -278,7 +282,8 @@ class PROTOBUF_EXPORT UInt64Value final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UInt32Value final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT UInt32Value final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.UInt32Value) */ {
  public:
   inline UInt32Value() : UInt32Value(nullptr) {}
@@ -400,7 +405,9 @@ class PROTOBUF_EXPORT UInt32Value final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(UInt32Value* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.UInt32Value"; }
 
  protected:
@@ -467,7 +474,8 @@ class PROTOBUF_EXPORT UInt32Value final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT StringValue final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.StringValue) */ {
  public:
   inline StringValue() : StringValue(nullptr) {}
@@ -589,7 +597,9 @@ class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(StringValue* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.StringValue"; }
 
  protected:
@@ -662,7 +672,8 @@ class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Int64Value final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Int64Value final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Int64Value) */ {
  public:
   inline Int64Value() : Int64Value(nullptr) {}
@@ -784,7 +795,9 @@ class PROTOBUF_EXPORT Int64Value final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(Int64Value* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Int64Value"; }
 
  protected:
@@ -851,7 +864,8 @@ class PROTOBUF_EXPORT Int64Value final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Int32Value final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Int32Value final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Int32Value) */ {
  public:
   inline Int32Value() : Int32Value(nullptr) {}
@@ -973,7 +987,9 @@ class PROTOBUF_EXPORT Int32Value final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(Int32Value* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Int32Value"; }
 
  protected:
@@ -1040,7 +1056,8 @@ class PROTOBUF_EXPORT Int32Value final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FloatValue final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT FloatValue final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.FloatValue) */ {
  public:
   inline FloatValue() : FloatValue(nullptr) {}
@@ -1162,7 +1179,9 @@ class PROTOBUF_EXPORT FloatValue final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(FloatValue* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FloatValue"; }
 
  protected:
@@ -1229,7 +1248,8 @@ class PROTOBUF_EXPORT FloatValue final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT DoubleValue final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT DoubleValue final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.DoubleValue) */ {
  public:
   inline DoubleValue() : DoubleValue(nullptr) {}
@@ -1351,7 +1371,9 @@ class PROTOBUF_EXPORT DoubleValue final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(DoubleValue* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.DoubleValue"; }
 
  protected:
@@ -1418,7 +1440,8 @@ class PROTOBUF_EXPORT DoubleValue final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT BytesValue final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.BytesValue) */ {
  public:
   inline BytesValue() : BytesValue(nullptr) {}
@@ -1540,7 +1563,9 @@ class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(BytesValue* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.BytesValue"; }
 
  protected:
@@ -1613,7 +1638,8 @@ class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT BoolValue final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.BoolValue) */ {
  public:
   inline BoolValue() : BoolValue(nullptr) {}
@@ -1735,7 +1761,9 @@ class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(BoolValue* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.BoolValue"; }
 
  protected:

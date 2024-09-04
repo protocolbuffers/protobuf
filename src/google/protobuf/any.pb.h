@@ -38,7 +38,8 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-class AnyMetadata;
+template <typename T>
+::absl::string_view GetAnyMessageName();
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -65,7 +66,8 @@ namespace protobuf {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Any final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Any) */ {
  public:
   inline Any() : Any(nullptr) {}
@@ -126,15 +128,19 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
 
   bool PackFrom(const ::google::protobuf::Message& message) {
     ABSL_DCHECK_NE(&message, this);
-    return _impl_._any_metadata_.PackFrom(GetArena(), message);
+    return ::google::protobuf::internal::InternalPackFrom(
+        message, mutable_type_url(), _internal_mutable_value());
   }
   bool PackFrom(const ::google::protobuf::Message& message,
                 ::absl::string_view type_url_prefix) {
     ABSL_DCHECK_NE(&message, this);
-    return _impl_._any_metadata_.PackFrom(GetArena(), message, type_url_prefix);
+    return ::google::protobuf::internal::InternalPackFrom(
+        message, type_url_prefix, mutable_type_url(),
+        _internal_mutable_value());
   }
   bool UnpackTo(::google::protobuf::Message* message) const {
-    return _impl_._any_metadata_.UnpackTo(message);
+    return ::google::protobuf::internal::InternalUnpackTo(
+        _internal_type_url(), _internal_value(), message);
   }
   static bool GetAnyFieldDescriptors(
       const ::google::protobuf::Message& message,
@@ -145,7 +151,8 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
       class = typename std::enable_if<!std::is_convertible<
           T, const ::google::protobuf::Message&>::value>::type>
   bool PackFrom(const T& message) {
-    return _impl_._any_metadata_.PackFrom<T>(GetArena(), message);
+    return ::google::protobuf::internal::InternalPackFrom<T>(
+        message, mutable_type_url(), _internal_mutable_value());
   }
   template <
       typename T,
@@ -153,19 +160,22 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
           T, const ::google::protobuf::Message&>::value>::type>
   bool PackFrom(const T& message,
                 ::absl::string_view type_url_prefix) {
-    return _impl_._any_metadata_.PackFrom<T>(GetArena(), message, type_url_prefix);
+    return ::google::protobuf::internal::InternalPackFrom<T>(
+        message, type_url_prefix, mutable_type_url(),
+        _internal_mutable_value());
   }
   template <
       typename T,
       class = typename std::enable_if<!std::is_convertible<
           T, const ::google::protobuf::Message&>::value>::type>
   bool UnpackTo(T* message) const {
-    return _impl_._any_metadata_.UnpackTo<T>(message);
+    return ::google::protobuf::internal::InternalUnpackTo<T>(
+        _internal_type_url(), _internal_value(), message);
   }
 
   template <typename T>
   bool Is() const {
-    return _impl_._any_metadata_.Is<T>();
+    return ::google::protobuf::internal::InternalIs<T>(_internal_type_url());
   }
   static bool ParseAnyTypeUrl(::absl::string_view type_url,
                               std::string* full_type_name);
@@ -235,7 +245,9 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(Any* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Any"; }
 
  protected:
@@ -319,7 +331,6 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
     ::google::protobuf::internal::ArenaStringPtr type_url_;
     ::google::protobuf::internal::ArenaStringPtr value_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::internal::AnyMetadata _any_metadata_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };

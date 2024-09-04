@@ -39,8 +39,7 @@ inline constexpr Any::Impl_::Impl_(
         value_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
-        _cached_size_{0},
-        _any_metadata_{&type_url_, &value_} {}
+        _cached_size_{0} {}
 
 template <typename>
 PROTOBUF_CONSTEXPR Any::Any(::_pbi::ConstantInitialized)
@@ -147,8 +146,7 @@ inline PROTOBUF_NDEBUG_INLINE Any::Impl_::Impl_(
     const Impl_& from, const ::google::protobuf::Any& from_msg)
       : type_url_(arena, from.type_url_),
         value_(arena, from.value_),
-        _cached_size_{0},
-        _any_metadata_{&type_url_, &value_} {}
+        _cached_size_{0} {}
 
 Any::Any(
     ::google::protobuf::Arena* arena,
@@ -171,8 +169,7 @@ inline PROTOBUF_NDEBUG_INLINE Any::Impl_::Impl_(
     ::google::protobuf::Arena* arena)
       : type_url_(arena),
         value_(arena),
-        _cached_size_{0},
-        _any_metadata_{&type_url_, &value_} {}
+        _cached_size_{0} {}
 
 inline void Any::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);

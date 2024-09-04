@@ -38,7 +38,8 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-class AnyMetadata;
+template <typename T>
+::absl::string_view GetAnyMessageName();
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -65,7 +66,8 @@ namespace protobuf {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Timestamp final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Timestamp final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Timestamp) */ {
  public:
   inline Timestamp() : Timestamp(nullptr) {}
@@ -187,7 +189,9 @@ class PROTOBUF_EXPORT Timestamp final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(Timestamp* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Timestamp"; }
 
  protected:

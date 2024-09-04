@@ -42,7 +42,8 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-class AnyMetadata;
+template <typename T>
+::absl::string_view GetAnyMessageName();
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -110,7 +111,8 @@ inline bool NullValue_Parse(absl::string_view name, NullValue* value) {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT ListValue final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.ListValue) */ {
  public:
   inline ListValue() : ListValue(nullptr) {}
@@ -232,7 +234,9 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(ListValue* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ListValue"; }
 
  protected:
@@ -306,7 +310,8 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Struct final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Struct) */ {
  public:
   inline Struct() : Struct(nullptr) {}
@@ -428,7 +433,9 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(Struct* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Struct"; }
 
  protected:
@@ -542,7 +549,8 @@ class Struct_FieldsEntry_DoNotUse final
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Value final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Value) */ {
  public:
   inline Value() : Value(nullptr) {}
@@ -673,7 +681,9 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(Value* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Value"; }
 
  protected:

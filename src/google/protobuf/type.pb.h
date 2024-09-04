@@ -41,7 +41,8 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-class AnyMetadata;
+template <typename T>
+::absl::string_view GetAnyMessageName();
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -199,7 +200,8 @@ inline bool Syntax_Parse(absl::string_view name, Syntax* value) {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Option final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Option) */ {
  public:
   inline Option() : Option(nullptr) {}
@@ -321,7 +323,9 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(Option* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Option"; }
 
  protected:
@@ -412,7 +416,8 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Field final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Field) */ {
  public:
   inline Field() : Field(nullptr) {}
@@ -534,7 +539,9 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(Field* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Field"; }
 
  protected:
@@ -797,7 +804,8 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT EnumValue final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValue) */ {
  public:
   inline EnumValue() : EnumValue(nullptr) {}
@@ -919,7 +927,9 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(EnumValue* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumValue"; }
 
  protected:
@@ -1023,7 +1033,8 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Type final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Type) */ {
  public:
   inline Type() : Type(nullptr) {}
@@ -1145,7 +1156,9 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(Type* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Type"; }
 
  protected:
@@ -1328,7 +1341,8 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Enum final
+    : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Enum) */ {
  public:
   inline Enum() : Enum(nullptr) {}
@@ -1450,7 +1464,9 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
   void SharedDtor();
   void InternalSwap(Enum* other);
  private:
-  friend class ::google::protobuf::internal::AnyMetadata;
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Enum"; }
 
  protected:

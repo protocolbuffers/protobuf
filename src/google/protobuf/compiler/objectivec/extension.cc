@@ -31,9 +31,8 @@ ExtensionGenerator::ExtensionGenerator(
     absl::string_view root_or_message_class_name,
     const FieldDescriptor* descriptor,
     const GenerationOptions& generation_options)
-    : method_name_(ExtensionMethodName(descriptor)),
-      full_method_name_(
-          absl::StrCat(root_or_message_class_name, "_", method_name_)),
+    : root_or_message_class_name_(root_or_message_class_name),
+      method_name_(ExtensionMethodName(descriptor)),
       descriptor_(descriptor),
       generation_options_(generation_options) {
   ABSL_CHECK(!descriptor->is_map())
@@ -90,16 +89,17 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
        {"extended_type", ObjCClass(containing_type)},
        {"extension_type",
         absl::StrCat("GPBDataType", GetCapitalizedType(descriptor_))},
+       {"method_name", method_name_},
        {"number", descriptor_->number()},
        {"options", BuildFlagsString(FLAGTYPE_EXTENSION, options)},
-       {"full_method_name", full_method_name_},
+       {"root_or_message_class_name", root_or_message_class_name_},
        {"type", objc_type == OBJECTIVECTYPE_MESSAGE
                     ? ObjCClass(ClassName(descriptor_->message_type()))
                     : "Nil"}},
       R"objc(
         {
           .defaultValue.$default_name$ = $default$,
-          .singletonName = GPBStringifySymbol($full_method_name$),
+          .singletonName = GPBStringifySymbol($root_or_message_class_name$) "_$method_name$",
           .extendedClass.clazz = $extended_type$,
           .messageOrGroupClass.clazz = $type$,
           .enumDescriptorFunc = $enum_desc_func_name$,
