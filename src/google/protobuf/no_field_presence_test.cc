@@ -218,6 +218,26 @@ void CheckNonDefaultValues(
   EXPECT_EQ("test", m.oneof_string());
 }
 
+// Helper function that uses reflection to test that HasField returns true for
+// the key of the map entry.
+bool MapEntryHasKeyField(const google::protobuf::Message& map_entry) {
+  const Reflection* r = map_entry.GetReflection();
+  const Descriptor* desc = map_entry.GetDescriptor();
+  const FieldDescriptor* key = desc->FindFieldByNumber(1);
+
+  return r->HasField(map_entry, key);
+}
+
+// Helper function that uses reflection to test that HasField returns true for
+// the key of the map entry.
+bool MapEntryHasValueField(const google::protobuf::Message& map_entry) {
+  const Reflection* r = map_entry.GetReflection();
+  const Descriptor* desc = map_entry.GetDescriptor();
+  const FieldDescriptor* value = desc->FindFieldByNumber(2);
+
+  return r->HasField(map_entry, value);
+}
+
 TEST(NoFieldPresenceTest, BasicMessageTest) {
   proto2_nofieldpresence_unittest::TestAllTypes message;
   // Check default values, fill all fields, check values. We just want to
@@ -271,7 +291,8 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
   const Descriptor* desc = message.GetDescriptor();
 
   // Check initial state: scalars not present (due to need to be consistent with
-  // MergeFrom()), message fields not present, oneofs not present.
+  // MergeFrom()), message fields not present, oneofs not present, maps not
+  // present.
   for (int i = 0; i < desc->field_count(); i++) {
     const FieldDescriptor* field = desc->field(i);
     if (field->is_repeated()) continue;
@@ -327,6 +348,161 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
   EXPECT_EQ(true, r->HasField(message, field_string));
   message.set_optional_string("");
   EXPECT_EQ(false, r->HasField(message, field_string));
+}
+
+TEST(NoFieldPresenceTest, ReflectionEmptyMapTest) {
+  proto2_nofieldpresence_unittest::TestAllTypes message;
+  const Reflection* r = message.GetReflection();
+  const Descriptor* desc = message.GetDescriptor();
+
+  const FieldDescriptor* field_map_int32_bytes =
+      desc->FindFieldByName("map_int32_bytes");
+  const FieldDescriptor* field_map_int32_foreign_enum =
+      desc->FindFieldByName("map_int32_foreign_enum");
+  const FieldDescriptor* field_map_int32_foreign_message =
+      desc->FindFieldByName("map_int32_foreign_message");
+
+  ASSERT_NE(field_map_int32_bytes, nullptr);
+  ASSERT_NE(field_map_int32_foreign_enum, nullptr);
+  ASSERT_NE(field_map_int32_foreign_message, nullptr);
+
+  // Maps are treated as repeated fields -- so fieldsize should be zero.
+  EXPECT_EQ(0, r->FieldSize(message, field_map_int32_bytes));
+  EXPECT_EQ(0, r->FieldSize(message, field_map_int32_foreign_enum));
+  EXPECT_EQ(0, r->FieldSize(message, field_map_int32_foreign_message));
+
+  // Trying to get an unset map entry would crash.
+  EXPECT_DEATH(r->GetRepeatedMessage(message, field_map_int32_bytes, 0),
+               "index < current_size_");
+}
+
+TEST(NoFieldPresenceTest, ReflectionTestVanillaMapEntriesPopulated) {
+  // For map entries, test that you can set and read nonzero values.
+
+  proto2_nofieldpresence_unittest::TestAllTypes message;
+  const Reflection* r = message.GetReflection();
+  const Descriptor* desc = message.GetDescriptor();
+
+  const FieldDescriptor* field_map_int32_bytes =
+      desc->FindFieldByName("map_int32_bytes");
+  const FieldDescriptor* field_map_int32_foreign_enum =
+      desc->FindFieldByName("map_int32_foreign_enum");
+  const FieldDescriptor* field_map_int32_foreign_message =
+      desc->FindFieldByName("map_int32_foreign_message");
+
+  // Now set nonzero values for key-value pairs and test that.
+  (*message.mutable_map_int32_bytes())[9] = "hello";
+  (*message.mutable_map_int32_foreign_enum())[99] =
+      proto2_nofieldpresence_unittest::FOREIGN_BAZ;
+  proto2_nofieldpresence_unittest::ForeignMessage submsg;
+  submsg.set_c(10101);
+  (*message.mutable_map_int32_foreign_message())[123] = submsg;
+
+  // ==== Gencode behaviour ====
+  //
+  EXPECT_EQ(1, message.map_int32_bytes().size());
+  EXPECT_EQ(1, message.map_int32_foreign_enum().size());
+  EXPECT_EQ(1, message.map_int32_foreign_message().size());
+
+  // Keys can be found.
+  EXPECT_TRUE(message.map_int32_bytes().contains(9));
+  EXPECT_TRUE(message.map_int32_foreign_enum().contains(99));
+  EXPECT_TRUE(message.map_int32_foreign_message().contains(123));
+
+  // Values are counted properly.
+  EXPECT_EQ(1, message.map_int32_bytes().count(9));
+  EXPECT_EQ(1, message.map_int32_foreign_enum().count(99));
+  EXPECT_EQ(1, message.map_int32_foreign_message().count(123));
+
+  // ==== Reflection behaviour ====
+  //
+  EXPECT_EQ(1, r->FieldSize(message, field_map_int32_bytes));
+  EXPECT_EQ(1, r->FieldSize(message, field_map_int32_foreign_enum));
+  EXPECT_EQ(1, r->FieldSize(message, field_map_int32_foreign_message));
+
+  EXPECT_TRUE(MapEntryHasKeyField(
+      r->GetRepeatedMessage(message, field_map_int32_bytes, /*index=*/0)));
+  EXPECT_TRUE(MapEntryHasKeyField(r->GetRepeatedMessage(
+      message, field_map_int32_foreign_enum, /*index=*/0)));
+  EXPECT_TRUE(MapEntryHasKeyField(r->GetRepeatedMessage(
+      message, field_map_int32_foreign_message, /*index=*/0)));
+
+  EXPECT_TRUE(MapEntryHasValueField(
+      r->GetRepeatedMessage(message, field_map_int32_bytes, /*index=*/0)));
+  EXPECT_TRUE(MapEntryHasValueField(r->GetRepeatedMessage(
+      message, field_map_int32_foreign_enum, /*index=*/0)));
+  EXPECT_TRUE(MapEntryHasValueField(r->GetRepeatedMessage(
+      message, field_map_int32_foreign_message, /*index=*/0)));
+}
+
+TEST(NoFieldPresenceTest, ReflectionTestEmptyMapEntriesPopulated) {
+  // For map entries, test that you can set and read zero values.
+  // Importantly this means that proto3 map fields behave like explicit
+  // presence in reflection!
+
+  proto2_nofieldpresence_unittest::TestAllTypes message;
+  const Reflection* r = message.GetReflection();
+  const Descriptor* desc = message.GetDescriptor();
+
+  // proto3 map reflection "behaves like explicit presence".
+  const FieldDescriptor* field_map_int32_bytes =
+      desc->FindFieldByName("map_int32_bytes");
+  const FieldDescriptor* field_map_int32_foreign_enum =
+      desc->FindFieldByName("map_int32_foreign_enum");
+  const FieldDescriptor* field_map_int32_foreign_message =
+      desc->FindFieldByName("map_int32_foreign_message");
+
+  // Set nonzero values for zero keys and test that.
+  (*message.mutable_map_int32_bytes())[0] = "hello";
+  (*message.mutable_map_int32_foreign_enum())[0] =
+      proto2_nofieldpresence_unittest::FOREIGN_BAZ;
+  proto2_nofieldpresence_unittest::ForeignMessage submsg;
+  submsg.set_c(10101);
+  (*message.mutable_map_int32_foreign_message())[0] = submsg;
+
+  // ==== Gencode behaviour ====
+  //
+  // Gencode treats map entries with zero values as invalid.
+  // They still "exist" but cannot be fetched.
+  EXPECT_EQ(1, message.map_int32_bytes().size());
+  EXPECT_EQ(1, message.map_int32_foreign_enum().size());
+  EXPECT_EQ(1, message.map_int32_foreign_message().size());
+
+  // Keys cannot be found.
+  EXPECT_FALSE(message.map_int32_bytes().contains(9));
+  EXPECT_FALSE(message.map_int32_foreign_enum().contains(99));
+  EXPECT_FALSE(message.map_int32_foreign_message().contains(123));
+
+  // Values are not counted.
+  EXPECT_EQ(0, message.map_int32_bytes().count(9));
+  EXPECT_EQ(0, message.map_int32_foreign_enum().count(99));
+  EXPECT_EQ(0, message.map_int32_foreign_message().count(123));
+
+  // ==== Reflection behaviour ====
+  //
+  // These map entries are considered valid in reflection APIs.
+  EXPECT_EQ(1, r->FieldSize(message, field_map_int32_bytes));
+  EXPECT_EQ(1, r->FieldSize(message, field_map_int32_foreign_enum));
+  EXPECT_EQ(1, r->FieldSize(message, field_map_int32_foreign_message));
+
+  // If map entries are truly "no presence", then they should not return true
+  // for HasField!
+  // However, the existing behavior is that map entries behave like
+  // explicit-presence fields in reflection -- i.e. they must return true for
+  // HasField even though they are zero.
+  EXPECT_TRUE(MapEntryHasKeyField(
+      r->GetRepeatedMessage(message, field_map_int32_bytes, /*index=*/0)));
+  EXPECT_TRUE(MapEntryHasKeyField(r->GetRepeatedMessage(
+      message, field_map_int32_foreign_enum, /*index=*/0)));
+  EXPECT_TRUE(MapEntryHasKeyField(r->GetRepeatedMessage(
+      message, field_map_int32_foreign_message, /*index=*/0)));
+
+  EXPECT_TRUE(MapEntryHasValueField(
+      r->GetRepeatedMessage(message, field_map_int32_bytes, /*index=*/0)));
+  EXPECT_TRUE(MapEntryHasValueField(r->GetRepeatedMessage(
+      message, field_map_int32_foreign_enum, /*index=*/0)));
+  EXPECT_TRUE(MapEntryHasValueField(r->GetRepeatedMessage(
+      message, field_map_int32_foreign_message, /*index=*/0)));
 }
 
 TEST(NoFieldPresenceTest, ReflectionClearFieldTest) {
@@ -733,6 +909,74 @@ TYPED_TEST(NoFieldPresenceSerializeTest, OneofPresence) {
   message.set_oneof_string("test");
   message.clear_oneof_string();
   EXPECT_EQ(0, message.ByteSizeLong());
+}
+
+TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTrip) {
+  proto2_nofieldpresence_unittest::TestAllTypes message;
+
+  // Create a map entry with default 'key' fields and nondefault values.
+  (*message.mutable_map_int32_bytes())[0] = "hello";
+  (*message.mutable_map_int32_foreign_enum())[0] =
+      proto2_nofieldpresence_unittest::FOREIGN_BAZ;
+  proto2_nofieldpresence_unittest::ForeignMessage submsg;
+  submsg.set_c(10101);
+  (*message.mutable_map_int32_foreign_message())[0] = submsg;
+
+  {
+    // Test that message can roundtrip.
+    TypeParam& output_sink = this->GetOutputSinkRef();
+    ASSERT_TRUE(TestSerialize(message, &output_sink));
+    // Maps with zero key or value fields are still serialized.
+    ASSERT_FALSE(this->GetOutput().empty());
+    EXPECT_TRUE(message.ParseFromString(this->GetOutput()));
+
+    EXPECT_EQ("hello", message.map_int32_bytes().at(0));
+    EXPECT_EQ(proto2_nofieldpresence_unittest::FOREIGN_BAZ,
+              message.map_int32_foreign_enum().at(0));
+    EXPECT_EQ(10101, message.map_int32_foreign_message().at(0).c());
+  }
+
+  message.Clear();
+
+  // Create a map entry with default 'value' fields and nondefault keys.
+  (*message.mutable_map_int32_bytes())[9];
+  (*message.mutable_map_int32_foreign_enum())[99];
+  (*message.mutable_map_int32_foreign_message())[123];
+
+  {
+    // Test that message can roundtrip.
+    TypeParam& output_sink = this->GetOutputSinkRef();
+    ASSERT_TRUE(TestSerialize(message, &output_sink));
+    // Maps with zero key or value fields are still serialized.
+    ASSERT_FALSE(this->GetOutput().empty());
+    EXPECT_TRUE(message.ParseFromString(this->GetOutput()));
+
+    EXPECT_EQ("", message.map_int32_bytes().at(9));
+    EXPECT_EQ(proto2_nofieldpresence_unittest::FOREIGN_FOO,
+              message.map_int32_foreign_enum().at(99));
+    EXPECT_EQ(0, message.map_int32_foreign_message().at(123).c());
+  }
+
+  message.Clear();
+
+  // Now both key and value are empty.
+  (*message.mutable_map_int32_bytes())[0];
+  (*message.mutable_map_int32_foreign_enum())[0];
+  (*message.mutable_map_int32_foreign_message())[0];
+
+  {
+    // Test that message can roundtrip.
+    TypeParam& output_sink = this->GetOutputSinkRef();
+    ASSERT_TRUE(TestSerialize(message, &output_sink));
+    // Maps with zero key or value fields are still serialized.
+    ASSERT_FALSE(this->GetOutput().empty());
+    EXPECT_TRUE(message.ParseFromString(this->GetOutput()));
+
+    EXPECT_EQ("", message.map_int32_bytes().at(0));
+    EXPECT_EQ(proto2_nofieldpresence_unittest::FOREIGN_FOO,
+              message.map_int32_foreign_enum().at(0));
+    EXPECT_EQ(0, message.map_int32_foreign_message().at(0).c());
+  }
 }
 
 }  // namespace
