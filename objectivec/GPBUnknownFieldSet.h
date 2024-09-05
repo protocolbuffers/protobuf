@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GPBUnknownField.h"
+
 @class GPBUnknownField;
 
 NS_ASSUME_NONNULL_BEGIN

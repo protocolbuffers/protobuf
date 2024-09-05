@@ -11,8 +11,10 @@
 
 #import "GPBCodedInputStream.h"
 
+#import "GPBDescriptor.h"
+#import "GPBUnknownFieldSet.h"
+
 @class GPBUnknownFieldSet;
-@class GPBFieldDescriptor;
 
 typedef struct GPBCodedInputStreamState {
   const uint8_t *bytes;

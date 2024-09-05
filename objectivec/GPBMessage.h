@@ -8,13 +8,15 @@
 #import <Foundation/Foundation.h>
 
 #import "GPBBootstrap.h"
+#import "GPBCodedInputStream.h"
+#import "GPBCodedOutputStream.h"
+#import "GPBDescriptor.h"
 #import "GPBExtensionRegistry.h"
+#import "GPBUnknownFieldSet.h"
+#import "GPBUnknownFields.h"
 
-@class GPBDescriptor;
 @class GPBCodedInputStream;
 @class GPBCodedOutputStream;
-@class GPBExtensionDescriptor;
-@class GPBFieldDescriptor;
 @class GPBUnknownFieldSet;
 @class GPBUnknownFields;
 

@@ -7,10 +7,9 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GPBCodedInputStream.h"
+#import "GPBCodedOutputStream.h"
 #import "GPBUnknownFieldSet.h"
-
-@class GPBCodedOutputStream;
-@class GPBCodedInputStream;
 
 @interface GPBUnknownFieldSet ()
 

@@ -8,10 +8,9 @@
 #import <Foundation/Foundation.h>
 
 #import "GPBArray.h"
+#import "GPBDescriptor.h"
 #import "GPBMessage.h"
 #import "GPBRuntimeTypes.h"
-
-@class GPBOneofDescriptor;
 
 CF_EXTERN_C_BEGIN
 

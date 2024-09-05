@@ -7,9 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
-@class GPBCodedOutputStream;
-@class GPBUInt32Array;
-@class GPBUInt64Array;
+#import "GPBArray.h"
+#import "GPBUnknownFieldSet.h"
+#import "GPBUnknownFields.h"
+
 @class GPBUnknownFieldSet;
 @class GPBUnknownFields;
 

@@ -9,6 +9,7 @@
 
 #import "GPBUtilities.h"
 
+#import "GPBDescriptor.h"
 #import "GPBDescriptor_PackagePrivate.h"
 
 // Macros for stringifying library symbols. These are used in the generated

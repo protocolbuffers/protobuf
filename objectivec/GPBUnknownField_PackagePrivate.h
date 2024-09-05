@@ -9,6 +9,8 @@
 
 #import "GPBUnknownField.h"
 
+#import "GPBArray.h"
+
 @class GPBCodedOutputStream;
 
 @interface GPBUnknownField () {

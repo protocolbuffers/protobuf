@@ -10,15 +10,9 @@
 #import "GPBRuntimeTypes.h"
 #import "GPBWireFormat.h"
 
-@class GPBBoolArray;
-@class GPBDoubleArray;
-@class GPBEnumArray;
-@class GPBFloatArray;
-@class GPBMessage;
-@class GPBInt32Array;
-@class GPBInt64Array;
-@class GPBUInt32Array;
-@class GPBUInt64Array;
+#import "GPBArray.h"
+#import "GPBUnknownFieldSet.h"
+
 @class GPBUnknownFieldSet;
 
 NS_ASSUME_NONNULL_BEGIN

@@ -5,7 +5,11 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#import <Foundation/Foundation.h>
+
 #import "GPBCodedOutputStream.h"
+
+#import "GPBMessage.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

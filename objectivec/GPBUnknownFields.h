@@ -7,6 +7,9 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GPBMessage.h"
+#import "GPBUnknownField.h"
+
 @class GPBMessage;
 @class GPBUnknownField;
 
