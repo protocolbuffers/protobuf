@@ -971,6 +971,7 @@ size_t SizeOfUnion(ItX it_dest, ItX end_dest, ItY it_source, ItY end_source) {
 
 void ExtensionSet::MergeFrom(const MessageLite* extendee,
                              const ExtensionSet& other) {
+  Prefetch5LinesFrom1Line(&other);
   if (PROTOBUF_PREDICT_TRUE(!is_large())) {
     if (PROTOBUF_PREDICT_TRUE(!other.is_large())) {
       GrowCapacity(SizeOfUnion(flat_begin(), flat_end(), other.flat_begin(),

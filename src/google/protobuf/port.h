@@ -306,6 +306,15 @@ inline PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 704);
 }
 
+// Prefetch 5 64-byte cache lines starting from 1 cache-line ahead.
+inline PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom1Line(const void* ptr) {
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 64);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 128);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 192);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 256);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 320);
+}
+
 #if defined(NDEBUG) && ABSL_HAVE_BUILTIN(__builtin_unreachable)
 [[noreturn]] ABSL_ATTRIBUTE_COLD PROTOBUF_ALWAYS_INLINE inline void
 Unreachable() {

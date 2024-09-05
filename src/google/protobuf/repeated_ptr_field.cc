@@ -132,6 +132,7 @@ memswap<ArenaOffsetHelper<RepeatedPtrFieldBase>::value>(
 template <>
 void RepeatedPtrFieldBase::MergeFrom<std::string>(
     const RepeatedPtrFieldBase& from) {
+  Prefetch5LinesFrom1Line(&from);
   ABSL_DCHECK_NE(&from, this);
   int new_size = current_size_ + from.current_size_;
   auto dst = reinterpret_cast<std::string**>(InternalReserve(new_size));
@@ -159,6 +160,7 @@ void RepeatedPtrFieldBase::MergeFrom<std::string>(
 
 int RepeatedPtrFieldBase::MergeIntoClearedMessages(
     const RepeatedPtrFieldBase& from) {
+  Prefetch5LinesFrom1Line(&from);
   auto dst = reinterpret_cast<MessageLite**>(elements() + current_size_);
   auto src = reinterpret_cast<MessageLite* const*>(from.elements());
   int count = std::min(ClearedCount(), from.current_size_);
@@ -173,6 +175,7 @@ int RepeatedPtrFieldBase::MergeIntoClearedMessages(
 
 void RepeatedPtrFieldBase::MergeFromConcreteMessage(
     const RepeatedPtrFieldBase& from, CopyFn copy_fn) {
+  Prefetch5LinesFrom1Line(&from);
   ABSL_DCHECK_NE(&from, this);
   int new_size = current_size_ + from.current_size_;
   void** dst = InternalReserve(new_size);
@@ -196,6 +199,7 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
 template <>
 void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
     const RepeatedPtrFieldBase& from) {
+  Prefetch5LinesFrom1Line(&from);
   ABSL_DCHECK_NE(&from, this);
   ABSL_DCHECK(from.current_size_ > 0);
   int new_size = current_size_ + from.current_size_;
