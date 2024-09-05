@@ -6,6 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBMessage.h"
+#import "GPBMessage_PackagePrivate.h"
 
 #import <Foundation/Foundation.h>
 #import <objc/message.h>
@@ -13,19 +14,26 @@
 #import <os/lock.h>
 #import <stdatomic.h>
 
+#import "GPBArray.h"
 #import "GPBArray_PackagePrivate.h"
+#import "GPBCodedInputStream.h"
 #import "GPBCodedInputStream_PackagePrivate.h"
+#import "GPBCodedOutputStream.h"
 #import "GPBCodedOutputStream_PackagePrivate.h"
+#import "GPBDescriptor.h"
 #import "GPBDescriptor_PackagePrivate.h"
+#import "GPBDictionary.h"
 #import "GPBDictionary_PackagePrivate.h"
 #import "GPBExtensionInternals.h"
 #import "GPBExtensionRegistry.h"
-#import "GPBMessage_PackagePrivate.h"
+#import "GPBRootObject.h"
 #import "GPBRootObject_PackagePrivate.h"
 #import "GPBUnknownField.h"
 #import "GPBUnknownFieldSet.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
+#import "GPBUnknownFields.h"
 #import "GPBUnknownFields_PackagePrivate.h"
+#import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
 
 // TODO: Consider using on other functions to reduce bloat when

@@ -16,7 +16,6 @@
 #import "GPBUnknownField_PackagePrivate.h"
 #import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
-
 #import "objectivec/Tests/MapUnittest.pbobjc.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
 #import "objectivec/Tests/UnittestObjc.pbobjc.h"

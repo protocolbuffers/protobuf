@@ -6,11 +6,13 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBUnknownField.h"
+#import "GPBUnknownField_PackagePrivate.h"
 
 #import "GPBArray.h"
+#import "GPBCodedOutputStream.h"
 #import "GPBCodedOutputStream_PackagePrivate.h"
 #import "GPBUnknownFieldSet.h"
-#import "GPBUnknownField_PackagePrivate.h"
+#import "GPBUnknownFields.h"
 #import "GPBUnknownFields_PackagePrivate.h"
 #import "GPBWireFormat.h"
 

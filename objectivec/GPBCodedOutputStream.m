@@ -5,12 +5,15 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#import "GPBCodedOutputStream.h"
 #import "GPBCodedOutputStream_PackagePrivate.h"
 
 #import <mach/vm_param.h>
 
 #import "GPBArray.h"
+#import "GPBUnknownFieldSet.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
+#import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
 
 // TODO: Consider using on other functions to reduce bloat when

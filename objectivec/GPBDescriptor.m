@@ -5,11 +5,14 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#import "GPBDescriptor.h"
 #import "GPBDescriptor_PackagePrivate.h"
 
 #import <objc/runtime.h>
 
+#import "GPBMessage.h"
 #import "GPBMessage_PackagePrivate.h"
+#import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
 #import "GPBWireFormat.h"
 

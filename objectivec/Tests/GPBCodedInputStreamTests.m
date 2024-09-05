@@ -14,6 +14,7 @@
 #import "GPBUnknownField.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUnknownFields.h"
+#import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
 #import "GPBWireFormat.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"

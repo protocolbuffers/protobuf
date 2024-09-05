@@ -9,14 +9,19 @@
 
 #import <objc/runtime.h>
 
+#import "GPBArray.h"
 #import "GPBArray_PackagePrivate.h"
+#import "GPBDescriptor.h"
 #import "GPBDescriptor_PackagePrivate.h"
+#import "GPBDictionary.h"
 #import "GPBDictionary_PackagePrivate.h"
+#import "GPBMessage.h"
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBUnknownField.h"
 #import "GPBUnknownFieldSet.h"
 #import "GPBUnknownField_PackagePrivate.h"
 #import "GPBUnknownFields.h"
+#import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
 
 // Direct access is use for speed, to avoid even internally declaring things

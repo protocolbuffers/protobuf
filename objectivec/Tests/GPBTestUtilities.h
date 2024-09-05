@@ -7,14 +7,9 @@
 
 #import <XCTest/XCTest.h>
 
-@class TestAllExtensions;
-@class TestAllTypes;
-@class TestMap;
-@class TestPackedTypes;
-@class TestPackedExtensions;
-@class TestUnpackedTypes;
-@class TestUnpackedExtensions;
-@class GPBExtensionRegistry;
+#import "GPBExtensionRegistry.h"
+#import "objectivec/Tests/MapUnittest.pbobjc.h"
+#import "objectivec/Tests/Unittest.pbobjc.h"
 
 static inline NSData *DataFromCStr(const char *str) {
   return [NSData dataWithBytes:str length:strlen(str)];

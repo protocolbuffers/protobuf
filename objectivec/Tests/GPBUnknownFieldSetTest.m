@@ -7,7 +7,6 @@
 
 #import "GPBTestUtilities.h"
 #import "GPBUnknownFieldSet.h"
-
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUnknownField_PackagePrivate.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
