@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
+#include "base/types.h"
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/port.h"
 
