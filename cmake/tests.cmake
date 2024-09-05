@@ -241,7 +241,7 @@ foreach(_hdr ${_exclude_hdrs})
 endforeach()
 
 foreach(_hdr ${_local_hdrs})
-string(REPLACE "${protobuf_SOURCE_DIR}/src" "" _file ${_hdr})
+  string(REPLACE "${protobuf_SOURCE_DIR}/src" "" _file ${_hdr})
   set(_tmp_file "${CMAKE_BINARY_DIR}/tmp-install-test/${_file}")
   add_custom_command(TARGET remove-installed-headers PRE_BUILD
                      COMMAND ${CMAKE_COMMAND} -E remove -f "${_hdr}")
