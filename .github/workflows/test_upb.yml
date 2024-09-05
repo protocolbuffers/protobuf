@@ -43,12 +43,12 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:${{ matrix.config.bazel_version || '6.3.0' }}-75f2a85ece6526cc3d54087018c0f1097d78d42b
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -63,11 +63,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
           image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:12.2-6.3.0-63dd26c0c7a808d92673a3e52e848189d4ab0f17"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -84,7 +84,7 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
       - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
@@ -92,7 +92,7 @@ jobs:
           cache: pip
           cache-dependency-path: 'python/requirements.txt'
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v3
+        uses: protocolbuffers/protobuf-ci/bazel@v5
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-windows"
@@ -111,7 +111,7 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
       - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
@@ -119,7 +119,7 @@ jobs:
           cache: pip
           cache-dependency-path: 'python/requirements.txt'
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v3
+        uses: protocolbuffers/protobuf-ci/bazel@v5
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-macos"
@@ -133,11 +133,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.3.0-91a0ac83e968068672bc6001a4d474cfd9a50f1d
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -154,11 +154,11 @@ jobs:
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Build Wheels
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
           image: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple:6.3.0-53225851b051e66f8543e972c143f35be757a181
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}

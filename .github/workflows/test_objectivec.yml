@@ -50,20 +50,20 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/ccache@v3
+        uses: protocolbuffers/protobuf-ci/ccache@v5
         with:
           cache-prefix: objectivec_${{ matrix.platform }}_${{ matrix.xc_config }}
           support-modules: true
 
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bash@v3
+        uses: protocolbuffers/protobuf-ci/bash@v5
         env:
           CC: ${{ github.workspace }}/ci/clang_wrapper
           CXX: ${{ github.workspace }}/ci/clang_wrapper++
@@ -103,7 +103,7 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Xcode version
@@ -111,7 +111,7 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_${{ matrix.XCODE }}.app
       - name: Pod lib lint
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel@v3
+        uses: protocolbuffers/protobuf-ci/bazel@v5
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cocoapods/${{ matrix.XCODE }}
@@ -153,12 +153,12 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: bazel ${{ matrix.config.bazel_action }}
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel@v3
+        uses: protocolbuffers/protobuf-ci/bazel@v5
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.config.bazel_action }} ${{ matrix.config.flags }} ${{ matrix.bazel_targets }}
