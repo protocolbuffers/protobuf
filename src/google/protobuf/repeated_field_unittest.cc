@@ -24,6 +24,7 @@
 #include <limits>
 #include <list>
 #include <memory>
+#include <new>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -34,7 +35,6 @@
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
-#include "absl/random/random.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
