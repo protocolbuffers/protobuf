@@ -10,7 +10,6 @@
 namespace protos {
 namespace internal {
 using hpb::internal::GetInternalMsg;
-using hpb::internal::Serialize;
 }  // namespace internal
 
 using hpb::Arena;
