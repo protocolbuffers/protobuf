@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -24,6 +25,7 @@
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/numeric/bits.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/extension_set_inl.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -196,16 +198,13 @@ ExtensionSet::~ExtensionSet() {
   }
 }
 
-void ExtensionSet::DeleteFlatMap(const ExtensionSet::KeyValue* flat,
-                                 uint16_t flat_capacity) {
+void ExtensionSet::DeleteFlatMap(int* flat, uint16_t flat_capacity) {
   // Arena::CreateArray already requires a trivially destructible type, but
   // ensure this constraint is not violated in the future.
-  static_assert(std::is_trivially_destructible<KeyValue>::value,
+  static_assert(std::is_trivially_destructible<Extension>::value,
                 "CreateArray requires a trivially destructible type");
-  // A const-cast is needed, but this is safe as we are about to deallocate the
-  // array.
-  internal::SizedArrayDelete(const_cast<KeyValue*>(flat),
-                             sizeof(*flat) * flat_capacity);
+  internal::SizedArrayDelete(FlatArrayBegin(flat, flat_capacity),
+                             FlatAllocSize(flat_capacity));
 }
 
 // Defined in extension_set_heavy.cc.
@@ -970,23 +969,23 @@ template <typename ItX, typename ItY>
 size_t SizeOfUnion(ItX it_dest, ItX end_dest, ItY it_source, ItY end_source) {
   size_t result = 0;
   while (it_dest != end_dest && it_source != end_source) {
-    if (it_dest->first < it_source->first) {
+    if (GetKey(it_dest) < GetKey(it_source)) {
       ++result;
       ++it_dest;
-    } else if (it_dest->first == it_source->first) {
+    } else if (GetKey(it_dest) == GetKey(it_source)) {
       ++result;
       ++it_dest;
       ++it_source;
     } else {
-      if (!it_source->second.is_cleared) {
+      if (!GetExtension(it_source).is_cleared) {
         ++result;
       }
       ++it_source;
     }
   }
-  result += std::distance(it_dest, end_dest);
+  result += end_dest - it_dest;
   for (; it_source != end_source; ++it_source) {
-    if (!it_source->second.is_cleared) {
+    if (!GetExtension(it_source).is_cleared) {
       ++result;
     }
   }
@@ -1236,8 +1235,8 @@ bool ExtensionSet::IsInitialized(const MessageLite* extendee) const {
     }
     return true;
   }
-  for (const KeyValue* it = flat_begin(); it != flat_end(); ++it) {
-    if (!it->second.IsInitialized(this, extendee, it->first, arena)) {
+  for (auto it = flat_begin(); it != flat_end(); ++it) {
+    if (!it.ext->IsInitialized(this, extendee, *it.key, arena)) {
       return false;
     }
   }
@@ -1287,12 +1286,12 @@ uint8_t* ExtensionSet::_InternalSerializeImpl(
     }
     return target;
   }
-  const KeyValue* end = flat_end();
-  const KeyValue* it = flat_begin();
-  while (it != end && it->first < start_field_number) ++it;
-  for (; it != end && it->first < end_field_number; ++it) {
-    target = it->second.InternalSerializeFieldWithCachedSizesToArray(
-        extendee, this, it->first, target, stream);
+  ConstFlatIterator end = flat_end();
+  ConstFlatIterator it = flat_begin();
+  while (it != end && *it.key < start_field_number) ++it;
+  for (; it != end && *it.key < end_field_number; ++it) {
+    target = it.ext->InternalSerializeFieldWithCachedSizesToArray(
+        extendee, this, *it.key, target, stream);
   }
   return target;
 }
@@ -1620,9 +1619,9 @@ const ExtensionSet::Extension* ExtensionSet::FindOrNull(int key) const {
   if (flat_size_ == 0) {
     return nullptr;
   } else if (PROTOBUF_PREDICT_TRUE(!is_large())) {
-    for (auto it = flat_begin(), end = flat_end();
-         it != end && it->first <= key; ++it) {
-      if (it->first == key) return &it->second;
+    for (auto it = flat_begin(), end = flat_end(); it != end && *it.key <= key;
+         ++it) {
+      if (*it.key == key) return it.ext;
     }
     return nullptr;
   } else {
@@ -1651,30 +1650,47 @@ ExtensionSet::Extension* ExtensionSet::FindOrNullInLargeMap(int key) {
       const_this->FindOrNullInLargeMap(key));
 }
 
+namespace {
+template <typename IterType>
+void CopyForward(IterType begin, IterType end, IterType dest_begin) {
+  for (; begin != end; ++begin, ++dest_begin) {
+    *dest_begin.key = *begin.key;
+    *dest_begin.ext = *begin.ext;
+  }
+}
+template <typename IterType>
+void CopyBackward(IterType begin, IterType end, IterType dest_end) {
+  while (begin != end) {
+    --dest_end;
+    --end;
+    *dest_end.key = *end.key;
+    *dest_end.ext = *end.ext;
+  }
+}
+}  // namespace
+
 std::pair<ExtensionSet::Extension*, bool> ExtensionSet::Insert(int key) {
   if (PROTOBUF_PREDICT_FALSE(is_large())) {
     auto maybe = map_.large->insert({key, Extension()});
     return {&maybe.first->second, maybe.second};
   }
-  KeyValue* end = flat_end();
-  KeyValue* it = flat_begin();
-  for (; it != end && it->first <= key; ++it) {
-    if (it->first == key) return {&it->second, false};
+  FlatIterator end = flat_end();
+  FlatIterator it = flat_begin();
+  for (; it != end && *it.key <= key; ++it) {
+    if (*it.key == key) return {it.ext, false};
   }
   if (flat_size_ < flat_capacity_) {
-    std::copy_backward(it, end, end + 1);
+    // flat_end() iterators aren't decrementable so we do this.
+    end = flat_begin() + flat_size_;
+    CopyBackward(it, end, end + 1);
     ++flat_size_;
-    it->first = key;
-    it->second = Extension();
-    return {&it->second, true};
+    *it.key = key;
+    *it.ext = Extension();
+    return {it.ext, true};
   }
   GrowCapacity(flat_size_ + 1);
   return Insert(key);
 }
-
-namespace {
-constexpr bool IsPowerOfTwo(size_t n) { return (n & (n - 1)) == 0; }
-}  // namespace
 
 void ExtensionSet::GrowCapacity(size_t minimum_new_capacity) {
   if (PROTOBUF_PREDICT_FALSE(is_large())) {
@@ -1684,39 +1700,53 @@ void ExtensionSet::GrowCapacity(size_t minimum_new_capacity) {
     return;
   }
 
-  auto new_flat_capacity = flat_capacity_;
-  do {
-    new_flat_capacity = new_flat_capacity == 0 ? 1 : new_flat_capacity * 4;
-  } while (new_flat_capacity < minimum_new_capacity);
+  // We grow by at least 4x for performance reasons.
+  minimum_new_capacity =
+      std::max<size_t>(minimum_new_capacity, flat_capacity_ * 4);
 
-  KeyValue* begin = flat_begin();
-  KeyValue* end = flat_end();
+  // Try to get as many elements as possible within the next power-of-2 bytes
+  // because ReturnArrayMemory allows reuse of power-of-2 sized blocks.
+  constexpr size_t kElementBytes = sizeof(Extension) + sizeof(int);
+  size_t new_capacity_bytes = minimum_new_capacity * kElementBytes;
+  const size_t new_capacity_bytes_next_pow2 =
+      absl::bit_ceil(new_capacity_bytes);
+  auto new_flat_capacity = minimum_new_capacity;
+  while (new_capacity_bytes + kElementBytes < new_capacity_bytes_next_pow2) {
+    ++new_flat_capacity;
+    new_capacity_bytes += kElementBytes;
+  }
+  ABSL_DCHECK_LE(new_capacity_bytes, new_capacity_bytes_next_pow2);
+  ABSL_DCHECK_GT(new_capacity_bytes + kElementBytes,
+                 new_capacity_bytes_next_pow2);
+  ABSL_DCHECK_EQ(new_capacity_bytes, FlatAllocSize(new_flat_capacity));
+
+  FlatIterator begin = flat_begin();
+  FlatIterator end = flat_end();
   AllocatedData new_map;
   Arena* const arena = arena_;
-  if (new_flat_capacity > kMaximumFlatCapacity) {
+  if (new_capacity_bytes > kMaximumFlatCapacityBytes) {
     new_map.large = Arena::Create<LargeMap>(arena);
     LargeMap::iterator hint = new_map.large->begin();
-    for (const KeyValue* it = begin; it != end; ++it) {
-      hint = new_map.large->insert(hint, {it->first, it->second});
+    for (FlatIterator it = begin; it != end; ++it) {
+      hint = new_map.large->insert(hint, {*it.key, *it.ext});
     }
     flat_size_ = static_cast<uint16_t>(-1);
     ABSL_DCHECK(is_large());
   } else {
-    new_map.flat = Arena::CreateArray<KeyValue>(arena, new_flat_capacity);
-    std::copy(begin, end, new_map.flat);
+    new_map.flat = reinterpret_cast<int*>(
+        Arena::CreateArray<char>(arena, new_capacity_bytes) +
+        FlatKeysOffset(new_flat_capacity));
+    FlatIterator dest{new_map.flat,
+                      reinterpret_cast<Extension*>(new_map.flat) - 1};
+    CopyForward(begin, end, dest);
   }
 
-  // ReturnArrayMemory is more efficient with power-of-2 bytes, and
-  // sizeof(KeyValue) is a power-of-2 on 64-bit platforms. flat_capacity_ is
-  // always a power-of-2.
-  ABSL_DCHECK(IsPowerOfTwo(sizeof(KeyValue)) || sizeof(void*) != 8)
-      << sizeof(KeyValue) << " " << sizeof(void*);
-  ABSL_DCHECK(IsPowerOfTwo(flat_capacity_));
   if (flat_capacity_ > 0) {
     if (arena == nullptr) {
-      DeleteFlatMap(begin, flat_capacity_);
+      DeleteFlatMap(begin.key, flat_capacity_);
     } else {
-      arena->ReturnArrayMemory(begin, sizeof(KeyValue) * flat_capacity_);
+      arena->ReturnArrayMemory(FlatArrayBegin(begin.key, flat_capacity_),
+                               FlatAllocSize(flat_capacity_));
     }
   }
   flat_capacity_ = new_flat_capacity;
@@ -1735,10 +1765,10 @@ void ExtensionSet::Erase(int key) {
     map_.large->erase(key);
     return;
   }
-  KeyValue* end = flat_end();
-  for (KeyValue* it = flat_begin(); it != end && it->first <= key; ++it) {
-    if (it->first == key) {
-      std::copy(it + 1, end, it);
+  FlatIterator end = flat_end();
+  for (FlatIterator it = flat_begin(); it != end && *it.key <= key; ++it) {
+    if (*it.key == key) {
+      CopyForward(it + 1, end, it);
       --flat_size_;
       return;
     }

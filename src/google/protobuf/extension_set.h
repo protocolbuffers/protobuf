@@ -184,6 +184,36 @@ class PROTOBUF_EXPORT GeneratedExtensionFinder {
   const MessageLite* extendee_;
 };
 
+// For use in generic code.
+template <typename IterType,
+          absl::enable_if_t<!std::is_same<typename IterType::value_type,
+                                          std::true_type>::value,
+                            int> = 0>
+int GetKey(IterType it) {
+  return it->first;
+}
+template <typename IterType,
+          absl::enable_if_t<!std::is_same<typename IterType::value_type,
+                                          std::true_type>::value,
+                            int> = 0>
+auto& GetExtension(IterType it) {
+  return it->second;
+}
+template <typename IterType,
+          absl::enable_if_t<std::is_same<typename IterType::value_type,
+                                         std::true_type>::value,
+                            int> = 0>
+int GetKey(IterType it) {
+  return *it.key;
+}
+template <typename IterType,
+          absl::enable_if_t<std::is_same<typename IterType::value_type,
+                                         std::true_type>::value,
+                            int> = 0>
+auto& GetExtension(IterType it) {
+  return *it.ext;
+}
+
 // Note:  extension_set_heavy.cc defines DescriptorPoolExtensionFinder for
 // finding extensions from a DescriptorPool.
 
@@ -762,10 +792,40 @@ class PROTOBUF_EXPORT ExtensionSet {
   // the number of elements is small enough that linear search is faster than
   // binary search.
 
-  struct KeyValue {
-    int first;
-    Extension second;
+  // In flat mode, we store keys and extensions in separate arrays because (a)
+  // we can save 4 bytes of padding per extension in 64-bit mode, and
+  // (b) 16 keys fit in one cache line instead of 2 keys per cache line if we
+  // store the keys and extensions in the same array. We store the extensions
+  // first and in reverse order so that the first extension is adjacent to the
+  // first key. We also tried storing the extensions in the same order as the
+  // keys, but this performed worse in load tests.
+  template <typename KeyType, typename ExtensionType>
+  struct FlatIteratorImpl {
+    // To distinguish from LargeMap iterators in generic code.
+    using value_type = std::true_type;
+    void operator++() {
+      ++key;
+      --ext;
+    }
+    void operator--() {
+      --key;
+      ++ext;
+    }
+    bool operator==(FlatIteratorImpl other) const { return key == other.key; }
+    bool operator!=(FlatIteratorImpl other) const { return key != other.key; }
+    FlatIteratorImpl operator+(ptrdiff_t diff) const {
+      return FlatIteratorImpl{key + diff, ext - diff};
+    }
+    friend ptrdiff_t operator-(FlatIteratorImpl lhs, FlatIteratorImpl rhs) {
+      return lhs.key - rhs.key;
+    }
+
+    KeyType* key;
+    // Can be uninitialized for end iterators.
+    ExtensionType* ext;
   };
+  using FlatIterator = FlatIteratorImpl<int, Extension>;
+  using ConstFlatIterator = FlatIteratorImpl<const int, const Extension>;
 
   using LargeMap = absl::btree_map<int, Extension>;
 
@@ -785,9 +845,9 @@ class PROTOBUF_EXPORT ExtensionSet {
   std::pair<Extension*, bool> Insert(int key);
 
   // Grows the flat_capacity_.
-  // If flat_capacity_ > kMaximumFlatCapacity, converts to LargeMap.
+  // If flat capacity bytes > kMaximumFlatCapacityBytes, converts to LargeMap.
   void GrowCapacity(size_t minimum_new_capacity);
-  static constexpr uint16_t kMaximumFlatCapacity = 256;
+  static constexpr uint16_t kMaximumFlatCapacityBytes = 8192;
   bool is_large() const { return static_cast<int16_t>(flat_size_) < 0; }
 
   // Removes a key from the ExtensionSet.
@@ -818,16 +878,16 @@ class PROTOBUF_EXPORT ExtensionSet {
     Iterator prefetch = it;
     // Prefetch the first kPrefetchDistance extensions.
     for (int i = 0; prefetch != end && i < kPrefetchDistance; ++prefetch, ++i) {
-      prefetch_func(prefetch->second.PrefetchPtr());
+      prefetch_func(GetExtension(prefetch).PrefetchPtr());
     }
     // For the middle extensions, call func and then prefetch the extension
     // kPrefetchDistance after the current one.
     for (; prefetch != end; ++it, ++prefetch) {
-      func(it->first, it->second);
-      prefetch_func(prefetch->second.PrefetchPtr());
+      func(GetKey(it), GetExtension(it));
+      prefetch_func(GetExtension(prefetch).PrefetchPtr());
     }
     // Call func on the rest without prefetching.
-    for (; it != end; ++it) func(it->first, it->second);
+    for (; it != end; ++it) func(GetKey(it), GetExtension(it));
   }
 
   // Similar to std::for_each, but returning void.
@@ -862,7 +922,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   template <typename Iterator, typename KeyValueFunctor>
   static void ForEachNoPrefetch(Iterator begin, Iterator end,
                                 KeyValueFunctor func) {
-    for (Iterator it = begin; it != end; ++it) func(it->first, it->second);
+    for (Iterator it = begin; it != end; ++it)
+      func(GetKey(it), GetExtension(it));
   }
 
   // Applies a functor to the <int, Extension&> pairs in sorted order.
@@ -1027,22 +1088,42 @@ class PROTOBUF_EXPORT ExtensionSet {
   static inline size_t RepeatedMessage_SpaceUsedExcludingSelfLong(
       RepeatedPtrFieldBase* field);
 
-  KeyValue* flat_begin() {
+  FlatIterator flat_begin() {
     assert(!is_large());
-    return map_.flat;
+    // Note: we need to cast to uintptr_t to avoid UB when map_.flat is null.
+    return FlatIterator{map_.flat, reinterpret_cast<Extension*>(
+                                       reinterpret_cast<uintptr_t>(map_.flat) -
+                                       sizeof(Extension))};
   }
-  const KeyValue* flat_begin() const {
+  ConstFlatIterator flat_begin() const {
     assert(!is_large());
-    return map_.flat;
+    return ConstFlatIterator{
+        map_.flat,
+        reinterpret_cast<Extension*>(reinterpret_cast<uintptr_t>(map_.flat) -
+                                     sizeof(Extension))};
   }
-  KeyValue* flat_end() {
+  // Note: returned iterators leave `ext` uninitialized for performance reasons
+  // so they don't support being decremented. If you need an end iterator that
+  // can be decremented, then use `flat_begin()+flat_size_`.
+  FlatIterator flat_end() {
     assert(!is_large());
-    return map_.flat + flat_size_;
+    return FlatIterator{map_.flat + flat_size_};
   }
-  const KeyValue* flat_end() const {
+  ConstFlatIterator flat_end() const {
     assert(!is_large());
-    return map_.flat + flat_size_;
+    return ConstFlatIterator{map_.flat + flat_size_};
   }
+
+  static size_t FlatKeysOffset(uint16_t flat_capacity) {
+    return sizeof(Extension) * flat_capacity;
+  }
+  static void* FlatArrayBegin(int* flat, uint16_t flat_capacity) {
+    return reinterpret_cast<char*>(flat) - FlatKeysOffset(flat_capacity);
+  }
+  static size_t FlatAllocSize(uint16_t flat_capacity) {
+    return (sizeof(Extension) + sizeof(int)) * flat_capacity;
+  }
+  static void DeleteFlatMap(int* flat, uint16_t flat_capacity);
 
   Arena* arena_;
 
@@ -1052,14 +1133,12 @@ class PROTOBUF_EXPORT ExtensionSet {
   uint16_t flat_capacity_;
   uint16_t flat_size_;  // negative int16_t(flat_size_) indicates is_large()
   union AllocatedData {
-    KeyValue* flat;
+    int* flat;
 
     // If flat_capacity_ > kMaximumFlatCapacity, switch to LargeMap,
     // which guarantees O(n lg n) CPU but larger constant factors.
     LargeMap* large;
   } map_;
-
-  static void DeleteFlatMap(const KeyValue* flat, uint16_t flat_capacity);
 };
 
 constexpr ExtensionSet::ExtensionSet(Arena* arena)
