@@ -16,7 +16,7 @@
 #ifndef GOOGLE_PROTOBUF_WIRE_FORMAT_H__
 #define GOOGLE_PROTOBUF_WIRE_FORMAT_H__
 
-#include "google/protobuf/stubs/common.h"
+#include "base/types.h"
 #include "absl/base/casts.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_util.h"
