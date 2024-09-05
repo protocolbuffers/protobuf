@@ -369,6 +369,8 @@ MessageLite* TcParser::AddMessage(const TcParseTableBase* table,
 template <typename TagType, bool group_coding, bool aux_is_table>
 inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
     PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 192);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 256);
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
@@ -452,6 +454,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 256);
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   const auto aux = *table->field_aux(data.aux_idx());
   auto& field = RefAt<RepeatedPtrFieldBase>(msg, data.offset());
