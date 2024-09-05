@@ -7,6 +7,11 @@ toolchain_type(
     name = "proto_toolchain_type",
 )
 
+toolchain_type(
+    name = "python_toolchain_type",
+    visibility = ["//visibility:public"],
+)
+
 bzl_library(
     name = "upb_proto_library_internal_bzl",
     srcs = [
