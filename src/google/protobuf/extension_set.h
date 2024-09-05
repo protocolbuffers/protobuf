@@ -28,6 +28,8 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "absl/base/call_once.h"
+#include "absl/base/casts.h"
+#include "absl/base/prefetch.h"
 #include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/internal_visibility.h"
@@ -555,6 +557,8 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   friend void internal::InitializeLazyExtensionSet();
 
+  static bool FieldTypeIsPointer(FieldType type);
+
   const int32_t& GetRefInt32(int number, const int32_t& default_value) const;
   const int64_t& GetRefInt64(int number, const int64_t& default_value) const;
   const uint32_t& GetRefUInt32(int number, const uint32_t& default_value) const;
@@ -670,6 +674,12 @@ class PROTOBUF_EXPORT ExtensionSet {
     size_t SpaceUsedExcludingSelfLong() const;
     bool IsInitialized(const ExtensionSet* ext_set, const MessageLite* extendee,
                        int number, Arena* arena) const;
+    const void* PrefetchPtr() const {
+      ABSL_DCHECK_EQ(is_pointer, is_repeated || FieldTypeIsPointer(type));
+      // We don't want to prefetch invalid/null pointers so if there isn't a
+      // pointer to prefetch, then return `this`.
+      return is_pointer ? absl::bit_cast<const void*>(ptr) : this;
+    }
 
     // The order of these fields packs Extension into 24 bytes when using 8
     // byte alignment. Consider this when adding or removing fields here.
@@ -708,20 +718,23 @@ class PROTOBUF_EXPORT ExtensionSet {
     FieldType type;
     bool is_repeated;
 
+    // Whether the extension is a pointer. This is used for prefetching.
+    bool is_pointer : 1;
+
     // For singular types, indicates if the extension is "cleared".  This
     // happens when an extension is set and then later cleared by the caller.
     // We want to keep the Extension object around for reuse, so instead of
     // removing it from the map, we just set is_cleared = true.  This has no
     // meaning for repeated types; for those, the size of the RepeatedField
     // simply becomes zero when cleared.
-    bool is_cleared : 4;
+    bool is_cleared : 1;
 
     // For singular message types, indicates whether lazy parsing is enabled
     // for this extension. This field is only valid when type == TYPE_MESSAGE
     // and !is_repeated because we only support lazy parsing for singular
     // message types currently. If is_lazy = true, the extension is stored in
     // lazymessage_value. Otherwise, the extension will be message_value.
-    bool is_lazy : 4;
+    bool is_lazy : 1;
 
     // For repeated types, this indicates if the [packed=true] option is set.
     bool is_packed;
@@ -779,32 +792,93 @@ class PROTOBUF_EXPORT ExtensionSet {
     return PROTOBUF_PREDICT_FALSE(is_large()) ? map_.large->size() : flat_size_;
   }
 
+  // For use as `PrefetchFunctor`s in `ForEach`.
+  struct Prefetch {
+    void operator()(const void* ptr) const { absl::PrefetchToLocalCache(ptr); }
+  };
+  struct PrefetchNta {
+    void operator()(const void* ptr) const {
+      absl::PrefetchToLocalCacheNta(ptr);
+    }
+  };
+
+  template <typename Iterator, typename KeyValueFunctor,
+            typename PrefetchFunctor>
+  static KeyValueFunctor ForEachPrefetchImpl(Iterator it, Iterator end,
+                                             KeyValueFunctor func,
+                                             PrefetchFunctor prefetch_func) {
+    // Note: based on arena's ChunkList::Cleanup().
+    // Prefetch distance 16 performs better than 8 in load tests.
+    constexpr int kPrefetchDistance = 16;
+    Iterator prefetch = it;
+    // Prefetch the first kPrefetchDistance extensions.
+    for (int i = 0; prefetch != end && i < kPrefetchDistance; ++prefetch, ++i) {
+      prefetch_func(prefetch->second.PrefetchPtr());
+    }
+    // For the middle extensions, call func and then prefetch the extension
+    // kPrefetchDistance after the current one.
+    for (; prefetch != end; ++it, ++prefetch) {
+      func(it->first, it->second);
+      prefetch_func(prefetch->second.PrefetchPtr());
+    }
+    // Call func on the rest without prefetching.
+    for (; it != end; ++it) func(it->first, it->second);
+    return std::move(func);
+  }
+
   // Similar to std::for_each.
   // Each Iterator is decomposed into ->first and ->second fields, so
   // that the KeyValueFunctor can be agnostic vis-a-vis KeyValue-vs-std::pair.
+  // Applies a functor to the <int, Extension&> pairs in sorted order and
+  // prefetches ahead.
+  template <typename KeyValueFunctor, typename PrefetchFunctor>
+  KeyValueFunctor ForEach(KeyValueFunctor func, PrefetchFunctor prefetch_func) {
+    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+      return ForEachPrefetchImpl(map_.large->begin(), map_.large->end(),
+                                 std::move(func), std::move(prefetch_func));
+    }
+    return ForEachPrefetchImpl(flat_begin(), flat_end(), std::move(func),
+                               std::move(prefetch_func));
+  }
+  // As above, but const.
+  template <typename KeyValueFunctor, typename PrefetchFunctor>
+  KeyValueFunctor ForEach(KeyValueFunctor func,
+                          PrefetchFunctor prefetch_func) const {
+    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+      return ForEachPrefetchImpl(map_.large->begin(), map_.large->end(),
+                                 std::move(func), std::move(prefetch_func));
+    }
+    return ForEachPrefetchImpl(flat_begin(), flat_end(), std::move(func),
+                               std::move(prefetch_func));
+  }
+
+  // As above, but without prefetching. This is for use in cases where we never
+  // use the pointed-to extension values in `func`.
   template <typename Iterator, typename KeyValueFunctor>
-  static KeyValueFunctor ForEach(Iterator begin, Iterator end,
-                                 KeyValueFunctor func) {
+  static KeyValueFunctor ForEachNoPrefetch(Iterator begin, Iterator end,
+                                           KeyValueFunctor func) {
     for (Iterator it = begin; it != end; ++it) func(it->first, it->second);
     return std::move(func);
   }
 
   // Applies a functor to the <int, Extension&> pairs in sorted order.
   template <typename KeyValueFunctor>
-  KeyValueFunctor ForEach(KeyValueFunctor func) {
+  KeyValueFunctor ForEachNoPrefetch(KeyValueFunctor func) {
     if (PROTOBUF_PREDICT_FALSE(is_large())) {
-      return ForEach(map_.large->begin(), map_.large->end(), std::move(func));
+      return ForEachNoPrefetch(map_.large->begin(), map_.large->end(),
+                               std::move(func));
     }
-    return ForEach(flat_begin(), flat_end(), std::move(func));
+    return ForEachNoPrefetch(flat_begin(), flat_end(), std::move(func));
   }
 
-  // Applies a functor to the <int, const Extension&> pairs in sorted order.
+  // As above, but const.
   template <typename KeyValueFunctor>
-  KeyValueFunctor ForEach(KeyValueFunctor func) const {
+  KeyValueFunctor ForEachNoPrefetch(KeyValueFunctor func) const {
     if (PROTOBUF_PREDICT_FALSE(is_large())) {
-      return ForEach(map_.large->begin(), map_.large->end(), std::move(func));
+      return ForEachNoPrefetch(map_.large->begin(), map_.large->end(),
+                               std::move(func));
     }
-    return ForEach(flat_begin(), flat_end(), std::move(func));
+    return ForEachNoPrefetch(flat_begin(), flat_end(), std::move(func));
   }
 
   // Merges existing Extension from other_extension
