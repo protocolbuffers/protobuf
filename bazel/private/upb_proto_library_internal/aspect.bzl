@@ -186,7 +186,6 @@ def _get_hint_providers(ctx, generator):
     possible_owners = []
     for generator in _GENERATORS:
         possible_owners.append(ctx.label.relative(_generate_name(ctx, generator)))
-        possible_owners.append(ctx.label.relative(_generate_name(ctx, generator)))
 
     if hasattr(cc_common, "CcSharedLibraryHintInfo"):
         return [cc_common.CcSharedLibraryHintInfo(owners = possible_owners)]
