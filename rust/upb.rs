@@ -9,15 +9,15 @@
 
 use crate::__internal::{Enum, Private, SealedInternal};
 use crate::{
-    IntoProxied, Map, MapIter, MapMut, MapView, Mut, ProtoBytes, ProtoStr, ProtoString, Proxied,
-    ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
+    IntoProxied, Map, MapIter, MapMut, MapView, Message, Mut, ProtoBytes, ProtoStr, ProtoString,
+    Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
 };
-use std::slice;
 use core::fmt::Debug;
 use std::alloc::Layout;
-use std::sync::OnceLock;
-use std::ptr::{self, NonNull};
 use std::mem::{size_of, ManuallyDrop, MaybeUninit};
+use std::ptr::{self, NonNull};
+use std::slice;
+use std::sync::OnceLock;
 
 #[cfg(bzl)]
 extern crate upb;
@@ -796,6 +796,102 @@ macro_rules! impl_ProxiedInMapValue_for_key_types {
 }
 
 impl_ProxiedInMapValue_for_key_types!(i32, u32, i64, u64, bool, ProtoString);
+
+impl<Key, MessageType> ProxiedInMapValue<Key> for MessageType
+where
+    Key: Proxied + UpbTypeConversions,
+    MessageType: Proxied + UpbTypeConversions + Message,
+{
+    fn map_new(_private: Private) -> Map<Key, Self> {
+        let arena = Arena::new();
+        let raw = unsafe {
+            upb_Map_New(
+                arena.raw(),
+                <Key as UpbTypeConversions>::upb_type(),
+                <Self as UpbTypeConversions>::upb_type(),
+            )
+        };
+
+        Map::from_inner(Private, InnerMap::new(raw, arena))
+    }
+
+    unsafe fn map_free(_private: Private, _map: &mut Map<Key, Self>) {
+        // No-op: the memory will be dropped by the arena.
+    }
+
+    fn map_clear(mut map: MapMut<Key, Self>) {
+        unsafe {
+            upb_Map_Clear(map.as_raw(Private));
+        }
+    }
+
+    fn map_len(map: MapView<Key, Self>) -> usize {
+        unsafe { upb_Map_Size(map.as_raw(Private)) }
+    }
+
+    fn map_insert(
+        mut map: MapMut<Key, Self>,
+        key: View<'_, Key>,
+        value: impl IntoProxied<Self>,
+    ) -> bool {
+        let arena = map.inner(Private).raw_arena();
+        unsafe {
+            upb_Map_InsertAndReturnIfInserted(
+                map.as_raw(Private),
+                <Key as UpbTypeConversions>::to_message_value(key),
+                <Self as UpbTypeConversions>::into_message_value_fuse_if_required(
+                    arena,
+                    value.into_proxied(Private),
+                ),
+                arena,
+            )
+        }
+    }
+
+    fn map_get<'a>(map: MapView<'a, Key, Self>, key: View<'_, Key>) -> Option<View<'a, Self>> {
+        let mut val = MaybeUninit::uninit();
+        let found = unsafe {
+            upb_Map_Get(
+                map.as_raw(Private),
+                <Key as UpbTypeConversions>::to_message_value(key),
+                val.as_mut_ptr(),
+            )
+        };
+        if !found {
+            return None;
+        }
+        Some(unsafe { <Self as UpbTypeConversions>::from_message_value(val.assume_init()) })
+    }
+
+    fn map_remove(mut map: MapMut<Key, Self>, key: View<'_, Key>) -> bool {
+        unsafe {
+            upb_Map_Delete(
+                map.as_raw(Private),
+                <Key as UpbTypeConversions>::to_message_value(key),
+                ptr::null_mut(),
+            )
+        }
+    }
+    fn map_iter(map: MapView<Key, Self>) -> MapIter<Key, Self> {
+        // SAFETY: MapView<'_,..>> guarantees its RawMap outlives '_.
+        unsafe { MapIter::from_raw(Private, RawMapIter::new(map.as_raw(Private))) }
+    }
+
+    fn map_iter_next<'a>(
+        iter: &mut MapIter<'a, Key, Self>,
+    ) -> Option<(View<'a, Key>, View<'a, Self>)> {
+        // SAFETY: MapIter<'a, ..> guarantees its RawMapIter outlives 'a.
+        unsafe { iter.as_raw_mut(Private).next_unchecked() }
+            // SAFETY: MapIter<K, V> returns key and values message values
+            //         with the variants for K and V active.
+            .map(|(k, v)| unsafe {
+                (
+                    <Key as UpbTypeConversions>::from_message_value(k),
+                    <Self as UpbTypeConversions>::from_message_value(v),
+                )
+            })
+    }
+}
 
 /// `upb_Map_Insert`, but returns a `bool` for whether insert occurred.
 ///
