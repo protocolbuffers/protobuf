@@ -280,6 +280,10 @@ constexpr bool DebugHardenForceCopyInSwap() {
   return false;
 }
 
+constexpr bool DebugHardenForceCopyInMove() {
+  return false;
+}
+
 // Returns true if pointers are 8B aligned, leaving least significant 3 bits
 // available.
 inline constexpr bool PtrIsAtLeast8BAligned() { return alignof(void*) >= 8; }

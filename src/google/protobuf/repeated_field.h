@@ -705,17 +705,13 @@ inline RepeatedField<Element>& RepeatedField<Element>::operator=(
 template <typename Element>
 inline RepeatedField<Element>::RepeatedField(Arena* arena, RepeatedField&& rhs)
     : RepeatedField(arena) {
-#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-  CopyFrom(rhs);
-#else   // PROTOBUF_FORCE_COPY_IN_MOVE
-  // We don't just call Swap(&rhs) here because it would perform 3 copies if rhs
-  // is on a different arena.
-  if (arena != rhs.GetArena()) {
-    CopyFrom(rhs);
-  } else {
+  if (internal::CanMoveWithInternalSwap(arena, rhs.GetArena())) {
     InternalSwap(&rhs);
+  } else {
+    // We don't just call Swap(&rhs) here because it would perform 3 copies if
+    // rhs is on a different arena.
+    CopyFrom(rhs);
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
 }
 
 template <typename Element>
@@ -724,15 +720,10 @@ inline RepeatedField<Element>& RepeatedField<Element>::operator=(
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // the two fields are on different arenas.
   if (this != &other) {
-    const Arena* arena = GetArena();
-    if (arena != other.GetArena()
-#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        || arena == nullptr
-#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
-    ) {
-      CopyFrom(other);
-    } else {
+    if (internal::CanMoveWithInternalSwap(GetArena(), other.GetArena())) {
       InternalSwap(&other);
+    } else {
+      CopyFrom(other);
     }
   }
   return *this;

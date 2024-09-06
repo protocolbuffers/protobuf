@@ -1306,17 +1306,13 @@ template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField(Arena* arena,
                                                    RepeatedPtrField&& rhs)
     : RepeatedPtrField(arena) {
-#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-  CopyFrom(rhs);
-#else   // PROTOBUF_FORCE_COPY_IN_MOVE
   // We don't just call Swap(&rhs) here because it would perform 3 copies if rhs
   // is on a different arena.
-  if (arena != rhs.GetArena()) {
-    CopyFrom(rhs);
-  } else {
+  if (internal::CanMoveWithInternalSwap(arena, rhs.GetArena())) {
     InternalSwap(&rhs);
+  } else {
+    CopyFrom(rhs);
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
 }
 
 template <typename Element>
@@ -1325,14 +1321,10 @@ inline RepeatedPtrField<Element>& RepeatedPtrField<Element>::operator=(
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // the two fields are on different arenas.
   if (this != &other) {
-    if (GetArena() != other.GetArena()
-#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        || GetArena() == nullptr
-#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
-    ) {
-      CopyFrom(other);
-    } else {
+    if (internal::CanMoveWithInternalSwap(GetArena(), other.GetArena())) {
       InternalSwap(&other);
+    } else {
+      CopyFrom(other);
     }
   }
   return *this;
