@@ -7,7 +7,7 @@
 
 use super::opaque_pointee::opaque_pointee;
 use super::{upb_MessageValue, CType, RawArena};
-use std::ptr::NonNull;
+use core::ptr::NonNull;
 
 opaque_pointee!(upb_Map);
 pub type RawMap = NonNull<upb_Map>;

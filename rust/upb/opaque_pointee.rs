@@ -15,7 +15,7 @@ macro_rules! opaque_pointee {
         #[repr(C)]
         pub struct $name {
             _data: [u8; 0],
-            _marker: std::marker::PhantomData<(*mut u8, std::marker::PhantomPinned)>,
+            _marker: core::marker::PhantomData<(*mut u8, core::marker::PhantomPinned)>,
         }
     };
 }

@@ -12,8 +12,8 @@ use super::{RawArray, RawMap, RawMessage, StringView};
 #[derive(Clone, Copy)]
 pub union upb_MessageValue {
     pub bool_val: bool,
-    pub float_val: std::ffi::c_float,
-    pub double_val: std::ffi::c_double,
+    pub float_val: core::ffi::c_float,
+    pub double_val: core::ffi::c_double,
     pub uint32_val: u32,
     pub int32_val: i32,
     pub uint64_val: u64,
@@ -24,14 +24,14 @@ pub union upb_MessageValue {
     pub msg_val: Option<RawMessage>,
     pub str_val: StringView,
 
-    tagged_msg_val: *const std::ffi::c_void,
+    tagged_msg_val: *const core::ffi::c_void,
 }
 
 impl upb_MessageValue {
     pub fn zeroed() -> Self {
         // SAFETY: zero bytes is a valid representation for at least one value in the
         // union (actually valid for all of them).
-        unsafe { std::mem::zeroed() }
+        unsafe { core::mem::zeroed() }
     }
 }
 

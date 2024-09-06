@@ -10,7 +10,7 @@ use super::{
     upb_ExtensionRegistry, upb_MiniTable, upb_MiniTableField, RawArena, RawArray, RawMap,
     StringView,
 };
-use std::ptr::NonNull;
+use core::ptr::NonNull;
 
 opaque_pointee!(upb_Message);
 pub type RawMessage = NonNull<upb_Message>;
@@ -215,7 +215,7 @@ extern "C" {
     pub fn upb_Message_SetBaseField(
         m: RawMessage,
         f: *const upb_MiniTableField,
-        val: *const std::ffi::c_void,
+        val: *const core::ffi::c_void,
     );
 
     /// # Safety

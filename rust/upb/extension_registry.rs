@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use super::opaque_pointee::opaque_pointee;
-use std::ptr::NonNull;
+use core::ptr::NonNull;
 
 opaque_pointee!(upb_ExtensionRegistry);
 pub type RawExtensionRegistry = NonNull<upb_ExtensionRegistry>;

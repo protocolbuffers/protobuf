@@ -50,7 +50,7 @@ pub unsafe fn encode(
     mini_table: *const upb_MiniTable,
 ) -> Result<Vec<u8>, EncodeStatus> {
     let arena = Arena::new();
-    let mut buf: *mut u8 = std::ptr::null_mut();
+    let mut buf: *mut u8 = core::ptr::null_mut();
     let mut len = 0usize;
 
     // SAFETY:
@@ -61,7 +61,7 @@ pub unsafe fn encode(
     if status == EncodeStatus::Ok {
         assert!(!buf.is_null()); // EncodeStatus Ok should never return NULL data, even for len=0.
         // SAFETY: upb guarantees that `buf` is valid to read for `len`.
-        Ok(unsafe { &*std::ptr::slice_from_raw_parts(buf, len) }.to_vec())
+        Ok(unsafe { &*core::ptr::slice_from_raw_parts(buf, len) }.to_vec())
     } else {
         Err(status)
     }
@@ -88,7 +88,7 @@ pub unsafe fn decode(
     // - `buf` is legally readable for at least `buf_size` bytes.
     // - `extreg` is null.
     let status =
-        unsafe { upb_Decode(buf, len, msg, mini_table, std::ptr::null(), options, arena.raw()) };
+        unsafe { upb_Decode(buf, len, msg, mini_table, core::ptr::null(), options, arena.raw()) };
     match status {
         DecodeStatus::Ok => Ok(()),
         _ => Err(status),

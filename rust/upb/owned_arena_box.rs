@@ -6,9 +6,9 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use super::Arena;
-use std::fmt::{self, Debug};
-use std::ops::{Deref, DerefMut};
-use std::ptr::NonNull;
+use core::fmt::{self, Debug};
+use core::ops::{Deref, DerefMut};
+use core::ptr::NonNull;
 
 /// An 'owned' T, similar to a Box<T> where the T is data
 /// held in a upb Arena. By holding the data pointer and a corresponding arena
@@ -18,7 +18,7 @@ use std::ptr::NonNull;
 /// inside `arena`. This avoids typical concerns of self-referential data
 /// structures because `arena` modifications (other than drop) will never
 /// invalidate `data`, and `data` and `arena` are both behind indirections which
-/// avoids any concern with std::mem::swap.
+/// avoids any concern with core::mem::swap.
 pub struct OwnedArenaBox<T: ?Sized + 'static> {
     data: NonNull<T>,
     arena: Arena,
@@ -87,7 +87,7 @@ impl<T: Debug + 'static> Debug for OwnedArenaBox<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::str;
+    use core::str;
 
     #[test]
     fn test_byte_slice_pointer_roundtrip() {
@@ -101,7 +101,7 @@ mod tests {
     fn test_alloc_str_roundtrip() {
         let arena = Arena::new();
         let s: &str = "Hello";
-        let arena_alloc_str: NonNull<str> = arena.copy_str_in(s).into();
+        let arena_alloc_str: NonNull<str> = arena.copy_str_in(s).unwrap().into();
         let owned_data = unsafe { OwnedArenaBox::new(arena_alloc_str, arena) };
         assert_eq!(&*owned_data, s);
     }
@@ -109,7 +109,7 @@ mod tests {
     #[test]
     fn test_sized_type_roundtrip() {
         let arena = Arena::new();
-        let arena_alloc_u32: NonNull<u32> = arena.copy_in(&7u32).into();
+        let arena_alloc_u32: NonNull<u32> = arena.copy_in(&7u32).unwrap().into();
         let mut owned_data = unsafe { OwnedArenaBox::new(arena_alloc_u32, arena) };
         assert_eq!(*owned_data, 7);
         *owned_data = 8;

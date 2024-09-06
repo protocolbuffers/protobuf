@@ -13,7 +13,6 @@ use crate::{
     Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
 };
 use core::fmt::Debug;
-use std::alloc::Layout;
 use std::mem::{size_of, ManuallyDrop, MaybeUninit};
 use std::ptr::{self, NonNull};
 use std::slice;
@@ -133,21 +132,6 @@ impl<'msg> MutatorMessageRef<'msg> {
     }
 }
 
-fn copy_bytes_in_arena<'msg>(arena: &'msg Arena, val: &'msg [u8]) -> &'msg [u8] {
-    // SAFETY: the alignment of `[u8]` is less than `UPB_MALLOC_ALIGN`.
-    let new_alloc = unsafe { arena.alloc(Layout::for_value(val)) };
-    debug_assert_eq!(new_alloc.len(), val.len());
-
-    let start: *mut u8 = new_alloc.as_mut_ptr().cast();
-    // SAFETY:
-    // - `new_alloc` is writeable for `val.len()` bytes.
-    // - After the copy, `new_alloc` is initialized for `val.len()` bytes.
-    unsafe {
-        val.as_ptr().copy_to_nonoverlapping(start, val.len());
-        &*(new_alloc as *mut _ as *mut [u8])
-    }
-}
-
 /// Kernel-specific owned `string` and `bytes` field type.
 #[doc(hidden)]
 pub struct InnerProtoString(OwnedArenaBox<[u8]>);
@@ -167,7 +151,7 @@ impl InnerProtoString {
 impl From<&[u8]> for InnerProtoString {
     fn from(val: &[u8]) -> InnerProtoString {
         let arena = Arena::new();
-        let in_arena_copy = arena.copy_slice_in(val);
+        let in_arena_copy = arena.copy_slice_in(val).unwrap();
         // SAFETY:
         // - `in_arena_copy` is valid slice that will live for `arena`'s lifetime and
         //   this is the only reference in the program to it.
@@ -354,7 +338,7 @@ macro_rules! impl_repeated_bytes {
                             len
                         );
                         for (src_ptr, dest_ptr) in src_ptrs.iter().zip(dest_ptrs) {
-                            *dest_ptr = copy_bytes_in_arena(&arena, src_ptr.as_ref()).into();
+                            *dest_ptr = arena.copy_slice_in(src_ptr.as_ref()).unwrap().into();
                         }
                     }
                 }
