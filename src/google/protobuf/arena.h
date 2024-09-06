@@ -98,6 +98,16 @@ inline bool CanUseInternalSwap(Arena* lhs, Arena* rhs) {
   }
 }
 
+inline bool CanMoveWithInternalSwap(Arena* lhs, Arena* rhs) {
+  if (DebugHardenForceCopyInMove()) {
+    // We force copy in move when we are not using an arena.
+    // If we did with an arena we would grow arena usage too much.
+    return lhs != nullptr && lhs == rhs;
+  } else {
+    return lhs == rhs;
+  }
+}
+
 }  // namespace internal
 
 // ArenaOptions provides optional additional parameters to arena construction

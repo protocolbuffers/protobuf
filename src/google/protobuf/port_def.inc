@@ -398,10 +398,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_RESTRICT
 #endif
 
-#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-#error PROTOBUF_FORCE_COPY_IN_MOVE was previously defined
-#endif
-
 #ifdef PROTOBUF_FUZZ_MESSAGE_SPACE_USED_LONG
 #error PROTOBUF_FUZZ_MESSAGE_SPACE_USED_LONG was previously defined
 #endif
