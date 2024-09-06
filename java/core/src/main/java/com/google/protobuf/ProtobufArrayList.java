@@ -143,7 +143,7 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
     // To avoid quadratic copying when calling .addAllFoo(List) in a loop, we must not size to
     // exactly the requested capacity, but must exponentially grow instead. This is similar
     // behaviour to ArrayList.
-    int n = size;
+    int n = array.length;
     while (n < minCapacity) {
       n = growSize(n);
     }
