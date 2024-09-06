@@ -219,11 +219,7 @@ class PROTOBUF_EXPORT Option final
   }
   inline Option& operator=(Option&& from) noexcept {
     if (this == &from) return *this;
-    if (GetArena() == from.GetArena()
-#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetArena() != nullptr
-#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
-    ) {
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -431,11 +427,7 @@ class PROTOBUF_EXPORT Field final
   }
   inline Field& operator=(Field&& from) noexcept {
     if (this == &from) return *this;
-    if (GetArena() == from.GetArena()
-#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetArena() != nullptr
-#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
-    ) {
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -815,11 +807,7 @@ class PROTOBUF_EXPORT EnumValue final
   }
   inline EnumValue& operator=(EnumValue&& from) noexcept {
     if (this == &from) return *this;
-    if (GetArena() == from.GetArena()
-#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetArena() != nullptr
-#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
-    ) {
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -1040,11 +1028,7 @@ class PROTOBUF_EXPORT Type final
   }
   inline Type& operator=(Type&& from) noexcept {
     if (this == &from) return *this;
-    if (GetArena() == from.GetArena()
-#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetArena() != nullptr
-#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
-    ) {
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -1344,11 +1328,7 @@ class PROTOBUF_EXPORT Enum final
   }
   inline Enum& operator=(Enum&& from) noexcept {
     if (this == &from) return *this;
-    if (GetArena() == from.GetArena()
-#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetArena() != nullptr
-#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
-    ) {
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);

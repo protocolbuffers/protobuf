@@ -93,11 +93,7 @@ class PROTOBUF_EXPORT Mixin final
   }
   inline Mixin& operator=(Mixin&& from) noexcept {
     if (this == &from) return *this;
-    if (GetArena() == from.GetArena()
-#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetArena() != nullptr
-#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
-    ) {
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -305,11 +301,7 @@ class PROTOBUF_EXPORT Method final
   }
   inline Method& operator=(Method&& from) noexcept {
     if (this == &from) return *this;
-    if (GetArena() == from.GetArena()
-#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetArena() != nullptr
-#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
-    ) {
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -590,11 +582,7 @@ class PROTOBUF_EXPORT Api final
   }
   inline Api& operator=(Api&& from) noexcept {
     if (this == &from) return *this;
-    if (GetArena() == from.GetArena()
-#ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetArena() != nullptr
-#endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
-    ) {
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
       InternalSwap(&from);
     } else {
       CopyFrom(from);
