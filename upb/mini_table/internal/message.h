@@ -71,7 +71,10 @@ struct upb_MiniTable {
   _upb_FastTable_Entry UPB_PRIVATE(fasttable)[];
 #endif
 };
-// LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/mini_table.ts)
+// LINT.ThenChange(
+//     //depot/google3/third_party/upb/bits/typescript/mini_table.ts,
+//     //depot/google3/third_party/upb/rust/mini_table/message.rs
+// )
 
 #ifdef __cplusplus
 extern "C" {

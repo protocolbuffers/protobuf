@@ -58,9 +58,8 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     pub fn $field$($view_self$)
                       -> $pb$::MapView<$view_lifetime$, $Key$, $Value$> {
                       unsafe {
-                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                          $upb_mt_field_index$);
+                        let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
+                        let f = mt.field_by_index_unchecked($upb_mt_field_index$);
                         $pbr$::upb_Message_GetMap(self.raw_msg(), f)
                           .map_or_else(
                             $pbr$::empty_map::<$Key$, $Value$>,
@@ -91,16 +90,8 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                       unsafe {
                         let parent_mini_table =
                           <Self as $pbr$::AssociatedMiniTable>::mini_table();
-
-                        let f =
-                          $pbr$::upb_MiniTable_GetFieldByIndex(
-                              parent_mini_table,
-                              $upb_mt_field_index$);
-
-                        let map_entry_mini_table =
-                          $pbr$::upb_MiniTable_SubMessage(
-                              parent_mini_table,
-                              f);
+                        let f = parent_mini_table.field_by_index_unchecked($upb_mt_field_index$);
+                        let map_entry_mini_table = parent_mini_table.sub_message(f).unwrap();
 
                         let raw_map =
                           $pbr$::upb_Message_GetOrCreateMutableMap(

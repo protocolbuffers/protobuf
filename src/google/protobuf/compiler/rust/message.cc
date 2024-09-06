@@ -286,22 +286,22 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg) {
     ctx.Emit({{"minitable", UpbMiniTableName(msg)}}, R"rs(
       unsafe impl $pbr$::AssociatedMiniTable for $Msg$ {
         #[inline(always)]
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
-          $std$::ptr::addr_of!($minitable$)
+        fn mini_table() -> &'static $pbr$::mini_table::MiniTable {
+          unsafe { &$minitable$ }
         }
       }
 
       unsafe impl $pbr$::AssociatedMiniTable for $Msg$View<'_> {
         #[inline(always)]
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
-          $std$::ptr::addr_of!($minitable$)
+        fn mini_table() -> &'static $pbr$::mini_table::MiniTable {
+          unsafe { &$minitable$ }
         }
       }
 
       unsafe impl $pbr$::AssociatedMiniTable for $Msg$Mut<'_> {
         #[inline(always)]
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
-          $std$::ptr::addr_of!($minitable$)
+        fn mini_table() -> &'static $pbr$::mini_table::MiniTable {
+          unsafe { &$minitable$ }
         }
       }
     )rs");
@@ -1191,7 +1191,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             /// Opaque static extern for this message's MiniTable, generated
             /// by the upb C MiniTable codegen. The only valid way to
             /// reference this static is with `std::ptr::addr_of!(..)`.
-            static $minitable_symbol_name$: $pbr$::upb_MiniTable;
+            static $minitable_symbol_name$: $pbr$::mini_table::MiniTable;
           }
       )rs");
   }

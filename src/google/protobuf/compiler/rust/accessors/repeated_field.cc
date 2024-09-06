@@ -39,9 +39,8 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                ctx.Emit(R"rs(
                     pub fn $field$($view_self$) -> $pb$::RepeatedView<$view_lifetime$, $RsType$> {
                       unsafe {
-                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                          $upb_mt_field_index$);
+                        let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
+                        let f = mt.field_by_index_unchecked($upb_mt_field_index$);
                         $pbr$::upb_Message_GetArray(
                           self.raw_msg(), f)
                       }.map_or_else(
@@ -74,9 +73,8 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                ctx.Emit({}, R"rs(
                     pub fn $field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $RsType$> {
                       unsafe {
-                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                          $upb_mt_field_index$);
+                        let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
+                        let f = mt.field_by_index_unchecked($upb_mt_field_index$);
                         let raw_array = $pbr$::upb_Message_GetOrCreateMutableArray(
                               self.raw_msg(),
                               f,
@@ -117,10 +115,8 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                ctx.Emit(R"rs(
                     pub fn set_$raw_field_name$(&mut self, src: impl $pb$::IntoProxied<$pb$::Repeated<$RsType$>>) {
                       let minitable_field = unsafe {
-                        $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                          $upb_mt_field_index$
-                        )
+                        let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
+                        mt.field_by_index_unchecked($upb_mt_field_index$)
                       };
                       let val = src.into_proxied($pbi$::Private);
                       let inner = val.inner($pbi$::Private);

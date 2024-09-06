@@ -65,9 +65,8 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                ctx.Emit(R"rs(
                   pub fn $field$($view_self$) -> $pb$::View<$view_lifetime$, $proxied_type$> {
                     let str_view = unsafe {
-                      let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                          $upb_mt_field_index$);
+                      let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
+                      let f = mt.field_by_index_unchecked($upb_mt_field_index$);
                       $pbr$::upb_Message_GetString(
                           self.raw_msg(), f, ($default_value$).into())
                     };
@@ -101,9 +100,8 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 parent_arena.fuse(&arena);
 
                 unsafe {
-                  let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                            <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                            $upb_mt_field_index$);
+                  let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
+                  let f = mt.field_by_index_unchecked($upb_mt_field_index$);
                   $pbr$::upb_Message_SetBaseFieldString(
                     self.as_mutator_message_ref($pbi$::Private).msg(),
                     f,

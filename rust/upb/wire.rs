@@ -5,7 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use super::{upb_ExtensionRegistry, upb_MiniTable, Arena, RawArena, RawMessage};
+use super::mini_table::MiniTable;
+use super::{upb_ExtensionRegistry, Arena, RawArena, RawMessage};
 
 // LINT.IfChange(encode_status)
 #[repr(C)]
@@ -47,7 +48,7 @@ enum DecodeOption {
 /// - `msg` must be associated with `mini_table`.
 pub unsafe fn encode(
     msg: RawMessage,
-    mini_table: *const upb_MiniTable,
+    mini_table: *const MiniTable,
 ) -> Result<Vec<u8>, EncodeStatus> {
     let arena = Arena::new();
     let mut buf: *mut u8 = core::ptr::null_mut();
@@ -76,7 +77,7 @@ pub unsafe fn encode(
 pub unsafe fn decode(
     buf: &[u8],
     msg: RawMessage,
-    mini_table: *const upb_MiniTable,
+    mini_table: *const MiniTable,
     arena: &Arena,
 ) -> Result<(), DecodeStatus> {
     let len = buf.len();
@@ -101,7 +102,7 @@ extern "C" {
     // - `buf` and `buf_size` are legally writable.
     pub fn upb_Encode(
         msg: RawMessage,
-        mini_table: *const upb_MiniTable,
+        mini_table: *const MiniTable,
         options: i32,
         arena: RawArena,
         buf: *mut *mut u8,
@@ -116,7 +117,7 @@ extern "C" {
         buf: *const u8,
         buf_size: usize,
         msg: RawMessage,
-        mini_table: *const upb_MiniTable,
+        mini_table: *const MiniTable,
         extreg: *const upb_ExtensionRegistry,
         options: i32,
         arena: RawArena,

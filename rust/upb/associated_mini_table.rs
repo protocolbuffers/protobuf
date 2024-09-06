@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use super::upb_MiniTable;
+use super::mini_table::MiniTable;
 
 /// A trait for types which have a constant associated MiniTable (e.g.
 /// generated messages, and their mut and view proxy types).
@@ -32,5 +32,5 @@ use super::upb_MiniTable;
 ///   always have the same non-null value, the underlying pointee should never
 ///   be modified and should have 'static lifetime).
 pub unsafe trait AssociatedMiniTable {
-    fn mini_table() -> *const upb_MiniTable;
+    fn mini_table() -> &'static MiniTable;
 }

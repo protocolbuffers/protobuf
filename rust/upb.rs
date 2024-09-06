@@ -25,6 +25,7 @@ use crate::upb;
 
 // Temporarily 'pub' since a lot of gencode is directly calling any of the ffi
 // fns.
+pub use upb::mini_table::MiniTable;
 pub use upb::*;
 
 pub type RawArena = upb::RawArena;
@@ -375,7 +376,7 @@ impl_repeated_bytes!((ProtoString, upb::CType::String), (ProtoBytes, upb::CType:
 pub unsafe fn repeated_message_copy_from<T: ProxiedInRepeated>(
     src: View<Repeated<T>>,
     mut dest: Mut<Repeated<T>>,
-    minitable: *const upb_MiniTable,
+    minitable: *const MiniTable,
 ) {
     // SAFETY:
     // - `src.as_raw()` is a valid `const upb_Array*`.

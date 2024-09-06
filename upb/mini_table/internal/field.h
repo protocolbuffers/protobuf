@@ -212,7 +212,10 @@ UPB_INLINE size_t UPB_PRIVATE(_upb_MiniTableField_ElemSizeLg2)(
   return UPB_PRIVATE(_upb_FieldType_SizeLg2)(field_type);
 }
 
-// LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/mini_table_field.ts)
+// LINT.ThenChange(
+//     //depot/google3/third_party/upb/bits/typescript/mini_table_field.ts
+//     //depot/google3/third_party/upb/rust/mini_table/field.rs
+// )
 
 #ifdef __cplusplus
 } /* extern "C" */

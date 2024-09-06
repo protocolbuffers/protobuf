@@ -13,11 +13,17 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+// LINT.IfChange(struct_definition)
+
 struct upb_MiniTableEnum {
   uint32_t UPB_PRIVATE(mask_limit);   // Highest that can be tested with mask.
   uint32_t UPB_PRIVATE(value_count);  // Number of values after the bitfield.
   uint32_t UPB_PRIVATE(data)[];       // Bitmask + enumerated values follow.
 };
+
+// LINT.ThenChange(
+//     //depot/google3/third_party/upb/rust/mini_table/enum_.rs
+// )
 
 #ifdef __cplusplus
 extern "C" {

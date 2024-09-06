@@ -88,8 +88,7 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     pub fn $field$($view_self$) -> $Scalar$ {
                       unsafe {
                         let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
-                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                            mt, $upb_mt_field_index$);
+                        let f = mt.field_by_index_unchecked($upb_mt_field_index$);
 
                         // TODO: b/361751487: This .into() and .try_into() is only
                         // here for the enum<->i32 case, we should avoid it for
@@ -118,8 +117,8 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   pub fn set_$raw_field_name$(&mut self, val: $Scalar$) {
                     unsafe {
                       let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
-                      let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                          mt, $upb_mt_field_index$);
+                      let f = mt.field_by_index_unchecked($upb_mt_field_index$);
+
                       // TODO: b/361751487: This .into() is only here
                       // here for the enum<->i32 case, we should avoid it for
                       // other primitives where the types naturally match

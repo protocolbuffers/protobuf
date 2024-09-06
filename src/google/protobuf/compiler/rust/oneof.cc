@@ -244,11 +244,9 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof,
                   UpbMiniTableFieldIndex(*oneof.field(0))}},
                 R"rs(
                 let field_num = unsafe {
-                  let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                      <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                      $upb_mt_field_index$);
-                  $pbr$::upb_Message_WhichOneofFieldNumber(
-                        self.raw_msg(), f)
+                  let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
+                  let f = mt.field_by_index_unchecked($upb_mt_field_index$);
+                  $pbr$::upb_Message_WhichOneofFieldNumber(self.raw_msg(), f)
                 };
                 unsafe {
                   $oneof_enum_module$$case_enum_name$::try_from(field_num).unwrap_unchecked()

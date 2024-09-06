@@ -46,9 +46,8 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 if (ctx.is_upb()) {
                   ctx.Emit(R"rs(
               let submsg = unsafe {
-                let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                            <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                            $upb_mt_field_index$);
+                let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
+                let f = mt.field_by_index_unchecked($upb_mt_field_index$);
                 $pbr$::upb_Message_GetMessage(self.raw_msg(), f)
               };
               //~ For upb, getters return null if the field is unset, so we need
@@ -93,7 +92,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                ctx.Emit({}, R"rs(
                   let raw_msg = unsafe {
                     let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
-                    let f = $pbr$::upb_MiniTable_GetFieldByIndex(mt, $upb_mt_field_index$);
+                    let f = mt.field_by_index_unchecked($upb_mt_field_index$);
                     $pbr$::upb_Message_GetOrCreateMutableMessage(
                         self.raw_msg(), mt, f, self.arena().raw()).unwrap()
                   };
@@ -127,9 +126,8 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     .fuse(msg.as_mutator_message_ref($pbi$::Private).arena());
 
                   unsafe {
-                    let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                              <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                              $upb_mt_field_index$);
+                    let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
+                    let f = mt.field_by_index_unchecked($upb_mt_field_index$);
                     $pbr$::upb_Message_SetBaseFieldMessage(
                       self.as_mutator_message_ref($pbi$::Private).msg(),
                       f,

@@ -5,7 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use super::{upb_MiniTable, RawMessage};
+use super::mini_table::MiniTable;
+use super::RawMessage;
 
 extern "C" {
     /// Returns the minimum needed length (excluding NULL) that `buf` has to be
@@ -18,7 +19,7 @@ extern "C" {
     ///   `size` is 0)
     fn upb_DebugString(
         msg: RawMessage,
-        mt: *const upb_MiniTable,
+        mt: *const MiniTable,
         options: i32,
         buf: *mut u8,
         size: usize,
@@ -42,7 +43,7 @@ enum Options {
 ///
 /// # Safety
 /// - `mt` must correspond to the `msg`s minitable.
-pub unsafe fn debug_string(msg: RawMessage, mt: *const upb_MiniTable) -> String {
+pub unsafe fn debug_string(msg: RawMessage, mt: *const MiniTable) -> String {
     // Only find out the length first to then allocate a buffer of the minimum size
     // needed.
     // SAFETY:
