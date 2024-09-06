@@ -1705,26 +1705,7 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
     HANDLE_FIXED_TYPE(BOOL, Bool)
 
     HANDLE_TYPE(GROUP, Group, Message)
-
-    case FieldDescriptor::TYPE_MESSAGE: {
-      if (field->is_repeated()) {
-        for (size_t j = 0; j < count; ++j) {
-          data_size += WireFormatLite::MessageSize(
-              message_reflection->GetRepeatedMessage(message, field, j));
-        }
-        break;
-      }
-      if (field->is_extension()) {
-        data_size += WireFormatLite::LengthDelimitedSize(
-            message_reflection->GetExtensionSet(message).GetMessageByteSizeLong(
-                field->number()));
-        break;
-      }
-      data_size += WireFormatLite::MessageSize(
-          message_reflection->GetMessage(message, field));
-      break;
-    }
-
+    HANDLE_TYPE(MESSAGE, Message, Message)
 #undef HANDLE_TYPE
 #undef HANDLE_FIXED_TYPE
 
