@@ -101,8 +101,15 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     int n = fields.getNumArrayEntries(); // Optimisation: hoist out of hot loop.
     for (int i = 0; i < n; ++i) {
       Entry<T, Object> entry = fields.getArrayEntryAt(i);
-      if (entry.getValue() instanceof GeneratedMessageLite) {
-        ((GeneratedMessageLite<?, ?>) entry.getValue()).makeImmutable();
+      Object value = entry.getValue();
+      if (value instanceof GeneratedMessageLite) {
+        ((GeneratedMessageLite<?, ?>) value).makeImmutable();
+      }
+    }
+    for (Map.Entry<T, Object> entry : fields.getOverflowEntries()) {
+      Object value = entry.getValue();
+      if (value instanceof GeneratedMessageLite) {
+        ((GeneratedMessageLite<?, ?>) value).makeImmutable();
       }
     }
     fields.makeImmutable();
