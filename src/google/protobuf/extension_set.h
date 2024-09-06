@@ -576,6 +576,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   const bool& GetRefRepeatedBool(int number, int index) const;
   const int& GetRefRepeatedEnum(int number, int index) const;
 
+  size_t GetMessageByteSizeLong(int number) const;
+
   // Implementation of _InternalSerialize for non-empty map_.
   uint8_t* _InternalSerializeImpl(const MessageLite* extendee,
                                   int start_field_number, int end_field_number,
