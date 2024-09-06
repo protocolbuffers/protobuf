@@ -39,10 +39,10 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                ctx.Emit(R"rs(
                     pub fn $field$($view_self$) -> $pb$::RepeatedView<$view_lifetime$, $RsType$> {
                       unsafe {
-                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                        let f = $upb_sys$::upb_MiniTable_GetFieldByIndex(
+                          <Self as $upb$::AssociatedMiniTable>::mini_table(),
                           $upb_mt_field_index$);
-                        $pbr$::upb_Message_GetArray(
+                        $upb_sys$::upb_Message_GetArray(
                           self.raw_msg(), f)
                       }.map_or_else(
                           $pbr$::empty_array::<$RsType$>,
@@ -74,10 +74,10 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                ctx.Emit({}, R"rs(
                     pub fn $field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $RsType$> {
                       unsafe {
-                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                        let f = $upb_sys$::upb_MiniTable_GetFieldByIndex(
+                          <Self as $upb$::AssociatedMiniTable>::mini_table(),
                           $upb_mt_field_index$);
-                        let raw_array = $pbr$::upb_Message_GetOrCreateMutableArray(
+                        let raw_array = $upb_sys$::upb_Message_GetOrCreateMutableArray(
                               self.raw_msg(),
                               f,
                               self.arena().raw(),
@@ -117,8 +117,8 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                ctx.Emit(R"rs(
                     pub fn set_$raw_field_name$(&mut self, src: impl $pb$::IntoProxied<$pb$::Repeated<$RsType$>>) {
                       let minitable_field = unsafe {
-                        $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                        $upb_sys$::upb_MiniTable_GetFieldByIndex(
+                          <Self as $upb$::AssociatedMiniTable>::mini_table(),
                           $upb_mt_field_index$
                         )
                       };
@@ -129,7 +129,7 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                       unsafe {
                           let value_ptr: *const *const std::ffi::c_void =
                               &(inner.raw().as_ptr() as *const std::ffi::c_void);
-                          $pbr$::upb_Message_SetBaseField(self.raw_msg(),
+                          $upb_sys$::upb_Message_SetBaseField(self.raw_msg(),
                             minitable_field,
                             value_ptr as *const std::ffi::c_void);
                       }

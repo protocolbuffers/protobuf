@@ -244,10 +244,10 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof,
                   UpbMiniTableFieldIndex(*oneof.field(0))}},
                 R"rs(
                 let field_num = unsafe {
-                  let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                      <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                  let f = $upb_sys$::upb_MiniTable_GetFieldByIndex(
+                      <Self as $upb$::AssociatedMiniTable>::mini_table(),
                       $upb_mt_field_index$);
-                  $pbr$::upb_Message_WhichOneofFieldNumber(
+                  $upb_sys$::upb_Message_WhichOneofFieldNumber(
                         self.raw_msg(), f)
                 };
                 unsafe {

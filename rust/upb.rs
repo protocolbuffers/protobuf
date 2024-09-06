@@ -20,19 +20,18 @@ use std::slice;
 use std::sync::OnceLock;
 
 #[cfg(bzl)]
-extern crate upb;
+pub extern crate upb;
 #[cfg(not(bzl))]
-use crate::upb;
+pub use crate::upb;
 
-// Temporarily 'pub' since a lot of gencode is directly calling any of the ffi
-// fns.
-pub use upb::*;
+use upb::*;
+// use sys;
 
-pub type RawArena = upb::RawArena;
-pub type RawMessage = upb::RawMessage;
-pub type RawRepeatedField = upb::RawArray;
-pub type RawMap = upb::RawMap;
-pub type PtrAndLen = upb::StringView;
+pub type RawArena = sys::RawArena;
+pub type RawMessage = sys::RawMessage;
+pub type RawRepeatedField = sys::RawArray;
+pub type RawMap = sys::RawMap;
+pub type PtrAndLen = sys::StringView;
 
 impl From<&ProtoStr> for PtrAndLen {
     fn from(s: &ProtoStr) -> Self {
@@ -227,7 +226,7 @@ macro_rules! impl_repeated_base {
             let arena = Arena::new();
             Repeated::from_inner(
                 Private,
-                InnerRepeated { raw: unsafe { upb_Array_New(arena.raw(), $upb_tag) }, arena },
+                InnerRepeated { raw: unsafe { sys::upb_Array_New(arena.raw(), $upb_tag) }, arena },
             )
         }
         #[allow(dead_code)]
@@ -236,13 +235,13 @@ macro_rules! impl_repeated_base {
         }
         #[inline]
         fn repeated_len(f: View<Repeated<$t>>) -> usize {
-            unsafe { upb_Array_Size(f.as_raw(Private)) }
+            unsafe { sys::upb_Array_Size(f.as_raw(Private)) }
         }
         #[inline]
         fn repeated_push(mut f: Mut<Repeated<$t>>, v: impl IntoProxied<$t>) {
             let arena = f.raw_arena(Private);
             unsafe {
-                assert!(upb_Array_Append(
+                assert!(sys::upb_Array_Append(
                     f.as_raw(Private),
                     <$t as UpbTypeConversions>::into_message_value_fuse_if_required(
                         arena,
@@ -255,13 +254,16 @@ macro_rules! impl_repeated_base {
         #[inline]
         fn repeated_clear(mut f: Mut<Repeated<$t>>) {
             unsafe {
-                upb_Array_Resize(f.as_raw(Private), 0, f.raw_arena(Private));
+                sys::upb_Array_Resize(f.as_raw(Private), 0, f.raw_arena(Private));
             }
         }
         #[inline]
         unsafe fn repeated_get_unchecked(f: View<Repeated<$t>>, i: usize) -> View<$t> {
             unsafe {
-                <$t as UpbTypeConversions>::from_message_value(upb_Array_Get(f.as_raw(Private), i))
+                <$t as UpbTypeConversions>::from_message_value(sys::upb_Array_Get(
+                    f.as_raw(Private),
+                    i,
+                ))
             }
         }
         #[inline]
@@ -272,7 +274,7 @@ macro_rules! impl_repeated_base {
         ) {
             let arena = f.raw_arena(Private);
             unsafe {
-                upb_Array_Set(
+                sys::upb_Array_Set(
                     f.as_raw(Private),
                     i,
                     <$t as UpbTypeConversions>::into_message_value_fuse_if_required(
@@ -289,8 +291,8 @@ macro_rules! impl_repeated_base {
             //   valid array.
             unsafe {
                 let arena = f.raw_arena(Private);
-                let size = upb_Array_Size(f.as_raw(Private));
-                assert!(upb_Array_Reserve(f.as_raw(Private), size + additional, arena));
+                let size = sys::upb_Array_Size(f.as_raw(Private));
+                assert!(sys::upb_Array_Reserve(f.as_raw(Private), size + additional, arena));
             }
         }
     };
@@ -309,12 +311,10 @@ macro_rules! impl_repeated_primitives {
                     // - `copy_nonoverlapping` is unsafe but here we guarantee that both pointers
                     //   are valid, the pointers are `#[repr(u8)]`, and the size is correct.
                     unsafe {
-                        if (!upb_Array_Resize(dest.as_raw(Private), src.len(), arena)) {
-                            panic!("upb_Array_Resize failed.");
-                        }
+                        assert!(sys::upb_Array_Resize(dest.as_raw(Private), src.len(), arena));
                         ptr::copy_nonoverlapping(
-                          upb_Array_DataPtr(src.as_raw(Private)).cast::<u8>(),
-                          upb_Array_MutableDataPtr(dest.as_raw(Private)).cast::<u8>(),
+                          sys::upb_Array_DataPtr(src.as_raw(Private)).cast::<u8>(),
+                          sys::upb_Array_MutableDataPtr(dest.as_raw(Private)).cast::<u8>(),
                           size_of::<$elem_t>() * src.len());
                     }
                 }
@@ -342,15 +342,13 @@ macro_rules! impl_repeated_bytes {
                     // - The bytes held within a valid array are valid.
                     unsafe {
                         let arena = ManuallyDrop::new(Arena::from_raw(dest.raw_arena(Private)));
-                        if (!upb_Array_Resize(dest.as_raw(Private), src.len(), arena.raw())) {
-                            panic!("upb_Array_Resize failed.");
-                        }
+                        assert!(sys::upb_Array_Resize(dest.as_raw(Private), src.len(), arena.raw()));
                         let src_ptrs: &[PtrAndLen] = slice::from_raw_parts(
-                            upb_Array_DataPtr(src.as_raw(Private)).cast(),
+                            sys::upb_Array_DataPtr(src.as_raw(Private)).cast(),
                             len
                         );
                         let dest_ptrs: &mut [PtrAndLen] = slice::from_raw_parts_mut(
-                            upb_Array_MutableDataPtr(dest.as_raw(Private)).cast(),
+                            sys::upb_Array_MutableDataPtr(dest.as_raw(Private)).cast(),
                             len
                         );
                         for (src_ptr, dest_ptr) in src_ptrs.iter().zip(dest_ptrs) {
@@ -372,17 +370,17 @@ impl<'msg, T> RepeatedMut<'msg, T> {
 }
 
 impl_repeated_primitives!(
-    // proxied type, element type, upb_MessageValue field name, upb::CType variant
-    (bool, bool, bool_val, upb::CType::Bool),
-    (f32, f32, float_val, upb::CType::Float),
-    (f64, f64, double_val, upb::CType::Double),
-    (i32, i32, int32_val, upb::CType::Int32),
-    (u32, u32, uint32_val, upb::CType::UInt32),
-    (i64, i64, int64_val, upb::CType::Int64),
-    (u64, u64, uint64_val, upb::CType::UInt64),
+    // proxied type, element type, upb_MessageValue field name, sys::CType variant
+    (bool, bool, bool_val, sys::CType::Bool),
+    (f32, f32, float_val, sys::CType::Float),
+    (f64, f64, double_val, sys::CType::Double),
+    (i32, i32, int32_val, sys::CType::Int32),
+    (u32, u32, uint32_val, sys::CType::UInt32),
+    (i64, i64, int64_val, sys::CType::Int64),
+    (u64, u64, uint64_val, sys::CType::UInt64),
 );
 
-impl_repeated_bytes!((ProtoString, upb::CType::String), (ProtoBytes, upb::CType::Bytes),);
+impl_repeated_bytes!((ProtoString, sys::CType::String), (ProtoBytes, sys::CType::Bytes),);
 
 /// Copy the contents of `src` into `dest`.
 ///
@@ -391,26 +389,31 @@ impl_repeated_bytes!((ProtoString, upb::CType::String), (ProtoBytes, upb::CType:
 pub unsafe fn repeated_message_copy_from<T: ProxiedInRepeated>(
     src: View<Repeated<T>>,
     mut dest: Mut<Repeated<T>>,
-    minitable: *const upb_MiniTable,
+    minitable: *const sys::upb_MiniTable,
 ) {
     // SAFETY:
     // - `src.as_raw()` is a valid `const upb_Array*`.
     // - `dest.as_raw()` is a valid `upb_Array*`.
     // - Elements of `src` and have message minitable `$minitable$`.
     unsafe {
-        let size = upb_Array_Size(src.as_raw(Private));
-        if !upb_Array_Resize(dest.as_raw(Private), size, dest.raw_arena(Private)) {
+        let size = sys::upb_Array_Size(src.as_raw(Private));
+        if !sys::upb_Array_Resize(dest.as_raw(Private), size, dest.raw_arena(Private)) {
             panic!("upb_Array_Resize failed.");
         }
         for i in 0..size {
-            let src_msg = upb_Array_Get(src.as_raw(Private), i)
+            let src_msg = sys::upb_Array_Get(src.as_raw(Private), i)
                 .msg_val
                 .expect("upb_Array* element should not be NULL");
             // Avoid the use of `upb_Array_DeepClone` as it creates an
             // entirely new `upb_Array*` at a new memory address.
-            let cloned_msg = upb_Message_DeepClone(src_msg, minitable, dest.raw_arena(Private))
-                .expect("upb_Message_DeepClone failed.");
-            upb_Array_Set(dest.as_raw(Private), i, upb_MessageValue { msg_val: Some(cloned_msg) });
+            let cloned_msg =
+                sys::upb_Message_DeepClone(src_msg, minitable, dest.raw_arena(Private))
+                    .expect("upb_Message_DeepClone failed.");
+            sys::upb_Array_Set(
+                dest.as_raw(Private),
+                i,
+                sys::upb_MessageValue { msg_val: Some(cloned_msg) },
+            );
         }
     }
 }
@@ -455,7 +458,7 @@ pub fn new_enum_repeated<E: Enum + ProxiedInRepeated>() -> Repeated<E> {
     // - `upb_Array_New` is unsafe but assumed to be sound when called on a valid
     //   arena.
     unsafe {
-        let raw = upb_Array_New(arena.raw(), upb::CType::Int32);
+        let raw = sys::upb_Array_New(arena.raw(), sys::CType::Int32);
         Repeated::from_inner(Private, InnerRepeated::from_raw_parts(raw, arena))
     }
 }
@@ -565,21 +568,21 @@ impl<'msg> InnerMapMut<'msg> {
 }
 
 pub trait UpbTypeConversions: Proxied {
-    fn upb_type() -> upb::CType;
+    fn upb_type() -> sys::CType;
 
-    fn to_message_value(val: View<'_, Self>) -> upb_MessageValue;
+    fn to_message_value(val: View<'_, Self>) -> sys::upb_MessageValue;
 
     /// # Safety
     /// - `raw_arena` must point to a valid upb arena.
     unsafe fn into_message_value_fuse_if_required(
         raw_arena: RawArena,
         val: Self,
-    ) -> upb_MessageValue;
+    ) -> sys::upb_MessageValue;
 
     /// # Safety
     /// - `msg` must be the correct variant for `Self`.
     /// - `msg` pointers must point to memory valid for `'msg` lifetime.
-    unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, Self>;
+    unsafe fn from_message_value<'msg>(msg: sys::upb_MessageValue) -> View<'msg, Self>;
 }
 
 macro_rules! impl_upb_type_conversions_for_scalars {
@@ -587,22 +590,22 @@ macro_rules! impl_upb_type_conversions_for_scalars {
         $(
             impl UpbTypeConversions for $t {
                 #[inline(always)]
-                fn upb_type() -> upb::CType {
+                fn upb_type() -> sys::CType {
                     $upb_tag
                 }
 
                 #[inline(always)]
-                fn to_message_value(val: View<'_, $t>) -> upb_MessageValue {
-                    upb_MessageValue { $ufield: val }
+                fn to_message_value(val: View<'_, $t>) -> sys::upb_MessageValue {
+                    sys::upb_MessageValue { $ufield: val }
                 }
 
                 #[inline(always)]
-                unsafe fn into_message_value_fuse_if_required(_: RawArena, val: $t) -> upb_MessageValue {
+                unsafe fn into_message_value_fuse_if_required(_: RawArena, val: $t) -> sys::upb_MessageValue {
                     Self::to_message_value(val)
                 }
 
                 #[inline(always)]
-                unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, $t> {
+                unsafe fn from_message_value<'msg>(msg: sys::upb_MessageValue) -> View<'msg, $t> {
                     unsafe { msg.$ufield }
                 }
             }
@@ -611,55 +614,55 @@ macro_rules! impl_upb_type_conversions_for_scalars {
 }
 
 impl_upb_type_conversions_for_scalars!(
-    f32, float_val, upb::CType::Float, 0f32;
-    f64, double_val, upb::CType::Double, 0f64;
-    i32, int32_val, upb::CType::Int32, 0i32;
-    u32, uint32_val, upb::CType::UInt32, 0u32;
-    i64, int64_val, upb::CType::Int64, 0i64;
-    u64, uint64_val, upb::CType::UInt64, 0u64;
-    bool, bool_val, upb::CType::Bool, false;
+    f32, float_val, sys::CType::Float, 0f32;
+    f64, double_val, sys::CType::Double, 0f64;
+    i32, int32_val, sys::CType::Int32, 0i32;
+    u32, uint32_val, sys::CType::UInt32, 0u32;
+    i64, int64_val, sys::CType::Int64, 0i64;
+    u64, uint64_val, sys::CType::UInt64, 0u64;
+    bool, bool_val, sys::CType::Bool, false;
 );
 
 impl UpbTypeConversions for ProtoBytes {
-    fn upb_type() -> upb::CType {
-        upb::CType::Bytes
+    fn upb_type() -> sys::CType {
+        sys::CType::Bytes
     }
 
-    fn to_message_value(val: View<'_, ProtoBytes>) -> upb_MessageValue {
-        upb_MessageValue { str_val: val.into() }
+    fn to_message_value(val: View<'_, ProtoBytes>) -> sys::upb_MessageValue {
+        sys::upb_MessageValue { str_val: val.into() }
     }
 
     unsafe fn into_message_value_fuse_if_required(
         raw_parent_arena: RawArena,
         val: ProtoBytes,
-    ) -> upb_MessageValue {
+    ) -> sys::upb_MessageValue {
         // SAFETY: The arena memory is not freed due to `ManuallyDrop`.
         let parent_arena = ManuallyDrop::new(unsafe { Arena::from_raw(raw_parent_arena) });
 
         let (view, arena) = val.inner.into_raw_parts();
         parent_arena.fuse(&arena);
 
-        upb_MessageValue { str_val: view }
+        sys::upb_MessageValue { str_val: view }
     }
 
-    unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, ProtoBytes> {
+    unsafe fn from_message_value<'msg>(msg: sys::upb_MessageValue) -> View<'msg, ProtoBytes> {
         unsafe { msg.str_val.as_ref() }
     }
 }
 
 impl UpbTypeConversions for ProtoString {
-    fn upb_type() -> upb::CType {
-        upb::CType::String
+    fn upb_type() -> sys::CType {
+        sys::CType::String
     }
 
-    fn to_message_value(val: View<'_, ProtoString>) -> upb_MessageValue {
-        upb_MessageValue { str_val: val.as_bytes().into() }
+    fn to_message_value(val: View<'_, ProtoString>) -> sys::upb_MessageValue {
+        sys::upb_MessageValue { str_val: val.as_bytes().into() }
     }
 
     unsafe fn into_message_value_fuse_if_required(
         raw_arena: RawArena,
         val: ProtoString,
-    ) -> upb_MessageValue {
+    ) -> sys::upb_MessageValue {
         // SAFETY: `raw_arena` is valid as promised by the caller
         unsafe {
             <ProtoBytes as UpbTypeConversions>::into_message_value_fuse_if_required(
@@ -669,7 +672,7 @@ impl UpbTypeConversions for ProtoString {
         }
     }
 
-    unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, ProtoString> {
+    unsafe fn from_message_value<'msg>(msg: sys::upb_MessageValue) -> View<'msg, ProtoString> {
         unsafe { ProtoStr::from_utf8_unchecked(msg.str_val.as_ref()) }
     }
 }
@@ -683,17 +686,19 @@ pub struct RawMapIter {
 
 impl RawMapIter {
     pub fn new(map: RawMap) -> Self {
-        RawMapIter { map, iter: UPB_MAP_BEGIN }
+        RawMapIter { map, iter: sys::UPB_MAP_BEGIN }
     }
 
     /// # Safety
     /// - `self.map` must be valid, and remain valid while the return value is
     ///   in use.
-    pub unsafe fn next_unchecked(&mut self) -> Option<(upb_MessageValue, upb_MessageValue)> {
+    pub unsafe fn next_unchecked(
+        &mut self,
+    ) -> Option<(sys::upb_MessageValue, sys::upb_MessageValue)> {
         let mut key = MaybeUninit::uninit();
         let mut value = MaybeUninit::uninit();
         // SAFETY: the `map` is valid as promised by the caller
-        unsafe { upb_Map_Next(self.map, key.as_mut_ptr(), value.as_mut_ptr(), &mut self.iter) }
+        unsafe { sys::upb_Map_Next(self.map, key.as_mut_ptr(), value.as_mut_ptr(), &mut self.iter) }
             // SAFETY: if upb_Map_Next returns true, then key and value have been populated.
             .then(|| unsafe { (key.assume_init(), value.assume_init()) })
     }
@@ -706,7 +711,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                 fn map_new(_private: Private) -> Map<$key_t, Self> {
                     let arena = Arena::new();
                     let raw = unsafe {
-                        upb_Map_New(arena.raw(),
+                        sys::upb_Map_New(arena.raw(),
                             <$key_t as UpbTypeConversions>::upb_type(),
                             <$t as UpbTypeConversions>::upb_type())
                     };
@@ -719,13 +724,13 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
 
                 fn map_clear(mut map: MapMut<$key_t, Self>) {
                     unsafe {
-                        upb_Map_Clear(map.as_raw(Private));
+                        sys::upb_Map_Clear(map.as_raw(Private));
                     }
                 }
 
                 fn map_len(map: MapView<$key_t, Self>) -> usize {
                     unsafe {
-                        upb_Map_Size(map.as_raw(Private))
+                        sys::upb_Map_Size(map.as_raw(Private))
                     }
                 }
 
@@ -744,7 +749,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                 fn map_get<'a>(map: MapView<'a, $key_t, Self>, key: View<'_, $key_t>) -> Option<View<'a, Self>> {
                     let mut val = MaybeUninit::uninit();
                     let found = unsafe {
-                        upb_Map_Get(map.as_raw(Private), <$key_t as UpbTypeConversions>::to_message_value(key),
+                        sys::upb_Map_Get(map.as_raw(Private), <$key_t as UpbTypeConversions>::to_message_value(key),
                             val.as_mut_ptr())
                     };
                     if !found {
@@ -755,7 +760,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
 
                 fn map_remove(mut map: MapMut<$key_t, Self>, key: View<'_, $key_t>) -> bool {
                     unsafe {
-                        upb_Map_Delete(map.as_raw(Private),
+                        sys::upb_Map_Delete(map.as_raw(Private),
                             <$key_t as UpbTypeConversions>::to_message_value(key),
                             ptr::null_mut())
                     }
@@ -805,7 +810,7 @@ where
     fn map_new(_private: Private) -> Map<Key, Self> {
         let arena = Arena::new();
         let raw = unsafe {
-            upb_Map_New(
+            sys::upb_Map_New(
                 arena.raw(),
                 <Key as UpbTypeConversions>::upb_type(),
                 <Self as UpbTypeConversions>::upb_type(),
@@ -821,12 +826,12 @@ where
 
     fn map_clear(mut map: MapMut<Key, Self>) {
         unsafe {
-            upb_Map_Clear(map.as_raw(Private));
+            sys::upb_Map_Clear(map.as_raw(Private));
         }
     }
 
     fn map_len(map: MapView<Key, Self>) -> usize {
-        unsafe { upb_Map_Size(map.as_raw(Private)) }
+        unsafe { sys::upb_Map_Size(map.as_raw(Private)) }
     }
 
     fn map_insert(
@@ -851,7 +856,7 @@ where
     fn map_get<'a>(map: MapView<'a, Key, Self>, key: View<'_, Key>) -> Option<View<'a, Self>> {
         let mut val = MaybeUninit::uninit();
         let found = unsafe {
-            upb_Map_Get(
+            sys::upb_Map_Get(
                 map.as_raw(Private),
                 <Key as UpbTypeConversions>::to_message_value(key),
                 val.as_mut_ptr(),
@@ -865,7 +870,7 @@ where
 
     fn map_remove(mut map: MapMut<Key, Self>, key: View<'_, Key>) -> bool {
         unsafe {
-            upb_Map_Delete(
+            sys::upb_Map_Delete(
                 map.as_raw(Private),
                 <Key as UpbTypeConversions>::to_message_value(key),
                 ptr::null_mut(),
@@ -908,13 +913,13 @@ where
 #[allow(non_snake_case)]
 pub unsafe fn upb_Map_InsertAndReturnIfInserted(
     map: RawMap,
-    key: upb_MessageValue,
-    value: upb_MessageValue,
+    key: sys::upb_MessageValue,
+    value: sys::upb_MessageValue,
     arena: RawArena,
 ) -> bool {
-    match unsafe { upb_Map_Insert(map, key, value, arena) } {
-        upb::MapInsertStatus::Inserted => true,
-        upb::MapInsertStatus::Replaced => false,
-        upb::MapInsertStatus::OutOfMemory => panic!("map arena is out of memory"),
+    match unsafe { sys::upb_Map_Insert(map, key, value, arena) } {
+        sys::MapInsertStatus::Inserted => true,
+        sys::MapInsertStatus::Replaced => false,
+        sys::MapInsertStatus::OutOfMemory => panic!("map arena is out of memory"),
     }
 }

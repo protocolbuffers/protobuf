@@ -173,10 +173,11 @@ bool RustGenerator::Generate(const FileDescriptor* file,
       {"pb", "::__pb"},
       {"pbi", "::__pb::__internal"},
       {"pbr", "::__pb::__runtime"},
+      {"upb", "::__pb::__runtime::upb"},
+      {"upb_sys", "::__pb::__runtime::upb::sys"},
       {"NonNull", "::__std::ptr::NonNull"},
       {"Phantom", "::__std::marker::PhantomData"},
   });
-
 
   ctx.Emit({{"kernel", KernelRsName(ctx.opts().kernel)}}, R"rs(
     extern crate protobuf_$kernel$ as __pb;

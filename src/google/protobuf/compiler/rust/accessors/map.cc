@@ -58,10 +58,10 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     pub fn $field$($view_self$)
                       -> $pb$::MapView<$view_lifetime$, $Key$, $Value$> {
                       unsafe {
-                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                        let f = $upb_sys$::upb_MiniTable_GetFieldByIndex(
+                          <Self as $upb$::AssociatedMiniTable>::mini_table(),
                           $upb_mt_field_index$);
-                        $pbr$::upb_Message_GetMap(self.raw_msg(), f)
+                        $upb_sys$::upb_Message_GetMap(self.raw_msg(), f)
                           .map_or_else(
                             $pbr$::empty_map::<$Key$, $Value$>,
                             |raw| $pb$::MapView::from_raw($pbi$::Private, raw)
@@ -90,20 +90,20 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                       -> $pb$::MapMut<'_, $Key$, $Value$> {
                       unsafe {
                         let parent_mini_table =
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table();
+                          <Self as $upb$::AssociatedMiniTable>::mini_table();
 
                         let f =
-                          $pbr$::upb_MiniTable_GetFieldByIndex(
+                          $upb_sys$::upb_MiniTable_GetFieldByIndex(
                               parent_mini_table,
                               $upb_mt_field_index$);
 
                         let map_entry_mini_table =
-                          $pbr$::upb_MiniTable_SubMessage(
+                          $upb_sys$::upb_MiniTable_SubMessage(
                               parent_mini_table,
                               f);
 
                         let raw_map =
-                          $pbr$::upb_Message_GetOrCreateMutableMap(
+                          $upb_sys$::upb_Message_GetOrCreateMutableMap(
                               self.raw_msg(),
                               map_entry_mini_table,
                               f,

@@ -13,18 +13,9 @@ rust_library(
     name = "upb",
     srcs = [
         "arena.rs",
-        "array.rs",
         "associated_mini_table.rs",
-        "ctype.rs",
-        "extension_registry.rs",
         "lib.rs",
-        "map.rs",
-        "message.rs",
-        "message_value.rs",
-        "mini_table.rs",
-        "opaque_pointee.rs",
         "owned_arena_box.rs",
-        "string_view.rs",
         "text.rs",
         "wire.rs",
     ],
@@ -33,25 +24,12 @@ rust_library(
         "//rust:__subpackages__",
         "//src/google/protobuf:__subpackages__",
     ],
-    deps = [":upb_c_api"],
+    deps = ["//third_party/upb/rust/sys:upb_sys"],
 )
 
 rust_test(
     name = "upb_rs_crate_test",
     crate = ":upb",
-)
-
-cc_library(
-    name = "upb_c_api",
-    srcs = ["upb_api.c"],
-    deps = [
-        "//upb:mem",
-        "//upb:message",
-        "//upb:message_compare",
-        "//upb:message_copy",
-        "//upb/mini_table",
-        "//upb/text:debug",
-    ],
 )
 
 pkg_files(

@@ -87,8 +87,8 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                    R"rs(
                     pub fn $field$($view_self$) -> $Scalar$ {
                       unsafe {
-                        let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
-                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
+                        let mt = <Self as $upb$::AssociatedMiniTable>::mini_table();
+                        let f = $upb_sys$::upb_MiniTable_GetFieldByIndex(
                             mt, $upb_mt_field_index$);
 
                         // TODO: b/361751487: This .into() and .try_into() is only
@@ -97,7 +97,7 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                         // perfectly (and do an unchecked conversion for
                         // i32->enum types, since even for closed enums we trust
                         // upb to only return one of the named values).
-                        $pbr$::upb_Message_Get$upb_fn_type_name$(
+                        $upb_sys$::upb_Message_Get$upb_fn_type_name$(
                             self.raw_msg(), f, ($default_value$).into()).try_into().unwrap()
                       }
                     }
@@ -117,14 +117,14 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                ctx.Emit(R"rs(
                   pub fn set_$raw_field_name$(&mut self, val: $Scalar$) {
                     unsafe {
-                      let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
-                      let f = $pbr$::upb_MiniTable_GetFieldByIndex(
+                      let mt = <Self as $upb$::AssociatedMiniTable>::mini_table();
+                      let f = $upb_sys$::upb_MiniTable_GetFieldByIndex(
                           mt, $upb_mt_field_index$);
                       // TODO: b/361751487: This .into() is only here
                       // here for the enum<->i32 case, we should avoid it for
                       // other primitives where the types naturally match
                       // perfectly.
-                      $pbr$::upb_Message_SetBaseField$upb_fn_type_name$(
+                      $upb_sys$::upb_Message_SetBaseField$upb_fn_type_name$(
                           self.raw_msg(), f, val.into());
                     }
                   }

@@ -154,12 +154,12 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
                  R"rs(
       impl $pb$::ProxiedInMapValue<$key_t$> for $name$ {
           fn map_new(_private: $pbi$::Private) -> $pb$::Map<$key_t$, Self> {
-              let arena = $pbr$::Arena::new();
+              let arena = $upb$::Arena::new();
               let raw = unsafe {
-                  $pbr$::upb_Map_New(
+                  $upb_sys$::upb_Map_New(
                       arena.raw(),
                       <$key_t$ as $pbr$::UpbTypeConversions>::upb_type(),
-                      $pbr$::CType::Enum)
+                      $upb_sys$::CType::Enum)
               };
               $pb$::Map::from_inner(
                   $pbi$::Private,
@@ -172,13 +172,13 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
 
           fn map_clear(mut map: $pb$::MapMut<$key_t$, Self>) {
               unsafe {
-                  $pbr$::upb_Map_Clear(map.as_raw($pbi$::Private));
+                  $upb_sys$::upb_Map_Clear(map.as_raw($pbi$::Private));
               }
           }
 
           fn map_len(map: $pb$::MapView<$key_t$, Self>) -> usize {
               unsafe {
-                  $pbr$::upb_Map_Size(map.as_raw($pbi$::Private))
+                  $upb_sys$::upb_Map_Size(map.as_raw($pbi$::Private))
               }
           }
 
@@ -188,7 +188,7 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
                   $pbr$::upb_Map_InsertAndReturnIfInserted(
                       map.as_raw($pbi$::Private),
                       <$key_t$ as $pbr$::UpbTypeConversions>::to_message_value(key),
-                      $pbr$::upb_MessageValue { int32_val: value.into_proxied($pbi$::Private).0 },
+                      $upb_sys$::upb_MessageValue { int32_val: value.into_proxied($pbi$::Private).0 },
                       arena
                   )
               }
@@ -197,7 +197,7 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
           fn map_get<'a>(map: $pb$::MapView<'a, $key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
               let mut val = $std$::mem::MaybeUninit::uninit();
               let found = unsafe {
-                  $pbr$::upb_Map_Get(
+                  $upb_sys$::upb_Map_Get(
                       map.as_raw($pbi$::Private),
                       <$key_t$ as $pbr$::UpbTypeConversions>::to_message_value(key),
                       val.as_mut_ptr())
@@ -211,7 +211,7 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
           fn map_remove(mut map: $pb$::MapMut<$key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> bool {
               let mut val = $std$::mem::MaybeUninit::uninit();
               unsafe {
-                  $pbr$::upb_Map_Delete(
+                  $upb_sys$::upb_Map_Delete(
                       map.as_raw($pbi$::Private),
                       <$key_t$ as $pbr$::UpbTypeConversions>::to_message_value(key),
                       val.as_mut_ptr())

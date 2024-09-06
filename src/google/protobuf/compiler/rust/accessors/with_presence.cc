@@ -49,10 +49,10 @@ void WithPresenceAccessorsInMsgImpl(Context& ctx, const FieldDescriptor& field,
                      R"rs(
                   pub fn has_$raw_field_name$($view_self$) -> bool {
                     unsafe {
-                      let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                      let f = $upb_sys$::upb_MiniTable_GetFieldByIndex(
+                          <Self as $upb$::AssociatedMiniTable>::mini_table(),
                           $upb_mt_field_index$);
-                      $pbr$::upb_Message_HasBaseField(self.raw_msg(), f)
+                      $upb_sys$::upb_Message_HasBaseField(self.raw_msg(), f)
                     }
                   }
                   )rs");
@@ -72,10 +72,10 @@ void WithPresenceAccessorsInMsgImpl(Context& ctx, const FieldDescriptor& field,
                      R"rs(
                     pub fn clear_$raw_field_name$(&mut self) {
                       unsafe {
-                        let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
-                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
+                        let mt = <Self as $upb$::AssociatedMiniTable>::mini_table();
+                        let f = $upb_sys$::upb_MiniTable_GetFieldByIndex(
                             mt, $upb_mt_field_index$);
-                        $pbr$::upb_Message_ClearBaseField(self.raw_msg(), f);
+                        $upb_sys$::upb_Message_ClearBaseField(self.raw_msg(), f);
                       }
                     })rs");
           }

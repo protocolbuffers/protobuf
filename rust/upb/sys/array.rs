@@ -5,8 +5,10 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use super::arena::RawArena;
+use super::ctype::CType;
+use super::message_value::{upb_MessageValue, upb_MutableMessageValue};
 use super::opaque_pointee::opaque_pointee;
-use super::{upb_MessageValue, upb_MutableMessageValue, CType, RawArena};
 use std::ptr::NonNull;
 
 opaque_pointee!(upb_Array);

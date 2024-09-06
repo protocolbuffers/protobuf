@@ -46,10 +46,10 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 if (ctx.is_upb()) {
                   ctx.Emit(R"rs(
               let submsg = unsafe {
-                let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                            <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                let f = $upb_sys$::upb_MiniTable_GetFieldByIndex(
+                            <Self as $upb$::AssociatedMiniTable>::mini_table(),
                             $upb_mt_field_index$);
-                $pbr$::upb_Message_GetMessage(self.raw_msg(), f)
+                $upb_sys$::upb_Message_GetMessage(self.raw_msg(), f)
               };
               //~ For upb, getters return null if the field is unset, so we need
               //~ to check for null and return the default instance manually.
@@ -92,9 +92,9 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              } else {
                ctx.Emit({}, R"rs(
                   let raw_msg = unsafe {
-                    let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
-                    let f = $pbr$::upb_MiniTable_GetFieldByIndex(mt, $upb_mt_field_index$);
-                    $pbr$::upb_Message_GetOrCreateMutableMessage(
+                    let mt = <Self as $upb$::AssociatedMiniTable>::mini_table();
+                    let f = $upb_sys$::upb_MiniTable_GetFieldByIndex(mt, $upb_mt_field_index$);
+                    $upb_sys$::upb_Message_GetOrCreateMutableMessage(
                         self.raw_msg(), mt, f, self.arena().raw()).unwrap()
                   };
                   $msg_type$Mut::from_parent($pbi$::Private,
@@ -127,10 +127,10 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     .fuse(msg.as_mutator_message_ref($pbi$::Private).arena());
 
                   unsafe {
-                    let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                              <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                    let f = $upb_sys$::upb_MiniTable_GetFieldByIndex(
+                              <Self as $upb$::AssociatedMiniTable>::mini_table(),
                               $upb_mt_field_index$);
-                    $pbr$::upb_Message_SetBaseFieldMessage(
+                    $upb_sys$::upb_Message_SetBaseFieldMessage(
                       self.as_mutator_message_ref($pbi$::Private).msg(),
                       f,
                       msg.as_mutator_message_ref($pbi$::Private).msg());

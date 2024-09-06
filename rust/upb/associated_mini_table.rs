@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use super::upb_MiniTable;
+use super::sys::mini_table::upb_MiniTable;
 
 /// A trait for types which have a constant associated MiniTable (e.g.
 /// generated messages, and their mut and view proxy types).

@@ -40,10 +40,10 @@ void MessageNew(Context& ctx, const Descriptor& msg) {
 
     case Kernel::kUpb:
       ctx.Emit(R"rs(
-        let arena = $pbr$::Arena::new();
+        let arena = $upb$::Arena::new();
         let raw_msg = unsafe {
-            $pbr$::upb_Message_New(
-                <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+            $upb_sys$::upb_Message_New(
+                <Self as $upb$::AssociatedMiniTable>::mini_table(),
                 arena.raw()).unwrap()
         };
         Self {
@@ -80,8 +80,8 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
                R"rs(
         // SAFETY: `MINI_TABLE` is the one associated with `self.raw_msg()`.
         let encoded = unsafe {
-          $pbr$::wire::encode(self.raw_msg(),
-              <Self as $pbr$::AssociatedMiniTable>::mini_table())
+          $upb$::wire::encode(self.raw_msg(),
+              <Self as $upb$::AssociatedMiniTable>::mini_table())
         };
         //~ TODO: This discards the info we have about the reason
         //~ of the failure, we should try to keep it instead.
@@ -105,9 +105,9 @@ void MessageMutClear(Context& ctx, const Descriptor& msg) {
       ctx.Emit(
           R"rs(
           unsafe {
-            $pbr$::upb_Message_Clear(
+            $upb_sys$::upb_Message_Clear(
                 self.raw_msg(),
-                <Self as $pbr$::AssociatedMiniTable>::mini_table())
+                <Self as $upb$::AssociatedMiniTable>::mini_table())
           }
         )rs");
       return;
@@ -142,10 +142,10 @@ void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
         // - `mini_table` is the one used to construct `msg.raw_msg()`
         // - `msg.arena().raw()` is held for the same lifetime as `msg`.
         let status = unsafe {
-          $pbr$::wire::decode(
+          $upb$::wire::decode(
               data,
               msg.raw_msg(),
-              <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+              <Self as $upb$::AssociatedMiniTable>::mini_table(),
               msg.arena())
         };
         match status {
@@ -178,9 +178,9 @@ void MessageDebug(Context& ctx, const Descriptor& msg) {
       ctx.Emit(
           R"rs(
         let string = unsafe {
-          $pbr$::debug_string(
+          $upb$::text::debug_string(
             self.raw_msg(),
-            <Self as $pbr$::AssociatedMiniTable>::mini_table()
+            <Self as $upb$::AssociatedMiniTable>::mini_table()
           )
         };
         write!(f, "{}", string)
@@ -259,10 +259,10 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
         impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$View<'msg> {
           fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
             let dst = $Msg$::new();
-            unsafe { $pbr$::upb_Message_DeepCopy(
+            unsafe { $upb_sys$::upb_Message_DeepCopy(
               dst.inner.msg,
               self.msg,
-              <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+              <Self as $upb$::AssociatedMiniTable>::mini_table(),
               dst.inner.arena.raw(),
             ) };
             dst
@@ -284,23 +284,23 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
 void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg) {
   if (ctx.opts().kernel == Kernel::kUpb) {
     ctx.Emit({{"minitable", UpbMiniTableName(msg)}}, R"rs(
-      unsafe impl $pbr$::AssociatedMiniTable for $Msg$ {
+      unsafe impl $upb$::AssociatedMiniTable for $Msg$ {
         #[inline(always)]
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
+        fn mini_table() -> *const $upb_sys$::upb_MiniTable {
           $std$::ptr::addr_of!($minitable$)
         }
       }
 
-      unsafe impl $pbr$::AssociatedMiniTable for $Msg$View<'_> {
+      unsafe impl $upb$::AssociatedMiniTable for $Msg$View<'_> {
         #[inline(always)]
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
+        fn mini_table() -> *const $upb_sys$::upb_MiniTable {
           $std$::ptr::addr_of!($minitable$)
         }
       }
 
-      unsafe impl $pbr$::AssociatedMiniTable for $Msg$Mut<'_> {
+      unsafe impl $upb$::AssociatedMiniTable for $Msg$Mut<'_> {
         #[inline(always)]
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
+        fn mini_table() -> *const $upb_sys$::upb_MiniTable {
           $std$::ptr::addr_of!($minitable$)
         }
       }
@@ -331,9 +331,9 @@ void MessageMutMergeFrom(Context& ctx, const Descriptor& msg) {
               // SAFETY: self and src are both valid `$Msg$`s.
               unsafe {
                 assert!(
-                  $pbr$::upb_Message_MergeFrom(self.raw_msg(),
+                  $upb_sys$::upb_Message_MergeFrom(self.raw_msg(),
                     src.as_view().raw_msg(),
-                    <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                    <Self as $upb$::AssociatedMiniTable>::mini_table(),
                     // Use a nullptr for the ExtensionRegistry.
                     $std$::ptr::null(),
                     self.arena().raw())
@@ -463,12 +463,12 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
           R"rs(
         unsafe impl $pb$::ProxiedInRepeated for $Msg$ {
           fn repeated_new(_private: $pbi$::Private) -> $pb$::Repeated<Self> {
-            let arena = $pbr$::Arena::new();
+            let arena = $upb$::Arena::new();
             unsafe {
               $pb$::Repeated::from_inner(
                   $pbi$::Private,
                   $pbr$::InnerRepeated::from_raw_parts(
-                      $pbr$::upb_Array_New(arena.raw(), $pbr$::CType::Message),
+                      $upb_sys$::upb_Array_New(arena.raw(), $upb_sys$::CType::Message),
                       arena,
                   ))
             }
@@ -480,7 +480,7 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
 
           fn repeated_len(f: $pb$::View<$pb$::Repeated<Self>>) -> usize {
             // SAFETY: `f.as_raw()` is a valid `upb_Array*`.
-            unsafe { $pbr$::upb_Array_Size(f.as_raw($pbi$::Private)) }
+            unsafe { $upb_sys$::upb_Array_Size(f.as_raw($pbi$::Private)) }
           }
           unsafe fn repeated_set_unchecked(
             mut f: $pb$::Mut<$pb$::Repeated<Self>>,
@@ -488,7 +488,7 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
             v: impl $pb$::IntoProxied<Self>,
           ) {
             unsafe {
-                $pbr$::upb_Array_Set(
+                $upb_sys$::upb_Array_Set(
                     f.as_raw($pbi$::Private),
                     i,
                     <Self as $pbr$::UpbTypeConversions>::into_message_value_fuse_if_required(
@@ -506,7 +506,7 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
             // SAFETY:
             // - `f.as_raw()` is a valid `const upb_Array*`.
             // - `i < len(f)` is promised by the caller.
-            let msg_ptr = unsafe { $pbr$::upb_Array_Get(f.as_raw($pbi$::Private), i).msg_val }
+            let msg_ptr = unsafe { $upb_sys$::upb_Array_Get(f.as_raw($pbi$::Private), i).msg_val }
               .expect("upb_Array* element should not be NULL.");
             $pb$::View::<Self>::new($pbi$::Private, msg_ptr)
           }
@@ -515,7 +515,7 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
             // SAFETY:
             // - `f.as_raw()` is a valid `upb_Array*`.
             unsafe {
-              $pbr$::upb_Array_Resize(f.as_raw($pbi$::Private), 0, f.raw_arena($pbi$::Private))
+              $upb_sys$::upb_Array_Resize(f.as_raw($pbi$::Private), 0, f.raw_arena($pbi$::Private))
             };
           }
           fn repeated_push(mut f: $pb$::Mut<$pb$::Repeated<Self>>, v: impl $pb$::IntoProxied<Self>) {
@@ -523,7 +523,7 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
             // - `f.as_raw()` is a valid `upb_Array*`.
             // - `msg_ptr` is a valid `upb_Message*`.
             unsafe {
-              $pbr$::upb_Array_Append(
+              $upb_sys$::upb_Array_Append(
                 f.as_raw($pbi$::Private),
                 <Self as $pbr$::UpbTypeConversions>::into_message_value_fuse_if_required(f.raw_arena($pbi$::Private), v.into_proxied($pbi$::Private)),
                 f.raw_arena($pbi$::Private)
@@ -538,7 +538,7 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
               // SAFETY:
               // - Elements of `src` and `dest` have message minitable `MINI_TABLE`.
               unsafe {
-                $pbr$::repeated_message_copy_from(src, dest, <Self as $pbr$::AssociatedMiniTable>::mini_table());
+                $pbr$::repeated_message_copy_from(src, dest, <Self as $upb$::AssociatedMiniTable>::mini_table());
               }
           }
 
@@ -549,8 +549,8 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
             // SAFETY:
             // - `f.as_raw()` is a valid `upb_Array*`.
             unsafe {
-              let size = $pbr$::upb_Array_Size(f.as_raw($pbi$::Private));
-              $pbr$::upb_Array_Reserve(f.as_raw($pbi$::Private), size + additional, f.raw_arena($pbi$::Private));
+              let size = $upb_sys$::upb_Array_Size(f.as_raw($pbi$::Private));
+              $upb_sys$::upb_Array_Reserve(f.as_raw($pbi$::Private), size + additional, f.raw_arena($pbi$::Private));
             }
           }
         }
@@ -689,27 +689,27 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
           },
           R"rs(
             impl $pbr$::UpbTypeConversions for $Msg$ {
-                fn upb_type() -> $pbr$::CType {
-                    $pbr$::CType::Message
+                fn upb_type() -> $upb_sys$::CType {
+                    $upb_sys$::CType::Message
                 }
 
                 fn to_message_value(
-                    val: $pb$::View<'_, Self>) -> $pbr$::upb_MessageValue {
-                    $pbr$::upb_MessageValue { msg_val: Some(val.raw_msg()) }
+                    val: $pb$::View<'_, Self>) -> $upb_sys$::upb_MessageValue {
+                    $upb_sys$::upb_MessageValue { msg_val: Some(val.raw_msg()) }
                 }
 
                 unsafe fn into_message_value_fuse_if_required(
                   raw_parent_arena: $pbr$::RawArena,
-                  mut val: Self) -> $pbr$::upb_MessageValue {
+                  mut val: Self) -> $upb_sys$::upb_MessageValue {
                   // SAFETY: The arena memory is not freed due to `ManuallyDrop`.
                   let parent_arena = core::mem::ManuallyDrop::new(
-                      unsafe { $pbr$::Arena::from_raw(raw_parent_arena) });
+                      unsafe { $upb$::Arena::from_raw(raw_parent_arena) });
 
                   parent_arena.fuse(val.as_mutator_message_ref($pbi$::Private).arena());
-                  $pbr$::upb_MessageValue { msg_val: Some(val.raw_msg()) }
+                  $upb_sys$::upb_MessageValue { msg_val: Some(val.raw_msg()) }
                 }
 
-                unsafe fn from_message_value<'msg>(msg: $pbr$::upb_MessageValue)
+                unsafe fn from_message_value<'msg>(msg: $upb_sys$::upb_MessageValue)
                     -> $pb$::View<'msg, Self> {
                     $Msg$View::new(
                         $pbi$::Private,
@@ -787,7 +787,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         [&] {
           if (ctx.is_upb()) {
             ctx.Emit({}, R"rs(
-                  fn arena(&self) -> &$pbr$::Arena {
+                  fn arena(&self) -> &$upb$::Arena {
                     &self.inner.arena
                   }
                   )rs");
@@ -797,7 +797,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         [&] {
           if (ctx.is_upb()) {
             ctx.Emit({}, R"rs(
-                  fn arena(&self) -> &$pbr$::Arena {
+                  fn arena(&self) -> &$upb$::Arena {
                     self.inner.arena()
                   }
                   )rs");
@@ -1191,7 +1191,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
             /// Opaque static extern for this message's MiniTable, generated
             /// by the upb C MiniTable codegen. The only valid way to
             /// reference this static is with `std::ptr::addr_of!(..)`.
-            static $minitable_symbol_name$: $pbr$::upb_MiniTable;
+            static $minitable_symbol_name$: $upb_sys$::upb_MiniTable;
           }
       )rs");
   }
@@ -1330,10 +1330,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
       impl<'a> $pbi$::MatcherEq for $Msg$View<'a> {
         fn matches(&self, o: &Self) -> bool {
           unsafe {
-            $pbr$::upb_Message_IsEqual(
+            $upb_sys$::upb_Message_IsEqual(
                 self.msg,
                 o.msg,
-                <$Msg$ as $pbr$::AssociatedMiniTable>::mini_table(),
+                <$Msg$ as $upb$::AssociatedMiniTable>::mini_table(),
                 0)
           }
         }

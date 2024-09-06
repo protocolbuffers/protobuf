@@ -5,21 +5,16 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use super::opaque_pointee::opaque_pointee;
+use super::sys::arena::{
+    upb_Arena_Free, upb_Arena_Fuse, upb_Arena_Malloc, upb_Arena_New, RawArena, UPB_MALLOC_ALIGN,
+};
+
 use std::alloc::{self, Layout};
 use std::cell::UnsafeCell;
 use std::marker::PhantomData;
-use std::mem::{align_of, MaybeUninit};
-use std::ptr::{self, NonNull};
+use std::mem::MaybeUninit;
+use std::ptr;
 use std::slice;
-
-opaque_pointee!(upb_Arena);
-pub type RawArena = NonNull<upb_Arena>;
-
-/// See `upb/port/def.inc`.
-const UPB_MALLOC_ALIGN: usize = 8;
-const _CHECK_UPB_MALLOC_ALIGN_AT_LEAST_POINTER_ALIGNED: () =
-    assert!(UPB_MALLOC_ALIGN >= align_of::<*const ()>());
 
 /// A wrapper over a `upb_Arena`.
 ///
@@ -184,28 +179,9 @@ impl Drop for Arena {
     }
 }
 
-extern "C" {
-    // `Option<NonNull<T: Sized>>` is ABI-compatible with `*mut T`
-    fn upb_Arena_New() -> Option<RawArena>;
-    fn upb_Arena_Free(arena: RawArena);
-    fn upb_Arena_Malloc(arena: RawArena, size: usize) -> *mut u8;
-    fn upb_Arena_Fuse(arena1: RawArena, arena2: RawArena) -> bool;
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn raw_ffi_test() {
-        // SAFETY: FFI unit test uses C API under expected patterns.
-        unsafe {
-            let arena = upb_Arena_New().unwrap();
-            let bytes = upb_Arena_Malloc(arena, 3);
-            *bytes.add(2) = 7;
-            upb_Arena_Free(arena);
-        }
-    }
 
     #[test]
     fn test_arena_new_and_free() {
