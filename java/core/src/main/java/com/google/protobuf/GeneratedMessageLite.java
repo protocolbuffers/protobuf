@@ -123,7 +123,6 @@ public abstract class GeneratedMessageLite<
     return MessageLiteToString.toString(this, super.toString());
   }
 
-  @SuppressWarnings("unchecked") // Guaranteed by runtime
   @Override
   public int hashCode() {
     if (isMutable()) {
@@ -1070,7 +1069,6 @@ public abstract class GeneratedMessageLite<
 
     /** Get the value of an extension. */
     @Override
-    @SuppressWarnings("unchecked")
     public final <Type> Type getExtension(final ExtensionLite<MessageType, Type> extension) {
       return instance.getExtension(extension);
     }
@@ -1330,7 +1328,6 @@ public abstract class GeneratedMessageLite<
       return messageDefaultInstance;
     }
 
-    @SuppressWarnings("unchecked")
     Object fromFieldSetType(Object value) {
       if (descriptor.isRepeated()) {
         if (descriptor.getLiteJavaType() == WireFormat.JavaType.ENUM) {
@@ -1590,7 +1587,6 @@ public abstract class GeneratedMessageLite<
   static <T extends GeneratedMessageLite<T, ?>> T parsePartialFrom(
       T instance, CodedInputStream input, ExtensionRegistryLite extensionRegistry)
       throws InvalidProtocolBufferException {
-    @SuppressWarnings("unchecked") // Guaranteed by protoc
     T result = instance.newMutableInstance();
     try {
       // TODO: Try to make input with type CodedInpuStream.ArrayDecoder use
@@ -1630,7 +1626,6 @@ public abstract class GeneratedMessageLite<
     if (length == 0) {
       return defaultInstance;
     }
-    @SuppressWarnings("unchecked") // Guaranteed by protoc
     T result = defaultInstance.newMutableInstance();
     try {
       Schema<T> schema = Protobuf.getInstance().schemaFor(result);
