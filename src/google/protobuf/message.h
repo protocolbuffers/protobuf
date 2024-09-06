@@ -479,6 +479,7 @@ class PROTOBUF_EXPORT Reflection final {
 
   // Returns true if the given message is a default message instance.
   bool IsDefaultInstance(const Message& message) const {
+    ABSL_DCHECK_EQ(message.GetReflection(), this);
     return schema_.IsDefaultInstance(message);
   }
 
