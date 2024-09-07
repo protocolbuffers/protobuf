@@ -110,6 +110,9 @@ bootstrap_cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//upb:friend_generators"],
     deps = [
+        "//src/google/protobuf/compiler:code_generator_lite",
+        "//upb:base",
+        "//upb:mem",
         "//upb:port",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",

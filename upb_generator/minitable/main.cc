@@ -6,10 +6,13 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
 #include "upb/reflection/def.hpp"

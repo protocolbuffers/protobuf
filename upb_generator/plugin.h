@@ -10,8 +10,11 @@
 
 #include <stdio.h>
 
+#include <cstring>
 #include <string>
+#include <utility>
 #include <vector>
+
 #ifdef _WIN32
 #include <fcntl.h>
 #include <io.h>
@@ -19,8 +22,12 @@
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
+#include "upb/base/status.hpp"
+#include "upb/base/string_view.h"
+#include "upb/mem/arena.h"
+#include "upb/mem/arena.hpp"
 #include "upb/reflection/def.hpp"
 #include "upb/reflection/descriptor_bootstrap.h"
 #include "upb_generator/plugin_bootstrap.h"
@@ -34,17 +41,7 @@ namespace generator {
 inline std::vector<std::pair<std::string, std::string>> ParseGeneratorParameter(
     const absl::string_view text) {
   std::vector<std::pair<std::string, std::string>> ret;
-  for (absl::string_view sp : absl::StrSplit(text, ',', absl::SkipEmpty())) {
-    std::string::size_type equals_pos = sp.find_first_of('=');
-    std::pair<std::string, std::string> value;
-    if (equals_pos == std::string::npos) {
-      value.first = std::string(sp);
-    } else {
-      value.first = std::string(sp.substr(0, equals_pos));
-      value.second = std::string(sp.substr(equals_pos + 1));
-    }
-    ret.push_back(std::move(value));
-  }
+  google::protobuf::compiler::ParseGeneratorParameter(text, &ret);
   return ret;
 }
 
