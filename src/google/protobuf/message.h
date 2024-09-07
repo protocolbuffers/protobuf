@@ -1234,11 +1234,17 @@ class PROTOBUF_EXPORT Reflection final {
     return schema_.IsFieldInlined(field);
   }
 
-  bool HasBit(const Message& message, const FieldDescriptor* field) const;
-  void SetBit(Message* message, const FieldDescriptor* field) const;
-  inline void ClearBit(Message* message, const FieldDescriptor* field) const;
-  inline void SwapBit(Message* message1, Message* message2,
-                      const FieldDescriptor* field) const;
+  // Returns true if the field is considered to be present.
+  // Requires the input to be 'singular' i.e. non-extension, non-oneof, non-weak
+  // field.
+  // For explicit presence fields, a field is present iff the hasbit is set.
+  // For implicit presence fields, a field is present iff it is nonzero.
+  bool HasFieldSingular(const Message& message,
+                        const FieldDescriptor* field) const;
+  void SetHasBit(Message* message, const FieldDescriptor* field) const;
+  inline void ClearHasBit(Message* message, const FieldDescriptor* field) const;
+  inline void SwapHasBit(Message* message1, Message* message2,
+                         const FieldDescriptor* field) const;
 
   inline const uint32_t* GetInlinedStringDonatedArray(
       const Message& message) const;
