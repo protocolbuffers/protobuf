@@ -5,20 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load(
-    "//bazel:upb_minitable_proto_library.bzl",
-    "upb_minitable_proto_library",
-)
-load(
-    "//bazel:upb_proto_library.bzl",
-    "upb_c_proto_library",
-    "upb_proto_reflection_library",
-)
-load(
-    "//upb/bazel:build_defs.bzl",
-    "UPB_DEFAULT_COPTS",
-    "UPB_DEFAULT_CPPOPTS",
-)
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_CPPOPTS")
 load(
     "//upb_generator:bootstrap_compiler.bzl",
     "bootstrap_cc_library",
@@ -28,31 +15,6 @@ load(
 package(default_applicable_licenses = ["//:license"])
 
 licenses(["notice"])
-
-proto_library(
-    name = "code_generator_request",
-    srcs = ["code_generator_request.proto"],
-    visibility = ["//upb:friends"],
-    deps = ["//:compiler_plugin_proto"],
-)
-
-upb_c_proto_library(
-    name = "code_generator_request_upb_proto",
-    visibility = ["//upb:friends"],
-    deps = [":code_generator_request"],
-)
-
-upb_proto_reflection_library(
-    name = "code_generator_request_upb_proto_reflection",
-    visibility = ["//upb:friends"],
-    deps = [":code_generator_request"],
-)
-
-upb_minitable_proto_library(
-    name = "code_generator_request_upb_minitable_proto",
-    visibility = ["//upb:friends"],
-    deps = [":code_generator_request"],
-)
 
 bootstrap_upb_proto_library(
     name = "plugin_upb_proto",
@@ -74,12 +36,6 @@ bootstrap_upb_proto_library(
     oss_strip_prefix = "third_party/protobuf/github/bootstrap/src",
     proto_lib_deps = ["//:compiler_plugin_proto"],
     deps = ["//upb/reflection:descriptor_upb_proto"],
-)
-
-upb_proto_reflection_library(
-    name = "plugin_upb_proto_reflection",
-    visibility = ["//upb:friends"],
-    deps = ["//:compiler_plugin_proto"],
 )
 
 bootstrap_cc_library(
@@ -195,52 +151,5 @@ cc_library(
     deps = [
         "//src/google/protobuf:port",
         "@com_google_absl//absl/strings",
-    ],
-)
-
-cc_binary(
-    name = "libupb_generator.so",
-    srcs = ["upb_generator_so.c"],
-    compatible_with = [],
-    copts = UPB_DEFAULT_COPTS + ["-DUPB_BUILD_API"],
-    linkshared = 1,
-    linkstatic = 1,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":upbdev",
-        "//upb:port",
-    ],
-)
-
-cc_library(
-    name = "upbdev",
-    srcs = [
-        "code_generator_request.c",
-        "code_generator_request.h",
-        "get_used_fields.c",
-        "upbdev.c",
-    ],
-    hdrs = [
-        "get_used_fields.h",
-        "upbdev.h",
-    ],
-    compatible_with = [],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:private"],
-    deps = [
-        ":code_generator_request_upb_proto",
-        ":code_generator_request_upb_proto_reflection",
-        "//src/google/protobuf:descriptor_upb_c_proto",
-        "//src/google/protobuf/compiler:plugin_upb_c_proto",
-        "//src/google/protobuf/compiler:plugin_upb_reflection_proto",
-        "//upb:base",
-        "//upb:json",
-        "//upb:mem",
-        "//upb:message",
-        "//upb:mini_descriptor",
-        "//upb:mini_table",
-        "//upb:port",
-        "//upb:reflection",
-        "//upb:wire",
     ],
 )
