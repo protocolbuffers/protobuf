@@ -412,10 +412,9 @@ void GenerateOneofInHeader(upb::OneofDefPtr oneof, const DefPoolPair& pools,
 }
 
 void GenerateHazzer(upb::FieldDefPtr field, const DefPoolPair& pools,
-                    absl::string_view msg_name,
-                    const NameToFieldDefMap& field_names,
+                    absl::string_view msg_name, const NameMangler& mangler,
                     const Options& options, Output& output) {
-  std::string resolved_name = ResolveFieldName(field, field_names);
+  std::string resolved_name = mangler.ResolveFieldName(field.name());
   if (field.has_presence()) {
     output(
         R"cc(
@@ -429,15 +428,14 @@ void GenerateHazzer(upb::FieldDefPtr field, const DefPoolPair& pools,
 }
 
 void GenerateClear(upb::FieldDefPtr field, const DefPoolPair& pools,
-                   absl::string_view msg_name,
-                   const NameToFieldDefMap& field_names, const Options& options,
-                   Output& output) {
+                   absl::string_view msg_name, const NameMangler& mangler,
+                   const Options& options, Output& output) {
   if (field == field.containing_type().map_key() ||
       field == field.containing_type().map_value()) {
     // Cannot be cleared.
     return;
   }
-  std::string resolved_name = ResolveFieldName(field, field_names);
+  std::string resolved_name = mangler.ResolveFieldName(field.name());
   output(
       R"cc(
         UPB_INLINE void $0_clear_$1($0* msg) {
@@ -449,10 +447,9 @@ void GenerateClear(upb::FieldDefPtr field, const DefPoolPair& pools,
 }
 
 void GenerateMapGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
-                        absl::string_view msg_name,
-                        const NameToFieldDefMap& field_names,
+                        absl::string_view msg_name, const NameMangler& mangler,
                         const Options& options, Output& output) {
-  std::string resolved_name = ResolveFieldName(field, field_names);
+  std::string resolved_name = mangler.ResolveFieldName(field.name());
   output(
       R"cc(
         UPB_INLINE size_t $0_$1_size(const $0* msg) {
@@ -524,8 +521,8 @@ void GenerateMapEntryGetters(upb::FieldDefPtr field, absl::string_view msg_name,
 
 void GenerateRepeatedGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
                              absl::string_view msg_name,
-                             const NameToFieldDefMap& field_names,
-                             const Options& options, Output& output) {
+                             const NameMangler& mangler, const Options& options,
+                             Output& output) {
   // Generate getter returning first item and size.
   //
   // Example:
@@ -546,7 +543,7 @@ void GenerateRepeatedGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       )cc",
       CTypeConst(field),                             // $0
       msg_name,                                      // $1
-      ResolveFieldName(field, field_names),          // $2
+      mangler.ResolveFieldName(field.name()),        // $2
       FieldInitializerStrong(pools, field, options)  // #3
   );
   // Generate private getter returning array or NULL for immutable and upb_Array
@@ -577,7 +574,7 @@ void GenerateRepeatedGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
       )cc",
       CTypeConst(field),                              // $0
       msg_name,                                       // $1
-      ResolveFieldName(field, field_names),           // $2
+      mangler.ResolveFieldName(field.name()),         // $2
       FieldInitializerStrong(pools, field, options),  // $3
       kRepeatedFieldArrayGetterPostfix,               // $4
       kRepeatedFieldMutableArrayGetterPostfix         // $5
@@ -586,9 +583,9 @@ void GenerateRepeatedGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
 
 void GenerateScalarGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
                            absl::string_view msg_name,
-                           const NameToFieldDefMap& field_names,
-                           const Options& Options, Output& output) {
-  std::string field_name = ResolveFieldName(field, field_names);
+                           const NameMangler& mangler, const Options& Options,
+                           Output& output) {
+  std::string field_name = mangler.ResolveFieldName(field.name());
   output(
       R"cc(
         UPB_INLINE $0 $1_$2(const $1* msg) {
@@ -605,26 +602,23 @@ void GenerateScalarGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
 }
 
 void GenerateGetters(upb::FieldDefPtr field, const DefPoolPair& pools,
-                     absl::string_view msg_name,
-                     const NameToFieldDefMap& field_names,
+                     absl::string_view msg_name, const NameMangler& mangler,
                      const Options& options, Output& output) {
   if (field.IsMap()) {
-    GenerateMapGetters(field, pools, msg_name, field_names, options, output);
+    GenerateMapGetters(field, pools, msg_name, mangler, options, output);
   } else if (field.containing_type().mapentry()) {
     GenerateMapEntryGetters(field, msg_name, output);
   } else if (field.IsSequence()) {
-    GenerateRepeatedGetters(field, pools, msg_name, field_names, options,
-                            output);
+    GenerateRepeatedGetters(field, pools, msg_name, mangler, options, output);
   } else {
-    GenerateScalarGetters(field, pools, msg_name, field_names, options, output);
+    GenerateScalarGetters(field, pools, msg_name, mangler, options, output);
   }
 }
 
 void GenerateMapSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
-                        absl::string_view msg_name,
-                        const NameToFieldDefMap& field_names,
+                        absl::string_view msg_name, const NameMangler& mangler,
                         const Options& options, Output& output) {
-  std::string resolved_name = ResolveFieldName(field, field_names);
+  std::string resolved_name = mangler.ResolveFieldName(field.name());
   output(
       R"cc(
         UPB_INLINE void $0_$1_clear($0* msg) {
@@ -674,9 +668,9 @@ void GenerateMapSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
 
 void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
                              absl::string_view msg_name,
-                             const NameToFieldDefMap& field_names,
-                             const Options& options, Output& output) {
-  std::string resolved_name = ResolveFieldName(field, field_names);
+                             const NameMangler& mangler, const Options& options,
+                             Output& output) {
+  std::string resolved_name = mangler.ResolveFieldName(field.name());
   output(
       R"cc(
         UPB_INLINE $0* $1_mutable_$2($1* msg, size_t* size) {
@@ -748,14 +742,14 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
 void GenerateNonRepeatedSetters(upb::FieldDefPtr field,
                                 const DefPoolPair& pools,
                                 absl::string_view msg_name,
-                                const NameToFieldDefMap& field_names,
+                                const NameMangler& mangler,
                                 const Options& options, Output& output) {
   if (field == field.containing_type().map_key()) {
     // Key cannot be mutated.
     return;
   }
 
-  std::string field_name = ResolveFieldName(field, field_names);
+  std::string field_name = mangler.ResolveFieldName(field.name());
 
   if (field == field.containing_type().map_value()) {
     output(R"cc(
@@ -797,16 +791,14 @@ void GenerateNonRepeatedSetters(upb::FieldDefPtr field,
 }
 
 void GenerateSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
-                     absl::string_view msg_name,
-                     const NameToFieldDefMap& field_names,
+                     absl::string_view msg_name, const NameMangler& mangler,
                      const Options& options, Output& output) {
   if (field.IsMap()) {
-    GenerateMapSetters(field, pools, msg_name, field_names, options, output);
+    GenerateMapSetters(field, pools, msg_name, mangler, options, output);
   } else if (field.IsSequence()) {
-    GenerateRepeatedSetters(field, pools, msg_name, field_names, options,
-                            output);
+    GenerateRepeatedSetters(field, pools, msg_name, mangler, options, output);
   } else {
-    GenerateNonRepeatedSetters(field, pools, msg_name, field_names, options,
+    GenerateNonRepeatedSetters(field, pools, msg_name, mangler, options,
                                output);
   }
 }
@@ -824,17 +816,17 @@ void GenerateMessageInHeader(upb::MessageDefPtr message,
     GenerateOneofInHeader(message.oneof(i), pools, msg_name, options, output);
   }
 
-  auto field_names = CreateFieldNameMap(message);
+  NameMangler mangler(GetUpbFields(message));
   for (auto field : FieldNumberOrder(message)) {
-    GenerateClear(field, pools, msg_name, field_names, options, output);
-    GenerateGetters(field, pools, msg_name, field_names, options, output);
-    GenerateHazzer(field, pools, msg_name, field_names, options, output);
+    GenerateClear(field, pools, msg_name, mangler, options, output);
+    GenerateGetters(field, pools, msg_name, mangler, options, output);
+    GenerateHazzer(field, pools, msg_name, mangler, options, output);
   }
 
   output("\n");
 
   for (auto field : FieldNumberOrder(message)) {
-    GenerateSetters(field, pools, msg_name, field_names, options, output);
+    GenerateSetters(field, pools, msg_name, mangler, options, output);
   }
 
   output("\n");

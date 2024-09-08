@@ -13,42 +13,75 @@
 #include "absl/base/attributes.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/descriptor.h"
-#include "upb/reflection/def.hpp"
 
 namespace upb {
 namespace generator {
 
-using NameToFieldDescriptorMap =
-    absl::flat_hash_map<absl::string_view, const google::protobuf::FieldDescriptor*>;
+enum FieldClass {
+  kStringField = 1 << 0,
+  kContainerField = 1 << 1,
+  kOtherField = 1 << 2,
+};
 
-// Returns field name by resolving naming conflicts across
-// proto field names (such as clear_ prefixes).
-std::string ResolveFieldName(const google::protobuf::FieldDescriptor* field,
-                             const NameToFieldDescriptorMap& field_names);
+class NameMangler {
+ public:
+  explicit NameMangler(
+      const absl::flat_hash_map<std::string, FieldClass>& fields);
 
-// Returns field map by name to use for conflict checks.
-NameToFieldDescriptorMap CreateFieldNameMap(const google::protobuf::Descriptor* message);
+  std::string ResolveFieldName(absl::string_view name) const {
+    auto it = names_.find(name);
+    return it == names_.end() ? std::string(name) : it->second;
+  }
 
-using NameToFieldDefMap =
-    absl::flat_hash_map<absl::string_view, upb::FieldDefPtr>;
+ private:
+  // Maps field_name -> mangled_name.  If a field name is not in the map, it
+  // is not mangled.
+  absl::flat_hash_map<std::string, std::string> names_;
+};
 
-// Returns field name by resolving naming conflicts across
-// proto field names (such as clear_ prefixes).
-std::string ResolveFieldName(upb::FieldDefPtr field,
-                             const NameToFieldDefMap& field_names);
+// Here we provide functions for building field lists from both C++ and upb
+// reflection.  They are templated so as to not actually introduce dependencies
+// on either C++ or upb.
 
-// Returns field map by name to use for conflict checks.
-NameToFieldDefMap CreateFieldNameMap(upb::MessageDefPtr message);
+template <class T>
+absl::flat_hash_map<std::string, FieldClass> GetCppFields(const T* descriptor) {
+  absl::flat_hash_map<std::string, FieldClass> fields;
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    const auto* field = descriptor->field(i);
+    if (field->is_repeated() || field->is_map()) {
+      fields.emplace(field->name(), kContainerField);
+    } else if (field->cpp_type() == field->CPPTYPE_STRING) {
+      fields.emplace(field->name(), kStringField);
+    } else {
+      fields.emplace(field->name(), kOtherField);
+    }
+  }
+  return fields;
+}
 
-// Private array getter name postfix for repeated fields.
-ABSL_CONST_INIT extern const absl::string_view kRepeatedFieldArrayGetterPostfix;
-ABSL_CONST_INIT extern const absl::string_view
-    kRepeatedFieldMutableArrayGetterPostfix;
+template <class T>
+absl::flat_hash_map<std::string, FieldClass> GetUpbFields(const T& msg_def) {
+  absl::flat_hash_map<std::string, FieldClass> fields;
+  for (const auto field : msg_def.fields()) {
+    if (field.IsSequence() || field.IsMap()) {
+      fields.emplace(field.name(), kContainerField);
+    } else if (field.ctype() == decltype(field)::CType::kUpb_CType_String) {
+      fields.emplace(field.name(), kStringField);
+    } else {
+      fields.emplace(field.name(), kOtherField);
+    }
+  }
+  return fields;
+}
 
-// Private getter name postfix for map fields.
-ABSL_CONST_INIT extern const absl::string_view kMapGetterPostfix;
-ABSL_CONST_INIT extern const absl::string_view kMutableMapGetterPostfix;
+ABSL_CONST_INIT const absl::string_view kRepeatedFieldArrayGetterPostfix =
+    "upb_array";
+ABSL_CONST_INIT const absl::string_view
+    kRepeatedFieldMutableArrayGetterPostfix = "mutable_upb_array";
+
+ABSL_CONST_INIT const absl::string_view kMapGetterPostfix = "upb_map";
+ABSL_CONST_INIT const absl::string_view kMutableMapGetterPostfix =
+    "mutable_upb_map";
 
 }  // namespace generator
 }  // namespace upb

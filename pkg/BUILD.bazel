@@ -225,8 +225,6 @@ cc_dist_library(
 cc_dist_library(
     name = "protoc-gen-upb",
     dist_deps = [
-        ":protobuf",
-        ":protoc",
         ":upb",
     ],
     tags = ["manual"],
@@ -238,8 +236,6 @@ cc_dist_library(
 cc_dist_library(
     name = "protoc-gen-upbdefs",
     dist_deps = [
-        ":protobuf",
-        ":protoc",
         ":upb",
     ],
     tags = ["manual"],
@@ -251,8 +247,6 @@ cc_dist_library(
 cc_dist_library(
     name = "protoc-gen-upb_minitable",
     dist_deps = [
-        ":protobuf",
-        ":protoc",
         ":upb",
     ],
     tags = ["manual"],

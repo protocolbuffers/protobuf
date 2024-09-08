@@ -59,6 +59,11 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
 std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
                              const NameToFieldDescriptorMap& field_names);
 
+upb::generator::NameMangler CreateNameMangler(
+    const protobuf::Descriptor* message) {
+  return upb::generator::NameMangler(upb::generator::GetCppFields(message));
+}
+
 NameToFieldDescriptorMap CreateFieldNameMap(
     const protobuf::Descriptor* message) {
   NameToFieldDescriptorMap field_names;
@@ -75,12 +80,11 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
   OutputIndenter i(output);
 
   auto field_names = CreateFieldNameMap(desc);
-  auto upbc_field_names = upb::generator::CreateFieldNameMap(desc);
+  auto mangler = CreateNameMangler(desc);
 
   for (const auto* field : FieldNumberOrder(desc)) {
     std::string resolved_field_name = ResolveFieldName(field, field_names);
-    std::string resolved_upbc_name =
-        upb::generator::ResolveFieldName(field, upbc_field_names);
+    std::string resolved_upbc_name = mangler.ResolveFieldName(field->name());
     WriteFieldAccessorHazzer(desc, field, resolved_field_name,
                              resolved_upbc_name, output);
     WriteFieldAccessorClear(desc, field, resolved_field_name,
@@ -191,14 +195,13 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
   output("namespace internal {\n");
   const char arena_expression[] = "arena_";
   auto field_names = CreateFieldNameMap(desc);
-  auto upbc_field_names = upb::generator::CreateFieldNameMap(desc);
+  auto mangler = CreateNameMangler(desc);
 
   // Generate const methods.
   OutputIndenter i(output);
   for (const auto* field : FieldNumberOrder(desc)) {
     std::string resolved_field_name = ResolveFieldName(field, field_names);
-    std::string resolved_upbc_name =
-        upb::generator::ResolveFieldName(field, upbc_field_names);
+    std::string resolved_upbc_name = mangler.ResolveFieldName(field->name());
     if (field->is_map()) {
       WriteMapAccessorDefinitions(desc, field, resolved_field_name, class_name,
                                   output);

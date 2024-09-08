@@ -121,21 +121,13 @@ bootstrap_cc_library(
     ],
 )
 
-bootstrap_cc_library(
+cc_library(
     name = "names",
-    srcs = [
-        "names.cc",
-    ],
-    hdrs = [
-        "names.h",
-    ],
-    bootstrap_deps = [
-        "//upb/reflection:reflection",
-    ],
+    srcs = ["names.cc"],
+    hdrs = ["names.h"],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//upb:friend_generators"],
     deps = [
-        "//:protobuf",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings",

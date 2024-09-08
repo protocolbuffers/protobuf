@@ -31,7 +31,6 @@ bootstrap_cc_library(
     bootstrap_deps = [
         "//upb_generator:common",
         "//upb_generator:file_layout",
-        "//upb_generator:names",
         "//upb_generator:plugin",
         "//upb_generator:plugin_upb_proto",
         "//upb/reflection:descriptor_upb_proto",
@@ -45,6 +44,7 @@ bootstrap_cc_library(
         "//upb:mini_table",
         "//upb:port",
         "//upb:wire_reader",
+        "//upb_generator:names",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
