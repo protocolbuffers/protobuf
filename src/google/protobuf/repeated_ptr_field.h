@@ -94,6 +94,10 @@ struct ArenaOffsetHelper {
   static constexpr size_t value = offsetof(T, arena_);
 };
 
+// Defined further below.
+template <typename Type>
+class GenericTypeHandler;
+
 // This is the common base class for RepeatedPtrFields.  It deals only in void*
 // pointers.  Users should not use this interface directly.
 //

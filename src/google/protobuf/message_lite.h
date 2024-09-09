@@ -225,9 +225,6 @@ class WireFormatLite;
 class WeakFieldMap;
 class RustMapHelper;
 
-template <typename Type>
-class GenericTypeHandler;  // defined in repeated_field.h
-
 // We compute sizes as size_t but cache them as int.  This function converts a
 // computed size to a cached size.  Since we don't proceed with serialization
 // if the total size was > INT_MAX, it is not important what this function
@@ -959,8 +956,6 @@ class PROTOBUF_EXPORT MessageLite {
 
   template <typename Type>
   friend class Arena::InternalHelper;
-  template <typename Type>
-  friend class internal::GenericTypeHandler;
 
   friend auto internal::GetClassData(const MessageLite& msg);
 
