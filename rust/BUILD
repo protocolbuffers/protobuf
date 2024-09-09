@@ -114,6 +114,7 @@ rust_library(
     rustc_flags = ["--cfg=upb_kernel"],
     visibility = [
         "//src/google/protobuf:__subpackages__",
+        "//rust/test:__subpackages__",
     ],
     deps = [":protobuf_upb"],
 )
@@ -130,7 +131,13 @@ rust_library(
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
-    rustc_flags = ["--cfg=cpp_kernel"],
+    rustc_flags = [
+        "--cfg=cpp_kernel",
+        "--cfg=bzl",
+    ],
+    visibility = [
+        "//rust/test:__subpackages__",
+    ],
     deps = [
         ":utf8",
         "//rust/cpp_kernel:cpp_api",
@@ -155,9 +162,13 @@ rust_library(
     name = "protobuf_cpp_export",
     testonly = True,
     srcs = ["protobuf.rs"],
-    rustc_flags = ["--cfg=cpp_kernel"],
+    rustc_flags = [
+        "--cfg=cpp_kernel",
+        "--cfg=bzl",
+    ],
     visibility = [
         "//src/google/protobuf:__subpackages__",
+        "//rust/test:__subpackages__",
     ],
     deps = [":protobuf_cpp"],
 )
