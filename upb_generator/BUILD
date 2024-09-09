@@ -93,7 +93,7 @@ cc_library(
         "keywords.h",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//src/google/protobuf/compiler/hpb:__pkg__"],
+    visibility = ["//upb:friends"],
 )
 
 bootstrap_cc_library(
