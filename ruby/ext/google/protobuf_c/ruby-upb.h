@@ -1499,7 +1499,14 @@ UPB_API_INLINE size_t upb_Array_Size(const struct upb_Array* arr) {
 #define UPB_MESSAGE_VALUE_H_
 
 #include <stdint.h>
+#include <string.h>
 
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef union {
   bool bool_val;
@@ -1521,11 +1528,28 @@ typedef union {
   uintptr_t tagged_msg_val;  // upb_TaggedMessagePtr
 } upb_MessageValue;
 
+UPB_API_INLINE upb_MessageValue upb_MessageValue_Zero(void) {
+  upb_MessageValue zero;
+  memset(&zero, 0, sizeof(zero));
+  return zero;
+}
+
 typedef union {
   struct upb_Array* array;
   struct upb_Map* map;
   struct upb_Message* msg;
 } upb_MutableMessageValue;
+
+UPB_API_INLINE upb_MutableMessageValue upb_MutableMessageValue_Zero(void) {
+  upb_MutableMessageValue zero;
+  memset(&zero, 0, sizeof(zero));
+  return zero;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
 
 #endif /* UPB_MESSAGE_VALUE_H_ */
 

@@ -1183,7 +1183,6 @@ static upb_MessageValue jsondec_int(jsondec* d, const upb_FieldDef* f) {
 /* Parse UINT32 or UINT64 value. */
 static upb_MessageValue jsondec_uint(jsondec* d, const upb_FieldDef* f) {
   upb_MessageValue val;
-  memset(&val, 0, sizeof(val));
 
   switch (jsondec_peek(d)) {
     case JD_NUMBER: {
@@ -1221,7 +1220,6 @@ static upb_MessageValue jsondec_uint(jsondec* d, const upb_FieldDef* f) {
 static upb_MessageValue jsondec_double(jsondec* d, const upb_FieldDef* f) {
   upb_StringView str;
   upb_MessageValue val;
-  memset(&val, 0, sizeof(val));
 
   switch (jsondec_peek(d)) {
     case JD_NUMBER:
@@ -15251,8 +15249,7 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
   const upb_MiniTable* mt = upb_MessageDef_MiniTable(m);
   size_t i = *iter;
   size_t n = upb_MiniTable_FieldCount(mt);
-  upb_MessageValue zero;
-  memset(&zero, 0, sizeof(zero));
+  upb_MessageValue zero = upb_MessageValue_Zero();
   UPB_UNUSED(ext_pool);
 
   // Iterate over normal fields, returning the first one that is set.
