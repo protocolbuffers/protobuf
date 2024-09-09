@@ -60,7 +60,7 @@ bazel_dep(
 
 bazel_dep(
     name = "rules_pkg",
-    version = "0.7.0",
+    version = "1.0.1",
 )
 
 bazel_dep(
