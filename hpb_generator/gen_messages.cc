@@ -395,12 +395,12 @@ void WriteMessageImplementation(
           $0::$0(const CProxy& from) : $0Access() {
             arena_ = owned_arena_.ptr();
             msg_ = ($1*)::hpb::internal::DeepClone(
-                ::hpb::internal::GetInternalMsg(&from), &$2, arena_);
+                ::hpb::interop::upb::GetMessage(&from), &$2, arena_);
           }
           $0::$0(const Proxy& from) : $0(static_cast<const CProxy&>(from)) {}
           internal::$0CProxy::$0CProxy($0Proxy m) : $0Access() {
             arena_ = m.arena_;
-            msg_ = ($1*)::hpb::internal::GetInternalMsg(&m);
+            msg_ = ($1*)::hpb::interop::upb::GetMessage(&m);
           }
           $0& $0::operator=(const $3& from) {
             arena_ = owned_arena_.ptr();
@@ -410,7 +410,7 @@ void WriteMessageImplementation(
           $0& $0::operator=(const CProxy& from) {
             arena_ = owned_arena_.ptr();
             msg_ = ($1*)::hpb::internal::DeepClone(
-                ::hpb::internal::GetInternalMsg(&from), &$2, arena_);
+                ::hpb::interop::upb::GetMessage(&from), &$2, arena_);
             return *this;
           }
         )cc",

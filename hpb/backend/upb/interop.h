@@ -29,6 +29,11 @@ const upb_MiniTable* GetMiniTable(Ptr<T>) {
 }
 
 template <typename T>
+auto* GetMessage(T&& message) {
+  return hpb::internal::PrivateAccess::GetInternalMsg(std::forward<T>(message));
+}
+
+template <typename T>
 upb_Arena* GetArena(Ptr<T> message) {
   return static_cast<upb_Arena*>(message->GetInternalArena());
 }

@@ -2,7 +2,6 @@
 #define GOOGLE_PROTOBUF_HPB_INTERNAL_INTERNAL_H__
 
 #include <cstdint>
-#include <utility>
 
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
@@ -32,11 +31,6 @@ struct PrivateAccess {
     return id.number();
   }
 };
-
-template <typename T>
-auto* GetInternalMsg(T&& message) {
-  return PrivateAccess::GetInternalMsg(std::forward<T>(message));
-}
 
 }  // namespace hpb::internal
 

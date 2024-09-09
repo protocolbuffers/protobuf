@@ -19,7 +19,7 @@ template <typename T>
 void ClearMessage(hpb::internal::PtrOrRaw<T> message) {
   auto ptr = Ptr(message);
   auto minitable = hpb::interop::upb::GetMiniTable(ptr);
-  upb_Message_Clear(hpb::internal::GetInternalMsg(ptr), minitable);
+  upb_Message_Clear(hpb::interop::upb::GetMessage(ptr), minitable);
 }
 
 }  // namespace hpb::internal::backend::upb

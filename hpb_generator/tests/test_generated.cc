@@ -22,7 +22,9 @@
 #include "google/protobuf/compiler/hpb/tests/no_package.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/test_extension.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
+#include "google/protobuf/hpb/backend/upb/interop.h"
 #include "google/protobuf/hpb/hpb.h"
+#include "google/protobuf/hpb/ptr.h"
 #include "google/protobuf/hpb/repeated_field.h"
 #include "google/protobuf/hpb/requires.h"
 #include "upb/mem/arena.h"
@@ -711,7 +713,7 @@ TEST(CppGeneratedCode, SetExtension) {
     // Use a nested scope to make sure the arenas are fused correctly.
     ThemeExtension extension1;
     extension1.set_ext_name("Hello World");
-    prior_message = ::hpb::internal::GetInternalMsg(&extension1);
+    prior_message = hpb::interop::upb::GetMessage(&extension1);
     EXPECT_EQ(false, ::hpb::HasExtension(&model, theme));
     EXPECT_EQ(true,
               ::hpb::SetExtension(&model, theme, std::move(extension1)).ok());
@@ -719,7 +721,7 @@ TEST(CppGeneratedCode, SetExtension) {
   EXPECT_EQ(true, ::hpb::HasExtension(&model, theme));
   auto ext = hpb::GetExtension(&model, theme);
   EXPECT_TRUE(ext.ok());
-  EXPECT_EQ(::hpb::internal::GetInternalMsg(*ext), prior_message);
+  EXPECT_EQ(hpb::interop::upb::GetMessage(*ext), prior_message);
 }
 
 TEST(CppGeneratedCode, SetExtensionWithPtr) {
@@ -732,7 +734,7 @@ TEST(CppGeneratedCode, SetExtensionWithPtr) {
     ::hpb::Ptr<ThemeExtension> extension1 =
         ::hpb::CreateMessage<ThemeExtension>(arena);
     extension1->set_ext_name("Hello World");
-    prior_message = ::hpb::internal::GetInternalMsg(extension1);
+    prior_message = hpb::interop::upb::GetMessage(extension1);
     EXPECT_EQ(false, ::hpb::HasExtension(model, theme));
     auto res = ::hpb::SetExtension(model, theme, extension1);
     EXPECT_EQ(true, res.ok());
@@ -740,7 +742,7 @@ TEST(CppGeneratedCode, SetExtensionWithPtr) {
   EXPECT_EQ(true, ::hpb::HasExtension(model, theme));
   auto ext = hpb::GetExtension(model, theme);
   EXPECT_TRUE(ext.ok());
-  EXPECT_NE(::hpb::internal::GetInternalMsg(*ext), prior_message);
+  EXPECT_NE(hpb::interop::upb::GetMessage(*ext), prior_message);
 }
 
 #ifndef _MSC_VER
@@ -774,7 +776,7 @@ TEST(CppGeneratedCode, SetExtensionWithPtrSameArena) {
     ::hpb::Ptr<ThemeExtension> extension1 =
         ::hpb::CreateMessage<ThemeExtension>(arena);
     extension1->set_ext_name("Hello World");
-    prior_message = ::hpb::internal::GetInternalMsg(extension1);
+    prior_message = hpb::interop::upb::GetMessage(extension1);
     EXPECT_EQ(false, ::hpb::HasExtension(model, theme));
     auto res = ::hpb::SetExtension(model, theme, extension1);
     EXPECT_EQ(true, res.ok());
@@ -782,7 +784,7 @@ TEST(CppGeneratedCode, SetExtensionWithPtrSameArena) {
   EXPECT_EQ(true, ::hpb::HasExtension(model, theme));
   auto ext = hpb::GetExtension(model, theme);
   EXPECT_TRUE(ext.ok());
-  EXPECT_NE(::hpb::internal::GetInternalMsg(*ext), prior_message);
+  EXPECT_NE(hpb::interop::upb::GetMessage(*ext), prior_message);
 }
 
 TEST(CppGeneratedCode, SetExtensionFusingFailureShouldCopy) {

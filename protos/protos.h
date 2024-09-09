@@ -9,7 +9,6 @@
 #include "google/protobuf/hpb/hpb.h"
 namespace protos {
 namespace internal {
-using hpb::internal::GetInternalMsg;
 }  // namespace internal
 
 using hpb::Arena;
