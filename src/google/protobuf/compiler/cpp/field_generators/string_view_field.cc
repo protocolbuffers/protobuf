@@ -218,17 +218,9 @@ void SingularStringView::GenerateStaticMembers(io::Printer* p) const {
 void SingularStringView::GenerateAccessorDeclarations(io::Printer* p) const {
   ABSL_CHECK(!field_->options().has_ctype());
 
-  auto vars = AnnotatedAccessors(field_, {"", "set_allocated_"});
-  vars.push_back(Sub{
-      "release_name",
-      SafeFunctionName(field_->containing_type(), field_, "release_"),
-  }
-                     .AnnotatedAs(field_));
-  auto v1 = p->WithVars(vars);
+  auto v1 = p->WithVars(AnnotatedAccessors(field_, {""}));
   auto v2 = p->WithVars(
       AnnotatedAccessors(field_, {"set_"}, AnnotationCollector::kSet));
-  auto v3 = p->WithVars(
-      AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
 
   p->Emit(
       {{"donated",
@@ -305,8 +297,6 @@ void SingularStringView::GenerateInlineAccessorDefinitions(
                }
              )cc");
            }},
-          {"release_name",
-           SafeFunctionName(field_->containing_type(), field_, "release_")},
       },
       R"cc(
         inline absl::string_view $Msg$::$name$() const
