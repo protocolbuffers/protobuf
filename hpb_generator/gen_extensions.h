@@ -13,7 +13,7 @@
 
 namespace google::protobuf::hpb_generator {
 
-namespace protobuf = ::proto2;
+namespace protobuf = ::google::protobuf;
 
 void WriteExtensionIdentifiersHeader(
     const std::vector<const protobuf::FieldDescriptor*>& extensions,
@@ -26,7 +26,6 @@ void WriteExtensionIdentifiers(
 void WriteExtensionIdentifier(const protobuf::FieldDescriptor* ext,
                               Context& ctx);
 
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator
 
 #endif  // PROTOBUF_COMPILER_HBP_GEN_EXTENSIONS_H_

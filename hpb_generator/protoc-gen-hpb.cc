@@ -26,7 +26,7 @@ namespace google::protobuf::hpb_generator {
 namespace {
 
 namespace protoc = ::google::protobuf::compiler;
-namespace protobuf = ::proto2;
+namespace protobuf = ::google::protobuf;
 using FileDescriptor = ::google::protobuf::FileDescriptor;
 using google::protobuf::Edition;
 
@@ -277,8 +277,7 @@ void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
 }
 
 }  // namespace
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator
 
 int main(int argc, char** argv) {
   google::protobuf::hpb_generator::Generator generator_cc;

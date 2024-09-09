@@ -13,7 +13,7 @@
 
 namespace google::protobuf::hpb_generator {
 
-namespace protobuf = ::proto2;
+namespace protobuf = ::google::protobuf;
 
 std::string EnumTypeName(const protobuf::EnumDescriptor* enum_descriptor);
 std::string EnumValueSymbolInNameSpace(
@@ -22,7 +22,6 @@ std::string EnumValueSymbolInNameSpace(
 void WriteEnumDeclarations(
     const std::vector<const protobuf::EnumDescriptor*>& enums, Context& ctx);
 
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator
 
 #endif  // PROTOBUF_COMPILER_HBP_GEN_ENUMS_H_

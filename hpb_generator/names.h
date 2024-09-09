@@ -15,7 +15,7 @@
 
 namespace google::protobuf::hpb_generator {
 
-namespace protobuf = ::proto2;
+namespace protobuf = ::google::protobuf;
 
 inline constexpr absl::string_view kNoPackageNamePrefix = "hpb_";
 
@@ -45,7 +45,6 @@ std::string MessageCProxyType(const protobuf::FieldDescriptor* field,
 std::string MessageProxyType(const protobuf::FieldDescriptor* field,
                              bool is_const);
 
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator
 
 #endif  // PROTOBUF_COMPILER_HBP_GEN_NAMES_H_
