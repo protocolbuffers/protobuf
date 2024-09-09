@@ -29,7 +29,7 @@ namespace Pb {
             "c3NhZ2UaTQoGTmVzdGVkMkMKC3Rlc3RfbmVzdGVkEhsuZ29vZ2xlLnByb3Rv",
             "YnVmLkZlYXR1cmVTZXQYjU4gASgLMhAucGIuVGVzdEZlYXR1cmVzMkQKDHRl",
             "c3RfbWVzc2FnZRIbLmdvb2dsZS5wcm90b2J1Zi5GZWF0dXJlU2V0GI5OIAEo",
-            "CzIQLnBiLlRlc3RGZWF0dXJlcyLbCgoMVGVzdEZlYXR1cmVzEnsKDGZpbGVf",
+            "CzIQLnBiLlRlc3RGZWF0dXJlcyKsDAoMVGVzdEZlYXR1cmVzEnsKDGZpbGVf",
             "ZmVhdHVyZRgBIAEoDjIPLnBiLkVudW1GZWF0dXJlQlSIAQGYAQGiAQsSBlZB",
             "TFVFMRiEB6IBCxIGVkFMVUUyGOcHogELEgZWQUxVRTMY6AeiAQwSBlZBTFVF",
             "NBidjQaiAQwSBlZBTFVFNRiejQayAQMI6AcSTAoXZXh0ZW5zaW9uX3Jhbmdl",
@@ -59,21 +59,32 @@ namespace Pb {
             "IOkHElQKDmZ1dHVyZV9mZWF0dXJlGBIgASgOMg8ucGIuRW51bUZlYXR1cmVC",
             "K4gBAZgBAZgBBKIBCxIGVkFMVUUxGIQHogELEgZWQUxVRTIY6QeyAQMI6QcS",
             "VwoObGVnYWN5X2ZlYXR1cmUYEyABKA4yDy5wYi5FbnVtRmVhdHVyZUIuiAEB",
-            "mAEBmAEEogELEgZWQUxVRTEYhAeiAQsSBlZBTFVFMhjoB7IBBgjnByDoByrJ",
-            "AgoLRW51bUZlYXR1cmUSHQoZVEVTVF9FTlVNX0ZFQVRVUkVfVU5LTk9XThAA",
-            "EgoKBlZBTFVFMRABEgoKBlZBTFVFMhACEgoKBlZBTFVFMxADEgoKBlZBTFVF",
-            "NBAEEgoKBlZBTFVFNRAFEgoKBlZBTFVFNhAGEgoKBlZBTFVFNxAHEgoKBlZB",
-            "TFVFOBAIEgoKBlZBTFVFORAJEgsKB1ZBTFVFMTAQChILCgdWQUxVRTExEAsS",
-            "CwoHVkFMVUUxMhAMEgsKB1ZBTFVFMTMQDRILCgdWQUxVRTE0EA4SCwoHVkFM",
-            "VUUxNRAPEhsKE1ZBTFVFX0VNUFRZX1NVUFBPUlQQYhoCIgASRAoMVkFMVUVf",
-            "RlVUVVJFEGMaMiIwCJ2NBhCejQYaIkN1c3RvbSBmZWF0dXJlIGRlcHJlY2F0",
-            "aW9uIHdhcm5pbmcgn40GOjwKBHRlc3QSGy5nb29nbGUucHJvdG9idWYuRmVh",
-            "dHVyZVNldBiPTiABKAsyEC5wYi5UZXN0RmVhdHVyZXM="));
+            "mAEBmAEEogELEgZWQUxVRTEYhAeiAQsSBlZBTFVFMhjoB7IBBgjnByDoBxLO",
+            "AQoWdmFsdWVfbGlmZXRpbWVfZmVhdHVyZRgUIAEoDjIYLnBiLlZhbHVlTGlm",
+            "ZXRpbWVGZWF0dXJlQpMBiAEBmAEBogEdEhhWQUxVRV9MSUZFVElNRV9JTkhF",
+            "UklURUQYhAeiARoSFVZBTFVFX0xJRkVUSU1FX0ZVVFVSRRjoB6IBGxIVVkFM",
+            "VUVfTElGRVRJTUVfRlVUVVJFGJ+NBrIBLwjoBxCejQYaIkN1c3RvbSBmZWF0",
+            "dXJlIGRlcHJlY2F0aW9uIHdhcm5pbmcgn40GKuYBCgtFbnVtRmVhdHVyZRId",
+            "ChlURVNUX0VOVU1fRkVBVFVSRV9VTktOT1dOEAASCgoGVkFMVUUxEAESCgoG",
+            "VkFMVUUyEAISCgoGVkFMVUUzEAMSCgoGVkFMVUU0EAQSCgoGVkFMVUU1EAUS",
+            "CgoGVkFMVUU2EAYSCgoGVkFMVUU3EAcSCgoGVkFMVUU4EAgSCgoGVkFMVUU5",
+            "EAkSCwoHVkFMVUUxMBAKEgsKB1ZBTFVFMTEQCxILCgdWQUxVRTEyEAwSCwoH",
+            "VkFMVUUxMxANEgsKB1ZBTFVFMTQQDhILCgdWQUxVRTE1EA8q4AIKFFZhbHVl",
+            "TGlmZXRpbWVGZWF0dXJlEh8KG1RFU1RfVkFMVUVfTElGRVRJTUVfVU5LTk9X",
+            "ThAAEhwKGFZBTFVFX0xJRkVUSU1FX0lOSEVSSVRFRBABEk4KFlZBTFVFX0xJ",
+            "RkVUSU1FX1NVUFBPUlQQAhoyIjAInY0GEJ6NBhoiQ3VzdG9tIGZlYXR1cmUg",
+            "ZGVwcmVjYXRpb24gd2FybmluZyCfjQYSJAocVkFMVUVfTElGRVRJTUVfRU1Q",
+            "VFlfU1VQUE9SVBADGgIiABIhChVWQUxVRV9MSUZFVElNRV9GVVRVUkUQBBoG",
+            "IgQInY0GEkkKGVZBTFVFX0xJRkVUSU1FX0RFUFJFQ0FURUQQBRoqIigQnY0G",
+            "GiJDdXN0b20gZmVhdHVyZSBkZXByZWNhdGlvbiB3YXJuaW5nEiUKFlZBTFVF",
+            "X0xJRkVUSU1FX1JFTU9WRUQQBhoJIgcQ6AcgnY0GOjwKBHRlc3QSGy5nb29n",
+            "bGUucHJvdG9idWYuRmVhdHVyZVNldBiPTiABKAsyEC5wYi5UZXN0RmVhdHVy",
+            "ZXNiCGVkaXRpb25zcOgH"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Pb.EnumFeature), }, new pb::Extension[] { UnittestFeaturesExtensions.Test }, new pbr::GeneratedClrTypeInfo[] {
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Pb.EnumFeature), typeof(global::Pb.ValueLifetimeFeature), }, new pb::Extension[] { UnittestFeaturesExtensions.Test }, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestMessage), global::Pb.TestMessage.Parser, null, null, null, new pb::Extension[] { global::Pb.TestMessage.Extensions.TestMessage }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestMessage.Types.Nested), global::Pb.TestMessage.Types.Nested.Parser, null, null, null, new pb::Extension[] { global::Pb.TestMessage.Types.Nested.Extensions.TestNested }, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestFeatures), global::Pb.TestFeatures.Parser, new[]{ "FileFeature", "ExtensionRangeFeature", "MessageFeature", "FieldFeature", "OneofFeature", "EnumFeature", "EnumEntryFeature", "ServiceFeature", "MethodFeature", "MultipleFeature", "BoolFieldFeature", "SourceFeature", "SourceFeature2", "RemovedFeature", "FutureFeature", "LegacyFeature" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestFeatures), global::Pb.TestFeatures.Parser, new[]{ "FileFeature", "ExtensionRangeFeature", "MessageFeature", "FieldFeature", "OneofFeature", "EnumFeature", "EnumEntryFeature", "ServiceFeature", "MethodFeature", "MultipleFeature", "BoolFieldFeature", "SourceFeature", "SourceFeature2", "RemovedFeature", "FutureFeature", "LegacyFeature", "ValueLifetimeFeature" }, null, null, null, null)
           }));
     }
     #endregion
@@ -103,8 +114,16 @@ namespace Pb {
     [pbr::OriginalName("VALUE13")] Value13 = 13,
     [pbr::OriginalName("VALUE14")] Value14 = 14,
     [pbr::OriginalName("VALUE15")] Value15 = 15,
-    [pbr::OriginalName("VALUE_EMPTY_SUPPORT")] ValueEmptySupport = 98,
-    [pbr::OriginalName("VALUE_FUTURE")] ValueFuture = 99,
+  }
+
+  public enum ValueLifetimeFeature {
+    [pbr::OriginalName("TEST_VALUE_LIFETIME_UNKNOWN")] TestValueLifetimeUnknown = 0,
+    [pbr::OriginalName("VALUE_LIFETIME_INHERITED")] ValueLifetimeInherited = 1,
+    [pbr::OriginalName("VALUE_LIFETIME_SUPPORT")] ValueLifetimeSupport = 2,
+    [pbr::OriginalName("VALUE_LIFETIME_EMPTY_SUPPORT")] ValueLifetimeEmptySupport = 3,
+    [pbr::OriginalName("VALUE_LIFETIME_FUTURE")] ValueLifetimeFuture = 4,
+    [pbr::OriginalName("VALUE_LIFETIME_DEPRECATED")] ValueLifetimeDeprecated = 5,
+    [pbr::OriginalName("VALUE_LIFETIME_REMOVED")] ValueLifetimeRemoved = 6,
   }
 
   #endregion
@@ -513,6 +532,7 @@ namespace Pb {
       removedFeature_ = other.removedFeature_;
       futureFeature_ = other.futureFeature_;
       legacyFeature_ = other.legacyFeature_;
+      valueLifetimeFeature_ = other.valueLifetimeFeature_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -954,6 +974,33 @@ namespace Pb {
       _hasBits0 &= ~32768;
     }
 
+    /// <summary>Field number for the "value_lifetime_feature" field.</summary>
+    public const int ValueLifetimeFeatureFieldNumber = 20;
+    private readonly static global::Pb.ValueLifetimeFeature ValueLifetimeFeatureDefaultValue = global::Pb.ValueLifetimeFeature.TestValueLifetimeUnknown;
+
+    private global::Pb.ValueLifetimeFeature valueLifetimeFeature_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Pb.ValueLifetimeFeature ValueLifetimeFeature {
+      get { if ((_hasBits0 & 65536) != 0) { return valueLifetimeFeature_; } else { return ValueLifetimeFeatureDefaultValue; } }
+      set {
+        _hasBits0 |= 65536;
+        valueLifetimeFeature_ = value;
+      }
+    }
+    /// <summary>Gets whether the "value_lifetime_feature" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasValueLifetimeFeature {
+      get { return (_hasBits0 & 65536) != 0; }
+    }
+    /// <summary>Clears the value of the "value_lifetime_feature" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearValueLifetimeFeature() {
+      _hasBits0 &= ~65536;
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -985,6 +1032,7 @@ namespace Pb {
       if (RemovedFeature != other.RemovedFeature) return false;
       if (FutureFeature != other.FutureFeature) return false;
       if (LegacyFeature != other.LegacyFeature) return false;
+      if (ValueLifetimeFeature != other.ValueLifetimeFeature) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1008,6 +1056,7 @@ namespace Pb {
       if (HasRemovedFeature) hash ^= RemovedFeature.GetHashCode();
       if (HasFutureFeature) hash ^= FutureFeature.GetHashCode();
       if (HasLegacyFeature) hash ^= LegacyFeature.GetHashCode();
+      if (HasValueLifetimeFeature) hash ^= ValueLifetimeFeature.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1090,6 +1139,10 @@ namespace Pb {
         output.WriteRawTag(152, 1);
         output.WriteEnum((int) LegacyFeature);
       }
+      if (HasValueLifetimeFeature) {
+        output.WriteRawTag(160, 1);
+        output.WriteEnum((int) ValueLifetimeFeature);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1164,6 +1217,10 @@ namespace Pb {
         output.WriteRawTag(152, 1);
         output.WriteEnum((int) LegacyFeature);
       }
+      if (HasValueLifetimeFeature) {
+        output.WriteRawTag(160, 1);
+        output.WriteEnum((int) ValueLifetimeFeature);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1221,6 +1278,9 @@ namespace Pb {
       }
       if (HasLegacyFeature) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) LegacyFeature);
+      }
+      if (HasValueLifetimeFeature) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) ValueLifetimeFeature);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1281,6 +1341,9 @@ namespace Pb {
       }
       if (other.HasLegacyFeature) {
         LegacyFeature = other.LegacyFeature;
+      }
+      if (other.HasValueLifetimeFeature) {
+        ValueLifetimeFeature = other.ValueLifetimeFeature;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -1365,6 +1428,10 @@ namespace Pb {
             LegacyFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
+          case 160: {
+            ValueLifetimeFeature = (global::Pb.ValueLifetimeFeature) input.ReadEnum();
+            break;
+          }
         }
       }
     #endif
@@ -1446,6 +1513,10 @@ namespace Pb {
           }
           case 152: {
             LegacyFeature = (global::Pb.EnumFeature) input.ReadEnum();
+            break;
+          }
+          case 160: {
+            ValueLifetimeFeature = (global::Pb.ValueLifetimeFeature) input.ReadEnum();
             break;
           }
         }
