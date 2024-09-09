@@ -53,6 +53,18 @@ mod tests {
     use super::*;
 
     #[test]
+    fn assert_map_linked() {
+        use super::super::assert_linked;
+        assert_linked!(upb_Map_New);
+        assert_linked!(upb_Map_Size);
+        assert_linked!(upb_Map_Insert);
+        assert_linked!(upb_Map_Get);
+        assert_linked!(upb_Map_Delete);
+        assert_linked!(upb_Map_Clear);
+        assert_linked!(upb_Map_Next);
+    }
+
+    #[test]
     fn map_ffi_test() {
         // SAFETY: FFI unit test uses C API under expected patterns.
         unsafe {

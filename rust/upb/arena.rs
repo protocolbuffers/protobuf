@@ -206,6 +206,15 @@ mod tests {
     use super::*;
 
     #[test]
+    fn assert_arena_linked() {
+        use super::super::assert_linked;
+        assert_linked!(upb_Arena_New);
+        assert_linked!(upb_Arena_Free);
+        assert_linked!(upb_Arena_Malloc);
+        assert_linked!(upb_Arena_Fuse);
+    }
+
+    #[test]
     fn raw_ffi_test() {
         // SAFETY: FFI unit test uses C API under expected patterns.
         unsafe {

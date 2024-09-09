@@ -64,3 +64,14 @@ pub unsafe fn debug_string(msg: RawMessage, mt: *const upb_MiniTable) -> String 
     assert_eq!(len, written_len);
     String::from_utf8_lossy(buf.as_slice()).to_string()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn assert_text_linked() {
+        use super::super::assert_linked;
+        assert_linked!(upb_DebugString);
+    }
+}

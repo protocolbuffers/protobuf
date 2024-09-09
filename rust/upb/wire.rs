@@ -122,3 +122,15 @@ extern "C" {
         arena: RawArena,
     ) -> DecodeStatus;
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn assert_wire_linked() {
+        use super::super::assert_linked;
+        assert_linked!(upb_Encode);
+        assert_linked!(upb_Decode);
+    }
+}

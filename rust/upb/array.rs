@@ -31,6 +31,21 @@ mod tests {
     use super::*;
 
     #[test]
+    fn assert_array_linked() {
+        use super::super::assert_linked;
+        assert_linked!(upb_Array_New);
+        assert_linked!(upb_Array_Size);
+        assert_linked!(upb_Array_Set);
+        assert_linked!(upb_Array_Get);
+        assert_linked!(upb_Array_Append);
+        assert_linked!(upb_Array_Resize);
+        assert_linked!(upb_Array_Reserve);
+        assert_linked!(upb_Array_MutableDataPtr);
+        assert_linked!(upb_Array_DataPtr);
+        assert_linked!(upb_Array_GetMutable);
+    }
+
+    #[test]
     fn array_ffi_test() {
         // SAFETY: FFI unit test uses C API under expected patterns.
         unsafe {
