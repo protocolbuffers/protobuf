@@ -2097,7 +2097,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_EQ(defaults.minimum_edition(), EDITION_PROTO2);
   EXPECT_EQ(defaults.maximum_edition(), EDITION_99999_TEST_ONLY);
-  ASSERT_EQ(defaults.defaults_size(), 6);
+  ASSERT_EQ(defaults.defaults_size(), 7);
   EXPECT_EQ(defaults.defaults(0).edition(), EDITION_LEGACY);
   EXPECT_EQ(defaults.defaults(2).edition(), EDITION_2023);
   EXPECT_EQ(defaults.defaults(3).edition(), EDITION_2024);
