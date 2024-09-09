@@ -12,8 +12,16 @@
 #define UPB_MESSAGE_VALUE_H_
 
 #include <stdint.h>
+#include <string.h>
 
 #include "upb/base/string_view.h"
+
+// Must be last.
+#include "upb/port/def.inc"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef union {
   bool bool_val;
@@ -35,10 +43,28 @@ typedef union {
   uintptr_t tagged_msg_val;  // upb_TaggedMessagePtr
 } upb_MessageValue;
 
+UPB_API_INLINE upb_MessageValue upb_MessageValue_Zero(void) {
+  upb_MessageValue zero;
+  memset(&zero, 0, sizeof(zero));
+  return zero;
+}
+
 typedef union {
   struct upb_Array* array;
   struct upb_Map* map;
   struct upb_Message* msg;
 } upb_MutableMessageValue;
+
+UPB_API_INLINE upb_MutableMessageValue upb_MutableMessageValue_Zero(void) {
+  upb_MutableMessageValue zero;
+  memset(&zero, 0, sizeof(zero));
+  return zero;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include "upb/port/undef.inc"
 
 #endif /* UPB_MESSAGE_VALUE_H_ */
