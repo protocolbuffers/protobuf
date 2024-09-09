@@ -10,6 +10,7 @@
 #include <string>
 
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "upb_generator/keywords.h"
 
 namespace google::protobuf::hpb_generator {
@@ -104,19 +105,19 @@ std::string QualifiedInternalClassName(const protobuf::Descriptor* descriptor) {
 }
 
 std::string CppSourceFilename(const google::protobuf::FileDescriptor* file) {
-  return StripExtension(file->name()) + ".upb.proto.cc";
+  return compiler::StripProto(file->name()) + ".upb.proto.cc";
 }
 
 std::string ForwardingHeaderFilename(const google::protobuf::FileDescriptor* file) {
-  return StripExtension(file->name()) + ".upb.fwd.h";
+  return compiler::StripProto(file->name()) + ".upb.fwd.h";
 }
 
 std::string UpbCFilename(const google::protobuf::FileDescriptor* file) {
-  return StripExtension(file->name()) + ".upb.h";
+  return compiler::StripProto(file->name()) + ".upb.h";
 }
 
 std::string CppHeaderFilename(const google::protobuf::FileDescriptor* file) {
-  return StripExtension(file->name()) + ".upb.proto.h";
+  return compiler::StripProto(file->name()) + ".upb.proto.h";
 }
 
 void WriteStartNamespace(const protobuf::FileDescriptor* file, Output& output) {

@@ -60,7 +60,8 @@ cc_library(
         "//upb_generator:common",
         "//upb_generator:file_layout",
         "//upb_generator:keywords",
-        "//upb_generator:names",
+        "//upb_generator/c:names",
+        "//upb_generator/minitable:names",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",
     ],
@@ -74,6 +75,8 @@ cc_library(
     deps = [
         "//:protobuf",
         "//src/google/protobuf/io",
+        "//upb_generator/c:names",
+        "//upb_generator/minitable:names",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],
@@ -100,6 +103,7 @@ cc_library(
     deps = [
         ":output",
         "//src/google/protobuf",
+        "//src/google/protobuf/compiler:code_generator",
         "//upb_generator:keywords",
         "@com_google_absl//absl/strings:string_view",
     ],

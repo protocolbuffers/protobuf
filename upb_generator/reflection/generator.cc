@@ -5,14 +5,22 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include <memory>
+#include <cstddef>
+#include <string>
 
 #include "google/protobuf/descriptor.upb.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/substitute.h"
+#include "upb/mem/arena.hpp"
 #include "upb/reflection/def.hpp"
 #include "upb/util/def_to_proto.h"
 #include "upb_generator/common.h"
+#include "upb_generator/common/names.h"
 #include "upb_generator/file_layout.h"
+#include "upb_generator/minitable/names.h"
 #include "upb_generator/plugin.h"
+#include "upb_generator/reflection/names.h"
 
 namespace upb {
 namespace generator {
@@ -23,7 +31,7 @@ struct Options {
 };
 
 std::string DefInitSymbol(upb::FileDefPtr file) {
-  return ToCIdent(file.name()) + "_upbdefinit";
+  return ReflectionFileSymbol(file.name());
 }
 
 static std::string DefHeaderFilename(upb::FileDefPtr file) {
@@ -35,8 +43,8 @@ static std::string DefSourceFilename(upb::FileDefPtr file) {
 }
 
 void GenerateMessageDefAccessor(upb::MessageDefPtr d, Output& output) {
-  output("UPB_INLINE const upb_MessageDef *$0_getmsgdef(upb_DefPool *s) {\n",
-         ToCIdent(d.full_name()));
+  output("UPB_INLINE const upb_MessageDef *$0(upb_DefPool *s) {\n",
+         ReflectionGetMessageSymbol(d.full_name()));
   output("  _upb_DefPool_LoadDefInit(s, &$0);\n", DefInitSymbol(d.file()));
   output("  return upb_DefPool_FindMessageByName(s, \"$0\");\n", d.full_name());
   output("}\n");
@@ -45,7 +53,7 @@ void GenerateMessageDefAccessor(upb::MessageDefPtr d, Output& output) {
 
 void WriteDefHeader(upb::FileDefPtr file, const Options& options,
                     Output& output) {
-  EmitFileWarning(file.name(), output);
+  output(FileWarning(file.name()));
 
   output(
       "#ifndef $0_UPBDEFS_H_\n"
@@ -57,7 +65,7 @@ void WriteDefHeader(upb::FileDefPtr file, const Options& options,
       "#ifdef __cplusplus\n"
       "extern \"C\" {\n"
       "#endif\n\n",
-      ToPreproc(file.name()));
+      IncludeGuard(file.name()));
 
   output("extern$1 _upb_DefPool_Init $0;\n", DefInitSymbol(file),
          PadPrefix(options.dllexport_decl));
@@ -75,16 +83,16 @@ void WriteDefHeader(upb::FileDefPtr file, const Options& options,
       "#include \"upb/port/undef.inc\"\n"
       "\n"
       "#endif  /* $0_UPBDEFS_H_ */\n",
-      ToPreproc(file.name()));
+      IncludeGuard(file.name()));
 }
 
 void WriteDefSource(upb::FileDefPtr file, const Options& options,
                     Output& output) {
-  EmitFileWarning(file.name(), output);
+  output(FileWarning(file.name()));
 
   output("#include \"upb/reflection/def.h\"\n");
   output("#include \"$0\"\n", DefHeaderFilename(file));
-  output("#include \"$0\"\n", MiniTableHeaderFilename(file, false));
+  output("#include \"$0\"\n", MiniTableHeaderFilename(file.name()));
   output("\n");
 
   for (int i = 0; i < file.dependency_count(); i++) {
@@ -126,7 +134,7 @@ void WriteDefSource(upb::FileDefPtr file, const Options& options,
 
   output("_upb_DefPool_Init $0 = {\n", DefInitSymbol(file));
   output("  deps,\n");
-  output("  &$0,\n", FileLayoutName(file));
+  output("  &$0,\n", MiniTableFileVarName(file.name()));
   output("  \"$0\",\n", file.name());
   output("  UPB_STRINGVIEW_INIT(descriptor, $0)\n", file_data.size());
   output("};\n");

@@ -33,9 +33,13 @@
 #include "upb/base/string_view.h"
 #include "upb/mini_table/field.h"
 #include "upb/reflection/def.hpp"
+#include "upb_generator/c/names.h"
+#include "upb_generator/c/names_internal.h"
 #include "upb_generator/common.h"
+#include "upb_generator/common/names.h"
 #include "upb_generator/file_layout.h"
-#include "upb_generator/names.h"
+#include "upb_generator/minitable/names.h"
+#include "upb_generator/minitable/names_internal.h"
 #include "upb_generator/plugin.h"
 
 // Must be last.
@@ -50,6 +54,24 @@ struct Options {
   bool strip_nonfunctional_codegen = false;
 };
 
+// Local convenience aliases for the public names.h header files.
+
+std::string ExtensionIdentBase(upb::FieldDefPtr field) {
+  return CApiExtensionIdentBase(field.full_name());
+}
+
+std::string MessageType(upb::MessageDefPtr descriptor) {
+  return CApiMessageType(descriptor.full_name());
+}
+
+std::string EnumType(upb::EnumDefPtr descriptor) {
+  return CApiEnumType(descriptor.full_name());
+}
+
+std::string EnumValueSymbol(upb::EnumValDefPtr value) {
+  return CApiEnumValueSymbol(value.full_name());
+}
+
 std::string SourceFilename(upb::FileDefPtr file) {
   return StripExtension(file.name()) + ".upb.c";
 }
@@ -57,40 +79,19 @@ std::string SourceFilename(upb::FileDefPtr file) {
 std::string MessageMiniTableRef(upb::MessageDefPtr descriptor,
                                 const Options& options) {
   if (options.bootstrap_stage == 0) {
-    return absl::StrCat(MessageInitName(descriptor), "()");
+    return absl::StrCat(MiniTableMessageVarName(descriptor.full_name()), "()");
   } else {
-    return absl::StrCat("&", MessageInitName(descriptor));
+    return absl::StrCat("&", MiniTableMessageVarName(descriptor.full_name()));
   }
-}
-
-std::string EnumInitName(upb::EnumDefPtr descriptor) {
-  return ToCIdent(descriptor.full_name()) + "_enum_init";
 }
 
 std::string EnumMiniTableRef(upb::EnumDefPtr descriptor,
                              const Options& options) {
   if (options.bootstrap_stage == 0) {
-    return absl::StrCat(EnumInitName(descriptor), "()");
+    return absl::StrCat(MiniTableEnumVarName(descriptor.full_name()), "()");
   } else {
-    return absl::StrCat("&", EnumInitName(descriptor));
+    return absl::StrCat("&", MiniTableEnumVarName(descriptor.full_name()));
   }
-}
-
-std::string ExtensionIdentBase(upb::FieldDefPtr ext) {
-  assert(ext.is_extension());
-  if (ext.extension_scope()) {
-    return MessageName(ext.extension_scope());
-  } else {
-    return ToCIdent(ext.file().package());
-  }
-}
-
-std::string ExtensionLayout(upb::FieldDefPtr ext) {
-  return absl::StrCat(ExtensionIdentBase(ext), "_", ext.name(), "_ext");
-}
-
-std::string EnumValueSymbol(upb::EnumValDefPtr value) {
-  return ToCIdent(value.full_name());
 }
 
 std::string CTypeInternal(upb::FieldDefPtr field, bool is_const) {
@@ -99,7 +100,7 @@ std::string CTypeInternal(upb::FieldDefPtr field, bool is_const) {
     case kUpb_CType_Message: {
       std::string maybe_struct =
           field.file() != field.message_type().file() ? "struct " : "";
-      return maybe_const + maybe_struct + MessageName(field.message_type()) +
+      return maybe_const + maybe_struct + MessageType(field.message_type()) +
              "*";
     }
     case kUpb_CType_Bool:
@@ -274,8 +275,8 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
           return upb_Message_HasExtension((upb_Message*)msg, &$3);
         }
       )cc",
-      ExtensionIdentBase(ext), ext.name(), MessageName(ext.containing_type()),
-      ExtensionLayout(ext));
+      ExtensionIdentBase(ext), ext.name(), MessageType(ext.containing_type()),
+      MiniTableExtensionVarName(ext.full_name()));
 
   output(
       R"cc(
@@ -283,8 +284,8 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
           upb_Message_ClearExtension((upb_Message*)msg, &$3);
         }
       )cc",
-      ExtensionIdentBase(ext), ext.name(), MessageName(ext.containing_type()),
-      ExtensionLayout(ext));
+      ExtensionIdentBase(ext), ext.name(), MessageType(ext.containing_type()),
+      MiniTableExtensionVarName(ext.full_name()));
 
   if (ext.IsSequence()) {
     // TODO: We need generated accessors for repeated extensions.
@@ -303,8 +304,9 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
           }
         )cc",
         CTypeConst(ext), ExtensionIdentBase(ext), ext.name(),
-        MessageName(ext.containing_type()), ExtensionLayout(ext),
-        GetFieldRep(pools, ext), FieldDefault(ext));
+        MessageType(ext.containing_type()),
+        MiniTableExtensionVarName(ext.full_name()), GetFieldRep(pools, ext),
+        FieldDefault(ext));
     output(
         R"cc(
           UPB_INLINE void $1_set_$2(struct $3* msg, $0 val, upb_Arena* arena) {
@@ -317,8 +319,8 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
           }
         )cc",
         CTypeConst(ext), ExtensionIdentBase(ext), ext.name(),
-        MessageName(ext.containing_type()), ExtensionLayout(ext),
-        GetFieldRep(pools, ext));
+        MessageType(ext.containing_type()),
+        MiniTableExtensionVarName(ext.full_name()), GetFieldRep(pools, ext));
 
     // Message extensions also have a Msg_mutable_foo() accessor that will
     // create the sub-message if it doesn't already exist.
@@ -335,8 +337,8 @@ void GenerateExtensionInHeader(const DefPoolPair& pools, upb::FieldDefPtr ext,
               return sub;
             }
           )cc",
-          MessageName(ext.message_type()), ExtensionIdentBase(ext), ext.name(),
-          MessageName(ext.containing_type()),
+          MessageType(ext.message_type()), ExtensionIdentBase(ext), ext.name(),
+          MessageType(ext.containing_type()),
           MessageMiniTableRef(ext.message_type(), options));
     }
   }
@@ -383,13 +385,13 @@ void GenerateMessageFunctionsInHeader(upb::MessageDefPtr message,
           return ptr;
         }
       )cc",
-      MessageName(message), MessageMiniTableRef(message, options));
+      MessageType(message), MessageMiniTableRef(message, options));
 }
 
 void GenerateOneofInHeader(upb::OneofDefPtr oneof, const DefPoolPair& pools,
                            absl::string_view msg_name, const Options& options,
                            Output& output) {
-  std::string fullname = ToCIdent(oneof.full_name());
+  std::string fullname = CApiOneofIdentBase(oneof.full_name());
   output("typedef enum {\n");
   for (int j = 0; j < oneof.field_count(); j++) {
     upb::FieldDefPtr field = oneof.field(j);
@@ -715,7 +717,7 @@ void GenerateRepeatedSetters(upb::FieldDefPtr field, const DefPoolPair& pools,
             return sub;
           }
         )cc",
-        MessageName(field.message_type()), msg_name, resolved_name,
+        MessageType(field.message_type()), msg_name, resolved_name,
         MessageMiniTableRef(field.message_type(), options),
         FieldInitializerStrong(pools, field, options));
   } else {
@@ -785,7 +787,7 @@ void GenerateNonRepeatedSetters(upb::FieldDefPtr field,
             return sub;
           }
         )cc",
-        MessageName(field.message_type()), msg_name, field_name,
+        MessageType(field.message_type()), msg_name, field_name,
         MessageMiniTableRef(field.message_type(), options));
   }
 }
@@ -807,7 +809,7 @@ void GenerateMessageInHeader(upb::MessageDefPtr message,
                              const DefPoolPair& pools, const Options& options,
                              Output& output) {
   output("/* $0 */\n\n", message.full_name());
-  std::string msg_name = ToCIdent(message.full_name());
+  std::string msg_name = MessageType(message);
   if (!message.mapentry()) {
     GenerateMessageFunctionsInHeader(message, options, output);
   }
@@ -869,19 +871,19 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
   std::vector<upb::MessageDefPtr> forward_messages =
       SortedForwardMessages(this_file_messages, this_file_exts);
 
-  EmitFileWarning(file.name(), output);
+  output(FileWarning(file.name()));
   output(
       "#ifndef $0_UPB_H_\n"
       "#define $0_UPB_H_\n\n"
       "#include \"upb/generated_code_support.h\"\n\n",
-      ToPreproc(file.name()));
+      IncludeGuard(file.name()));
 
   for (int i = 0; i < file.public_dependency_count(); i++) {
     if (i == 0) {
       output("/* Public Imports. */\n");
     }
     output("#include \"$0\"\n",
-           CApiHeaderFilename(file.public_dependency(i),
+           CApiHeaderFilename(file.public_dependency(i).name(),
                               options.bootstrap_stage >= 0));
   }
   if (file.public_dependency_count() > 0) {
@@ -890,7 +892,7 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
 
   if (options.bootstrap_stage != 0) {
     output("#include \"$0\"\n\n",
-           MiniTableHeaderFilename(file, options.bootstrap_stage >= 0));
+           MiniTableHeaderFilename(file.name(), options.bootstrap_stage >= 0));
     for (int i = 0; i < file.dependency_count(); i++) {
       if (options.strip_nonfunctional_codegen &&
           google::protobuf::compiler::IsKnownFeatureProto(file.dependency(i).name())) {
@@ -898,7 +900,7 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
         continue;
       }
       output("#include \"$0\"\n",
-             MiniTableHeaderFilename(file.dependency(i),
+             MiniTableHeaderFilename(file.dependency(i).name(),
                                      options.bootstrap_stage >= 0));
     }
     output("\n");
@@ -916,14 +918,15 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
   if (options.bootstrap_stage == 0) {
     for (auto message : this_file_messages) {
       output("extern const upb_MiniTable* $0(void);\n",
-             MessageInitName(message));
+             MiniTableMessageVarName(message.full_name()));
     }
     for (auto message : forward_messages) {
       output("extern const upb_MiniTable* $0(void);\n",
-             MessageInitName(message));
+             MiniTableMessageVarName(message.full_name()));
     }
     for (auto enumdesc : this_file_enums) {
-      output("extern const upb_MiniTableEnum* $0(void);\n", EnumInit(enumdesc));
+      output("extern const upb_MiniTableEnum* $0(void);\n",
+             MiniTableEnumVarName(enumdesc.full_name()));
     }
     output("\n");
   }
@@ -931,13 +934,13 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
   // Forward-declare types defined in this file.
   for (auto message : this_file_messages) {
     output("typedef struct $0 { upb_Message UPB_PRIVATE(base); } $0;\n",
-           ToCIdent(message.full_name()));
+           MessageType(message));
   }
 
   // Forward-declare types not in this file, but used as submessages.
   // Order by full name for consistent ordering.
   for (auto msg : forward_messages) {
-    output("struct $0;\n", MessageName(msg));
+    output("struct $0;\n", MessageType(msg));
   }
 
   if (!this_file_messages.empty()) {
@@ -947,7 +950,7 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
   for (auto enumdesc : this_file_enums) {
     output("typedef enum {\n");
     DumpEnumValues(enumdesc, output);
-    output("} $0;\n\n", ToCIdent(enumdesc.full_name()));
+    output("} $0;\n\n", EnumType(enumdesc));
   }
 
   output("\n");
@@ -998,7 +1001,7 @@ void WriteHeader(const DefPoolPair& pools, upb::FileDefPtr file,
       "#include \"upb/port/undef.inc\"\n"
       "\n"
       "#endif  /* $0_UPB_H_ */\n",
-      ToPreproc(file.name()));
+      IncludeGuard(file.name()));
 }
 
 std::string FieldInitializer(upb::FieldDefPtr field,
@@ -1017,8 +1020,9 @@ std::string FieldInitializer(upb::FieldDefPtr field,
 
 std::string StrongReferenceSingle(upb::FieldDefPtr field) {
   if (!field.message_type()) return "";
-  return absl::Substitute("  UPB_PRIVATE(_upb_MiniTable_StrongReference)(&$0)",
-                          MessageInitName(field.message_type()));
+  return absl::Substitute(
+      "  UPB_PRIVATE(_upb_MiniTable_StrongReference)(&$0)",
+      MiniTableMessageVarName(field.message_type().full_name()));
 }
 
 std::string StrongReference(upb::FieldDefPtr field) {
@@ -1080,7 +1084,8 @@ void WriteMessageMiniDescriptorInitializer(upb::MessageDefPtr msg,
           $2return mini_table;
         }
       )cc",
-      MessageInitName(msg), msg.MiniDescriptorEncode(), resolve_calls.output());
+      MiniTableMessageVarName(msg.full_name()), msg.MiniDescriptorEncode(),
+      resolve_calls.output());
   output("\n");
 }
 
@@ -1099,7 +1104,8 @@ void WriteEnumMiniDescriptorInitializer(upb::EnumDefPtr enum_def,
           return mini_table;
         }
       )cc",
-      EnumInitName(enum_def), enum_def.MiniDescriptorEncode());
+      MiniTableEnumVarName(enum_def.full_name()),
+      enum_def.MiniDescriptorEncode());
   output("\n");
 }
 
@@ -1109,16 +1115,16 @@ void WriteMiniDescriptorSource(const DefPoolPair& pools, upb::FileDefPtr file,
       "#include <stddef.h>\n"
       "#include \"upb/generated_code_support.h\"\n"
       "#include \"$0\"\n\n",
-      CApiHeaderFilename(file, options.bootstrap_stage >= 0));
+      CApiHeaderFilename(file.name(), options.bootstrap_stage >= 0));
 
   for (int i = 0; i < file.dependency_count(); i++) {
     if (options.strip_nonfunctional_codegen &&
         google::protobuf::compiler::IsKnownFeatureProto(file.dependency(i).name())) {
       continue;
     }
-    output(
-        "#include \"$0\"\n",
-        CApiHeaderFilename(file.dependency(i), options.bootstrap_stage >= 0));
+    output("#include \"$0\"\n",
+           CApiHeaderFilename(file.dependency(i).name(),
+                              options.bootstrap_stage >= 0));
   }
 
   output(
@@ -1145,7 +1151,8 @@ void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
                   const Options& options, Plugin* plugin) {
   Output h_output;
   WriteHeader(pools, file, options, h_output);
-  plugin->AddOutputFile(CApiHeaderFilename(file, false), h_output.output());
+  plugin->AddOutputFile(CApiHeaderFilename(file.name(), false),
+                        h_output.output());
 
   if (options.bootstrap_stage == 0) {
     Output c_output;

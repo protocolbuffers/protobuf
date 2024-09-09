@@ -19,9 +19,9 @@
 #include "google/protobuf/compiler/hpb/names.h"
 #include "google/protobuf/compiler/hpb/output.h"
 #include "google/protobuf/descriptor.h"
+#include "upb_generator/c/names.h"
 #include "upb_generator/common.h"
 #include "upb_generator/file_layout.h"
-#include "upb_generator/names.h"
 
 namespace google::protobuf::hpb_generator {
 

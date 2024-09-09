@@ -22,8 +22,7 @@
 #include "google/protobuf/compiler/hpb/names.h"
 #include "google/protobuf/compiler/hpb/output.h"
 #include "google/protobuf/descriptor.h"
-#include "upb_generator/common.h"
-#include "upb_generator/file_layout.h"
+#include "upb_generator/minitable/names.h"
 
 namespace google::protobuf::hpb_generator {
 
@@ -206,7 +205,7 @@ void WriteModelPublicDeclaration(
           }
       )cc",
       ClassName(descriptor),
-      ::upb::generator::MessageInit(descriptor->full_name()),
+      ::upb::generator::MiniTableMessageVarName(descriptor->full_name()),
       MessageName(descriptor), QualifiedClassName(descriptor));
 
   WriteUsingAccessorsInHeader(descriptor, MessageClassType::kMessage, output);
@@ -416,7 +415,7 @@ void WriteMessageImplementation(
           }
         )cc",
         ClassName(descriptor), MessageName(descriptor),
-        ::upb::generator::MessageInit(descriptor->full_name()),
+        ::upb::generator::MiniTableMessageVarName(descriptor->full_name()),
         QualifiedClassName(descriptor));
     output("\n");
     // Minitable
@@ -425,7 +424,7 @@ void WriteMessageImplementation(
           const upb_MiniTable* $0::minitable() { return &$1; }
         )cc",
         ClassName(descriptor),
-        ::upb::generator::MessageInit(descriptor->full_name()));
+        ::upb::generator::MiniTableMessageVarName(descriptor->full_name()));
     output("\n");
   }
 

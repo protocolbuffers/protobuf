@@ -137,14 +137,12 @@ class OutputIndenter {
   Output& output_;
 };
 
-std::string StripExtension(absl::string_view fname);
 std::string ToCIdent(absl::string_view str);
 std::string ToPreproc(absl::string_view str);
 void EmitFileWarning(const google::protobuf::FileDescriptor* file, Output& output);
 std::string MessageName(const google::protobuf::Descriptor* descriptor);
 std::string FileLayoutName(const google::protobuf::FileDescriptor* file);
 std::string CHeaderFilename(const google::protobuf::FileDescriptor* file);
-std::string CSourceFilename(const google::protobuf::FileDescriptor* file);
 
 }  // namespace protobuf
 }  // namespace google::hpb_generator

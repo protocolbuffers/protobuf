@@ -5,17 +5,53 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_PROTOS_GENERATOR_NAMES_H
-#define UPB_PROTOS_GENERATOR_NAMES_H
+#ifndef THIRD_PARTY_UPB_UPB_GENERATOR_C_NAMES_H_
+#define THIRD_PARTY_UPB_UPB_GENERATOR_C_NAMES_H_
 
 #include <string>
 
-#include "absl/base/attributes.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 
 namespace upb {
 namespace generator {
+
+// Note: these names are not currently exported, in hopes that no code
+// generators outside of the protobuf repo will ever use the generated C API.
+
+// Maps: foo/bar/baz.proto -> foo/bar/baz.upb.h
+std::string CApiHeaderFilename(absl::string_view proto_filename);
+
+// The foo.upb.h file defines far more symbols than we currently enumerate here.
+// We do the bare minimum by by defining the type name for messages and enums,
+// which also forms the symbol prefix for associated functions.
+//
+//   typedef struct { /* ... */ } <MessageType>;
+//   typedef enum { <EnumValue> = X, ... } <EnumType>;
+//
+// Oneofs and extensions have a base name that forms the prefix for associated
+// functions.
+
+std::string CApiMessageType(absl::string_view full_name);
+std::string CApiEnumType(absl::string_view full_name);
+std::string CApiEnumValueSymbol(absl::string_view full_name);
+std::string CApiExtensionIdentBase(absl::string_view full_name);
+std::string CApiOneofIdentBase(absl::string_view full_name);
+
+// Name mangling for individual fields. NameMangler maps each field name to a
+// mangled name, which tries to avoid collisions with other field accessors.
+//
+// For example, a field named "clear_foo" might be renamed to "clear_foo_" if
+// there is a field named "foo" in the same message.
+//
+// This API would be more principled if it generated a full symbol name for each
+// generated API function, eg.
+//   mangler.GetSetter("clear_foo") -> "mypkg_MyMessage_set_clear_foo_"
+//   mangler.GetHazzer("clear_foo") -> "mypkg_MyMessage_has_clear_foo_"
+//
+// But that would be a larger and more complicated API. In the long run, we
+// probably don't want to have other code generators wrapping these APIs, so
+// it's probably not worth designing a fully principled API.
 
 enum FieldClass {
   kStringField = 1 << 0,
@@ -86,4 +122,4 @@ ABSL_CONST_INIT const absl::string_view kMutableMapGetterPostfix =
 }  // namespace generator
 }  // namespace upb
 
-#endif  // UPB_PROTOS_GENERATOR_NAMES_H
+#endif  // THIRD_PARTY_UPB_UPB_GENERATOR_C_NAMES_H_

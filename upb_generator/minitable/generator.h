@@ -5,18 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include <string.h>
-
-#include <algorithm>
-#include <cstddef>
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
-#include <map>
-#include <string>
-#include <utility>
-#include <vector>
-
+#include "upb/reflection/def.hpp"
 #include "upb_generator/common.h"
 #include "upb_generator/file_layout.h"
 #include "upb_generator/plugin.h"

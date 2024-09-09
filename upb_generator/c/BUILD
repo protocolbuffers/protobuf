@@ -1,3 +1,10 @@
+# Copyright (c) 2009-2024, Google LLC
+# All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 load(
     "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_CPPOPTS",
@@ -11,6 +18,28 @@ load(
 package(default_applicable_licenses = ["//:license"])
 
 licenses(["notice"])
+
+cc_library(
+    name = "names",
+    srcs = ["names.cc"],
+    hdrs = ["names.h"],
+    visibility = ["//src/google/protobuf/compiler/hpb:__pkg__"],
+    deps = [
+        ":names_internal",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "names_internal",
+    srcs = ["names_internal.cc"],
+    hdrs = ["names_internal.h"],
+    deps = [
+        "//upb_generator/common:names",
+        "@com_google_absl//absl/strings",
+    ],
+)
 
 bootstrap_cc_binary(
     name = "protoc-gen-upb",
@@ -39,12 +68,16 @@ bootstrap_cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//pkg:__pkg__"],
     deps = [
+        ":names",
+        ":names_internal",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
         "//upb:port",
         "//upb:wire_reader",
-        "//upb_generator:names",
+        "//upb_generator/common:names",
+        "//upb_generator/minitable:names",
+        "//upb_generator/minitable:names_internal",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",

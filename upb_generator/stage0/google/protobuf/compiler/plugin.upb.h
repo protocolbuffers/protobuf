@@ -6,8 +6,8 @@
  * regenerated.
  * NO CHECKED-IN PROTOBUF GENCODE */
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_H_
-#define GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_H_
+#ifndef GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_H__UPB_H_
+#define GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_H__UPB_H_
 
 #include "upb/generated_code_support.h"
 
@@ -24,7 +24,7 @@ extern const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse_ms
 extern const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse__File_msg_init(void);
 extern const upb_MiniTable* google__protobuf__FileDescriptorProto_msg_init(void);
 extern const upb_MiniTable* google__protobuf__GeneratedCodeInfo_msg_init(void);
-extern const upb_MiniTableEnum* google_protobuf_compiler_CodeGeneratorResponse_Feature_enum_init(void);
+extern const upb_MiniTableEnum* google__protobuf__compiler__CodeGeneratorResponse__Feature_enum_init(void);
 
 typedef struct google_protobuf_compiler_Version { upb_Message UPB_PRIVATE(base); } google_protobuf_compiler_Version;
 typedef struct google_protobuf_compiler_CodeGeneratorRequest { upb_Message UPB_PRIVATE(base); } google_protobuf_compiler_CodeGeneratorRequest;
@@ -741,4 +741,4 @@ UPB_INLINE struct google_protobuf_GeneratedCodeInfo* google_protobuf_compiler_Co
 
 #include "upb/port/undef.inc"
 
-#endif  /* GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_H_ */
+#endif  /* GOOGLE_PROTOBUF_COMPILER_PLUGIN_PROTO_UPB_H__UPB_H_ */

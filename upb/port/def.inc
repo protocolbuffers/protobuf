@@ -90,6 +90,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_API_INLINE UPB_INLINE
 #endif
 
+#ifdef EXPORT_UPBC
+#define UPBC_API UPB_EXPORT
+#else
+#define UPBC_API
+#endif
+
 #define UPB_MALLOC_ALIGN 8
 #define UPB_ALIGN_UP(size, align) (((size) + (align) - 1) / (align) * (align))
 #define UPB_ALIGN_DOWN(size, align) ((size) / (align) * (align))

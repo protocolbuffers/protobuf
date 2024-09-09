@@ -250,7 +250,7 @@ cc_library(
     ],
     deps = [
         "//src/google/protobuf",
-        "//upb_generator:mangle",
+        "//upb_generator/minitable:names",
         "@com_google_absl//absl/log:absl_check",
     ],
 )

@@ -17,8 +17,10 @@
 #include "upb/base/string_view.h"
 #include "upb/reflection/def.hpp"
 #include "upb_generator/common.h"
+#include "upb_generator/common/names.h"
 #include "upb_generator/file_layout.h"
 #include "upb_generator/minitable/generator.h"
+#include "upb_generator/minitable/names_internal.h"
 #include "upb_generator/plugin.h"
 
 // Must be last.
@@ -39,7 +41,7 @@ void GenerateFile(const DefPoolPair& pools, upb::FileDefPtr file,
                   const MiniTableOptions& options, Plugin* plugin) {
   Output h_output;
   WriteMiniTableHeader(pools, file, options, h_output);
-  plugin->AddOutputFile(MiniTableHeaderFilename(file, false),
+  plugin->AddOutputFile(MiniTableHeaderFilename(file.name(), false),
                         h_output.output());
 
   Output c_output;
