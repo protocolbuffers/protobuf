@@ -20,6 +20,9 @@ namespace internal {
 // random-access efficiently. All iterator methods delegates the work to
 // corresponding random-access methods.
 class RandomAccessRepeatedFieldAccessor : public RepeatedFieldAccessor {
+ // using RepeatedFieldAccessor::Field;
+ // using RepeatedFieldAccessor::Value;
+ // using RepeatedFieldAccessor::Iterator;
  public:
   Iterator* BeginIterator(const Field* /*data*/) const override {
     return PositionToIterator(0);
@@ -43,6 +46,11 @@ class RandomAccessRepeatedFieldAccessor : public RepeatedFieldAccessor {
                       Iterator* /*iterator*/) const override {}
   const Value* GetIteratorValue(const Field* data, const Iterator* iterator,
                                 Value* scratch_space) const override {
+    return Get(data, static_cast<int>(IteratorToPosition(iterator)),
+               scratch_space);
+  }
+  Value* GetIteratorValue(Field* data, const Iterator* iterator,
+                          Value* scratch_space) const override {
     return Get(data, static_cast<int>(IteratorToPosition(iterator)),
                scratch_space);
   }
@@ -74,6 +82,10 @@ class RepeatedFieldWrapper : public RandomAccessRepeatedFieldAccessor {
   const Value* Get(const Field* data, int index,
                    Value* scratch_space) const override {
     return ConvertFromT(GetRepeatedField(data)->Get(index), scratch_space);
+  }
+  Value* Get(Field* data, int index,
+             Value* scratch_space) const override {
+    return ConvertFromT(*MutableRepeatedField(data)->Mutable(index), scratch_space);
   }
   void Clear(Field* data) const override {
     MutableRepeatedField(data)->Clear();
@@ -115,6 +127,8 @@ class RepeatedFieldWrapper : public RandomAccessRepeatedFieldAccessor {
   // scratch_space and scratch_space should be returned.
   virtual const Value* ConvertFromT(const T& value,
                                     Value* scratch_space) const = 0;
+  virtual Value* ConvertFromT(T& value,
+                              Value* scratch_space) const = 0;
 };
 
 // Base class for RepeatedFieldAccessor implementations that manipulates
@@ -131,6 +145,10 @@ class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
   const Value* Get(const Field* data, int index,
                    Value* scratch_space) const override {
     return ConvertFromT(GetRepeatedField(data)->Get(index), scratch_space);
+  }
+  Value* Get(Field* data, int index,
+             Value* scratch_space) const override {
+    return ConvertFromT(*MutableRepeatedField(data)->Mutable(index), scratch_space);
   }
   void Clear(Field* data) const override {
     MutableRepeatedField(data)->Clear();
@@ -180,6 +198,8 @@ class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
   // scratch_space and scratch_space should be returned.
   virtual const Value* ConvertFromT(const T& value,
                                     Value* scratch_space) const = 0;
+  virtual Value* ConvertFromT(T& value,
+                              Value* scratch_space) const = 0;
 };
 
 // An implementation of RandomAccessRepeatedFieldAccessor that manipulates
@@ -197,6 +217,10 @@ class MapFieldAccessor final : public RandomAccessRepeatedFieldAccessor {
   const Value* Get(const Field* data, int index,
                    Value* scratch_space) const override {
     return ConvertFromEntry(GetRepeatedField(data)->Get(index), scratch_space);
+  }
+  Value* Get(Field* data, int index,
+             Value* scratch_space) const override {
+    return ConvertFromEntry(*MutableRepeatedField(data)->Mutable(index), scratch_space);
   }
   void Clear(Field* data) const override {
     MutableRepeatedField(data)->Clear();
@@ -248,6 +272,10 @@ class MapFieldAccessor final : public RandomAccessRepeatedFieldAccessor {
                                         Value* /*scratch_space*/) const {
     return static_cast<const Value*>(&value);
   }
+  virtual Value* ConvertFromEntry(Message& value,
+                                  Value* /*scratch_space*/) const {
+    return static_cast<Value*>(&value);
+  }
 };
 
 // Default implementations of RepeatedFieldAccessor for primitive types.
@@ -275,6 +303,10 @@ class RepeatedFieldPrimitiveAccessor final : public RepeatedFieldWrapper<T> {
   const Value* ConvertFromT(const T& value,
                             Value* /*scratch_space*/) const override {
     return static_cast<const Value*>(&value);
+  }
+  Value* ConvertFromT(T& value,
+                      Value* /*scratch_space*/) const override {
+    return static_cast<Value*>(&value);
   }
 };
 
@@ -316,6 +348,10 @@ class RepeatedPtrFieldStringAccessor final
                             Value* /*scratch_space*/) const override {
     return static_cast<const Value*>(&value);
   }
+  Value* ConvertFromT(std::string& value,
+                      Value* /*scratch_space*/) const override {
+    return static_cast<Value*>(&value);
+  }
 };
 
 
@@ -342,6 +378,10 @@ class RepeatedPtrFieldMessageAccessor final
   const Value* ConvertFromT(const Message& value,
                             Value* /*scratch_space*/) const override {
     return static_cast<const Value*>(&value);
+  }
+  Value* ConvertFromT(Message& value,
+                      Value* /*scratch_space*/) const override {
+    return static_cast<Value*>(&value);
   }
 };
 }  // namespace internal

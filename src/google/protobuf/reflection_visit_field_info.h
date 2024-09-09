@@ -25,6 +25,7 @@
 
 // clang-format off
 #include "google/protobuf/port_def.inc"
+#include "reflection.h"
 // clang-format on
 
 namespace google {
@@ -708,12 +709,12 @@ struct RepeatedEntityDynamicFieldInfoBase {
   iterator_range<typename RepeatedField<FieldT>::const_iterator> Get() const {
     return {const_repeated.cbegin(), const_repeated.cend()};
   }
-  iterator_range<typename RepeatedField<FieldT>::iterator> Mutable() {
-    auto& rep = *reflection->MutableRepeatedField<FieldT>(&message, field);
+  iterator_range<typename MutableRepeatedFieldRef<FieldT>::iterator> Mutable() {
+    auto rep = reflection->GetMutableRepeatedFieldRef<FieldT>(&message, field);
     return {rep.begin(), rep.end()};
   }
   void Clear() {
-    reflection->MutableRepeatedField<FieldT>(&message, field)->Clear();
+    reflection->GetMutableRepeatedFieldRef<FieldT>(&message, field).Clear();
   }
 
   const Reflection* reflection;
@@ -808,12 +809,12 @@ struct RepeatedPtrEntityDynamicFieldInfoBase {
       const {
     return {const_repeated.cbegin(), const_repeated.cend()};
   }
-  iterator_range<typename RepeatedPtrField<FieldT>::iterator> Mutable() {
-    auto& rep = *reflection->MutableRepeatedPtrField<FieldT>(&message, field);
+  iterator_range<typename MutableRepeatedFieldRef<FieldT>::iterator> Mutable() {
+    auto rep = reflection->GetMutableRepeatedFieldRef<FieldT>(&message, field);
     return {rep.begin(), rep.end()};
   }
   void Clear() {
-    reflection->MutableRepeatedPtrField<FieldT>(&message, field)->Clear();
+    reflection->GetMutableRepeatedFieldRef<FieldT>(&message, field).Clear();
   }
 
   const Reflection* reflection;
