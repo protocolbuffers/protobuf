@@ -1,0 +1,49 @@
+diff --git a/ruby/private/bundle/create_bundle_build_file.rb b/ruby/private/bundle/create_bundle_build_file.rb
+index 0c67128..3b0ac0d 100755
+--- a/ruby/private/bundle/create_bundle_build_file.rb
++++ b/ruby/private/bundle/create_bundle_build_file.rb
+@@ -68,9 +68,10 @@ ALL_GEMS
+ #
+ # Library path differs across implementations as `lib/ruby` on MRI and `lib/jruby` on JRuby.
+ GEM_PATH = ->(ruby_version, gem_name, gem_version) do
+-  glob = Dir.glob("lib/#{RbConfig::CONFIG['RUBY_INSTALL_NAME']}/#{ruby_version}/gems/#{gem_name}-#{gem_version}*").first
+-  alt_glob = Dir.glob("lib/#{RbConfig::CONFIG['RUBY_INSTALL_NAME']}/#{ruby_version}/bundler/gems/#{gem_name}-*").first
+-  glob || alt_glob
++  glob = Dir.glob("lib/#{RbConfig::CONFIG['RUBY_BASE_NAME']}/#{ruby_version}/gems/#{gem_name}-#{gem_version}*").first
++  alt_glob = Dir.glob("lib/#{RbConfig::CONFIG['RUBY_BASE_NAME']}/#{ruby_version}/bundler/gems/#{gem_name}-*").first
++  # alt_alt_glob = Dir.glob("lib/#{RbConfig::CONFIG['RUBY_BASE_NAME']}/gems/#{ruby_version}/gems/#{gem_name}-#{gem_version}*").first
++  glob || alt_glob # || alt_alt_glob
+ end
+ 
+ # For ordinary gems, this path is like 'lib/ruby/3.0.0/specifications/rspec-3.10.0.gemspec'.
+@@ -83,9 +84,10 @@ end
+ #
+ # Library path differs across implementations as `lib/ruby` on MRI and `lib/jruby` on JRuby.
+ SPEC_PATH = ->(ruby_version, gem_name, gem_version) do
+-  glob = Dir.glob("lib/#{RbConfig::CONFIG['RUBY_INSTALL_NAME']}/#{ruby_version}/specifications/#{gem_name}-#{gem_version}*.gemspec").first
+-  alt_glob = Dir.glob("lib/#{RbConfig::CONFIG['RUBY_INSTALL_NAME']}/#{ruby_version}/bundler/gems/#{gem_name}-*/**/*.gemspec").first
+-  glob || alt_glob
++  glob = Dir.glob("lib/#{RbConfig::CONFIG['RUBY_BASE_NAME']}/#{ruby_version}/specifications/#{gem_name}-#{gem_version}*.gemspec").first
++  alt_glob = Dir.glob("lib/#{RbConfig::CONFIG['RUBY_BASE_NAME']}/#{ruby_version}/bundler/gems/#{gem_name}-*/**/*.gemspec").first
++  # alt_alt_glob = Dir.glob("lib/#{RbConfig::CONFIG['RUBY_BASE_NAME']}/gems/#{ruby_version}/specifications/#{gem_name}-#{gem_version}*.gemspec").first
++  glob || alt_glob # || alt_alt_glob
+ end
+ 
+ HERE = File.absolute_path '.'
+@@ -199,13 +201,13 @@ class BundleBuildFileGenerator
+     # ruby/2.6.0/gems for all minor versions of 2.6.*
+     @ruby_version ||= begin
+         version_string = (RUBY_VERSION.split('.')[0..1] << 0).join('.')
+-        if File.exist?("lib/#{RbConfig::CONFIG['RUBY_INSTALL_NAME']}/#{version_string}")
++        if File.exist?("lib/#{RbConfig::CONFIG['RUBY_BASE_NAME']}/#{version_string}")
+             version_string
+         else
+-            if File.exist?("lib/#{RbConfig::CONFIG['RUBY_INSTALL_NAME']}/#{version_string}+0")
++            if File.exist?("lib/#{RbConfig::CONFIG['RUBY_BASE_NAME']}/#{version_string}+0")
+                 version_string + "+0"
+             else
+-                raise "Cannot find directory named #{version_string} within lib/#{RbConfig::CONFIG['RUBY_INSTALL_NAME']}"
++                raise "Cannot find directory named #{version_string} within lib/#{RbConfig::CONFIG['RUBY_BASE_NAME']}"
+             end
+         end
+     end
