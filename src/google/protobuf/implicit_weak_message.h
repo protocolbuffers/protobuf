@@ -87,10 +87,6 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 
   static void MergeImpl(MessageLite&, const MessageLite&);
 
-  static void ClearImpl(MessageLite& msg) {
-    static_cast<ImplicitWeakMessage&>(msg).Clear();
-  }
-
   static size_t ByteSizeLongImpl(const MessageLite& msg) {
     return static_cast<const ImplicitWeakMessage&>(msg).ByteSizeLong();
   }

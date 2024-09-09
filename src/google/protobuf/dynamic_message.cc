@@ -270,7 +270,7 @@ struct DynamicMessageFactory::TypeInfo {
           &DynamicMessage::MergeImpl,
           internal::MessageCreator(),  // to be filled later
           &DynamicMessage::DeleteImpl,
-          DynamicMessage::ClearImpl,
+          static_cast<void (MessageLite::*)()>(&DynamicMessage::ClearImpl),
           DynamicMessage::ByteSizeLongImpl,
           DynamicMessage::_InternalSerializeImpl,
           PROTOBUF_FIELD_OFFSET(DynamicMessage, cached_byte_size_),

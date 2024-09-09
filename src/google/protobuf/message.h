@@ -390,7 +390,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Reflection based version for reflection based types.
   static absl::string_view GetTypeNameImpl(const ClassData* data);
   static void MergeImpl(MessageLite& to, const MessageLite& from);
-  static void ClearImpl(MessageLite& msg);
+  void ClearImpl();
   static size_t ByteSizeLongImpl(const MessageLite& msg);
   static uint8_t* _InternalSerializeImpl(const MessageLite& msg,
                                          uint8_t* target,

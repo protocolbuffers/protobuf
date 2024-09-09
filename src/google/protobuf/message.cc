@@ -71,8 +71,8 @@ void Message::MergeImpl(MessageLite& to, const MessageLite& from) {
                        DownCastMessage<Message>(&to));
 }
 
-void Message::ClearImpl(MessageLite& msg) {
-  ReflectionOps::Clear(&DownCastMessage<Message>(msg));
+void Message::ClearImpl() {
+  ReflectionOps::Clear(DownCastMessage<Message>(this));
 }
 
 size_t Message::ByteSizeLongImpl(const MessageLite& msg) {
