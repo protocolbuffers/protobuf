@@ -18,7 +18,7 @@ namespace protobuf {
 namespace internal {
 
 ABSL_CONST_INIT PROTOBUF_EXPORT
-    ABSL_CACHELINE_ALIGNED const char kZeroBuffer[ABSL_CACHELINE_SIZE] = {};
+    ABSL_CACHELINE_ALIGNED const char kZeroBuffer[std::max(ABSL_CACHELINE_SIZE, 64)] = {};
 
 }  // namespace internal
 }  // namespace protobuf
