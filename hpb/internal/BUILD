@@ -61,7 +61,7 @@ cc_test(
     deps = [
         "//hpb",
         "//hpb/internal:message_lock",
-        "//src/google/protobuf/compiler/hpb/tests:test_model_upb_cc_proto",
+        "//hpb_generator/tests:test_model_upb_cc_proto",
         "//upb:mem",
         "@com_google_absl//absl/hash",
         "@com_google_absl//absl/log:absl_check",

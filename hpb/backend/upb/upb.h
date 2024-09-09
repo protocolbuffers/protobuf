@@ -8,10 +8,10 @@
 #ifndef GOOGLE_PROTOBUF_HPB_BACKEND_UPB_UPB_H__
 #define GOOGLE_PROTOBUF_HPB_BACKEND_UPB_UPB_H__
 
-#include "google/protobuf/hpb/backend/upb/interop.h"
-#include "google/protobuf/hpb/internal/internal.h"
-#include "google/protobuf/hpb/internal/template_help.h"
-#include "google/protobuf/hpb/ptr.h"
+#include "hpb/backend/upb/interop.h"
+#include "hpb/internal/internal.h"
+#include "hpb/internal/template_help.h"
+#include "hpb/ptr.h"
 
 namespace hpb::internal::backend::upb {
 

@@ -15,11 +15,11 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/hpb/backend/upb/interop.h"
-#include "google/protobuf/hpb/extension.h"
-#include "google/protobuf/hpb/internal/internal.h"
-#include "google/protobuf/hpb/internal/template_help.h"
-#include "google/protobuf/hpb/ptr.h"
+#include "hpb/backend/upb/interop.h"
+#include "hpb/extension.h"
+#include "hpb/internal/internal.h"
+#include "hpb/internal/template_help.h"
+#include "hpb/ptr.h"
 #include "upb/base/status.hpp"
 #include "upb/mem/arena.hpp"
 #include "upb/message/copy.h"
@@ -28,7 +28,7 @@
 #include "upb/wire/encode.h"
 
 #ifdef HPB_BACKEND_UPB
-#include "google/protobuf/hpb/backend/upb/upb.h"
+#include "hpb/backend/upb/upb.h"
 #else
 #error hpb backend must be specified
 #endif

@@ -10,8 +10,8 @@
 
 // The sole public header in hpb/backend/upb
 
-#include "google/protobuf/hpb/internal/internal.h"
-#include "google/protobuf/hpb/ptr.h"
+#include "hpb/internal/internal.h"
+#include "hpb/ptr.h"
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"

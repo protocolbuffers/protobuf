@@ -9,7 +9,7 @@
 #define PROTOBUF_COMPILER_HBP_GEN_ENUMS_H_
 
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/compiler/hpb/output.h"
+#include "hpb_generator/output.h"
 
 namespace google::protobuf::hpb_generator {
 

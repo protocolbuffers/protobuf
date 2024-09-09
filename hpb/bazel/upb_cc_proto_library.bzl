@@ -214,12 +214,12 @@ _upb_cc_proto_library_aspect = aspect(
         "_gen_upbprotos": attr.label(
             executable = True,
             cfg = "exec",
-            default = "//src/google/protobuf/compiler/hpb:protoc-gen-upb-protos",
+            default = "//hpb_generator:protoc-gen-upb-protos",
         ),
         "_protoc": attr.label(
             executable = True,
             cfg = "exec",
-            default = "//net/proto2/compiler/public:protocol_compiler",
+            default = "//src/google/protobuf/compiler:protoc",
         ),
         "_cc_toolchain": attr.label(
             default = "@bazel_tools//tools/cpp:current_cc_toolchain",

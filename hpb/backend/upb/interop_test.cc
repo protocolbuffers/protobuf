@@ -5,11 +5,10 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/hpb/backend/upb/interop.h"
+#include "hpb/backend/upb/interop.h"
 
 #include <gtest/gtest.h>
-#include "google/protobuf/compiler/hpb/tests/test_model.upb.h"
-#include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
+#include "hpb_generator/tests/test_model.upb.proto.h"
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
 

@@ -10,7 +10,7 @@
 
 #include <type_traits>
 
-#include "google/protobuf/hpb/ptr.h"
+#include "hpb/ptr.h"
 
 namespace hpb {
 namespace internal {

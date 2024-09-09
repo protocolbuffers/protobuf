@@ -10,7 +10,7 @@
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/compiler/hpb/output.h"
+#include "hpb_generator/output.h"
 
 namespace google::protobuf::hpb_generator {
 

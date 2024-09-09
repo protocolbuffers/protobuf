@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/compiler/hpb/gen_accessors.h"
+#include "hpb_generator/gen_accessors.h"
 
 #include <string>
 
@@ -13,12 +13,12 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/hpb/gen_repeated_fields.h"
-#include "google/protobuf/compiler/hpb/gen_utils.h"
-#include "google/protobuf/compiler/hpb/keywords.h"
-#include "google/protobuf/compiler/hpb/names.h"
-#include "google/protobuf/compiler/hpb/output.h"
 #include "google/protobuf/descriptor.h"
+#include "hpb_generator/hpb/gen_repeated_fields.h"
+#include "hpb_generator/hpb/gen_utils.h"
+#include "hpb_generator/hpb/keywords.h"
+#include "hpb_generator/hpb/names.h"
+#include "hpb_generator/hpb/output.h"
 #include "upb_generator/c/names.h"
 #include "upb_generator/minitable/names.h"
 
