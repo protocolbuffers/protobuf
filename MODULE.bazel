@@ -14,7 +14,7 @@ module(
 # Thus the highest version in their module graph is resolved.
 bazel_dep(
     name = "abseil-cpp",
-    version = "20230802.0.bcr.1",
+    version = "20240722.0",
     repo_name = "com_google_absl",
 )
 
