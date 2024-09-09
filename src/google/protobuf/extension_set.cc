@@ -513,6 +513,14 @@ const int& ExtensionSet::GetRefRepeatedEnum(int number, int index) const {
   return extension->ptr.repeated_enum_value->Get(index);
 }
 
+size_t ExtensionSet::GetMessageByteSizeLong(int number) const {
+  const Extension* extension = FindOrNull(number);
+  ABSL_CHECK(extension != nullptr) << "not present";
+  ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
+  return extension->is_lazy ? extension->ptr.lazymessage_value->ByteSizeLong()
+                            : extension->ptr.message_value->ByteSizeLong();
+}
+
 void ExtensionSet::SetRepeatedEnum(int number, int index, int value) {
   Extension* extension = FindOrNull(number);
   ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
