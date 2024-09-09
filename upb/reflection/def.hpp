@@ -444,7 +444,7 @@ class EnumDefPtr {
   // Returns the number of values currently defined in the enum.  Note that
   // multiple names can refer to the same number, so this may be greater than
   // the total number of unique numbers.
-  int value_count() const { return upb_EnumDef_ValueCount(ptr_); }
+  size_t value_count() const { return upb_EnumDef_ValueCount(ptr_); }
   EnumValDefPtr value(int i) const {
     return EnumValDefPtr(upb_EnumDef_Value(ptr_, i));
   }

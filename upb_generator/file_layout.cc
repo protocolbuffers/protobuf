@@ -14,6 +14,8 @@
 #include "upb/reflection/def.hpp"
 #include "upb_generator/common.h"
 
+using std::size_t;
+
 namespace upb {
 namespace generator {
 
@@ -58,7 +60,7 @@ std::vector<upb::EnumDefPtr> SortedEnums(upb::FileDefPtr file,
 std::vector<uint32_t> SortedUniqueEnumNumbers(upb::EnumDefPtr e) {
   std::vector<uint32_t> values;
   values.reserve(e.value_count());
-  for (int i = 0; i < e.value_count(); i++) {
+  for (size_t i = 0; i < e.value_count(); i++) {
     values.push_back(static_cast<uint32_t>(e.value(i).number()));
   }
   std::sort(values.begin(), values.end());

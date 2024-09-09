@@ -39,6 +39,8 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+using std::size_t;
+
 namespace google {
 namespace protobuf {
 namespace io {
@@ -124,7 +126,7 @@ class AnnotationProtoCollector : public AnnotationCollector {
                      const std::string& file_path, const std::vector<int>& path,
                      absl::optional<Semantic> semantic) override {
     auto* annotation = annotation_proto_->add_annotation();
-    for (int i = 0; i < path.size(); ++i) {
+    for (size_t i = 0; i < path.size(); ++i) {
       annotation->add_path(path[i]);
     }
     annotation->set_source_file(file_path);

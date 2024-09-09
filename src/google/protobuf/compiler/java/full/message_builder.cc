@@ -39,6 +39,8 @@
 // Must be last.
 #include "google/protobuf/port_def.inc"
 
+using std::size_t;
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -211,7 +213,7 @@ void MessageBuilderGenerator::GenerateDescriptorMethods(io::Printer* printer) {
         "  switch (number) {\n");
     printer->Indent();
     printer->Indent();
-    for (int i = 0; i < map_fields.size(); ++i) {
+    for (size_t i = 0; i < map_fields.size(); ++i) {
       const FieldDescriptor* field = map_fields[i];
       const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
       printer->Print(
@@ -237,7 +239,7 @@ void MessageBuilderGenerator::GenerateDescriptorMethods(io::Printer* printer) {
         "  switch (number) {\n");
     printer->Indent();
     printer->Indent();
-    for (int i = 0; i < map_fields.size(); ++i) {
+    for (size_t i = 0; i < map_fields.size(); ++i) {
       const FieldDescriptor* field = map_fields[i];
       const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
       printer->Print(

@@ -25,6 +25,8 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 
+using std::size_t;
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -36,7 +38,7 @@ EnumLiteGenerator::EnumLiteGenerator(const EnumDescriptor* descriptor,
       immutable_api_(immutable_api),
       context_(context),
       name_resolver_(context->GetNameResolver()) {
-  for (int i = 0; i < descriptor_->value_count(); i++) {
+  for (size_t i = 0; i < descriptor_->value_count(); i++) {
     const EnumValueDescriptor* value = descriptor_->value(i);
     const EnumValueDescriptor* canonical_value =
         descriptor_->FindValueByNumber(value->number());
@@ -67,7 +69,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   printer->Annotate("classname", descriptor_);
   printer->Indent();
 
-  for (int i = 0; i < canonical_values_.size(); i++) {
+  for (size_t i = 0; i < canonical_values_.size(); i++) {
     absl::flat_hash_map<absl::string_view, std::string> vars;
     vars["name"] = canonical_values_[i]->name();
     vars["number"] = absl::StrCat(canonical_values_[i]->number());
@@ -91,7 +93,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
 
   // -----------------------------------------------------------------
 
-  for (int i = 0; i < aliases_.size(); i++) {
+  for (size_t i = 0; i < aliases_.size(); i++) {
     absl::flat_hash_map<absl::string_view, std::string> vars;
     vars["classname"] = descriptor_->name();
     vars["name"] = aliases_[i].value->name();
@@ -102,7 +104,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
     printer->Annotate("name", aliases_[i].value);
   }
 
-  for (int i = 0; i < descriptor_->value_count(); i++) {
+  for (size_t i = 0; i < descriptor_->value_count(); i++) {
     absl::flat_hash_map<absl::string_view, std::string> vars;
     vars["name"] = descriptor_->value(i)->name();
     vars["number"] = absl::StrCat(descriptor_->value(i)->number());
@@ -162,7 +164,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   printer->Indent();
   printer->Indent();
 
-  for (int i = 0; i < canonical_values_.size(); i++) {
+  for (size_t i = 0; i < canonical_values_.size(); i++) {
     printer->Print("case $number$: return $name$;\n", "name",
                    canonical_values_[i]->name(), "number",
                    absl::StrCat(canonical_values_[i]->number()));

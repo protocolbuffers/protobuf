@@ -51,7 +51,7 @@ const upb_EnumReservedRange* upb_EnumDef_ReservedRange(const upb_EnumDef* e,
 int upb_EnumDef_ReservedRangeCount(const upb_EnumDef* e);
 
 UPB_API const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i);
-UPB_API int upb_EnumDef_ValueCount(const upb_EnumDef* e);
+UPB_API size_t upb_EnumDef_ValueCount(const upb_EnumDef* e);
 
 #ifdef __cplusplus
 } /* extern "C" */

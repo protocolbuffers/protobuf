@@ -16,6 +16,8 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 
+using std::size_t;
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -62,7 +64,7 @@ std::string RelativePath::Relative(const RelativePath& dest) const {
     result.push_back(segment);
   }
   // Push `..` from the common ancestor to the current path.
-  for (int i = 0; i < current_segments.size(); ++i) {
+  for (size_t i = 0; i < current_segments.size(); ++i) {
     result.push_back("..");
   }
   absl::c_reverse(result);
