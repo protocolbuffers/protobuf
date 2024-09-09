@@ -265,8 +265,10 @@ bool NullValue_IsValid(int value) {
                           ::google::protobuf::Message::GetNewImpl<Struct_FieldsEntry_DoNotUse>(),
               #if defined(PROTOBUF_CUSTOM_VTABLE)
                           ::google::protobuf::Message::GetDeleteImpl<Struct_FieldsEntry_DoNotUse>(),
-                          ::google::protobuf::Message::ClearImpl, ::google::protobuf::Message::ByteSizeLongImpl,
-                              ::google::protobuf::Message::_InternalSerializeImpl,
+                          static_cast<void (::google::protobuf::MessageLite::*)()>(
+                              &Struct_FieldsEntry_DoNotUse::ClearImpl),
+                              ::google::protobuf::Message::ByteSizeLongImpl, ::google::protobuf::Message::_InternalSerializeImpl
+                              ,
               #endif  // PROTOBUF_CUSTOM_VTABLE
                           PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_._cached_size_),
                           false,
