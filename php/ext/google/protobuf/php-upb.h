@@ -85,6 +85,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_API_INLINE UPB_INLINE
 #endif
 
+#ifdef EXPORT_UPBC
+#define UPBC_API UPB_EXPORT
+#else
+#define UPBC_API
+#endif
+
 #define UPB_MALLOC_ALIGN 8
 #define UPB_ALIGN_UP(size, align) (((size) + (align) - 1) / (align) * (align))
 #define UPB_ALIGN_DOWN(size, align) ((size) / (align) * (align))
@@ -1203,8 +1209,8 @@ UPB_INLINE bool upb_StringView_IsEqual(upb_StringView a, upb_StringView b) {
  * regenerated.
  * NO CHECKED-IN PROTOBUF GENCODE */
 
-#ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_
-#define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_
+#ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPB_H_
+#define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPB_H_
 
 
 #ifndef UPB_GENERATED_CODE_SUPPORT_H_
@@ -5330,8 +5336,8 @@ TAGBYTES(r)
  * regenerated.
  * NO CHECKED-IN PROTOBUF GENCODE */
 
-#ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_MINITABLE_H_
-#define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_MINITABLE_H_
+#ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPB_MINITABLE_H_
+#define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPB_MINITABLE_H_
 
 
 // Must be last.
@@ -5407,23 +5413,23 @@ extern const upb_MiniTable* google__protobuf__GeneratedCodeInfo_msg_init_ptr;
 extern const upb_MiniTable google__protobuf__GeneratedCodeInfo__Annotation_msg_init;
 extern const upb_MiniTable* google__protobuf__GeneratedCodeInfo__Annotation_msg_init_ptr;
 
-extern const upb_MiniTableEnum google_protobuf_Edition_enum_init;
-extern const upb_MiniTableEnum google_protobuf_ExtensionRangeOptions_VerificationState_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FeatureSet_EnumType_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FeatureSet_FieldPresence_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FeatureSet_JsonFormat_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FeatureSet_MessageEncoding_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FeatureSet_RepeatedFieldEncoding_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FeatureSet_Utf8Validation_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FieldDescriptorProto_Label_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FieldDescriptorProto_Type_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FieldOptions_CType_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FieldOptions_JSType_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FieldOptions_OptionRetention_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FieldOptions_OptionTargetType_enum_init;
-extern const upb_MiniTableEnum google_protobuf_FileOptions_OptimizeMode_enum_init;
-extern const upb_MiniTableEnum google_protobuf_GeneratedCodeInfo_Annotation_Semantic_enum_init;
-extern const upb_MiniTableEnum google_protobuf_MethodOptions_IdempotencyLevel_enum_init;
+extern const upb_MiniTableEnum google__protobuf__Edition_enum_init;
+extern const upb_MiniTableEnum google__protobuf__ExtensionRangeOptions__VerificationState_enum_init;
+extern const upb_MiniTableEnum google__protobuf__FeatureSet__EnumType_enum_init;
+extern const upb_MiniTableEnum google__protobuf__FeatureSet__FieldPresence_enum_init;
+extern const upb_MiniTableEnum google__protobuf__FeatureSet__JsonFormat_enum_init;
+extern const upb_MiniTableEnum google__protobuf__FeatureSet__MessageEncoding_enum_init;
+extern const upb_MiniTableEnum google__protobuf__FeatureSet__RepeatedFieldEncoding_enum_init;
+extern const upb_MiniTableEnum google__protobuf__FeatureSet__Utf8Validation_enum_init;
+extern const upb_MiniTableEnum google__protobuf__FieldDescriptorProto__Label_enum_init;
+extern const upb_MiniTableEnum google__protobuf__FieldDescriptorProto__Type_enum_init;
+extern const upb_MiniTableEnum google__protobuf__FieldOptions__CType_enum_init;
+extern const upb_MiniTableEnum google__protobuf__FieldOptions__JSType_enum_init;
+extern const upb_MiniTableEnum google__protobuf__FieldOptions__OptionRetention_enum_init;
+extern const upb_MiniTableEnum google__protobuf__FieldOptions__OptionTargetType_enum_init;
+extern const upb_MiniTableEnum google__protobuf__FileOptions__OptimizeMode_enum_init;
+extern const upb_MiniTableEnum google__protobuf__GeneratedCodeInfo__Annotation__Semantic_enum_init;
+extern const upb_MiniTableEnum google__protobuf__MethodOptions__IdempotencyLevel_enum_init;
 extern const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout;
 
 #ifdef __cplusplus
@@ -5431,7 +5437,7 @@ extern const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout;
 #endif
 
 
-#endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_MINITABLE_H_ */
+#endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPB_MINITABLE_H_ */
 
 
 // Must be last.
@@ -12312,7 +12318,7 @@ UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_semantic(google
 #endif
 
 
-#endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_ */
+#endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPB_H_ */
 #endif
 
 // IWYU pragma: end_exports
@@ -14337,8 +14343,8 @@ UPB_INLINE const char* upb_WireReader_SkipValue(
  * regenerated.
  * NO CHECKED-IN PROTOBUF GENCODE */
 
-#ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPBDEFS_H_
-#define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPBDEFS_H_
+#ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPBDEFS_H_
+#define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPBDEFS_H_
 
 
 #ifndef UPB_REFLECTION_DEF_POOL_INTERNAL_H_
@@ -14564,7 +14570,7 @@ UPB_INLINE const upb_MessageDef *google_protobuf_GeneratedCodeInfo_Annotation_ge
 #endif
 
 
-#endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPBDEFS_H_ */
+#endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPBDEFS_H_ */
 
 #ifndef UPB_LEX_STRTOD_H_
 #define UPB_LEX_STRTOD_H_
@@ -15268,6 +15274,7 @@ upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
 #undef UPB_EXPORT
 #undef UPB_INLINE
 #undef UPB_API
+#undef UPBC_API
 #undef UPB_API_INLINE
 #undef UPB_ALIGN_UP
 #undef UPB_ALIGN_DOWN
