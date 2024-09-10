@@ -256,8 +256,10 @@ void ServiceGenerator::GenerateCallMethodCases(io::Printer* printer) {
         },
         R"cc(
           case $index$:
-            $name$(controller, ::$proto_ns$::DownCastMessage<$input$>(request),
-                   ::$proto_ns$::DownCastMessage<$output$>(response), done);
+            this->$name$(controller,
+                         ::$proto_ns$::DownCastMessage<$input$>(request),
+                         ::$proto_ns$::DownCastMessage<$output$>(response),
+                         done);
             break;
         )cc");
   }
