@@ -15,11 +15,11 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/hpb/gen_repeated_fields.h"
 #include "google/protobuf/compiler/hpb/gen_utils.h"
+#include "google/protobuf/compiler/hpb/keywords.h"
 #include "google/protobuf/compiler/hpb/names.h"
 #include "google/protobuf/compiler/hpb/output.h"
 #include "google/protobuf/descriptor.h"
 #include "upb_generator/c/names.h"
-#include "upb_generator/keywords.h"
 #include "upb_generator/minitable/names.h"
 
 namespace google::protobuf::hpb_generator {
@@ -567,7 +567,7 @@ std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
       }
     }
   }
-  return upb::generator::ResolveKeywordConflict(std::string(field_name));
+  return ResolveKeywordConflict(field_name);
 }
 
 }  // namespace protobuf

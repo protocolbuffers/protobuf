@@ -5,15 +5,18 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "upb_generator/keywords.h"
+#include "google/protobuf/compiler/hpb/keywords.h"
 
+#include <new>
 #include <string>
-#include <unordered_set>
 
-namespace upb {
-namespace generator {
+#include "absl/container/flat_hash_set.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 
-static const char* const kKeywordList[] = {
+namespace google::protobuf::hpb_generator {
+
+static const absl::string_view kKeywordList[] = {
     //
     "NULL",
     "alignas",
@@ -110,22 +113,22 @@ static const char* const kKeywordList[] = {
     "requires",
 };
 
-static std::unordered_set<std::string>* MakeKeywordsMap() {
-  auto* result = new std::unordered_set<std::string>();
+static absl::flat_hash_set<std::string>* MakeKeywordsMap() {
+  auto* result = new absl::flat_hash_set<std::string>();
   for (const auto keyword : kKeywordList) {
     result->emplace(keyword);
   }
   return result;
 }
 
-static std::unordered_set<std::string>& kKeywords = *MakeKeywordsMap();
+static absl::flat_hash_set<std::string>& kKeywords = *MakeKeywordsMap();
 
-std::string ResolveKeywordConflict(const std::string& name) {
+std::string ResolveKeywordConflict(absl::string_view name) {
   if (kKeywords.count(name) > 0) {
-    return name + "_";
+    return absl::StrCat(name, "_");
   }
-  return name;
+  return std::string(name);
 }
 
-}  // namespace generator
-}  // namespace upb
+}  // namespace protobuf
+}  // namespace google::hpb_generator

@@ -53,15 +53,26 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         ":gen_utils",
+        ":keywords",
         ":names",
         ":output",
         "//:protobuf",
         "//src/google/protobuf",
         "//upb_generator:common",
         "//upb_generator:file_layout",
-        "//upb_generator:keywords",
         "//upb_generator/c:names",
         "//upb_generator/minitable:names",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "keywords",
+    srcs = ["keywords.cc"],
+    hdrs = ["keywords.h"],
+    visibility = ["//visibility:private"],
+    deps = [
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",
     ],
@@ -101,10 +112,10 @@ cc_library(
     hdrs = ["names.h"],
     visibility = ["//visibility:private"],
     deps = [
+        ":keywords",
         ":output",
         "//src/google/protobuf",
         "//src/google/protobuf/compiler:code_generator",
-        "//upb_generator:keywords",
         "@com_google_absl//absl/strings:string_view",
     ],
 )

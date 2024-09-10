@@ -84,18 +84,6 @@ bootstrap_cc_library(
     ],
 )
 
-cc_library(
-    name = "keywords",
-    srcs = [
-        "keywords.cc",
-    ],
-    hdrs = [
-        "keywords.h",
-    ],
-    copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//src/google/protobuf/compiler/hpb:__pkg__"],
-)
-
 bootstrap_cc_library(
     name = "plugin",
     hdrs = [

@@ -5,18 +5,19 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef UPB_PROTOS_GENERATOR_KEYWORDS_H
-#define UPB_PROTOS_GENERATOR_KEYWORDS_H
+#ifndef PROTOBUF_COMPILER_HBP_GENERATOR_KEYWORDS_H
+#define PROTOBUF_COMPILER_HBP_GENERATOR_KEYWORDS_H
 
 #include <string>
 
-namespace upb {
-namespace generator {
+#include "absl/strings/string_view.h"
+
+namespace google::protobuf::hpb_generator {
 
 // Resolves proto field name conflict with C++ reserved keywords.
-std::string ResolveKeywordConflict(const std::string& name);
+std::string ResolveKeywordConflict(absl::string_view name);
 
-}  // namespace generator
-}  // namespace upb
+}  // namespace protobuf
+}  // namespace google::hpb_generator
 
-#endif  // UPB_PROTOS_GENERATOR_KEYWORDS_H
+#endif  // PROTOBUF_COMPILER_HBP_GENERATOR_KEYWORDS_H

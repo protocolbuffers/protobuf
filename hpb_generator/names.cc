@@ -11,7 +11,7 @@
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
-#include "upb_generator/keywords.h"
+#include "google/protobuf/compiler/hpb/keywords.h"
 
 namespace google::protobuf::hpb_generator {
 namespace protobuf = ::proto2;
@@ -92,7 +92,7 @@ std::string ClassName(const protobuf::Descriptor* descriptor) {
   }
   if (parent) res += ClassName(parent) + "_";
   absl::StrAppend(&res, descriptor->name());
-  return ::upb::generator::ResolveKeywordConflict(res);
+  return ResolveKeywordConflict(res);
 }
 
 std::string QualifiedClassName(const protobuf::Descriptor* descriptor) {
