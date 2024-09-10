@@ -29,7 +29,7 @@ cc_binary(
         "//:protobuf",
         "//src/google/protobuf",
         "//src/google/protobuf/compiler:code_generator",
-        "//src/google/protobuf/compiler:plugin",
+        "//src/google/protobuf/compiler:plugin_cc_proto",
         "//upb_generator:file_layout",
     ],
 )
