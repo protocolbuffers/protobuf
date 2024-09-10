@@ -88,8 +88,9 @@ impl<T: Debug + 'static> Debug for OwnedArenaBox<T> {
 mod tests {
     use super::*;
     use core::str;
+    use googletest::gtest;
 
-    #[test]
+    #[gtest]
     fn test_byte_slice_pointer_roundtrip() {
         let arena = Arena::new();
         let original_data: &'static [u8] = b"Hello world";
@@ -97,7 +98,7 @@ mod tests {
         assert_eq!(&*owned_data, b"Hello world");
     }
 
-    #[test]
+    #[gtest]
     fn test_alloc_str_roundtrip() {
         let arena = Arena::new();
         let s: &str = "Hello";
@@ -106,7 +107,7 @@ mod tests {
         assert_eq!(&*owned_data, s);
     }
 
-    #[test]
+    #[gtest]
     fn test_sized_type_roundtrip() {
         let arena = Arena::new();
         let arena_alloc_u32: NonNull<u32> = arena.copy_in(&7u32).unwrap().into();

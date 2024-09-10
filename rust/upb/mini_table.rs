@@ -50,8 +50,9 @@ extern "C" {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use googletest::gtest;
 
-    #[test]
+    #[gtest]
     fn assert_mini_table_linked() {
         use super::super::assert_linked;
         assert_linked!(upb_MiniTable_FindFieldByNumber);

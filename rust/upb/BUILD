@@ -39,6 +39,9 @@ rust_library(
 rust_test(
     name = "upb_rs_crate_test",
     crate = ":upb",
+    deps = [
+        "@crate_index//:googletest",
+    ],
 )
 
 cc_library(
