@@ -18,6 +18,20 @@
 
 namespace hpb::interop::upb {
 
+/**
+ * Moves ownership of a message created in a source arena.
+ *
+ * Utility function to provide a way to move ownership across languages or VMs.
+ *
+ * Warning: any minitable skew will incur arbitrary memory access. Ensuring
+ * minitable compatibility is the responsibility of the caller.
+ */
+// TODO: b/365824801 - consider rename to OwnMessage
+template <typename T>
+T MoveMessage(upb_Message* msg, upb_Arena* arena) {
+  return T(msg, arena);
+}
+
 template <typename T>
 const upb_MiniTable* GetMiniTable(const T*) {
   return T::minitable();
