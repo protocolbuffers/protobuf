@@ -252,7 +252,8 @@ void WriteModelPublicDeclaration(
             const ::hpb::ExtensionRegistry& extension_registry, int options));
         friend upb_Arena* hpb::interop::upb::GetArena<$0>($0* message);
         friend upb_Arena* hpb::interop::upb::GetArena<$0>(::hpb::Ptr<$0> message);
-        friend $0(::hpb::internal::MoveMessage<$0>(upb_Message* msg, upb_Arena* arena));
+        friend $0(hpb::interop::upb::MoveMessage<$0>(upb_Message* msg,
+                                                     upb_Arena* arena));
       )cc",
       ClassName(descriptor), MessageName(descriptor),
       QualifiedClassName(descriptor));
