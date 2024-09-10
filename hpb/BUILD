@@ -82,50 +82,16 @@ cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
 )
 
-cc_library(
-    name = "internal",
-    hdrs = ["internal.h"],
-    copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//upb:friends"],
-    deps = [
-        ":hpb",
-        "//upb:mem",
-        "//upb:message",
-        "//upb:mini_table",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
-        "@com_google_absl//absl/strings:str_format",
-    ],
-)
-
 # Common support code for C++ generated code.
 cc_library(
     name = "generated_hpb_support",
-    hdrs = [
-        "internal.h",
-    ],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//hpb/bazel:__pkg__"],
     deps = [
         ":hpb",
-        ":internal",
         ":repeated_field",
         "//upb:mem",
         "//upb:message",
-    ],
-)
-
-cc_test(
-    name = "internal_test",
-    srcs = ["internal_test.cc"],
-    copts = UPB_DEFAULT_CPPOPTS,
-    deps = [
-        ":internal",
-        "//src/google/protobuf/compiler/hpb/tests:test_model_upb_cc_proto",
-        "//src/google/protobuf/compiler/hpb/tests:test_model_upb_proto",
-        "//upb:mem",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
     ],
 )
 

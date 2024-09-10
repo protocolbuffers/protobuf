@@ -5,6 +5,11 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load(
+    "//upb/bazel:build_defs.bzl",
+    "UPB_DEFAULT_CPPOPTS",
+)
+
 package(default_applicable_licenses = ["//:license"])
 
 cc_library(
@@ -33,5 +38,20 @@ cc_library(
         "//upb:mem",
         "//upb:message",
         "//upb:mini_table",
+    ],
+)
+
+cc_test(
+    name = "interop_test",
+    srcs = ["interop_test.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    deps = [
+        ":interop",
+        "//src/google/protobuf/compiler/hpb/tests:test_model_upb_cc_proto",
+        "//src/google/protobuf/compiler/hpb/tests:test_model_upb_proto",
+        "//upb:mem",
+        "//upb:message",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
