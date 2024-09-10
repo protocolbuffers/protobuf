@@ -15,6 +15,7 @@
 #include <iterator>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
@@ -23,14 +24,15 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/printer.h"
-#include "google/protobuf/port.h"
 
 
 // Must be included last.
@@ -557,7 +559,7 @@ inline std::string MakeVarintCachedSizeFieldName(const FieldDescriptor* field,
 bool IsAnyMessage(const FileDescriptor* descriptor);
 bool IsAnyMessage(const Descriptor* descriptor);
 
-bool IsWellKnownMessage(const FileDescriptor* descriptor);
+bool IsWellKnownMessage(const FileDescriptor* file);
 
 enum class GeneratedFileType : int { kPbH, kProtoH, kProtoStaticReflectionH };
 
@@ -623,7 +625,7 @@ std::vector<const Descriptor*> TopologicalSortMessagesInFile(
     const FileDescriptor* file, MessageSCCAnalyzer& scc_analyzer);
 
 bool HasWeakFields(const Descriptor* desc, const Options& options);
-bool HasWeakFields(const FileDescriptor* desc, const Options& options);
+bool HasWeakFields(const FileDescriptor* file, const Options& options);
 
 // Returns true if the "required" restriction check should be ignored for the
 // given field.

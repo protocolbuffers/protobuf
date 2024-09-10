@@ -12,37 +12,52 @@
 #include "google/protobuf/compiler/cpp/helpers.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <memory>
+#include <new>
 #include <queue>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
+#include "absl/base/thread_annotations.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
+#include "absl/types/optional.h"
+#include "absl/types/span.h"
+#include "google/protobuf/arenastring.h"
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
+#include "google/protobuf/map.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -278,7 +293,7 @@ std::string UnderscoresToCamelCase(absl::string_view input,
                                    bool cap_next_letter) {
   std::string result;
   // Note:  I distrust ctype.h due to locales.
-  for (int i = 0; i < input.size(); i++) {
+  for (size_t i = 0; i < input.size(); ++i) {
     if ('a' <= input[i] && input[i] <= 'z') {
       if (cap_next_letter) {
         result += input[i] + ('A' - 'a');
@@ -864,7 +879,7 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
 // Convert a file name into a valid identifier.
 std::string FilenameIdentifier(absl::string_view filename) {
   std::string result;
-  for (int i = 0; i < filename.size(); i++) {
+  for (size_t i = 0; i < filename.size(); ++i) {
     if (absl::ascii_isalnum(filename[i])) {
       result.push_back(filename[i]);
     } else {
@@ -1555,7 +1570,7 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
   if (UsingImplicitWeakFields(scc->GetFile(), options_)) {
     result.contains_weak = true;
   }
-  for (int i = 0; i < scc->descriptors.size(); i++) {
+  for (size_t i = 0; i < scc->descriptors.size(); ++i) {
     const Descriptor* descriptor = scc->descriptors[i];
     if (descriptor->extension_range_count() > 0) {
       result.contains_extension = true;
