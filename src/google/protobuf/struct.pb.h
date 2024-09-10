@@ -117,6 +117,14 @@ class PROTOBUF_EXPORT ListValue final
  public:
   inline ListValue() : ListValue(nullptr) {}
   ~ListValue() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(ListValue* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(ListValue));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR ListValue(
       ::google::protobuf::internal::ConstantInitialized);
@@ -223,7 +231,7 @@ class PROTOBUF_EXPORT ListValue final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(ListValue* other);
  private:
   template <typename T>
@@ -308,6 +316,14 @@ class PROTOBUF_EXPORT Struct final
  public:
   inline Struct() : Struct(nullptr) {}
   ~Struct() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(Struct* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(Struct));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR Struct(
       ::google::protobuf::internal::ConstantInitialized);
@@ -414,7 +430,7 @@ class PROTOBUF_EXPORT Struct final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(Struct* other);
  private:
   template <typename T>
@@ -539,6 +555,14 @@ class PROTOBUF_EXPORT Value final
  public:
   inline Value() : Value(nullptr) {}
   ~Value() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(Value* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(Value));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR Value(
       ::google::protobuf::internal::ConstantInitialized);
@@ -654,7 +678,7 @@ class PROTOBUF_EXPORT Value final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(Value* other);
  private:
   template <typename T>

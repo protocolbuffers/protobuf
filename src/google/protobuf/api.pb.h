@@ -80,6 +80,14 @@ class PROTOBUF_EXPORT Mixin final
  public:
   inline Mixin() : Mixin(nullptr) {}
   ~Mixin() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(Mixin* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(Mixin));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR Mixin(
       ::google::protobuf::internal::ConstantInitialized);
@@ -186,7 +194,7 @@ class PROTOBUF_EXPORT Mixin final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(Mixin* other);
  private:
   template <typename T>
@@ -288,6 +296,14 @@ class PROTOBUF_EXPORT Method final
  public:
   inline Method() : Method(nullptr) {}
   ~Method() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(Method* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(Method));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR Method(
       ::google::protobuf::internal::ConstantInitialized);
@@ -394,7 +410,7 @@ class PROTOBUF_EXPORT Method final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(Method* other);
  private:
   template <typename T>
@@ -569,6 +585,14 @@ class PROTOBUF_EXPORT Api final
  public:
   inline Api() : Api(nullptr) {}
   ~Api() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(Api* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(Api));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR Api(
       ::google::protobuf::internal::ConstantInitialized);
@@ -675,7 +699,7 @@ class PROTOBUF_EXPORT Api final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(Api* other);
  private:
   template <typename T>

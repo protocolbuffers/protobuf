@@ -72,6 +72,14 @@ class PROTOBUF_EXPORT Any final
  public:
   inline Any() : Any(nullptr) {}
   ~Any() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(Any* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(Any));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR Any(
       ::google::protobuf::internal::ConstantInitialized);
@@ -234,7 +242,7 @@ class PROTOBUF_EXPORT Any final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(Any* other);
  private:
   template <typename T>

@@ -156,13 +156,14 @@ inline void SourceContext::SharedCtor(::_pb::Arena* arena) {
 }
 SourceContext::~SourceContext() {
   // @@protoc_insertion_point(destructor:google.protobuf.SourceContext)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void SourceContext::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.file_name_.Destroy();
-  _impl_.~Impl_();
+inline void SourceContext::SharedDtor(MessageLite& self) {
+  SourceContext& this_ = static_cast<SourceContext&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.file_name_.Destroy();
+  this_._impl_.~Impl_();
 }
 
 inline void* SourceContext::PlacementNew_(const void*, void* mem,
@@ -184,7 +185,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &SourceContext::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<SourceContext>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<SourceContext>(),
+            &SourceContext::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<SourceContext>(), &SourceContext::ByteSizeLong,
                 &SourceContext::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE

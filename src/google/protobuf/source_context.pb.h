@@ -72,6 +72,14 @@ class PROTOBUF_EXPORT SourceContext final
  public:
   inline SourceContext() : SourceContext(nullptr) {}
   ~SourceContext() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(SourceContext* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(SourceContext));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR SourceContext(
       ::google::protobuf::internal::ConstantInitialized);
@@ -178,7 +186,7 @@ class PROTOBUF_EXPORT SourceContext final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(SourceContext* other);
  private:
   template <typename T>

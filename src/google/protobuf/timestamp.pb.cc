@@ -144,12 +144,13 @@ inline void Timestamp::SharedCtor(::_pb::Arena* arena) {
 }
 Timestamp::~Timestamp() {
   // @@protoc_insertion_point(destructor:google.protobuf.Timestamp)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void Timestamp::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.~Impl_();
+inline void Timestamp::SharedDtor(MessageLite& self) {
+  Timestamp& this_ = static_cast<Timestamp&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.~Impl_();
 }
 
 inline void* Timestamp::PlacementNew_(const void*, void* mem,
@@ -171,7 +172,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &Timestamp::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<Timestamp>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<Timestamp>(),
+            &Timestamp::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<Timestamp>(), &Timestamp::ByteSizeLong,
                 &Timestamp::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE

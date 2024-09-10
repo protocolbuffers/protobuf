@@ -324,15 +324,16 @@ inline void Api::SharedCtor(::_pb::Arena* arena) {
 }
 Api::~Api() {
   // @@protoc_insertion_point(destructor:google.protobuf.Api)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void Api::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.name_.Destroy();
-  _impl_.version_.Destroy();
-  delete _impl_.source_context_;
-  _impl_.~Impl_();
+inline void Api::SharedDtor(MessageLite& self) {
+  Api& this_ = static_cast<Api&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.name_.Destroy();
+  this_._impl_.version_.Destroy();
+  delete this_._impl_.source_context_;
+  this_._impl_.~Impl_();
 }
 
 inline void* Api::PlacementNew_(const void*, void* mem,
@@ -373,7 +374,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &Api::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<Api>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<Api>(),
+            &Api::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<Api>(), &Api::ByteSizeLong,
                 &Api::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -785,15 +786,16 @@ inline void Method::SharedCtor(::_pb::Arena* arena) {
 }
 Method::~Method() {
   // @@protoc_insertion_point(destructor:google.protobuf.Method)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void Method::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.name_.Destroy();
-  _impl_.request_type_url_.Destroy();
-  _impl_.response_type_url_.Destroy();
-  _impl_.~Impl_();
+inline void Method::SharedDtor(MessageLite& self) {
+  Method& this_ = static_cast<Method&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.name_.Destroy();
+  this_._impl_.request_type_url_.Destroy();
+  this_._impl_.response_type_url_.Destroy();
+  this_._impl_.~Impl_();
 }
 
 inline void* Method::PlacementNew_(const void*, void* mem,
@@ -826,7 +828,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &Method::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<Method>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<Method>(),
+            &Method::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<Method>(), &Method::ByteSizeLong,
                 &Method::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1182,14 +1184,15 @@ inline void Mixin::SharedCtor(::_pb::Arena* arena) {
 }
 Mixin::~Mixin() {
   // @@protoc_insertion_point(destructor:google.protobuf.Mixin)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void Mixin::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.name_.Destroy();
-  _impl_.root_.Destroy();
-  _impl_.~Impl_();
+inline void Mixin::SharedDtor(MessageLite& self) {
+  Mixin& this_ = static_cast<Mixin&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.name_.Destroy();
+  this_._impl_.root_.Destroy();
+  this_._impl_.~Impl_();
 }
 
 inline void* Mixin::PlacementNew_(const void*, void* mem,
@@ -1211,7 +1214,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &Mixin::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<Mixin>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<Mixin>(),
+            &Mixin::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<Mixin>(), &Mixin::ByteSizeLong,
                 &Mixin::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE

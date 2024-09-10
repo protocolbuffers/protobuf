@@ -72,6 +72,14 @@ class PROTOBUF_EXPORT Timestamp final
  public:
   inline Timestamp() : Timestamp(nullptr) {}
   ~Timestamp() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(Timestamp* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(Timestamp));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR Timestamp(
       ::google::protobuf::internal::ConstantInitialized);
@@ -178,7 +186,7 @@ class PROTOBUF_EXPORT Timestamp final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(Timestamp* other);
  private:
   template <typename T>

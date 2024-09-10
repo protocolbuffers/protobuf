@@ -96,6 +96,14 @@ class PROTOBUF_EXPORT UInt64Value final
  public:
   inline UInt64Value() : UInt64Value(nullptr) {}
   ~UInt64Value() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(UInt64Value* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(UInt64Value));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR UInt64Value(
       ::google::protobuf::internal::ConstantInitialized);
@@ -202,7 +210,7 @@ class PROTOBUF_EXPORT UInt64Value final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(UInt64Value* other);
  private:
   template <typename T>
@@ -280,6 +288,14 @@ class PROTOBUF_EXPORT UInt32Value final
  public:
   inline UInt32Value() : UInt32Value(nullptr) {}
   ~UInt32Value() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(UInt32Value* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(UInt32Value));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR UInt32Value(
       ::google::protobuf::internal::ConstantInitialized);
@@ -386,7 +402,7 @@ class PROTOBUF_EXPORT UInt32Value final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(UInt32Value* other);
  private:
   template <typename T>
@@ -464,6 +480,14 @@ class PROTOBUF_EXPORT StringValue final
  public:
   inline StringValue() : StringValue(nullptr) {}
   ~StringValue() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(StringValue* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(StringValue));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR StringValue(
       ::google::protobuf::internal::ConstantInitialized);
@@ -570,7 +594,7 @@ class PROTOBUF_EXPORT StringValue final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(StringValue* other);
  private:
   template <typename T>
@@ -654,6 +678,14 @@ class PROTOBUF_EXPORT Int64Value final
  public:
   inline Int64Value() : Int64Value(nullptr) {}
   ~Int64Value() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(Int64Value* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(Int64Value));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR Int64Value(
       ::google::protobuf::internal::ConstantInitialized);
@@ -760,7 +792,7 @@ class PROTOBUF_EXPORT Int64Value final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(Int64Value* other);
  private:
   template <typename T>
@@ -838,6 +870,14 @@ class PROTOBUF_EXPORT Int32Value final
  public:
   inline Int32Value() : Int32Value(nullptr) {}
   ~Int32Value() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(Int32Value* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(Int32Value));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR Int32Value(
       ::google::protobuf::internal::ConstantInitialized);
@@ -944,7 +984,7 @@ class PROTOBUF_EXPORT Int32Value final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(Int32Value* other);
  private:
   template <typename T>
@@ -1022,6 +1062,14 @@ class PROTOBUF_EXPORT FloatValue final
  public:
   inline FloatValue() : FloatValue(nullptr) {}
   ~FloatValue() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(FloatValue* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(FloatValue));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR FloatValue(
       ::google::protobuf::internal::ConstantInitialized);
@@ -1128,7 +1176,7 @@ class PROTOBUF_EXPORT FloatValue final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(FloatValue* other);
  private:
   template <typename T>
@@ -1206,6 +1254,14 @@ class PROTOBUF_EXPORT DoubleValue final
  public:
   inline DoubleValue() : DoubleValue(nullptr) {}
   ~DoubleValue() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(DoubleValue* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(DoubleValue));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR DoubleValue(
       ::google::protobuf::internal::ConstantInitialized);
@@ -1312,7 +1368,7 @@ class PROTOBUF_EXPORT DoubleValue final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(DoubleValue* other);
  private:
   template <typename T>
@@ -1390,6 +1446,14 @@ class PROTOBUF_EXPORT BytesValue final
  public:
   inline BytesValue() : BytesValue(nullptr) {}
   ~BytesValue() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(BytesValue* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(BytesValue));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR BytesValue(
       ::google::protobuf::internal::ConstantInitialized);
@@ -1496,7 +1560,7 @@ class PROTOBUF_EXPORT BytesValue final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(BytesValue* other);
  private:
   template <typename T>
@@ -1580,6 +1644,14 @@ class PROTOBUF_EXPORT BoolValue final
  public:
   inline BoolValue() : BoolValue(nullptr) {}
   ~BoolValue() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(BoolValue* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(BoolValue));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR BoolValue(
       ::google::protobuf::internal::ConstantInitialized);
@@ -1686,7 +1758,7 @@ class PROTOBUF_EXPORT BoolValue final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(BoolValue* other);
  private:
   template <typename T>

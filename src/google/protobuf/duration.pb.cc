@@ -144,12 +144,13 @@ inline void Duration::SharedCtor(::_pb::Arena* arena) {
 }
 Duration::~Duration() {
   // @@protoc_insertion_point(destructor:google.protobuf.Duration)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void Duration::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.~Impl_();
+inline void Duration::SharedDtor(MessageLite& self) {
+  Duration& this_ = static_cast<Duration&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.~Impl_();
 }
 
 inline void* Duration::PlacementNew_(const void*, void* mem,
@@ -171,7 +172,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &Duration::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<Duration>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<Duration>(),
+            &Duration::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<Duration>(), &Duration::ByteSizeLong,
                 &Duration::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE

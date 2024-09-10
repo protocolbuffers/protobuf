@@ -154,12 +154,13 @@ inline void FieldMask::SharedCtor(::_pb::Arena* arena) {
 }
 FieldMask::~FieldMask() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldMask)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void FieldMask::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.~Impl_();
+inline void FieldMask::SharedDtor(MessageLite& self) {
+  FieldMask& this_ = static_cast<FieldMask&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.~Impl_();
 }
 
 inline void* FieldMask::PlacementNew_(const void*, void* mem,
@@ -192,7 +193,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &FieldMask::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<FieldMask>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<FieldMask>(),
+            &FieldMask::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<FieldMask>(), &FieldMask::ByteSizeLong,
                 &FieldMask::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE

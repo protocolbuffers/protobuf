@@ -176,14 +176,15 @@ inline void Any::SharedCtor(::_pb::Arena* arena) {
 }
 Any::~Any() {
   // @@protoc_insertion_point(destructor:google.protobuf.Any)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void Any::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.type_url_.Destroy();
-  _impl_.value_.Destroy();
-  _impl_.~Impl_();
+inline void Any::SharedDtor(MessageLite& self) {
+  Any& this_ = static_cast<Any&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.type_url_.Destroy();
+  this_._impl_.value_.Destroy();
+  this_._impl_.~Impl_();
 }
 
 inline void* Any::PlacementNew_(const void*, void* mem,
@@ -205,7 +206,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &Any::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<Any>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<Any>(),
+            &Any::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<Any>(), &Any::ByteSizeLong,
                 &Any::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE

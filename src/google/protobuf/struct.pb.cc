@@ -264,7 +264,7 @@ bool NullValue_IsValid(int value) {
                           &Struct_FieldsEntry_DoNotUse::MergeImpl,
                           ::google::protobuf::Message::GetNewImpl<Struct_FieldsEntry_DoNotUse>(),
               #if defined(PROTOBUF_CUSTOM_VTABLE)
-                          ::google::protobuf::Message::GetDeleteImpl<Struct_FieldsEntry_DoNotUse>(),
+                          &Struct_FieldsEntry_DoNotUse::SharedDtor,
                           static_cast<void (::google::protobuf::MessageLite::*)()>(
                               &Struct_FieldsEntry_DoNotUse::ClearImpl),
                               ::google::protobuf::Message::ByteSizeLongImpl, ::google::protobuf::Message::_InternalSerializeImpl
@@ -373,12 +373,13 @@ inline void Struct::SharedCtor(::_pb::Arena* arena) {
 }
 Struct::~Struct() {
   // @@protoc_insertion_point(destructor:google.protobuf.Struct)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void Struct::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.~Impl_();
+inline void Struct::SharedDtor(MessageLite& self) {
+  Struct& this_ = static_cast<Struct&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.~Impl_();
 }
 
 inline void* Struct::PlacementNew_(const void*, void* mem,
@@ -415,7 +416,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &Struct::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<Struct>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<Struct>(),
+            &Struct::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<Struct>(), &Struct::ByteSizeLong,
                 &Struct::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -692,15 +693,16 @@ inline void Value::SharedCtor(::_pb::Arena* arena) {
 }
 Value::~Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.Value)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void Value::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  if (has_kind()) {
-    clear_kind();
+inline void Value::SharedDtor(MessageLite& self) {
+  Value& this_ = static_cast<Value&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  if (this_.has_kind()) {
+    this_.clear_kind();
   }
-  _impl_.~Impl_();
+  this_._impl_.~Impl_();
 }
 
 void Value::clear_kind() {
@@ -766,7 +768,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &Value::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<Value>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<Value>(),
+            &Value::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<Value>(), &Value::ByteSizeLong,
                 &Value::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1096,12 +1098,13 @@ inline void ListValue::SharedCtor(::_pb::Arena* arena) {
 }
 ListValue::~ListValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.ListValue)
-  _internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  SharedDtor();
+  SharedDtor(*this);
 }
-inline void ListValue::SharedDtor() {
-  ABSL_DCHECK(GetArena() == nullptr);
-  _impl_.~Impl_();
+inline void ListValue::SharedDtor(MessageLite& self) {
+  ListValue& this_ = static_cast<ListValue&>(self);
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.~Impl_();
 }
 
 inline void* ListValue::PlacementNew_(const void*, void* mem,
@@ -1134,7 +1137,7 @@ const ::google::protobuf::MessageLite::ClassDataFull
             &ListValue::MergeImpl,
             ::google::protobuf::Message::GetNewImpl<ListValue>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            ::google::protobuf::Message::GetDeleteImpl<ListValue>(),
+            &ListValue::SharedDtor,
             ::google::protobuf::Message::GetClearImpl<ListValue>(), &ListValue::ByteSizeLong,
                 &ListValue::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE

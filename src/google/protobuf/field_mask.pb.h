@@ -72,6 +72,14 @@ class PROTOBUF_EXPORT FieldMask final
  public:
   inline FieldMask() : FieldMask(nullptr) {}
   ~FieldMask() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(FieldMask* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(FieldMask));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR FieldMask(
       ::google::protobuf::internal::ConstantInitialized);
@@ -178,7 +186,7 @@ class PROTOBUF_EXPORT FieldMask final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(FieldMask* other);
  private:
   template <typename T>

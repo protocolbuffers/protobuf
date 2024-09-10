@@ -72,6 +72,14 @@ class PROTOBUF_EXPORT Empty final
 /* @@protoc_insertion_point(class_definition:google.protobuf.Empty) */ {
  public:
   inline Empty() : Empty(nullptr) {}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(Empty* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(Empty));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR Empty(
       ::google::protobuf::internal::ConstantInitialized);
