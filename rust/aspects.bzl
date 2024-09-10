@@ -1,7 +1,4 @@
-"""This file implements an experimental, do-not-use-kind of rust_proto_library.
-
-Disclaimer: This project is experimental, under heavy development, and should not
-be used yet."""
+"""This file implements rust_proto_library aspect."""
 
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 
@@ -390,6 +387,7 @@ def _make_proto_library_aspect(is_upb):
                 default = [
                     Label("//rust/cpp_kernel:cpp_api"),
                     Label("//src/google/protobuf"),
+                    Label("//src/google/protobuf:protobuf_lite"),
                 ],
             ),
             "_error_format": attr.label(
