@@ -38,6 +38,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 
 
 // Must be included last.
@@ -273,7 +274,6 @@ template bool MergeFromImpl<false>(BoundedZCIS input, MessageLite* msg,
 template bool MergeFromImpl<true>(BoundedZCIS input, MessageLite* msg,
                                   const internal::TcParseTableBase* tc_table,
                                   MessageLite::ParseFlags parse_flags);
-
 }  // namespace internal
 
 class ZeroCopyCodedInputStream : public io::ZeroCopyInputStream {
@@ -300,6 +300,7 @@ class ZeroCopyCodedInputStream : public io::ZeroCopyInputStream {
     cord->Append(std::move(tmp));
     return res;
   }
+
  private:
   io::CodedInputStream* cis_;
 };
