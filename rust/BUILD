@@ -146,6 +146,7 @@ rust_test(
     ],
     deps = [
         "@crate_index//:googletest",
+        ":utf8",
     ],
 )
 
