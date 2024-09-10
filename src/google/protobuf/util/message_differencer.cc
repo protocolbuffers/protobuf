@@ -529,6 +529,15 @@ bool MessageDifferencer::FieldBefore(const FieldDescriptor* field1,
 
 bool MessageDifferencer::Compare(const Message& message1,
                                  const Message& message2) {
+  const Descriptor* descriptor1 = message1.GetDescriptor();
+  const Descriptor* descriptor2 = message2.GetDescriptor();
+  if (descriptor1 != descriptor2) {
+    ABSL_DLOG(FATAL) << "Comparison between two messages with different "
+                     << "descriptors. " << descriptor1->full_name() << " vs "
+                     << descriptor2->full_name();
+    return false;
+  }
+
   std::vector<SpecificField> parent_fields;
   force_compare_no_presence_fields_.clear();
   force_compare_failure_triggering_fields_.clear();
@@ -602,17 +611,8 @@ bool MessageDifferencer::CompareWithFields(
 bool MessageDifferencer::Compare(const Message& message1,
                                  const Message& message2, int unpacked_any,
                                  std::vector<SpecificField>* parent_fields) {
-  const Descriptor* descriptor1 = message1.GetDescriptor();
-  const Descriptor* descriptor2 = message2.GetDescriptor();
-  if (descriptor1 != descriptor2) {
-    ABSL_DLOG(FATAL) << "Comparison between two messages with different "
-                     << "descriptors. " << descriptor1->full_name() << " vs "
-                     << descriptor2->full_name();
-    return false;
-  }
-
   // Expand google.protobuf.Any payload if possible.
-  if (descriptor1->full_name() == internal::kAnyFullTypeName) {
+  if (message1.GetTypeName() == internal::kAnyFullTypeName) {
     std::unique_ptr<Message> data1;
     std::unique_ptr<Message> data2;
     if (unpack_any_field_.UnpackAny(message1, &data1) &&
