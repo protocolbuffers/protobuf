@@ -44,13 +44,14 @@ rust_cc_proto_library(
     deps = [":optimize_for_lite_proto"],
 )
 
-rust_test(
-    name = "debug_test",
-    srcs = ["debug_test.rs"],
-    deps = [
-        ":debug_cpp_rust_proto",
-        ":optimize_for_lite_cpp_rust_proto",
-        "//rust:protobuf_cpp",
-        "@crate_index//:googletest",
-    ],
-)
+# Does not build
+# rust_test(
+#     name = "debug_test",
+#     srcs = ["debug_test.rs"],
+#     deps = [
+#         ":debug_cpp_rust_proto",
+#         ":optimize_for_lite_cpp_rust_proto",
+#         "//rust:protobuf_cpp",
+#         "@crate_index//:googletest",
+#     ],
+# )

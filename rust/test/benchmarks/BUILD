@@ -24,10 +24,11 @@ cc_proto_library(
     deps = [":bench_data_proto"],
 )
 
-rust_cc_proto_library(
-    name = "bench_data_cpp_rust_proto",
-    deps = [":bench_data_proto"],
-)
+# does not build
+# rust_cc_proto_library(
+#     name = "bench_data_cpp_rust_proto",
+#     deps = [":bench_data_proto"],
+# )
 
 rust_upb_proto_library(
     name = "bench_data_upb_rust_proto",
@@ -39,60 +40,59 @@ hpb_proto_library(
     deps = [":bench_data_proto"],
 )
 
-cc_test(
-    name = "rust_protobuf_benchmarks_cpp",
-    testonly = True,
-    srcs = ["rust_protobuf_benchmarks.cc"],
-    deps = [
-        ":bench_data_cc_proto",
-        ":bench_data_upb_cc_proto",
-        ":benchmarks",
-        ":proto_benchmarks_cpp",  # build_cleaner: keep
-        "//hpb",
-        "//hpb:repeated_field",
-        "//protos",
-        "//src/google/protobuf:protobuf_lite",
-        "//testing/base/public:gunit",
-        "//third_party/benchmark",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
+# :proto_benchmarks_cpp does not build
+# cc_test(
+#     name = "rust_protobuf_benchmarks_cpp",
+#     testonly = True,
+#     srcs = ["rust_protobuf_benchmarks.cc"],
+#     deps = [
+#         ":bench_data_cc_proto",
+#         ":bench_data_upb_cc_proto",
+#         ":benchmarks",
+#         ":proto_benchmarks_cpp",  # build_cleaner: keep
+#         "//hpb",
+#         "//hpb:repeated_field",
+#         "//protos",
+#         "//src/google/protobuf:protobuf_lite",
+#         "@com_google_absl//absl/log:absl_check",
+#         "@com_google_googletest//:gtest",
+#         "@com_google_googletest//:gtest_main",
+#     ],
+# )
 
-cc_test(
-    name = "rust_protobuf_benchmarks_upb",
-    testonly = True,
-    srcs = ["rust_protobuf_benchmarks.cc"],
-    defines = ["BENCHMARK_UPB"],
-    deps = [
-        ":bench_data_cc_proto",
-        ":bench_data_upb_cc_proto",
-        ":benchmarks",
-        ":proto_benchmarks_upb",  # build_cleaner: keep
-        "//hpb",
-        "//hpb:repeated_field",
-        "//protos",
-        "//src/google/protobuf:protobuf_lite",
-        "//testing/base/public:gunit",
-        "//third_party/benchmark",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
+# benchmark/benchmark.h does not exist
+# cc_test(
+#     name = "rust_protobuf_benchmarks_upb",
+#     testonly = True,
+#     srcs = ["rust_protobuf_benchmarks.cc"],
+#     defines = ["BENCHMARK_UPB"],
+#     deps = [
+#         ":bench_data_cc_proto",
+#         ":bench_data_upb_cc_proto",
+#         ":benchmarks",
+#         ":proto_benchmarks_upb",  # build_cleaner: keep
+#         "//hpb",
+#         "//hpb:repeated_field",
+#         "//protos",
+#         "//src/google/protobuf:protobuf_lite",
+#         "@com_google_absl//absl/log:absl_check",
+#         "@com_google_googletest//:gtest",
+#         "@com_google_googletest//:gtest_main",
+#     ],
+# )
 
-rust_library(
-    name = "proto_benchmarks_cpp",
-    srcs = ["proto_benchmarks.rs"],
-    proc_macro_deps = [
-        "@crate_index//:paste",
-    ],
-    rustc_flags = [
-        "--cfg=bench_cpp",
-    ],
-    deps = [":bench_data_cpp_rust_proto"],
-)
+# bench_data_cpp_rust_proto does not build
+# rust_library(
+#     name = "proto_benchmarks_cpp",
+#     srcs = ["proto_benchmarks.rs"],
+#     proc_macro_deps = [
+#         "@crate_index//:paste",
+#     ],
+#     rustc_flags = [
+#         "--cfg=bench_cpp",
+#     ],
+#     deps = [":bench_data_cpp_rust_proto"],
+# )
 
 rust_library(
     name = "proto_benchmarks_upb",

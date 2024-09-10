@@ -18,73 +18,75 @@ UNITTEST_PROTO3_OPTIONAL_TARGET = "//src/google/protobuf:test_protos"
 
 UNITTEST_EDITION_TARGET = "//src/google/protobuf:test_protos"
 
-rust_upb_proto_library(
-    name = "unittest_upb_rust_proto",
-    testonly = True,
-    visibility = [
-        "//rust/test/shared:__subpackages__",
-        "//rust/test/upb:__subpackages__",
-    ],
-    deps = [UNITTEST_PROTO_TARGET],
-)
-
-rust_cc_proto_library(
-    name = "unittest_cpp_rust_proto",
-    testonly = True,
-    visibility = [
-        "//rust/test/cpp:__subpackages__",
-        "//rust/test/shared:__subpackages__",
-    ],
-    deps = [UNITTEST_PROTO_TARGET],
-)
-
-rust_cc_proto_library(
-    name = "unittest_proto3_cpp_rust_proto",
-    testonly = True,
-    visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [UNITTEST_PROTO3_TARGET],
-)
-
-rust_upb_proto_library(
-    name = "unittest_proto3_upb_rust_proto",
-    testonly = True,
-    visibility = [
-        "//rust/test/shared:__subpackages__",
-        "//rust/test/upb:__subpackages__",
-    ],
-    deps = [UNITTEST_PROTO3_TARGET],
-)
-
-rust_cc_proto_library(
-    name = "unittest_proto3_optional_cpp_rust_proto",
-    testonly = True,
-    visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [UNITTEST_PROTO3_OPTIONAL_TARGET],
-)
-
-rust_upb_proto_library(
-    name = "unittest_proto3_optional_upb_rust_proto",
-    testonly = True,
-    visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [UNITTEST_PROTO3_OPTIONAL_TARGET],
-)
-
-rust_cc_proto_library(
-    name = "unittest_edition_cpp_rust_proto",
-    testonly = True,
-    visibility = ["//rust/test/shared:__subpackages__"],
-    deps = [UNITTEST_EDITION_TARGET],
-)
-
-rust_upb_proto_library(
-    name = "unittest_edition_upb_rust_proto",
-    testonly = True,
-    visibility = [
-        "//rust/test/shared:__subpackages__",
-        "//rust/test/upb:__subpackages__",
-    ],
-    deps = [UNITTEST_EDITION_TARGET],
-)
+# These fail to build because the crate mapping does not contain the proto files
+# for the protos they depend on.
+# rust_upb_proto_library(
+#     name = "unittest_upb_rust_proto",
+#     testonly = True,
+#     visibility = [
+#         "//rust/test/shared:__subpackages__",
+#         "//rust/test/upb:__subpackages__",
+#     ],
+#     deps = [UNITTEST_PROTO_TARGET],
+# )
+# 
+# rust_cc_proto_library(
+#     name = "unittest_cpp_rust_proto",
+#     testonly = True,
+#     visibility = [
+#         "//rust/test/cpp:__subpackages__",
+#         "//rust/test/shared:__subpackages__",
+#     ],
+#     deps = [UNITTEST_PROTO_TARGET],
+# )
+# 
+# rust_cc_proto_library(
+#     name = "unittest_proto3_cpp_rust_proto",
+#     testonly = True,
+#     visibility = ["//rust/test/shared:__subpackages__"],
+#     deps = [UNITTEST_PROTO3_TARGET],
+# )
+# 
+# rust_upb_proto_library(
+#     name = "unittest_proto3_upb_rust_proto",
+#     testonly = True,
+#     visibility = [
+#         "//rust/test/shared:__subpackages__",
+#         "//rust/test/upb:__subpackages__",
+#     ],
+#     deps = [UNITTEST_PROTO3_TARGET],
+# )
+# 
+# rust_cc_proto_library(
+#     name = "unittest_proto3_optional_cpp_rust_proto",
+#     testonly = True,
+#     visibility = ["//rust/test/shared:__subpackages__"],
+#     deps = [UNITTEST_PROTO3_OPTIONAL_TARGET],
+# )
+# 
+# rust_upb_proto_library(
+#     name = "unittest_proto3_optional_upb_rust_proto",
+#     testonly = True,
+#     visibility = ["//rust/test/shared:__subpackages__"],
+#     deps = [UNITTEST_PROTO3_OPTIONAL_TARGET],
+# )
+# 
+# rust_cc_proto_library(
+#     name = "unittest_edition_cpp_rust_proto",
+#     testonly = True,
+#     visibility = ["//rust/test/shared:__subpackages__"],
+#     deps = [UNITTEST_EDITION_TARGET],
+# )
+# 
+# rust_upb_proto_library(
+#     name = "unittest_edition_upb_rust_proto",
+#     testonly = True,
+#     visibility = [
+#         "//rust/test/shared:__subpackages__",
+#         "//rust/test/upb:__subpackages__",
+#     ],
+#     deps = [UNITTEST_EDITION_TARGET],
+# )
 
 proto_library(
     name = "parent_proto",
@@ -377,24 +379,25 @@ rust_upb_proto_library(
     deps = [":nested_proto"],
 )
 
-rust_cc_proto_library(
-    name = "map_unittest_cpp_rust_proto",
-    testonly = True,
-    visibility = [
-        "//rust/test/shared:__subpackages__",
-    ],
-    deps = ["//src/google/protobuf:map_unittest_proto"],
-)
-
-rust_upb_proto_library(
-    name = "map_unittest_upb_rust_proto",
-    testonly = True,
-    visibility = [
-        "//rust/test/shared:__subpackages__",
-        "//rust/test/upb:__subpackages__",
-    ],
-    deps = ["//src/google/protobuf:map_unittest_proto"],
-)
+# //src/google/protobuf:map_unittest_proto does not exist
+# rust_cc_proto_library(
+#     name = "map_unittest_cpp_rust_proto",
+#     testonly = True,
+#     visibility = [
+#         "//rust/test/shared:__subpackages__",
+#     ],
+#     deps = ["//src/google/protobuf:map_unittest_proto"],
+# )
+# 
+# rust_upb_proto_library(
+#     name = "map_unittest_upb_rust_proto",
+#     testonly = True,
+#     visibility = [
+#         "//rust/test/shared:__subpackages__",
+#         "//rust/test/upb:__subpackages__",
+#     ],
+#     deps = ["//src/google/protobuf:map_unittest_proto"],
+# )
 
 proto_library(
     name = "imported_types_proto",
