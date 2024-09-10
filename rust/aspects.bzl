@@ -123,6 +123,12 @@ def _generate_rust_gencode(
         ),
     )
 
+    proto_root = proto_info.proto_source_root
+    # Handles virtual import cases
+    if proto_root.startswith(ctx.bin_dir.path):
+        proto_root = proto_root[len(ctx.bin_dir.path) + 1:]
+
+
     proto_common.compile(
         actions = ctx.actions,
         proto_info = proto_info,
@@ -130,7 +136,7 @@ def _generate_rust_gencode(
         additional_args = additional_args,
         generated_files = rs_outputs + cc_outputs,
         proto_lang_toolchain_info = proto_lang_toolchain,
-        plugin_output = ctx.bin_dir.path,
+        plugin_output = ctx.bin_dir.path + "/" + proto_root
     )
     return (rs_outputs, cc_outputs)
 
