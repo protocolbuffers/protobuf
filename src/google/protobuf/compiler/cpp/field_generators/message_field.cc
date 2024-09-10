@@ -379,7 +379,7 @@ void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
     )cc");
   } else {
     p->Emit(R"cc(
-      delete $field_$;
+      delete this_.$field_$;
     )cc");
   }
 }
@@ -924,7 +924,7 @@ void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {
 void RepeatedMessage::GenerateDestructorCode(io::Printer* p) const {
   if (should_split()) {
     p->Emit(R"cc(
-      $field_$.DeleteIfNotDefault();
+      this_.$field_$.DeleteIfNotDefault();
     )cc");
   }
 }

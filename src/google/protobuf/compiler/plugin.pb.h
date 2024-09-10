@@ -122,6 +122,14 @@ class PROTOC_EXPORT Version final
  public:
   inline Version() : Version(nullptr) {}
   ~Version() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(Version* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(Version));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR Version(
       ::google::protobuf::internal::ConstantInitialized);
@@ -228,7 +236,7 @@ class PROTOC_EXPORT Version final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(Version* other);
  private:
   template <typename T>
@@ -353,6 +361,14 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final
  public:
   inline CodeGeneratorResponse_File() : CodeGeneratorResponse_File(nullptr) {}
   ~CodeGeneratorResponse_File() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(CodeGeneratorResponse_File* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(CodeGeneratorResponse_File));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR CodeGeneratorResponse_File(
       ::google::protobuf::internal::ConstantInitialized);
@@ -459,7 +475,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorResponse_File* other);
  private:
   template <typename T>
@@ -600,6 +616,14 @@ class PROTOC_EXPORT CodeGeneratorResponse final
  public:
   inline CodeGeneratorResponse() : CodeGeneratorResponse(nullptr) {}
   ~CodeGeneratorResponse() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(CodeGeneratorResponse* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(CodeGeneratorResponse));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR CodeGeneratorResponse(
       ::google::protobuf::internal::ConstantInitialized);
@@ -706,7 +730,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorResponse* other);
  private:
   template <typename T>
@@ -871,6 +895,14 @@ class PROTOC_EXPORT CodeGeneratorRequest final
  public:
   inline CodeGeneratorRequest() : CodeGeneratorRequest(nullptr) {}
   ~CodeGeneratorRequest() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(CodeGeneratorRequest* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(CodeGeneratorRequest));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR CodeGeneratorRequest(
       ::google::protobuf::internal::ConstantInitialized);
@@ -982,7 +1014,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorRequest* other);
  private:
   template <typename T>

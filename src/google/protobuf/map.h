@@ -1190,7 +1190,7 @@ class RustMapHelper {
     m->erase_no_destroy(bucket, static_cast<typename Map::KeyNode*>(node));
   }
 
-  static void DestroyMessage(MessageLite* m) { m->DestroyInstance(false); }
+  static void DestroyMessage(MessageLite* m) { m->DestroyInstance(); }
 
   static void ClearTable(UntypedMapBase* m, ClearInput input) {
     m->ClearTable(input);

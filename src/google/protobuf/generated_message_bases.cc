@@ -37,6 +37,11 @@ ZeroFieldsBase::~ZeroFieldsBase() {
   _internal_metadata_.Delete<UnknownFieldSet>();
 }
 
+void ZeroFieldsBase::SharedDtor(MessageLite& msg) {
+  static_cast<ZeroFieldsBase&>(msg)
+      ._internal_metadata_.Delete<UnknownFieldSet>();
+}
+
 size_t ZeroFieldsBase::ByteSizeLong(const MessageLite& base) {
   auto& msg = static_cast<const ZeroFieldsBase&>(base);
   return msg.MaybeComputeUnknownFieldsSize(0, &msg._impl_._cached_size_);

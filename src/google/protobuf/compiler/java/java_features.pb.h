@@ -105,6 +105,14 @@ class PROTOC_EXPORT JavaFeatures final
  public:
   inline JavaFeatures() : JavaFeatures(nullptr) {}
   ~JavaFeatures() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(JavaFeatures* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(JavaFeatures));
+  }
+#endif
+
   template <typename = void>
   explicit PROTOBUF_CONSTEXPR JavaFeatures(
       ::google::protobuf::internal::ConstantInitialized);
@@ -211,7 +219,7 @@ class PROTOC_EXPORT JavaFeatures final
 
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
-  void SharedDtor();
+  static void SharedDtor(MessageLite& self);
   void InternalSwap(JavaFeatures* other);
  private:
   template <typename T>

@@ -492,7 +492,7 @@ void SingularStringView::GenerateDestructorCode(io::Printer* p) const {
   }
 
   p->Emit(R"cc(
-    $field_$.Destroy();
+    this_.$field_$.Destroy();
   )cc");
 }
 
@@ -602,7 +602,7 @@ class RepeatedStringView : public FieldGeneratorBase {
   void GenerateDestructorCode(io::Printer* p) const override {
     if (should_split()) {
       p->Emit(R"cc(
-        $field_$.DeleteIfNotDefault();
+        this_.$field_$.DeleteIfNotDefault();
       )cc");
     }
   }

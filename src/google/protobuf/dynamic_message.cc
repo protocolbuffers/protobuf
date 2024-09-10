@@ -234,7 +234,7 @@ class DynamicMessage final : public Message {
   }
 
   static void* NewImpl(const void* prototype, void* mem, Arena* arena);
-  static void DeleteImpl(void* ptr, bool free_memory);
+  static void DestroyImpl(MessageLite& ptr);
 
   void* MutableRaw(int i);
   void* MutableExtensionsRaw();
@@ -269,7 +269,7 @@ struct DynamicMessageFactory::TypeInfo {
           &DynamicMessage::IsInitializedImpl,
           &DynamicMessage::MergeImpl,
           internal::MessageCreator(),  // to be filled later
-          &DynamicMessage::DeleteImpl,
+          &DynamicMessage::DestroyImpl,
           static_cast<void (MessageLite::*)()>(&DynamicMessage::ClearImpl),
           DynamicMessage::ByteSizeLongImpl,
           DynamicMessage::_InternalSerializeImpl,
@@ -570,13 +570,8 @@ void* DynamicMessage::NewImpl(const void* prototype, void* mem, Arena* arena) {
   return new (mem) DynamicMessage(type_info, arena);
 }
 
-void DynamicMessage::DeleteImpl(void* ptr, bool free_memory) {
-  auto* msg = static_cast<DynamicMessage*>(ptr);
-  const size_t size = msg->type_info_->class_data.allocation_size();
-  msg->~DynamicMessage();
-  if (free_memory) {
-    internal::SizedDelete(ptr, size);
-  }
+void DynamicMessage::DestroyImpl(MessageLite& msg) {
+  static_cast<DynamicMessage&>(msg).~DynamicMessage();
 }
 
 void DynamicMessage::CrossLinkPrototypes() {

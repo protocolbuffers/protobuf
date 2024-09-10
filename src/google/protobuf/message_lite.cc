@@ -45,13 +45,21 @@
 namespace google {
 namespace protobuf {
 
-void MessageLite::DestroyInstance(bool free_memory) {
+void MessageLite::DestroyInstance() {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  _class_data_->delete_message(this, free_memory);
+  _class_data_->destroy_message(*this);
 #else   // PROTOBUF_CUSTOM_VTABLE
-  ABSL_DCHECK(!free_memory);
   this->~MessageLite();
 #endif  // PROTOBUF_CUSTOM_VTABLE
+}
+
+void MessageLite::DeleteInstance() {
+  // Cache the size and pointer because we can't access them after the
+  // destruction.
+  const size_t size = GetClassData()->allocation_size();
+  void* const ptr = this;
+  DestroyInstance();
+  internal::SizedDelete(ptr, size);
 }
 
 void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {

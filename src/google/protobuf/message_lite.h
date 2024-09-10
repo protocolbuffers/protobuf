@@ -162,7 +162,7 @@ class PROTOBUF_EXPORT CachedSize {
   }
 
   void Set(Scalar desired) const noexcept {
-    // Avoid writing the value when it is zero. This prevents writing to gloabl
+    // Avoid writing the value when it is zero. This prevents writing to global
     // default instances, which might be in readonly memory.
     if (ABSL_PREDICT_FALSE(desired == 0)) {
       if (Get() == 0) return;
@@ -637,24 +637,12 @@ class PROTOBUF_EXPORT MessageLite {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   template <typename T>
-  static void DeleteImpl(void* msg, bool free_memory) {
-    static_cast<T*>(msg)->~T();
-    if (free_memory) internal::SizedDelete(msg, sizeof(T));
-  }
-  template <typename T>
-  static constexpr auto GetDeleteImpl() {
-    return DeleteImpl<T>;
-  }
-
-  template <typename T>
   static constexpr auto GetClearImpl() {
     return static_cast<void (MessageLite::*)()>(&T::Clear);
   }
 #else   // PROTOBUF_CUSTOM_VTABLE
   // When custom vtables are off we avoid instantiating the functions because we
   // will not use them anyway. Less work for the compiler.
-  template <typename T>
-  using GetDeleteImpl = std::nullptr_t;
   template <typename T>
   using GetClearImpl = std::nullptr_t;
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -698,7 +686,7 @@ class PROTOBUF_EXPORT MessageLite {
   // otherwise be null. We can have some metadata in ClassData telling us if we
   // have them and their offset.
   friend internal::MessageCreator;
-  using DeleteMessageF = void (*)(void* msg, bool free_memory);
+  using DestroyMessageF = void (*)(MessageLite& msg);
   struct ClassData {
     const MessageLite* prototype;
     const internal::TcParseTableBase* tc_table;
@@ -707,7 +695,7 @@ class PROTOBUF_EXPORT MessageLite {
     void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
     internal::MessageCreator message_creator;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    DeleteMessageF delete_message;
+    DestroyMessageF destroy_message;
     void (MessageLite::*clear)();
     size_t (*byte_size_long)(const MessageLite&);
     uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
@@ -752,7 +740,7 @@ class PROTOBUF_EXPORT MessageLite {
         bool (*is_initialized)(const MessageLite&),
         void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
         internal::MessageCreator message_creator,  //
-        DeleteMessageF delete_message,             //
+        DestroyMessageF destroy_message,           //
         void (MessageLite::*clear)(),
         size_t (*byte_size_long)(const MessageLite&),
         uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
@@ -765,7 +753,7 @@ class PROTOBUF_EXPORT MessageLite {
           merge_to_from(merge_to_from),
           message_creator(message_creator),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          delete_message(delete_message),
+          destroy_message(destroy_message),
           clear(clear),
           byte_size_long(byte_size_long),
           serialize(serialize),
@@ -931,7 +919,7 @@ class PROTOBUF_EXPORT MessageLite {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   void operator delete(MessageLite* msg, std::destroying_delete_t) {
-    msg->DestroyInstance(true);
+    msg->DeleteInstance();
   }
 #endif
 
@@ -963,9 +951,11 @@ class PROTOBUF_EXPORT MessageLite {
 
   bool MergeFromImpl(io::CodedInputStream* input, ParseFlags parse_flags);
 
-  // Runs the destructor for this instance, and if `free_memory` is true,
-  // also frees the memory.
-  void DestroyInstance(bool free_memory);
+  // Runs the destructor for this instance.
+  void DestroyInstance();
+  // Runs the destructor for this instance and deletes the memory via
+  // `operator delete`
+  void DeleteInstance();
 
   template <typename T, const void* ptr = T::_raw_default_instance_>
   static constexpr auto GetStrongPointerForTypeImpl(int) {
