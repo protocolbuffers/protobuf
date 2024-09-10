@@ -8,9 +8,6 @@
 #define UPB_PROTOS_PROTOS_H_
 #include "google/protobuf/hpb/hpb.h"
 namespace protos {
-namespace internal {
-}  // namespace internal
-
 using hpb::Arena;
 }  // namespace protos
 #endif
