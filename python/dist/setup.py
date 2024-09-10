@@ -12,7 +12,7 @@ import glob
 import os
 import sys
 
-from setuptools import setup, Extension, find_packages
+from setuptools import setup, Extension, find_namespace_packages
 
 
 def GetVersion():
@@ -60,8 +60,7 @@ setup(
         'Programming Language :: Python :: 3.12',
         'Programming Language :: Python :: 3.13',
     ],
-    namespace_packages=['google'],
-    packages=find_packages(),
+    packages=find_namespace_packages(include=['google*']),
     install_requires=[],
     ext_modules=[
         Extension(
