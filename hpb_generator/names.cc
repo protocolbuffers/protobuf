@@ -11,7 +11,7 @@
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/compiler/hpb/keywords.h"
+#include "hpb_generator/keywords.h"
 
 namespace google::protobuf::hpb_generator {
 namespace protobuf = ::proto2;
