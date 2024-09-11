@@ -21,9 +21,12 @@
 #ifndef GOOGLE_PROTOBUF_REPEATED_FIELD_H__
 #define GOOGLE_PROTOBUF_REPEATED_FIELD_H__
 
+#include <stdlib.h>
+
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <iterator>
 #include <limits>
@@ -803,8 +806,14 @@ inline void RepeatedField<Element>::Resize(int new_size, const Element& value) {
 template <typename Element>
 inline const Element& RepeatedField<Element>::Get(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+#ifdef ABORT_ON_BOUNDS_CHECK_FAIL
+  if (ABSL_PREDICT_FALSE(index < 0 || index >= size())) {
+    internal::LogIndexOutOfBoundsAndAbort(index, size());
+  }
+#else
   ABSL_DCHECK_GE(index, 0);
   ABSL_DCHECK_LT(index, size());
+#endif
   return elements(is_soo())[index];
 }
 
@@ -827,8 +836,14 @@ inline Element& RepeatedField<Element>::at(int index)
 template <typename Element>
 inline Element* RepeatedField<Element>::Mutable(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+#ifdef ABORT_ON_BOUNDS_CHECK_FAIL
+  if (ABSL_PREDICT_FALSE(index < 0 || index >= size())) {
+    internal::LogIndexOutOfBoundsAndAbort(index, size());
+  }
+#else
   ABSL_DCHECK_GE(index, 0);
   ABSL_DCHECK_LT(index, size());
+#endif
   return &elements(is_soo())[index];
 }
 
