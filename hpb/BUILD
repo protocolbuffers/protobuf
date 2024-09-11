@@ -30,6 +30,7 @@ cc_library(
     defines = ["HPB_BACKEND_UPB"],
     visibility = ["//visibility:public"],
     deps = [
+        "//hpb:arena",
         "//hpb:extension",
         "//hpb:ptr",
         "//hpb/backend/upb",

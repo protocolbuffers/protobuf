@@ -49,8 +49,8 @@ cc_test(
         ":benchmarks",
         ":proto_benchmarks_cpp",  # build_cleaner: keep
         "//hpb",
+        "//hpb:arena",
         "//hpb:repeated_field",
-        "//protos",
         "//src/google/protobuf:protobuf_lite",
         "//testing/base/public:gunit",
         "//third_party/benchmark",
@@ -71,6 +71,7 @@ cc_test(
         ":benchmarks",
         ":proto_benchmarks_upb",  # build_cleaner: keep
         "//hpb",
+        "//hpb:arena",
         "//hpb:repeated_field",
         "//protos",
         "//src/google/protobuf:protobuf_lite",

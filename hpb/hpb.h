@@ -15,6 +15,7 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/hpb/arena.h"
 #include "google/protobuf/hpb/backend/upb/interop.h"
 #include "google/protobuf/hpb/extension.h"
 #include "google/protobuf/hpb/internal/internal.h"
@@ -35,7 +36,6 @@
 
 namespace hpb {
 class ExtensionRegistry;
-using Arena = ::upb::Arena;
 
 // TODO: b/354766950 - Move upb-specific chunks out of hpb header
 inline absl::string_view UpbStrToStringView(upb_StringView str) {
