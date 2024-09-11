@@ -428,11 +428,21 @@ public final class Descriptors {
       if (strings.length == 1) {
         return strings[0].getBytes(Internal.ISO_8859_1);
       }
-      StringBuilder descriptorData = new StringBuilder();
-      for (String part : strings) {
-        descriptorData.append(part);
+
+      byte[][] pieces = new byte[strings.length][];
+      int totalSize = 0;
+      for (int i = 0; i < strings.length; i++) {
+        pieces[i] = strings[i].getBytes(Internal.ISO_8859_1);
+        totalSize += pieces[i].length;
       }
-      return descriptorData.toString().getBytes(Internal.ISO_8859_1);
+      byte[] result = new byte[totalSize];
+      int offset = 0;
+      for (int i = 0; i < strings.length; i++) {
+        System.arraycopy(pieces[i], 0, result, offset, pieces[i].length);
+        offset += pieces[i].length;
+        pieces[i] = null;
+      }
+      return result;
     }
 
     private static FileDescriptor[] findDescriptors(
