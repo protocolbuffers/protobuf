@@ -2651,11 +2651,17 @@ PyObject* ContainerBase::DeepCopy() {
       cmessage::NewEmptyMessage(this->parent->GetMessageClass());
   new_parent->message = this->parent->message->New(nullptr);
 
-  // Copy the map field into the new message.
-  this->parent->message->GetReflection()->SwapFields(
-      this->parent->message, new_parent->message,
-      {this->parent_field_descriptor});
-  this->parent->message->MergeFrom(*new_parent->message);
+  // There is no API to copy a single field. The closest operation we have is
+  // SwapFields.
+  // So, we copy the source into a disposable message and then swap the one
+  // field we care about from it.
+  // If the performance of this operation matters we can do a copy of the single
+  // field, but that would require huge switches for each type+cardinality to
+  // call the right read/write field functions.
+  std::unique_ptr<Message> tmp(this->parent->message->New(nullptr));
+  tmp->MergeFrom(*this->parent->message);
+  tmp->GetReflection()->SwapFields(tmp.get(), new_parent->message,
+                                   {this->parent_field_descriptor});
 
   PyObject* result =
       cmessage::GetFieldValue(new_parent, this->parent_field_descriptor);
