@@ -38,6 +38,8 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/scoped_mock_log.h"
 #include "absl/strings/cord.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"

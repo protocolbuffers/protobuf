@@ -1232,6 +1232,7 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
     return InternalSerializeMessageSetItem(field, message, target, stream);
   }
 
+
   // For map fields, we can use either repeated field reflection or map
   // reflection.  Our choice has some subtle effects.  If we use repeated field
   // reflection here, then the repeated field representation becomes
@@ -1707,7 +1708,29 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
     HANDLE_FIXED_TYPE(BOOL, Bool)
 
     HANDLE_TYPE(GROUP, Group, Message)
+#ifndef PROTOBUF_ENABLE_FIX_CODE_SIZE_LAZY
     HANDLE_TYPE(MESSAGE, Message, Message)
+#else  // !PROTOBUF_ENABLE_FIX_CODE_SIZE_LAZY
+    case FieldDescriptor::TYPE_MESSAGE: {
+      if (field->is_repeated()) {
+        for (size_t j = 0; j < count; ++j) {
+          data_size += WireFormatLite::MessageSize(
+              message_reflection->GetRepeatedMessage(message, field, j));
+        }
+        break;
+      }
+      if (field->is_extension()) {
+        data_size += WireFormatLite::LengthDelimitedSize(
+            message_reflection->GetExtensionSet(message).GetMessageByteSizeLong(
+                field->number()));
+        break;
+      }
+      data_size += WireFormatLite::MessageSize(
+          message_reflection->GetMessage(message, field));
+      break;
+    }
+#endif  // PROTOBUF_ENABLE_FIX_CODE_SIZE_LAZY
+
 #undef HANDLE_TYPE
 #undef HANDLE_FIXED_TYPE
 
