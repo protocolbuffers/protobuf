@@ -17,8 +17,6 @@
 #include "google/protobuf/compiler/hpb/names.h"
 #include "google/protobuf/descriptor.h"
 
-using std::size_t;
-
 namespace google::protobuf::hpb_generator {
 
 namespace protobuf = ::proto2;
@@ -84,7 +82,7 @@ void WriteEnumValues(const protobuf::EnumDescriptor* desc, Output& output) {
   std::vector<const protobuf::EnumValueDescriptor*> values;
   auto value_count = desc->value_count();
   values.reserve(value_count);
-  for (size_t i = 0; i < value_count; i++) {
+  for (int i = 0; i < value_count; i++) {
     values.push_back(desc->value(i));
   }
   std::stable_sort(values.begin(), values.end(),

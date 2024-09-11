@@ -1321,7 +1321,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
 
   // The number of values for this EnumDescriptor.  Guaranteed to be greater
   // than zero.
-  size_t value_count() const;
+  int value_count() const;
   // Gets a value by index, where 0 <= index < value_count().
   // These are returned in the order they were defined in the .proto file.
   const EnumValueDescriptor* value(int index) const;
@@ -2596,7 +2596,7 @@ PROTOBUF_DEFINE_OPTIONS_ACCESSOR(OneofDescriptor, OneofOptions)
 PROTOBUF_DEFINE_NAME_ACCESSOR(EnumDescriptor)
 PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, file, const FileDescriptor*)
 PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, containing_type, const Descriptor*)
-PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, value_count, size_t)
+PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, value_count, int)
 PROTOBUF_DEFINE_ARRAY_ACCESSOR(EnumDescriptor, value,
                                const EnumValueDescriptor*)
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(EnumDescriptor, EnumOptions)
@@ -2881,7 +2881,7 @@ inline const std::string& NameOfEnumAsString(
 }
 
 inline bool IsEnumFullySequential(const EnumDescriptor* enum_desc) {
-  return (size_t)(enum_desc->sequential_value_limit_) == enum_desc->value_count() - 1;
+  return enum_desc->sequential_value_limit_ == enum_desc->value_count() - 1;
 }
 
 // FieldRange(desc) provides an iterable range for the fields of a

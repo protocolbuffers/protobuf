@@ -45,7 +45,7 @@ struct upb_EnumDef {
   const upb_EnumValueDef* values;
   const upb_EnumReservedRange* res_ranges;
   const upb_StringView* res_names;
-  size_t value_count;
+  int value_count;
   int res_range_count;
   int res_name_count;
   int32_t defaultval;
@@ -126,7 +126,7 @@ upb_StringView upb_EnumDef_ReservedName(const upb_EnumDef* e, int i) {
   return e->res_names[i];
 }
 
-size_t upb_EnumDef_ValueCount(const upb_EnumDef* e) { return e->value_count; }
+int upb_EnumDef_ValueCount(const upb_EnumDef* e) { return e->value_count; }
 
 const upb_EnumValueDef* upb_EnumDef_FindValueByName(const upb_EnumDef* e,
                                                     const char* name) {

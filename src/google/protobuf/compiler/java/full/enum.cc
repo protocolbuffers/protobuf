@@ -42,7 +42,7 @@ EnumNonLiteGenerator::EnumNonLiteGenerator(const EnumDescriptor* descriptor,
       immutable_api_(immutable_api),
       context_(context),
       name_resolver_(context->GetNameResolver()) {
-  for (size_t i = 0; i < descriptor_->value_count(); i++) {
+  for (int i = 0; i < descriptor_->value_count(); i++) {
     const EnumValueDescriptor* value = descriptor_->value(i);
     const EnumValueDescriptor* canonical_value =
         descriptor_->FindValueByNumber(value->number());
@@ -135,7 +135,7 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
     printer->Annotate("name", aliases_[i].value);
   }
 
-  for (size_t i = 0; i < descriptor_->value_count(); i++) {
+  for (int i = 0; i < descriptor_->value_count(); i++) {
     absl::flat_hash_map<absl::string_view, std::string> vars;
     vars["name"] = descriptor_->value(i)->name();
     vars["number"] = absl::StrCat(descriptor_->value(i)->number());
@@ -318,7 +318,7 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
           "return new $classname$[] {\n"
           "  ",
           "classname", descriptor_->name());
-      for (size_t i = 0; i < descriptor_->value_count(); i++) {
+      for (int i = 0; i < descriptor_->value_count(); i++) {
         printer->Print("$name$, ", "name", descriptor_->value(i)->name());
       }
       printer->Print(
@@ -382,10 +382,10 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
 }
 
 bool EnumNonLiteGenerator::CanUseEnumValues() {
-  if (canonical_values_.size() != descriptor_->value_count()) {
+  if (canonical_values_.size() != static_cast<size_t>(descriptor_->value_count())) {
     return false;
   }
-  for (size_t i = 0; i < descriptor_->value_count(); i++) {
+  for (int i = 0; i < descriptor_->value_count(); i++) {
     if (descriptor_->value(i)->name() != canonical_values_[i]->name()) {
       return false;
     }

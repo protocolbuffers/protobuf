@@ -45,8 +45,6 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-using std::size_t;
-
 namespace upb {
 namespace generator {
 namespace {
@@ -246,7 +244,7 @@ std::string FieldInitializerStrong(const DefPoolPair& pools,
 void DumpEnumValues(upb::EnumDefPtr desc, Output& output) {
   std::vector<upb::EnumValDefPtr> values;
   values.reserve(desc.value_count());
-  for (size_t i = 0; i < desc.value_count(); i++) {
+  for (int i = 0; i < desc.value_count(); i++) {
     values.push_back(desc.value(i));
   }
   std::stable_sort(values.begin(), values.end(),
