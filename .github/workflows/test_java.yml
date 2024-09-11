@@ -30,19 +30,19 @@ jobs:
         include:
           - name: OpenJDK 8
             cache_key: '8'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:6.4.0-8-27cf7b86212020d7e552bc13b1e084abb971da75
             # TODO: b/318555165 - enable the layering check. Currently it does
             # not work correctly with the toolchain in this Docker image.
             targets: //java/... //java/internal:java_version //compatibility/... --features=-layering_check
             continuous-only: true
           - name: OpenJDK 11
             cache_key: '11'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:6.4.0-11-27cf7b86212020d7e552bc13b1e084abb971da75
             targets: //java/... //java/internal:java_version //compatibility/...
             continuous-only: true
           - name: OpenJDK 17
             cache_key: '17'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:17-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:6.4.0-17-27cf7b86212020d7e552bc13b1e084abb971da75
             targets: //java/... //java/internal:java_version //compatibility/...
           - name: Bazel7
             cache_key: 'bazel7nobzlmod'
@@ -56,7 +56,7 @@ jobs:
             flags: --enable_bzlmod --enable_workspace
           - name: aarch64
             cache_key: 'aarch64'
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:6.4.0-aarch64-08714ed7a713068c8418003a2d95f423d4b1eac9
             targets: //java/... //compatibility/... //src/google/protobuf/compiler:protoc_aarch64_test
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name }}
@@ -97,7 +97,7 @@ jobs:
 
   protobuf-bom:
     name: Protobuf Maven BOM
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22-4core
     steps:
     - name: Checkout pending changes
       uses: protocolbuffers/protobuf-ci/checkout@v3
@@ -106,7 +106,7 @@ jobs:
     - name: Generate maven artifacts with bazel and install using maven
       uses: protocolbuffers/protobuf-ci/bazel-docker@v3
       with:
-        image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:11-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
+        image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:6.4.0-11-27cf7b86212020d7e552bc13b1e084abb971da75
         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
         bazel-cache: java_linux/11
         bash: |
