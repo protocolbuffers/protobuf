@@ -17,7 +17,6 @@ namespace google::protobuf::hpb_generator {
 // Resolves proto field name conflict with C++ reserved keywords.
 std::string ResolveKeywordConflict(absl::string_view name);
 
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator
 
 #endif  // PROTOBUF_COMPILER_HBP_GENERATOR_KEYWORDS_H
