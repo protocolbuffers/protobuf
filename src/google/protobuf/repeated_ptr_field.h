@@ -2041,7 +2041,7 @@ UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
 namespace internal {
 // Size optimization for `memswap<N>` - supplied below N is used by every
 // `RepeatedPtrField<T>`.
-template PROTOBUF_EXPORT_TEMPLATE_DECLARE void
+extern "C" template PROTOBUF_EXPORT_TEMPLATE_DECLARE void
 memswap<ArenaOffsetHelper<RepeatedPtrFieldBase>::value>(
     char* PROTOBUF_RESTRICT, char* PROTOBUF_RESTRICT);
 }  // namespace internal
