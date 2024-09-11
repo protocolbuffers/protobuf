@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <type_traits>
 
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/has_bits.h"
@@ -84,6 +85,14 @@ class MapEntry : public Message {
   MapEntry& operator=(const MapEntry&) = delete;
 
   ~MapEntry() PROTOBUF_OVERRIDE {
+    // Make sure that `Value` is never a derived message type.
+    // We don't want to instantiate the template with every unique derived type.
+    // The assertion is in the destructor because we need `Value` to be
+    // complete to test it.
+    static_assert(!std::is_base_of<Message, Value>::value ||
+                      std::is_same<Message, Value>::value,
+                  "");
+
     if (GetArena() != nullptr) return;
     SharedDtor(*this);
   }
