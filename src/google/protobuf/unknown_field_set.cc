@@ -11,6 +11,10 @@
 
 #include "google/protobuf/unknown_field_set.h"
 
+#include <cstring>
+#include <string>
+#include <utility>
+
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/internal/resize_uninitialized.h"
@@ -116,6 +120,20 @@ void UnknownFieldSet::AddFixed64(int number, uint64_t value) {
   field.SetType(UnknownField::TYPE_FIXED64);
   field.data_.fixed64_ = value;
 }
+
+void UnknownFieldSet::AddLengthDelimited(int number, const absl::Cord& value) {
+  absl::CopyCordToString(value, AddLengthDelimited(number));
+}
+
+template <int&...>
+void UnknownFieldSet::AddLengthDelimited(int number, std::string&& value) {
+  auto& field = *fields_.Add();
+  field.number_ = number;
+  field.SetType(UnknownField::TYPE_LENGTH_DELIMITED);
+  field.data_.string_value =
+      Arena::Create<std::string>(arena(), std::move(value));
+}
+template void UnknownFieldSet::AddLengthDelimited(int, std::string&&);
 
 std::string* UnknownFieldSet::AddLengthDelimited(int number) {
   auto& field = *fields_.Add();
