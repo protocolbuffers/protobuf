@@ -1322,9 +1322,9 @@ inline std::string* Version::release_suffix() {
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.suffix_.Release();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.suffix_.Set("", GetArena());
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.suffix_.Set("", GetArena());
+  }
   return released;
 }
 inline void Version::set_allocated_suffix(std::string* value) {
@@ -1335,11 +1335,9 @@ inline void Version::set_allocated_suffix(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.suffix_.SetAllocated(value, GetArena());
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.suffix_.IsDefault()) {
-          _impl_.suffix_.Set("", GetArena());
-        }
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.suffix_.IsDefault()) {
+    _impl_.suffix_.Set("", GetArena());
+  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.Version.suffix)
 }
 
@@ -1461,9 +1459,9 @@ inline std::string* CodeGeneratorRequest::release_parameter() {
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.parameter_.Release();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.parameter_.Set("", GetArena());
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.parameter_.Set("", GetArena());
+  }
   return released;
 }
 inline void CodeGeneratorRequest::set_allocated_parameter(std::string* value) {
@@ -1474,11 +1472,9 @@ inline void CodeGeneratorRequest::set_allocated_parameter(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.parameter_.SetAllocated(value, GetArena());
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.parameter_.IsDefault()) {
-          _impl_.parameter_.Set("", GetArena());
-        }
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.parameter_.IsDefault()) {
+    _impl_.parameter_.Set("", GetArena());
+  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
 
@@ -1722,9 +1718,9 @@ inline std::string* CodeGeneratorResponse_File::release_name() {
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.name_.Release();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.name_.Set("", GetArena());
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.name_.Set("", GetArena());
+  }
   return released;
 }
 inline void CodeGeneratorResponse_File::set_allocated_name(std::string* value) {
@@ -1735,11 +1731,9 @@ inline void CodeGeneratorResponse_File::set_allocated_name(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.name_.SetAllocated(value, GetArena());
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.name_.IsDefault()) {
-          _impl_.name_.Set("", GetArena());
-        }
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
+    _impl_.name_.Set("", GetArena());
+  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
 
@@ -1793,9 +1787,9 @@ inline std::string* CodeGeneratorResponse_File::release_insertion_point() {
   }
   _impl_._has_bits_[0] &= ~0x00000002u;
   auto* released = _impl_.insertion_point_.Release();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.insertion_point_.Set("", GetArena());
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.insertion_point_.Set("", GetArena());
+  }
   return released;
 }
 inline void CodeGeneratorResponse_File::set_allocated_insertion_point(std::string* value) {
@@ -1806,11 +1800,9 @@ inline void CodeGeneratorResponse_File::set_allocated_insertion_point(std::strin
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
   _impl_.insertion_point_.SetAllocated(value, GetArena());
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.insertion_point_.IsDefault()) {
-          _impl_.insertion_point_.Set("", GetArena());
-        }
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.insertion_point_.IsDefault()) {
+    _impl_.insertion_point_.Set("", GetArena());
+  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
 
@@ -1864,9 +1856,9 @@ inline std::string* CodeGeneratorResponse_File::release_content() {
   }
   _impl_._has_bits_[0] &= ~0x00000004u;
   auto* released = _impl_.content_.Release();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.content_.Set("", GetArena());
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.content_.Set("", GetArena());
+  }
   return released;
 }
 inline void CodeGeneratorResponse_File::set_allocated_content(std::string* value) {
@@ -1877,11 +1869,9 @@ inline void CodeGeneratorResponse_File::set_allocated_content(std::string* value
     _impl_._has_bits_[0] &= ~0x00000004u;
   }
   _impl_.content_.SetAllocated(value, GetArena());
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.content_.IsDefault()) {
-          _impl_.content_.Set("", GetArena());
-        }
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.content_.IsDefault()) {
+    _impl_.content_.Set("", GetArena());
+  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
 
@@ -2030,9 +2020,9 @@ inline std::string* CodeGeneratorResponse::release_error() {
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
   auto* released = _impl_.error_.Release();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.error_.Set("", GetArena());
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.error_.Set("", GetArena());
+  }
   return released;
 }
 inline void CodeGeneratorResponse::set_allocated_error(std::string* value) {
@@ -2043,11 +2033,9 @@ inline void CodeGeneratorResponse::set_allocated_error(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.error_.SetAllocated(value, GetArena());
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.error_.IsDefault()) {
-          _impl_.error_.Set("", GetArena());
-        }
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.error_.IsDefault()) {
+    _impl_.error_.Set("", GetArena());
+  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
 

@@ -361,9 +361,9 @@ void SingularString::ReleaseImpl(io::Printer* p) const {
 
   p->Emit(R"cc(
     auto* released = $field_$.Release();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    $field_$.Set("", $set_args$);
-#endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    if ($pbi$::DebugHardenForceCopyDefaultString()) {
+      $field_$.Set("", $set_args$);
+    }
     return released;
   )cc");
 }
@@ -406,11 +406,9 @@ void SingularString::SetAllocatedImpl(io::Printer* p) const {
 
   if (EmptyDefault()) {
     p->Emit(R"cc(
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-      if ($field_$.IsDefault()) {
+      if ($pbi$::DebugHardenForceCopyDefaultString() && $field_$.IsDefault()) {
         $field_$.Set("", $set_args$);
       }
-#endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
     )cc");
   }
 }
@@ -618,9 +616,9 @@ void SingularString::GenerateConstructorCode(io::Printer* p) const {
 
   if (IsString(field_) && EmptyDefault()) {
     p->Emit(R"cc(
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-      $field_$.Set("", GetArena());
-#endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+      if ($pbi$::DebugHardenForceCopyDefaultString()) {
+        $field_$.Set("", GetArena());
+      }
     )cc");
   }
 }

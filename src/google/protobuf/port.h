@@ -244,15 +244,6 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 // The maximum byte alignment we support.
 enum { kMaxMessageAlignment = 8 };
 
-// Returns true if debug string hardening is required
-inline constexpr bool DebugHardenStringValues() {
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  return true;
-#else
-  return false;
-#endif
-}
-
 // Returns true if debug hardening for clearing oneof message on arenas is
 // enabled.
 inline constexpr bool DebugHardenClearOneofMessageOnArena() {
@@ -270,6 +261,12 @@ constexpr bool PerformDebugChecks() {
 #else
   return true;
 #endif
+}
+
+// Force copy the default string to a string field so that non-optimized builds
+// have harder-to-rely-on address stability.
+constexpr bool DebugHardenForceCopyDefaultString() {
+  return false;
 }
 
 constexpr bool DebugHardenForceCopyInRelease() {

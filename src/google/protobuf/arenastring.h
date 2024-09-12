@@ -240,7 +240,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // hardening is enabled, in which case this instance will hold a forced copy.
   explicit ArenaStringPtr(Arena* arena)
       : tagged_ptr_(&fixed_address_empty_string) {
-    if (DebugHardenStringValues()) {
+    if (DebugHardenForceCopyDefaultString()) {
       Set(absl::string_view(""), arena);
     }
   }
@@ -251,7 +251,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // forced copy of the value in `default_value`.
   ArenaStringPtr(Arena* arena, const LazyString& default_value)
       : tagged_ptr_(&fixed_address_empty_string) {
-    if (DebugHardenStringValues()) {
+    if (DebugHardenForceCopyDefaultString()) {
       Set(absl::string_view(default_value.get()), arena);
     }
   }
@@ -428,7 +428,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
 };
 
 inline TaggedStringPtr TaggedStringPtr::Copy(Arena* arena) const {
-  if (DebugHardenStringValues()) {
+  if (DebugHardenForceCopyDefaultString()) {
     // Harden by forcing an allocated string value.
     return IsNull() ? *this : ForceCopy(arena);
   }
@@ -437,7 +437,7 @@ inline TaggedStringPtr TaggedStringPtr::Copy(Arena* arena) const {
 
 inline TaggedStringPtr TaggedStringPtr::Copy(
     Arena* arena, const LazyString& default_value) const {
-  if (DebugHardenStringValues()) {
+  if (DebugHardenForceCopyDefaultString()) {
     // Harden by forcing an allocated string value.
     TaggedStringPtr hardened(*this);
     if (IsDefault()) {
