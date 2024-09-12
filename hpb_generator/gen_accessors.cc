@@ -114,7 +114,7 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
                )cc",
                MessagePtrConstType(field, /* const */ false),
                MessagePtrConstType(field, /* const */ true),
-               resolved_field_name, resolved_upbc_name);
+               resolved_field_name);
       } else {
         output(
             R"cc(
