@@ -6,7 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load(
-    "//hpb/bazel:upb_cc_proto_library.bzl",
+    "//hpb/bazel:hpb_proto_library.bzl",
     "upb_cc_proto_library_copts",
 )
 load(

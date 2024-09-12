@@ -47,7 +47,7 @@ cc_test(
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         ":interop",
-        "//src/google/protobuf/compiler/hpb/tests:test_model_upb_cc_proto",
+        "//src/google/protobuf/compiler/hpb/tests:test_model_hpb_proto",
         "//src/google/protobuf/compiler/hpb/tests:test_model_upb_proto",
         "//upb:mem",
         "//upb:message",
