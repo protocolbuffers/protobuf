@@ -83,6 +83,9 @@ bool HasExtensionOrUnknown(const upb_Message* msg,
 bool GetOrPromoteExtension(upb_Message* msg, const upb_MiniTableExtension* eid,
                            upb_Arena* arena, upb_MessageValue* value);
 
+void DeepCopy(upb_Message* target, const upb_Message* source,
+              const upb_MiniTable* mini_table, upb_Arena* arena);
+
 upb_Message* DeepClone(const upb_Message* source,
                        const upb_MiniTable* mini_table, upb_Arena* arena);
 
@@ -248,6 +251,33 @@ typename T::Proxy CloneMessage(Ptr<T> message, upb_Arena* arena) {
       ::hpb::internal::DeepClone(hpb::interop::upb::GetMessage(message),
                                  T::minitable(), arena),
       arena);
+}
+
+template <typename T>
+void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
+  static_assert(!std::is_const_v<T>);
+  ::hpb::internal::DeepCopy(
+      hpb::interop::upb::GetMessage(target_message),
+      hpb::interop::upb::GetMessage(source_message), T::minitable(),
+      static_cast<upb_Arena*>(target_message->GetInternalArena()));
+}
+
+template <typename T>
+void DeepCopy(Ptr<const T> source_message, T* target_message) {
+  static_assert(!std::is_const_v<T>);
+  DeepCopy(source_message, Ptr(target_message));
+}
+
+template <typename T>
+void DeepCopy(const T* source_message, Ptr<T> target_message) {
+  static_assert(!std::is_const_v<T>);
+  DeepCopy(Ptr(source_message), target_message);
+}
+
+template <typename T>
+void DeepCopy(const T* source_message, T* target_message) {
+  static_assert(!std::is_const_v<T>);
+  DeepCopy(Ptr(source_message), Ptr(target_message));
 }
 
 template <typename T>

@@ -106,6 +106,12 @@ absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
   return MessageEncodeError(status);
 }
 
+void DeepCopy(upb_Message* target, const upb_Message* source,
+              const upb_MiniTable* mini_table, upb_Arena* arena) {
+  MessageLock msg_lock(source);
+  upb_Message_DeepCopy(target, source, mini_table, arena);
+}
+
 upb_Message* DeepClone(const upb_Message* source,
                        const upb_MiniTable* mini_table, upb_Arena* arena) {
   MessageLock msg_lock(source);
