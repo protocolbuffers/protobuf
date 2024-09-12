@@ -168,6 +168,8 @@ alias(
         ":use_upb_kernel": ":protobuf_gtest_matchers_upb",
         "//conditions:default": ":protobuf_gtest_matchers_cpp",
     }),
+    visibility = [
+    ],
 )
 
 rust_library(
