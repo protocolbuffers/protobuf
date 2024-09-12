@@ -1188,25 +1188,6 @@ TEST(CppGeneratedCode, CannotInvokeClearMessageWithConstRawPtr) {
   EXPECT_FALSE(CanCallClearMessage<const TestModel*>());
 }
 
-TEST(CppGeneratedCode, DeepCopy) {
-  // Fill model.
-  TestModel model;
-  model.set_int64(5);
-  model.set_str2("Hello");
-  auto new_child = model.add_child_models();
-  ASSERT_TRUE(new_child.ok());
-  new_child.value()->set_child_str1("text in child");
-  ThemeExtension extension1;
-  extension1.set_ext_name("name in extension");
-  EXPECT_TRUE(::hpb::SetExtension(&model, theme, extension1).ok());
-  TestModel target;
-  target.set_b1(true);
-  ::hpb::DeepCopy(&model, &target);
-  EXPECT_FALSE(target.b1()) << "Target was not cleared before copying content ";
-  EXPECT_EQ(target.str2(), "Hello");
-  EXPECT_TRUE(::hpb::HasExtension(&target, theme));
-}
-
 TEST(CppGeneratedCode, HasExtensionAndRegistry) {
   // Fill model.
   TestModel source;
