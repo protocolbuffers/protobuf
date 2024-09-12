@@ -299,3 +299,12 @@ pkg_zip(
         "//:LICENSE",
     ],
 )
+
+sh_binary(
+    name = "cargo_test",
+    srcs = ["cargo_test.sh"],
+    data = [
+        ":rust_crate",
+    ],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+)
