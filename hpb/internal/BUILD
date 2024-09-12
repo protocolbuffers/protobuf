@@ -15,6 +15,7 @@ package(default_applicable_licenses = ["//:license"])
 cc_library(
     name = "template_help",
     hdrs = ["template_help.h"],
+    copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//hpb:__subpackages__"],
     deps = [
         "//hpb:ptr",

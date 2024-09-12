@@ -63,8 +63,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":hpb",
-        ":traits",
         "//hpb/backend/upb:interop",
+        "//hpb/internal:template_help",
         "//upb:base",
         "//upb:mem",
         "//upb:message",
@@ -72,15 +72,6 @@ cc_library(
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/strings",
     ],
-)
-
-# Internally used type traits.
-cc_library(
-    name = "traits",
-    hdrs = [
-        "traits.h",
-    ],
-    copts = UPB_DEFAULT_CPPOPTS,
 )
 
 # Common support code for C++ generated code.
