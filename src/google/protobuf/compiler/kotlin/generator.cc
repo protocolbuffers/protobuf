@@ -15,15 +15,17 @@
 
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/compiler/java/file.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/options.h"
+#include "google/protobuf/compiler/kotlin/file.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
-namespace java {
+namespace kotlin {
+
+using google::protobuf::compiler::java::Options;
 
 KotlinGenerator::KotlinGenerator() {}
 KotlinGenerator::~KotlinGenerator() {}
@@ -80,16 +82,15 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
   std::vector<std::string> all_annotations;
 
   std::unique_ptr<FileGenerator> file_generator(
-        new FileGenerator(file, file_options, /* immutable_api = */ true));
+      new FileGenerator(file, file_options));
 
-  if (!file_generator || !file_generator->Validate(error)) {
-    return false;
-  }
+  if (!file_generator) return false;
 
   auto open_file = [context](const std::string& filename) {
     return std::unique_ptr<io::ZeroCopyOutputStream>(context->Open(filename));
   };
-  std::string package_dir = JavaPackageToDir(file_generator->java_package());
+  std::string package_dir =
+      java::JavaPackageToDir(file_generator->java_package());
   std::string kotlin_filename = absl::StrCat(
       package_dir, file_generator->GetKotlinClassname(), ".proto.kt");
   all_files.push_back(kotlin_filename);
@@ -107,10 +108,9 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
       output.get(), '$',
       file_options.annotate_code ? &annotation_collector : nullptr);
 
-  file_generator->GenerateKotlin(&printer);
-
-  file_generator->GenerateKotlinSiblings(package_dir, context, &all_files,
-                                         &all_annotations);
+  file_generator->Generate(&printer);
+  file_generator->GenerateSiblings(package_dir, context, &all_files,
+                                   &all_annotations);
 
   if (file_options.annotate_code) {
     auto info_output = open_file(info_full_path);
@@ -142,7 +142,7 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
   return true;
 }
 
-}  // namespace java
+}  // namespace kotlin
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google

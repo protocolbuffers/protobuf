@@ -5,19 +5,17 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-// Author: kenton@google.com (Kenton Varda)
-//  Based on original Protocol Buffers design by
-//  Sanjay Ghemawat, Jeff Dean, and others.
+// Generates Kotlin code for a given .proto file.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_FILE_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_FILE_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_KOTLIN_FILE_H__
+#define GOOGLE_PROTOBUF_COMPILER_KOTLIN_FILE_H__
 
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "google/protobuf/compiler/java/generator_factory.h"
 #include "google/protobuf/compiler/java/options.h"
-#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {
@@ -41,56 +39,41 @@ class ClassNameResolver;   // name_resolver.h
 namespace google {
 namespace protobuf {
 namespace compiler {
-namespace java {
+namespace kotlin {
 
+// TODO: b/366047913 - Move away from these generator classes and more towards
+// the "Context" model that the Kotlin Native & Rust code generators use:
+// http://google3/third_party/kotlin/protobuf/generator/native/file.cc;l=149-170;rcl=642292300
 class FileGenerator {
  public:
-  FileGenerator(const FileDescriptor* file, const Options& options,
-                bool immutable_api = true);
+  FileGenerator(const FileDescriptor* file, const java::Options& options);
   FileGenerator(const FileGenerator&) = delete;
   FileGenerator& operator=(const FileGenerator&) = delete;
-  ~FileGenerator();
+  ~FileGenerator() = default;
 
-  // Checks for problems that would otherwise lead to cryptic compile errors.
-  // Returns true if there are no problems, or writes an error description to
-  // the given string and returns false otherwise.
-  bool Validate(std::string* error);
-
+  std::string GetKotlinClassname();
   void Generate(io::Printer* printer);
-
-  // If we aren't putting everything into one file, this will write all the
-  // files other than the outer file (i.e. one for each message, enum, and
-  // service type).
   void GenerateSiblings(const std::string& package_dir,
                         GeneratorContext* generator_context,
                         std::vector<std::string>* file_list,
                         std::vector<std::string>* annotation_list);
 
   const std::string& java_package() { return java_package_; }
-  const std::string& classname() { return classname_; }
 
  private:
-  void GenerateDescriptorInitializationCodeForImmutable(io::Printer* printer);
-
-  bool ShouldIncludeDependency(const FileDescriptor* descriptor,
-                               bool immutable_api_);
-
   const FileDescriptor* file_;
   std::string java_package_;
-  std::string classname_;
 
-  std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
-  std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
-  std::unique_ptr<Context> context_;
-  std::unique_ptr<GeneratorFactory> generator_factory_;
-  ClassNameResolver* name_resolver_;
-  const Options options_;
-  bool immutable_api_;
+  std::vector<std::unique_ptr<java::MessageGenerator>> message_generators_;
+  std::unique_ptr<java::Context> context_;
+  std::unique_ptr<java::GeneratorFactory> generator_factory_;
+  java::ClassNameResolver* name_resolver_;
+  const java::Options options_;
 };
 
-}  // namespace java
+}  // namespace kotlin
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_FILE_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_KOTLIN_FILE_H__
