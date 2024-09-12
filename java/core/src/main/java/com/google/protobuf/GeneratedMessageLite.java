@@ -1496,8 +1496,7 @@ public abstract class GeneratedMessageLite<
 
   protected static IntList mutableCopy(IntList list) {
     int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    return list.mutableCopyWithCapacity(size * 2);
   }
 
   protected static LongList emptyLongList() {
@@ -1506,8 +1505,7 @@ public abstract class GeneratedMessageLite<
 
   protected static LongList mutableCopy(LongList list) {
     int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    return list.mutableCopyWithCapacity(size * 2);
   }
 
   protected static FloatList emptyFloatList() {
@@ -1516,8 +1514,7 @@ public abstract class GeneratedMessageLite<
 
   protected static FloatList mutableCopy(FloatList list) {
     int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    return list.mutableCopyWithCapacity(size * 2);
   }
 
   protected static DoubleList emptyDoubleList() {
@@ -1526,8 +1523,7 @@ public abstract class GeneratedMessageLite<
 
   protected static DoubleList mutableCopy(DoubleList list) {
     int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    return list.mutableCopyWithCapacity(size * 2);
   }
 
   protected static BooleanList emptyBooleanList() {
@@ -1536,8 +1532,7 @@ public abstract class GeneratedMessageLite<
 
   protected static BooleanList mutableCopy(BooleanList list) {
     int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    return list.mutableCopyWithCapacity(size * 2);
   }
 
   protected static <E> ProtobufList<E> emptyProtobufList() {
@@ -1546,8 +1541,7 @@ public abstract class GeneratedMessageLite<
 
   protected static <E> ProtobufList<E> mutableCopy(ProtobufList<E> list) {
     int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+    return list.mutableCopyWithCapacity(size * 2);
   }
 
   /**

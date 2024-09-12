@@ -8,6 +8,7 @@
 package com.google.protobuf;
 
 import static com.google.protobuf.Internal.checkNotNull;
+import static java.lang.Math.max;
 
 import com.google.protobuf.Internal.BooleanList;
 import java.util.Arrays;
@@ -22,7 +23,9 @@ import java.util.RandomAccess;
 final class BooleanArrayList extends AbstractProtobufList<Boolean>
     implements BooleanList, RandomAccess, PrimitiveNonBoxingCollection {
 
-  private static final BooleanArrayList EMPTY_LIST = new BooleanArrayList(new boolean[0], 0, false);
+  private static final boolean[] EMPTY_ARRAY = new boolean[0];
+
+  private static final BooleanArrayList EMPTY_LIST = new BooleanArrayList(EMPTY_ARRAY, 0, false);
 
   public static BooleanArrayList emptyList() {
     return EMPTY_LIST;
@@ -39,7 +42,7 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
 
   /** Constructs a new mutable {@code BooleanArrayList} with default capacity. */
   BooleanArrayList() {
-    this(new boolean[DEFAULT_CAPACITY], 0, true);
+    this(EMPTY_ARRAY, 0, true);
   }
 
   /**
@@ -101,7 +104,8 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
     if (capacity < size) {
       throw new IllegalArgumentException();
     }
-    return new BooleanArrayList(Arrays.copyOf(array, capacity), size, true);
+    boolean[] newArray = capacity == 0 ? EMPTY_ARRAY : Arrays.copyOf(array, capacity);
+    return new BooleanArrayList(newArray, size, true);
   }
 
   @Override
@@ -258,6 +262,10 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
     if (minCapacity <= array.length) {
       return;
     }
+    if (array.length == 0) {
+      array = new boolean[max(minCapacity, DEFAULT_CAPACITY)];
+      return;
+    }
     // To avoid quadratic copying when calling .addAllFoo(List) in a loop, we must not size to
     // exactly the requested capacity, but must exponentially grow instead. This is similar
     // behaviour to ArrayList.
@@ -269,8 +277,8 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
   }
 
   private static int growSize(int previousSize) {
-    // Resize to 1.5x the size
-    return ((previousSize * 3) / 2) + 1;
+    // Resize to 1.5x the size, rounding up to DEFAULT_CAPACITY.
+    return max(((previousSize * 3) / 2) + 1, DEFAULT_CAPACITY);
   }
 
   /**

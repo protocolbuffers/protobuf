@@ -8,6 +8,7 @@
 package com.google.protobuf;
 
 import static com.google.protobuf.Internal.checkNotNull;
+import static java.lang.Math.max;
 
 import com.google.protobuf.Internal.DoubleList;
 import java.util.Arrays;
@@ -22,7 +23,9 @@ import java.util.RandomAccess;
 final class DoubleArrayList extends AbstractProtobufList<Double>
     implements DoubleList, RandomAccess, PrimitiveNonBoxingCollection {
 
-  private static final DoubleArrayList EMPTY_LIST = new DoubleArrayList(new double[0], 0, false);
+  private static final double[] EMPTY_ARRAY = new double[0];
+
+  private static final DoubleArrayList EMPTY_LIST = new DoubleArrayList(EMPTY_ARRAY, 0, false);
 
   public static DoubleArrayList emptyList() {
     return EMPTY_LIST;
@@ -39,7 +42,7 @@ final class DoubleArrayList extends AbstractProtobufList<Double>
 
   /** Constructs a new mutable {@code DoubleArrayList} with default capacity. */
   DoubleArrayList() {
-    this(new double[DEFAULT_CAPACITY], 0, true);
+    this(EMPTY_ARRAY, 0, true);
   }
 
   /**
@@ -101,7 +104,8 @@ final class DoubleArrayList extends AbstractProtobufList<Double>
     if (capacity < size) {
       throw new IllegalArgumentException();
     }
-    return new DoubleArrayList(Arrays.copyOf(array, capacity), size, true);
+    double[] newArray = capacity == 0 ? EMPTY_ARRAY : Arrays.copyOf(array, capacity);
+    return new DoubleArrayList(newArray, size, true);
   }
 
   @Override
@@ -258,6 +262,10 @@ final class DoubleArrayList extends AbstractProtobufList<Double>
     if (minCapacity <= array.length) {
       return;
     }
+    if (array.length == 0) {
+      array = new double[max(minCapacity, DEFAULT_CAPACITY)];
+      return;
+    }
     // To avoid quadratic copying when calling .addAllFoo(List) in a loop, we must not size to
     // exactly the requested capacity, but must exponentially grow instead. This is similar
     // behaviour to ArrayList.
@@ -269,8 +277,8 @@ final class DoubleArrayList extends AbstractProtobufList<Double>
   }
 
   private static int growSize(int previousSize) {
-    // Resize to 1.5x the size
-    return ((previousSize * 3) / 2) + 1;
+    // Resize to 1.5x the size, rounding up to DEFAULT_CAPACITY.
+    return max(((previousSize * 3) / 2) + 1, DEFAULT_CAPACITY);
   }
 
   /**

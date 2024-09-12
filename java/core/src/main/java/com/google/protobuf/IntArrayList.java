@@ -8,6 +8,7 @@
 package com.google.protobuf;
 
 import static com.google.protobuf.Internal.checkNotNull;
+import static java.lang.Math.max;
 
 import com.google.protobuf.Internal.IntList;
 import java.util.Arrays;
@@ -22,7 +23,9 @@ import java.util.RandomAccess;
 final class IntArrayList extends AbstractProtobufList<Integer>
     implements IntList, RandomAccess, PrimitiveNonBoxingCollection {
 
-  private static final IntArrayList EMPTY_LIST = new IntArrayList(new int[0], 0, false);
+  private static final int[] EMPTY_ARRAY = new int[0];
+
+  private static final IntArrayList EMPTY_LIST = new IntArrayList(EMPTY_ARRAY, 0, false);
 
   public static IntArrayList emptyList() {
     return EMPTY_LIST;
@@ -39,7 +42,7 @@ final class IntArrayList extends AbstractProtobufList<Integer>
 
   /** Constructs a new mutable {@code IntArrayList} with default capacity. */
   IntArrayList() {
-    this(new int[DEFAULT_CAPACITY], 0, true);
+    this(EMPTY_ARRAY, 0, true);
   }
 
   /**
@@ -100,7 +103,8 @@ final class IntArrayList extends AbstractProtobufList<Integer>
     if (capacity < size) {
       throw new IllegalArgumentException();
     }
-    return new IntArrayList(Arrays.copyOf(array, capacity), size, true);
+    int[] newArray = capacity == 0 ? EMPTY_ARRAY : Arrays.copyOf(array, capacity);
+    return new IntArrayList(newArray, size, true);
   }
 
   @Override
@@ -257,6 +261,10 @@ final class IntArrayList extends AbstractProtobufList<Integer>
     if (minCapacity <= array.length) {
       return;
     }
+    if (array.length == 0) {
+      array = new int[max(minCapacity, DEFAULT_CAPACITY)];
+      return;
+    }
     // To avoid quadratic copying when calling .addAllFoo(List) in a loop, we must not size to
     // exactly the requested capacity, but must exponentially grow instead. This is similar
     // behaviour to ArrayList.
@@ -268,8 +276,8 @@ final class IntArrayList extends AbstractProtobufList<Integer>
   }
 
   private static int growSize(int previousSize) {
-    // Resize to 1.5x the size
-    return ((previousSize * 3) / 2) + 1;
+    // Resize to 1.5x the size, rounding up to DEFAULT_CAPACITY.
+    return max(((previousSize * 3) / 2) + 1, DEFAULT_CAPACITY);
   }
 
   /**
