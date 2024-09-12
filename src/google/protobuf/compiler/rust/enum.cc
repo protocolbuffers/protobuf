@@ -148,97 +148,29 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
       }
       return;
     case Kernel::kUpb:
-      for (const auto& t : kMapKeyTypes) {
-        ctx.Emit({io::Printer::Sub("key_t", [&] { ctx.Emit(t.rs_key_t); })
-                      .WithSuffix("")},
-                 R"rs(
-      impl $pb$::ProxiedInMapValue<$key_t$> for $name$ {
-          fn map_new(_private: $pbi$::Private) -> $pb$::Map<$key_t$, Self> {
-              let arena = $pbr$::Arena::new();
-              let raw = unsafe {
-                  $pbr$::upb_Map_New(
-                      arena.raw(),
-                      <$key_t$ as $pbr$::UpbTypeConversions>::upb_type(),
-                      $pbr$::CType::Enum)
-              };
-              $pb$::Map::from_inner(
-                  $pbi$::Private,
-                  $pbr$::InnerMap::new(raw, arena))
-          }
+      ctx.Emit(R"rs(
+            impl $pbr$::UpbTypeConversions for $name$ {
+                fn upb_type() -> $pbr$::CType {
+                    $pbr$::CType::Enum
+                }
 
-          unsafe fn map_free(_private: $pbi$::Private, _map: &mut $pb$::Map<$key_t$, Self>) {
-              // No-op: the memory will be dropped by the arena.
-          }
+                fn to_message_value(
+                    val: $pb$::View<'_, Self>) -> $pbr$::upb_MessageValue {
+                    $pbr$::upb_MessageValue { int32_val: val.0 }
+                }
 
-          fn map_clear(mut map: $pb$::MapMut<$key_t$, Self>) {
-              unsafe {
-                  $pbr$::upb_Map_Clear(map.as_raw($pbi$::Private));
-              }
-          }
+                unsafe fn into_message_value_fuse_if_required(
+                  raw_parent_arena: $pbr$::RawArena,
+                  val: Self) -> $pbr$::upb_MessageValue {
+                    $pbr$::upb_MessageValue { int32_val: val.0 }
+                }
 
-          fn map_len(map: $pb$::MapView<$key_t$, Self>) -> usize {
-              unsafe {
-                  $pbr$::upb_Map_Size(map.as_raw($pbi$::Private))
-              }
-          }
-
-          fn map_insert(mut map: $pb$::MapMut<$key_t$, Self>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
-              let arena = map.inner($pbi$::Private).raw_arena();
-              unsafe {
-                  $pbr$::upb_Map_InsertAndReturnIfInserted(
-                      map.as_raw($pbi$::Private),
-                      <$key_t$ as $pbr$::UpbTypeConversions>::to_message_value(key),
-                      $pbr$::upb_MessageValue { int32_val: value.into_proxied($pbi$::Private).0 },
-                      arena
-                  )
-              }
-          }
-
-          fn map_get<'a>(map: $pb$::MapView<'a, $key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
-              let mut val = $std$::mem::MaybeUninit::uninit();
-              let found = unsafe {
-                  $pbr$::upb_Map_Get(
-                      map.as_raw($pbi$::Private),
-                      <$key_t$ as $pbr$::UpbTypeConversions>::to_message_value(key),
-                      val.as_mut_ptr())
-              };
-              if !found {
-                  return None;
-              }
-              Some($name$(unsafe { val.assume_init().int32_val }))
-          }
-
-          fn map_remove(mut map: $pb$::MapMut<$key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> bool {
-              let mut val = $std$::mem::MaybeUninit::uninit();
-              unsafe {
-                  $pbr$::upb_Map_Delete(
-                      map.as_raw($pbi$::Private),
-                      <$key_t$ as $pbr$::UpbTypeConversions>::to_message_value(key),
-                      val.as_mut_ptr())
-              }
-          }
-          fn map_iter(map: $pb$::MapView<$key_t$, Self>) -> $pb$::MapIter<$key_t$, Self> {
-              // SAFETY: View<Map<'_,..>> guarantees its RawMap outlives '_.
-              unsafe {
-                  $pb$::MapIter::from_raw($pbi$::Private, $pbr$::RawMapIter::new(map.as_raw($pbi$::Private)))
-              }
-          }
-
-          fn map_iter_next<'a>(
-              iter: &mut $pb$::MapIter<'a, $key_t$, Self>
-          ) -> Option<($pb$::View<'a, $key_t$>, $pb$::View<'a, Self>)> {
-              // SAFETY: MapIter<'a, ..> guarantees its RawMapIter outlives 'a.
-              unsafe { iter.as_raw_mut($pbi$::Private).next_unchecked() }
-                  // SAFETY: MapIter<K, V> returns key and values message values
-                  //         with the variants for K and V active.
-                  .map(|(k, v)| unsafe {(
-                      <$key_t$ as $pbr$::UpbTypeConversions>::from_message_value(k),
-                      Self(v.int32_val),
-                  )})
-          }
-      }
-      )rs");
-      }
+                unsafe fn from_message_value<'msg>(val: $pbr$::upb_MessageValue)
+                    -> $pb$::View<'msg, Self> {
+                  $name$(unsafe { val.int32_val })
+                }
+            }
+            )rs");
       return;
   }
 }
