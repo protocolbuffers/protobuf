@@ -459,7 +459,12 @@ final class ArrayDecoders {
       throws InvalidProtocolBufferException {
     final IntArrayList output = (IntArrayList) list;
     position = decodeVarint32(data, position, registers);
-    final int fieldLimit = position + registers.int1;
+    final int packedDataByteSize = registers.int1;
+    final int fieldLimit = position + packedDataByteSize;
+    if (fieldLimit > data.length) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+    output.ensureCapacity(output.size() + packedDataByteSize / 4);
     while (position < fieldLimit) {
       output.addInt(decodeFixed32(data, position));
       position += 4;
@@ -476,7 +481,12 @@ final class ArrayDecoders {
       throws InvalidProtocolBufferException {
     final LongArrayList output = (LongArrayList) list;
     position = decodeVarint32(data, position, registers);
-    final int fieldLimit = position + registers.int1;
+    final int packedDataByteSize = registers.int1;
+    final int fieldLimit = position + packedDataByteSize;
+    if (fieldLimit > data.length) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+    output.ensureCapacity(output.size() + packedDataByteSize / 8);
     while (position < fieldLimit) {
       output.addLong(decodeFixed64(data, position));
       position += 8;
@@ -493,7 +503,12 @@ final class ArrayDecoders {
       throws InvalidProtocolBufferException {
     final FloatArrayList output = (FloatArrayList) list;
     position = decodeVarint32(data, position, registers);
-    final int fieldLimit = position + registers.int1;
+    final int packedDataByteSize = registers.int1;
+    final int fieldLimit = position + packedDataByteSize;
+    if (fieldLimit > data.length) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+    output.ensureCapacity(output.size() + packedDataByteSize / 4);
     while (position < fieldLimit) {
       output.addFloat(decodeFloat(data, position));
       position += 4;
@@ -510,7 +525,12 @@ final class ArrayDecoders {
       throws InvalidProtocolBufferException {
     final DoubleArrayList output = (DoubleArrayList) list;
     position = decodeVarint32(data, position, registers);
-    final int fieldLimit = position + registers.int1;
+    final int packedDataByteSize = registers.int1;
+    final int fieldLimit = position + packedDataByteSize;
+    if (fieldLimit > data.length) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+    output.ensureCapacity(output.size() + packedDataByteSize / 8);
     while (position < fieldLimit) {
       output.addDouble(decodeDouble(data, position));
       position += 8;

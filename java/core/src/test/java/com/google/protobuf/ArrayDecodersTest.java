@@ -160,6 +160,42 @@ public class ArrayDecodersTest {
   }
 
   @Test
+  public void testDecodePackedFixed32List_2gb_beyondEndOfArray() {
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodePackedFixed32List(
+                packedSizeBytesNoTag(2_000_000_000), 0, new IntArrayList(), registers));
+  }
+
+  @Test
+  public void testDecodePackedFixed64List_2gb_beyondEndOfArray() {
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodePackedFixed64List(
+                packedSizeBytesNoTag(2_000_000_000), 0, new LongArrayList(), registers));
+  }
+
+  @Test
+  public void testDecodePackedFloatList_2gb_beyondEndOfArray() {
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodePackedFloatList(
+                packedSizeBytesNoTag(2_000_000_000), 0, new FloatArrayList(), registers));
+  }
+
+  @Test
+  public void testDecodePackedDoubleList_2gb_beyondEndOfArray() {
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodePackedDoubleList(
+                packedSizeBytesNoTag(2_000_000_000), 0, new DoubleArrayList(), registers));
+  }
+
+  @Test
   public void testDecodePackedFixed64List_negativeSize() {
     assertThrows(
         InvalidProtocolBufferException.class,
