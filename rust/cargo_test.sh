@@ -28,10 +28,17 @@ fi
 
 TMP_DIR=$(mktemp -d)
 trap 'rm -rf -- "$TMP_DIR"' EXIT
-CRATE=$(rlocation com_google_protobuf/rust/rust_crate.zip)
 
-unzip -d $TMP_DIR $CRATE
-cd $TMP_DIR
+CARGO_HOME=$TMP_DIR/cargo_home
+mkdir $CARGO_HOME
+
+CRATE_ROOT=$TMP_DIR/protobuf
+mkdir $CRATE_ROOT
+
+CRATE_ZIP=$(rlocation com_google_protobuf/rust/rust_crate.zip)
+
+unzip -d $CRATE_ROOT $CRATE_ZIP
+cd $CRATE_ROOT
 
 # Run all tests except doctests
-cargo test --lib --bins --tests
+CARGO_HOME=$CARGO_HOME cargo test --lib --bins --tests

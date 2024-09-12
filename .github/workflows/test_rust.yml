@@ -32,3 +32,11 @@ jobs:
             //rust:protobuf_upb_test //rust:protobuf_cpp_test
             //rust/test/rust_proto_library_unit_test:rust_upb_aspect_test
             //src/google/protobuf/compiler/rust/...
+      - name: Run Cargo tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+        with:
+          image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:6.3.0-1.74.0-8858126dd9480abf91e6ce8d6e41a5cd3c03882c"
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: rust_linux
+          bazel: >-
+            run //rust:cargo_test
