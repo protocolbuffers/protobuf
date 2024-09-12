@@ -310,7 +310,7 @@ mod tests {
 
     #[gtest]
     fn assert_message_linked() {
-        use super::super::assert_linked;
+        use crate::assert_linked;
         assert_linked!(upb_Message_New);
         assert_linked!(upb_Message_Clear);
         assert_linked!(upb_Message_ClearBaseField);

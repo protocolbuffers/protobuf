@@ -208,7 +208,7 @@ mod tests {
 
     #[gtest]
     fn assert_arena_linked() {
-        use super::super::assert_linked;
+        use crate::assert_linked;
         assert_linked!(upb_Arena_New);
         assert_linked!(upb_Arena_Free);
         assert_linked!(upb_Arena_Malloc);

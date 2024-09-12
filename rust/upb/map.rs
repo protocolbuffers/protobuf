@@ -55,7 +55,7 @@ mod tests {
 
     #[gtest]
     fn assert_map_linked() {
-        use super::super::assert_linked;
+        use crate::assert_linked;
         assert_linked!(upb_Map_New);
         assert_linked!(upb_Map_Size);
         assert_linked!(upb_Map_Insert);

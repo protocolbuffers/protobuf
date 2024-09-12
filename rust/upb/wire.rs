@@ -130,7 +130,7 @@ mod tests {
 
     #[gtest]
     fn assert_wire_linked() {
-        use super::super::assert_linked;
+        use crate::assert_linked;
         assert_linked!(upb_Encode);
         assert_linked!(upb_Decode);
     }

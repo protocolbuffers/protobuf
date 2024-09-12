@@ -33,7 +33,7 @@ mod tests {
 
     #[gtest]
     fn assert_array_linked() {
-        use super::super::assert_linked;
+        use crate::assert_linked;
         assert_linked!(upb_Array_New);
         assert_linked!(upb_Array_Size);
         assert_linked!(upb_Array_Set);

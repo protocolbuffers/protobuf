@@ -72,7 +72,7 @@ mod tests {
 
     #[gtest]
     fn assert_text_linked() {
-        use super::super::assert_linked;
+        use crate::assert_linked;
         assert_linked!(upb_DebugString);
     }
 }

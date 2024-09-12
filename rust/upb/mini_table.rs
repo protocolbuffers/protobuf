@@ -54,7 +54,7 @@ mod tests {
 
     #[gtest]
     fn assert_mini_table_linked() {
-        use super::super::assert_linked;
+        use crate::assert_linked;
         assert_linked!(upb_MiniTable_FindFieldByNumber);
         assert_linked!(upb_MiniTable_GetFieldByIndex);
         assert_linked!(upb_MiniTable_SubMessage);
