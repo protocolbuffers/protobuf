@@ -11,13 +11,6 @@ syntax = "proto3";
 
 package enums;
 
-import "devtools/staticanalysis/pipeline/analyzers/proto_best_practices/proto/optouts.proto";
-
-option (proto_best_practices.file_optouts) = {
-  categories: ENUM_DEFAULT_VALUE_NAME_CONFLICT
-  categories: ENUM_VALUE_NAMES
-};
-
 // This should result in an enum with these accessible values:
 // - Unknown = 0
 // - Unrecognized = 0

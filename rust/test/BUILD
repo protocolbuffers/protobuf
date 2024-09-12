@@ -172,7 +172,6 @@ proto_library(
     name = "enums_proto",
     testonly = True,
     srcs = ["enums.proto"],
-    deps = ["//devtools/staticanalysis/pipeline/analyzers/proto_best_practices/proto:optouts_proto"],
 )
 
 rust_cc_proto_library(
