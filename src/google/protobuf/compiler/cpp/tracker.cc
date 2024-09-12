@@ -102,6 +102,11 @@ std::vector<Sub> GenerateTrackerCalls(
       // Emit(), we need to include a newline here so that the line that follows
       // the annotation is on its own line.
       call_str.push_back('\n');
+      if (enable_tracking) {
+        call_str =
+            absl::StrCat("if (::", ProtobufNamespace(opts),
+                         "::internal::cpp::IsTrackingEnabled()) ", call_str);
+      }
     }
 
     subs.push_back(

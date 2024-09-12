@@ -2983,6 +2983,11 @@ PROTOBUF_EXPORT bool IsGroupLike(const FieldDescriptor& field);
 // protos to avoid linker bloat in lite runtimes.
 PROTOBUF_EXPORT bool IsLazilyInitializedFile(absl::string_view filename);
 
+// Returns true during internal calls that should avoid calling trackers.  These
+// calls can be particularly dangerous during build steps like feature
+// resolution, where a MergeFrom call can wind up in a deadlock.
+PROTOBUF_EXPORT bool IsTrackingEnabled();
+
 template <typename F>
 auto VisitDescriptorsInFileOrder(const Descriptor* desc,
                                  F& f) -> decltype(f(desc)) {

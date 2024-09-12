@@ -39,6 +39,7 @@
 #include "absl/base/const_init.h"
 #include "absl/base/dynamic_annotations.h"
 #include "absl/base/thread_annotations.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
@@ -571,6 +572,19 @@ class FlatAllocatorImpl {
   TypeMap<IntT, T...> total_;
   TypeMap<IntT, T...> used_;
 };
+
+// Allows us to disable tracking in the current thread while certain build steps
+// are happening.
+bool& is_tracking_enabled() {
+  static PROTOBUF_THREAD_LOCAL bool value = true;
+  return value;
+}
+
+auto DisableTracking() {
+  bool old_value = is_tracking_enabled();
+  is_tracking_enabled() = false;
+  return absl::MakeCleanup([=] { is_tracking_enabled() = old_value; });
+}
 
 }  // namespace
 
@@ -6156,20 +6170,24 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
 
     // Handle feature resolution.  This must occur after option interpretation,
     // but before validation.
-    internal::VisitDescriptors(
-        *result, proto, [&](const auto& descriptor, const auto& proto) {
-          using OptionsT =
-              typename std::remove_const<typename std::remove_pointer<
-                  decltype(descriptor.options_)>::type>::type;
-          using DescriptorT = typename std::remove_const<
-              typename std::remove_reference<decltype(descriptor)>::type>::type;
+    {
+      auto cleanup = DisableTracking();
+      internal::VisitDescriptors(
+          *result, proto, [&](const auto& descriptor, const auto& proto) {
+            using OptionsT =
+                typename std::remove_const<typename std::remove_pointer<
+                    decltype(descriptor.options_)>::type>::type;
+            using DescriptorT =
+                typename std::remove_const<typename std::remove_reference<
+                    decltype(descriptor)>::type>::type;
 
-          ResolveFeatures(
-              proto, const_cast<DescriptorT*>(&descriptor),
-              const_cast<  // NOLINT(google3-runtime-proto-const-cast)
-                  OptionsT*>(descriptor.options_),
-              alloc);
-        });
+            ResolveFeatures(
+                proto, const_cast<DescriptorT*>(&descriptor),
+                const_cast<  // NOLINT(google3-runtime-proto-const-cast)
+                    OptionsT*>(descriptor.options_),
+                alloc);
+          });
+    }
 
     internal::VisitDescriptors(*result, [&](const FieldDescriptor& field) {
       if (result->edition() >= Edition::EDITION_2024 &&
@@ -9782,6 +9800,8 @@ void LazyDescriptor::Once(const ServiceDescriptor* service) {
 }
 
 bool ParseNoReflection(absl::string_view from, google::protobuf::MessageLite& to) {
+  auto cleanup = DisableTracking();
+
   to.Clear();
   const char* ptr;
   internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
@@ -9853,6 +9873,8 @@ bool IsLazilyInitializedFile(absl::string_view filename) {
   return filename == "net/proto2/proto/descriptor.proto" ||
          filename == "google/protobuf/descriptor.proto";
 }
+
+bool IsTrackingEnabled() { return is_tracking_enabled(); }
 
 }  // namespace cpp
 }  // namespace internal
