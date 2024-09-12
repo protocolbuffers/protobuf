@@ -24,7 +24,8 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-VariantKey RealKeyToVariantKey<MapKey>::operator()(const MapKey& value) const {
+VariantKey RealKeyToVariantKey<MapKeyConstRef>::operator()(
+    MapKeyConstRef value) const {
   switch (value.type()) {
     case FieldDescriptor::CPPTYPE_STRING:
       return VariantKey(value.GetStringValue());
@@ -80,6 +81,7 @@ void MapFieldBase::CopyIterator(MapIterator* this_iter,
                                 const MapIterator& that_iter) const {
   this_iter->iter_ = that_iter.iter_;
   this_iter->key_.SetType(that_iter.key_.type());
+  this_iter->key_ref_.SetType(that_iter.key_ref_.type());
   // MapValueRef::type() fails when containing data is null. However, if
   // this_iter points to MapEnd, data can be null.
   this_iter->value_.SetType(
@@ -240,10 +242,12 @@ void MapFieldBase::SyncRepeatedFieldWithMapNoLock() {
   for (; !EqualIterator(it, end); IncreaseIterator(&it)) {
     Message* new_entry = prototype->New(arena());
     rep.AddAllocated(new_entry);
-    const MapKey& map_key = it.GetKey();
+    const MapKeyConstRef& map_key = it.GetKeyRef();
     switch (key_des->cpp_type()) {
       case FieldDescriptor::CPPTYPE_STRING:
-        reflection->SetString(new_entry, key_des, map_key.GetStringValue());
+        reflection->SetString(
+            new_entry, key_des,
+            static_cast<std::string>(map_key.GetStringValue()));
         break;
       case FieldDescriptor::CPPTYPE_INT64:
         reflection->SetInt64(new_entry, key_des, map_key.GetInt64Value());
@@ -404,7 +408,7 @@ void MapFieldBase::Clear() {
 
 int MapFieldBase::size() const { return GetMap().size(); }
 
-bool MapFieldBase::InsertOrLookupMapValue(const MapKey& map_key,
+bool MapFieldBase::InsertOrLookupMapValue(MapKeyConstRef map_key,
                                           MapValueRef* val) {
   SyncMapWithRepeatedField();
   SetMapDirty();
@@ -477,7 +481,7 @@ void DynamicMapField::AllocateMapValue(MapValueRef* map_val) {
 }
 
 bool DynamicMapField::InsertOrLookupMapValueNoSyncImpl(MapFieldBase& base,
-                                                       const MapKey& map_key,
+                                                       MapKeyConstRef map_key,
                                                        MapValueRef* val) {
   auto& self = static_cast<DynamicMapField&>(base);
   Map<MapKey, MapValueRef>::iterator iter = self.map_.find(map_key);

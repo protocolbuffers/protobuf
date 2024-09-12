@@ -132,6 +132,7 @@ class AssignDescriptorsHelper;
 class DynamicMessageFactory;
 class GeneratedMessageReflectionTestHelper;
 class MapKey;
+class MapKeyConstRef;
 class MapValueConstRef;
 class MapValueRef;
 class MapIterator;
@@ -1137,27 +1138,27 @@ class PROTOBUF_EXPORT Reflection final {
 
   // Returns true if key is in map. Returns false if key is not in map field.
   bool ContainsMapKey(const Message& message, const FieldDescriptor* field,
-                      const MapKey& key) const;
+                      MapKeyConstRef key) const;
 
   // If key is in map field: Saves the value pointer to val and returns
   // false. If key in not in map field: Insert the key into map, saves
   // value pointer to val and returns true. Users are able to modify the
   // map value by MapValueRef.
   bool InsertOrLookupMapValue(Message* message, const FieldDescriptor* field,
-                              const MapKey& key, MapValueRef* val) const;
+                              MapKeyConstRef key, MapValueRef* val) const;
 
   // If key is in map field: Saves the value pointer to val and returns true.
   // Returns false if key is not in map field. Users are NOT able to modify
   // the value by MapValueConstRef.
   bool LookupMapValue(const Message& message, const FieldDescriptor* field,
-                      const MapKey& key, MapValueConstRef* val) const;
-  bool LookupMapValue(const Message&, const FieldDescriptor*, const MapKey&,
+                      MapKeyConstRef key, MapValueConstRef* val) const;
+  bool LookupMapValue(const Message&, const FieldDescriptor*, MapKeyConstRef,
                       MapValueRef*) const = delete;
 
   // Delete and returns true if key is in the map field. Returns false
   // otherwise.
   bool DeleteMapValue(Message* message, const FieldDescriptor* field,
-                      const MapKey& key) const;
+                      MapKeyConstRef key) const;
 
   // Returns a MapIterator referring to the first element in the map field.
   // If the map field is empty, this function returns the same as

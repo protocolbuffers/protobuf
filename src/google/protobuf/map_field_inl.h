@@ -15,7 +15,10 @@
 #include <tuple>
 #include <type_traits>
 
+#include "absl/base/attributes.h"
 #include "absl/base/casts.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_type_handler.h"
@@ -32,36 +35,73 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-// UnwrapMapKey template. We're using overloading rather than template
-// specialization so that we can return a value or reference type depending on
-// `T`.
-inline int32_t UnwrapMapKeyImpl(const MapKey& map_key, const int32_t*) {
-  return map_key.GetInt32Value();
-}
-inline uint32_t UnwrapMapKeyImpl(const MapKey& map_key, const uint32_t*) {
-  return map_key.GetUInt32Value();
-}
-inline int64_t UnwrapMapKeyImpl(const MapKey& map_key, const int64_t*) {
-  return map_key.GetInt64Value();
-}
-inline uint64_t UnwrapMapKeyImpl(const MapKey& map_key, const uint64_t*) {
-  return map_key.GetUInt64Value();
-}
-inline bool UnwrapMapKeyImpl(const MapKey& map_key, const bool*) {
-  return map_key.GetBoolValue();
-}
-inline const std::string& UnwrapMapKeyImpl(const MapKey& map_key,
-                                           const std::string*) {
-  return map_key.GetStringValue();
-}
-inline const MapKey& UnwrapMapKeyImpl(const MapKey& map_key, const MapKey*) {
-  return map_key;
-}
+
+struct UnwrapMapKeyConstRef {
+  inline int32_t operator()(MapKeyConstRef map_key, const int32_t*) const {
+    return map_key.GetInt32Value();
+  }
+  inline uint32_t operator()(MapKeyConstRef map_key, const uint32_t*) const {
+    return map_key.GetUInt32Value();
+  }
+  inline int64_t operator()(MapKeyConstRef map_key, const int64_t*) const {
+    return map_key.GetInt64Value();
+  }
+  inline uint64_t operator()(MapKeyConstRef map_key, const uint64_t*) const {
+    return map_key.GetUInt64Value();
+  }
+  inline bool operator()(MapKeyConstRef map_key, const bool*) const {
+    return map_key.GetBoolValue();
+  }
+  inline absl::string_view operator()(MapKeyConstRef map_key,
+                                      const std::string*) const {
+    return map_key.GetStringValue();
+  }
+  inline MapKeyConstRef operator()(MapKeyConstRef map_key,
+                                   const MapKey*) const {
+    return map_key;
+  }
+};
 
 template <typename T>
-decltype(auto) UnwrapMapKey(const MapKey& map_key) {
-  return UnwrapMapKeyImpl(map_key, static_cast<T*>(nullptr));
+decltype(auto) UnwrapMapKey(MapKeyConstRef map_key) {
+  return UnwrapMapKeyConstRef{}(map_key, static_cast<T*>(nullptr));
 }
+
+struct WrapMapKeyConstRef {
+  inline void operator()(MapKeyConstRef* map_key,
+                         const int32_t* value
+                             ABSL_ATTRIBUTE_LIFETIME_BOUND) const {
+    map_key->SetTypeAndValue(FieldDescriptorLite::CPPTYPE_INT32, value);
+  }
+  inline void operator()(MapKeyConstRef* map_key,
+                         const uint32_t* value
+                             ABSL_ATTRIBUTE_LIFETIME_BOUND) const {
+    map_key->SetTypeAndValue(FieldDescriptorLite::CPPTYPE_UINT32, value);
+  }
+  inline void operator()(MapKeyConstRef* map_key,
+                         const int64_t* value
+                             ABSL_ATTRIBUTE_LIFETIME_BOUND) const {
+    map_key->SetTypeAndValue(FieldDescriptorLite::CPPTYPE_INT64, value);
+  }
+  inline void operator()(MapKeyConstRef* map_key,
+                         const uint64_t* value
+                             ABSL_ATTRIBUTE_LIFETIME_BOUND) const {
+    map_key->SetTypeAndValue(FieldDescriptorLite::CPPTYPE_UINT64, value);
+  }
+  inline void operator()(MapKeyConstRef* map_key,
+                         const bool* value
+                             ABSL_ATTRIBUTE_LIFETIME_BOUND) const {
+    map_key->SetTypeAndValue(FieldDescriptorLite::CPPTYPE_BOOL, value);
+  }
+  inline void operator()(MapKeyConstRef* map_key,
+                         const std::string* value
+                             ABSL_ATTRIBUTE_LIFETIME_BOUND) const {
+    map_key->SetTypeAndValue(FieldDescriptorLite::CPPTYPE_STRING, value);
+  }
+  inline void operator()(MapKeyConstRef* map_key, const MapKey* value) const {
+    *map_key = *value;
+  }
+};
 
 // SetMapKey
 inline void SetMapKey(MapKey* map_key, int32_t value) {
@@ -93,12 +133,13 @@ void TypeDefinedMapFieldBase<Key, T>::SetMapIteratorValueImpl(
   if (map_iter->iter_.Equals(UntypedMapBase::EndIterator())) return;
   auto iter = typename Map<Key, T>::const_iterator(map_iter->iter_);
   SetMapKey(&map_iter->key_, iter->first);
+  WrapMapKeyConstRef{}(&map_iter->key_ref_, &iter->first);
   map_iter->value_.SetValueOrCopy(&iter->second);
 }
 
 template <typename Key, typename T>
 bool TypeDefinedMapFieldBase<Key, T>::InsertOrLookupMapValueNoSyncImpl(
-    MapFieldBase& map, const MapKey& map_key, MapValueRef* val) {
+    MapFieldBase& map, MapKeyConstRef map_key, MapValueRef* val) {
   auto res = static_cast<TypeDefinedMapFieldBase&>(map).map_.try_emplace(
       UnwrapMapKey<Key>(map_key));
   val->SetValue(&res.first->second);
@@ -107,7 +148,7 @@ bool TypeDefinedMapFieldBase<Key, T>::InsertOrLookupMapValueNoSyncImpl(
 
 template <typename Key, typename T>
 bool TypeDefinedMapFieldBase<Key, T>::LookupMapValueImpl(
-    const MapFieldBase& self, const MapKey& map_key, MapValueConstRef* val) {
+    const MapFieldBase& self, MapKeyConstRef map_key, MapValueConstRef* val) {
   const auto& map = static_cast<const TypeDefinedMapFieldBase&>(self).GetMap();
   auto iter = map.find(UnwrapMapKey<Key>(map_key));
   if (map.end() == iter) {
@@ -121,7 +162,7 @@ bool TypeDefinedMapFieldBase<Key, T>::LookupMapValueImpl(
 
 template <typename Key, typename T>
 bool TypeDefinedMapFieldBase<Key, T>::DeleteMapValueImpl(
-    MapFieldBase& map, const MapKey& map_key) {
+    MapFieldBase& map, MapKeyConstRef map_key) {
   return static_cast<TypeDefinedMapFieldBase&>(map).MutableMap()->erase(
       UnwrapMapKey<Key>(map_key));
 }
