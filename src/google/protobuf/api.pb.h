@@ -939,11 +939,9 @@ inline std::string* Api::release_name() {
 inline void Api::set_allocated_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.SetAllocated(value, GetArena());
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.name_.IsDefault()) {
-          _impl_.name_.Set("", GetArena());
-        }
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
+    _impl_.name_.Set("", GetArena());
+  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Api.name)
 }
 
@@ -1083,11 +1081,9 @@ inline std::string* Api::release_version() {
 inline void Api::set_allocated_version(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.version_.SetAllocated(value, GetArena());
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.version_.IsDefault()) {
-          _impl_.version_.Set("", GetArena());
-        }
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.version_.IsDefault()) {
+    _impl_.version_.Set("", GetArena());
+  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Api.version)
 }
 
@@ -1299,11 +1295,9 @@ inline std::string* Method::release_name() {
 inline void Method::set_allocated_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.SetAllocated(value, GetArena());
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.name_.IsDefault()) {
-          _impl_.name_.Set("", GetArena());
-        }
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
+    _impl_.name_.Set("", GetArena());
+  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Method.name)
 }
 
@@ -1349,11 +1343,9 @@ inline std::string* Method::release_request_type_url() {
 inline void Method::set_allocated_request_type_url(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.request_type_url_.SetAllocated(value, GetArena());
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.request_type_url_.IsDefault()) {
-          _impl_.request_type_url_.Set("", GetArena());
-        }
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.request_type_url_.IsDefault()) {
+    _impl_.request_type_url_.Set("", GetArena());
+  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Method.request_type_url)
 }
 
@@ -1421,11 +1413,9 @@ inline std::string* Method::release_response_type_url() {
 inline void Method::set_allocated_response_type_url(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.response_type_url_.SetAllocated(value, GetArena());
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.response_type_url_.IsDefault()) {
-          _impl_.response_type_url_.Set("", GetArena());
-        }
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.response_type_url_.IsDefault()) {
+    _impl_.response_type_url_.Set("", GetArena());
+  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Method.response_type_url)
 }
 
@@ -1564,11 +1554,9 @@ inline std::string* Mixin::release_name() {
 inline void Mixin::set_allocated_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.SetAllocated(value, GetArena());
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.name_.IsDefault()) {
-          _impl_.name_.Set("", GetArena());
-        }
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
+    _impl_.name_.Set("", GetArena());
+  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Mixin.name)
 }
 
@@ -1614,11 +1602,9 @@ inline std::string* Mixin::release_root() {
 inline void Mixin::set_allocated_root(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.root_.SetAllocated(value, GetArena());
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.root_.IsDefault()) {
-          _impl_.root_.Set("", GetArena());
-        }
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.root_.IsDefault()) {
+    _impl_.root_.Set("", GetArena());
+  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Mixin.root)
 }
 

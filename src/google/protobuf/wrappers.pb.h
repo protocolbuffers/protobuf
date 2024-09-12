@@ -2069,11 +2069,9 @@ inline std::string* StringValue::release_value() {
 inline void StringValue::set_allocated_value(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.SetAllocated(value, GetArena());
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.value_.IsDefault()) {
-          _impl_.value_.Set("", GetArena());
-        }
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.value_.IsDefault()) {
+    _impl_.value_.Set("", GetArena());
+  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.StringValue.value)
 }
 
@@ -2123,11 +2121,9 @@ inline std::string* BytesValue::release_value() {
 inline void BytesValue::set_allocated_value(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.SetAllocated(value, GetArena());
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.value_.IsDefault()) {
-          _impl_.value_.Set("", GetArena());
-        }
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.value_.IsDefault()) {
+    _impl_.value_.Set("", GetArena());
+  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.BytesValue.value)
 }
 

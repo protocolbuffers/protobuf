@@ -321,11 +321,9 @@ inline std::string* SourceContext::release_file_name() {
 inline void SourceContext::set_allocated_file_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.file_name_.SetAllocated(value, GetArena());
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-        if (_impl_.file_name_.IsDefault()) {
-          _impl_.file_name_.Set("", GetArena());
-        }
-  #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.file_name_.IsDefault()) {
+    _impl_.file_name_.Set("", GetArena());
+  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceContext.file_name)
 }
 
