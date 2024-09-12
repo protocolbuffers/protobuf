@@ -11,6 +11,7 @@
 #include <stdio.h>
 
 #include <cstring>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -20,17 +21,21 @@
 #include <io.h>
 #endif
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator_lite.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/reflection/def.hpp"
-#include "upb/reflection/descriptor_bootstrap.h"
-#include "upb_generator/plugin_bootstrap.h"
+#include "upb/reflection/descriptor_bootstrap.h"  // IWYU pragma: keep
+#include "upb_generator/plugin_bootstrap.h"  // IWYU pragma: keep
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -74,6 +79,8 @@ class Plugin {
           ToStringView(UPB_DESC(FileDescriptorProto_name)(files[i]));
       func(files[i], files_to_generate.contains(name));
     }
+
+    AddFilesToResponse();
   }
 
   template <class T>
@@ -110,11 +117,38 @@ class Plugin {
     (file, StringDup(content));
   }
 
+  google::protobuf::io::ZeroCopyOutputStream* Open(absl::string_view filename) {
+    auto pair = files_.emplace(filename, nullptr);
+    ABSL_CHECK(pair.second) << "Duplicate file: " << filename;
+    pair.first->second = std::make_unique<File>();
+    return &pair.first->second->stream;
+  }
+
  private:
   upb::Arena arena_;
   upb::DefPool pool_;
   UPB_DESC(compiler_CodeGeneratorRequest) * request_;
   UPB_DESC(compiler_CodeGeneratorResponse) * response_;
+
+  struct File {
+    File() : stream(&content) {}
+    std::string content;
+    google::protobuf::io::StringOutputStream stream;
+  };
+
+  absl::flat_hash_map<std::string, std::unique_ptr<File>> files_;
+
+  void AddFilesToResponse() {
+    for (const auto& pair : files_) {
+      UPB_DESC(compiler_CodeGeneratorResponse_File)* file = UPB_DESC(
+          compiler_CodeGeneratorResponse_add_file)(response_, arena_.ptr());
+      UPB_DESC(compiler_CodeGeneratorResponse_File_set_name)
+      (file, StringDup(pair.first));
+      UPB_DESC(compiler_CodeGeneratorResponse_File_set_content)
+      (file, StringDup(pair.second->content));
+    }
+    files_.clear();
+  }
 
   static absl::string_view ToStringView(upb_StringView sv) {
     return absl::string_view(sv.data, sv.size);

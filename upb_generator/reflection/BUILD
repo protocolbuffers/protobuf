@@ -34,7 +34,14 @@ cc_binary(
 # In Bazel 7, our cmake dependency scraping works fine with cc_binary.
 cc_library(
     name = "generator_with_main",
-    srcs = ["generator.cc"],
+    srcs = [
+        "context.h",
+        "generator.cc",
+        "header.cc",
+        "header.h",
+        "source.cc",
+        "source.h",
+    ],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//pkg:__pkg__"],
     # To work around the following link error from ABSL:
@@ -44,6 +51,8 @@ cc_library(
     deps = [
         ":names",
         "//src/google/protobuf:descriptor_upb_c_proto",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
         "//upb:mem",
         "//upb:reflection",
         "//upb/util:def_to_proto",
@@ -53,7 +62,10 @@ cc_library(
         "//upb_generator/common:names",
         "//upb_generator/minitable:names",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/strings:string_view",
+        "@com_google_absl//absl/types:source_location",
+        "@com_google_absl//absl/types:span",
     ],
 )
 

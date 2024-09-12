@@ -98,6 +98,7 @@ bootstrap_cc_library(
     visibility = ["//upb:friend_generators"],
     deps = [
         "//src/google/protobuf/compiler:code_generator_lite",
+        "//src/google/protobuf/io",
         "//upb:base",
         "//upb:mem",
         "//upb:port",
