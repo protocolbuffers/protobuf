@@ -2509,7 +2509,7 @@ class MapFieldPrinterHelper {
   static bool SortMap(const Message& message, const Reflection* reflection,
                       const FieldDescriptor* field,
                       std::vector<const Message*>* sorted_map_field);
-  static void CopyKey(const MapKey& key, Message* message,
+  static void CopyKey(const MapKeyConstRef& key, Message* message,
                       const FieldDescriptor* field_desc);
   static void CopyValue(const MapValueRef& value, Message* message,
                         const FieldDescriptor* field_desc);
@@ -2541,7 +2541,7 @@ bool MapFieldPrinterHelper::SortMap(
          iter != reflection->MapEnd(const_cast<Message*>(&message), field);
          ++iter) {
       Message* map_entry_message = prototype->New();
-      CopyKey(iter.GetKey(), map_entry_message, map_entry_desc->field(0));
+      CopyKey(iter.GetKeyRef(), map_entry_message, map_entry_desc->field(0));
       CopyValue(iter.GetValueRef(), map_entry_message,
                 map_entry_desc->field(1));
       sorted_map_field->push_back(map_entry_message);
@@ -2555,7 +2555,7 @@ bool MapFieldPrinterHelper::SortMap(
   return need_release;
 }
 
-void MapFieldPrinterHelper::CopyKey(const MapKey& key, Message* message,
+void MapFieldPrinterHelper::CopyKey(const MapKeyConstRef& key, Message* message,
                                     const FieldDescriptor* field_desc) {
   const Reflection* reflection = message->GetReflection();
   switch (field_desc->cpp_type()) {
@@ -2566,7 +2566,8 @@ void MapFieldPrinterHelper::CopyKey(const MapKey& key, Message* message,
       ABSL_LOG(ERROR) << "Not supported.";
       break;
     case FieldDescriptor::CPPTYPE_STRING:
-      reflection->SetString(message, field_desc, key.GetStringValue());
+      reflection->SetString(message, field_desc,
+                            std::string(key.GetStringValue()));
       return;
     case FieldDescriptor::CPPTYPE_INT64:
       reflection->SetInt64(message, field_desc, key.GetInt64Value());

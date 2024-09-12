@@ -1102,7 +1102,7 @@ bool MessageDifferencer::CompareMapFieldByMapReflection(
                    it_end = reflection1->MapEnd(const_cast<Message*>(&message1),
                                                 map_field);
        it != it_end; ++it) {
-    if (!reflection2->ContainsMapKey(message2, map_field, it.GetKey())) {
+    if (!reflection2->ContainsMapKey(message2, map_field, it.GetKeyRef())) {
       return false;
     }
   }
@@ -1118,7 +1118,8 @@ bool MessageDifferencer::CompareMapFieldByMapReflection(
                          const_cast<Message*>(&message1), map_field);         \
          it != it_end; ++it) {                                                \
       MapValueConstRef value2;                                                \
-      reflection2->LookupMapValue(message2, map_field, it.GetKey(), &value2); \
+      reflection2->LookupMapValue(message2, map_field, it.GetKeyRef(),        \
+                                  &value2);                                   \
       if (!comparator->Compare##COMPAREMETHOD(*val_des,                       \
                                               it.GetValueRef().Get##METHOD(), \
                                               value2.Get##METHOD())) {        \
@@ -1143,12 +1144,13 @@ bool MessageDifferencer::CompareMapFieldByMapReflection(
            it !=
            reflection1->MapEnd(const_cast<Message*>(&message1), map_field);
            ++it) {
-        if (!reflection2->ContainsMapKey(message2, map_field, it.GetKey())) {
+        if (!reflection2->ContainsMapKey(message2, map_field, it.GetKeyRef())) {
           return false;
         }
         bool compare_result;
         MapValueConstRef value2;
-        reflection2->LookupMapValue(message2, map_field, it.GetKey(), &value2);
+        reflection2->LookupMapValue(message2, map_field, it.GetKeyRef(),
+                                    &value2);
         // Append currently compared field to the end of parent_fields.
         SpecificField specific_value_field;
         specific_value_field.message1 = &message1;

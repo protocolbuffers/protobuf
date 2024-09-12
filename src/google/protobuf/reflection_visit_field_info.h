@@ -1198,7 +1198,8 @@ inline size_t MapPrimitiveFieldByteSize(FieldDescriptor::Type type, T value) {
 
 #define PROTOBUF_MAP_KEY_INFO(NAME, KEY_TYPE, CPPTYPE)                   \
   struct MapDynamicField##NAME##KeyInfo {                                \
-    explicit MapDynamicField##NAME##KeyInfo(const MapKey& k) : key(k) {  \
+    explicit MapDynamicField##NAME##KeyInfo(const MapKeyConstRef& k)     \
+        : key(k) {                                                       \
       ABSL_DCHECK_EQ(cpp_type, key.type());                              \
     }                                                                    \
                                                                          \
@@ -1209,7 +1210,7 @@ inline size_t MapPrimitiveFieldByteSize(FieldDescriptor::Type type, T value) {
     static constexpr FieldDescriptor::CppType cpp_type =                 \
         FieldDescriptor::CPPTYPE_##CPPTYPE;                              \
                                                                          \
-    const MapKey& key;                                                   \
+    const MapKeyConstRef& key;                                           \
   };
 
 PROTOBUF_MAP_KEY_INFO(Int32, int32_t, INT32);
@@ -1217,7 +1218,7 @@ PROTOBUF_MAP_KEY_INFO(Int64, int64_t, INT64);
 PROTOBUF_MAP_KEY_INFO(UInt32, uint32_t, UINT32);
 PROTOBUF_MAP_KEY_INFO(UInt64, uint64_t, UINT64);
 PROTOBUF_MAP_KEY_INFO(Bool, bool, BOOL);
-PROTOBUF_MAP_KEY_INFO(String, const std::string&, STRING);
+PROTOBUF_MAP_KEY_INFO(String, absl::string_view, STRING);
 
 #undef PROTOBUF_MAP_KEY_INFO
 
@@ -1294,7 +1295,7 @@ void MapDynamicFieldVisitValue(MapValueRefT& value, MapValueCallback&& cb) {
 // Dispatches based on key type to instantiate a right KeyInfo, then calls
 // MapDynamicFieldVisitValue to dispatch on the value type.
 template <typename MapValueRefT, typename MapFieldCallback>
-void MapDynamicFieldVisitKey(const MapKey& key, MapValueRefT& value,
+void MapDynamicFieldVisitKey(const MapKeyConstRef& key, MapValueRefT& value,
                              const MapFieldCallback& user_cb) {
   switch (key.type()) {
 #define PROTOBUF_HANDLE_MAP_KEY_CASE(NAME, CPPTYPE)                            \
@@ -1363,7 +1364,7 @@ struct MapDynamicFieldInfo {
     map_field.MapEnd(&end);
 
     for (auto it = begin; it != end; ++it) {
-      MapDynamicFieldVisitKey(it.GetKey(), *it.MutableValueRef(), cb);
+      MapDynamicFieldVisitKey(it.GetKeyRef(), *it.MutableValueRef(), cb);
     }
   }
 
@@ -1383,7 +1384,7 @@ struct MapDynamicFieldInfo {
     const_map_field.MapEnd(&end);
 
     for (auto it = begin; it != end; ++it) {
-      MapDynamicFieldVisitKey(it.GetKey(), it.GetValueRef(), cb);
+      MapDynamicFieldVisitKey(it.GetKeyRef(), it.GetValueRef(), cb);
     }
   }
 

@@ -37,6 +37,7 @@
 namespace google {
 namespace protobuf {
 class MapKey;
+class MapKeyConstRef;
 class MapValueRef;
 class MessageLayoutInspector;
 class Message;
