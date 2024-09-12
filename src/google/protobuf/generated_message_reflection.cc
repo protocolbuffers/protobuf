@@ -2649,7 +2649,7 @@ const FieldDescriptor* Reflection::GetOneofFieldDescriptor(
 
 bool Reflection::ContainsMapKey(const Message& message,
                                 const FieldDescriptor* field,
-                                const MapKey& key) const {
+                                MapKeyConstRef key) const {
   USAGE_CHECK(IsMapFieldInApi(field), LookupMapValue,
               "Field is not a map field.");
   return GetRaw<MapFieldBase>(message, field).ContainsMapKey(key);
@@ -2657,7 +2657,7 @@ bool Reflection::ContainsMapKey(const Message& message,
 
 bool Reflection::InsertOrLookupMapValue(Message* message,
                                         const FieldDescriptor* field,
-                                        const MapKey& key,
+                                        MapKeyConstRef key,
                                         MapValueRef* val) const {
   USAGE_CHECK(IsMapFieldInApi(field), InsertOrLookupMapValue,
               "Field is not a map field.");
@@ -2667,7 +2667,8 @@ bool Reflection::InsertOrLookupMapValue(Message* message,
 }
 
 bool Reflection::LookupMapValue(const Message& message,
-                                const FieldDescriptor* field, const MapKey& key,
+                                const FieldDescriptor* field,
+                                MapKeyConstRef key,
                                 MapValueConstRef* val) const {
   USAGE_CHECK(IsMapFieldInApi(field), LookupMapValue,
               "Field is not a map field.");
@@ -2676,7 +2677,7 @@ bool Reflection::LookupMapValue(const Message& message,
 }
 
 bool Reflection::DeleteMapValue(Message* message, const FieldDescriptor* field,
-                                const MapKey& key) const {
+                                MapKeyConstRef key) const {
   USAGE_CHECK(IsMapFieldInApi(field), DeleteMapValue,
               "Field is not a map field.");
   return MutableRaw<MapFieldBase>(message, field)->DeleteMapValue(key);

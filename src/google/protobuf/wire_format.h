@@ -380,7 +380,7 @@ size_t ComputeUnknownFieldsSize(const InternalMetadata& metadata, size_t size,
                                 CachedSize* cached_size);
 
 size_t MapKeyDataOnlyByteSize(const FieldDescriptor* field,
-                              const MapKey& value);
+                              const MapKeyConstRef& value);
 
 uint8_t* SerializeMapKeyWithCachedSizes(const FieldDescriptor* field,
                                         const MapKey& value, uint8_t* target,

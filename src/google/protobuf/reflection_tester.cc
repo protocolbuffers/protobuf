@@ -1403,7 +1403,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
       message->SerializeToString(&serialized);
       message->SpaceUsedLong();
       message->ByteSizeLong();
-      EXPECT_EQ(map[iter.GetKey().GetInt32Value()],
+      EXPECT_EQ(map[iter.GetKeyRef().GetInt32Value()],
                 iter.GetValueRef().GetInt32Value());
     }
     EXPECT_EQ(size, 2);
@@ -1414,7 +1414,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     map[1] = 1;
     for (MapIterator iter = reflection->MapBegin(message, F("map_int64_int64"));
          iter != reflection->MapEnd(message, F("map_int64_int64")); ++iter) {
-      EXPECT_EQ(map[iter.GetKey().GetInt64Value()],
+      EXPECT_EQ(map[iter.GetKeyRef().GetInt64Value()],
                 iter.GetValueRef().GetInt64Value());
     }
   }
@@ -1425,7 +1425,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     for (MapIterator iter =
              reflection->MapBegin(message, F("map_uint32_uint32"));
          iter != reflection->MapEnd(message, F("map_uint32_uint32")); ++iter) {
-      EXPECT_EQ(map[iter.GetKey().GetUInt32Value()],
+      EXPECT_EQ(map[iter.GetKeyRef().GetUInt32Value()],
                 iter.GetValueRef().GetUInt32Value());
     }
   }
@@ -1436,7 +1436,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     for (MapIterator iter =
              reflection->MapBegin(message, F("map_uint64_uint64"));
          iter != reflection->MapEnd(message, F("map_uint64_uint64")); ++iter) {
-      EXPECT_EQ(map[iter.GetKey().GetUInt64Value()],
+      EXPECT_EQ(map[iter.GetKeyRef().GetUInt64Value()],
                 iter.GetValueRef().GetUInt64Value());
     }
   }
@@ -1447,7 +1447,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     for (MapIterator iter =
              reflection->MapBegin(message, F("map_sint32_sint32"));
          iter != reflection->MapEnd(message, F("map_sint32_sint32")); ++iter) {
-      EXPECT_EQ(map[iter.GetKey().GetInt32Value()],
+      EXPECT_EQ(map[iter.GetKeyRef().GetInt32Value()],
                 iter.GetValueRef().GetInt32Value());
     }
   }
@@ -1458,7 +1458,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     for (MapIterator iter =
              reflection->MapBegin(message, F("map_sint64_sint64"));
          iter != reflection->MapEnd(message, F("map_sint64_sint64")); ++iter) {
-      EXPECT_EQ(map[iter.GetKey().GetInt64Value()],
+      EXPECT_EQ(map[iter.GetKeyRef().GetInt64Value()],
                 iter.GetValueRef().GetInt64Value());
     }
   }
@@ -1470,7 +1470,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
              reflection->MapBegin(message, F("map_fixed32_fixed32"));
          iter != reflection->MapEnd(message, F("map_fixed32_fixed32"));
          ++iter) {
-      EXPECT_EQ(map[iter.GetKey().GetUInt32Value()],
+      EXPECT_EQ(map[iter.GetKeyRef().GetUInt32Value()],
                 iter.GetValueRef().GetUInt32Value());
     }
   }
@@ -1482,7 +1482,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
              reflection->MapBegin(message, F("map_fixed64_fixed64"));
          iter != reflection->MapEnd(message, F("map_fixed64_fixed64"));
          ++iter) {
-      EXPECT_EQ(map[iter.GetKey().GetUInt64Value()],
+      EXPECT_EQ(map[iter.GetKeyRef().GetUInt64Value()],
                 iter.GetValueRef().GetUInt64Value());
     }
   }
@@ -1494,7 +1494,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
              reflection->MapBegin(message, F("map_sfixed32_sfixed32"));
          iter != reflection->MapEnd(message, F("map_sfixed32_sfixed32"));
          ++iter) {
-      EXPECT_EQ(map[iter.GetKey().GetInt32Value()],
+      EXPECT_EQ(map[iter.GetKeyRef().GetInt32Value()],
                 iter.GetValueRef().GetInt32Value());
     }
   }
@@ -1504,7 +1504,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     map[1] = 1.0;
     for (MapIterator iter = reflection->MapBegin(message, F("map_int32_float"));
          iter != reflection->MapEnd(message, F("map_int32_float")); ++iter) {
-      EXPECT_EQ(map[iter.GetKey().GetInt32Value()],
+      EXPECT_EQ(map[iter.GetKeyRef().GetInt32Value()],
                 iter.GetValueRef().GetFloatValue());
     }
   }
@@ -1515,7 +1515,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     for (MapIterator iter =
              reflection->MapBegin(message, F("map_int32_double"));
          iter != reflection->MapEnd(message, F("map_int32_double")); ++iter) {
-      EXPECT_EQ(map[iter.GetKey().GetInt32Value()],
+      EXPECT_EQ(map[iter.GetKeyRef().GetInt32Value()],
                 iter.GetValueRef().GetDoubleValue());
     }
   }
@@ -1525,7 +1525,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     map[1] = true;
     for (MapIterator iter = reflection->MapBegin(message, F("map_bool_bool"));
          iter != reflection->MapEnd(message, F("map_bool_bool")); ++iter) {
-      EXPECT_EQ(map[iter.GetKey().GetBoolValue() ? 1 : 0],
+      EXPECT_EQ(map[iter.GetKeyRef().GetBoolValue() ? 1 : 0],
                 iter.GetValueRef().GetBoolValue());
     }
   }
@@ -1544,7 +1544,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
       message->SerializeToString(&serialized);
       message->SpaceUsedLong();
       message->ByteSizeLong();
-      EXPECT_EQ(map[iter.GetKey().GetStringValue()],
+      EXPECT_EQ(map[iter.GetKeyRef().GetStringValue()],
                 iter.GetValueRef().GetStringValue());
     }
     EXPECT_EQ(size, 2);
@@ -1555,7 +1555,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     map[1] = long_string_2();
     for (MapIterator iter = reflection->MapBegin(message, F("map_int32_bytes"));
          iter != reflection->MapEnd(message, F("map_int32_bytes")); ++iter) {
-      EXPECT_EQ(map[iter.GetKey().GetInt32Value()],
+      EXPECT_EQ(map[iter.GetKeyRef().GetInt32Value()],
                 iter.GetValueRef().GetStringValue());
     }
   }
@@ -1565,7 +1565,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     map[1] = map_enum_baz_;
     for (MapIterator iter = reflection->MapBegin(message, F("map_int32_enum"));
          iter != reflection->MapEnd(message, F("map_int32_enum")); ++iter) {
-      EXPECT_EQ(map[iter.GetKey().GetInt32Value()]->number(),
+      EXPECT_EQ(map[iter.GetKeyRef().GetInt32Value()]->number(),
                 iter.GetValueRef().GetEnumValue());
     }
   }
@@ -1585,7 +1585,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
       message->SpaceUsedLong();
       message->ByteSizeLong();
       const Message& sub_message = iter.GetValueRef().GetMessageValue();
-      EXPECT_EQ(map[iter.GetKey().GetInt32Value()],
+      EXPECT_EQ(map[iter.GetKeyRef().GetInt32Value()],
                 sub_message.GetReflection()->GetInt32(sub_message, foreign_c_));
     }
     EXPECT_EQ(size, 2);

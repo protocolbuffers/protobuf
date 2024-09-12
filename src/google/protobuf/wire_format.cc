@@ -1075,7 +1075,8 @@ uint8_t* WireFormat::_InternalSerialize(const Message& message, uint8_t* target,
 }
 
 uint8_t* SerializeMapKeyWithCachedSizes(const FieldDescriptor* field,
-                                        const MapKey& value, uint8_t* target,
+                                        const MapKeyConstRef& value,
+                                        uint8_t* target,
                                         io::EpsCopyOutputStream* stream) {
   target = stream->EnsureSpace(target);
   switch (field->type()) {
@@ -1155,15 +1156,15 @@ static uint8_t* SerializeMapValueRefWithCachedSizes(
 
 class MapKeySorter {
  public:
-  static std::vector<MapKey> SortKey(const Message& message,
-                                     const Reflection* reflection,
-                                     const FieldDescriptor* field) {
-    std::vector<MapKey> sorted_key_list;
+  static std::vector<MapKeyConstRef> SortKey(const Message& message,
+                                             const Reflection* reflection,
+                                             const FieldDescriptor* field) {
+    std::vector<MapKeyConstRef> sorted_key_list;
     for (MapIterator it =
              reflection->MapBegin(const_cast<Message*>(&message), field);
          it != reflection->MapEnd(const_cast<Message*>(&message), field);
          ++it) {
-      sorted_key_list.push_back(it.GetKey());
+      sorted_key_list.push_back(it.GetKeyRef());
     }
     MapKeyComparator comparator;
     std::sort(sorted_key_list.begin(), sorted_key_list.end(), comparator);
@@ -1173,31 +1174,12 @@ class MapKeySorter {
  private:
   class MapKeyComparator {
    public:
-    bool operator()(const MapKey& a, const MapKey& b) const {
-      ABSL_DCHECK(a.type() == b.type());
-      switch (a.type()) {
-#define CASE_TYPE(CppType, CamelCppType)                                \
-  case FieldDescriptor::CPPTYPE_##CppType: {                            \
-    return a.Get##CamelCppType##Value() < b.Get##CamelCppType##Value(); \
-  }
-        CASE_TYPE(STRING, String)
-        CASE_TYPE(INT64, Int64)
-        CASE_TYPE(INT32, Int32)
-        CASE_TYPE(UINT64, UInt64)
-        CASE_TYPE(UINT32, UInt32)
-        CASE_TYPE(BOOL, Bool)
-#undef CASE_TYPE
-
-        default:
-          ABSL_DLOG(FATAL) << "Invalid key for map field.";
-          return true;
-      }
-    }
+    bool operator()(MapKeyConstRef a, MapKeyConstRef b) const { return a < b; }
   };
 };
 
 static uint8_t* InternalSerializeMapEntry(const FieldDescriptor* field,
-                                          const MapKey& key,
+                                          const MapKeyConstRef& key,
                                           const MapValueConstRef& value,
                                           uint8_t* target,
                                           io::EpsCopyOutputStream* stream) {
@@ -1249,9 +1231,9 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
         message_reflection->GetMapData(message, field);
     if (map_field->IsMapValid()) {
       if (stream->IsSerializationDeterministic()) {
-        std::vector<MapKey> sorted_key_list =
+        std::vector<MapKeyConstRef> sorted_key_list =
             MapKeySorter::SortKey(message, message_reflection, field);
-        for (std::vector<MapKey>::iterator it = sorted_key_list.begin();
+        for (std::vector<MapKeyConstRef>::iterator it = sorted_key_list.begin();
              it != sorted_key_list.end(); ++it) {
           MapValueConstRef map_value;
           message_reflection->LookupMapValue(message, field, *it, &map_value);
@@ -1264,7 +1246,7 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
              it !=
              message_reflection->MapEnd(const_cast<Message*>(&message), field);
              ++it) {
-          target = InternalSerializeMapEntry(field, it.GetKey(),
+          target = InternalSerializeMapEntry(field, it.GetKeyRef(),
                                              it.GetValueRef(), target, stream);
         }
       }
@@ -1551,7 +1533,7 @@ size_t WireFormat::FieldByteSize(const FieldDescriptor* field,
 }
 
 size_t MapKeyDataOnlyByteSize(const FieldDescriptor* field,
-                              const MapKey& value) {
+                              const MapKeyConstRef& value) {
   ABSL_DCHECK_EQ(FieldDescriptor::TypeToCppType(field->type()), value.type());
   switch (field->type()) {
     case FieldDescriptor::TYPE_DOUBLE:
@@ -1648,7 +1630,7 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
       for (map_field->MapBegin(&iter), map_field->MapEnd(&end); iter != end;
            ++iter) {
         size_t size = kMapEntryTagByteSize;
-        size += MapKeyDataOnlyByteSize(key_field, iter.GetKey());
+        size += MapKeyDataOnlyByteSize(key_field, iter.GetKeyRef());
         size += MapValueRefDataOnlyByteSize(value_field, iter.GetValueRef());
         data_size += WireFormatLite::LengthDelimitedSize(size);
       }

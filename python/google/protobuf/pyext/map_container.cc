@@ -32,7 +32,7 @@ class MapReflectionFriend {
   // Methods that are in common between the map types.
   static PyObject* Contains(PyObject* _self, PyObject* key);
   static Py_ssize_t Length(PyObject* _self);
-  static PyObject* GetIterator(PyObject *_self);
+  static PyObject* GetIterator(PyObject* _self);
   static PyObject* IterNext(PyObject* _self);
   static PyObject* MergeFrom(PyObject* _self, PyObject* arg);
 
@@ -80,7 +80,7 @@ Message* MapContainer::GetMutableMessage() {
 
 // Consumes a reference on the Python string object.
 static bool PyStringToSTL(PyObject* py_string, std::string* stl_string) {
-  char *value;
+  char* value;
   Py_ssize_t value_len;
 
   if (!py_string) {
@@ -134,15 +134,14 @@ static bool PythonToMapKey(MapContainer* self, PyObject* obj, MapKey* key) {
       break;
     }
     default:
-      PyErr_Format(
-          PyExc_SystemError, "Type %d cannot be a map key",
-          field_descriptor->cpp_type());
+      PyErr_Format(PyExc_SystemError, "Type %d cannot be a map key",
+                   field_descriptor->cpp_type());
       return false;
   }
   return true;
 }
 
-static PyObject* MapKeyToPython(MapContainer* self, const MapKey& key) {
+static PyObject* MapKeyToPython(MapContainer* self, const MapKeyConstRef& key) {
   const FieldDescriptor* field_descriptor =
       self->parent_field_descriptor->message_type()->map_key();
   switch (field_descriptor->cpp_type()) {
@@ -159,9 +158,8 @@ static PyObject* MapKeyToPython(MapContainer* self, const MapKey& key) {
     case FieldDescriptor::CPPTYPE_STRING:
       return ToStringObject(field_descriptor, key.GetStringValue());
     default:
-      PyErr_Format(
-          PyExc_SystemError, "Couldn't convert type %d to value",
-          field_descriptor->cpp_type());
+      PyErr_Format(PyExc_SystemError, "Couldn't convert type %d to value",
+                   field_descriptor->cpp_type());
       return nullptr;
   }
 }
@@ -191,9 +189,8 @@ PyObject* MapValueRefToPython(MapContainer* self, const MapValueRef& value) {
     case FieldDescriptor::CPPTYPE_ENUM:
       return PyLong_FromLong(value.GetEnumValue());
     default:
-      PyErr_Format(
-          PyExc_SystemError, "Couldn't convert type %d to value",
-          field_descriptor->cpp_type());
+      PyErr_Format(PyExc_SystemError, "Couldn't convert type %d to value",
+                   field_descriptor->cpp_type());
       return nullptr;
   }
 }
@@ -269,9 +266,9 @@ static bool PythonToMapValueRef(MapContainer* self, PyObject* obj,
       break;
     }
     default:
-      PyErr_Format(
-          PyExc_SystemError, "Setting value to a field of unknown type %d",
-          field_descriptor->cpp_type());
+      PyErr_Format(PyExc_SystemError,
+                   "Setting value to a field of unknown type %d",
+                   field_descriptor->cpp_type());
       return false;
   }
 }
@@ -320,8 +317,8 @@ PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
   const Message* other_message = other_map->parent->message;
   const Reflection* reflection = message->GetReflection();
   const Reflection* other_reflection = other_message->GetReflection();
-  internal::MapFieldBase* field = reflection->MutableMapData(
-      message, self->parent_field_descriptor);
+  internal::MapFieldBase* field =
+      reflection->MutableMapData(message, self->parent_field_descriptor);
   const internal::MapFieldBase* other_field = other_reflection->GetMapData(
       *other_message, other_map->parent_field_descriptor);
   field->MergeFrom(*other_field);
@@ -358,8 +355,7 @@ MapContainer* NewScalarMapContainer(
 
   PyObject* obj(PyType_GenericAlloc(ScalarMapContainer_Type, 0));
   if (obj == nullptr) {
-    PyErr_Format(PyExc_RuntimeError,
-                 "Could not allocate new container.");
+    PyErr_Format(PyExc_RuntimeError, "Could not allocate new container.");
     return nullptr;
   }
 
@@ -474,11 +470,10 @@ PyObject* MapReflectionFriend::ScalarMapToStr(PyObject* _self) {
   MapContainer* self = GetMap(_self);
   Message* message = self->GetMutableMessage();
   const Reflection* reflection = message->GetReflection();
-  for (google::protobuf::MapIterator it = reflection->MapBegin(
-           message, self->parent_field_descriptor);
-       it != reflection->MapEnd(message, self->parent_field_descriptor);
-       ++it) {
-    key.reset(MapKeyToPython(self, it.GetKey()));
+  for (google::protobuf::MapIterator it =
+           reflection->MapBegin(message, self->parent_field_descriptor);
+       it != reflection->MapEnd(message, self->parent_field_descriptor); ++it) {
+    key.reset(MapKeyToPython(self, it.GetKeyRef()));
     if (key == nullptr) {
       return nullptr;
     }
@@ -496,7 +491,7 @@ PyObject* MapReflectionFriend::ScalarMapToStr(PyObject* _self) {
 static void ScalarMapDealloc(PyObject* _self) {
   MapContainer* self = GetMap(_self);
   self->RemoveFromParentCache();
-  PyTypeObject *type = Py_TYPE(_self);
+  PyTypeObject* type = Py_TYPE(_self);
   type->tp_free(_self);
   if (type->tp_flags & Py_TPFLAGS_HEAPTYPE) {
     // With Python3, the Map class is not static, and must be managed.
@@ -620,8 +615,7 @@ int MapReflectionFriend::MessageMapSetItem(PyObject* _self, PyObject* key,
     }
 
     // Delete key from map.
-    reflection->DeleteMapValue(message, self->parent_field_descriptor,
-                               map_key);
+    reflection->DeleteMapValue(message, self->parent_field_descriptor, map_key);
     return 0;
   } else {
     PyErr_Format(PyExc_KeyError, "Key not present in map");
@@ -661,11 +655,10 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
   MessageMapContainer* self = GetMessageMap(_self);
   Message* message = self->GetMutableMessage();
   const Reflection* reflection = message->GetReflection();
-  for (google::protobuf::MapIterator it = reflection->MapBegin(
-           message, self->parent_field_descriptor);
-       it != reflection->MapEnd(message, self->parent_field_descriptor);
-       ++it) {
-    key.reset(MapKeyToPython(self, it.GetKey()));
+  for (google::protobuf::MapIterator it =
+           reflection->MapBegin(message, self->parent_field_descriptor);
+       it != reflection->MapEnd(message, self->parent_field_descriptor); ++it) {
+    key.reset(MapKeyToPython(self, it.GetKeyRef()));
     if (key == nullptr) {
       return nullptr;
     }
@@ -711,7 +704,7 @@ static void MessageMapDealloc(PyObject* _self) {
   MessageMapContainer* self = GetMessageMap(_self);
   self->RemoveFromParentCache();
   Py_DECREF(self->message_class);
-  PyTypeObject *type = Py_TYPE(_self);
+  PyTypeObject* type = Py_TYPE(_self);
   type->tp_free(_self);
   if (type->tp_flags & Py_TPFLAGS_HEAPTYPE) {
     // With Python3, the Map class is not static, and must be managed.
@@ -762,7 +755,7 @@ static MapIterator* GetIter(PyObject* obj) {
   return reinterpret_cast<MapIterator*>(obj);
 }
 
-PyObject* MapReflectionFriend::GetIterator(PyObject *_self) {
+PyObject* MapReflectionFriend::GetIterator(PyObject* _self) {
   MapContainer* self = GetMap(_self);
 
   ScopedPyObjectPtr obj(PyType_GenericAlloc(&MapIterator_Type, 0));
@@ -795,12 +788,10 @@ PyObject* MapReflectionFriend::IterNext(PyObject* _self) {
   // This won't catch mutations to the map performed by MergeFrom(); no easy way
   // to address that.
   if (self->version != self->container->version) {
-    return PyErr_Format(PyExc_RuntimeError,
-                        "Map modified during iteration.");
+    return PyErr_Format(PyExc_RuntimeError, "Map modified during iteration.");
   }
   if (self->parent != self->container->parent) {
-    return PyErr_Format(PyExc_RuntimeError,
-                        "Map cleared during iteration.");
+    return PyErr_Format(PyExc_RuntimeError, "Map cleared during iteration.");
   }
 
   if (self->iter.get() == nullptr) {
@@ -815,7 +806,7 @@ PyObject* MapReflectionFriend::IterNext(PyObject* _self) {
     return nullptr;
   }
 
-  PyObject* ret = MapKeyToPython(self->container, self->iter->GetKey());
+  PyObject* ret = MapKeyToPython(self->container, self->iter->GetKeyRef());
 
   ++(*self->iter);
 
