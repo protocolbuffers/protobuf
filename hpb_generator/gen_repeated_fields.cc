@@ -204,7 +204,7 @@ void WriteRepeatedStringAccessor(const protobuf::Descriptor* message,
           size_t len;
           auto* ptr = $3_mutable_$4(msg_, &len);
           assert(index < len);
-          return ::hpb::UpbStrToStringView(*(ptr + index));
+          return hpb::interop::upb::FromUpbStringView(*(ptr + index));
         }
       )cc",
       class_name, CppConstType(field), resolved_field_name,

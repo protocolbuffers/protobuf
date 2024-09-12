@@ -10,8 +10,10 @@
 
 // The sole public header in hpb/backend/upb
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/hpb/internal/internal.h"
 #include "google/protobuf/hpb/ptr.h"
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
@@ -91,6 +93,10 @@ typename T::CProxy MakeCHandle(const upb_Message* msg, upb_Arena* arena) {
 template <typename T>
 typename T::Proxy MakeHandle(upb_Message* msg, upb_Arena* arena) {
   return typename T::Proxy(msg, arena);
+}
+
+inline absl::string_view FromUpbStringView(upb_StringView str) {
+  return absl::string_view(str.data, str.size);
 }
 
 }  // namespace hpb::interop::upb

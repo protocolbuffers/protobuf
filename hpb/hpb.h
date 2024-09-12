@@ -37,11 +37,6 @@
 namespace hpb {
 class ExtensionRegistry;
 
-// TODO: b/354766950 - Move upb-specific chunks out of hpb header
-inline absl::string_view UpbStrToStringView(upb_StringView str) {
-  return absl::string_view(str.data, str.size);
-}
-
 // TODO: update bzl and move to upb runtime / protos.cc.
 inline upb_StringView UpbStrFromStringView(absl::string_view str,
                                            upb_Arena* arena) {

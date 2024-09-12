@@ -35,9 +35,11 @@ cc_library(
     deps = [
         "//hpb:ptr",
         "//hpb/internal",
+        "//upb:base",
         "//upb:mem",
         "//upb:message",
         "//upb:mini_table",
+        "@com_google_absl//absl/strings:string_view",
     ],
 )
 
