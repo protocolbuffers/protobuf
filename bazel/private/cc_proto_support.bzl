@@ -9,6 +9,8 @@
 
 load("@proto_bazel_features//:features.bzl", "bazel_features")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 
 def get_feature_configuration(ctx, has_sources, extra_requested_features = []):
     """Returns C++ feature configuration for compiling and linking generated C++ files.
