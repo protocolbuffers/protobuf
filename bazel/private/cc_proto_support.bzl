@@ -95,7 +95,7 @@ def cc_proto_compile_and_link(ctx, deps, sources, headers, disallow_dynamic_libr
         cc_toolchain = cc_toolchain,
         srcs = sources,
         public_hdrs = headers,
-        compilation_contexts = [dep[CcInfo].compilation_context for dep in deps],
+        compilation_contexts = [dep[CcInfo].compilation_context for dep in deps if CcInfo in dep],
         name = ctx.label.name,
         # Don't instrument the generated C++ files even when --collect_code_coverage is set.
         # If we actually start generating coverage instrumentation for .proto files based on coverage
@@ -113,7 +113,7 @@ def cc_proto_compile_and_link(ctx, deps, sources, headers, disallow_dynamic_libr
             feature_configuration = feature_configuration,
             cc_toolchain = cc_toolchain,
             compilation_outputs = compilation_outputs,
-            linking_contexts = [dep[CcInfo].linking_context for dep in deps],
+            linking_contexts = [dep[CcInfo].linking_context for dep in deps if CcInfo in dep],
             name = ctx.label.name,
             disallow_dynamic_library = disallow_dynamic_library,
             alwayslink = alwayslink,
