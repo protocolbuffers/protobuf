@@ -1,0 +1,25 @@
+name: Release Branch Tests
+
+on:
+  schedule:
+    # Run daily at 10 AM UTC (2 AM PDT)
+    - cron: 0 10 * * *
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  releases:
+    strategy:
+      fail-fast: false
+      matrix:
+        branch: [25.x, 27.x, 28.x]
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+    name: Run Tests on ${{ matrix.branch }}
+    steps:
+      - run: gh workflow run test_runner.yml --ref ${{ matrix.branch }}
