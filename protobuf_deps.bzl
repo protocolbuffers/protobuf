@@ -98,27 +98,11 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_java"):
-        bazel_version = native.bazel_version or "999999.999999.999999"
-        version_parts = bazel_version.split("-")[0].split(".")
-        if len(version_parts) != 3:
-            fail("invalid Bazel version '{}': got {} dot-separated segments, want 3".format(bazel_version, len(version_parts)))
-        major_version_int = int(version_parts[0])
-        minor_version_int = int(version_parts[1])
-
-        if major_version_int < 6 or (major_version_int == 6 and minor_version_int <= 3):
-            # Works with Bazel 6.3.0, but not higher
-            http_archive(
-                name = "rules_java",
-                url = "https://github.com/bazelbuild/rules_java/releases/download/6.0.0/rules_java-6.0.0.tar.gz",
-                sha256 = "469b7f3b580b4fcf8112f4d6d0d5a4ce8e1ad5e21fee67d8e8335d5f8b3debab",
-            )
-        else:
-            # Version 6.5.2 works both with Bazel 6.4.0 and Bazel 7
-            http_archive(
-                name = "rules_java",
-                url = "https://github.com/bazelbuild/rules_java/releases/download/6.5.0/rules_java-6.5.0.tar.gz",
-                sha256 = "160d1ebf33763124766fb35316329d907ca67f733238aa47624a8e3ff3cf2ef4",
-            )
+        http_archive(
+            name = "rules_java",
+            url = "https://github.com/bazelbuild/rules_java/releases/download/7.11.1/rules_java-7.11.1.tar.gz",
+            sha256 = "6f3ce0e9fba979a844faba2d60467843fbf5191d8ca61fa3d2ea17655b56bb8c",
+        )
 
     if not native.existing_rule("proto_bazel_features"):
         proto_bazel_features(name = "proto_bazel_features")
@@ -138,12 +122,11 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_jvm_external"):
-        # Version 6.0 is the lowest that works with rules_kotlin 1.9.0
         http_archive(
             name = "rules_jvm_external",
-            strip_prefix = "rules_jvm_external-6.0",
-            sha256 = "85fd6bad58ac76cc3a27c8e051e4255ff9ccd8c92ba879670d195622e7c0a9b7",
-            url = "https://github.com/bazelbuild/rules_jvm_external/releases/download/6.0/rules_jvm_external-6.0.tar.gz",
+            strip_prefix = "rules_jvm_external-6.3",
+            sha256 = "c18a69d784bcd851be95897ca0eca0b57dc86bb02e62402f15736df44160eb02",
+            url = "https://github.com/bazelbuild/rules_jvm_external/releases/download/6.3/rules_jvm_external-6.3.tar.gz",
         )
 
     if not native.existing_rule("rules_pkg"):
@@ -182,10 +165,10 @@ def protobuf_deps():
         http_archive(
             name = "rules_license",
             urls = [
-                "https://mirror.bazel.build/github.com/bazelbuild/rules_license/releases/download/0.0.8/rules_license-0.0.8.tar.gz",
-                "https://github.com/bazelbuild/rules_license/releases/download/0.0.8/rules_license-0.0.8.tar.gz",
+                "https://mirror.bazel.build/github.com/bazelbuild/rules_license/releases/download/1.0.0/rules_license-1.0.0.tar.gz",
+                "https://github.com/bazelbuild/rules_license/releases/download/1.0.0/rules_license-1.0.0.tar.gz",
             ],
-            sha256 = "241b06f3097fd186ff468832150d6cc142247dc42a32aaefb56d0099895fd229",
+            sha256 = "26d4021f6898e23b82ef953078389dd49ac2b5618ac564ade4ef87cced147b38",
         )
 
     # Python Downloads
