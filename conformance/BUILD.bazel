@@ -10,6 +10,8 @@ load(
 load("@rules_ruby//ruby:defs.bzl", "ruby_binary")
 load("//:protobuf.bzl", "internal_csharp_proto_library", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library", "internal_ruby_proto_library")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
+load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("//ruby:defs.bzl", "internal_ruby_proto_library")
 

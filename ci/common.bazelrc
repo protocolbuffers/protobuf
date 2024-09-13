@@ -1,3 +1,7 @@
+# Needed for java_lite_proto_library, that's using ProguardSpecProvider
+# TODO: Once the provider is ported to Starlark the flag may be removed.
+common --experimental_google_legacy_api
+
 build:dbg --compilation_mode=dbg
 
 build:opt --compilation_mode=opt
