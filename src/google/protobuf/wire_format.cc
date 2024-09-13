@@ -11,10 +11,14 @@
 
 #include "google/protobuf/wire_format.h"
 
-#include <stack>
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
@@ -22,14 +26,12 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/map_field.h"
-#include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/unknown_field_set.h"
+#include "google/protobuf/wire_format_lite.h"
 
 
 // Must be included last.

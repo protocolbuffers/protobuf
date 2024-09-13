@@ -11,17 +11,23 @@
 
 #include "google/protobuf/wire_format_lite.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <limits>
-#include <stack>
+#include <new>
 #include <string>
-#include <vector>
+#include <type_traits>
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/log/log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/repeated_field.h"
 #include "utf8_validity.h"
 
 
