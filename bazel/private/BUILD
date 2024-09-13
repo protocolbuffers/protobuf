@@ -5,6 +5,22 @@ package(default_applicable_licenses = ["//:license"])
 
 toolchain_type(
     name = "proto_toolchain_type",
+    visibility = ["//visibility:public"],
+)
+
+toolchain_type(
+    name = "cc_toolchain_type",
+    visibility = ["//visibility:public"],
+)
+
+toolchain_type(
+    name = "java_toolchain_type",
+    visibility = ["//visibility:public"],
+)
+
+toolchain_type(
+    name = "javalite_toolchain_type",
+    visibility = ["//visibility:public"],
 )
 
 toolchain_type(

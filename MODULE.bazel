@@ -30,7 +30,7 @@ bazel_dep(
 
 bazel_dep(
     name = "rules_cc",
-    version = "0.0.9",
+    version = "0.0.10",
 )
 
 bazel_dep(
@@ -85,9 +85,12 @@ bazel_dep(
 
 bazel_dep(
     name = "bazel_features",
-    version = "1.16.0",
+    version = "1.17.0",
     repo_name = "proto_bazel_features",
 )
+
+# Proto toolchains
+register_toolchains("//bazel/private/toolchains:all")
 
 SUPPORTED_PYTHON_VERSIONS = [
     "3.8",

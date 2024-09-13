@@ -90,11 +90,11 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_cc"):
-        _github_archive(
+        http_archive(
             name = "rules_cc",
-            repo = "https://github.com/bazelbuild/rules_cc",
-            commit = "c8c38f8c710cbbf834283e4777916b68261b359c",  # 0.0.9
-            sha256 = "5f862a44bbd032e1b48ed53c9c211ba2a1da60e10c5baa01c97369c249299ecb",
+            url = "https://github.com/bazelbuild/rules_cc/releases/download/0.0.10/rules_cc-0.0.10.tar.gz",
+            sha256 = "65b67b81c6da378f136cc7e7e14ee08d5b9375973427eceb8c773a4f69fa7e49",
+            strip_prefix = "rules_cc-0.0.10",
         )
 
     if not native.existing_rule("rules_java"):
@@ -200,3 +200,4 @@ def protobuf_deps():
         name = "nuget_python_x86-64_3.10.0",
         sha256 = "4474c83c25625d93e772e926f95f4cd398a0abbb52793625fa30f39af3d2cc00",
     )
+    native.register_toolchains("//bazel/private/toolchains:all")
