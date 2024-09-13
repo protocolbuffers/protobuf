@@ -5,10 +5,10 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use edition_unittest_rust_proto::TestAllTypes as TestAllTypesEditions;
 use googletest::prelude::*;
 use paste::paste;
 use protobuf_gtest_matchers::proto_eq;
-use unittest_edition_rust_proto::TestAllTypes as TestAllTypesEditions;
 use unittest_proto3_rust_proto::TestAllTypes as TestAllTypesProto3;
 use unittest_rust_proto::TestAllTypes as TestAllTypesProto2;
 

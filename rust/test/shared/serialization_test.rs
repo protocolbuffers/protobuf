@@ -8,8 +8,8 @@
 use googletest::prelude::*;
 use protobuf::prelude::*;
 
+use edition_unittest_rust_proto::TestAllTypes as TestAllTypesEditions;
 use paste::paste;
-use unittest_edition_rust_proto::TestAllTypes as TestAllTypesEditions;
 use unittest_proto3_optional_rust_proto::TestProto3Optional;
 use unittest_proto3_rust_proto::TestAllTypes as TestAllTypesProto3;
 use unittest_rust_proto::TestAllTypes as TestAllTypesProto2;
