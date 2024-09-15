@@ -439,28 +439,33 @@ public class JsonFormat {
     /**
      * Parses from the proto3 JSON format into a protobuf message.
      *
-     * @throws InvalidProtocolBufferException if the input is not valid JSON
-     *         proto3 format or there are unknown fields in the input.
+     * @throws InvalidProtocolBufferException if the input is not valid JSON proto3 format or there
+     *     are unknown fields in the input.
      */
-    public void merge(String json, Message.Builder builder) throws InvalidProtocolBufferException {
+    @CanIgnoreReturnValue
+    public <T extends Message.Builder> T merge(String json, T builder)
+        throws InvalidProtocolBufferException {
       // TODO: Investigate the allocation overhead and optimize for
       // mobile.
       new ParserImpl(registry, oldRegistry, ignoringUnknownFields, recursionLimit)
           .merge(json, builder);
+      return builder;
     }
 
     /**
      * Parses from the proto3 JSON encoding into a protobuf message.
      *
-     * @throws InvalidProtocolBufferException if the input is not valid proto3 JSON
-     *         format or there are unknown fields in the input
+     * @throws InvalidProtocolBufferException if the input is not valid proto3 JSON format or there
+     *     are unknown fields in the input
      * @throws IOException if reading from the input throws
      */
-    public void merge(Reader json, Message.Builder builder) throws IOException {
+    @CanIgnoreReturnValue
+    public <T extends Message.Builder> T merge(Reader json, T builder) throws IOException {
       // TODO: Investigate the allocation overhead and optimize for
       // mobile.
       new ParserImpl(registry, oldRegistry, ignoringUnknownFields, recursionLimit)
           .merge(json, builder);
+      return builder;
     }
 
     // For testing only.
