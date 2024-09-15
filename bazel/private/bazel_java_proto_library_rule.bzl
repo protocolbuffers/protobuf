@@ -12,8 +12,7 @@ load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:java_proto_support.bzl", "java_compile_for_protos", "java_info_merge_for_protos")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
-# TODO: replace with toolchain type located in protobuf
-_JAVA_PROTO_TOOLCHAIN = "@rules_java//java/proto:toolchain_type"
+_JAVA_PROTO_TOOLCHAIN = "//bazel/private:java_toolchain_type"
 
 # The provider is used to collect source and runtime jars in the `proto_library` dependency graph.
 JavaProtoAspectInfo = provider("JavaProtoAspectInfo", fields = ["jars"])
