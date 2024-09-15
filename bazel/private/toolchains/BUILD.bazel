@@ -1,0 +1,48 @@
+load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
+load("//bazel/toolchains:proto_toolchain.bzl", "proto_toolchain")
+
+# Keep this file as small as possible and free of any unnecessary loads
+# It is loaded by every use of protobuf repository, and loads here can force
+# fetching of additional external repositories
+
+# It's also intentionally using toolchain instead of proto_lang_toolchain,
+# because the former does not resolve dependencies until toolchain resolution
+# needs them
+
+proto_toolchain(
+    name = "protoc_sources",
+    exec_compatible_with = [],
+    proto_compiler = "//:protoc",
+)
+
+toolchain(
+    name = "cc_source_toolchain",
+    exec_compatible_with = [],
+    target_compatible_with = [],
+    toolchain = "//:cc_toolchain",
+    toolchain_type = "//bazel/private:cc_toolchain_type",
+)
+
+toolchain(
+    name = "java_source_toolchain",
+    exec_compatible_with = [],
+    target_compatible_with = [],
+    toolchain = "//java/core:toolchain",
+    toolchain_type = "//bazel/private:java_toolchain_type",
+)
+
+toolchain(
+    name = "javalite_source_toolchain",
+    exec_compatible_with = [],
+    target_compatible_with = [],
+    toolchain = "//java/lite:toolchain",
+    toolchain_type = "//bazel/private:javalite_toolchain_type",
+)
+
+toolchain(
+    name = "python_source_toolchain",
+    exec_compatible_with = [],
+    target_compatible_with = [],
+    toolchain = "//python:python_toolchain",
+    toolchain_type = "//bazel/private:python_toolchain_type",
+)

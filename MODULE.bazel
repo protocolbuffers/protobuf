@@ -89,6 +89,9 @@ bazel_dep(
     repo_name = "proto_bazel_features",
 )
 
+# Proto toolchains
+register_toolchains("//bazel/private/toolchains:all")
+
 SUPPORTED_PYTHON_VERSIONS = [
     "3.8",
     "3.9",

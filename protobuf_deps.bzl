@@ -200,3 +200,4 @@ def protobuf_deps():
         name = "nuget_python_x86-64_3.10.0",
         sha256 = "4474c83c25625d93e772e926f95f4cd398a0abbb52793625fa30f39af3d2cc00",
     )
+    native.register_toolchains("//bazel/private/toolchains:all")
