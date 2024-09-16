@@ -507,24 +507,20 @@ public abstract class GeneratedMessageLite<
       return (BuilderType) this;
     }
 
-    private static <MessageType> void mergeFromInstance(MessageType dest, MessageType src) {
-      Protobuf.getInstance().schemaFor(dest).mergeFrom(dest, src);
-    }
-
-    @Override
-    public MessageType getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
     @Override
     public BuilderType mergeFrom(
         byte[] input, int offset, int length, ExtensionRegistryLite extensionRegistry)
         throws InvalidProtocolBufferException {
       copyOnWrite();
       try {
-        Protobuf.getInstance().schemaFor(instance).mergeFrom(
-            instance, input, offset, offset + length,
-            new ArrayDecoders.Registers(extensionRegistry));
+        Protobuf.getInstance()
+            .schemaFor(instance)
+            .mergeFrom(
+                instance,
+                input,
+                offset,
+                offset + length,
+                new ArrayDecoders.Registers(extensionRegistry));
       } catch (InvalidProtocolBufferException e) {
         throw e;
       } catch (IndexOutOfBoundsException e) {
@@ -536,8 +532,7 @@ public abstract class GeneratedMessageLite<
     }
 
     @Override
-    public BuilderType mergeFrom(
-        byte[] input, int offset, int length)
+    public BuilderType mergeFrom(byte[] input, int offset, int length)
         throws InvalidProtocolBufferException {
       return mergeFrom(input, offset, length, ExtensionRegistryLite.getEmptyRegistry());
     }
@@ -551,8 +546,9 @@ public abstract class GeneratedMessageLite<
       try {
         // TODO: Try to make input with type CodedInputStream.ArrayDecoder use
         // fast path.
-        Protobuf.getInstance().schemaFor(instance).mergeFrom(
-            instance, CodedInputStreamReader.forCodedInput(input), extensionRegistry);
+        Protobuf.getInstance()
+            .schemaFor(instance)
+            .mergeFrom(instance, CodedInputStreamReader.forCodedInput(input), extensionRegistry);
       } catch (RuntimeException e) {
         if (e.getCause() instanceof IOException) {
           throw (IOException) e.getCause();
@@ -560,6 +556,15 @@ public abstract class GeneratedMessageLite<
         throw e;
       }
       return (BuilderType) this;
+    }
+
+    private static <MessageType> void mergeFromInstance(MessageType dest, MessageType src) {
+      Protobuf.getInstance().schemaFor(dest).mergeFrom(dest, src);
+    }
+
+    @Override
+    public MessageType getDefaultInstanceForType() {
+      return defaultInstance;
     }
   }
 
@@ -678,7 +683,7 @@ public abstract class GeneratedMessageLite<
           while (input.getBytesUntilLimit() > 0) {
             Object value =
                 FieldSet.readPrimitiveField(
-                    input, extension.descriptor.getLiteType(), /*checkUtf8=*/ false);
+                    input, extension.descriptor.getLiteType(), /* checkUtf8= */ false);
             extensions.addRepeatedField(extension.descriptor, value);
           }
         }
@@ -719,7 +724,7 @@ public abstract class GeneratedMessageLite<
           default:
             value =
                 FieldSet.readPrimitiveField(
-                    input, extension.descriptor.getLiteType(), /*checkUtf8=*/ false);
+                    input, extension.descriptor.getLiteType(), /* checkUtf8= */ false);
             break;
         }
 
@@ -1433,8 +1438,10 @@ public abstract class GeneratedMessageLite<
         java.lang.reflect.Field defaultInstanceField =
             messageClass.getDeclaredField("DEFAULT_INSTANCE");
         defaultInstanceField.setAccessible(true);
-        MessageLite defaultInstance = (MessageLite) defaultInstanceField.get(null);
-        return defaultInstance.newBuilderForType().mergeFrom(asBytes).buildPartial();
+        MessageLite.Builder builder =
+            ((MessageLite) defaultInstanceField.get(null)).newBuilderForType();
+        builder.mergeFrom(asBytes);
+        return builder.buildPartial();
       } catch (ClassNotFoundException e) {
         throw new RuntimeException("Unable to find proto buffer class: " + messageClassName, e);
       } catch (NoSuchFieldException e) {
@@ -1713,8 +1720,9 @@ public abstract class GeneratedMessageLite<
   // Validates last tag.
   protected static <T extends GeneratedMessageLite<T, ?>> T parseFrom(
       T defaultInstance, byte[] data) throws InvalidProtocolBufferException {
-    return checkMessageInitialized(parsePartialFrom(
-        defaultInstance, data, 0, data.length, ExtensionRegistryLite.getEmptyRegistry()));
+    return checkMessageInitialized(
+        parsePartialFrom(
+            defaultInstance, data, 0, data.length, ExtensionRegistryLite.getEmptyRegistry()));
   }
 
   // Validates last tag.
