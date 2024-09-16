@@ -7,9 +7,7 @@ bzl_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        ":proto_lang_toolchain_info_bzl",
-        "//bazel/private:toolchain_helpers_bzl",
-        "@proto_bazel_features//:features",
+        "//bazel/private:native_bzl",
     ],
 )
 
@@ -31,14 +29,6 @@ bzl_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//bazel/private:native_bzl",
-    ],
-)
-
-filegroup(
-    name = "bazel_osx_p4deps",
-    srcs = glob(["**"]) + ["@proto_bazel_features//:features"],
-    visibility = [
-        "//bazel:__pkg__",
+        ":proto_common.bzl",
     ],
 )
