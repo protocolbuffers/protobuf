@@ -281,6 +281,10 @@ constexpr bool DebugHardenForceCopyInMove() {
   return false;
 }
 
+constexpr bool DebugHardenFuzzMessageSpaceUsedLong() {
+  return false;
+}
+
 // Returns true if pointers are 8B aligned, leaving least significant 3 bits
 // available.
 inline constexpr bool PtrIsAtLeast8BAligned() { return alignof(void*) >= 8; }
