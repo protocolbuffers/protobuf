@@ -146,18 +146,23 @@ public final class TextFormat {
      * DEBUG_MULTILINE.compareTo(PRINTER_PRINT_TO_STRING) > 0. The inverse is not necessarily true.
      */
     static enum FieldReporterLevel {
-      NO_REPORT,
-      PRINT,
-      PRINTER_PRINT_TO_STRING,
-      TEXTFORMAT_PRINT_TO_STRING,
-      PRINT_UNICODE,
-      SHORT_DEBUG_STRING,
-      LEGACY_MULTILINE,
-      LEGACY_SINGLE_LINE,
-      DEBUG_MULTILINE,
-      DEBUG_SINGLE_LINE,
-      ABSTRACT_TO_STRING,
-      ABSTRACT_MUTABLE_TO_STRING
+      NO_REPORT(0),
+      PRINT(1),
+      PRINTER_PRINT_TO_STRING(2),
+      TEXTFORMAT_PRINT_TO_STRING(3),
+      PRINT_UNICODE(4),
+      SHORT_DEBUG_STRING(5),
+      LEGACY_MULTILINE(6),
+      LEGACY_SINGLE_LINE(7),
+      DEBUG_MULTILINE(8),
+      DEBUG_SINGLE_LINE(9),
+      ABSTRACT_TO_STRING(10),
+      ABSTRACT_MUTABLE_TO_STRING(11);
+      private final int index;
+
+      FieldReporterLevel(int index) {
+        this.index = index;
+      }
     }
 
     /** Whether to escape non ASCII characters with backslash and octal. */
