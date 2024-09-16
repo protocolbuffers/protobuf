@@ -513,6 +513,31 @@ const int& ExtensionSet::GetRefRepeatedEnum(int number, int index) const {
   return extension->ptr.repeated_enum_value->Get(index);
 }
 
+size_t ExtensionSet::GetMessageByteSizeLong(int number) const {
+  const Extension* extension = FindOrNull(number);
+  ABSL_CHECK(extension != nullptr) << "not present";
+  ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
+  return extension->is_lazy ? extension->ptr.lazymessage_value->ByteSizeLong()
+                            : extension->ptr.message_value->ByteSizeLong();
+}
+
+uint8_t* ExtensionSet::InternalSerializeMessage(
+    int number, const MessageLite* prototype, uint8_t* target,
+    io::EpsCopyOutputStream* stream) const {
+  const Extension* extension = FindOrNull(number);
+  ABSL_CHECK(extension != nullptr) << "not present";
+  ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
+
+  if (extension->is_lazy) {
+    return extension->ptr.lazymessage_value->WriteMessageToArray(
+        prototype, number, target, stream);
+  }
+
+  const auto* msg = extension->ptr.message_value;
+  return WireFormatLite::InternalWriteMessage(
+      number, *msg, msg->GetCachedSize(), target, stream);
+}
+
 void ExtensionSet::SetRepeatedEnum(int number, int index, int value) {
   Extension* extension = FindOrNull(number);
   ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
