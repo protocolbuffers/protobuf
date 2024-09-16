@@ -1,562 +1,385 @@
-################################################################################
-# Protocol Buffers: C++ Runtime and common proto files
-################################################################################
+# Package:
+#   third_party/protobuf
 
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("@rules_license//rules:license.bzl", "license")
+load("@rules_python//python:proto.bzl", "py_proto_library")
+load("@rules_python//python:py_test.bzl", "py_test")
+load("//base:select.bzl", "deployment_select")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
-load("//bazel:proto_library.bzl", "proto_library")
-load("//bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
-load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
-load("//bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
-load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
-load("//upb/cmake:build_defs.bzl", "staleness_test")
+
+# For google3-only code.
+load("//dart:dart_proto_library.bzl", "dart_proto_library")
+load("//devtools/clif/python:clif_build_rule.bzl", "pyclif_proto_library")
+load("//devtools/crosstool/perflab/tools:test_with_lib.bzl", "cc_test_with_lib")
+load("//editions:defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
+load("//net/proto2/compiler/stubby/cc:cc_stubby_library.bzl", "cc_stubby_library")
+load("//net/proto2/compiler/stubby/java:java_stubby_library.bzl", "java_stubby_library")
+load(
+    "//net/proto2/contrib/generated_file_staleness_test:build_defs.bzl",
+    "generated_file_staleness_test",
+)
+load("//rust:defs.bzl", "rust_cc_proto_library", "rust_upb_proto_library")
+load("//tools/build_defs/cc:cc_fake_binary.bzl", "cc_fake_binary")
+load("//tools/build_defs/cc:portable_cc_test.bzl", "portable_cc_test")
+load("//tools/build_defs/js/jspb_proto_library:rules.bzl", "jspb_proto_library")
+load("//tools/build_defs/objc:objc_proto_library.bzl", "objc_proto_library")
+load("//tools/build_defs/swift:swift_proto_library.bzl", "swift_proto_library")
+load(
+    ":bootstrap.bzl",
+    "bootstrap_proto",
+)
+
+# New BSD
+licenses(["notice"])
 
 package(
-    default_visibility = [
-        "//:__pkg__",  # "public" targets are alias rules in //.
-        "//json:__subpackages__",
-        "//src/google/protobuf:__subpackages__",
+    default_applicable_licenses = [":license"],
+    default_visibility = ["//visibility:private"],
+    features = ["header_modules"],
+)
+
+license(
+    name = "license",
+    package_name = "protobuf",
+)
+
+exports_files(["LICENSE"])
+
+exports_files(["METADATA"])
+
+exports_files(
+    [
+        "cpp_features.proto",
+        "test_messages_proto2.proto",
+        "sample_messages_edition.proto",
+        "test_messages_proto3.proto",
+        "unittest_features.proto",
+        "unittest_legacy_features.proto",
+        "unittest_retention.proto",
+    ],
+    visibility = [
+        "//editions:__subpackages__",
+        "//net/proto2/compiler/cpp/internal:__pkg__",
+        "//net/proto2/z_generated_example:__pkg__",
+        "//src/google/protobuf/compiler/cpp:__pkg__",
+        "//src/google/protobuf/csharp:__pkg__",
     ],
 )
 
-proto_library(
-    name = "any_proto",
-    srcs = ["any.proto"],
-    strip_import_prefix = "/src",
-)
-
-cc_proto_library(
-    name = "any_cc_proto",
-    deps = [":any_proto"],
-)
-
-proto_library(
-    name = "api_proto",
-    srcs = ["api.proto"],
-    strip_import_prefix = "/src",
-    deps = [
-        "//:source_context_proto",
-        "//:type_proto",
+exports_files(
+    [
+        "map_lite_unittest.proto",
+        "map_unittest.proto",
+        "map_proto2_unittest.proto",
+        "map_proto3_unittest.proto",
+        "unittest_arena.proto",
+        "unittest_import_lite.proto",
+        "unittest_import_public_lite.proto",
+        "unittest_lite.proto",
+        "unittest_proto3.proto",
+        "unittest_proto3_arena.proto",
+        "descriptor_weak_messages.lds",
+    ],
+    visibility = [
+        "//editions:__pkg__",
+        "//net/proto2/internal:__pkg__",
     ],
 )
 
-cc_proto_library(
-    name = "api_cc_proto",
-    deps = [":api_proto"],
-)
-
-proto_library(
-    name = "duration_proto",
-    srcs = ["duration.proto"],
-    strip_import_prefix = "/src",
-)
-
-cc_proto_library(
-    name = "duration_cc_proto",
-    deps = [":duration_proto"],
-)
-
-proto_library(
-    name = "empty_proto",
-    srcs = ["empty.proto"],
-    strip_import_prefix = "/src",
-)
-
-cc_proto_library(
-    name = "empty_cc_proto",
-    deps = [":empty_proto"],
-)
-
-proto_library(
-    name = "field_mask_proto",
-    srcs = ["field_mask.proto"],
-    strip_import_prefix = "/src",
-)
-
-cc_proto_library(
-    name = "field_mask_cc_proto",
-    deps = [":field_mask_proto"],
-)
-
-proto_library(
-    name = "source_context_proto",
-    srcs = ["source_context.proto"],
-    strip_import_prefix = "/src",
-)
-
-cc_proto_library(
-    name = "source_context_cc_proto",
-    deps = [":source_context_proto"],
-)
-
-proto_library(
-    name = "struct_proto",
-    srcs = ["struct.proto"],
-    strip_import_prefix = "/src",
-)
-
-cc_proto_library(
-    name = "struct_cc_proto",
-    deps = [":struct_proto"],
-)
-
-proto_library(
-    name = "timestamp_proto",
-    srcs = ["timestamp.proto"],
-    strip_import_prefix = "/src",
-)
-
-cc_proto_library(
-    name = "timestamp_cc_proto",
-    deps = [":timestamp_proto"],
-)
-
-proto_library(
-    name = "type_proto",
-    srcs = ["type.proto"],
-    strip_import_prefix = "/src",
-    deps = [
-        "//:any_proto",
-        "//:source_context_proto",
+exports_files(
+    [
+        "unittest_proto3_optional.proto",
+    ],
+    visibility = [
+        "//editions:__pkg__",
+        "//net/proto2/internal:__pkg__",
+        "//src/google/protobuf/csharp:__pkg__",
     ],
 )
 
-cc_proto_library(
-    name = "type_cc_proto",
-    deps = [":type_proto"],
+exports_files(
+    [
+        "unittest.proto",
+        "unittest_embed_optimize_for.proto",
+        "unittest_empty.proto",
+        "unittest_extension_set.proto",
+        "unittest_import.proto",
+        "unittest_import_public.proto",
+        "unittest_mset.proto",
+        "unittest_mset_wire_format.proto",
+        "unittest_optimize_for.proto",
+    ],
+    visibility = [
+        ":__pkg__",
+        "//editions:__pkg__",
+        "//net/proto/globaldb:__pkg__",
+        "//net/proto/tools:__pkg__",
+        "//net/proto2/bridge/internal:__pkg__",
+        "//net/proto2/compiler:__subpackages__",
+        "//net/proto2/contrib/partial_message:__subpackages__",
+        "//net/proto2/internal:__pkg__",
+        "//net/proto2/util/internal:__pkg__",
+        "//net/proto_compiler:__pkg__",
+        "//src/google/protobuf/compiler:__subpackages__",
+        "//third_party/py/google/protobuf:__pkg__",
+    ],
 )
 
-proto_library(
-    name = "wrappers_proto",
-    srcs = ["wrappers.proto"],
-    strip_import_prefix = "/src",
+exports_files(
+    [
+        "map_test.inc",
+        "test_util.inc",
+        "message_unittest.inc",
+        "message_unittest_legacy_apis.inc",
+        "proto3_lite_unittest.inc",
+        "repeated_field_reflection_unittest.inc",
+        "wire_format_unittest.inc",
+    ],
+    visibility = [
+        "//net/proto2:__subpackages__",
+    ],
 )
 
-cc_proto_library(
-    name = "wrappers_cc_proto",
-    deps = [":wrappers_proto"],
+exports_files(
+    [
+        "copy.bara.sky",
+        "file_list.bzl",
+    ],
+    visibility = ["//src/google/protobuf/testing:__pkg__"],
 )
 
-# Generate code for the well-known types on demand.
-# This needs to be done in a separate genrule because we publish protoc and the
-# C++ runtime with the WKT code linked in.  We need to use a stripped down
-# compiler and runtime library to generate them, and cc_proto_library doesn't
-# support swapping out the compiler binary (even though a custom runtime can
-# be passed to proto_lang_toolchain).
-#
-# TODO We still check in generated pb.h and pb.cc files purely to
-# support CMake builds.  These aren't used at all by Bazel and will be removed
-# in the future once CMake can generate them too.
+exports_files(
+    glob(["testdata/**"]),
+    visibility = [
+        ":__subpackages__",
+        "//net/proto2/compiler/internal:__pkg__",
+        "//net/proto2/contrib/upb:__pkg__",
+        "//net/proto2/experiments:__pkg__",
+        "//net/proto2/internal:__pkg__",
+        "//net/proto2/io/internal:__pkg__",
+        "//net/proto2/python/internal:__pkg__",
+        "//third_party/py/google/protobuf/internal:__pkg__",
+    ],
+)
 
-WELL_KNOWN_TYPES = [
-    "any",
-    "api",
-    "duration",
-    "empty",
-    "field_mask",
-    "source_context",
-    "struct",
-    "timestamp",
-    "type",
-    "wrappers",
-]
+# Also used for the ObjC library (just like OSS shares the file)
+exports_files(
+    ["PrivacyInfo.xcprivacy"],
+    visibility = [
+        "//src/google/protobuf/objectivec:__pkg__",
+    ],
+)
 
-# When we generate code for the well-known types, we put the resulting files in
-# wkt/google/protobuf and add ./wkt to the include paths below. This is a
-# somewhat strange setup but is necessary to satisfy these two constraints:
-# - We need to keep the checked-in sources for now, since Cocoapods relies on
-#   them.
-# - The Bazel build should always use the generated sources so that developers
-#   don't have to worry about manually updating the checked-in sources.
-genrule(
-    name = "gen_wkt_cc_sources",
-    srcs = [wkt + ".proto" for wkt in WELL_KNOWN_TYPES],
-    outs =
-        ["wkt/google/protobuf/" + wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES] +
-        ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
-    cmd = """
-        $(execpath //:protoc) \
-            --cpp_out=dllexport_decl=PROTOBUF_EXPORT:$(RULEDIR)/wkt \
-            --proto_path=$$(dirname $$(dirname $$(dirname $(location any.proto)))) \
-            $(SRCS)
-    """,
-    tools = ["//:protoc"],
+package_group(
+    name = "pb_dart_users",
+    packages = [
+    ],
+)
+
+bzl_library(
+    name = "bootstrap_bzl",
+    srcs = ["bootstrap.bzl"],
+    parse_tests = False,
     visibility = ["//visibility:private"],
 )
 
-staleness_test(
-    name = "well_known_types_staleness_test",
-    outs =
-        [wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES] +
-        [wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
-    generated_pattern = "wkt/google/protobuf/%s",
-    tags = ["manual"],
+bool_flag(
+    name = "debug_logging_may_leak_pii",
+    build_setting_default = False,
+    visibility = ["//visibility:private"],
 )
 
-# This is necessary for our generated cmake configs to pick up the checked in
-# WKT files.
-# TODO Remove this once we generate WKT code from cmake.
-cc_library(
-    name = "cmake_wkt_cc_proto",
-    srcs = ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
-    hdrs = ["wkt/google/protobuf/" + wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES],
-    copts = COPTS,
-    includes = ["wkt"],
-    linkopts = LINK_OPTS,
-    strip_include_prefix = "/src",
-    visibility = ["//pkg:__pkg__"],
-    deps = [
-        ":port",
-        ":protobuf",
-        ":protobuf_lite",
-        "//src/google/protobuf/io",
-    ],
-)
-
-# Built-in runtime types
-
-proto_library(
-    name = "descriptor_proto",
-    srcs = ["descriptor.proto"],
-    strip_import_prefix = "/src",
-    visibility = [
-        "//:__pkg__",
-        "//pkg:__pkg__",
-    ],
-)
-
-upb_c_proto_library(
-    name = "descriptor_upb_c_proto",
-    visibility = ["//:__subpackages__"],
-    deps = [":descriptor_proto"],
-)
-
-upb_minitable_proto_library(
-    name = "descriptor_upb_minitable_proto",
-    visibility = ["//:__subpackages__"],
-    deps = [":descriptor_proto"],
-)
-
-upb_proto_reflection_library(
-    name = "descriptor_upb_reflection_proto",
-    visibility = ["//:__subpackages__"],
-    deps = [":descriptor_proto"],
-)
-
-proto_library(
-    name = "cpp_features_proto",
-    srcs = ["cpp_features.proto"],
-    strip_import_prefix = "/src",
-    visibility = ["//:__subpackages__"],
-    deps = [":descriptor_proto"],
-)
-
-cc_proto_library(
-    name = "cpp_features_cc_proto",
-    visibility = ["//editions:__pkg__"],
-    deps = [":cpp_features_proto"],
-)
-
-################################################################################
-# C++ Runtime Library
-################################################################################
-
-cc_library(
-    name = "port",
-    srcs = ["port.cc"],
-    hdrs = [
-        "port.h",
-        "port_def.inc",
-        "port_undef.inc",
-    ],
-    strip_include_prefix = "/src",
-    visibility = [
-        "//:__subpackages__",
-        "//src/google/protobuf:__subpackages__",
-    ],
-    deps = [
-        "@com_google_absl//absl/base:config",
-        "@com_google_absl//absl/base:core_headers",
-        "@com_google_absl//absl/base:prefetch",
-        "@com_google_absl//absl/meta:type_traits",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:str_format",
-        "@com_google_absl//absl/types:optional",
-    ],
+config_setting(
+    name = "debug_logging",
+    flag_values = {":debug_logging_may_leak_pii": "True"},
 )
 
 cc_library(
-    name = "varint_shuffle",
-    hdrs = ["varint_shuffle.h"],
-    copts = COPTS,
+    name = "arenaz_sampler",
+    srcs = ["arenaz_sampler.cc"],
+    hdrs = ["arenaz_sampler.h"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+        "//buildenv/target:vendor",
+    ],
     strip_include_prefix = "/src",
     visibility = [
-        "//:__subpackages__",
-        "//src/google/protobuf:__subpackages__",
-    ],
-    deps = [":port"],
-)
-
-cc_test(
-    name = "varint_shuffle_test",
-    srcs = ["varint_shuffle_test.cc"],
-    deps = [
-        ":port",
-        ":varint_shuffle",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "reflection_visit_fields_test",
-    size = "small",
-    srcs = ["reflection_visit_fields_test.cc"],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-error=sign-compare",
-        ],
-    }),
-    deps = [
-        ":arena",
-        ":cc_test_protos",
-        ":lite_test_util",
-        ":protobuf",
-        ":protobuf_lite",
-        ":test_util",
-        "//src/google/protobuf/io",
-        "//src/google/protobuf/stubs",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:cord",
-        "@com_google_absl//absl/strings:string_view",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "port_test",
-    srcs = ["port_test.cc"],
-    deps = [
-        ":port",
-        ":varint_shuffle",
-        "@com_google_absl//absl/base:config",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_library(
-    name = "arena_align",
-    srcs = ["arena_align.cc"],
-    hdrs = ["arena_align.h"],
-    strip_include_prefix = "/src",
-    visibility = [
-        "//:__subpackages__",
-        "//src/google/protobuf:__subpackages__",
+        ":__subpackages__",
+        "//perftools/profiles/proto:__pkg__",
     ],
     deps = [
         ":port",
-        "//src/google/protobuf/stubs:lite",
-        "@com_google_absl//absl/base:core_headers",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
+        "//base:port",
+        "//base:sysinfo",
+        "@com_google_absl//absl/debugging:stacktrace",
         "@com_google_absl//absl/numeric:bits",
-    ],
-)
-
-cc_library(
-    name = "arena_cleanup",
-    hdrs = ["arena_cleanup.h"],
-    strip_include_prefix = "/src",
-    visibility = [
-        "//:__subpackages__",
-        "//src/google/protobuf:__subpackages__",
-    ],
-    deps = [
-        "@com_google_absl//absl/base:core_headers",
-        "@com_google_absl//absl/base:prefetch",
-    ],
-)
-
-cc_library(
-    name = "arena_allocation_policy",
-    hdrs = ["arena_allocation_policy.h"],
-    strip_include_prefix = "/src",
-    visibility = [
-        "//:__subpackages__",
-        "//src/google/protobuf:__subpackages__",
-    ],
-    deps = [
-        "//src/google/protobuf/stubs:lite",
-    ],
-)
-
-cc_library(
-    name = "string_block",
-    hdrs = ["string_block.h"],
-    strip_include_prefix = "/src",
-    deps = [
-        ":arena_align",
-        "@com_google_absl//absl/base:core_headers",
-        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/profiling:exponential_biased",
+        "@com_google_absl//absl/profiling:sample_recorder",
+        "@com_google_absl//absl/utility",
     ],
 )
 
 cc_test(
-    name = "string_block_test",
-    srcs = ["string_block_test.cc"],
+    name = "arenaz_sampler_test",
+    srcs = ["arenaz_sampler_test.cc"],
     deps = [
+        ":arenaz_sampler",
         ":port",
-        ":string_block",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_library(
-    name = "arena",
-    srcs = [
-        "arena.cc",
-    ],
-    hdrs = [
-        "arena.h",
-        "arenaz_sampler.h",
-        "serial_arena.h",
-        "thread_safe_arena.h",
-    ],
-    strip_include_prefix = "/src",
-    visibility = [
-        "//:__subpackages__",
-        "//src/google/protobuf:__subpackages__",
-    ],
-    deps = [
-        ":arena_align",
-        ":arena_allocation_policy",
-        ":arena_cleanup",
-        ":port",
-        ":string_block",
-        "//src/google/protobuf/stubs:lite",
-        "@com_google_absl//absl/base:core_headers",
-        "@com_google_absl//absl/base:prefetch",
-        "@com_google_absl//absl/container:layout",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
+        ":test_messages_proto2_cc_proto",
+        "//net/proto2/arena:arena_safe_unique_ptr",
+        "//thread",
         "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/strings",
         "@com_google_absl//absl/synchronization",
-        "@com_google_absl//absl/types:span",
-        "@com_google_absl//absl/utility:if_constexpr",
+        "@com_google_absl//absl/synchronization:thread_pool",
+        "@com_google_absl//absl/time",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
 cc_library(
     name = "internal_visibility",
     hdrs = ["internal_visibility.h"],
-    copts = COPTS,
-    strip_include_prefix = "/src",
-    visibility = [
-        "//:__subpackages__",
-        "//src/google/protobuf:__subpackages__",
+    compatible_with = [
+        "//buildenv/target:non_prod",
+        "//buildenv/target:vendor",
     ],
+    strip_include_prefix = "/src",
+)
+
+# Linking this library would disable full verification of message sets. Opt out
+# is strongly discouraged and only meant as an emergency measure.
+cc_library(
+    name = "fully_verify_message_sets_opt_out",
+    srcs = ["fully_verify_message_sets_opt_out.cc"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+        "//buildenv/target:vendor",
+    ],
+    strip_include_prefix = "/src",
+    alwayslink = 1,
 )
 
 cc_library(
     name = "internal_visibility_for_testing",
-    testonly = 1,
+    testonly = True,
     hdrs = ["internal_visibility_for_testing.h"],
-    copts = COPTS,
+    compatible_with = [
+        "//buildenv/target:vendor",
+        "//buildenv/target:non_prod",
+    ],
     strip_include_prefix = "/src",
     visibility = [
-        "//:__subpackages__",
-        "//src/google/protobuf:__subpackages__",
+        "//net/proto2/internal:__pkg__",
+        "//net/proto2/internal:__subpackages__",
     ],
     deps = [":internal_visibility"],
 )
 
+# Public headers for the lite runtime (protobuf_lite).
+PROTOBUF_LITE_HDRS = [
+    "arenastring.h",
+    "descriptor_lite.h",
+    "explicitly_constructed.h",
+    "extension_set.h",
+    "generated_enum_util.h",
+    "generated_message_tctable_decl.h",
+    "generated_message_tctable_impl.h",
+    "generated_message_util.h",
+    "has_bits.h",
+    "implicit_weak_message.h",
+    "inlined_string_field.h",
+    "lazy_field.h",
+    "lazy_repeated_field.h",
+    "map.h",
+    "map_field_lite.h",
+    "map_type_handler.h",
+    "message_lite.h",
+    "message_static_reflection.h",
+    "metadata_lite.h",
+    "raw_ptr.h",
+    "repeated_field.h",
+    "repeated_ptr_field.h",
+    "string_piece_field_support.h",
+    "wire_format_lite.h",
+    "wire_format_verify.h",
+    "internal_version.h",
+    "runtime_version.h",
+    "v2/generated_message_table.h",
+]
+
 cc_library(
-    name = "protobuf_lite",
+    name = "protobuf_lite_internal",
     srcs = [
         "any_lite.cc",
         "arenastring.cc",
-        "arenaz_sampler.cc",
         "extension_set.cc",
         "generated_enum_util.cc",
         "generated_message_tctable_lite.cc",
         "generated_message_util.cc",
         "implicit_weak_message.cc",
         "inlined_string_field.cc",
+        "lazy_field.cc",
+        "lazy_repeated_field.cc",
         "map.cc",
         "message_lite.cc",
         "parse_context.cc",
         "raw_ptr.cc",
         "repeated_field.cc",
         "repeated_ptr_field.cc",
+        "string_piece_field_support.cc",
         "wire_format_lite.cc",
+        "wire_format_verify.cc",
     ],
-    # TODO Fix ODR violations across BUILD.bazel files.
-    hdrs = [
+    hdrs = PROTOBUF_LITE_HDRS + [
         "any.h",
-        "arena.h",
-        "arenastring.h",
-        "arenaz_sampler.h",
-        "descriptor_lite.h",
-        "endian.h",
-        "explicitly_constructed.h",
-        "extension_set.h",
         "extension_set_inl.h",
-        "generated_enum_util.h",
-        "generated_message_tctable_decl.h",
-        "generated_message_tctable_impl.h",
-        "generated_message_util.h",
-        "has_bits.h",
-        "implicit_weak_message.h",
-        "inlined_string_field.h",
-        "map.h",
-        "map_field_lite.h",
-        "map_type_handler.h",
-        "message_lite.h",
-        "metadata_lite.h",
         "parse_context.h",
-        "raw_ptr.h",
-        "repeated_field.h",
-        "repeated_ptr_field.h",
-        "runtime_version.h",
-        "serial_arena.h",
-        "thread_safe_arena.h",
-        "wire_format_lite.h",
+        "string_member_robber.h",
     ],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-error",
-        ],
-    }),
-    linkopts = LINK_OPTS,
+    compatible_with = ["//buildenv/target:non_prod"],
+    defines = [
+        # Force a build error when the internal and external protobuf
+        # implementations are linked together. Linking the two versions
+        # together is no longer supported, because it will produce ODR
+        # violations once we have unified the proto2 and google::protobuf
+        # namespaces (see b/34197817). The compiler does not always produce an
+        # error when a macro is redefined, so for that reason we also define
+        # PROTOBUF_INTERNAL_IMPL here so that we can perform a more reliable
+        # check using an #error preprocessor directive.
+        "PROTOBUF_IMPL_SEE_BUG_34197817=internal",
+        "PROTOBUF_INTERNAL_IMPL",
+    ],
     strip_include_prefix = "/src",
     visibility = [
-        "//:__subpackages__",
+        "//net/proto2/internal:__subpackages__",
+        "//tech/internal/env/framework/field_mask:__pkg__",
     ],
-    # In Bazel 6.0+, these will be `interface_deps`:
     deps = [
         ":arena",
         ":arena_align",
-        ":arena_allocation_policy",
-        ":arena_cleanup",
+        ":arena_internal",
         ":endian",
         ":internal_visibility",
         ":port",
-        ":string_block",
         ":varint_shuffle",
+        "//base",
+        "//base:examine_stack",
+        "//base:once",
+        "//base:port",
+        "//base:spinlock_wait",
+        "//net/proto2/internal:proto_hook",
         "//src/google/protobuf/io",
-        "//src/google/protobuf/stubs:lite",
+        "//third_party/tcmalloc:malloc_extension",
         "//third_party/utf8_range:utf8_validity",
+        "//util/gtl:no_destructor",
+        "//util/gtl:stl_util",
+        "//util/hash",
+        "//util/utf8/public:unilib",
         "@com_google_absl//absl/base",
         "@com_google_absl//absl/base:config",
         "@com_google_absl//absl/base:core_headers",
@@ -575,100 +398,398 @@ cc_library(
         "@com_google_absl//absl/strings:internal",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/synchronization",
-        "@com_google_absl//absl/time",
         "@com_google_absl//absl/types:optional",
         "@com_google_absl//absl/types:span",
-        "@com_google_absl//absl/utility:if_constexpr",
     ],
 )
 
-PROTOBUF_HEADERS = [
-    "cpp_edition_defaults.h",
-    "cpp_features.pb.h",
-    "descriptor.h",
-    "descriptor.pb.h",
-    "descriptor_database.h",
-    "descriptor_visitor.h",
-    "dynamic_message.h",
-    "feature_resolver.h",
-    "field_access_listener.h",
-    "generated_enum_reflection.h",
-    "generated_message_bases.h",
-    "generated_message_reflection.h",
-    "generated_message_tctable_gen.h",
-    "map_entry.h",
-    "map_field.h",
-    "map_field_inl.h",
-    "message.h",
-    "metadata.h",
-    "reflection.h",
-    "reflection_internal.h",
-    "reflection_mode.h",
-    "reflection_ops.h",
-    "reflection_visit_fields.h",
-    "reflection_visit_field_info.h",
-    "service.h",
-    "text_format.h",
-    "unknown_field_set.h",
-    "wire_format.h",
-]
+cc_library(
+    name = "protobuf_lite",
+    hdrs = PROTOBUF_LITE_HDRS,
+    compatible_with = ["//buildenv/target:non_prod"],
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":arena",
+        ":arena_internal",
+        ":endian",
+        ":internal_visibility",
+        ":port",
+        ":protobuf_lite_internal",
+        ":varint_shuffle",
+        "//base",
+        "//base:once",
+        "//base:port",
+        "//base:spinlock_wait",
+        "//net/proto2/internal:proto_hook",
+        "//src/google/protobuf/io",
+        "//third_party/tcmalloc:malloc_extension",
+        "//util/gtl:no_destructor",
+        "//util/hash",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/base:config",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/base:dynamic_annotations",
+        "@com_google_absl//absl/base:prefetch",
+        "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/hash",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/meta:type_traits",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:cord",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/types:span",
+    ],
+)
+
+filegroup(
+    name = "aliased_descriptor_proto_source",
+    srcs = ["aliased_descriptor.proto"],
+    compatible_with = [
+        "//buildenv/target:vendor",
+        "//buildenv/target:non_prod",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+bootstrap_proto(
+    name = "aliased_descriptor_bootstrap_generate",
+    testonly = True,
+    outs = [
+        "generated/aliased_descriptor.pb.cc",
+        "generated/aliased_descriptor.proto.h",
+    ],
+    compatible_with = ["//buildenv/target:non_prod"],
+    proto = ":aliased_descriptor_proto_source",
+)
+
+bootstrap_proto(
+    name = "descriptor_bootstrap_generate",
+    testonly = True,
+    outs = [
+        "generated/descriptor_bootstrap.pb.cc",
+        "generated/descriptor_bootstrap.proto.h",
+    ],
+    compatible_with = ["//buildenv/target:non_prod"],
+    proto = "//net/proto2/proto:descriptor_proto_source",
+)
+
+bootstrap_proto(
+    name = "cpp_features_bootstrap_generate",
+    testonly = True,
+    outs = [
+        "generated/cpp_features_bootstrap.pb.cc",
+        "generated/cpp_features_bootstrap.proto.h",
+    ],
+    compatible_with = ["//buildenv/target:non_prod"],
+    proto = "cpp_features.proto",
+    deps = [
+        "//net/proto2/proto:descriptor_proto_source",
+    ],
+)
+
+compile_edition_defaults(
+    name = "cpp_edition_defaults",
+    srcs = [
+        "cpp_features_proto",
+        "//:descriptor_proto",
+    ],
+    maximum_edition = "2024",
+    minimum_edition = "PROTO2",
+)
+
+embed_edition_defaults(
+    name = "embedded_cpp_edition_defaults_generate",
+    defaults = "cpp_edition_defaults",
+    output = "generated/cpp_edition_defaults.h",
+    placeholder = "DEFAULTS_VALUE",
+    template = "cpp_edition_defaults.h.template",
+)
+
+exports_files(
+    srcs = ["cpp_edition_defaults.h.template"],
+    visibility = ["//src/google/protobuf/github:__pkg__"],
+)
+
+generated_file_staleness_test(
+    name = "bootstrap_protos_staleness_test",
+    outs = [
+        "aliased_descriptor.pb.cc",
+        "aliased_descriptor.proto.h",
+        "cpp_edition_defaults.h",
+        "cpp_features_bootstrap.pb.cc",
+        "cpp_features_bootstrap.proto.h",
+        "descriptor_bootstrap.pb.cc",
+        "descriptor_bootstrap.proto.h",
+    ],
+    generated_pattern = "generated/%s",
+    target_files = glob(
+        [
+            "*.pb.cc",
+            "*.pb.h",  # delete any stray .pb.h files when running with --fix
+            "*.proto.h",
+            "cpp_edition_defaults.h",
+        ],
+        exclude = ["descriptor.pb.h"],
+    ),
+)
+
+filegroup(
+    name = "cpp_features_proto_source",
+    srcs = ["cpp_features.proto"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+    ],
+    visibility = [
+        ":__subpackages__",
+        "//javatests/com/google/moneta/common/tools/prototiller:__subpackages__",
+        "//third_party/prototiller:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "cpp_features_proto",
+    srcs = ["cpp_features.proto"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+    ],
+    strip_import_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = ["//:descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "cpp_features_cc_proto",
+    visibility = [
+        "//editions:__pkg__",
+        "//net/proto2/internal/fuzz:__pkg__",
+        "//src/google/protobuf/compiler/cpp:__pkg__",
+    ],
+    deps = [":cpp_features_proto"],
+)
+
+java_proto_library(
+    name = "cpp_features_java_proto",
+    visibility = ["//java/com/google/moneta/common/tools/prototiller/transforms:__pkg__"],
+    deps = [":cpp_features_proto"],
+)
+
+cc_library(
+    name = "cpp_features_bootstrap",
+    hdrs = [
+        "cpp_features_bootstrap.proto.h",
+    ],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+    ],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//src/google/protobuf/compiler/cpp:__subpackages__",
+    ],
+    deps = [
+        ":arena",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        "//src/google/protobuf/io",
+    ],
+)
+
+selects.config_setting_group(
+    name = "support_syslog_reporting_cpus",
+    match_any = [
+        "//third_party/bazel_platforms/cpu:x86_32",
+        "//third_party/bazel_platforms/cpu:x86_64",
+    ],
+)
+
+selects.config_setting_group(
+    name = "support_syslog_reporting",
+    match_all = [
+        ":support_syslog_reporting_cpus",
+        "//tools/cc_target_os:linux-google",
+    ],
+)
+
+# For google3-only
+cc_library(
+    name = "reflection_mode",
+    srcs = ["reflection_mode.cc"],
+    hdrs = ["reflection_mode.h"],
+    compatible_with = ["//buildenv/target:non_prod"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//net/proto2/public:__pkg__",
+    ],
+    deps = [
+        ":port",
+    ],
+)
+
+cc_test(
+    name = "reflection_mode_test",
+    srcs = ["reflection_mode_test.cc"],
+    deps = [
+        ":reflection_mode",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
 
 cc_library(
     name = "protobuf",
     srcs = [
+        "aliased_descriptor.pb.cc",
+        "aliased_descriptor.proto.h",
         "any.cc",
-        "cpp_features.pb.cc",
+        "cpp_edition_defaults.h",
+        "cpp_features_bootstrap.pb.cc",
+        "cpp_features_bootstrap.proto.h",
         "descriptor.cc",
-        "descriptor.pb.cc",
+        "descriptor_bootstrap.pb.cc",
+        "descriptor_bootstrap.proto.h",
         "descriptor_database.cc",
+        "descriptor_visitor.h",
         "dynamic_message.cc",
+        "enforce_undeclared_extension_range.cc",
+        "enforce_utf8_white_list.cc",
+        "extension_declaration.cc",
         "extension_set_heavy.cc",
         "feature_resolver.cc",
+        "feature_resolver.h",
         "generated_message_bases.cc",
         "generated_message_reflection.cc",
         "generated_message_tctable_full.cc",
         "generated_message_tctable_gen.cc",
+        "lazy_field_heavy.cc",
+        "lazy_repeated_field_heavy.cc",
         "map_field.cc",
+        "memory_usage_estimation.h",
         "message.cc",
-        "reflection_mode.cc",
+        "reflection_internal.h",
         "reflection_ops.cc",
+        "reflection_visit_field_info.h",
         "service.cc",
         "text_format.cc",
+        "text_format_google3.cc",
         "unknown_field_set.cc",
+        "v2/generated_message_table_gen.cc",
+        "weak_field_map.cc",
         "wire_format.cc",
+        "wire_format_verify_heavy.cc",
     ],
-    hdrs = PROTOBUF_HEADERS,
-    copts = COPTS,
-    linkopts = LINK_OPTS,
+    hdrs = [
+        "descriptor.h",
+        "descriptor_database.h",
+        "dynamic_message.h",
+        "extension_declaration.h",
+        "generated_enum_reflection.h",
+        "generated_message_bases.h",
+        "generated_message_reflection.h",
+        "generated_message_tctable_gen.h",
+        "map_entry.h",
+        "map_field.h",
+        "map_field_inl.h",
+        "message.h",
+        "metadata.h",
+        "reflection.h",
+        "reflection_ops.h",
+        "reflection_visit_fields.h",
+        "service.h",
+        "text_format.h",
+        "unknown_field_set.h",
+        "v2/generated_message_table_gen.h",
+        "weak_field_map.h",
+        "wire_format.h",
+    ],
+    compatible_with = ["//buildenv/target:non_prod"],
+    defines = select({
+        "//tools/cc_target_os:linux-google": [
+            "IS_LINUX_GOOGLE_DISTRO",
+            # go/proto-proposals/explicit-debug-string
+            "SUPPORT_EXPLICIT_DEBUG_STRING",
+        ],
+        "//conditions:default": [],
+    }) + select({
+        ":support_syslog_reporting": [
+            # go/monitoring-debug-string-deserialization
+            "SUPPORT_SYSLOG_REPORTING",
+        ],
+        "//conditions:default": [],
+    }),
+    linkopts = select({
+        ":descriptor_weak_messages_enabled": [
+            "-T",
+            "$(location :descriptor_weak_messages.lds)",
+        ],
+        "//conditions:default": [],
+    }),
+    local_defines = deployment_select(
+        external = [],
+        internal = ["PROTO2_IMPL_INTERNAL_DEPLOYMENT"],
+    ),
     strip_include_prefix = "/src",
-    visibility = [
-        "//:__subpackages__",
-    ],
+    textual_hdrs = PROTOBUF_LITE_HDRS,
+    visibility = ["//visibility:public"],
     deps = [
+        ":arena",
+        ":arena_internal",
+        ":endian",
         ":internal_visibility",
         ":port",
         ":protobuf_lite",
+        ":protobuf_lite_internal",
+        ":reflection_mode",
+        ":varint_shuffle",
+        "//base",
+        "//base:callback",
+        "//base:cycleclock",
+        "//base:examine_stack",
+        "//base:googleinit",
+        "//base:once",
+        "//base:port",
+        "//base:spinlock_wait",
+        "//base:strtoint",
+        "//net/proto2/internal:proto_hook",
+        "//net/proto2/io/public:io",
+        "//net/proto2/io/public:io_lite",
         "//src/google/protobuf/io",
-        "//src/google/protobuf/io:gzip_stream",
-        "//src/google/protobuf/io:printer",
+        "//src/google/protobuf/io:strtod",
         "//src/google/protobuf/io:tokenizer",
-        "//src/google/protobuf/stubs",
+        "//testing/production_stub/public:gunit_prod",
+        "//third_party/tcmalloc:malloc_extension",
         "//third_party/utf8_range:utf8_validity",
+        "//util/gtl:lockfree_hashmap",
+        "//util/gtl:map_util",
+        "//util/gtl:no_destructor",
+        "//util/gtl:singleton_macros",
+        "//util/hash",
+        "//util/utf8/public:unilib",
         "@com_google_absl//absl/algorithm:container",
         "@com_google_absl//absl/base",
+        "@com_google_absl//absl/base:config",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/base:dynamic_annotations",
+        "@com_google_absl//absl/base:no_destructor",
+        "@com_google_absl//absl/base:prefetch",
         "@com_google_absl//absl/cleanup",
         "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/container:fixed_array",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/container:node_hash_set",
+        "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/functional:any_invocable",
         "@com_google_absl//absl/functional:function_ref",
         "@com_google_absl//absl/hash",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/log:die_if_null",
         "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/meta:type_traits",
         "@com_google_absl//absl/numeric:bits",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
@@ -677,55 +798,135 @@ cc_library(
         "@com_google_absl//absl/strings:internal",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/synchronization",
-        "@com_google_absl//absl/time",
         "@com_google_absl//absl/types:optional",
         "@com_google_absl//absl/types:span",
         "@com_google_absl//absl/types:variant",
+    ] + select({
+        "//tools/cc_target_os:linux-google": [
+            "//util/symbolize",
+            "@com_google_absl//absl/base:builddata",
+        ],
+        "//conditions:default": [],
+    }) + select({
+        ":support_syslog_reporting": [
+            "//base:syslog_util",
+            "//util/os/core:image_info",
+            "@com_google_absl//absl/debugging:stacktrace",
+        ],
+        "//conditions:default": [],
+    }) + select({
+        ":descriptor_weak_messages_enabled": [
+            ":descriptor_weak_messages.lds",
+        ],
+        "//conditions:default": [],
+    }),
+)
+
+cc_library(
+    name = "descriptor_bootstrap",
+    hdrs = [
+        "descriptor_bootstrap.proto.h",
+    ],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+    ],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//java/core:__pkg__",
+        "//net/proto:__pkg__",
+        "//net/proto2/bridge/internal:__pkg__",
+        "//net/proto2/compiler:__subpackages__",
+        "//net/proto2/internal:__pkg__",
+        "//net/proto2/tools/internal:__pkg__",
+        "//net/proto_compiler:__pkg__",
+        "//src/google/protobuf/compiler:__subpackages__",
+    ],
+    deps = [
+        ":arena",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite_internal",
+        "//base:spinlock_wait",
+        "//src/google/protobuf/io",
     ],
 )
 
-# This target exposes the headers for the protobuf runtime, and additionally
-# depends on the C++ well-known types and some other miscellaneous utilities.
-# The purpose is to preserve compatibility with projects that do not yet comply
-# with the layering check. Ideally everyone should get into compliance with the
-# layering check, which would mean for example taking a dependency on
-# //:any_cc_proto instead of relying on this target to make it available
-# indirectly.
 cc_library(
-    name = "protobuf_layering_check_legacy",
-    hdrs = PROTOBUF_HEADERS,
-    copts = COPTS,
-    linkopts = LINK_OPTS,
+    name = "descriptor_visitor",
+    hdrs = ["descriptor_visitor.h"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+    ],
     strip_include_prefix = "/src",
     visibility = [
-        "//:__subpackages__",
+        ":__subpackages__",
     ],
     deps = [
-        ":any_cc_proto",
-        ":api_cc_proto",
-        ":duration_cc_proto",
-        ":empty_cc_proto",
-        ":field_mask_cc_proto",
+        ":descriptor_bootstrap",
         ":protobuf",
-        ":source_context_cc_proto",
-        ":struct_cc_proto",
-        ":timestamp_cc_proto",
-        ":type_cc_proto",
-        ":wrappers_cc_proto",
-        "//src/google/protobuf/compiler:importer",
-        "//src/google/protobuf/util:delimited_message_util",
-        "//src/google/protobuf/util:differencer",
-        "//src/google/protobuf/util:field_mask_util",
-        "//src/google/protobuf/util:json_util",
-        "//src/google/protobuf/util:time_util",
-        "//src/google/protobuf/util:type_resolver",
     ],
+)
+
+cc_test(
+    name = "descriptor_visitor_test",
+    srcs = ["descriptor_visitor_test.cc"],
+    deps = [
+        ":descriptor_visitor",
+        ":protobuf",
+        ":unittest_cc_proto",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "descriptor_pb",
+    hdrs = ["descriptor.pb.h"],
+    compatible_with = ["//buildenv/target:non_prod"],
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [":descriptor_bootstrap"],
+)
+
+cc_library(
+    name = "descriptor_legacy",
+    hdrs = ["descriptor_legacy.h"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+    ],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//cloud/helix/storage/utils:__pkg__",
+        "//conformance:__pkg__",
+        "//datawarehouse/plx/common/io/columnio:__pkg__",
+        "//net/proto:__pkg__",
+        "//net/proto2/contrib/equals_plugin:__pkg__",
+        "//net/proto2/contrib/needed_descriptor_set:__pkg__",
+        "//nlp/generation/composable:__pkg__",
+        "//privacy/data_governance/field_level_annotations_automation/proto_annotation_editor:__pkg__",
+        "//src/google/protobuf/util:__pkg__",
+        "//storage/f1/db:__pkg__",
+    ],
+    deps = [
+        ":descriptor_bootstrap",
+        ":protobuf",
+    ],
+)
+
+cc_library(
+    name = "arena_allocation_policy",
+    hdrs = ["arena_allocation_policy.h"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+        "//buildenv/target:vendor",
+    ],
+    strip_include_prefix = "/src",
 )
 
 cc_test(
     name = "has_bits_test",
     srcs = ["has_bits_test.cc"],
-    copts = COPTS,
     deps = [
         ":protobuf_lite",
         "@com_google_googletest//:gtest",
@@ -733,327 +934,1055 @@ cc_test(
     ],
 )
 
-# This provides just the header files for use in projects that need to build
-# shared libraries for dynamic loading. This target is available until Bazel
-# adds native support for such use cases.
-# TODO: Remove this target once the support gets added to Bazel.
 cc_library(
-    name = "protobuf_headers",
-    hdrs = glob([
-        "**/*.h",
-        "**/*.inc",
-    ]),
+    name = "arena_align",
+    srcs = ["arena_align.cc"],
+    hdrs = ["arena_align.h"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+        "//buildenv/target:vendor",
+    ],
     strip_include_prefix = "/src",
+    deps = [
+        ":port",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/numeric:bits",
+    ],
+)
+
+cc_test(
+    name = "arena_align_test",
+    srcs = ["arena_align_test.cc"],
+    deps = [
+        ":arena_align",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
 )
 
 cc_library(
-    name = "descriptor_visitor",
-    hdrs = ["descriptor_visitor.h"],
-    copts = COPTS,
-    linkopts = LINK_OPTS,
+    name = "arena_cleanup",
+    hdrs = ["arena_cleanup.h"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+        "//buildenv/target:vendor",
+    ],
     strip_include_prefix = "/src",
-    visibility = ["//:__subpackages__"],
+    deps = [
+        ":port",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/base:prefetch",
+    ],
+)
+
+cc_library(
+    name = "string_block",
+    hdrs = ["string_block.h"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+        "//buildenv/target:vendor",
+    ],
+    strip_include_prefix = "/src",
+    deps = [
+        ":arena_align",
+        ":port",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/log:absl_check",
+    ],
+)
+
+cc_test(
+    name = "string_block_test",
+    srcs = ["string_block_test.cc"],
+    deps = [
+        ":port",
+        ":string_block",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "generated_enum_util_test",
+    srcs = ["generated_enum_util_test.cc"],
     deps = [
         ":port",
         ":protobuf",
+        ":protobuf_lite_internal",
+        ":unittest_cc_proto",
+        "//testing/fuzzing:fuzztest",
+        "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:span",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
 cc_library(
-    name = "descriptor_legacy",
-    hdrs = ["descriptor_legacy.h"],
-    copts = COPTS,
-    linkopts = LINK_OPTS,
+    name = "arena_internal",
+    hdrs = [
+        "serial_arena.h",
+        "thread_safe_arena.h",
+    ],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+        "//buildenv/target:vendor",
+    ],
     strip_include_prefix = "/src",
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:private"],
     deps = [
-        ":protobuf",
+        ":arena_align",
+        ":arena_allocation_policy",
+        ":arena_cleanup",
+        ":arenaz_sampler",
+        ":port",
+        ":string_block",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/base:prefetch",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/synchronization",
     ],
 )
 
-filegroup(
-    name = "well_known_type_protos",
+cc_library(
+    name = "arena",
     srcs = [
-        "any.proto",
-        "api.proto",
-        "duration.proto",
-        "empty.proto",
-        "field_mask.proto",
-        "source_context.proto",
-        "struct.proto",
-        "timestamp.proto",
-        "type.proto",
-        "wrappers.proto",
+        "arena.cc",
     ],
-    visibility = ["//:__subpackages__"],
+    hdrs = [
+        "arena.h",
+    ],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+        "//buildenv/target:vendor",
+    ],
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":arena_align",
+        ":arena_allocation_policy",
+        ":arena_cleanup",
+        ":arena_internal",
+        ":arenaz_sampler",
+        ":port",
+        ":string_block",
+        "//third_party/tcmalloc:malloc_extension",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/base:prefetch",
+        "@com_google_absl//absl/container:layout",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/synchronization",
+        "@com_google_absl//absl/types:span",
+        "@com_google_absl//absl/utility:if_constexpr",
+    ],
 )
 
-filegroup(
-    name = "descriptor_proto_srcs",
-    srcs = ["descriptor.proto"],
-    visibility = ["//:__subpackages__"],
-)
-
-filegroup(
-    name = "cpp_features_proto_srcs",
-    srcs = ["cpp_features.proto"],
-    visibility = ["//:__subpackages__"],
-)
-
-filegroup(
-    name = "testdata",
-    srcs = glob(["testdata/**/*"]) + [
-        "descriptor.cc",
+cc_library(
+    name = "port",
+    srcs = ["port.cc"],
+    hdrs = ["port.h"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+        "//buildenv/target:vendor",
+    ],
+    defines = select({
+        "//tools/cc_target_os:android": ["GOOGLE_PROTOBUF_NO_RTTI=1"],
+        "//tools/cc_target_os:apple": ["GOOGLE_PROTOBUF_NO_RTTI=1"],
+        "//conditions:default": [],
+    }) + select({
+        ":debug_logging": ["PROTOBUF_ENABLE_DEBUG_LOGGING_MAY_LEAK_PII=1"],
+        "//conditions:default": [],
+    }) + select({
+        "//src/google/protobuf:custom_vtable_enabled": [
+            "PROTOBUF_ENABLE_CUSTOM_VTABLES",
+        ],
+        "//conditions:default": [],
+    }),
+    strip_include_prefix = "/src",
+    textual_hdrs = [
+        "port_def.inc",
+        "port_undef.inc",
     ],
     visibility = [
-        "//:__subpackages__",
+        ":__subpackages__",
+        "//devtools/gdb/component:__pkg__",
+        "//java/core:__pkg__",
+        "//net/grpc/gateway/examples/echo:__pkg__",
+        "//net/grpc/gateway/testing/interop/grpc:__pkg__",
+        "//net/proto:__pkg__",
+        "//net/proto2/arena:__pkg__",
+        "//net/proto2/benchmark:__pkg__",
+        "//net/proto2/bridge/internal:__pkg__",
+        "//net/proto2/compiler:__subpackages__",
+        "//net/proto2/internal:__pkg__",
+        "//net/proto2/internal/fuzz:__pkg__",
+        "//net/proto2/public:__pkg__",
+        "//net/proto2/util:__pkg__",
+        "//net/proto2/z_generated_example:__pkg__",
+        "//net/proto_compiler:__pkg__",
+        "//perftools/profiles/proto:__pkg__",
+        "//security/zatar/prod/grpc:__pkg__",
+        "//testing/sanitizer_common/tests:__pkg__",
+        "//third_party/arcore/unity/instant_preview/proto:__pkg__",
+        "//third_party/ignition/msgs:__pkg__",
+        "//third_party/py/google/protobuf/pyext:__pkg__",
+        "//third_party/speckle/mysql/servers/mysql56gce:__pkg__",
+        "//upb_generator:__pkg__",
+    ],
+    deps = [
+        "//third_party/tcmalloc:malloc_extension",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/base:config",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/base:prefetch",
+        "@com_google_absl//absl/meta:type_traits",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:optional",
     ],
 )
 
-filegroup(
-    name = "lite_test_proto_srcs",
-    srcs = [
-        "map_lite_unittest.proto",
-        "unittest_import_lite.proto",
-        "unittest_import_public_lite.proto",
-        "unittest_lite.proto",
+cc_library(
+    name = "varint_shuffle",
+    hdrs = ["varint_shuffle.h"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+        "//buildenv/target:vendor",
     ],
-    visibility = ["//:__subpackages__"],
+    strip_include_prefix = "/src",
+    deps = [":port"],
+)
+
+cc_test(
+    name = "varint_shuffle_test",
+    srcs = ["varint_shuffle_test.cc"],
+    deps = [
+        ":port",
+        ":varint_shuffle",
+        "//testing/fuzzing:fuzztest",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "reflection_visit_fields_test",
+    size = "small",
+    srcs = ["reflection_visit_fields_test.cc"],
+    deps = [
+        ":arena",
+        ":map_test_util",
+        ":map_unittest_cc_proto",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_util",
+        ":unittest_cc_proto",
+        "//src/google/protobuf/io",
+        "//testing/fuzzing:fuzztest",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings:cord",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "port_test",
+    srcs = ["port_test.cc"],
+    deps = [
+        ":port",
+        ":varint_shuffle",
+        "//testing/fuzzing:fuzztest",
+        "@com_google_absl//absl/base:config",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "debug_counter_noop_test",
+    srcs = ["debug_counter_test.cc"],
+    deps = [
+        ":port",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "debug_counter_test",
+    srcs = ["debug_counter_test.cc"],
+    defines = ["PROTOBUF_INTERNAL_ENABLE_DEBUG_COUNTERS"],
+    deps = [
+        ":port",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+# Configure headers, copts, and deps based on hook_type go/configurable-build-attributes
+cc_library(
+    name = "field_access_listener",
+    srcs = select({
+        "//net/proto2/public:dax_hook": [
+            "proto_hooks/dax/dax_proto_field_listener.cc",
+        ],
+        "//net/proto2/public:dfsan_hook": [
+            "proto_hooks/dfsan/dfsan_proto_field_listener.cc",
+        ],
+        "//net/proto2/public:fuzzing_hook": [
+            "proto_hooks/fuzzing/fuzzing_field_listener.cc",
+        ],
+        "//net/proto2/public:superroot_hook": [
+            "proto_hooks/superroot/superroot_proto_hook.cc",
+        ],
+        "//conditions:default": [],
+    }),
+    hdrs = ["field_access_listener.h"] + select({
+        "//net/proto2/public:dax_hook": ["proto_hooks/dax/dax_proto_field_listener.h"],
+        "//net/proto2/public:dfsan_hook": ["proto_hooks/dfsan/dfsan_proto_field_listener.h"],
+        "//net/proto2/public:fuzzing_hook": ["proto_hooks/fuzzing/fuzzing_field_listener.h"],
+        "//net/proto2/public:mem_test_hook": ["proto_hooks/testing/memory_test_field_listener.h"],
+        "//net/proto2/public:superroot_hook": ["proto_hooks/superroot/superroot_proto_hook.h"],
+        "//conditions:default": [],
+    }),
+    compatible_with = ["//buildenv/target:non_prod"],
+    defines = select({
+        "//net/proto2/public:dax_hook": [
+            "DAX_FIELD_LISTENER",
+            "REPLACE_PROTO_LISTENER_IMPL",
+        ],
+        "//net/proto2/public:dfsan_hook": [
+            "DFSAN_FIELD_LISTENER",
+            "REPLACE_PROTO_LISTENER_IMPL",
+        ],
+        "//net/proto2/public:fuzzing_hook": [
+            "FUZZING_FIELD_LISTENER",
+            "REPLACE_PROTO_LISTENER_IMPL",
+        ],
+        "//net/proto2/public:mem_test_hook": [
+            "MEMORY_TESTING_FIELD_LISTENER",
+            "REPLACE_PROTO_LISTENER_IMPL",
+        ],
+        "//net/proto2/public:superroot_hook": [
+            "SUPERROOT_FIELD_LISTENER",
+            "REPLACE_PROTO_LISTENER_IMPL",
+        ],
+        "//conditions:default": [],
+    }),
+    hdrs_check = "strict",
+    strip_include_prefix = "/src",
+    visibility = [
+        "//net/proto2/internal:__pkg__",
+        "//net/proto2/public:__pkg__",
+        "//net/proto2/z_generated_example:__pkg__",
+    ],
+    deps = [
+        ":port",
+        ":protobuf_lite",
+        ":reflection_mode",
+        "//base",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/functional:function_ref",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:cord",
+    ] + select({
+        "//net/proto2/public:dfsan_hook": [":protobuf"],
+        "//net/proto2/public:dax_hook": [
+            ":protobuf",
+            "//util/gtl:lockfree_hashset",
+            "//util/symbolize",
+            "@com_google_absl//absl/base:core_headers",
+            "@com_google_absl//absl/container:flat_hash_map",
+            "@com_google_absl//absl/status",
+            "@com_google_absl//absl/types:optional",
+        ],
+        "//net/proto2/public:fuzzing_hook": [":protobuf"],
+        "//net/proto2/public:mem_test_hook": [":protobuf"],
+        "//net/proto2/public:superroot_hook": [":protobuf"],
+        "//conditions:default": [],
+    }),
+)
+
+cc_library(
+    name = "json_parser_internal",
+    srcs = [
+        "json_parser.cc",
+    ],
+    hdrs = [
+        "json_parser_internal.h",
+    ],
+    compatible_with = [
+        "//buildenv/target:vendor",
+        "//buildenv/target:non_prod",
+    ],
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:private"],
+    deps = [
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        "//:type_cc_proto_proto",
+        "//src/google/protobuf",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "json_conformance_unittest",
+    srcs = ["json_conformance_unittest.cc"],
+    deps = [
+        ":json_parser_internal",
+        ":protobuf",
+        ":test_messages_proto2_cc_proto",
+        ":test_messages_proto3_cc_proto",
+        "//conformance:conformance_cc_proto",
+        "//conformance:conformance_test_lib",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test_with_lib(
+    name = "arena_unittest",
+    testonly = 1,
+    srcs = ["arena_unittest.cc"],
+    visibility = ["//devtools/crosstool/perflab/benchmarks:__pkg__"],
+    deps = [
+        ":arena",
+        ":arena_cleanup",
+        ":arena_internal",
+        ":arena_test_util",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_util",
+        ":unittest_arena_cc_proto",
+        ":unittest_cc_proto",
+        "//net/proto2/arena:arena_safe_unique_ptr",
+        "//src/google/protobuf/io",
+        "//thread",
+        "//thread/fiber",
+        "//thread/fiber:fiber-options",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:cord",
+        "@com_google_absl//absl/synchronization",
+        "@com_google_absl//absl/utility",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_fake_binary(
+    name = "arena_nc",
+    srcs = ["arena_nc.cc"],
+    deps = [
+        ":arena",
+        ":unittest_cc_proto",
+    ],
+)
+
+py_test(
+    name = "arena_nc_test",
+    size = "large",
+    srcs = ["arena_nc_test.py"],
+    data = ["arena_nc"],
+    python_version = "PY3",
+    tags = ["non_compile_test"],
+    deps = [
+        "//testing/pybase",
+        "//testing/pybase:fake_target_util",
+    ],
 )
 
 proto_library(
-    name = "lite_test_protos",
-    srcs = [":lite_test_proto_srcs"],
+    name = "any_test_proto",
+    srcs = ["any_test.proto"],
     strip_import_prefix = "/src",
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":any_proto",
-        ":api_proto",
-        ":descriptor_proto",
-        ":duration_proto",
-        ":empty_proto",
-        ":field_mask_proto",
-        ":source_context_proto",
-        ":struct_proto",
-        ":timestamp_proto",
-        ":type_proto",
-        ":wrappers_proto",
-    ],
+    visibility = ["//visibility:private"],
+    deps = ["//:any_proto"],
 )
 
-filegroup(
-    name = "test_proto_srcs",
+cc_proto_library(
+    name = "any_test_cc_proto",
+    visibility = [
+        "//net/proto2/internal:__pkg__",
+        "//src/google/protobuf/util:__pkg__",
+    ],
+    deps = [":any_test_proto"],
+)
+
+java_proto_library(
+    name = "any_test_java_proto",
+    visibility = ["//javatests/com/google/protobuf/contrib:__subpackages__"],
+    deps = [":any_test_proto"],
+)
+
+py_proto_library(
+    name = "any_test_py_pb2",
+    api_version = 2,
+    visibility = ["//third_party/py/google/protobuf/internal:__pkg__"],
+    deps = [":any_test_proto"],
+)
+
+proto_library(
+    name = "map_unittest_proto",
     srcs = [
-        "any_test.proto",
-        "map_proto2_unittest.proto",
         "map_unittest.proto",
-        "unittest.proto",
-        "unittest_custom_options.proto",
-        "unittest_embed_optimize_for.proto",
-        "unittest_empty.proto",
-        "unittest_enormous_descriptor.proto",
-        "unittest_features.proto",
-        "unittest_import.proto",
-        "unittest_import_public.proto",
-        "unittest_invalid_features.proto",
-        "unittest_lite_imports_nonlite.proto",
-        "unittest_mset.proto",
-        "unittest_mset_wire_format.proto",
-        "unittest_no_generic_services.proto",
-        "unittest_optimize_for.proto",
-        "unittest_proto3.proto",
-        "unittest_proto3_arena.proto",
-        "unittest_proto3_arena_lite.proto",
-        "unittest_proto3_bad_macros.proto",
-        "unittest_proto3_extensions.proto",
-        "unittest_proto3_lite.proto",
-        "unittest_proto3_optional.proto",
-        "unittest_retention.proto",
-        "unittest_string_type.proto",
-        "unittest_well_known_types.proto",
     ],
-    visibility = ["//:__subpackages__"],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//rust/test:__pkg__",
+    ],
+    deps = [
+        ":unittest_proto",
+        "//net/proto2/bridge/internal:bridge_unittest_proto",
+    ],
 )
 
-filegroup(
-    name = "unittest_proto_srcs",
+cc_proto_library(
+    name = "map_unittest_cc_proto",
+    visibility = [
+        "//net/proto2/arena:__pkg__",
+        "//net/proto2/contrib/in_order_encoder:__subpackages__",
+        "//net/proto2/internal:__pkg__",
+        "//net/proto2/util/internal:__pkg__",
+        "//src/google/protobuf/util:__pkg__",
+    ],
+    deps = [":map_unittest_proto"],
+)
+
+py_proto_library(
+    name = "map_unittest_py_pb2",
+    has_services = 1,
+    api_version = 2,
+    visibility = [
+        "//maps/util/proto:__pkg__",
+        "//net/proto2/contrib/pyutil:__pkg__",
+        "//third_party/py/google/protobuf/internal:__pkg__",
+        "//video/youtube/src/python/util/polymer:__pkg__",
+    ],
+    deps = [":map_unittest_proto"],
+)
+
+proto_library(
+    name = "map_proto2_unittest_proto",
     srcs = [
-        "unittest.proto",
-        "unittest_import.proto",
-        "unittest_import_public.proto",
+        "map_proto2_unittest.proto",
     ],
-    visibility = ["//:__subpackages__"],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//third_party/kotlin/protobuf/src/commonTest:__subpackages__",
+    ],
+    deps = [":unittest_proto"],
 )
 
-filegroup(
-    name = "test_proto_editions_srcs",
+cc_proto_library(
+    name = "map_proto2_unittest_cc_proto",
+    visibility = [
+        "//net/proto2/internal:__pkg__",
+        "//pipeline/flume/tests:__pkg__",
+    ],
+    deps = [":map_proto2_unittest_proto"],
+)
+
+py_proto_library(
+    name = "map_proto2_unittest_py_pb2",
+    has_services = 1,
+    api_version = 2,
+    visibility = ["//third_party/py/google/protobuf/internal:__pkg__"],
+    deps = [":map_proto2_unittest_proto"],
+)
+
+proto_library(
+    name = "map_proto3_unittest_proto",
+    srcs = [
+        "map_proto3_unittest.proto",
+    ],
+    strip_import_prefix = "/src",
+    deps = [":unittest_proto"],
+)
+
+cc_proto_library(
+    name = "map_proto3_unittest_cc_proto",
+    visibility = [
+        "//net/proto2/internal:__pkg__",
+    ],
+    deps = [":map_proto3_unittest_proto"],
+)
+
+proto_library(
+    name = "edition_unittest_proto",
     srcs = [
         "edition_unittest.proto",
-        "map_proto3_unittest.proto",
+    ],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//rust:__subpackages__",
+    ],
+    deps = [
+        ":cpp_features_proto",
+        ":unittest_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "edition_unittest_cc_proto",
+    deps = [":edition_unittest_proto"],
+)
+
+rust_cc_proto_library(
+    name = "edition_unittest_cpp_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":edition_unittest_proto"],
+)
+
+rust_upb_proto_library(
+    name = "edition_unittest_upb_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust/test/shared:__subpackages__",
+        "//rust/test/upb:__subpackages__",
+    ],
+    deps = [":edition_unittest_proto"],
+)
+
+proto_library(
+    name = "unittest_proto",
+    srcs = [
+        "unittest.proto",
+        "unittest_embed_optimize_for.proto",
+        "unittest_empty.proto",
+        "unittest_extension_set.proto",
+        "unittest_import.proto",
+        "unittest_import_public.proto",
+        "unittest_mset.proto",
+        "unittest_mset_wire_format.proto",
+        "unittest_optimize_for.proto",
+    ],
+    has_services = 1,
+    compatible_with = ["//buildenv/target:non_prod"],
+    features = ["-proto_dynamic_mode_static_link"],
+    strip_import_prefix = "/src",
+    use_java_stubby_library = True,
+    visibility = [
+        "//javatests/com/google/protobuf:__subpackages__",
+        "//localsearch/ui/analysis/jsproto:__pkg__",
+        "//net/proto/globaldb:__pkg__",
+        "//net/proto2/bridge/internal:__pkg__",
+        "//net/proto2/contrib/partial_message:__subpackages__",
+        "//net/proto2/internal:__pkg__",
+        "//net/proto_compiler:__pkg__",
+        "//research/rs/v2/tool:__pkg__",
+        "//rust:__subpackages__",
+        "//src/google/protobuf/json:__subpackages__",
+        "//testing/onediff/utils:__pkg__",
+        "//third_party/java_src/protobuf/current/javatests:__subpackages__",
+        "//third_party/kotlin/protobuf/src/commonTest:__subpackages__",
+        "//video/youtube/datawarehouse/procella/ingestion_proxy:__pkg__",
+    ],
+    deps = ["//net/proto2/bridge/proto:message_set"],
+)
+
+cc_proto_library(
+    name = "unittest_cc_proto",
+    compatible_with = ["//buildenv/target:non_prod"],
+    visibility = [
+        ":__subpackages__",
+        "//access/marconi/common/utils/proto:__pkg__",
+        "//ads/gpa/build/millwheel/utils:__pkg__",
+        "//ads/ts/util/protodiff:__pkg__",
+        "//analysis/millwheel/extractor/supermessenger:__pkg__",
+        "//assistant/assistant_server/util:__pkg__",
+        "//cloud/resourceinventory/common:__pkg__",
+        "//contentads/shared/capture:__pkg__",
+        "//learning/brain/contrib/proto/test/fuzz:__pkg__",
+        "//logs/utils/lib:__pkg__",
+        "//maps/util/proto:__pkg__",
+        "//maps/versatile/reversatile/auditor:__pkg__",
+        "//monitoring/cortex/client/base:__pkg__",
+        "//monitoring/cortex/client/readlib:__pkg__",
+        "//monitoring/cortex/client/testing:__pkg__",
+        "//net/proto:__pkg__",
+        "//net/proto/globaldb:__pkg__",
+        "//net/proto/sstabledb:__pkg__",
+        "//net/proto2/arena:__pkg__",
+        "//net/proto2/benchmark:__pkg__",
+        "//net/proto2/bridge/internal:__pkg__",
+        "//net/proto2/compiler:__subpackages__",
+        "//net/proto2/compiler/cpp/internal:__pkg__",
+        "//net/proto2/contrib/arena_utils/internal:__pkg__",
+        "//net/proto2/contrib/field_size_calculator/internal:__pkg__",
+        "//net/proto2/contrib/in_order_encoder:__subpackages__",
+        "//net/proto2/contrib/partial_message/internal:__pkg__",
+        "//net/proto2/contrib/protodiff/internal:__pkg__",
+        "//net/proto2/internal:__pkg__",
+        "//net/proto2/internal/fuzz:__pkg__",
+        "//net/proto2/python/internal:__pkg__",
+        "//net/proto2/static_reflection:__subpackages__",
+        "//net/proto2/util:__subpackages__",
+        "//net/proto_compiler:__pkg__",
+        "//net/rpc/tools:__pkg__",
+        "//net/rpc2/contrib/interceptors/filter/regexp:__pkg__",
+        "//pipeline/flume/contrib:__pkg__",
+        "//pipeline/flume/tests:__pkg__",
+        "//production/resources/uhmr/merging:__pkg__",
+        "//research/rs/v2/data:__pkg__",
+        "//search/common/util:__pkg__",
+        "//src/google/protobuf/compiler:__subpackages__",
+        "//sstable/contrib:__pkg__",
+        "//testing/integration/sdiff/reporter/onediff:__pkg__",
+        "//testing/onediff/tree/builders/message_differencer:__pkg__",
+        "//testing/onediff/workflow/inprocess:__pkg__",
+        "//third_party/proto_converter:__subpackages__",
+        "//third_party/py/google/protobuf/internal:__pkg__",
+        "//util/tools/codex:__pkg__",
+        "//video/youtube/datawarehouse/procella/ingestion_proxy:__pkg__",
+        "//video/youtube/src/python/util/polymer/json:__pkg__",
+    ],
+    deps = [":unittest_proto"],
+)
+
+rust_upb_proto_library(
+    name = "unittest_upb_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust:__subpackages__",
+    ],
+    deps = [":unittest_proto"],
+)
+
+rust_cc_proto_library(
+    name = "unittest_cpp_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust:__subpackages__",
+    ],
+    deps = ["unittest_proto"],
+)
+
+cc_stubby_library(
+    name = "unittest_cc_stubby",
+    srcs = [":unittest_proto"],
+    stubby_versions = ["1"],
+    visibility = [
+        "//net/proto2/compiler:__subpackages__",
+        "//net/proto_compiler:__pkg__",
+        "//third_party/py/google/protobuf/internal:__pkg__",
+    ],
+    deps = [":unittest_cc_proto"],
+)
+
+go_proto_library(
+    name = "unittest_go_proto",
+    visibility = [
+        "//analysis/dremel/core/capacitor/public/go:__pkg__",
+        "//localsearch/ui/analysis/jsproto:__pkg__",
+        "//maps/util/proto/go:__pkg__",
+    ],
+    deps = [":unittest_proto"],
+)
+
+java_proto_library(
+    name = "unittest_java_proto",
+    visibility = [
+        "//java/com/google/social/boq/stream/serving/testing:__pkg__",
+        "//javatests/com/google/abuse/admin/widget/builder/autocompleteinput:__pkg__",
+        "//javatests/com/google/abuse/admin/widget/builder/bigintegerinput:__pkg__",
+        "//javatests/com/google/abuse/admin/widget/builder/booleaninput:__pkg__",
+        "//javatests/com/google/abuse/admin/widget/builder/bytesinput:__pkg__",
+        "//javatests/com/google/abuse/admin/widget/builder/codemirrorinput:__pkg__",
+        "//javatests/com/google/abuse/admin/widget/builder/enuminput:__pkg__",
+        "//javatests/com/google/abuse/admin/widget/builder/enumlistinput:__pkg__",
+        "//javatests/com/google/abuse/admin/widget/builder/integerinput:__pkg__",
+        "//javatests/com/google/abuse/admin/widget/builder/realnumberinput:__pkg__",
+        "//javatests/com/google/abuse/admin/widget/builder/textinput:__pkg__",
+        "//javatests/com/google/abuse/admin/widget/builder/unsignedbigintegerinput:__pkg__",
+        "//javatests/com/google/ads/adh/pipeline/transform/eventprocessor:__pkg__",
+        "//javatests/com/google/ads/awapps/infra/ess/formatters:__pkg__",
+        "//javatests/com/google/ads/review/common/proto:__pkg__",
+        "//javatests/com/google/apps/security/arbok/framework/cdpush:__pkg__",
+        "//javatests/com/google/blogger/b2/data:__subpackages__",
+        "//javatests/com/google/calendar/util/logging:__pkg__",
+        "//javatests/com/google/caribou/base/protobuf:__pkg__",
+        "//javatests/com/google/ccc/hosted/reporting/analytics/wipeout:__pkg__",
+        "//javatests/com/google/commerce/delivery/inventory/product/experiments/testing:__pkg__",
+        "//javatests/com/google/government/civicinfo/storage:__pkg__",
+        "//javatests/com/google/io/protocol:__pkg__",
+        "//javatests/com/google/io/protocol/globaldb:__pkg__",
+        "//javatests/com/google/io/protocol/sstabledb:__pkg__",
+        "//javatests/com/google/protobuf:__subpackages__",
+        "//javatests/com/google/protobuf/bridge:__pkg__",
+        "//javatests/com/google/protobuf/contrib:__pkg__",
+        "//javatests/com/google/protobuf/tools:__pkg__",
+        "//javatests/com/google/search/engagement/highlight/common/util:__pkg__",
+        "//javatests/com/google/social/boq/stream/serving/backends/streamactions:__pkg__",
+        "//javatests/com/google/supplychain/common/pagination/client:__pkg__",
+        "//javatests/com/google/supplychain/cp/common/filter:__pkg__",
+        "//javatests/com/google/supplychain/cp/common/oracle:__pkg__",
+        "//javatests/com/google/supplychain/planning/common/txl/converters:__pkg__",
+        "//javatests/com/google/workflows/symphony/engine/api/common/field:__pkg__",
+        "//net/proto2/internal:__pkg__",
+        "//third_party/java_src/protobuf/current/javatests:__subpackages__",
+        "//third_party/kotlin/protobuf/src/commonTest:__subpackages__",
+    ],
+    deps = [":unittest_proto"],
+)
+
+java_mutable_proto_library(
+    name = "unittest_java_proto_mutable",
+    visibility = [
+        "//javatests/com/google/io/protocol:__pkg__",
+        "//javatests/com/google/io/protocol/sstabledb:__pkg__",
+        "//javatests/com/google/protobuf:__pkg__",
+        "//javatests/com/google/protobuf/bridge:__pkg__",
+        "//javatests/com/google/protobuf/tools:__pkg__",
+        "//javatests/com/google/supplychain/common/pagination/client:__pkg__",
+        "//javatests/com/google/supplychain/cp/common/filter:__pkg__",
+        "//third_party/java_src/protobuf/current/javatests/com/google/protobuf:__pkg__",
+    ],
+    deps = [":unittest_proto"],
+)
+
+java_lite_proto_library(
+    name = "unittest_java_proto_lite",
+    visibility = [
+        "//javatests/com/google/protobuf:__subpackages__",
+        "//third_party/java_src/protobuf/current/javatests/com/google/protobuf:__subpackages__",
+        "//third_party/kotlin/protobuf/src/commonTest:__subpackages__",
+    ],
+    deps = [":unittest_proto"],
+)
+
+java_stubby_library(
+    name = "unittest_java_stubby",
+    srcs = [":unittest_proto"],
+    deps = [":unittest_java_proto"],
+)
+
+py_proto_library(
+    name = "unittest_py_pb2",
+    has_services = 1,
+    api_version = 2,
+    visibility = [
+        "//corp/marketing:marketing_apps",
+        "//corp/support/common/gae_kennedy/python:__pkg__",
+        "//maps/util/proto:__pkg__",
+        "//monitoring/viceroy/common:__pkg__",
+        "//monitoring/viceroy/common/utils:__pkg__",
+        "//net/proto2/contrib/legacy_xml/python:__pkg__",
+        "//net/proto2/contrib/pyutil:__pkg__",
+        "//net/proto2/python/internal:__pkg__",
+        "//net/proto2/python/util/internal:__pkg__",
+        "//net/proto2/util/public/python:__pkg__",
+        "//third_party/py/google/protobuf/internal:__pkg__",
+        "//video/youtube/src/python/util/polymer:__pkg__",
+    ],
+    deps = [":unittest_proto"],
+)
+
+pyclif_proto_library(
+    name = "unittest_pyclif",
+    proto_lib = ":unittest_proto",
+    proto_srcfile = "unittest.proto",
+    visibility = ["//net/proto2/util/public/python:__pkg__"],
+)
+
+proto_library(
+    name = "unittest_arena_proto",
+    srcs = [
         "unittest_arena.proto",
-        "unittest_delimited.proto",
-        "unittest_delimited_import.proto",
-        "unittest_drop_unknown_fields.proto",
+    ],
+    strip_import_prefix = "/src",
+    visibility = ["//visibility:private"],
+)
+
+cc_proto_library(
+    name = "unittest_arena_cc_proto",
+    visibility = ["//net/proto2/internal:__pkg__"],
+    deps = [":unittest_arena_proto"],
+)
+
+proto_library(
+    name = "unittest_custom_options_proto",
+    srcs = ["unittest_custom_options.proto"],
+    has_services = 1,
+    strip_import_prefix = "/src",
+    use_java_stubby_library = True,
+    visibility = [
+        "//javatests/com/google/protobuf:__pkg__",
+        "//third_party/java_src/protobuf/current/javatests/com/google/protobuf:__pkg__",
+    ],
+    deps = [
+        "//:any_proto",
+        "//:descriptor_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "unittest_custom_options_cc_proto",
+    visibility = [
+        ":__subpackages__",
+        "//net/proto:__pkg__",
+    ],
+    deps = [":unittest_custom_options_proto"],
+)
+
+java_stubby_library(
+    name = "unittest_custom_options_java_stubby",
+    srcs = [":unittest_custom_options_proto"],
+    deps = [":unittest_custom_options_java_proto"],
+)
+
+cc_stubby_library(
+    name = "unittest_custom_options_cc_stubby",
+    srcs = [":unittest_custom_options_proto"],
+    stubby_versions = ["1"],
+    deps = [":unittest_custom_options_cc_proto"],
+)
+
+java_proto_library(
+    name = "unittest_custom_options_java_proto",
+    visibility = [
+        "//javatests/com/google/protobuf:__pkg__",
+        "//third_party/java_src/protobuf/current/javatests/com/google/protobuf:__pkg__",
+    ],
+    deps = [":unittest_custom_options_proto"],
+)
+
+py_proto_library(
+    name = "unittest_custom_options_py_pb2",
+    has_services = 1,
+    api_version = 2,
+    visibility = ["//third_party/py/google/protobuf/internal:__pkg__"],
+    deps = [":unittest_custom_options_proto"],
+)
+
+proto_library(
+    name = "unittest_drop_unknown_fields_proto",
+    srcs = ["unittest_drop_unknown_fields.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//visibility:private"],
+)
+
+cc_proto_library(
+    name = "unittest_drop_unknown_fields_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = [":unittest_drop_unknown_fields_proto"],
+)
+
+proto_library(
+    name = "unittest_enormous_descriptor_proto",
+    srcs = [
+        "unittest_enormous_descriptor.proto",
+    ],
+    strip_import_prefix = "/src",
+    visibility = ["//visibility:private"],
+)
+
+cc_proto_library(
+    name = "unittest_enormous_descriptor_cc_proto",
+    visibility = [
+        "//net/proto2/compiler/cpp/internal:__pkg__",
+        "//src/google/protobuf/compiler:__subpackages__",
+    ],
+    deps = [":unittest_enormous_descriptor_proto"],
+)
+
+java_proto_library(
+    name = "unittest_enormous_descriptor_java_proto",
+    visibility = [
+        "//javatests/com/google/protobuf:__pkg__",
+        "//third_party/java_src/protobuf/current/javatests/com/google/protobuf:__pkg__",
+    ],
+    deps = [":unittest_enormous_descriptor_proto"],
+)
+
+java_mutable_proto_library(
+    name = "unittest_enormous_descriptor_java_proto_mutable",
+    visibility = [
+        "//javatests/com/google/protobuf:__pkg__",
+    ],
+    deps = [":unittest_enormous_descriptor_proto"],
+)
+
+proto_library(
+    name = "unittest_lazy_dependencies",
+    srcs = [
         "unittest_lazy_dependencies.proto",
         "unittest_lazy_dependencies_custom_option.proto",
         "unittest_lazy_dependencies_enum.proto",
-        "unittest_legacy_features.proto",
-        "unittest_no_field_presence.proto",
-        "unittest_preserve_unknown_enum.proto",
-        "unittest_preserve_unknown_enum2.proto",
-        "unittest_string_view.proto",
     ],
-    visibility = ["//:__subpackages__"],
-)
-
-filegroup(
-    name = "test_proto_all_srcs",
-    srcs = [
-        ":test_proto_editions_srcs",
-        ":test_proto_srcs",
-    ],
-    visibility = ["//:__subpackages__"],
-)
-
-proto_library(
-    name = "test_protos",
-    srcs = [":test_proto_all_srcs"],
     strip_import_prefix = "/src",
-    visibility = ["//:__subpackages__"],
     deps = [
-        ":any_proto",
-        ":api_proto",
-        ":cpp_features_proto",
-        ":descriptor_proto",
-        ":duration_proto",
-        ":empty_proto",
-        ":field_mask_proto",
-        ":source_context_proto",
-        ":struct_proto",
-        ":timestamp_proto",
-        ":type_proto",
-        ":wrappers_proto",
-    ],
-)
-
-proto_library(
-    name = "unittest_features_proto",
-    srcs = ["unittest_features.proto"],
-    strip_import_prefix = "/src",
-    visibility = ["//editions:__subpackages__"],
-    deps = [
-        ":descriptor_proto",
+        "//:descriptor_proto",
     ],
 )
 
 cc_proto_library(
-    name = "unittest_features_cc_proto",
-    visibility = ["//editions:__subpackages__"],
-    deps = [":unittest_features_proto"],
+    name = "unittest_lazy_dependencies_cc_proto",
+    deps = [":unittest_lazy_dependencies"],
 )
+
+_UNITTEST_LITE_PROTOS_NO_EXPERIMENTAL = [
+    "map_lite_unittest.proto",
+    "unittest_lite.proto",
+    "unittest_import_lite.proto",
+    "unittest_import_public_lite.proto",
+]
+
+_UNITTEST_LITE_PROTOS = _UNITTEST_LITE_PROTOS_NO_EXPERIMENTAL + [
+    "unittest_lite_edition_2024.proto",
+]
 
 proto_library(
-    name = "generic_test_protos",
-    srcs = [":test_proto_srcs"],
-    strip_import_prefix = "/src",
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":any_proto",
-        ":api_proto",
-        ":cpp_features_proto",
-        ":descriptor_proto",
-        ":duration_proto",
-        ":empty_proto",
-        ":field_mask_proto",
-        ":source_context_proto",
-        ":struct_proto",
-        ":timestamp_proto",
-        ":type_proto",
-        ":wrappers_proto",
-    ],
-)
-
-proto_library(
-    name = "generic_test_editions_protos",
-    srcs = [":test_proto_editions_srcs"],
-    strip_import_prefix = "/src",
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":any_proto",
-        ":api_proto",
-        ":cpp_features_proto",
-        ":descriptor_proto",
-        ":duration_proto",
-        ":empty_proto",
-        ":field_mask_proto",
-        ":generic_test_protos",
-        ":source_context_proto",
-        ":struct_proto",
-        ":timestamp_proto",
-        ":type_proto",
-        ":wrappers_proto",
-    ],
-)
-
-exports_files(
-    [
-        "test_messages_proto2.proto",
-        "test_messages_proto3.proto",
-    ],
-    visibility = [
-        "//:__pkg__",
-        "//python:__pkg__",
-        "//ruby:__pkg__",
-        "//upb:__pkg__",
-    ],
-)
-
-proto_library(
-    name = "test_messages_proto2_proto",
-    srcs = ["test_messages_proto2.proto"],
+    name = "unittest_lite_proto",
+    srcs = _UNITTEST_LITE_PROTOS_NO_EXPERIMENTAL,
     strip_import_prefix = "/src",
     visibility = [
-        "//:__pkg__",
-        "//conformance:__pkg__",
-        "//lua:__subpackages__",
-        "//python:__subpackages__",
-        "//upb:__subpackages__",
+        "//third_party/java_src/protobuf/current/javatests:__subpackages__",
+        "//third_party/kotlin/protobuf/src/commonTest/kotlin:__subpackages__",
     ],
 )
 
-proto_library(
-    name = "test_messages_proto3_proto",
-    srcs = ["test_messages_proto3.proto"],
-    strip_import_prefix = "/src",
+java_proto_library(
+    name = "unittest_lite_java_proto",
     visibility = [
-        "//:__pkg__",
-        "//conformance:__pkg__",
-        "//lua:__subpackages__",
-        "//python:__subpackages__",
-        "//upb:__subpackages__",
+        "//javatests/com/google/protobuf:__subpackages__",
+        "//third_party/java_src/protobuf:__subpackages__",
     ],
-    deps = [
-        ":any_proto",
-        ":duration_proto",
-        ":field_mask_proto",
-        ":struct_proto",
-        ":timestamp_proto",
-        ":wrappers_proto",
-    ],
+    deps = [":unittest_lite_proto"],
 )
 
-cc_proto_library(
-    name = "cc_lite_test_protos",
-    deps = [":lite_test_protos"],
-)
-
-cc_proto_library(
-    name = "cc_test_protos",
+java_lite_proto_library(
+    name = "unittest_lite_java_proto_lite",
     visibility = [
-        "//rust/test:__subpackages__",
-        "//src/google/protobuf:__subpackages__",
+        "//javatests/com/google/protobuf:__subpackages__",
+        "//third_party/java_src/protobuf/current/javatests/com/google/protobuf:__subpackages__",
+        "//third_party/kotlin/protobuf/src/commonTest/kotlin:__subpackages__",
     ],
-    deps = [":test_protos"],
+    deps = [":unittest_lite_proto"],
 )
 
 proto_library(
@@ -1065,6 +1994,7 @@ proto_library(
 
 cc_proto_library(
     name = "unittest_string_view_cc_proto",
+    visibility = ["//net/proto2/internal:__pkg__"],
     deps = [":unittest_string_view_proto"],
 )
 
@@ -1081,53 +2011,873 @@ cc_test(
     ],
 )
 
-# Filegroup for golden comparison test:
-filegroup(
-    name = "descriptor_cc_srcs",
+# For testing lite messages, we have to use a genrule to invoke the proto2
+# compiler so that we can avoid any implicit dependency on the protobuf library.
+genrule(
+    name = "gen_unittest_lite_protos",
     testonly = 1,
-    data = [
-        "descriptor.pb.cc",
-        "descriptor.pb.h",
-    ],
-    visibility = ["//src/google/protobuf/compiler/cpp:__pkg__"],
-)
-
-filegroup(
-    name = "cpp_features_cc_srcs",
-    testonly = 1,
-    data = [
-        "cpp_features.pb.cc",
-        "cpp_features.pb.h",
-    ],
-    visibility = ["//src/google/protobuf/compiler/cpp:__pkg__"],
+    srcs = _UNITTEST_LITE_PROTOS,
+    outs = [p.replace(".proto", ".proto.h") for p in _UNITTEST_LITE_PROTOS] +
+           [p.replace(".proto", ".pb.cc") for p in _UNITTEST_LITE_PROTOS],
+    cmd = "PROTOC=$$PWD/$(location //net/proto2/compiler/public:protocol_compiler) && " +
+          "$$PROTOC --cpp_out=proto_h:$(GENDIR) --experimental_editions " +
+          " ".join(["third_party/protobuf/%s" % p for p in _UNITTEST_LITE_PROTOS]),
+    tools = ["//net/proto2/compiler/public:protocol_compiler"],
 )
 
 cc_library(
-    name = "lite_test_util",
+    name = "unittest_lite_protos",
     testonly = 1,
-    srcs = [
-        "arena_test_util.cc",
-        "map_lite_test_util.cc",
-        "test_util_lite.cc",
-    ],
-    hdrs = [
-        "arena_test_util.h",
-        "map_lite_test_util.h",
-        "map_test_util_impl.h",
-        "proto3_lite_unittest.inc",
-        "test_util_lite.h",
-    ],
+    srcs = [":gen_unittest_lite_protos"],
+    hdrs = [p.replace(".proto", ".proto.h") for p in _UNITTEST_LITE_PROTOS],
     strip_include_prefix = "/src",
-    visibility = ["//:__subpackages__"],
+    visibility = [
+        "//net/proto2/arena:__pkg__",
+        "//net/proto2/benchmark:__pkg__",
+        "//net/proto2/util/legacy_debug_string:__pkg__",
+    ],
     deps = [
         ":arena",
-        ":cc_lite_test_protos",
         ":port",
-        ":test_util2",
+        ":protobuf",
+        ":protobuf_lite",
+        "//base",
+        "//src/google/protobuf/io",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:cord",
+    ],
+)
+
+_UNITTEST_LITE_IMPLICIT_WEAK_PROTOS = [
+    p.replace(".proto", "_implicit_weak.proto")
+    for p in _UNITTEST_LITE_PROTOS
+]
+
+genrule(
+    name = "gen_unittest_lite_implicit_weak_copy",
+    testonly = 1,
+    srcs = _UNITTEST_LITE_PROTOS,
+    outs = _UNITTEST_LITE_IMPLICIT_WEAK_PROTOS,
+    cmd = " && ".join(
+              ["cp $(location %s) $(@D)/%s" % (
+                  p,
+                  p.replace(".proto", "_implicit_weak.proto"),
+              ) for p in _UNITTEST_LITE_PROTOS],
+          ) +
+          " && sed -i 's/\\.proto\";$$/_implicit_weak.proto\";/' $(OUTS)",
+)
+
+# As a temporary workaround, we currently output a fixed number of .cc files
+# per .proto file for testing implicit weak fields.
+_MAX_MESSAGES_FOR_IMPLICIT_WEAK = 150
+
+# We build an implicit-weak version of each of the lite protos.
+genrule(
+    name = "gen_unittest_lite_implicit_weak_protos",
+    testonly = 1,
+    srcs = _UNITTEST_LITE_IMPLICIT_WEAK_PROTOS,
+    outs = [p.replace(".proto", ".proto.h") for p in _UNITTEST_LITE_IMPLICIT_WEAK_PROTOS] +
+           [p.replace(".proto", ".pb.cc") for p in _UNITTEST_LITE_IMPLICIT_WEAK_PROTOS] +
+           [p.replace(
+               ".proto",
+               ".out/%d.cc" % i,
+           ) for p in _UNITTEST_LITE_IMPLICIT_WEAK_PROTOS for i in range(_MAX_MESSAGES_FOR_IMPLICIT_WEAK)],
+    cmd = "PROTOC=$$PWD/$(location //net/proto2/compiler/public:protocol_compiler) && " +
+          "cd $(GENDIR) && $$PROTOC " + " --experimental_editions  --cpp_out=proto_h,lite_implicit_weak_fields=%d:. " % _MAX_MESSAGES_FOR_IMPLICIT_WEAK +
+          " ".join(["third_party/protobuf/%s" % p for p in _UNITTEST_LITE_IMPLICIT_WEAK_PROTOS]),
+    tools = ["//net/proto2/compiler/public:protocol_compiler"],
+)
+
+cc_library(
+    name = "unittest_lite_implicit_weak_protos",
+    testonly = 1,
+    srcs = [":gen_unittest_lite_implicit_weak_protos"],
+    hdrs = [p.replace(".proto", ".proto.h") for p in _UNITTEST_LITE_IMPLICIT_WEAK_PROTOS],
+    strip_include_prefix = "/src",
+    deps = [
+        ":arena",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        "//base",
+        "//src/google/protobuf/io",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:cord",
+    ],
+)
+
+proto_library(
+    name = "unittest_lite_imports_nonlite_proto",
+    srcs = [
+        "unittest_lite_imports_nonlite.proto",
+    ],
+    strip_import_prefix = "/src",
+    deps = [":unittest_proto"],
+)
+
+proto_library(
+    name = "unittest_metadata_proto",
+    testonly = True,
+    srcs = [
+        "unittest_metadata.proto",
+    ],
+    strip_import_prefix = "/src",
+)
+
+java_proto_library(
+    name = "unittest_metadata_java_proto",
+    testonly = True,
+    deps = [":unittest_metadata_proto"],
+)
+
+py_proto_library(
+    name = "unittest_metadata_py_proto",
+    testonly = True,
+    api_version = 2,
+    visibility = ["//third_party/py/google/protobuf:__subpackages__"],
+    deps = [":unittest_metadata_proto"],
+)
+
+cc_proto_library(
+    name = "unittest_metadata_cc_proto",
+    testonly = True,
+    deps = [":unittest_metadata_proto"],
+)
+
+java_lite_proto_library(
+    name = "unittest_lite_imports_nonlite_java_proto_lite",
+    visibility = ["//javatests/com/google/protobuf:__pkg__"],
+    deps = [":unittest_lite_imports_nonlite_proto"],
+)
+
+proto_library(
+    name = "unittest_no_field_presence_proto",
+    srcs = ["unittest_no_field_presence.proto"],
+    strip_import_prefix = "/src",
+    deps = [":unittest_proto"],
+)
+
+cc_proto_library(
+    name = "unittest_no_field_presence_cc_proto",
+    deps = [":unittest_no_field_presence_proto"],
+)
+
+proto_library(
+    name = "unittest_no_generic_services_proto",
+    srcs = ["unittest_no_generic_services.proto"],
+    has_services = 1,
+    strip_import_prefix = "/src",
+    use_java_stubby_library = True,
+    visibility = ["//visibility:private"],
+)
+
+java_stubby_library(
+    name = "unittest_no_generic_services_java_stubby",
+    srcs = [":unittest_no_generic_services_proto"],
+    deps = [":unittest_no_generic_services_java_proto"],
+)
+
+cc_proto_library(
+    name = "unittest_no_generic_services_cc_proto",
+    visibility = [
+        "//net/proto2/compiler/cpp/internal:__pkg__",
+        "//src/google/protobuf/compiler:__subpackages__",
+    ],
+    deps = [":unittest_no_generic_services_proto"],
+)
+
+cc_stubby_library(
+    name = "unittest_no_generic_services_cc_stubby",
+    srcs = [":unittest_no_generic_services_proto"],
+    stubby_versions = ["1"],
+    visibility = [
+        "//net/proto2/compiler/cpp/internal:__pkg__",
+        "//src/google/protobuf/compiler:__subpackages__",
+    ],
+    deps = [":unittest_no_generic_services_cc_proto"],
+)
+
+java_proto_library(
+    name = "unittest_no_generic_services_java_proto",
+    visibility = [
+        "//javatests/com/google/protobuf:__pkg__",
+        "//third_party/java_src/protobuf/current/javatests/com/google/protobuf:__pkg__",
+    ],
+    deps = [":unittest_no_generic_services_proto"],
+)
+
+py_proto_library(
+    name = "unittest_no_generic_services_py_pb2",
+    has_services = 1,
+    api_version = 2,
+    visibility = ["//third_party/py/google/protobuf/internal:__pkg__"],
+    deps = [":unittest_no_generic_services_proto"],
+)
+
+proto_library(
+    name = "unittest_preserve_unknown_enum_proto",
+    srcs = [
+        "unittest_preserve_unknown_enum.proto",
+        "unittest_preserve_unknown_enum2.proto",
+    ],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "unittest_preserve_unknown_enum_cc_proto",
+    deps = [":unittest_preserve_unknown_enum_proto"],
+)
+
+proto_library(
+    name = "unittest_proto3",
+    srcs = ["unittest_proto3.proto"],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//javatests/com/google/protobuf:__subpackages__",
+        "//rust:__subpackages__",
+        "//third_party/java_src/protobuf/current/javatests:__subpackages__",
+        "//third_party/kotlin/protobuf/src/commonTest:__subpackages__",
+    ],
+    deps = [":unittest_proto"],
+)
+
+py_proto_library(
+    name = "unittest_proto3_py_pb2",
+    api_version = 2,
+    visibility = [
+        "//third_party/py/google/protobuf/internal:__pkg__",
+    ],
+    deps = [":unittest_proto3"],
+)
+
+cc_proto_library(
+    name = "unittest_proto3_cc_proto",
+    visibility = [
+        "//net/proto2/internal:__subpackages__",
+        "//net/proto2/static_reflection:__subpackages__",
+    ],
+    deps = [":unittest_proto3"],
+)
+
+rust_cc_proto_library(
+    name = "unittest_proto3_cpp_rust_proto",
+    testonly = True,
+    visibility = ["//rust:__subpackages__"],
+    deps = [":unittest_proto3"],
+)
+
+rust_upb_proto_library(
+    name = "unittest_proto3_upb_rust_proto",
+    testonly = True,
+    visibility = [
+        "//rust:__subpackages__",
+    ],
+    deps = [":unittest_proto3"],
+)
+
+java_proto_library(
+    name = "unittest_proto3_java_proto",
+    visibility = [
+        "//javatests/com/google/protobuf:__subpackages__",
+        "//third_party/java_src/protobuf/current/javatests:__subpackages__",
+        "//third_party/kotlin/protobuf/src/commonTest:__subpackages__",
+    ],
+    deps = [":unittest_proto3"],
+)
+
+java_lite_proto_library(
+    name = "unittest_proto3_java_proto_lite",
+    visibility = [
+        "//third_party/java_src/protobuf/current/javatests:__subpackages__",
+        "//third_party/kotlin/protobuf/src/commonTest:__subpackages__",
+    ],
+    deps = [":unittest_proto3"],
+)
+
+proto_library(
+    name = "unittest_proto3_arena_proto",
+    srcs = ["unittest_proto3_arena.proto"],
+    strip_import_prefix = "/src",
+    deps = [":unittest_proto"],
+)
+
+cc_proto_library(
+    name = "unittest_proto3_arena_cc_proto",
+    deps = [":unittest_proto3_arena_proto"],
+)
+
+py_proto_library(
+    name = "unittest_proto3_arena_py_pb2",
+    has_services = 1,
+    api_version = 2,
+    visibility = ["//third_party/py/google/protobuf/internal:__pkg__"],
+    deps = [":unittest_proto3_arena_proto"],
+)
+
+proto_library(
+    name = "unittest_proto3_optional",
+    srcs = ["unittest_proto3_optional.proto"],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//rust:__subpackages__",
+    ],
+    deps = [
+        "//:descriptor_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "unittest_proto3_optional_cc_proto",
+    visibility = ["//net/proto2/internal:__pkg__"],
+    deps = [
+        ":unittest_proto3_optional",
+    ],
+)
+
+rust_cc_proto_library(
+    name = "unittest_proto3_optional_cpp_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":unittest_proto3_optional"],
+)
+
+rust_upb_proto_library(
+    name = "unittest_proto3_optional_upb_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":unittest_proto3_optional"],
+)
+
+java_proto_library(
+    name = "unittest_proto3_optional_java_proto",
+    visibility = [
+        "//javatests/com/google/protobuf:__pkg__",
+        "//third_party/java_src/protobuf/current/javatests/com/google/protobuf:__pkg__",
+    ],
+    deps = [":unittest_proto3_optional"],
+)
+
+java_lite_proto_library(
+    name = "unittest_proto3_optional_java_proto_lite",
+    visibility = ["//javatests/com/google/protobuf:__pkg__"],
+    deps = [":unittest_proto3_optional"],
+)
+
+java_mutable_proto_library(
+    name = "unittest_proto3_optional_java_proto_mutable",
+    visibility = [
+        "//javatests/com/google/protobuf:__pkg__",
+        "//third_party/java_src/protobuf/current/javatests/com/google/protobuf:__pkg__",
+    ],
+    deps = [":unittest_proto3_optional"],
+)
+
+proto_library(
+    name = "unittest_proto3_extensions_proto",
+    testonly = True,
+    srcs = ["unittest_proto3_extensions.proto"],
+    strip_import_prefix = "/src",
+    deps = ["//:descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "unittest_proto3_extensions_cc_proto",
+    testonly = True,
+    deps = [":unittest_proto3_extensions_proto"],
+)
+
+java_proto_library(
+    name = "unittest_proto3_extensions_java_proto",
+    testonly = True,
+    visibility = ["//third_party/java_src/protobuf/current/javatests/com/google/protobuf:__subpackages__"],
+    deps = [":unittest_proto3_extensions_proto"],
+)
+
+py_proto_library(
+    name = "unittest_proto3_extensions_py_pb2",
+    testonly = True,
+    api_version = 2,
+    visibility = ["//third_party/py/google/protobuf/internal:__subpackages__"],
+    deps = [":unittest_proto3_extensions_proto"],
+)
+
+proto_library(
+    name = "test_messages_proto2",
+    srcs = ["test_messages_proto2.proto"],
+    compatible_with = ["//buildenv/target:non_prod"],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//javascript/apps/jspb/conformance:__pkg__",
+        "//net/proto2/contrib/js_proto/tests/conformance:__pkg__",
+        "//upb:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "test_messages_proto3",
+    srcs = ["test_messages_proto3.proto"],
+    compatible_with = ["//buildenv/target:non_prod"],
+    strip_import_prefix = "/src",
+    visibility = [
+        "//javascript/apps/jspb/conformance:__pkg__",
+        "//net/proto2/contrib/js_proto/tests/conformance:__pkg__",
+        "//upb:__subpackages__",
+    ],
+    deps = [
+        "//:any_proto",
+        "//:duration_proto",
+        "//:field_mask_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:wrappers_proto",
+    ],
+)
+
+proto_library(
+    name = "sample_messages_edition_proto",
+    srcs = ["sample_messages_edition.proto"],
+    strip_import_prefix = "/src",
+    deps = [":cpp_features_proto"],
+)
+
+cc_proto_library(
+    name = "test_messages_proto2_cc_proto",
+    visibility = [
+        ":__subpackages__",
+        "//learning/brain/contrib/proto/test:__pkg__",
+        "//net/proto2/internal:__subpackages__",
+    ],
+    deps = [":test_messages_proto2"],
+)
+
+cc_proto_library(
+    name = "test_messages_proto3_cc_proto",
+    visibility = [
+        ":__subpackages__",
+        "//learning/brain/contrib/proto/test:__pkg__",
+    ],
+    deps = [":test_messages_proto3"],
+)
+
+cc_proto_library(
+    name = "sample_messages_edition_cc_proto",
+    deps = [":sample_messages_edition_proto"],
+)
+
+dart_proto_library(
+    name = "test_messages_proto2_dart_proto",
+    visibility = ["//third_party/dart/pb_conformance:__subpackages__"],
+    deps = [":test_messages_proto2"],
+)
+
+dart_proto_library(
+    name = "test_messages_proto3_dart_proto",
+    deps = [":test_messages_proto3"],
+)
+
+rust_cc_proto_library(
+    name = "test_messages_proto2_cpp_rust_proto",
+    visibility = [
+        ":__subpackages__",
+    ],
+    deps = [":test_messages_proto2"],
+)
+
+rust_upb_proto_library(
+    name = "test_messages_proto3_upb_rust_proto",
+    visibility = [
+        ":__subpackages__",
+    ],
+    deps = [":test_messages_proto3"],
+)
+
+rust_cc_proto_library(
+    name = "test_messages_proto3_cpp_rust_proto",
+    visibility = [
+        ":__subpackages__",
+    ],
+    deps = [":test_messages_proto3"],
+)
+
+rust_upb_proto_library(
+    name = "test_messages_proto2_upb_rust_proto",
+    visibility = [
+        ":__subpackages__",
+    ],
+    deps = [":test_messages_proto2"],
+)
+
+go_proto_library(
+    name = "test_messages_proto2_go_proto",
+    visibility = [
+        "//net/proto2/contrib/dynamicproto/conformance:__pkg__",
+        "//third_party/golang/protobuf/v2/internal/conformance:__pkg__",
+    ],
+    deps = [":test_messages_proto2"],
+)
+
+go_proto_library(
+    name = "test_messages_proto3_go_proto",
+    visibility = [
+        "//net/proto2/contrib/dynamicproto/conformance:__pkg__",
+        "//third_party/golang/protobuf/v2/internal/conformance:__pkg__",
+    ],
+    deps = [":test_messages_proto3"],
+)
+
+java_proto_library(
+    name = "test_messages_proto2_java_proto",
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto2"],
+)
+
+java_proto_library(
+    name = "test_messages_proto3_java_proto",
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto3"],
+)
+
+java_lite_proto_library(
+    name = "test_messages_proto2_java_proto_lite",
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto2"],
+)
+
+java_lite_proto_library(
+    name = "test_messages_proto3_java_proto_lite",
+    visibility = ["//conformance:__pkg__"],
+    deps = [":test_messages_proto3"],
+)
+
+py_proto_library(
+    name = "test_messages_proto2_py_pb2",
+    api_version = 2,
+    visibility = [
+        "//conformance:__pkg__",
+        "//learning/brain/contrib/proto/test:__pkg__",
+    ],
+    deps = [":test_messages_proto2"],
+)
+
+py_proto_library(
+    name = "test_messages_proto3_py_pb2",
+    api_version = 2,
+    visibility = [
+        "//conformance:__pkg__",
+        "//learning/brain/contrib/proto/test:__pkg__",
+    ],
+    deps = [":test_messages_proto3"],
+)
+
+jspb_proto_library(
+    name = "test_messages_proto2_jspb_proto",
+    visibility = [
+        "//javascript/apps/jspb/conformance:__pkg__",
+    ],
+    deps = [":test_messages_proto2"],
+)
+
+jspb_proto_library(
+    name = "test_messages_proto3_jspb_proto",
+    visibility = [
+        "//javascript/apps/jspb/conformance:__pkg__",
+    ],
+    deps = [":test_messages_proto3"],
+)
+
+objc_proto_library(
+    name = "test_messages_proto2_objc_proto",
+    visibility = [
+        "//conformance:__pkg__",
+    ],
+    deps = [":test_messages_proto2"],
+)
+
+objc_proto_library(
+    name = "test_messages_proto3_objc_proto",
+    visibility = [
+        "//conformance:__pkg__",
+    ],
+    deps = [":test_messages_proto3"],
+)
+
+swift_proto_library(
+    name = "test_messages_proto2_swift_proto",
+    tags = ["nosan"],
+    visibility = [
+        "//third_party/swift/swift_protobuf:__pkg__",
+    ],
+    deps = [":test_messages_proto2"],
+)
+
+swift_proto_library(
+    name = "test_messages_proto3_swift_proto",
+    tags = ["nosan"],
+    visibility = [
+        "//third_party/swift/swift_protobuf:__pkg__",
+    ],
+    deps = [":test_messages_proto3"],
+)
+
+cc_library(
+    name = "arena_test_util",
+    srcs = ["arena_test_util.cc"],
+    hdrs = ["arena_test_util.h"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//net/proto2/internal:__pkg__",
+    ],
+    deps = [
+        ":arena",
+        ":port",
+        "//net/proto2/internal:new_delete_capture",
         "//src/google/protobuf/io",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
+    ],
+)
+
+cc_library(
+    name = "map_lite_test_util",
+    testonly = 1,
+    srcs = [
+        "map_lite_test_util.cc",
+        "map_test_util_impl.h",
+    ],
+    hdrs = [
+        "map_lite_test_util.h",
+    ],
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:private"],
+    deps = [
+        ":unittest_lite_protos",
+        "//testing/base/public:gunit_no_google3",
+    ],
+)
+
+cc_library(
+    name = "map_test_util",
+    testonly = 1,
+    srcs = [
+        "map_test_util_impl.h",
+    ],
+    strip_include_prefix = "/src",
+    textual_hdrs = [
+        "map_test_util.h",
+        "map_test_util.inc",
+    ],
+    visibility = [
+        ":__subpackages__",
+        "//logs/utils/lib:__pkg__",
+        "//net/proto2:__subpackages__",
+    ],
+    deps = [
+        ":map_unittest_cc_proto",
+        ":protobuf",
+        ":reflection_tester",
+        ":unittest_cc_proto",
+        ":unittest_lite_protos",
+        "@com_google_googletest//:gtest",
+    ],
+    alwayslink = 1,
+)
+
+cc_library(
+    name = "map_test_lib",
+    testonly = 1,
+    srcs = [
+        "map_test.cc",
+        "map_test.inc",
+    ],
+    data = [
+        "testdata/map_test_data.txt",
+    ],
+    strip_include_prefix = "/src",
+    deps = [
+        ":arena_test_util",
+        ":internal_visibility_for_testing",
+        ":map_proto2_unittest_cc_proto",
+        ":map_proto3_unittest_cc_proto",
+        ":map_test_util",
+        ":map_unittest_cc_proto",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":reflection_tester",
+        ":test_util2",
+        ":unittest_cc_proto",
+        "//net/proto2/bridge/internal:bridge_test_util",
+        "//net/proto2/bridge/internal:bridge_unittest_cc_proto",
+        "//net/proto2/internal:unittest_proto3_utf8_cc_proto",
+        "//src/google/protobuf",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "//src/google/protobuf/util:differencer",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/cleanup",
+        "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/log:scoped_mock_log",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/time",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+    alwayslink = 1,
+)
+
+cc_test(
+    name = "map_test",
+    size = "medium",
+    timeout = "long",
+    deps = [
+        ":map_test_lib",
+    ],
+)
+
+cc_test(
+    name = "map_test_force_deterministic_serialization",
+    size = "medium",
+    timeout = "long",
+    args = ["--force_deterministic_serialization"],
+    deps = [
+        ":map_test_lib",
+    ],
+)
+
+# Like test_util but for lite code.
+cc_library(
+    name = "test_util_lite",
+    testonly = 1,
+    srcs = [
+        "test_util_lite.cc",
+    ],
+    hdrs = [
+        "test_util_lite.h",
+    ],
+    copts = ["-O0"],
+    strip_include_prefix = "/src",
+    visibility = ["//net/proto2/benchmark:__pkg__"],
+    deps = [
+        ":unittest_lite_protos",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+    ],
+)
+
+LITE_UNITTEST_SRCS = [
+    "lite_unittest.cc",
+    "map_lite_test_util.cc",
+    "map_lite_test_util.h",
+    "map_test_util_impl.h",
+    "test_util_lite.cc",
+    "test_util_lite.h",
+]
+
+# LITE_UNITTEST_TABLE_DRIVEN_SRCS = [s.replace(".h", "_table_driven.h").replace(".cc", "_table_driven.cc") for s in LITE_UNITTEST_SRCS]
+
+LITE_UNITTEST_IMPLICIT_WEAK_SRCS = [s.replace(".h", "_implicit_weak.h").replace(".cc", "_implicit_weak.cc") for s in LITE_UNITTEST_SRCS]
+
+# We don't link this against gUnit because gUnit depends on net/proto2, and
+# the whole point of this test is to verify that we can compile and link
+# lite types without depending on proto2.
+portable_cc_test(
+    name = "lite_unittest",
+    size = "small",
+    srcs = LITE_UNITTEST_SRCS,
+    tags = [
+        "not_run:ppc",
+    ],
+    deps = [
+        ":arena_test_util",
+        ":port",
+        ":protobuf_lite_internal",
+        ":unittest_lite_protos",
+        "//src/google/protobuf/io",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main_no_google3",
+    ],
+)
+
+genrule(
+    name = "gen_lite_implicit_weak_unittest",
+    testonly = 1,
+    srcs = LITE_UNITTEST_SRCS,
+    outs = LITE_UNITTEST_IMPLICIT_WEAK_SRCS,
+    cmd = "for s in $(SRCS); do " +
+          "dest=$$(echo $$s | sed 's/\\./_implicit_weak./'); " +
+          "sed -e 's/\\.proto\\./_implicit_weak.proto./' " +
+          "    -e 's/map_lite_test_util\\./map_lite_test_util_implicit_weak./' " +
+          "    -e 's/test_util_lite\\./test_util_lite_implicit_weak./' " +
+          "$$s > $(GENDIR)/$$dest; " +
+          "done",
+)
+
+cc_test(
+    name = "lite_implicit_weak_unittest",
+    size = "small",
+    srcs = [
+        "map_test_util_impl.h",
+        ":gen_lite_implicit_weak_unittest",
+    ],
+    deps = [
+        ":arena_test_util",
+        ":port",
+        ":protobuf_lite",
+        ":protobuf_lite_internal",
+        ":unittest_lite_implicit_weak_protos",
+        "//base",
+        "//net/proto2/io/public:io_lite",
+        "//src/google/protobuf/io",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+portable_cc_test(
+    name = "lite_arena_unittest",
+    size = "small",
+    srcs = ["lite_arena_unittest.cc"],
+    tags = [
+        "no_test_ios",
+        "no_test_wasm",  # wasm doesn't have malloc hooks
+        "not_run:ppc",
+    ],
+    deps = [
+        ":arena_test_util",
+        ":map_lite_test_util",
+        ":port",
+        "//net/proto2/internal:new_delete_capture",
+        "//net/proto2/internal:unittest_lite_arena_cc_proto",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main_no_google3",
+    ],
+)
+
+cc_library(
+    name = "reflection_tester",
+    testonly = 1,
+    srcs = ["reflection_tester.cc"],
+    hdrs = ["reflection_tester.h"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//net/proto2/internal:__pkg__",
+    ],
+    deps = [
+        ":port",
+        ":protobuf",
+        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_googletest//:gtest",
     ],
 )
@@ -1136,475 +2886,112 @@ cc_library(
     name = "test_util",
     testonly = 1,
     srcs = [
-        "reflection_tester.cc",
         "test_util.cc",
     ],
     hdrs = [
-        "map_test.inc",
-        "map_test_util.h",
-        "map_test_util.inc",
-        "message_unittest.inc",
-        "message_unittest_legacy_apis.inc",
-        "reflection_tester.h",
-        "repeated_field_reflection_unittest.inc",
         "test_util.h",
-        "test_util.inc",
-        "test_util_lite.h",
-        "wire_format_unittest.inc",
     ],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-error=sign-compare",
-        ],
-    }),
     strip_include_prefix = "/src",
-    visibility = ["//:__subpackages__"],
+    textual_hdrs = [
+        "test_util.inc",
+    ],
+    visibility = [
+        ":__subpackages__",
+        "//cloud/resourceinventory/common:__pkg__",
+        "//cloud/vmm/server:__pkg__",
+        "//logs/utils/lib:__pkg__",
+        "//net/proto:__pkg__",
+        "//net/proto2:__subpackages__",
+        "//net/proto2/bridge/internal:__pkg__",
+        "//net/proto2/contrib:__subpackages__",
+        "//net/proto_compiler:__pkg__",
+        "//util/tools/codex:__pkg__",
+        "//video/youtube/datawarehouse/procella/ingestion_proxy:__pkg__",
+    ],
     deps = [
-        ":cc_lite_test_protos",
-        ":cc_test_protos",
-        ":lite_test_util",
         ":port",
         ":protobuf",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
-        "@com_google_absl//absl/container:flat_hash_map",
+        ":unittest_cc_proto",
+        "//base",
+        "//net/proto2/arena:arena_safe_unique_ptr",
         "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/time",
-        "@com_google_googletest//:gtest",
-    ],
+    ] + select({
+        "//tools/cc_target_os:android": [
+            "//testing/base/public:gunit_no_google3",
+        ],
+        "//conditions:default": [
+            "@com_google_googletest//:gtest",
+        ],
+    }),
 )
 
+# This name is gross, but test_util above should really be named
+# unittest_proto_testutil.  Unfortunately we can't easily change that because a
+# lot of teams #include test_util.h now.
 cc_library(
     name = "test_util2",
     testonly = 1,
-    hdrs = ["test_util2.h"],
+    hdrs = [
+        "test_util2.h",
+    ],
+    compatible_with = ["//buildenv/target:non_prod"],
     strip_include_prefix = "/src",
-    textual_hdrs = ["test_util.inc"],
-    visibility = ["//:__subpackages__"],
+    textual_hdrs = [
+        "test_util.inc",
+    ],
+    visibility = [
+        ":__subpackages__",
+        "//net/proto2:__subpackages__",
+    ],
     deps = [
+        ":protobuf",
+        ":unittest_cc_proto",
         "//src/google/protobuf/io",
         "//src/google/protobuf/util:differencer",
-        "@com_google_googletest//:gtest",
-    ],
-)
-
-cc_test(
-    name = "any_test",
-    srcs = ["any_test.cc"],
-    deps = [
-        ":any_cc_proto",
-        ":cc_test_protos",
-        ":port",
-        ":protobuf",
-        ":test_util",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
     ],
-)
-
-cc_test(
-    name = "arena_align_test",
-    srcs = ["arena_align_test.cc"],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-error=sign-compare",
-        ],
-    }),
-    deps = [
-        ":arena_align",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "arena_unittest",
-    srcs = ["arena_unittest.cc"],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-error=sign-compare",
-        ],
-    }),
-    deps = [
-        ":arena",
-        ":arena_cleanup",
-        ":cc_test_protos",
-        ":lite_test_util",
-        ":port",
-        ":protobuf",
-        ":protobuf_lite",
-        ":test_util",
-        "//src/google/protobuf/io",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/synchronization",
-        "@com_google_absl//absl/utility",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "arenastring_unittest",
-    srcs = ["arenastring_unittest.cc"],
-    deps = [
-        ":port",
-        ":protobuf",
-        ":protobuf_lite",
-        "//src/google/protobuf/io",
-        "//src/google/protobuf/stubs",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "arenaz_sampler_test",
-    srcs = ["arenaz_sampler_test.cc"],
-    deps = [
-        ":arena",
-        ":port",
-        ":protobuf",
-        "//src/google/protobuf/stubs",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "descriptor_database_unittest",
-    srcs = ["descriptor_database_unittest.cc"],
-    deps = [
-        ":protobuf",
-        ":test_textproto",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "descriptor_unittest",
-    srcs = ["descriptor_unittest.cc"],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-error=sign-compare",
-        ],
-    }),
-    deps = [
-        ":any_cc_proto",
-        ":cc_test_protos",
-        ":descriptor_legacy",
-        ":port",
-        ":protobuf",
-        ":test_textproto",
-        "//src/google/protobuf/compiler:importer",
-        "//src/google/protobuf/io",
-        "//src/google/protobuf/io:tokenizer",
-        "//src/google/protobuf/stubs",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
-        "@com_google_absl//absl/base:log_severity",
-        "@com_google_absl//absl/container:btree",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/flags:flag",
-        "@com_google_absl//absl/functional:any_invocable",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/log:die_if_null",
-        "@com_google_absl//absl/log:scoped_mock_log",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:str_format",
-        "@com_google_absl//absl/synchronization",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
+    alwayslink = 1,
 )
 
 cc_library(
-    name = "test_textproto",
-    testonly = True,
-    hdrs = ["test_textproto.h"],
+    name = "proto_hooks/reflective_proto_hook",
+    hdrs = ["proto_hooks/reflective_proto_hook.h"],
     strip_include_prefix = "/src",
-    visibility = [
-        "//editions:__pkg__",
-        "//pkg:__pkg__",
-        "//src/google/protobuf:__subpackages__",
-    ],
-    deps = [
-        ":protobuf",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/memory",
-        "@com_google_googletest//:gtest",
-    ],
+    deps = [":protobuf_lite"],
 )
 
 cc_test(
-    name = "drop_unknown_fields_test",
-    srcs = ["drop_unknown_fields_test.cc"],
-    deps = [
-        ":cc_test_protos",
-        ":protobuf",
-        ":protobuf_lite",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "dynamic_message_unittest",
-    srcs = ["dynamic_message_unittest.cc"],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-error=sign-compare",
-        ],
-    }),
-    deps = [
-        ":cc_test_protos",
-        ":protobuf",
-        ":test_util",
-        "//src/google/protobuf/stubs",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "extension_set_unittest",
-    srcs = ["extension_set_unittest.cc"],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-error=sign-compare",
-        ],
-    }),
-    deps = [
-        ":cc_test_protos",
-        ":port",
-        ":protobuf",
-        ":protobuf_lite",
-        ":test_util",
-        ":test_util2",
-        "//src/google/protobuf/io",
-        "//src/google/protobuf/stubs",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
-        "//src/google/protobuf/util:differencer",
-        "@com_google_absl//absl/base",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:cord",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "feature_resolver_test",
-    srcs = ["feature_resolver_test.cc"],
-    copts = COPTS,
-    deps = [
-        ":cc_test_protos",
-        ":port",
-        ":protobuf",
-        ":test_textproto",
-        ":test_util",
-        "//src/google/protobuf/compiler:importer",
-        "//src/google/protobuf/io",
-        "//src/google/protobuf/io:tokenizer",
-        "//src/google/protobuf/stubs",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/log:die_if_null",
-        "@com_google_absl//absl/memory",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "generated_message_reflection_unittest",
-    srcs = ["generated_message_reflection_unittest.cc"],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-error=sign-compare",
-        ],
-    }),
-    deps = [
-        ":arena",
-        ":cc_test_protos",
-        ":port",
-        ":protobuf",
-        ":test_util",
-        "//src/google/protobuf/stubs",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
-        "@com_google_absl//absl/flags:flag",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:cord",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "generated_message_tctable_lite_test",
-    srcs = ["generated_message_tctable_lite_test.cc"],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-error=sign-compare",
-        ],
-    }),
-    deps = [
-        ":cc_test_protos",
-        ":port",
-        ":protobuf_lite",
-        "//src/google/protobuf/io",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/types:optional",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "inlined_string_field_unittest",
-    srcs = ["inlined_string_field_unittest.cc"],
-    deps = [
-        ":cc_test_protos",
-        ":port",
-        ":protobuf",
-        ":protobuf_lite",
-        "//src/google/protobuf/io",
-        "//src/google/protobuf/stubs",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "lite_arena_unittest",
-    srcs = ["lite_arena_unittest.cc"],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-error=sign-compare",
-        ],
-    }),
-    deps = [
-        ":lite_test_util",
-        ":protobuf",
-        ":test_util",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "lite_unittest",
-    srcs = ["lite_unittest.cc"],
-    deps = [
-        ":cc_lite_test_protos",
-        ":lite_test_util",
-        ":port",
-        ":protobuf",
-        ":protobuf_lite",
-        "//src/google/protobuf/io",
-        "//src/google/protobuf/stubs",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "map_field_test",
-    srcs = ["map_field_test.cc"],
-    deps = [
-        ":arena",
-        ":cc_test_protos",
-        ":lite_test_util",
-        ":port",
-        ":protobuf",
-        ":protobuf_lite",
-        ":test_util",
-        "//src/google/protobuf/stubs",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/strings:str_format",
-        "@com_google_absl//absl/synchronization",
-        "@com_google_absl//absl/types:optional",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "map_test",
-    timeout = "long",
+    name = "edition_message_unittest",
+    size = "small",
+    timeout = "moderate",
     srcs = [
-        "map_test.cc",
-        "map_test.inc",
+        "edition_message_unittest.cc",
+        "message_unittest.inc",
+        "test_util.inc",
     ],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-deprecated-declarations",
-        ],
-    }),
-    data = [":testdata"],
     deps = [
-        ":cc_test_protos",
-        ":internal_visibility_for_testing",
-        ":lite_test_util",
+        ":arena",
+        ":edition_unittest_cc_proto",
+        ":internal_visibility",
         ":port",
         ":protobuf",
-        ":protobuf_lite",
         ":test_util",
         ":test_util2",
+        ":unittest_cc_proto",
+        "//net/proto2/public:direct_access",
+        "//src/google/protobuf",
         "//src/google/protobuf/io",
-        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/io:io_win32",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
-        "//src/google/protobuf/util:differencer",
-        "//src/google/protobuf/util:time_util",
-        "@com_google_absl//absl/base",
-        "@com_google_absl//absl/cleanup",
-        "@com_google_absl//absl/container:btree",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/log:scoped_mock_log",
         "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/time",
+        "@com_google_absl//absl/strings:cord",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -1612,27 +2999,30 @@ cc_test(
 
 cc_test(
     name = "message_unittest",
+    size = "small",
+    timeout = "moderate",
     srcs = [
         "message_unittest.cc",
         "message_unittest.inc",
         "message_unittest_legacy_apis.inc",
+        "test_util.inc",
     ],
     deps = [
         ":arena",
-        ":cc_lite_test_protos",
-        ":cc_test_protos",
         ":internal_visibility",
         ":port",
         ":protobuf",
-        ":protobuf_lite",
         ":test_util",
         ":test_util2",
+        ":unittest_cc_proto",
+        ":unittest_lite_protos",
+        "//net/proto2/public:direct_access",
+        "//src/google/protobuf",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:io_win32",
-        "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
-        "//src/google/protobuf/util:differencer",
+        "@com_google_absl//absl/base:builddata",
         "@com_google_absl//absl/hash:hash_testing",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:scoped_mock_log",
@@ -1643,30 +3033,149 @@ cc_test(
     ],
 )
 
-cc_test(
-    name = "edition_message_unittest",
-    srcs = [
-        "edition_message_unittest.cc",
-        "message_unittest.inc",
+portable_cc_test(
+    name = "any_test",
+    srcs = ["any_test.cc"],
+    linkstatic = 1,
+    tags = [
+        "no_test_android_arm",
+        "no_test_wasm",  # takes too long
+        "not_run:ppc",
     ],
     deps = [
-        ":arena",
-        ":cc_test_protos",
-        ":internal_visibility",
+        ":any_test_cc_proto",
+        ":port",
+        ":test_util",
+        ":unittest_cc_proto",
+        "//:any_cc_proto_proto",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test_with_lib(
+    name = "arenastring_unittest",
+    testonly = 1,
+    srcs = [
+        "arenastring_unittest.cc",
+    ],
+    copts = select({
+        "//tools/cc_target_os:linux-google": ["-DPROTO2_HAS_MALLOC_HOOKS=1"],
+        "//conditions:default": [],
+    }),
+    visibility = ["//visibility:private"],
+    deps = [
+        ":any_test_cc_proto",
+        ":port",
+        ":protobuf_lite",
+        ":protobuf_lite_internal",
+        "//base:malloc_hook",
+        "//src/google/protobuf/io",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "descriptor_database_unittest",
+    size = "small",
+    srcs = ["descriptor_database_unittest.cc"],
+    deps = [
+        ":protobuf",
+        ":test_textproto",
+        "//src/google/protobuf",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "descriptor_unittest",
+    size = "small",
+    srcs = ["descriptor_unittest.cc"],
+    deps = [
+        ":cpp_features_cc_proto",
+        ":descriptor_legacy",
+        ":feature_resolver",
         ":port",
         ":protobuf",
-        ":protobuf_lite",
-        ":test_util",
-        ":test_util2",
+        ":test_textproto",
+        ":unittest_cc_proto",
+        ":unittest_cc_stubby",
+        ":unittest_custom_options_cc_proto",
+        ":unittest_custom_options_cc_stubby",
+        ":unittest_delimited_cc_proto",
+        ":unittest_features_cc_proto",
+        ":unittest_lazy_dependencies_cc_proto",
+        ":unittest_proto3_arena_cc_proto",
+        ":unittest_string_type_cc_proto",
+        "//:any_cc_proto_proto",
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/io",
-        "//src/google/protobuf/io:io_win32",
-        "//src/google/protobuf/stubs",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
-        "//src/google/protobuf/util:differencer",
+        "//src/google/protobuf/io:tokenizer",
+        "//thread",
+        "//thread/fiber",
+        "@com_google_absl//absl/base:log_severity",
+        "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/functional:any_invocable",
+        "@com_google_absl//absl/google:flags",
         "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/log:die_if_null",
         "@com_google_absl//absl/log:scoped_mock_log",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/synchronization",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "extension_declaration_test",
+    srcs = ["extension_declaration_test.cc"],
+    data = [
+        "testdata/extdecl/extdecl_field_options.txtpb",
+        "testdata/extdecl/invalid/extdecl_field_options.txtpb",
+    ],
+    deps = [
+        ":protobuf",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "drop_unknown_fields_test",
+    size = "small",
+    srcs = ["drop_unknown_fields_test.cc"],
+    deps = [
+        ":protobuf",
+        ":unittest_drop_unknown_fields_cc_proto",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "dynamic_message_unittest",
+    size = "small",
+    srcs = ["dynamic_message_unittest.cc"],
+    deps = [
+        ":protobuf",
+        ":test_util",
+        ":unittest_cc_proto",
+        ":unittest_no_field_presence_cc_proto",
+        "//src/google/protobuf",
         "@com_google_absl//absl/strings:cord",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -1674,11 +3183,217 @@ cc_test(
 )
 
 cc_test(
+    name = "extension_set_unittest",
+    size = "small",
+    srcs = ["extension_set_unittest.cc"],
+    deps = [
+        ":arena",
+        ":cpp_features_bootstrap",
+        ":fully_verify_message_sets_opt_out",
+        ":port",
+        ":protobuf",
+        ":test_util",
+        ":test_util2",
+        ":unittest_cc_proto",
+        ":unittest_proto3_extensions_cc_proto",
+        "//net/proto2/bridge/proto:message_set_cc_proto",
+        "//src/google/protobuf",
+        "//src/google/protobuf/io",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:cord",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "feature_resolver",
+    hdrs = ["feature_resolver.h"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+    ],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//net/proto2/contrib/protoc_explorer/plugins/edition_defaults:__pkg__",
+        "//src/google/protobuf:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
+    deps = [
+        ":descriptor_bootstrap",
+        ":port",
+        ":protobuf",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_library(
+    name = "test_textproto",
+    testonly = True,
+    hdrs = ["test_textproto.h"],
+    strip_include_prefix = "/src",
+    visibility = [":__subpackages__"],
+    deps = [
+        ":protobuf",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/memory",
+        "@com_google_googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "feature_resolver_test",
+    srcs = ["feature_resolver_test.cc"],
+    deps = [
+        ":cpp_features_cc_proto",
+        ":descriptor_pb",
+        ":feature_resolver",
+        ":port",
+        ":protobuf",
+        ":test_textproto",
+        ":unittest_custom_options_cc_proto",
+        ":unittest_features_cc_proto",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/stubs",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/log:die_if_null",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "generated_message_reflection_unittest",
+    size = "small",
+    srcs = ["generated_message_reflection_unittest.cc"],
+    deps = [
+        ":arena",
+        ":map_test_util",
+        ":map_unittest_cc_proto",
+        ":port",
+        ":protobuf",
+        ":test_util",
+        ":unittest_cc_proto",
+        ":unittest_proto3_cc_proto",
+        "//net/proto2/internal:unittest_eagerly_verified_lazy_protos",
+        "//src/google/protobuf",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings:cord",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "generated_message_tctable_lite_test",
+    srcs = ["generated_message_tctable_lite_test.cc"],
+    deps = [
+        ":port",
+        ":protobuf_lite",
+        ":protobuf_lite_internal",
+        ":unittest_cc_proto",
+        "//src/google/protobuf/io",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "generated_message_table_gen_test",
+    srcs = ["v2/generated_message_table_gen_test.cc"],
+    deps = [
+        ":port",
+        ":protobuf",
+        ":unittest_cc_proto",
+        "@com_google_absl//absl/algorithm:container",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test_with_lib(
+    name = "inlined_string_field_unittest",
+    testonly = 1,
+    srcs = [
+        "inlined_string_field_unittest.cc",
+    ],
+    copts = select({
+        "//tools/cc_target_os:linux-google": ["-DPROTO2_HAS_MALLOC_HOOKS=1"],
+        "//conditions:default": [],
+    }),
+    visibility = ["//visibility:private"],
+    deps = [
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":protobuf_lite_internal",
+        "//base:malloc_hook",
+        "//src/google/protobuf/io",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "map_field_test",
+    size = "small",
+    srcs = ["map_field_test.cc"],
+    deps = [
+        ":arena",
+        ":arena_test_util",
+        ":internal_visibility_for_testing",
+        ":map_test_util",
+        ":map_unittest_cc_proto",
+        ":port",
+        ":protobuf",
+        ":unittest_cc_proto",
+        "//net/eventmanager:eventmanager_default",
+        "//src/google/protobuf/io",
+        "//thread",
+        "//util/random:mt_random",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/synchronization",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "no_field_presence_test",
+    size = "small",
     srcs = ["no_field_presence_test.cc"],
     deps = [
-        ":cc_test_protos",
         ":protobuf",
+        ":unittest_cc_proto",
+        ":unittest_no_field_presence_cc_proto",
+        "//src/google/protobuf",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings:cord",
@@ -1689,25 +3404,73 @@ cc_test(
 )
 
 cc_test(
-    name = "preserve_unknown_enum_test",
-    srcs = ["preserve_unknown_enum_test.cc"],
+    name = "parse_context_test",
+    size = "small",
+    srcs = ["parse_context_test.cc"],
     deps = [
-        ":cc_test_protos",
-        ":protobuf",
+        ":protobuf_lite_internal",
+        ":unittest_cc_proto",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
 
 cc_test(
+    name = "preserve_unknown_enum_test",
+    size = "small",
+    srcs = ["preserve_unknown_enum_test.cc"],
+    deps = [
+        ":protobuf",
+        ":unittest_cc_proto",
+        ":unittest_preserve_unknown_enum_cc_proto",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+ENFORCE_LITE_ARENA_SRC_PROTOS = [
+    "//src/google/protobuf:unittest_proto3_arena.proto",
+    "//src/google/protobuf:unittest_import.proto",
+    "//src/google/protobuf:unittest_import_public.proto",
+]
+
+# The generated files should be kept completely internal, due to conflicted
+# classes generated by the normal proto_library rule (non-lite runtime).
+# Only enforce_lite related tests should depend on the output.
+# TODO: move this and gen_unittest_enforce_lite_proto3_protos to the
+# blaze rule once blaze aspects and lite proto rules are available.
+genrule(
+    name = "gen_unittest_enforce_lite_arena_proto3_protos",
+    testonly = 1,
+    srcs = ENFORCE_LITE_ARENA_SRC_PROTOS,
+    outs = (["lite_arena_proto3/" + s.replace("//", "").replace(":", "/").replace(".proto", ".proto.h") for s in ENFORCE_LITE_ARENA_SRC_PROTOS] +
+            ["lite_arena_proto3/" + s.replace("//", "").replace(":", "/").replace(".proto", ".pb.cc") for s in ENFORCE_LITE_ARENA_SRC_PROTOS]),
+    cmd = "mkdir -p $(GENDIR)/net/proto2/internal/lite && " +
+          "$(location //net/proto2/compiler/public:protocol_compiler) " +
+          "  --cpp_out=proto_h,lite:$(GENDIR)/third_party/protobuf/lite_arena_proto3 " +
+          "  $(location :unittest_proto3_arena.proto) " +
+          "  $(location :unittest_import.proto) " +
+          "  $(location :unittest_import_public.proto)",
+    tools = ["//net/proto2/compiler/public:protocol_compiler"],
+    visibility = ["//visibility:private"],
+)
+
+cc_test(
     name = "proto3_arena_lite_unittest",
-    srcs = ["proto3_arena_lite_unittest.cc"],
+    srcs = [
+        "proto3_arena_lite_unittest.cc",
+        ":gen_unittest_enforce_lite_arena_proto3_protos",
+    ],
+    includes = ["lite_arena_proto3"],
     deps = [
         ":arena",
-        ":cc_test_protos",
+        ":port",
         ":protobuf",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
+        ":protobuf_lite",
+        "//base",
+        "//src/google/protobuf/io",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:cord",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -1716,21 +3479,14 @@ cc_test(
 cc_test(
     name = "proto3_arena_unittest",
     srcs = ["proto3_arena_unittest.cc"],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-error=sign-compare",
-        ],
-    }),
     deps = [
         ":arena",
-        ":cc_test_protos",
         ":port",
         ":protobuf",
-        ":test_util",
-        "//src/google/protobuf/stubs",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
+        ":unittest_cc_proto",
+        ":unittest_proto3_arena_cc_proto",
+        ":unittest_proto3_optional_cc_proto",
+        "//src/google/protobuf",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
@@ -1738,25 +3494,45 @@ cc_test(
     ],
 )
 
+ENFORCE_LITE_SRC_PROTOS = [
+    "//src/google/protobuf:unittest_proto3.proto",
+    "//src/google/protobuf:unittest_import.proto",
+    "//src/google/protobuf:unittest_import_public.proto",
+]
+
+genrule(
+    name = "gen_unittest_enforce_lite_proto3_protos",
+    testonly = 1,
+    srcs = ENFORCE_LITE_SRC_PROTOS,
+    outs = (["lite_proto3/" + s.replace("//", "").replace(":", "/").replace(".proto", ".proto.h") for s in ENFORCE_LITE_SRC_PROTOS] +
+            ["lite_proto3/" + s.replace("//", "").replace(":", "/").replace(".proto", ".pb.cc") for s in ENFORCE_LITE_SRC_PROTOS]),
+    cmd = "mkdir -p $(GENDIR)/net/proto2/internal/lite && " +
+          "$(location //net/proto2/compiler/public:protocol_compiler) " +
+          "  --cpp_out=proto_h,lite:$(GENDIR)/third_party/protobuf/lite_proto3 " +
+          "  $(location :unittest_proto3.proto) " +
+          "  $(location :unittest_import.proto) " +
+          "  $(location :unittest_import_public.proto)",
+    tools = ["//net/proto2/compiler/public:protocol_compiler"],
+    visibility = ["//visibility:private"],
+)
+
 cc_test(
     name = "proto3_lite_unittest",
     srcs = [
         "proto3_lite_unittest.cc",
         "proto3_lite_unittest.inc",
+        ":gen_unittest_enforce_lite_proto3_protos",
     ],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-deprecated-declarations",
-        ],
-    }),
+    includes = ["lite_proto3"],
     deps = [
         ":arena",
-        ":cc_test_protos",
-        ":lite_test_util",
+        ":port",
         ":protobuf",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
+        ":protobuf_lite",
+        "//base",
+        "//src/google/protobuf/io",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:cord",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -1764,20 +3540,12 @@ cc_test(
 
 cc_test(
     name = "reflection_ops_unittest",
+    size = "small",
     srcs = ["reflection_ops_unittest.cc"],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-error=sign-compare",
-        ],
-    }),
     deps = [
-        ":cc_test_protos",
         ":protobuf",
         ":test_util",
-        "//src/google/protobuf/stubs",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
+        ":unittest_cc_proto",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -1785,23 +3553,34 @@ cc_test(
 )
 
 cc_test(
+    name = "internal_message_util_unittest",
+    size = "small",
+    srcs = ["internal_message_util_unittest.cc"],
+    deps = [
+        ":map_unittest_cc_proto",
+        ":protobuf",
+        ":unittest_cc_proto",
+        "//testing/fuzzing:fuzztest",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "repeated_field_reflection_unittest",
+    size = "small",
     srcs = [
         "repeated_field_reflection_unittest.cc",
         "repeated_field_reflection_unittest.inc",
     ],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-deprecated-declarations",
-        ],
-    }),
     deps = [
-        ":cc_test_protos",
         ":port",
         ":protobuf",
         ":test_util",
-        "//src/google/protobuf/stubs",
+        ":unittest_cc_proto",
         "@com_google_absl//absl/base",
         "@com_google_absl//absl/strings:cord",
         "@com_google_googletest//:gtest",
@@ -1811,27 +3590,32 @@ cc_test(
 
 cc_test(
     name = "repeated_field_unittest",
-    srcs = ["repeated_field_unittest.cc"],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-deprecated-declarations",
-        ],
+    size = "small",
+    srcs = [
+        "repeated_field_unittest.cc",
+    ],
+    copts = selects.with_or({
+        # The optional parts of the "huge" tests OOM with the debug allocator.
+        # This selector enables in opt, which should work.
+        (
+            "//tools/compilation_mode:opt",
+        ): ["-DPROTOBUF_TEST_ALLOW_LARGE_ALLOC"],
+        "//conditions:default": [],
     }),
     deps = [
-        ":cc_test_protos",
+        ":arena",
+        ":arena_test_util",
         ":internal_visibility_for_testing",
-        ":lite_test_util",
         ":port",
-        ":protobuf",
         ":protobuf_lite",
+        ":protobuf_lite_internal",
+        ":test_util",
+        ":unittest_cc_proto",
         "//src/google/protobuf/io",
-        "//src/google/protobuf/stubs",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
+        "//thread",
+        "//util/random:shared_bit_gen",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/numeric:bits",
-        "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:cord",
         "@com_google_absl//absl/types:span",
@@ -1842,27 +3626,33 @@ cc_test(
 
 cc_test(
     name = "text_format_unittest",
+    size = "small",
     srcs = ["text_format_unittest.cc"],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-deprecated-declarations",
-        ],
-    }),
-    data = [":testdata"],
+    data = [
+        "testdata/text_format_unittest_data_oneof_implemented.txt",
+        "testdata/text_format_unittest_extensions_data.txt",
+    ],
     deps = [
-        ":any_cc_proto",
-        ":cc_test_protos",
+        ":any_test_cc_proto",
+        ":map_unittest_cc_proto",
         ":port",
         ":protobuf",
         ":test_util",
         ":test_util2",
+        ":unittest_cc_proto",
+        ":unittest_delimited_cc_proto",
+        ":unittest_metadata_cc_proto",
+        ":unittest_proto3_cc_proto",
+        "//:any_cc_proto_proto",
+        "//file/localfile",
+        "//net/proto2/internal:text_format_google3_redaction_cc_proto",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:tokenizer",
-        "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
+        "//testing/fuzzing:fuzztest",
         "//third_party/utf8_range:utf8_validity",
+        "//thread",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:die_if_null",
         "@com_google_absl//absl/log:scoped_mock_log",
@@ -1876,22 +3666,15 @@ cc_test(
 
 cc_test(
     name = "unknown_field_set_unittest",
+    size = "small",
     srcs = ["unknown_field_set_unittest.cc"],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-error=sign-compare",
-        ],
-    }),
     deps = [
-        ":cc_lite_test_protos",
-        ":cc_test_protos",
         ":protobuf",
         ":test_util",
+        ":unittest_cc_proto",
+        ":unittest_lite_protos",
+        "//base:callback",
         "//src/google/protobuf/io",
-        "//src/google/protobuf/stubs",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/functional:bind_front",
         "@com_google_absl//absl/log:absl_check",
@@ -1904,43 +3687,21 @@ cc_test(
 )
 
 cc_test(
-    name = "well_known_types_unittest",
-    srcs = ["well_known_types_unittest.cc"],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": [
-            "-Wno-deprecated-declarations",
-        ],
-    }),
-    deps = [
-        ":cc_test_protos",
-        ":protobuf",
-        "//src/google/protobuf/stubs",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
     name = "wire_format_unittest",
+    size = "small",
     srcs = [
         "wire_format_unittest.cc",
         "wire_format_unittest.inc",
     ],
     deps = [
-        ":cc_test_protos",
         ":port",
         ":protobuf",
-        ":protobuf_lite",
         ":test_util",
         ":test_util2",
+        ":unittest_cc_proto",
+        ":unittest_proto3_arena_cc_proto",
+        "//src/google/protobuf",
         "//src/google/protobuf/io",
-        "//src/google/protobuf/stubs",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/testing:file",
-        "//src/google/protobuf/util:differencer",
         "@com_google_absl//absl/base",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:scoped_mock_log",
@@ -1951,27 +3712,162 @@ cc_test(
     ],
 )
 
-cc_test(
-    name = "generated_enum_util_test",
-    srcs = ["generated_enum_util_test.cc"],
-    deps = [
-        ":port",
-        ":protobuf",
-        ":protobuf_lite",
-        "@com_google_absl//absl/container:btree",
-        "@com_google_absl//absl/strings:str_format",
-        "@com_google_absl//absl/types:span",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+proto_library(
+    name = "unittest_retention_proto",
+    testonly = True,
+    srcs = ["unittest_retention.proto"],
+    has_services = True,
+    strip_import_prefix = "/src",
+    use_java_stubby_library = True,
+    deps = ["//:descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "unittest_retention_cc_proto",
+    testonly = True,
+    deps = ["unittest_retention_proto"],
+)
+
+proto_library(
+    name = "unittest_features_proto",
+    testonly = True,
+    srcs = ["unittest_features.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//src/google/protobuf:__subpackages__"],
+    deps = ["//:descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "unittest_features_cc_proto",
+    testonly = True,
+    visibility = [":__subpackages__"],
+    deps = [":unittest_features_proto"],
+)
+
+java_proto_library(
+    name = "unittest_features_java_proto",
+    testonly = True,
+    visibility = ["//third_party/java_src/protobuf/current/javatests/com/google/protobuf:__pkg__"],
+    deps = [":unittest_features_proto"],
+)
+
+py_proto_library(
+    name = "unittest_features_py_pb2",
+    testonly = True,
+    api_version = 2,
+    visibility = ["//third_party/py/google/protobuf/internal:__subpackages__"],
+    deps = [":unittest_features_proto"],
+)
+
+proto_library(
+    name = "unittest_legacy_features_proto",
+    testonly = True,
+    srcs = ["unittest_legacy_features.proto"],
+    strip_import_prefix = "/src",
+)
+
+py_proto_library(
+    name = "unittest_legacy_features_py_pb2",
+    testonly = True,
+    api_version = 2,
+    visibility = ["//third_party/py/google/protobuf/internal:__subpackages__"],
+    deps = [":unittest_legacy_features_proto"],
+)
+
+java_proto_library(
+    name = "unittest_legacy_features_java_proto",
+    testonly = True,
+    visibility = ["//third_party/java_src/protobuf/current/javatests/com/google/protobuf:__pkg__"],
+    deps = [":unittest_legacy_features_proto"],
+)
+
+proto_library(
+    name = "unittest_invalid_features_proto",
+    testonly = True,
+    srcs = ["unittest_invalid_features.proto"],
+    strip_import_prefix = "/src",
+    deps = ["//:descriptor_proto"],
+)
+
+proto_library(
+    name = "unittest_string_type_proto",
+    srcs = ["unittest_string_type.proto"],
+    strip_import_prefix = "/src",
+    deps = [":cpp_features_proto"],
+)
+
+cc_proto_library(
+    name = "unittest_string_type_cc_proto",
+    deps = [":unittest_string_type_proto"],
+)
+
+proto_library(
+    name = "unittest_delimited_proto",
+    testonly = True,
+    srcs = [
+        "unittest_delimited.proto",
+        "unittest_delimited_import.proto",
     ],
+    strip_import_prefix = "/src",
+)
+
+java_proto_library(
+    name = "unittest_delimited_java_proto",
+    testonly = True,
+    visibility = ["//third_party/java_src/protobuf/current/javatests/com/google/protobuf:__pkg__"],
+    deps = [":unittest_delimited_proto"],
+)
+
+py_proto_library(
+    name = "unittest_delimited_py_proto",
+    testonly = True,
+    api_version = 2,
+    visibility = ["//third_party/py/google/protobuf:__subpackages__"],
+    deps = [":unittest_delimited_proto"],
+)
+
+cc_proto_library(
+    name = "unittest_delimited_cc_proto",
+    testonly = True,
+    deps = [":unittest_delimited_proto"],
+)
+
+cc_proto_library(
+    name = "unittest_invalid_features_cc_proto",
+    testonly = True,
+    visibility = [":__subpackages__"],
+    deps = [":unittest_invalid_features_proto"],
+)
+
+java_proto_library(
+    name = "unittest_retention_java_proto",
+    testonly = True,
+    visibility = ["//third_party/java_src/protobuf/current/javatests/com/google/protobuf:__pkg__"],
+    deps = [":unittest_retention_proto"],
+)
+
+java_mutable_proto_library(
+    name = "unittest_retention_java_proto_mutable",
+    testonly = True,
+    visibility = ["//third_party/java_src/protobuf/current/javatests/com/google/protobuf:__pkg__"],
+    deps = [":unittest_retention_proto"],
+)
+
+py_proto_library(
+    name = "unittest_retention_py_pb2",
+    testonly = True,
+    api_version = 2,
+    visibility = ["//third_party/py/google/protobuf/internal:__pkg__"],
+    deps = [":unittest_retention_proto"],
 )
 
 cc_test(
     name = "retention_test",
     srcs = ["retention_test.cc"],
     deps = [
-        ":cc_test_protos",
         ":protobuf",
+        ":unittest_retention_cc_proto",
+        "//src/google/protobuf",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/compiler:retention",
         "//src/google/protobuf/io",
@@ -1984,22 +3880,49 @@ cc_test(
 )
 
 cc_test(
-    name = "reflection_mode_test",
-    srcs = ["reflection_mode_test.cc"],
+    name = "redaction_metric_test",
+    size = "small",
+    srcs = ["redaction_metric_test.cc"],
     deps = [
         ":protobuf",
+        ":unittest_cc_proto",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
 
 cc_test(
-    name = "descriptor_visitor_test",
-    srcs = ["descriptor_visitor_test.cc"],
+    name = "raw_ptr_test",
+    srcs = ["raw_ptr_test.cc"],
     deps = [
-        ":cc_test_protos",
         ":protobuf",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "map_probe_benchmark",
+    srcs = ["map_probe_benchmark.cc"],
+    deps = [
+        ":protobuf",
+        "@com_google_absl//absl/random",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/strings:string_view",
+    ],
+)
+
+cc_test(
+    name = "merge_from_benchmark",
+    srcs = ["merge_from_benchmark.cc"],
+    deps = [
+        ":arena",
+        ":test_textproto",
+        ":unittest_cc_proto",
+        "//testing/base/public:gunit",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -2010,11 +3933,14 @@ cc_library(
     testonly = True,
     srcs = ["unredacted_debug_format_for_test.cc"],
     hdrs = ["unredacted_debug_format_for_test.h"],
+    compatible_with = [
+        "//buildenv/target:vendor",
+        "//buildenv/target:non_prod",
+    ],
     strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
         ":protobuf",
-        ":protobuf_lite",
     ],
 )
 
@@ -2022,90 +3948,66 @@ cc_test(
     name = "unredacted_debug_format_for_test_test",
     srcs = ["unredacted_debug_format_for_test_test.cc"],
     deps = [
-        ":cc_lite_test_protos",
-        ":cc_test_protos",
         ":protobuf",
+        ":unittest_cc_proto",
+        ":unittest_lite_protos",
         ":unredacted_debug_format_for_test",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
 
-################################################################################
-# Helper targets for Kotlin tests
-################################################################################
-
-proto_library(
-    name = "kt_unittest_protos",
-    srcs = [
-        "map_proto2_unittest.proto",
-        "unittest.proto",
-        "unittest_import.proto",
-        "unittest_import_public.proto",
-    ],
-    strip_import_prefix = "/src",
-    visibility = ["//java/kotlin:__pkg__"],
+bool_flag(
+    name = "enable_descriptor_weak_messages",
+    build_setting_default = False,
+    visibility = ["//visibility:public"],
 )
 
-proto_library(
-    name = "kt_proto3_unittest_protos",
-    srcs = [
-        "unittest_import.proto",
-        "unittest_import_public.proto",
-        "unittest_proto3.proto",
-    ],
-    strip_import_prefix = "/src",
-    visibility = [
-        "//java/kotlin:__pkg__",
-        "//java/kotlin-lite:__pkg__",
-    ],
+config_setting(
+    name = "descriptor_weak_messages_enabled",
+    flag_values = {":enable_descriptor_weak_messages": "True"},
 )
 
-################################################################################
-# Packaging rules
-################################################################################
-
-pkg_files(
-    name = "dist_files",
-    srcs = glob(["**"]),
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//src:__pkg__"],
+bool_flag(
+    name = "enable_custom_vtable",
+    build_setting_default = False,
+    visibility = ["//visibility:public"],
 )
 
-filegroup(
-    name = "full_test_srcs",
-    srcs = glob(
-        include = [
-            "*_test.cc",
-            "*unittest.cc",
-        ],
-        exclude = [
-            "lite_unittest.cc",
-            "lite_arena_unittest.cc",
-        ],
-    ),
-    visibility = ["//pkg:__pkg__"],
+config_setting(
+    name = "custom_vtable_enabled",
+    flag_values = {":enable_custom_vtable": "True"},
 )
 
-filegroup(
-    name = "lite_test_srcs",
-    srcs = [
-        "lite_arena_unittest.cc",
-        "lite_unittest.cc",
+genrule(
+    name = "internal_version",
+    srcs = ["//src/google/protobuf/compiler:versions.h"],
+    outs = ["internal_version.h"],
+    cmd =
+        "echo \"#define PROTOBUF_INTERNAL_VERSION " +
+        "$$(grep '#define PROTOBUF_INTERNAL_VERSION_STRING' " +
+        "$(location //src/google/protobuf/compiler:versions.h) | awk '{print $$3}')\" | " +
+        "sed -e 's/\"0\\.//g; s/\\.0\"//g' > $@",
+    compatible_with = [
+        "//buildenv/target:non_prod",
+        "//buildenv/target:vendor",
     ],
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//visibility:private"],
 )
 
 cc_library(
     name = "endian",
     hdrs = ["endian.h"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+        "//buildenv/target:vendor",
+    ],
     strip_include_prefix = "/src",
     visibility = [
-        "//conformance:__subpackages__",
-        "//src/google/protobuf:__subpackages__",
+        ":__subpackages__",
     ],
     deps = [
-        ":port",
+        "//src/google/protobuf:port",
         "@com_google_absl//absl/base:config",
     ],
 )
