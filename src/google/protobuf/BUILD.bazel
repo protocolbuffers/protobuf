@@ -917,7 +917,45 @@ filegroup(
 
 proto_library(
     name = "test_protos",
-    srcs = [":test_proto_all_srcs"],
+    srcs = [
+        "any_test.proto",
+        "edition_unittest.proto",
+        "map_proto2_unittest.proto",
+        "map_proto3_unittest.proto",
+        "map_unittest.proto",
+        "unittest.proto",
+        "unittest_arena.proto",
+        "unittest_custom_options.proto",
+        "unittest_delimited.proto",
+        "unittest_delimited_import.proto",
+        "unittest_drop_unknown_fields.proto",
+        "unittest_embed_optimize_for.proto",
+        "unittest_empty.proto",
+        "unittest_enormous_descriptor.proto",
+        "unittest_features.proto",
+        "unittest_import.proto",
+        "unittest_import_public.proto",
+        "unittest_invalid_features.proto",
+        "unittest_lazy_dependencies.proto",
+        "unittest_lazy_dependencies_custom_option.proto",
+        "unittest_lazy_dependencies_enum.proto",
+        "unittest_legacy_features.proto",
+        "unittest_lite_imports_nonlite.proto",
+        "unittest_mset.proto",
+        "unittest_mset_wire_format.proto",
+        "unittest_no_field_presence.proto",
+        "unittest_no_generic_services.proto",
+        "unittest_optimize_for.proto",
+        "unittest_preserve_unknown_enum.proto",
+        "unittest_preserve_unknown_enum2.proto",
+        "unittest_proto3_bad_macros.proto",
+        "unittest_proto3_extensions.proto",
+        "unittest_proto3_lite.proto",
+        "unittest_retention.proto",
+        "unittest_string_type.proto",
+        "unittest_string_view.proto",
+        "unittest_well_known_types.proto",
+    ],
     strip_import_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = [
@@ -934,6 +972,67 @@ proto_library(
         ":type_proto",
         ":wrappers_proto",
     ],
+)
+
+proto_library(
+    name = "unittest_proto3_arena_proto",
+    srcs = ["unittest_proto3_arena.proto"],
+    strip_import_prefix = "/src",
+    deps = [
+        ":descriptor_proto",
+        ":test_protos",
+    ],
+)
+
+cc_proto_library(
+    name = "unittest_proto3_arena_cc_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":unittest_proto3_arena_proto"],
+)
+
+proto_library(
+    name = "unittest_proto3_arena_lite_proto",
+    srcs = ["unittest_proto3_arena_lite.proto"],
+    strip_import_prefix = "/src",
+    deps = [
+        ":descriptor_proto",
+        ":test_protos",
+    ],
+)
+
+cc_proto_library(
+    name = "unittest_proto3_arena_lite_cc_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":unittest_proto3_arena_lite_proto"],
+)
+
+proto_library(
+    name = "unittest_proto3_proto",
+    srcs = ["unittest_proto3.proto"],
+    strip_import_prefix = "/src",
+    deps = [
+        ":descriptor_proto",
+        ":test_protos",
+    ],
+)
+
+cc_proto_library(
+    name = "unittest_proto3_cc_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":unittest_proto3_proto"],
+)
+
+proto_library(
+    name = "unittest_proto3_optional_proto",
+    srcs = ["unittest_proto3_optional.proto"],
+    strip_import_prefix = "/src",
+    deps = [":descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "unittest_proto3_optional_cc_proto",
+    visibility = ["//:__subpackages__"],
+    deps = [":unittest_proto3_optional_proto"],
 )
 
 proto_library(
@@ -1309,6 +1408,7 @@ cc_test(
         ":port",
         ":protobuf",
         ":test_textproto",
+        ":unittest_proto3_arena_cc_proto",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:tokenizer",
@@ -1457,6 +1557,7 @@ cc_test(
         ":port",
         ":protobuf",
         ":test_util",
+        ":unittest_proto3_cc_proto",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
@@ -1706,6 +1807,8 @@ cc_test(
         ":arena",
         ":cc_test_protos",
         ":protobuf",
+        # TODO: This should test against :unittest_proto3_arena_lite_cc_proto instead.
+        ":unittest_proto3_arena_cc_proto",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "@com_google_googletest//:gtest",
@@ -1728,6 +1831,8 @@ cc_test(
         ":port",
         ":protobuf",
         ":test_util",
+        ":unittest_proto3_arena_cc_proto",
+        ":unittest_proto3_optional_cc_proto",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
@@ -1755,6 +1860,7 @@ cc_test(
         ":cc_test_protos",
         ":lite_test_util",
         ":protobuf",
+        ":unittest_proto3_cc_proto",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "@com_google_googletest//:gtest",
@@ -1857,6 +1963,7 @@ cc_test(
         ":protobuf",
         ":test_util",
         ":test_util2",
+        ":unittest_proto3_cc_proto",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:tokenizer",
         "//src/google/protobuf/stubs",
@@ -1936,6 +2043,7 @@ cc_test(
         ":protobuf_lite",
         ":test_util",
         ":test_util2",
+        ":unittest_proto3_arena_cc_proto",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
