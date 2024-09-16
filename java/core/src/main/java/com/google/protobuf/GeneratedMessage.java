@@ -988,7 +988,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       final Object value = extensions.getField(descriptor);
       if (value == null) {
         if (descriptor.isRepeated()) {
-          return (T) Collections.emptyList();
+          return (T) ProtobufArrayList.emptyList();
         } else if (descriptor.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
           return (T) extension.getMessageDefaultInstance();
         } else {
@@ -1826,10 +1826,12 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         if (descriptor.getJavaType() == FieldDescriptor.JavaType.MESSAGE
             || descriptor.getJavaType() == FieldDescriptor.JavaType.ENUM) {
           // Must convert the whole list.
-          final List<Object> result = new ArrayList<>();
+          final ProtobufArrayList<Object> result = new ProtobufArrayList<>();
+          result.ensureCapacity(((List<?>) value).size());
           for (final Object element : (List<?>) value) {
             result.add(singularFromReflectionType(element));
           }
+          result.makeImmutable();
           return result;
         } else {
           return value;

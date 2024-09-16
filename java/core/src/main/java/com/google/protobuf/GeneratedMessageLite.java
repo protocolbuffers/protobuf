@@ -23,7 +23,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1160,7 +1159,7 @@ public abstract class GeneratedMessageLite<
           final boolean isPacked,
           final Class singularType) {
     @SuppressWarnings("unchecked") // Subclasses ensure Type is a List
-    Type emptyList = (Type) Collections.emptyList();
+    Type emptyList = (Type) ProtobufArrayList.emptyList();
     return new GeneratedExtension<ContainingType, Type>(
         containingTypeDefaultInstance,
         emptyList,
@@ -1331,10 +1330,12 @@ public abstract class GeneratedMessageLite<
     Object fromFieldSetType(Object value) {
       if (descriptor.isRepeated()) {
         if (descriptor.getLiteJavaType() == WireFormat.JavaType.ENUM) {
-          List<Object> result = new ArrayList<>();
+          ProtobufArrayList<Object> result = new ProtobufArrayList<>();
+          result.ensureCapacity(((List<?>) value).size());
           for (Object element : (List) value) {
             result.add(singularFromFieldSetType(element));
           }
+          result.makeImmutable();
           return result;
         } else {
           return value;
