@@ -14,8 +14,8 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/compiler/java/generator_factory.h"
 #include "google/protobuf/compiler/java/options.h"
+#include "google/protobuf/compiler/kotlin/message.h"
 
 namespace google {
 namespace protobuf {
@@ -64,9 +64,8 @@ class FileGenerator {
   const FileDescriptor* file_;
   std::string java_package_;
 
-  std::vector<std::unique_ptr<java::MessageGenerator>> message_generators_;
+  std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
   std::unique_ptr<java::Context> context_;
-  std::unique_ptr<java::GeneratorFactory> generator_factory_;
   java::ClassNameResolver* name_resolver_;
   const java::Options options_;
 };
