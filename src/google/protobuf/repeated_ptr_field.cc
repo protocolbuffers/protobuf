@@ -93,6 +93,14 @@ void RepeatedPtrFieldBase::DestroyProtos() {
   tagged_rep_or_elem_ = nullptr;
 }
 
+void* RepeatedPtrFieldBase::AddMessageLite(ElementFactory factory) {
+  return AddInternal(factory);
+}
+
+void* RepeatedPtrFieldBase::AddString() {
+  return AddInternal([](Arena* arena) { return NewStringElement(arena); });
+}
+
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {
   if (using_sso()) {
     if (start == 0 && num == 1) {
@@ -106,6 +114,11 @@ void RepeatedPtrFieldBase::CloseGap(int start, int num) {
     r->allocated_size -= num;
   }
   ExchangeCurrentSize(current_size_ - num);
+}
+
+MessageLite* RepeatedPtrFieldBase::AddMessage(const MessageLite* prototype) {
+  return static_cast<MessageLite*>(
+      AddInternal([prototype](Arena* a) { return prototype->New(a); }));
 }
 
 void InternalOutOfLineDeleteMessageLite(MessageLite* message) {
@@ -212,6 +225,10 @@ void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
   if (new_size > allocated_size()) {
     rep()->allocated_size = new_size;
   }
+}
+
+void* NewStringElement(Arena* arena) {
+  return Arena::Create<std::string>(arena);
 }
 
 }  // namespace internal

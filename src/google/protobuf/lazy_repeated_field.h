@@ -328,7 +328,7 @@ class LazyRepeatedPtrField {
     const char* ptr2 = ptr;
     TagType next_tag;
     do {
-      MessageLite* submsg = value->AddFromPrototype(prototype);
+      MessageLite* submsg = value->AddMessage(prototype);
       // ptr2 points to the start of the element's encoded length.
       ptr = ctx->ParseMessage(submsg, ptr2);
       if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
