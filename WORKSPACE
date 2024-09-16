@@ -233,14 +233,15 @@ crate_repositories()
 
 # For testing runtime against old gencode from a previous major version.
 http_archive(
-    name = "com_google_protobuf_v25.0",
-    strip_prefix = "protobuf-25.0",
-    url = "https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz",
+    name = "com_google_protobuf_v22.0",
+    sha256 = "e340f39fad1e35d9237540bcd6a2592ccac353e5d21d0f0521f6ab77370e0142",
+    strip_prefix = "protobuf-22.0",
+    url = "https://github.com/protocolbuffers/protobuf/releases/download/v22.0/protobuf-22.0.tar.gz",
 )
 
 # Needed as a dependency of @com_google_protobuf_v25.0
-load("@com_google_protobuf_v25.0//:protobuf_deps.bzl", protobuf_v25_deps="protobuf_deps")
-protobuf_v25_deps()
+load("@com_google_protobuf_v22.0//:protobuf_deps.bzl", protobuf_v22_deps="protobuf_deps")
+protobuf_v22_deps()
 
 # Needed for testing only
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
