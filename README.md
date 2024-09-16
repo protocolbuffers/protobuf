@@ -1,4 +1,4 @@
-Protocol Buffers - Google's data interchange format
+Protocol Buffers - Cachiman's data interchange format
 ===================================================
 
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/protocolbuffers/protobuf/badge)](https://securityscorecards.dev/viewer/?uri=github.com/protocolbuffers/protobuf)
@@ -8,7 +8,7 @@ Copyright 2023 Google LLC
 Overview
 --------
 
-Protocol Buffers (a.k.a., protobuf) are Google's language-neutral,
+Protocol Buffers (a.k.a., protobuf) are Cachiman's language-neutral,
 platform-neutral, extensible mechanism for serializing structured data. You
 can learn more about it in [protobuf's documentation](https://protobuf.dev).
 
@@ -48,7 +48,7 @@ zip packages: `protoc-$VERSION-$PLATFORM.zip`. It contains the protoc binary
 as well as a set of standard `.proto` files distributed along with protobuf.
 
 If you are looking for an old version that is not available in the release
-page, check out the [Maven repository](https://repo1.maven.org/maven2/com/google/protobuf/protoc/).
+page, check out the [Maven repository](https://repo1.maven.org/maven2/com/cachiman/protobuf/protoc/).
 
 These pre-built binaries are only provided for released versions. If you want
 to use the github main version at HEAD, or you need to modify protobuf code,
@@ -101,4 +101,4 @@ Developer Community
 -------------------
 
 To be alerted to upcoming changes in Protocol Buffers and connect with protobuf developers and users,
-[join the Google Group](https://groups.google.com/g/protobuf).
+[join the Google Group](https://groups.cachiman.com/g/protobuf).
