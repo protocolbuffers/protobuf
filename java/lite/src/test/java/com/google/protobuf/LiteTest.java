@@ -2470,6 +2470,211 @@ public class LiteTest {
   }
 
   @Test
+  public void testParseFromInputStream_concurrent_nestingUnknownGroups() throws Exception {
+    int numThreads = 200;
+    ArrayList<Thread> threads = new ArrayList<>();
+
+    ByteString byteString = generateNestingGroups(99);
+    AtomicBoolean thrown = new AtomicBoolean(false);
+
+    for (int i = 0; i < numThreads; i++) {
+      Thread thread =
+          new Thread(
+              () -> {
+                try {
+                  TestAllTypesLite unused = TestAllTypesLite.parseFrom(byteString);
+                } catch (IOException e) {
+                  if (e.getMessage().contains("Protocol message had too many levels of nesting")) {
+                    thrown.set(true);
+                  }
+                }
+              });
+      thread.start();
+      threads.add(thread);
+    }
+
+    for (Thread thread : threads) {
+      thread.join();
+    }
+
+    assertThat(thrown.get()).isFalse();
+  }
+
+  @Test
+  public void testParseFromInputStream_nestingUnknownGroups() throws IOException {
+    ByteString byteString = generateNestingGroups(99);
+
+    Throwable thrown =
+        assertThrows(
+            InvalidProtocolBufferException.class, () -> TestAllTypesLite.parseFrom(byteString));
+    assertThat(thrown)
+        .hasMessageThat()
+        .doesNotContain("Protocol message had too many levels of nesting");
+  }
+
+  @Test
+  public void testParseFromInputStream_nestingUnknownGroups_exception() throws IOException {
+    ByteString byteString = generateNestingGroups(100);
+
+    Throwable thrown =
+        assertThrows(
+            InvalidProtocolBufferException.class, () -> TestAllTypesLite.parseFrom(byteString));
+    assertThat(thrown).hasMessageThat().contains("Protocol message had too many levels of nesting");
+  }
+
+  @Test
+  public void testParseFromInputStream_setRecursionLimit_exception() throws IOException {
+    ByteString byteString = generateNestingGroups(199);
+    UnknownFieldSchema<?, ?> schema = SchemaUtil.unknownFieldSetLiteSchema();
+    schema.setRecursionLimit(200);
+
+    Throwable thrown =
+        assertThrows(
+            InvalidProtocolBufferException.class, () -> TestAllTypesLite.parseFrom(byteString));
+    assertThat(thrown)
+        .hasMessageThat()
+        .doesNotContain("Protocol message had too many levels of nesting");
+    schema.setRecursionLimit(UnknownFieldSchema.DEFAULT_RECURSION_LIMIT);
+  }
+
+  @Test
+  public void testParseFromBytes_concurrent_nestingUnknownGroups() throws Exception {
+    int numThreads = 200;
+    ArrayList<Thread> threads = new ArrayList<>();
+
+    ByteString byteString = generateNestingGroups(99);
+    AtomicBoolean thrown = new AtomicBoolean(false);
+
+    for (int i = 0; i < numThreads; i++) {
+      Thread thread =
+          new Thread(
+              () -> {
+                try {
+                  // Should pass in byte[] instead of ByteString to go into ArrayDecoders.
+                  TestAllTypesLite unused = TestAllTypesLite.parseFrom(byteString.toByteArray());
+                } catch (InvalidProtocolBufferException e) {
+                  if (e.getMessage().contains("Protocol message had too many levels of nesting")) {
+                    thrown.set(true);
+                  }
+                }
+              });
+      thread.start();
+      threads.add(thread);
+    }
+
+    for (Thread thread : threads) {
+      thread.join();
+    }
+
+    assertThat(thrown.get()).isFalse();
+  }
+
+  @Test
+  public void testParseFromBytes_nestingUnknownGroups() throws IOException {
+    ByteString byteString = generateNestingGroups(99);
+
+    Throwable thrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> TestAllTypesLite.parseFrom(byteString.toByteArray()));
+    assertThat(thrown)
+        .hasMessageThat()
+        .doesNotContain("Protocol message had too many levels of nesting");
+  }
+
+  @Test
+  public void testParseFromBytes_nestingUnknownGroups_exception() throws IOException {
+    ByteString byteString = generateNestingGroups(100);
+
+    Throwable thrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> TestAllTypesLite.parseFrom(byteString.toByteArray()));
+    assertThat(thrown).hasMessageThat().contains("Protocol message had too many levels of nesting");
+  }
+
+  @Test
+  public void testParseFromBytes_setRecursionLimit_exception() throws IOException {
+    ByteString byteString = generateNestingGroups(199);
+    ArrayDecoders.setRecursionLimit(200);
+
+    Throwable thrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> TestAllTypesLite.parseFrom(byteString.toByteArray()));
+    assertThat(thrown)
+        .hasMessageThat()
+        .doesNotContain("Protocol message had too many levels of nesting");
+    ArrayDecoders.setRecursionLimit(ArrayDecoders.DEFAULT_RECURSION_LIMIT);
+  }
+
+  @Test
+  public void testParseFromBytes_recursiveMessages() throws Exception {
+    byte[] data99 = makeRecursiveMessage(99).toByteArray();
+    byte[] data100 = makeRecursiveMessage(100).toByteArray();
+
+    RecursiveMessage unused = RecursiveMessage.parseFrom(data99);
+    Throwable thrown =
+        assertThrows(
+            InvalidProtocolBufferException.class, () -> RecursiveMessage.parseFrom(data100));
+    assertThat(thrown).hasMessageThat().contains("Protocol message had too many levels of nesting");
+  }
+
+  @Test
+  public void testParseFromBytes_recursiveKnownGroups() throws Exception {
+    byte[] data99 = makeRecursiveGroup(99).toByteArray();
+    byte[] data100 = makeRecursiveGroup(100).toByteArray();
+
+    RecursiveGroup unused = RecursiveGroup.parseFrom(data99);
+    Throwable thrown =
+        assertThrows(InvalidProtocolBufferException.class, () -> RecursiveGroup.parseFrom(data100));
+    assertThat(thrown).hasMessageThat().contains("Protocol message had too many levels of nesting");
+  }
+
+  @Test
+  @SuppressWarnings("ProtoParseFromByteString")
+  public void testMaliciousSGroupTagsWithMapField_fromByteArray() throws Exception {
+    ByteString byteString = generateNestingGroups(102);
+
+    Throwable parseFromThrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> MapContainer.parseFrom(byteString.toByteArray()));
+    Throwable mergeFromThrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> MapContainer.newBuilder().mergeFrom(byteString.toByteArray()));
+
+    assertThat(parseFromThrown)
+        .hasMessageThat()
+        .contains("Protocol message had too many levels of nesting");
+    assertThat(mergeFromThrown)
+        .hasMessageThat()
+        .contains("Protocol message had too many levels of nesting");
+  }
+
+  @Test
+  public void testMaliciousSGroupTagsWithMapField_fromInputStream() throws Exception {
+    byte[] bytes = generateNestingGroups(101).toByteArray();
+
+    Throwable parseFromThrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> MapContainer.parseFrom(new ByteArrayInputStream(bytes)));
+    Throwable mergeFromThrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> MapContainer.newBuilder().mergeFrom(new ByteArrayInputStream(bytes)));
+
+    assertThat(parseFromThrown)
+        .hasMessageThat()
+        .contains("Protocol message had too many levels of nesting");
+    assertThat(mergeFromThrown)
+        .hasMessageThat()
+        .contains("Protocol message had too many levels of nesting");
+  }
+
+  @Test
   public void testParseFromByteBuffer_extensions() throws Exception {
     TestAllExtensionsLite message =
         TestAllExtensionsLite.newBuilder()
@@ -2824,5 +3029,32 @@ public class LiteTest {
       }
     }
     return false;
+  }
+
+  private static ByteString generateNestingGroups(int num) throws IOException {
+    int groupTap = WireFormat.makeTag(3, WireFormat.WIRETYPE_START_GROUP);
+    ByteString.Output byteStringOutput = ByteString.newOutput();
+    CodedOutputStream codedOutput = CodedOutputStream.newInstance(byteStringOutput);
+    for (int i = 0; i < num; i++) {
+      codedOutput.writeInt32NoTag(groupTap);
+    }
+    codedOutput.flush();
+    return byteStringOutput.toByteString();
+  }
+
+  private static RecursiveMessage makeRecursiveMessage(int num) {
+    if (num == 0) {
+      return RecursiveMessage.getDefaultInstance();
+    } else {
+      return RecursiveMessage.newBuilder().setRecurse(makeRecursiveMessage(num - 1)).build();
+    }
+  }
+
+  private static RecursiveGroup makeRecursiveGroup(int num) {
+    if (num == 0) {
+      return RecursiveGroup.getDefaultInstance();
+    } else {
+      return RecursiveGroup.newBuilder().setRecurse(makeRecursiveGroup(num - 1)).build();
+    }
   }
 }
