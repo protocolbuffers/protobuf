@@ -230,6 +230,9 @@ class PROTOBUF_EXPORT MapKey {
     }
   }
 
+  template <typename H>
+  friend H AbslHashValue(H state, const MapKey& map_key);
+
  private:
   template <typename K, typename V>
   friend class internal::TypeDefinedMapFieldBase;
@@ -273,26 +276,21 @@ struct RealKeyToVariantKey<MapKey> {
   VariantKey operator()(const MapKey& value) const;
 };
 
-}  // namespace internal
-
-}  // namespace protobuf
-}  // namespace google
-namespace std {
 template <>
-struct hash<google::protobuf::MapKey> {
-  size_t operator()(const google::protobuf::MapKey& map_key) const {
-    return ::google::protobuf::internal::RealKeyToVariantKey<::google::protobuf::MapKey>{}(map_key)
-        .Hash();
-  }
-  bool operator()(const google::protobuf::MapKey& map_key1,
-                  const google::protobuf::MapKey& map_key2) const {
-    return map_key1 < map_key2;
+struct RealKeyToVariantKeyAlternative<MapKey> {
+  VariantKey operator()(const MapKey& value) const {
+    return RealKeyToVariantKey<MapKey>{}(value);
   }
 };
-}  // namespace std
 
-namespace google {
-namespace protobuf {
+}  // namespace internal
+
+template <typename H>
+H AbslHashValue(H state, const MapKey& map_key) {
+  return H::combine(std::move(state),
+                    internal::RealKeyToVariantKey<MapKey>{}(map_key));
+}
+
 namespace internal {
 
 class ContendedMapCleanTest;

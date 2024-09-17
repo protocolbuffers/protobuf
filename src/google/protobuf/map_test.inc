@@ -336,6 +336,13 @@ struct RealKeyToVariantKey<MoveTestKey> {
   }
 };
 
+template <>
+struct RealKeyToVariantKeyAlternative<MoveTestKey> {
+  VariantKey operator()(const MoveTestKey& value) const {
+    return VariantKey(value.data);
+  }
+};
+
 namespace {
 
 TEST_F(MapImplTest, OperatorBracketRValue) {
