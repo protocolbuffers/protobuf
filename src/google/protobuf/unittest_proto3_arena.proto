@@ -67,6 +67,7 @@ message TestAllTypes {
 
   string optional_string_piece = 24 [ctype=STRING_PIECE];
   string optional_cord = 25 [ctype=CORD];
+  bytes optional_bytes_cord = 86 [ctype=CORD];
 
   // Defined in unittest_import_public.proto
   protobuf_unittest_import.PublicImportMessage

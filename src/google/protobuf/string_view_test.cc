@@ -12,6 +12,9 @@
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest_string_view.pb.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace {
@@ -284,10 +287,12 @@ TEST(StringViewFieldTest, RepeatedSetAndGetByReflection) {
   }
 
   // MutableRepeatedPtrField().
+  PROTOBUF_IGNORE_DEPRECATION_START;
   for (auto& it :
        *reflection->MutableRepeatedPtrField<std::string>(&message, field)) {
     it.append(it);
   }
+  PROTOBUF_IGNORE_DEPRECATION_STOP;
   {
     const auto& rep_str =
         reflection->GetRepeatedFieldRef<std::string>(message, field);
@@ -309,3 +314,5 @@ TEST(StringViewFieldTest, RepeatedSetAndGetByReflection) {
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
