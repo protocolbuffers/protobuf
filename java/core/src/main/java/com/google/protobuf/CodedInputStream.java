@@ -229,7 +229,10 @@ public abstract class CodedInputStream {
       if (tag == 0) {
         return;
       }
+      checkRecursionLimit();
+      ++recursionDepth;
       boolean fieldSkipped = skipField(tag);
+      --recursionDepth;
       if (!fieldSkipped) {
         return;
       }
@@ -246,7 +249,10 @@ public abstract class CodedInputStream {
       if (tag == 0) {
         return;
       }
+      checkRecursionLimit();
+      ++recursionDepth;
       boolean fieldSkipped = skipField(tag, output);
+      --recursionDepth;
       if (!fieldSkipped) {
         return;
       }
