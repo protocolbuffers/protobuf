@@ -117,9 +117,11 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
         }
 
       case FD::CPPTYPE_STRING:
-        switch (field->options().ctype()) {
-          default:  // TODO:  Support other string reps.
-          case FieldOptions::STRING:
+        switch (field->cpp_string_type()) {
+          case FieldDescriptor::CppStringType::kCord:
+            return sizeof(RepeatedField<absl::Cord>);
+          case FieldDescriptor::CppStringType::kView:
+          case FieldDescriptor::CppStringType::kString:
             return sizeof(RepeatedPtrField<std::string>);
         }
         break;
@@ -147,9 +149,11 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
         return sizeof(Message*);
 
       case FD::CPPTYPE_STRING:
-        switch (field->options().ctype()) {
-          default:  // TODO:  Support other string reps.
-          case FieldOptions::STRING:
+        switch (field->cpp_string_type()) {
+          case FieldDescriptor::CppStringType::kCord:
+            return sizeof(absl::Cord);
+          case FieldDescriptor::CppStringType::kView:
+          case FieldDescriptor::CppStringType::kString:
             return sizeof(ArenaStringPtr);
         }
         break;
@@ -410,9 +414,31 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
         break;
 
       case FieldDescriptor::CPPTYPE_STRING:
-        switch (field->options().ctype()) {
-          default:  // TODO:  Support other string reps.
-          case FieldOptions::STRING:
+        switch (field->cpp_string_type()) {
+          case FieldDescriptor::CppStringType::kCord:
+            if (!field->is_repeated()) {
+              if (field->has_default_value()) {
+                new (field_ptr) absl::Cord(field->default_value_string());
+              } else {
+                new (field_ptr) absl::Cord;
+              }
+              if (arena != nullptr) {
+                // Cord does not support arena so here we need to notify arena
+                // to remove the data it allocated on the heap by calling its
+                // destructor.
+                arena->OwnDestructor(static_cast<absl::Cord*>(field_ptr));
+              }
+            } else {
+              new (field_ptr) RepeatedField<absl::Cord>(arena);
+              if (arena != nullptr) {
+                // Needs to destroy Cord elements.
+                arena->OwnDestructor(
+                    static_cast<RepeatedField<absl::Cord>*>(field_ptr));
+              }
+            }
+            break;
+          case FieldDescriptor::CppStringType::kView:
+          case FieldDescriptor::CppStringType::kString:
             if (!field->is_repeated()) {
               ArenaStringPtr* asp = new (field_ptr) ArenaStringPtr();
               asp->InitDefault();
@@ -502,9 +528,12 @@ DynamicMessage::~DynamicMessage() {
       if (*(reinterpret_cast<const int32_t*>(field_ptr)) == field->number()) {
         field_ptr = MutableOneofFieldRaw(field);
         if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-          switch (field->options().ctype()) {
-            default:
-            case FieldOptions::STRING: {
+          switch (field->cpp_string_type()) {
+            case FieldDescriptor::CppStringType::kCord:
+              delete *reinterpret_cast<absl::Cord**>(field_ptr);
+              break;
+            case FieldDescriptor::CppStringType::kView:
+            case FieldDescriptor::CppStringType::kString: {
               reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy();
               break;
             }
@@ -536,9 +565,13 @@ DynamicMessage::~DynamicMessage() {
 #undef HANDLE_TYPE
 
         case FieldDescriptor::CPPTYPE_STRING:
-          switch (field->options().ctype()) {
-            default:  // TODO:  Support other string reps.
-            case FieldOptions::STRING:
+          switch (field->cpp_string_type()) {
+            case FieldDescriptor::CppStringType::kCord:
+              reinterpret_cast<RepeatedField<absl::Cord>*>(field_ptr)
+                  ->~RepeatedField<absl::Cord>();
+              break;
+            case FieldDescriptor::CppStringType::kView:
+            case FieldDescriptor::CppStringType::kString:
               reinterpret_cast<RepeatedPtrField<std::string>*>(field_ptr)
                   ->~RepeatedPtrField<std::string>();
               break;
@@ -556,9 +589,12 @@ DynamicMessage::~DynamicMessage() {
       }
 
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-      switch (field->options().ctype()) {
-        default:  // TODO:  Support other string reps.
-        case FieldOptions::STRING: {
+      switch (field->cpp_string_type()) {
+        case FieldDescriptor::CppStringType::kCord:
+          reinterpret_cast<absl::Cord*>(field_ptr)->~Cord();
+          break;
+        case FieldDescriptor::CppStringType::kView:
+        case FieldDescriptor::CppStringType::kString: {
           reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy();
           break;
         }

@@ -427,6 +427,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SwapWithOther) {
   message1.set_optional_string("abc");
   message1.mutable_optional_nested_message()->set_bb(1);
   message1.set_optional_nested_enum(UNITTEST::TestAllTypes::FOO);
+  message1.set_optional_bytes_cord("bytes cord");
   message1.add_repeated_int32(1);
   message1.add_repeated_int32(2);
   message1.add_repeated_string("a");
@@ -440,6 +441,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SwapWithOther) {
   message2.set_optional_string("def");
   message2.mutable_optional_nested_message()->set_bb(2);
   message2.set_optional_nested_enum(UNITTEST::TestAllTypes::BAR);
+  message2.set_optional_bytes_cord("bytes cord");
   message2.add_repeated_int32(3);
   message2.add_repeated_string("c");
   message2.add_repeated_nested_message()->set_bb(9);
@@ -451,6 +453,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SwapWithOther) {
   EXPECT_EQ("def", message1.optional_string());
   EXPECT_EQ(2, message1.optional_nested_message().bb());
   EXPECT_EQ(UNITTEST::TestAllTypes::BAR, message1.optional_nested_enum());
+  EXPECT_EQ(absl::Cord("bytes cord"), message1.optional_bytes_cord());
   ASSERT_EQ(1, message1.repeated_int32_size());
   EXPECT_EQ(3, message1.repeated_int32(0));
   ASSERT_EQ(1, message1.repeated_string_size());
@@ -464,6 +467,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SwapWithOther) {
   EXPECT_EQ("abc", message2.optional_string());
   EXPECT_EQ(1, message2.optional_nested_message().bb());
   EXPECT_EQ(UNITTEST::TestAllTypes::FOO, message2.optional_nested_enum());
+  EXPECT_EQ(absl::Cord("bytes cord"), message2.optional_bytes_cord());
   ASSERT_EQ(2, message2.repeated_int32_size());
   EXPECT_EQ(1, message2.repeated_int32(0));
   EXPECT_EQ(2, message2.repeated_int32(1));

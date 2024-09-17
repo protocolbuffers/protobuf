@@ -48,6 +48,7 @@
 #include "google/protobuf/compiler/mock_code_generator.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/test_textproto.h"
+#include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
@@ -4153,7 +4154,16 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
   std::string unittest_proto_descriptor_set_filename_;
 };
 
+static void WriteGoldenMessage(const std::string& filename) {
+  protobuf_unittest::TestAllTypes message;
+  TestUtil::SetAllFields(&message);
+  std::string golden = message.SerializeAsString();
+  ABSL_CHECK_OK(File::SetContents(filename, golden, true));
+}
+
 TEST_P(EncodeDecodeTest, Encode) {
+  std::string golden_path = absl::StrCat(TestTempDir(), "/golden_message");
+  WriteGoldenMessage(golden_path);
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
       "google/protobuf/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
@@ -4163,14 +4173,14 @@ TEST_P(EncodeDecodeTest, Encode) {
   }
   EXPECT_TRUE(
       Run(absl::StrCat(args, " --encode=protobuf_unittest.TestAllTypes")));
-  ExpectStdoutMatchesBinaryFile(TestUtil::GetTestDataPath(
-      "google/protobuf/testdata/golden_message_oneof_implemented"));
+  ExpectStdoutMatchesBinaryFile(golden_path);
   ExpectStderrMatchesText("");
 }
 
 TEST_P(EncodeDecodeTest, Decode) {
-  RedirectStdinFromFile(TestUtil::GetTestDataPath(
-      "google/protobuf/testdata/golden_message_oneof_implemented"));
+  std::string golden_path = absl::StrCat(TestTempDir(), "/golden_message");
+  WriteGoldenMessage(golden_path);
+  RedirectStdinFromFile(golden_path);
   EXPECT_TRUE(
       Run("google/protobuf/unittest.proto"
           " --decode=protobuf_unittest.TestAllTypes"));
@@ -4223,6 +4233,8 @@ TEST_P(EncodeDecodeTest, ProtoParseError) {
 }
 
 TEST_P(EncodeDecodeTest, EncodeDeterministicOutput) {
+  std::string golden_path = absl::StrCat(TestTempDir(), "/golden_message");
+  WriteGoldenMessage(golden_path);
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
       "google/protobuf/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
@@ -4232,14 +4244,14 @@ TEST_P(EncodeDecodeTest, EncodeDeterministicOutput) {
   }
   EXPECT_TRUE(Run(absl::StrCat(
       args, " --encode=protobuf_unittest.TestAllTypes --deterministic_output")));
-  ExpectStdoutMatchesBinaryFile(TestUtil::GetTestDataPath(
-      "google/protobuf/testdata/golden_message_oneof_implemented"));
+  ExpectStdoutMatchesBinaryFile(golden_path);
   ExpectStderrMatchesText("");
 }
 
 TEST_P(EncodeDecodeTest, DecodeDeterministicOutput) {
-  RedirectStdinFromFile(TestUtil::GetTestDataPath(
-      "google/protobuf/testdata/golden_message_oneof_implemented"));
+  std::string golden_path = absl::StrCat(TestTempDir(), "/golden_message");
+  WriteGoldenMessage(golden_path);
+  RedirectStdinFromFile(golden_path);
   EXPECT_FALSE(
       Run("google/protobuf/unittest.proto"
           " --decode=protobuf_unittest.TestAllTypes --deterministic_output"));

@@ -191,9 +191,6 @@ cc_test(
         "zero_copy_stream_unittest.cc",
     ],
     copts = COPTS,
-    data = [
-        "//src/google/protobuf:testdata",
-    ],
     deps = [
         ":gzip_stream",
         ":io",
@@ -203,6 +200,7 @@ cc_test(
         "//:protobuf",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
+        "//src/google/protobuf:test_util",
         "//src/google/protobuf:test_util2",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",

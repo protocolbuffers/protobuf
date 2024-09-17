@@ -1571,7 +1571,8 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
       switch (field->type()) {
         case FieldDescriptor::TYPE_STRING:
         case FieldDescriptor::TYPE_BYTES: {
-          if (field->options().ctype() == FieldOptions::CORD) {
+          if (field->cpp_string_type() ==
+              FieldDescriptor::CppStringType::kCord) {
             result.contains_cord = true;
           }
           break;

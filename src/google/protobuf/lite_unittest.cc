@@ -958,6 +958,18 @@ TYPED_TEST(LiteTest, AllLite43) {
     EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
     EXPECT_EQ(17, message2.oneof_int32());
   }
+
+  // Bytes [ctype = CORD]
+  {
+    protobuf_unittest::TestOneofParsingLite message2;
+    message2.set_oneof_bytes_cord("bytes cord");
+    io::CodedInputStream input_stream(
+        reinterpret_cast<const ::uint8_t*>(serialized.data()),
+        serialized.size());
+    EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
+    EXPECT_EQ(17, message2.oneof_int32());
+  }
+
 }
 
 // Verify that we can successfully parse fields of various types within oneof
@@ -1042,6 +1054,18 @@ TYPED_TEST(LiteTest, AllLite44) {
       EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
       EXPECT_EQ(protobuf_unittest::V2_SECOND, parsed.oneof_enum());
     }
+  }
+
+  // Bytes [ctype = CORD]
+  {
+    protobuf_unittest::TestOneofParsingLite original;
+    original.set_oneof_bytes_cord("bytes cord");
+    std::string serialized;
+    EXPECT_TRUE(original.SerializeToString(&serialized));
+    protobuf_unittest::TestOneofParsingLite parsed;
+    EXPECT_TRUE(parsed.MergeFromString(serialized));
+    EXPECT_EQ("bytes cord", std::string(parsed.oneof_bytes_cord()));
+    EXPECT_TRUE(parsed.MergeFromString(serialized));
   }
 
   std::cout << "PASS" << std::endl;
