@@ -250,7 +250,7 @@ internal_php_proto_library(
         "golden",
         "src",
     ],
-    proto_deps = ["//:well_known_protos"],
+    proto_deps = ["//:well_known_type_protos"],
     visibility = ["//conformance:__pkg__"],
 )
 
