@@ -112,9 +112,9 @@ class PROTOBUF_EXPORT MapKey {
     SetType(FieldDescriptor::CPPTYPE_BOOL);
     val_.bool_value = value;
   }
-  void SetStringValue(std::string val) {
+  void SetStringValue(absl::string_view val) {
     SetType(FieldDescriptor::CPPTYPE_STRING);
-    *val_.string_value.get_mutable() = std::move(val);
+    val_.string_value.get_mutable()->assign(val.data(), val.size());
   }
 
   int64_t GetInt64Value() const {

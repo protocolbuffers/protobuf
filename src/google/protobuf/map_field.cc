@@ -338,10 +338,12 @@ void MapFieldBase::SyncMapWithRepeatedFieldNoLock() {
 
   for (const Message& elem : rep) {
     // MapKey type will be set later.
+    Reflection::ScratchSpace map_key_scratch_space;
     MapKey map_key;
     switch (key_des->cpp_type()) {
       case FieldDescriptor::CPPTYPE_STRING:
-        map_key.SetStringValue(reflection->GetString(elem, key_des));
+        map_key.SetStringValue(
+            reflection->GetStringView(elem, key_des, map_key_scratch_space));
         break;
       case FieldDescriptor::CPPTYPE_INT64:
         map_key.SetInt64Value(reflection->GetInt64(elem, key_des));
