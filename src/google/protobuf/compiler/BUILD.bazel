@@ -323,6 +323,7 @@ cc_test(
         "//:protobuf",
         "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf:test_textproto",
+        "//src/google/protobuf:test_util",
         "//src/google/protobuf:test_util2",
         "//src/google/protobuf/compiler/cpp:names",
         "//src/google/protobuf/io",
