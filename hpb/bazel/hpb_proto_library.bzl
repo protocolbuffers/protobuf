@@ -102,18 +102,18 @@ def _cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos):
 
 # Dummy rule to expose select() copts to aspects  ##############################
 
-UpbCcProtoLibraryCoptsInfo = provider(
-    "Provides copts for upb cc proto targets",
+HpbProtoLibraryCoptsInfo = provider(
+    "Provides copts for hpb proto targets",
     fields = {
-        "copts": "copts for upb_cc_proto_library()",
+        "copts": "copts for hpb_proto_library()",
     },
 )
 
-def upb_cc_proto_library_copts_impl(ctx):
-    return UpbCcProtoLibraryCoptsInfo(copts = ctx.attr.copts)
+def hpb_proto_library_copts_impl(ctx):
+    return HpbProtoLibraryCoptsInfo(copts = ctx.attr.copts)
 
-upb_cc_proto_library_copts = rule(
-    implementation = upb_cc_proto_library_copts_impl,
+hpb_proto_library_copts = rule(
+    implementation = hpb_proto_library_copts_impl,
     attrs = {"copts": attr.string_list(default = [])},
 )
 
@@ -198,7 +198,7 @@ def _upb_cc_proto_aspect_impl(target, ctx, generator, cc_provider, file_provider
         name = ctx.rule.attr.name + "." + generator,
         hdrs = files.hdrs,
         srcs = files.srcs,
-        copts = ctx.attr._ccopts[UpbCcProtoLibraryCoptsInfo].copts,
+        copts = ctx.attr._ccopts[HpbProtoLibraryCoptsInfo].copts,
         dep_ccinfos = dep_ccinfos,
     )
     return [cc_provider(cc_info = cc_info), file_provider(srcs = files)]
@@ -209,7 +209,7 @@ def _upb_cc_proto_library_aspect_impl(target, ctx):
 _upb_cc_proto_library_aspect = aspect(
     attrs = {
         "_ccopts": attr.label(
-            default = "//hpb:upb_cc_proto_library_copts",
+            default = "//hpb:hpb_proto_library_copts",
         ),
         "_gen_upbprotos": attr.label(
             executable = True,
@@ -261,7 +261,7 @@ upb_cc_proto_library = rule(
             providers = [ProtoInfo],
         ),
         "_ccopts": attr.label(
-            default = "//hpb:upb_cc_proto_library_copts",
+            default = "//hpb:hpb_proto_library_copts",
         ),
     },
 )

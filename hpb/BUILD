@@ -7,7 +7,7 @@
 
 load(
     "//hpb/bazel:hpb_proto_library.bzl",
-    "upb_cc_proto_library_copts",
+    "hpb_proto_library_copts",
 )
 load(
     "//upb/bazel:build_defs.bzl",
@@ -87,8 +87,8 @@ cc_library(
     ],
 )
 
-upb_cc_proto_library_copts(
-    name = "upb_cc_proto_library_copts",
+hpb_proto_library_copts(
+    name = "hpb_proto_library_copts",
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//hpb/bazel:__pkg__"],
 )
