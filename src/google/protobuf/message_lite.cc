@@ -20,6 +20,7 @@
 #include <string>
 #include <utility>
 
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
@@ -181,7 +182,7 @@ inline bool CheckFieldPresence(const internal::ParseContext& ctx,
                                const MessageLite& msg,
                                MessageLite::ParseFlags parse_flags) {
   (void)ctx;  // Parameter is used by Google-internal code.
-  if (PROTOBUF_PREDICT_FALSE((parse_flags & MessageLite::kMergePartial) != 0)) {
+  if (ABSL_PREDICT_FALSE((parse_flags & MessageLite::kMergePartial) != 0)) {
     return true;
   }
   return msg.IsInitializedWithErrors();
@@ -215,7 +216,7 @@ bool MergeFromImpl(absl::string_view input, MessageLite* msg,
                              aliasing, &ptr, input);
   ptr = internal::TcParser::ParseLoop(msg, ptr, &ctx, tc_table);
   // ctx has an explicit limit set (length of string_view).
-  if (PROTOBUF_PREDICT_TRUE(ptr && ctx.EndedAtLimit())) {
+  if (ABSL_PREDICT_TRUE(ptr && ctx.EndedAtLimit())) {
     return CheckFieldPresence(ctx, *msg, parse_flags);
   }
   return false;
@@ -230,7 +231,7 @@ bool MergeFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg,
                              aliasing, &ptr, input);
   ptr = internal::TcParser::ParseLoop(msg, ptr, &ctx, tc_table);
   // ctx has no explicit limit (hence we end on end of stream)
-  if (PROTOBUF_PREDICT_TRUE(ptr && ctx.EndedAtEndOfStream())) {
+  if (ABSL_PREDICT_TRUE(ptr && ctx.EndedAtEndOfStream())) {
     return CheckFieldPresence(ctx, *msg, parse_flags);
   }
   return false;
@@ -244,9 +245,9 @@ bool MergeFromImpl(BoundedZCIS input, MessageLite* msg,
   internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
                              aliasing, &ptr, input.zcis, input.limit);
   ptr = internal::TcParser::ParseLoop(msg, ptr, &ctx, tc_table);
-  if (PROTOBUF_PREDICT_FALSE(!ptr)) return false;
+  if (ABSL_PREDICT_FALSE(!ptr)) return false;
   ctx.BackUp(ptr);
-  if (PROTOBUF_PREDICT_TRUE(ctx.EndedAtLimit())) {
+  if (ABSL_PREDICT_TRUE(ctx.EndedAtLimit())) {
     return CheckFieldPresence(ctx, *msg, parse_flags);
   }
   return false;
@@ -291,7 +292,7 @@ class ZeroCopyCodedInputStream : public io::ZeroCopyInputStream {
 
   bool ReadCord(absl::Cord* cord, int count) final {
     // Fast path: tail call into ReadCord reading new value.
-    if (PROTOBUF_PREDICT_TRUE(cord->empty())) {
+    if (ABSL_PREDICT_TRUE(cord->empty())) {
       return cis_->ReadCord(cord, count);
     }
     absl::Cord tmp;
@@ -316,7 +317,7 @@ bool MessageLite::MergeFromImpl(io::CodedInputStream* input,
   ctx.data().pool = input->GetExtensionPool();
   ctx.data().factory = input->GetExtensionFactory();
   ptr = internal::TcParser::ParseLoop(this, ptr, &ctx, GetTcParseTable());
-  if (PROTOBUF_PREDICT_FALSE(!ptr)) return false;
+  if (ABSL_PREDICT_FALSE(!ptr)) return false;
   ctx.BackUp(ptr);
   if (!ctx.EndedAtEndOfStream()) {
     ABSL_DCHECK_NE(ctx.LastTag(), 1u);  // We can't end on a pushed limit.

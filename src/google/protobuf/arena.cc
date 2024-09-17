@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
 #include "absl/container/internal/layout.h"
 #include "absl/log/absl_check.h"
@@ -639,7 +640,7 @@ uint64_t ThreadSafeArena::GetNextLifeCycleId() {
   ThreadCache& tc = thread_cache();
   uint64_t id = tc.next_lifecycle_id;
   constexpr uint64_t kInc = ThreadCache::kPerThreadIds;
-  if (PROTOBUF_PREDICT_FALSE((id & (kInc - 1)) == 0)) {
+  if (ABSL_PREDICT_FALSE((id & (kInc - 1)) == 0)) {
     // On platforms that don't support uint64_t atomics we can certainly not
     // afford to increment by large intervals and expect uniqueness due to
     // wrapping, hence we only add by 1.
@@ -809,7 +810,7 @@ uint64_t ThreadSafeArena::Reset() {
 void* ThreadSafeArena::AllocateAlignedWithCleanup(size_t n, size_t align,
                                                   void (*destructor)(void*)) {
   SerialArena* arena;
-  if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+  if (ABSL_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
     return arena->AllocateAlignedWithCleanup(n, align, destructor);
   } else {
     return AllocateAlignedWithCleanupFallback(n, align, destructor);
@@ -822,7 +823,7 @@ void ThreadSafeArena::AddCleanup(void* elem, void (*cleanup)(void*)) {
 
 SerialArena* ThreadSafeArena::GetSerialArena() {
   SerialArena* arena;
-  if (PROTOBUF_PREDICT_FALSE(!GetSerialArenaFast(&arena))) {
+  if (ABSL_PREDICT_FALSE(!GetSerialArenaFast(&arena))) {
     arena = GetSerialArenaFallback(kMaxCleanupNodeSize);
   }
   return arena;

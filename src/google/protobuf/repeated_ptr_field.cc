@@ -19,6 +19,7 @@
 #include <new>
 #include <string>
 
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/message_lite.h"
@@ -181,7 +182,7 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
   void** dst = InternalReserve(new_size);
   const void* const* src = from.elements();
   auto end = src + from.current_size_;
-  if (PROTOBUF_PREDICT_FALSE(ClearedCount() > 0)) {
+  if (ABSL_PREDICT_FALSE(ClearedCount() > 0)) {
     int recycled = MergeIntoClearedMessages(from);
     dst += recycled;
     src += recycled;
@@ -208,7 +209,7 @@ void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
   auto end = src + from.current_size_;
   const MessageLite* prototype = src[0];
   ABSL_DCHECK(prototype != nullptr);
-  if (PROTOBUF_PREDICT_FALSE(ClearedCount() > 0)) {
+  if (ABSL_PREDICT_FALSE(ClearedCount() > 0)) {
     int recycled = MergeIntoClearedMessages(from);
     dst += recycled;
     src += recycled;

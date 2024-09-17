@@ -1148,7 +1148,7 @@ inline int CalculateReserveSize(int capacity, int new_size) {
   }
   constexpr int kMaxSizeBeforeClamp =
       (std::numeric_limits<int>::max() - kHeapRepHeaderSize) / 2;
-  if (PROTOBUF_PREDICT_FALSE(capacity > kMaxSizeBeforeClamp)) {
+  if (ABSL_PREDICT_FALSE(capacity > kMaxSizeBeforeClamp)) {
     return std::numeric_limits<int>::max();
   }
   constexpr int kSooCapacityElements = SooCapacityElements(sizeof(T));

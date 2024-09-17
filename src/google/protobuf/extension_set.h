@@ -29,6 +29,7 @@
 #include "google/protobuf/stubs/common.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
+#include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
 #include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
@@ -794,7 +795,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   void Erase(int key);
 
   size_t Size() const {
-    return PROTOBUF_PREDICT_FALSE(is_large()) ? map_.large->size() : flat_size_;
+    return ABSL_PREDICT_FALSE(is_large()) ? map_.large->size() : flat_size_;
   }
 
   // For use as `PrefetchFunctor`s in `ForEach`.
@@ -838,7 +839,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // prefetches ahead.
   template <typename KeyValueFunctor, typename PrefetchFunctor>
   KeyValueFunctor ForEach(KeyValueFunctor func, PrefetchFunctor prefetch_func) {
-    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+    if (ABSL_PREDICT_FALSE(is_large())) {
       return ForEachPrefetchImpl(map_.large->begin(), map_.large->end(),
                                  std::move(func), std::move(prefetch_func));
     }
@@ -849,7 +850,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   template <typename KeyValueFunctor, typename PrefetchFunctor>
   KeyValueFunctor ForEach(KeyValueFunctor func,
                           PrefetchFunctor prefetch_func) const {
-    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+    if (ABSL_PREDICT_FALSE(is_large())) {
       return ForEachPrefetchImpl(map_.large->begin(), map_.large->end(),
                                  std::move(func), std::move(prefetch_func));
     }
@@ -869,7 +870,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Applies a functor to the <int, Extension&> pairs in sorted order.
   template <typename KeyValueFunctor>
   KeyValueFunctor ForEachNoPrefetch(KeyValueFunctor func) {
-    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+    if (ABSL_PREDICT_FALSE(is_large())) {
       return ForEachNoPrefetch(map_.large->begin(), map_.large->end(),
                                std::move(func));
     }
@@ -879,7 +880,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // As above, but const.
   template <typename KeyValueFunctor>
   KeyValueFunctor ForEachNoPrefetch(KeyValueFunctor func) const {
-    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+    if (ABSL_PREDICT_FALSE(is_large())) {
       return ForEachNoPrefetch(map_.large->begin(), map_.large->end(),
                                std::move(func));
     }

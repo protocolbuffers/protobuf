@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "absl/log/absl_check.h"
+#include "absl/base/optimization.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/explicitly_constructed.h"
@@ -62,7 +63,7 @@ class PROTOBUF_EXPORT LazyString {
   const std::string& get() const {
     // This check generates less code than a call-once invocation.
     auto* res = inited_.load(std::memory_order_acquire);
-    if (PROTOBUF_PREDICT_FALSE(res == nullptr)) return Init();
+    if (ABSL_PREDICT_FALSE(res == nullptr)) return Init();
     return *res;
   }
 

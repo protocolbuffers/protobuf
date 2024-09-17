@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "absl/base/config.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
@@ -162,7 +163,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     // We must update the limit first before the early return. Otherwise, we can
     // end up with an invalid limit and it can lead to integer overflows.
     limit_ = limit_ + std::move(delta).token();
-    if (PROTOBUF_PREDICT_FALSE(!EndedAtLimit())) return false;
+    if (ABSL_PREDICT_FALSE(!EndedAtLimit())) return false;
     // TODO We could remove this line and hoist the code to
     // DoneFallback. Study the perf/bin-size effects.
     limit_end_ = buffer_end_ + (std::min)(0, limit_);
@@ -261,7 +262,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // If limit is exceeded, it returns true and ptr is set to null.
   bool DoneWithCheck(const char** ptr, int d) {
     ABSL_DCHECK(*ptr);
-    if (PROTOBUF_PREDICT_TRUE(*ptr < limit_end_)) return false;
+    if (ABSL_PREDICT_TRUE(*ptr < limit_end_)) return false;
     int overrun = static_cast<int>(*ptr - buffer_end_);
     ABSL_DCHECK_LE(overrun, kSlopBytes);  // Guaranteed by parse loop.
     if (overrun ==
@@ -537,7 +538,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
     }
     group_depth_--;
     depth_++;
-    if (PROTOBUF_PREDICT_FALSE(!ConsumeEndGroup(tag))) return nullptr;
+    if (ABSL_PREDICT_FALSE(!ConsumeEndGroup(tag))) return nullptr;
     return ptr;
   }
 
@@ -799,12 +800,12 @@ VarintParseSlowArm64(const char* p, uint64_t first8) {
   // This immediate ends in 14 zeroes since valid_chunk_bits is too low by 14.
   uint64_t result_mask = kResultMaskUnshifted << info.valid_chunk_bits;
   //  iff the Varint i invalid.
-  if (PROTOBUF_PREDICT_FALSE(info.masked_cont_bits == 0)) {
+  if (ABSL_PREDICT_FALSE(info.masked_cont_bits == 0)) {
     return {nullptr, 0};
   }
   // Test for early exit if Varint does not exceed 6 chunks.  Branching on one
   // bit is faster on ARM than via a compare and branch.
-  if (PROTOBUF_PREDICT_FALSE((info.valid_bits & 0x20) != 0)) {
+  if (ABSL_PREDICT_FALSE((info.valid_bits & 0x20) != 0)) {
     // Extract data bits from high four chunks.
     uint64_t merged_67 = ExtractAndMergeTwoChunks(first8, /*first_chunk=*/6);
     // Last two chunks come from last two bytes of info.last8.
@@ -842,7 +843,7 @@ VarintParseSlowArm32(const char* p, uint64_t first8) {
   // condition isn't on the critical path. Here we make sure that we don't do so
   // until result has been computed.
   info.masked_cont_bits = ValueBarrier(info.masked_cont_bits, result);
-  if (PROTOBUF_PREDICT_FALSE(info.masked_cont_bits == 0)) {
+  if (ABSL_PREDICT_FALSE(info.masked_cont_bits == 0)) {
     return {nullptr, 0};
   }
   return {info.p, result};
@@ -870,11 +871,11 @@ PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
   // This optimization is not supported in big endian mode
   uint64_t first8;
   std::memcpy(&first8, p, sizeof(first8));
-  if (PROTOBUF_PREDICT_TRUE((first8 & 0x80) == 0)) {
+  if (ABSL_PREDICT_TRUE((first8 & 0x80) == 0)) {
     *out = static_cast<uint8_t>(first8);
     return p + 1;
   }
-  if (PROTOBUF_PREDICT_TRUE((first8 & 0x8000) == 0)) {
+  if (ABSL_PREDICT_TRUE((first8 & 0x8000) == 0)) {
     uint64_t chunk1;
     uint64_t chunk2;
     // Extracting the two chunks this way gives a speedup for this path.
@@ -958,18 +959,18 @@ RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
 inline PROTOBUF_ALWAYS_INLINE const char* ReadTagInlined(const char* ptr,
                                                          uint32_t* out) {
   uint64_t res = 0xFF & ptr[0];
-  if (PROTOBUF_PREDICT_FALSE(res >= 128)) {
+  if (ABSL_PREDICT_FALSE(res >= 128)) {
     res = RotRight7AndReplaceLowByte(res, ptr[1]);
-    if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+    if (ABSL_PREDICT_FALSE(res & 0x80)) {
       res = RotRight7AndReplaceLowByte(res, ptr[2]);
-      if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+      if (ABSL_PREDICT_FALSE(res & 0x80)) {
         res = RotRight7AndReplaceLowByte(res, ptr[3]);
-        if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+        if (ABSL_PREDICT_FALSE(res & 0x80)) {
           // Note: this wouldn't work if res were 32-bit,
           // because then replacing the low byte would overwrite
           // the bottom 4 bits of the result.
           res = RotRight7AndReplaceLowByte(res, ptr[4]);
-          if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+          if (ABSL_PREDICT_FALSE(res & 0x80)) {
             // The proto format does not permit longer than 5-byte encodings for
             // tags.
             *out = 0;
@@ -1026,7 +1027,7 @@ inline const char* ParseBigVarint(const char* p, uint64_t* out) {
   auto pnew = p;
   auto tmp = DecodeTwoBytes(&pnew);
   uint64_t res = tmp >> 1;
-  if (PROTOBUF_PREDICT_TRUE(static_cast<std::int16_t>(tmp) >= 0)) {
+  if (ABSL_PREDICT_TRUE(static_cast<std::int16_t>(tmp) >= 0)) {
     *out = res;
     return pnew;
   }
@@ -1034,7 +1035,7 @@ inline const char* ParseBigVarint(const char* p, uint64_t* out) {
     pnew = p + 2 * i;
     tmp = DecodeTwoBytes(&pnew);
     res += (static_cast<std::uint64_t>(tmp) - 2) << (14 * i - 1);
-    if (PROTOBUF_PREDICT_TRUE(static_cast<std::int16_t>(tmp) >= 0)) {
+    if (ABSL_PREDICT_TRUE(static_cast<std::int16_t>(tmp) >= 0)) {
       *out = res;
       return pnew;
     }
@@ -1117,14 +1118,14 @@ ParseContext::ParseGroupInlined(const char* ptr, uint32_t start_tag,
   }
   group_depth_--;
   depth_++;
-  if (PROTOBUF_PREDICT_FALSE(!ConsumeEndGroup(start_tag))) return nullptr;
+  if (ABSL_PREDICT_FALSE(!ConsumeEndGroup(start_tag))) return nullptr;
   return ptr;
 }
 
 inline const char* ParseContext::ReadSizeAndPushLimitAndDepthInlined(
     const char* ptr, LimitToken* old_limit) {
   int size = ReadSize(&ptr);
-  if (PROTOBUF_PREDICT_FALSE(!ptr) || depth_ <= 0) {
+  if (ABSL_PREDICT_FALSE(!ptr) || depth_ <= 0) {
     return nullptr;
   }
   *old_limit = PushLimit(ptr, size);
@@ -1139,7 +1140,7 @@ const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr,
   do {
     out->Add(UnalignedLoad<T>(ptr));
     ptr += sizeof(T);
-    if (PROTOBUF_PREDICT_FALSE(ptr >= limit_end_)) return ptr;
+    if (ABSL_PREDICT_FALSE(ptr >= limit_end_)) return ptr;
   } while (UnalignedLoad<Tag>(ptr) == expected_tag && (ptr += sizeof(Tag)));
   return ptr;
 }

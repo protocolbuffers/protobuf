@@ -20,6 +20,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "absl/base/optimization.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
@@ -188,7 +189,7 @@ ExtensionSet::~ExtensionSet() {
   if (arena_ == nullptr) {
     ForEach([](int /* number */, Extension& ext) { ext.Free(); },
             PrefetchNta{});
-    if (PROTOBUF_PREDICT_FALSE(is_large())) {
+    if (ABSL_PREDICT_FALSE(is_large())) {
       delete map_.large;
     } else {
       DeleteFlatMap(map_.flat, flat_capacity_);
@@ -997,8 +998,8 @@ size_t SizeOfUnion(ItX it_dest, ItX end_dest, ItY it_source, ItY end_source) {
 void ExtensionSet::MergeFrom(const MessageLite* extendee,
                              const ExtensionSet& other) {
   Prefetch5LinesFrom1Line(&other);
-  if (PROTOBUF_PREDICT_TRUE(!is_large())) {
-    if (PROTOBUF_PREDICT_TRUE(!other.is_large())) {
+  if (ABSL_PREDICT_TRUE(!is_large())) {
+    if (ABSL_PREDICT_TRUE(!other.is_large())) {
       GrowCapacity(SizeOfUnion(flat_begin(), flat_end(), other.flat_begin(),
                                other.flat_end()));
     } else {
@@ -1228,7 +1229,7 @@ bool ExtensionSet::IsInitialized(const MessageLite* extendee) const {
   // Extensions are never required.  However, we need to check that all
   // embedded messages are initialized.
   Arena* const arena = arena_;
-  if (PROTOBUF_PREDICT_FALSE(is_large())) {
+  if (ABSL_PREDICT_FALSE(is_large())) {
     for (const auto& kv : *map_.large) {
       if (!kv.second.IsInitialized(this, extendee, kv.first, arena)) {
         return false;
@@ -1278,7 +1279,7 @@ bool ExtensionSet::FieldTypeIsPointer(FieldType type) {
 uint8_t* ExtensionSet::_InternalSerializeImpl(
     const MessageLite* extendee, int start_field_number, int end_field_number,
     uint8_t* target, io::EpsCopyOutputStream* stream) const {
-  if (PROTOBUF_PREDICT_FALSE(is_large())) {
+  if (ABSL_PREDICT_FALSE(is_large())) {
     const auto& end = map_.large->end();
     for (auto it = map_.large->lower_bound(start_field_number);
          it != end && it->first < end_field_number; ++it) {
@@ -1619,7 +1620,7 @@ void ExtensionSet::LazyMessageExtension::UnusedKeyMethod() {}
 const ExtensionSet::Extension* ExtensionSet::FindOrNull(int key) const {
   if (flat_size_ == 0) {
     return nullptr;
-  } else if (PROTOBUF_PREDICT_TRUE(!is_large())) {
+  } else if (ABSL_PREDICT_TRUE(!is_large())) {
     for (auto it = flat_begin(), end = flat_end();
          it != end && it->first <= key; ++it) {
       if (it->first == key) return &it->second;
@@ -1652,7 +1653,7 @@ ExtensionSet::Extension* ExtensionSet::FindOrNullInLargeMap(int key) {
 }
 
 std::pair<ExtensionSet::Extension*, bool> ExtensionSet::Insert(int key) {
-  if (PROTOBUF_PREDICT_FALSE(is_large())) {
+  if (ABSL_PREDICT_FALSE(is_large())) {
     auto maybe = map_.large->insert({key, Extension()});
     return {&maybe.first->second, maybe.second};
   }
@@ -1677,7 +1678,7 @@ constexpr bool IsPowerOfTwo(size_t n) { return (n & (n - 1)) == 0; }
 }  // namespace
 
 void ExtensionSet::GrowCapacity(size_t minimum_new_capacity) {
-  if (PROTOBUF_PREDICT_FALSE(is_large())) {
+  if (ABSL_PREDICT_FALSE(is_large())) {
     return;  // LargeMap does not have a "reserve" method.
   }
   if (flat_capacity_ >= minimum_new_capacity) {
@@ -1731,7 +1732,7 @@ constexpr uint16_t ExtensionSet::kMaximumFlatCapacity;
         //  && _MSC_VER < 1912))
 
 void ExtensionSet::Erase(int key) {
-  if (PROTOBUF_PREDICT_FALSE(is_large())) {
+  if (ABSL_PREDICT_FALSE(is_large())) {
     map_.large->erase(key);
     return;
   }

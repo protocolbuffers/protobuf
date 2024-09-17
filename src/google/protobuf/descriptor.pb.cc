@@ -2773,7 +2773,7 @@ PROTOBUF_NOINLINE void FileDescriptorSet::Clear() {
                     target, stream);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -3302,7 +3302,7 @@ PROTOBUF_NOINLINE void FileDescriptorProto::Clear() {
                 14, this_._internal_edition(), target);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -3743,7 +3743,7 @@ PROTOBUF_NOINLINE void DescriptorProto_ExtensionRange::Clear() {
                 stream);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -4021,7 +4021,7 @@ PROTOBUF_NOINLINE void DescriptorProto_ReservedRange::Clear() {
                     stream, this_._internal_end(), target);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -4514,7 +4514,7 @@ PROTOBUF_NOINLINE void DescriptorProto::Clear() {
             target = stream->WriteString(10, s, target);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -4963,7 +4963,7 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions_Declaration::Clear() {
                 6, this_._internal_repeated(), target);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -5338,7 +5338,7 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
           // Extension range [1000, 536870912)
           target = this_._impl_._extensions_._InternalSerialize(
               internal_default_instance(), 1000, 536870912, target, stream);
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -5845,7 +5845,7 @@ PROTOBUF_NOINLINE void FieldDescriptorProto::Clear() {
                 17, this_._internal_proto3_optional(), target);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -6225,7 +6225,7 @@ PROTOBUF_NOINLINE void OneofDescriptorProto::Clear() {
                 stream);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -6493,7 +6493,7 @@ PROTOBUF_NOINLINE void EnumDescriptorProto_EnumReservedRange::Clear() {
                     stream, this_._internal_end(), target);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -6858,7 +6858,7 @@ PROTOBUF_NOINLINE void EnumDescriptorProto::Clear() {
             target = stream->WriteString(5, s, target);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -7210,7 +7210,7 @@ PROTOBUF_NOINLINE void EnumValueDescriptorProto::Clear() {
                 stream);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -7552,7 +7552,7 @@ PROTOBUF_NOINLINE void ServiceDescriptorProto::Clear() {
                 stream);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -7947,7 +7947,7 @@ PROTOBUF_NOINLINE void MethodDescriptorProto::Clear() {
                 6, this_._internal_server_streaming(), target);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -8663,7 +8663,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
           // Extension range [1000, 536870912)
           target = this_._impl_._extensions_._InternalSerialize(
               internal_default_instance(), 1000, 536870912, target, stream);
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -9236,7 +9236,7 @@ PROTOBUF_NOINLINE void MessageOptions::Clear() {
           // Extension range [1000, 536870912)
           target = this_._impl_._extensions_._InternalSerialize(
               internal_default_instance(), 1000, 536870912, target, stream);
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -9573,7 +9573,7 @@ PROTOBUF_NOINLINE void FieldOptions_EditionDefault::Clear() {
                 3, this_._internal_edition(), target);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -9888,7 +9888,7 @@ PROTOBUF_NOINLINE void FieldOptions_FeatureSupport::Clear() {
                 4, this_._internal_edition_removed(), target);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -10416,7 +10416,7 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
           // Extension range [1000, 536870912)
           target = this_._impl_._extensions_._InternalSerialize(
               internal_default_instance(), 1000, 536870912, target, stream);
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -10852,7 +10852,7 @@ PROTOBUF_NOINLINE void OneofOptions::Clear() {
           // Extension range [1000, 536870912)
           target = this_._impl_._extensions_._InternalSerialize(
               internal_default_instance(), 1000, 536870912, target, stream);
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -11230,7 +11230,7 @@ PROTOBUF_NOINLINE void EnumOptions::Clear() {
           // Extension range [1000, 536870912)
           target = this_._impl_._extensions_._InternalSerialize(
               internal_default_instance(), 1000, 536870912, target, stream);
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -11649,7 +11649,7 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
           // Extension range [1000, 536870912)
           target = this_._impl_._extensions_._InternalSerialize(
               internal_default_instance(), 1000, 536870912, target, stream);
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -12029,7 +12029,7 @@ PROTOBUF_NOINLINE void ServiceOptions::Clear() {
           // Extension range [1000, 536870912)
           target = this_._impl_._extensions_._InternalSerialize(
               internal_default_instance(), 1000, 536870912, target, stream);
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -12415,7 +12415,7 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
           // Extension range [1000, 536870912)
           target = this_._impl_._extensions_._InternalSerialize(
               internal_default_instance(), 1000, 536870912, target, stream);
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -12735,7 +12735,7 @@ PROTOBUF_NOINLINE void UninterpretedOption_NamePart::Clear() {
                 2, this_._internal_is_extension(), target);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -13128,7 +13128,7 @@ PROTOBUF_NOINLINE void UninterpretedOption::Clear() {
             target = stream->WriteStringMaybeAliased(8, _s, target);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -13538,7 +13538,7 @@ PROTOBUF_NOINLINE void FeatureSet::Clear() {
           // Extension range [1000, 10001)
           target = this_._impl_._extensions_._InternalSerialize(
               internal_default_instance(), 1000, 10001, target, stream);
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -13886,7 +13886,7 @@ PROTOBUF_NOINLINE void FeatureSetDefaults_FeatureSetEditionDefault::Clear() {
                 stream);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -14227,7 +14227,7 @@ PROTOBUF_NOINLINE void FeatureSetDefaults::Clear() {
                 5, this_._internal_maximum_edition(), target);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -14607,7 +14607,7 @@ PROTOBUF_NOINLINE void SourceCodeInfo_Location::Clear() {
             target = stream->WriteString(6, s, target);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -14894,7 +14894,7 @@ PROTOBUF_NOINLINE void SourceCodeInfo::Clear() {
                     target, stream);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -15225,7 +15225,7 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo_Annotation::Clear() {
                 5, this_._internal_semantic(), target);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
@@ -15513,7 +15513,7 @@ PROTOBUF_NOINLINE void GeneratedCodeInfo::Clear() {
                     target, stream);
           }
 
-          if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+          if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
                     this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);

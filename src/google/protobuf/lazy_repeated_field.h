@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
@@ -331,14 +332,14 @@ class LazyRepeatedPtrField {
       MessageLite* submsg = value->AddMessage(prototype);
       // ptr2 points to the start of the element's encoded length.
       ptr = ctx->ParseMessage(submsg, ptr2);
-      if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
-      if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
+      if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+      if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
         if (ctx->Done(&ptr)) {
           break;
         }
       }
       ptr2 = ReadTagInternal(ptr, &next_tag);
-      if (PROTOBUF_PREDICT_FALSE(ptr2 == nullptr)) return nullptr;
+      if (ABSL_PREDICT_FALSE(ptr2 == nullptr)) return nullptr;
     } while (next_tag == expected_tag);
     return ptr;
   }
@@ -373,7 +374,7 @@ class LazyRepeatedPtrField {
             taglen_size = tmp.size();
             return ctx->AppendString(p, &tmp);
           });
-      if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+      if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
       const auto tmp_size = tmp.size();
       ABSL_DCHECK_GE(tmp_size, taglen_size);
       if (unparsed_.IsCord()) {
@@ -392,9 +393,9 @@ class LazyRepeatedPtrField {
             prototype, arena, ptr, ctx, expected_tag,
             absl::string_view(tmp.data() + taglen_size,
                               tmp_size - taglen_size));
-        if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+        if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
       }
-      if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
+      if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
         // `Done` advances the stream to the next buffer chunk.
         if (ctx->Done(&ptr)) {
           break;
@@ -406,7 +407,7 @@ class LazyRepeatedPtrField {
 
       // TODO: Try to remove the following condition for 8 and 16 bits
       // TagType.
-      if (PROTOBUF_PREDICT_FALSE(ptr2 == nullptr)) return nullptr;
+      if (ABSL_PREDICT_FALSE(ptr2 == nullptr)) return nullptr;
     } while (next_tag == expected_tag);
     if (unparsed_.IsArray()) {
       unparsed_.ZeroOutTailingBytes();

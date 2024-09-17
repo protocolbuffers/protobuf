@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "absl/base/optimization.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "google/protobuf/explicitly_constructed.h"
@@ -82,14 +83,14 @@ inline PROTOBUF_ALWAYS_INLINE bool ValidateEnumInlined(int value,
   uint64_t adjusted =
       static_cast<uint64_t>(static_cast<int64_t>(value)) - min_seq;
   // Check if the value is within the sequential part.
-  if (PROTOBUF_PREDICT_TRUE(adjusted < length_seq)) {
+  if (ABSL_PREDICT_TRUE(adjusted < length_seq)) {
     return true;
   }
 
   const uint16_t length_bitmap = static_cast<uint16_t>(data[1] & 0xFFFF);
   adjusted -= length_seq;
   // Check if the value is within the bitmap.
-  if (PROTOBUF_PREDICT_TRUE(adjusted < length_bitmap)) {
+  if (ABSL_PREDICT_TRUE(adjusted < length_bitmap)) {
     return ((data[2 + (adjusted / 32)] >> (adjusted % 32)) & 1) == 1;
   }
 
