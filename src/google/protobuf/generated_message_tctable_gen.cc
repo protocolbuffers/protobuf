@@ -321,18 +321,6 @@ bool IsFieldEligibleForFastParsing(
       }
       break;
 
-    case FieldDescriptor::TYPE_ENUM: {
-      uint8_t rmax_value;
-      if (!message_options.uses_codegen &&
-          GetEnumRangeInfo(field, rmax_value) == EnumRangeInfo::kNone) {
-        // We can't use fast parsing for these entries because we can't specify
-        // the validator.
-        // TODO: Implement a fast parser for these enums.
-        return false;
-      }
-      break;
-    }
-
     default:
       break;
   }
