@@ -1708,9 +1708,7 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
     HANDLE_FIXED_TYPE(BOOL, Bool)
 
     HANDLE_TYPE(GROUP, Group, Message)
-#ifndef PROTOBUF_ENABLE_FIX_CODE_SIZE_LAZY
-    HANDLE_TYPE(MESSAGE, Message, Message)
-#else  // !PROTOBUF_ENABLE_FIX_CODE_SIZE_LAZY
+
     case FieldDescriptor::TYPE_MESSAGE: {
       if (field->is_repeated()) {
         for (size_t j = 0; j < count; ++j) {
@@ -1729,7 +1727,6 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
           message_reflection->GetMessage(message, field));
       break;
     }
-#endif  // PROTOBUF_ENABLE_FIX_CODE_SIZE_LAZY
 
 #undef HANDLE_TYPE
 #undef HANDLE_FIXED_TYPE
