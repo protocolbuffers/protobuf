@@ -104,6 +104,11 @@
 #undef PROTOBUF_DID_UNDEF_DOMAIN
 #endif
 
+#ifdef PROTOBUF_DID_UNDEF_HZ
+#pragma pop_macro("HZ")
+#undef PROTOBUF_DID_UNDEF_HZ
+#endif
+
 #ifdef PROTOBUF_DID_UNDEF_LINUX
 #pragma pop_macro("linux")
 #endif

@@ -716,6 +716,13 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #undef DOMAIN
 #endif
 
+// HZ is a MACRO defined in Linux's kernel header asm-generic/param.h.
+#ifdef HZ
+#pragma push_macro("HZ")
+#undef HZ
+#define PROTOBUF_DID_UNDEF_HZ
+#endif
+
 // linux is a legacy MACRO defined in most popular C++ standards.
 #ifdef linux
 #pragma push_macro("linux")
