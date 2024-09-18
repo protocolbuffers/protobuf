@@ -4500,6 +4500,28 @@ TEST_F(ValidationErrorTest, ReservedFieldsDebugString) {
       file->DebugString());
 }
 
+TEST_F(ValidationErrorTest, ReservedFieldsDebugString2023) {
+  const FileDescriptor* file = BuildFile(R"pb(
+    syntax: "editions"
+    edition: EDITION_2023
+    name: "foo.proto"
+    message_type {
+      name: "Foo"
+      reserved_name: "foo"
+      reserved_name: "bar"
+      reserved_range { start: 5 end: 6 }
+      reserved_range { start: 10 end: 20 }
+    })pb");
+
+  ASSERT_EQ(
+      "edition = \"2023\";\n\n"
+      "message Foo {\n"
+      "  reserved 5, 10 to 19;\n"
+      "  reserved foo, bar;\n"
+      "}\n\n",
+      file->DebugString());
+}
+
 TEST_F(ValidationErrorTest, DebugStringReservedRangeMax) {
   const FileDescriptor* file = BuildFile(absl::Substitute(
       "name: \"foo.proto\" "
@@ -4682,6 +4704,37 @@ TEST_F(ValidationErrorTest, EnumReservedFieldsDebugString) {
       "  FOO = 3;\n"
       "  reserved -6, -5 to -4, -1 to 1, 5, 10 to 19;\n"
       "  reserved \"foo\", \"bar\";\n"
+      "}\n\n",
+      file->DebugString());
+}
+
+TEST_F(ValidationErrorTest, EnumReservedFieldsDebugString2023) {
+  const FileDescriptor* file = BuildFile(R"pb(
+    syntax: "editions"
+    edition: EDITION_2023
+    name: "foo.proto"
+    enum_type {
+      name: "Foo"
+      value { name: "FOO" number: 3 }
+      options { features { enum_type: CLOSED } }
+      reserved_name: "foo"
+      reserved_name: "bar"
+      reserved_range { start: -6 end: -6 }
+      reserved_range { start: -5 end: -4 }
+      reserved_range { start: -1 end: 1 }
+      reserved_range { start: 5 end: 5 }
+      reserved_range { start: 10 end: 19 }
+    })pb");
+
+  ASSERT_EQ(
+      "edition = \"2023\";\n\n"
+      "enum Foo {\n"
+      "  option features = {\n"
+      "    enum_type: CLOSED\n"
+      "  };\n"
+      "  FOO = 3;\n"
+      "  reserved -6, -5 to -4, -1 to 1, 5, 10 to 19;\n"
+      "  reserved foo, bar;\n"
       "}\n\n",
       file->DebugString());
 }

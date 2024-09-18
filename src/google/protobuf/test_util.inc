@@ -76,6 +76,8 @@ inline void ExpectOneofClear(const UNITTEST::TestOneof2& message);
 inline void ExpectLastRepeatedsRemoved(const UNITTEST::TestAllTypes& message);
 inline void ExpectLastRepeatedExtensionsRemoved(
     const UNITTEST::TestAllExtensions& message);
+inline void ExpectLastRepeatedExtensionsRemoved(
+    const UNITTEST::TestPackedExtensions& message);
 inline void ExpectLastRepeatedsReleased(const UNITTEST::TestAllTypes& message);
 inline void ExpectLastRepeatedExtensionsReleased(
     const UNITTEST::TestAllExtensions& message);
@@ -2071,6 +2073,42 @@ inline void TestUtil::ExpectLastRepeatedExtensionsRemoved(
   EXPECT_EQ("224",
             message.GetExtension(UNITTEST::repeated_string_piece_extension, 0));
   EXPECT_EQ("225", message.GetExtension(UNITTEST::repeated_cord_extension, 0));
+}
+
+inline void TestUtil::ExpectLastRepeatedExtensionsRemoved(
+    const UNITTEST::TestPackedExtensions& message) {
+  // Test that one element was removed.
+  ASSERT_EQ(1, message.ExtensionSize(UNITTEST::packed_int32_extension));
+  ASSERT_EQ(1, message.ExtensionSize(UNITTEST::packed_int64_extension));
+  ASSERT_EQ(1, message.ExtensionSize(UNITTEST::packed_uint32_extension));
+  ASSERT_EQ(1, message.ExtensionSize(UNITTEST::packed_uint64_extension));
+  ASSERT_EQ(1, message.ExtensionSize(UNITTEST::packed_sint32_extension));
+  ASSERT_EQ(1, message.ExtensionSize(UNITTEST::packed_sint64_extension));
+  ASSERT_EQ(1, message.ExtensionSize(UNITTEST::packed_fixed32_extension));
+  ASSERT_EQ(1, message.ExtensionSize(UNITTEST::packed_fixed64_extension));
+  ASSERT_EQ(1, message.ExtensionSize(UNITTEST::packed_sfixed32_extension));
+  ASSERT_EQ(1, message.ExtensionSize(UNITTEST::packed_sfixed64_extension));
+  ASSERT_EQ(1, message.ExtensionSize(UNITTEST::packed_float_extension));
+  ASSERT_EQ(1, message.ExtensionSize(UNITTEST::packed_double_extension));
+  ASSERT_EQ(1, message.ExtensionSize(UNITTEST::packed_bool_extension));
+  ASSERT_EQ(1, message.ExtensionSize(UNITTEST::packed_enum_extension));
+
+  // Test that the remaining element is the correct one.
+  EXPECT_EQ(601, message.GetExtension(UNITTEST::packed_int32_extension, 0));
+  EXPECT_EQ(602, message.GetExtension(UNITTEST::packed_int64_extension, 0));
+  EXPECT_EQ(603, message.GetExtension(UNITTEST::packed_uint32_extension, 0));
+  EXPECT_EQ(604, message.GetExtension(UNITTEST::packed_uint64_extension, 0));
+  EXPECT_EQ(605, message.GetExtension(UNITTEST::packed_sint32_extension, 0));
+  EXPECT_EQ(606, message.GetExtension(UNITTEST::packed_sint64_extension, 0));
+  EXPECT_EQ(607, message.GetExtension(UNITTEST::packed_fixed32_extension, 0));
+  EXPECT_EQ(608, message.GetExtension(UNITTEST::packed_fixed64_extension, 0));
+  EXPECT_EQ(609, message.GetExtension(UNITTEST::packed_sfixed32_extension, 0));
+  EXPECT_EQ(610, message.GetExtension(UNITTEST::packed_sfixed64_extension, 0));
+  EXPECT_EQ(611, message.GetExtension(UNITTEST::packed_float_extension, 0));
+  EXPECT_EQ(612, message.GetExtension(UNITTEST::packed_double_extension, 0));
+  EXPECT_TRUE(message.GetExtension(UNITTEST::packed_bool_extension, 0));
+  EXPECT_EQ(UNITTEST::FOREIGN_BAR,
+            message.GetExtension(UNITTEST::packed_enum_extension, 0));
 }
 
 inline void TestUtil::ExpectLastRepeatedsReleased(
