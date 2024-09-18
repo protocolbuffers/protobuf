@@ -3250,6 +3250,9 @@ const void* Reflection::RepeatedFieldData(
       << "the actual field type (for enums T should be the generated enum "
       << "type or int32_t).";
   if (message_type != nullptr) {
+    std::cout << "Carter: " << message_type->DebugString()
+              << " \n compared to \n"
+              << field->message_type()->DebugString();
     ABSL_CHECK_EQ(message_type, field->message_type());
   }
   if (field->is_extension()) {
