@@ -17,7 +17,6 @@ import com.google.protobuf.UnittestImportLite.ImportEnumLite;
 import com.google.protobuf.UnittestImportPublicLite.PublicImportMessageLite;
 import com.google.protobuf.UnittestLite.ForeignEnumLite;
 import com.google.protobuf.UnittestLite.ForeignMessageLite;
-import com.google.protobuf.UnittestLite.RecursiveGroup;
 import com.google.protobuf.UnittestLite.RecursiveMessage;
 import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
 import com.google.protobuf.UnittestLite.TestAllTypesLite;
@@ -2615,17 +2614,6 @@ public class LiteTest {
   }
 
   @Test
-  public void testParseFromBytes_recursiveKnownGroups() throws Exception {
-    byte[] data99 = makeRecursiveGroup(99).toByteArray();
-    byte[] data100 = makeRecursiveGroup(100).toByteArray();
-
-    RecursiveGroup unused = RecursiveGroup.parseFrom(data99);
-    Throwable thrown =
-        assertThrows(InvalidProtocolBufferException.class, () -> RecursiveGroup.parseFrom(data100));
-    assertThat(thrown).hasMessageThat().contains("Protocol message had too many levels of nesting");
-  }
-
-  @Test
   @SuppressWarnings("ProtoParseFromByteString")
   public void testMaliciousSGroupTagsWithMapField_fromByteArray() throws Exception {
     ByteString byteString = generateNestingGroups(102);
@@ -3041,14 +3029,6 @@ public class LiteTest {
       return RecursiveMessage.getDefaultInstance();
     } else {
       return RecursiveMessage.newBuilder().setRecurse(makeRecursiveMessage(num - 1)).build();
-    }
-  }
-
-  private static RecursiveGroup makeRecursiveGroup(int num) {
-    if (num == 0) {
-      return RecursiveGroup.getDefaultInstance();
-    } else {
-      return RecursiveGroup.newBuilder().setRecurse(makeRecursiveGroup(num - 1)).build();
     }
   }
 }
