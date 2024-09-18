@@ -115,7 +115,6 @@ FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* descriptor,
       break;
     case FieldDescriptor::CPPTYPE_STRING:
       is_string_ = true;
-      string_type_ = descriptor->options().ctype();
       is_inlined_ = IsStringInlined(descriptor, options);
       is_bytes_ = descriptor->type() == FieldDescriptor::TYPE_BYTES;
       has_default_constexpr_constructor_ = is_repeated_or_map;
@@ -242,15 +241,18 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return MakeSinguarMessageGenerator(field, options, scc);
     case FieldDescriptor::CPPTYPE_STRING:
-      if (field->type() == FieldDescriptor::TYPE_BYTES &&
-          field->options().ctype() == FieldOptions::CORD) {
-        if (field->real_containing_oneof()) {
-          return MakeOneofCordGenerator(field, options, scc);
-        } else {
-          return MakeSingularCordGenerator(field, options, scc);
-        }
-      } else {
-        return MakeSinguarStringGenerator(field, options, scc);
+      switch (field->cpp_string_type()) {
+        case FieldDescriptor::CppStringType::kCord:
+          if (field->type() == FieldDescriptor::TYPE_BYTES) {
+            if (field->real_containing_oneof()) {
+              return MakeOneofCordGenerator(field, options, scc);
+            } else {
+              return MakeSingularCordGenerator(field, options, scc);
+            }
+          }
+          ABSL_FALLTHROUGH_INTENDED;
+        default:
+          return MakeSinguarStringGenerator(field, options, scc);
       }
     case FieldDescriptor::CPPTYPE_ENUM:
       return MakeSinguarEnumGenerator(field, options, scc);

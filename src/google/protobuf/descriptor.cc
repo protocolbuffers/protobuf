@@ -3790,6 +3790,16 @@ bool FieldDescriptor::legacy_enum_field_treated_as_closed() const {
           enum_type()->is_closed());
 }
 
+FieldDescriptor::CppStringType FieldDescriptor::cpp_string_type() const {
+  ABSL_DCHECK(cpp_type() == FieldDescriptor::CPPTYPE_STRING);
+  switch (internal::cpp::EffectiveStringCType(this)) {
+  case FieldOptions::CORD:
+    return CppStringType::kCord;
+  default:
+    return CppStringType::kString;
+  }
+}
+
 // Location methods ===============================================
 
 bool FileDescriptor::GetSourceLocation(const std::vector<int>& path,

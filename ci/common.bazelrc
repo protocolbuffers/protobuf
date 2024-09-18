@@ -34,3 +34,5 @@ build:ubsan --copt=-DUNDEFINED_SANITIZER=1
 # Workaround for the fact that Bazel links with $CC, not $CXX
 # https://github.com/bazelbuild/bazel/issues/11122#issuecomment-613746748
 build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
+# Abseil passes nullptr to memcmp with 0 size
+build:ubsan --copt=-fno-sanitize=nonnull-attribute

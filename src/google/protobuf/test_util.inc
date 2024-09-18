@@ -137,6 +137,7 @@ inline void TestUtil::SetOptionalFields(UNITTEST::TestAllTypes* message) {
       message, message->GetDescriptor()->FindFieldByName("optional_cord"),
       "125");
 #endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
+  message->set_optional_bytes_cord("optional bytes cord");
 }
 
 // -------------------------------------------------------------------
@@ -352,6 +353,7 @@ inline void TestUtil::ExpectAllFieldsSet(
   EXPECT_TRUE(message.has_optional_string_piece());
   EXPECT_TRUE(message.has_optional_cord());
 #endif
+  EXPECT_TRUE(message.has_optional_bytes_cord());
 
   EXPECT_EQ(101, message.optional_int32());
   EXPECT_EQ(102, message.optional_int64());
@@ -381,6 +383,7 @@ inline void TestUtil::ExpectAllFieldsSet(
   EXPECT_EQ(UNITTEST::FOREIGN_BAZ, message.optional_foreign_enum());
   EXPECT_EQ(UNITTEST_IMPORT::IMPORT_BAZ, message.optional_import_enum());
 
+  EXPECT_EQ("optional bytes cord", message.optional_bytes_cord());
 
   // -----------------------------------------------------------------
 
@@ -554,6 +557,7 @@ inline void TestUtil::ExpectClear(const UNITTEST::TestAllTypes& message) {
 
   EXPECT_FALSE(message.has_optional_string_piece());
   EXPECT_FALSE(message.has_optional_cord());
+  EXPECT_FALSE(message.has_optional_bytes_cord());
 
   // Optional fields without defaults are set to zero or something like it.
   EXPECT_EQ(0, message.optional_int32());
@@ -594,6 +598,7 @@ inline void TestUtil::ExpectClear(const UNITTEST::TestAllTypes& message) {
   EXPECT_EQ(UNITTEST::FOREIGN_FOO, message.optional_foreign_enum());
   EXPECT_EQ(UNITTEST_IMPORT::IMPORT_FOO, message.optional_import_enum());
 
+  EXPECT_EQ("", message.optional_bytes_cord());
 
   // Repeated fields are empty.
   EXPECT_EQ(0, message.repeated_int32_size());
@@ -975,6 +980,8 @@ inline void TestUtil::SetAllExtensions(UNITTEST::TestAllExtensions* message) {
 
   message->SetExtension(UNITTEST::optional_string_piece_extension, "124");
   message->SetExtension(UNITTEST::optional_cord_extension, "125");
+  message->SetExtension(UNITTEST::optional_bytes_cord_extension,
+                        "optional bytes cord");
 
   message->MutableExtension(UNITTEST::optional_public_import_message_extension)
       ->set_e(126);
@@ -1204,6 +1211,7 @@ inline void TestUtil::ExpectAllExtensionsSet(
 
   EXPECT_TRUE(message.HasExtension(UNITTEST::optional_string_piece_extension));
   EXPECT_TRUE(message.HasExtension(UNITTEST::optional_cord_extension));
+  EXPECT_TRUE(message.HasExtension(UNITTEST::optional_bytes_cord_extension));
 
   EXPECT_EQ(101, message.GetExtension(UNITTEST::optional_int32_extension));
   EXPECT_EQ(102, message.GetExtension(UNITTEST::optional_int64_extension));
@@ -1242,6 +1250,8 @@ inline void TestUtil::ExpectAllExtensionsSet(
   EXPECT_EQ("124",
             message.GetExtension(UNITTEST::optional_string_piece_extension));
   EXPECT_EQ("125", message.GetExtension(UNITTEST::optional_cord_extension));
+  EXPECT_EQ("optional bytes cord",
+            message.GetExtension(UNITTEST::optional_bytes_cord_extension));
   EXPECT_EQ(
       126,
       message.GetExtension(UNITTEST::optional_public_import_message_extension)
@@ -1490,6 +1500,7 @@ inline void TestUtil::ExpectExtensionsClear(
 
   EXPECT_FALSE(message.HasExtension(UNITTEST::optional_string_piece_extension));
   EXPECT_FALSE(message.HasExtension(UNITTEST::optional_cord_extension));
+  EXPECT_FALSE(message.HasExtension(UNITTEST::optional_bytes_cord_extension));
 
   // Optional fields without defaults are set to zero or something like it.
   EXPECT_EQ(0, message.GetExtension(UNITTEST::optional_int32_extension));
@@ -1557,6 +1568,7 @@ inline void TestUtil::ExpectExtensionsClear(
   EXPECT_EQ("",
             message.GetExtension(UNITTEST::optional_string_piece_extension));
   EXPECT_EQ("", message.GetExtension(UNITTEST::optional_cord_extension));
+  EXPECT_EQ("", message.GetExtension(UNITTEST::optional_bytes_cord_extension));
 
   // Repeated fields are empty.
   EXPECT_EQ(0, message.ExtensionSize(UNITTEST::repeated_int32_extension));

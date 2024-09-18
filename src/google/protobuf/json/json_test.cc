@@ -250,7 +250,7 @@ TEST_P(JsonTest, TestDefaultValues) {
           R"("defaultSfixed64":"-50","defaultFloat":51.5,"defaultDouble":52000,"defaultBool":true,)"
           R"("defaultString":"hello","defaultBytes":"d29ybGQ=","defaultNestedEnum":"BAR",)"
           R"("defaultForeignEnum":"FOREIGN_BAR","defaultImportEnum":"IMPORT_BAR",)"
-          R"("defaultStringPiece":"abc","defaultCord":"123"})"));
+          R"("defaultStringPiece":"abc","defaultCord":"123","optionalBytesCord":""})")) << *ToJson(protobuf_unittest::TestAllTypes(), options);
 
   EXPECT_THAT(
       ToJson(protobuf_unittest::TestExtremeDefaultValues(), options),

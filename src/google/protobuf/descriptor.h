@@ -49,6 +49,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/port.h"
 
@@ -731,7 +732,8 @@ PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(Descriptor, 152);
 // - Given a DescriptorPool, call DescriptorPool::FindExtensionByNumber() or
 //   DescriptorPool::FindExtensionByPrintableName().
 // Use DescriptorPool to construct your own descriptors.
-class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
+class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
+                                        public internal::FieldDescriptorLite {
  public:
   typedef FieldDescriptorProto Proto;
 
@@ -842,6 +844,10 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   CppType cpp_type() const;           // C++ type of this field.
   const char* cpp_type_name() const;  // Name of the C++ type.
   Label label() const;                // optional/required/repeated
+
+#ifndef SWIG
+  CppStringType cpp_string_type() const;  // The C++ string type of this field.
+#endif
 
   bool is_required() const;  // shorthand for label() == LABEL_REQUIRED
   bool is_optional() const;  // shorthand for label() == LABEL_OPTIONAL
