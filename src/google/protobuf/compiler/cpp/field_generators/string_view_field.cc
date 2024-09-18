@@ -216,8 +216,6 @@ void SingularStringView::GenerateStaticMembers(io::Printer* p) const {
 }
 
 void SingularStringView::GenerateAccessorDeclarations(io::Printer* p) const {
-  ABSL_CHECK(!field_->options().has_ctype());
-
   auto vars = AnnotatedAccessors(field_, {"", "set_allocated_"});
   vars.push_back(Sub{
       "release_name",

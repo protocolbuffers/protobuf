@@ -1640,6 +1640,12 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
         field.Destroy();
         break;
       }
+      case field_layout::kRepCord: {
+        if (msg->GetArena() == nullptr) {
+          delete RefAt<absl::Cord*>(msg, current_entry->offset);
+        }
+        break;
+      }
       case field_layout::kRepSString:
       case field_layout::kRepIString:
       default:
