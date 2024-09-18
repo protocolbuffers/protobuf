@@ -368,3 +368,13 @@ rust_upb_proto_library(
     ],
     deps = [":fields-with-imported-types_proto"],
 )
+
+rust_cc_proto_library(
+    name = "test_protos_cpp_rust_proto",
+    deps = ["//src/google/protobuf:test_protos"],
+)
+
+rust_upb_proto_library(
+    name = "test_protos_upb_rust_proto",
+    deps = ["//src/google/protobuf:test_protos"],
+)

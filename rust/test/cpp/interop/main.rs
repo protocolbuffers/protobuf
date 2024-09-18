@@ -11,7 +11,9 @@ use protobuf_cpp::prelude::*;
 use protobuf_cpp::__runtime::PtrAndLen;
 use protobuf_cpp::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop};
 use std::ffi::c_void;
-use unittest_rust_proto::{TestAllExtensions, TestAllTypes, TestAllTypesMut, TestAllTypesView};
+
+use test_protos::{TestAllExtensions, TestAllTypes, TestAllTypesMut,
+TestAllTypesView};
 
 macro_rules! proto_assert_eq {
     ($lhs:expr, $rhs:expr) => {{
