@@ -30,6 +30,7 @@ jobs:
           bazel: >-
             test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
             //rust:all
+            //rust/test/cpp/...
             //rust/test/rust_proto_library_unit_test:rust_upb_aspect_test
             //src/google/protobuf/compiler/rust/...
       - name: Run Cargo tests
