@@ -700,7 +700,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   void MergeFromConcreteMessage(const RepeatedPtrFieldBase& from,
                                 CopyFn copy_fn);
 
-  // Extends capacity by at least |extend_amount|.
+  // Extends capacity by at least |extend_amount|. Returns a pointer to the
+  // next available element slot.
   //
   // Pre-condition: |extend_amount| must be > 0.
   void** InternalExtend(int extend_amount);

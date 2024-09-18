@@ -35,25 +35,27 @@ namespace internal {
 
 void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   ABSL_DCHECK(extend_amount > 0);
-  constexpr size_t ptr_size = sizeof(rep()->elements[0]);
-  int capacity = Capacity();
-  int new_capacity = capacity + extend_amount;
+  constexpr size_t kPtrSize = sizeof(rep()->elements[0]);
+  constexpr size_t kMaxSize = std::numeric_limits<size_t>::max();
+  constexpr size_t kMaxCapacity = (kMaxSize - kRepHeaderSize) / kPtrSize;
+  const int old_capacity = Capacity();
   Arena* arena = GetArena();
-  new_capacity = internal::CalculateReserveSize<void*, kRepHeaderSize>(
-      capacity, new_capacity);
-  ABSL_CHECK_LE(
-      static_cast<int64_t>(new_capacity),
-      static_cast<int64_t>(
-          (std::numeric_limits<size_t>::max() - kRepHeaderSize) / ptr_size))
-      << "Requested size is too large to fit into size_t.";
-  size_t bytes = kRepHeaderSize + ptr_size * new_capacity;
-  Rep* new_rep;
-  if (arena == nullptr) {
-    internal::SizedPtr res = internal::AllocateAtLeast(bytes);
-    new_capacity = static_cast<int>((res.n - kRepHeaderSize) / ptr_size);
-    new_rep = reinterpret_cast<Rep*>(res.p);
-  } else {
-    new_rep = reinterpret_cast<Rep*>(Arena::CreateArray<char>(arena, bytes));
+  Rep* new_rep = nullptr;
+  {
+    int new_capacity = internal::CalculateReserveSize<void*, kRepHeaderSize>(
+        old_capacity, old_capacity + extend_amount);
+    ABSL_DCHECK_LE(new_capacity, kMaxCapacity)
+        << "New capacity is too large to fit into internal representation";
+    const size_t new_size = kRepHeaderSize + kPtrSize * new_capacity;
+    if (arena == nullptr) {
+      const internal::SizedPtr alloc = internal::AllocateAtLeast(new_size);
+      new_capacity = static_cast<int>((alloc.n - kRepHeaderSize) / kPtrSize);
+      new_rep = reinterpret_cast<Rep*>(alloc.p);
+    } else {
+      auto* alloc = Arena::CreateArray<char>(arena, new_size);
+      new_rep = reinterpret_cast<Rep*>(alloc);
+    }
+    capacity_proxy_ = new_capacity - kSSOCapacity;
   }
 
   if (using_sso()) {
@@ -62,9 +64,8 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   } else {
     Rep* old_rep = rep();
     memcpy(new_rep, old_rep,
-           old_rep->allocated_size * ptr_size + kRepHeaderSize);
-
-    size_t old_size = capacity * ptr_size + kRepHeaderSize;
+           old_rep->allocated_size * kPtrSize + kRepHeaderSize);
+    size_t old_size = old_capacity * kPtrSize + kRepHeaderSize;
     if (arena == nullptr) {
       internal::SizedDelete(old_rep, old_size);
     } else {
@@ -74,7 +75,7 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
 
   tagged_rep_or_elem_ =
       reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(new_rep) + 1);
-  capacity_proxy_ = new_capacity - kSSOCapacity;
+
   return &new_rep->elements[current_size_];
 }
 
