@@ -100,7 +100,6 @@ void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
               : msg_(const_cast<$1*>(msg)), arena_(arena) {
             assert(arena != nullptr);
           }  // NOLINT
-          void* GetInternalArena() const { return arena_; }
       )cc",
       ClassName(descriptor), MessageName(descriptor));
   WriteFieldAccessorsInHeader(descriptor, output);
@@ -225,7 +224,6 @@ void WriteModelPublicDeclaration(
   output(
       R"cc(
         static const upb_MiniTable* minitable();
-        using $0Access::GetInternalArena;
       )cc",
       ClassName(descriptor));
   output("\n");
@@ -235,6 +233,8 @@ void WriteModelPublicDeclaration(
         private:
         const upb_Message* msg() const { return UPB_UPCAST(msg_); }
         upb_Message* msg() { return UPB_UPCAST(msg_); }
+
+        upb_Arena* arena() const { return arena_; }
 
         $0(upb_Message* msg, upb_Arena* arena) : $0Access() {
           msg_ = ($1*)msg;
@@ -282,7 +282,6 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
             arena_ = m.arena_;
             return *this;
           }
-          using $0Access::GetInternalArena;
       )cc",
       ClassName(descriptor));
 
@@ -294,6 +293,8 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
       R"cc(
         private:
         upb_Message* msg() const { return UPB_UPCAST(msg_); }
+
+        upb_Arena* arena() const { return arena_; }
 
         $0Proxy(upb_Message* msg, upb_Arena* arena)
             : internal::$0Access(($1*)msg, arena) {}
@@ -334,7 +335,6 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
           $0CProxy(const $0* m)
               : internal::$0Access(m->msg_, hpb::interop::upb::GetArena(m)) {}
           $0CProxy($0Proxy m);
-          using $0Access::GetInternalArena;
       )cc",
       ClassName(descriptor), MessageName(descriptor));
 
@@ -347,6 +347,7 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
         private:
         using AsNonConst = $0Proxy;
         const upb_Message* msg() const { return UPB_UPCAST(msg_); }
+        upb_Arena* arena() const { return arena_; }
 
         $0CProxy(const upb_Message* msg, upb_Arena* arena)
             : internal::$0Access(($1*)msg, arena){};

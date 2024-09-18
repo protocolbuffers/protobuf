@@ -51,12 +51,12 @@ auto* GetMessage(T&& message) {
 
 template <typename T>
 upb_Arena* GetArena(Ptr<T> message) {
-  return static_cast<upb_Arena*>(message->GetInternalArena());
+  return hpb::internal::PrivateAccess::GetInternalArena(message);
 }
 
 template <typename T>
 upb_Arena* GetArena(T* message) {
-  return static_cast<upb_Arena*>(message->GetInternalArena());
+  return hpb::internal::PrivateAccess::GetInternalArena(message);
 }
 
 /**

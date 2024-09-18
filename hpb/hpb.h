@@ -141,7 +141,7 @@ absl::Status SetExtension(
     const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
     const Extension& value) {
   static_assert(!std::is_const_v<T>);
-  auto* message_arena = static_cast<upb_Arena*>(message->GetInternalArena());
+  auto* message_arena = hpb::interop::upb::GetArena(message);
   return ::hpb::internal::SetExtension(hpb::interop::upb::GetMessage(message),
                                        message_arena, id.mini_table_ext(),
                                        hpb::interop::upb::GetMessage(&value));
@@ -155,7 +155,7 @@ absl::Status SetExtension(
     const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
     Ptr<Extension> value) {
   static_assert(!std::is_const_v<T>);
-  auto* message_arena = static_cast<upb_Arena*>(message->GetInternalArena());
+  auto* message_arena = hpb::interop::upb::GetArena(message);
   return ::hpb::internal::SetExtension(hpb::interop::upb::GetMessage(message),
                                        message_arena, id.mini_table_ext(),
                                        hpb::interop::upb::GetMessage(value));
@@ -170,8 +170,8 @@ absl::Status SetExtension(
     Extension&& value) {
   Extension ext = std::move(value);
   static_assert(!std::is_const_v<T>);
-  auto* message_arena = static_cast<upb_Arena*>(message->GetInternalArena());
-  auto* extension_arena = static_cast<upb_Arena*>(ext.GetInternalArena());
+  auto* message_arena = hpb::interop::upb::GetArena(message);
+  auto* extension_arena = hpb::interop::upb::GetArena(&ext);
   return ::hpb::internal::MoveExtension(hpb::interop::upb::GetMessage(message),
                                         message_arena, id.mini_table_ext(),
                                         hpb::interop::upb::GetMessage(&ext),
@@ -251,10 +251,10 @@ typename T::Proxy CloneMessage(Ptr<T> message, upb_Arena* arena) {
 template <typename T>
 void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
   static_assert(!std::is_const_v<T>);
-  ::hpb::internal::DeepCopy(
-      hpb::interop::upb::GetMessage(target_message),
-      hpb::interop::upb::GetMessage(source_message), T::minitable(),
-      static_cast<upb_Arena*>(target_message->GetInternalArena()));
+  ::hpb::internal::DeepCopy(hpb::interop::upb::GetMessage(target_message),
+                            hpb::interop::upb::GetMessage(source_message),
+                            T::minitable(),
+                            hpb::interop::upb::GetArena(target_message));
 }
 
 template <typename T>
@@ -285,7 +285,7 @@ ABSL_MUST_USE_RESULT bool Parse(Ptr<T> message, absl::string_view bytes) {
   static_assert(!std::is_const_v<T>);
   upb_Message_Clear(hpb::interop::upb::GetMessage(message),
                     ::hpb::interop::upb::GetMiniTable(message));
-  auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
+  auto* arena = hpb::interop::upb::GetArena(message);
   return upb_Decode(bytes.data(), bytes.size(),
                     hpb::interop::upb::GetMessage(message),
                     ::hpb::interop::upb::GetMiniTable(message),
@@ -300,7 +300,7 @@ ABSL_MUST_USE_RESULT bool Parse(
   static_assert(!std::is_const_v<T>);
   upb_Message_Clear(hpb::interop::upb::GetMessage(message),
                     ::hpb::interop::upb::GetMiniTable(message));
-  auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
+  auto* arena = hpb::interop::upb::GetArena(message);
   return upb_Decode(bytes.data(), bytes.size(),
                     hpb::interop::upb::GetMessage(message),
                     ::hpb::interop::upb::GetMiniTable(message),
@@ -322,7 +322,7 @@ ABSL_MUST_USE_RESULT bool Parse(T* message, absl::string_view bytes) {
   static_assert(!std::is_const_v<T>);
   upb_Message_Clear(hpb::interop::upb::GetMessage(message),
                     ::hpb::interop::upb::GetMiniTable(message));
-  auto* arena = static_cast<upb_Arena*>(message->GetInternalArena());
+  auto* arena = hpb::interop::upb::GetArena(message);
   return upb_Decode(bytes.data(), bytes.size(),
                     hpb::interop::upb::GetMessage(message),
                     ::hpb::interop::upb::GetMiniTable(message),
@@ -333,7 +333,7 @@ ABSL_MUST_USE_RESULT bool Parse(T* message, absl::string_view bytes) {
 template <typename T>
 absl::StatusOr<T> Parse(absl::string_view bytes, int options = 0) {
   T message;
-  auto* arena = static_cast<upb_Arena*>(message.GetInternalArena());
+  auto* arena = hpb::interop::upb::GetArena(&message);
   upb_DecodeStatus status =
       upb_Decode(bytes.data(), bytes.size(), message.msg(),
                  ::hpb::interop::upb::GetMiniTable(&message),
@@ -349,7 +349,7 @@ absl::StatusOr<T> Parse(absl::string_view bytes,
                         const ::hpb::ExtensionRegistry& extension_registry,
                         int options = 0) {
   T message;
-  auto* arena = static_cast<upb_Arena*>(message.GetInternalArena());
+  auto* arena = hpb::interop::upb::GetArena(&message);
   upb_DecodeStatus status =
       upb_Decode(bytes.data(), bytes.size(), message.msg(),
                  ::hpb::interop::upb::GetMiniTable(&message),
