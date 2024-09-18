@@ -26,6 +26,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "json/config.h"
 #include "json/reader.h"
 #include "json/value.h"
 #include "conformance/conformance.pb.h"
@@ -659,12 +660,16 @@ void BinaryAndJsonConformanceSuiteImpl<
     suite_.ReportFailure(test, level, request, response);
     return;
   }
-  Json::Reader reader;
+  Json::CharReaderBuilder builder;
   Json::Value value;
-  if (!reader.parse(response.json_payload(), value)) {
+  Json::String err;
+  const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
+  if (!reader->parse(
+          response.json_payload().c_str(),
+          response.json_payload().c_str() + response.json_payload().length(),
+          &value, &err)) {
     test.set_failure_message(
-        absl::StrCat("JSON payload cannot be parsed as valid JSON: ",
-                     reader.getFormattedErrorMessages()));
+        absl::StrCat("JSON payload cannot be parsed as valid JSON: ", err));
     suite_.ReportFailure(test, level, request, response);
     return;
   }
