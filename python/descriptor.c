@@ -1062,6 +1062,11 @@ static PyObject* PyUpb_FieldDescriptor_GetIsExtension(
   return PyBool_FromLong(upb_FieldDef_IsExtension(self->def));
 }
 
+static PyObject* PyUpb_FieldDescriptor_GetIsPacked(PyUpb_DescriptorBase* self,
+                                                   void* closure) {
+  return PyBool_FromLong(upb_FieldDef_IsPacked(self->def));
+}
+
 static PyObject* PyUpb_FieldDescriptor_GetNumber(PyUpb_DescriptorBase* self,
                                                  void* closure) {
   return PyLong_FromLong(upb_FieldDef_Number(self->def));
@@ -1164,6 +1169,7 @@ static PyGetSetDef PyUpb_FieldDescriptor_Getters[] = {
      "Default Value"},
     {"has_default_value", (getter)PyUpb_FieldDescriptor_HasDefaultValue},
     {"is_extension", (getter)PyUpb_FieldDescriptor_GetIsExtension, NULL, "ID"},
+    {"is_packed", (getter)PyUpb_FieldDescriptor_GetIsPacked, NULL, "Is Packed"},
     // TODO
     //{ "id", (getter)GetID, NULL, "ID"},
     {"message_type", (getter)PyUpb_FieldDescriptor_GetMessageType, NULL,
