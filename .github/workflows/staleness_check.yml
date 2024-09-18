@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        branch: [main, 25.x, 27.x]
+        branch: [28.x]
         os: [{ name: Linux, value: ubuntu-latest}]
 
     name: Test staleness ${{ matrix.os.name }} ${{ github.head_ref && 'PR' || matrix.branch }}
