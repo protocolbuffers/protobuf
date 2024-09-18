@@ -1,6 +1,24 @@
-"""Load dependencies needed to compile the protobuf library as a 3rd-party consumer."""
+"""Load dependencies needed to compile the protobuf library as a 3rd-party consumer.
+
+The consumers should use the following WORKSPACE snippet, which loads dependencies
+and sets up the repositories protobuf needs:
+
+```
+http_archive(
+    name = "protobuf",
+    strip_prefix = "protobuf-VERSION",
+    sha256 = ...,
+    url = ...,
+)
+
+load("@protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
+```
+"""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("//bazel/private:proto_bazel_features.bzl", "proto_bazel_features")  # buildifier: disable=bzl-visibility
 load("//python/dist:python_downloads.bzl", "python_nuget_package", "python_source_archive")
 load("//python/dist:system_python.bzl", "system_python")
 
@@ -33,11 +51,11 @@ def protobuf_deps():
     if not native.existing_rule("bazel_skylib"):
         http_archive(
             name = "bazel_skylib",
+            sha256 = "d00f1389ee20b60018e92644e0948e16e350a7707219e7a390fb0a99b6ec9262",
             urls = [
-                "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
-                "https://github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
+                "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.7.0/bazel-skylib-1.7.0.tar.gz",
+                "https://github.com/bazelbuild/bazel-skylib/releases/download/1.7.0/bazel-skylib-1.7.0.tar.gz",
             ],
-            sha256 = "74d544d96f4a5bb630d465ca8bbcfe231e3594e5aae57e1edbf17a6eb3ca2506",
         )
 
     if not native.existing_rule("com_google_absl"):
@@ -86,16 +104,8 @@ def protobuf_deps():
             sha256 = "469b7f3b580b4fcf8112f4d6d0d5a4ce8e1ad5e21fee67d8e8335d5f8b3debab",
         )
 
-    # TODO: remove after toolchain types are moved to protobuf
-    if not native.existing_rule("rules_proto"):
-        http_archive(
-            name = "rules_proto",
-            sha256 = "dc3fb206a2cb3441b485eb1e423165b231235a1ea9b031b4433cf7bc1fa460dd",
-            strip_prefix = "rules_proto-5.3.0-21.7",
-            urls = [
-                "https://github.com/bazelbuild/rules_proto/archive/refs/tags/5.3.0-21.7.tar.gz",
-            ],
-        )
+    if not native.existing_rule("proto_bazel_features"):
+        proto_bazel_features(name = "proto_bazel_features")
 
     if not native.existing_rule("rules_python"):
         http_archive(
