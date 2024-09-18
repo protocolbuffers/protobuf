@@ -281,6 +281,10 @@ constexpr bool DebugHardenForceCopyInMove() {
   return false;
 }
 
+constexpr bool DebugHardenForceAllocationOnConstruction() {
+  return false;
+}
+
 constexpr bool DebugHardenFuzzMessageSpaceUsedLong() {
   return false;
 }

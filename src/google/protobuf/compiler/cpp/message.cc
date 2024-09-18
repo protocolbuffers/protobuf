@@ -3276,10 +3276,9 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
   auto force_allocation = [&] {
     if (ShouldForceAllocationOnConstruction(descriptor_, options_)) {
       p->Emit(R"cc(
-        //~ force alignment
-#ifdef PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION
-        $mutable_unknown_fields$;
-#endif  // PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION
+        if ($pbi$::DebugHardenForceAllocationOnConstruction()) {
+          $mutable_unknown_fields$;
+        }
       )cc");
     }
   };
