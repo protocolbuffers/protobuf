@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>4.27.5</version>
+    <version>4.27.6</version>
   </parent>
 
   <artifactId>protobuf-java</artifactId>
