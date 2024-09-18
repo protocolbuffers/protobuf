@@ -48,7 +48,7 @@ namespace internal {
 #define GOOGLE_PROTOBUF_VERSION 5028002
 
 // A suffix string for alpha, beta or rc releases. Empty for stable releases.
-#define GOOGLE_PROTOBUF_VERSION_SUFFIX "-dev"
+#define GOOGLE_PROTOBUF_VERSION_SUFFIX ""
 
 // Verifies that the protobuf version a program was compiled with matches what
 // it is linked/running with. Use the macro below to call this function.
