@@ -25,7 +25,7 @@ extern "C" void MutateTestAllTypes(protobuf_unittest::TestAllTypes* msg) {
 
 extern "C" SerializedData SerializeTestAllTypes(
     const protobuf_unittest::TestAllTypes* msg) {
-  SerializedData data(nullptr, 0);
+  SerializedData data;
   ABSL_CHECK(SerializeMsg(msg, &data));
   return data;
 }
