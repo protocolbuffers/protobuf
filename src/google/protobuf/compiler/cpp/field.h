@@ -95,9 +95,6 @@ class FieldGeneratorBase {
   // Returns true if the field API uses bytes (void) instead of chars.
   bool is_bytes() const { return is_bytes_; }
 
-  // Returns the public API string type for string fields.
-  FieldOptions::CType string_type() const { return string_type_; }
-
   // Returns true if this field is part of a oneof field.
   bool is_oneof() const { return is_oneof_; }
 
@@ -217,7 +214,6 @@ class FieldGeneratorBase {
   bool is_lazy_ = false;
   bool is_weak_ = false;
   bool is_oneof_ = false;
-  FieldOptions::CType string_type_ = FieldOptions::STRING;
   bool has_default_constexpr_constructor_ = false;
 };
 
@@ -269,7 +265,6 @@ class FieldGenerator {
   bool is_foreign() const { return impl_->is_foreign(); }
   bool is_string() const { return impl_->is_string(); }
   bool is_bytes() const { return impl_->is_bytes(); }
-  FieldOptions::CType string_type() const { return impl_->string_type(); }
   bool is_oneof() const { return impl_->is_oneof(); }
   bool is_inlined() const { return impl_->is_inlined(); }
   bool has_default_constexpr_constructor() const {

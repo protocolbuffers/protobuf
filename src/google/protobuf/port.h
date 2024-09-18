@@ -29,6 +29,12 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+#include <sanitizer/asan_interface.h>
+#elif defined(ABSL_HAVE_MEMORY_SANITIZER)
+#include <sanitizer/msan_interface.h>
+#endif
+
 // must be last
 #include "google/protobuf/port_def.inc"
 
@@ -254,10 +260,63 @@ inline constexpr bool DebugHardenClearOneofMessageOnArena() {
 #endif
 }
 
-constexpr bool PerformDebugChecks() {
-#if defined(NDEBUG) && !defined(PROTOBUF_ASAN) && !defined(PROTOBUF_MSAN) && \
-    !defined(PROTOBUF_TSAN)
+constexpr bool HasASan() {
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  return true;
+#else
   return false;
+#endif
+}
+
+constexpr bool HasMSan() {
+#if defined(ABSL_HAVE_MEMORY_SANITIZER)
+  return true;
+#else
+  return false;
+#endif
+}
+
+constexpr bool HasTSan() {
+#if defined(ABSL_HAVE_THREAD_SANITIZER)
+  return true;
+#else
+  return false;
+#endif
+}
+
+constexpr bool HasMemoryPoisoning() { return HasASan() || HasMSan(); }
+
+PROTOBUF_ALWAYS_INLINE inline void PoisonMemoryRegion(const void* ptr,
+                                                      size_t n) {
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  ASAN_POISON_MEMORY_REGION(ptr, n);
+#elif defined(ABSL_HAVE_MEMORY_SANITIZER)
+  __msan_poison(ptr, n);
+#endif
+}
+
+PROTOBUF_ALWAYS_INLINE inline void UnpoisonMemoryRegion(const void* ptr,
+                                                        size_t n) {
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  ASAN_UNPOISON_MEMORY_REGION(ptr, n);
+#elif defined(ABSL_HAVE_MEMORY_SANITIZER)
+  __msan_unpoison(ptr, n);
+#endif
+}
+
+inline bool IsMemoryPoisoned(const void* ptr) {
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  return __asan_address_is_poisoned(ptr);
+#elif defined(ABSL_HAVE_MEMORY_SANITIZER)
+  return __msan_test_shadow(ptr, 1) >= 0;
+#else
+  return false;
+#endif
+}
+
+constexpr bool PerformDebugChecks() {
+#if defined(NDEBUG)
+  return internal::HasASan() || internal::HasMSan() || internal::HasTSan();
 #else
   return true;
 #endif
@@ -340,7 +399,7 @@ Unreachable() {
 }
 #endif
 
-#ifdef PROTOBUF_TSAN
+#if defined(ABSL_HAVE_THREAD_SANITIZER)
 // TODO: it would be preferable to use __tsan_external_read/
 // __tsan_external_write, but they can cause dlopen issues.
 template <typename T>

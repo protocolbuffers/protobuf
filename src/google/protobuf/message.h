@@ -1586,12 +1586,11 @@ bool SplitFieldHasExtraIndirectionStatic(const FieldDescriptor* field) {
 
 inline void MaybePoisonAfterClear(Message* root) {
   if (root == nullptr) return;
-#ifndef PROTOBUF_ASAN
-  root->Clear();
-#else
-  const Reflection* reflection = root->GetReflection();
-  reflection->MaybePoisonAfterClear(*root);
-#endif
+  if (internal::HasMemoryPoisoning()) {
+    root->GetReflection()->MaybePoisonAfterClear(*root);
+  } else {
+    root->Clear();
+  }
 }
 
 }  // namespace internal

@@ -43,6 +43,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unittest.pb.h"
 
@@ -529,9 +530,9 @@ TEST(RepeatedField, ReserveLarge) {
 }
 
 TEST(RepeatedField, ReserveHuge) {
-#if defined(PROTOBUF_ASAN) || defined(PROTOBUF_MSAN)
-  GTEST_SKIP() << "Disabled because sanitizer is active";
-#endif
+  if (internal::HasASan() || internal::HasMSan()) {
+    GTEST_SKIP() << "Disabled because sanitizer is active";
+  }
   // Largest value that does not clamp to the large limit:
   constexpr int non_clamping_limit =
       (std::numeric_limits<int>::max() - sizeof(Arena*)) / 2;
@@ -1231,19 +1232,18 @@ TEST(RepeatedField, HardenAgainstBadTruncate) {
   }
 }
 
-#if defined(GTEST_HAS_DEATH_TEST) && \
-    (defined(PROTOBUF_ASAN) || defined(PROTOBUF_MSAN))
+#if defined(GTEST_HAS_DEATH_TEST)
 
 // This function verifies that the code dies under ASAN or MSAN trying to both
 // read and write the reserved element directly beyond the last element.
 void VerifyDeathOnWriteAndReadAccessBeyondEnd(RepeatedField<int64_t>& field) {
   auto* end = field.Mutable(field.size() - 1) + 1;
-#if defined(PROTOBUF_ASAN)
-  EXPECT_DEATH(*end = 1, "container-overflow");
-  EXPECT_DEATH(EXPECT_NE(*end, 1), "container-overflow");
-#elif defined(PROTOBUF_MSAN)
-  EXPECT_DEATH(EXPECT_NE(*end, 1), "use-of-uninitialized-value");
-#endif
+  if (internal::HasASan()) {
+    EXPECT_DEATH(*end = 1, "container-overflow");
+    EXPECT_DEATH(EXPECT_NE(*end, 1), "container-overflow");
+  } else if (internal::HasMSan()) {
+    EXPECT_DEATH(EXPECT_NE(*end, 1), "use-of-uninitialized-value");
+  }
 
   // Confirm we died a death of *SAN
   EXPECT_EQ(field.AddAlreadyReserved(), end);
@@ -1252,6 +1252,9 @@ void VerifyDeathOnWriteAndReadAccessBeyondEnd(RepeatedField<int64_t>& field) {
 }
 
 TEST(RepeatedField, PoisonsMemoryOnAdd) {
+  if (!internal::HasMemoryPoisoning()) {
+    GTEST_SKIP() << "Missing poisoning feature.";
+  }
   RepeatedField<int64_t> field;
   do {
     field.Add(0);
@@ -1260,6 +1263,9 @@ TEST(RepeatedField, PoisonsMemoryOnAdd) {
 }
 
 TEST(RepeatedField, PoisonsMemoryOnAddAlreadyReserved) {
+  if (!internal::HasMemoryPoisoning()) {
+    GTEST_SKIP() << "Missing poisoning feature.";
+  }
   RepeatedField<int64_t> field;
   field.Reserve(2);
   field.AddAlreadyReserved();
@@ -1267,6 +1273,9 @@ TEST(RepeatedField, PoisonsMemoryOnAddAlreadyReserved) {
 }
 
 TEST(RepeatedField, PoisonsMemoryOnAddNAlreadyReserved) {
+  if (!internal::HasMemoryPoisoning()) {
+    GTEST_SKIP() << "Missing poisoning feature.";
+  }
   RepeatedField<int64_t> field;
   field.Reserve(10);
   field.AddNAlreadyReserved(8);
@@ -1274,6 +1283,9 @@ TEST(RepeatedField, PoisonsMemoryOnAddNAlreadyReserved) {
 }
 
 TEST(RepeatedField, PoisonsMemoryOnResize) {
+  if (!internal::HasMemoryPoisoning()) {
+    GTEST_SKIP() << "Missing poisoning feature.";
+  }
   RepeatedField<int64_t> field;
   field.Add(0);
   do {
@@ -1287,6 +1299,9 @@ TEST(RepeatedField, PoisonsMemoryOnResize) {
 }
 
 TEST(RepeatedField, PoisonsMemoryOnTruncate) {
+  if (!internal::HasMemoryPoisoning()) {
+    GTEST_SKIP() << "Missing poisoning feature.";
+  }
   RepeatedField<int64_t> field;
   field.Add(0);
   field.Add(1);
@@ -1295,6 +1310,9 @@ TEST(RepeatedField, PoisonsMemoryOnTruncate) {
 }
 
 TEST(RepeatedField, PoisonsMemoryOnReserve) {
+  if (!internal::HasMemoryPoisoning()) {
+    GTEST_SKIP() << "Missing poisoning feature.";
+  }
   RepeatedField<int64_t> field;
   field.Add(1);
   field.Reserve(field.Capacity() + 1);
@@ -1302,6 +1320,9 @@ TEST(RepeatedField, PoisonsMemoryOnReserve) {
 }
 
 TEST(RepeatedField, PoisonsMemoryOnAssign) {
+  if (!internal::HasMemoryPoisoning()) {
+    GTEST_SKIP() << "Missing poisoning feature.";
+  }
   RepeatedField<int64_t> src;
   RepeatedField<int64_t> field;
   src.Add(1);

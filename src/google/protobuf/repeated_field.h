@@ -560,8 +560,8 @@ class RepeatedField final
       // We need to manually unpoison the SOO buffer because in reflection for
       // split repeated fields, we poison the whole SOO buffer even when we
       // don't actually use the whole SOO buffer (e.g. for RepeatedField<bool>).
-      PROTOBUF_UNPOISON_MEMORY_REGION(soo_rep_.short_rep.data,
-                                      sizeof(soo_rep_.short_rep.data));
+      internal::UnpoisonMemoryRegion(soo_rep_.short_rep.data,
+                                     sizeof(soo_rep_.short_rep.data));
     }
   }
 

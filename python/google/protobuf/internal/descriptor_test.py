@@ -727,7 +727,7 @@ class GeneratedDescriptorTest(unittest.TestCase):
     excepted_dict['new_key'] = 'new'
     self.assertNotEqual(mapping, excepted_dict)
     self.assertRaises(KeyError, mapping.__getitem__, 'key_error')
-    self.assertRaises(KeyError, mapping.__getitem__, len(mapping) + 1)
+    self.assertRaises(KeyError, mapping.__getitem__, len(mapping) * 2)
     # TODO: Add __repr__ support for DescriptorMapping.
     if api_implementation.Type() == 'cpp':
       self.assertEqual(str(mapping)[0], '<')

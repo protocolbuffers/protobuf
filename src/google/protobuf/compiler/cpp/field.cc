@@ -130,7 +130,6 @@ FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* field,
       break;
     case FieldDescriptor::CPPTYPE_STRING:
       is_string_ = true;
-      string_type_ = field->options().ctype();
       is_inlined_ = IsStringInlined(field, options);
       is_bytes_ = field->type() == FieldDescriptor::TYPE_BYTES;
       has_default_constexpr_constructor_ = is_repeated_or_map;
@@ -229,40 +228,6 @@ void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
 }
 
 namespace {
-// Use internal types instead of ctype or string_type.
-enum class StringType {
-  kView,
-  kString,
-  kCord,
-  kStringPiece,
-};
-
-StringType GetStringType(const FieldDescriptor& field) {
-  ABSL_CHECK_EQ(field.cpp_type(), FieldDescriptor::CPPTYPE_STRING);
-
-  if (field.options().has_ctype()) {
-    switch (field.options().ctype()) {
-      case FieldOptions::CORD:
-        return StringType::kCord;
-      case FieldOptions::STRING_PIECE:
-        return StringType::kStringPiece;
-      default:
-        return StringType::kString;
-    }
-  }
-
-  const pb::CppFeatures& cpp_features =
-      CppGenerator::GetResolvedSourceFeatures(field).GetExtension(::pb::cpp);
-  switch (cpp_features.string_type()) {
-    case pb::CppFeatures::CORD:
-      return StringType::kCord;
-    case pb::CppFeatures::VIEW:
-      return StringType::kView;
-    default:
-      return StringType::kString;
-  }
-}
-
 std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
                                                   const Options& options,
                                                   MessageSCCAnalyzer* scc) {
@@ -279,7 +244,7 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
       case FieldDescriptor::CPPTYPE_MESSAGE:
         return MakeRepeatedMessageGenerator(field, options, scc);
       case FieldDescriptor::CPPTYPE_STRING: {
-        if (GetStringType(*field) == StringType::kView) {
+        if (field->cpp_string_type() == FieldDescriptor::CppStringType::kView) {
           return MakeRepeatedStringViewGenerator(field, options, scc);
         } else {
           return MakeRepeatedStringGenerator(field, options, scc);
@@ -303,10 +268,10 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
     case FieldDescriptor::CPPTYPE_ENUM:
       return MakeSinguarEnumGenerator(field, options, scc);
     case FieldDescriptor::CPPTYPE_STRING: {
-      switch (GetStringType(*field)) {
-        case StringType::kView:
+      switch (field->cpp_string_type()) {
+        case FieldDescriptor::CppStringType::kView:
           return MakeSingularStringViewGenerator(field, options, scc);
-        case StringType::kCord:
+        case FieldDescriptor::CppStringType::kCord:
           if (field->type() == FieldDescriptor::TYPE_BYTES) {
             if (field->real_containing_oneof()) {
               return MakeOneofCordGenerator(field, options, scc);

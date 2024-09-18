@@ -59,7 +59,9 @@ using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::TestEmptyMessage;
 using protobuf_unittest::TestOneof2;
 using protobuf_unittest::TestRepeatedString;
+using ::testing::AnyOf;
 using ::testing::ElementsAreArray;
+using ::testing::HasSubstr;
 
 namespace google {
 namespace protobuf {
@@ -1537,13 +1539,15 @@ TEST(ArenaTest, ClearOneofMessageOnArena) {
   child->set_moo_int(100);
   message->clear_foo_message();
 
-#ifndef PROTOBUF_ASAN
-  EXPECT_NE(child->moo_int(), 100);
-#else
+  if (internal::HasMemoryPoisoning()) {
 #if GTEST_HAS_DEATH_TEST && defined(__cpp_if_constexpr)
-  EXPECT_DEATH(EXPECT_EQ(child->moo_int(), 0), "use-after-poison");
+    EXPECT_DEATH(EXPECT_EQ(child->moo_int(), 0),
+                 AnyOf(/* asan */ HasSubstr("use-after-poison"),
+                       /* msan */ HasSubstr("use-of-uninitialized-value")));
 #endif
-#endif
+  } else {
+    EXPECT_NE(child->moo_int(), 100);
+  }
 }
 
 TEST(ArenaTest, CopyValuesWithinOneof) {
@@ -1838,7 +1842,10 @@ TEST(ArenaTest, SpaceReuseForArraysSizeChecks) {
 }
 
 TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
-#ifdef PROTOBUF_ASAN
+  if (!internal::HasMemoryPoisoning()) {
+    GTEST_SKIP() << "Memory poisoning is disabled.";
+  }
+
   char buf[1024]{};
   constexpr int kSize = 32;
   {
@@ -1847,19 +1854,19 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
     for (int i = 0; i < 100; ++i) {
       void* p = Arena::CreateArray<char>(&arena, kSize);
       // Simulate other ASan client managing shadow memory.
-      ASAN_POISON_MEMORY_REGION(p, kSize);
-      ASAN_UNPOISON_MEMORY_REGION(p, kSize - 4);
+      internal::PoisonMemoryRegion(p, kSize);
+      internal::UnpoisonMemoryRegion(p, kSize - 4);
       pointers.push_back(p);
     }
     for (void* p : pointers) {
       internal::ArenaTestPeer::ReturnArrayMemory(&arena, p, kSize);
       // The first one is not poisoned because it becomes the freelist.
-      if (p != pointers[0]) EXPECT_TRUE(__asan_address_is_poisoned(p));
+      if (p != pointers[0]) EXPECT_TRUE(internal::IsMemoryPoisoned(p));
     }
 
     bool found_poison = false;
     for (char& c : buf) {
-      if (__asan_address_is_poisoned(&c)) {
+      if (internal::IsMemoryPoisoned(&c)) {
         found_poison = true;
         break;
       }
@@ -1869,12 +1876,8 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
 
   // Should not be poisoned after destruction.
   for (char& c : buf) {
-    ASSERT_FALSE(__asan_address_is_poisoned(&c));
+    ASSERT_FALSE(internal::IsMemoryPoisoned(&c));
   }
-
-#else   // PROTOBUF_ASAN
-  GTEST_SKIP();
-#endif  // PROTOBUF_ASAN
 }
 
 

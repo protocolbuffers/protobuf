@@ -2954,7 +2954,8 @@ PROTOBUF_EXPORT bool HasHasbit(const FieldDescriptor* field);
 template <typename FieldDesc = FieldDescriptor,
           typename FieldOpts = FieldOptions>
 typename FieldOpts::CType EffectiveStringCType(const FieldDesc* field) {
-  // TODO Replace this function with FieldDescriptor::string_type;
+  // TODO Replace this function with
+  // FieldDescriptor::cpp_string_type;
   switch (field->cpp_string_type()) {
     case FieldDescriptor::CppStringType::kCord:
       return FieldOpts::CORD;

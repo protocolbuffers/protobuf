@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
@@ -26,6 +27,9 @@
 
 using proto3_arena_unittest::ForeignMessage;
 using proto3_arena_unittest::TestAllTypes;
+
+using ::testing::AnyOf;
+using ::testing::HasSubstr;
 
 namespace google {
 namespace protobuf {
@@ -287,13 +291,15 @@ TEST(Proto3ArenaTest, CheckOneofMessageFieldIsCleared) {
   child->set_bb(100);
   msg->Clear();
 
-#ifndef PROTOBUF_ASAN
-  EXPECT_EQ(child->bb(), 0);
-#else
+  if (internal::HasMemoryPoisoning()) {
 #if GTEST_HAS_DEATH_TEST && defined(__cpp_if_constexpr)
-  EXPECT_DEATH(EXPECT_EQ(child->bb(), 100), "use-after-poison");
+    EXPECT_DEATH(EXPECT_EQ(child->bb(), 100),
+                 AnyOf(/* asan */ HasSubstr("use-after-poison"),
+                       /* msan */ HasSubstr("use-of-uninitialized-value")));
 #endif
-#endif
+  } else {
+    EXPECT_EQ(child->bb(), 0);
+  }
 }
 
 TEST(Proto3OptionalTest, OptionalFieldDescriptor) {
