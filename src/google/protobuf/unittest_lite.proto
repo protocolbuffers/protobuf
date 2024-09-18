@@ -508,5 +508,5 @@ message RecursiveMessage {
 }
 
 message RecursiveGroup {
-  RecursiveGroup recurse = 1 [features.message_encoding = DELIMITED];
+  optional RecursiveGroup recurse = 1 [features.message_encoding = DELIMITED];
 }
