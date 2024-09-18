@@ -1038,6 +1038,7 @@ cc_test(
     name = "string_view_test",
     srcs = ["string_view_test.cc"],
     deps = [
+        ":port",
         ":protobuf",
         ":unittest_string_view_cc_proto",
         "@com_google_absl//absl/strings:string_view",
@@ -1578,7 +1579,6 @@ cc_test(
         "message_unittest.inc",
         "message_unittest_legacy_apis.inc",
     ],
-    data = [":testdata"],
     deps = [
         ":arena",
         ":cc_test_protos",
@@ -1609,7 +1609,6 @@ cc_test(
         "edition_message_unittest.cc",
         "message_unittest.inc",
     ],
-    data = [":testdata"],
     deps = [
         ":arena",
         ":cc_test_protos",

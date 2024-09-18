@@ -168,10 +168,10 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
    : field->is_repeated() ? PROTOBUF_PICK_FUNCTION(fn##R) \
                           : PROTOBUF_PICK_FUNCTION(fn##S))
 
-#define PROTOBUF_PICK_STRING_FUNCTION(fn)                       \
-  (field->options().ctype() == FieldOptions::CORD               \
-       ? PROTOBUF_PICK_FUNCTION(fn##cS)                         \
-   : options.is_string_inlined ? PROTOBUF_PICK_FUNCTION(fn##iS) \
+#define PROTOBUF_PICK_STRING_FUNCTION(fn)                            \
+  (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord \
+       ? PROTOBUF_PICK_FUNCTION(fn##cS)                              \
+   : options.is_string_inlined ? PROTOBUF_PICK_FUNCTION(fn##iS)      \
                                : PROTOBUF_PICK_REPEATABLE_FUNCTION(fn))
 
   const FieldDescriptor* field = entry.field;
@@ -304,10 +304,12 @@ bool IsFieldEligibleForFastParsing(
   switch (field->type()) {
       // Some bytes fields can be handled on fast path.
     case FieldDescriptor::TYPE_STRING:
-    case FieldDescriptor::TYPE_BYTES:
-      if (field->options().ctype() == FieldOptions::STRING) {
+    case FieldDescriptor::TYPE_BYTES: {
+      auto ctype = field->cpp_string_type();
+      if (ctype == FieldDescriptor::CppStringType::kString ||
+          ctype == FieldDescriptor::CppStringType::kView) {
         // strings are fine...
-      } else if (field->options().ctype() == FieldOptions::CORD) {
+      } else if (ctype == FieldDescriptor::CppStringType::kCord) {
         // Cords are worth putting into the fast table, if they're not repeated
         if (field->is_repeated()) return false;
       } else {
@@ -321,6 +323,7 @@ bool IsFieldEligibleForFastParsing(
         aux_idx = entry.inlined_string_idx;
       }
       break;
+    }
 
     case FieldDescriptor::TYPE_ENUM: {
       uint8_t rmax_value;
@@ -760,12 +763,13 @@ uint16_t MakeTypeCardForField(
   // Fill in extra information about string and bytes field representations.
   if (field->type() == FieldDescriptor::TYPE_BYTES ||
       field->type() == FieldDescriptor::TYPE_STRING) {
-    switch (internal::cpp::EffectiveStringCType(field)) {
-      case FieldOptions::CORD:
+    switch (field->cpp_string_type()) {
+      case FieldDescriptor::CppStringType::kCord:
         // `Cord` is always used, even for repeated fields.
         type_card |= fl::kRepCord;
         break;
-      case FieldOptions::STRING:
+      case FieldDescriptor::CppStringType::kView:
+      case FieldDescriptor::CppStringType::kString:
         if (field->is_repeated()) {
           // A repeated string field uses RepeatedPtrField<std::string>
           // (unless it has a ctype option; see above).
@@ -775,8 +779,6 @@ uint16_t MakeTypeCardForField(
           type_card |= fl::kRepAString;
         }
         break;
-      default:
-        Unreachable();
     }
   }
 
