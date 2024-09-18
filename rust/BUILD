@@ -130,7 +130,10 @@ rust_library(
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
-    rustc_flags = ["--cfg=cpp_kernel"],
+    rustc_flags = [
+        "--cfg=cpp_kernel",
+        "--cfg=bzl",
+    ],
     deps = [
         ":utf8",
         "//rust/cpp_kernel:cpp_api",
