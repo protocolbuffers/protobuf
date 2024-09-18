@@ -3305,18 +3305,29 @@ void Reflection::PopulateTcParseEntries(
     TcParseTableBase::FieldEntry* entries) const {
   for (const auto& entry : table_info.field_entries) {
     const FieldDescriptor* field = entry.field;
-    const OneofDescriptor* oneof = field->real_containing_oneof();
-    entries->offset = schema_.GetFieldOffset(field);
-    if (oneof != nullptr) {
-      entries->has_idx = schema_.oneof_case_offset_ + 4 * oneof->index();
-    } else if (schema_.HasHasbits()) {
-      entries->has_idx =
-          static_cast<int>(8 * schema_.HasBitsOffset() + entry.hasbit_idx);
+    if (field->type() == field->TYPE_ENUM &&
+        (entry.type_card & internal::field_layout::kTvMask) ==
+            internal::field_layout::kTvEnum &&
+        table_info.aux_entries[entry.aux_idx].type ==
+            internal::TailCallTableInfo::kEnumValidator) {
+      // Mini parse can't handle it. Fallback to reflection.
+      *entries = {};
+      table_info.aux_entries[entry.aux_idx] = {};
     } else {
-      entries->has_idx = 0;
+      const OneofDescriptor* oneof = field->real_containing_oneof();
+      entries->offset = schema_.GetFieldOffset(field);
+      if (oneof != nullptr) {
+        entries->has_idx = schema_.oneof_case_offset_ + 4 * oneof->index();
+      } else if (schema_.HasHasbits()) {
+        entries->has_idx =
+            static_cast<int>(8 * schema_.HasBitsOffset() + entry.hasbit_idx);
+      } else {
+        entries->has_idx = 0;
+      }
+      entries->aux_idx = entry.aux_idx;
+      entries->type_card = entry.type_card;
     }
-    entries->aux_idx = entry.aux_idx;
-    entries->type_card = entry.type_card;
+
     ++entries;
   }
 }
@@ -3361,8 +3372,7 @@ void Reflection::PopulateTcParseFieldAux(
                                    aux_entry.enum_range.size};
         break;
       case internal::TailCallTableInfo::kEnumValidator:
-        field_aux++->enum_data =
-            aux_entry.field->enum_type()->GetValidatorData();
+        ABSL_LOG(FATAL) << "Not supported.";
         break;
       case internal::TailCallTableInfo::kNumericOffset:
         field_aux++->offset = aux_entry.offset;

@@ -1455,8 +1455,6 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
-  const uint32_t* GetValidatorData() const;
-
   // True if this is a placeholder for an unknown type.
   bool is_placeholder_ : 1;
   // True if this is a placeholder and the type name wasn't fully-qualified.
@@ -1487,8 +1485,6 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   EnumDescriptor::ReservedRange* reserved_ranges_;
   const std::string** reserved_names_;
 
-  mutable std::atomic<const uint32_t*> validator_data_;
-
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<EnumDescriptor>() and AllocateArray<EnumDescriptor>() in
   // descriptor.cc and update them to initialize the field.
@@ -1505,7 +1501,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   friend class Reflection;
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(EnumDescriptor, 96);
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(EnumDescriptor, 88);
 
 // Describes an individual enum constant of a particular type.  To get the
 // EnumValueDescriptor for a given enum value, first get the EnumDescriptor
