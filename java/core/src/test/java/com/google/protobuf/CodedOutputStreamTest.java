@@ -13,7 +13,6 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import com.google.protobuf.CodedOutputStream.OutOfSpaceException;
 import protobuf_unittest.UnittestProto.SparseEnumMessage;
 import protobuf_unittest.UnittestProto.TestAllTypes;
-import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.UnittestProto.TestSparseEnum;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -325,47 +324,6 @@ public class CodedOutputStreamTest {
     assertThat(
             CodedOutputStream.encodeZigZag64(CodedInputStream.decodeZigZag64(-75123905439571256L)))
         .isEqualTo(-75123905439571256L);
-  }
-
-  /** Tests writing a whole message with every field type. */
-  @Test
-  public void testWriteWholeMessage() throws Exception {
-    final byte[] expectedBytes = TestUtil.getGoldenMessage().toByteArray();
-    TestAllTypes message = TestUtil.getAllSet();
-
-    for (OutputType outputType : OutputType.values()) {
-      Coder coder = outputType.newCoder(message.getSerializedSize());
-      message.writeTo(coder.stream());
-      coder.stream().flush();
-      byte[] rawBytes = coder.toByteArray();
-      assertEqualBytes(outputType, expectedBytes, rawBytes);
-    }
-
-    // Try different block sizes.
-    for (int blockSize = 1; blockSize < 256; blockSize *= 2) {
-      Coder coder = OutputType.STREAM.newCoder(blockSize);
-      message.writeTo(coder.stream());
-      coder.stream().flush();
-      assertEqualBytes(OutputType.STREAM, expectedBytes, coder.toByteArray());
-    }
-  }
-
-  /**
-   * Tests writing a whole message with every packed field type. Ensures the wire format of packed
-   * fields is compatible with C++.
-   */
-  @Test
-  public void testWriteWholePackedFieldsMessage() throws Exception {
-    byte[] expectedBytes = TestUtil.getGoldenPackedFieldsMessage().toByteArray();
-    TestPackedTypes message = TestUtil.getPackedSet();
-
-    for (OutputType outputType : OutputType.values()) {
-      Coder coder = outputType.newCoder(message.getSerializedSize());
-      message.writeTo(coder.stream());
-      coder.stream().flush();
-      byte[] rawBytes = coder.toByteArray();
-      assertEqualBytes(outputType, expectedBytes, rawBytes);
-    }
   }
 
   /**

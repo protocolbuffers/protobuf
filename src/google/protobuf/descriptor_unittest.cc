@@ -7298,6 +7298,20 @@ TEST_F(FeaturesTest, Proto2Features) {
       }
       field { name: "utf8" number: 6 label: LABEL_REPEATED type: TYPE_STRING }
       field { name: "req" number: 7 label: LABEL_REQUIRED type: TYPE_INT32 }
+      field {
+        name: "cord"
+        number: 8
+        label: LABEL_OPTIONAL
+        type: TYPE_BYTES
+        options { ctype: CORD }
+      }
+      field {
+        name: "piece"
+        number: 9
+        label: LABEL_OPTIONAL
+        type: TYPE_STRING
+        options { ctype: STRING_PIECE }
+      }
     }
     enum_type {
       name: "Foo2"
@@ -7350,6 +7364,11 @@ TEST_F(FeaturesTest, Proto2Features) {
   EXPECT_TRUE(message->FindFieldByName("packed")->is_packed());
   EXPECT_TRUE(message->FindFieldByName("req")->is_required());
   EXPECT_TRUE(file->enum_type(0)->is_closed());
+
+  EXPECT_EQ(message->FindFieldByName("str")->cpp_string_type(),
+            FieldDescriptor::CppStringType::kString);
+  EXPECT_EQ(message->FindFieldByName("cord")->cpp_string_type(),
+            FieldDescriptor::CppStringType::kCord);
 
   // Check round-trip consistency.
   FileDescriptorProto proto;
