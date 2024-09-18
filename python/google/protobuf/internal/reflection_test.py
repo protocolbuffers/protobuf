@@ -3259,13 +3259,13 @@ class OptionsTest(unittest.TestCase):
     proto.optional_int32 = 1
     proto.optional_double = 3.0
     for field_descriptor, _ in proto.ListFields():
-      self.assertEqual(False, field_descriptor.GetOptions().packed)
+      self.assertEqual(False, field_descriptor.is_packed)
 
     proto = unittest_pb2.TestPackedTypes()
     proto.packed_int32.append(1)
     proto.packed_double.append(3.0)
     for field_descriptor, _ in proto.ListFields():
-      self.assertEqual(True, field_descriptor.GetOptions().packed)
+      self.assertEqual(True, field_descriptor.is_packed)
       self.assertEqual(descriptor.FieldDescriptor.LABEL_REPEATED,
                        field_descriptor.label)
 

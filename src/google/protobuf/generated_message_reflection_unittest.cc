@@ -360,6 +360,19 @@ TEST_P(GeneratedMessageReflectionSwapTest, Extensions) {
   TestUtil::ExpectAllExtensionsSet(rhs);
 }
 
+TEST_P(GeneratedMessageReflectionSwapTest, PackedExtensions) {
+  unittest::TestPackedExtensions lhs;
+  unittest::TestPackedExtensions rhs;
+
+  TestUtil::SetPackedExtensions(&lhs);
+
+  Swap(lhs.GetReflection(), &lhs, &rhs);
+
+  EXPECT_EQ(lhs.SerializeAsString(), "");
+
+  TestUtil::ExpectPackedExtensionsSet(rhs);
+}
+
 TEST_P(GeneratedMessageReflectionSwapTest, Unknown) {
   unittest::TestEmptyMessage lhs, rhs;
 
@@ -695,6 +708,18 @@ TEST(GeneratedMessageReflectionTest, RemoveLastExtensions) {
   TestUtil::ExpectLastRepeatedExtensionsRemoved(message);
 }
 
+TEST(GeneratedMessageReflectionTest, RemoveLastPackedExtensions) {
+  unittest::TestPackedExtensions message;
+  TestUtil::ReflectionTester reflection_tester(
+      unittest::TestPackedExtensions::descriptor());
+
+  TestUtil::SetPackedExtensions(&message);
+
+  reflection_tester.RemoveLastRepeatedsViaReflection(&message);
+
+  TestUtil::ExpectLastRepeatedExtensionsRemoved(message);
+}
+
 TEST(GeneratedMessageReflectionTest, ReleaseLast) {
   unittest::TestAllTypes message;
   const Descriptor* descriptor = message.GetDescriptor();
@@ -793,6 +818,24 @@ TEST(GeneratedMessageReflectionTest, Extensions) {
 
   reflection_tester.ModifyRepeatedFieldsViaReflection(&message);
   TestUtil::ExpectRepeatedExtensionsModified(message);
+}
+
+TEST(GeneratedMessageReflectionTest, PackedExtensions) {
+  // Set every extension to a unique value then go back and check all those
+  // values.
+  unittest::TestPackedExtensions message;
+
+  // First set the extensions via the generated API (see b/366468123).
+  TestUtil::SetPackedExtensions(&message);
+  TestUtil::ExpectPackedExtensionsSet(message);
+  message.Clear();
+
+  TestUtil::ReflectionTester reflection_tester(
+      unittest::TestPackedExtensions::descriptor());
+
+  reflection_tester.SetPackedFieldsViaReflection(&message);
+  TestUtil::ExpectPackedExtensionsSet(message);
+  reflection_tester.ExpectPackedFieldsSetViaReflection(message);
 }
 
 TEST(GeneratedMessageReflectionTest, FindExtensionTypeByNumber) {

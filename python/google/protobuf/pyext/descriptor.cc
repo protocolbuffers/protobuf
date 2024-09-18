@@ -853,6 +853,10 @@ static PyObject* IsExtension(PyBaseDescriptor *self, void *closure) {
   return PyBool_FromLong(_GetDescriptor(self)->is_extension());
 }
 
+static PyObject* IsPacked(PyBaseDescriptor* self, void* closure) {
+  return PyBool_FromLong(_GetDescriptor(self)->is_packed());
+}
+
 static PyObject* HasDefaultValue(PyBaseDescriptor *self, void *closure) {
   return PyBool_FromLong(_GetDescriptor(self)->has_default_value());
 }
@@ -1050,6 +1054,7 @@ static PyGetSetDef Getters[] = {
     {"default_value", (getter)GetDefaultValue, nullptr, "Default Value"},
     {"has_default_value", (getter)HasDefaultValue},
     {"is_extension", (getter)IsExtension, nullptr, "ID"},
+    {"is_packed", (getter)IsPacked, nullptr, "Is Packed"},
     {"id", (getter)GetID, nullptr, "ID"},
     {"_cdescriptor", (getter)GetCDescriptor, nullptr, "HAACK REMOVE ME"},
 

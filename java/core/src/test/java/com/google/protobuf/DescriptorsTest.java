@@ -19,6 +19,7 @@ import com.google.protobuf.DescriptorProtos.EnumValueDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FeatureSetDefaults;
 import com.google.protobuf.DescriptorProtos.FeatureSetDefaults.FeatureSetEditionDefault;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
+import com.google.protobuf.DescriptorProtos.FieldOptions;
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FileOptions;
 import com.google.protobuf.DescriptorProtos.MethodDescriptorProto;
@@ -53,7 +54,6 @@ import protobuf_unittest.UnittestProto.TestReservedEnumFields;
 import protobuf_unittest.UnittestProto.TestReservedFields;
 import protobuf_unittest.UnittestProto.TestService;
 import protobuf_unittest.UnittestRetention;
-import proto3_unittest.UnittestProto3;
 import protobuf_unittest.UnittestProto3Extensions.Proto3FileExtensions;
 import java.util.Collections;
 import java.util.List;
@@ -1256,32 +1256,106 @@ public class DescriptorsTest {
     }
 
     @Test
-    public void testLegacyInferRequired() {
-      FieldDescriptor field = UnittestProto.TestRequired.getDescriptor().findFieldByName("a");
+    public void testLegacyInferRequired() throws Exception {
+      FileDescriptor file =
+          FileDescriptor.buildFrom(
+              FileDescriptorProto.newBuilder()
+                  .setName("some/filename/some.proto")
+                  .setSyntax("proto2")
+                  .addMessageType(
+                      DescriptorProto.newBuilder()
+                          .setName("Foo")
+                          .addField(
+                              FieldDescriptorProto.newBuilder()
+                                  .setName("a")
+                                  .setNumber(1)
+                                  .setType(FieldDescriptorProto.Type.TYPE_INT32)
+                                  .setLabel(FieldDescriptorProto.Label.LABEL_REQUIRED)
+                                  .build())
+                          .build())
+                  .build(),
+              new FileDescriptor[0]);
+      FieldDescriptor field = file.findMessageTypeByName("Foo").findFieldByName("a");
       assertThat(field.features.getFieldPresence())
           .isEqualTo(DescriptorProtos.FeatureSet.FieldPresence.LEGACY_REQUIRED);
     }
 
     @Test
-    public void testLegacyInferGroup() {
-      FieldDescriptor field =
-          UnittestProto.TestAllTypes.getDescriptor().findFieldByName("optionalgroup");
+    public void testLegacyInferGroup() throws Exception {
+      FileDescriptor file =
+          FileDescriptor.buildFrom(
+              FileDescriptorProto.newBuilder()
+                  .setName("some/filename/some.proto")
+                  .setSyntax("proto2")
+                  .addMessageType(
+                      DescriptorProto.newBuilder()
+                          .setName("Foo")
+                          .addNestedType(
+                              DescriptorProto.newBuilder().setName("OptionalGroup").build())
+                          .addField(
+                              FieldDescriptorProto.newBuilder()
+                                  .setName("optionalgroup")
+                                  .setNumber(1)
+                                  .setType(FieldDescriptorProto.Type.TYPE_GROUP)
+                                  .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                                  .setTypeName("Foo.OptionalGroup")
+                                  .build())
+                          .build())
+                  .build(),
+              new FileDescriptor[0]);
+      FieldDescriptor field = file.findMessageTypeByName("Foo").findFieldByName("optionalgroup");
       assertThat(field.features.getMessageEncoding())
           .isEqualTo(DescriptorProtos.FeatureSet.MessageEncoding.DELIMITED);
     }
 
     @Test
-    public void testLegacyInferProto2Packed() {
-      FieldDescriptor field =
-          UnittestProto.TestPackedTypes.getDescriptor().findFieldByName("packed_int32");
+    public void testLegacyInferProto2Packed() throws Exception {
+      FileDescriptor file =
+          FileDescriptor.buildFrom(
+              FileDescriptorProto.newBuilder()
+                  .setName("some/filename/some.proto")
+                  .setSyntax("proto2")
+                  .addMessageType(
+                      DescriptorProto.newBuilder()
+                          .setName("Foo")
+                          .addField(
+                              FieldDescriptorProto.newBuilder()
+                                  .setName("a")
+                                  .setNumber(1)
+                                  .setLabel(FieldDescriptorProto.Label.LABEL_REPEATED)
+                                  .setType(FieldDescriptorProto.Type.TYPE_INT32)
+                                  .setOptions(FieldOptions.newBuilder().setPacked(true).build())
+                                  .build())
+                          .build())
+                  .build(),
+              new FileDescriptor[0]);
+      FieldDescriptor field = file.findMessageTypeByName("Foo").findFieldByName("a");
       assertThat(field.features.getRepeatedFieldEncoding())
           .isEqualTo(DescriptorProtos.FeatureSet.RepeatedFieldEncoding.PACKED);
     }
 
     @Test
-    public void testLegacyInferProto3Expanded() {
-      FieldDescriptor field =
-          UnittestProto3.TestUnpackedTypes.getDescriptor().findFieldByName("repeated_int32");
+    public void testLegacyInferProto3Expanded() throws Exception {
+      FileDescriptor file =
+          FileDescriptor.buildFrom(
+              FileDescriptorProto.newBuilder()
+                  .setName("some/filename/some.proto")
+                  .setSyntax("proto3")
+                  .addMessageType(
+                      DescriptorProto.newBuilder()
+                          .setName("Foo")
+                          .addField(
+                              FieldDescriptorProto.newBuilder()
+                                  .setName("a")
+                                  .setNumber(1)
+                                  .setType(FieldDescriptorProto.Type.TYPE_INT32)
+                                  .setLabel(FieldDescriptorProto.Label.LABEL_REPEATED)
+                                  .setOptions(FieldOptions.newBuilder().setPacked(false).build())
+                                  .build())
+                          .build())
+                  .build(),
+              new FileDescriptor[0]);
+      FieldDescriptor field = file.findMessageTypeByName("Foo").findFieldByName("a");
       assertThat(field.features.getRepeatedFieldEncoding())
           .isEqualTo(DescriptorProtos.FeatureSet.RepeatedFieldEncoding.EXPANDED);
     }
@@ -1302,9 +1376,16 @@ public class DescriptorsTest {
     }
 
     @Test
-    public void testProto2Defaults() {
-      FieldDescriptor proto2Field = TestAllTypes.getDescriptor().findFieldByName("optional_int32");
-      DescriptorProtos.FeatureSet features = proto2Field.features;
+    public void testProto2Defaults() throws Exception {
+      FileDescriptor proto2File =
+          FileDescriptor.buildFrom(
+              FileDescriptorProto.newBuilder()
+                  .setName("some/filename/some.proto")
+                  .setPackage("protobuf_unittest")
+                  .setSyntax("proto2")
+                  .build(),
+              new FileDescriptor[0]);
+      DescriptorProtos.FeatureSet features = proto2File.features;
       assertThat(features.getFieldPresence())
           .isEqualTo(DescriptorProtos.FeatureSet.FieldPresence.EXPLICIT);
       assertThat(features.getEnumType()).isEqualTo(DescriptorProtos.FeatureSet.EnumType.CLOSED);
@@ -1323,10 +1404,16 @@ public class DescriptorsTest {
     }
 
     @Test
-    public void testProto3Defaults() {
-      FieldDescriptor proto3Field =
-          UnittestProto3.TestAllTypes.getDescriptor().findFieldByName("optional_int32");
-      DescriptorProtos.FeatureSet features = proto3Field.features;
+    public void testProto3Defaults() throws Exception {
+      FileDescriptor proto3File =
+          FileDescriptor.buildFrom(
+              FileDescriptorProto.newBuilder()
+                  .setName("some/filename/some.proto")
+                  .setPackage("proto3_unittest")
+                  .setSyntax("proto3")
+                  .build(),
+              new FileDescriptor[0]);
+      DescriptorProtos.FeatureSet features = proto3File.features;
       assertThat(features.getFieldPresence())
           .isEqualTo(DescriptorProtos.FeatureSet.FieldPresence.IMPLICIT);
       assertThat(features.getEnumType()).isEqualTo(DescriptorProtos.FeatureSet.EnumType.OPEN);

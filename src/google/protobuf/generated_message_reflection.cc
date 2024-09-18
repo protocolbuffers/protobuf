@@ -1806,8 +1806,7 @@ void Reflection::ListFields(const Message& message,
     USAGE_MUTABLE_CHECK_ALL(Add##TYPENAME, REPEATED, CPPTYPE);                 \
     if (field->is_extension()) {                                               \
       MutableExtensionSet(message)->Add##TYPENAME(                             \
-          field->number(), field->type(), field->options().packed(), value,    \
-          field);                                                              \
+          field->number(), field->type(), field->is_packed(), value, field);   \
     } else {                                                                   \
       AddField<TYPE>(message, field, value);                                   \
     }                                                                          \

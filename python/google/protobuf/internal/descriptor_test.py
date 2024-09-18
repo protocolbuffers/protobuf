@@ -18,17 +18,18 @@ from google.protobuf import descriptor_pool
 from google.protobuf import symbol_database
 from google.protobuf import text_format
 from google.protobuf.internal import api_implementation
+from google.protobuf.internal import test_proto2_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 
 from google.protobuf.internal import _parameterized
-from google.protobuf import unittest_legacy_features_pb2
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_features_pb2
 from google.protobuf import unittest_import_pb2
+from google.protobuf import unittest_legacy_features_pb2
 from google.protobuf import unittest_pb2
-from google.protobuf import unittest_proto3_pb2
 from google.protobuf import unittest_proto3_extensions_pb2
+from google.protobuf import unittest_proto3_pb2
 
 
 TEST_EMPTY_MESSAGE_DESCRIPTOR_ASCII = """
@@ -1325,7 +1326,7 @@ class FeaturesTest(_parameterized.TestCase):
     )
 
   def testProto2Defaults(self):
-    features = unittest_pb2.TestAllTypes.DESCRIPTOR.fields_by_name[
+    features = test_proto2_pb2.TestProto2.DESCRIPTOR.fields_by_name[
         'optional_int32'
     ]._GetFeatures()
     fs = descriptor_pb2.FeatureSet

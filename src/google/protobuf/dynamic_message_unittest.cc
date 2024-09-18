@@ -77,6 +77,8 @@ class DynamicMessageTest : public ::testing::TestWithParam<bool> {
   const Message* prototype_;
   const Descriptor* extensions_descriptor_;
   const Message* extensions_prototype_;
+  const Descriptor* packed_extensions_descriptor_;
+  const Message* packed_extensions_prototype_;
   const Descriptor* packed_descriptor_;
   const Message* packed_prototype_;
   const Descriptor* oneof_descriptor_;
@@ -97,6 +99,12 @@ class DynamicMessageTest : public ::testing::TestWithParam<bool> {
         pool_.FindMessageTypeByName("protobuf_unittest.TestAllExtensions");
     ASSERT_TRUE(extensions_descriptor_ != nullptr);
     extensions_prototype_ = factory_.GetPrototype(extensions_descriptor_);
+
+    packed_extensions_descriptor_ =
+        pool_.FindMessageTypeByName("protobuf_unittest.TestPackedExtensions");
+    ASSERT_TRUE(packed_extensions_descriptor_ != nullptr);
+    packed_extensions_prototype_ =
+        factory_.GetPrototype(packed_extensions_descriptor_);
 
     packed_descriptor_ =
         pool_.FindMessageTypeByName("protobuf_unittest.TestPackedTypes");
@@ -156,6 +164,21 @@ TEST_P(DynamicMessageTest, Extensions) {
 
   reflection_tester.SetAllFieldsViaReflection(message);
   reflection_tester.ExpectAllFieldsSetViaReflection(*message);
+
+  if (!GetParam()) {
+    delete message;
+  }
+}
+
+TEST_P(DynamicMessageTest, PackedExtensions) {
+  // Check that extensions work.
+  Arena arena;
+  Message* message =
+      packed_extensions_prototype_->New(GetParam() ? &arena : nullptr);
+  TestUtil::ReflectionTester reflection_tester(packed_extensions_descriptor_);
+
+  reflection_tester.SetPackedFieldsViaReflection(message);
+  reflection_tester.ExpectPackedFieldsSetViaReflection(*message);
 
   if (!GetParam()) {
     delete message;
