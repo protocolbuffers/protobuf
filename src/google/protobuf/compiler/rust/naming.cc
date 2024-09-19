@@ -62,7 +62,9 @@ std::string GetThunkCcFile(Context& ctx, const FileDescriptor& file) {
 
 std::string GetHeaderFile(Context& ctx, const FileDescriptor& file) {
   auto basename = StripProto(file.name());
-  return absl::StrCat(basename, ".proto.h");
+  constexpr absl::string_view kCcGencodeExt = ".pb.h";
+
+  return absl::StrCat(basename, kCcGencodeExt);
 }
 
 std::string RawMapThunk(Context& ctx, const Descriptor& msg,
