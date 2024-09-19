@@ -35,7 +35,7 @@ RustProtoInfo = provider(
 )
 
 def label_to_crate_name(ctx, label, toolchain):
-    return str(label).rsplit(":", 1)[1].replace("-", "_")
+    return label.name.replace("-", "_")
 
 def proto_rust_toolchain_label(is_upb):
     if is_upb:
