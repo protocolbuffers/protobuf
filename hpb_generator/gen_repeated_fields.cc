@@ -219,7 +219,9 @@ void WriteRepeatedStringAccessor(const protobuf::Descriptor* message,
   output(
       R"cc(
         bool $0::add_$2($1 val) {
-          return $3_add_$4(msg_, ::hpb::UpbStrFromStringView(val, arena_), arena_);
+          return $3_add_$4(msg_,
+                           hpb::interop::upb::CopyToUpbStringView(val, arena_),
+                           arena_);
         }
       )cc",
       class_name, CppConstType(field), resolved_field_name,
@@ -230,7 +232,7 @@ void WriteRepeatedStringAccessor(const protobuf::Descriptor* message,
           size_t len;
           auto* ptr = $3_mutable_$4(msg_, &len);
           assert(index < len);
-          *(ptr + index) = ::hpb::UpbStrFromStringView(val, arena_);
+          *(ptr + index) = hpb::interop::upb::CopyToUpbStringView(val, arena_);
         }
       )cc",
       class_name, CppConstType(field), resolved_field_name,

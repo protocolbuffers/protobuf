@@ -234,7 +234,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
         output(
             R"cc(
               void $0::set_$2($1 value) {
-                $4_set_$3(msg_, ::hpb::UpbStrFromStringView(value, $5));
+                $4_set_$3(msg_, hpb::interop::upb::CopyToUpbStringView(value, $5));
               }
             )cc",
             class_name, CppConstType(field), resolved_field_name,
@@ -353,7 +353,8 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
         R"cc(
           bool $0::set_$1($2 key, $3 value) {
             $5return $4_$7_set(
-                msg_, $6, ::hpb::UpbStrFromStringView(value, arena_), arena_);
+                msg_, $6, hpb::interop::upb::CopyToUpbStringView(value, arena_),
+                arena_);
           }
         )cc",
         class_name, resolved_field_name, CppConstType(key), CppConstType(val),
