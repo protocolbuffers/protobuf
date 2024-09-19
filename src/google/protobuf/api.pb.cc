@@ -356,10 +356,12 @@ constexpr auto Api::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Api), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::CopyInit(
+        sizeof(Api), alignof(Api), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&Api::PlacementNew_,
-                                 sizeof(Api));
+                                 sizeof(Api),
+                                 alignof(Api));
   }
 }
 PROTOBUF_CONSTINIT
@@ -810,10 +812,12 @@ constexpr auto Method::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Method), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::CopyInit(
+        sizeof(Method), alignof(Method), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&Method::PlacementNew_,
-                                 sizeof(Method));
+                                 sizeof(Method),
+                                 alignof(Method));
   }
 }
 PROTOBUF_CONSTINIT
@@ -1200,7 +1204,8 @@ inline void* Mixin::PlacementNew_(const void*, void* mem,
   return ::new (mem) Mixin(arena);
 }
 constexpr auto Mixin::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Mixin));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Mixin),
+                                            alignof(Mixin));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1

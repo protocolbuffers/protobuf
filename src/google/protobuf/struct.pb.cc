@@ -250,7 +250,8 @@ bool NullValue_IsValid(int value) {
                 return ::new (mem) Struct_FieldsEntry_DoNotUse(arena);
               }
               constexpr auto Struct_FieldsEntry_DoNotUse::InternalNewImpl_() {
-                return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Struct_FieldsEntry_DoNotUse));
+                return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Struct_FieldsEntry_DoNotUse),
+                                                          alignof(Struct_FieldsEntry_DoNotUse));
               }
               PROTOBUF_CONSTINIT
               PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -398,10 +399,12 @@ constexpr auto Struct::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Struct), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::CopyInit(
+        sizeof(Struct), alignof(Struct), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&Struct::PlacementNew_,
-                                 sizeof(Struct));
+                                 sizeof(Struct),
+                                 alignof(Struct));
   }
 }
 PROTOBUF_CONSTINIT
@@ -754,7 +757,8 @@ inline void* Value::PlacementNew_(const void*, void* mem,
   return ::new (mem) Value(arena);
 }
 constexpr auto Value::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Value));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Value),
+                                            alignof(Value));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -1119,10 +1123,12 @@ constexpr auto ListValue::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(ListValue), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(
+        sizeof(ListValue), alignof(ListValue), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&ListValue::PlacementNew_,
-                                 sizeof(ListValue));
+                                 sizeof(ListValue),
+                                 alignof(ListValue));
   }
 }
 PROTOBUF_CONSTINIT

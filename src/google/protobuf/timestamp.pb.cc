@@ -158,7 +158,8 @@ inline void* Timestamp::PlacementNew_(const void*, void* mem,
   return ::new (mem) Timestamp(arena);
 }
 constexpr auto Timestamp::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Timestamp));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Timestamp),
+                                            alignof(Timestamp));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1

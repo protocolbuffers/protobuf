@@ -132,7 +132,8 @@ inline void* Empty::PlacementNew_(const void*, void* mem,
   return ::new (mem) Empty(arena);
 }
 constexpr auto Empty::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Empty));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Empty),
+                                            alignof(Empty));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1

@@ -171,7 +171,8 @@ inline void* SourceContext::PlacementNew_(const void*, void* mem,
   return ::new (mem) SourceContext(arena);
 }
 constexpr auto SourceContext::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SourceContext));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SourceContext),
+                                            alignof(SourceContext));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1

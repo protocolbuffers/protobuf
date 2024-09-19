@@ -449,7 +449,8 @@ inline void* DoubleValue::PlacementNew_(const void*, void* mem,
   return ::new (mem) DoubleValue(arena);
 }
 constexpr auto DoubleValue::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(DoubleValue));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(DoubleValue),
+                                            alignof(DoubleValue));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -655,7 +656,8 @@ inline void* FloatValue::PlacementNew_(const void*, void* mem,
   return ::new (mem) FloatValue(arena);
 }
 constexpr auto FloatValue::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FloatValue));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FloatValue),
+                                            alignof(FloatValue));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -861,7 +863,8 @@ inline void* Int64Value::PlacementNew_(const void*, void* mem,
   return ::new (mem) Int64Value(arena);
 }
 constexpr auto Int64Value::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Int64Value));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Int64Value),
+                                            alignof(Int64Value));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -1068,7 +1071,8 @@ inline void* UInt64Value::PlacementNew_(const void*, void* mem,
   return ::new (mem) UInt64Value(arena);
 }
 constexpr auto UInt64Value::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(UInt64Value));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(UInt64Value),
+                                            alignof(UInt64Value));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -1275,7 +1279,8 @@ inline void* Int32Value::PlacementNew_(const void*, void* mem,
   return ::new (mem) Int32Value(arena);
 }
 constexpr auto Int32Value::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Int32Value));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Int32Value),
+                                            alignof(Int32Value));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -1482,7 +1487,8 @@ inline void* UInt32Value::PlacementNew_(const void*, void* mem,
   return ::new (mem) UInt32Value(arena);
 }
 constexpr auto UInt32Value::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(UInt32Value));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(UInt32Value),
+                                            alignof(UInt32Value));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -1689,7 +1695,8 @@ inline void* BoolValue::PlacementNew_(const void*, void* mem,
   return ::new (mem) BoolValue(arena);
 }
 constexpr auto BoolValue::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(BoolValue));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(BoolValue),
+                                            alignof(BoolValue));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -1913,7 +1920,8 @@ inline void* StringValue::PlacementNew_(const void*, void* mem,
   return ::new (mem) StringValue(arena);
 }
 constexpr auto StringValue::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(StringValue));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(StringValue),
+                                            alignof(StringValue));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -2144,7 +2152,8 @@ inline void* BytesValue::PlacementNew_(const void*, void* mem,
   return ::new (mem) BytesValue(arena);
 }
 constexpr auto BytesValue::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(BytesValue));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(BytesValue),
+                                            alignof(BytesValue));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1

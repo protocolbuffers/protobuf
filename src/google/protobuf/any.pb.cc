@@ -192,7 +192,8 @@ inline void* Any::PlacementNew_(const void*, void* mem,
   return ::new (mem) Any(arena);
 }
 constexpr auto Any::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Any));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Any),
+                                            alignof(Any));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1

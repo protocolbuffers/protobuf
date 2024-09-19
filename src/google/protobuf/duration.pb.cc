@@ -158,7 +158,8 @@ inline void* Duration::PlacementNew_(const void*, void* mem,
   return ::new (mem) Duration(arena);
 }
 constexpr auto Duration::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Duration));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Duration),
+                                            alignof(Duration));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1

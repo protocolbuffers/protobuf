@@ -175,10 +175,12 @@ constexpr auto FieldMask::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FieldMask), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(
+        sizeof(FieldMask), alignof(FieldMask), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&FieldMask::PlacementNew_,
-                                 sizeof(FieldMask));
+                                 sizeof(FieldMask),
+                                 alignof(FieldMask));
   }
 }
 PROTOBUF_CONSTINIT
