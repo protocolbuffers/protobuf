@@ -7,7 +7,7 @@
 
 syntax = "proto2";
 
-import "google/protobuf/editions/proto/editions_transform_proto3.proto";
+import "editions/proto/editions_transform_proto3.proto";
 
 // This file contains various edge cases we've collected from migrating real
 // protos in order to lock down the transformations.
