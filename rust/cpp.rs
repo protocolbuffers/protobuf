@@ -812,7 +812,6 @@ macro_rules! impl_map_primitives {
                     size_info: MapNodeSizeInfo,
                     key: $cpp_type,
                     value: RawMessage,
-                    placement_new: unsafe extern "C" fn(*mut c_void, m: RawMessage),
                 ) -> bool;
                 pub fn $get_thunk(
                     m: RawMap,

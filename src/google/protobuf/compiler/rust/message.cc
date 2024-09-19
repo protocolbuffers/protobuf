@@ -195,7 +195,6 @@ void CppMessageExterns(Context& ctx, const Descriptor& msg) {
   ABSL_CHECK(ctx.is_cpp());
   ctx.Emit(
       {{"new_thunk", ThunkName(ctx, msg, "new")},
-       {"placement_new_thunk", ThunkName(ctx, msg, "placement_new")},
        {"repeated_new_thunk", ThunkName(ctx, msg, "repeated_new")},
        {"repeated_free_thunk", ThunkName(ctx, msg, "repeated_free")},
        {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
@@ -208,7 +207,6 @@ void CppMessageExterns(Context& ctx, const Descriptor& msg) {
        {"map_size_info_thunk", ThunkName(ctx, msg, "size_info")}},
       R"rs(
       fn $new_thunk$() -> $pbr$::RawMessage;
-      fn $placement_new_thunk$(ptr: *mut $std$::ffi::c_void, m: $pbr$::RawMessage);
       fn $repeated_new_thunk$() -> $pbr$::RawRepeatedField;
       fn $repeated_free_thunk$(raw: $pbr$::RawRepeatedField);
       fn $repeated_len_thunk$(raw: $pbr$::RawRepeatedField) -> usize;
@@ -566,7 +564,6 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
       for (const auto& t : kMapKeyTypes) {
         ctx.Emit(
             {{"map_size_info_thunk", ThunkName(ctx, msg, "size_info")},
-             {"placement_new_thunk", ThunkName(ctx, msg, "placement_new")},
              {"map_insert",
               absl::StrCat("proto2_rust_map_insert_", t.thunk_ident)},
              {"map_remove",
@@ -616,7 +613,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                             map.as_raw($pbi$::Private),
                             $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
                             $key_expr$,
-                            value.into_proxied($pbi$::Private).raw_msg(), $placement_new_thunk$)
+                            value.into_proxied($pbi$::Private).raw_msg())
                     }
                 }
 
@@ -1355,7 +1352,6 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
        {"Msg", RsSafeName(msg.name())},
        {"QualifiedMsg", cpp::QualifiedClassName(&msg)},
        {"new_thunk", ThunkName(ctx, msg, "new")},
-       {"placement_new_thunk", ThunkName(ctx, msg, "placement_new")},
        {"repeated_new_thunk", ThunkName(ctx, msg, "repeated_new")},
        {"repeated_free_thunk", ThunkName(ctx, msg, "repeated_free")},
        {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
@@ -1391,9 +1387,6 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
         // clang-format off
         extern $abi$ {
         void* $new_thunk$() { return new $QualifiedMsg$(); }
-        void $placement_new_thunk$(void* ptr, $QualifiedMsg$& m) {
-          new (ptr) $QualifiedMsg$(std::move(m));
-        }
 
         void* $repeated_new_thunk$() {
           return new google::protobuf::RepeatedPtrField<$QualifiedMsg$>();

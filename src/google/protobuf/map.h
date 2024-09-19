@@ -1190,6 +1190,11 @@ class RustMapHelper {
     m->erase_no_destroy(bucket, static_cast<typename Map::KeyNode*>(node));
   }
 
+  static google::protobuf::MessageLite* PlacementNew(const MessageLite* prototype,
+                                           void* mem) {
+    return prototype->GetClassData()->PlacementNew(mem, /* arena = */ nullptr);
+  }
+
   static void DestroyMessage(MessageLite* m) { m->DestroyInstance(); }
 
   static void ClearTable(UntypedMapBase* m, ClearInput input) {
