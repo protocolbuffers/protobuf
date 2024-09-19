@@ -10,9 +10,12 @@
 #ifndef GOOGLE_PROTOBUF_ARENA_H__
 #define GOOGLE_PROTOBUF_ARENA_H__
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <limits>
+#include <memory>
 #include <new>  // IWYU pragma: keep for operator new().
 #include <string>
 #include <type_traits>
@@ -28,9 +31,7 @@ using type_info = ::type_info;
 #endif
 
 #include "absl/base/attributes.h"
-#include "absl/base/macros.h"
 #include "absl/base/optimization.h"
-#include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "absl/utility/internal/if_constexpr.h"
 #include "google/protobuf/arena_align.h"
@@ -265,26 +266,67 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // Create an array of object type T on the arena *without* invoking the
   // constructor of T. If `arena` is null, then the return value should be freed
   // with `delete[] x;` (or `::operator delete[](x);`).
-  // To ensure safe uses, this function checks at compile time
-  // (when compiled as C++11) that T is trivially default-constructible and
-  // trivially destructible.
+  //
+  // The optional `align` parameter specifies the alignment of the array: this
+  // can be used to allocate raw memory for a future object or an array of
+  // objects of the type when at least the type's size and alignment are known:
+  // `char* buffer = CreateArray<char>(..., size_of_t, alignment_of_t)`.
+  // The following restrictions on `align` apply:
+  // `align` >= `alignof(T)`
+  // if `align` > `alignof(T)`: `align` <= `alignof(std::max_align_t)`
+  //
+  // To ensure safe uses, this function checks at compile time (when compiled as
+  // C++11) that T is trivially default-constructible and trivially
+  // destructible.
   template <typename T>
   PROTOBUF_NDEBUG_INLINE static T* CreateArray(Arena* arena,
-                                               size_t num_elements) {
+                                               size_t num_elements,
+                                               size_t align = alignof(T)) {
     static_assert(std::is_trivial<T>::value,
                   "CreateArray requires a trivially constructible type");
     static_assert(std::is_trivially_destructible<T>::value,
                   "CreateArray requires a trivially destructible type");
+    ABSL_CHECK_GE(align, alignof(T))
+        << "Aligning narrower than type's own alignment is not supported";
+    if (align > alignof(T)) {
+      ABSL_CHECK_LE(align, alignof(std::max_align_t))
+          << "Over-aligning wider than std::max_align_t is not supported";
+    }
     ABSL_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))
         << "Requested size is too large to fit into size_t.";
+    size_t array_bytes = sizeof(T) * num_elements;
+    size_t alloc_bytes = 0;
+    void* alloc = nullptr;
     if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
-      return new T[num_elements];
+      // TODO: Use `std::aligned_alloc` instead once we're at C++17.
+      // Account for some platforms that still don't support it even at C++17,
+      // e.g. older versions of MacOS.
+      if (align == alignof(T)) {
+        alloc_bytes = array_bytes;
+        alloc = new T[num_elements];
+      } else {
+        // `new char[n]` is guaranteed to correctly align to accommodate objects
+        // of any type no larger than `n`: leverage that here to achieve the
+        // requested alignment (possibly overallocating by up to `align - 1`
+        // bytes).
+        alloc_bytes = std::max(array_bytes, align);
+        alloc = new char[alloc_bytes];
+      }
     } else {
-      // We count on compiler to realize that if sizeof(T) is a multiple of
-      // 8 AlignUpTo can be elided.
-      return static_cast<T*>(
-          arena->AllocateAlignedForArray(sizeof(T) * num_elements, alignof(T)));
+      // `AllocateAlignedForArray()` requires the allocation size to be a
+      // multiple of `align`, so we have to round up (possibly overallocating
+      // by up to `align - 1` bytes).
+      alloc_bytes = (array_bytes + align - 1) / align * align;
+      alloc = arena->AllocateAlignedForArray(alloc_bytes, align);
     }
+    const size_t misaligned_by = reinterpret_cast<uintptr_t>(alloc) % align;
+    ABSL_CHECK(alloc != nullptr && misaligned_by == 0)
+        << "arena=" << arena << " num_elements=" << num_elements
+        << " align=" << align << " alignof(T)=" << alignof(T)
+        << " sizeof(T)=" << sizeof(T) << " array_bytes=" << array_bytes
+        << " alloc_bytes=" << alloc_bytes << " alloc=" << alloc
+        << " misaligned_by=" << misaligned_by;
+    return static_cast<T*>(alloc);
   }
 
   // The following routines are for monitoring. They will approximate the total

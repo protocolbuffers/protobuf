@@ -835,9 +835,7 @@ MessageLite* ExtensionSet::AddMessage(int number, FieldType type,
     ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, MESSAGE);
   }
 
-  return reinterpret_cast<internal::RepeatedPtrFieldBase*>(
-             extension->ptr.repeated_message_value)
-      ->AddMessage(&prototype);
+  return extension->ptr.repeated_message_value->AddFromPrototype(&prototype);
 }
 
 // Defined in extension_set_heavy.cc.

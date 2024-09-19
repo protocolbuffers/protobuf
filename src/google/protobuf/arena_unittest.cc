@@ -16,10 +16,11 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <initializer_list>
 #include <memory>
 #include <new>  // IWYU pragma: keep for operator new
 #include <string>
-#include <thread>
+#include <thread>  // NOLINT
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -29,6 +30,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/substitute.h"
 #include "absl/synchronization/barrier.h"
 #include "absl/utility/utility.h"
 #include "google/protobuf/arena_cleanup.h"
