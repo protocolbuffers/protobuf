@@ -3944,7 +3944,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
     p->Emit(R"cc(
       constexpr auto $classname$::InternalNewImpl_() {
         return $pbi$::MessageCreator(&$classname$::PlacementNew_,
-                                     sizeof($classname$));
+                                     sizeof($classname$), alignof($classname$));
       }
     )cc");
   } else if (new_op.needs_arena_seeding) {
@@ -3956,10 +3956,12 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                     $arena_offsets$,
                 });
                 if (arena_bits.has_value()) {
-                  return $pbi$::MessageCreator::$copy_type$(sizeof($classname$), *arena_bits);
+                  return $pbi$::MessageCreator::$copy_type$(
+                      sizeof($classname$), alignof($classname$), *arena_bits);
                 } else {
                   return $pbi$::MessageCreator(&$classname$::PlacementNew_,
-                                               sizeof($classname$));
+                                               sizeof($classname$),
+                                               alignof($classname$));
                 }
               }
             )cc");
@@ -3968,7 +3970,8 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
              {"arena_offsets", [&] { GetNewOp(p); }}},
             R"cc(
               constexpr auto $classname$::InternalNewImpl_() {
-                return $pbi$::MessageCreator::$copy_type$(sizeof($classname$));
+                return $pbi$::MessageCreator::$copy_type$(sizeof($classname$),
+                                                          alignof($classname$));
               }
             )cc");
   }

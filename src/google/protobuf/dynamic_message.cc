@@ -767,7 +767,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   type_info->weak_field_map_offset = -1;
 
   type_info->class_data.message_creator =
-      internal::MessageCreator(DynamicMessage::NewImpl, size);
+      internal::MessageCreator(DynamicMessage::NewImpl, size, kSafeAlignment);
 
   // Construct the reflection object.
 

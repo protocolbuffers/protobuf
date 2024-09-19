@@ -200,7 +200,8 @@ inline void* JavaFeatures::PlacementNew_(const void*, void* mem,
   return ::new (mem) JavaFeatures(arena);
 }
 constexpr auto JavaFeatures::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(JavaFeatures));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(JavaFeatures),
+                                            alignof(JavaFeatures));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1

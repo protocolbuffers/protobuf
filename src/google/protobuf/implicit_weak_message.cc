@@ -70,7 +70,8 @@ constexpr MessageLite::ClassDataLite<1> ImplicitWeakMessage::class_data_ = {
         nullptr,  // is_initialized (always true)
         MergeImpl,
         internal::MessageCreator(NewImpl<ImplicitWeakMessage>,
-                                 sizeof(ImplicitWeakMessage)),
+                                 sizeof(ImplicitWeakMessage),
+                                 alignof(ImplicitWeakMessage)),
         &DestroyImpl,
         GetClearImpl<ImplicitWeakMessage>(),
         &ByteSizeLongImpl,

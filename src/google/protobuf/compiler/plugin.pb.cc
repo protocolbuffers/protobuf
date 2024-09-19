@@ -398,7 +398,8 @@ inline void* Version::PlacementNew_(const void*, void* mem,
   return ::new (mem) Version(arena);
 }
 constexpr auto Version::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Version));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Version),
+                                            alignof(Version));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -755,10 +756,12 @@ constexpr auto CodeGeneratorRequest::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorRequest), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::CopyInit(
+        sizeof(CodeGeneratorRequest), alignof(CodeGeneratorRequest), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&CodeGeneratorRequest::PlacementNew_,
-                                 sizeof(CodeGeneratorRequest));
+                                 sizeof(CodeGeneratorRequest),
+                                 alignof(CodeGeneratorRequest));
   }
 }
 PROTOBUF_CONSTINIT
@@ -1156,7 +1159,8 @@ inline void* CodeGeneratorResponse_File::PlacementNew_(const void*, void* mem,
   return ::new (mem) CodeGeneratorResponse_File(arena);
 }
 constexpr auto CodeGeneratorResponse_File::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorResponse_File));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorResponse_File),
+                                            alignof(CodeGeneratorResponse_File));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -1515,10 +1519,12 @@ constexpr auto CodeGeneratorResponse::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorResponse), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::CopyInit(
+        sizeof(CodeGeneratorResponse), alignof(CodeGeneratorResponse), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&CodeGeneratorResponse::PlacementNew_,
-                                 sizeof(CodeGeneratorResponse));
+                                 sizeof(CodeGeneratorResponse),
+                                 alignof(CodeGeneratorResponse));
   }
 }
 PROTOBUF_CONSTINIT

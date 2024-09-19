@@ -2669,10 +2669,12 @@ constexpr auto FileDescriptorSet::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FileDescriptorSet), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(
+        sizeof(FileDescriptorSet), alignof(FileDescriptorSet), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&FileDescriptorSet::PlacementNew_,
-                                 sizeof(FileDescriptorSet));
+                                 sizeof(FileDescriptorSet),
+                                 alignof(FileDescriptorSet));
   }
 }
 PROTOBUF_CONSTINIT
@@ -2982,10 +2984,12 @@ constexpr auto FileDescriptorProto::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FileDescriptorProto), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::CopyInit(
+        sizeof(FileDescriptorProto), alignof(FileDescriptorProto), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&FileDescriptorProto::PlacementNew_,
-                                 sizeof(FileDescriptorProto));
+                                 sizeof(FileDescriptorProto),
+                                 alignof(FileDescriptorProto));
   }
 }
 PROTOBUF_CONSTINIT
@@ -3609,7 +3613,8 @@ inline void* DescriptorProto_ExtensionRange::PlacementNew_(const void*, void* me
   return ::new (mem) DescriptorProto_ExtensionRange(arena);
 }
 constexpr auto DescriptorProto_ExtensionRange::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(DescriptorProto_ExtensionRange));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(DescriptorProto_ExtensionRange),
+                                            alignof(DescriptorProto_ExtensionRange));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -3905,7 +3910,8 @@ inline void* DescriptorProto_ReservedRange::PlacementNew_(const void*, void* mem
   return ::new (mem) DescriptorProto_ReservedRange(arena);
 }
 constexpr auto DescriptorProto_ReservedRange::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(DescriptorProto_ReservedRange));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(DescriptorProto_ReservedRange),
+                                            alignof(DescriptorProto_ReservedRange));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -4231,10 +4237,12 @@ constexpr auto DescriptorProto::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(DescriptorProto), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::CopyInit(
+        sizeof(DescriptorProto), alignof(DescriptorProto), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&DescriptorProto::PlacementNew_,
-                                 sizeof(DescriptorProto));
+                                 sizeof(DescriptorProto),
+                                 alignof(DescriptorProto));
   }
 }
 PROTOBUF_CONSTINIT
@@ -4791,7 +4799,8 @@ inline void* ExtensionRangeOptions_Declaration::PlacementNew_(const void*, void*
   return ::new (mem) ExtensionRangeOptions_Declaration(arena);
 }
 constexpr auto ExtensionRangeOptions_Declaration::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ExtensionRangeOptions_Declaration));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ExtensionRangeOptions_Declaration),
+                                            alignof(ExtensionRangeOptions_Declaration));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -5168,10 +5177,12 @@ constexpr auto ExtensionRangeOptions::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ExtensionRangeOptions), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::CopyInit(
+        sizeof(ExtensionRangeOptions), alignof(ExtensionRangeOptions), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&ExtensionRangeOptions::PlacementNew_,
-                                 sizeof(ExtensionRangeOptions));
+                                 sizeof(ExtensionRangeOptions),
+                                 alignof(ExtensionRangeOptions));
   }
 }
 PROTOBUF_CONSTINIT
@@ -5569,7 +5580,8 @@ inline void* FieldDescriptorProto::PlacementNew_(const void*, void* mem,
   return ::new (mem) FieldDescriptorProto(arena);
 }
 constexpr auto FieldDescriptorProto::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldDescriptorProto));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldDescriptorProto),
+                                            alignof(FieldDescriptorProto));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -6101,7 +6113,8 @@ inline void* OneofDescriptorProto::PlacementNew_(const void*, void* mem,
   return ::new (mem) OneofDescriptorProto(arena);
 }
 constexpr auto OneofDescriptorProto::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(OneofDescriptorProto));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(OneofDescriptorProto),
+                                            alignof(OneofDescriptorProto));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -6377,7 +6390,8 @@ inline void* EnumDescriptorProto_EnumReservedRange::PlacementNew_(const void*, v
   return ::new (mem) EnumDescriptorProto_EnumReservedRange(arena);
 }
 constexpr auto EnumDescriptorProto_EnumReservedRange::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(EnumDescriptorProto_EnumReservedRange));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(EnumDescriptorProto_EnumReservedRange),
+                                            alignof(EnumDescriptorProto_EnumReservedRange));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -6673,10 +6687,12 @@ constexpr auto EnumDescriptorProto::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumDescriptorProto), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::CopyInit(
+        sizeof(EnumDescriptorProto), alignof(EnumDescriptorProto), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&EnumDescriptorProto::PlacementNew_,
-                                 sizeof(EnumDescriptorProto));
+                                 sizeof(EnumDescriptorProto),
+                                 alignof(EnumDescriptorProto));
   }
 }
 PROTOBUF_CONSTINIT
@@ -7071,7 +7087,8 @@ inline void* EnumValueDescriptorProto::PlacementNew_(const void*, void* mem,
   return ::new (mem) EnumValueDescriptorProto(arena);
 }
 constexpr auto EnumValueDescriptorProto::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumValueDescriptorProto));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(EnumValueDescriptorProto),
+                                            alignof(EnumValueDescriptorProto));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -7404,10 +7421,12 @@ constexpr auto ServiceDescriptorProto::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(ServiceDescriptorProto), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::CopyInit(
+        sizeof(ServiceDescriptorProto), alignof(ServiceDescriptorProto), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&ServiceDescriptorProto::PlacementNew_,
-                                 sizeof(ServiceDescriptorProto));
+                                 sizeof(ServiceDescriptorProto),
+                                 alignof(ServiceDescriptorProto));
   }
 }
 PROTOBUF_CONSTINIT
@@ -7756,7 +7775,8 @@ inline void* MethodDescriptorProto::PlacementNew_(const void*, void* mem,
   return ::new (mem) MethodDescriptorProto(arena);
 }
 constexpr auto MethodDescriptorProto::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(MethodDescriptorProto));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(MethodDescriptorProto),
+                                            alignof(MethodDescriptorProto));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -8212,10 +8232,12 @@ constexpr auto FileOptions::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FileOptions), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::CopyInit(
+        sizeof(FileOptions), alignof(FileOptions), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&FileOptions::PlacementNew_,
-                                 sizeof(FileOptions));
+                                 sizeof(FileOptions),
+                                 alignof(FileOptions));
   }
 }
 PROTOBUF_CONSTINIT
@@ -9038,10 +9060,12 @@ constexpr auto MessageOptions::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(MessageOptions), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(
+        sizeof(MessageOptions), alignof(MessageOptions), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&MessageOptions::PlacementNew_,
-                                 sizeof(MessageOptions));
+                                 sizeof(MessageOptions),
+                                 alignof(MessageOptions));
   }
 }
 PROTOBUF_CONSTINIT
@@ -9454,7 +9478,8 @@ inline void* FieldOptions_EditionDefault::PlacementNew_(const void*, void* mem,
   return ::new (mem) FieldOptions_EditionDefault(arena);
 }
 constexpr auto FieldOptions_EditionDefault::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldOptions_EditionDefault));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldOptions_EditionDefault),
+                                            alignof(FieldOptions_EditionDefault));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -9737,7 +9762,8 @@ inline void* FieldOptions_FeatureSupport::PlacementNew_(const void*, void* mem,
   return ::new (mem) FieldOptions_FeatureSupport(arena);
 }
 constexpr auto FieldOptions_FeatureSupport::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldOptions_FeatureSupport));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldOptions_FeatureSupport),
+                                            alignof(FieldOptions_FeatureSupport));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -10106,10 +10132,12 @@ constexpr auto FieldOptions::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FieldOptions), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(
+        sizeof(FieldOptions), alignof(FieldOptions), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&FieldOptions::PlacementNew_,
-                                 sizeof(FieldOptions));
+                                 sizeof(FieldOptions),
+                                 alignof(FieldOptions));
   }
 }
 PROTOBUF_CONSTINIT
@@ -10719,10 +10747,12 @@ constexpr auto OneofOptions::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(OneofOptions), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(
+        sizeof(OneofOptions), alignof(OneofOptions), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&OneofOptions::PlacementNew_,
-                                 sizeof(OneofOptions));
+                                 sizeof(OneofOptions),
+                                 alignof(OneofOptions));
   }
 }
 PROTOBUF_CONSTINIT
@@ -11056,10 +11086,12 @@ constexpr auto EnumOptions::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(EnumOptions), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(
+        sizeof(EnumOptions), alignof(EnumOptions), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&EnumOptions::PlacementNew_,
-                                 sizeof(EnumOptions));
+                                 sizeof(EnumOptions),
+                                 alignof(EnumOptions));
   }
 }
 PROTOBUF_CONSTINIT
@@ -11466,10 +11498,12 @@ constexpr auto EnumValueOptions::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(EnumValueOptions), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(
+        sizeof(EnumValueOptions), alignof(EnumValueOptions), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&EnumValueOptions::PlacementNew_,
-                                 sizeof(EnumValueOptions));
+                                 sizeof(EnumValueOptions),
+                                 alignof(EnumValueOptions));
   }
 }
 PROTOBUF_CONSTINIT
@@ -11882,10 +11916,12 @@ constexpr auto ServiceOptions::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(ServiceOptions), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(
+        sizeof(ServiceOptions), alignof(ServiceOptions), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&ServiceOptions::PlacementNew_,
-                                 sizeof(ServiceOptions));
+                                 sizeof(ServiceOptions),
+                                 alignof(ServiceOptions));
   }
 }
 PROTOBUF_CONSTINIT
@@ -12247,10 +12283,12 @@ constexpr auto MethodOptions::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(MethodOptions), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(
+        sizeof(MethodOptions), alignof(MethodOptions), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&MethodOptions::PlacementNew_,
-                                 sizeof(MethodOptions));
+                                 sizeof(MethodOptions),
+                                 alignof(MethodOptions));
   }
 }
 PROTOBUF_CONSTINIT
@@ -12616,7 +12654,8 @@ inline void* UninterpretedOption_NamePart::PlacementNew_(const void*, void* mem,
   return ::new (mem) UninterpretedOption_NamePart(arena);
 }
 constexpr auto UninterpretedOption_NamePart::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(UninterpretedOption_NamePart));
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(UninterpretedOption_NamePart),
+                                            alignof(UninterpretedOption_NamePart));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -12921,10 +12960,12 @@ constexpr auto UninterpretedOption::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(UninterpretedOption), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::CopyInit(
+        sizeof(UninterpretedOption), alignof(UninterpretedOption), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&UninterpretedOption::PlacementNew_,
-                                 sizeof(UninterpretedOption));
+                                 sizeof(UninterpretedOption),
+                                 alignof(UninterpretedOption));
   }
 }
 PROTOBUF_CONSTINIT
@@ -13355,10 +13396,12 @@ constexpr auto FeatureSet::InternalNewImpl_() {
               ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FeatureSet), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(
+        sizeof(FeatureSet), alignof(FeatureSet), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&FeatureSet::PlacementNew_,
-                                 sizeof(FeatureSet));
+                                 sizeof(FeatureSet),
+                                 alignof(FeatureSet));
   }
 }
 PROTOBUF_CONSTINIT
@@ -13748,7 +13791,8 @@ inline void* FeatureSetDefaults_FeatureSetEditionDefault::PlacementNew_(const vo
   return ::new (mem) FeatureSetDefaults_FeatureSetEditionDefault(arena);
 }
 constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FeatureSetDefaults_FeatureSetEditionDefault));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FeatureSetDefaults_FeatureSetEditionDefault),
+                                            alignof(FeatureSetDefaults_FeatureSetEditionDefault));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
@@ -14090,10 +14134,12 @@ constexpr auto FeatureSetDefaults::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(FeatureSetDefaults), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(
+        sizeof(FeatureSetDefaults), alignof(FeatureSetDefaults), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&FeatureSetDefaults::PlacementNew_,
-                                 sizeof(FeatureSetDefaults));
+                                 sizeof(FeatureSetDefaults),
+                                 alignof(FeatureSetDefaults));
   }
 }
 PROTOBUF_CONSTINIT
@@ -14427,10 +14473,12 @@ constexpr auto SourceCodeInfo_Location::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SourceCodeInfo_Location), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::CopyInit(
+        sizeof(SourceCodeInfo_Location), alignof(SourceCodeInfo_Location), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&SourceCodeInfo_Location::PlacementNew_,
-                                 sizeof(SourceCodeInfo_Location));
+                                 sizeof(SourceCodeInfo_Location),
+                                 alignof(SourceCodeInfo_Location));
   }
 }
 PROTOBUF_CONSTINIT
@@ -14790,10 +14838,12 @@ constexpr auto SourceCodeInfo::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(SourceCodeInfo), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(
+        sizeof(SourceCodeInfo), alignof(SourceCodeInfo), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&SourceCodeInfo::PlacementNew_,
-                                 sizeof(SourceCodeInfo));
+                                 sizeof(SourceCodeInfo),
+                                 alignof(SourceCodeInfo));
   }
 }
 PROTOBUF_CONSTINIT
@@ -15053,10 +15103,12 @@ constexpr auto GeneratedCodeInfo_Annotation::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(GeneratedCodeInfo_Annotation), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::CopyInit(
+        sizeof(GeneratedCodeInfo_Annotation), alignof(GeneratedCodeInfo_Annotation), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&GeneratedCodeInfo_Annotation::PlacementNew_,
-                                 sizeof(GeneratedCodeInfo_Annotation));
+                                 sizeof(GeneratedCodeInfo_Annotation),
+                                 alignof(GeneratedCodeInfo_Annotation));
   }
 }
 PROTOBUF_CONSTINIT
@@ -15409,10 +15461,12 @@ constexpr auto GeneratedCodeInfo::InternalNewImpl_() {
                   ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
-    return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(GeneratedCodeInfo), *arena_bits);
+    return ::google::protobuf::internal::MessageCreator::ZeroInit(
+        sizeof(GeneratedCodeInfo), alignof(GeneratedCodeInfo), *arena_bits);
   } else {
     return ::google::protobuf::internal::MessageCreator(&GeneratedCodeInfo::PlacementNew_,
-                                 sizeof(GeneratedCodeInfo));
+                                 sizeof(GeneratedCodeInfo),
+                                 alignof(GeneratedCodeInfo));
   }
 }
 PROTOBUF_CONSTINIT

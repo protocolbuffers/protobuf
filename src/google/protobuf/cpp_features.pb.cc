@@ -200,7 +200,8 @@ inline void* CppFeatures::PlacementNew_(const void*, void* mem,
   return ::new (mem) CppFeatures(arena);
 }
 constexpr auto CppFeatures::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(CppFeatures));
+  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(CppFeatures),
+                                            alignof(CppFeatures));
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
