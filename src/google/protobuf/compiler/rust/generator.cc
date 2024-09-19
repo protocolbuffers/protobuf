@@ -175,8 +175,8 @@ bool RustGenerator::Generate(const FileDescriptor* file,
       {"pbr", "::__pb::__runtime"},
       {"NonNull", "::__std::ptr::NonNull"},
       {"Phantom", "::__std::marker::PhantomData"},
+      {"Result", "::__std::result::Result"},
   });
-
 
   ctx.Emit({{"kernel", KernelRsName(ctx.opts().kernel)}}, R"rs(
     extern crate protobuf_$kernel$ as __pb;

@@ -153,7 +153,7 @@ void MessageClearAndParse(Context& ctx, const Descriptor& msg) {
             //~ This swap causes the old self.inner.arena to be moved into `msg`
             //~ which we immediately drop, which will release any previous
             //~ message that was held here.
-            std::mem::swap(self, &mut msg);
+            $std$::mem::swap(self, &mut msg);
             Ok(())
           }
           Err(_) => Err($pb$::ParseError)
@@ -208,7 +208,7 @@ void CppMessageExterns(Context& ctx, const Descriptor& msg) {
        {"map_size_info_thunk", ThunkName(ctx, msg, "size_info")}},
       R"rs(
       fn $new_thunk$() -> $pbr$::RawMessage;
-      fn $placement_new_thunk$(ptr: *mut std::ffi::c_void, m: $pbr$::RawMessage);
+      fn $placement_new_thunk$(ptr: *mut $std$::ffi::c_void, m: $pbr$::RawMessage);
       fn $repeated_new_thunk$() -> $pbr$::RawRepeatedField;
       fn $repeated_free_thunk$(raw: $pbr$::RawRepeatedField);
       fn $repeated_len_thunk$(raw: $pbr$::RawRepeatedField) -> usize;
@@ -848,20 +848,20 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
         impl $pb$::Message for $Msg$ {}
 
-        impl std::default::Default for $Msg$ {
+        impl $std$::default::Default for $Msg$ {
           fn default() -> Self {
             Self::new()
           }
         }
 
         impl $pb$::Parse for $Msg$ {
-          fn parse(serialized: &[u8]) -> Result<Self, $pb$::ParseError> {
+          fn parse(serialized: &[u8]) -> $Result$<Self, $pb$::ParseError> {
             Self::parse(serialized)
           }
         }
 
-        impl std::fmt::Debug for $Msg$ {
-          fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        impl $std$::fmt::Debug for $Msg$ {
+          fn fmt(&self, f: &mut $std$::fmt::Formatter<'_>) -> $std$::fmt::Result {
             $Msg::debug$
           }
         }
@@ -874,7 +874,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         }
 
         impl $pb$::Serialize for $Msg$ {
-          fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
+          fn serialize(&self) -> $Result$<Vec<u8>, $pb$::SerializeError> {
             $pb$::AsView::as_view(self).serialize()
           }
         }
@@ -886,7 +886,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         }
 
         impl $pb$::ClearAndParse for $Msg$ {
-          fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), $pb$::ParseError> {
+          fn clear_and_parse(&mut self, data: &[u8]) -> $Result$<(), $pb$::ParseError> {
             $Msg::clear_and_parse$
           }
         }
@@ -924,14 +924,14 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           type Message = $Msg$;
         }
 
-        impl std::fmt::Debug for $Msg$View<'_> {
-          fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        impl $std$::fmt::Debug for $Msg$View<'_> {
+          fn fmt(&self, f: &mut $std$::fmt::Formatter<'_>) -> $std$::fmt::Result {
             $Msg::debug$
           }
         }
 
         impl $pb$::Serialize for $Msg$View<'_> {
-          fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
+          fn serialize(&self) -> $Result$<Vec<u8>, $pb$::SerializeError> {
             $Msg::serialize$
           }
         }
@@ -998,14 +998,14 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           type Message = $Msg$;
         }
 
-        impl std::fmt::Debug for $Msg$Mut<'_> {
-          fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        impl $std$::fmt::Debug for $Msg$Mut<'_> {
+          fn fmt(&self, f: &mut $std$::fmt::Formatter<'_>) -> $std$::fmt::Result {
             $Msg::debug$
           }
         }
 
         impl $pb$::Serialize for $Msg$Mut<'_> {
-          fn serialize(&self) -> Result<Vec<u8>, $pb$::SerializeError> {
+          fn serialize(&self) -> $Result$<Vec<u8>, $pb$::SerializeError> {
             $pb$::AsView::as_view(self).serialize()
           }
         }
@@ -1111,7 +1111,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
           $raw_arena_getter_for_message$
 
-          pub fn parse(data: &[u8]) -> Result<Self, $pb$::ParseError> {
+          pub fn parse(data: &[u8]) -> $Result$<Self, $pb$::ParseError> {
             let mut msg = Self::new();
             $pb$::ClearAndParse::clear_and_parse(&mut msg, data).map(|_| msg)
           }
@@ -1201,68 +1201,68 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
     ctx.Emit({{"Msg", RsSafeName(msg.name())}}, R"rs(
       impl<'a> $Msg$Mut<'a> {
         pub unsafe fn __unstable_wrap_cpp_grant_permission_to_break(
-            msg: &'a mut *mut std::ffi::c_void) -> Self {
+            msg: &'a mut *mut $std$::ffi::c_void) -> Self {
           Self {
             inner: $pbr$::MutatorMessageRef::wrap_raw(
                 $pbr$::RawMessage::new(*msg as *mut _).unwrap())
           }
         }
-        pub fn __unstable_cpp_repr_grant_permission_to_break(self) -> *mut std::ffi::c_void {
+        pub fn __unstable_cpp_repr_grant_permission_to_break(self) -> *mut $std$::ffi::c_void {
           self.raw_msg().as_ptr() as *mut _
         }
       }
 
       impl<'a> $Msg$View<'a> {
         pub fn __unstable_wrap_cpp_grant_permission_to_break(
-          msg: &'a *const std::ffi::c_void) -> Self {
+          msg: &'a *const $std$::ffi::c_void) -> Self {
           Self::new($pbi$::Private, $pbr$::RawMessage::new(*msg as *mut _).unwrap())
         }
-        pub fn __unstable_cpp_repr_grant_permission_to_break(self) -> *const std::ffi::c_void {
+        pub fn __unstable_cpp_repr_grant_permission_to_break(self) -> *const $std$::ffi::c_void {
           self.msg.as_ptr() as *const _
         }
       }
 
       impl $pb$::OwnedMessageInterop for $Msg$ {
-        unsafe fn __unstable_take_ownership_of_raw_message(msg: *mut std::ffi::c_void) -> Self {
+        unsafe fn __unstable_take_ownership_of_raw_message(msg: *mut $std$::ffi::c_void) -> Self {
           Self { inner: $pbr$::MessageInner { msg: $pbr$::RawMessage::new(msg as *mut _).unwrap() } }
         }
 
-        fn __unstable_leak_raw_message(self) -> *mut std::ffi::c_void {
-          let s = std::mem::ManuallyDrop::new(self);
+        fn __unstable_leak_raw_message(self) -> *mut $std$::ffi::c_void {
+          let s = $std$::mem::ManuallyDrop::new(self);
           s.raw_msg().as_ptr() as *mut _
         }
       }
 
       impl<'a> $pb$::MessageMutInterop<'a> for $Msg$Mut<'a> {
         unsafe fn __unstable_wrap_raw_message_mut(
-            msg: &'a mut *mut std::ffi::c_void) -> Self {
+            msg: &'a mut *mut $std$::ffi::c_void) -> Self {
           Self {
             inner: $pbr$::MutatorMessageRef::wrap_raw(
                 $pbr$::RawMessage::new(*msg as *mut _).unwrap())
           }
         }
         unsafe fn __unstable_wrap_raw_message_mut_unchecked_lifetime(
-            msg: *mut std::ffi::c_void) -> Self {
+            msg: *mut $std$::ffi::c_void) -> Self {
           Self {
             inner: $pbr$::MutatorMessageRef::wrap_raw(
                 $pbr$::RawMessage::new(msg as *mut _).unwrap())
           }
         }
-        fn __unstable_as_raw_message_mut(&mut self) -> *mut std::ffi::c_void {
+        fn __unstable_as_raw_message_mut(&mut self) -> *mut $std$::ffi::c_void {
           self.raw_msg().as_ptr() as *mut _
         }
       }
 
       impl<'a> $pb$::MessageViewInterop<'a> for $Msg$View<'a> {
         unsafe fn __unstable_wrap_raw_message(
-          msg: &'a *const std::ffi::c_void) -> Self {
+          msg: &'a *const $std$::ffi::c_void) -> Self {
           Self::new($pbi$::Private, $pbr$::RawMessage::new(*msg as *mut _).unwrap())
         }
         unsafe fn __unstable_wrap_raw_message_unchecked_lifetime(
-          msg: *const std::ffi::c_void) -> Self {
+          msg: *const $std$::ffi::c_void) -> Self {
           Self::new($pbi$::Private, $pbr$::RawMessage::new(msg as *mut _).unwrap())
         }
-        fn __unstable_as_raw_message(&self) -> *const std::ffi::c_void {
+        fn __unstable_as_raw_message(&self) -> *const $std$::ffi::c_void {
           self.msg.as_ptr() as *const _
         }
       }
@@ -1299,14 +1299,14 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
 
       impl<'a> $pb$::MessageViewInterop<'a> for $Msg$View<'a> {
         unsafe fn __unstable_wrap_raw_message(
-          msg: &'a *const std::ffi::c_void) -> Self {
+          msg: &'a *const $std$::ffi::c_void) -> Self {
           Self::new($pbi$::Private, $pbr$::RawMessage::new(*msg as *mut _).unwrap())
         }
         unsafe fn __unstable_wrap_raw_message_unchecked_lifetime(
-          msg: *const std::ffi::c_void) -> Self {
+          msg: *const $std$::ffi::c_void) -> Self {
           Self::new($pbi$::Private, $pbr$::RawMessage::new(msg as *mut _).unwrap())
         }
-        fn __unstable_as_raw_message(&self) -> *const std::ffi::c_void {
+        fn __unstable_as_raw_message(&self) -> *const $std$::ffi::c_void {
           self.msg.as_ptr() as *const _
         }
       }

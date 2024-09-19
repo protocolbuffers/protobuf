@@ -258,7 +258,7 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc) {
               impl $std$::convert::TryFrom<i32> for $name$ {
                 type Error = $pb$::UnknownEnumValue<Self>;
 
-                fn try_from(val: i32) -> Result<$name$, Self::Error> {
+                fn try_from(val: i32) -> $Result$<$name$, Self::Error> {
                   if <Self as $pbi$::Enum>::is_known(val) {
                     Ok(Self(val))
                   } else {
