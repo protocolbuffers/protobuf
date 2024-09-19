@@ -671,8 +671,8 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     // - The thunk does not increment the iterator.
                     unsafe {
                         iter.as_raw_mut($pbi$::Private).next_unchecked::<$key_t$, Self, _, _>(
-                            $pbr$::$map_iter_get$,
-                            $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
+                            |iter, key, value| { $pbr$::$map_iter_get$(
+                                iter, $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX), key, value) },
                             |ffi_key| $from_ffi_key_expr$,
                             |raw_msg| $Msg$View::new($pbi$::Private, raw_msg)
                         )

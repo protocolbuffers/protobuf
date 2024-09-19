@@ -722,13 +722,11 @@ impl UntypedMapIterator {
     pub unsafe fn next_unchecked<'a, K, V, FfiKey, FfiValue>(
         &mut self,
 
-        iter_get_thunk: unsafe extern "C" fn(
+        iter_get_thunk: unsafe fn(
             iter: &mut UntypedMapIterator,
-            size_info: MapNodeSizeInfo,
             key: *mut FfiKey,
             value: *mut FfiValue,
         ),
-        size_info: MapNodeSizeInfo,
         from_ffi_key: impl FnOnce(FfiKey) -> View<'a, K>,
         from_ffi_value: impl FnOnce(FfiValue) -> View<'a, V>,
     ) -> Option<(View<'a, K>, View<'a, V>)>
@@ -746,7 +744,7 @@ impl UntypedMapIterator {
         // - The iterator is not at the end (node is non-null).
         // - `ffi_key` and `ffi_value` are not read (as uninit) as promised by the
         //   caller.
-        unsafe { (iter_get_thunk)(self, size_info, ffi_key.as_mut_ptr(), ffi_value.as_mut_ptr()) }
+        unsafe { (iter_get_thunk)(self, ffi_key.as_mut_ptr(), ffi_value.as_mut_ptr()) }
 
         // SAFETY:
         // - The backing map is alive as promised by the caller.
@@ -876,7 +874,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                 pub fn [< proto2_rust_thunk_Map_ $key_t _ $t _insert >](m: RawMap, key: $ffi_key_t, value: $ffi_value_t) -> bool;
                 pub fn [< proto2_rust_thunk_Map_ $key_t _ $t _get >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_view_t) -> bool;
                 pub fn [< proto2_rust_thunk_Map_ $key_t _ $t _iter >](m: RawMap) -> UntypedMapIterator;
-                pub fn [< proto2_rust_thunk_Map_ $key_t _ $t _iter_get >](iter: &mut UntypedMapIterator, size_info: MapNodeSizeInfo, key: *mut $ffi_key_t, value: *mut $ffi_view_t);
+                pub fn [< proto2_rust_thunk_Map_ $key_t _ $t _iter_get >](iter: &mut UntypedMapIterator, key: *mut $ffi_key_t, value: *mut $ffi_view_t);
                 pub fn [< proto2_rust_thunk_Map_ $key_t _ $t _remove >](m: RawMap, key: $ffi_key_t, value: *mut $ffi_view_t) -> bool;
             }
 
@@ -955,8 +953,7 @@ macro_rules! impl_ProxiedInMapValue_for_non_generated_value_types {
                     // - The thunk does not increment the iterator.
                     unsafe {
                         iter.as_raw_mut(Private).next_unchecked::<$key_t, Self, _, _>(
-                            [< proto2_rust_thunk_Map_ $key_t _ $t _iter_get >],
-                            MapNodeSizeInfo(0),
+                            |iter, key, value| { [< proto2_rust_thunk_Map_ $key_t _ $t _iter_get >](iter, key, value) },
                             $from_ffi_key,
                             $from_ffi_value,
                         )
