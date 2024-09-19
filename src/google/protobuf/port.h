@@ -379,7 +379,13 @@ constexpr T* Launder(T* p) {
 #endif
 }
 
-#if ABSL_HAVE_BUILTIN(__is_bitwise_cloneable)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+constexpr bool EnableCustomNew() { return true; }
+template <typename T>
+constexpr bool EnableCustomNewFor() {
+  return true;
+}
+#elif ABSL_HAVE_BUILTIN(__is_bitwise_cloneable)
 constexpr bool EnableCustomNew() { return true; }
 template <typename T>
 constexpr bool EnableCustomNewFor() {
