@@ -109,9 +109,6 @@ void SetEnumVariables(
     variables->insert({"unknown", (*variables)["default"]});
   }
 
-  // We use `x.getClass()` as a null check because it generates less bytecode
-  // than an `if (x == null) { throw ... }` statement.
-  (*variables)["null_check"] = "value.getClass();\n";
   // Calls to Annotate() use variable ranges to know which text to annotate.
   (*variables)["{"] = "";
   (*variables)["}"] = "";
@@ -693,17 +690,19 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER,
                                context_->options());
   printer->Print(variables_,
+                 "@java.lang.SuppressWarnings(\"ReturnValueIgnored\")\n"
                  "private void set$capitalized_name$(\n"
                  "    int index, $type$ value) {\n"
-                 "  $null_check$"
+                 "  value.getClass();  // minimal bytecode null check\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.setInt(index, value.getNumber());\n"
                  "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
                                context_->options());
   printer->Print(variables_,
+                 "@java.lang.SuppressWarnings(\"ReturnValueIgnored\")\n"
                  "private void add$capitalized_name$($type$ value) {\n"
-                 "  $null_check$"
+                 "  value.getClass();  // minimal bytecode null check\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.addInt(value.getNumber());\n"
                  "}\n");
