@@ -1524,10 +1524,10 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
   // Calculate the feature defaults for each built-in generator.  All generators
   // that support editions must agree on the supported edition range.
   std::vector<const FieldDescriptor*> feature_extensions;
-  Edition minimum_edition = PROTOBUF_MINIMUM_EDITION;
+  Edition minimum_edition = MinimumAllowedEdition();
   // Override maximum_edition if experimental_editions is true.
   Edition maximum_edition =
-      !experimental_editions_ ? PROTOBUF_MAXIMUM_EDITION : Edition::EDITION_MAX;
+      !experimental_editions_ ? MaximumAllowedEdition() : Edition::EDITION_MAX;
   for (const auto& output : output_directives_) {
     if (output.generator == nullptr) continue;
     if (!experimental_editions_ &&
@@ -3037,11 +3037,11 @@ bool CommandLineInterface::WriteEditionDefaults(const DescriptorPool& pool) {
   std::vector<const FieldDescriptor*> extensions;
   pool.FindAllExtensions(feature_set, &extensions);
 
-  Edition minimum = PROTOBUF_MINIMUM_EDITION;
+  Edition minimum = MinimumAllowedEdition();
   if (edition_defaults_minimum_ != EDITION_UNKNOWN) {
     minimum = edition_defaults_minimum_;
   }
-  Edition maximum = PROTOBUF_MAXIMUM_EDITION;
+  Edition maximum = MaximumAllowedEdition();
   if (edition_defaults_maximum_ != EDITION_UNKNOWN) {
     maximum = edition_defaults_maximum_;
   }

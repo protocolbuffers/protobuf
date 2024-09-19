@@ -72,8 +72,8 @@ class TestGenerator : public CodeGenerator {
 
  private:
   uint64_t features_ = CodeGenerator::Feature::FEATURE_SUPPORTS_EDITIONS;
-  Edition minimum_edition_ = PROTOBUF_MINIMUM_EDITION;
-  Edition maximum_edition_ = PROTOBUF_MAXIMUM_EDITION;
+  Edition minimum_edition_ = MinimumAllowedEdition();
+  Edition maximum_edition_ = MaximumAllowedEdition();
   std::vector<const FieldDescriptor*> feature_extensions_ = {
       GetExtensionReflection(pb::test)};
 };
@@ -320,8 +320,15 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsUnsupported) {
   auto result = generator.BuildFeatureSetDefaults();
 
   ASSERT_TRUE(result.ok()) << result.status().message();
-  EXPECT_EQ(result->minimum_edition(), PROTOBUF_MINIMUM_EDITION);
-  EXPECT_EQ(result->maximum_edition(), PROTOBUF_MAXIMUM_EDITION);
+  EXPECT_EQ(result->minimum_edition(), MinimumAllowedEdition());
+  EXPECT_EQ(result->maximum_edition(), MaximumAllowedEdition());
+}
+
+TEST_F(CodeGeneratorTest, SupportedEditionRangeIsDense) {
+  for (int i = static_cast<int>(MinimumAllowedEdition());
+       i <= static_cast<int>(MaximumAllowedEdition()); ++i) {
+    EXPECT_TRUE(Edition_IsValid(i));
+  }
 }
 
 #include "google/protobuf/port_undef.inc"

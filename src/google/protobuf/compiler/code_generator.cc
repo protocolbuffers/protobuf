@@ -70,7 +70,7 @@ absl::StatusOr<FeatureSetDefaults> CodeGenerator::BuildFeatureSetDefaults()
     // anyway.
     return FeatureResolver::CompileDefaults(
         FeatureSet::descriptor(), GetFeatureExtensions(),
-        PROTOBUF_MINIMUM_EDITION, PROTOBUF_MAXIMUM_EDITION);
+        MinimumAllowedEdition(), MaximumAllowedEdition());
   }
   return FeatureResolver::CompileDefaults(
       FeatureSet::descriptor(), GetFeatureExtensions(), GetMinimumEdition(),
