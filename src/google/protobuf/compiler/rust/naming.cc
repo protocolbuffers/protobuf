@@ -441,7 +441,7 @@ PROTOBUF_CONSTINIT const MapKeyType kMapKeyTypes[] = {
      /*cc_ffi_key_t=*/"google::protobuf::rust::PtrAndLen",
      /*cc_from_ffi_key_expr=*/
      "std::string(key.ptr, key.len)", /*cc_to_ffi_key_expr=*/
-     "google::protobuf::rust::PtrAndLen(cpp_key.data(), cpp_key.size())"}};
+     "google::protobuf::rust::PtrAndLen{cpp_key.data(), cpp_key.size()}"}};
 
 }  // namespace rust
 }  // namespace compiler
