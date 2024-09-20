@@ -426,6 +426,17 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 
 #endif
 
+// Future versions of upb will include breaking changes to some APIs.
+// This macro can be set to enable these API changes ahead of time, so that
+// user code can be updated before upgrading versions of protobuf.
+#ifdef UPB_FUTURE_BREAKING_CHANGES
+
+// Properly enforce closed enums in python.
+// Owner: mkruskal@
+#define UPB_FUTURE_PYTHON_CLOSED_ENUM_ENFORCEMENT 1
+
+#endif
+
 
 #include <errno.h>
 #include <float.h>
@@ -17130,3 +17141,5 @@ upb_ServiceDef* _upb_ServiceDefs_New(upb_DefBuilder* ctx, int n,
 #undef UPB_LINKARR_APPEND
 #undef UPB_LINKARR_START
 #undef UPB_LINKARR_STOP
+#undef UPB_FUTURE_BREAKING_CHANGES
+#undef UPB_FUTURE_PYTHON_CLOSED_ENUM_ENFORCEMENT
