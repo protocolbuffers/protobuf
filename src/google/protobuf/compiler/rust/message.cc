@@ -1399,10 +1399,10 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
         size_t $repeated_len_thunk$(google::protobuf::RepeatedPtrField<$QualifiedMsg$>* field) {
           return field->size();
         }
-        const $QualifiedMsg$& $repeated_get_thunk$(
+        const $QualifiedMsg$* $repeated_get_thunk$(
           google::protobuf::RepeatedPtrField<$QualifiedMsg$>* field,
           size_t index) {
-          return field->Get(index);
+          return &field->Get(index);
         }
         $QualifiedMsg$* $repeated_get_mut_thunk$(
           google::protobuf::RepeatedPtrField<$QualifiedMsg$>* field,
