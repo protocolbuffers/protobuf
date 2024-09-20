@@ -164,14 +164,6 @@ class PROTOC_EXPORT FileGenerator {
   // Calculates if we should skip importing a specific dependency.
   bool ShouldSkipDependencyImports(const FileDescriptor* dep) const;
 
-  bool IsDepWeak(const FileDescriptor* dep) const {
-    if (weak_deps_.count(dep) != 0) {
-      ABSL_CHECK(!options_.opensource_runtime);
-      return true;
-    }
-    return false;
-  }
-
   // For testing only.  Returns the descriptors ordered topologically.
   std::vector<const Descriptor*> MessagesInTopologicalOrder() const;
   friend class FileGeneratorFriendForTesting;

@@ -94,10 +94,6 @@ void UnmuteWuninitialized(io::Printer* p) {
 
 bool FileGenerator::ShouldSkipDependencyImports(
     const FileDescriptor* dep) const {
-  // Do not import weak deps.
-  if (!options_.opensource_runtime && IsDepWeak(dep)) {
-    return true;
-  }
 
   // Skip feature imports, which are a visible (but non-functional) deviation
   // between editions and legacy syntax.
@@ -153,10 +149,6 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
   for (int i = 0; i < file->extension_count(); ++i) {
     extension_generators_.push_back(std::make_unique<ExtensionGenerator>(
         file->extension(i), options, &scc_analyzer_));
-  }
-
-  for (int i = 0; i < file->weak_dependency_count(); ++i) {
-    weak_deps_.insert(file->weak_dependency(i));
   }
 }
 
@@ -753,8 +745,6 @@ void FileGenerator::GetCrossFileReferencesForFile(const FileDescriptor* file,
 
     if (!ShouldSkipDependencyImports(file->dependency(i))) {
       refs->strong_reflection_files.insert(dep);
-    } else if (IsDepWeak(dep)) {
-      refs->weak_reflection_files.insert(dep);
     }
   }
 }

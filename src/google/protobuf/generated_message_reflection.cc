@@ -2397,7 +2397,6 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
     const FieldDescriptor* field) const {
   USAGE_MUTABLE_CHECK_ALL(SetAllocatedMessage, SINGULAR, MESSAGE);
 
-
   if (field->is_extension()) {
     MutableExtensionSet(message)->UnsafeArenaSetAllocatedMessage(
         field->number(), field->type(), field, sub_message);
