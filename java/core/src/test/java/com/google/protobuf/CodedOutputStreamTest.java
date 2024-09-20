@@ -17,9 +17,7 @@ import protobuf_unittest.UnittestProto.TestSparseEnum;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -537,13 +535,13 @@ public class CodedOutputStreamTest {
     for (OutputType type : new OutputType[] {OutputType.ARRAY}) {
       Coder coder = type.newCoder(4);
       coder.stream().writeByteArrayNoTag(fullArray, 2, 2);
-      assertEqualBytes(type, bytes(0x02, 0x33, 0x44), coder.toByteArray());
+      assertWithMessage(type.name()).that(coder.toByteArray()).isEqualTo(bytes(0x02, 0x33, 0x44));
       assertThat(coder.stream().getTotalBytesWritten()).isEqualTo(3);
     }
   }
 
   @Test
-  public void testSerializeUtf8_MultipleSmallWrites() throws Exception {
+  public void testSerializeUtf8_multipleSmallWrites() throws Exception {
     final String source = "abcdefghijklmnopqrstuvwxyz";
 
     // Generate the expected output if the source string is written 2 bytes at a time.
@@ -563,7 +561,7 @@ public class CodedOutputStreamTest {
         coder.stream().writeStringNoTag(substr);
       }
       coder.stream().flush();
-      assertEqualBytes(outputType, expectedBytes, coder.toByteArray());
+      assertWithMessage(outputType.name()).that(coder.toByteArray()).isEqualTo(expectedBytes);
     }
   }
 
@@ -677,7 +675,9 @@ public class CodedOutputStreamTest {
         }) {
       coder.stream().writeStringNoTag(value);
       coder.stream().flush();
-      assertEqualBytes(coder.getOutputType(), new byte[] {3, 'a', 'b', 'c'}, coder.toByteArray());
+      assertWithMessage(coder.getOutputType().name())
+          .that(coder.toByteArray())
+          .isEqualTo(new byte[] {3, 'a', 'b', 'c'});
     }
   }
 
@@ -690,15 +690,16 @@ public class CodedOutputStreamTest {
       Coder coder = outputType.newCoder(data.length);
       coder.stream().writeFixed32NoTag(value);
       coder.stream().flush();
-      assertEqualBytes(outputType, data, coder.toByteArray());
+      assertWithMessage(outputType.name()).that(coder.toByteArray()).isEqualTo(data);
     }
 
     // Try different block sizes.
     for (int blockSize = 1; blockSize <= 16; blockSize *= 2) {
-      Coder coder = OutputType.STREAM.newCoder(blockSize);
+      OutputType outputType = OutputType.STREAM;
+      Coder coder = outputType.newCoder(blockSize);
       coder.stream().writeFixed32NoTag(value);
       coder.stream().flush();
-      assertEqualBytes(OutputType.STREAM, data, coder.toByteArray());
+      assertWithMessage(outputType.name()).that(coder.toByteArray()).isEqualTo(data);
     }
   }
 
@@ -711,15 +712,16 @@ public class CodedOutputStreamTest {
       Coder coder = outputType.newCoder(data.length);
       coder.stream().writeFixed64NoTag(value);
       coder.stream().flush();
-      assertEqualBytes(outputType, data, coder.toByteArray());
+      assertWithMessage(outputType.name()).that(coder.toByteArray()).isEqualTo(data);
     }
 
     // Try different block sizes.
     for (int blockSize = 1; blockSize <= 16; blockSize *= 2) {
-      Coder coder = OutputType.STREAM.newCoder(blockSize);
+      OutputType outputType = OutputType.STREAM;
+      Coder coder = outputType.newCoder(blockSize);
       coder.stream().writeFixed64NoTag(value);
       coder.stream().flush();
-      assertEqualBytes(OutputType.STREAM, data, coder.toByteArray());
+      assertWithMessage(outputType.name()).that(coder.toByteArray()).isEqualTo(data);
     }
   }
 
@@ -757,19 +759,6 @@ public class CodedOutputStreamTest {
     return bytes;
   }
 
-  /** Arrays.asList() does not work with arrays of primitives. :( */
-  private static List<Byte> toList(byte[] bytes) {
-    List<Byte> result = new ArrayList<Byte>();
-    for (byte b : bytes) {
-      result.add(b);
-    }
-    return result;
-  }
-
-  private static void assertEqualBytes(OutputType outputType, byte[] a, byte[] b) {
-    assertWithMessage(outputType.name()).that(toList(a)).isEqualTo(toList(b));
-  }
-
   /**
    * Writes the given value using writeRawVarint32() and writeRawVarint64() and checks that the
    * result matches the given bytes.
@@ -782,7 +771,7 @@ public class CodedOutputStreamTest {
         Coder coder = outputType.newCoder(10);
         coder.stream().writeUInt32NoTag((int) value);
         coder.stream().flush();
-        assertEqualBytes(outputType, data, coder.toByteArray());
+        assertWithMessage(outputType.name()).that(coder.toByteArray()).isEqualTo(data);
 
         // Also try computing size.
         assertThat(data).hasLength(CodedOutputStream.computeUInt32SizeNoTag((int) value));
@@ -792,7 +781,7 @@ public class CodedOutputStreamTest {
         Coder coder = outputType.newCoder(10);
         coder.stream().writeUInt64NoTag(value);
         coder.stream().flush();
-        assertEqualBytes(outputType, data, coder.toByteArray());
+        assertWithMessage(outputType.name()).that(coder.toByteArray()).isEqualTo(data);
 
         // Also try computing size.
         assertThat(data).hasLength(CodedOutputStream.computeUInt64SizeNoTag(value));
@@ -803,23 +792,25 @@ public class CodedOutputStreamTest {
     for (int blockSize = 1; blockSize <= 16; blockSize *= 2) {
       // Only test 32-bit write if the value fits into an int.
       if (value == (int) value) {
-        Coder coder = OutputType.STREAM.newCoder(blockSize);
+        OutputType outputType = OutputType.STREAM;
+        Coder coder = outputType.newCoder(blockSize);
         coder.stream().writeUInt64NoTag((int) value);
         coder.stream().flush();
-        assertEqualBytes(OutputType.STREAM, data, coder.toByteArray());
+        assertWithMessage(outputType.name()).that(coder.toByteArray()).isEqualTo(data);
 
         ByteArrayOutputStream rawOutput = new ByteArrayOutputStream();
         CodedOutputStream output = CodedOutputStream.newInstance(rawOutput, blockSize);
         output.writeUInt32NoTag((int) value);
         output.flush();
-        assertEqualBytes(OutputType.STREAM, data, rawOutput.toByteArray());
+        assertWithMessage(outputType.name()).that(rawOutput.toByteArray()).isEqualTo(data);
       }
 
       {
-        Coder coder = OutputType.STREAM.newCoder(blockSize);
+        OutputType outputType = OutputType.STREAM;
+        Coder coder = outputType.newCoder(blockSize);
         coder.stream().writeUInt64NoTag(value);
         coder.stream().flush();
-        assertEqualBytes(OutputType.STREAM, data, coder.toByteArray());
+        assertWithMessage(outputType.name()).that(coder.toByteArray()).isEqualTo(data);
       }
     }
   }
