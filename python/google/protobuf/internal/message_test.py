@@ -1422,6 +1422,12 @@ class Proto2Test(unittest.TestCase):
       m.repeated_nested_enum[0] = 2
       with self.assertRaises(ValueError):
         m.repeated_nested_enum[0] = 123456
+    else:
+      m.optional_nested_enum = 1234567
+      m.repeated_nested_enum.append(1234567)
+      m.repeated_nested_enum.append(2)
+      m.repeated_nested_enum[0] = 2
+      m.repeated_nested_enum[0] = 123456
 
     # Unknown enum value can be parsed but is ignored.
     m2 = unittest_proto3_arena_pb2.TestAllTypes()
