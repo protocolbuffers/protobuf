@@ -100,11 +100,13 @@ message TestAllTypes {
     string oneof_string = 113;
     NestedEnum oneof_enum = 114;
   }
+}
 
-  map<int32, bytes> map_int32_bytes = 200;
-  map<int32, ForeignEnum> map_int32_foreign_enum = 201;
-  map<int32, ForeignMessage> map_int32_foreign_message = 202;
-  map<int32, ExplicitForeignMessage> map_int32_explicit_foreign_message = 203;
+message TestAllMapTypes {
+  map<int32, bytes> map_int32_bytes = 1;
+  map<int32, ForeignEnum> map_int32_foreign_enum = 2;
+  map<int32, ForeignMessage> map_int32_foreign_message = 3;
+  map<int32, ExplicitForeignMessage> map_int32_explicit_foreign_message = 4;
 }
 
 message TestProto2Required {
