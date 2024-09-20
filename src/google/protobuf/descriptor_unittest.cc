@@ -2957,29 +2957,6 @@ TEST_F(MiscTest, DefaultValues) {
   EXPECT_EQ(enum_value_a, message->field(22)->default_value_enum());
 }
 
-TEST_F(MiscTest, InvalidFieldOptions) {
-  FileDescriptorProto file_proto;
-  file_proto.set_name("foo.proto");
-
-  file_proto.set_syntax("editions");
-  file_proto.set_edition(Edition::EDITION_2023);
-
-  DescriptorProto* message_proto = AddMessage(&file_proto, "TestMessage");
-  AddField(message_proto, "foo", 1, FieldDescriptorProto::LABEL_OPTIONAL,
-           FieldDescriptorProto::TYPE_INT32);
-  FieldDescriptorProto* bar_proto =
-      AddField(message_proto, "bar", 2, FieldDescriptorProto::LABEL_OPTIONAL,
-               FieldDescriptorProto::TYPE_INT32);
-
-  FieldOptions* options = bar_proto->mutable_options();
-  options->set_ctype(FieldOptions::CORD);
-
-  // Expects it to fail as int32 fields cannot have ctype.
-  DescriptorPool pool;
-  const FileDescriptor* file = pool.BuildFile(file_proto);
-  EXPECT_EQ(file, nullptr);
-}
-
 TEST_F(MiscTest, FieldOptions) {
   // Try setting field options.
 

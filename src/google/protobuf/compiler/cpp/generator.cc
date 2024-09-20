@@ -355,8 +355,6 @@ static bool IsEnumMapType(const FieldDescriptor& field) {
 
 absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
   absl::Status status = absl::OkStatus();
-  auto edition = GetEdition(*file);
-
   google::protobuf::internal::VisitDescriptors(*file, [&](const FieldDescriptor& field) {
     const FeatureSet& resolved_features = GetResolvedSourceFeatures(field);
     const pb::CppFeatures& unresolved_features =
@@ -413,8 +411,7 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
       }
     }
 
-    // 'ctype' check has moved to DescriptorBuilder for Edition 2023 and above.
-    if (edition < Edition::EDITION_2023 && field.options().has_ctype()) {
+    if (field.options().has_ctype()) {
       if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
         status = absl::FailedPreconditionError(absl::StrCat(
             "Field ", field.full_name(),
@@ -424,9 +421,17 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
         if (field.is_extension()) {
           status = absl::FailedPreconditionError(absl::StrCat(
               "Extension ", field.full_name(),
-              " specifies ctype=CORD which is not supported for extensions."));
+              " specifies Cord type which is not supported for extensions."));
         }
       }
+    }
+
+    if (field.cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+        field.cpp_string_type() == FieldDescriptor::CppStringType::kCord &&
+        field.is_extension()) {
+      status = absl::FailedPreconditionError(absl::StrCat(
+          "Extension ", field.full_name(),
+          " specifies Cord type which is not supported for extensions."));
     }
   });
   return status;

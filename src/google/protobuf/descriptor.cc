@@ -7952,32 +7952,6 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
 
   ValidateFieldFeatures(field, proto);
 
-  auto edition = field->file()->edition();
-  auto& field_options = field->options();
-
-  if (field_options.has_ctype()) {
-    if (edition == Edition::EDITION_2023) {
-      if (field->cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
-        AddError(field->full_name(), proto,
-                 DescriptorPool::ErrorCollector::TYPE,
-                 absl::StrFormat("Field %s specifies ctype, but is not a "
-                                 "string nor bytes field.",
-                                 field->full_name())
-                     .c_str());
-      }
-      if (field_options.ctype() == FieldOptions::CORD) {
-        if (field->is_extension()) {
-          AddError(field->full_name(), proto,
-                   DescriptorPool::ErrorCollector::TYPE,
-                   absl::StrFormat("Extension %s specifies ctype=CORD which is "
-                                   "not supported for extensions.",
-                                   field->full_name())
-                       .c_str());
-        }
-      }
-    }
-  }
-
   // Only message type fields may be lazy.
   if (field->options().lazy() || field->options().unverified_lazy()) {
     if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
