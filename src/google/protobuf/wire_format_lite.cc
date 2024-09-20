@@ -671,9 +671,11 @@ static size_t VarintSize(const T* data, const int n) {
     if (x > 0x1FFFFF) sum++;
     if (x > 0xFFFFFFF) sum++;
   }
+#ifdef __clang__
 // Clang is not smart enough to see that this loop doesn't run many times
 // NOLINTNEXTLINE(google3-runtime-pragma-loop-hint): b/315043579
 #pragma clang loop vectorize(disable) unroll(disable) interleave(disable)
+#endif
   for (; i < n; i++) {
     uint32_t x = data[i];
     if (ZigZag) {
@@ -713,9 +715,11 @@ static size_t VarintSize64(const T* data, const int n) {
     if (x > 0x1FFFFF) sum++;
     if (x > 0xFFFFFFF) sum++;
   }
+#ifdef __clang__
 // Clang is not smart enough to see that this loop doesn't run many times
 // NOLINTNEXTLINE(google3-runtime-pragma-loop-hint): b/315043579
 #pragma clang loop vectorize(disable) unroll(disable) interleave(disable)
+#endif
   for (; i < n; i++) {
     uint64_t x = data[i];
     if (ZigZag) {
