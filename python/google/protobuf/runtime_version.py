@@ -108,12 +108,6 @@ def ValidateProtobufRuntimeVersion(
         f' {location}: gencode {gen_version} runtime {version}. Runtime version'
         f' cannot be older than the linked gencode version. {error_prompt}'
     )
-  elif MINOR > gen_minor or PATCH > gen_patch:
-    warnings.warn(
-        'Protobuf gencode version %s is older than the runtime version %s at'
-        ' %s. Please avoid checked-in Protobuf gencode that can be obsolete.'
-        % (gen_version, version, location)
-    )
 
   if gen_suffix != SUFFIX:
     _ReportVersionError(
