@@ -31,6 +31,7 @@ using ::proto2_nofieldpresence_unittest::ExplicitForeignMessage;
 using ::proto2_nofieldpresence_unittest::FOREIGN_BAZ;
 using ::proto2_nofieldpresence_unittest::FOREIGN_FOO;
 using ::proto2_nofieldpresence_unittest::ForeignMessage;
+using ::proto2_nofieldpresence_unittest::TestAllTypes;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Not;
@@ -72,8 +73,7 @@ MATCHER(MapEntryValueExplicitPresence, "") {
 }
 
 // Helper: checks that all fields have default (zero/empty) values.
-void CheckDefaultValues(
-    const proto2_nofieldpresence_unittest::TestAllTypes& m) {
+void CheckDefaultValues(const TestAllTypes& m) {
   EXPECT_EQ(0, m.optional_int32());
   EXPECT_EQ(0, m.optional_int64());
   EXPECT_EQ(0, m.optional_uint32());
@@ -99,10 +99,8 @@ void CheckDefaultValues(
   // default instance.
   EXPECT_EQ(41, m.optional_proto2_message().default_int32());
   EXPECT_EQ(false, m.has_optional_foreign_message());
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::FOO,
-            m.optional_nested_enum());
-  EXPECT_EQ(proto2_nofieldpresence_unittest::FOREIGN_FOO,
-            m.optional_foreign_enum());
+  EXPECT_EQ(TestAllTypes::FOO, m.optional_nested_enum());
+  EXPECT_EQ(FOREIGN_FOO, m.optional_foreign_enum());
 
 
   EXPECT_EQ(0, m.repeated_int32_size());
@@ -126,11 +124,10 @@ void CheckDefaultValues(
   EXPECT_EQ(0, m.repeated_nested_enum_size());
   EXPECT_EQ(0, m.repeated_foreign_enum_size());
   EXPECT_EQ(0, m.repeated_lazy_message_size());
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::ONEOF_FIELD_NOT_SET,
-            m.oneof_field_case());
+  EXPECT_EQ(TestAllTypes::ONEOF_FIELD_NOT_SET, m.oneof_field_case());
 }
 
-void FillValues(proto2_nofieldpresence_unittest::TestAllTypes* m) {
+void FillValues(TestAllTypes* m) {
   m->set_optional_int32(100);
   m->set_optional_int64(101);
   m->set_optional_uint32(102);
@@ -149,9 +146,8 @@ void FillValues(proto2_nofieldpresence_unittest::TestAllTypes* m) {
   m->mutable_optional_nested_message()->set_bb(42);
   m->mutable_optional_foreign_message()->set_c(43);
   m->mutable_optional_proto2_message()->set_optional_int32(44);
-  m->set_optional_nested_enum(
-      proto2_nofieldpresence_unittest::TestAllTypes::BAZ);
-  m->set_optional_foreign_enum(proto2_nofieldpresence_unittest::FOREIGN_BAZ);
+  m->set_optional_nested_enum(TestAllTypes::BAZ);
+  m->set_optional_foreign_enum(FOREIGN_BAZ);
   m->mutable_optional_lazy_message()->set_bb(45);
   m->add_repeated_int32(100);
   m->add_repeated_int64(101);
@@ -171,9 +167,8 @@ void FillValues(proto2_nofieldpresence_unittest::TestAllTypes* m) {
   m->add_repeated_nested_message()->set_bb(46);
   m->add_repeated_foreign_message()->set_c(47);
   m->add_repeated_proto2_message()->set_optional_int32(48);
-  m->add_repeated_nested_enum(
-      proto2_nofieldpresence_unittest::TestAllTypes::BAZ);
-  m->add_repeated_foreign_enum(proto2_nofieldpresence_unittest::FOREIGN_BAZ);
+  m->add_repeated_nested_enum(TestAllTypes::BAZ);
+  m->add_repeated_foreign_enum(FOREIGN_BAZ);
   m->add_repeated_lazy_message()->set_bb(49);
 
   m->set_oneof_uint32(1);
@@ -181,8 +176,7 @@ void FillValues(proto2_nofieldpresence_unittest::TestAllTypes* m) {
   m->set_oneof_string("test");  // only this one remains set
 }
 
-void CheckNonDefaultValues(
-    const proto2_nofieldpresence_unittest::TestAllTypes& m) {
+void CheckNonDefaultValues(const TestAllTypes& m) {
   EXPECT_EQ(100, m.optional_int32());
   EXPECT_EQ(101, m.optional_int64());
   EXPECT_EQ(102, m.optional_uint32());
@@ -204,10 +198,8 @@ void CheckNonDefaultValues(
   EXPECT_EQ(43, m.optional_foreign_message().c());
   EXPECT_EQ(true, m.has_optional_proto2_message());
   EXPECT_EQ(44, m.optional_proto2_message().optional_int32());
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::BAZ,
-            m.optional_nested_enum());
-  EXPECT_EQ(proto2_nofieldpresence_unittest::FOREIGN_BAZ,
-            m.optional_foreign_enum());
+  EXPECT_EQ(TestAllTypes::BAZ, m.optional_nested_enum());
+  EXPECT_EQ(FOREIGN_BAZ, m.optional_foreign_enum());
   EXPECT_EQ(true, m.has_optional_lazy_message());
   EXPECT_EQ(45, m.optional_lazy_message().bb());
 
@@ -248,21 +240,18 @@ void CheckNonDefaultValues(
   EXPECT_EQ(1, m.repeated_proto2_message_size());
   EXPECT_EQ(48, m.repeated_proto2_message(0).optional_int32());
   EXPECT_EQ(1, m.repeated_nested_enum_size());
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::BAZ,
-            m.repeated_nested_enum(0));
+  EXPECT_EQ(TestAllTypes::BAZ, m.repeated_nested_enum(0));
   EXPECT_EQ(1, m.repeated_foreign_enum_size());
-  EXPECT_EQ(proto2_nofieldpresence_unittest::FOREIGN_BAZ,
-            m.repeated_foreign_enum(0));
+  EXPECT_EQ(FOREIGN_BAZ, m.repeated_foreign_enum(0));
   EXPECT_EQ(1, m.repeated_lazy_message_size());
   EXPECT_EQ(49, m.repeated_lazy_message(0).bb());
 
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::kOneofString,
-            m.oneof_field_case());
+  EXPECT_EQ(TestAllTypes::kOneofString, m.oneof_field_case());
   EXPECT_EQ("test", m.oneof_string());
 }
 
 TEST(NoFieldPresenceTest, BasicMessageTest) {
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   // Check default values, fill all fields, check values. We just want to
   // exercise the basic getters/setter paths here to make sure no
   // field-presence-related changes broke these.
@@ -277,7 +266,7 @@ TEST(NoFieldPresenceTest, BasicMessageTest) {
 
 TEST(NoFieldPresenceTest, MessageFieldPresenceTest) {
   // check that presence still works properly for message fields.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   EXPECT_EQ(false, message.has_optional_nested_message());
   // Getter should fetch default instance, and not cause the field to become
   // present.
@@ -301,15 +290,14 @@ TEST(NoFieldPresenceTest, MessageFieldPresenceTest) {
 
   // Test field presence of a message field on the default instance.
   EXPECT_EQ(false,
-            proto2_nofieldpresence_unittest::TestAllTypes::default_instance()
-                .has_optional_nested_message());
+            TestAllTypes::default_instance().has_optional_nested_message());
 }
 
 TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
   // check that HasField reports true on all scalar fields. Check that it
   // behaves properly for message fields.
 
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -324,11 +312,7 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
   // Test field presence of a message field on the default instance.
   const FieldDescriptor* msg_field =
       desc->FindFieldByName("optional_nested_message");
-  EXPECT_EQ(
-      false,
-      r->HasField(
-          proto2_nofieldpresence_unittest::TestAllTypes::default_instance(),
-          msg_field));
+  EXPECT_EQ(false, r->HasField(TestAllTypes::default_instance(), msg_field));
 
   // Fill all fields, expect everything to report true (check oneofs below).
   FillValues(&message);
@@ -388,14 +372,14 @@ bool MapValueSubMessageHasFieldViaReflection(
 }
 
 TEST(NoFieldPresenceTest, GenCodeMapMissingKeyDeathTest) {
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
 
   // Trying to find an unset key in a map would crash.
   EXPECT_DEATH(message.map_int32_bytes().at(9), "key not found");
 }
 
 TEST(NoFieldPresenceTest, GenCodeMapReflectionMissingKeyDeathTest) {
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -407,7 +391,7 @@ TEST(NoFieldPresenceTest, GenCodeMapReflectionMissingKeyDeathTest) {
 }
 
 TEST(NoFieldPresenceTest, ReflectionEmptyMapTest) {
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -434,7 +418,7 @@ TEST(NoFieldPresenceTest, ReflectionEmptyMapTest) {
 
 TEST(NoFieldPresenceTest, TestNonZeroMapEntriesStringValuePopulatedInGenCode) {
   // Set nonzero values for key-value pairs and test that.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   (*message.mutable_map_int32_bytes())[9] = "hello";
 
   EXPECT_EQ(1, message.map_int32_bytes().size());
@@ -451,7 +435,7 @@ TEST(NoFieldPresenceTest, TestNonZeroMapEntriesStringValuePopulatedInGenCode) {
 
 TEST(NoFieldPresenceTest, TestNonZeroMapEntriesIntValuePopulatedInGenCode) {
   // Set nonzero values for key-value pairs and test that.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   (*message.mutable_map_int32_foreign_enum())[99] = FOREIGN_BAZ;
 
   ASSERT_NE(0, static_cast<uint32_t>(FOREIGN_BAZ));
@@ -470,7 +454,7 @@ TEST(NoFieldPresenceTest, TestNonZeroMapEntriesIntValuePopulatedInGenCode) {
 
 TEST(NoFieldPresenceTest, TestNonZeroMapEntriesMessageValuePopulatedInGenCode) {
   // Set nonzero values for key-value pairs and test that.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   (*message.mutable_map_int32_foreign_message())[123].set_c(10101);
 
   EXPECT_EQ(1, message.map_int32_foreign_message().size());
@@ -488,7 +472,7 @@ TEST(NoFieldPresenceTest, TestNonZeroMapEntriesMessageValuePopulatedInGenCode) {
 TEST(NoFieldPresenceTest,
      TestNonZeroMapEntriesExplicitMessageValuePopulatedInGenCode) {
   // Set nonzero values for key-value pairs and test that.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   (*message.mutable_map_int32_explicit_foreign_message())[456].set_c(20202);
 
   EXPECT_EQ(1, message.map_int32_explicit_foreign_message().size());
@@ -504,7 +488,7 @@ TEST(NoFieldPresenceTest,
 }
 
 TEST(NoFieldPresenceTest, TestNonZeroStringMapEntriesHaveNoPresence) {
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -527,7 +511,7 @@ TEST(NoFieldPresenceTest, TestNonZeroStringMapEntriesHaveNoPresence) {
 }
 
 TEST(NoFieldPresenceTest, TestNonZeroIntMapEntriesHaveNoPresence) {
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -551,7 +535,7 @@ TEST(NoFieldPresenceTest, TestNonZeroIntMapEntriesHaveNoPresence) {
 }
 
 TEST(NoFieldPresenceTest, TestNonZeroImplicitSubMessageMapEntriesHavePresence) {
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -575,7 +559,7 @@ TEST(NoFieldPresenceTest, TestNonZeroImplicitSubMessageMapEntriesHavePresence) {
 }
 
 TEST(NoFieldPresenceTest, TestNonZeroExplicitSubMessageMapEntriesHavePresence) {
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -599,7 +583,7 @@ TEST(NoFieldPresenceTest, TestNonZeroExplicitSubMessageMapEntriesHavePresence) {
 }
 
 TEST(NoFieldPresenceTest, TestNonZeroStringMapEntriesPopulatedInReflection) {
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -620,7 +604,7 @@ TEST(NoFieldPresenceTest, TestNonZeroStringMapEntriesPopulatedInReflection) {
 }
 
 TEST(NoFieldPresenceTest, TestNonZeroIntMapEntriesPopulatedInReflection) {
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -643,7 +627,7 @@ TEST(NoFieldPresenceTest, TestNonZeroIntMapEntriesPopulatedInReflection) {
 
 TEST(NoFieldPresenceTest,
      TestNonZeroSubMessageMapEntriesPopulatedInReflection) {
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -669,7 +653,7 @@ TEST(NoFieldPresenceTest,
 
 TEST(NoFieldPresenceTest,
      TestNonZeroExplicitSubMessageMapEntriesPopulatedInReflection) {
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -695,7 +679,7 @@ TEST(NoFieldPresenceTest,
 
 TEST(NoFieldPresenceTest, TestEmptyMapEntriesStringValuePopulatedInGenCode) {
   // Set zero values for zero keys and test that.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   (*message.mutable_map_int32_bytes())[0];
 
   // Zero keys are valid entries in gencode.
@@ -710,7 +694,7 @@ TEST(NoFieldPresenceTest, TestEmptyMapEntriesStringValuePopulatedInGenCode) {
 
 TEST(NoFieldPresenceTest, TestEmptyMapEntriesIntValuePopulatedInGenCode) {
   // Set zero values for zero keys and test that.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   (*message.mutable_map_int32_foreign_enum())[0];
 
   EXPECT_EQ(1, message.map_int32_foreign_enum().size());
@@ -724,7 +708,7 @@ TEST(NoFieldPresenceTest, TestEmptyMapEntriesIntValuePopulatedInGenCode) {
 
 TEST(NoFieldPresenceTest, TestEmptyMapEntriesMessageValuePopulatedInGenCode) {
   // Set zero values for zero keys and test that.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   (*message.mutable_map_int32_foreign_message())[0];
 
   // ==== Gencode behaviour ====
@@ -742,7 +726,7 @@ TEST(NoFieldPresenceTest, TestEmptyMapEntriesMessageValuePopulatedInGenCode) {
 TEST(NoFieldPresenceTest,
      TestEmptyMapEntriesExplicitMessageValuePopulatedInGenCode) {
   // Set zero values for zero keys and test that.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   (*message.mutable_map_int32_explicit_foreign_message())[0];
 
   // ==== Gencode behaviour ====
@@ -762,7 +746,7 @@ TEST(NoFieldPresenceTest, TestEmptyStringMapEntriesHaveNoPresence) {
   // Importantly this means that proto3 map fields behave like explicit
   // presence in reflection! i.e. they can be accessed even when zeroed.
 
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -789,7 +773,7 @@ TEST(NoFieldPresenceTest, TestEmptyIntMapEntriesHaveNoPresence) {
   // Importantly this means that proto3 map fields behave like explicit
   // presence in reflection! i.e. they can be accessed even when zeroed.
 
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -816,7 +800,7 @@ TEST(NoFieldPresenceTest, TestEmptySubMessageMapEntriesHavePresence) {
   // Importantly this means that proto3 map fields behave like explicit
   // presence in reflection! i.e. they can be accessed even when zeroed.
 
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -846,7 +830,7 @@ TEST(NoFieldPresenceTest, TestEmptyExplicitSubMessageMapEntriesHavePresence) {
   // Importantly this means that proto3 map fields behave like explicit
   // presence in reflection! i.e. they can be accessed even when zeroed.
 
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -876,7 +860,7 @@ TEST(NoFieldPresenceTest, TestEmptyStringMapEntriesPopulatedInReflection) {
   // Importantly this means that proto3 map fields behave like explicit
   // presence in reflection! i.e. they can be accessed even when zeroed.
 
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -905,7 +889,7 @@ TEST(NoFieldPresenceTest, TestEmptyIntMapEntriesPopulatedInReflection) {
   // Importantly this means that proto3 map fields behave like explicit
   // presence in reflection! i.e. they can be accessed even when zeroed.
 
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -934,7 +918,7 @@ TEST(NoFieldPresenceTest, TestEmptySubMessageMapEntriesPopulatedInReflection) {
   // Importantly this means that proto3 map fields behave like explicit
   // presence in reflection! i.e. they can be accessed even when zeroed.
 
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -969,7 +953,7 @@ TEST(NoFieldPresenceTest,
   // Importantly this means that proto3 map fields behave like explicit
   // presence in reflection! i.e. they can be accessed even when zeroed.
 
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
@@ -999,7 +983,7 @@ TEST(NoFieldPresenceTest,
 }
 
 TEST(NoFieldPresenceTest, ReflectionClearFieldTest) {
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
 
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
@@ -1039,7 +1023,7 @@ TEST(NoFieldPresenceTest, ReflectionClearFieldTest) {
 
 TEST(NoFieldPresenceTest, HasFieldOneofsTest) {
   // check that HasField behaves properly for oneofs.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
 
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
@@ -1074,8 +1058,7 @@ TEST(NoFieldPresenceTest, HasFieldOneofsTest) {
 
 TEST(NoFieldPresenceTest, MergeFromIfNonzeroTest) {
   // check that MergeFrom copies if nonzero/nondefault only.
-  proto2_nofieldpresence_unittest::TestAllTypes source;
-  proto2_nofieldpresence_unittest::TestAllTypes dest;
+  TestAllTypes source, dest;
 
   dest.set_optional_int32(42);
   dest.set_optional_string("test");
@@ -1233,7 +1216,7 @@ TYPED_TEST_SUITE(NoFieldPresenceSerializeTest, SerializableOutputTypes);
 TYPED_TEST(NoFieldPresenceSerializeTest, DontSerializeDefaultValuesTest) {
   // check that serialized data contains only non-zero numeric fields/non-empty
   // string/byte fields.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   TypeParam& output_sink = this->GetOutputSinkRef();
 
   // All default values -> no output.
@@ -1256,10 +1239,8 @@ TYPED_TEST(NoFieldPresenceSerializeTest, DontSerializeDefaultValuesTest) {
   message.set_optional_bool(false);
   message.set_optional_string("");
   message.set_optional_bytes("");
-  message.set_optional_nested_enum(
-      proto2_nofieldpresence_unittest::TestAllTypes::FOO);  // first enum entry
-  message.set_optional_foreign_enum(
-      proto2_nofieldpresence_unittest::FOREIGN_FOO);  // first enum entry
+  message.set_optional_nested_enum(TestAllTypes::FOO);  // first enum entry
+  message.set_optional_foreign_enum(FOREIGN_FOO);       // first enum entry
 
   ASSERT_TRUE(TestSerialize(message, &output_sink));
   EXPECT_EQ(0, this->GetOutput().size());
@@ -1277,7 +1258,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, DontSerializeDefaultValuesTest) {
 TYPED_TEST(NoFieldPresenceSerializeTest, NullMutableSerializesEmpty) {
   // Check that, if mutable_foo() was called, but fields were not modified,
   // nothing is serialized on the wire.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   TypeParam& output_sink = this->GetOutputSinkRef();
 
   // All default values -> no output.
@@ -1300,7 +1281,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, NullMutableSerializesEmpty) {
 TYPED_TEST(NoFieldPresenceSerializeTest, SetAllocatedAndReleaseTest) {
   // Check that setting an empty string via set_allocated_foo behaves properly;
   // Check that serializing after release_foo does not generate output for foo.
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   TypeParam& output_sink = this->GetOutputSinkRef();
 
   // All default values -> no output.
@@ -1330,7 +1311,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, SetAllocatedAndReleaseTest) {
 TYPED_TEST(NoFieldPresenceSerializeTest, LazyMessageFieldHasBit) {
   // Check that has-bit interaction with lazy message works (has-bit before and
   // after lazy decode).
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
   const FieldDescriptor* field = desc->FindFieldByName("optional_lazy_message");
@@ -1347,7 +1328,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, LazyMessageFieldHasBit) {
   // object is in unparsed state.
   TypeParam& output_sink = this->GetOutputSinkRef();
   ASSERT_TRUE(TestSerialize(message, &output_sink));
-  proto2_nofieldpresence_unittest::TestAllTypes message2;
+  TestAllTypes message2;
   message2.ParseFromString(this->GetOutput());
 
   EXPECT_EQ(true, message2.has_optional_lazy_message());
@@ -1360,7 +1341,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, LazyMessageFieldHasBit) {
 }
 
 TYPED_TEST(NoFieldPresenceSerializeTest, OneofPresence) {
-  proto2_nofieldpresence_unittest::TestAllTypes message;
+  TestAllTypes message;
   // oneof fields still have field presence -- ensure that this goes on the wire
   // even though its value is the empty string.
   message.set_oneof_string("");
@@ -1376,8 +1357,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, OneofPresence) {
 
   message.Clear();
   EXPECT_TRUE(message.ParseFromString(this->GetOutput()));
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::kOneofString,
-            message.oneof_field_case());
+  EXPECT_EQ(TestAllTypes::kOneofString, message.oneof_field_case());
 
   // Also test int32 and enum fields.
   message.Clear();
@@ -1385,18 +1365,14 @@ TYPED_TEST(NoFieldPresenceSerializeTest, OneofPresence) {
   ASSERT_TRUE(TestSerialize(message, &output_sink));
   EXPECT_EQ(3, this->GetOutput().size());
   EXPECT_TRUE(message.ParseFromString(this->GetOutput()));
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::kOneofUint32,
-            message.oneof_field_case());
+  EXPECT_EQ(TestAllTypes::kOneofUint32, message.oneof_field_case());
 
   message.Clear();
-  message.set_oneof_enum(
-      // FOO is the default value.
-      proto2_nofieldpresence_unittest::TestAllTypes::FOO);
+  message.set_oneof_enum(TestAllTypes::FOO);  // FOO is the default value.
   ASSERT_TRUE(TestSerialize(message, &output_sink));
   EXPECT_EQ(3, this->GetOutput().size());
   EXPECT_TRUE(message.ParseFromString(this->GetOutput()));
-  EXPECT_EQ(proto2_nofieldpresence_unittest::TestAllTypes::kOneofEnum,
-            message.oneof_field_case());
+  EXPECT_EQ(TestAllTypes::kOneofEnum, message.oneof_field_case());
 
   message.Clear();
   message.set_oneof_string("test");
@@ -1405,7 +1381,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, OneofPresence) {
 }
 
 TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripNonZeroKeyNonZeroString) {
-  proto2_nofieldpresence_unittest::TestAllTypes msg;
+  TestAllTypes msg;
   (*msg.mutable_map_int32_bytes())[9] = "hello";
 
   // Test that message can serialize.
@@ -1415,7 +1391,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripNonZeroKeyNonZeroString) {
   ASSERT_FALSE(this->GetOutput().empty());
 
   // Test that message can roundtrip.
-  proto2_nofieldpresence_unittest::TestAllTypes rt_msg;
+  TestAllTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
   EXPECT_THAT(rt_msg.map_int32_bytes(),
               UnorderedPointwise(Eq(), msg.map_int32_bytes()));
@@ -1426,7 +1402,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripNonZeroKeyNonZeroString) {
 }
 
 TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripNonZeroKeyNonZeroEnum) {
-  proto2_nofieldpresence_unittest::TestAllTypes msg;
+  TestAllTypes msg;
   ASSERT_NE(static_cast<uint32_t>(FOREIGN_BAZ), 0);
   (*msg.mutable_map_int32_foreign_enum())[99] = FOREIGN_BAZ;
 
@@ -1437,7 +1413,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripNonZeroKeyNonZeroEnum) {
   ASSERT_FALSE(this->GetOutput().empty());
 
   // Test that message can roundtrip.
-  proto2_nofieldpresence_unittest::TestAllTypes rt_msg;
+  TestAllTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
   EXPECT_THAT(rt_msg.map_int32_foreign_enum(),
               UnorderedPointwise(Eq(), msg.map_int32_foreign_enum()));
@@ -1448,7 +1424,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripNonZeroKeyNonZeroEnum) {
 }
 
 TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripNonZeroKeyNonZeroMessage) {
-  proto2_nofieldpresence_unittest::TestAllTypes msg;
+  TestAllTypes msg;
   (*msg.mutable_map_int32_foreign_message())[123].set_c(10101);
 
   // Test that message can serialize.
@@ -1458,7 +1434,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripNonZeroKeyNonZeroMessage) {
   ASSERT_FALSE(this->GetOutput().empty());
 
   // Test that message can roundtrip.
-  proto2_nofieldpresence_unittest::TestAllTypes rt_msg;
+  TestAllTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
   // TODO: b/368089585 - write this better when we have access to EqualsProto.
   EXPECT_EQ(rt_msg.map_int32_foreign_message().at(123).c(),
@@ -1471,7 +1447,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripNonZeroKeyNonZeroMessage) {
 
 TYPED_TEST(NoFieldPresenceSerializeTest,
            MapRoundTripNonZeroKeyNonZeroExplicitSubMessage) {
-  proto2_nofieldpresence_unittest::TestAllTypes msg;
+  TestAllTypes msg;
   (*msg.mutable_map_int32_explicit_foreign_message())[456].set_c(20202);
 
   // Test that message can serialize.
@@ -1481,7 +1457,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest,
   ASSERT_FALSE(this->GetOutput().empty());
 
   // Test that message can roundtrip.
-  proto2_nofieldpresence_unittest::TestAllTypes rt_msg;
+  TestAllTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
   // TODO: b/368089585 - write this better when we have access to EqualsProto.
   EXPECT_EQ(rt_msg.map_int32_explicit_foreign_message().at(456).c(),
@@ -1499,7 +1475,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest,
 TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyNonZeroString) {
   // Because the map definitions all have int32 keys, testing one of them is
   // sufficient.
-  proto2_nofieldpresence_unittest::TestAllTypes msg;
+  TestAllTypes msg;
   (*msg.mutable_map_int32_bytes())[0] = "hello";
 
   // Test that message can serialize.
@@ -1509,7 +1485,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyNonZeroString) {
   ASSERT_FALSE(this->GetOutput().empty());
 
   // Test that message can roundtrip.
-  proto2_nofieldpresence_unittest::TestAllTypes rt_msg;
+  TestAllTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
   EXPECT_THAT(rt_msg.map_int32_bytes(),
               UnorderedPointwise(Eq(), msg.map_int32_bytes()));
@@ -1522,7 +1498,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyNonZeroString) {
 // Note: "zero value" in this case means that the value is zero, but still
 // explicitly assigned.
 TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyZeroString) {
-  proto2_nofieldpresence_unittest::TestAllTypes msg;
+  TestAllTypes msg;
   (*msg.mutable_map_int32_bytes())[0] = "";
 
   // Test that message can serialize.
@@ -1532,7 +1508,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyZeroString) {
   ASSERT_FALSE(this->GetOutput().empty());
 
   // Test that message can roundtrip.
-  proto2_nofieldpresence_unittest::TestAllTypes rt_msg;
+  TestAllTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
   EXPECT_THAT(rt_msg.map_int32_bytes(),
               UnorderedPointwise(Eq(), msg.map_int32_bytes()));
@@ -1543,7 +1519,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyZeroString) {
 }
 
 TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyZeroEnum) {
-  proto2_nofieldpresence_unittest::TestAllTypes msg;
+  TestAllTypes msg;
   ASSERT_EQ(static_cast<uint32_t>(FOREIGN_FOO), 0);
   (*msg.mutable_map_int32_foreign_enum())[0] = FOREIGN_FOO;
 
@@ -1554,7 +1530,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyZeroEnum) {
   ASSERT_FALSE(this->GetOutput().empty());
 
   // Test that message can roundtrip.
-  proto2_nofieldpresence_unittest::TestAllTypes rt_msg;
+  TestAllTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
   EXPECT_THAT(rt_msg.map_int32_foreign_enum(),
               UnorderedPointwise(Eq(), msg.map_int32_foreign_enum()));
@@ -1565,7 +1541,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyZeroEnum) {
 }
 
 TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyZeroMessage) {
-  proto2_nofieldpresence_unittest::TestAllTypes msg;
+  TestAllTypes msg;
   (*msg.mutable_map_int32_foreign_message())[0].set_c(0);
 
   // Test that message can serialize.
@@ -1575,7 +1551,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyZeroMessage) {
   ASSERT_FALSE(this->GetOutput().empty());
 
   // Test that message can roundtrip.
-  proto2_nofieldpresence_unittest::TestAllTypes rt_msg;
+  TestAllTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
   // TODO: b/368089585 - write this better when we have access to EqualsProto.
   EXPECT_EQ(rt_msg.map_int32_foreign_message().at(0).c(),
@@ -1588,7 +1564,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyZeroMessage) {
 
 TYPED_TEST(NoFieldPresenceSerializeTest,
            MapRoundTripZeroKeyZeroExplicitMessage) {
-  proto2_nofieldpresence_unittest::TestAllTypes msg;
+  TestAllTypes msg;
   (*msg.mutable_map_int32_explicit_foreign_message())[0].set_c(0);
 
   // Test that message can serialize.
@@ -1598,7 +1574,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest,
   ASSERT_FALSE(this->GetOutput().empty());
 
   // Test that message can roundtrip.
-  proto2_nofieldpresence_unittest::TestAllTypes rt_msg;
+  TestAllTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
   // TODO: b/368089585 - write this better when we have access to EqualsProto.
   EXPECT_EQ(rt_msg.map_int32_explicit_foreign_message().at(0).c(),
@@ -1617,7 +1593,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest,
 // Note: "default value" in this case means that there is no explicit assignment
 // to any value. Instead, map values are just created with operator[].
 TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyDefaultString) {
-  proto2_nofieldpresence_unittest::TestAllTypes msg;
+  TestAllTypes msg;
   (*msg.mutable_map_int32_bytes())[0];
 
   // Test that message can serialize.
@@ -1627,7 +1603,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyDefaultString) {
   ASSERT_FALSE(this->GetOutput().empty());
 
   // Test that message can roundtrip.
-  proto2_nofieldpresence_unittest::TestAllTypes rt_msg;
+  TestAllTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
   EXPECT_THAT(rt_msg.map_int32_bytes(),
               UnorderedPointwise(Eq(), msg.map_int32_bytes()));
@@ -1640,7 +1616,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyDefaultString) {
 // Note: "default value" in this case means that there is no explicit assignment
 // to any value. Instead, map values are just created with operator[].
 TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyDefaultEnum) {
-  proto2_nofieldpresence_unittest::TestAllTypes msg;
+  TestAllTypes msg;
   (*msg.mutable_map_int32_foreign_enum())[0];
 
   // Test that message can serialize.
@@ -1650,7 +1626,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyDefaultEnum) {
   ASSERT_FALSE(this->GetOutput().empty());
 
   // Test that message can roundtrip.
-  proto2_nofieldpresence_unittest::TestAllTypes rt_msg;
+  TestAllTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
   EXPECT_THAT(rt_msg.map_int32_bytes(),
               UnorderedPointwise(Eq(), msg.map_int32_bytes()));
@@ -1663,7 +1639,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyDefaultEnum) {
 // Note: "default value" in this case means that there is no explicit assignment
 // to any value. Instead, map values are just created with operator[].
 TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyDefaultMessage) {
-  proto2_nofieldpresence_unittest::TestAllTypes msg;
+  TestAllTypes msg;
   (*msg.mutable_map_int32_foreign_message())[0];
 
   // Test that message can serialize.
@@ -1673,7 +1649,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyDefaultMessage) {
   ASSERT_FALSE(this->GetOutput().empty());
 
   // Test that message can roundtrip.
-  proto2_nofieldpresence_unittest::TestAllTypes rt_msg;
+  TestAllTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
   // TODO: b/368089585 - write this better when we have access to EqualsProto.
   EXPECT_EQ(rt_msg.map_int32_foreign_message().at(0).c(),
@@ -1688,7 +1664,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest, MapRoundTripZeroKeyDefaultMessage) {
 // to any value. Instead, map values are just created with operator[].
 TYPED_TEST(NoFieldPresenceSerializeTest,
            MapRoundTripZeroKeyDefaultExplicitMessage) {
-  proto2_nofieldpresence_unittest::TestAllTypes msg;
+  TestAllTypes msg;
   (*msg.mutable_map_int32_explicit_foreign_message())[0];
 
   // Test that message can serialize.
@@ -1698,7 +1674,7 @@ TYPED_TEST(NoFieldPresenceSerializeTest,
   ASSERT_FALSE(this->GetOutput().empty());
 
   // Test that message can roundtrip.
-  proto2_nofieldpresence_unittest::TestAllTypes rt_msg;
+  TestAllTypes rt_msg;
   EXPECT_TRUE(rt_msg.ParseFromString(this->GetOutput()));
   // TODO: b/368089585 - write this better when we have access to EqualsProto.
   EXPECT_EQ(rt_msg.map_int32_explicit_foreign_message().at(0).c(),
