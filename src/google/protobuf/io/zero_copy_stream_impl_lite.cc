@@ -15,7 +15,7 @@
 #include <limits>
 #include <utility>
 
-#include "google/protobuf/stubs/common.h"
+#include "base/types.h"
 #include "absl/base/casts.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
