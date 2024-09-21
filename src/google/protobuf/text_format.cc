@@ -1094,7 +1094,7 @@ class TextFormat::Parser::ParserImpl {
       return true;
     }
 
-    // If allow_field_numer_ or allow_unknown_field_ is true, we should able
+    // If allow_field_number_ or allow_unknown_field_ is true, we should able
     // to parse integer identifiers.
     if ((allow_field_number_ || allow_unknown_field_ ||
          allow_unknown_extension_) &&

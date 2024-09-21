@@ -1010,7 +1010,7 @@ TEST_F(MapImplTest, EraseSingleByKey) {
   EXPECT_EQ(0, map_.erase(key));
 }
 
-TEST_F(MapImplTest, EraseMutipleByKey) {
+TEST_F(MapImplTest, EraseMultipleByKey) {
   // erase in one specific order to trigger corner cases
   for (int i = 0; i < 5; i++) {
     map_[i] = i;
@@ -2733,7 +2733,7 @@ TEST(GeneratedMapFieldTest, Proto2UnknownEnum) {
   EXPECT_EQ(UNITTEST::PROTO2_MAP_ENUM_FOO, to.known_map_field().at(0));
 }
 
-TEST(GeneratedMapFieldTest, Proto2UknownEnumThrowsAwayUnknownData) {
+TEST(GeneratedMapFieldTest, Proto2UnknownEnumThrowsAwayUnknownData) {
   UNITTEST::TestEnumMap to;
   // 101: {
   //   1: 2

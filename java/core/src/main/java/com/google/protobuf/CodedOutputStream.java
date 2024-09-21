@@ -702,7 +702,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     This code is ported from the C++ varint implementation.
     Implementation notes:
 
-    To calcuate varint size, we want to count the number of 7 bit chunks required. Rather than using
+    To calculate varint size, we want to count the number of 7 bit chunks required. Rather than using
     division by 7 to accomplish this, we use multiplication by 9/64. This has a number of important
     properties:
      * It's roughly 1/7.111111. This makes the 0 bits set case have the same value as the 7 bits set

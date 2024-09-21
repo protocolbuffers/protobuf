@@ -19,5 +19,5 @@ scripts in this directory. We want to avoid having two separate sources of
 truth that both need to be updated when a file is added or removed.
 
 This directory also contains some generated files that would be created
-on the fly during a Bazel build. These are automaticaly kept in sync by
+on the fly during a Bazel build. These are automatically kept in sync by
 the Bazel test `//cmake:test_generated_files`.

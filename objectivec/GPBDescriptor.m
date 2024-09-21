@@ -1155,7 +1155,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
              @"Internal error: If a MessageSet extension is set, the data type must be a message.");
     NSAssert((desc->options & GPBExtensionRepeated) == 0,
              @"Internal Error: MessageSet extension can't be repeated.");
-    // NOTE: Could also check that the exteneded class is a MessageSet, but that would force the
+    // NOTE: Could also check that the extended class is a MessageSet, but that would force the
     // ObjC runtime to start up that class and that isn't desirable here.
   }
 #endif

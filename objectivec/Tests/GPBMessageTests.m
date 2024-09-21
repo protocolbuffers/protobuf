@@ -1735,14 +1735,14 @@
   // Mutable copy shouldn't copy autocreated extensions.
   TestAllExtensions *message = [TestAllExtensions message];
   GPBExtensionDescriptor *optionalGroupExtension = [UnittestRoot optionalGroupExtension];
-  GPBExtensionDescriptor *optionalNestedMessageExtesion =
+  GPBExtensionDescriptor *optionalNestedMessageExtension =
       [UnittestRoot optionalNestedMessageExtension];
   TestAllTypes_OptionalGroup *optionalGroup = [message getExtension:optionalGroupExtension];
   optionalGroup.a = 42;
   XCTAssertNotNil(optionalGroup);
-  XCTAssertNotNil([message getExtension:optionalNestedMessageExtesion]);
+  XCTAssertNotNil([message getExtension:optionalNestedMessageExtension]);
   XCTAssertTrue([message hasExtension:optionalGroupExtension]);
-  XCTAssertFalse([message hasExtension:optionalNestedMessageExtesion]);
+  XCTAssertFalse([message hasExtension:optionalNestedMessageExtension]);
 
   TestAllExtensions *message2 = [[message copy] autorelease];
 
@@ -1754,11 +1754,11 @@
   XCTAssertNotEqual([message getExtension:optionalGroupExtension],
                     [message2 getExtension:optionalGroupExtension]);
 
-  XCTAssertFalse([message2 hasExtension:optionalNestedMessageExtesion]);
+  XCTAssertFalse([message2 hasExtension:optionalNestedMessageExtension]);
   // Intentionally doing a pointer comparison (auto creation should be
   // different)
-  XCTAssertNotEqual([message getExtension:optionalNestedMessageExtesion],
-                    [message2 getExtension:optionalNestedMessageExtesion]);
+  XCTAssertNotEqual([message getExtension:optionalNestedMessageExtension],
+                    [message2 getExtension:optionalNestedMessageExtension]);
 }
 
 - (void)testClearMessageAutocreatedExtension {

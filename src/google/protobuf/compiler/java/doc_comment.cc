@@ -157,7 +157,7 @@ static void WriteDocCommentBodyForLocation(io::Printer* printer,
     for (size_t i = 0; i < lines.size(); i++) {
       // Lines should start with a single space and any extraneous leading
       // spaces should be stripped. For lines starting with a /, the leading
-      // space will prevent putting it right after the leading asterick from
+      // space will prevent putting it right after the leading asterisk from
       // closing the comment.
       std::string line = lines[i];
       line.erase(line.begin(),

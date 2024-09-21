@@ -560,7 +560,7 @@ static NSData* DataForGroupsOfDepth(NSUInteger depth) {
   [self assertReadByteToEndGroupFails:bytes(35, 25, 0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56,
                                             0x34)];  // truncated fixed64
 
-  // Mising end group
+  // Missing end group
   [self assertReadByteToEndGroupFails:bytes(35)];
   [self assertReadByteToEndGroupFails:bytes(35, 8, 1)];
   [self assertReadByteToEndGroupFails:bytes(35, 43)];

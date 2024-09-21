@@ -147,7 +147,7 @@ public final class RuntimeVersion {
 
   private static boolean checkDisabled() {
     // Check the environmental variable, and temporarily disable validation if it's set to true.
-    String disableFlag = java.lang.System.getenv("TEMORARILY_DISABLE_PROTOBUF_VERSION_CHECK");
+    String disableFlag = java.lang.System.getenv("TEMPORARILY_DISABLE_PROTOBUF_VERSION_CHECK");
     if ((disableFlag != null && disableFlag.equals("true"))) {
       return true;
     }

@@ -736,7 +736,7 @@ public class CodedOutputStreamTest {
     Coder coder = outputType.newCoder(testAllTypes.getSerializedSize());
     testAllTypes.writeTo(coder.stream());
     coder.stream().flush();
-    assertWithMessage("OuputType: " + outputType)
+    assertWithMessage("OutputType: " + outputType)
         .that(fullString)
         .isEqualTo(TestAllTypes.parseFrom(coder.toByteArray()).getOptionalString());
   }

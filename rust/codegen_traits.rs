@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-//! Traits that are implemeted by codegen types.
+//! Traits that are implemented by codegen types.
 
 use crate::__internal::SealedInternal;
 use crate::{MutProxied, MutProxy, ViewProxy};

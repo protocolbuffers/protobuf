@@ -293,7 +293,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           if (value != nullptr) {
             //~ When $Submsg$ is a cross-file type, have to read the arena
             //~ through the virtual method, because the type isn't defined in
-            //~ this file, only forward-declated.
+            //~ this file, only forward-declared.
             $pb$::Arena* submessage_arena = $base_cast$(value)->GetArena();
             if (message_arena != submessage_arena) {
               value = $pbi$::GetOwnedMessage(message_arena, value, submessage_arena);
@@ -353,7 +353,7 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
   } else {
     // Important: we set `hasbits` after we copied the field. There are cases
     // where people assign root values to child values or vice versa which
-    // are not always checked, so we delay this change becoming 'visibile'
+    // are not always checked, so we delay this change becoming 'visible'
     // until after we copied the message.
     // TODO enforces this as undefined behavior in debug builds.
     p->Emit(R"cc(

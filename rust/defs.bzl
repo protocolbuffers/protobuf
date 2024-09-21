@@ -92,7 +92,7 @@ def _rust_proto_library_impl(ctx):
     #
     # When the aspect visits proto_libraries, it doesn't know and cannot deduce the name of the
     # rust_proto_library (although the name of rust_proto_libraries is consistently ending with
-    # _rust_proto, we can't rely on all proto_libraires to have a name consistently ending with
+    # _rust_proto, we can't rely on all proto_libraries to have a name consistently ending with
     # _proto), therefore we have to modify it after the fact here.
     #
     # Since Starlark providers are frozen once they leave the _impl function that defines them,

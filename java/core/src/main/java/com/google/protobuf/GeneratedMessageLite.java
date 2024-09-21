@@ -1584,7 +1584,7 @@ public abstract class GeneratedMessageLite<
       throws InvalidProtocolBufferException {
     T result = instance.newMutableInstance();
     try {
-      // TODO: Try to make input with type CodedInpuStream.ArrayDecoder use
+      // TODO: Try to make input with type CodedInputStream.ArrayDecoder use
       // fast path.
       Schema<T> schema = Protobuf.getInstance().schemaFor(result);
       schema.mergeFrom(result, CodedInputStreamReader.forCodedInput(input), extensionRegistry);

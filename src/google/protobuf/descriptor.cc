@@ -9326,8 +9326,8 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
         // the pool's mutex, and the latter method locks it again.
         Symbol symbol =
             builder_->FindSymbolNotEnforcingDeps(fully_qualified_name);
-        if (auto* candicate_descriptor = symbol.enum_value_descriptor()) {
-          if (candicate_descriptor->type() != enum_type) {
+        if (auto* candidate_descriptor = symbol.enum_value_descriptor()) {
+          if (candidate_descriptor->type() != enum_type) {
             return AddValueError([&] {
               return absl::StrCat(
                   "Enum type \"", enum_type->full_name(),
@@ -9336,7 +9336,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                   "\". This appears to be a value from a sibling type.");
             });
           } else {
-            enum_value = candicate_descriptor;
+            enum_value = candidate_descriptor;
           }
         }
       } else {

@@ -311,8 +311,8 @@ For C++ rules, the following are generated:
 
 For proto_library, the following are generated:
     {libname}_proto_srcs: contains the srcs from the `proto_library` rule.
-    {libname}_srcs: contains syntesized paths for generated C++ sources.
-    {libname}_hdrs: contains syntesized paths for generated C++ headers.
+    {libname}_srcs: contains synthesized paths for generated C++ sources.
+    {libname}_hdrs: contains synthesized paths for generated C++ headers.
 
 """,
     implementation = _cmake_file_list_impl,

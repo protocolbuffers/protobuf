@@ -514,7 +514,7 @@ static NSData* DataForGroupsOfDepth(NSUInteger depth) {
                                   0x34)
               error:NULL]);  // truncated fixed64
 
-  // Mising end group
+  // Missing end group
   XCTAssertNil([TestEmptyMessage parseFromData:DataFromBytes(35) error:NULL]);
   XCTAssertNil([TestEmptyMessage parseFromData:DataFromBytes(35, 8, 1) error:NULL]);
   XCTAssertNil([TestEmptyMessage parseFromData:DataFromBytes(35, 43) error:NULL]);

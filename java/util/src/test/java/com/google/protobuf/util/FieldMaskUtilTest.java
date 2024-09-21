@@ -224,7 +224,7 @@ public class FieldMaskUtilTest {
   }
 
   @Test
-  public void testSubstract() throws Exception {
+  public void testSubtract() throws Exception {
     // Only test a simple case here and expect
     // {@link FieldMaskTreeTest#testRemoveFieldPath} to cover all scenarios.
     FieldMask mask1 = FieldMaskUtil.fromString("foo,bar.baz,bar.quz");
@@ -234,7 +234,7 @@ public class FieldMaskUtilTest {
   }
 
   @Test
-  public void testSubstract_usingVarArgs() throws Exception {
+  public void testSubtract_usingVarArgs() throws Exception {
     FieldMask mask1 = FieldMaskUtil.fromString("foo,bar.baz,bar.quz.bar");
     FieldMask mask2 = FieldMaskUtil.fromString("foo.bar,bar.baz.quz");
     FieldMask mask3 = FieldMaskUtil.fromString("bar.quz");

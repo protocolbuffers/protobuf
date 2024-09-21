@@ -68,7 +68,7 @@ def ValidateProtobufRuntimeVersion(
     runtime.
   """
 
-  disable_flag = os.getenv('TEMORARILY_DISABLE_PROTOBUF_VERSION_CHECK')
+  disable_flag = os.getenv('TEMPORARILY_DISABLE_PROTOBUF_VERSION_CHECK')
   if disable_flag is not None and disable_flag.lower() == 'true':
     return
 

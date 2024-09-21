@@ -624,7 +624,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_UNUSED
 #endif
 
-// For the toolchains that support it, evalutes to `true` if the input is
+// For the toolchains that support it, evaluates to `true` if the input is
 // determined to be a compile time constant after optimizations have happened
 // (like inlining and constant propagation). A `false` result means that the
 // compiler could not determine it is constant (it might still be but couldn't

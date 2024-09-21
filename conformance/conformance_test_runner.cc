@@ -157,7 +157,7 @@ void UsageError() {
           "                              output files.\n\n");
   fprintf(stderr, "  --test <test_name>          Only run\n");
   fprintf(stderr,
-          "                              the specified test. Mulitple tests\n"
+          "                              the specified test. Multiple tests\n"
           "                              can be specified by repeating the \n"
           "                              flag.\n\n");
   fprintf(stderr,

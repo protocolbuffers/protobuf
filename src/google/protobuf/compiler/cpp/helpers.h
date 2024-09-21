@@ -772,7 +772,7 @@ void ListAllTypesForServices(const FileDescriptor* fd,
 // missing to insert in the extension table in ExtensionSet.
 //
 // For services, the TU unconditionally pins the request/response objects.
-// This is the status quo for simplicitly to avoid modifying the RPC layer. It
+// This is the status quo for simplicity to avoid modifying the RPC layer. It
 // might be improved in the future.
 bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
                                  const Options& options);

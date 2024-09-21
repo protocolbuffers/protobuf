@@ -1353,7 +1353,7 @@ TEST(LiteBasicTest, CodedInputStreamRollback) {
   }
 }
 
-// Two arbitary types
+// Two arbitrary types
 using CastType1 = protobuf_unittest::TestAllTypesLite;
 using CastType2 = protobuf_unittest::TestPackedTypesLite;
 
