@@ -209,6 +209,12 @@ public class CodedOutputStreamTest {
     };
 
     abstract Coder newCoder(int size);
+
+    /** Whether we can call CodedOutputStream.spaceLeft(). */
+    boolean supportsSpaceLeft() {
+      // STREAM doesn't know how much space is left.
+      return this != OutputType.STREAM;
+    }
   }
 
   /** Checks that invariants are maintained for varint round trip input and output. */
@@ -523,6 +529,37 @@ public class CodedOutputStreamTest {
     }
     for (int i = 0; i < length3; i++) {
       assertThat(buffer.get()).isEqualTo((byte) 3);
+    }
+  }
+
+  @Test
+  public void testWriteByte() throws Exception {
+    Coder coder = outputType.newCoder(5);
+    // Write 5 bytes
+    coder.stream().write((byte) 1);
+    coder.stream().write((byte) 1);
+    coder.stream().write((byte) 1);
+    coder.stream().write((byte) 1);
+    coder.stream().write((byte) 1);
+    coder.stream().flush();
+    byte[] rawBytes = coder.toByteArray();
+    assertThat(rawBytes).isEqualTo(new byte[] {1, 1, 1, 1, 1});
+    if (outputType.supportsSpaceLeft()) {
+      assertThat(coder.stream().spaceLeft()).isEqualTo(0);
+    }
+
+    // Going beyond bounds should throw. Except if we're streaming, where buffering masks the
+    // failure.
+    if (outputType == OutputType.STREAM) {
+      return;
+    }
+    assertThrows(OutOfSpaceException.class, () -> coder.stream().write((byte) 1));
+    // For some OutputTypes, this test doesn't pass yet.
+    if (outputType.supportsSpaceLeft()
+        && outputType != OutputType.ARRAY
+        && outputType != OutputType.NIO_HEAP
+        && outputType != OutputType.NIO_HEAP_WITH_INITIAL_OFFSET) {
+      assertThat(coder.stream().spaceLeft()).isEqualTo(0);
     }
   }
 
