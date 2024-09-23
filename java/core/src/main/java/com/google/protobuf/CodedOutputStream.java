@@ -2044,7 +2044,12 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void writeFixed32NoTag(int value) throws IOException {
-      buffer.putInt(bufferPos(position), value);
+      try {
+        buffer.putInt(bufferPos(position), value);
+      } catch (IndexOutOfBoundsException e) {
+        throw new OutOfSpaceException(
+            String.format("Pos: %d, limit: %d, len: %d", position, limit, FIXED32_SIZE), e);
+      }
       position += FIXED32_SIZE;
     }
 
@@ -2078,7 +2083,12 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void writeFixed64NoTag(long value) throws IOException {
-      buffer.putLong(bufferPos(position), value);
+      try {
+        buffer.putLong(bufferPos(position), value);
+      } catch (IndexOutOfBoundsException e) {
+        throw new OutOfSpaceException(
+            String.format("Pos: %d, limit: %d, len: %d", position, limit, FIXED64_SIZE), e);
+      }
       position += FIXED64_SIZE;
     }
 
