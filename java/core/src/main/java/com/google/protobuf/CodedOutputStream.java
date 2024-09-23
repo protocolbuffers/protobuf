@@ -1306,12 +1306,14 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public final void write(byte value) throws IOException {
+      int position = this.position;
       try {
         buffer[position++] = value;
       } catch (IndexOutOfBoundsException e) {
         throw new OutOfSpaceException(
             String.format("Pos: %d, limit: %d, len: %d", position, limit, 1), e);
       }
+      this.position = position; // Only update position if we stayed within the array bounds.
     }
 
     @Override

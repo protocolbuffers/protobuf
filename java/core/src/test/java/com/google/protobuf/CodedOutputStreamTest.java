@@ -554,11 +554,7 @@ public class CodedOutputStreamTest {
       return;
     }
     assertThrows(OutOfSpaceException.class, () -> coder.stream().write((byte) 1));
-    // For some OutputTypes, this test doesn't pass yet.
-    if (outputType.supportsSpaceLeft()
-        && outputType != OutputType.ARRAY
-        && outputType != OutputType.NIO_HEAP
-        && outputType != OutputType.NIO_HEAP_WITH_INITIAL_OFFSET) {
+    if (outputType.supportsSpaceLeft()) {
       assertThat(coder.stream().spaceLeft()).isEqualTo(0);
     }
   }
