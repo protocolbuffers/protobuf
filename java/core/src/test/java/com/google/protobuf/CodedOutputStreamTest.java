@@ -274,16 +274,52 @@ public class CodedOutputStreamTest {
             | (0x01L << 63));
   }
 
-  /** Tests writeRawLittleEndian32() and writeRawLittleEndian64(). */
   @Test
-  public void testWriteLittleEndian() throws Exception {
-    assertWriteLittleEndian32(bytes(0x78, 0x56, 0x34, 0x12), 0x12345678);
-    assertWriteLittleEndian32(bytes(0xf0, 0xde, 0xbc, 0x9a), 0x9abcdef0);
+  public void testWriteFixed32NoTag() throws Exception {
+    assertWriteFixed32(bytes(0x78, 0x56, 0x34, 0x12), 0x12345678);
+    assertWriteFixed32(bytes(0xf0, 0xde, 0xbc, 0x9a), 0x9abcdef0);
+  }
 
-    assertWriteLittleEndian64(
-        bytes(0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12), 0x123456789abcdef0L);
-    assertWriteLittleEndian64(
-        bytes(0x78, 0x56, 0x34, 0x12, 0xf0, 0xde, 0xbc, 0x9a), 0x9abcdef012345678L);
+  @Test
+  public void testWriteFixed64NoTag() throws Exception {
+    assertWriteFixed64(bytes(0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12), 0x123456789abcdef0L);
+    assertWriteFixed64(bytes(0x78, 0x56, 0x34, 0x12, 0xf0, 0xde, 0xbc, 0x9a), 0x9abcdef012345678L);
+  }
+
+  @Test
+  public void testWriteFixed32NoTag_outOfBounds_throws() throws Exception {
+    // Streaming's buffering masks out of bounds writes.
+    assume().that(outputType).isNotEqualTo(OutputType.STREAM);
+
+    Class<? extends Exception> e = OutOfSpaceException.class;
+    // UnsafeDirectNioEncoder is incorrectly throwing IndexOutOfBoundsException for some operations.
+    if (outputType == OutputType.NIO_DIRECT_UNSAFE
+        || outputType == OutputType.NIO_DIRECT_UNSAFE_WITH_INITIAL_OFFSET) {
+      e = IndexOutOfBoundsException.class;
+    }
+
+    for (int i = 0; i < 4; i++) {
+      Coder coder = outputType.newCoder(i);
+      assertThrows(e, () -> coder.stream().writeFixed32NoTag(1));
+    }
+  }
+
+  @Test
+  public void testWriteFixed64NoTag_outOfBounds_throws() throws Exception {
+    // Streaming's buffering masks out of bounds writes.
+    assume().that(outputType).isNotEqualTo(OutputType.STREAM);
+
+    Class<? extends Exception> e = OutOfSpaceException.class;
+    // UnsafeDirectNioEncoder is incorrectly throwing IndexOutOfBoundsException for some operations.
+    if (outputType == OutputType.NIO_DIRECT_UNSAFE
+        || outputType == OutputType.NIO_DIRECT_UNSAFE_WITH_INITIAL_OFFSET) {
+      e = IndexOutOfBoundsException.class;
+    }
+
+    for (int i = 0; i < 8; i++) {
+      Coder coder = outputType.newCoder(i);
+      assertThrows(e, () -> coder.stream().writeFixed64NoTag(1));
+    }
   }
 
   /** Test encodeZigZag32() and encodeZigZag64(). */
@@ -710,10 +746,10 @@ public class CodedOutputStreamTest {
   }
 
   /**
-   * Parses the given bytes using writeRawLittleEndian32() and checks that the result matches the
-   * given value.
+   * Parses the given bytes using writeFixed32NoTag() and checks that the result matches the given
+   * value.
    */
-  private void assertWriteLittleEndian32(byte[] data, int value) throws Exception {
+  private void assertWriteFixed32(byte[] data, int value) throws Exception {
     {
       Coder coder = outputType.newCoder(data.length);
       coder.stream().writeFixed32NoTag(value);
@@ -733,10 +769,10 @@ public class CodedOutputStreamTest {
   }
 
   /**
-   * Parses the given bytes using writeRawLittleEndian64() and checks that the result matches the
-   * given value.
+   * Parses the given bytes using writeFixed64NoTag() and checks that the result matches the given
+   * value.
    */
-  private void assertWriteLittleEndian64(byte[] data, long value) throws Exception {
+  private void assertWriteFixed64(byte[] data, long value) throws Exception {
     {
       Coder coder = outputType.newCoder(data.length);
       coder.stream().writeFixed64NoTag(value);
