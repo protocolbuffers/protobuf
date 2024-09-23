@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -948,6 +949,22 @@ public abstract class CodedOutputStream extends ByteOutput {
     OutOfSpaceException(String explanationMessage, Throwable cause) {
       super(MESSAGE + ": " + explanationMessage, cause);
     }
+
+    OutOfSpaceException(int position, int limit, int length) {
+      this(position, limit, length, null);
+    }
+
+    OutOfSpaceException(int position, int limit, int length, Throwable cause) {
+      this((long) position, (long) limit, length, cause);
+    }
+
+    OutOfSpaceException(long position, long limit, int length) {
+      this(position, limit, length, null);
+    }
+
+    OutOfSpaceException(long position, long limit, int length, Throwable cause) {
+      this(String.format(Locale.US, "Pos: %d, limit: %d, len: %d", position, limit, 1), cause);
+    }
   }
 
   /**
@@ -1152,8 +1169,11 @@ public abstract class CodedOutputStream extends ByteOutput {
       if ((offset | length | (buffer.length - (offset + length))) < 0) {
         throw new IllegalArgumentException(
             String.format(
+                Locale.US,
                 "Array range is invalid. Buffer.length=%d, offset=%d, length=%d",
-                buffer.length, offset, length));
+                buffer.length,
+                offset,
+                length));
       }
       this.buffer = buffer;
       this.offset = offset;
@@ -1310,8 +1330,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       try {
         buffer[position++] = value;
       } catch (IndexOutOfBoundsException e) {
-        throw new OutOfSpaceException(
-            String.format("Pos: %d, limit: %d, len: %d", position, limit, 1), e);
+        throw new OutOfSpaceException(position, limit, 1, e);
       }
       this.position = position; // Only update position if we stayed within the array bounds.
     }
@@ -1339,22 +1358,23 @@ public abstract class CodedOutputStream extends ByteOutput {
           }
         }
       } catch (IndexOutOfBoundsException e) {
-        throw new OutOfSpaceException(
-            String.format("Pos: %d, limit: %d, len: %d", position, limit, 1), e);
+        throw new OutOfSpaceException(position, limit, 1, e);
       }
     }
 
     @Override
     public final void writeFixed32NoTag(int value) throws IOException {
+      int position = this.position; // Perf: hoist field to register to avoid load/stores.
       try {
-        buffer[position++] = (byte) (value & 0xFF);
-        buffer[position++] = (byte) ((value >> 8) & 0xFF);
-        buffer[position++] = (byte) ((value >> 16) & 0xFF);
-        buffer[position++] = (byte) ((value >> 24) & 0xFF);
+        buffer[position] = (byte) (value & 0xFF);
+        buffer[position + 1] = (byte) ((value >> 8) & 0xFF);
+        buffer[position + 2] = (byte) ((value >> 16) & 0xFF);
+        buffer[position + 3] = (byte) ((value >> 24) & 0xFF);
       } catch (IndexOutOfBoundsException e) {
-        throw new OutOfSpaceException(
-            String.format("Pos: %d, limit: %d, len: %d", position, limit, 1), e);
+        throw new OutOfSpaceException(position, limit, FIXED32_SIZE, e);
       }
+      // Only update position if we stayed within the array bounds.
+      this.position = position + FIXED32_SIZE;
     }
 
     @Override
@@ -1381,27 +1401,28 @@ public abstract class CodedOutputStream extends ByteOutput {
             }
           }
         } catch (IndexOutOfBoundsException e) {
-          throw new OutOfSpaceException(
-              String.format("Pos: %d, limit: %d, len: %d", position, limit, 1), e);
+          throw new OutOfSpaceException(position, limit, 1, e);
         }
       }
     }
 
     @Override
     public final void writeFixed64NoTag(long value) throws IOException {
+      int position = this.position; // Perf: hoist field to register to avoid load/stores.
       try {
-        buffer[position++] = (byte) ((int) (value) & 0xFF);
-        buffer[position++] = (byte) ((int) (value >> 8) & 0xFF);
-        buffer[position++] = (byte) ((int) (value >> 16) & 0xFF);
-        buffer[position++] = (byte) ((int) (value >> 24) & 0xFF);
-        buffer[position++] = (byte) ((int) (value >> 32) & 0xFF);
-        buffer[position++] = (byte) ((int) (value >> 40) & 0xFF);
-        buffer[position++] = (byte) ((int) (value >> 48) & 0xFF);
-        buffer[position++] = (byte) ((int) (value >> 56) & 0xFF);
+        buffer[position] = (byte) ((int) (value) & 0xFF);
+        buffer[position + 1] = (byte) ((int) (value >> 8) & 0xFF);
+        buffer[position + 2] = (byte) ((int) (value >> 16) & 0xFF);
+        buffer[position + 3] = (byte) ((int) (value >> 24) & 0xFF);
+        buffer[position + 4] = (byte) ((int) (value >> 32) & 0xFF);
+        buffer[position + 5] = (byte) ((int) (value >> 40) & 0xFF);
+        buffer[position + 6] = (byte) ((int) (value >> 48) & 0xFF);
+        buffer[position + 7] = (byte) ((int) (value >> 56) & 0xFF);
       } catch (IndexOutOfBoundsException e) {
-        throw new OutOfSpaceException(
-            String.format("Pos: %d, limit: %d, len: %d", position, limit, 1), e);
+        throw new OutOfSpaceException(position, limit, FIXED64_SIZE, e);
       }
+      // Only update position if we stayed within the array bounds.
+      this.position = position + FIXED64_SIZE;
     }
 
     @Override
@@ -1410,8 +1431,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         System.arraycopy(value, offset, buffer, position, length);
         position += length;
       } catch (IndexOutOfBoundsException e) {
-        throw new OutOfSpaceException(
-            String.format("Pos: %d, limit: %d, len: %d", position, limit, length), e);
+        throw new OutOfSpaceException(position, limit, length, e);
       }
     }
 
@@ -1427,8 +1447,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         value.get(buffer, position, length);
         position += length;
       } catch (IndexOutOfBoundsException e) {
-        throw new OutOfSpaceException(
-            String.format("Pos: %d, limit: %d, len: %d", position, limit, length), e);
+        throw new OutOfSpaceException(position, limit, length, e);
       }
     }
 
@@ -1975,8 +1994,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     @Override
     public void write(byte value) throws IOException {
       if (position >= limit) {
-        throw new OutOfSpaceException(
-            String.format("Pos: %d, limit: %d, len: %d", position, limit, 1));
+        throw new OutOfSpaceException(position, limit, 1);
       }
       UnsafeUtil.putByte(position++, value);
     }
@@ -2037,14 +2055,17 @@ public abstract class CodedOutputStream extends ByteOutput {
             value >>>= 7;
           }
         }
-        throw new OutOfSpaceException(
-            String.format("Pos: %d, limit: %d, len: %d", position, limit, 1));
+        throw new OutOfSpaceException(position, limit, 1);
       }
     }
 
     @Override
     public void writeFixed32NoTag(int value) throws IOException {
-      buffer.putInt(bufferPos(position), value);
+      try {
+        buffer.putInt(bufferPos(position), value);
+      } catch (IndexOutOfBoundsException e) {
+        throw new OutOfSpaceException(position, limit, FIXED32_SIZE, e);
+      }
       position += FIXED32_SIZE;
     }
 
@@ -2071,14 +2092,17 @@ public abstract class CodedOutputStream extends ByteOutput {
             value >>>= 7;
           }
         }
-        throw new OutOfSpaceException(
-            String.format("Pos: %d, limit: %d, len: %d", position, limit, 1));
+        throw new OutOfSpaceException(position, limit, 1);
       }
     }
 
     @Override
     public void writeFixed64NoTag(long value) throws IOException {
-      buffer.putLong(bufferPos(position), value);
+      try {
+        buffer.putLong(bufferPos(position), value);
+      } catch (IndexOutOfBoundsException e) {
+        throw new OutOfSpaceException(position, limit, FIXED64_SIZE, e);
+      }
       position += FIXED64_SIZE;
     }
 
@@ -2092,8 +2116,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         if (value == null) {
           throw new NullPointerException("value");
         }
-        throw new OutOfSpaceException(
-            String.format("Pos: %d, limit: %d, len: %d", position, limit, length));
+        throw new OutOfSpaceException(position, limit, length);
       }
 
       UnsafeUtil.copyMemory(value, offset, position, length);
