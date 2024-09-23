@@ -37,7 +37,7 @@ pub trait Message: SealedInternal
 pub trait MessageView<'msg>: SealedInternal
     + ViewProxy<'msg, Proxied = Self::Message>
     // Read traits:
-    + Debug + Serialize
+    + Debug + Serialize + Default
     // Thread safety:
     + Send + Sync
     // Copy/Clone:

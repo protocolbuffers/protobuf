@@ -195,6 +195,7 @@ void CppMessageExterns(Context& ctx, const Descriptor& msg) {
   ABSL_CHECK(ctx.is_cpp());
   ctx.Emit(
       {{"new_thunk", ThunkName(ctx, msg, "new")},
+       {"default_instance_thunk", ThunkName(ctx, msg, "default_instance")},
        {"repeated_new_thunk", ThunkName(ctx, msg, "repeated_new")},
        {"repeated_free_thunk", ThunkName(ctx, msg, "repeated_free")},
        {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
@@ -207,6 +208,7 @@ void CppMessageExterns(Context& ctx, const Descriptor& msg) {
        {"map_size_info_thunk", ThunkName(ctx, msg, "size_info")}},
       R"rs(
       fn $new_thunk$() -> $pbr$::RawMessage;
+      fn $default_instance_thunk$() -> $pbr$::RawMessage;
       fn $repeated_new_thunk$() -> $pbr$::RawRepeatedField;
       fn $repeated_free_thunk$(raw: $pbr$::RawRepeatedField);
       fn $repeated_len_thunk$(raw: $pbr$::RawRepeatedField) -> usize;
@@ -733,6 +735,16 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
   }
 }
 
+void GenerateDefaultInstanceImpl(Context& ctx, const Descriptor& msg) {
+  if (ctx.is_upb()) {
+    ctx.Emit("$pbr$::ScratchSpace::zeroed_block()");
+  } else {
+    ctx.Emit(
+        {{"default_instance_thunk", ThunkName(ctx, msg, "default_instance")}},
+        "unsafe { $default_instance_thunk$() }");
+  }
+}
+
 }  // namespace
 
 void GenerateRs(Context& ctx, const Descriptor& msg) {
@@ -749,6 +761,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
        {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
        {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
        {"MsgMut::merge_from", [&] { MessageMutMergeFrom(ctx, msg); }},
+       {"default_instance_impl",
+        [&] { GenerateDefaultInstanceImpl(ctx, msg); }},
        {"accessor_fns",
         [&] {
           for (int i = 0; i < msg.field_count(); ++i) {
@@ -945,6 +959,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         impl $pb$::Serialize for $Msg$View<'_> {
           fn serialize(&self) -> $Result$<Vec<u8>, $pb$::SerializeError> {
             $Msg::serialize$
+          }
+        }
+
+        impl $std$::default::Default for $Msg$View<'_> {
+          fn default() -> $Msg$View<'static> {
+            $Msg$View::new($pbi$::Private, $default_instance_impl$)
           }
         }
 
@@ -1367,6 +1387,7 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
        {"Msg", RsSafeName(msg.name())},
        {"QualifiedMsg", cpp::QualifiedClassName(&msg)},
        {"new_thunk", ThunkName(ctx, msg, "new")},
+       {"default_instance_thunk", ThunkName(ctx, msg, "default_instance")},
        {"repeated_new_thunk", ThunkName(ctx, msg, "repeated_new")},
        {"repeated_free_thunk", ThunkName(ctx, msg, "repeated_free")},
        {"repeated_len_thunk", ThunkName(ctx, msg, "repeated_len")},
@@ -1402,6 +1423,10 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
         // clang-format off
         extern $abi$ {
         void* $new_thunk$() { return new $QualifiedMsg$(); }
+
+        const google::protobuf::MessageLite* $default_instance_thunk$() {
+          return &$QualifiedMsg$::default_instance();
+        }
 
         void* $repeated_new_thunk$() {
           return new google::protobuf::RepeatedPtrField<$QualifiedMsg$>();
