@@ -23,6 +23,24 @@ proto_library(
     deps = [":parent_proto"],
 )
 
+proto_library(
+    name = "empty_proto",
+)
+
+rust_cc_proto_library(
+    name = "empty_cpp_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":empty_proto"],
+)
+
+rust_upb_proto_library(
+    name = "empty_upb_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = [":empty_proto"],
+)
+
 rust_upb_proto_library(
     name = "parent_upb_rust_proto",
     testonly = True,

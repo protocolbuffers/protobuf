@@ -88,6 +88,9 @@ def _rust_proto_library_impl(ctx):
     dep_variant_info = rust_proto_info.dep_variant_info
     crate_info = dep_variant_info.crate_info
 
+    if crate_info == None:
+        return []
+
     # Change the crate name from the hame of the proto_library to the name of the rust_proto_library.
     #
     # When the aspect visits proto_libraries, it doesn't know and cannot deduce the name of the

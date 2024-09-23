@@ -212,6 +212,14 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps):
     Returns:
       A DepVariantInfo provider.
     """
+    if src == None:
+        return DepVariantInfo(
+            crate_info = None,
+            dep_info = None,
+            cc_info = None,
+            build_info = None,
+        )
+
     toolchain = ctx.toolchains["@rules_rust//rust:toolchain_type"]
     output_hash = repr(hash(src.path))
 
@@ -347,7 +355,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
     dep_variant_info = _compile_rust(
         ctx = ctx,
         attr = ctx.rule.attr,
-        src = gencode[0],
+        src = gencode[0] if (len(gencode) > 0) else None,
         extra_srcs = gencode[1:],
         deps = [dep_variant_info_for_runtime, dep_variant_info_for_native_gencode] + (
             [d[RustProtoInfo].dep_variant_info for d in proto_deps]
