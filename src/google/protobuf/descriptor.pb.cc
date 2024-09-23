@@ -5346,9 +5346,9 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
                     target, stream);
           }
 
-          // Extension range [1000, 536870912)
-          target = this_._impl_._extensions_._InternalSerialize(
-              internal_default_instance(), 1000, 536870912, target, stream);
+          // All extensions.
+          target = this_._impl_._extensions_._InternalSerializeAll(
+              internal_default_instance(), target, stream);
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -8682,9 +8682,9 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
                     target, stream);
           }
 
-          // Extension range [1000, 536870912)
-          target = this_._impl_._extensions_._InternalSerialize(
-              internal_default_instance(), 1000, 536870912, target, stream);
+          // All extensions.
+          target = this_._impl_._extensions_._InternalSerializeAll(
+              internal_default_instance(), target, stream);
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -9257,9 +9257,9 @@ PROTOBUF_NOINLINE void MessageOptions::Clear() {
                     target, stream);
           }
 
-          // Extension range [1000, 536870912)
-          target = this_._impl_._extensions_._InternalSerialize(
-              internal_default_instance(), 1000, 536870912, target, stream);
+          // All extensions.
+          target = this_._impl_._extensions_._InternalSerializeAll(
+              internal_default_instance(), target, stream);
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -10441,9 +10441,9 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
                     target, stream);
           }
 
-          // Extension range [1000, 536870912)
-          target = this_._impl_._extensions_._InternalSerialize(
-              internal_default_instance(), 1000, 536870912, target, stream);
+          // All extensions.
+          target = this_._impl_._extensions_._InternalSerializeAll(
+              internal_default_instance(), target, stream);
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -10879,9 +10879,9 @@ PROTOBUF_NOINLINE void OneofOptions::Clear() {
                     target, stream);
           }
 
-          // Extension range [1000, 536870912)
-          target = this_._impl_._extensions_._InternalSerialize(
-              internal_default_instance(), 1000, 536870912, target, stream);
+          // All extensions.
+          target = this_._impl_._extensions_._InternalSerializeAll(
+              internal_default_instance(), target, stream);
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -11259,9 +11259,9 @@ PROTOBUF_NOINLINE void EnumOptions::Clear() {
                     target, stream);
           }
 
-          // Extension range [1000, 536870912)
-          target = this_._impl_._extensions_._InternalSerialize(
-              internal_default_instance(), 1000, 536870912, target, stream);
+          // All extensions.
+          target = this_._impl_._extensions_._InternalSerializeAll(
+              internal_default_instance(), target, stream);
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -11680,9 +11680,9 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
                     target, stream);
           }
 
-          // Extension range [1000, 536870912)
-          target = this_._impl_._extensions_._InternalSerialize(
-              internal_default_instance(), 1000, 536870912, target, stream);
+          // All extensions.
+          target = this_._impl_._extensions_._InternalSerializeAll(
+              internal_default_instance(), target, stream);
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -12062,9 +12062,9 @@ PROTOBUF_NOINLINE void ServiceOptions::Clear() {
                     target, stream);
           }
 
-          // Extension range [1000, 536870912)
-          target = this_._impl_._extensions_._InternalSerialize(
-              internal_default_instance(), 1000, 536870912, target, stream);
+          // All extensions.
+          target = this_._impl_._extensions_._InternalSerializeAll(
+              internal_default_instance(), target, stream);
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -12450,9 +12450,9 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
                     target, stream);
           }
 
-          // Extension range [1000, 536870912)
-          target = this_._impl_._extensions_._InternalSerialize(
-              internal_default_instance(), 1000, 536870912, target, stream);
+          // All extensions.
+          target = this_._impl_._extensions_._InternalSerializeAll(
+              internal_default_instance(), target, stream);
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -13578,9 +13578,9 @@ PROTOBUF_NOINLINE void FeatureSet::Clear() {
                 6, this_._internal_json_format(), target);
           }
 
-          // Extension range [1000, 10001)
-          target = this_._impl_._extensions_._InternalSerialize(
-              internal_default_instance(), 1000, 10001, target, stream);
+          // All extensions.
+          target = this_._impl_._extensions_._InternalSerializeAll(
+              internal_default_instance(), target, stream);
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(

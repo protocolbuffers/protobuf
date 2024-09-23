@@ -13,8 +13,10 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -1279,18 +1281,41 @@ uint8_t* ExtensionSet::_InternalSerializeImpl(
     const MessageLite* extendee, int start_field_number, int end_field_number,
     uint8_t* target, io::EpsCopyOutputStream* stream) const {
   if (PROTOBUF_PREDICT_FALSE(is_large())) {
-    const auto& end = map_.large->end();
-    for (auto it = map_.large->lower_bound(start_field_number);
-         it != end && it->first < end_field_number; ++it) {
-      target = it->second.InternalSerializeFieldWithCachedSizesToArray(
-          extendee, this, it->first, target, stream);
-    }
-    return target;
+    return _InternalSerializeImplLarge(extendee, start_field_number,
+                                       end_field_number, target, stream);
   }
   const KeyValue* end = flat_end();
   const KeyValue* it = flat_begin();
   while (it != end && it->first < start_field_number) ++it;
   for (; it != end && it->first < end_field_number; ++it) {
+    target = it->second.InternalSerializeFieldWithCachedSizesToArray(
+        extendee, this, it->first, target, stream);
+  }
+  return target;
+}
+
+uint8_t* ExtensionSet::_InternalSerializeAllImpl(
+    const MessageLite* extendee, uint8_t* target,
+    io::EpsCopyOutputStream* stream) const {
+  if (PROTOBUF_PREDICT_FALSE(is_large())) {
+    return _InternalSerializeImplLarge(
+        extendee, 0, std::numeric_limits<int>::max(), target, stream);
+  }
+  const KeyValue* end = flat_end();
+  for (const KeyValue* it = flat_begin(); it != end; ++it) {
+    target = it->second.InternalSerializeFieldWithCachedSizesToArray(
+        extendee, this, it->first, target, stream);
+  }
+  return target;
+}
+
+uint8_t* ExtensionSet::_InternalSerializeImplLarge(
+    const MessageLite* extendee, int start_field_number, int end_field_number,
+    uint8_t* target, io::EpsCopyOutputStream* stream) const {
+  assert(is_large());
+  const auto& end = map_.large->end();
+  for (auto it = map_.large->lower_bound(start_field_number);
+       it != end && it->first < end_field_number; ++it) {
     target = it->second.InternalSerializeFieldWithCachedSizesToArray(
         extendee, this, it->first, target, stream);
   }

@@ -479,7 +479,6 @@ class PROTOBUF_EXPORT ExtensionSet {
   // serialized extensions.
   //
   // Returns a pointer past the last written byte.
-
   uint8_t* _InternalSerialize(const MessageLite* extendee,
                               int start_field_number, int end_field_number,
                               uint8_t* target,
@@ -490,6 +489,16 @@ class PROTOBUF_EXPORT ExtensionSet {
     }
     return _InternalSerializeImpl(extendee, start_field_number,
                                   end_field_number, target, stream);
+  }
+
+  // Same as _InternalSerialize, but do not verify the range of field numbers.
+  uint8_t* _InternalSerializeAll(const MessageLite* extendee, uint8_t* target,
+                                 io::EpsCopyOutputStream* stream) const {
+    if (flat_size_ == 0) {
+      assert(!is_large());
+      return target;
+    }
+    return _InternalSerializeAllImpl(extendee, target, stream);
   }
 
   // Like above but serializes in MessageSet format.
@@ -586,6 +595,17 @@ class PROTOBUF_EXPORT ExtensionSet {
                                   int start_field_number, int end_field_number,
                                   uint8_t* target,
                                   io::EpsCopyOutputStream* stream) const;
+  // Implementation of _InternalSerializeAll for non-empty map_.
+  uint8_t* _InternalSerializeAllImpl(const MessageLite* extendee,
+                                     uint8_t* target,
+                                     io::EpsCopyOutputStream* stream) const;
+  // Implementation of _InternalSerialize for large map_.
+  // Extracted as a separate method to avoid inlining and to reuse in
+  // _InternalSerializeAllImpl.
+  uint8_t* _InternalSerializeImplLarge(const MessageLite* extendee,
+                                       int start_field_number,
+                                       int end_field_number, uint8_t* target,
+                                       io::EpsCopyOutputStream* stream) const;
   // Interface of a lazily parsed singular message extension.
   class PROTOBUF_EXPORT LazyMessageExtension {
    public:
