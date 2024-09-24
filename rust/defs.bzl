@@ -28,7 +28,7 @@ def rust_proto_library(name, deps, **args):
     """
     if not name.endswith("_rust_proto"):
         fail(
-            "{}: Name rust_proto_library target should end with `_rust_proto`, but was '{}'"
+            "Name rust_proto_library target should end with `_rust_proto`, but was '{}'"
                 .format(name),
         )
     name = name.removesuffix("_rust_proto")
