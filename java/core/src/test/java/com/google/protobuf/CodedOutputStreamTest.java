@@ -294,12 +294,7 @@ public class CodedOutputStreamTest {
     for (int i = 0; i < 4; i++) {
       Coder coder = outputType.newCoder(i);
       assertThrows(OutOfSpaceException.class, () -> coder.stream().writeFixed32NoTag(1));
-      // These OutputTypes are not behaving correctly yet.
-      if (outputType != OutputType.ARRAY
-          && outputType != OutputType.NIO_HEAP
-          && outputType != OutputType.NIO_HEAP_WITH_INITIAL_OFFSET) {
-        assertThat(coder.stream().spaceLeft()).isEqualTo(i);
-      }
+      assertThat(coder.stream().spaceLeft()).isEqualTo(i);
     }
   }
 
@@ -311,12 +306,7 @@ public class CodedOutputStreamTest {
     for (int i = 0; i < 8; i++) {
       Coder coder = outputType.newCoder(i);
       assertThrows(OutOfSpaceException.class, () -> coder.stream().writeFixed64NoTag(1));
-      // These OutputTypes are not behaving correctly yet.
-      if (outputType != OutputType.ARRAY
-          && outputType != OutputType.NIO_HEAP
-          && outputType != OutputType.NIO_HEAP_WITH_INITIAL_OFFSET) {
-        assertThat(coder.stream().spaceLeft()).isEqualTo(i);
-      }
+      assertThat(coder.stream().spaceLeft()).isEqualTo(i);
     }
   }
 

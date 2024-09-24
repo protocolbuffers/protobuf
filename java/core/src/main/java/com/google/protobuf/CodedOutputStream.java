@@ -1346,6 +1346,7 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public final void writeFixed32NoTag(int value) throws IOException {
+      int position = this.position; // Perf: hoist field to register to avoid load/stores.
       try {
         buffer[position++] = (byte) (value & 0xFF);
         buffer[position++] = (byte) ((value >> 8) & 0xFF);
@@ -1355,6 +1356,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         throw new OutOfSpaceException(
             String.format("Pos: %d, limit: %d, len: %d", position, limit, 1), e);
       }
+      this.position = position; // Only update position if we stayed within the array bounds.
     }
 
     @Override
@@ -1389,6 +1391,7 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public final void writeFixed64NoTag(long value) throws IOException {
+      int position = this.position; // Perf: hoist field to register to avoid load/stores.
       try {
         buffer[position++] = (byte) ((int) (value) & 0xFF);
         buffer[position++] = (byte) ((int) (value >> 8) & 0xFF);
@@ -1402,6 +1405,7 @@ public abstract class CodedOutputStream extends ByteOutput {
         throw new OutOfSpaceException(
             String.format("Pos: %d, limit: %d, len: %d", position, limit, 1), e);
       }
+      this.position = position; // Only update position if we stayed within the array bounds.
     }
 
     @Override
