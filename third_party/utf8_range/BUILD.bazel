@@ -4,13 +4,23 @@
 # license that can be found in the LICENSE file or at
 # https://opensource.org/licenses/MIT.
 
+load("@rules_license//rules:license.bzl", "license")
+
 DEFAULT_VISIBILITY = [
     "//src/google/protobuf:__subpackages__",
     "//third_party/utf8_range:__subpackages__",
     "//util/utf8/internal:__subpackages__",
 ]
 
-package(default_visibility = ["//visibility:public"])
+package(
+    default_applicable_licenses = ["//third_party/utf8_range:license"],
+    default_visibility = ["//visibility:public"],
+)
+
+license(
+    name = "license",
+    package_name = "utf8_range",
+)
 
 licenses(["notice"])
 

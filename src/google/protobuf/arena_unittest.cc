@@ -528,7 +528,6 @@ class DispatcherTestProto : public Message {
       : Message(nullptr, nullptr) {
     ABSL_LOG(FATAL);
   }
-  DispatcherTestProto* New(Arena*) const PROTOBUF_FINAL { ABSL_LOG(FATAL); }
   const ClassData* GetClassData() const PROTOBUF_FINAL { ABSL_LOG(FATAL); }
 };
 // We use a specialization to inject behavior for the test.
@@ -652,7 +651,7 @@ TEST(ArenaTest, UnknownFields) {
   arena_message_3->mutable_unknown_fields()->AddVarint(1000, 42);
   arena_message_3->mutable_unknown_fields()->AddFixed32(1001, 42);
   arena_message_3->mutable_unknown_fields()->AddFixed64(1002, 42);
-  arena_message_3->mutable_unknown_fields()->AddLengthDelimited(1003);
+  arena_message_3->mutable_unknown_fields()->AddLengthDelimited(1003, "");
   arena_message_3->mutable_unknown_fields()->DeleteSubrange(0, 2);
   arena_message_3->mutable_unknown_fields()->DeleteByNumber(1002);
   arena_message_3->mutable_unknown_fields()->DeleteByNumber(1003);
@@ -1605,13 +1604,6 @@ TEST(ArenaTest, NoHeapAllocationsTest) {
   }
 
   arena.Reset();
-}
-
-TEST(ArenaTest, ParseCorruptedString) {
-  TestAllTypes message;
-  TestUtil::SetAllFields(&message);
-  TestParseCorruptedString<TestAllTypes, true>(message);
-  TestParseCorruptedString<TestAllTypes, false>(message);
 }
 
 #if PROTOBUF_RTTI

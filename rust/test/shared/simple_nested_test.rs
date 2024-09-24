@@ -10,7 +10,7 @@ use nested_rust_proto::outer::inner::InnerEnum;
 use nested_rust_proto::outer::InnerView;
 use nested_rust_proto::*;
 
-#[test]
+#[gtest]
 fn test_deeply_nested_message() {
     let deep =
         outer::inner::super_inner::duper_inner::even_more_inner::CantBelieveItsSoInner::new();
@@ -20,7 +20,7 @@ fn test_deeply_nested_message() {
     assert_that!(outermsg.deep().num(), eq(0));
 }
 
-#[test]
+#[gtest]
 fn test_deeply_nested_enum() {
     use outer::inner::super_inner::duper_inner::even_more_inner::JustWayTooInner;
     let deep = JustWayTooInner::default();
@@ -30,7 +30,7 @@ fn test_deeply_nested_enum() {
     assert_that!(outermsg.deep_enum(), eq(JustWayTooInner::Unspecified));
 }
 
-#[test]
+#[gtest]
 fn test_nested_views() {
     let outermsg = Outer::new();
     let inner_msg: InnerView<'_> = outermsg.inner();
@@ -53,7 +53,7 @@ fn test_nested_views() {
     assert_that!(inner_msg.inner_enum(), eq(InnerEnum::Unspecified));
 }
 
-#[test]
+#[gtest]
 fn test_nested_view_lifetimes() {
     // Ensure that views have the lifetime of the first layer of borrow, and don't
     // create intermediate borrows through nested accessors.
@@ -79,7 +79,7 @@ fn test_nested_view_lifetimes() {
     assert_that!(string_map.len(), eq(0));
 }
 
-#[test]
+#[gtest]
 fn test_msg_from_outside() {
     // let's make sure that we're not just working for messages nested inside
     // messages, messages from without and within should work
@@ -87,7 +87,7 @@ fn test_msg_from_outside() {
     assert_that!(outer.notinside().num(), eq(0));
 }
 
-#[test]
+#[gtest]
 fn test_recursive_view() {
     let rec = nested_rust_proto::Recursive::new();
     assert_that!(rec.num(), eq(0));
@@ -100,7 +100,7 @@ fn test_recursive_view() {
     assert_that!(nested.num(), eq(0));
 }
 
-#[test]
+#[gtest]
 fn test_recursive_mut() {
     let mut rec = nested_rust_proto::Recursive::new();
     let mut one = rec.rec_mut();

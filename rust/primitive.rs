@@ -4,33 +4,38 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
-use crate::__internal::Private;
-use crate::{IntoProxied, Proxied, View, ViewProxy};
+use crate::__internal::SealedInternal;
+use crate::{AsView, IntoView, Proxied, Proxy, ViewProxy};
 
 macro_rules! impl_singular_primitives {
   ($($t:ty),*) => {
       $(
+        impl SealedInternal for $t {}
+
         impl Proxied for $t {
             type View<'msg> = $t;
         }
 
-        impl<'msg> ViewProxy<'msg> for $t {
+        impl<'msg> Proxy<'msg> for $t {
+        }
+
+        impl AsView for $t {
             type Proxied = $t;
 
-            fn as_view(&self) -> View<'_, Self::Proxied> {
-                *self
-            }
-
-            fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied> {
-                self
-            }
-        }
-
-        impl IntoProxied<$t> for $t {
-          fn into_proxied(self, _private: Private) -> $t {
-            self
+            fn as_view(&self) -> $t {
+              *self
           }
         }
+
+        impl<'msg> IntoView<'msg> for $t {
+            fn into_view<'shorter>(self) -> $t
+            where
+                'msg: 'shorter {
+              self
+          }
+        }
+
+        impl<'msg> ViewProxy<'msg> for $t {}
 
         // ProxiedInRepeated is implemented in {cpp,upb}.rs
       )*

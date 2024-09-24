@@ -19,9 +19,7 @@ load(
     "UPB_DEFAULT_CPPOPTS",
 )
 
-# begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
-# end:google_only
+package(default_applicable_licenses = ["//:license"])
 
 cc_library(
     name = "parse_text_proto",
@@ -326,7 +324,6 @@ cc_test(
     ],
 )
 
-# begin:github_only
 filegroup(
     name = "test_srcs",
     srcs = glob(
@@ -357,4 +354,3 @@ filegroup(
     ),
     visibility = ["//upb:__pkg__"],
 )
-# end:github_only

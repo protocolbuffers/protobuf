@@ -55,7 +55,7 @@ std::string ClassNameWithoutPackage(const Descriptor* descriptor,
 }
 
 std::string ClassNameWithoutPackageKotlin(const Descriptor* descriptor) {
-  std::string result = descriptor->name();
+  std::string result = std::string(descriptor->name());
   const Descriptor* temp = descriptor->containing_type();
 
   while (temp) {
@@ -71,7 +71,7 @@ std::string ClassNameWithoutPackage(const EnumDescriptor* descriptor,
   // Doesn't append "Mutable" for enum type's name.
   const Descriptor* message_descriptor = descriptor->containing_type();
   if (message_descriptor == nullptr) {
-    return descriptor->name();
+    return std::string(descriptor->name());
   } else {
     return absl::StrCat(ClassNameWithoutPackage(message_descriptor, immutable),
                         ".", descriptor->name());

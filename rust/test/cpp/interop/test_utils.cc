@@ -25,7 +25,7 @@ extern "C" void MutateTestAllTypes(protobuf_unittest::TestAllTypes* msg) {
 
 extern "C" SerializedData SerializeTestAllTypes(
     const protobuf_unittest::TestAllTypes* msg) {
-  SerializedData data(nullptr, 0);
+  SerializedData data;
   ABSL_CHECK(SerializeMsg(msg, &data));
   return data;
 }
@@ -58,4 +58,9 @@ extern "C" int32_t TakeOwnershipAndGetOptionalInt32(
   int32_t i = msg->optional_int32();
   delete msg;
   return i;
+}
+
+extern "C" const void* GetConstStaticTestAllTypes() {
+  static const auto* msg = new protobuf_unittest::TestAllTypes;
+  return msg;
 }

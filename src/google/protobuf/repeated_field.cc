@@ -12,6 +12,8 @@
 #include "google/protobuf/repeated_field.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 
 #include "absl/log/absl_check.h"
@@ -28,8 +30,8 @@ namespace protobuf {
 template <>
 PROTOBUF_EXPORT_TEMPLATE_DEFINE size_t
 RepeatedField<absl::Cord>::SpaceUsedExcludingSelfLong() const {
-  size_t result = current_size_ * sizeof(absl::Cord);
-  for (int i = 0; i < current_size_; i++) {
+  size_t result = size() * sizeof(absl::Cord);
+  for (int i = 0; i < size(); i++) {
     // Estimate only.
     result += Get(i).size();
   }

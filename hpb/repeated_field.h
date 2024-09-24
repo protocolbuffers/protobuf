@@ -15,16 +15,16 @@
 #include <type_traits>
 
 #include "absl/strings/string_view.h"
-#include "google/protobuf/hpb/hpb.h"
+#include "google/protobuf/hpb/backend/upb/interop.h"
+#include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/repeated_field_iterator.h"
-#include "google/protobuf/hpb/traits.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
 #include "upb/message/copy.h"
 #include "upb/message/message.h"
 
-namespace protos {
+namespace hpb {
 namespace internal {
 
 // Shared implementation of repeated fields for absl::string_view and
@@ -37,7 +37,7 @@ namespace internal {
 // upb_Array* for the message when the RepeatedFieldProxy is constructed.
 template <class T>
 class RepeatedFieldProxyBase {
-  using Array = add_const_if_T_is_const<T, upb_Array>;
+  using Array = hpb::internal::add_const_if_T_is_const<T, upb_Array>;
 
  public:
   explicit RepeatedFieldProxyBase(Array* arr, upb_Arena* arena)
@@ -94,13 +94,13 @@ class RepeatedFieldProxy
       : RepeatedFieldProxyBase<T>(arr, arena) {}
   RepeatedFieldProxy(upb_Array* arr, upb_Arena* arena)
       : RepeatedFieldProxyMutableBase<T>(arr, arena) {}
-  // Constructor used by ::protos::Ptr.
+  // Constructor used by ::hpb::Ptr.
   RepeatedFieldProxy(const RepeatedFieldProxy&) = default;
 
   // T::CProxy [] operator specialization.
   typename T::CProxy operator[](size_t n) const {
     upb_MessageValue message_value = upb_Array_Get(this->arr_, n);
-    return ::protos::internal::CreateMessage<typename std::remove_const_t<T>>(
+    return ::hpb::interop::upb::MakeCHandle<typename std::remove_const_t<T>>(
         (upb_Message*)message_value.msg_val, this->arena_);
   }
 
@@ -109,8 +109,7 @@ class RepeatedFieldProxy
   template <int&... DeductionBlocker, bool b = !kIsConst,
             typename = std::enable_if_t<b>>
   typename T::Proxy operator[](size_t n) {
-    return ::protos::internal::CreateMessageProxy<T>(this->GetMessage(n),
-                                                     this->arena_);
+    return hpb::interop::upb::MakeHandle<T>(this->GetMessage(n), this->arena_);
   }
 
   // Mutable message reference specialization.
@@ -119,8 +118,8 @@ class RepeatedFieldProxy
   void push_back(const T& t) {
     upb_MessageValue message_value;
     message_value.msg_val = upb_Message_DeepClone(
-        PrivateAccess::GetInternalMsg(&t), ::protos::internal::GetMiniTable(&t),
-        this->arena_);
+        ::hpb::internal::PrivateAccess::GetInternalMsg(&t),
+        ::hpb::interop::upb::GetMiniTable(&t), this->arena_);
     upb_Array_Append(this->arr_, message_value, this->arena_);
   }
 
@@ -129,8 +128,9 @@ class RepeatedFieldProxy
             typename = std::enable_if_t<b>>
   void push_back(T&& msg) {
     upb_MessageValue message_value;
-    message_value.msg_val = PrivateAccess::GetInternalMsg(&msg);
-    upb_Arena_Fuse(GetArena(&msg), this->arena_);
+    message_value.msg_val =
+        ::hpb::internal::PrivateAccess::GetInternalMsg(&msg);
+    upb_Arena_Fuse(hpb::interop::upb::GetArena(&msg), this->arena_);
     upb_Array_Append(this->arr_, message_value, this->arena_);
     T moved_msg = std::move(msg);
   }
@@ -147,7 +147,7 @@ class RepeatedFieldProxy
   reverse_iterator rend() const { return reverse_iterator(begin()); }
 
  private:
-  friend class ::protos::Ptr<T>;
+  friend class ::hpb::Ptr<T>;
 };
 
 // RepeatedField proxy for repeated strings.
@@ -175,7 +175,7 @@ class RepeatedFieldStringProxy
   // Mutable constructor.
   RepeatedFieldStringProxy(upb_Array* arr, upb_Arena* arena)
       : RepeatedFieldProxyMutableBase<T>(arr, arena) {}
-  // Constructor used by ::protos::Ptr.
+  // Constructor used by ::hpb::Ptr.
   RepeatedFieldStringProxy(const RepeatedFieldStringProxy&) = default;
 
   reference operator[](size_t n) const { return begin()[n]; }
@@ -222,7 +222,7 @@ class RepeatedFieldScalarProxy
       : RepeatedFieldProxyBase<T>(arr, arena) {}
   RepeatedFieldScalarProxy(upb_Array* arr, upb_Arena* arena)
       : RepeatedFieldProxyMutableBase<T>(arr, arena) {}
-  // Constructor used by ::protos::Ptr.
+  // Constructor used by ::hpb::Ptr.
   RepeatedFieldScalarProxy(const RepeatedFieldScalarProxy&) = default;
 
   T operator[](size_t n) const {
@@ -285,16 +285,16 @@ class RepeatedField {
   // We would like to reference T::CProxy. Validate forwarding header design.
   using ValueProxy = std::conditional_t<
       kIsScalar, T,
-      std::conditional_t<kIsString, absl::string_view, ::protos::Ptr<T>>>;
+      std::conditional_t<kIsString, absl::string_view, ::hpb::Ptr<T>>>;
   using ValueCProxy = std::conditional_t<
       kIsScalar, const T,
-      std::conditional_t<kIsString, absl::string_view, ::protos::Ptr<const T>>>;
+      std::conditional_t<kIsString, absl::string_view, ::hpb::Ptr<const T>>>;
   using Access = std::conditional_t<
       kIsScalar, internal::RepeatedFieldScalarProxy<T>,
       std::conditional_t<kIsString, internal::RepeatedFieldStringProxy<T>,
                          internal::RepeatedFieldProxy<T>>>;
 };
 
-}  // namespace protos
+}  // namespace hpb
 
 #endif  // PROTOBUF_HPB_REPEATED_FIELD_H_

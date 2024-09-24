@@ -1,3 +1,4 @@
 import common.bazelrc
 
 build --cxxopt=-std=c++14 --host_cxxopt=-std=c++14
+build --copt="-Werror" --copt="-Wno-sign-compare" --copt="-Wno-sign-conversion" --copt="-Wno-error=sign-conversion" --copt="-Wno-deprecated-declarations"

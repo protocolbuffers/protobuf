@@ -71,8 +71,8 @@ void Message::MergeImpl(MessageLite& to, const MessageLite& from) {
                        DownCastMessage<Message>(&to));
 }
 
-void Message::ClearImpl(MessageLite& msg) {
-  ReflectionOps::Clear(&DownCastMessage<Message>(msg));
+void Message::ClearImpl() {
+  ReflectionOps::Clear(DownCastMessage<Message>(this));
 }
 
 size_t Message::ByteSizeLongImpl(const MessageLite& msg) {
@@ -185,7 +185,7 @@ size_t Message::ByteSizeLong() const {
 #endif  // !PROTOBUF_CUSTOM_VTABLE
 
 size_t Message::ComputeUnknownFieldsSize(
-    size_t total_size, internal::CachedSize* cached_size) const {
+    size_t total_size, const internal::CachedSize* cached_size) const {
   total_size += WireFormat::ComputeUnknownFieldsSize(
       _internal_metadata_.unknown_fields<UnknownFieldSet>(
           UnknownFieldSet::default_instance));
@@ -194,7 +194,7 @@ size_t Message::ComputeUnknownFieldsSize(
 }
 
 size_t Message::MaybeComputeUnknownFieldsSize(
-    size_t total_size, internal::CachedSize* cached_size) const {
+    size_t total_size, const internal::CachedSize* cached_size) const {
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     return ComputeUnknownFieldsSize(total_size, cached_size);
   }
@@ -477,9 +477,11 @@ const internal::RepeatedFieldAccessor* Reflection::RepeatedFieldAccessor(
     HANDLE_PRIMITIVE_TYPE(ENUM, int32_t)
 #undef HANDLE_PRIMITIVE_TYPE
     case FieldDescriptor::CPPTYPE_STRING:
-      switch (field->options().ctype()) {
-        default:
-        case FieldOptions::STRING:
+      switch (field->cpp_string_type()) {
+        case FieldDescriptor::CppStringType::kCord:
+          ABSL_LOG(FATAL) << "Repeated cords are not supported.";
+        case FieldDescriptor::CppStringType::kView:
+        case FieldDescriptor::CppStringType::kString:
           return GetSingleton<internal::RepeatedPtrFieldStringAccessor>();
       }
       break;

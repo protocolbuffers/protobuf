@@ -5,13 +5,20 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#import "GPBUnknownFieldSet.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 
+#import "GPBCodedInputStream.h"
 #import "GPBCodedInputStream_PackagePrivate.h"
 #import "GPBCodedOutputStream.h"
+#import "GPBUnknownField.h"
 #import "GPBUnknownField_PackagePrivate.h"
 #import "GPBUtilities.h"
 #import "GPBWireFormat.h"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 
 #pragma mark Helpers
 
@@ -212,10 +219,6 @@ static void GPBUnknownFieldSetSerializedSizeAsMessageSet(__unused const void *ke
   return data;
 }
 
-+ (BOOL)isFieldTag:(int32_t)tag {
-  return GPBWireFormatGetTagWireType(tag) != GPBWireFormatEndGroup;
-}
-
 - (void)addField:(GPBUnknownField *)field {
   int32_t number = [field number];
   checkNumber(number);
@@ -272,6 +275,11 @@ static void GPBUnknownFieldSetMergeUnknownFields(__unused const void *key, const
   [[self mutableFieldForNumber:number create:YES] addVarint:value];
 }
 
+- (void)mergeLengthDelimited:(int32_t)fieldNum value:(NSData *)value {
+  checkNumber(fieldNum);
+  [[self mutableFieldForNumber:fieldNum create:YES] addLengthDelimited:value];
+}
+
 - (BOOL)mergeFieldFrom:(int32_t)tag input:(GPBCodedInputStream *)input {
   NSAssert(GPBWireFormatIsValidTag(tag), @"Got passed an invalid tag");
   int32_t number = GPBWireFormatGetTagFieldNumber(tag);
@@ -314,15 +322,6 @@ static void GPBUnknownFieldSetMergeUnknownFields(__unused const void *key, const
   }
 }
 
-- (void)mergeMessageSetMessage:(int32_t)number data:(NSData *)messageData {
-  [[self mutableFieldForNumber:number create:YES] addLengthDelimited:messageData];
-}
-
-- (void)addUnknownMapEntry:(int32_t)fieldNum value:(NSData *)data {
-  GPBUnknownField *field = [self mutableFieldForNumber:fieldNum create:YES];
-  [field addLengthDelimited:data];
-}
-
 - (void)mergeFromCodedInputStream:(GPBCodedInputStream *)input {
   while (YES) {
     int32_t tag = GPBCodedInputStreamReadTag(&input->state_);
@@ -345,3 +344,5 @@ static void GPBUnknownFieldSetMergeUnknownFields(__unused const void *key, const
 #pragma clang diagnostic pop
 
 @end
+
+#pragma clang diagnostic pop  // -Wdeprecated-declarations suppression

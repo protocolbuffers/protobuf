@@ -5,16 +5,24 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#import "GPBUtilities_PackagePrivate.h"
+#import "GPBUtilities.h"
 
 #import <objc/runtime.h>
 
+#import "GPBArray.h"
 #import "GPBArray_PackagePrivate.h"
+#import "GPBDescriptor.h"
 #import "GPBDescriptor_PackagePrivate.h"
+#import "GPBDictionary.h"
 #import "GPBDictionary_PackagePrivate.h"
+#import "GPBMessage.h"
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBUnknownField.h"
 #import "GPBUnknownFieldSet.h"
+#import "GPBUnknownField_PackagePrivate.h"
+#import "GPBUnknownFields.h"
+#import "GPBUtilities.h"
+#import "GPBUtilities_PackagePrivate.h"
 
 // Direct access is use for speed, to avoid even internally declaring things
 // read/write, etc. The warning is enabled in the project to ensure code calling
@@ -203,6 +211,14 @@ void GPBCheckRuntimeVersionSupport(int32_t objcRuntimeVersion) {
                        @" supports back to %d!",
                        objcRuntimeVersion, GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION];
   }
+#if defined(DEBUG) && DEBUG
+  if (objcRuntimeVersion < GOOGLE_PROTOBUF_OBJC_VERSION) {
+    // This is a version we haven't generated for yet.
+    NSLog(@"WARNING: Code from generated Objective-C proto from an older version of the library is "
+          @"being used. Please regenerate with the current version as the code will stop working "
+          @"in a future release.");
+  }
+#endif
 }
 
 void GPBRuntimeMatchFailure(void) {
@@ -1929,6 +1945,78 @@ static void AppendTextFormatForMessageExtensionRange(GPBMessage *message, NSArra
   }  // for..in(activeExtensions)
 }
 
+static void AppendTextFormatForUnknownFields(GPBUnknownFields *ufs, NSMutableString *toStr,
+                                             NSString *lineIndent) {
+#if defined(DEBUG) && DEBUG
+  NSCAssert(!ufs.empty, @"Internal Error: No unknown fields to format.");
+#endif
+  // Extract the fields and sort them by field number. Use a stable sort and sort just by the field
+  // numbers, that way the output will still show the order the different types were added as well
+  // as maintaining the order within a give number/type pair (i.e. - repeated fields say in order).
+  NSMutableArray *sortedFields = [[NSMutableArray alloc] initWithCapacity:ufs.count];
+  for (GPBUnknownField *field in ufs) {
+    [sortedFields addObject:field];
+  }
+  [sortedFields
+      sortWithOptions:NSSortStable
+      usingComparator:^NSComparisonResult(GPBUnknownField *field1, GPBUnknownField *field2) {
+        int32_t fieldNumber1 = field1->number_;
+        int32_t fieldNumber2 = field2->number_;
+        if (fieldNumber1 < fieldNumber2) {
+          return NSOrderedAscending;
+        } else if (fieldNumber1 > fieldNumber2) {
+          return NSOrderedDescending;
+        } else {
+          return NSOrderedSame;
+        }
+      }];
+
+  NSString *subIndent = nil;
+
+  for (GPBUnknownField *field in sortedFields) {
+    int32_t fieldNumber = field->number_;
+    switch (field->type_) {
+      case GPBUnknownFieldTypeVarint:
+        [toStr appendFormat:@"%@%d: %llu\n", lineIndent, fieldNumber, field->storage_.intValue];
+        break;
+      case GPBUnknownFieldTypeFixed32:
+        [toStr appendFormat:@"%@%d: 0x%X\n", lineIndent, fieldNumber,
+                            (uint32_t)field->storage_.intValue];
+        break;
+      case GPBUnknownFieldTypeFixed64:
+        [toStr appendFormat:@"%@%d: 0x%llX\n", lineIndent, fieldNumber, field->storage_.intValue];
+        break;
+      case GPBUnknownFieldTypeLengthDelimited:
+        [toStr appendFormat:@"%@%d: ", lineIndent, fieldNumber];
+        AppendBufferAsString(field->storage_.lengthDelimited, toStr);
+        [toStr appendString:@"\n"];
+        break;
+      case GPBUnknownFieldTypeGroup: {
+        GPBUnknownFields *group = field->storage_.group;
+        if (group.empty) {
+          [toStr appendFormat:@"%@%d: {}\n", lineIndent, fieldNumber];
+        } else {
+          [toStr appendFormat:@"%@%d: {\n", lineIndent, fieldNumber];
+          if (subIndent == nil) {
+            subIndent = [lineIndent stringByAppendingString:@"  "];
+          }
+          AppendTextFormatForUnknownFields(group, toStr, subIndent);
+          [toStr appendFormat:@"%@}\n", lineIndent];
+        }
+      } break;
+      case GPBUnknownFieldTypeLegacy:
+#if defined(DEBUG) && DEBUG
+        NSCAssert(
+            NO,
+            @"Internal error: Shouldn't have gotten a legacy field type in the unknown fields.");
+#endif
+        break;
+    }
+  }
+  [subIndent release];
+  [sortedFields release];
+}
+
 static void AppendTextFormatForMessage(GPBMessage *message, NSMutableString *toStr,
                                        NSString *lineIndent) {
   GPBDescriptor *descriptor = [message descriptor];
@@ -1951,11 +2039,12 @@ static void AppendTextFormatForMessage(GPBMessage *message, NSMutableString *toS
     }
   }
 
-  NSString *unknownFieldsStr = GPBTextFormatForUnknownFieldSet(message.unknownFields, lineIndent);
-  if ([unknownFieldsStr length] > 0) {
+  GPBUnknownFields *ufs = [[GPBUnknownFields alloc] initFromMessage:message];
+  if (ufs.count > 0) {
     [toStr appendFormat:@"%@# --- Unknown fields ---\n", lineIndent];
-    [toStr appendString:unknownFieldsStr];
+    AppendTextFormatForUnknownFields(ufs, toStr, lineIndent);
   }
+  [ufs release];
 }
 
 NSString *GPBTextFormatForMessage(GPBMessage *message, NSString *lineIndent) {

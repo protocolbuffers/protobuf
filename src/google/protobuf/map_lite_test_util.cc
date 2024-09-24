@@ -9,6 +9,7 @@
 
 #include "google/protobuf/map_lite_unittest.pb.h"
 #include "google/protobuf/map_test_util_impl.h"
+#include "google/protobuf/unittest_lite.pb.h"
 
 namespace google {
 namespace protobuf {

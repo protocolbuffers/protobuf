@@ -155,7 +155,7 @@ class Proto2LiteTest {
       .isEqualTo(TestUtilLite.getAllLiteSetBuilder().build())
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testGetters() {
     testAllTypesLite {
@@ -176,7 +176,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testDefaultGetters() {
     testAllTypesLite {
@@ -187,7 +187,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testRepeatedGettersAndSetters() {
     testAllTypesLite {
@@ -208,20 +208,20 @@ class Proto2LiteTest {
       repeatedGroup.addAll(
         listOf(
           TestAllTypesLiteKt.repeatedGroup { a = 1 },
-          TestAllTypesLiteKt.repeatedGroup { a = 2 }
+          TestAllTypesLiteKt.repeatedGroup { a = 2 },
         )
       )
       assertThat(repeatedGroup)
         .isEqualTo(
           listOf(
             TestAllTypesLiteKt.repeatedGroup { a = 1 },
-            TestAllTypesLiteKt.repeatedGroup { a = 2 }
+            TestAllTypesLiteKt.repeatedGroup { a = 2 },
           )
         )
       repeatedGroup +=
         listOf(
           TestAllTypesLiteKt.repeatedGroup { a = 3 },
-          TestAllTypesLiteKt.repeatedGroup { a = 4 }
+          TestAllTypesLiteKt.repeatedGroup { a = 4 },
         )
       assertThat(repeatedGroup)
         .isEqualTo(
@@ -229,7 +229,7 @@ class Proto2LiteTest {
             TestAllTypesLiteKt.repeatedGroup { a = 1 },
             TestAllTypesLiteKt.repeatedGroup { a = 2 },
             TestAllTypesLiteKt.repeatedGroup { a = 3 },
-            TestAllTypesLiteKt.repeatedGroup { a = 4 }
+            TestAllTypesLiteKt.repeatedGroup { a = 4 },
           )
         )
       repeatedGroup[0] = TestAllTypesLiteKt.repeatedGroup { a = 5 }
@@ -239,7 +239,7 @@ class Proto2LiteTest {
             TestAllTypesLiteKt.repeatedGroup { a = 5 },
             TestAllTypesLiteKt.repeatedGroup { a = 2 },
             TestAllTypesLiteKt.repeatedGroup { a = 3 },
-            TestAllTypesLiteKt.repeatedGroup { a = 4 }
+            TestAllTypesLiteKt.repeatedGroup { a = 4 },
           )
         )
 
@@ -253,7 +253,7 @@ class Proto2LiteTest {
             nestedMessage { bb = 1 },
             nestedMessage { bb = 2 },
             nestedMessage { bb = 3 },
-            nestedMessage { bb = 4 }
+            nestedMessage { bb = 4 },
           )
         )
       repeatedNestedMessage[0] = nestedMessage { bb = 5 }
@@ -263,7 +263,7 @@ class Proto2LiteTest {
             nestedMessage { bb = 5 },
             nestedMessage { bb = 2 },
             nestedMessage { bb = 3 },
-            nestedMessage { bb = 4 }
+            nestedMessage { bb = 4 },
           )
         )
 
@@ -278,7 +278,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHazzers() {
     testAllTypesLite {
@@ -309,7 +309,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testClears() {
     testAllTypesLite {
@@ -398,36 +398,36 @@ class Proto2LiteTest {
           setExtension(UnittestLite.optionalBytesExtensionLite, toBytes("116"))
           setExtension(
             UnittestLite.optionalGroupExtensionLite,
-            optionalGroupExtensionLite { a = 117 }
+            optionalGroupExtensionLite { a = 117 },
           )
           setExtension(
             UnittestLite.optionalNestedMessageExtensionLite,
-            TestAllTypesLiteKt.nestedMessage { bb = 118 }
+            TestAllTypesLiteKt.nestedMessage { bb = 118 },
           )
           setExtension(
             UnittestLite.optionalForeignMessageExtensionLite,
-            foreignMessageLite { c = 119 }
+            foreignMessageLite { c = 119 },
           )
           setExtension(
             UnittestLite.optionalImportMessageExtensionLite,
-            ImportMessageLite.newBuilder().setD(120).build()
+            ImportMessageLite.newBuilder().setD(120).build(),
           )
           setExtension(
             UnittestLite.optionalPublicImportMessageExtensionLite,
-            PublicImportMessageLite.newBuilder().setE(126).build()
+            PublicImportMessageLite.newBuilder().setE(126).build(),
           )
           setExtension(
             UnittestLite.optionalLazyMessageExtensionLite,
-            TestAllTypesLiteKt.nestedMessage { bb = 127 }
+            TestAllTypesLiteKt.nestedMessage { bb = 127 },
           )
           setExtension(
             UnittestLite.optionalUnverifiedLazyMessageExtensionLite,
-            TestAllTypesLiteKt.nestedMessage { bb = 128 }
+            TestAllTypesLiteKt.nestedMessage { bb = 128 },
           )
           setExtension(UnittestLite.optionalNestedEnumExtensionLite, NestedEnum.BAZ)
           setExtension(
             UnittestLite.optionalForeignEnumExtensionLite,
-            ForeignEnumLite.FOREIGN_LITE_BAZ
+            ForeignEnumLite.FOREIGN_LITE_BAZ,
           )
           setExtension(UnittestLite.optionalImportEnumExtensionLite, ImportEnumLite.IMPORT_LITE_BAZ)
           setExtension(UnittestLite.optionalStringPieceExtensionLite, "124")
@@ -521,7 +521,7 @@ class Proto2LiteTest {
       .isEqualTo(TestUtilLite.getAllLiteExtensionsSet())
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testExtensionGetters() {
     testAllExtensionsLite {
@@ -545,7 +545,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testRepeatedExtensionGettersAndSetters() {
     testAllExtensionsLite {
@@ -580,7 +580,7 @@ class Proto2LiteTest {
             repeatedGroupExtensionLite { a = 1 },
             repeatedGroupExtensionLite { a = 2 },
             repeatedGroupExtensionLite { a = 3 },
-            repeatedGroupExtensionLite { a = 4 }
+            repeatedGroupExtensionLite { a = 4 },
           )
         )
       this[UnittestLite.repeatedGroupExtensionLite][0] = repeatedGroupExtensionLite { a = 5 }
@@ -590,7 +590,7 @@ class Proto2LiteTest {
             repeatedGroupExtensionLite { a = 5 },
             repeatedGroupExtensionLite { a = 2 },
             repeatedGroupExtensionLite { a = 3 },
-            repeatedGroupExtensionLite { a = 4 }
+            repeatedGroupExtensionLite { a = 4 },
           )
         )
 
@@ -607,7 +607,7 @@ class Proto2LiteTest {
             nestedMessage { bb = 1 },
             nestedMessage { bb = 2 },
             nestedMessage { bb = 3 },
-            nestedMessage { bb = 4 }
+            nestedMessage { bb = 4 },
           )
         )
       this[UnittestLite.repeatedNestedMessageExtensionLite][0] = nestedMessage { bb = 5 }
@@ -617,7 +617,7 @@ class Proto2LiteTest {
             nestedMessage { bb = 5 },
             nestedMessage { bb = 2 },
             nestedMessage { bb = 3 },
-            nestedMessage { bb = 4 }
+            nestedMessage { bb = 4 },
           )
         )
 
@@ -635,7 +635,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testExtensionContains() {
     testAllExtensionsLite {
@@ -667,7 +667,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testExtensionClears() {
     testAllExtensionsLite {
@@ -756,7 +756,7 @@ class Proto2LiteTest {
       )
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testMapGettersAndSetters() {
     testMapLite {
@@ -788,7 +788,7 @@ class Proto2LiteTest {
             1 to MapEnumLite.MAP_ENUM_FOO_LITE,
             2 to MapEnumLite.MAP_ENUM_BAR_LITE,
             3 to MapEnumLite.MAP_ENUM_BAZ_LITE,
-            4 to MapEnumLite.MAP_ENUM_FOO_LITE
+            4 to MapEnumLite.MAP_ENUM_FOO_LITE,
           )
         )
 
@@ -806,13 +806,13 @@ class Proto2LiteTest {
             1 to foreignMessageLite { c = 1 },
             2 to foreignMessageLite { c = 2 },
             3 to foreignMessageLite { c = 3 },
-            4 to foreignMessageLite { c = 4 }
+            4 to foreignMessageLite { c = 4 },
           )
         )
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testMapRemove() {
     testMapLite {
@@ -838,7 +838,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testMapClear() {
     testMapLite {
@@ -920,7 +920,7 @@ class Proto2LiteTest {
     assertThat(interface_ {}).isEqualTo(Interface.newBuilder().build())
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHardKeywordGettersAndSetters() {
     hardKeywordsAllTypesProto2 {
@@ -950,7 +950,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHardKeywordHazzers() {
     hardKeywordsAllTypesProto2 {
@@ -965,7 +965,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHardKeywordClears() {
     hardKeywordsAllTypesProto2 {

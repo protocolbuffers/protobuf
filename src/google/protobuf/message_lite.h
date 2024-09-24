@@ -19,12 +19,16 @@
 #include <climits>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <iosfwd>
+#include <new>
 #include <string>
 #include <type_traits>
 
 #include "absl/base/attributes.h"
+#include "absl/base/casts.h"
 #include "absl/log/absl_check.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
@@ -64,7 +68,86 @@ class ZeroCopyInputStream;
 class ZeroCopyOutputStream;
 
 }  // namespace io
+
+namespace compiler {
+namespace cpp {
+class MessageTableTester;
+}  // namespace cpp
+}  // namespace compiler
+
 namespace internal {
+
+class MessageCreator {
+ public:
+  using Func = void* (*)(const void*, void*, Arena*);
+
+  // Use -1/0/1 to be able to use <0, ==0, >0
+  enum Tag : int8_t {
+    kFunc = -1,
+    kZeroInit = 0,
+    kMemcpy = 1,
+  };
+
+  constexpr MessageCreator()
+      : allocation_size_(), tag_(), alignment_(), arena_bits_(uintptr_t{}) {}
+
+  static constexpr MessageCreator ZeroInit(uint32_t allocation_size,
+                                           uint8_t alignment,
+                                           uintptr_t arena_bits = 0) {
+    MessageCreator out;
+    out.allocation_size_ = allocation_size;
+    out.tag_ = kZeroInit;
+    out.alignment_ = alignment;
+    out.arena_bits_ = arena_bits;
+    return out;
+  }
+  static constexpr MessageCreator CopyInit(uint32_t allocation_size,
+                                           uint8_t alignment,
+                                           uintptr_t arena_bits = 0) {
+    MessageCreator out;
+    out.allocation_size_ = allocation_size;
+    out.tag_ = kMemcpy;
+    out.alignment_ = alignment;
+    out.arena_bits_ = arena_bits;
+    return out;
+  }
+  constexpr MessageCreator(Func func, uint32_t allocation_size,
+                           uint8_t alignment)
+      : allocation_size_(allocation_size),
+        tag_(kFunc),
+        alignment_(alignment),
+        func_(func) {}
+
+  // Template for testing.
+  template <bool test_call = false, typename MessageLite>
+  MessageLite* New(const MessageLite* prototype_for_func,
+                   const MessageLite* prototype_for_copy, Arena* arena) const;
+
+  template <bool test_call = false, typename MessageLite>
+  MessageLite* PlacementNew(const MessageLite* prototype_for_func,
+                            const MessageLite* prototype_for_copy, void* mem,
+                            Arena* arena) const;
+
+  Tag tag() const { return tag_; }
+
+  uint32_t allocation_size() const { return allocation_size_; }
+
+  uint8_t alignment() const { return alignment_; }
+
+  uintptr_t arena_bits() const {
+    ABSL_DCHECK_NE(+tag(), +kFunc);
+    return arena_bits_;
+  }
+
+ private:
+  uint32_t allocation_size_;
+  Tag tag_;
+  uint8_t alignment_;
+  union {
+    Func func_;
+    uintptr_t arena_bits_;
+  };
+};
 
 // Allow easy change to regular int on platforms where the atomic might have a
 // perf impact.
@@ -88,6 +171,7 @@ class PROTOBUF_EXPORT CachedSize {
   constexpr CachedSize() noexcept : atom_(Scalar{}) {}
   // NOLINTNEXTLINE(google-explicit-constructor)
   constexpr CachedSize(Scalar desired) noexcept : atom_(desired) {}
+
 #if PROTOBUF_BUILTIN_ATOMIC
   constexpr CachedSize(const CachedSize& other) = default;
 
@@ -95,7 +179,16 @@ class PROTOBUF_EXPORT CachedSize {
     return __atomic_load_n(&atom_, __ATOMIC_RELAXED);
   }
 
-  void Set(Scalar desired) noexcept {
+  void Set(Scalar desired) const noexcept {
+    // Avoid writing the value when it is zero. This prevents writing to global
+    // default instances, which might be in readonly memory.
+    if (ABSL_PREDICT_FALSE(desired == 0)) {
+      if (Get() == 0) return;
+    }
+    __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
+  }
+
+  void SetNonZero(Scalar desired) const noexcept {
     __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
   }
 #else
@@ -109,16 +202,25 @@ class PROTOBUF_EXPORT CachedSize {
     return atom_.load(std::memory_order_relaxed);
   }
 
-  void Set(Scalar desired) noexcept {
+  void Set(Scalar desired) const noexcept {
+    // Avoid writing the value when it is zero. This prevents writing to global
+    // default instances, which might be in readonly memory.
+    if (ABSL_PREDICT_FALSE(desired == 0)) {
+      if (Get() == 0) return;
+    }
+    atom_.store(desired, std::memory_order_relaxed);
+  }
+
+  void SetNonZero(Scalar desired) const noexcept {
     atom_.store(desired, std::memory_order_relaxed);
   }
 #endif
 
  private:
 #if PROTOBUF_BUILTIN_ATOMIC
-  Scalar atom_;
+  mutable Scalar atom_;
 #else
-  std::atomic<Scalar> atom_;
+  mutable std::atomic<Scalar> atom_;
 #endif
 };
 
@@ -139,9 +241,7 @@ class TcParser;
 struct TcParseTableBase;
 class WireFormatLite;
 class WeakFieldMap;
-
-template <typename Type>
-class GenericTypeHandler;  // defined in repeated_field.h
+class RustMapHelper;
 
 // We compute sizes as size_t but cache them as int.  This function converts a
 // computed size to a cached size.  Since we don't proceed with serialization
@@ -169,6 +269,12 @@ inline int ToIntSize(size_t size) {
   ABSL_DCHECK_LE(size, static_cast<size_t>(INT_MAX));
   return static_cast<int>(size);
 }
+
+#if defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
+using GetTypeNameReturnType = absl::string_view;
+#else
+using GetTypeNameReturnType = std::string;
+#endif
 
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference. This empty string is aligned with a
@@ -220,7 +326,7 @@ class PROTOBUF_EXPORT MessageLite {
   // Basic Operations ------------------------------------------------
 
   // Get the name of this message type, e.g. "foo.bar.BazProto".
-  std::string GetTypeName() const;
+  internal::GetTypeNameReturnType GetTypeName() const;
 
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.
@@ -228,11 +334,7 @@ class PROTOBUF_EXPORT MessageLite {
 
   // Construct a new instance on the arena. Ownership is passed to the caller
   // if arena is a nullptr.
-#if defined(PROTOBUF_CUSTOM_VTABLE)
   MessageLite* New(Arena* arena) const;
-#else
-  virtual MessageLite* New(Arena* arena) const = 0;
-#endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Returns the arena, if any, that directly owns this message and its internal
   // memory (Arena::Own is different in that the arena doesn't directly own the
@@ -246,7 +348,7 @@ class PROTOBUF_EXPORT MessageLite {
   // will likely be needed again, so the memory used may not be freed.
   // To ensure that all memory used by a Message is freed, you must delete it.
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void Clear();
+  void Clear() { (this->*_class_data_->clear)(); }
 #else
   virtual void Clear() = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -470,7 +572,7 @@ class PROTOBUF_EXPORT MessageLite {
   // ByteSizeLong() is generally linear in the number of fields defined for the
   // proto.
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  size_t ByteSizeLong() const;
+  size_t ByteSizeLong() const { return _class_data_->byte_size_long(*this); }
 #else
   virtual size_t ByteSizeLong() const = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -512,7 +614,11 @@ class PROTOBUF_EXPORT MessageLite {
   // sub-message is changed, all of its parents' cached sizes would need to be
   // invalidated, which is too much work for an otherwise inlined setter
   // method.)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  int GetCachedSize() const { return AccessCachedSize().Get(); }
+#else
   int GetCachedSize() const;
+#endif
 
   const char* _InternalParse(const char* ptr, internal::ParseContext* ctx);
 
@@ -529,66 +635,34 @@ class PROTOBUF_EXPORT MessageLite {
     return static_cast<T*>(Arena::DefaultConstruct<T>(arena));
   }
 
+  template <typename T>
+  static void* NewImpl(const void*, void* mem, Arena* arena) {
+    return ::new (mem) T(arena);
+  }
+  template <typename T>
+  static constexpr internal::MessageCreator GetNewImpl() {
+#if defined(__cpp_if_constexpr)
+    if constexpr (internal::EnableCustomNewFor<T>()) {
+#else
+    // Equally valid code, but might be more work for the compiler
+    if (internal::EnableCustomNewFor<T>()) {
+#endif
+      return T::InternalNewImpl_();
+    } else {
+      return internal::MessageCreator(&T::PlacementNew_, sizeof(T), alignof(T));
+    }
+  }
+
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   template <typename T>
-  static void* NewImpl(const void* prototype, Arena* arena) {
-    return static_cast<const T*>(prototype)->New(arena);
-  }
-  template <typename T>
-  static constexpr auto GetNewImpl() {
-    return NewImpl<T>;
-  }
-
-  template <typename T>
-  static void DeleteImpl(void* msg, bool free_memory) {
-    static_cast<T*>(msg)->~T();
-    if (free_memory) internal::SizedDelete(msg, sizeof(T));
-  }
-  template <typename T>
-  static constexpr auto GetDeleteImpl() {
-    return DeleteImpl<T>;
-  }
-
-  template <typename T>
-  static void ClearImpl(MessageLite& msg) {
-    return static_cast<T&>(msg).Clear();
-  }
-  template <typename T>
   static constexpr auto GetClearImpl() {
-    return ClearImpl<T>;
-  }
-
-  template <typename T>
-  static auto ByteSizeLongImpl(const MessageLite& msg) {
-    return static_cast<const T&>(msg).ByteSizeLong();
-  }
-  template <typename T>
-  static constexpr auto GetByteSizeLongImpl() {
-    return ByteSizeLongImpl<T>;
-  }
-
-  template <typename T>
-  static uint8_t* SerializeImpl(const MessageLite& msg, uint8_t* target,
-                                io::EpsCopyOutputStream* stream) {
-    return static_cast<const T&>(msg)._InternalSerialize(target, stream);
-  }
-  template <typename T>
-  static constexpr auto GetSerializeImpl() {
-    return SerializeImpl<T>;
+    return static_cast<void (MessageLite::*)()>(&T::Clear);
   }
 #else   // PROTOBUF_CUSTOM_VTABLE
   // When custom vtables are off we avoid instantiating the functions because we
   // will not use them anyway. Less work for the compiler.
   template <typename T>
-  using GetNewImpl = std::nullptr_t;
-  template <typename T>
-  using GetDeleteImpl = std::nullptr_t;
-  template <typename T>
   using GetClearImpl = std::nullptr_t;
-  template <typename T>
-  using GetByteSizeLongImpl = std::nullptr_t;
-  template <typename T>
-  using GetSerializeImpl = std::nullptr_t;
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
   template <typename T>
@@ -629,18 +703,18 @@ class PROTOBUF_EXPORT MessageLite {
   // We could save more data by omitting any optional pointer that would
   // otherwise be null. We can have some metadata in ClassData telling us if we
   // have them and their offset.
-  using NewMessageF = void* (*)(const void* prototype, Arena* arena);
-  using DeleteMessageF = void (*)(void* msg, bool free_memory);
+  friend internal::MessageCreator;
+  using DestroyMessageF = void (*)(MessageLite& msg);
   struct ClassData {
     const MessageLite* prototype;
     const internal::TcParseTableBase* tc_table;
     void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
     bool (*is_initialized)(const MessageLite&);
     void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
+    internal::MessageCreator message_creator;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    DeleteMessageF delete_message;
-    NewMessageF new_message;
-    void (*clear)(MessageLite&);
+    DestroyMessageF destroy_message;
+    void (MessageLite::*clear)();
     size_t (*byte_size_long)(const MessageLite&);
     uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
                           io::EpsCopyOutputStream* stream);
@@ -656,21 +730,25 @@ class PROTOBUF_EXPORT MessageLite {
     // In normal mode we have the small constructor to avoid the cost in
     // codegen.
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
-    constexpr ClassData(const MessageLite* prototype,
-                        const internal::TcParseTableBase* tc_table,
-                        void (*on_demand_register_arena_dtor)(MessageLite&,
-                                                              Arena&),
-                        bool (*is_initialized)(const MessageLite&),
-                        void (*merge_to_from)(MessageLite& to,
-                                              const MessageLite& from_msg),
-                        uint32_t cached_size_offset, bool is_lite)
+    constexpr ClassData(
+        const MessageLite* prototype,
+        const internal::TcParseTableBase* tc_table,
+        void (*on_demand_register_arena_dtor)(MessageLite&, Arena&),
+        bool (*is_initialized)(const MessageLite&),
+        void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
+        internal::MessageCreator message_creator, uint32_t cached_size_offset,
+        bool is_lite
+        )
         : prototype(prototype),
           tc_table(tc_table),
           on_demand_register_arena_dtor(on_demand_register_arena_dtor),
           is_initialized(is_initialized),
           merge_to_from(merge_to_from),
+          message_creator(message_creator),
           cached_size_offset(cached_size_offset),
-          is_lite(is_lite) {}
+          is_lite(is_lite)
+    {
+    }
 #endif  // !PROTOBUF_CUSTOM_VTABLE
 
     // But we always provide the full constructor even in normal mode to make
@@ -681,33 +759,49 @@ class PROTOBUF_EXPORT MessageLite {
         void (*on_demand_register_arena_dtor)(MessageLite&, Arena&),
         bool (*is_initialized)(const MessageLite&),
         void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
-        DeleteMessageF delete_message,  //
-        NewMessageF new_message,        //
-        void (*clear)(MessageLite&),
+        internal::MessageCreator message_creator,  //
+        DestroyMessageF destroy_message,           //
+        void (MessageLite::*clear)(),
         size_t (*byte_size_long)(const MessageLite&),
         uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
                               io::EpsCopyOutputStream* stream),
-        uint32_t cached_size_offset, bool is_lite)
+        uint32_t cached_size_offset, bool is_lite
+        )
         : prototype(prototype),
           tc_table(tc_table),
           on_demand_register_arena_dtor(on_demand_register_arena_dtor),
           is_initialized(is_initialized),
           merge_to_from(merge_to_from),
+          message_creator(message_creator),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          delete_message(delete_message),
-          new_message(new_message),
+          destroy_message(destroy_message),
           clear(clear),
           byte_size_long(byte_size_long),
           serialize(serialize),
 #endif  // PROTOBUF_CUSTOM_VTABLE
           cached_size_offset(cached_size_offset),
-          is_lite(is_lite) {
+          is_lite(is_lite)
+    {
     }
 
     const ClassDataFull& full() const {
       ABSL_DCHECK(!is_lite);
       return *static_cast<const ClassDataFull*>(this);
     }
+
+    MessageLite* New(Arena* arena) const {
+      return message_creator.New(prototype, prototype, arena);
+    }
+
+    MessageLite* PlacementNew(void* mem, Arena* arena) const {
+      return message_creator.PlacementNew(prototype, prototype, mem, arena);
+    }
+
+    uint32_t allocation_size() const {
+      return message_creator.allocation_size();
+    }
+
+    uint8_t alignment() const { return message_creator.alignment(); }
   };
   template <size_t N>
   struct ClassDataLite {
@@ -793,14 +887,32 @@ class PROTOBUF_EXPORT MessageLite {
 
   // Return the cached size object as described by
   // ClassData::cached_size_offset.
-  internal::CachedSize& AccessCachedSize() const;
+  const internal::CachedSize& AccessCachedSize() const {
+    return *reinterpret_cast<const internal::CachedSize*>(
+        reinterpret_cast<const char*>(this) +
+        GetClassData()->cached_size_offset);
+  }
 
  public:
   enum ParseFlags {
+    // Merge vs. Parse:
+    // Merge: overwrites scalar fields but appends to repeated fields in the
+    //        destination; other fields in the destination remain untouched.
+    // Parse: clears all fields in the destination before calling Merge.
     kMerge = 0,
     kParse = 1,
+    // Default behaviour vs. Partial:
+    // Default: a missing required field is deemed as parsing failure.
+    // Partial: parse or merge will not give an error if input is missing
+    //          required fields.
     kMergePartial = 2,
     kParsePartial = 3,
+    // Default behaviour vs. Aliasing:
+    // Default:  when merging, pointer is followed and expanded (deep-copy).
+    // Aliasing: when merging, the destination message is allowed to retain
+    //           pointers to the original structure (shallow-copy). This mostly
+    //           is intended for use with STRING_PIECE.
+    // NOTE: STRING_PIECE is not recommended for new usage. Prefer Cords.
     kMergeWithAliasing = 4,
     kParseWithAliasing = 5,
     kMergePartialWithAliasing = 6,
@@ -814,7 +926,9 @@ class PROTOBUF_EXPORT MessageLite {
   //  uint8_t* _InternalSerialize(uint8_t* ptr) const;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   uint8_t* _InternalSerialize(uint8_t* ptr,
-                              io::EpsCopyOutputStream* stream) const;
+                              io::EpsCopyOutputStream* stream) const {
+    return _class_data_->serialize(*this, ptr, stream);
+  }
 #else   // PROTOBUF_CUSTOM_VTABLE
   virtual uint8_t* _InternalSerialize(
       uint8_t* ptr, io::EpsCopyOutputStream* stream) const = 0;
@@ -829,7 +943,7 @@ class PROTOBUF_EXPORT MessageLite {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   void operator delete(MessageLite* msg, std::destroying_delete_t) {
-    msg->DestroyInstance(true);
+    msg->DeleteInstance();
   }
 #endif
 
@@ -840,6 +954,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class Message;
   friend class Reflection;
   friend class TypeId;
+  friend class compiler::cpp::MessageTableTester;
   friend class internal::DescriptorPoolExtensionFinder;
   friend class internal::ExtensionSet;
   friend class internal::LazyField;
@@ -849,11 +964,11 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::UntypedMapBase;
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
+  friend class internal::RustMapHelper;
+  friend struct internal::TcParseTableBase;
 
   template <typename Type>
   friend class Arena::InternalHelper;
-  template <typename Type>
-  friend class internal::GenericTypeHandler;
 
   friend auto internal::GetClassData(const MessageLite& msg);
 
@@ -861,9 +976,18 @@ class PROTOBUF_EXPORT MessageLite {
 
   bool MergeFromImpl(io::CodedInputStream* input, ParseFlags parse_flags);
 
-  // Runs the destructor for this instance, and if `free_memory` is true,
-  // also frees the memory.
-  void DestroyInstance(bool free_memory);
+  // Runs the destructor for this instance.
+  void DestroyInstance();
+  // Runs the destructor for this instance and deletes the memory via
+  // `operator delete`
+  void DeleteInstance();
+
+  // For tests that need to inspect private _oneof_case_. It is the callers
+  // responsibility to ensure T has the right member.
+  template <typename T>
+  static uint32_t GetOneofCaseOffsetForTesting() {
+    return offsetof(T, _impl_._oneof_case_);
+  }
 
   template <typename T, const void* ptr = T::_raw_default_instance_>
   static constexpr auto GetStrongPointerForTypeImpl(int) {
@@ -1053,6 +1177,123 @@ T* OnShutdownDelete(T* p) {
 inline void AssertDownCast(const MessageLite& from, const MessageLite& to) {
   ABSL_DCHECK(TypeId::Get(from) == TypeId::Get(to))
       << "Cannot downcast " << from.GetTypeName() << " to " << to.GetTypeName();
+}
+
+template <bool test_call, typename MessageLite>
+PROTOBUF_ALWAYS_INLINE inline MessageLite* MessageCreator::PlacementNew(
+    const MessageLite* prototype_for_func,
+    const MessageLite* prototype_for_copy, void* mem, Arena* arena) const {
+  ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(mem) % alignment_, 0u);
+  const Tag as_tag = tag();
+  // When the feature is not enabled we skip the `as_tag` check since it is
+  // unnecessary. Except for testing, where we want to test the copy logic even
+  // when we can't use it for real messages.
+  constexpr bool kMustBeFunc = !test_call && !internal::EnableCustomNew();
+  static_assert(kFunc < 0 && !(kZeroInit < 0) && !(kMemcpy < 0),
+                "Only kFunc must be the only negative value");
+  if (ABSL_PREDICT_FALSE(kMustBeFunc || as_tag < 0)) {
+    PROTOBUF_DEBUG_COUNTER("MessageCreator.Func").Inc();
+    return static_cast<MessageLite*>(func_(prototype_for_func, mem, arena));
+  }
+
+  char* dst = static_cast<char*>(mem);
+  const size_t size = allocation_size_;
+  const char* src = reinterpret_cast<const char*>(prototype_for_copy);
+
+  // These are a bit more efficient than calling normal memset/memcpy because:
+  //  - We know the minimum size is 16. We have a fallback for when it is not.
+  //  - We can "underflow" the buffer because those are the MessageLite bytes
+  //    we will set later.
+#ifndef PROTO2_OPENSOURCE
+  // This manual handling shows a 1.85% improvement in the parsing
+  // microbenchmark.
+  // TODO: Verify this is still the case.
+#endif  // !PROTO2_OPENSOUCE
+  if (as_tag == kZeroInit) {
+    // Make sure the input is really all zeros.
+    ABSL_DCHECK(std::all_of(src + sizeof(MessageLite), src + size,
+                            [](auto c) { return c == 0; }));
+
+    if (sizeof(MessageLite) != 16) {
+      memset(dst, 0, size);
+    } else if (size <= 32) {
+      memset(dst + size - 16, 0, 16);
+    } else if (size <= 64) {
+      memset(dst + 16, 0, 16);
+      memset(dst + size - 32, 0, 32);
+    } else {
+      for (size_t offset = 16; offset + 64 < size; offset += 64) {
+        absl::PrefetchToLocalCacheForWrite(dst + offset + 64);
+        memset(dst + offset, 0, 64);
+      }
+      memset(dst + size - 64, 0, 64);
+    }
+  } else {
+    ABSL_DCHECK_EQ(+as_tag, +kMemcpy);
+
+    if (sizeof(MessageLite) != 16) {
+      memcpy(dst, src, size);
+    } else if (size <= 32) {
+      memcpy(dst + size - 16, src + size - 16, 16);
+    } else if (size <= 64) {
+      memcpy(dst + 16, src + 16, 16);
+      memcpy(dst + size - 32, src + size - 32, 32);
+    } else {
+      for (size_t offset = 16; offset + 64 < size; offset += 64) {
+        absl::PrefetchToLocalCache(src + offset + 64);
+        absl::PrefetchToLocalCacheForWrite(dst + offset + 64);
+        memcpy(dst + offset, src + offset, 64);
+      }
+      memcpy(dst + size - 64, src + size - 64, 64);
+    }
+  }
+
+  if (arena_bits() != 0) {
+    if (as_tag == kZeroInit) {
+      PROTOBUF_DEBUG_COUNTER("MessageCreator.ZeroArena").Inc();
+    } else {
+      PROTOBUF_DEBUG_COUNTER("MessageCreator.McpyArena").Inc();
+    }
+  } else {
+    if (as_tag == kZeroInit) {
+      PROTOBUF_DEBUG_COUNTER("MessageCreator.Zero").Inc();
+    } else {
+      PROTOBUF_DEBUG_COUNTER("MessageCreator.Mcpy").Inc();
+    }
+  }
+
+  if (internal::PerformDebugChecks() || arena != nullptr) {
+    if (uintptr_t offsets = arena_bits()) {
+      do {
+        const size_t offset = absl::countr_zero(offsets) * sizeof(Arena*);
+        ABSL_DCHECK_LE(offset + sizeof(Arena*), size);
+        // Verify we are overwriting a null pointer. If we are not, there is a
+        // bug somewhere.
+        ABSL_DCHECK_EQ(*reinterpret_cast<Arena**>(dst + offset), nullptr);
+        memcpy(dst + offset, &arena, sizeof(arena));
+        offsets &= offsets - 1;
+      } while (offsets != 0);
+    }
+  }
+
+  // The second memcpy overwrites part of the first, but the compiler should
+  // avoid the double-write. It's easier than trying to avoid the overlap.
+  memcpy(dst, static_cast<const void*>(prototype_for_copy),
+         sizeof(MessageLite));
+  memcpy(dst + PROTOBUF_FIELD_OFFSET(MessageLite, _internal_metadata_), &arena,
+         sizeof(arena));
+  return Launder(reinterpret_cast<MessageLite*>(mem));
+}
+
+template <bool test_call, typename MessageLite>
+PROTOBUF_ALWAYS_INLINE inline MessageLite* MessageCreator::New(
+    const MessageLite* prototype_for_func,
+    const MessageLite* prototype_for_copy, Arena* arena) const {
+  return PlacementNew<test_call>(prototype_for_func, prototype_for_copy,
+                                 arena != nullptr
+                                     ? arena->AllocateAligned(allocation_size_)
+                                     : ::operator new(allocation_size_),
+                                 arena);
 }
 
 }  // namespace internal

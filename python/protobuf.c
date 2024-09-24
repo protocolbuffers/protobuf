@@ -203,11 +203,6 @@ typedef struct {
   upb_Arena* arena;
 } PyUpb_Arena;
 
-// begin:google_only
-// static upb_alloc* global_alloc = &upb_alloc_global;
-// end:google_only
-
-// begin:github_only
 #ifdef __GLIBC__
 #include <malloc.h>  // malloc_trim()
 #endif
@@ -241,7 +236,6 @@ static void* upb_trim_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
 }
 static upb_alloc trim_alloc = {&upb_trim_allocfunc};
 static upb_alloc* global_alloc = &trim_alloc;
-// end:github_only
 
 static upb_Arena* PyUpb_NewArena(void) {
   return upb_Arena_Init(NULL, 0, global_alloc);

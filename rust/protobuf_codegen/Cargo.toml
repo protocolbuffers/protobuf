@@ -1,0 +1,9 @@
+[package]
+edition = "2021"
+name = "protobuf-codegen"
+readme = "README.md"
+version = "4.27.3-beta.0"
+
+[dependencies]
+walkdir = "2.5.0"
+cc = "1.1.6"

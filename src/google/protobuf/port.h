@@ -64,7 +64,10 @@ inline PROTOBUF_ALWAYS_INLINE void StrongPointer() {
 template <typename T>
 inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
   static constexpr auto ptr = T::template GetStrongPointerForType<T>();
-  return StrongPointer<decltype(ptr), ptr>();
+  // This is identical to the implementation of StrongPointer() above, but it
+  // has to be explicitly inlined here or else Clang 19 will raise an error in
+  // some configurations.
+  asm(".reloc ., BFD_RELOC_NONE, %p0" ::"Ws"(ptr));
 }
 #else   // .reloc
 // Portable fallback. It usually generates a single LEA instruction or
@@ -241,15 +244,6 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 // The maximum byte alignment we support.
 enum { kMaxMessageAlignment = 8 };
 
-// Returns true if debug string hardening is required
-inline constexpr bool DebugHardenStringValues() {
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  return true;
-#else
-  return false;
-#endif
-}
-
 // Returns true if debug hardening for clearing oneof message on arenas is
 // enabled.
 inline constexpr bool DebugHardenClearOneofMessageOnArena() {
@@ -260,9 +254,49 @@ inline constexpr bool DebugHardenClearOneofMessageOnArena() {
 #endif
 }
 
+constexpr bool PerformDebugChecks() {
+#if defined(NDEBUG) && !defined(PROTOBUF_ASAN) && !defined(PROTOBUF_MSAN) && \
+    !defined(PROTOBUF_TSAN)
+  return false;
+#else
+  return true;
+#endif
+}
+
+// Force copy the default string to a string field so that non-optimized builds
+// have harder-to-rely-on address stability.
+constexpr bool DebugHardenForceCopyDefaultString() {
+  return false;
+}
+
+constexpr bool DebugHardenForceCopyInRelease() {
+  return false;
+}
+
+constexpr bool DebugHardenForceCopyInSwap() {
+  return false;
+}
+
+constexpr bool DebugHardenForceCopyInMove() {
+  return false;
+}
+
+constexpr bool DebugHardenForceAllocationOnConstruction() {
+  return false;
+}
+
+constexpr bool DebugHardenFuzzMessageSpaceUsedLong() {
+  return false;
+}
+
 // Returns true if pointers are 8B aligned, leaving least significant 3 bits
 // available.
 inline constexpr bool PtrIsAtLeast8BAligned() { return alignof(void*) >= 8; }
+
+inline constexpr bool IsLazyParsingSupported() {
+  // We need 3 bits for pointer tagging in lazy parsing.
+  return PtrIsAtLeast8BAligned();
+}
 
 // Prefetch 5 64-byte cache line starting from 7 cache-lines ahead.
 // Constants are somewhat arbitrary and pretty aggressive, but were
@@ -279,6 +313,15 @@ inline PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 576);
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 640);
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 704);
+}
+
+// Prefetch 5 64-byte cache lines starting from 1 cache-line ahead.
+inline PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom1Line(const void* ptr) {
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 64);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 128);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 192);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 256);
+  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 320);
 }
 
 #if defined(NDEBUG) && ABSL_HAVE_BUILTIN(__builtin_unreachable)
@@ -324,6 +367,37 @@ inline PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
 inline void PrefetchToLocalCache(const void* ptr) {
   absl::PrefetchToLocalCache(ptr);
 }
+
+template <typename T>
+constexpr T* Launder(T* p) {
+#if defined(__cpp_lib_launder) && __cpp_lib_launder >= 201606L
+  return std::launder(p);
+#elif ABSL_HAVE_BUILTIN(__builtin_launder)
+  return __builtin_launder(p);
+#else
+  return p;
+#endif
+}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+constexpr bool EnableCustomNew() { return true; }
+template <typename T>
+constexpr bool EnableCustomNewFor() {
+  return true;
+}
+#elif ABSL_HAVE_BUILTIN(__is_bitwise_cloneable)
+constexpr bool EnableCustomNew() { return true; }
+template <typename T>
+constexpr bool EnableCustomNewFor() {
+  return __is_bitwise_cloneable(T);
+}
+#else
+constexpr bool EnableCustomNew() { return false; }
+template <typename T>
+constexpr bool EnableCustomNewFor() {
+  return false;
+}
+#endif
 
 constexpr bool IsOss() { return true; }
 

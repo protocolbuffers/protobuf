@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include <string>
 
 #include "google/protobuf/compiler/code_generator.h"
 #include "absl/container/flat_hash_map.h"
@@ -65,7 +66,9 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
 
 MessageGenerator::~MessageGenerator() {}
 
-std::string MessageGenerator::class_name() { return descriptor_->name(); }
+std::string MessageGenerator::class_name() {
+  return std::string(descriptor_->name());
+}
 
 std::string MessageGenerator::full_class_name() {
   return GetClassName(descriptor_);

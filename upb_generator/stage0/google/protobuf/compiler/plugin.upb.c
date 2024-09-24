@@ -1,8 +1,8 @@
 #include <stddef.h>
 #include "upb/generated_code_support.h"
-#include "google/protobuf/compiler/plugin.upb.h"
+#include "upb_generator/plugin_bootstrap.h"
 
-#include "google/protobuf/descriptor.upb.h"
+#include "upb/reflection/descriptor_bootstrap.h"
 static upb_Arena* upb_BootstrapArena() {
   static upb_Arena* arena = NULL;
   if (!arena) arena = upb_Arena_New();
@@ -54,7 +54,7 @@ const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse__File_msg
   return mini_table;
 }
 
-const upb_MiniTableEnum* google_protobuf_compiler_CodeGeneratorResponse_Feature_enum_init() {
+const upb_MiniTableEnum* google__protobuf__compiler__CodeGeneratorResponse__Feature_enum_init() {
   static const upb_MiniTableEnum* mini_table = NULL;
   static const char* mini_descriptor = "!)";
   if (mini_table) return mini_table;

@@ -9,7 +9,8 @@
 
 #include <string>
 
-#include "absl/strings/str_replace.h"
+#include "upb_generator/c/names.h"
+#include "upb_generator/minitable/names.h"
 
 namespace google::protobuf::hpb_generator {
 namespace {
@@ -17,14 +18,6 @@ namespace {
 namespace protobuf = ::proto2;
 
 }  // namespace
-
-std::string StripExtension(absl::string_view fname) {
-  size_t lastdot = fname.find_last_of('.');
-  if (lastdot == std::string::npos) {
-    return std::string(fname);
-  }
-  return std::string(fname.substr(0, lastdot));
-}
 
 std::string ToCIdent(absl::string_view str) {
   return absl::StrReplaceAll(str, {{".", "_"}, {"/", "_"}, {"-", "_"}});
@@ -51,19 +44,15 @@ void EmitFileWarning(const protobuf::FileDescriptor* file, Output& output) {
 }
 
 std::string MessageName(const protobuf::Descriptor* descriptor) {
-  return ToCIdent(descriptor->full_name());
+  return upb::generator::CApiMessageType(descriptor->full_name());
 }
 
 std::string FileLayoutName(const google::protobuf::FileDescriptor* file) {
-  return ToCIdent(file->name()) + "_upb_file_layout";
+  return upb::generator::MiniTableFileVarName(file->name());
 }
 
 std::string CHeaderFilename(const google::protobuf::FileDescriptor* file) {
-  return StripExtension(file->name()) + ".upb.h";
-}
-
-std::string CSourceFilename(const google::protobuf::FileDescriptor* file) {
-  return StripExtension(file->name()) + ".upb.c";
+  return upb::generator::CApiHeaderFilename(file->name());
 }
 
 }  // namespace protobuf

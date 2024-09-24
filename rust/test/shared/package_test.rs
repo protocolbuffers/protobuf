@@ -7,7 +7,9 @@
 
 //! Tests covering proto packages.
 
-#[test]
+use googletest::prelude::*;
+
+#[gtest]
 fn test_message_packages() {
     // empty package, message declared in the first .proto source
     let _: no_package_rust_proto::MsgWithoutPackage;
@@ -26,7 +28,7 @@ fn test_message_packages() {
     let _: package_rust_proto::ImportedMsgWithPackage;
 }
 
-#[test]
+#[gtest]
 fn test_enum_packages() {
     // empty package, enum declared in the first .proto source
     let _: no_package_rust_proto::EnumWithoutPackage;

@@ -2343,7 +2343,7 @@ public final class Descriptors {
         new Comparator<EnumValueDescriptor>() {
           @Override
           public int compare(EnumValueDescriptor o1, EnumValueDescriptor o2) {
-            return Integer.valueOf(o1.getNumber()).compareTo(o2.getNumber());
+            return Integer.compare(o1.getNumber(), o2.getNumber());
           }
         };
 
@@ -2805,9 +2805,10 @@ public final class Descriptors {
       }
       boolean hasPossibleUnknownJavaFeature =
           !unresolvedFeatures.getUnknownFields().isEmpty()
-              && unresolvedFeatures
-                  .getUnknownFields()
-                  .hasField(JavaFeaturesProto.java_.getNumber());
+              && (unresolvedFeatures
+                      .getUnknownFields()
+                      .hasField(JavaFeaturesProto.java_.getNumber())
+              );
       if (hasPossibleCustomJavaFeature || hasPossibleUnknownJavaFeature) {
         ExtensionRegistry registry = ExtensionRegistry.newInstance();
         registry.add(JavaFeaturesProto.java_);

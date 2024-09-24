@@ -11,16 +11,23 @@
 
 #include "google/protobuf/wire_format_lite.h"
 
+#include <cstddef>
+#include <cstdint>
 #include <limits>
-#include <stack>
+#include <new>
 #include <string>
-#include <vector>
+#include <type_traits>
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/log/log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/repeated_field.h"
 #include "utf8_validity.h"
 
 
@@ -604,7 +611,7 @@ void PrintUTF8ErrorLog(absl::string_view message_name,
 }
 
 bool WireFormatLite::VerifyUtf8String(const char* data, int size, Operation op,
-                                      const char* field_name) {
+                                      const absl::string_view field_name) {
   if (!utf8_range::IsStructurallyValid({data, static_cast<size_t>(size)})) {
     const char* operation_str = nullptr;
     switch (op) {
@@ -664,9 +671,11 @@ static size_t VarintSize(const T* data, const int n) {
     if (x > 0x1FFFFF) sum++;
     if (x > 0xFFFFFFF) sum++;
   }
+#ifdef __clang__
 // Clang is not smart enough to see that this loop doesn't run many times
 // NOLINTNEXTLINE(google3-runtime-pragma-loop-hint): b/315043579
 #pragma clang loop vectorize(disable) unroll(disable) interleave(disable)
+#endif
   for (; i < n; i++) {
     uint32_t x = data[i];
     if (ZigZag) {
@@ -706,9 +715,11 @@ static size_t VarintSize64(const T* data, const int n) {
     if (x > 0x1FFFFF) sum++;
     if (x > 0xFFFFFFF) sum++;
   }
+#ifdef __clang__
 // Clang is not smart enough to see that this loop doesn't run many times
 // NOLINTNEXTLINE(google3-runtime-pragma-loop-hint): b/315043579
 #pragma clang loop vectorize(disable) unroll(disable) interleave(disable)
+#endif
   for (; i < n; i++) {
     uint64_t x = data[i];
     if (ZigZag) {
@@ -829,6 +840,91 @@ size_t WireFormatLite::SInt64Size(const RepeatedField<int64_t>& value) {
 }
 
 #endif
+
+size_t WireFormatLite::Int32SizeWithPackedTagSize(
+    const RepeatedField<int32_t>& value, size_t tag_size,
+    const internal::CachedSize& cached_size) {
+  if (value.empty()) {
+    cached_size.Set(0);
+    return 0;
+  }
+  size_t res;
+  PROTOBUF_ALWAYS_INLINE_CALL res = Int32Size(value);
+  cached_size.SetNonZero(ToCachedSize(res));
+  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+}
+size_t WireFormatLite::Int64SizeWithPackedTagSize(
+    const RepeatedField<int64_t>& value, size_t tag_size,
+    const internal::CachedSize& cached_size) {
+  if (value.empty()) {
+    cached_size.Set(0);
+    return 0;
+  }
+  size_t res;
+  PROTOBUF_ALWAYS_INLINE_CALL res = Int64Size(value);
+  cached_size.SetNonZero(ToCachedSize(res));
+  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+}
+size_t WireFormatLite::UInt32SizeWithPackedTagSize(
+    const RepeatedField<uint32_t>& value, size_t tag_size,
+    const internal::CachedSize& cached_size) {
+  if (value.empty()) {
+    cached_size.Set(0);
+    return 0;
+  }
+  size_t res;
+  PROTOBUF_ALWAYS_INLINE_CALL res = UInt32Size(value);
+  cached_size.SetNonZero(ToCachedSize(res));
+  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+}
+size_t WireFormatLite::UInt64SizeWithPackedTagSize(
+    const RepeatedField<uint64_t>& value, size_t tag_size,
+    const internal::CachedSize& cached_size) {
+  if (value.empty()) {
+    cached_size.Set(0);
+    return 0;
+  }
+  size_t res;
+  PROTOBUF_ALWAYS_INLINE_CALL res = UInt64Size(value);
+  cached_size.SetNonZero(ToCachedSize(res));
+  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+}
+size_t WireFormatLite::SInt32SizeWithPackedTagSize(
+    const RepeatedField<int32_t>& value, size_t tag_size,
+    const internal::CachedSize& cached_size) {
+  if (value.empty()) {
+    cached_size.Set(0);
+    return 0;
+  }
+  size_t res;
+  PROTOBUF_ALWAYS_INLINE_CALL res = SInt32Size(value);
+  cached_size.SetNonZero(ToCachedSize(res));
+  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+}
+size_t WireFormatLite::SInt64SizeWithPackedTagSize(
+    const RepeatedField<int64_t>& value, size_t tag_size,
+    const internal::CachedSize& cached_size) {
+  if (value.empty()) {
+    cached_size.Set(0);
+    return 0;
+  }
+  size_t res;
+  PROTOBUF_ALWAYS_INLINE_CALL res = SInt64Size(value);
+  cached_size.SetNonZero(ToCachedSize(res));
+  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+}
+size_t WireFormatLite::EnumSizeWithPackedTagSize(
+    const RepeatedField<int>& value, size_t tag_size,
+    const internal::CachedSize& cached_size) {
+  if (value.empty()) {
+    cached_size.Set(0);
+    return 0;
+  }
+  size_t res;
+  PROTOBUF_ALWAYS_INLINE_CALL res = EnumSize(value);
+  cached_size.SetNonZero(ToCachedSize(res));
+  return tag_size + res + Int32Size(static_cast<int32_t>(res));
+}
 
 }  // namespace internal
 }  // namespace protobuf

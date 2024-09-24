@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -17,6 +18,7 @@
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/compiler/rust/rust_field_type.h"
+#include "google/protobuf/compiler/rust/upb_helpers.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -158,7 +160,17 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
                  ctx.Emit({{"name", OneofCaseRsName(field)},
                            {"number", std::to_string(field.number())}},
                           R"rs($name$ = $number$,
-                )rs");
+                          )rs");
+               }
+             }},
+            {"try_from_cases",
+             [&] {
+               for (int i = 0; i < oneof.field_count(); ++i) {
+                 auto& field = *oneof.field(i);
+                 ctx.Emit({{"name", OneofCaseRsName(field)},
+                           {"number", std::to_string(field.number())}},
+                          R"rs($number$ => Some($case_enum_name$::$name$),
+                          )rs");
                }
              }}},
            R"rs(
@@ -172,44 +184,78 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
         not_set = 0
       }
 
+      impl $case_enum_name$ {
+        //~ This try_from is not a TryFrom impl so that it isn't
+        //~ committed to as part of our public api.
+        #[allow(dead_code)]
+        pub(crate) fn try_from(v: u32) -> Option<$case_enum_name$> {
+          match v {
+            0 => Some($case_enum_name$::not_set),
+            $try_from_cases$
+            _ => None
+          }
+        }
+      }
+
       )rs");
 }
 
 void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof,
                             AccessorCase accessor_case) {
   ctx.Emit(
-      {
-          {"oneof_name", RsSafeName(oneof.name())},
-          {"view_lifetime", ViewLifetime(accessor_case)},
-          {"self", ViewReceiver(accessor_case)},
-          {"oneof_enum_module",
-           absl::StrCat("crate::", RustModuleForContainingType(
-                                       ctx, oneof.containing_type()))},
-          {"view_enum_name", OneofViewEnumRsName(oneof)},
-          {"case_enum_name", OneofCaseEnumRsName(oneof)},
-          {"view_cases",
-           [&] {
-             for (int i = 0; i < oneof.field_count(); ++i) {
-               auto& field = *oneof.field(i);
-               std::string rs_type = RsTypeNameView(ctx, field);
-               if (rs_type.empty()) {
-                 continue;
-               }
-               std::string field_name = FieldNameWithCollisionAvoidance(field);
-               ctx.Emit(
-                   {
-                       {"case", OneofCaseRsName(field)},
-                       {"rs_getter", RsSafeName(field_name)},
-                       {"type", rs_type},
-                   },
-                   R"rs(
+      {{"oneof_name", RsSafeName(oneof.name())},
+       {"view_lifetime", ViewLifetime(accessor_case)},
+       {"self", ViewReceiver(accessor_case)},
+       {"oneof_enum_module",
+        absl::StrCat("crate::", RustModuleForContainingType(
+                                    ctx, oneof.containing_type()))},
+       {"view_enum_name", OneofViewEnumRsName(oneof)},
+       {"case_enum_name", OneofCaseEnumRsName(oneof)},
+       {"view_cases",
+        [&] {
+          for (int i = 0; i < oneof.field_count(); ++i) {
+            auto& field = *oneof.field(i);
+            std::string rs_type = RsTypeNameView(ctx, field);
+            if (rs_type.empty()) {
+              continue;
+            }
+            std::string field_name = FieldNameWithCollisionAvoidance(field);
+            ctx.Emit(
+                {
+                    {"case", OneofCaseRsName(field)},
+                    {"rs_getter", RsSafeName(field_name)},
+                    {"type", rs_type},
+                },
+                R"rs(
                 $oneof_enum_module$$case_enum_name$::$case$ =>
                     $oneof_enum_module$$view_enum_name$::$case$(self.$rs_getter$()),
                 )rs");
-             }
-           }},
-          {"case_thunk", ThunkName(ctx, oneof, "case")},
-      },
+          }
+        }},
+       {"oneof_case_body",
+        [&] {
+          if (ctx.is_cpp()) {
+            ctx.Emit({{"case_thunk", ThunkName(ctx, oneof, "case")}},
+                     "unsafe { $case_thunk$(self.raw_msg()) }");
+          } else {
+            ctx.Emit(
+                // The field index for an arbitrary field that in the oneof.
+                {{"upb_mt_field_index",
+                  UpbMiniTableFieldIndex(*oneof.field(0))}},
+                R"rs(
+                let field_num = unsafe {
+                  let f = $pbr$::upb_MiniTable_GetFieldByIndex(
+                      <Self as $pbr$::AssociatedMiniTable>::mini_table(),
+                      $upb_mt_field_index$);
+                  $pbr$::upb_Message_WhichOneofFieldNumber(
+                        self.raw_msg(), f)
+                };
+                unsafe {
+                  $oneof_enum_module$$case_enum_name$::try_from(field_num).unwrap_unchecked()
+                }
+              )rs");
+          }
+        }}},
       R"rs(
         pub fn $oneof_name$($self$) -> $oneof_enum_module$$view_enum_name$<$view_lifetime$> {
           match $self$.$oneof_name$_case() {
@@ -219,12 +265,14 @@ void GenerateOneofAccessors(Context& ctx, const OneofDescriptor& oneof,
         }
 
         pub fn $oneof_name$_case($self$) -> $oneof_enum_module$$case_enum_name$ {
-          unsafe { $case_thunk$(self.raw_msg()) }
+          $oneof_case_body$
         }
       )rs");
 }
 
 void GenerateOneofExternC(Context& ctx, const OneofDescriptor& oneof) {
+  ABSL_CHECK(ctx.is_cpp());
+
   ctx.Emit(
       {
           {"oneof_enum_module",
@@ -239,6 +287,8 @@ void GenerateOneofExternC(Context& ctx, const OneofDescriptor& oneof) {
 }
 
 void GenerateOneofThunkCc(Context& ctx, const OneofDescriptor& oneof) {
+  ABSL_CHECK(ctx.is_cpp());
+
   ctx.Emit(
       {
           {"oneof_name", oneof.name()},

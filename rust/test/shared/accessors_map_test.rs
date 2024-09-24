@@ -9,6 +9,7 @@ use enums_rust_proto::{test_map_with_nested_enum, TestMapWithNestedEnum};
 use googletest::prelude::*;
 use map_unittest_rust_proto::{MapEnum, TestMap, TestMapWithMessages};
 use paste::paste;
+use protobuf::ProtoString;
 use std::collections::HashMap;
 use unittest_rust_proto::TestAllTypes;
 
@@ -19,7 +20,7 @@ macro_rules! generate_map_primitives_tests {
         $(,)?
     ) => {
         paste! { $(
-            #[test]
+            #[gtest]
             fn [< test_map_ $k_field _ $v_field >]() {
                 let mut msg = TestMap::new();
                 assert_that!(msg.[< map_ $k_field _ $v_field >]().len(), eq(0));
@@ -95,7 +96,7 @@ generate_map_primitives_tests!(
     (i32, MapEnum, int32, enum, 1, MapEnum::Baz),
 );
 
-#[test]
+#[gtest]
 fn collect_as_hashmap() {
     // Highlights conversion from protobuf map to hashmap.
     let mut msg = TestMap::new();
@@ -114,7 +115,7 @@ fn collect_as_hashmap() {
     );
 }
 
-#[test]
+#[gtest]
 fn test_string_maps() {
     let mut msg = TestMap::new();
     msg.map_string_string_mut().insert("hello", "world");
@@ -126,7 +127,7 @@ fn test_string_maps() {
     assert_that!(msg.map_string_string().len(), eq(0));
 }
 
-#[test]
+#[gtest]
 fn test_nested_enum_maps() {
     // Verify that C++ thunks are generated and are with the right name for strings
     TestMapWithNestedEnum::new()
@@ -134,7 +135,7 @@ fn test_nested_enum_maps() {
         .insert("foo", test_map_with_nested_enum::inner_nested::NestedEnum::Foo);
 }
 
-#[test]
+#[gtest]
 fn test_bytes_and_string_copied() {
     let mut msg = TestMap::new();
 
@@ -154,20 +155,110 @@ fn test_bytes_and_string_copied() {
     assert_that!(msg.map_int32_bytes_mut().get(1).unwrap(), eq(b"world"));
 }
 
-#[test]
+#[gtest]
 fn test_map_setter() {
-    let mut msg = TestMap::new();
-    msg.map_string_string_mut().insert("hello", "world");
-    msg.map_string_string_mut().insert("fizz", "buzz");
+    // Set Map
+    {
+        let mut msg = TestMap::new();
+        let mut map = protobuf::Map::<ProtoString, ProtoString>::new();
+        map.as_mut().copy_from([("hello", "world"), ("fizz", "buzz")]);
+        msg.set_map_string_string(map);
+        assert_that!(
+            msg.map_string_string(),
+            unordered_elements_are![
+                eq(("hello".into(), "world".into())),
+                eq(("fizz".into(), "buzz".into()))
+            ]
+        );
+    }
 
-    let mut msg2 = TestMap::new();
-    msg2.set_map_string_string(msg.map_string_string());
-    assert_that!(
-        msg2.map_string_string(),
-        unordered_elements_are![
-            eq(("hello".into(), "world".into())),
-            eq(("fizz".into(), "buzz".into()))
-        ]
+    // Set MapView
+    {
+        let mut msg = TestMap::new();
+        let mut map = protobuf::Map::<ProtoString, ProtoString>::new();
+        map.as_mut().copy_from([("hello", "world"), ("fizz", "buzz")]);
+        msg.set_map_string_string(map.as_view());
+        assert_that!(
+            msg.map_string_string(),
+            unordered_elements_are![
+                eq(("hello".into(), "world".into())),
+                eq(("fizz".into(), "buzz".into()))
+            ]
+        );
+    }
+
+    // Set MapMut
+    {
+        let mut msg = TestMap::new();
+        let mut map = protobuf::Map::<ProtoString, ProtoString>::new();
+        map.as_mut().copy_from([("hello", "world"), ("fizz", "buzz")]);
+        msg.set_map_string_string(map.as_mut());
+        assert_that!(
+            msg.map_string_string(),
+            unordered_elements_are![
+                eq(("hello".into(), "world".into())),
+                eq(("fizz".into(), "buzz".into()))
+            ]
+        );
+
+        // The original map should remain unchanged.
+        assert_that!(
+            map.as_view(),
+            unordered_elements_are![
+                eq(("hello".into(), "world".into())),
+                eq(("fizz".into(), "buzz".into()))
+            ]
+        );
+    }
+}
+
+#[test]
+fn test_map_creation_with_message_values() {
+    // Maps are usually created and owned by a parent message, but let's verify that
+    // we can successfully create and destroy them independently.
+    macro_rules! test_for_each_key {
+        ($($key_t:ty, $key:expr;)*) => {
+            $(
+                let msg = TestAllTypes::new();
+                let mut map = protobuf::Map::<$key_t, TestAllTypes>::new();
+                map.as_mut().insert($key, msg);
+                assert_that!(map.as_view().len(), eq(1));
+            )*
+        }
+    }
+
+    test_for_each_key!(
+        i32, -5;
+        u32, 13u32;
+        i64, 7;
+        u64, 11u64;
+        bool, false;
+        ProtoString, "looooooooooooooooooooooooong string";
+    );
+}
+
+#[test]
+fn test_map_clearing_with_message_values() {
+    macro_rules! test_for_each_key {
+        ($($key_t:ty, $key:expr;)*) => {
+            $(
+                let msg = TestAllTypes::new();
+                let mut map = protobuf::Map::<$key_t, TestAllTypes>::new();
+                map.as_mut().insert($key, msg);
+                assert_that!(map.as_view().len(), eq(1));
+                map.as_mut().clear();
+                assert_that!(map.as_view().len(), eq(0));
+            )*
+        }
+    }
+
+    test_for_each_key!(
+        i32, -5;
+        u32, 13u32;
+        i64, 7;
+        u64, 11u64;
+        bool, false;
+        ProtoString, "looooooooooooooooooooooooong string";
     );
 }
 
@@ -177,7 +268,7 @@ macro_rules! generate_map_with_msg_values_tests {
         $(,)?
     ) => {
         paste! { $(
-            #[test]
+            #[gtest]
             fn [< test_map_ $k_field _all_types >]() {
                 // We need to cover the following upb/c++ thunks:
                 // TODO - b/323883851: Add test once Map::new is public.

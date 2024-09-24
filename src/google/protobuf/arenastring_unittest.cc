@@ -107,7 +107,7 @@ TEST_P(SingleArena, ConstructEmpty) {
   ArenaStringPtr field(arena.get());
 
   EXPECT_EQ(field.Get(), "");
-  if (internal::DebugHardenStringValues()) {
+  if (internal::DebugHardenForceCopyDefaultString()) {
     EXPECT_FALSE(field.IsDefault());
   } else {
     EXPECT_TRUE(field.IsDefault());
@@ -120,7 +120,7 @@ TEST_P(SingleArena, ConstructEmptyWithDefault) {
   internal::LazyString default_value{{{"Hello default", 13}}, {nullptr}};
   ArenaStringPtr field(arena.get(), default_value);
 
-  if (internal::DebugHardenStringValues()) {
+  if (internal::DebugHardenForceCopyDefaultString()) {
     EXPECT_EQ(field.Get(), "Hello default");
     EXPECT_FALSE(field.IsDefault());
   } else {
@@ -138,7 +138,7 @@ TEST_P(SingleArena, CopyConstructEmpty) {
 
   ArenaStringPtr dst(arena.get(), field);
   EXPECT_EQ(dst.Get(), "");
-  if (internal::DebugHardenStringValues()) {
+  if (internal::DebugHardenForceCopyDefaultString()) {
     EXPECT_FALSE(dst.IsDefault());
   } else {
     EXPECT_TRUE(dst.IsDefault());
@@ -155,7 +155,7 @@ TEST_P(SingleArena, CopyConstructEmptyWithDefault) {
 
   internal::LazyString default_value{{{"Hello default", 13}}, {nullptr}};
   ArenaStringPtr dst(arena.get(), field, default_value);
-  if (internal::DebugHardenStringValues()) {
+  if (internal::DebugHardenForceCopyDefaultString()) {
     EXPECT_EQ(dst.Get(), "Hello default");
     EXPECT_FALSE(dst.IsDefault());
   } else {

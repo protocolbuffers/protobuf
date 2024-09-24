@@ -249,7 +249,7 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
         if ((has_bits[index / 32] & (1u << (index % 32))) == 0) continue;
       } else {
         // Skip if it has default values.
-        if (!reflection->HasBit(message, field)) continue;
+        if (!reflection->HasFieldSingular(message, field)) continue;
       }
       switch (field->type()) {
 #define PROTOBUF_HANDLE_CASE(TYPE, NAME)                                     \
@@ -303,102 +303,105 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
   auto* extendee = reflection->descriptor_;
   auto* pool = reflection->descriptor_pool_;
 
-  set.ForEach([&](int number, auto& ext) {
-    ABSL_DCHECK_GT(ext.type, 0);
-    ABSL_DCHECK_LE(ext.type, FieldDescriptor::MAX_TYPE);
+  set.ForEach(
+      [&](int number, auto& ext) {
+        ABSL_DCHECK_GT(ext.type, 0);
+        ABSL_DCHECK_LE(ext.type, FieldDescriptor::MAX_TYPE);
 
-    if (!ShouldVisit(mask, FieldDescriptor::TypeToCppType(
-                               static_cast<FieldDescriptor::Type>(ext.type)))) {
-      return;
-    }
+        if (!ShouldVisit(mask,
+                         FieldDescriptor::TypeToCppType(
+                             static_cast<FieldDescriptor::Type>(ext.type)))) {
+          return;
+        }
 
-    if (ext.is_repeated) {
-      if (ext.GetSize() == 0) return;
+        if (ext.is_repeated) {
+          if (ext.GetSize() == 0) return;
 
-      switch (ext.type) {
+          switch (ext.type) {
 #define PROTOBUF_HANDLE_CASE(TYPE, NAME)                                \
   case FieldDescriptor::TYPE_##TYPE:                                    \
     func(internal::Repeated##NAME##DynamicExtensionInfo<decltype(ext)>{ \
         ext, number});                                                  \
     break;
-        PROTOBUF_HANDLE_CASE(DOUBLE, Double);
-        PROTOBUF_HANDLE_CASE(FLOAT, Float);
-        PROTOBUF_HANDLE_CASE(INT64, Int64);
-        PROTOBUF_HANDLE_CASE(UINT64, UInt64);
-        PROTOBUF_HANDLE_CASE(INT32, Int32);
-        PROTOBUF_HANDLE_CASE(FIXED64, Fixed64);
-        PROTOBUF_HANDLE_CASE(FIXED32, Fixed32);
-        PROTOBUF_HANDLE_CASE(BOOL, Bool);
-        PROTOBUF_HANDLE_CASE(UINT32, UInt32);
-        PROTOBUF_HANDLE_CASE(ENUM, Enum);
-        PROTOBUF_HANDLE_CASE(SFIXED32, SFixed32);
-        PROTOBUF_HANDLE_CASE(SFIXED64, SFixed64);
-        PROTOBUF_HANDLE_CASE(SINT32, SInt32);
-        PROTOBUF_HANDLE_CASE(SINT64, SInt64);
+            PROTOBUF_HANDLE_CASE(DOUBLE, Double);
+            PROTOBUF_HANDLE_CASE(FLOAT, Float);
+            PROTOBUF_HANDLE_CASE(INT64, Int64);
+            PROTOBUF_HANDLE_CASE(UINT64, UInt64);
+            PROTOBUF_HANDLE_CASE(INT32, Int32);
+            PROTOBUF_HANDLE_CASE(FIXED64, Fixed64);
+            PROTOBUF_HANDLE_CASE(FIXED32, Fixed32);
+            PROTOBUF_HANDLE_CASE(BOOL, Bool);
+            PROTOBUF_HANDLE_CASE(UINT32, UInt32);
+            PROTOBUF_HANDLE_CASE(ENUM, Enum);
+            PROTOBUF_HANDLE_CASE(SFIXED32, SFixed32);
+            PROTOBUF_HANDLE_CASE(SFIXED64, SFixed64);
+            PROTOBUF_HANDLE_CASE(SINT32, SInt32);
+            PROTOBUF_HANDLE_CASE(SINT64, SInt64);
 
-        PROTOBUF_HANDLE_CASE(MESSAGE, Message);
-        PROTOBUF_HANDLE_CASE(GROUP, Group);
+            PROTOBUF_HANDLE_CASE(MESSAGE, Message);
+            PROTOBUF_HANDLE_CASE(GROUP, Group);
 
-        case FieldDescriptor::TYPE_BYTES:
-        case FieldDescriptor::TYPE_STRING:
-          func(internal::RepeatedStringDynamicExtensionInfo<decltype(ext)>{
-              ext, number});
-          break;
-        default:
-          internal::Unreachable();
-          break;
+            case FieldDescriptor::TYPE_BYTES:
+            case FieldDescriptor::TYPE_STRING:
+              func(internal::RepeatedStringDynamicExtensionInfo<decltype(ext)>{
+                  ext, number});
+              break;
+            default:
+              internal::Unreachable();
+              break;
 #undef PROTOBUF_HANDLE_CASE
-      }
-    } else {
-      if (ext.is_cleared) return;
+          }
+        } else {
+          if (ext.is_cleared) return;
 
-      switch (ext.type) {
+          switch (ext.type) {
 #define PROTOBUF_HANDLE_CASE(TYPE, NAME)                                    \
   case FieldDescriptor::TYPE_##TYPE:                                        \
     func(internal::NAME##DynamicExtensionInfo<decltype(ext)>{ext, number}); \
     break;
-        PROTOBUF_HANDLE_CASE(DOUBLE, Double);
-        PROTOBUF_HANDLE_CASE(FLOAT, Float);
-        PROTOBUF_HANDLE_CASE(INT64, Int64);
-        PROTOBUF_HANDLE_CASE(UINT64, UInt64);
-        PROTOBUF_HANDLE_CASE(INT32, Int32);
-        PROTOBUF_HANDLE_CASE(FIXED64, Fixed64);
-        PROTOBUF_HANDLE_CASE(FIXED32, Fixed32);
-        PROTOBUF_HANDLE_CASE(BOOL, Bool);
-        PROTOBUF_HANDLE_CASE(UINT32, UInt32);
-        PROTOBUF_HANDLE_CASE(ENUM, Enum);
-        PROTOBUF_HANDLE_CASE(SFIXED32, SFixed32);
-        PROTOBUF_HANDLE_CASE(SFIXED64, SFixed64);
-        PROTOBUF_HANDLE_CASE(SINT32, SInt32);
-        PROTOBUF_HANDLE_CASE(SINT64, SInt64);
+            PROTOBUF_HANDLE_CASE(DOUBLE, Double);
+            PROTOBUF_HANDLE_CASE(FLOAT, Float);
+            PROTOBUF_HANDLE_CASE(INT64, Int64);
+            PROTOBUF_HANDLE_CASE(UINT64, UInt64);
+            PROTOBUF_HANDLE_CASE(INT32, Int32);
+            PROTOBUF_HANDLE_CASE(FIXED64, Fixed64);
+            PROTOBUF_HANDLE_CASE(FIXED32, Fixed32);
+            PROTOBUF_HANDLE_CASE(BOOL, Bool);
+            PROTOBUF_HANDLE_CASE(UINT32, UInt32);
+            PROTOBUF_HANDLE_CASE(ENUM, Enum);
+            PROTOBUF_HANDLE_CASE(SFIXED32, SFixed32);
+            PROTOBUF_HANDLE_CASE(SFIXED64, SFixed64);
+            PROTOBUF_HANDLE_CASE(SINT32, SInt32);
+            PROTOBUF_HANDLE_CASE(SINT64, SInt64);
 
-        PROTOBUF_HANDLE_CASE(GROUP, Group);
-        case FieldDescriptor::TYPE_MESSAGE: {
-          const FieldDescriptor* field =
-              ext.descriptor != nullptr
-                  ? ext.descriptor
-                  : pool->FindExtensionByNumber(extendee, number);
-          ABSL_DCHECK_EQ(field->number(), number);
-          bool is_mset =
-              field->containing_type()->options().message_set_wire_format();
-          func(internal::MessageDynamicExtensionInfo<decltype(ext)>{ext, number,
-                                                                    is_mset});
-          break;
-        }
+            PROTOBUF_HANDLE_CASE(GROUP, Group);
+            case FieldDescriptor::TYPE_MESSAGE: {
+              const FieldDescriptor* field =
+                  ext.descriptor != nullptr
+                      ? ext.descriptor
+                      : pool->FindExtensionByNumber(extendee, number);
+              ABSL_DCHECK_EQ(field->number(), number);
+              bool is_mset =
+                  field->containing_type()->options().message_set_wire_format();
+              func(internal::MessageDynamicExtensionInfo<decltype(ext)>{
+                  ext, number, is_mset});
+              break;
+            }
 
-        case FieldDescriptor::TYPE_BYTES:
-        case FieldDescriptor::TYPE_STRING:
-          func(
-              internal::StringDynamicExtensionInfo<decltype(ext)>{ext, number});
-          break;
+            case FieldDescriptor::TYPE_BYTES:
+            case FieldDescriptor::TYPE_STRING:
+              func(internal::StringDynamicExtensionInfo<decltype(ext)>{ext,
+                                                                       number});
+              break;
 
-        default:
-          internal::Unreachable();
-          break;
+            default:
+              internal::Unreachable();
+              break;
 #undef PROTOBUF_HANDLE_CASE
-      }
-    }
-  });
+          }
+        }
+      },
+      ExtensionSet::Prefetch{});
 }
 
 template <typename CallbackFn>

@@ -3,8 +3,9 @@
 Disclaimer: This project is experimental, under heavy development, and should not
 be used yet."""
 
-load("@rules_proto//proto:defs.bzl", "ProtoInfo", "proto_common")
 load("@rules_rust//rust:defs.bzl", "rust_common")
+load("//bazel/common:proto_common.bzl", "proto_common")
+load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load(
     "//rust:aspects.bzl",
     "RustProtoInfo",
@@ -13,12 +14,6 @@ load(
     "rust_cc_proto_library_aspect",
     "rust_upb_proto_library_aspect",
 )
-
-visibility([
-    "//experimental/...",
-    "//src/google/protobuf/...",
-    "//rust/...",
-])
 
 def rust_proto_library(name, deps, **args):
     """Declares all the boilerplate needed to use Rust protobufs conveniently.
@@ -97,7 +92,7 @@ def _rust_proto_library_impl(ctx):
     #
     # When the aspect visits proto_libraries, it doesn't know and cannot deduce the name of the
     # rust_proto_library (although the name of rust_proto_libraries is consistently ending with
-    # _rust_proto, we can't rely on all proto_libraires to have a name consistently ending with
+    # _rust_proto, we can't rely on all proto_libraries to have a name consistently ending with
     # _proto), therefore we have to modify it after the fact here.
     #
     # Since Starlark providers are frozen once they leave the _impl function that defines them,

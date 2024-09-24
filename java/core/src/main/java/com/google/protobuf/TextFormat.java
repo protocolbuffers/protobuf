@@ -17,9 +17,12 @@ import java.math.BigInteger;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,11 +51,10 @@ public final class TextFormat {
    * @deprecated Use {@code printer().emittingSingleLine(true).printToString(MessageOrBuilder)}
    */
   @Deprecated
-  @InlineMe(
-      replacement = "TextFormat.printer().emittingSingleLine(true).printToString(message)",
-      imports = "com.google.protobuf.TextFormat")
   public static String shortDebugString(final MessageOrBuilder message) {
-    return printer().emittingSingleLine(true).printToString(message);
+    return printer()
+        .emittingSingleLine(true)
+        .printToString(message, Printer.FieldReporterLevel.SHORT_DEBUG_STRING);
   }
 
   /**
@@ -109,20 +111,59 @@ public final class TextFormat {
 
   /** Printer instance which escapes non-ASCII characters. */
   public static Printer printer() {
-    return Printer.DEFAULT;
+    return Printer.DEFAULT_TEXT_FORMAT;
+  }
+
+  /** Printer instance which escapes non-ASCII characters and prints in the debug format. */
+  public static Printer debugFormatPrinter() {
+    return Printer.DEFAULT_DEBUG_FORMAT;
   }
 
   /** Helper class for converting protobufs to text. */
   public static final class Printer {
 
-    // Printer instance which escapes non-ASCII characters.
-    private static final Printer DEFAULT =
+    // Printer instance which escapes non-ASCII characters and prints in the text format.
+    private static final Printer DEFAULT_TEXT_FORMAT =
         new Printer(
             true,
             TypeRegistry.getEmptyTypeRegistry(),
             ExtensionRegistryLite.getEmptyRegistry(),
             false,
             false);
+
+    // Printer instance which escapes non-ASCII characters and prints in the debug format.
+    private static final Printer DEFAULT_DEBUG_FORMAT =
+        new Printer(
+            true,
+            TypeRegistry.getEmptyTypeRegistry(),
+            ExtensionRegistryLite.getEmptyRegistry(),
+            true,
+            false);
+
+    /**
+     * A list of the public APIs that output human-readable text from a message. A higher-level API
+     * must be larger than any lower-level APIs it calls under the hood, e.g
+     * DEBUG_MULTILINE.compareTo(PRINTER_PRINT_TO_STRING) > 0. The inverse is not necessarily true.
+     */
+    static enum FieldReporterLevel {
+      NO_REPORT(0),
+      PRINT(1),
+      PRINTER_PRINT_TO_STRING(2),
+      TEXTFORMAT_PRINT_TO_STRING(3),
+      PRINT_UNICODE(4),
+      SHORT_DEBUG_STRING(5),
+      LEGACY_MULTILINE(6),
+      LEGACY_SINGLE_LINE(7),
+      DEBUG_MULTILINE(8),
+      DEBUG_SINGLE_LINE(9),
+      ABSTRACT_TO_STRING(10),
+      ABSTRACT_MUTABLE_TO_STRING(11);
+      private final int index;
+
+      FieldReporterLevel(int index) {
+        this.index = index;
+      }
+    }
 
     /** Whether to escape non ASCII characters with backslash and octal. */
     private final boolean escapeNonAscii;
@@ -137,6 +178,16 @@ public final class TextFormat {
     private final boolean enablingSafeDebugFormat;
 
     private final boolean singleLine;
+
+    // Any API level higher than this level will be reported. This is set to
+    // ABSTRACT_MUTABLE_TO_STRING by default to prevent reporting for now.
+    private static final ThreadLocal<FieldReporterLevel> sensitiveFieldReportingLevel =
+        new ThreadLocal<FieldReporterLevel>() {
+          @Override
+          protected FieldReporterLevel initialValue() {
+            return FieldReporterLevel.ABSTRACT_MUTABLE_TO_STRING;
+          }
+        };
 
     private Printer(
         boolean escapeNonAscii,
@@ -219,13 +270,23 @@ public final class TextFormat {
           escapeNonAscii, typeRegistry, extensionRegistry, enablingSafeDebugFormat, singleLine);
     }
 
+    void setSensitiveFieldReportingLevel(FieldReporterLevel level) {
+      Printer.sensitiveFieldReportingLevel.set(level);
+    }
+
     /**
      * Outputs a textual representation of the Protocol Message supplied into the parameter output.
      * (This representation is the new version of the classic "ProtocolPrinter" output from the
      * original Protocol Buffer system)
      */
     public void print(final MessageOrBuilder message, final Appendable output) throws IOException {
-      print(message, setSingleLineOutput(output, this.singleLine));
+      print(message, output, FieldReporterLevel.PRINT);
+    }
+
+    void print(final MessageOrBuilder message, final Appendable output, FieldReporterLevel level)
+        throws IOException {
+      TextGenerator generator = setSingleLineOutput(output, this.singleLine, level);
+      print(message, generator);
     }
 
     /** Outputs a textual representation of {@code fields} to {@code output}. */
@@ -389,11 +450,11 @@ public final class TextFormat {
         }
         switch (fieldType) {
           case BOOLEAN:
-            return Boolean.valueOf((boolean) getKey()).compareTo((boolean) b.getKey());
+            return ((Boolean) getKey()).compareTo((Boolean) b.getKey());
           case LONG:
-            return Long.valueOf((long) getKey()).compareTo((long) b.getKey());
+            return ((Long) getKey()).compareTo((Long) b.getKey());
           case INT:
-            return Integer.valueOf((int) getKey()).compareTo((int) b.getKey());
+            return ((Integer) getKey()).compareTo((Integer) b.getKey());
           case STRING:
             String aString = (String) getKey();
             String bString = (String) b.getKey();
@@ -430,7 +491,7 @@ public final class TextFormat {
     private void printFieldValue(
         final FieldDescriptor field, final Object value, final TextGenerator generator)
         throws IOException {
-      if (shouldRedact(field)) {
+      if (shouldRedact(field, generator)) {
         generator.print(REDACTED_MARKER);
         if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
           generator.eol();
@@ -492,7 +553,12 @@ public final class TextFormat {
           break;
 
         case ENUM:
-          generator.print(((EnumValueDescriptor) value).getName());
+          if (((EnumValueDescriptor) value).getIndex() == -1) {
+            // Unknown enum value, print the number instead of the name.
+            generator.print(Integer.toString(((EnumValueDescriptor) value).getNumber()));
+          } else {
+            generator.print(((EnumValueDescriptor) value).getName());
+          }
           break;
 
         case MESSAGE:
@@ -513,49 +579,64 @@ public final class TextFormat {
     // option
     // must be on. 2) The field must be marked by a debug_redact=true option, or is marked by an
     // option with an enum value that is marked by a debug_redact=true option.
-    private boolean shouldRedact(final FieldDescriptor field) {
-      if (!this.enablingSafeDebugFormat) {
+    @SuppressWarnings("unchecked") // List<EnumValueDescriptor> guaranteed by protobuf runtime.
+    private boolean shouldRedact(final FieldDescriptor field, TextGenerator generator) {
+      // Skip checking if it's sensitive and potentially reporting it if we don't care about either.
+      if (!shouldReport(generator.fieldReporterLevel) && !enablingSafeDebugFormat) {
         return false;
       }
-      if (field.getOptions().hasDebugRedact()) {
-        return field.getOptions().getDebugRedact();
-      }
-      // Iterate through every option; if it's an enum, we check each enum value for debug_redact.
-      for (Map.Entry<Descriptors.FieldDescriptor, Object> entry :
-          field.getOptions().getAllFields().entrySet()) {
-        Descriptors.FieldDescriptor option = entry.getKey();
-        if (option.getType() != Descriptors.FieldDescriptor.Type.ENUM) {
-          continue;
-        }
-        if (option.isRepeated()) {
-          for (EnumValueDescriptor value : (List<EnumValueDescriptor>) entry.getValue()) {
-            if (shouldRedactOptionValue(value)) {
-              return true;
+      boolean isSensitive = false;
+      if (field.getOptions().hasDebugRedact() && field.getOptions().getDebugRedact()) {
+        isSensitive = true;
+      } else {
+        // Iterate through every option; if it's an enum, we check each enum value for debug_redact.
+        for (Map.Entry<Descriptors.FieldDescriptor, Object> entry :
+            field.getOptions().getAllFields().entrySet()) {
+          Descriptors.FieldDescriptor option = entry.getKey();
+          if (option.getType() != Descriptors.FieldDescriptor.Type.ENUM) {
+            continue;
+          }
+          if (option.isRepeated()) {
+            for (EnumValueDescriptor value : (List<EnumValueDescriptor>) entry.getValue()) {
+              if (shouldRedactOptionValue(value)) {
+                isSensitive = true;
+                break;
+              }
+            }
+          } else {
+            EnumValueDescriptor optionValue = (EnumValueDescriptor) entry.getValue();
+            if (shouldRedactOptionValue(optionValue)) {
+              isSensitive = true;
+              break;
             }
           }
-        } else {
-          EnumValueDescriptor optionValue = (EnumValueDescriptor) entry.getValue();
-          if (shouldRedactOptionValue(optionValue)) {
-            return true;
-          }
         }
       }
-      return false;
+      return isSensitive && enablingSafeDebugFormat;
+    }
+
+    private boolean shouldReport(FieldReporterLevel level) {
+      return sensitiveFieldReportingLevel.get().compareTo(level) < 0;
     }
 
     /** Like {@code print()}, but writes directly to a {@code String} and returns it. */
     public String printToString(final MessageOrBuilder message) {
+      return printToString(message, FieldReporterLevel.PRINTER_PRINT_TO_STRING);
+    }
+
+    String printToString(final MessageOrBuilder message, FieldReporterLevel level) {
       try {
         final StringBuilder text = new StringBuilder();
         if (enablingSafeDebugFormat) {
           applyUnstablePrefix(text);
         }
-        print(message, text);
+        print(message, text, level);
         return text.toString();
       } catch (IOException e) {
         throw new IllegalStateException(e);
       }
     }
+
     /** Like {@code print()}, but writes directly to a {@code String} and returns it. */
     public String printToString(final UnknownFieldSet fields) {
       try {
@@ -578,9 +659,9 @@ public final class TextFormat {
      *     this.printer().emittingSingleLine(true).printToString(MessageOrBuilder)}
      */
     @Deprecated
-    @InlineMe(replacement = "this.emittingSingleLine(true).printToString(message)")
     public String shortDebugString(final MessageOrBuilder message) {
-      return this.emittingSingleLine(true).printToString(message);
+      return this.emittingSingleLine(true)
+          .printToString(message, FieldReporterLevel.SHORT_DEBUG_STRING);
     }
 
     /**
@@ -780,7 +861,12 @@ public final class TextFormat {
   }
 
   private static TextGenerator setSingleLineOutput(Appendable output, boolean singleLine) {
-    return new TextGenerator(output, singleLine);
+    return new TextGenerator(output, singleLine, Printer.FieldReporterLevel.NO_REPORT);
+  }
+
+  private static TextGenerator setSingleLineOutput(
+      Appendable output, boolean singleLine, Printer.FieldReporterLevel fieldReporterLevel) {
+    return new TextGenerator(output, singleLine, fieldReporterLevel);
   }
 
   /** An inner class for writing text to the output stream. */
@@ -792,10 +878,17 @@ public final class TextFormat {
     // we would do in response to this is emit the (zero length) indentation, so it has no effect.
     // Setting it false here does however suppress an unwanted leading space in single-line mode.
     private boolean atStartOfLine = false;
+    // Indicate which Protobuf public stringification API (e.g AbstractMessage.toString()) is
+    // called.
+    private final Printer.FieldReporterLevel fieldReporterLevel;
 
-    private TextGenerator(final Appendable output, boolean singleLineMode) {
+    private TextGenerator(
+        final Appendable output,
+        boolean singleLineMode,
+        Printer.FieldReporterLevel fieldReporterLevel) {
       this.output = output;
       this.singleLineMode = singleLineMode;
+      this.fieldReporterLevel = fieldReporterLevel;
     }
 
     /**
@@ -2126,7 +2219,10 @@ public final class TextFormat {
 
             if (tokenizer.lookingAtInteger()) {
               final int number = tokenizer.consumeInt32();
-              value = enumType.findValueByNumber(number);
+              value =
+                  enumType.isClosed()
+                      ? enumType.findValueByNumber(number)
+                      : enumType.findValueByNumberCreatingIfUnknown(number);
               if (value == null) {
                 String unknownValueMsg =
                     "Enum type \""

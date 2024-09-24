@@ -3,9 +3,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
-#include "google/protobuf/rust/test/shared/utf8/feature_verify.pb.h"
-#include "google/protobuf/rust/test/shared/utf8/no_features_proto2.pb.h"
-#include "google/protobuf/rust/test/shared/utf8/no_features_proto3.pb.h"
+#include "rust/test/shared/utf8/feature_verify.pb.h"
+#include "rust/test/shared/utf8/no_features_proto2.pb.h"
+#include "rust/test/shared/utf8/no_features_proto3.pb.h"
 
 namespace {
 

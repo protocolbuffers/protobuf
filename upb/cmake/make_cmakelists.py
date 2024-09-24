@@ -58,7 +58,7 @@ add_library(%(name)s %(type)s
 target_include_directories(%(name)s %(keyword)s
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cmake>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINRARY_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 )
 """
 
@@ -238,6 +238,8 @@ class BuildFileFunctions(object):
   def alias(self, **kwargs):
     pass
 
+  def package(self, **kwargs):
+    pass
 
 class Converter(object):
   def __init__(self):

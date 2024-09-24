@@ -1,0 +1,44 @@
+cc_library(
+    name = "kotlin",
+    srcs = ["generator.cc"],
+    hdrs = ["generator.h"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
+    deps = [
+        ":kotlin_internal",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler/java",
+        "//src/google/protobuf/compiler/java:helpers",
+        "//src/google/protobuf/io:printer",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "kotlin_internal",
+    srcs = ["file.cc"],
+    hdrs = ["file.h"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler/java",
+        "//src/google/protobuf/compiler/java:helpers",
+        "//src/google/protobuf/compiler/java/full",
+        "//src/google/protobuf/compiler/java/lite",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
+        "@com_google_absl//absl/strings",
+    ],
+)

@@ -198,7 +198,7 @@ cc_dist_library(
         "//src/google/protobuf/compiler/cpp",
         "//src/google/protobuf/compiler/csharp",
         "//src/google/protobuf/compiler/java",
-        "//src/google/protobuf/compiler/java:kotlin",
+        "//src/google/protobuf/compiler/kotlin",
         "//src/google/protobuf/compiler/objectivec",
         "//src/google/protobuf/compiler/php",
         "//src/google/protobuf/compiler/python",
@@ -218,42 +218,40 @@ cc_dist_library(
         "//upb/text",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
+        "//upb/wire:byte_size",
     ],
 )
 
 cc_dist_library(
     name = "protoc-gen-upb",
     dist_deps = [
-        ":protobuf",
         ":upb",
     ],
     tags = ["manual"],
     deps = [
-        "//upb_generator:protoc-gen-upb_lib",
+        "//upb_generator/c:generator_with_main",
     ],
 )
 
 cc_dist_library(
     name = "protoc-gen-upbdefs",
     dist_deps = [
-        ":protobuf",
         ":upb",
     ],
     tags = ["manual"],
     deps = [
-        "//upb_generator:protoc-gen-upbdefs_lib",
+        "//upb_generator/reflection:generator_with_main",
     ],
 )
 
 cc_dist_library(
     name = "protoc-gen-upb_minitable",
     dist_deps = [
-        ":protobuf",
         ":upb",
     ],
     tags = ["manual"],
     deps = [
-        "//upb_generator:protoc-gen-upb_minitable_lib_lib",
+        "//upb_generator/minitable:generator_with_main",
     ],
 )
 

@@ -447,6 +447,10 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
           "}\n"
           "\n");
     }
+    if (!context_->options().opensource_runtime) {
+      printer->Print(
+          "@com.google.protobuf.Internal.ProtoMethodMayReturnNull\n");
+    }
     printer->Print(
         vars,
         "public static $oneof_capitalized_name$Case forNumber(int value) {\n"
@@ -1330,6 +1334,11 @@ void ImmutableMessageGenerator::GenerateKotlinOrNull(
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (field->has_presence() && GetJavaType(field) == JAVATYPE_MESSAGE) {
+      if (field->options().deprecated()) {
+        printer->Print(
+            "@kotlin.Deprecated(message = \"Field $name$ is deprecated\")\n",
+            "name", context_->GetFieldGeneratorInfo(field)->name);
+      }
       printer->Print(
           "public val $full_classname$OrBuilder.$camelcase_name$OrNull: "
           "$full_name$?\n"

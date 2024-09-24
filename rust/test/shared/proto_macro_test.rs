@@ -18,7 +18,7 @@ struct TestValue {
     val: i64,
 }
 
-#[test]
+#[gtest]
 fn test_setting_literals() {
     let fixed64 = || 108;
     let test_ref = |x: &i64| *x;
@@ -67,7 +67,7 @@ fn test_setting_literals() {
     assert_that!(msg.optional_nested_enum(), eq(test_all_types::NestedEnum::Baz));
 }
 
-#[test]
+#[gtest]
 fn single_nested_message() {
     let msg = proto!(TestAllTypes { optional_nested_message: NestedMessage { bb: 42 } });
     assert_that!(msg.optional_nested_message().bb(), eq(42));
@@ -94,6 +94,14 @@ fn single_nested_message() {
     });
     assert_that!(msg.optional_nested_message().bb(), eq(42));
 
+    // field above and below it
+    let msg = proto!(TestAllTypes {
+        optional_int32: 1,
+        optional_nested_message: __ { bb: 42 },
+        optional_int64: 2
+    });
+    assert_that!(msg.optional_nested_message().bb(), eq(42));
+
     // test empty initializer
     let msg = proto!(TestAllTypes {});
     assert_that!(msg.has_optional_nested_message(), eq(false));
@@ -104,9 +112,17 @@ fn single_nested_message() {
         optional_nested_message: unittest_rust_proto::test_all_types::NestedMessage {}
     });
     assert_that!(msg.has_optional_nested_message(), eq(true));
+
+    let msg = proto!(::unittest_rust_proto::TestAllTypes {
+        optional_nested_message: ::unittest_rust_proto::test_all_types::NestedMessage {}
+    });
+    assert_that!(msg.has_optional_nested_message(), eq(true));
+
+    let msg = proto!(::unittest_rust_proto::TestAllTypes { optional_nested_message: __ {} });
+    assert_that!(msg.has_optional_nested_message(), eq(true));
 }
 
-#[test]
+#[gtest]
 fn test_recursive_msg() {
     let msg = proto!(NestedTestAllTypes {
         child: NestedTestAllTypes {
@@ -123,7 +139,7 @@ fn test_recursive_msg() {
     assert_that!(msg.child().child().child().payload().optional_int32(), eq(43));
 }
 
-#[test]
+#[gtest]
 fn test_spread_msg() {
     let msg = proto!(TestAllTypes { optional_nested_message: NestedMessage { bb: 42 } });
     let msg2 = proto!(TestAllTypes { ..msg.as_view() });
@@ -133,7 +149,7 @@ fn test_spread_msg() {
     assert_that!(msg3.optional_int32(), eq(1));
 }
 
-#[test]
+#[gtest]
 fn test_spread_nested_msg() {
     let msg = proto!(NestedTestAllTypes {
         child: NestedTestAllTypes {
@@ -150,4 +166,39 @@ fn test_spread_nested_msg() {
     assert_that!(msg2.child().payload().optional_int32(), eq(100));
     assert_that!(msg2.child().child().payload().optional_int32(), eq(42));
     assert_that!(msg2.child().child().child().payload().optional_int32(), eq(43));
+}
+
+#[gtest]
+fn test_repeated_i32() {
+    let msg = proto!(TestAllTypes { repeated_int32: [1, 1 + 1, 3] });
+    assert_that!(msg.repeated_int32().len(), eq(3));
+    assert_that!(msg.repeated_int32().get(0).unwrap(), eq(1));
+    assert_that!(msg.repeated_int32().get(1).unwrap(), eq(2));
+    assert_that!(msg.repeated_int32().get(2).unwrap(), eq(3));
+}
+
+#[gtest]
+fn test_repeated_msg() {
+    let msg2 = proto!(NestedTestAllTypes { payload: TestAllTypes { optional_int32: 1 } });
+    let msg = proto!(NestedTestAllTypes {
+        child: NestedTestAllTypes {
+            repeated_child: [
+                NestedTestAllTypes { payload: TestAllTypes { optional_int32: 0 } },
+                msg2,
+                __ { payload: TestAllTypes { optional_int32: 2 } }
+            ]
+        },
+        repeated_child: [
+            __ { payload: __ { optional_int32: 1 } },
+            NestedTestAllTypes { payload: TestAllTypes { optional_int32: 2 } }
+        ]
+    });
+    assert_that!(msg.child().repeated_child().len(), eq(3));
+    assert_that!(msg.child().repeated_child().get(0).unwrap().payload().optional_int32(), eq(0));
+    assert_that!(msg.child().repeated_child().get(1).unwrap().payload().optional_int32(), eq(1));
+    assert_that!(msg.child().repeated_child().get(2).unwrap().payload().optional_int32(), eq(2));
+
+    assert_that!(msg.repeated_child().len(), eq(2));
+    assert_that!(msg.repeated_child().get(0).unwrap().payload().optional_int32(), eq(1));
+    assert_that!(msg.repeated_child().get(1).unwrap().payload().optional_int32(), eq(2));
 }

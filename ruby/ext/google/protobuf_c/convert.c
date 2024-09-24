@@ -104,6 +104,41 @@ unknownval:
   rb_raise(rb_eRangeError, "Unknown symbol value for enum field '%s'.", name);
 }
 
+VALUE Convert_CheckStringUtf8(VALUE str) {
+  VALUE utf8 = rb_enc_from_encoding(rb_utf8_encoding());
+
+  if (rb_obj_encoding(str) == utf8) {
+    // Note: Just because a string is marked as having UTF-8 encoding does
+    // not mean that it is *valid* UTF-8.  We have to check separately
+    // whether it is valid.
+    if (rb_enc_str_coderange(str) == ENC_CODERANGE_BROKEN) {
+      // TODO: For now
+      // we only warn for this case.  We will remove the warning and throw an
+      // exception below in the 30.x release
+
+      rb_warn(
+          "String is invalid UTF-8. This will be an error in a future "
+          "version.");
+      // VALUE exc = rb_const_get_at(
+      //     rb_cEncoding, rb_intern("InvalidByteSequenceError"));
+      // rb_raise(exc, "String is invalid UTF-8");
+    }
+  } else {
+    // Note: this will not duplicate underlying string data unless
+    // necessary.
+    //
+    // This will throw an exception if the conversion cannot be performed:
+    // - Encoding::UndefinedConversionError if certain characters cannot be
+    //   converted to UTF-8.
+    // - Encoding::InvalidByteSequenceError if certain characters were invalid
+    //   in the source encoding.
+    str = rb_str_encode(str, utf8, 0, Qnil);
+    PBRUBY_ASSERT(rb_enc_str_coderange(str) != ENC_CODERANGE_BROKEN);
+  }
+
+  return str;
+}
+
 upb_MessageValue Convert_RubyToUpb(VALUE value, const char* name,
                                    TypeInfo type_info, upb_Arena* arena) {
   upb_MessageValue ret;
@@ -137,8 +172,7 @@ upb_MessageValue Convert_RubyToUpb(VALUE value, const char* name,
       }
       break;
     }
-    case kUpb_CType_String: {
-      VALUE utf8 = rb_enc_from_encoding(rb_utf8_encoding());
+    case kUpb_CType_String:
       if (rb_obj_class(value) == rb_cSymbol) {
         value = rb_funcall(value, rb_intern("to_s"), 0);
       } else if (!rb_obj_is_kind_of(value, rb_cString)) {
@@ -147,19 +181,9 @@ upb_MessageValue Convert_RubyToUpb(VALUE value, const char* name,
                  rb_class2name(CLASS_OF(value)));
       }
 
-      if (rb_obj_encoding(value) != utf8) {
-        // Note: this will not duplicate underlying string data unless
-        // necessary.
-        value = rb_str_encode(value, utf8, 0, Qnil);
-
-        if (rb_enc_str_coderange(value) == ENC_CODERANGE_BROKEN) {
-          rb_raise(rb_eEncodingError, "String is invalid UTF-8");
-        }
-      }
-
+      value = Convert_CheckStringUtf8(value);
       ret.str_val = Convert_StringData(value, arena);
       break;
-    }
     case kUpb_CType_Bytes: {
       VALUE bytes = rb_enc_from_encoding(rb_ascii8bit_encoding());
       if (rb_obj_class(value) != rb_cString) {
@@ -204,7 +228,8 @@ upb_MessageValue Convert_RubyToUpb(VALUE value, const char* name,
           ret.uint64_val = NUM2ULL(value);
           break;
         default:
-          break;
+          rb_raise(cTypeError, "Convert_RubyToUpb(): Unexpected type %d",
+                   (int)type_info.type);
       }
       break;
     default:

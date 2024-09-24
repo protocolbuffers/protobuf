@@ -1,6 +1,35 @@
 #ifndef GOOGLE_PROTOBUF_RUST_CPP_KERNEL_MAP_H__
 #define GOOGLE_PROTOBUF_RUST_CPP_KERNEL_MAP_H__
 
+#include <memory>
+#include <type_traits>
+
+#include "google/protobuf/map.h"
+#include "google/protobuf/message_lite.h"
+#include "rust/cpp_kernel/strings.h"
+
+namespace google {
+namespace protobuf {
+namespace rust {
+
+// String and bytes values are passed across the FFI boundary as owned raw
+// pointers when we do map insertions. Unlike other types, they have to be
+// explicitly deleted. This MakeCleanup() helper does nothing by default, but
+// for std::string pointers it returns a std::unique_ptr to take ownership of
+// the raw pointer.
+template <typename T>
+auto MakeCleanup(T value) {
+  if constexpr (std::is_same<T, std::string*>::value) {
+    return std::unique_ptr<std::string>(value);
+  } else {
+    return 0;
+  }
+}
+
+}  // namespace rust
+}  // namespace protobuf
+}  // namespace google
+
 // Defines concrete thunks to access typed map methods from Rust.
 #define __PB_RUST_EXPOSE_SCALAR_MAP_METHODS(                                  \
     key_ty, rust_key_ty, ffi_key_ty, to_cpp_key, to_ffi_key, value_ty,        \
@@ -23,6 +52,8 @@
   }                                                                           \
   bool proto2_rust_thunk_Map_##rust_key_ty##_##rust_value_ty##_insert(        \
       google::protobuf::Map<key_ty, value_ty>* m, ffi_key_ty key, ffi_value_ty value) { \
+    auto cleanup = google::protobuf::rust::MakeCleanup(value);                          \
+    (void)cleanup;                                                            \
     auto iter_and_inserted = m->try_emplace(to_cpp_key, to_cpp_value);        \
     if (!iter_and_inserted.second) {                                          \
       iter_and_inserted.first->second = to_cpp_value;                         \
@@ -85,7 +116,7 @@
   __PB_RUST_EXPOSE_SCALAR_MAP_METHODS(                                      \
       std::string, ProtoString, google::protobuf::rust::PtrAndLen,                    \
       std::string(key.ptr, key.len),                                        \
-      google::protobuf::rust::PtrAndLen(cpp_key.data(), cpp_key.size()), value_ty,    \
+      (google::protobuf::rust::PtrAndLen{cpp_key.data(), cpp_key.size()}), value_ty,  \
       rust_value_ty, ffi_view_ty, ffi_value_ty, to_cpp_value, to_ffi_value);
 
 #endif  // GOOGLE_PROTOBUF_RUST_CPP_KERNEL_MAP_H__

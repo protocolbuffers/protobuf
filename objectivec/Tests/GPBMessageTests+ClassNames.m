@@ -5,14 +5,16 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#import "GPBTestUtilities.h"
-
 #import <objc/runtime.h>
 
 #import "GPBDescriptor_PackagePrivate.h"
 #import "GPBExtensionRegistry.h"
 #import "GPBMessage.h"
 #import "GPBRootObject_PackagePrivate.h"
+#import "GPBTestUtilities.h"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 // Support classes for tests using old class name (vs classrefs) interfaces.
 GPB_FINAL @interface MessageLackingClazzRoot : GPBRootObject
@@ -106,6 +108,8 @@ typedef struct MessageLackingClazz_storage_ {
   return registry;
 }
 @end
+
+#pragma clang diagnostic pop
 
 @interface MessageClassNameTests : GPBTestCase
 @end

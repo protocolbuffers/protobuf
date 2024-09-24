@@ -208,6 +208,7 @@ cc_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//src/google/protobuf",
+        "//src/google/protobuf:any_cc_proto",
         "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:port",
         "//src/google/protobuf:source_context_cc_proto",

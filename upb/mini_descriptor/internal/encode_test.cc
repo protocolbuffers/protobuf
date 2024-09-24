@@ -28,10 +28,6 @@
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 
-// begin:google_only
-// #include "testing/fuzzing/fuzztest.h"
-// end:google_only
-
 // Must be last.
 #include "upb/port/def.inc"
 
@@ -289,21 +285,3 @@ TEST_P(MiniTableTest, Extendible) {
   EXPECT_EQ(kUpb_ExtMode_Extendable,
             table->UPB_PRIVATE(ext) & kUpb_ExtMode_Extendable);
 }
-
-// begin:google_only
-//
-// static void BuildMiniTable(std::string_view s, bool is_32bit) {
-//   upb::Arena arena;
-//   upb::Status status;
-//   _upb_MiniTable_Build(
-//       s.data(), s.size(),
-//       is_32bit ? kUpb_MiniTablePlatform_32Bit : kUpb_MiniTablePlatform_64Bit,
-//       arena.ptr(), status.ptr());
-// }
-// FUZZ_TEST(FuzzTest, BuildMiniTable);
-//
-// TEST(FuzzTest, BuildMiniTableRegression) {
-//   BuildMiniTable("g}{v~fq{\271", false);
-// }
-//
-// end:google_only

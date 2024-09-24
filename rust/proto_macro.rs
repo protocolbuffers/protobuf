@@ -40,6 +40,8 @@ macro_rules! proto {
 #[macro_export(local_inner_macros)]
 #[doc(hidden)]
 macro_rules! proto_internal {
+    // @merge rules are used to find a trailing ..expr on the message and call merge_from on it
+    // before the fields of the message are set.
     (@merge $msg:ident $ident:ident : $expr:expr, $($rest:tt)*) => {
         proto_internal!(@merge $msg $($rest)*);
     };
@@ -48,55 +50,227 @@ macro_rules! proto_internal {
     };
 
     (@merge $msg:ident ..$expr:expr) => {
-        $msg.merge_from($expr);
+        $crate::MergeFrom::merge_from(&mut $msg, $expr);
     };
 
-    // nested message,
-    (@msg $msg:ident $submsg:ident : $($msgtype:ident)::+ { $field:ident : $($value:tt)* }, $($rest:tt)*) => {
-        proto_internal!(@msg $msg $submsg : $($msgtype)::+ { $field : $($value)* });
+    // @msg rules are used to set the fields of the message. There is a lot of duplication here
+    // because we need to parse the message type using a :: separated list of identifiers.
+    // nested message and trailing fields
+    (@msg $msg:ident $submsg:ident : $($msgtype:ident)::+ { $($value:tt)* }, $($rest:tt)*) => {
+        proto_internal!(@msg $msg $submsg : $($msgtype)::+ { $($value)* });
         proto_internal!(@msg $msg $($rest)*);
     };
-    (@msg $msg:ident $submsg:ident : ::$($msgtype:ident)::+ { $field:ident : $($value:tt)* }, $($rest:tt)*) => {
-        proto_internal!(@msg $msg $submsg : ::$($msgtype)::+ { $field : $($value)* });
+    // nested message with leading :: on type and trailing fields
+    (@msg $msg:ident $submsg:ident : ::$($msgtype:ident)::+ { $($value:tt)* }, $($rest:tt)*) => {
+        proto_internal!(@msg $msg $submsg : ::$($msgtype)::+ { $($value)* });
         proto_internal!(@msg $msg $($rest)*);
     };
 
+    // nested message using __
+    (@msg $msg:ident $submsg:ident : __ { $($value:tt)* }) => {
+        {
+            let mut $msg = $crate::__internal::paste!($msg.[<$submsg _mut>]());
+            proto_internal!(@merge $msg $($value)*);
+            proto_internal!(@msg $msg $($value)*);
+        }
+    };
     // nested message
-    (@msg $msg:ident $submsg:ident : $($msgtype:ident)::+ { $field:ident : $($value:tt)* }) => {
+    (@msg $msg:ident $submsg:ident : $($msgtype:ident)::+ { $($value:tt)* }) => {
         {
             let mut $msg: <$($msgtype)::+ as $crate::MutProxied>::Mut<'_> = $crate::__internal::paste!($msg.[<$submsg _mut>]());
-            proto_internal!(@merge $msg $field : $($value)*);
-            proto_internal!(@msg $msg $field : $($value)*);
+            proto_internal!(@merge $msg $($value)*);
+            proto_internal!(@msg $msg $($value)*);
         }
     };
-    (@msg $msg:ident $submsg:ident : ::$($msgtype:ident)::+ { $field:ident : $($value:tt)* }) => {
+    // nested message with leading ::
+    (@msg $msg:ident $submsg:ident : ::$($msgtype:ident)::+ { $($value:tt)* }) => {
         {
             let mut $msg: <::$($msgtype)::+ as $crate::MutProxied>::Mut<'_> = $crate::__internal::paste!($msg.[<$submsg _mut>]());
-            proto_internal!(@merge $msg $field : $($value)*);
-            proto_internal!(@msg $msg $field : $($value)*);
+            proto_internal!(@merge $msg $($value)*);
+            proto_internal!(@msg $msg $($value)*);
         }
     };
 
-    // empty nested message,
-    (@msg $msg:ident $submsg:ident : $($msgtype:ident)::+ { }, $($rest:tt)*) => {
-        proto_internal!(@msg $msg $submsg : $($msgtype)::+ { });
+    // field with array literal and trailing fields
+    (@msg $msg:ident $ident:ident : [$($elems:tt)*], $($rest:tt)*) => {
+        proto_internal!(@msg $msg $ident : [$($elems)*]);
         proto_internal!(@msg $msg $($rest)*);
     };
-    (@msg $msg:ident $submsg:ident : ::$($msgtype:ident)::+ { }, $($rest:tt)*) => {
-        proto_internal!(@msg $msg $submsg : ::$($msgtype)::+ { });
-        proto_internal!(@msg $msg $($rest)*);
+    // field with array literal, calls out to @array to look for nested messages
+    (@msg $msg:ident $ident:ident : [$($elems:tt)*]) => {
+        {
+            let _repeated = $crate::__internal::paste!($msg.[<$ident>]());
+            let elems = proto_internal!(@array $msg _repeated [] $($elems)*);
+            $crate::__internal::paste!($msg.[<set_ $ident>](elems.into_iter()));
+        }
     };
 
-    // empty nested message
-    (@msg $msg:ident $submsg:ident : $($msgtype:ident)::+ { }) => {
-        {
-            let mut $msg: <$($msgtype)::+ as $crate::MutProxied>::Mut<'_> = $crate::__internal::paste!($msg.[<$submsg _mut>]());
-        }
+    // @array searches through an array literal for nested messages.
+    // If a message is found then we recursively call the macro on it to set the fields.
+    // This will create an array literal of owned messages to be used while setting the field.
+    // For primitive types they should just be passed through as an $expr.
+    // The array literal is constructed recursively, so the [] case has to be handled separately so
+    // that we can properly insert commas. This leads to a lot of duplication.
+
+    // Message nested in array literal with trailing array items
+    (@array $msg:ident $repeated:ident [$($vals:expr),+] __ { $($value:tt)* }, $($rest:tt)*) => {
+        proto_internal!(@array $msg $repeated [
+                $($vals),+ ,
+                {
+                    let mut $msg = $crate::get_repeated_default_value($crate::__internal::Private, $repeated);
+                    proto_internal!(@merge $msg $($value)*);
+                    proto_internal!(@msg $msg $($value)*);
+                    $msg
+                }
+            ] $($rest)*)
     };
-    (@msg $msg:ident $submsg:ident : ::$($msgtype:ident)::+ { }) => {
-        {
-            let mut $msg: <::$($msgtype)::+ as $crate::MutProxied>::Mut<'_> = $crate::__internal::paste!($msg.[<$submsg _mut>]());
-        }
+
+    // Message nested in [] literal
+    (@array $msg:ident $repeated:ident [$($vals:expr),+] __ { $($value:tt)* }) => {
+        [
+            $($vals),+ ,
+            {
+                let mut $msg = $crate::get_repeated_default_value($crate::__internal::Private, $repeated);
+                proto_internal!(@merge $msg $($value)*);
+                proto_internal!(@msg $msg $($value)*);
+                $msg
+            }
+        ]
+    };
+
+    // Message nested in array literal with trailing array items
+    (@array $msg:ident $repeated:ident [] __ { $($value:tt)* }, $($rest:tt)*) => {
+        proto_internal!(@array $msg $repeated [
+                {
+                    let mut $msg = $crate::get_repeated_default_value($crate::__internal::Private, $repeated);
+                    proto_internal!(@merge $msg $($value)*);
+                    proto_internal!(@msg $msg $($value)*);
+                    $msg
+                }
+            ] $($rest)*)
+    };
+
+    // Message nested in [] literal
+    (@array $msg:ident $repeated:ident [] __ { $($value:tt)* }) => {
+        [
+            {
+                let mut $msg = $crate::get_repeated_default_value($crate::__internal::Private, $repeated);
+                proto_internal!(@merge $msg $($value)*);
+                proto_internal!(@msg $msg $($value)*);
+                $msg
+            }
+        ]
+    };
+
+    // End of __ repeated, now we need to handle named types
+
+    // Message nested in array literal with trailing array items
+    (@array $msg:ident $repeated:ident [$($vals:expr),+] $($msgtype:ident)::+ { $($value:tt)* }, $($rest:tt)*) => {
+        proto_internal!(@array $msg $repeated [
+                $($vals),+ ,
+                {
+                    let mut $msg = $($msgtype)::+::new();
+                    proto_internal!(@merge $msg $($value)*);
+                    proto_internal!(@msg $msg $($value)*);
+                    $msg
+                }
+            ] $($rest)*)
+    };
+    // Message nested in [] literal with leading :: on type and trailing array items
+    (@array $msg:ident $repeated:ident [$($vals:expr),+] ::$($msgtype:ident)::+ { $($value:tt)* }, $($rest:tt)*) => {
+        proto_internal!(@array $msg $repeated [
+                $($vals),+ ,
+                {
+                    let mut $msg = ::$($msgtype)::+::new();
+                    proto_internal!(@merge $msg $($value)*);
+                    proto_internal!(@msg $msg $($value)*);
+                    $msg
+                }
+            ] $($rest)*)
+    };
+    // Message nested in [] literal
+    (@array $msg:ident $repeated:ident [$($vals:expr),+] $($msgtype:ident)::+ { $($value:tt)* }) => {
+        [
+            $($vals),+ ,
+            {
+                let mut $msg = $($msgtype)::+::new();
+                proto_internal!(@merge $msg $($value)*);
+                proto_internal!(@msg $msg $($value)*);
+                $msg
+            }
+        ]
+    };
+    // Message nested in [] literal with leading :: on type
+    (@array $msg:ident $repeated:ident [$($vals:expr),+] ::$($msgtype:ident)::+ { $($value:tt)* }) => {
+        [
+            $($vals),+ ,
+            {
+                let mut $msg = ::$($msgtype)::+::new();
+                proto_internal!(@merge $msg $($value)*);
+                proto_internal!(@msg $msg $($value)*);
+                $msg
+            }
+        ]
+    };
+
+    // Message nested in array literal with trailing array items
+    (@array $msg:ident $repeated:ident [] $($msgtype:ident)::+ { $($value:tt)* }, $($rest:tt)*) => {
+        proto_internal!(@array $msg $repeated [
+                {
+                    let mut $msg = $($msgtype)::+::new();
+                    proto_internal!(@merge $msg $($value)*);
+                    proto_internal!(@msg $msg $($value)*);
+                    $msg
+                }
+            ] $($rest)*)
+    };
+    // with leading ::
+    (@array $msg:ident $repeated:ident [] ::$($msgtype:ident)::+ { $($value:tt)* }, $($rest:tt)*) => {
+        proto_internal!(@array $msg $repeated [
+                {
+                    let mut $msg = ::$($msgtype)::+::new();
+                    proto_internal!(@merge $msg $($value)*);
+                    proto_internal!(@msg $msg $($value)*);
+                    $msg
+                }
+            ] $($rest)*)
+    };
+    // Message nested in [] literal
+    (@array $msg:ident $repeated:ident [] $($msgtype:ident)::+ { $($value:tt)* }) => {
+        [
+            {
+                let mut $msg = $($msgtype)::+::new();
+                proto_internal!(@merge $msg $($value)*);
+                proto_internal!(@msg $msg $($value)*);
+                $msg
+            }
+        ]
+    };
+    (@array $msg:ident $repeated:ident [] ::$($msgtype:ident)::+ { $($value:tt)* }) => {
+        [
+            {
+                let mut $msg = ::$($msgtype)::+::new();
+                proto_internal!(@merge $msg $($value)*);
+                proto_internal!(@msg $msg $($value)*);
+                $msg
+            }
+        ]
+    };
+
+    (@array $msg:ident $repeated:ident [$($vals:expr),+] $expr:expr, $($rest:tt)*) => {
+        proto_internal!(@array $msg $repeated [$($vals),+, $expr]  $($rest)*)
+    };
+    (@array $msg:ident $repeated:ident [$($vals:expr),+] $expr:expr) => {
+        [$($vals),+, $expr]
+    };
+    (@array $msg:ident $repeated:ident [] $expr:expr, $($rest:tt)*) => {
+        proto_internal!(@array $msg $repeated [$expr]  $($rest)*)
+    };
+    (@array $msg:ident $repeated:ident [] $expr:expr) => {
+        [$expr]
+    };
+    (@array $msg:ident $repeated:ident []) => {
+        []
     };
 
     // field: expr,

@@ -48,9 +48,11 @@
 #include "google/protobuf/compiler/mock_code_generator.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/test_textproto.h"
+#include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
+#include "google/protobuf/unittest_import.pb.h"
 
 #ifdef GOOGLE_PROTOBUF_USE_BAZEL_GENERATED_PLUGIN_PATHS
 // This is needed because of https://github.com/bazelbuild/bazel/issues/19124.
@@ -977,7 +979,7 @@ TEST_F(CommandLineInterfaceTest,
   ExpectNoErrors();
 }
 
-TEST_F(CommandLineInterfaceTest, ReportsTransitiveMisingImports_LeafFirst) {
+TEST_F(CommandLineInterfaceTest, ReportsTransitiveMissingImports_LeafFirst) {
   CreateTempFile("unused.proto",
                  "syntax = \"proto2\";\n"
                  "message Unused {}\n");
@@ -998,7 +1000,7 @@ TEST_F(CommandLineInterfaceTest, ReportsTransitiveMisingImports_LeafFirst) {
       "bar.proto:2:1: warning: Import unused.proto is unused.");
 }
 
-TEST_F(CommandLineInterfaceTest, ReportsTransitiveMisingImports_LeafLast) {
+TEST_F(CommandLineInterfaceTest, ReportsTransitiveMissingImports_LeafLast) {
   CreateTempFile("unused.proto",
                  "syntax = \"proto2\";\n"
                  "message Unused {}\n");
@@ -1551,6 +1553,54 @@ TEST_F(CommandLineInterfaceTest, Plugin_DeprecatedEdition) {
       "edition 99997_TEST_ONLY.");
 }
 
+TEST_F(CommandLineInterfaceTest, Plugin_DeprecatedFeature) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("google/protobuf/unittest_features.proto",
+                 pb::TestFeatures::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    import "google/protobuf/unittest_features.proto";
+    package foo;
+    option features.(pb.test).removed_feature = VALUE9;
+  )schema");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectWarningSubstring(
+      "foo.proto:4:5: warning: Feature pb.TestFeatures.removed_feature has "
+      "been deprecated in edition 2023: Custom feature deprecation warning\n");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_TransitiveDeprecatedFeature) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("google/protobuf/unittest_features.proto",
+                 pb::TestFeatures::descriptor()->file()->DebugString());
+  CreateTempFile("unused.proto",
+                 R"schema(
+    edition = "2023";
+    import "google/protobuf/unittest_features.proto";
+    package foo;
+    option features.(pb.test).removed_feature = VALUE9;
+    message Foo {}
+  )schema");
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    import "unused.proto";
+    package foo;
+    message Bar {
+      Foo foo = 1;
+    }
+  )schema");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
 TEST_F(CommandLineInterfaceTest, Plugin_FutureEdition) {
   CreateTempFile("foo.proto", R"schema(
     edition = "2023";
@@ -2047,7 +2097,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_EQ(defaults.minimum_edition(), EDITION_PROTO2);
   EXPECT_EQ(defaults.maximum_edition(), EDITION_99999_TEST_ONLY);
-  ASSERT_EQ(defaults.defaults_size(), 6);
+  ASSERT_EQ(defaults.defaults_size(), 7);
   EXPECT_EQ(defaults.defaults(0).edition(), EDITION_LEGACY);
   EXPECT_EQ(defaults.defaults(2).edition(), EDITION_2023);
   EXPECT_EQ(defaults.defaults(3).edition(), EDITION_2024);
@@ -4153,7 +4203,16 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
   std::string unittest_proto_descriptor_set_filename_;
 };
 
+static void WriteGoldenMessage(const std::string& filename) {
+  protobuf_unittest::TestAllTypes message;
+  TestUtil::SetAllFields(&message);
+  std::string golden = message.SerializeAsString();
+  ABSL_CHECK_OK(File::SetContents(filename, golden, true));
+}
+
 TEST_P(EncodeDecodeTest, Encode) {
+  std::string golden_path = absl::StrCat(TestTempDir(), "/golden_message");
+  WriteGoldenMessage(golden_path);
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
       "google/protobuf/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
@@ -4163,14 +4222,14 @@ TEST_P(EncodeDecodeTest, Encode) {
   }
   EXPECT_TRUE(
       Run(absl::StrCat(args, " --encode=protobuf_unittest.TestAllTypes")));
-  ExpectStdoutMatchesBinaryFile(TestUtil::GetTestDataPath(
-      "google/protobuf/testdata/golden_message_oneof_implemented"));
+  ExpectStdoutMatchesBinaryFile(golden_path);
   ExpectStderrMatchesText("");
 }
 
 TEST_P(EncodeDecodeTest, Decode) {
-  RedirectStdinFromFile(TestUtil::GetTestDataPath(
-      "google/protobuf/testdata/golden_message_oneof_implemented"));
+  std::string golden_path = absl::StrCat(TestTempDir(), "/golden_message");
+  WriteGoldenMessage(golden_path);
+  RedirectStdinFromFile(golden_path);
   EXPECT_TRUE(
       Run("google/protobuf/unittest.proto"
           " --decode=protobuf_unittest.TestAllTypes"));
@@ -4223,6 +4282,8 @@ TEST_P(EncodeDecodeTest, ProtoParseError) {
 }
 
 TEST_P(EncodeDecodeTest, EncodeDeterministicOutput) {
+  std::string golden_path = absl::StrCat(TestTempDir(), "/golden_message");
+  WriteGoldenMessage(golden_path);
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
       "google/protobuf/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
@@ -4232,14 +4293,14 @@ TEST_P(EncodeDecodeTest, EncodeDeterministicOutput) {
   }
   EXPECT_TRUE(Run(absl::StrCat(
       args, " --encode=protobuf_unittest.TestAllTypes --deterministic_output")));
-  ExpectStdoutMatchesBinaryFile(TestUtil::GetTestDataPath(
-      "google/protobuf/testdata/golden_message_oneof_implemented"));
+  ExpectStdoutMatchesBinaryFile(golden_path);
   ExpectStderrMatchesText("");
 }
 
 TEST_P(EncodeDecodeTest, DecodeDeterministicOutput) {
-  RedirectStdinFromFile(TestUtil::GetTestDataPath(
-      "google/protobuf/testdata/golden_message_oneof_implemented"));
+  std::string golden_path = absl::StrCat(TestTempDir(), "/golden_message");
+  WriteGoldenMessage(golden_path);
+  RedirectStdinFromFile(golden_path);
   EXPECT_FALSE(
       Run("google/protobuf/unittest.proto"
           " --decode=protobuf_unittest.TestAllTypes --deterministic_output"));

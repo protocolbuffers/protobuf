@@ -9,8 +9,6 @@
 
 #import "GPBUnknownFields.h"
 
-@class GPBCodedOutputStream;
-
 @interface GPBUnknownFields ()
 
 - (nonnull NSData *)serializeAsData;

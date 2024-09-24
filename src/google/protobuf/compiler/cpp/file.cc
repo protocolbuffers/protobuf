@@ -59,7 +59,7 @@ using ::google::protobuf::internal::cpp::IsLazilyInitializedFile;
 absl::flat_hash_map<absl::string_view, std::string> FileVars(
     const FileDescriptor* file, const Options& options) {
   return {
-      {"filename", file->name()},
+      {"filename", std::string(file->name())},
       {"package_ns", Namespace(file, options)},
       {"tablename", UniqueName("TableStruct", file, options)},
       {"desc_table", DescriptorTableName(file, options)},
@@ -236,7 +236,8 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
              NamespaceOpener ns(ProtobufNamespace(options_), p);
              p->Emit(R"cc(
                namespace internal {
-               class AnyMetadata;
+               template <typename T>
+               ::absl::string_view GetAnyMessageName();
                }  // namespace internal
              )cc");
            }},
@@ -489,6 +490,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
   IncludeFile("third_party/protobuf/generated_message_tctable_impl.h", p);
   // TODO This is to include parse_context.h, we need a better way
   IncludeFile("third_party/protobuf/extension_set.h", p);
+  IncludeFile("third_party/protobuf/generated_message_util.h", p);
   IncludeFile("third_party/protobuf/wire_format_lite.h", p);
 
   if (ShouldVerify(file_, options_, &scc_analyzer_)) {
@@ -1833,3 +1835,5 @@ std::vector<const Descriptor*> FileGenerator::MessagesInTopologicalOrder()
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

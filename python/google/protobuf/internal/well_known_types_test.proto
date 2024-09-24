@@ -1,0 +1,29 @@
+edition = "2023";
+
+package google.protobuf.internal;
+
+import "google/protobuf/any.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+message TestAny {
+  google.protobuf.Any value = 1;
+  int32 int_value = 2;
+  map<string, int32> map_value = 3;
+  extensions 10 to max;
+}
+
+message TestAnyExtension1 {
+  extend TestAny {
+    TestAnyExtension1 extension1 = 98418603;
+  }
+  int32 i = 15;
+}
+
+message WKTMessage {
+  Timestamp optional_timestamp = 1;
+  Duration optional_duration = 2;
+  Struct optional_struct = 3;
+  ListValue optional_list_value = 4;
+}

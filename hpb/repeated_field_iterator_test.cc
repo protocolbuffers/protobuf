@@ -17,10 +17,13 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/strings/string_view.h"
+#include "google/protobuf/hpb/hpb.h"
+#include "upb/message/array.h"
 
 using ::testing::ElementsAre;
 
-namespace protos {
+namespace hpb {
 namespace internal {
 
 template <typename T>
@@ -45,13 +48,13 @@ struct IteratorTestPeer {
   }
 
   template <typename T>
-  static StringRef<T> MakeStringRefProxy(upb_Array* arr, protos::Arena& arena) {
+  static StringRef<T> MakeStringRefProxy(upb_Array* arr, hpb::Arena& arena) {
     return StringRef<T>({arr, arena.ptr(), 0});
   }
 
   template <typename T>
   static StringIterator<T> MakeStringIterator(upb_Array* arr,
-                                              protos::Arena& arena) {
+                                              hpb::Arena& arena) {
     return StringIterator<T>({arr, arena.ptr()});
   }
 };
@@ -225,12 +228,12 @@ TEST(ScalarIteratorTest, IteratorBasedAlgorithmsWork) {
   EXPECT_THAT(v, ElementsAre(10, 12, 14, 16, 18, 11, 13, 15, 17, 19));
 }
 
-const char* CloneString(protos::Arena& arena, absl::string_view str) {
+const char* CloneString(hpb::Arena& arena, absl::string_view str) {
   char* data = (char*)upb_Arena_Malloc(arena.ptr(), str.size());
   memcpy(data, str.data(), str.size());
   return data;
 }
-upb_Array* MakeStringArray(protos::Arena& arena,
+upb_Array* MakeStringArray(hpb::Arena& arena,
                            const std::vector<std::string>& input) {
   upb_Array* arr = upb_Array_New(arena.ptr(), kUpb_CType_String);
   for (absl::string_view str : input) {
@@ -243,7 +246,7 @@ upb_Array* MakeStringArray(protos::Arena& arena,
 }
 
 TEST(StringReferenceTest, BasicOperationsWork) {
-  protos::Arena arena;
+  hpb::Arena arena;
   upb_Array* arr = MakeStringArray(arena, {""});
 
   auto read = [&] {
@@ -289,7 +292,7 @@ TEST(StringReferenceTest, BasicOperationsWork) {
 }
 
 TEST(StringReferenceTest, AssignmentAndSwap) {
-  protos::Arena arena;
+  hpb::Arena arena;
   upb_Array* arr1 = MakeStringArray(arena, {"ABC"});
   upb_Array* arr2 = MakeStringArray(arena, {"DEF"});
 
@@ -309,7 +312,7 @@ TEST(StringReferenceTest, AssignmentAndSwap) {
 }
 
 template <typename T>
-void TestStringIterator(protos::Arena& arena, upb_Array* array) {
+void TestStringIterator(hpb::Arena& arena, upb_Array* array) {
   StringIterator<T> it = IteratorTestPeer::MakeStringIterator<T>(array, arena);
   // Copy
   auto it2 = it;
@@ -349,7 +352,7 @@ void TestStringIterator(protos::Arena& arena, upb_Array* array) {
 }
 
 TEST(StringIteratorTest, BasicOperationsWork) {
-  protos::Arena arena;
+  hpb::Arena arena;
   auto* array = MakeStringArray(
       arena, {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19"});
   TestStringIterator<const absl::string_view>(arena, array);
@@ -357,7 +360,7 @@ TEST(StringIteratorTest, BasicOperationsWork) {
 }
 
 TEST(StringIteratorTest, Convertibility) {
-  protos::Arena arena;
+  hpb::Arena arena;
   auto* array = MakeStringArray(
       arena, {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19"});
   StringIterator<absl::string_view> it =
@@ -381,7 +384,7 @@ TEST(StringIteratorTest, Convertibility) {
 }
 
 TEST(StringIteratorTest, MutabilityOnlyWorksOnMutable) {
-  protos::Arena arena;
+  hpb::Arena arena;
   auto* array = MakeStringArray(
       arena, {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19"});
   StringIterator<absl::string_view> it =
@@ -403,7 +406,7 @@ TEST(StringIteratorTest, MutabilityOnlyWorksOnMutable) {
 }
 
 TEST(StringIteratorTest, IteratorReferenceInteraction) {
-  protos::Arena arena;
+  hpb::Arena arena;
   auto* array = MakeStringArray(
       arena, {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19"});
   StringIterator<absl::string_view> it =
@@ -415,7 +418,7 @@ TEST(StringIteratorTest, IteratorReferenceInteraction) {
 }
 
 TEST(StringIteratorTest, IteratorBasedAlgorithmsWork) {
-  protos::Arena arena;
+  hpb::Arena arena;
   auto* array = MakeStringArray(
       arena, {"10", "11", "12", "13", "14", "15", "16", "17", "18", "19"});
   StringIterator<absl::string_view> it =
@@ -452,4 +455,4 @@ TEST(StringIteratorTest, IteratorBasedAlgorithmsWork) {
 
 }  // namespace
 }  // namespace internal
-}  // namespace protos
+}  // namespace hpb

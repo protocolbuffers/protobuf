@@ -48,6 +48,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestUnpackedTypes",
       "TestUnpackedExtensions",
       "TestReservedFields",
+      "TestRequiredOpenEnum",
       "TestRequiredOneof.NestedMessage",
       "TestRequiredNoMaskMulti",
       "TestRequiredEnumNoMask",
@@ -111,10 +112,14 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "RedactedFields.MapUnredactedStringEntry",
       "RedactedFields.MapRedactedStringEntry",
       "OptionalGroup_extension",
+      "OpenEnumMessage",
       "OneString",
       "OneBytes",
       "MoreString",
       "MoreBytes",
+      "MessageCreatorZeroInit",
+      "MessageCreatorMemcpy.M2Entry",
+      "MessageCreatorFunc",
       "ManyOptionalString",
       "Int64ParseTester",
       "Int64Message",
@@ -153,6 +158,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestCamelCaseFieldNames",
       "TestAllTypes",
       "RedactedFields",
+      "MessageCreatorMemcpy",
       "TestVerifyUint32BigFieldNumber",
       "TestVerifyUint32",
       "TestVerifyOneUint32",
@@ -206,9 +212,6 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
     EXPECT_TRUE(match) << "failed to match; expected "
                        << kExpectedDescriptorOrder[i] << ", got "
                        << desc->full_name();
-    if (!match) {
-      break;
-    }
   }
 }
 

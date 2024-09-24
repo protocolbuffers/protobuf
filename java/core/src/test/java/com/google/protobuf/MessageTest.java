@@ -244,7 +244,7 @@ public class MessageTest {
   }
 
   @Test
-  public void testParseUnititialized() throws Exception {
+  public void testParseUninitialized() throws Exception {
     try {
       TestRequired.parseFrom(ByteString.EMPTY);
       assertWithMessage("Should have thrown an exception.").fail();
@@ -254,7 +254,7 @@ public class MessageTest {
   }
 
   @Test
-  public void testParseNestedUnititialized() throws Exception {
+  public void testParseNestedUninitialized() throws Exception {
     ByteString data =
         TestRequiredForeign.newBuilder()
             .setOptionalMessage(TEST_REQUIRED_UNINITIALIZED)
@@ -301,7 +301,7 @@ public class MessageTest {
   }
 
   @Test
-  public void testDynamicParseUnititialized() throws Exception {
+  public void testDynamicParseUninitialized() throws Exception {
     try {
       Descriptors.Descriptor descriptor = TestRequired.getDescriptor();
       DynamicMessage.parseFrom(descriptor, ByteString.EMPTY);

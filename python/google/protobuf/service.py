@@ -19,6 +19,14 @@ and can avoid unnecessary layers of indirection.
 
 __author__ = 'petar@google.com (Petar Petrov)'
 
+import warnings
+
+warnings.warn(
+    'google.protobuf.service module is deprecated. RPC implementations '
+    'should provide code generator plugins which generate code specific to '
+    'the RPC implementation. service.py will be removed in Jan 2025',
+    stacklevel=2,
+)
 
 class RpcException(Exception):
   """Exception raised on failed blocking RPC method call."""
@@ -62,12 +70,12 @@ class Service(object):
     Postconditions:
 
     * "done" will be called when the method is complete.  This may be
-      before CallMethod() returns or it may be at some point in the future.
+     before CallMethod() returns or it may be at some point in the future.
     * If the RPC failed, the response value passed to "done" will be None.
-      Further details about the failure can be found by querying the
-      RpcController.
+     Further details about the failure can be found by querying the
+     RpcController.
     """
-    raise NotImplementedError
+   raise NotImplementedError
 
   def GetRequestClass(self, method_descriptor):
     """Returns the class of the request message for the specified method.

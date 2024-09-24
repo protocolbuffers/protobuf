@@ -9,23 +9,26 @@
 
 #include <string>
 
-#include "upb_generator/keywords.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/hpb/keywords.h"
 
 namespace google::protobuf::hpb_generator {
 namespace protobuf = ::proto2;
 
 namespace {
 
+// TODO: b/346865271 append ::hpb instead of ::protos after namespace swap
 std::string NamespaceFromPackageName(absl::string_view package_name) {
   return absl::StrCat(absl::StrReplaceAll(package_name, {{".", "::"}}),
                       "::protos");
 }
 
-std::string DotsToColons(const std::string& name) {
+std::string DotsToColons(const absl::string_view name) {
   return absl::StrReplaceAll(name, {{".", "::"}});
 }
 
-std::string Namespace(const std::string& package) {
+std::string Namespace(const absl::string_view package) {
   if (package.empty()) return "";
   return "::" + DotsToColons(package);
 }
@@ -81,7 +84,7 @@ std::string ClassName(const protobuf::Descriptor* descriptor) {
   const protobuf::Descriptor* parent = descriptor->containing_type();
   std::string res;
   // Classes in global namespace without package names are prefixed
-  // by protos_ to avoid collision with C compiler structs defined in
+  // by hpb_ to avoid collision with C compiler structs defined in
   // proto.upb.h.
   if ((parent && parent->file()->package().empty()) ||
       descriptor->file()->package().empty()) {
@@ -89,7 +92,7 @@ std::string ClassName(const protobuf::Descriptor* descriptor) {
   }
   if (parent) res += ClassName(parent) + "_";
   absl::StrAppend(&res, descriptor->name());
-  return ::upb::generator::ResolveKeywordConflict(res);
+  return ResolveKeywordConflict(res);
 }
 
 std::string QualifiedClassName(const protobuf::Descriptor* descriptor) {
@@ -102,19 +105,19 @@ std::string QualifiedInternalClassName(const protobuf::Descriptor* descriptor) {
 }
 
 std::string CppSourceFilename(const google::protobuf::FileDescriptor* file) {
-  return StripExtension(file->name()) + ".upb.proto.cc";
+  return compiler::StripProto(file->name()) + ".upb.proto.cc";
 }
 
 std::string ForwardingHeaderFilename(const google::protobuf::FileDescriptor* file) {
-  return StripExtension(file->name()) + ".upb.fwd.h";
+  return compiler::StripProto(file->name()) + ".upb.fwd.h";
 }
 
 std::string UpbCFilename(const google::protobuf::FileDescriptor* file) {
-  return StripExtension(file->name()) + ".upb.h";
+  return compiler::StripProto(file->name()) + ".upb.h";
 }
 
 std::string CppHeaderFilename(const google::protobuf::FileDescriptor* file) {
-  return StripExtension(file->name()) + ".upb.proto.h";
+  return compiler::StripProto(file->name()) + ".upb.proto.h";
 }
 
 void WriteStartNamespace(const protobuf::FileDescriptor* file, Output& output) {
@@ -154,7 +157,7 @@ std::string MessagePtrConstType(const protobuf::FieldDescriptor* field,
                                 bool is_const) {
   ABSL_DCHECK(field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE);
   std::string maybe_const = is_const ? "const " : "";
-  return "::protos::Ptr<" + maybe_const +
+  return "::hpb::Ptr<" + maybe_const +
          QualifiedClassName(field->message_type()) + ">";
 }
 

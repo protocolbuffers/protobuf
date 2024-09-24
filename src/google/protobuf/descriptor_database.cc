@@ -1034,8 +1034,8 @@ bool MergedDescriptorDatabase::FindAllFileNames(
     std::vector<std::string> source_output;
     if (source->FindAllFileNames(&source_output)) {
       output->reserve(output->size() + source_output.size());
-      for (auto& source : source_output) {
-        output->push_back(std::move(source));
+      for (auto& source_out : source_output) {
+        output->push_back(std::move(source_out));
       }
       implemented = true;
     }

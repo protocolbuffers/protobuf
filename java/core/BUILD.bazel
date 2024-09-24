@@ -2,6 +2,7 @@ load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//:protobuf.bzl", "internal_gen_well_known_protos_java")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
@@ -13,7 +14,6 @@ load("//java/internal:testing.bzl", "junit_tests")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
 
 LITE_SRCS = [
-    # Keep in sync with `//java/lite:pom.xml`.
     "src/main/java/com/google/protobuf/AbstractMessageLite.java",
     "src/main/java/com/google/protobuf/AbstractParser.java",
     "src/main/java/com/google/protobuf/AbstractProtobufList.java",
@@ -523,7 +523,6 @@ protobuf_java_library(
 )
 
 LITE_TEST_EXCLUSIONS = [
-    # Keep in sync with //java/lite:pom.xml id=copy-test-source-files execution.
     "src/test/java/com/google/protobuf/AbstractMessageTest.java",
     "src/test/java/com/google/protobuf/AbstractProto2SchemaTest.java",
     "src/test/java/com/google/protobuf/AnyTest.java",
@@ -551,6 +550,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/Proto2ExtensionLookupSchemaTest.java",
     "src/test/java/com/google/protobuf/Proto2SchemaTest.java",
     "src/test/java/com/google/protobuf/Proto2UnknownEnumValueTest.java",
+    "src/test/java/com/google/protobuf/ProtobufToStringOutputTest.java",
     "src/test/java/com/google/protobuf/RepeatedFieldBuilderTest.java",
     "src/test/java/com/google/protobuf/ServiceTest.java",
     "src/test/java/com/google/protobuf/SingleFieldBuilderTest.java",
@@ -591,6 +591,104 @@ junit_tests(
     ],
 )
 
+protobuf_java_library(
+    name = "v25_test_util_srcjar",
+    testonly = True,
+    srcs = [
+        "src/test/java/com/google/protobuf/TestUtil.java",
+        "src/test/java/com/google/protobuf/TestUtilLite.java",
+    ],
+    deps = [
+        ":core",
+        "//compatibility:v25_test_protos_srcjar",
+        "@maven//:com_google_guava_guava",
+        "@maven//:junit_junit",
+    ],
+)
+
+# Tests source compatibility against v25 gencode jar compiled against current runtime
+junit_tests(
+    name = "v25_core_tests_srcjar",
+    size = "small",
+    srcs = glob(
+        ["src/test/java/**/*.java"],
+        exclude = [
+            # Depends on test protos or API changes added in v4.x.x (e.g. editions)
+            "src/test/java/com/google/protobuf/TextFormatTest.java",
+            "src/test/java/com/google/protobuf/DescriptorsTest.java",
+            "src/test/java/com/google/protobuf/DebugFormatTest.java",
+            "src/test/java/com/google/protobuf/CodedOutputStreamTest.java",
+            "src/test/java/com/google/protobuf/CodedInputStreamTest.java",
+            "src/test/java/com/google/protobuf/ProtobufToStringOutputTest.java",
+            # Excluded in core_tests
+            "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
+            "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
+            "src/test/java/com/google/protobuf/TestUtil.java",
+            "src/test/java/com/google/protobuf/TestUtilLite.java",
+            "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
+        ],
+    ),
+    test_prefix = "v25SrcJar",
+    deps = [
+        ":core",
+        ":v25_test_util_srcjar",
+        "//compatibility:v25_test_protos_srcjar",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+        "@maven//:org_mockito_mockito_core",
+    ],
+)
+
+protobuf_java_library(
+    name = "v25_test_util_jar",
+    testonly = True,
+    srcs = [
+        "src/test/java/com/google/protobuf/TestUtil.java",
+        "src/test/java/com/google/protobuf/TestUtilLite.java",
+    ],
+    deps = [
+        ":core",
+        "//compatibility:v25_test_protos_jar",
+        "@maven//:com_google_guava_guava",
+        "@maven//:junit_junit",
+    ],
+)
+
+# Tests binary compatibility against v25 gencode ja compiled against v25 runtime
+junit_tests(
+    name = "v25_core_tests_jar",
+    size = "small",
+    srcs = glob(
+        ["src/test/java/**/*.java"],
+        exclude = [
+            # Depends on test protos or API changes added in v4.x.x (e.g. editions)
+            "src/test/java/com/google/protobuf/TextFormatTest.java",
+            "src/test/java/com/google/protobuf/DescriptorsTest.java",
+            "src/test/java/com/google/protobuf/DebugFormatTest.java",
+            "src/test/java/com/google/protobuf/CodedOutputStreamTest.java",
+            "src/test/java/com/google/protobuf/CodedInputStreamTest.java",
+            "src/test/java/com/google/protobuf/ProtobufToStringOutputTest.java",
+            # Excluded in core_tests
+            "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
+            "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
+            "src/test/java/com/google/protobuf/TestUtil.java",
+            "src/test/java/com/google/protobuf/TestUtilLite.java",
+            "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
+        ],
+    ),
+    test_prefix = "v25Jar",
+    deps = [
+        ":core",
+        ":v25_test_util_jar",
+        "//compatibility:v25_test_protos_jar",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+        "@maven//:org_mockito_mockito_core",
+    ],
+)
+
 pkg_files(
     name = "dist_files",
     srcs = glob([
@@ -602,7 +700,6 @@ pkg_files(
         "BUILD.bazel",
         "generate-sources-build.xml",
         "generate-test-sources-build.xml",
-        "pom.xml",
         "pom_template.xml",
     ],
     strip_prefix = strip_prefix.from_root(""),

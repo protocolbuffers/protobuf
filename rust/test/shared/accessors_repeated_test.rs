@@ -7,13 +7,13 @@
 
 use googletest::prelude::*;
 use paste::paste;
-use protobuf::ViewProxy;
+use protobuf::AsView;
 use unittest_rust_proto::{test_all_types, test_all_types::NestedMessage, TestAllTypes};
 
 macro_rules! generate_repeated_numeric_test {
   ($(($t: ty, $field: ident)),*) => {
       paste! { $(
-          #[test]
+          #[gtest]
           fn [< test_repeated_ $field _accessors >]() {
               let mut msg = TestAllTypes::new();
               assert_that!(msg.[< repeated_ $field >](), empty());
@@ -52,7 +52,7 @@ macro_rules! generate_repeated_numeric_test {
               );
           }
 
-          #[test]
+          #[gtest]
           fn [< test_repeated_ $field _set >]() {
               let mut msg = TestAllTypes::new();
               let mut msg2 = TestAllTypes::new();
@@ -70,7 +70,7 @@ macro_rules! generate_repeated_numeric_test {
               );
           }
 
-          #[test]
+          #[gtest]
           fn [< test_repeated_ $field _exact_size_iterator >]() {
             let mut msg = TestAllTypes::new();
             let mut mutator = msg.[<repeated_ $field _mut>]();
@@ -104,7 +104,7 @@ generate_repeated_numeric_test!(
     (f64, double)
 );
 
-#[test]
+#[gtest]
 fn test_repeated_bool_accessors() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.repeated_bool(), empty());
@@ -134,7 +134,7 @@ fn test_repeated_bool_accessors() {
     assert_that!(msg.repeated_bool(), each(eq(false)));
 }
 
-#[test]
+#[gtest]
 fn test_repeated_enum_accessors() {
     use test_all_types::NestedEnum;
 
@@ -172,7 +172,19 @@ fn test_repeated_enum_accessors() {
     assert_that!(msg.repeated_nested_enum(), each(eq(NestedEnum::Foo)));
 }
 
-#[test]
+#[gtest]
+fn test_repeated_enum_set() {
+    use test_all_types::NestedEnum;
+
+    let mut msg = TestAllTypes::new();
+    msg.set_repeated_nested_enum([NestedEnum::Foo, NestedEnum::Bar, NestedEnum::Baz].into_iter());
+    assert_that!(
+        msg.repeated_nested_enum(),
+        elements_are![eq(NestedEnum::Foo), eq(NestedEnum::Bar), eq(NestedEnum::Baz)]
+    );
+}
+
+#[gtest]
 fn test_repeated_bool_set() {
     let mut msg = TestAllTypes::new();
     let mut msg2 = TestAllTypes::new();
@@ -187,7 +199,7 @@ fn test_repeated_bool_set() {
     assert_that!(&view.iter().collect::<Vec<_>>(), eq(&mutator2.iter().collect::<Vec<_>>()));
 }
 
-#[test]
+#[gtest]
 fn test_repeated_message() {
     let mut msg = TestAllTypes::new();
     assert_that!(msg.repeated_nested_message().len(), eq(0));
@@ -218,7 +230,16 @@ fn test_repeated_message() {
     assert_that!(msg2.repeated_nested_message().len(), eq(0));
 }
 
-#[test]
+#[gtest]
+fn test_repeated_message_setter() {
+    let mut msg = TestAllTypes::new();
+    let mut nested = NestedMessage::new();
+    nested.set_bb(1);
+    msg.set_repeated_nested_message([nested].into_iter());
+    assert_that!(msg.repeated_nested_message().get(0).unwrap().bb(), eq(1));
+}
+
+#[gtest]
 fn test_repeated_strings() {
     let mut older_msg = TestAllTypes::new();
     {
@@ -253,7 +274,7 @@ fn test_repeated_strings() {
     assert_that!(older_msg.repeated_string(), empty());
 }
 
-#[test]
+#[gtest]
 fn test_repeated_bytes() {
     let mut older_msg = TestAllTypes::new();
     {

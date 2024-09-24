@@ -16,6 +16,8 @@ load(
 )
 load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
+package(default_applicable_licenses = ["//:license"])
+
 cc_library(
     name = "message",
     srcs = [
@@ -86,6 +88,24 @@ cc_library(
 )
 
 cc_library(
+    name = "iterator",
+    srcs = [
+        "internal/iterator.c",
+    ],
+    hdrs = [
+        "internal/iterator.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":internal",
+        ":message",
+        "//upb:mini_table",
+        "//upb:port",
+    ],
+)
+
+cc_library(
     name = "compare",
     srcs = [
         "compare.c",
@@ -97,6 +117,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
+        ":iterator",
         ":message",
         "//upb:base",
         "//upb:mini_table",
@@ -411,7 +432,6 @@ cc_test(
     ],
 )
 
-# begin:github_only
 filegroup(
     name = "source_files",
     srcs = glob(
@@ -425,9 +445,7 @@ filegroup(
         "//upb/cmake:__pkg__",
     ],
 )
-# end:github_only
 
-# begin:github_only
 filegroup(
     name = "test_srcs",
     srcs = glob(
@@ -448,4 +466,3 @@ filegroup(
     ),
     visibility = ["//upb:__pkg__"],
 )
-# end:github_only

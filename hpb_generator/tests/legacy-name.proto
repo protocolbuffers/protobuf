@@ -7,7 +7,7 @@
 
 syntax = "proto3";
 
-package protos_generator.test;
+package hpb_unittest;
 
 // option java_multiple_files = true;
 

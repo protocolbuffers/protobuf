@@ -711,7 +711,7 @@ static upb_MessageValue jsondec_int(jsondec* d, const upb_FieldDef* f) {
 
 /* Parse UINT32 or UINT64 value. */
 static upb_MessageValue jsondec_uint(jsondec* d, const upb_FieldDef* f) {
-  upb_MessageValue val = {0};
+  upb_MessageValue val;
 
   switch (jsondec_peek(d)) {
     case JD_NUMBER: {
@@ -748,7 +748,7 @@ static upb_MessageValue jsondec_uint(jsondec* d, const upb_FieldDef* f) {
 /* Parse DOUBLE or FLOAT value. */
 static upb_MessageValue jsondec_double(jsondec* d, const upb_FieldDef* f) {
   upb_StringView str;
-  upb_MessageValue val = {0};
+  upb_MessageValue val;
 
   switch (jsondec_peek(d)) {
     case JD_NUMBER:

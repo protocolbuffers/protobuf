@@ -38,7 +38,7 @@ impl StringView {
             // SAFETY:
             // - `ptr` is non-null
             // - `ptr` is valid for `len` bytes as promised by the caller.
-            unsafe { std::slice::from_raw_parts(self.ptr, self.len) }
+            unsafe { core::slice::from_raw_parts(self.ptr, self.len) }
         }
     }
 }
@@ -46,5 +46,11 @@ impl StringView {
 impl From<&[u8]> for StringView {
     fn from(slice: &[u8]) -> Self {
         Self { ptr: slice.as_ptr(), len: slice.len() }
+    }
+}
+
+impl<const N: usize> From<&[u8; N]> for StringView {
+    fn from(slice: &[u8; N]) -> Self {
+        Self { ptr: slice.as_ptr(), len: N }
     }
 }

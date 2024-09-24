@@ -10,8 +10,8 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
@@ -25,9 +25,6 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/wire_format.h"
-#include "google/protobuf/wire_format_lite.h"
 
 namespace google {
 namespace protobuf {
@@ -37,8 +34,6 @@ namespace cpp {
 namespace {
 using internal::TailCallTableInfo;
 using internal::cpp::Utf8CheckMode;
-using google::protobuf::internal::WireFormat;
-using google::protobuf::internal::WireFormatLite;
 
 std::vector<const FieldDescriptor*> GetOrderedFields(
     const Descriptor* descriptor, const Options& options) {
@@ -74,28 +69,29 @@ ParseFunctionGenerator::ParseFunctionGenerator(
   fields.reserve(ordered_fields_.size());
   for (size_t i = 0; i < ordered_fields_.size(); ++i) {
     auto* field = ordered_fields_[i];
+    ABSL_CHECK_GE(field->index(), 0);
+    size_t index = static_cast<size_t>(field->index());
     fields.push_back({
         field,
-        field->index() < has_bit_indices.size()
-            ? has_bit_indices[field->index()]
-            : -1,
+        index < has_bit_indices.size() ? has_bit_indices[index] : -1,
         GetPresenceProbability(field, options_),
         GetLazyStyle(field, options_, scc_analyzer_),
         IsStringInlined(field, options_),
         IsImplicitWeakField(field, options_, scc_analyzer_),
         /* use_direct_tcparser_table */ true,
         ShouldSplit(field, options_),
-        field->index() < inlined_string_indices.size()
-            ? inlined_string_indices[field->index()]
-            : -1,
+        index < inlined_string_indices.size() ? inlined_string_indices[index]
+                                              : -1,
     });
   }
-  tc_table_info_.reset(new TailCallTableInfo(
+  tc_table_info_ = std::make_unique<TailCallTableInfo>(
       descriptor_,
-      {/* is_lite */ GetOptimizeFor(descriptor->file(), options_) ==
-           FileOptions::LITE_RUNTIME,
-       /* uses_codegen */ true, options_.profile_driven_cluster_aux_subtable},
-      fields));
+      TailCallTableInfo::MessageOptions{
+          /* is_lite */ GetOptimizeFor(descriptor->file(), options_) ==
+              FileOptions::LITE_RUNTIME,
+          /* uses_codegen */ true,
+          options_.profile_driven_cluster_aux_subtable},
+      fields);
   SetCommonMessageDataVariables(descriptor_, &variables_);
   SetUnknownFieldsVariable(descriptor_, options_, &variables_);
   variables_["classname"] = ClassName(descriptor, false);
@@ -129,7 +125,7 @@ static NumToEntryTable MakeNumToEntryTable(
 static int FieldNameDataSize(const std::vector<uint8_t>& data) {
   // We add a +1 here to allow for a NUL termination character. It makes the
   // codegen nicer.
-  return data.empty() ? 0 : data.size() + 1;
+  return data.empty() ? 0 : static_cast<int>(data.size()) + 1;
 }
 
 void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
@@ -208,7 +204,7 @@ static NumToEntryTable MakeNumToEntryTable(
   uint32_t last_skip_entry_start = 0;
   for (; field_entry_index != N; ++field_entry_index) {
     auto* field_descriptor = field_descriptors[field_entry_index];
-    uint32_t fnum = field_descriptor->number();
+    uint32_t fnum = static_cast<uint32_t>(field_descriptor->number());
     ABSL_CHECK_GT(fnum, last_skip_entry_start);
     if (start_new_block == false) {
       // If the next field number is within 15 of the last_skip_entry_start, we
@@ -362,8 +358,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
       // field_lookup_table[]
       auto field_lookup_scope = format.ScopedIndent();
       int line_entries = 0;
-      for (int i = 0, N = field_num_to_entry_table.blocks.size(); i < N; ++i) {
-        SkipEntryBlock& entry_block = field_num_to_entry_table.blocks[i];
+      for (auto& entry_block : field_num_to_entry_table.blocks) {
         format("$1$, $2$, $3$,\n", entry_block.first_fnum & 65535,
                entry_block.first_fnum / 65536, entry_block.entries.size());
         for (auto se16 : entry_block.entries) {
@@ -481,10 +476,8 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
                         {"field", FieldMemberName(
                                       aux_entry.field,
                                       ShouldSplit(aux_entry.field, options_))},
-                        {"strict",
-                         utf8_check == internal::cpp::Utf8CheckMode::kStrict},
-                        {"verify",
-                         utf8_check == internal::cpp::Utf8CheckMode::kVerify},
+                        {"strict", utf8_check == Utf8CheckMode::kStrict},
+                        {"verify", utf8_check == Utf8CheckMode::kVerify},
                         {"validate", validated_enum},
                         {"key_wire", map_key->type()},
                         {"value_wire", map_value->type()},
@@ -497,10 +490,6 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* printer) {
                     )cc");
                 break;
               }
-              case TailCallTableInfo::kCreateInArena:
-                format("{::_pbi::TcParser::CreateInArenaStorageCb<$1$>},\n",
-                       QualifiedClassName(aux_entry.desc, options_));
-                break;
             }
           }
         }
@@ -580,7 +569,7 @@ void ParseFunctionGenerator::GenerateFieldEntries(Formatter& format) {
                absl::StrCat(FieldName(field), "_"));
       } else {
         format("PROTOBUF_FIELD_OFFSET($classname$, $1$), ",
-               FieldMemberName(field, /*cold=*/false));
+               FieldMemberName(field, /*split=*/false));
       }
       if (oneof) {
         format("_Internal::kOneofCaseOffset + $1$, ", 4 * oneof->index());
@@ -613,7 +602,7 @@ void ParseFunctionGenerator::GenerateFieldNames(Formatter& format) {
   // have a literal string than an initializer list of chars.
 
   const int total_sizes =
-      static_cast<int>(((tc_table_info_->field_entries.size() + 1) + 7) & ~7);
+      static_cast<int>(((tc_table_info_->field_entries.size() + 1) + 7) & ~7u);
   const uint8_t* p = tc_table_info_->field_name_data.data();
   const uint8_t* sizes = p;
   const uint8_t* sizes_end = sizes + total_sizes;

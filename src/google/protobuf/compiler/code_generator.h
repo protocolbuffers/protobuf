@@ -22,6 +22,7 @@
 
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator_lite.h"  // IWYU pragma: export
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
@@ -161,6 +162,9 @@ class PROTOC_EXPORT CodeGenerator {
   }
 };
 
+constexpr auto MinimumAllowedEdition() { return Edition::EDITION_PROTO2; }
+constexpr auto MaximumAllowedEdition() { return Edition::EDITION_2023; }
+
 // CodeGenerators generate one or more files in a given directory.  This
 // abstract interface represents the directory to which the CodeGenerator is
 // to write and other information about the context in which the Generator
@@ -220,21 +224,6 @@ class PROTOC_EXPORT GeneratorContext {
 // The type GeneratorContext was once called OutputDirectory. This typedef
 // provides backward compatibility.
 typedef GeneratorContext OutputDirectory;
-
-// Several code generators treat the parameter argument as holding a
-// list of options separated by commas.  This helper function parses
-// a set of comma-delimited name/value pairs: e.g.,
-//   "foo=bar,baz,moo=corge"
-// parses to the pairs:
-//   ("foo", "bar"), ("baz", ""), ("moo", "corge")
-PROTOC_EXPORT void ParseGeneratorParameter(
-    absl::string_view, std::vector<std::pair<std::string, std::string> >*);
-
-// Strips ".proto" or ".protodevel" from the end of a filename.
-PROTOC_EXPORT std::string StripProto(absl::string_view filename);
-
-// Returns true if the proto path corresponds to a known feature file.
-PROTOC_EXPORT bool IsKnownFeatureProto(absl::string_view filename);
 
 // Returns true if the proto path can skip edition check.
 PROTOC_EXPORT bool CanSkipEditionCheck(absl::string_view filename);

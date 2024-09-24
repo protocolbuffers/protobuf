@@ -89,7 +89,6 @@ cc_library(
         "//src/google/protobuf/io:printer",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
@@ -113,7 +112,10 @@ cc_library(
         "message_builder.h",
     ],
     strip_include_prefix = "/src",
-    visibility = ["//src/google/protobuf/compiler/java:__pkg__"],
+    visibility = [
+        "//src/google/protobuf/compiler/java:__pkg__",
+        "//src/google/protobuf/compiler/kotlin:__pkg__",
+    ],
     deps = [
         ":eg",
         ":fg",

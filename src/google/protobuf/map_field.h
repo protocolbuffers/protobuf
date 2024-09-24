@@ -18,6 +18,7 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
@@ -26,7 +27,6 @@
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/map.h"
-#include "google/protobuf/map_entry.h"
 #include "google/protobuf/map_field_lite.h"
 #include "google/protobuf/map_type_handler.h"
 #include "google/protobuf/message.h"
@@ -112,9 +112,9 @@ class PROTOBUF_EXPORT MapKey {
     SetType(FieldDescriptor::CPPTYPE_BOOL);
     val_.bool_value = value;
   }
-  void SetStringValue(std::string val) {
+  void SetStringValue(absl::string_view val) {
     SetType(FieldDescriptor::CPPTYPE_STRING);
-    *val_.string_value.get_mutable() = std::move(val);
+    val_.string_value.get_mutable()->assign(val.data(), val.size());
   }
 
   int64_t GetInt64Value() const {
@@ -137,7 +137,7 @@ class PROTOBUF_EXPORT MapKey {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_BOOL, "MapKey::GetBoolValue");
     return val_.bool_value;
   }
-  const std::string& GetStringValue() const {
+  absl::string_view GetStringValue() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_STRING, "MapKey::GetStringValue");
     return val_.string_value.get();
   }
@@ -406,6 +406,10 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     return internal::ToIntSize(SpaceUsedExcludingSelfLong());
   }
 
+  static constexpr size_t InternalGetArenaOffset(internal::InternalVisibility) {
+    return PROTOBUF_FIELD_OFFSET(MapFieldBase, payload_);
+  }
+
  protected:
   // Gets the size of space used by map field.
   size_t SpaceUsedExcludingSelfNoLock() const {
@@ -417,7 +421,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 
   // Synchronizes the content in Map to RepeatedPtrField if there is any change
   // to Map after last synchronization.
-  void SyncRepeatedFieldWithMap() const;
+  const RepeatedPtrFieldBase& SyncRepeatedFieldWithMap(bool for_mutation) const;
   void SyncRepeatedFieldWithMapNoLock();
 
   // Synchronizes the content in RepeatedPtrField to Map if there is any change
@@ -608,6 +612,12 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
 
   void InternalSwap(TypeDefinedMapFieldBase* other);
 
+  static constexpr size_t InternalGetArenaOffsetAlt(
+      internal::InternalVisibility access) {
+    return PROTOBUF_FIELD_OFFSET(TypeDefinedMapFieldBase, map_) +
+           decltype(map_)::InternalGetArenaOffset(access);
+  }
+
  protected:
   friend struct MapFieldTestPeer;
 
@@ -646,9 +656,6 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
   typedef MapTypeHandler<kKeyFieldType_, Key> KeyTypeHandler;
   typedef MapTypeHandler<kValueFieldType_, T> ValueTypeHandler;
 
-  // Define message type for internal repeated field.
-  typedef Derived EntryType;
-
  public:
   typedef Map<Key, T> MapType;
   static constexpr WireFormatLite::FieldType kKeyFieldType = kKeyFieldType_;
@@ -666,12 +673,6 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
   MapField(InternalVisibility, Arena* arena, const MapField& from)
       : MapField(arena) {
     this->MergeFromImpl(*this, from);
-  }
-
-  // Used in the implementation of parsing. Caller should take the ownership iff
-  // arena_ is nullptr.
-  EntryType* NewEntry() const {
-    return Arena::Create<EntryType>(this->arena());
   }
 
  private:
@@ -701,14 +702,6 @@ bool AllAreInitialized(const TypeDefinedMapFieldBase<Key, T>& field) {
   }
   return true;
 }
-
-template <typename T, typename Key, typename Value,
-          WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType>
-struct MapEntryToMapField<
-    MapEntry<T, Key, Value, kKeyFieldType, kValueFieldType>> {
-  typedef MapField<T, Key, Value, kKeyFieldType, kValueFieldType> MapFieldType;
-};
 
 class PROTOBUF_EXPORT DynamicMapField final
     : public TypeDefinedMapFieldBase<MapKey, MapValueRef> {

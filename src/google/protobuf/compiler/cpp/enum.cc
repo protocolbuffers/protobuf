@@ -24,8 +24,11 @@
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
+#include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_enum_util.h"
 
@@ -41,7 +44,8 @@ absl::flat_hash_map<absl::string_view, std::string> EnumVars(
     const EnumValueDescriptor* min, const EnumValueDescriptor* max) {
   auto classname = ClassName(enum_, false);
   return {
-      {"Enum", enum_->name()},
+      {"DEPRECATED", enum_->options().deprecated() ? "[[deprecated]]" : ""},
+      {"Enum", std::string(enum_->name())},
       {"Enum_", ResolveKeyword(enum_->name())},
       {"Msg_Enum", classname},
       {"::Msg_Enum", QualifiedClassName(enum_, options)},
@@ -49,6 +53,11 @@ absl::flat_hash_map<absl::string_view, std::string> EnumVars(
        enum_->containing_type() == nullptr ? "" : absl::StrCat(classname, "_")},
       {"kMin", absl::StrCat(min->number())},
       {"kMax", absl::StrCat(max->number())},
+      {"return_type", CppGenerator::GetResolvedSourceFeatures(*enum_)
+                              .GetExtension(::pb::cpp)
+                              .enum_name_uses_string_view()
+                          ? "::absl::string_view"
+                          : "const std::string&"},
   };
 }
 
@@ -154,7 +163,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
            }},
       },
       R"cc(
-        enum $Msg_Enum_annotated$ : int {
+        enum $DEPRECATED $$Msg_Enum_annotated$ : int {
           $values$,
           $open_enum_sentinels$,
         };
@@ -182,7 +191,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
     )cc");
   } else {
     p->Emit(R"cc(
-      const std::string& $Msg_Enum$_Name($Msg_Enum$ value);
+      $return_type$ $Msg_Enum$_Name($Msg_Enum$ value);
     )cc");
   }
 
@@ -204,7 +213,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
   if (should_cache_ || !has_reflection_) {
     p->Emit({{"static_assert", write_assert}}, R"cc(
       template <typename T>
-      const std::string& $Msg_Enum$_Name(T value) {
+      $return_type$ $Msg_Enum$_Name(T value) {
         $static_assert$;
         return $Msg_Enum$_Name(static_cast<$Msg_Enum$>(value));
       }
@@ -216,7 +225,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
       // pointers, so if the enum values are sparse, it's not worth it.
       p->Emit(R"cc(
         template <>
-        inline const std::string& $Msg_Enum$_Name($Msg_Enum$ value) {
+        inline $return_type$ $Msg_Enum$_Name($Msg_Enum$ value) {
           return ::$proto_ns$::internal::NameOfDenseEnum<$Msg_Enum$_descriptor,
                                                          $kMin$, $kMax$>(
               static_cast<int>(value));
@@ -226,7 +235,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
   } else {
     p->Emit({{"static_assert", write_assert}}, R"cc(
       template <typename T>
-      const std::string& $Msg_Enum$_Name(T value) {
+      $return_type$ $Msg_Enum$_Name(T value) {
         $static_assert$;
         return ::$proto_ns$::internal::NameOfEnum($Msg_Enum$_descriptor(), value);
       }
@@ -322,7 +331,7 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
 
   p->Emit(R"cc(
     template <typename T>
-    static inline const std::string& $Enum$_Name(T value) {
+    static inline $return_type$ $Enum$_Name(T value) {
       return $Msg_Enum$_Name(value);
     }
     static inline bool $Enum$_Parse(absl::string_view name, $Enum_$* value) {
@@ -514,7 +523,7 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
               $entries_by_number$,
           };
 
-          const std::string& $Msg_Enum$_Name($Msg_Enum$ value) {
+          $return_type$ $Msg_Enum$_Name($Msg_Enum$ value) {
             static const bool kDummy =
                 ::$proto_ns$::internal::InitializeEnumStrings(
                     $Msg_Enum$_entries, $Msg_Enum$_entries_by_number,

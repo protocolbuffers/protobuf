@@ -9,7 +9,7 @@ syntax = "proto3";
 
 package protobuf_editions_test.proto3;
 
-import "google/protobuf/editions/codegen_tests/proto3_implicit.proto";
+import "editions/codegen_tests/proto3_implicit.proto";
 
 message Proto3ImportMessage {
   Proto3Implicit sub_message_field = 1;

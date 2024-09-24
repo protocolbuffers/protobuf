@@ -13,21 +13,21 @@ __author__ = 'petar@google.com (Petar Petrov)'
 import unittest
 
 from google.protobuf import service_reflection
-from google.protobuf import service
 from google.protobuf import unittest_pb2
 
 
 class FooUnitTest(unittest.TestCase):
 
   def testService(self):
-    class MockRpcChannel(service.RpcChannel):
+
+    class MockRpcChannel:
       def CallMethod(self, method, controller, request, response, callback):
         self.method = method
         self.controller = controller
         self.request = request
         callback(response)
 
-    class MockRpcController(service.RpcController):
+    class MockRpcController:
       def SetFailed(self, msg):
         self.failure_message = msg
 
@@ -81,7 +81,8 @@ class FooUnitTest(unittest.TestCase):
     self.assertEqual(True, srvc.bar_called)
 
   def testServiceStub(self):
-    class MockRpcChannel(service.RpcChannel):
+
+    class MockRpcChannel:
       def CallMethod(self, method, controller, request,
                      response_class, callback):
         self.method = method

@@ -10,15 +10,9 @@
 #import "GPBRuntimeTypes.h"
 #import "GPBWireFormat.h"
 
-@class GPBBoolArray;
-@class GPBDoubleArray;
-@class GPBEnumArray;
-@class GPBFloatArray;
-@class GPBMessage;
-@class GPBInt32Array;
-@class GPBInt64Array;
-@class GPBUInt32Array;
-@class GPBUInt64Array;
+#import "GPBArray.h"
+#import "GPBUnknownFieldSet.h"
+
 @class GPBUnknownFieldSet;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -589,6 +583,10 @@ __attribute__((objc_subclassing_restricted))
 - (void)writeGroupNoTag:(int32_t)fieldNumber
                   value:(GPBMessage *)value;
 
+//%PDDM-EXPAND-END _WRITE_DECLS()
+
+// clang-format on
+
 /**
  * Write a GPBUnknownFieldSet for the given field number.
  *
@@ -596,7 +594,9 @@ __attribute__((objc_subclassing_restricted))
  * @param value       The value to write out.
  **/
 - (void)writeUnknownGroup:(int32_t)fieldNumber
-                    value:(GPBUnknownFieldSet *)value;
+                    value:(GPBUnknownFieldSet *)value
+    __attribute__((deprecated("GPBUnknownFieldSet is going away.")));
+
 /**
  * Write an array of GPBUnknownFieldSet for the given field number.
  *
@@ -604,7 +604,9 @@ __attribute__((objc_subclassing_restricted))
  * @param values      The values to write out.
  **/
 - (void)writeUnknownGroupArray:(int32_t)fieldNumber
-                        values:(NSArray<GPBUnknownFieldSet*> *)values;
+                        values:(NSArray<GPBUnknownFieldSet *> *)values
+    __attribute__((deprecated("GPBUnknownFieldSet is going away.")));
+
 /**
  * Write a GPBUnknownFieldSet without any tag (but does write the endGroup tag).
  *
@@ -612,11 +614,8 @@ __attribute__((objc_subclassing_restricted))
  * @param value       The value to write out.
  **/
 - (void)writeUnknownGroupNoTag:(int32_t)fieldNumber
-                         value:(GPBUnknownFieldSet *)value;
-
-//%PDDM-EXPAND-END _WRITE_DECLS()
-
-// clang-format on
+                         value:(GPBUnknownFieldSet *)value
+    __attribute__((deprecated("GPBUnknownFieldSet is going away.")));
 
 /**
 Write a MessageSet extension field to the stream. For historical reasons,
@@ -741,6 +740,5 @@ NS_ASSUME_NONNULL_END
 //%_WRITE_UNPACKABLE_DECLS(Message, GPBMessage)
 //%_WRITE_UNPACKABLE_DECLS(Bytes, NSData)
 //%_WRITE_GROUP_DECLS(Group, GPBMessage)
-//%_WRITE_GROUP_DECLS(UnknownGroup, GPBUnknownFieldSet)
 
 // clang-format on

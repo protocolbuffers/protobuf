@@ -12,7 +12,7 @@ use googletest::prelude::*;
 use protobuf::Enum;
 use unittest_rust_proto::*;
 
-#[test]
+#[gtest]
 fn test_nested_enum_values() {
     assert_that!(i32::from(test_all_types::NestedEnum::Foo), eq(1));
     assert_that!(i32::from(test_all_types::NestedEnum::Bar), eq(2));
@@ -20,19 +20,19 @@ fn test_nested_enum_values() {
     assert_that!(i32::from(test_all_types::NestedEnum::Neg), eq(-1));
 }
 
-#[test]
+#[gtest]
 fn test_isolated_nested_enum() {
     // Ensure that the enum is generated even when it's the only nested type for the
     // message.
     assert_that!(i32::from(test_required_enum_no_mask::NestedEnum::Foo), eq(2));
 }
 
-#[test]
+#[gtest]
 fn test_enum_value_name_same_as_enum() {
     assert_that!(i32::from(TestEnumValueNameSameAsEnum::TestEnumValueNameSameAsEnum), eq(1));
 }
 
-#[test]
+#[gtest]
 fn test_enum_defaults() {
     assert_that!(TestSparseEnum::default(), eq(TestSparseEnum::SparseA));
     assert_that!(TestEnumWithDupValue::default(), eq(TestEnumWithDupValue::Foo1));
@@ -44,7 +44,7 @@ fn test_enum_defaults() {
     assert_that!(test_all_types::NestedEnum::default(), eq(test_all_types::NestedEnum::Foo));
 }
 
-#[test]
+#[gtest]
 #[deny(unreachable_patterns)]
 #[allow(clippy::let_unit_value)]
 fn test_closed_enum_is_nonexhaustive() {
@@ -58,7 +58,7 @@ fn test_closed_enum_is_nonexhaustive() {
     };
 }
 
-#[test]
+#[gtest]
 fn test_closed_enum_conversion() {
     assert_that!(i32::from(TestSparseEnum::SparseA), eq(123));
     assert_that!(TestSparseEnum::try_from(123), ok(eq(&TestSparseEnum::SparseA)));
@@ -70,7 +70,7 @@ fn test_closed_enum_conversion() {
     assert_that!(TestSparseEnum::try_from(1), err(anything()));
 }
 
-#[test]
+#[gtest]
 fn test_closed_aliased_enum_conversion() {
     assert_that!(i32::from(TestEnumWithDupValue::Foo1), eq(1));
     assert_that!(i32::from(TestEnumWithDupValue::Foo2), eq(1));
@@ -88,7 +88,7 @@ fn test_closed_aliased_enum_conversion() {
     assert_that!(TestEnumWithDupValue::Bar1, eq(TestEnumWithDupValue::Bar2));
 }
 
-#[test]
+#[gtest]
 #[deny(unreachable_patterns)]
 #[allow(clippy::let_unit_value)]
 fn test_open_enum_is_nonexhaustive() {
@@ -100,7 +100,7 @@ fn test_open_enum_is_nonexhaustive() {
     };
 }
 
-#[test]
+#[gtest]
 fn test_open_enum_conversion() {
     assert_that!(i32::from(TestEnumWithNumericNames::Unknown), eq(0));
     assert_that!(i32::from(TestEnumWithNumericNames::_2020), eq(1));
@@ -123,7 +123,7 @@ fn test_open_enum_conversion() {
     assert_that!(i32::from(TestEnumWithNumericNames::from(-1)), eq(-1));
 }
 
-#[test]
+#[gtest]
 fn test_open_aliased_enum_conversion() {
     assert_that!(i32::from(TestEnumWithDuplicateStrippedPrefixNames::Unknown), eq(0));
     assert_that!(i32::from(TestEnumWithDuplicateStrippedPrefixNames::Foo), eq(1));
@@ -157,19 +157,19 @@ fn test_open_aliased_enum_conversion() {
     assert_that!(i32::from(TestEnumWithDuplicateStrippedPrefixNames::from(5)), eq(5));
 }
 
-#[test]
+#[gtest]
 fn test_enum_conversion_failure_display() {
     let err = TestSparseEnum::try_from(1).unwrap_err();
     assert_that!(format!("{err}"), eq("1 is not a known value for TestSparseEnum"));
 }
 
-#[test]
+#[gtest]
 fn test_enum_conversion_failure_impls_std_error() {
     let err = TestSparseEnum::try_from(1).unwrap_err();
     let _test_compiles: &dyn std::error::Error = &err;
 }
 
-#[test]
+#[gtest]
 fn test_is_known_for_closed_enum() {
     assert_that!(test_all_types::NestedEnum::is_known(-2), eq(false));
     assert_that!(test_all_types::NestedEnum::is_known(-1), eq(true));
@@ -180,7 +180,7 @@ fn test_is_known_for_closed_enum() {
     assert_that!(test_all_types::NestedEnum::is_known(4), eq(false));
 }
 
-#[test]
+#[gtest]
 fn test_is_known_for_open_enum() {
     assert_that!(TestEnumWithNumericNames::is_known(-1), eq(false));
     assert_that!(TestEnumWithNumericNames::is_known(0), eq(true));

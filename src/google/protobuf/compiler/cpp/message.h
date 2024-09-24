@@ -14,7 +14,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <limits>
 #include <memory>
 #include <string>
 #include <utility>
@@ -29,6 +28,7 @@
 #include "google/protobuf/compiler/cpp/message_layout_helper.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -134,6 +134,17 @@ class MessageGenerator {
   void GenerateIsInitialized(io::Printer* p);
   bool NeedsIsInitialized();
 
+  struct NewOpRequirements {
+    // Some field is initialized to non-zero values. Eg string fields pointing
+    // to default string.
+    bool needs_memcpy = false;
+    // Some field has a copy of the arena.
+    bool needs_arena_seeding = false;
+    // Some field has logic that needs to run.
+    bool needs_to_run_constructor = false;
+  };
+  NewOpRequirements GetNewOp(io::Printer* arena_emitter) const;
+
   // Helpers for GenerateSerializeWithCachedSizes().
   //
   // cached_has_bit_index maintains that:
@@ -185,6 +196,12 @@ class MessageGenerator {
   int HasByteIndex(const FieldDescriptor* field) const;
   int HasWordIndex(const FieldDescriptor* field) const;
   std::vector<uint32_t> RequiredFieldsBitMask() const;
+
+  // Helper functions to reduce nesting levels of deep Emit calls.
+  void EmitCheckAndUpdateByteSizeForField(const FieldDescriptor* field,
+                                          io::Printer* p) const;
+  void EmitUpdateByteSizeForField(const FieldDescriptor* field, io::Printer* p,
+                                  int& cached_has_word_index) const;
 
   const Descriptor* descriptor_;
   int index_in_file_messages_;

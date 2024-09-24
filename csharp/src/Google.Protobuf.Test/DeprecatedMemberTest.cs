@@ -25,7 +25,7 @@ namespace Google.Protobuf
         }
 
         [Test]
-        public void TestDepreatedPrimitiveValue() =>
+        public void TestDeprecatedPrimitiveValue() =>
             AssertIsDeprecated(typeof(TestDeprecatedFields).GetProperty(nameof(TestDeprecatedFields.DeprecatedInt32)));
 
         [Test]

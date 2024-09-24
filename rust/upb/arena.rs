@@ -5,13 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use crate::opaque_pointee::opaque_pointee;
-use std::alloc::{self, Layout};
-use std::cell::UnsafeCell;
-use std::marker::PhantomData;
-use std::mem::{align_of, MaybeUninit};
-use std::ptr::{self, NonNull};
-use std::slice;
+use super::opaque_pointee::opaque_pointee;
+use core::cell::UnsafeCell;
+use core::marker::PhantomData;
+use core::mem::{align_of, align_of_val, size_of_val, MaybeUninit};
+use core::ptr::{self, NonNull};
+use core::slice;
 
 opaque_pointee!(upb_Arena);
 pub type RawArena = NonNull<upb_Arena>;
@@ -79,75 +78,85 @@ impl Arena {
         self.raw
     }
 
-    /// Allocates some memory on the arena.
+    /// Allocates some memory on the arena. Returns None if the allocation
+    /// failed.
     ///
     /// # Safety
     ///
-    /// - `layout`'s alignment must be less than `UPB_MALLOC_ALIGN`.
+    /// - `align` must be less than `UPB_MALLOC_ALIGN`.
     #[allow(clippy::mut_from_ref)]
     #[inline]
-    pub unsafe fn alloc(&self, layout: Layout) -> &mut [MaybeUninit<u8>] {
-        debug_assert!(layout.align() <= UPB_MALLOC_ALIGN);
+    pub unsafe fn alloc(&self, size: usize, align: usize) -> Option<&mut [MaybeUninit<u8>]> {
+        debug_assert!(align <= UPB_MALLOC_ALIGN);
         // SAFETY: `self.raw` is a valid UPB arena
-        let ptr = unsafe { upb_Arena_Malloc(self.raw, layout.size()) };
-        if ptr.is_null() {
-            alloc::handle_alloc_error(layout);
-        }
+        let ptr = unsafe { upb_Arena_Malloc(self.raw, size) };
 
-        // SAFETY:
-        // - `upb_Arena_Malloc` promises that if the return pointer is non-null, it is
-        //   dereferencable for `size` bytes and has an alignment of `UPB_MALLOC_ALIGN`
-        //   until the arena is destroyed.
-        // - `[MaybeUninit<u8>]` has no alignment requirement, and `ptr` is aligned to a
-        //   `UPB_MALLOC_ALIGN` boundary.
-        unsafe { slice::from_raw_parts_mut(ptr.cast(), layout.size()) }
+        if ptr.is_null() {
+            None
+        } else {
+            // SAFETY:
+            // - `upb_Arena_Malloc` promises that if the return pointer is non-null, it is
+            //   dereferencable for `size` bytes and has an alignment of `UPB_MALLOC_ALIGN`
+            //   until the arena is destroyed.
+            // - `[MaybeUninit<u8>]` has no alignment requirement, and `ptr` is aligned to a
+            //   `UPB_MALLOC_ALIGN` boundary.
+            Some(unsafe { slice::from_raw_parts_mut(ptr.cast(), size) })
+        }
     }
 
-    /// Same as alloc() but panics if `layout.align() > UPB_MALLOC_ALIGN`.
+    /// Same as alloc() but panics if `align > UPB_MALLOC_ALIGN`.
     #[allow(clippy::mut_from_ref)]
     #[inline]
-    pub fn checked_alloc(&self, layout: Layout) -> &mut [MaybeUninit<u8>] {
-        assert!(layout.align() <= UPB_MALLOC_ALIGN);
-        // SAFETY: layout.align() <= UPB_MALLOC_ALIGN asserted.
-        unsafe { self.alloc(layout) }
+    pub fn checked_alloc(&self, size: usize, align: usize) -> Option<&mut [MaybeUninit<u8>]> {
+        assert!(align <= UPB_MALLOC_ALIGN);
+        // SAFETY: align <= UPB_MALLOC_ALIGN asserted.
+        unsafe { self.alloc(size, align) }
     }
 
     /// Copies the T into this arena and returns a pointer to the T data inside
-    /// the arena.
-    pub fn copy_in<'a, T: Copy>(&'a self, data: &T) -> &'a T {
-        let layout = Layout::for_value(data);
-        let alloc = self.checked_alloc(layout);
+    /// the arena. Returns None if the allocation failed.
+    pub fn copy_in<'a, T: Copy>(&'a self, data: &T) -> Option<&'a T> {
+        let size = size_of_val(data);
+        let align = align_of_val(data);
 
-        // SAFETY:
-        // - alloc is valid for `layout.len()` bytes and is the uninit bytes are written
-        //   to not read from until written.
-        // - T is copy so copying the bytes of the value is sound.
-        unsafe {
-            let alloc = alloc.as_mut_ptr().cast::<MaybeUninit<T>>();
-            // let data = (data as *const T).cast::<MaybeUninit<T>>();
-            (*alloc).write(*data)
-        }
+        self.checked_alloc(size, align).map(|alloc| {
+            // SAFETY:
+            // - alloc is valid for `size` bytes and is the uninit bytes are written to not
+            //   read from until written.
+            // - T is copy so copying the bytes of the value is sound.
+            unsafe {
+                let alloc = alloc.as_mut_ptr().cast::<MaybeUninit<T>>();
+                &*(*alloc).write(*data)
+            }
+        })
     }
 
-    pub fn copy_str_in<'a>(&'a self, s: &str) -> &'a str {
-        let copied_bytes = self.copy_slice_in(s.as_bytes());
-        // SAFETY: `copied_bytes` has same contents as `s` and so must meet &str
-        // criteria.
-        unsafe { std::str::from_utf8_unchecked(copied_bytes) }
+    /// Copies the str into this arena and returns a pointer to the T data
+    /// inside the arena. Returns None if the allocation failed.
+    pub fn copy_str_in<'a>(&'a self, s: &str) -> Option<&'a str> {
+        self.copy_slice_in(s.as_bytes()).map(|copied_bytes| {
+            // SAFETY: `copied_bytes` has same contents as `s` and so must meet &str
+            // criteria.
+            unsafe { core::str::from_utf8_unchecked(copied_bytes) }
+        })
     }
 
-    pub fn copy_slice_in<'a, T: Copy>(&'a self, data: &[T]) -> &'a [T] {
-        let layout = Layout::for_value(data);
-        let alloc: *mut T = self.checked_alloc(layout).as_mut_ptr().cast();
-
-        // SAFETY:
-        // - uninit_alloc is valid for `layout.len()` bytes and is the uninit bytes are
-        //   written to not read from until written.
-        // - T is copy so copying the bytes of the values is sound.
-        unsafe {
-            ptr::copy_nonoverlapping(data.as_ptr(), alloc, data.len());
-            slice::from_raw_parts_mut(alloc, data.len())
-        }
+    /// Copies the slice into this arena and returns a pointer to the T data
+    /// inside the arena. Returns None if the allocation failed.
+    pub fn copy_slice_in<'a, T: Copy>(&'a self, data: &[T]) -> Option<&'a [T]> {
+        let size = size_of_val(data);
+        let align = align_of_val(data);
+        self.checked_alloc(size, align).map(|alloc| {
+            let alloc: *mut T = alloc.as_mut_ptr().cast();
+            // SAFETY:
+            // - uninit_alloc is valid for `layout.len()` bytes and is the uninit bytes are
+            //   written to not read from until written.
+            // - T is copy so copying the bytes of the values is sound.
+            unsafe {
+                ptr::copy_nonoverlapping(data.as_ptr(), alloc, data.len());
+                slice::from_raw_parts(alloc, data.len())
+            }
+        })
     }
 
     /// Fuse two arenas so they share the same lifetime.
@@ -195,8 +204,18 @@ extern "C" {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use googletest::gtest;
 
-    #[test]
+    #[gtest]
+    fn assert_arena_linked() {
+        use crate::assert_linked;
+        assert_linked!(upb_Arena_New);
+        assert_linked!(upb_Arena_Free);
+        assert_linked!(upb_Arena_Malloc);
+        assert_linked!(upb_Arena_Fuse);
+    }
+
+    #[gtest]
     fn raw_ffi_test() {
         // SAFETY: FFI unit test uses C API under expected patterns.
         unsafe {
@@ -207,7 +226,7 @@ mod tests {
         }
     }
 
-    #[test]
+    #[gtest]
     fn test_arena_new_and_free() {
         let arena = Arena::new();
         drop(arena);

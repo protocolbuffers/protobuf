@@ -40,6 +40,7 @@ import org.jcodings.Encoding;
 import org.jcodings.specific.ASCIIEncoding;
 import org.jcodings.specific.UTF8Encoding;
 import org.jruby.*;
+import org.jruby.common.RubyWarnings;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.runtime.Block;
@@ -389,11 +390,21 @@ public class Utils {
     if (!(value instanceof RubyString))
       throw createInvalidTypeError(context, fieldType, fieldName, value);
 
+    RubyString string = (RubyString) value;
+    if (encoding == UTF8Encoding.INSTANCE && string.getEncoding().isUTF8()) {
+      if (string.isCodeRangeBroken()) {
+        // TODO: For now we only warn for
+        // this case.  We will remove the warning and throw an exception in the 30.x release
+        context
+            .runtime
+            .getWarnings()
+            .warn("String is invalid UTF-8. This will be an error in a future version.");
+      }
+    }
+
     value =
-        ((RubyString) value)
-            .encode(
-                context,
-                context.runtime.getEncodingService().convertEncodingToRubyEncoding(encoding));
+        string.encode(
+            context, context.runtime.getEncodingService().convertEncodingToRubyEncoding(encoding));
     value.setFrozen(true);
     return value;
   }

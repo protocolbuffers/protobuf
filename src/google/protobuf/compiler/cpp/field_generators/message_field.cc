@@ -31,9 +31,10 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
+
 using ::google::protobuf::internal::cpp::HasHasbit;
-using Sub = ::google::protobuf::io::Printer::Sub;
 using ::google::protobuf::io::AnnotationCollector;
+using Sub = ::google::protobuf::io::Printer::Sub;
 
 std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
                       bool weak) {
@@ -232,17 +233,17 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $clear_hasbit$;
           $Submsg$* released = $cast_field_$;
           $field_$ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-          auto* old = reinterpret_cast<$pb$::MessageLite*>(released);
-          released = $pbi$::DuplicateIfNonNull(released);
-          if (GetArena() == nullptr) {
-            delete old;
-          }
-#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
-          if (GetArena() != nullptr) {
+          if ($pbi$::DebugHardenForceCopyInRelease()) {
+            auto* old = reinterpret_cast<$pb$::MessageLite*>(released);
             released = $pbi$::DuplicateIfNonNull(released);
+            if (GetArena() == nullptr) {
+              delete old;
+            }
+          } else {
+            if (GetArena() != nullptr) {
+              released = $pbi$::DuplicateIfNonNull(released);
+            }
           }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
           return released;
         }
         inline $Submsg$* $Msg$::unsafe_arena_release_$name$() {
@@ -292,7 +293,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           if (value != nullptr) {
             //~ When $Submsg$ is a cross-file type, have to read the arena
             //~ through the virtual method, because the type isn't defined in
-            //~ this file, only forward-declated.
+            //~ this file, only forward-declared.
             $pb$::Arena* submessage_arena = $base_cast$(value)->GetArena();
             if (message_arena != submessage_arena) {
               value = $pbi$::GetOwnedMessage(message_arena, value, submessage_arena);
@@ -352,7 +353,7 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
   } else {
     // Important: we set `hasbits` after we copied the field. There are cases
     // where people assign root values to child values or vice versa which
-    // are not always checked, so we delay this change becoming 'visibile'
+    // are not always checked, so we delay this change becoming 'visible'
     // until after we copied the message.
     // TODO enforces this as undefined behavior in debug builds.
     p->Emit(R"cc(
@@ -378,12 +379,10 @@ void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
     )cc");
   } else {
     p->Emit(R"cc(
-      delete $field_$;
+      delete this_.$field_$;
     )cc");
   }
 }
-
-using internal::cpp::HasHasbit;
 
 void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
@@ -400,21 +399,22 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
   if (!is_group()) {
     p->Emit(R"cc(
       target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
-          $number$, *$field_$, $field_$->GetCachedSize(), target, stream);
+          $number$, *this_.$field_$, this_.$field_$->GetCachedSize(), target,
+          stream);
     )cc");
   } else {
     p->Emit(R"cc(
       target = stream->EnsureSpace(target);
       target = $pbi$::WireFormatLite::InternalWrite$declared_type$(
-          $number$, *$field_$, target, stream);
+          $number$, *this_.$field_$, target, stream);
     )cc");
   }
 }
 
 void SingularMessage::GenerateByteSize(io::Printer* p) const {
   p->Emit(R"cc(
-    total_size +=
-        $tag_size$ + $pbi$::WireFormatLite::$declared_type$Size(*$field_$);
+    total_size += $tag_size$ +
+                  $pbi$::WireFormatLite::$declared_type$Size(*this_.$field_$);
   )cc");
 }
 
@@ -924,7 +924,7 @@ void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {
 void RepeatedMessage::GenerateDestructorCode(io::Printer* p) const {
   if (should_split()) {
     p->Emit(R"cc(
-      $field_$.DeleteIfNotDefault();
+      this_.$field_$.DeleteIfNotDefault();
     )cc");
   }
 }
@@ -953,8 +953,8 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
                 }
               }}},
             R"cc(
-              for (auto it = this->$field_$.pointer_begin(),
-                        end = this->$field_$.pointer_end();
+              for (auto it = this_.$field_$.pointer_begin(),
+                        end = this_.$field_$.pointer_end();
                    it < end; ++it) {
                 $serialize_field$;
               }
@@ -965,7 +965,7 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
                 if (field_->type() == FieldDescriptor::TYPE_MESSAGE) {
                   p->Emit(
                       R"cc(
-                        const auto& repfield = this->_internal_$name$().Get(i);
+                        const auto& repfield = this_._internal_$name$().Get(i);
                         target =
                             $pbi$::WireFormatLite::InternalWrite$declared_type$(
                                 $number$, repfield, repfield.GetCachedSize(),
@@ -977,14 +977,14 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
                         target = stream->EnsureSpace(target);
                         target =
                             $pbi$::WireFormatLite::InternalWrite$declared_type$(
-                                $number$, this->_internal_$name$().Get(i),
+                                $number$, this_._internal_$name$().Get(i),
                                 target, stream);
                       )cc");
                 }
               }}},
             R"cc(
               for (unsigned i = 0, n = static_cast<unsigned>(
-                                       this->_internal_$name$_size());
+                                       this_._internal_$name$_size());
                    i < n; i++) {
                 $serialize_field$;
               }
@@ -995,8 +995,8 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
 void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
   p->Emit(
       R"cc(
-        total_size += $tag_size$UL * this->_internal_$name$_size();
-        for (const auto& msg : this->_internal$_weak$_$name$()) {
+        total_size += $tag_size$UL * this_._internal_$name$_size();
+        for (const auto& msg : this_._internal$_weak$_$name$()) {
           total_size += $pbi$::WireFormatLite::$declared_type$Size(msg);
         }
       )cc");

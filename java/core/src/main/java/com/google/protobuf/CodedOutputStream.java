@@ -702,7 +702,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     This code is ported from the C++ varint implementation.
     Implementation notes:
 
-    To calcuate varint size, we want to count the number of 7 bit chunks required. Rather than using
+    To calculate varint size, we want to count the number of 7 bit chunks required. Rather than using
     division by 7 to accomplish this, we use multiplication by 9/64. This has a number of important
     properties:
      * It's roughly 1/7.111111. This makes the 0 bits set case have the same value as the 7 bits set
@@ -1306,12 +1306,14 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public final void write(byte value) throws IOException {
+      int position = this.position;
       try {
         buffer[position++] = value;
       } catch (IndexOutOfBoundsException e) {
         throw new OutOfSpaceException(
             String.format("Pos: %d, limit: %d, len: %d", position, limit, 1), e);
       }
+      this.position = position; // Only update position if we stayed within the array bounds.
     }
 
     @Override
@@ -2042,7 +2044,12 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void writeFixed32NoTag(int value) throws IOException {
-      buffer.putInt(bufferPos(position), value);
+      try {
+        buffer.putInt(bufferPos(position), value);
+      } catch (IndexOutOfBoundsException e) {
+        throw new OutOfSpaceException(
+            String.format("Pos: %d, limit: %d, len: %d", position, limit, FIXED32_SIZE), e);
+      }
       position += FIXED32_SIZE;
     }
 
@@ -2076,7 +2083,12 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void writeFixed64NoTag(long value) throws IOException {
-      buffer.putLong(bufferPos(position), value);
+      try {
+        buffer.putLong(bufferPos(position), value);
+      } catch (IndexOutOfBoundsException e) {
+        throw new OutOfSpaceException(
+            String.format("Pos: %d, limit: %d, len: %d", position, limit, FIXED64_SIZE), e);
+      }
       position += FIXED64_SIZE;
     }
 

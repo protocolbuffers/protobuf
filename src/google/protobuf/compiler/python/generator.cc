@@ -1433,7 +1433,7 @@ void Generator::FixOptionsForEnum(const EnumDescriptor& enum_descriptor,
     PrintDescriptorOptionsFixingCode(
         value_descriptor, proto.value(i),
         absl::StrFormat("%s.values_by_name[\"%s\"]", descriptor_name.c_str(),
-                        value_descriptor.name().c_str()));
+                        value_descriptor.name()));
   }
 }
 

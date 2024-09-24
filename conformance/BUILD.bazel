@@ -10,6 +10,9 @@ load(
 load("@rules_ruby//ruby:defs.bzl", "ruby_binary")
 load("//:protobuf.bzl", "internal_csharp_proto_library", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library", "internal_ruby_proto_library")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
+load("//bazel:java_proto_library.bzl", "java_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("//ruby:defs.bzl", "internal_ruby_proto_library")
 
@@ -134,15 +137,18 @@ cc_library(
     srcs = [
         "conformance_test.cc",
         "conformance_test_runner.cc",
+        "failure_list_trie_node.cc",
     ],
     hdrs = [
         "conformance_test.h",
+        "failure_list_trie_node.h",
     ],
     includes = ["."],
     deps = [
         ":conformance_cc_proto",
         "//src/google/protobuf",
         "//src/google/protobuf:descriptor_legacy",
+        "//src/google/protobuf:endian",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/util:differencer",
         "//src/google/protobuf/util:json_util",
@@ -151,9 +157,31 @@ cc_library(
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:optional",
     ],
+)
+
+cc_test(
+    name = "failure_list_trie_node_test",
+    srcs = ["failure_list_trie_node_test.cc"],
+    deps = [
+        ":conformance_test",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+# Add more meta-testing here. This is not to be confused with a conformance test itself.
+test_suite(
+    name = "conformance_framework_tests",
+    tests = ["failure_list_trie_node_test"],
 )
 
 cc_library(
@@ -232,6 +260,7 @@ cc_binary(
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/json",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/util:json_util",
         "//src/google/protobuf/util:type_resolver",
@@ -302,6 +331,11 @@ py_binary(
         "//python:_message",  # Make upb visible if we need it.
         "//python:conformance_test_py_proto",
     ],
+)
+
+py_binary(
+    name = "update_failure_list",
+    srcs = ["update_failure_list.py"],
 )
 
 inline_sh_binary(

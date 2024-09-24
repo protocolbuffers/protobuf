@@ -11,6 +11,7 @@
 
 #import "GPBWellKnownTypes.h"
 
+#import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
 
 NSString *const GPBWellKnownTypesErrorDomain = GPBNSStringifySymbol(GPBWellKnownTypesErrorDomain);

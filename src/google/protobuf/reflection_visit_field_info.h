@@ -152,13 +152,13 @@ struct DynamicExtensionInfoHelper {
 #define PROTOBUF_REPEATED_FIELD_METHODS(NAME, FIELD_TYPE, VAR)              \
   static const RepeatedField<FIELD_TYPE>* GetRepeated##NAME(                \
       const Extension& ext) {                                               \
-    return ext.repeated_##VAR##_value;                                      \
+    return ext.ptr.repeated_##VAR##_value;                                  \
   }                                                                         \
   static RepeatedField<FIELD_TYPE>* MutableRepeated##NAME(Extension& ext) { \
-    return ext.repeated_##VAR##_value;                                      \
+    return ext.ptr.repeated_##VAR##_value;                                  \
   }                                                                         \
   static void ClearRepeated##NAME(Extension& ext) {                         \
-    return ext.repeated_##VAR##_value->Clear();                             \
+    return ext.ptr.repeated_##VAR##_value->Clear();                         \
   }
 
   PROTOBUF_REPEATED_FIELD_METHODS(Int32, int32_t, int32_t);
@@ -175,13 +175,13 @@ struct DynamicExtensionInfoHelper {
 #define PROTOBUF_REPEATED_PTR_FIELD_METHODS(FIELD_TYPE, NAME, VAR)             \
   static const RepeatedPtrField<FIELD_TYPE>* GetRepeated##NAME(                \
       const Extension& ext) {                                                  \
-    return ext.repeated_##VAR##_value;                                         \
+    return ext.ptr.repeated_##VAR##_value;                                     \
   }                                                                            \
   static RepeatedPtrField<FIELD_TYPE>* MutableRepeated##NAME(Extension& ext) { \
-    return ext.repeated_##VAR##_value;                                         \
+    return ext.ptr.repeated_##VAR##_value;                                     \
   }                                                                            \
   static void ClearRepeated##NAME(Extension& ext) {                            \
-    return ext.repeated_##VAR##_value->Clear();                                \
+    return ext.ptr.repeated_##VAR##_value->Clear();                            \
   }
 
   PROTOBUF_REPEATED_PTR_FIELD_METHODS(std::string, String, string);
@@ -190,49 +190,49 @@ struct DynamicExtensionInfoHelper {
 #undef PROTOBUF_REPEATED_PTR_FIELD_METHODS
 
   static absl::string_view GetStringView(const Extension& ext) {
-    return *ext.string_value;
+    return *ext.ptr.string_value;
   }
   static void SetStringView(Extension& ext, absl::string_view value) {
-    ext.string_value->assign(value.data(), value.size());
+    ext.ptr.string_value->assign(value.data(), value.size());
   }
   static void ClearStringView(Extension& ext) {
     ext.is_cleared = true;
-    ext.string_value->clear();
+    ext.ptr.string_value->clear();
   }
 
   static const Message& GetMessage(const Extension& ext) {
-    return DownCastMessage<Message>(*ext.message_value);
+    return DownCastMessage<Message>(*ext.ptr.message_value);
   }
   static Message& MutableMessage(Extension& ext) {
-    return DownCastMessage<Message>(*ext.message_value);
+    return DownCastMessage<Message>(*ext.ptr.message_value);
   }
   static void ClearMessage(Extension& ext) {
     ext.is_cleared = true;
-    ext.message_value->Clear();
+    ext.ptr.message_value->Clear();
   }
 
   static const Message& GetLazyMessage(const Extension& ext,
                                        const Message& prototype, Arena* arena) {
     return DownCastMessage<Message>(
-        ext.lazymessage_value->GetMessage(prototype, arena));
+        ext.ptr.lazymessage_value->GetMessage(prototype, arena));
   }
   static const Message& GetLazyMessageIgnoreUnparsed(const Extension& ext,
                                                      const Message& prototype,
                                                      Arena* arena) {
     return DownCastMessage<Message>(
-        ext.lazymessage_value->GetMessageIgnoreUnparsed(prototype, arena));
+        ext.ptr.lazymessage_value->GetMessageIgnoreUnparsed(prototype, arena));
   }
   static Message& MutableLazyMessage(Extension& ext, const Message& prototype,
                                      Arena* arena) {
     return DownCastMessage<Message>(
-        *ext.lazymessage_value->MutableMessage(prototype, arena));
+        *ext.ptr.lazymessage_value->MutableMessage(prototype, arena));
   }
   static void ClearLazyMessage(Extension& ext) {
     ext.is_cleared = true;
-    return ext.lazymessage_value->Clear();
+    return ext.ptr.lazymessage_value->Clear();
   }
   static size_t ByteSizeLongLazyMessage(const Extension& ext) {
-    return ext.lazymessage_value->ByteSizeLong();
+    return ext.ptr.lazymessage_value->ByteSizeLong();
   }
 };
 
@@ -1217,7 +1217,7 @@ PROTOBUF_MAP_KEY_INFO(Int64, int64_t, INT64);
 PROTOBUF_MAP_KEY_INFO(UInt32, uint32_t, UINT32);
 PROTOBUF_MAP_KEY_INFO(UInt64, uint64_t, UINT64);
 PROTOBUF_MAP_KEY_INFO(Bool, bool, BOOL);
-PROTOBUF_MAP_KEY_INFO(String, const std::string&, STRING);
+PROTOBUF_MAP_KEY_INFO(String, absl::string_view, STRING);
 
 #undef PROTOBUF_MAP_KEY_INFO
 

@@ -17,6 +17,15 @@ BUNDLE_LICENSE = "https://opensource.org/licenses/BSD-3-Clause"
 def protobuf_java_export(**kwargs):
     java_export(
         javacopts = JAVA_OPTS,
+        # https://github.com/bazelbuild/rules_jvm_external/issues/1245
+        javadocopts = [
+            "-notimestamp",
+            "-use",
+            "-quiet",
+            "-Xdoclint:-missing",
+            "-encoding",
+            "UTF8",
+        ],
         **kwargs
     )
 

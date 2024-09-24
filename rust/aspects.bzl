@@ -1,17 +1,15 @@
-"""This file implements an experimental, do-not-use-kind of rust_proto_library.
-
-Disclaimer: This project is experimental, under heavy development, and should not
-be used yet."""
+"""This file implements rust_proto_library aspect."""
 
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
-load("@rules_proto//proto:defs.bzl", "ProtoInfo", "proto_common")
 
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVariantInfo")
 
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:rustc.bzl", "rustc_compile_action")
-load("//bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library_aspect")
+load("//bazel:upb_minitable_proto_library.bzl", "UpbMinitableCcInfo", "upb_minitable_proto_library_aspect")
+load("//bazel/common:proto_common.bzl", "proto_common")
+load("//bazel/common:proto_info.bzl", "ProtoInfo")
 
 visibility(["//rust/..."])
 
@@ -34,7 +32,7 @@ RustProtoInfo = provider(
 )
 
 def label_to_crate_name(ctx, label, toolchain):
-    return str(label).rsplit(":", 1)[1].replace("-", "_")
+    return label.name.replace("-", "_")
 
 def proto_rust_toolchain_label(is_upb):
     if is_upb:
@@ -322,7 +320,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
     )
 
     if is_upb:
-        thunks_cc_info = target[UpbWrappedCcInfo].cc_info_with_thunks
+        thunks_cc_info = target[UpbMinitableCcInfo].cc_info
     else:
         dep_cc_infos = []
         for dep in proto_deps:
@@ -370,7 +368,7 @@ def _make_proto_library_aspect(is_upb):
     return aspect(
         implementation = (_rust_upb_proto_aspect_impl if is_upb else _rust_cc_proto_aspect_impl),
         attr_aspects = ["deps"],
-        requires = ([upb_proto_library_aspect] if is_upb else [cc_proto_aspect]),
+        requires = ([upb_minitable_proto_library_aspect] if is_upb else [cc_proto_aspect]),
         attrs = {
             "_cc_toolchain": attr.label(
                 doc = (
@@ -389,6 +387,7 @@ def _make_proto_library_aspect(is_upb):
                 default = [
                     Label("//rust/cpp_kernel:cpp_api"),
                     Label("//src/google/protobuf"),
+                    Label("//src/google/protobuf:protobuf_lite"),
                 ],
             ),
             "_error_format": attr.label(
