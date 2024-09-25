@@ -3714,7 +3714,7 @@ final class MessageSchema<T> implements Schema<T> {
                   data,
                   position,
                   limit,
-                  list,
+                  (ProtobufList<Object>) list,
                   registers);
         }
         break;
