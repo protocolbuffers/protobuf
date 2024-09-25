@@ -293,7 +293,9 @@ public class CodedOutputStreamTest {
 
     for (int i = 0; i < 4; i++) {
       Coder coder = outputType.newCoder(i);
-      assertThrows(OutOfSpaceException.class, () -> coder.stream().writeFixed32NoTag(1));
+      OutOfSpaceException e =
+          assertThrows(OutOfSpaceException.class, () -> coder.stream().writeFixed32NoTag(1));
+      assertThat(e.getMessage()).contains("len: 4");
       assertThat(coder.stream().spaceLeft()).isEqualTo(i);
     }
   }
@@ -305,8 +307,42 @@ public class CodedOutputStreamTest {
 
     for (int i = 0; i < 8; i++) {
       Coder coder = outputType.newCoder(i);
-      assertThrows(OutOfSpaceException.class, () -> coder.stream().writeFixed64NoTag(1));
+      OutOfSpaceException e =
+          assertThrows(OutOfSpaceException.class, () -> coder.stream().writeFixed64NoTag(1));
+      assertThat(e.getMessage()).contains("len: 8");
       assertThat(coder.stream().spaceLeft()).isEqualTo(i);
+    }
+  }
+
+  @Test
+  public void testWriteUInt32NoTag_outOfBounds_throws() throws Exception {
+    // Streaming's buffering masks out of bounds writes.
+    assume().that(outputType).isNotEqualTo(OutputType.STREAM);
+
+    for (int i = 0; i < 5; i++) {
+      Coder coder = outputType.newCoder(i);
+      OutOfSpaceException e =
+          assertThrows(
+              OutOfSpaceException.class, () -> coder.stream().writeUInt32NoTag(Integer.MAX_VALUE));
+
+      // Space left should not go negative.
+      assertWithMessage("i=%s", i).that(coder.stream().spaceLeft()).isAtLeast(0);
+    }
+  }
+
+  @Test
+  public void testWriteUInt64NoTag_outOfBounds_throws() throws Exception {
+    // Streaming's buffering masks out of bounds writes.
+    assume().that(outputType).isNotEqualTo(OutputType.STREAM);
+
+    for (int i = 0; i < 9; i++) {
+      Coder coder = outputType.newCoder(i);
+      OutOfSpaceException e =
+          assertThrows(
+              OutOfSpaceException.class, () -> coder.stream().writeUInt64NoTag(Long.MAX_VALUE));
+
+      // Space left should not go negative.
+      assertWithMessage("i=%s", i).that(coder.stream().spaceLeft()).isAtLeast(0);
     }
   }
 
@@ -577,7 +613,9 @@ public class CodedOutputStreamTest {
     if (outputType == OutputType.STREAM) {
       return;
     }
-    assertThrows(OutOfSpaceException.class, () -> coder.stream().write((byte) 1));
+    OutOfSpaceException e =
+        assertThrows(OutOfSpaceException.class, () -> coder.stream().write((byte) 1));
+    assertThat(e.getMessage()).contains("len: 1");
     if (outputType.supportsSpaceLeft()) {
       assertThat(coder.stream().spaceLeft()).isEqualTo(0);
     }
@@ -673,12 +711,10 @@ public class CodedOutputStreamTest {
     Coder coder = outputType.newCoder(notEnoughBytes);
 
     String invalidString = newString(Character.MIN_HIGH_SURROGATE, 'f', 'o', 'o', 'b', 'a', 'r');
-    try {
-      coder.stream().writeStringNoTag(invalidString);
-      assertWithMessage("Expected OutOfSpaceException").fail();
-    } catch (OutOfSpaceException e) {
-      assertThat(e).hasCauseThat().isInstanceOf(IndexOutOfBoundsException.class);
-    }
+    OutOfSpaceException e =
+        assertThrows(
+            OutOfSpaceException.class, () -> coder.stream().writeStringNoTag(invalidString));
+    assertThat(e).hasCauseThat().isInstanceOf(IndexOutOfBoundsException.class);
   }
 
   /** Regression test for https://github.com/protocolbuffers/protobuf/issues/292 */
