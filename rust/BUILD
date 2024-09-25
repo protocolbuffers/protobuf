@@ -294,11 +294,45 @@ pkg_zip(
     ],
 )
 
+pkg_files(
+    name = "protobuf_codegen_files",
+    srcs = glob(["protobuf_codegen/src/*"]) + ["protobuf_codegen/Cargo.toml"],
+    strip_prefix = strip_prefix.from_root("rust/protobuf_codegen"),
+)
+
+pkg_zip(
+    name = "codegen_crate",
+    srcs = [
+        ":protobuf_codegen_files",
+        "//:LICENSE",
+    ],
+    visibility = ["//rust:__pkg__"],
+)
+
+pkg_files(
+    name = "codegen_example_files",
+    srcs = glob(["protobuf_codegen/example/**/*"]),
+    strip_prefix = strip_prefix.from_root("rust/protobuf_codegen/example"),
+)
+
+pkg_zip(
+    name = "codegen_example",
+    srcs = [
+        ":codegen_example_files",
+        "//:LICENSE",
+    ],
+    visibility = ["//rust:__pkg__"],
+)
+
 sh_binary(
     name = "cargo_test",
     srcs = ["cargo_test.sh"],
     data = [
+        ":codegen_crate",
+        ":codegen_example",
         ":rust_crate",
+        "//:protoc",
+        "//upb_generator/minitable:protoc-gen-upb_minitable",
     ],
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )

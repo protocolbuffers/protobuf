@@ -1,5 +1,5 @@
 use std::fs::{self, OpenOptions};
-use std::io::{self, prelude::*};
+use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
@@ -84,6 +84,10 @@ impl CodeGen {
         for input in &self.inputs {
             cmd.arg(input);
         }
+        if !self.output_dir.exists() {
+            // Attempt to make the directory if it doesn't exist
+            let _ = std::fs::create_dir(&self.output_dir);
+        }
         cmd.arg(format!("--rust_out={}", self.output_dir.display()))
             .arg("--rust_opt=experimental-codegen=enabled,kernel=upb")
             .arg(format!("--plugin=protoc-gen-upb={}", self.protoc_gen_upb_path.display()))
@@ -91,8 +95,7 @@ impl CodeGen {
                 "--plugin=protoc-gen-upb_minitable={}",
                 self.protoc_gen_upb_minitable_path.display()
             ))
-            .arg(format!("--upb_minitable_out={}", self.output_dir.display()))
-            .arg(format!("--upb_out={}", self.output_dir.display()));
+            .arg(format!("--upb_minitable_out={}", self.output_dir.display()));
         for include in &self.includes {
             cmd.arg(format!("--proto_path={}", include.display()));
         }
