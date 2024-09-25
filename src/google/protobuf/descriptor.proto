@@ -80,7 +80,7 @@ enum Edition {
   EDITION_2024 = 1001;
 
   // Placeholder editions for testing feature resolution.  These should not be
-  // used or relyed on outside of tests.
+  // used or relied on outside of tests.
   EDITION_1_TEST_ONLY = 1;
   EDITION_2_TEST_ONLY = 2;
   EDITION_99997_TEST_ONLY = 99997;
