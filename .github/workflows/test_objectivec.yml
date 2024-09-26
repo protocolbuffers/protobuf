@@ -86,14 +86,12 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        PLATFORM: ["ios", "macos", "tvos", "watchos", "visionos"]
+        # Disabling visionOS for now: https://github.com/actions/runner-images/issues/10559
+        PLATFORM: ["ios", "macos", "tvos", "watchos"]
         CONFIGURATION: ["Debug", "Release"]
         include:
           - OS: macos-12
             XCODE: "14.1"
-          - OS: macos-14
-            PLATFORM: "visionos"
-            XCODE: "15.2"
           # We run presubmits on all "Debug" entries, but not on "Release" entries
           - CONFIGURATION: "Debug"
           - CONFIGURATION: "Release"
