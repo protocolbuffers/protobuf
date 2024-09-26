@@ -205,28 +205,27 @@ constexpr auto JavaFeatures::InternalNewImpl_() {
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::google::protobuf::MessageLite::ClassDataFull
-    JavaFeatures::_class_data_ = {
-        ::google::protobuf::Message::ClassData{
-            &_JavaFeatures_default_instance_._instance,
-            &_table_.header,
-            nullptr,  // OnDemandRegisterArenaDtor
-            nullptr,  // IsInitialized
-            &JavaFeatures::MergeImpl,
-            ::google::protobuf::Message::GetNewImpl<JavaFeatures>(),
+const ::google::protobuf::internal::ClassDataFull JavaFeatures::_class_data_ = {
+    ::google::protobuf::internal::ClassData{
+        &_JavaFeatures_default_instance_._instance,
+        &_table_.header,
+        nullptr,  // OnDemandRegisterArenaDtor
+        nullptr,  // IsInitialized
+        &JavaFeatures::MergeImpl,
+        ::google::protobuf::Message::GetNewImpl<JavaFeatures>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            &JavaFeatures::SharedDtor,
-            ::google::protobuf::Message::GetClearImpl<JavaFeatures>(), &JavaFeatures::ByteSizeLong,
-                &JavaFeatures::_InternalSerialize,
+        &JavaFeatures::SharedDtor,
+        ::google::protobuf::Message::GetClearImpl<JavaFeatures>(), &JavaFeatures::ByteSizeLong,
+            &JavaFeatures::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-            PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
-            false,
-        },
-        &JavaFeatures::kDescriptorMethods,
-        &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
-        nullptr,  // tracker
+        PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
+        false,
+    },
+    &JavaFeatures::kDescriptorMethods,
+    &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
+    nullptr,  // tracker
 };
-const ::google::protobuf::MessageLite::ClassData* JavaFeatures::GetClassData() const {
+const ::google::protobuf::internal::ClassData* JavaFeatures::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
   return _class_data_.base();

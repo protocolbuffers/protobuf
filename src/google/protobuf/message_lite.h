@@ -289,6 +289,165 @@ PROTOBUF_EXPORT constexpr const std::string& GetEmptyStringAlreadyInited() {
 
 PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
 
+struct ClassDataFull;
+
+// Note: The order of arguments in the functions is chosen so that it has
+// the same ABI as the member function that calls them. Eg the `this`
+// pointer becomes the first argument in the free function.
+//
+// Future work:
+// We could save more data by omitting any optional pointer that would
+// otherwise be null. We can have some metadata in ClassData telling us if we
+// have them and their offset.
+
+struct PROTOBUF_EXPORT ClassData {
+  const MessageLite* prototype;
+  const internal::TcParseTableBase* tc_table;
+  void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
+  bool (*is_initialized)(const MessageLite&);
+  void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
+  internal::MessageCreator message_creator;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void (*destroy_message)(MessageLite& msg);
+  void (MessageLite::*clear)();
+  size_t (*byte_size_long)(const MessageLite&);
+  uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
+                        io::EpsCopyOutputStream* stream);
+#endif  // PROTOBUF_CUSTOM_VTABLE
+
+  // Offset of the CachedSize member.
+  uint32_t cached_size_offset;
+  // LITE objects (ie !descriptor_methods) collocate their name as a
+  // char[] just beyond the ClassData.
+  bool is_lite;
+  bool is_dynamic = false;
+
+  // In normal mode we have the small constructor to avoid the cost in
+  // codegen.
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+  constexpr ClassData(
+      const MessageLite* prototype, const internal::TcParseTableBase* tc_table,
+      void (*on_demand_register_arena_dtor)(MessageLite&, Arena&),
+      bool (*is_initialized)(const MessageLite&),
+      void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
+      internal::MessageCreator message_creator, uint32_t cached_size_offset,
+      bool is_lite
+      )
+      : prototype(prototype),
+        tc_table(tc_table),
+        on_demand_register_arena_dtor(on_demand_register_arena_dtor),
+        is_initialized(is_initialized),
+        merge_to_from(merge_to_from),
+        message_creator(message_creator),
+        cached_size_offset(cached_size_offset),
+        is_lite(is_lite)
+  {
+  }
+#endif  // !PROTOBUF_CUSTOM_VTABLE
+
+  // But we always provide the full constructor even in normal mode to make
+  // helper code simpler.
+  constexpr ClassData(
+      const MessageLite* prototype, const internal::TcParseTableBase* tc_table,
+      void (*on_demand_register_arena_dtor)(MessageLite&, Arena&),
+      bool (*is_initialized)(const MessageLite&),
+      void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
+      internal::MessageCreator message_creator,
+      void (*destroy_message)(MessageLite& msg),  //
+      void (MessageLite::*clear)(),
+      size_t (*byte_size_long)(const MessageLite&),
+      uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
+                            io::EpsCopyOutputStream* stream),
+      uint32_t cached_size_offset, bool is_lite
+      )
+      : prototype(prototype),
+        tc_table(tc_table),
+        on_demand_register_arena_dtor(on_demand_register_arena_dtor),
+        is_initialized(is_initialized),
+        merge_to_from(merge_to_from),
+        message_creator(message_creator),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+        destroy_message(destroy_message),
+        clear(clear),
+        byte_size_long(byte_size_long),
+        serialize(serialize),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+        cached_size_offset(cached_size_offset),
+        is_lite(is_lite)
+  {
+  }
+
+  const ClassDataFull& full() const;
+
+  MessageLite* New(Arena* arena) const {
+    return message_creator.New(prototype, prototype, arena);
+  }
+
+  MessageLite* PlacementNew(void* mem, Arena* arena) const {
+    return message_creator.PlacementNew(prototype, prototype, mem, arena);
+  }
+
+  uint32_t allocation_size() const { return message_creator.allocation_size(); }
+
+  uint8_t alignment() const { return message_creator.alignment(); }
+};
+
+template <size_t N>
+struct ClassDataLite {
+  ClassData header;
+  const char type_name[N];
+
+  constexpr const ClassData* base() const { return &header; }
+};
+
+// We use a secondary vtable for descriptor based methods. This way ClassData
+// does not grow with the number of descriptor methods. This avoids extra
+// costs in MessageLite.
+struct PROTOBUF_EXPORT DescriptorMethods {
+  absl::string_view (*get_type_name)(const ClassData* data);
+  std::string (*initialization_error_string)(const MessageLite&);
+  const internal::TcParseTableBase* (*get_tc_table)(const MessageLite&);
+  size_t (*space_used_long)(const MessageLite&);
+  std::string (*debug_string)(const MessageLite&);
+};
+
+struct PROTOBUF_EXPORT ClassDataFull : ClassData {
+  constexpr ClassDataFull(ClassData base,
+                          const DescriptorMethods* descriptor_methods,
+                          const internal::DescriptorTable* descriptor_table,
+                          void (*get_metadata_tracker)())
+      : ClassData(base),
+        descriptor_methods(descriptor_methods),
+        descriptor_table(descriptor_table),
+        reflection(),
+        descriptor(),
+        get_metadata_tracker(get_metadata_tracker) {}
+
+  constexpr const ClassData* base() const { return this; }
+
+  const DescriptorMethods* descriptor_methods;
+
+  // Codegen types will provide a DescriptorTable to do lazy
+  // registration/initialization of the reflection objects.
+  // Other types, like DynamicMessage, keep the table as null but eagerly
+  // populate `reflection`/`descriptor` fields.
+  const internal::DescriptorTable* descriptor_table;
+  // Accesses are protected by the once_flag in `descriptor_table`. When the
+  // table is null these are populated from the beginning and need to
+  // protection.
+  mutable const Reflection* reflection;
+  mutable const Descriptor* descriptor;
+
+  // When an access tracker is installed, this function notifies the tracker
+  // that GetMetadata was called.
+  void (*get_metadata_tracker)();
+};
+
+inline const ClassDataFull& ClassData::full() const {
+  ABSL_DCHECK(!is_lite);
+  return *static_cast<const ClassDataFull*>(this);
+}
+
 }  // namespace internal
 
 // Interface to light weight protocol messages.
@@ -682,175 +841,16 @@ class PROTOBUF_EXPORT MessageLite {
     return tc_table;
   }
 
-  // We use a secondary vtable for descriptor based methods. This way ClassData
-  // does not grow with the number of descriptor methods. This avoids extra
-  // costs in MessageLite.
-  struct ClassData;
-  struct ClassDataFull;
-  struct DescriptorMethods {
-    absl::string_view (*get_type_name)(const ClassData* data);
-    std::string (*initialization_error_string)(const MessageLite&);
-    const internal::TcParseTableBase* (*get_tc_table)(const MessageLite&);
-    size_t (*space_used_long)(const MessageLite&);
-    std::string (*debug_string)(const MessageLite&);
-  };
-
-  // Note: The order of arguments in the functions is chosen so that it has
-  // the same ABI as the member function that calls them. Eg the `this`
-  // pointer becomes the first argument in the free function.
-  //
-  // Future work:
-  // We could save more data by omitting any optional pointer that would
-  // otherwise be null. We can have some metadata in ClassData telling us if we
-  // have them and their offset.
-  friend internal::MessageCreator;
-  using DestroyMessageF = void (*)(MessageLite& msg);
-  struct ClassData {
-    const MessageLite* prototype;
-    const internal::TcParseTableBase* tc_table;
-    void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
-    bool (*is_initialized)(const MessageLite&);
-    void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
-    internal::MessageCreator message_creator;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    DestroyMessageF destroy_message;
-    void (MessageLite::*clear)();
-    size_t (*byte_size_long)(const MessageLite&);
-    uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
-                          io::EpsCopyOutputStream* stream);
-#endif  // PROTOBUF_CUSTOM_VTABLE
-
-    // Offset of the CachedSize member.
-    uint32_t cached_size_offset;
-    // LITE objects (ie !descriptor_methods) collocate their name as a
-    // char[] just beyond the ClassData.
-    bool is_lite;
-    bool is_dynamic = false;
-
-    // In normal mode we have the small constructor to avoid the cost in
-    // codegen.
-#if !defined(PROTOBUF_CUSTOM_VTABLE)
-    constexpr ClassData(
-        const MessageLite* prototype,
-        const internal::TcParseTableBase* tc_table,
-        void (*on_demand_register_arena_dtor)(MessageLite&, Arena&),
-        bool (*is_initialized)(const MessageLite&),
-        void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
-        internal::MessageCreator message_creator, uint32_t cached_size_offset,
-        bool is_lite
-        )
-        : prototype(prototype),
-          tc_table(tc_table),
-          on_demand_register_arena_dtor(on_demand_register_arena_dtor),
-          is_initialized(is_initialized),
-          merge_to_from(merge_to_from),
-          message_creator(message_creator),
-          cached_size_offset(cached_size_offset),
-          is_lite(is_lite)
-    {
-    }
-#endif  // !PROTOBUF_CUSTOM_VTABLE
-
-    // But we always provide the full constructor even in normal mode to make
-    // helper code simpler.
-    constexpr ClassData(
-        const MessageLite* prototype,
-        const internal::TcParseTableBase* tc_table,
-        void (*on_demand_register_arena_dtor)(MessageLite&, Arena&),
-        bool (*is_initialized)(const MessageLite&),
-        void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
-        internal::MessageCreator message_creator,  //
-        DestroyMessageF destroy_message,           //
-        void (MessageLite::*clear)(),
-        size_t (*byte_size_long)(const MessageLite&),
-        uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
-                              io::EpsCopyOutputStream* stream),
-        uint32_t cached_size_offset, bool is_lite
-        )
-        : prototype(prototype),
-          tc_table(tc_table),
-          on_demand_register_arena_dtor(on_demand_register_arena_dtor),
-          is_initialized(is_initialized),
-          merge_to_from(merge_to_from),
-          message_creator(message_creator),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          destroy_message(destroy_message),
-          clear(clear),
-          byte_size_long(byte_size_long),
-          serialize(serialize),
-#endif  // PROTOBUF_CUSTOM_VTABLE
-          cached_size_offset(cached_size_offset),
-          is_lite(is_lite)
-    {
-    }
-
-    const ClassDataFull& full() const {
-      ABSL_DCHECK(!is_lite);
-      return *static_cast<const ClassDataFull*>(this);
-    }
-
-    MessageLite* New(Arena* arena) const {
-      return message_creator.New(prototype, prototype, arena);
-    }
-
-    MessageLite* PlacementNew(void* mem, Arena* arena) const {
-      return message_creator.PlacementNew(prototype, prototype, mem, arena);
-    }
-
-    uint32_t allocation_size() const {
-      return message_creator.allocation_size();
-    }
-
-    uint8_t alignment() const { return message_creator.alignment(); }
-  };
-  template <size_t N>
-  struct ClassDataLite {
-    ClassData header;
-    const char type_name[N];
-
-    constexpr const ClassData* base() const { return &header; }
-  };
-  struct ClassDataFull : ClassData {
-    constexpr ClassDataFull(ClassData base,
-                            const DescriptorMethods* descriptor_methods,
-                            const internal::DescriptorTable* descriptor_table,
-                            void (*get_metadata_tracker)())
-        : ClassData(base),
-          descriptor_methods(descriptor_methods),
-          descriptor_table(descriptor_table),
-          reflection(),
-          descriptor(),
-          get_metadata_tracker(get_metadata_tracker) {}
-
-    constexpr const ClassData* base() const { return this; }
-
-    const DescriptorMethods* descriptor_methods;
-
-    // Codegen types will provide a DescriptorTable to do lazy
-    // registration/initialization of the reflection objects.
-    // Other types, like DynamicMessage, keep the table as null but eagerly
-    // populate `reflection`/`descriptor` fields.
-    const internal::DescriptorTable* descriptor_table;
-    // Accesses are protected by the once_flag in `descriptor_table`. When the
-    // table is null these are populated from the beginning and need to
-    // protection.
-    mutable const Reflection* reflection;
-    mutable const Descriptor* descriptor;
-
-    // When an access tracker is installed, this function notifies the tracker
-    // that GetMetadata was called.
-    void (*get_metadata_tracker)();
-  };
-
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-  explicit constexpr MessageLite(const ClassData* data) : _class_data_(data) {}
-  explicit MessageLite(Arena* arena, const ClassData* data)
+  explicit constexpr MessageLite(const internal::ClassData* data)
+      : _class_data_(data) {}
+  explicit MessageLite(Arena* arena, const internal::ClassData* data)
       : _internal_metadata_(arena), _class_data_(data) {}
 #else   // PROTOBUF_CUSTOM_VTABLE
   constexpr MessageLite() {}
   explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
-  explicit constexpr MessageLite(const ClassData*) {}
-  explicit MessageLite(Arena* arena, const ClassData*)
+  explicit constexpr MessageLite(const internal::ClassData*) {}
+  explicit MessageLite(Arena* arena, const internal::ClassData*)
       : _internal_metadata_(arena) {}
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
@@ -862,12 +862,12 @@ class PROTOBUF_EXPORT MessageLite {
   // This is a work in progress. There are still some types (eg MapEntry) that
   // return a default table instead of a unique one.
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  const ClassData* GetClassData() const {
+  const internal::ClassData* GetClassData() const {
     ::absl::PrefetchToLocalCache(_class_data_);
     return _class_data_;
   }
 #else   // PROTOBUF_CUSTOM_VTABLE
-  virtual const ClassData* GetClassData() const = 0;
+  virtual const internal::ClassData* GetClassData() const = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
   template <typename T>
@@ -882,7 +882,7 @@ class PROTOBUF_EXPORT MessageLite {
 
   internal::InternalMetadata _internal_metadata_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  const ClassData* _class_data_;
+  const internal::ClassData* _class_data_;
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Return the cached size object as described by
@@ -965,7 +965,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
   friend class internal::RustMapHelper;
-  friend struct internal::TcParseTableBase;
+  friend internal::MessageCreator;
 
   template <typename Type>
   friend class Arena::InternalHelper;
@@ -1067,9 +1067,9 @@ class TypeId {
   }
 
  private:
-  constexpr explicit TypeId(const MessageLite::ClassData* data) : data_(data) {}
+  constexpr explicit TypeId(const internal::ClassData* data) : data_(data) {}
 
-  const MessageLite::ClassData* data_;
+  const internal::ClassData* data_;
 };
 
 namespace internal {

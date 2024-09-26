@@ -104,7 +104,7 @@ absl::string_view TypeId::name() const {
   }
 
   // For LITE messages, the type name is a char[] just beyond ClassData.
-  return reinterpret_cast<const char*>(data_) + sizeof(MessageLite::ClassData);
+  return reinterpret_cast<const char*>(data_) + sizeof(internal::ClassData);
 }
 
 void MessageLite::OnDemandRegisterArenaDtor(Arena* arena) {

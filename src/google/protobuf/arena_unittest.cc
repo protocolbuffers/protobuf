@@ -205,7 +205,7 @@ void TestCtorAndDtorTraits(std::vector<absl::string_view> def,
       ABSL_LOG(FATAL);
       return nullptr;
     }
-    const ClassData* GetClassData() const PROTOBUF_FINAL {
+    const internal::ClassData* GetClassData() const PROTOBUF_FINAL {
       ABSL_LOG(FATAL);
       return nullptr;
     }
@@ -528,7 +528,9 @@ class DispatcherTestProto : public Message {
       : Message(nullptr, nullptr) {
     ABSL_LOG(FATAL);
   }
-  const ClassData* GetClassData() const PROTOBUF_FINAL { ABSL_LOG(FATAL); }
+  const internal::ClassData* GetClassData() const PROTOBUF_FINAL {
+    ABSL_LOG(FATAL);
+  }
 };
 // We use a specialization to inject behavior for the test.
 // This test is very intrusive and will have to be fixed if we change the

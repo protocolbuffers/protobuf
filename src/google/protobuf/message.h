@@ -377,7 +377,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Get a struct containing the metadata for the Message, which is used in turn
   // to implement GetDescriptor() and GetReflection() above.
   Metadata GetMetadata() const;
-  static Metadata GetMetadataImpl(const ClassDataFull& data);
+  static Metadata GetMetadataImpl(const internal::ClassDataFull& data);
 
   // For CODE_SIZE types
   static bool IsInitializedImpl(const MessageLite&);
@@ -388,7 +388,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
       size_t total_size, const internal::CachedSize* cached_size) const;
 
   // Reflection based version for reflection based types.
-  static absl::string_view GetTypeNameImpl(const ClassData* data);
+  static absl::string_view GetTypeNameImpl(const internal::ClassData* data);
   static void MergeImpl(MessageLite& to, const MessageLite& from);
   void ClearImpl();
   static size_t ByteSizeLongImpl(const MessageLite& msg);
@@ -401,7 +401,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   static size_t SpaceUsedLongImpl(const MessageLite& msg_lite);
 
-  static const DescriptorMethods kDescriptorMethods;
+  static const internal::DescriptorMethods kDescriptorMethods;
 
 };
 

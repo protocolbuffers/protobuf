@@ -1399,11 +1399,11 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
           $parse_decls$;
           $decl_annotate$;
 
-          const $superclass$::ClassData* GetClassData() const PROTOBUF_FINAL;
+          const $pbi$::ClassData* GetClassData() const PROTOBUF_FINAL;
           static void* PlacementNew_(const void*, void* mem,
                                      ::$proto_ns$::Arena* arena);
           static constexpr auto InternalNewImpl_();
-          static const $superclass$::ClassDataFull _class_data_;
+          static const $pbi$::ClassDataFull _class_data_;
         };
       )cc");
 }
@@ -2182,11 +2182,11 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             *this = ::std::move(from);
           }
           $arena_dtor$;
-          const $superclass$::ClassData* GetClassData() const PROTOBUF_FINAL;
+          const $pbi$::ClassData* GetClassData() const PROTOBUF_FINAL;
           static void* PlacementNew_(const void*, void* mem,
                                      ::$proto_ns$::Arena* arena);
           static constexpr auto InternalNewImpl_();
-          static const $superclass$::$classdata_type$ _class_data_;
+          static const $pbi$::$classdata_type$ _class_data_;
 
          public:
           $get_metadata$;
@@ -4066,28 +4066,27 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
         R"cc(
           PROTOBUF_CONSTINIT
           PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-          const ::$proto_ns$::MessageLite::ClassDataFull
-              $classname$::_class_data_ = {
-                  $superclass$::ClassData{
-                      $default_instance$,
-                      &_table_.header,
-                      $on_demand_register_arena_dtor$,
-                      $is_initialized$,
-                      &$classname$::MergeImpl,
-                      $superclass$::GetNewImpl<$classname$>(),
+          const $pbi$::ClassDataFull $classname$::_class_data_ = {
+              $pbi$::ClassData{
+                  $default_instance$,
+                  &_table_.header,
+                  $on_demand_register_arena_dtor$,
+                  $is_initialized$,
+                  &$classname$::MergeImpl,
+                  $superclass$::GetNewImpl<$classname$>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                      &$classname$::SharedDtor,
-                      $custom_vtable_methods$,
+                  &$classname$::SharedDtor,
+                  $custom_vtable_methods$,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-                      PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
-                      false,
-                      $v2_msg_table$,
-                  },
-                  &$classname$::kDescriptorMethods,
-                  &$desc_table$,
-                  $tracker_on_get_metadata$,
+                  PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
+                  false,
+                  $v2_msg_table$,
+              },
+              &$classname$::kDescriptorMethods,
+              &$desc_table$,
+              $tracker_on_get_metadata$,
           };
-          const ::$proto_ns$::MessageLite::ClassData* $classname$::GetClassData() const {
+          const $pbi$::ClassData* $classname$::GetClassData() const {
             $pin_weak_descriptor$;
             $pbi$::PrefetchToLocalCache(&_class_data_);
             $pbi$::PrefetchToLocalCache(_class_data_.tc_table);
@@ -4108,26 +4107,25 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
         R"cc(
           PROTOBUF_CONSTINIT
           PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-          const ::$proto_ns$::MessageLite::ClassDataLite<$type_size$>
-              $classname$::_class_data_ = {
-                  {
-                      $default_instance$,
-                      &_table_.header,
-                      $on_demand_register_arena_dtor$,
-                      $is_initialized$,
-                      &$classname$::MergeImpl,
-                      $superclass$::GetNewImpl<$classname$>(),
+          const $pbi$::ClassDataLite<$type_size$> $classname$::_class_data_ = {
+              {
+                  $default_instance$,
+                  &_table_.header,
+                  $on_demand_register_arena_dtor$,
+                  $is_initialized$,
+                  &$classname$::MergeImpl,
+                  $superclass$::GetNewImpl<$classname$>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                      &$classname$::SharedDtor,
-                      $custom_vtable_methods$,
+                  &$classname$::SharedDtor,
+                  $custom_vtable_methods$,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-                      PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
-                      true,
-                      $v2_msg_table$,
-                  },
-                  "$full_name$",
+                  PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
+                  true,
+                  $v2_msg_table$,
+              },
+              "$full_name$",
           };
-          const ::$proto_ns$::MessageLite::ClassData* $classname$::GetClassData() const {
+          const $pbi$::ClassData* $classname$::GetClassData() const {
             return _class_data_.base();
           }
         )cc");

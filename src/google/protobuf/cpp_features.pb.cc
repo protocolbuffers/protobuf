@@ -205,28 +205,27 @@ constexpr auto CppFeatures::InternalNewImpl_() {
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::google::protobuf::MessageLite::ClassDataFull
-    CppFeatures::_class_data_ = {
-        ::google::protobuf::Message::ClassData{
-            &_CppFeatures_default_instance_._instance,
-            &_table_.header,
-            nullptr,  // OnDemandRegisterArenaDtor
-            nullptr,  // IsInitialized
-            &CppFeatures::MergeImpl,
-            ::google::protobuf::Message::GetNewImpl<CppFeatures>(),
+const ::google::protobuf::internal::ClassDataFull CppFeatures::_class_data_ = {
+    ::google::protobuf::internal::ClassData{
+        &_CppFeatures_default_instance_._instance,
+        &_table_.header,
+        nullptr,  // OnDemandRegisterArenaDtor
+        nullptr,  // IsInitialized
+        &CppFeatures::MergeImpl,
+        ::google::protobuf::Message::GetNewImpl<CppFeatures>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            &CppFeatures::SharedDtor,
-            ::google::protobuf::Message::GetClearImpl<CppFeatures>(), &CppFeatures::ByteSizeLong,
-                &CppFeatures::_InternalSerialize,
+        &CppFeatures::SharedDtor,
+        ::google::protobuf::Message::GetClearImpl<CppFeatures>(), &CppFeatures::ByteSizeLong,
+            &CppFeatures::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-            PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
-            false,
-        },
-        &CppFeatures::kDescriptorMethods,
-        &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
-        nullptr,  // tracker
+        PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
+        false,
+    },
+    &CppFeatures::kDescriptorMethods,
+    &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
+    nullptr,  // tracker
 };
-const ::google::protobuf::MessageLite::ClassData* CppFeatures::GetClassData() const {
+const ::google::protobuf::internal::ClassData* CppFeatures::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
   return _class_data_.base();
