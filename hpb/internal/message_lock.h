@@ -10,6 +10,10 @@
 
 #include <atomic>
 
+#include "absl/status/statusor.h"
+#include "absl/strings/string_view.h"
+#include "upb/message/message.h"
+
 namespace hpb::internal {
 
 // TODO: Temporary locking api for cross-language
@@ -25,6 +29,22 @@ using UpbExtensionLocker = UpbExtensionUnlocker (*)(const void*);
 
 // TODO: Expose as function instead of global.
 extern std::atomic<UpbExtensionLocker> upb_extension_locker_global;
+
+absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
+                                            const upb_MiniTable* mini_table,
+                                            upb_Arena* arena, int options);
+
+bool HasExtensionOrUnknown(const upb_Message* msg,
+                           const upb_MiniTableExtension* eid);
+
+bool GetOrPromoteExtension(upb_Message* msg, const upb_MiniTableExtension* eid,
+                           upb_Arena* arena, upb_MessageValue* value);
+
+void DeepCopy(upb_Message* target, const upb_Message* source,
+              const upb_MiniTable* mini_table, upb_Arena* arena);
+
+upb_Message* DeepClone(const upb_Message* source,
+                       const upb_MiniTable* mini_table, upb_Arena* arena);
 
 }  // namespace hpb::internal
 

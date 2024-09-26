@@ -10,7 +10,6 @@
 
 #include <cstdint>
 #include <type_traits>
-#include <vector>
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -19,14 +18,13 @@
 #include "google/protobuf/hpb/backend/upb/interop.h"
 #include "google/protobuf/hpb/extension.h"
 #include "google/protobuf/hpb/internal/internal.h"
+#include "google/protobuf/hpb/internal/message_lock.h"
 #include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/ptr.h"
-#include "upb/base/status.hpp"
+#include "google/protobuf/hpb/status.h"
 #include "upb/mem/arena.hpp"
-#include "upb/message/copy.h"
 #include "upb/mini_table/extension.h"
 #include "upb/wire/decode.h"
-#include "upb/wire/encode.h"
 
 #ifdef HPB_BACKEND_UPB
 #include "google/protobuf/hpb/backend/upb/upb.h"
@@ -37,43 +35,7 @@
 namespace hpb {
 class ExtensionRegistry;
 
-// This type exists to work around an absl type that has not yet been
-// released.
-struct SourceLocation {
-  static SourceLocation current() { return {}; }
-  absl::string_view file_name() { return "<unknown>"; }
-  int line() { return 0; }
-};
-
-absl::Status MessageAllocationError(
-    SourceLocation loc = SourceLocation::current());
-
-absl::Status ExtensionNotFoundError(
-    int extension_number, SourceLocation loc = SourceLocation::current());
-
-absl::Status MessageDecodeError(upb_DecodeStatus status,
-                                SourceLocation loc = SourceLocation::current());
-
-absl::Status MessageEncodeError(upb_EncodeStatus status,
-                                SourceLocation loc = SourceLocation::current());
-
 namespace internal {
-
-absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
-                                            const upb_MiniTable* mini_table,
-                                            upb_Arena* arena, int options);
-
-bool HasExtensionOrUnknown(const upb_Message* msg,
-                           const upb_MiniTableExtension* eid);
-
-bool GetOrPromoteExtension(upb_Message* msg, const upb_MiniTableExtension* eid,
-                           upb_Arena* arena, upb_MessageValue* value);
-
-void DeepCopy(upb_Message* target, const upb_Message* source,
-              const upb_MiniTable* mini_table, upb_Arena* arena);
-
-upb_Message* DeepClone(const upb_Message* source,
-                       const upb_MiniTable* mini_table, upb_Arena* arena);
 
 absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
                            const upb_MiniTableExtension* ext,
