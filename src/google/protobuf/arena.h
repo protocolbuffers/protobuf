@@ -300,12 +300,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
   }
 
-  // The following are routines are for monitoring. They will approximate the
-  // total sum allocated and used memory, but the exact value is an
-  // implementation deal. For instance allocated space depends on growth
-  // policies. Do not use these in unit tests.
-  // Returns the total space allocated by the arena, which is the sum of the
-  // sizes of the underlying blocks.
+  // The following routines are for monitoring. They will approximate the total
+  // sum allocated and used memory, but the exact value is an implementation
+  // deal. For instance allocated space depends on growth policies. Do not use
+  // these in unit tests. Returns the total space allocated by the arena, which
+  // is the sum of the sizes of the underlying blocks.
   uint64_t SpaceAllocated() const { return impl_.SpaceAllocated(); }
   // Returns the total space used by the arena. Similar to SpaceAllocated but
   // does not include free space and block overhead.  This is a best-effort
