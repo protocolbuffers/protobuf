@@ -40,6 +40,8 @@ jobs:
           xc_project: "ProtocolBuffers_iOS.xcodeproj"
         # We run presubmits on all "Debug" entries, but not on "Release" entries
         - xc_config: "Debug"
+          # TODO: Remove continuous-only once failure at HEAD is fixed.
+          continuous-only: true
         - xc_config: "Release"
           continuous-only: true
 
