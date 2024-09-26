@@ -511,3 +511,8 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://nebius.ai
     *   Extensions: 1191-1199
+
+1.  protoc-gen-default / protoc-gen-env (confpb)
+
+    *   Website: https://github.com/MarnixBouhuis/confpb
+    *   Extensions: 1200-1201
