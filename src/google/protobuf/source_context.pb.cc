@@ -176,28 +176,27 @@ constexpr auto SourceContext::InternalNewImpl_() {
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::google::protobuf::MessageLite::ClassDataFull
-    SourceContext::_class_data_ = {
-        ::google::protobuf::Message::ClassData{
-            &_SourceContext_default_instance_._instance,
-            &_table_.header,
-            nullptr,  // OnDemandRegisterArenaDtor
-            nullptr,  // IsInitialized
-            &SourceContext::MergeImpl,
-            ::google::protobuf::Message::GetNewImpl<SourceContext>(),
+const ::google::protobuf::internal::ClassDataFull SourceContext::_class_data_ = {
+    ::google::protobuf::internal::ClassData{
+        &_SourceContext_default_instance_._instance,
+        &_table_.header,
+        nullptr,  // OnDemandRegisterArenaDtor
+        nullptr,  // IsInitialized
+        &SourceContext::MergeImpl,
+        ::google::protobuf::Message::GetNewImpl<SourceContext>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            &SourceContext::SharedDtor,
-            ::google::protobuf::Message::GetClearImpl<SourceContext>(), &SourceContext::ByteSizeLong,
-                &SourceContext::_InternalSerialize,
+        &SourceContext::SharedDtor,
+        ::google::protobuf::Message::GetClearImpl<SourceContext>(), &SourceContext::ByteSizeLong,
+            &SourceContext::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-            PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
-            false,
-        },
-        &SourceContext::kDescriptorMethods,
-        &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
-        nullptr,  // tracker
+        PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
+        false,
+    },
+    &SourceContext::kDescriptorMethods,
+    &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
+    nullptr,  // tracker
 };
-const ::google::protobuf::MessageLite::ClassData* SourceContext::GetClassData() const {
+const ::google::protobuf::internal::ClassData* SourceContext::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
   return _class_data_.base();

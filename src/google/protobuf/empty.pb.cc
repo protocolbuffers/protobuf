@@ -137,28 +137,27 @@ constexpr auto Empty::InternalNewImpl_() {
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::google::protobuf::MessageLite::ClassDataFull
-    Empty::_class_data_ = {
-        ::google::protobuf::internal::ZeroFieldsBase::ClassData{
-            &_Empty_default_instance_._instance,
-            &_table_.header,
-            nullptr,  // OnDemandRegisterArenaDtor
-            nullptr,  // IsInitialized
-            &Empty::MergeImpl,
-            ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<Empty>(),
+const ::google::protobuf::internal::ClassDataFull Empty::_class_data_ = {
+    ::google::protobuf::internal::ClassData{
+        &_Empty_default_instance_._instance,
+        &_table_.header,
+        nullptr,  // OnDemandRegisterArenaDtor
+        nullptr,  // IsInitialized
+        &Empty::MergeImpl,
+        ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<Empty>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            &Empty::SharedDtor,
-            ::google::protobuf::internal::ZeroFieldsBase::GetClearImpl<Empty>(), &Empty::ByteSizeLong,
-                &Empty::_InternalSerialize,
+        &Empty::SharedDtor,
+        ::google::protobuf::internal::ZeroFieldsBase::GetClearImpl<Empty>(), &Empty::ByteSizeLong,
+            &Empty::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-            PROTOBUF_FIELD_OFFSET(Empty, _impl_._cached_size_),
-            false,
-        },
-        &Empty::kDescriptorMethods,
-        &descriptor_table_google_2fprotobuf_2fempty_2eproto,
-        nullptr,  // tracker
+        PROTOBUF_FIELD_OFFSET(Empty, _impl_._cached_size_),
+        false,
+    },
+    &Empty::kDescriptorMethods,
+    &descriptor_table_google_2fprotobuf_2fempty_2eproto,
+    nullptr,  // tracker
 };
-const ::google::protobuf::MessageLite::ClassData* Empty::GetClassData() const {
+const ::google::protobuf::internal::ClassData* Empty::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
   return _class_data_.base();

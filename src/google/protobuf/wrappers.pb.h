@@ -225,11 +225,11 @@ class PROTOBUF_EXPORT UInt64Value final
       : UInt64Value(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::Message::ClassDataFull _class_data_;
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -417,11 +417,11 @@ class PROTOBUF_EXPORT UInt32Value final
       : UInt32Value(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::Message::ClassDataFull _class_data_;
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -609,11 +609,11 @@ class PROTOBUF_EXPORT StringValue final
       : StringValue(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::Message::ClassDataFull _class_data_;
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -807,11 +807,11 @@ class PROTOBUF_EXPORT Int64Value final
       : Int64Value(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::Message::ClassDataFull _class_data_;
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -999,11 +999,11 @@ class PROTOBUF_EXPORT Int32Value final
       : Int32Value(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::Message::ClassDataFull _class_data_;
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -1191,11 +1191,11 @@ class PROTOBUF_EXPORT FloatValue final
       : FloatValue(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::Message::ClassDataFull _class_data_;
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -1383,11 +1383,11 @@ class PROTOBUF_EXPORT DoubleValue final
       : DoubleValue(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::Message::ClassDataFull _class_data_;
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -1575,11 +1575,11 @@ class PROTOBUF_EXPORT BytesValue final
       : BytesValue(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::Message::ClassDataFull _class_data_;
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -1773,11 +1773,11 @@ class PROTOBUF_EXPORT BoolValue final
       : BoolValue(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::Message::ClassDataFull _class_data_;
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;

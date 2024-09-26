@@ -246,11 +246,11 @@ class PROTOBUF_EXPORT ListValue final
       : ListValue(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::Message::ClassDataFull _class_data_;
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -445,11 +445,11 @@ class PROTOBUF_EXPORT Struct final
       : Struct(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::Message::ClassDataFull _class_data_;
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;
@@ -541,11 +541,11 @@ class Struct_FieldsEntry_DoNotUse final
       46, 2>
       _table_;
 
-  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::Message::ClassDataFull _class_data_;
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 };
 // -------------------------------------------------------------------
 
@@ -693,11 +693,11 @@ class PROTOBUF_EXPORT Value final
       : Value(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::Message::ClassData* GetClassData() const PROTOBUF_FINAL;
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::Message::ClassDataFull _class_data_;
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;

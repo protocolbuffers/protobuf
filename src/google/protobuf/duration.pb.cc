@@ -163,28 +163,27 @@ constexpr auto Duration::InternalNewImpl_() {
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::google::protobuf::MessageLite::ClassDataFull
-    Duration::_class_data_ = {
-        ::google::protobuf::Message::ClassData{
-            &_Duration_default_instance_._instance,
-            &_table_.header,
-            nullptr,  // OnDemandRegisterArenaDtor
-            nullptr,  // IsInitialized
-            &Duration::MergeImpl,
-            ::google::protobuf::Message::GetNewImpl<Duration>(),
+const ::google::protobuf::internal::ClassDataFull Duration::_class_data_ = {
+    ::google::protobuf::internal::ClassData{
+        &_Duration_default_instance_._instance,
+        &_table_.header,
+        nullptr,  // OnDemandRegisterArenaDtor
+        nullptr,  // IsInitialized
+        &Duration::MergeImpl,
+        ::google::protobuf::Message::GetNewImpl<Duration>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            &Duration::SharedDtor,
-            ::google::protobuf::Message::GetClearImpl<Duration>(), &Duration::ByteSizeLong,
-                &Duration::_InternalSerialize,
+        &Duration::SharedDtor,
+        ::google::protobuf::Message::GetClearImpl<Duration>(), &Duration::ByteSizeLong,
+            &Duration::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-            PROTOBUF_FIELD_OFFSET(Duration, _impl_._cached_size_),
-            false,
-        },
-        &Duration::kDescriptorMethods,
-        &descriptor_table_google_2fprotobuf_2fduration_2eproto,
-        nullptr,  // tracker
+        PROTOBUF_FIELD_OFFSET(Duration, _impl_._cached_size_),
+        false,
+    },
+    &Duration::kDescriptorMethods,
+    &descriptor_table_google_2fprotobuf_2fduration_2eproto,
+    nullptr,  // tracker
 };
-const ::google::protobuf::MessageLite::ClassData* Duration::GetClassData() const {
+const ::google::protobuf::internal::ClassData* Duration::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
   return _class_data_.base();

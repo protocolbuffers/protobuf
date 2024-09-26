@@ -173,11 +173,11 @@ class PROTOBUF_EXPORT Empty final
       : Empty(arena) {
     *this = ::std::move(from);
   }
-  const ::google::protobuf::internal::ZeroFieldsBase::ClassData* GetClassData() const PROTOBUF_FINAL;
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ZeroFieldsBase::ClassDataFull _class_data_;
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
   ::google::protobuf::Metadata GetMetadata() const;

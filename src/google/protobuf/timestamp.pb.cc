@@ -163,28 +163,27 @@ constexpr auto Timestamp::InternalNewImpl_() {
 }
 PROTOBUF_CONSTINIT
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::google::protobuf::MessageLite::ClassDataFull
-    Timestamp::_class_data_ = {
-        ::google::protobuf::Message::ClassData{
-            &_Timestamp_default_instance_._instance,
-            &_table_.header,
-            nullptr,  // OnDemandRegisterArenaDtor
-            nullptr,  // IsInitialized
-            &Timestamp::MergeImpl,
-            ::google::protobuf::Message::GetNewImpl<Timestamp>(),
+const ::google::protobuf::internal::ClassDataFull Timestamp::_class_data_ = {
+    ::google::protobuf::internal::ClassData{
+        &_Timestamp_default_instance_._instance,
+        &_table_.header,
+        nullptr,  // OnDemandRegisterArenaDtor
+        nullptr,  // IsInitialized
+        &Timestamp::MergeImpl,
+        ::google::protobuf::Message::GetNewImpl<Timestamp>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            &Timestamp::SharedDtor,
-            ::google::protobuf::Message::GetClearImpl<Timestamp>(), &Timestamp::ByteSizeLong,
-                &Timestamp::_InternalSerialize,
+        &Timestamp::SharedDtor,
+        ::google::protobuf::Message::GetClearImpl<Timestamp>(), &Timestamp::ByteSizeLong,
+            &Timestamp::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-            PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._cached_size_),
-            false,
-        },
-        &Timestamp::kDescriptorMethods,
-        &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto,
-        nullptr,  // tracker
+        PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._cached_size_),
+        false,
+    },
+    &Timestamp::kDescriptorMethods,
+    &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto,
+    nullptr,  // tracker
 };
-const ::google::protobuf::MessageLite::ClassData* Timestamp::GetClassData() const {
+const ::google::protobuf::internal::ClassData* Timestamp::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
   ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
   return _class_data_.base();
