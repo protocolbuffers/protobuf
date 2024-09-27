@@ -273,26 +273,15 @@ struct RealKeyToVariantKey<MapKey> {
   VariantKey operator()(const MapKey& value) const;
 };
 
-}  // namespace internal
-
-}  // namespace protobuf
-}  // namespace google
-namespace std {
 template <>
-struct hash<google::protobuf::MapKey> {
-  size_t operator()(const google::protobuf::MapKey& map_key) const {
-    return ::google::protobuf::internal::RealKeyToVariantKey<::google::protobuf::MapKey>{}(map_key)
-        .Hash();
-  }
-  bool operator()(const google::protobuf::MapKey& map_key1,
-                  const google::protobuf::MapKey& map_key2) const {
-    return map_key1 < map_key2;
+struct RealKeyToVariantKeyAlternative<MapKey> {
+  VariantKey operator()(const MapKey& value) const {
+    return RealKeyToVariantKey<MapKey>{}(value);
   }
 };
-}  // namespace std
 
-namespace google {
-namespace protobuf {
+}  // namespace internal
+
 namespace internal {
 
 class ContendedMapCleanTest;
