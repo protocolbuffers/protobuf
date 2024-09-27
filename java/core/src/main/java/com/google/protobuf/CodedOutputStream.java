@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -962,7 +963,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
 
     OutOfSpaceException(long position, long limit, int length, Throwable cause) {
-      this(String.format("Pos: %d, limit: %d, len: %d", position, limit, length), cause);
+      this(String.format(Locale.US, "Pos: %d, limit: %d, len: %d", position, limit, length), cause);
     }
   }
 
@@ -1168,8 +1169,11 @@ public abstract class CodedOutputStream extends ByteOutput {
       if ((offset | length | (buffer.length - (offset + length))) < 0) {
         throw new IllegalArgumentException(
             String.format(
+                Locale.US,
                 "Array range is invalid. Buffer.length=%d, offset=%d, length=%d",
-                buffer.length, offset, length));
+                buffer.length,
+                offset,
+                length));
       }
       this.buffer = buffer;
       this.offset = offset;
