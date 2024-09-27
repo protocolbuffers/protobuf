@@ -50,7 +50,7 @@ bazel_dep(
 
 bazel_dep(
     name = "rules_kotlin",
-    version = "1.9.0",
+    version = "1.9.6",
 )
 
 bazel_dep(
