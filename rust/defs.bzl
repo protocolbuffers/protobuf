@@ -99,9 +99,9 @@ def _rust_proto_library_impl(ctx):
     # we have to create a shallow copy.
     toolchain = ctx.toolchains["@rules_rust//rust:toolchain_type"]
     fields = {field: getattr(crate_info, field) for field in dir(crate_info)}
-    pkg, name = _user_visible_label(ctx).rsplit(":")
-    label = struct(**{"name": name, "pkg": pkg})
-    fields["name"] = label_to_crate_name(ctx, label, toolchain)
+    fields["name"] = label_to_crate_name(ctx, _user_visible_label(ctx), toolchain)
+    fields.pop("to_json")
+    fields.pop("to_proto")
     crate_info_with_rust_proto_name = rust_common.crate_info(**fields)
 
     return [
