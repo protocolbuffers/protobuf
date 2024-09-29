@@ -188,7 +188,7 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
         //~ This try_from is not a TryFrom impl so that it isn't
         //~ committed to as part of our public api.
         #[allow(dead_code)]
-        pub(crate) fn try_from(v: u32) -> Option<$case_enum_name$> {
+        pub(crate) fn try_from(v: u32) -> $Option$<$case_enum_name$> {
           match v {
             0 => Some($case_enum_name$::not_set),
             $try_from_cases$

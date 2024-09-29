@@ -634,7 +634,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     }
                 }
 
-                fn map_get<'a>(map: $pb$::MapView<'a, $key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
+                fn map_get<'a>(map: $pb$::MapView<'a, $key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> $Option$<$pb$::View<'a, Self>> {
                     use $pbr$::MapNodeSizeInfoIndexForType;
                     let key = $key_expr$;
                     let mut value = $std$::mem::MaybeUninit::uninit();
@@ -675,7 +675,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     }
                 }
 
-                fn map_iter_next<'a>(iter: &mut $pb$::MapIter<'a, $key_t$, Self>) -> Option<($pb$::View<'a, $key_t$>, $pb$::View<'a, Self>)> {
+                fn map_iter_next<'a>(iter: &mut $pb$::MapIter<'a, $key_t$, Self>) -> $Option$<($pb$::View<'a, $key_t$>, $pb$::View<'a, Self>)> {
                     use $pbr$::MapNodeSizeInfoIndexForType;
                     // SAFETY:
                     // - The `MapIter` API forbids the backing map from being mutated for 'a,

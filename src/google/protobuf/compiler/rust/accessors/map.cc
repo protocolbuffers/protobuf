@@ -155,7 +155,7 @@ void Map::InExternC(Context& ctx, const FieldDescriptor& field) const {
              if (ctx.is_upb()) {
                ctx.Emit({}, R"rs(
                 fn $getter_thunk$(raw_msg: $pbr$::RawMessage)
-                  -> Option<$pbr$::RawMap>;
+                  -> $Option$<$pbr$::RawMap>;
                 fn $getter_mut_thunk$(raw_msg: $pbr$::RawMessage,
                   arena: $pbr$::RawArena) -> $pbr$::RawMap;
               )rs");
