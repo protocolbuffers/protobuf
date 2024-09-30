@@ -21,8 +21,14 @@ cc_library(
 
 cc_library(
     name = "kotlin_internal",
-    srcs = ["file.cc"],
-    hdrs = ["file.h"],
+    srcs = [
+        "file.cc",
+        "message.cc",
+    ],
+    hdrs = [
+        "file.h",
+        "message.h",
+    ],
     strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
@@ -34,11 +40,15 @@ cc_library(
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler/java",
+        "//src/google/protobuf/compiler/java:generator_common",
         "//src/google/protobuf/compiler/java:helpers",
-        "//src/google/protobuf/compiler/java/full",
-        "//src/google/protobuf/compiler/java/lite",
+        "//src/google/protobuf/compiler/java/full:fg",
+        "//src/google/protobuf/compiler/java/full:mfg",
+        "//src/google/protobuf/compiler/java/lite:field_generators",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
+        "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/strings",
     ],
 )

@@ -41,7 +41,7 @@ void SetCommonFieldVariables(
   (*variables)["kt_capitalized_name"] =
       IsForbiddenKotlin(info->name) ? absl::StrCat(info->capitalized_name, "_")
                                     : info->capitalized_name;
-  (*variables)["jvm_synthetic"] = JvmSynthetic(info->options);
+  (*variables)["jvm_synthetic"] = JvmSynthetic(info->options.jvm_dsl);
   if (!descriptor->is_repeated()) {
     (*variables)["annotation_field_type"] =
         std::string(FieldTypeName(descriptor->type()));

@@ -23,6 +23,7 @@ class FieldGenerator {
  public:
   virtual ~FieldGenerator() = default;
   virtual void GenerateSerializationCode(io::Printer* printer) const = 0;
+  virtual void GenerateKotlinDslMembers(io::Printer* printer) const = 0;
 };
 
 // Convenience class which constructs FieldGenerators for a Descriptor.

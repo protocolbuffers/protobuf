@@ -4,6 +4,7 @@ cc_library(
     name = "fg",
     hdrs = ["field_generator.h"],
     strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf/compiler/kotlin:__subpackages__"],
     deps = [
         "//src/google/protobuf/compiler/java:generator_common",
         "//src/google/protobuf/io:printer",
@@ -49,6 +50,7 @@ cc_library(
     srcs = ["make_field_gens.cc"],
     hdrs = ["make_field_gens.h"],
     strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf/compiler/kotlin:__subpackages__"],
     deps = [
         ":fg",
         ":fgs",

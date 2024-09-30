@@ -156,7 +156,10 @@ cc_library(
         "generator_factory.h",
     ],
     strip_include_prefix = "/src",
-    visibility = ["//src/google/protobuf/compiler/java:__subpackages__"],
+    visibility = [
+        "//src/google/protobuf/compiler/java:__subpackages__",
+        "//src/google/protobuf/compiler/kotlin:__subpackages__",
+    ],
     deps = [
         ":helpers",
         "//src/google/protobuf",
