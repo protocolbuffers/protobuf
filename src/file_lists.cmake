@@ -366,6 +366,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/shared_code_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/kotlin/file.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/kotlin/generator.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/kotlin/message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/enum.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/enum_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/extension.cc
@@ -504,6 +505,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/shared_code_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/kotlin/file.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/kotlin/generator.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/kotlin/message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/enum.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/enum_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/extension.h
