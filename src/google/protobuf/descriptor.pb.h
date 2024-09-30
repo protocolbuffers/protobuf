@@ -25,6 +25,7 @@
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"  // IWYU pragma: export
 #include "google/protobuf/extension_set.h"  // IWYU pragma: export
 #include "google/protobuf/generated_enum_reflection.h"
@@ -894,7 +895,6 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final
       62, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1173,7 +1173,6 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final
       3, 5, 0,
       106, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1455,7 +1454,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final
       64, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1696,7 +1694,6 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final
       71, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1910,7 +1907,6 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final
       1, 2, 1,
       57, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -2471,7 +2467,6 @@ class PROTOBUF_EXPORT FeatureSet final
       0, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -2731,7 +2726,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final
       71, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -2941,7 +2935,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final
       0, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -3147,7 +3140,6 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final
       1, 2, 0,
       0, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -3445,7 +3437,6 @@ class PROTOBUF_EXPORT UninterpretedOption final
       75, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -3652,7 +3643,6 @@ class PROTOBUF_EXPORT SourceCodeInfo final
       0, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -3851,7 +3841,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final
       0, 1, 1,
       0, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -4081,7 +4070,6 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final
       2, 3, 3,
       0, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -4496,7 +4484,6 @@ class PROTOBUF_EXPORT ServiceOptions final
       0, 12>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -4898,7 +4885,6 @@ class PROTOBUF_EXPORT OneofOptions final
       2, 2, 2,
       0, 7>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -5344,7 +5330,6 @@ class PROTOBUF_EXPORT MethodOptions final
       3, 4, 3,
       0, 12>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -5808,7 +5793,6 @@ class PROTOBUF_EXPORT MessageOptions final
       3, 7, 2,
       0, 7>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -6524,7 +6508,6 @@ class PROTOBUF_EXPORT FileOptions final
       202, 12>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -7196,7 +7179,6 @@ class PROTOBUF_EXPORT FieldOptions final
       0, 7>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -7439,7 +7421,6 @@ class PROTOBUF_EXPORT FeatureSetDefaults final
       1, 3, 3,
       0, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -7892,7 +7873,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final
       0, 12>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -8336,7 +8316,6 @@ class PROTOBUF_EXPORT EnumValueOptions final
       0, 7>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -8777,7 +8756,6 @@ class PROTOBUF_EXPORT EnumOptions final
       0, 7>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -9002,7 +8980,6 @@ class PROTOBUF_EXPORT OneofDescriptorProto final
       1, 2, 1,
       49, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -9284,7 +9261,6 @@ class PROTOBUF_EXPORT MethodDescriptorProto final
       3, 6, 1,
       71, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -9698,7 +9674,6 @@ class PROTOBUF_EXPORT FieldDescriptorProto final
       96, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -9941,7 +9916,6 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final
       53, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -10169,7 +10143,6 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final
       2, 3, 1,
       0, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -10410,7 +10383,6 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final
       2, 3, 2,
       51, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -10693,7 +10665,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto final
       3, 5, 3,
       61, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -11069,7 +11040,6 @@ class PROTOBUF_EXPORT DescriptorProto final
       4, 10, 8,
       65, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -11497,7 +11467,6 @@ class PROTOBUF_EXPORT FileDescriptorProto final
       79, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -11713,7 +11682,6 @@ class PROTOBUF_EXPORT FileDescriptorSet final
       0, 1, 1,
       0, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;

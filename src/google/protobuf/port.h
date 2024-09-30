@@ -40,6 +40,8 @@ class MessageLite;
 
 namespace internal {
 
+struct MessageTraitsImpl;
+
 template <typename T>
 inline PROTOBUF_ALWAYS_INLINE void StrongPointer(T* var) {
 #if defined(__GNUC__)
@@ -61,9 +63,10 @@ inline PROTOBUF_ALWAYS_INLINE void StrongPointer() {
   asm(".reloc ., BFD_RELOC_NONE, %p0" ::"Ws"(ptr));
 }
 
-template <typename T>
+template <typename T, typename TraitsImpl = MessageTraitsImpl>
 inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
-  static constexpr auto ptr = T::template GetStrongPointerForType<T>();
+  static constexpr auto ptr =
+      decltype(TraitsImpl::template value<T>)::StrongPointer();
   // This is identical to the implementation of StrongPointer() above, but it
   // has to be explicitly inlined here or else Clang 19 will raise an error in
   // some configurations.
@@ -77,9 +80,10 @@ inline PROTOBUF_ALWAYS_INLINE void StrongPointer() {
   StrongPointer(ptr);
 }
 
-template <typename T>
+template <typename T, typename TraitsImpl = MessageTraitsImpl>
 inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
-  return StrongPointer(T::template GetStrongPointerForType<T>());
+  return StrongPointer(
+      decltype(TraitsImpl::template value<T>)::StrongPointer());
 }
 #endif  // .reloc
 

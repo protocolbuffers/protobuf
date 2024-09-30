@@ -2041,18 +2041,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                                                $pbi$::ParseContext* ctx);
           )cc");
         }},
-       {"raw_default_instance",
-        [&] {
-          // We can't make a constexpr pointer to the global if we have DLL
-          // linkage so skip this. The fallback in
-          // `MessageLite::GetStrongPointerForType` will do the right thing in
-          // those platforms.
-          if (!options_.dllexport_decl.empty()) return;
-          p->Emit(R"cc(
-            static constexpr const void* _raw_default_instance_ =
-                &_$classname$_default_instance_;
-          )cc");
-        }},
        {"decl_impl", [&] { GenerateImplDefinition(p); }},
        {"classdata_type",
         HasDescriptorMethods(descriptor_->file(), options_)
@@ -2209,8 +2197,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           $decl_oneof_has$;
           $decl_data$;
           $post_loop_handler$;
-
-          $raw_default_instance$;
 
           friend class ::$proto_ns$::MessageLite;
           friend class ::$proto_ns$::Arena;

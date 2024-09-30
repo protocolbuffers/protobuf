@@ -224,6 +224,34 @@ class PROTOBUF_EXPORT CachedSize {
 #endif
 };
 
+// TODO: Upgrade to `auto` parameters when we drop C++14 support.
+template <typename T, const T* kDefault>
+struct GeneratedMessageTraitsT {
+  static constexpr const void* default_instance() { return kDefault; }
+  static constexpr auto StrongPointer() { return default_instance(); }
+};
+
+template <typename T>
+struct FallbackMessageTraits {
+  static const void* default_instance() { return T::default_instance(); }
+  // We can't make a constexpr pointer to the default, so use a function pointer
+  // instead.
+  static constexpr auto StrongPointer() { return &T::default_instance; }
+};
+
+// Traits for message T.
+// We use a class scope variable template, which can be specialized with a
+// different type in a non-defining declaration.
+// We need non-defining declarations because we might have duplicates of the
+// same trait specification on each dependent coming from different .proto.h
+// files.
+struct MessageTraitsImpl {
+  template <typename T>
+  static FallbackMessageTraits<T> value;
+};
+template <typename T>
+using MessageTraits = decltype(MessageTraitsImpl::value<T>);
+
 // For MessageLite to friend.
 auto GetClassData(const MessageLite& msg);
 
@@ -988,26 +1016,6 @@ class PROTOBUF_EXPORT MessageLite {
   static uint32_t GetOneofCaseOffsetForTesting() {
     return offsetof(T, _impl_._oneof_case_);
   }
-
-  template <typename T, const void* ptr = T::_raw_default_instance_>
-  static constexpr auto GetStrongPointerForTypeImpl(int) {
-    return ptr;
-  }
-  template <typename T>
-  static constexpr auto GetStrongPointerForTypeImpl(char) {
-    return &T::default_instance;
-  }
-  // Return a pointer we can use to make a strong reference to a type.
-  // Ideally, this is a pointer to the default instance.
-  // If we can't get that, then we use a pointer to the `default_instance`
-  // function. The latter always works but pins the function artificially into
-  // the binary so we avoid it.
-  template <typename T>
-  static constexpr auto GetStrongPointerForType() {
-    return GetStrongPointerForTypeImpl<T>(0);
-  }
-  template <typename T>
-  friend void internal::StrongReferenceToType();
 };
 
 // A `std::type_info` equivalent for protobuf message types.
