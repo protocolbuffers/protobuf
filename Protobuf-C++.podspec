@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name     = 'Protobuf-C++'
-  s.version  = '5.29.0'
+  s.version  = '5.30.0'
   s.summary  = 'Protocol Buffers v3 runtime library for C++.'
   s.homepage = 'https://github.com/google/protobuf'
   s.license  = 'BSD-3-Clause'
