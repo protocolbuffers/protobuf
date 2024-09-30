@@ -25,6 +25,7 @@
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"  // IWYU pragma: export
 #include "google/protobuf/extension_set.h"  // IWYU pragma: export
 #include "google/protobuf/generated_enum_reflection.h"
@@ -389,7 +390,6 @@ class PROTOBUF_EXPORT Option final
       1, 2, 1,
       35, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -771,7 +771,6 @@ class PROTOBUF_EXPORT Field final
       72, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1006,7 +1005,6 @@ class PROTOBUF_EXPORT EnumValue final
       2, 3, 1,
       38, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1310,7 +1308,6 @@ class PROTOBUF_EXPORT Type final
       46, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1594,7 +1591,6 @@ class PROTOBUF_EXPORT Enum final
       3, 6, 3,
       40, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;

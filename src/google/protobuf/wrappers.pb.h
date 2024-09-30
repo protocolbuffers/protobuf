@@ -25,6 +25,7 @@
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"  // IWYU pragma: export
 #include "google/protobuf/extension_set.h"  // IWYU pragma: export
 #include "google/protobuf/unknown_field_set.h"
@@ -258,7 +259,6 @@ class PROTOBUF_EXPORT UInt64Value final
       0, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -449,7 +449,6 @@ class PROTOBUF_EXPORT UInt32Value final
       0, 1, 0,
       0, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -648,7 +647,6 @@ class PROTOBUF_EXPORT StringValue final
       41, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -839,7 +837,6 @@ class PROTOBUF_EXPORT Int64Value final
       0, 1, 0,
       0, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1032,7 +1029,6 @@ class PROTOBUF_EXPORT Int32Value final
       0, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1224,7 +1220,6 @@ class PROTOBUF_EXPORT FloatValue final
       0, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1415,7 +1410,6 @@ class PROTOBUF_EXPORT DoubleValue final
       0, 1, 0,
       0, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1614,7 +1608,6 @@ class PROTOBUF_EXPORT BytesValue final
       0, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -1805,7 +1798,6 @@ class PROTOBUF_EXPORT BoolValue final
       0, 1, 0,
       0, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;

@@ -25,6 +25,7 @@
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"  // IWYU pragma: export
 #include "google/protobuf/extension_set.h"  // IWYU pragma: export
 #include "google/protobuf/unknown_field_set.h"
@@ -245,7 +246,6 @@ class PROTOBUF_EXPORT FieldMask final
       0, 1, 0,
       39, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;

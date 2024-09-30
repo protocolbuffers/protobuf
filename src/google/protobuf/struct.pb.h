@@ -25,6 +25,7 @@
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"  // IWYU pragma: export
 #include "google/protobuf/extension_set.h"  // IWYU pragma: export
 #include "google/protobuf/map.h"  // IWYU pragma: export
@@ -286,7 +287,6 @@ class PROTOBUF_EXPORT ListValue final
       0, 2>
       _table_;
 
-
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
   template <typename T>
@@ -482,7 +482,6 @@ class PROTOBUF_EXPORT Struct final
       0, 1, 2,
       37, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -818,7 +817,6 @@ class PROTOBUF_EXPORT Value final
       0, 6, 2,
       42, 2>
       _table_;
-
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
