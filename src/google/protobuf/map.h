@@ -1173,6 +1173,18 @@ class RustMapHelper {
   using NodeAndBucket = UntypedMapBase::NodeAndBucket;
   using ClearInput = UntypedMapBase::ClearInput;
 
+  static void GetSizeAndAlignment(const google::protobuf::MessageLite* m, uint16_t* size,
+                                  uint8_t* alignment) {
+    const auto* class_data = m->GetClassData();
+    *size = static_cast<uint16_t>(class_data->allocation_size());
+    *alignment = class_data->alignment();
+  }
+
+  static constexpr MapNodeSizeInfoT MakeSizeInfo(uint16_t size,
+                                                 uint16_t value_offset) {
+    return MakeNodeInfo(size, value_offset);
+  }
+
   template <typename Key, typename Value>
   static constexpr MapNodeSizeInfoT SizeInfo() {
     return Map<Key, Value>::Node::size_info();
