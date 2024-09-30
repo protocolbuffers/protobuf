@@ -447,9 +447,9 @@ with info about your project (name and website) so we can add an entry for you.
     *   Website: http://buf.build/
     *   Extension: 1157-1166
 
-1.  Connect
+1.  Connect RPC
 
-    *   Website: http://connect.build/
+    *   Website: http://connectrpc.com/
     *   Extension: 1167-1176
 
 1.  protocel
