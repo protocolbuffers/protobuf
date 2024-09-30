@@ -178,19 +178,22 @@ static inline const char* utf8_range_SkipAscii(const char* data,
 static FORCE_INLINE_ATTR inline size_t utf8_range_Validate(
     const char* data, size_t len, int return_position) {
   if (len == 0) return 1 - return_position;
+  // Save buffer start address for later use
+  const char* const data_original = data;
   const char* const end = data + len;
   data = utf8_range_SkipAscii(data, end);
   /* SIMD algorithm always outperforms the naive version for any data of
      length >=16.
    */
   if (end - data < 16) {
-    return (return_position ? (data - (end - len)) : 0) +
+    return (return_position ? (data - data_original) : 0) +
            utf8_range_ValidateUTF8Naive(data, end, return_position);
   }
 #if defined(__SSE4_1__) || (defined(__ARM_NEON) && defined(__ARM_64BIT_STATE))
-  return utf8_range_ValidateUTF8Simd(data, end, return_position);
+  return utf8_range_ValidateUTF8Simd(
+      data_original, data, end, return_position);
 #else
-  return (return_position ? (data - (end - len)) : 0) +
+  return (return_position ? (data - data_original) : 0) +
          utf8_range_ValidateUTF8Naive(data, end, return_position);
 #endif
 }

@@ -7,7 +7,8 @@
  */
 
 static FORCE_INLINE_ATTR inline size_t utf8_range_ValidateUTF8Simd(
-    const char* data, const char* end, int return_position) {
+    const char* data_original, const char* data, const char* end,
+    int return_position) {
   const uint8x16_t first_len_tbl = {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 3,
   };
@@ -57,7 +58,6 @@ static FORCE_INLINE_ATTR inline size_t utf8_range_ValidateUTF8Simd(
   uint8x16_t prev_first_len = vdupq_n_u8(0);
   uint8x16_t error = vdupq_n_u8(0);
 
-  const char* const data_original = data;
   while (end - data >= 16) {
     const uint8x16_t input = vld1q_u8((const uint8_t*)data);
 

@@ -3,7 +3,8 @@
 #include <tmmintrin.h>
 
 static FORCE_INLINE_ATTR inline size_t utf8_range_ValidateUTF8Simd(
-    const char* data, const char* end, int return_position) {
+    const char* data_original, const char* data, const char* end,
+    int return_position) {
   /* This code checks that utf-8 ranges are structurally valid 16 bytes at once
    * using superscalar instructions.
    * The mapping between ranges of codepoint and their corresponding utf-8
@@ -154,8 +155,6 @@ static FORCE_INLINE_ATTR inline size_t utf8_range_ValidateUTF8Simd(
   __m128i prev_first_len = _mm_set1_epi8(0);
   __m128i error = _mm_set1_epi8(0);
 
-  // Save buffer start address for later use
-  const char* const data_original = data;
   while (end - data >= 16) {
     const __m128i input = _mm_loadu_si128((const __m128i*)(data));
 
