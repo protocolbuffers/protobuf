@@ -921,7 +921,12 @@ message MethodOptions {
   repeated UninterpretedOption uninterpreted_option = 999;
 
   // Clients can define custom options in extensions of this message. See above.
-  extensions 1000 to max;
+  extensions 1000 to max
+  [declaration = {
+    number: 1001,
+    full_name: ".proto2_stubby.disable_legacy_client",
+    type: ".bool"
+  }];
 }
 
 // A message representing a option the parser does not recognize. This only
