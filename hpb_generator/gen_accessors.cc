@@ -24,7 +24,7 @@
 
 namespace google::protobuf::hpb_generator {
 
-namespace protobuf = ::proto2;
+namespace protobuf = ::google::protobuf;
 
 using NameToFieldDescriptorMap =
     absl::flat_hash_map<absl::string_view, const protobuf::FieldDescriptor*>;
@@ -571,5 +571,4 @@ std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
   return ResolveKeywordConflict(field_name);
 }
 
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator

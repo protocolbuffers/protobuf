@@ -14,7 +14,7 @@
 
 namespace google::protobuf::hpb_generator {
 
-namespace protobuf = ::proto2;
+namespace protobuf = ::google::protobuf;
 
 void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
                                  Output& output);
@@ -23,7 +23,6 @@ void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
                                  MessageClassType handle_type, Output& output);
 void WriteOneofAccessorsInHeader(const protobuf::Descriptor* desc,
                                  Output& output);
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator
 
 #endif  // PROTOBUF_COMPILER_HBP_GEN_ACCESSORS_H_

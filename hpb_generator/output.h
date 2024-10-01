@@ -144,7 +144,6 @@ std::string MessageName(const google::protobuf::Descriptor* descriptor);
 std::string FileLayoutName(const google::protobuf::FileDescriptor* file);
 std::string CHeaderFilename(const google::protobuf::FileDescriptor* file);
 
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator
 
 #endif  // PROTOBUF_COMPILER_HBP_OUTPUT_H_

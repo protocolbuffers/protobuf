@@ -14,7 +14,7 @@
 #include "google/protobuf/compiler/hpb/keywords.h"
 
 namespace google::protobuf::hpb_generator {
-namespace protobuf = ::proto2;
+namespace protobuf = ::google::protobuf;
 
 namespace {
 
@@ -177,5 +177,4 @@ std::string MessageProxyType(const protobuf::FieldDescriptor* field,
          "Proxy";
 }
 
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator

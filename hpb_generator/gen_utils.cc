@@ -16,7 +16,7 @@
 
 namespace google::protobuf::hpb_generator {
 
-namespace protobuf = ::proto2;
+namespace protobuf = ::google::protobuf;
 
 void AddEnums(const protobuf::Descriptor* message,
               std::vector<const protobuf::EnumDescriptor*>* enums) {
@@ -127,5 +127,4 @@ std::string ToCamelCase(const absl::string_view input, bool lower_first) {
   return result;
 }
 
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator

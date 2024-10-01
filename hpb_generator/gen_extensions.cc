@@ -13,7 +13,7 @@
 
 namespace google::protobuf::hpb_generator {
 
-namespace protobuf = ::proto2;
+namespace protobuf = ::google::protobuf;
 
 std::string ExtensionIdentifierBase(const protobuf::FieldDescriptor* ext) {
   assert(ext->is_extension());
@@ -91,5 +91,4 @@ void WriteExtensionIdentifiers(
   }
 }
 
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator

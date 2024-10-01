@@ -26,7 +26,7 @@
 
 namespace google::protobuf::hpb_generator {
 
-namespace protobuf = ::proto2;
+namespace protobuf = ::google::protobuf;
 
 void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
                                  Output& output);
@@ -535,5 +535,4 @@ void WriteUsingEnumsInHeader(
   }
 }
 
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator

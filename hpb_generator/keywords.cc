@@ -130,5 +130,4 @@ std::string ResolveKeywordConflict(absl::string_view name) {
   return std::string(name);
 }
 
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator

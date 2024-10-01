@@ -19,7 +19,7 @@
 
 namespace google::protobuf::hpb_generator {
 
-namespace protobuf = ::proto2;
+namespace protobuf = ::google::protobuf;
 
 // Convert enum value to C++ literal.
 //
@@ -118,5 +118,4 @@ void WriteHeaderEnumForwardDecls(
   }
 }
 
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator

@@ -15,7 +15,7 @@
 namespace google::protobuf::hpb_generator {
 namespace {
 
-namespace protobuf = ::proto2;
+namespace protobuf = ::google::protobuf;
 
 }  // namespace
 
@@ -55,5 +55,4 @@ std::string CHeaderFilename(const google::protobuf::FileDescriptor* file) {
   return upb::generator::CApiHeaderFilename(file->name());
 }
 
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator
