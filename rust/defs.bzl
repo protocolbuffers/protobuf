@@ -101,8 +101,8 @@ def _rust_proto_library_impl(ctx):
 
     # These two fields present on the dir(crate_info) but break on some versions of Bazel when
     # passed back in to crate_info. Strip them for now.
-    fields.pop("to_json")
-    fields.pop("to_proto")
+    fields.pop("to_json", None)
+    fields.pop("to_proto", None)
 
     crate_info_with_rust_proto_name = rust_common.crate_info(**fields)
 
