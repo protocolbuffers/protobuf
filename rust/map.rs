@@ -400,6 +400,21 @@ where
     }
 }
 
+impl<'msg, 'k, 'v, K, KView, V, VView, I> IntoProxied<Map<K, V>> for I
+where
+    I: Iterator<Item = (KView, VView)>,
+    K: Proxied + 'msg + 'k,
+    V: ProxiedInMapValue<K> + 'msg + 'v,
+    KView: Into<View<'k, K>>,
+    VView: IntoProxied<V>,
+{
+    fn into_proxied(self, _private: Private) -> Map<K, V> {
+        let mut m = Map::<K, V>::new();
+        m.as_mut().extend(self);
+        m
+    }
+}
+
 /// An iterator visiting all key-value pairs in arbitrary order.
 ///
 /// The iterator element type is `(View<Key>, View<Value>)`.

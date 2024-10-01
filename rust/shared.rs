@@ -116,10 +116,3 @@ impl fmt::Display for SerializeError {
         write!(f, "Couldn't serialize proto into bytes (depth too deep or missing required fields)")
     }
 }
-
-pub fn get_repeated_default_value<T: repeated::ProxiedInRepeated + Default>(
-    _: __internal::Private,
-    _: repeated::RepeatedView<'_, T>,
-) -> T {
-    Default::default()
-}

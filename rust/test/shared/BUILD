@@ -456,6 +456,7 @@ rust_test(
     },
     deps = [
         "//rust:protobuf_cpp",
+        "//rust/test:map_unittest_cpp_rust_proto",
         "//src/google/protobuf:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
@@ -471,6 +472,7 @@ rust_test(
     deps = [
         "//rust:protobuf_gtest_matchers_upb",
         "//rust:protobuf_upb",
+        "//rust/test:map_unittest_upb_rust_proto",
         "//src/google/protobuf:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
