@@ -198,6 +198,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
   output(
       R"cc(
 #include <stddef.h>
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "$0"
       )cc",
