@@ -24,13 +24,13 @@ jobs:
       fail-fast: false
       matrix:
         # TODO Remove this parameterization once the release branch testing is stable.
-        branch: [main, 25.x, 27.x, 28.x]
+        branch: [main, 25.x, 28.x, 29.x]
         os: [{ name: Linux, value: ubuntu-latest}]
         exclude:
           # If we are in a presubmit run, only test main
           - branch: ${{ !inputs.continuous-run && '25.x' }}
-          - branch: ${{ !inputs.continuous-run && '27.x' }}
           - branch: ${{ !inputs.continuous-run && '28.x' }}
+          - branch: ${{ !inputs.continuous-run && '29.x' }}
 
     name: Test staleness ${{ matrix.os.name }} ${{ github.head_ref && 'PR' || matrix.branch }}
     runs-on: ${{ matrix.os.value }}
