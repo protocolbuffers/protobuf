@@ -258,6 +258,16 @@ using IntT = int;
 template <typename T>
 using PointerT = T*;
 
+// State that we gather during EstimatedMemoryUsed while on the lock, but we
+// will use outside the lock.
+struct EstimatedMemoryUsedState {
+  // We can't call SpaceUsed under the lock because it uses reflection and can
+  // potentially deadlock if it requires to load new files into the pool.
+  // NOTE: Messages added here must not be modified or destroyed outside the
+  // lock while the pool is alive.
+  std::vector<const Message*> messages;
+};
+
 // Manages an allocation of sequential arrays of type `T...`.
 // It is more space efficient than storing N (ptr, size) pairs, by storing only
 // the pointer to the head and the boundaries between the arrays.
