@@ -35,7 +35,7 @@ inline constexpr JavaFeatures::Impl_::Impl_(
 template <typename>
 PROTOBUF_CONSTEXPR JavaFeatures::JavaFeatures(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(_class_data_.base()),
+    : ::google::protobuf::Message(JavaFeatures_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -158,7 +158,7 @@ class JavaFeatures::_Internal {
 
 JavaFeatures::JavaFeatures(::google::protobuf::Arena* arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, _class_data_.base()) {
+    : ::google::protobuf::Message(arena, JavaFeatures_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -203,32 +203,38 @@ constexpr auto JavaFeatures::InternalNewImpl_() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(JavaFeatures),
                                             alignof(JavaFeatures));
 }
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::google::protobuf::internal::ClassDataFull JavaFeatures::_class_data_ = {
-    ::google::protobuf::internal::ClassData{
-        &_JavaFeatures_default_instance_._instance,
-        &_table_.header,
-        nullptr,  // OnDemandRegisterArenaDtor
-        nullptr,  // IsInitialized
-        &JavaFeatures::MergeImpl,
-        ::google::protobuf::Message::GetNewImpl<JavaFeatures>(),
+constexpr auto JavaFeatures::InternalGenerateClassData_() {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_JavaFeatures_default_instance_._instance,
+          &_table_.header,
+          nullptr,  // OnDemandRegisterArenaDtor
+          nullptr,  // IsInitialized
+          &JavaFeatures::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<JavaFeatures>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-        &JavaFeatures::SharedDtor,
-        ::google::protobuf::Message::GetClearImpl<JavaFeatures>(), &JavaFeatures::ByteSizeLong,
-            &JavaFeatures::_InternalSerialize,
+          &JavaFeatures::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<JavaFeatures>(), &JavaFeatures::ByteSizeLong,
+              &JavaFeatures::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-        PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
-        false,
-    },
-    &JavaFeatures::kDescriptorMethods,
-    &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
-    nullptr,  // tracker
-};
+          PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_._cached_size_),
+          false,
+      },
+      &JavaFeatures::kDescriptorMethods,
+      &descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto,
+      nullptr,  // tracker
+  };
+}
+
+PROTOBUF_CONSTINIT PROTOC_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
+        JavaFeatures_class_data_ =
+            JavaFeatures::InternalGenerateClassData_();
+
 const ::google::protobuf::internal::ClassData* JavaFeatures::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
-  return _class_data_.base();
+  ::google::protobuf::internal::PrefetchToLocalCache(&JavaFeatures_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(JavaFeatures_class_data_.tc_table);
+  return JavaFeatures_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<1, 2, 1, 0, 2> JavaFeatures::_table_ = {
@@ -242,7 +248,7 @@ const ::_pbi::TcParseTable<1, 2, 1, 0, 2> JavaFeatures::_table_ = {
     2,  // num_field_entries
     1,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
-    _class_data_.base(),
+    JavaFeatures_class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE

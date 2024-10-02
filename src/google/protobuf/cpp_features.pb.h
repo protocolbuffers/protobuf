@@ -57,6 +57,7 @@ namespace pb {
 class CppFeatures;
 struct CppFeaturesDefaultTypeInternal;
 PROTOBUF_EXPORT extern CppFeaturesDefaultTypeInternal _CppFeatures_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull CppFeatures_class_data_;
 }  // namespace pb
 namespace google {
 namespace protobuf {
@@ -240,9 +241,10 @@ class PROTOBUF_EXPORT CppFeatures final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using StringType = CppFeatures_StringType;
@@ -339,6 +341,8 @@ class PROTOBUF_EXPORT CppFeatures final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcpp_5ffeatures_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull CppFeatures_class_data_;
 
 // ===================================================================
 

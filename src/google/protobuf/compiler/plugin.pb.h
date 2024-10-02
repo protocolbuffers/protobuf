@@ -65,15 +65,19 @@ namespace compiler {
 class CodeGeneratorRequest;
 struct CodeGeneratorRequestDefaultTypeInternal;
 PROTOC_EXPORT extern CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_;
+PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorRequest_class_data_;
 class CodeGeneratorResponse;
 struct CodeGeneratorResponseDefaultTypeInternal;
 PROTOC_EXPORT extern CodeGeneratorResponseDefaultTypeInternal _CodeGeneratorResponse_default_instance_;
+PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_class_data_;
 class CodeGeneratorResponse_File;
 struct CodeGeneratorResponse_FileDefaultTypeInternal;
 PROTOC_EXPORT extern CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_;
+PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_File_class_data_;
 class Version;
 struct VersionDefaultTypeInternal;
 PROTOC_EXPORT extern VersionDefaultTypeInternal _Version_default_instance_;
+PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull Version_class_data_;
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
@@ -256,9 +260,10 @@ class PROTOC_EXPORT Version final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -353,6 +358,8 @@ class PROTOC_EXPORT Version final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
+
+PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull Version_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOC_EXPORT CodeGeneratorResponse_File final
@@ -494,9 +501,10 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -607,6 +615,8 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
+
+PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_File_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOC_EXPORT CodeGeneratorResponse final
@@ -748,9 +758,10 @@ class PROTOC_EXPORT CodeGeneratorResponse final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using File = CodeGeneratorResponse_File;
@@ -885,6 +896,8 @@ class PROTOC_EXPORT CodeGeneratorResponse final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
+
+PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOC_EXPORT CodeGeneratorRequest final
@@ -1031,9 +1044,10 @@ class PROTOC_EXPORT CodeGeneratorRequest final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -1168,6 +1182,8 @@ class PROTOC_EXPORT CodeGeneratorRequest final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
+
+PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorRequest_class_data_;
 
 // ===================================================================
 

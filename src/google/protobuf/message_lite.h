@@ -224,16 +224,23 @@ class PROTOBUF_EXPORT CachedSize {
 #endif
 };
 
+auto GetClassData(const MessageLite& msg);
+
 // TODO: Upgrade to `auto` parameters when we drop C++14 support.
-template <typename T, const T* kDefault>
+template <typename T, const T* kDefault, typename ClassData,
+          const ClassData* kClassData>
 struct GeneratedMessageTraitsT {
   static constexpr const void* default_instance() { return kDefault; }
+  static constexpr const auto* class_data() { return kClassData->base(); }
   static constexpr auto StrongPointer() { return default_instance(); }
 };
 
 template <typename T>
 struct FallbackMessageTraits {
-  static const void* default_instance() { return T::default_instance(); }
+  static const void* default_instance() { return &T::default_instance(); }
+  static constexpr const auto* class_data() {
+    return GetClassData(T::default_instance());
+  }
   // We can't make a constexpr pointer to the default, so use a function pointer
   // instead.
   static constexpr auto StrongPointer() { return &T::default_instance; }
@@ -251,9 +258,6 @@ struct MessageTraitsImpl {
 };
 template <typename T>
 using MessageTraits = decltype(MessageTraitsImpl::value<T>);
-
-// For MessageLite to friend.
-auto GetClassData(const MessageLite& msg);
 
 class SwapFieldHelper;
 
@@ -898,16 +902,6 @@ class PROTOBUF_EXPORT MessageLite {
   virtual const internal::ClassData* GetClassData() const = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
-  template <typename T>
-  static auto GetClassDataGenerated() {
-    static_assert(std::is_base_of<MessageLite, T>::value, "");
-    // We could speed this up if needed by avoiding the function call.
-    // In LTO this is likely inlined, so it might not matter.
-    static_assert(
-        std::is_same<const T&, decltype(T::default_instance())>::value, "");
-    return T::default_instance().T::GetClassData();
-  }
-
   internal::InternalMetadata _internal_metadata_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   const internal::ClassData* _class_data_;
@@ -1038,7 +1032,7 @@ class TypeId {
 
   template <typename T>
   static TypeId Get() {
-    return TypeId(MessageLite::GetClassDataGenerated<T>());
+    return TypeId(internal::MessageTraits<T>::class_data());
   }
 
   // Name of the message type.

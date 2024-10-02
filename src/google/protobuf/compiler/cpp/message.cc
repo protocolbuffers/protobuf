@@ -1392,6 +1392,8 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
 
           $decl_verify_func$;
 
+          static constexpr auto InternalGenerateClassData_();
+
          private:
           friend class ::$proto_ns$::MessageLite;
           friend struct ::$tablename$;
@@ -1403,8 +1405,8 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
           static void* PlacementNew_(const void*, void* mem,
                                      ::$proto_ns$::Arena* arena);
           static constexpr auto InternalNewImpl_();
-          static const $pbi$::ClassDataFull _class_data_;
         };
+        $dllexport_decl $extern const $pbi$::ClassDataFull $classname$_class_data_;
       )cc");
 }
 
@@ -2042,11 +2044,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           )cc");
         }},
        {"decl_impl", [&] { GenerateImplDefinition(p); }},
-       {"classdata_type",
-        HasDescriptorMethods(descriptor_->file(), options_)
-            ? "ClassDataFull"
-            : absl::StrFormat("ClassDataLite<%d>",
-                              descriptor_->full_name().size() + 1)},
+       {"classdata_type", ClassDataType(descriptor_, options_)},
        {"split_friend",
         [&] {
           if (!ShouldSplit(descriptor_, options_)) return;
@@ -2174,9 +2172,14 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           static void* PlacementNew_(const void*, void* mem,
                                      ::$proto_ns$::Arena* arena);
           static constexpr auto InternalNewImpl_();
-          static const $pbi$::$classdata_type$ _class_data_;
 
          public:
+          //~ We need this in the public section to call it from the initializer
+          //~ of T_class_data_. However, since it is `constexpr` and has an
+          //~ `auto` return type it is not callable from outside the .pb.cc
+          //~ without a definition so it is effectively private.
+          static constexpr auto InternalGenerateClassData_();
+
           $get_metadata$;
           $decl_split_methods$;
           // nested types ----------------------------------------------------
@@ -2210,6 +2213,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           //~ order to construct the offsets of all members.
           friend struct ::$tablename$;
         };
+
+        $dllexport_decl $extern const $pbi$::$classdata_type$ $classname$_class_data_;
       )cc");
 }  // NOLINT(readability/fn_size)
 
@@ -2290,9 +2295,10 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
              {"class_data", [&] { GenerateClassData(p); }}},
             R"cc(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-              $classname$::$classname$() : SuperType(_class_data_.base()) {}
+              $classname$::$classname$()
+                  : SuperType($classname$_class_data_.base()) {}
               $classname$::$classname$(::$proto_ns$::Arena* arena)
-                  : SuperType(arena, _class_data_.base()) {}
+                  : SuperType(arena, $classname$_class_data_.base()) {}
 #else   // PROTOBUF_CUSTOM_VTABLE
               $classname$::$classname$() : SuperType() {}
               $classname$::$classname$(::$proto_ns$::Arena* arena) : SuperType(arena) {}
@@ -3007,7 +3013,7 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
               template <typename>
               $constexpr$ $classname$::$classname$(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                  : $base$(_class_data_.base()){}
+                  : $base$($classname$_class_data_.base()){}
 #else   // PROTOBUF_CUSTOM_VTABLE
                   : $base$() {
               }
@@ -3034,7 +3040,7 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
         template <typename>
         $constexpr$ $classname$::$classname$(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            : $superclass$(_class_data_.base()),
+            : $superclass$($classname$_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
             : $superclass$(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -3302,7 +3308,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
                 //~ force alignment
                 const $classname$& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                : $superclass$(arena, _class_data_.base()) {
+                : $superclass$(arena, $classname$_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
                 : $superclass$(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -3352,7 +3358,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
       R"cc(
         $classname$::$classname$(::$proto_ns$::Arena* arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            : $superclass$(arena, _class_data_.base()) {
+            : $superclass$(arena, $classname$_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
             : $superclass$(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -4050,33 +4056,39 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
              }},
         },
         R"cc(
-          PROTOBUF_CONSTINIT
-          PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-          const $pbi$::ClassDataFull $classname$::_class_data_ = {
-              $pbi$::ClassData{
-                  $default_instance$,
-                  &_table_.header,
-                  $on_demand_register_arena_dtor$,
-                  $is_initialized$,
-                  &$classname$::MergeImpl,
-                  $superclass$::GetNewImpl<$classname$>(),
+          constexpr auto $classname$::InternalGenerateClassData_() {
+            return $pbi$::ClassDataFull{
+                $pbi$::ClassData{
+                    $default_instance$,
+                    &_table_.header,
+                    $on_demand_register_arena_dtor$,
+                    $is_initialized$,
+                    &$classname$::MergeImpl,
+                    $superclass$::GetNewImpl<$classname$>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                  &$classname$::SharedDtor,
-                  $custom_vtable_methods$,
+                    &$classname$::SharedDtor,
+                    $custom_vtable_methods$,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-                  PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
-                  false,
-                  $v2_msg_table$,
-              },
-              &$classname$::kDescriptorMethods,
-              &$desc_table$,
-              $tracker_on_get_metadata$,
-          };
+                    PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
+                    false,
+                    $v2_msg_table$,
+                },
+                &$classname$::kDescriptorMethods,
+                &$desc_table$,
+                $tracker_on_get_metadata$,
+            };
+          }
+
+          PROTOBUF_CONSTINIT$ dllexport_decl$
+              PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $pbi$::ClassDataFull
+                  $classname$_class_data_ =
+                      $classname$::InternalGenerateClassData_();
+
           const $pbi$::ClassData* $classname$::GetClassData() const {
             $pin_weak_descriptor$;
-            $pbi$::PrefetchToLocalCache(&_class_data_);
-            $pbi$::PrefetchToLocalCache(_class_data_.tc_table);
-            return _class_data_.base();
+            $pbi$::PrefetchToLocalCache(&$classname$_class_data_);
+            $pbi$::PrefetchToLocalCache($classname$_class_data_.tc_table);
+            return $classname$_class_data_.base();
           }
         )cc");
   } else {
@@ -4091,28 +4103,34 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
              }},
         },
         R"cc(
+          constexpr auto $classname$::InternalGenerateClassData_() {
+            return $pbi$::ClassDataLite<$type_size$>{
+                {
+                    $default_instance$,
+                    &_table_.header,
+                    $on_demand_register_arena_dtor$,
+                    $is_initialized$,
+                    &$classname$::MergeImpl,
+                    $superclass$::GetNewImpl<$classname$>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+                    &$classname$::SharedDtor,
+                    $custom_vtable_methods$,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+                    PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
+                    true,
+                    $v2_msg_table$,
+                },
+                "$full_name$",
+            };
+          }
+
           PROTOBUF_CONSTINIT
           PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-          const $pbi$::ClassDataLite<$type_size$> $classname$::_class_data_ = {
-              {
-                  $default_instance$,
-                  &_table_.header,
-                  $on_demand_register_arena_dtor$,
-                  $is_initialized$,
-                  &$classname$::MergeImpl,
-                  $superclass$::GetNewImpl<$classname$>(),
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-                  &$classname$::SharedDtor,
-                  $custom_vtable_methods$,
-#endif  // PROTOBUF_CUSTOM_VTABLE
-                  PROTOBUF_FIELD_OFFSET($classname$, $cached_size$),
-                  true,
-                  $v2_msg_table$,
-              },
-              "$full_name$",
-          };
+          const $pbi$::ClassDataLite<$type_size$> $classname$_class_data_ =
+              $classname$::InternalGenerateClassData_();
+
           const $pbi$::ClassData* $classname$::GetClassData() const {
-            return _class_data_.base();
+            return $classname$_class_data_.base();
           }
         )cc");
   }

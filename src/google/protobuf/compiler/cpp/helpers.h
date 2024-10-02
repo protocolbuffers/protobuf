@@ -173,6 +173,9 @@ std::string QualifiedDefaultInstancePtr(const Descriptor* descriptor,
                                         const Options& options,
                                         bool split = false);
 
+// Name of the ClassData subclass used for a message.
+std::string ClassDataType(const Descriptor* descriptor, const Options& options);
+
 // DescriptorTable variable name.
 std::string DescriptorTableName(const FileDescriptor* file,
                                 const Options& options);
