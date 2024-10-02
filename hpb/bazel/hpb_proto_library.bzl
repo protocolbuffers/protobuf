@@ -233,7 +233,6 @@ _upb_cc_proto_library_aspect = aspect(
                 "@com_google_absl//absl/strings",
                 "@com_google_absl//absl/status:statusor",
                 "//hpb:repeated_field",
-                "//protos",
             ],
         ),
     },
