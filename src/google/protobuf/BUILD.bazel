@@ -801,6 +801,12 @@ filegroup(
 )
 
 filegroup(
+    name = "go_features_proto_srcs",
+    srcs = ["go_features.proto"],
+    visibility = ["//:__subpackages__"],
+)
+
+filegroup(
     name = "testdata",
     srcs = glob(["testdata/**/*"]) + [
         "descriptor.cc",
