@@ -1666,7 +1666,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       try {
         buffer.put(value);
       } catch (BufferOverflowException e) {
-        throw new OutOfSpaceException(e);
+        throw new OutOfSpaceException(buffer.position(), buffer.limit(), 1, e);
       }
     }
 
@@ -1725,7 +1725,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       try {
         buffer.putInt(value);
       } catch (BufferOverflowException e) {
-        throw new OutOfSpaceException(e);
+        throw new OutOfSpaceException(buffer.position(), buffer.limit(), FIXED32_SIZE, e);
       }
     }
 
@@ -1751,7 +1751,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       try {
         buffer.putLong(value);
       } catch (BufferOverflowException e) {
-        throw new OutOfSpaceException(e);
+        throw new OutOfSpaceException(buffer.position(), buffer.limit(), FIXED64_SIZE, e);
       }
     }
 

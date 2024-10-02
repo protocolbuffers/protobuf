@@ -8,7 +8,6 @@
 package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertThrows;
 
@@ -293,7 +292,9 @@ public class CodedOutputStreamTest {
 
     for (int i = 0; i < 4; i++) {
       Coder coder = outputType.newCoder(i);
-      assertThrows(OutOfSpaceException.class, () -> coder.stream().writeFixed32NoTag(1));
+      OutOfSpaceException e =
+          assertThrows(OutOfSpaceException.class, () -> coder.stream().writeFixed32NoTag(1));
+      assertThat(e).hasMessageThat().contains("len: 4");
       assertThat(coder.stream().spaceLeft()).isEqualTo(i);
     }
   }
@@ -305,7 +306,9 @@ public class CodedOutputStreamTest {
 
     for (int i = 0; i < 8; i++) {
       Coder coder = outputType.newCoder(i);
-      assertThrows(OutOfSpaceException.class, () -> coder.stream().writeFixed64NoTag(1));
+      OutOfSpaceException e =
+          assertThrows(OutOfSpaceException.class, () -> coder.stream().writeFixed64NoTag(1));
+      assertThat(e).hasMessageThat().contains("len: 8");
       assertThat(coder.stream().spaceLeft()).isEqualTo(i);
     }
   }
@@ -577,7 +580,9 @@ public class CodedOutputStreamTest {
     if (outputType == OutputType.STREAM) {
       return;
     }
-    assertThrows(OutOfSpaceException.class, () -> coder.stream().write((byte) 1));
+    OutOfSpaceException e =
+        assertThrows(OutOfSpaceException.class, () -> coder.stream().write((byte) 1));
+    assertThat(e).hasMessageThat().contains("len: 1");
     if (outputType.supportsSpaceLeft()) {
       assertThat(coder.stream().spaceLeft()).isEqualTo(0);
     }
@@ -673,12 +678,10 @@ public class CodedOutputStreamTest {
     Coder coder = outputType.newCoder(notEnoughBytes);
 
     String invalidString = newString(Character.MIN_HIGH_SURROGATE, 'f', 'o', 'o', 'b', 'a', 'r');
-    try {
-      coder.stream().writeStringNoTag(invalidString);
-      assertWithMessage("Expected OutOfSpaceException").fail();
-    } catch (OutOfSpaceException e) {
-      assertThat(e).hasCauseThat().isInstanceOf(IndexOutOfBoundsException.class);
-    }
+    OutOfSpaceException e =
+        assertThrows(
+            OutOfSpaceException.class, () -> coder.stream().writeStringNoTag(invalidString));
+    assertThat(e).hasCauseThat().isInstanceOf(IndexOutOfBoundsException.class);
   }
 
   /** Regression test for https://github.com/protocolbuffers/protobuf/issues/292 */
