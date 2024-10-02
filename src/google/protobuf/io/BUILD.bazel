@@ -103,6 +103,7 @@ cc_library(
     copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
+        ":io",
         ":zero_copy_sink",
         "//src/google/protobuf:port",
         "//src/google/protobuf/stubs",

@@ -125,6 +125,7 @@ cc_library(
         ":service",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/compiler/java:generator_common",
         "//src/google/protobuf/compiler/java:helpers",
         "//src/google/protobuf/compiler/java:message_serialization",
