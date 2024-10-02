@@ -2608,8 +2608,7 @@ void MapFieldPrinterHelper::CopyValue(const MapValueRef& value,
       return;
     }
     case FieldDescriptor::CPPTYPE_STRING:
-      reflection->SetString(message, field_desc,
-                            std::string(value.GetStringValue()));
+      reflection->SetString(message, field_desc, value.GetStringValue());
       return;
     case FieldDescriptor::CPPTYPE_INT64:
       reflection->SetInt64(message, field_desc, value.GetInt64Value());
