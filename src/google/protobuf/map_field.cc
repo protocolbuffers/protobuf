@@ -269,7 +269,8 @@ void MapFieldBase::SyncRepeatedFieldWithMapNoLock() {
     const MapValueRef& map_val = it.GetValueRef();
     switch (val_des->cpp_type()) {
       case FieldDescriptor::CPPTYPE_STRING:
-        reflection->SetString(new_entry, val_des, map_val.GetStringValue());
+        reflection->SetString(new_entry, val_des,
+                              std::string(map_val.GetStringValue()));
         break;
       case FieldDescriptor::CPPTYPE_INT64:
         reflection->SetInt64(new_entry, val_des, map_val.GetInt64Value());
