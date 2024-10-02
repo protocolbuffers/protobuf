@@ -940,36 +940,6 @@ TEST(RepeatedField, MoveAssign) {
   }
 }
 
-TEST(Movable, Works) {
-  class NonMoveConstructible {
-   public:
-    NonMoveConstructible(NonMoveConstructible&&) = delete;
-    NonMoveConstructible& operator=(NonMoveConstructible&&) { return *this; }
-  };
-  class NonMoveAssignable {
-   public:
-    NonMoveAssignable(NonMoveAssignable&&) {}
-    NonMoveAssignable& operator=(NonMoveConstructible&&) = delete;
-  };
-  class NonMovable {
-   public:
-    NonMovable(NonMovable&&) = delete;
-    NonMovable& operator=(NonMovable&&) = delete;
-  };
-
-  EXPECT_TRUE(internal::IsMovable<std::string>::value);
-
-  EXPECT_FALSE(std::is_move_constructible<NonMoveConstructible>::value);
-  EXPECT_TRUE(std::is_move_assignable<NonMoveConstructible>::value);
-  EXPECT_FALSE(internal::IsMovable<NonMoveConstructible>::value);
-
-  EXPECT_TRUE(std::is_move_constructible<NonMoveAssignable>::value);
-  EXPECT_FALSE(std::is_move_assignable<NonMoveAssignable>::value);
-  EXPECT_FALSE(internal::IsMovable<NonMoveAssignable>::value);
-
-  EXPECT_FALSE(internal::IsMovable<NonMovable>::value);
-}
-
 TEST(RepeatedField, MutableDataIsMutable) {
   RepeatedField<int> field;
   field.Add(1);

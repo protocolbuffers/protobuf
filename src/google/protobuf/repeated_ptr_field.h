@@ -81,11 +81,6 @@ inline void memswap(char* PROTOBUF_RESTRICT a, char* PROTOBUF_RESTRICT b) {
   std::swap_ranges(a, a + N, b);
 }
 
-template <typename T>
-struct IsMovable
-    : std::integral_constant<bool, std::is_move_constructible<T>::value &&
-                                       std::is_move_assignable<T>::value> {};
-
 // A trait that tells offset of `T::arena_`.
 //
 // Do not use this struct - it exists for internal use only.
@@ -106,7 +101,6 @@ class GenericTypeHandler;
 //   class TypeHandler {
 //    public:
 //     using Type = MyType;
-//     using Movable = ...;
 //
 //     static Type*(*)(Arena*) GetNewFunc();
 //     static void GetArena(Type* value);
@@ -198,10 +192,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return cast<TypeHandler>(AddMessageLite(TypeHandler::GetNewFunc()));
   }
 
-  template <
-      typename TypeHandler,
-      typename std::enable_if<TypeHandler::Movable::value>::type* = nullptr>
+  template <typename TypeHandler>
   inline void Add(Value<TypeHandler>&& value) {
+    static_assert(std::is_move_constructible<Value<TypeHandler>>::value, "");
+    static_assert(std::is_move_assignable<Value<TypeHandler>>::value, "");
     if (current_size_ < allocated_size()) {
       *cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1))) =
           std::move(value);
@@ -818,7 +812,6 @@ template <typename GenericType>
 class GenericTypeHandler {
  public:
   using Type = GenericType;
-  using Movable = IsMovable<Type>;
 
   static constexpr auto GetNewFunc() { return Arena::DefaultConstruct<Type>; }
   static inline Arena* GetArena(Type* value) {
@@ -896,7 +889,6 @@ template <>
 class GenericTypeHandler<std::string> {
  public:
   using Type = std::string;
-  using Movable = IsMovable<Type>;
 
   static constexpr auto GetNewFunc() { return NewStringElement; }
   static inline Arena* GetArena(Type*) { return nullptr; }
