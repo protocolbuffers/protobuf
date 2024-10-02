@@ -58,12 +58,15 @@ namespace protobuf {
 class Api;
 struct ApiDefaultTypeInternal;
 PROTOBUF_EXPORT extern ApiDefaultTypeInternal _Api_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Api_class_data_;
 class Method;
 struct MethodDefaultTypeInternal;
 PROTOBUF_EXPORT extern MethodDefaultTypeInternal _Method_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Method_class_data_;
 class Mixin;
 struct MixinDefaultTypeInternal;
 PROTOBUF_EXPORT extern MixinDefaultTypeInternal _Mixin_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Mixin_class_data_;
 }  // namespace protobuf
 }  // namespace google
 
@@ -214,9 +217,10 @@ class PROTOBUF_EXPORT Mixin final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -288,6 +292,8 @@ class PROTOBUF_EXPORT Mixin final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fapi_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Mixin_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT Method final
@@ -429,9 +435,10 @@ class PROTOBUF_EXPORT Method final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -576,6 +583,8 @@ class PROTOBUF_EXPORT Method final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fapi_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Method_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT Api final
@@ -717,9 +726,10 @@ class PROTOBUF_EXPORT Api final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -878,6 +888,8 @@ class PROTOBUF_EXPORT Api final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fapi_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Api_class_data_;
 
 // ===================================================================
 

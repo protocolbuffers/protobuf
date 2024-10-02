@@ -56,6 +56,7 @@ namespace protobuf {
 class SourceContext;
 struct SourceContextDefaultTypeInternal;
 PROTOBUF_EXPORT extern SourceContextDefaultTypeInternal _SourceContext_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceContext_class_data_;
 }  // namespace protobuf
 }  // namespace google
 
@@ -206,9 +207,10 @@ class PROTOBUF_EXPORT SourceContext final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -262,6 +264,8 @@ class PROTOBUF_EXPORT SourceContext final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceContext_class_data_;
 
 // ===================================================================
 

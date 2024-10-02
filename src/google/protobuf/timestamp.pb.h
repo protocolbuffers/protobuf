@@ -56,6 +56,7 @@ namespace protobuf {
 class Timestamp;
 struct TimestampDefaultTypeInternal;
 PROTOBUF_EXPORT extern TimestampDefaultTypeInternal _Timestamp_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Timestamp_class_data_;
 }  // namespace protobuf
 }  // namespace google
 
@@ -206,9 +207,10 @@ class PROTOBUF_EXPORT Timestamp final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -268,6 +270,8 @@ class PROTOBUF_EXPORT Timestamp final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftimestamp_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Timestamp_class_data_;
 
 // ===================================================================
 

@@ -44,7 +44,7 @@ inline constexpr Any::Impl_::Impl_(
 template <typename>
 PROTOBUF_CONSTEXPR Any::Any(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(_class_data_.base()),
+    : ::google::protobuf::Message(Any_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -134,7 +134,7 @@ class Any::_Internal {
 
 Any::Any(::google::protobuf::Arena* arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, _class_data_.base()) {
+    : ::google::protobuf::Message(arena, Any_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -152,7 +152,7 @@ Any::Any(
     ::google::protobuf::Arena* arena,
     const Any& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, _class_data_.base()) {
+    : ::google::protobuf::Message(arena, Any_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -195,32 +195,38 @@ constexpr auto Any::InternalNewImpl_() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Any),
                                             alignof(Any));
 }
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::google::protobuf::internal::ClassDataFull Any::_class_data_ = {
-    ::google::protobuf::internal::ClassData{
-        &_Any_default_instance_._instance,
-        &_table_.header,
-        nullptr,  // OnDemandRegisterArenaDtor
-        nullptr,  // IsInitialized
-        &Any::MergeImpl,
-        ::google::protobuf::Message::GetNewImpl<Any>(),
+constexpr auto Any::InternalGenerateClassData_() {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_Any_default_instance_._instance,
+          &_table_.header,
+          nullptr,  // OnDemandRegisterArenaDtor
+          nullptr,  // IsInitialized
+          &Any::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<Any>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-        &Any::SharedDtor,
-        ::google::protobuf::Message::GetClearImpl<Any>(), &Any::ByteSizeLong,
-            &Any::_InternalSerialize,
+          &Any::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<Any>(), &Any::ByteSizeLong,
+              &Any::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-        PROTOBUF_FIELD_OFFSET(Any, _impl_._cached_size_),
-        false,
-    },
-    &Any::kDescriptorMethods,
-    &descriptor_table_google_2fprotobuf_2fany_2eproto,
-    nullptr,  // tracker
-};
+          PROTOBUF_FIELD_OFFSET(Any, _impl_._cached_size_),
+          false,
+      },
+      &Any::kDescriptorMethods,
+      &descriptor_table_google_2fprotobuf_2fany_2eproto,
+      nullptr,  // tracker
+  };
+}
+
+PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
+        Any_class_data_ =
+            Any::InternalGenerateClassData_();
+
 const ::google::protobuf::internal::ClassData* Any::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
-  return _class_data_.base();
+  ::google::protobuf::internal::PrefetchToLocalCache(&Any_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(Any_class_data_.tc_table);
+  return Any_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
@@ -234,7 +240,7 @@ const ::_pbi::TcParseTable<1, 2, 0, 36, 2> Any::_table_ = {
     2,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
-    _class_data_.base(),
+    Any_class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE

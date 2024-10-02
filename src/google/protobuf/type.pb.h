@@ -59,18 +59,23 @@ namespace protobuf {
 class Enum;
 struct EnumDefaultTypeInternal;
 PROTOBUF_EXPORT extern EnumDefaultTypeInternal _Enum_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Enum_class_data_;
 class EnumValue;
 struct EnumValueDefaultTypeInternal;
 PROTOBUF_EXPORT extern EnumValueDefaultTypeInternal _EnumValue_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValue_class_data_;
 class Field;
 struct FieldDefaultTypeInternal;
 PROTOBUF_EXPORT extern FieldDefaultTypeInternal _Field_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Field_class_data_;
 class Option;
 struct OptionDefaultTypeInternal;
 PROTOBUF_EXPORT extern OptionDefaultTypeInternal _Option_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Option_class_data_;
 class Type;
 struct TypeDefaultTypeInternal;
 PROTOBUF_EXPORT extern TypeDefaultTypeInternal _Type_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Type_class_data_;
 }  // namespace protobuf
 }  // namespace google
 
@@ -340,9 +345,10 @@ class PROTOBUF_EXPORT Option final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -414,6 +420,8 @@ class PROTOBUF_EXPORT Option final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Option_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT Field final
@@ -555,9 +563,10 @@ class PROTOBUF_EXPORT Field final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using Kind = Field_Kind;
@@ -801,6 +810,8 @@ class PROTOBUF_EXPORT Field final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Field_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT EnumValue final
@@ -942,9 +953,10 @@ class PROTOBUF_EXPORT EnumValue final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -1029,6 +1041,8 @@ class PROTOBUF_EXPORT EnumValue final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValue_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT Type final
@@ -1170,9 +1184,10 @@ class PROTOBUF_EXPORT Type final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -1336,6 +1351,8 @@ class PROTOBUF_EXPORT Type final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Type_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT Enum final
@@ -1477,9 +1494,10 @@ class PROTOBUF_EXPORT Enum final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -1619,6 +1637,8 @@ class PROTOBUF_EXPORT Enum final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Enum_class_data_;
 
 // ===================================================================
 

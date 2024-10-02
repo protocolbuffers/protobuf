@@ -56,6 +56,7 @@ namespace protobuf {
 class Duration;
 struct DurationDefaultTypeInternal;
 PROTOBUF_EXPORT extern DurationDefaultTypeInternal _Duration_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Duration_class_data_;
 }  // namespace protobuf
 }  // namespace google
 
@@ -206,9 +207,10 @@ class PROTOBUF_EXPORT Duration final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -268,6 +270,8 @@ class PROTOBUF_EXPORT Duration final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fduration_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Duration_class_data_;
 
 // ===================================================================
 

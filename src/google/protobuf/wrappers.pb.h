@@ -56,30 +56,39 @@ namespace protobuf {
 class BoolValue;
 struct BoolValueDefaultTypeInternal;
 PROTOBUF_EXPORT extern BoolValueDefaultTypeInternal _BoolValue_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull BoolValue_class_data_;
 class BytesValue;
 struct BytesValueDefaultTypeInternal;
 PROTOBUF_EXPORT extern BytesValueDefaultTypeInternal _BytesValue_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull BytesValue_class_data_;
 class DoubleValue;
 struct DoubleValueDefaultTypeInternal;
 PROTOBUF_EXPORT extern DoubleValueDefaultTypeInternal _DoubleValue_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DoubleValue_class_data_;
 class FloatValue;
 struct FloatValueDefaultTypeInternal;
 PROTOBUF_EXPORT extern FloatValueDefaultTypeInternal _FloatValue_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FloatValue_class_data_;
 class Int32Value;
 struct Int32ValueDefaultTypeInternal;
 PROTOBUF_EXPORT extern Int32ValueDefaultTypeInternal _Int32Value_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Int32Value_class_data_;
 class Int64Value;
 struct Int64ValueDefaultTypeInternal;
 PROTOBUF_EXPORT extern Int64ValueDefaultTypeInternal _Int64Value_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Int64Value_class_data_;
 class StringValue;
 struct StringValueDefaultTypeInternal;
 PROTOBUF_EXPORT extern StringValueDefaultTypeInternal _StringValue_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull StringValue_class_data_;
 class UInt32Value;
 struct UInt32ValueDefaultTypeInternal;
 PROTOBUF_EXPORT extern UInt32ValueDefaultTypeInternal _UInt32Value_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UInt32Value_class_data_;
 class UInt64Value;
 struct UInt64ValueDefaultTypeInternal;
 PROTOBUF_EXPORT extern UInt64ValueDefaultTypeInternal _UInt64Value_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UInt64Value_class_data_;
 }  // namespace protobuf
 }  // namespace google
 
@@ -230,9 +239,10 @@ class PROTOBUF_EXPORT UInt64Value final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -280,6 +290,8 @@ class PROTOBUF_EXPORT UInt64Value final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UInt64Value_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT UInt32Value final
@@ -421,9 +433,10 @@ class PROTOBUF_EXPORT UInt32Value final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -471,6 +484,8 @@ class PROTOBUF_EXPORT UInt32Value final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UInt32Value_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT StringValue final
@@ -612,9 +627,10 @@ class PROTOBUF_EXPORT StringValue final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -668,6 +684,8 @@ class PROTOBUF_EXPORT StringValue final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull StringValue_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT Int64Value final
@@ -809,9 +827,10 @@ class PROTOBUF_EXPORT Int64Value final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -859,6 +878,8 @@ class PROTOBUF_EXPORT Int64Value final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Int64Value_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT Int32Value final
@@ -1000,9 +1021,10 @@ class PROTOBUF_EXPORT Int32Value final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -1050,6 +1072,8 @@ class PROTOBUF_EXPORT Int32Value final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Int32Value_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT FloatValue final
@@ -1191,9 +1215,10 @@ class PROTOBUF_EXPORT FloatValue final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -1241,6 +1266,8 @@ class PROTOBUF_EXPORT FloatValue final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FloatValue_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT DoubleValue final
@@ -1382,9 +1409,10 @@ class PROTOBUF_EXPORT DoubleValue final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -1432,6 +1460,8 @@ class PROTOBUF_EXPORT DoubleValue final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull DoubleValue_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT BytesValue final
@@ -1573,9 +1603,10 @@ class PROTOBUF_EXPORT BytesValue final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -1629,6 +1660,8 @@ class PROTOBUF_EXPORT BytesValue final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull BytesValue_class_data_;
 // -------------------------------------------------------------------
 
 class PROTOBUF_EXPORT BoolValue final
@@ -1770,9 +1803,10 @@ class PROTOBUF_EXPORT BoolValue final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -1820,6 +1854,8 @@ class PROTOBUF_EXPORT BoolValue final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fwrappers_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull BoolValue_class_data_;
 
 // ===================================================================
 

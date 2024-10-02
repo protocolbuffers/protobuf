@@ -37,7 +37,7 @@ inline constexpr SourceContext::Impl_::Impl_(
 template <typename>
 PROTOBUF_CONSTEXPR SourceContext::SourceContext(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(_class_data_.base()),
+    : ::google::protobuf::Message(SourceContext_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -116,7 +116,7 @@ class SourceContext::_Internal {
 
 SourceContext::SourceContext(::google::protobuf::Arena* arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, _class_data_.base()) {
+    : ::google::protobuf::Message(arena, SourceContext_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -133,7 +133,7 @@ SourceContext::SourceContext(
     ::google::protobuf::Arena* arena,
     const SourceContext& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, _class_data_.base()) {
+    : ::google::protobuf::Message(arena, SourceContext_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -174,32 +174,38 @@ constexpr auto SourceContext::InternalNewImpl_() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SourceContext),
                                             alignof(SourceContext));
 }
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::google::protobuf::internal::ClassDataFull SourceContext::_class_data_ = {
-    ::google::protobuf::internal::ClassData{
-        &_SourceContext_default_instance_._instance,
-        &_table_.header,
-        nullptr,  // OnDemandRegisterArenaDtor
-        nullptr,  // IsInitialized
-        &SourceContext::MergeImpl,
-        ::google::protobuf::Message::GetNewImpl<SourceContext>(),
+constexpr auto SourceContext::InternalGenerateClassData_() {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_SourceContext_default_instance_._instance,
+          &_table_.header,
+          nullptr,  // OnDemandRegisterArenaDtor
+          nullptr,  // IsInitialized
+          &SourceContext::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<SourceContext>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-        &SourceContext::SharedDtor,
-        ::google::protobuf::Message::GetClearImpl<SourceContext>(), &SourceContext::ByteSizeLong,
-            &SourceContext::_InternalSerialize,
+          &SourceContext::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<SourceContext>(), &SourceContext::ByteSizeLong,
+              &SourceContext::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-        PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
-        false,
-    },
-    &SourceContext::kDescriptorMethods,
-    &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
-    nullptr,  // tracker
-};
+          PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
+          false,
+      },
+      &SourceContext::kDescriptorMethods,
+      &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
+      nullptr,  // tracker
+  };
+}
+
+PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
+        SourceContext_class_data_ =
+            SourceContext::InternalGenerateClassData_();
+
 const ::google::protobuf::internal::ClassData* SourceContext::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
-  return _class_data_.base();
+  ::google::protobuf::internal::PrefetchToLocalCache(&SourceContext_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(SourceContext_class_data_.tc_table);
+  return SourceContext_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<0, 1, 0, 47, 2> SourceContext::_table_ = {
@@ -213,7 +219,7 @@ const ::_pbi::TcParseTable<0, 1, 0, 47, 2> SourceContext::_table_ = {
     1,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
-    _class_data_.base(),
+    SourceContext_class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE

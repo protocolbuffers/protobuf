@@ -36,7 +36,7 @@ inline constexpr Timestamp::Impl_::Impl_(
 template <typename>
 PROTOBUF_CONSTEXPR Timestamp::Timestamp(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(_class_data_.base()),
+    : ::google::protobuf::Message(Timestamp_class_data_.base()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -116,7 +116,7 @@ class Timestamp::_Internal {
 
 Timestamp::Timestamp(::google::protobuf::Arena* arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, _class_data_.base()) {
+    : ::google::protobuf::Message(arena, Timestamp_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -161,32 +161,38 @@ constexpr auto Timestamp::InternalNewImpl_() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Timestamp),
                                             alignof(Timestamp));
 }
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::google::protobuf::internal::ClassDataFull Timestamp::_class_data_ = {
-    ::google::protobuf::internal::ClassData{
-        &_Timestamp_default_instance_._instance,
-        &_table_.header,
-        nullptr,  // OnDemandRegisterArenaDtor
-        nullptr,  // IsInitialized
-        &Timestamp::MergeImpl,
-        ::google::protobuf::Message::GetNewImpl<Timestamp>(),
+constexpr auto Timestamp::InternalGenerateClassData_() {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_Timestamp_default_instance_._instance,
+          &_table_.header,
+          nullptr,  // OnDemandRegisterArenaDtor
+          nullptr,  // IsInitialized
+          &Timestamp::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<Timestamp>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-        &Timestamp::SharedDtor,
-        ::google::protobuf::Message::GetClearImpl<Timestamp>(), &Timestamp::ByteSizeLong,
-            &Timestamp::_InternalSerialize,
+          &Timestamp::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<Timestamp>(), &Timestamp::ByteSizeLong,
+              &Timestamp::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-        PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._cached_size_),
-        false,
-    },
-    &Timestamp::kDescriptorMethods,
-    &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto,
-    nullptr,  // tracker
-};
+          PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._cached_size_),
+          false,
+      },
+      &Timestamp::kDescriptorMethods,
+      &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto,
+      nullptr,  // tracker
+  };
+}
+
+PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
+        Timestamp_class_data_ =
+            Timestamp::InternalGenerateClassData_();
+
 const ::google::protobuf::internal::ClassData* Timestamp::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
-  return _class_data_.base();
+  ::google::protobuf::internal::PrefetchToLocalCache(&Timestamp_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(Timestamp_class_data_.tc_table);
+  return Timestamp_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Timestamp::_table_ = {
@@ -200,7 +206,7 @@ const ::_pbi::TcParseTable<1, 2, 0, 0, 2> Timestamp::_table_ = {
     2,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
-    _class_data_.base(),
+    Timestamp_class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE

@@ -56,6 +56,7 @@ namespace protobuf {
 class Any;
 struct AnyDefaultTypeInternal;
 PROTOBUF_EXPORT extern AnyDefaultTypeInternal _Any_default_instance_;
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Any_class_data_;
 }  // namespace protobuf
 }  // namespace google
 
@@ -262,9 +263,10 @@ class PROTOBUF_EXPORT Any final
   static void* PlacementNew_(const void*, void* mem,
                              ::google::protobuf::Arena* arena);
   static constexpr auto InternalNewImpl_();
-  static const ::google::protobuf::internal::ClassDataFull _class_data_;
 
  public:
+  static constexpr auto InternalGenerateClassData_();
+
   ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
@@ -336,6 +338,8 @@ class PROTOBUF_EXPORT Any final
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fany_2eproto;
 };
+
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Any_class_data_;
 
 // ===================================================================
 

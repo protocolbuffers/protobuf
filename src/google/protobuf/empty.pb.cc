@@ -29,7 +29,7 @@ namespace protobuf {
               template <typename>
 PROTOBUF_CONSTEXPR Empty::Empty(::_pbi::ConstantInitialized)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::internal::ZeroFieldsBase(_class_data_.base()){}
+    : ::google::protobuf::internal::ZeroFieldsBase(Empty_class_data_.base()){}
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::internal::ZeroFieldsBase() {
 }
@@ -105,7 +105,7 @@ class Empty::_Internal {
 
 Empty::Empty(::google::protobuf::Arena* arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::internal::ZeroFieldsBase(arena, _class_data_.base()) {
+    : ::google::protobuf::internal::ZeroFieldsBase(arena, Empty_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::internal::ZeroFieldsBase(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -115,7 +115,7 @@ Empty::Empty(
     ::google::protobuf::Arena* arena,
     const Empty& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::internal::ZeroFieldsBase(arena, _class_data_.base()) {
+    : ::google::protobuf::internal::ZeroFieldsBase(arena, Empty_class_data_.base()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::internal::ZeroFieldsBase(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -135,32 +135,38 @@ constexpr auto Empty::InternalNewImpl_() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Empty),
                                             alignof(Empty));
 }
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::google::protobuf::internal::ClassDataFull Empty::_class_data_ = {
-    ::google::protobuf::internal::ClassData{
-        &_Empty_default_instance_._instance,
-        &_table_.header,
-        nullptr,  // OnDemandRegisterArenaDtor
-        nullptr,  // IsInitialized
-        &Empty::MergeImpl,
-        ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<Empty>(),
+constexpr auto Empty::InternalGenerateClassData_() {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_Empty_default_instance_._instance,
+          &_table_.header,
+          nullptr,  // OnDemandRegisterArenaDtor
+          nullptr,  // IsInitialized
+          &Empty::MergeImpl,
+          ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<Empty>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-        &Empty::SharedDtor,
-        ::google::protobuf::internal::ZeroFieldsBase::GetClearImpl<Empty>(), &Empty::ByteSizeLong,
-            &Empty::_InternalSerialize,
+          &Empty::SharedDtor,
+          ::google::protobuf::internal::ZeroFieldsBase::GetClearImpl<Empty>(), &Empty::ByteSizeLong,
+              &Empty::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-        PROTOBUF_FIELD_OFFSET(Empty, _impl_._cached_size_),
-        false,
-    },
-    &Empty::kDescriptorMethods,
-    &descriptor_table_google_2fprotobuf_2fempty_2eproto,
-    nullptr,  // tracker
-};
+          PROTOBUF_FIELD_OFFSET(Empty, _impl_._cached_size_),
+          false,
+      },
+      &Empty::kDescriptorMethods,
+      &descriptor_table_google_2fprotobuf_2fempty_2eproto,
+      nullptr,  // tracker
+  };
+}
+
+PROTOBUF_CONSTINIT PROTOBUF_EXPORT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ::google::protobuf::internal::ClassDataFull
+        Empty_class_data_ =
+            Empty::InternalGenerateClassData_();
+
 const ::google::protobuf::internal::ClassData* Empty::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(_class_data_.tc_table);
-  return _class_data_.base();
+  ::google::protobuf::internal::PrefetchToLocalCache(&Empty_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(Empty_class_data_.tc_table);
+  return Empty_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<0, 0, 0, 0, 2> Empty::_table_ = {
@@ -174,7 +180,7 @@ const ::_pbi::TcParseTable<0, 0, 0, 0, 2> Empty::_table_ = {
     0,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
-    _class_data_.base(),
+    Empty_class_data_.base(),
     nullptr,  // post_loop_handler
     ::_pbi::TcParser::GenericFallback,  // fallback
     #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
