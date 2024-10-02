@@ -7,9 +7,8 @@ use walkdir::WalkDir;
 pub struct CodeGen {
     inputs: Vec<PathBuf>,
     output_dir: PathBuf,
-    protoc_path: PathBuf,
-    protoc_gen_upb_path: PathBuf,
-    protoc_gen_upb_minitable_path: PathBuf,
+    protoc_path: Option<PathBuf>,
+    protoc_gen_upb_minitable_path: Option<PathBuf>,
     includes: Vec<PathBuf>,
 }
 
@@ -20,9 +19,8 @@ impl CodeGen {
         Self {
             inputs: Vec::new(),
             output_dir: std::env::current_dir().unwrap().join("src").join("protos"),
-            protoc_path: PathBuf::from("protoc"),
-            protoc_gen_upb_path: PathBuf::from("protoc-gen-upb"),
-            protoc_gen_upb_minitable_path: PathBuf::from("protoc-gen-upb_minitable"),
+            protoc_path: None,
+            protoc_gen_upb_minitable_path: None,
             includes: Vec::new(),
         }
     }
@@ -43,12 +41,7 @@ impl CodeGen {
     }
 
     pub fn protoc_path(&mut self, protoc_path: impl AsRef<Path>) -> &mut Self {
-        self.protoc_path = protoc_path.as_ref().to_owned();
-        self
-    }
-
-    pub fn protoc_gen_upb_path(&mut self, protoc_gen_upb_path: impl AsRef<Path>) -> &mut Self {
-        self.protoc_gen_upb_path = protoc_gen_upb_path.as_ref().to_owned();
+        self.protoc_path = Some(protoc_path.as_ref().to_owned());
         self
     }
 
@@ -56,7 +49,8 @@ impl CodeGen {
         &mut self,
         protoc_gen_upb_minitable_path: impl AsRef<Path>,
     ) -> &mut Self {
-        self.protoc_gen_upb_minitable_path = protoc_gen_upb_minitable_path.as_ref().to_owned();
+        self.protoc_gen_upb_minitable_path =
+            Some(protoc_gen_upb_minitable_path.as_ref().to_owned());
         self
     }
 
@@ -80,7 +74,12 @@ impl CodeGen {
             );
         }
 
-        let mut cmd = std::process::Command::new(&self.protoc_path);
+        let protoc_path = if let Some(path) = &self.protoc_path {
+            path.clone()
+        } else {
+            protoc_path().expect("To be a supported platform")
+        };
+        let mut cmd = std::process::Command::new(protoc_path);
         for input in &self.inputs {
             cmd.arg(input);
         }
@@ -88,12 +87,17 @@ impl CodeGen {
             // Attempt to make the directory if it doesn't exist
             let _ = std::fs::create_dir(&self.output_dir);
         }
+        let protoc_gen_upb_minitable_path = if let Some(path) = &self.protoc_gen_upb_minitable_path
+        {
+            path.clone()
+        } else {
+            protoc_gen_upb_minitable_path().expect("To be a supported platform")
+        };
         cmd.arg(format!("--rust_out={}", self.output_dir.display()))
             .arg("--rust_opt=experimental-codegen=enabled,kernel=upb")
-            .arg(format!("--plugin=protoc-gen-upb={}", self.protoc_gen_upb_path.display()))
             .arg(format!(
                 "--plugin=protoc-gen-upb_minitable={}",
-                self.protoc_gen_upb_minitable_path.display()
+                protoc_gen_upb_minitable_path.display()
             ))
             .arg(format!("--upb_minitable_out={}", self.output_dir.display()));
         for include in &self.includes {
@@ -151,4 +155,34 @@ impl CodeGen {
         let mut file = OpenOptions::new().write(true).truncate(true).open(path).unwrap();
         file.write(contents.as_bytes()).unwrap();
     }
+}
+
+fn get_path_for_arch() -> Option<PathBuf> {
+    let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path.push("bin");
+    match (std::env::consts::OS, std::env::consts::ARCH) {
+        ("macos", "x86_64") => path.push("osx-x86_64"),
+        ("macos", "aarch64") => path.push("osx-aarch_64"),
+        ("linux", "aarch64") => path.push("linux-aarch_64"),
+        ("linux", "powerpc64") => path.push("linux-ppcle_64"),
+        ("linux", "s390x") => path.push("linux-s390_64"),
+        ("linux", "x86") => path.push("linux-x86_32"),
+        ("linux", "x86_64") => path.push("linux-x86_64"),
+        ("windows", "x86") => path.push("win32"),
+        ("windows", "x86_64") => path.push("win64"),
+        _ => return None,
+    };
+    Some(path)
+}
+
+pub fn protoc_path() -> Option<PathBuf> {
+    let mut path = get_path_for_arch()?;
+    path.push("protoc");
+    Some(path)
+}
+
+pub fn protoc_gen_upb_minitable_path() -> Option<PathBuf> {
+    let mut path = get_path_for_arch()?;
+    path.push("protoc-gen-upb_minitable");
+    Some(path)
 }

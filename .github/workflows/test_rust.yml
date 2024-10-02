@@ -40,4 +40,4 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: rust_linux
           bazel: >-
-            run //rust:cargo_test
+            run --crosstool_top=//toolchain:clang_suite --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //rust:cargo_test
