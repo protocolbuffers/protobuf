@@ -11,6 +11,11 @@
 #include <cstdint>
 #include <vector>
 
+#include "absl/base/attributes.h"
+#include "google/protobuf/hpb/backend/upb/interop.h"
+#include "google/protobuf/hpb/internal/message_lock.h"
+#include "google/protobuf/hpb/internal/template_help.h"
+#include "google/protobuf/hpb/ptr.h"
 #include "upb/mem/arena.hpp"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
@@ -87,6 +92,42 @@ class ExtensionRegistry {
       const ExtensionRegistry& extension_registry);
   upb_ExtensionRegistry* registry_;
 };
+
+template <typename T, typename Extendee, typename Extension,
+          typename = hpb::internal::EnableIfHpbClass<T>>
+ABSL_MUST_USE_RESULT bool HasExtension(
+    Ptr<T> message,
+    const ::hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
+  return ::hpb::internal::HasExtensionOrUnknown(
+      hpb::interop::upb::GetMessage(message), id.mini_table_ext());
+}
+
+template <typename T, typename Extendee, typename Extension,
+          typename = hpb::internal::EnableIfHpbClass<T>>
+ABSL_MUST_USE_RESULT bool HasExtension(
+    const T* message,
+    const ::hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
+  return HasExtension(Ptr(message), id);
+}
+
+template <typename T, typename Extension,
+          typename = hpb::internal::EnableIfHpbClass<T>,
+          typename = hpb::internal::EnableIfMutableProto<T>>
+void ClearExtension(
+    Ptr<T> message,
+    const ::hpb::internal::ExtensionIdentifier<T, Extension>& id) {
+  static_assert(!std::is_const_v<T>, "");
+  upb_Message_ClearExtension(hpb::interop::upb::GetMessage(message),
+                             id.mini_table_ext());
+}
+
+template <typename T, typename Extension,
+          typename = hpb::internal::EnableIfHpbClass<T>>
+void ClearExtension(
+    T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id) {
+  ClearExtension(Ptr(message), id);
+}
+
 }  // namespace hpb
 
 #endif  // GOOGLE_PROTOBUF_HPB_EXTENSION_H__
