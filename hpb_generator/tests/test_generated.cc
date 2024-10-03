@@ -41,6 +41,7 @@ using ::hpb_unittest::protos::container_ext;
 using ::hpb_unittest::protos::ContainerExtension;
 using ::hpb_unittest::protos::other_ext;
 using ::hpb_unittest::protos::Parent;
+using ::hpb_unittest::protos::ParentWithRepeated;
 using ::hpb_unittest::protos::RED;
 using ::hpb_unittest::protos::TestEnum;
 using ::hpb_unittest::protos::TestModel;
@@ -1271,6 +1272,31 @@ TEST(CppGeneratedCode, SetAliasFailsForDifferentArena) {
   hpb::Arena different_arena;
   auto parent = hpb::CreateMessage<Parent>(different_arena);
   EXPECT_DEATH(parent.set_alias_child(child), "hpb::interop::upb::GetArena");
+}
+
+TEST(CppGeneratedCode, SetAliasRepeated) {
+  hpb::Arena arena;
+  auto child = hpb::CreateMessage<Child>(arena);
+  child.set_peeps(1611);
+  auto parent1 = hpb::CreateMessage<ParentWithRepeated>(arena);
+  auto parent2 = hpb::CreateMessage<ParentWithRepeated>(arena);
+  parent1.add_alias_children(child);
+  parent2.add_alias_children(child);
+
+  ASSERT_EQ(parent1.children(0)->peeps(), parent2.children(0)->peeps());
+  ASSERT_EQ(hpb::interop::upb::GetMessage(parent1.children(0)),
+            hpb::interop::upb::GetMessage(parent2.children(0)));
+  auto childPtr = hpb::Ptr<Child>(child);
+  ASSERT_EQ(hpb::interop::upb::GetMessage(childPtr),
+            hpb::interop::upb::GetMessage(parent1.children(0)));
+}
+
+TEST(CppGeneratedCode, SetAliasRepeatedFailsForDifferentArena) {
+  hpb::Arena arena;
+  auto child = hpb::CreateMessage<Child>(arena);
+  hpb::Arena different_arena;
+  auto parent = hpb::CreateMessage<ParentWithRepeated>(different_arena);
+  EXPECT_DEATH(parent.add_alias_children(child), "hpb::interop::upb::GetArena");
 }
 
 }  // namespace

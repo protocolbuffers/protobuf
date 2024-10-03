@@ -29,21 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
 NSString *GPBTextFormatForMessage(GPBMessage *message, NSString *__nullable lineIndent);
 
 /**
- * Generates a string that should be a valid "TextFormat" for the C++ version
- * of Protocol Buffers.
- *
- * @param unknownSet The unknown field set to generate from.
- * @param lineIndent A string to use as the prefix for all lines generated. Can
- *                   be nil if no extra indent is needed.
- *
- * @return An NSString with the TextFormat of the unknown field set.
- **/
-NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet *__nullable unknownSet,
-                                          NSString *__nullable lineIndent)
-    __attribute__((deprecated("Use GPBTextFormatForMessage will include the unknown fields, and "
-                              "GPBUnknownFieldSet it going away.")));
-
-/**
  * Checks if the given field number is set on a message.
  *
  * @param self        The message to check.
