@@ -11,9 +11,8 @@
 #include "absl/container/btree_map.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/generator_common.h"
-#include "google/protobuf/compiler/java/full/field_generator.h"
-#include "google/protobuf/compiler/java/lite/field_generator.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/compiler/kotlin/field.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -40,11 +39,7 @@ class MessageGenerator {
   bool lite_;
   bool jvm_dsl_;
 
-  // TODO: b/366047913 - These can be simplified once lite and full field
-  // generators are unified.
-  java::FieldGeneratorMap<java::ImmutableFieldLiteGenerator>
-      lite_field_generators_;
-  java::FieldGeneratorMap<java::ImmutableFieldGenerator> field_generators_;
+  java::FieldGeneratorMap<FieldGenerator> field_generators_;
 
   void GenerateExtensions(io::Printer* printer) const;
   void GenerateOrNull(io::Printer* printer) const;

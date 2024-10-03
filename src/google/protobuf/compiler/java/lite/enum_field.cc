@@ -53,7 +53,6 @@ void SetEnumVariables(
 
   (*variables)["type"] =
       name_resolver->GetImmutableClassName(descriptor->enum_type());
-  variables->insert({"kt_type", EscapeKotlinKeywords((*variables)["type"])});
   (*variables)["mutable_type"] =
       name_resolver->GetMutableClassName(descriptor->enum_type());
   (*variables)["default"] =
@@ -68,12 +67,6 @@ void SetEnumVariables(
   // by the proto compiler
   (*variables)["deprecation"] =
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
-  variables->insert(
-      {"kt_deprecation",
-       descriptor->options().deprecated()
-           ? absl::StrCat("@kotlin.Deprecated(message = \"Field ",
-                          (*variables)["name"], " is deprecated\") ")
-           : ""});
   (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
   if (HasHasbit(descriptor)) {
@@ -296,63 +289,6 @@ void ImmutableEnumFieldLiteGenerator::GenerateBuilderMembers(
       "  return this;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
-}
-
-void ImmutableEnumFieldLiteGenerator::GenerateKotlinDslMembers(
-    io::Printer* printer) const {
-  auto vars = printer->WithVars(variables_);
-  JvmNameContext name_ctx = {context_->options(), printer};
-  WriteFieldDocComment(printer, descriptor_, context_->options(),
-                       /* kdoc */ true);
-  printer->Emit(
-      {
-          {"jvm_name_get",
-           [&] { JvmName("${$get$kt_capitalized_name$$}$", name_ctx); }},
-          {"jvm_name_set",
-           [&] { JvmName("${$set$kt_capitalized_name$$}$", name_ctx); }},
-      },
-      "$kt_deprecation$public var $kt_name$: $kt_type$\n"
-      "  $jvm_name_get$"
-      "  get() = $kt_dsl_builder$.${$$kt_safe_name$$}$\n"
-      "  $jvm_name_set$"
-      "  set(value) {\n"
-      "    $kt_dsl_builder$.${$$kt_safe_name$$}$ = value\n"
-      "  }\n");
-
-  if (SupportUnknownEnumValue(descriptor_)) {
-    printer->Emit(
-        {
-            {"jvm_name_get",
-             [&] { JvmName("${$get$kt_capitalized_name$Value$}$", name_ctx); }},
-            {"jvm_name_set",
-             [&] { JvmName("${$set$kt_capitalized_name$Value$}$", name_ctx); }},
-        },
-        "$kt_deprecation$public var $kt_name$Value: kotlin.Int\n"
-        "  $jvm_name_get$"
-        "  get() = $kt_dsl_builder$.${$$kt_property_name$Value$}$\n"
-        "  $jvm_name_set$"
-        "  set(value) {\n"
-        "    $kt_dsl_builder$.${$$kt_property_name$Value$}$ = value\n"
-        "  }\n");
-  }
-
-  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
-                               context_->options(),
-                               /* builder */ false, /* kdoc */ true);
-  printer->Print(
-      "public fun ${$clear$kt_capitalized_name$$}$() {\n"
-      "  $kt_dsl_builder$.${$clear$capitalized_name$$}$()\n"
-      "}\n");
-
-  if (descriptor_->has_presence()) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
-                                 context_->options(),
-                                 /* builder */ false, /* kdoc */ true);
-    printer->Print(
-        "public fun ${$has$kt_capitalized_name$$}$(): kotlin.Boolean {\n"
-        "  return $kt_dsl_builder$.${$has$capitalized_name$$}$()\n"
-        "}\n");
-  }
 }
 
 void ImmutableEnumFieldLiteGenerator::GenerateInitializationCode(
@@ -901,128 +837,6 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateBuilderMembers(
 void RepeatedImmutableEnumFieldLiteGenerator::GenerateInitializationCode(
     io::Printer* printer) const {
   printer->Print(variables_, "$name$_ = emptyIntList();\n");
-}
-
-void RepeatedImmutableEnumFieldLiteGenerator::GenerateKotlinDslMembers(
-    io::Printer* printer) const {
-  auto vars = printer->WithVars(variables_);
-  JvmNameContext name_ctx = {context_->options(), printer};
-  printer->Print(
-      "/**\n"
-      " * An uninstantiable, behaviorless type to represent the field in\n"
-      " * generics.\n"
-      " */\n"
-      "@kotlin.OptIn"
-      "(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)\n"
-      "public class ${$$kt_capitalized_name$Proxy$}$ private constructor()"
-      " : com.google.protobuf.kotlin.DslProxy()\n");
-
-  WriteFieldDocComment(printer, descriptor_, context_->options(),
-                       /* kdoc */ true);
-  printer->Print(
-      "$kt_deprecation$ public val $kt_name$: "
-      "com.google.protobuf.kotlin.DslList"
-      "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
-      "$  jvm_synthetic$"
-      "  get() = com.google.protobuf.kotlin.DslList(\n"
-      "    $kt_dsl_builder$.${$$kt_property_name$List$}$\n"
-      "  )\n");
-
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
-                               context_->options(),
-                               /* builder */ false, /* kdoc */ true);
-  printer->Emit(
-      {
-          {"jvm_name", [&] { JvmName("add$kt_capitalized_name$", name_ctx); }},
-      },
-      "$jvm_synthetic$"
-      "$jvm_name$"
-      "public fun com.google.protobuf.kotlin.DslList"
-      "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
-      "add(value: $kt_type$) {\n"
-      "  $kt_dsl_builder$.${$add$capitalized_name$$}$(value)\n"
-      "}");
-
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
-                               context_->options(),
-                               /* builder */ false, /* kdoc */ true);
-  printer->Emit(
-      {
-          {"jvm_name",
-           [&] { JvmName("plusAssign$kt_capitalized_name$", name_ctx); }},
-      },
-      "$jvm_synthetic$"
-      "$jvm_name$"
-      "@Suppress(\"NOTHING_TO_INLINE\")\n"
-      "public inline operator fun com.google.protobuf.kotlin.DslList"
-      "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
-      "plusAssign(value: $kt_type$) {\n"
-      "  add(value)\n"
-      "}");
-
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
-                               context_->options(),
-                               /* builder */ false, /* kdoc */ true);
-  printer->Emit(
-      {
-          {"jvm_name",
-           [&] { JvmName("addAll$kt_capitalized_name$", name_ctx); }},
-      },
-      "$jvm_synthetic$"
-      "$jvm_name$"
-      "public fun com.google.protobuf.kotlin.DslList"
-      "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
-      "addAll(values: kotlin.collections.Iterable<$kt_type$>) {\n"
-      "  $kt_dsl_builder$.${$addAll$capitalized_name$$}$(values)\n"
-      "}");
-
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
-                               context_->options(),
-                               /* builder */ false, /* kdoc */ true);
-  printer->Emit(
-      {
-          {"jvm_name",
-           [&] { JvmName("plusAssignAll$kt_capitalized_name$", name_ctx); }},
-      },
-      "$jvm_synthetic$"
-      "$jvm_name$"
-      "@Suppress(\"NOTHING_TO_INLINE\")\n"
-      "public inline operator fun com.google.protobuf.kotlin.DslList"
-      "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
-      "plusAssign(values: kotlin.collections.Iterable<$kt_type$>) {\n"
-      "  addAll(values)\n"
-      "}");
-
-  WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER,
-                               context_->options(),
-                               /* builder */ false, /* kdoc */ true);
-  printer->Emit(
-      {
-          {"jvm_name", [&] { JvmName("set$kt_capitalized_name$", name_ctx); }},
-      },
-      "$jvm_synthetic$"
-      "$jvm_name$"
-      "public operator fun com.google.protobuf.kotlin.DslList"
-      "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
-      "set(index: kotlin.Int, value: $kt_type$) {\n"
-      "  $kt_dsl_builder$.${$set$capitalized_name$$}$(index, value)\n"
-      "}");
-
-  WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
-                               context_->options(),
-                               /* builder */ false, /* kdoc */ true);
-  printer->Emit(
-      {
-          {"jvm_name",
-           [&] { JvmName("clear$kt_capitalized_name$", name_ctx); }},
-      },
-      "$jvm_synthetic$"
-      "$jvm_name$"
-      "public fun com.google.protobuf.kotlin.DslList"
-      "<$kt_type$, ${$$kt_capitalized_name$Proxy$}$>."
-      "clear() {\n"
-      "  $kt_dsl_builder$.${$clear$capitalized_name$$}$()\n"
-      "}");
 }
 
 std::string RepeatedImmutableEnumFieldLiteGenerator::GetBoxedType() const {

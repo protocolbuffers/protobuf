@@ -44,7 +44,6 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
       io::Printer* printer) const override;
   void GenerateEqualsCode(io::Printer* printer) const override;
   void GenerateHashCode(io::Printer* printer) const override;
-  void GenerateKotlinDslMembers(io::Printer* printer) const override;
 
   std::string GetBoxedType() const override;
 
