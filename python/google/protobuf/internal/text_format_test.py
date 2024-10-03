@@ -1179,6 +1179,73 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
     test_util.SetAllFields(message)
     self.assertEqual(message, parsed_message)
 
+  def testPrintMapEmptyKeys(self):
+    message = map_unittest_pb2.TestMap()
+
+    message.map_int32_int32[0] = 123
+    message.map_int64_int64[0] = 2**33
+    message.map_uint32_uint32[0] = 123
+    message.map_uint64_uint64[0] = 2**33
+    message.map_string_string[''] = 'world'
+    message.map_int32_foreign_message[0].c = 111
+    self.CompareToGoldenText(
+        text_format.MessageToString(message),
+        'map_int32_int32 {\n'
+        '  value: 123\n'
+        '}\n'
+        'map_int64_int64 {\n'
+        '  value: 8589934592\n'
+        '}\n'
+        'map_uint32_uint32 {\n'
+        '  value: 123\n'
+        '}\n'
+        'map_uint64_uint64 {\n'
+        '  value: 8589934592\n'
+        '}\n'
+        'map_string_string {\n'
+        '  value: "world"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  value {\n'
+        '    c: 111\n'
+        '  }\n'
+        '}\n',
+    )
+
+  def testPrintMapEmptyValues(self):
+    message = map_unittest_pb2.TestMap()
+
+    message.map_int32_int32[-123] = 0
+    message.map_int64_int64[-(2**33)] = 0
+    message.map_uint32_uint32[123] = 0
+    message.map_uint64_uint64[2**33] = 0
+    message.map_string_string['hello'] = ''
+    message.map_int32_foreign_message[111].c = 0
+    self.CompareToGoldenText(
+        text_format.MessageToString(message),
+        'map_int32_int32 {\n'
+        '  key: -123\n'
+        '}\n'
+        'map_int64_int64 {\n'
+        '  key: -8589934592\n'
+        '}\n'
+        'map_uint32_uint32 {\n'
+        '  key: 123\n'
+        '}\n'
+        'map_uint64_uint64 {\n'
+        '  key: 8589934592\n'
+        '}\n'
+        'map_string_string {\n'
+        '  key: "hello"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    c: 0\n'
+        '  }\n'
+        '}\n',
+    )
+
   def testPrintMap(self):
     message = map_unittest_pb2.TestMap()
 
