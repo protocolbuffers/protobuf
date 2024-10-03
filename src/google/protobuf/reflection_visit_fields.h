@@ -174,9 +174,10 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
         reflection, message, field, rep});                                     \
   }
 
-          switch (cpp::EffectiveStringCType(field)) {
-            default:
-            case FieldOptions::STRING:
+          switch (field->cpp_string_type()) {
+            case FieldDescriptor::CppStringType::kCord:
+            case FieldDescriptor::CppStringType::kView:
+            case FieldDescriptor::CppStringType::kString:
               PROTOBUF_IMPL_STRING_CASE(std::string, String);
               break;
           }
@@ -227,13 +228,16 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
 
         case FieldDescriptor::TYPE_BYTES:
         case FieldDescriptor::TYPE_STRING: {
-          auto ctype = cpp::EffectiveStringCType(field);
-          if (ctype == FieldOptions::CORD) {
-            func(CordDynamicFieldInfo<MessageT, true>{reflection, message,
-                                                      field});
-          } else {
-            func(StringDynamicFieldInfo<MessageT, true>{reflection, message,
+          switch (field->cpp_string_type()) {
+            case FieldDescriptor::CppStringType::kCord:
+              func(CordDynamicFieldInfo<MessageT, true>{reflection, message,
                                                         field});
+              break;
+            case FieldDescriptor::CppStringType::kString:
+            case FieldDescriptor::CppStringType::kView:
+              func(StringDynamicFieldInfo<MessageT, true>{reflection, message,
+                                                          field});
+              break;
           }
           break;
         }
@@ -279,13 +283,16 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
           break;
         case FieldDescriptor::TYPE_BYTES:
         case FieldDescriptor::TYPE_STRING: {
-          auto ctype = cpp::EffectiveStringCType(field);
-          if (ctype == FieldOptions::CORD) {
-            func(CordDynamicFieldInfo<MessageT, false>{reflection, message,
-                                                       field});
-          } else {
-            func(StringDynamicFieldInfo<MessageT, false>{reflection, message,
+          switch (field->cpp_string_type()) {
+            case FieldDescriptor::CppStringType::kCord:
+              func(CordDynamicFieldInfo<MessageT, false>{reflection, message,
                                                          field});
+              break;
+            case FieldDescriptor::CppStringType::kString:
+            case FieldDescriptor::CppStringType::kView:
+              func(StringDynamicFieldInfo<MessageT, false>{reflection, message,
+                                                           field});
+              break;
           }
           break;
         }
