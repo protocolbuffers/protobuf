@@ -1433,10 +1433,10 @@ public abstract class CodedOutputStream extends ByteOutput {
     public final void write(byte[] value, int offset, int length) throws IOException {
       try {
         System.arraycopy(value, offset, buffer, position, length);
-        position += length;
       } catch (IndexOutOfBoundsException e) {
         throw new OutOfSpaceException(position, limit, length, e);
       }
+      position += length;
     }
 
     @Override
