@@ -8,6 +8,7 @@
 package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertThrows;
 
@@ -310,6 +311,36 @@ public class CodedOutputStreamTest {
           assertThrows(OutOfSpaceException.class, () -> coder.stream().writeFixed64NoTag(1));
       assertThat(e).hasMessageThat().contains("len: 8");
       assertThat(coder.stream().spaceLeft()).isEqualTo(i);
+    }
+  }
+
+  @Test
+  public void testWriteUInt32NoTag_outOfBounds_throws() throws Exception {
+    // Streaming's buffering masks out of bounds writes.
+    assume().that(outputType).isNotEqualTo(OutputType.STREAM);
+
+    for (int i = 0; i < 5; i++) {
+      Coder coder = outputType.newCoder(i);
+      assertThrows(
+          OutOfSpaceException.class, () -> coder.stream().writeUInt32NoTag(Integer.MAX_VALUE));
+
+      // Space left should not go negative.
+      assertWithMessage("i=%s", i).that(coder.stream().spaceLeft()).isAtLeast(0);
+    }
+  }
+
+  @Test
+  public void testWriteUInt64NoTag_outOfBounds_throws() throws Exception {
+    // Streaming's buffering masks out of bounds writes.
+    assume().that(outputType).isNotEqualTo(OutputType.STREAM);
+
+    for (int i = 0; i < 9; i++) {
+      Coder coder = outputType.newCoder(i);
+      assertThrows(
+          OutOfSpaceException.class, () -> coder.stream().writeUInt64NoTag(Long.MAX_VALUE));
+
+      // Space left should not go negative.
+      assertWithMessage("i=%s", i).that(coder.stream().spaceLeft()).isAtLeast(0);
     }
   }
 

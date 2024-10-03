@@ -1347,11 +1347,12 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public final void writeUInt32NoTag(int value) throws IOException {
+      int position = this.position; // Perf: hoist field to register to avoid load/stores.
       try {
         while (true) {
           if ((value & ~0x7F) == 0) {
             buffer[position++] = (byte) value;
-            return;
+            break;
           } else {
             buffer[position++] = (byte) ((value | 0x80) & 0xFF);
             value >>>= 7;
@@ -1360,6 +1361,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       } catch (IndexOutOfBoundsException e) {
         throw new OutOfSpaceException(position, limit, 1, e);
       }
+      this.position = position; // Only update position if we stayed within the array bounds.
     }
 
     @Override
@@ -1379,11 +1381,12 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public final void writeUInt64NoTag(long value) throws IOException {
+      int position = this.position; // Perf: hoist field to register to avoid load/stores.
       if (HAS_UNSAFE_ARRAY_OPERATIONS && spaceLeft() >= MAX_VARINT_SIZE) {
         while (true) {
           if ((value & ~0x7FL) == 0) {
             UnsafeUtil.putByte(buffer, position++, (byte) value);
-            return;
+            break;
           } else {
             UnsafeUtil.putByte(buffer, position++, (byte) (((int) value | 0x80) & 0xFF));
             value >>>= 7;
@@ -1394,7 +1397,7 @@ public abstract class CodedOutputStream extends ByteOutput {
           while (true) {
             if ((value & ~0x7FL) == 0) {
               buffer[position++] = (byte) value;
-              return;
+              break;
             } else {
               buffer[position++] = (byte) (((int) value | 0x80) & 0xFF);
               value >>>= 7;
@@ -1404,6 +1407,7 @@ public abstract class CodedOutputStream extends ByteOutput {
           throw new OutOfSpaceException(position, limit, 1, e);
         }
       }
+      this.position = position; // Only update position if we stayed within the array bounds.
     }
 
     @Override
@@ -2034,29 +2038,34 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void writeUInt32NoTag(int value) throws IOException {
+      long position = this.position; // Perf: hoist field to register to avoid load/stores.
       if (position <= oneVarintLimit) {
         // Optimization to avoid bounds checks on each iteration.
         while (true) {
           if ((value & ~0x7F) == 0) {
             UnsafeUtil.putByte(position++, (byte) value);
-            return;
+            break;
           } else {
             UnsafeUtil.putByte(position++, (byte) ((value | 0x80) & 0xFF));
             value >>>= 7;
           }
         }
       } else {
-        while (position < limit) {
+        while (true) {
+          if (position >= limit) {
+            throw new OutOfSpaceException(
+                String.format("Pos: %d, limit: %d, len: %d", position, limit, 1));
+          }
           if ((value & ~0x7F) == 0) {
             UnsafeUtil.putByte(position++, (byte) value);
-            return;
+            break;
           } else {
             UnsafeUtil.putByte(position++, (byte) ((value | 0x80) & 0xFF));
             value >>>= 7;
           }
         }
-        throw new OutOfSpaceException(position, limit, 1);
       }
+      this.position = position; // Only update position if we stayed within the array bounds.
     }
 
     @Override
@@ -2071,29 +2080,33 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void writeUInt64NoTag(long value) throws IOException {
+      long position = this.position; // Perf: hoist field to register to avoid load/stores.
       if (position <= oneVarintLimit) {
         // Optimization to avoid bounds checks on each iteration.
         while (true) {
           if ((value & ~0x7FL) == 0) {
             UnsafeUtil.putByte(position++, (byte) value);
-            return;
+            break;
           } else {
             UnsafeUtil.putByte(position++, (byte) (((int) value | 0x80) & 0xFF));
             value >>>= 7;
           }
         }
       } else {
-        while (position < limit) {
+        while (true) {
+          if (position >= limit) {
+            throw new OutOfSpaceException(position, limit, 1);
+          }
           if ((value & ~0x7FL) == 0) {
             UnsafeUtil.putByte(position++, (byte) value);
-            return;
+            break;
           } else {
             UnsafeUtil.putByte(position++, (byte) (((int) value | 0x80) & 0xFF));
             value >>>= 7;
           }
         }
-        throw new OutOfSpaceException(position, limit, 1);
       }
+      this.position = position; // Only update position if we stayed within the array bounds.
     }
 
     @Override
