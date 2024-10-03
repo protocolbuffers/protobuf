@@ -8,11 +8,14 @@
 #include "google/protobuf/map_field.h"
 
 #include <atomic>
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/log/absl_check.h"
+#include "absl/types/variant.h"
+#include "absl/utility/utility.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/port.h"
@@ -43,6 +46,58 @@ VariantKey RealKeyToVariantKey<MapKey>::operator()(const MapKey& value) const {
       Unreachable();
       return VariantKey(uint64_t{});
   }
+}
+
+DynamicMapKey::Variant DynamicMapKey::FromMapKey(google::protobuf::MapKey map_key) {
+  switch (map_key.type()) {
+    case FieldDescriptor::CPPTYPE_STRING:
+      return DynamicMapKey::Variant(absl::in_place_type<std::string>,
+                                    map_key.GetStringValue());
+    case FieldDescriptor::CPPTYPE_INT64:
+      return DynamicMapKey::Variant(map_key.GetInt64Value());
+    case FieldDescriptor::CPPTYPE_INT32:
+      return DynamicMapKey::Variant(map_key.GetInt32Value());
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return DynamicMapKey::Variant(map_key.GetUInt64Value());
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return DynamicMapKey::Variant(map_key.GetUInt32Value());
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return DynamicMapKey::Variant(map_key.GetBoolValue());
+    default:
+      internal::Unreachable();
+  }
+}
+
+namespace {
+
+struct DynamicMapKeyToMapKey {
+  google::protobuf::MapKey* map_key;
+
+  void operator()(bool value) const { map_key->SetBoolValue(value); }
+
+  void operator()(int32_t value) const { map_key->SetInt32Value(value); }
+
+  void operator()(int64_t value) const { map_key->SetInt64Value(value); }
+
+  void operator()(uint32_t value) const { map_key->SetUInt32Value(value); }
+
+  void operator()(uint64_t value) const { map_key->SetUInt64Value(value); }
+
+  void operator()(const std::string& value) const {
+    map_key->SetStringValue(value);
+  }
+};
+
+}  // namespace
+
+google::protobuf::MapKey DynamicMapKey::ToMapKey() const {
+  google::protobuf::MapKey result;
+  absl::visit(DynamicMapKeyToMapKey{&result}, variant_);
+  return result;
+}
+
+VariantKey DynamicMapKey::ToVariantKey() const {
+  return absl::visit([](const auto& alt) { return VariantKey(alt); }, variant_);
 }
 
 MapFieldBase::~MapFieldBase() {
@@ -422,7 +477,7 @@ DynamicMapField::DynamicMapField(const Message* default_entry)
       default_entry_(default_entry) {}
 
 DynamicMapField::DynamicMapField(const Message* default_entry, Arena* arena)
-    : TypeDefinedMapFieldBase<MapKey, MapValueRef>(&kVTable, arena),
+    : TypeDefinedMapFieldBase<DynamicMapKey, MapValueRef>(&kVTable, arena),
       default_entry_(default_entry) {}
 
 constexpr DynamicMapField::VTable DynamicMapField::kVTable =
@@ -485,7 +540,7 @@ bool DynamicMapField::InsertOrLookupMapValueNoSyncImpl(MapFieldBase& base,
                                                        const MapKey& map_key,
                                                        MapValueRef* val) {
   auto& self = static_cast<DynamicMapField&>(base);
-  Map<MapKey, MapValueRef>::iterator iter = self.map_.find(map_key);
+  auto iter = self.map_.find(map_key);
   if (iter == self.map_.end()) {
     MapValueRef& map_val = self.map_[map_key];
     self.AllocateMapValue(&map_val);
@@ -502,13 +557,12 @@ void DynamicMapField::MergeFromImpl(MapFieldBase& base,
                                     const MapFieldBase& other) {
   auto& self = static_cast<DynamicMapField&>(base);
   ABSL_DCHECK(self.IsMapValid() && other.IsMapValid());
-  Map<MapKey, MapValueRef>* map = self.MutableMap();
+  Map<DynamicMapKey, MapValueRef>* map = self.MutableMap();
   const DynamicMapField& other_field =
       reinterpret_cast<const DynamicMapField&>(other);
-  for (Map<MapKey, MapValueRef>::const_iterator other_it =
-           other_field.map_.begin();
+  for (auto other_it = other_field.map_.begin();
        other_it != other_field.map_.end(); ++other_it) {
-    Map<MapKey, MapValueRef>::iterator iter = map->find(other_it->first);
+    auto iter = map->find(other_it->first);
     MapValueRef* map_val;
     if (iter == map->end()) {
       map_val = &self.map_[other_it->first];
@@ -579,11 +633,11 @@ size_t DynamicMapField::SpaceUsedExcludingSelfNoLockImpl(
   }
   size_t map_size = self.map_.size();
   if (map_size) {
-    Map<MapKey, MapValueRef>::const_iterator it = self.map_.begin();
+    auto it = self.map_.begin();
     size += sizeof(it->first) * map_size;
     size += sizeof(it->second) * map_size;
     // If key is string, add the allocated space.
-    if (it->first.type() == FieldDescriptor::CPPTYPE_STRING) {
+    if (it->first.IsString()) {
       size += sizeof(std::string) * map_size;
     }
     // Add the allocated space in MapValueRef.

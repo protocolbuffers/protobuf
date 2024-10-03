@@ -58,6 +58,10 @@ inline absl::string_view UnwrapMapKeyImpl(const MapKey& map_key,
 inline const MapKey& UnwrapMapKeyImpl(const MapKey& map_key, const MapKey*) {
   return map_key;
 }
+inline const MapKey& UnwrapMapKeyImpl(const MapKey& map_key,
+                                      const DynamicMapKey*) {
+  return map_key;
+}
 
 template <typename T>
 decltype(auto) UnwrapMapKey(const MapKey& map_key) {
@@ -80,11 +84,14 @@ inline void SetMapKey(MapKey* map_key, uint64_t value) {
 inline void SetMapKey(MapKey* map_key, bool value) {
   map_key->SetBoolValue(value);
 }
-inline void SetMapKey(MapKey* map_key, const std::string& value) {
+inline void SetMapKey(MapKey* map_key, absl::string_view value) {
   map_key->SetStringValue(value);
 }
 inline void SetMapKey(MapKey* map_key, const MapKey& value) {
-  map_key->CopyFrom(value);
+  *map_key = value;
+}
+inline void SetMapKey(MapKey* map_key, const DynamicMapKey& value) {
+  *map_key = value.ToMapKey();
 }
 
 // ------------------------TypeDefinedMapFieldBase---------------

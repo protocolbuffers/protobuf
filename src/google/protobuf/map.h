@@ -210,20 +210,22 @@ using KeyForBase = typename KeyForBaseImpl<T>::type;
 // only accept `key_type`.
 template <typename key_type>
 struct TransparentSupport {
+  static_assert(std::is_scalar<key_type>::value,
+                "Should only be used for ints.");
+
   // We hash all the scalars as uint64_t so that we can implement the same hash
   // function for VariantKey. This way we can have MapKey provide the same hash
   // as the underlying value would have.
-  using hash = absl::Hash<
-      std::conditional_t<std::is_scalar<key_type>::value, uint64_t, key_type>>;
+  using hash = absl::Hash<uint64_t>;
 
-  static bool Equals(const key_type& a, const key_type& b) { return a == b; }
+  static bool Equals(key_type a, key_type b) { return a == b; }
 
   template <typename K>
   using key_arg = key_type;
 
-  using ViewType = std::conditional_t<std::is_scalar<key_type>::value, key_type,
-                                      const key_type&>;
-  static ViewType ToView(const key_type& v) { return v; }
+  using ViewType = key_type;
+
+  static key_type ToView(key_type v) { return v; }
 };
 
 // We add transparent support for std::string keys. We use
@@ -1017,7 +1019,7 @@ class KeyMapBase : public UntypedMapBase {
     // determined whether we are inserting into an empty list, a short list,
     // or whatever.  But it's probably cheap enough to recompute that here;
     // it's likely that we're inserting into an empty or short list.
-    ABSL_DCHECK(FindHelper(node->key()).node == nullptr);
+    ABSL_DCHECK(FindHelper(TS::ToView(node->key())).node == nullptr);
     if (TableEntryIsEmpty(b)) {
       InsertUniqueInList(b, node);
       index_of_first_non_null_ = (std::min)(index_of_first_non_null_, b);
@@ -1116,7 +1118,7 @@ class KeyMapBase : public UntypedMapBase {
   void TransferList(KeyNode* node) {
     do {
       auto* next = static_cast<KeyNode*>(node->next);
-      InsertUnique(BucketNumber(node->key()), node);
+      InsertUnique(BucketNumber(TS::ToView(node->key())), node);
       node = next;
     } while (node != nullptr);
   }
@@ -1152,7 +1154,7 @@ class KeyMapBase : public UntypedMapBase {
     // not.  Revalidate just to be sure.  This case is rare enough that we
     // don't worry about potential optimizations, such as having a custom
     // find-like method that compares Node* instead of the key.
-    auto res = FindHelper(node->key(), it);
+    auto res = FindHelper(TS::ToView(node->key()), it);
     bucket_index = res.bucket;
     return TableEntryIsList(bucket_index);
   }
