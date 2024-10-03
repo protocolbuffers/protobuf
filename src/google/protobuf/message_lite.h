@@ -1291,11 +1291,11 @@ template <bool test_call, typename MessageLite>
 PROTOBUF_ALWAYS_INLINE inline MessageLite* MessageCreator::New(
     const MessageLite* prototype_for_func,
     const MessageLite* prototype_for_copy, Arena* arena) const {
-  return PlacementNew<test_call>(prototype_for_func, prototype_for_copy,
-                                 arena != nullptr
-                                     ? arena->AllocateAligned(allocation_size_)
-                                     : ::operator new(allocation_size_),
-                                 arena);
+  return PlacementNew<test_call>(
+      prototype_for_func, prototype_for_copy,
+      arena != nullptr ? arena->AllocateAlignedInlined(allocation_size_)
+                       : ::operator new(allocation_size_),
+      arena);
 }
 
 }  // namespace internal

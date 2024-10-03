@@ -199,7 +199,7 @@ class PROTOBUF_EXPORT SerialArena {
 
  public:
   // Allocate space if the current region provides enough space.
-  bool MaybeAllocateAligned(size_t n, void** out) {
+  PROTOBUF_NDEBUG_INLINE bool MaybeAllocateAligned(size_t n, void** out) {
     ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
     ABSL_DCHECK_GE(limit_, ptr());
     char* ret = ptr();

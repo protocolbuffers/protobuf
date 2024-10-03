@@ -58,6 +58,7 @@ class Map;
 namespace internal {
 struct RepeatedFieldBase;
 class ExtensionSet;
+class MessageCreator;
 }  // namespace internal
 
 namespace arena_metrics {
@@ -524,6 +525,19 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                : ConstructType::kUnknown;
   }
 
+  // For callers that want to fully inline the success path.
+  // Only for callers where the extra inlining is net positive. Not to be called
+  // from codegen.
+  PROTOBUF_ALWAYS_INLINE void* AllocateAlignedInlined(size_t size) {
+    size = internal::ArenaAlignDefault::Ceil(size);
+    void* res;
+    if (PROTOBUF_PREDICT_TRUE(impl_.MaybeAllocateAligned(size, &res))) {
+      return res;
+    }
+    // Fallback
+    return Allocate(size);
+  }
+
   void ReturnArrayMemory(void* p, size_t size) {
     impl_.ReturnArrayMemory(p, size);
   }
@@ -672,6 +686,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   friend class internal::RepeatedPtrFieldBase;  // For ReturnArrayMemory
   friend class internal::UntypedMapBase;        // For ReturnArrayMemory
   friend class internal::ExtensionSet;          // For ReturnArrayMemory
+  friend class internal::MessageCreator;
 
   friend struct internal::ArenaTestPeer;
 };
