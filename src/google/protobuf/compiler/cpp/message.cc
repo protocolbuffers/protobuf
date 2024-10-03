@@ -3880,16 +3880,21 @@ MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp(
             break;
 
           case FieldDescriptor::CPPTYPE_STRING:
-            switch (field->cpp_string_type()) {
-              case FieldDescriptor::CppStringType::kCord:
+            switch (internal::cpp::EffectiveStringCType(field)) {
+              case FieldOptions::STRING_PIECE:
+                op.needs_arena_seeding = true;
+                print_arena_offset();
+                break;
+              case FieldOptions::CORD:
                 // Cord fields are currently rejected above because of ArenaDtor
                 // requirements.
                 ABSL_CHECK(op.needs_to_run_constructor);
                 break;
-              case FieldDescriptor::CppStringType::kView:
-              case FieldDescriptor::CppStringType::kString:
+              case FieldOptions::STRING:
                 op.needs_memcpy = true;
                 break;
+              default:
+                ABSL_LOG(FATAL);
             }
             break;
           case FieldDescriptor::CPPTYPE_MESSAGE:
