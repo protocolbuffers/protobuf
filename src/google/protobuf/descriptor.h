@@ -2949,20 +2949,6 @@ PROTOBUF_EXPORT bool HasPreservingUnknownEnumSemantics(
 PROTOBUF_EXPORT bool HasHasbit(const FieldDescriptor* field);
 
 #ifndef SWIG
-// For a string field, returns the effective ctype.  If the actual ctype is
-// not supported, returns the default of STRING.
-template <typename FieldDesc = FieldDescriptor,
-          typename FieldOpts = FieldOptions>
-typename FieldOpts::CType EffectiveStringCType(const FieldDesc* field) {
-  // TODO Replace this function with
-  // FieldDescriptor::cpp_string_type;
-  switch (field->cpp_string_type()) {
-    case FieldDescriptor::CppStringType::kCord:
-      return FieldOpts::CORD;
-    default:
-      return FieldOpts::STRING;
-  }
-}
 
 enum class Utf8CheckMode : uint8_t {
   kStrict = 0,  // Parsing will fail if non UTF-8 data is in string fields.
