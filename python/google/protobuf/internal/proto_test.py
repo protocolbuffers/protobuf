@@ -13,6 +13,7 @@ import unittest
 
 from google.protobuf import proto
 from google.protobuf.internal import encoder
+from google.protobuf.internal import test_proto2_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 
@@ -21,8 +22,10 @@ from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 
 
-@_parameterized.named_parameters(('_proto2', unittest_pb2),
-                                ('_proto3', unittest_proto3_arena_pb2))
+@_parameterized.named_parameters(
+    ('_proto2', unittest_pb2),
+    ('_proto3', unittest_proto3_arena_pb2),
+)
 @testing_refleaks.TestCase
 class ProtoTest(unittest.TestCase):
 
@@ -72,6 +75,22 @@ class ProtoTest(unittest.TestCase):
     self.assertIn(
         'Failed to write complete message (wrote: 0, expected: 2)',
         str(context.exception),
+    )
+
+
+class SelfFieldTest(unittest.TestCase):
+
+  def test_pytype_allows_unset_self_field(self):
+    self.assertEqual(
+        test_proto2_pb2.MessageWithSelfField(something=123).something, 123
+    )
+
+  def test_pytype_allows_unset_self_and_self_underscore_field(self):
+    self.assertEqual(
+        test_proto2_pb2.MessageWithSelfAndSelfUnderscoreField(
+            something=123
+        ).something,
+        123,
     )
 
 
