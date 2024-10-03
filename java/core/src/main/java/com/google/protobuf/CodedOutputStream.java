@@ -2266,7 +2266,10 @@ public abstract class CodedOutputStream extends ByteOutput {
      * responsibility of the caller.
      */
     final void buffer(byte value) {
-      buffer[position++] = value;
+      int position = this.position;
+      buffer[position] = value;
+      // Android optimisation: 1 fewer instruction codegen vs buffer[position++].
+      this.position = position + 1;
       totalBytesWritten++;
     }
 
