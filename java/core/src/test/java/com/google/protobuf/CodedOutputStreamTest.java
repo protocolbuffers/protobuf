@@ -722,20 +722,23 @@ public class CodedOutputStreamTest {
   }
 
   @Test
-  public void testWriteByteBuffer() throws Exception {
+  public void testWriteRawBytes_byteBuffer() throws Exception {
     byte[] value = "abcde".getBytes(Internal.UTF_8);
     Coder coder = outputType.newCoder(100);
     CodedOutputStream codedStream = coder.stream();
-    ByteBuffer byteBuffer = ByteBuffer.wrap(value, 0, 1);
+    ByteBuffer byteBuffer = ByteBuffer.wrap(value, /* offset= */ 0, /* length= */ 1);
+    assertThat(byteBuffer.capacity()).isEqualTo(5);
     // This will actually write 5 bytes into the CodedOutputStream as the
     // ByteBuffer's capacity() is 5.
     codedStream.writeRawBytes(byteBuffer);
-    // The above call shouldn't affect the ByteBuffer's state.
+    assertThat(codedStream.getTotalBytesWritten()).isEqualTo(5);
+
+    // writeRawBytes shouldn't affect the ByteBuffer's state.
     assertThat(byteBuffer.position()).isEqualTo(0);
     assertThat(byteBuffer.limit()).isEqualTo(1);
 
     // The correct way to write part of an array using ByteBuffer.
-    codedStream.writeRawBytes(ByteBuffer.wrap(value, 2, 1).slice());
+    codedStream.writeRawBytes(ByteBuffer.wrap(value, /* offset= */ 2, /* length= */ 1).slice());
 
     codedStream.flush();
     byte[] result = coder.toByteArray();
@@ -744,6 +747,44 @@ public class CodedOutputStreamTest {
       assertThat(value[i]).isEqualTo(result[i]);
     }
     assertThat(value[2]).isEqualTo(result[5]);
+  }
+
+  @Test
+  public void testWrite_byteBuffer() throws Exception {
+    byte[] bytes = new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    Coder coder = outputType.newCoder(100);
+    CodedOutputStream codedStream = coder.stream();
+    ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+    assertThat(byteBuffer.capacity()).isEqualTo(10);
+    assertThat(byteBuffer.position()).isEqualTo(0);
+    assertThat(byteBuffer.limit()).isEqualTo(10);
+
+    codedStream.write(byteBuffer);
+    codedStream.flush();
+    assertThat(codedStream.getTotalBytesWritten()).isEqualTo(10);
+
+    // write should update the ByteBuffer's state.
+    assertThat(byteBuffer.position()).isEqualTo(10);
+    assertThat(byteBuffer.limit()).isEqualTo(10);
+
+    assertThat(coder.toByteArray()).isEqualTo(bytes);
+  }
+
+  @Test
+  // Some coders throw immediately on write, some throw on flush.
+  @SuppressWarnings("AssertThrowsMultipleStatements")
+  public void testWrite_byteBuffer_outOfSpace() throws Exception {
+    byte[] bytes = new byte[10];
+
+    for (int i = 0; i < 10; i++) {
+      ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+      Coder coder = outputType.newCoder(i);
+      CodedOutputStream codedStream = coder.stream();
+      assertThrows("i=" + i, OutOfSpaceException.class, () -> {
+        codedStream.write(byteBuffer);
+        codedStream.flush();
+      });
+    }
   }
 
   @Test
