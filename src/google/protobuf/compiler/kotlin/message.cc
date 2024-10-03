@@ -7,7 +7,9 @@
 
 #include "google/protobuf/compiler/kotlin/message.h"
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
@@ -16,11 +18,8 @@
 #include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/generator_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
-#include "google/protobuf/compiler/java/full/field_generator.h"
-#include "google/protobuf/compiler/java/full/make_field_gens.h"
-#include "google/protobuf/compiler/java/lite/field_generator.h"
-#include "google/protobuf/compiler/java/lite/make_field_gens.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/compiler/kotlin/field.h"
 #include "google/protobuf/io/printer.h"
 
 // Must be last.
@@ -39,36 +38,17 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
       lite_(!java::HasDescriptorMethods(descriptor_->file(),
                                         context->EnforceLite())),
       jvm_dsl_(!lite_ || context->options().jvm_dsl),
-      lite_field_generators_(
-          java::FieldGeneratorMap<java::ImmutableFieldLiteGenerator>(
-              descriptor_)),
-      field_generators_(
-          java::FieldGeneratorMap<java::ImmutableFieldGenerator>(descriptor_)) {
+      field_generators_(java::FieldGeneratorMap<FieldGenerator>(descriptor_)) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (java::IsRealOneof(descriptor_->field(i))) {
       const OneofDescriptor* oneof = descriptor_->field(i)->containing_oneof();
       ABSL_CHECK(oneofs_.emplace(oneof->index(), oneof).first->second == oneof);
     }
   }
-  if (lite_) {
-    lite_field_generators_ =
-        java::MakeImmutableFieldLiteGenerators(descriptor_, context_);
-  } else {
-    field_generators_ =
-        java::MakeImmutableFieldGenerators(descriptor_, context_);
-  }
-}
-
-void MessageGenerator::GenerateFieldMembers(io::Printer* printer) const {
   for (int i = 0; i < descriptor_->field_count(); i++) {
-    printer->Print("\n");
-    if (lite_) {
-      lite_field_generators_.get(descriptor_->field(i))
-          .GenerateKotlinDslMembers(printer);
-    } else {
-      field_generators_.get(descriptor_->field(i))
-          .GenerateKotlinDslMembers(printer);
-    }
+    const FieldDescriptor* field = descriptor->field(i);
+    auto generator = std::make_unique<FieldGenerator>(field, context_, lite_);
+    field_generators_.Add(field, std::move(generator));
   }
 }
 
@@ -97,7 +77,10 @@ void MessageGenerator::Generate(io::Printer* printer) const {
 
   printer->Indent();
 
-  GenerateFieldMembers(printer);
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    printer->Print("\n");
+    field_generators_.get(descriptor_->field(i)).Generate(printer);
+  }
 
   for (auto& kv : oneofs_) {
     java::JvmNameContext name_ctx = {context_->options(), printer, lite_};
