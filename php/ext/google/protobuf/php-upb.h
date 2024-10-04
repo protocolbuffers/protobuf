@@ -375,8 +375,9 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 
 #if defined(__ELF__) || defined(__wasm__)
 
-#define UPB_LINKARR_APPEND(name) \
-  __attribute__((retain, used, section("linkarr_" #name)))
+#define UPB_LINKARR_APPEND(name)                          \
+  __attribute__((retain, used, section("linkarr_" #name), \
+                 no_sanitize("address")))
 #define UPB_LINKARR_DECLARE(name, type)     \
   extern type const __start_linkarr_##name; \
   extern type const __stop_linkarr_##name;  \
@@ -387,8 +388,9 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #elif defined(__MACH__)
 
 /* As described in: https://stackoverflow.com/a/22366882 */
-#define UPB_LINKARR_APPEND(name) \
-  __attribute__((retain, used, section("__DATA,__la_" #name)))
+#define UPB_LINKARR_APPEND(name)                              \
+  __attribute__((retain, used, section("__DATA,__la_" #name), \
+                 no_sanitize("address")))
 #define UPB_LINKARR_DECLARE(name, type)           \
   extern type const __start_linkarr_##name __asm( \
       "section$start$__DATA$__la_" #name);        \
@@ -408,8 +410,9 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 
 // Usage of __attribute__ here probably means this is Clang-specific, and would
 // not work on MSVC.
-#define UPB_LINKARR_APPEND(name) \
-  __declspec(allocate("la_" #name "$j")) __attribute__((retain, used))
+#define UPB_LINKARR_APPEND(name)         \
+  __declspec(allocate("la_" #name "$j")) \
+  __attribute__((retain, used, no_sanitize("address")))
 #define UPB_LINKARR_DECLARE(name, type)                               \
   __declspec(allocate("la_" #name "$a")) type __start_linkarr_##name; \
   __declspec(allocate("la_" #name "$z")) type __stop_linkarr_##name;  \
