@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <limits>
 #include <string>
+#include "google/protobuf/wire_format_lite.h"
 
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -362,6 +363,32 @@ TEST(MESSAGE_TEST_NAME, ExplicitLazyExceedRecursionLimit) {
   // Lazy read results in parsing error which can be verified by not having
   // expected value.
   EXPECT_NE(parsed.lazy_child().child().payload().optional_int32(), -1);
+}
+
+TEST(MESSAGE_TEST_NAME, ExplicitLazyBadLengthDelimitedSize) {
+  std::string serialized;
+
+  // This is a regression test for a bug in lazy field verification.  It
+  // requires invalid wire format to trigger the bug.
+
+  // NestedMessage optional_lazy_message = 27 [lazy=true];
+  uint32_t tag = internal::WireFormatLite::MakeTag(
+      27, internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+  uint8_t tag_bytes[5];
+  io::CodedOutputStream::WriteTagToArray(tag, tag_bytes);
+  serialized.push_back(tag_bytes[0]);
+  serialized.push_back(tag_bytes[1]);
+  serialized.push_back(6);
+
+  // bytes bytes_field = 2;
+  serialized.push_back(internal::WireFormatLite::MakeTag(
+      2, internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED));
+
+  // To trigger this bug, we need an overlong size.
+  serialized.append(5, 0xff);
+
+  UNITTEST::TestAllTypes parsed;
+  EXPECT_FALSE(parsed.ParseFromString(serialized));
 }
 
 TEST(MESSAGE_TEST_NAME, NestedLazyRecursionLimit) {
