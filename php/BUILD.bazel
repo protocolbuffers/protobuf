@@ -267,7 +267,7 @@ genrule(
     tags = ["manual"],
     tools = ["//:protoc"],
     outs = ["generated/" + wkt for wkt in _WKT_GENERATED_FILES] +
-           ["generated/ext/google/protobuf/wkt.inc"],
+        ["generated/ext/google/protobuf/wkt.inc"],
 )
 
 genrule(
