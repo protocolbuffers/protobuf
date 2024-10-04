@@ -274,25 +274,21 @@ for f in $$(find $(@D) -name "*.php"); do
 done
 """
 
+# These must be combined due to windows sandbox isolation issues.
 genrule(
     name = "gen_wkt_sources",
-    srcs = ["//src/google/protobuf:well_known_type_protos"],
-    cmd = "$(execpath //:protoc) --php_out=internal_generate_c_wkt:$(RULEDIR)/generated/src --proto_path=src $(SRCS);"
-        + _CHECK_GENCODE,
+    srcs = [
+        "//src/google/protobuf:well_known_type_protos",
+        "//src/google/protobuf:descriptor_proto_srcs",
+    ],
+    cmd = """
+        $(execpath //:protoc) --php_out=internal_generate_c_wkt:$(RULEDIR)/generated/src --proto_path=src $(locations //src/google/protobuf:well_known_type_protos);
+        $(execpath //:protoc) --php_out=internal:$(RULEDIR)/generated/src --proto_path=src $(location //src/google/protobuf:descriptor_proto_srcs);
+    """ + _CHECK_GENCODE,
     tags = ["manual"],
     tools = ["//:protoc"],
-    outs = ["generated/" + wkt for wkt in _WKT_GENERATED_FILES] +
+    outs = ["generated/" + wkt for wkt in _WKT_GENERATED_FILES + _DESCRIPTOR_GENERATED_FILES] +
         ["generated/ext/google/protobuf/wkt.inc"],
-)
-
-genrule(
-    name = "gen_descriptor_sources",
-    srcs = ["//src/google/protobuf:descriptor_proto_srcs"],
-    cmd = "$(execpath //:protoc) --php_out=internal:$(RULEDIR)/generated/src --proto_path=src $(SRCS);"
-        + _CHECK_GENCODE,
-    tags = ["manual"],
-    tools = ["//:protoc"],
-    outs = ["generated/" + wkt for wkt in _DESCRIPTOR_GENERATED_FILES],
 )
 
 staleness_test(
