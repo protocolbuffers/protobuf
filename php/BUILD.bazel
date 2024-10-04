@@ -23,7 +23,8 @@ _WKT_GENERATED_FILES = glob([
     "src/Google/Protobuf/Enum.php",
     "src/Google/Protobuf/EnumValue.php",
     "src/Google/Protobuf/Field.php",
-    "src/Google/Protobuf/Field/**/*.php",
+    "src/Google/Protobuf/Field/Cardinality.php",
+    "src/Google/Protobuf/Field/Kind.php",
     "src/Google/Protobuf/FieldMask.php",
     "src/Google/Protobuf/FloatValue.php",
     "src/Google/Protobuf/GPBEmpty.php",
@@ -55,45 +56,59 @@ _WKT_GENERATED_FILES = glob([
     "src/GPBMetadata/Google/Protobuf/Wrappers.php",
 ])
 
-_DESCRIPTOR_GENERATED_FILES = glob([
+_DESCRIPTOR_GENERATED_FILES = [
     "src/Google/Protobuf/Internal/DescriptorProto.php",
-    "src/Google/Protobuf/Internal/DescriptorProto/**/*.php",
+    "src/Google/Protobuf/Internal/DescriptorProto/ExtensionRange.php",
+    "src/Google/Protobuf/Internal/DescriptorProto/ReservedRange.php",
     "src/Google/Protobuf/Internal/Edition.php",
     "src/Google/Protobuf/Internal/EnumDescriptorProto.php",
-    "src/Google/Protobuf/Internal/EnumDescriptorProto/**/*.php",
+    "src/Google/Protobuf/Internal/EnumDescriptorProto/EnumReservedRange.php",
     "src/Google/Protobuf/Internal/EnumOptions.php",
     "src/Google/Protobuf/Internal/EnumValueDescriptorProto.php",
     "src/Google/Protobuf/Internal/EnumValueOptions.php",
     "src/Google/Protobuf/Internal/ExtensionRangeOptions.php",
-    "src/Google/Protobuf/Internal/ExtensionRangeOptions/**/*.php",
+    "src/Google/Protobuf/Internal/ExtensionRangeOptions/Declaration.php",
+    "src/Google/Protobuf/Internal/ExtensionRangeOptions/VerificationState.php",
     "src/Google/Protobuf/Internal/FeatureSet.php",
-    "src/Google/Protobuf/Internal/FeatureSet/**/*.php",
+    "src/Google/Protobuf/Internal/FeatureSet/EnumType.php",
+    "src/Google/Protobuf/Internal/FeatureSet/FieldPresence.php",
+    "src/Google/Protobuf/Internal/FeatureSet/JsonFormat.php",
+    "src/Google/Protobuf/Internal/FeatureSet/MessageEncoding.php",
+    "src/Google/Protobuf/Internal/FeatureSet/RepeatedFieldEncoding.php",
+    "src/Google/Protobuf/Internal/FeatureSet/Utf8Validation.php",
     "src/Google/Protobuf/Internal/FeatureSetDefaults.php",
-    "src/Google/Protobuf/Internal/FeatureSetDefaults/**/*.php",
+    "src/Google/Protobuf/Internal/FeatureSetDefaults/FeatureSetEditionDefault.php",
     "src/Google/Protobuf/Internal/FieldDescriptorProto.php",
-    "src/Google/Protobuf/Internal/FieldDescriptorProto/**/*.php",
+    "src/Google/Protobuf/Internal/FieldDescriptorProto/Label.php",
+    "src/Google/Protobuf/Internal/FieldDescriptorProto/Type.php",
     "src/Google/Protobuf/Internal/FieldOptions.php",
-    "src/Google/Protobuf/Internal/FieldOptions/**/*.php",
+    "src/Google/Protobuf/Internal/FieldOptions/CType.php",
+    "src/Google/Protobuf/Internal/FieldOptions/EditionDefault.php",
+    "src/Google/Protobuf/Internal/FieldOptions/FeatureSupport.php",
+    "src/Google/Protobuf/Internal/FieldOptions/JSType.php",
+    "src/Google/Protobuf/Internal/FieldOptions/OptionRetention.php",
+    "src/Google/Protobuf/Internal/FieldOptions/OptionTargetType.php",
     "src/Google/Protobuf/Internal/FileDescriptorProto.php",
     "src/Google/Protobuf/Internal/FileDescriptorSet.php",
     "src/Google/Protobuf/Internal/FileOptions.php",
-    "src/Google/Protobuf/Internal/FileOptions/**/*.php",
+    "src/Google/Protobuf/Internal/FileOptions/OptimizeMode.php",
     "src/Google/Protobuf/Internal/GeneratedCodeInfo.php",
-    "src/Google/Protobuf/Internal/GeneratedCodeInfo/**/*.php",
+    "src/Google/Protobuf/Internal/GeneratedCodeInfo/Annotation.php",
+    "src/Google/Protobuf/Internal/GeneratedCodeInfo/Annotation/Semantic.php",
     "src/Google/Protobuf/Internal/MessageOptions.php",
     "src/Google/Protobuf/Internal/MethodDescriptorProto.php",
     "src/Google/Protobuf/Internal/MethodOptions.php",
-    "src/Google/Protobuf/Internal/MethodOptions/**/*.php",
+    "src/Google/Protobuf/Internal/MethodOptions/IdempotencyLevel.php",
     "src/Google/Protobuf/Internal/OneofDescriptorProto.php",
     "src/Google/Protobuf/Internal/OneofOptions.php",
     "src/Google/Protobuf/Internal/ServiceDescriptorProto.php",
     "src/Google/Protobuf/Internal/ServiceOptions.php",
     "src/Google/Protobuf/Internal/SourceCodeInfo.php",
-    "src/Google/Protobuf/Internal/SourceCodeInfo/**/*.php",
+    "src/Google/Protobuf/Internal/SourceCodeInfo/Location.php",
     "src/Google/Protobuf/Internal/UninterpretedOption.php",
-    "src/Google/Protobuf/Internal/UninterpretedOption/**/*.php",
+    "src/Google/Protobuf/Internal/UninterpretedOption/NamePart.php",
     "src/GPBMetadata/Google/Protobuf/Internal/Descriptor.php",
-])
+]
 
 _RUNTIME_SOURCES = [
     "src/Google/Protobuf/Descriptor.php",
@@ -252,7 +267,7 @@ staleness_test(
 # Make sure we error if new files start showing up, since that may go unnoticed.
 _CHECK_GENCODE = """
 for f in $$(find $(@D) -name "*.php"); do
-    local=$$(echo $$f | sed "s:bazel-out.*/bin/php/::g");
+    local=$$(echo $$f | sed "s:bazel-out.*.bin.php.::g");
     if [[ "$(OUTS)" != *$$local* ]]; then
         echo "Extra generated file $$local!  Please update the lists in php/BUILD.bazel" && exit 1;
     fi
