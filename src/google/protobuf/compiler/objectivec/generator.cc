@@ -64,8 +64,6 @@ std::string NumberedObjCMFileName(absl::string_view basename, int number) {
 
 }  // namespace
 
-bool ObjectiveCGenerator::HasGenerateAll() const { return true; }
-
 bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
                                    const std::string& parameter,
                                    GeneratorContext* context,
