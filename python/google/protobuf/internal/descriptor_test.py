@@ -835,13 +835,19 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
 
   def testCopyToProto_NestedMessage(self):
     TEST_NESTED_MESSAGE_ASCII = """
-      name: 'NestedMessage'
-      field: <
-        name: 'bb'
+      name: "NestedMessage"
+      field {
+        name: "bb"
         number: 1
-        label: 1  # Optional
-        type: 5  # TYPE_INT32
-      >
+        label: LABEL_OPTIONAL
+        type: TYPE_INT32
+      }
+      field {
+        name: "bytes_field"
+        number: 2
+        label: LABEL_OPTIONAL
+        type: TYPE_BYTES
+      }
       """
 
     self._InternalTestCopyToProto(
