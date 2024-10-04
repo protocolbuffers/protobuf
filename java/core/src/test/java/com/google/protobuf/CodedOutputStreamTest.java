@@ -788,7 +788,36 @@ public class CodedOutputStreamTest {
   }
 
   @Test
-  public void testWriteByteArrayWithOffsets() throws Exception {
+  public void testWrite_byteArray() throws Exception {
+    byte[] bytes = new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    Coder coder = outputType.newCoder(100);
+    CodedOutputStream codedStream = coder.stream();
+
+    codedStream.write(bytes, 0, bytes.length);
+    codedStream.flush();
+    assertThat(codedStream.getTotalBytesWritten()).isEqualTo(10);
+
+    assertThat(coder.toByteArray()).isEqualTo(bytes);
+  }
+
+  @Test
+  // Some coders throw immediately on write, some throw on flush.
+  @SuppressWarnings("AssertThrowsMultipleStatements")
+  public void testWrite_byteArray_outOfSpace() throws Exception {
+    byte[] bytes = new byte[10];
+
+    for (int i = 0; i < 10; i++) {
+      Coder coder = outputType.newCoder(i);
+      CodedOutputStream codedStream = coder.stream();
+      assertThrows("i=" + i, OutOfSpaceException.class, () -> {
+        codedStream.write(bytes, 0, bytes.length);
+        codedStream.flush();
+      });
+    }
+  }
+
+  @Test
+  public void testWriteByteArrayNoTag_withOffsets() throws Exception {
     assume().that(outputType).isEqualTo(OutputType.ARRAY);
 
     byte[] fullArray = bytes(0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88);
