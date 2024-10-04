@@ -1206,11 +1206,6 @@ PROTOBUF_ALWAYS_INLINE inline MessageLite* MessageCreator::PlacementNew(
   //  - We know the minimum size is 16. We have a fallback for when it is not.
   //  - We can "underflow" the buffer because those are the MessageLite bytes
   //    we will set later.
-#ifndef PROTO2_OPENSOURCE
-  // This manual handling shows a 1.85% improvement in the parsing
-  // microbenchmark.
-  // TODO: Verify this is still the case.
-#endif  // !PROTO2_OPENSOUCE
   if (as_tag == kZeroInit) {
     // Make sure the input is really all zeros.
     ABSL_DCHECK(std::all_of(src + sizeof(MessageLite), src + size,
