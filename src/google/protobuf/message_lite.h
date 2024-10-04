@@ -81,11 +81,33 @@ class MessageCreator {
  public:
   using Func = void* (*)(const void*, void*, Arena*);
 
-  // Use -1/0/1 to be able to use <0, ==0, >0
-  enum Tag : int8_t {
-    kFunc = -1,
-    kZeroInit = 0,
-    kMemcpy = 1,
+  enum Tag : uint8_t {
+    // Nothing to copy. Message has no fields.
+    kZero,
+
+    // Message is zero initialized.
+    kMemset17to32,
+    kMemset33to64,
+    kMemset65to128,
+    kMemset129toMax,
+
+    // Message needs copy from prototype.
+    kMemcpy17to32,
+    kMemcpy33to64,
+    kMemcpy65to128,
+    kMemcpy129toMax,
+
+    // Call generated function
+    kFunc,
+
+    // Use the fallback path.
+    kJustMemset,
+    kJustMemcpy,
+
+    kMemsetFirst = kMemset17to32,
+    kMemsetLast = kMemset129toMax,
+    kMemcpyFirst = kMemcpy17to32,
+    kMemcpyLast = kMemcpy129toMax,
   };
 
   constexpr MessageCreator()
@@ -93,24 +115,10 @@ class MessageCreator {
 
   static constexpr MessageCreator ZeroInit(uint32_t allocation_size,
                                            uint8_t alignment,
-                                           uintptr_t arena_bits = 0) {
-    MessageCreator out;
-    out.allocation_size_ = allocation_size;
-    out.tag_ = kZeroInit;
-    out.alignment_ = alignment;
-    out.arena_bits_ = arena_bits;
-    return out;
-  }
+                                           uintptr_t arena_bits = 0);
   static constexpr MessageCreator CopyInit(uint32_t allocation_size,
                                            uint8_t alignment,
-                                           uintptr_t arena_bits = 0) {
-    MessageCreator out;
-    out.allocation_size_ = allocation_size;
-    out.tag_ = kMemcpy;
-    out.alignment_ = alignment;
-    out.arena_bits_ = arena_bits;
-    return out;
-  }
+                                           uintptr_t arena_bits = 0);
   constexpr MessageCreator(Func func, uint32_t allocation_size,
                            uint8_t alignment)
       : allocation_size_(allocation_size),
@@ -134,8 +142,10 @@ class MessageCreator {
 
   uint8_t alignment() const { return alignment_; }
 
+  bool is_memset() const { return tag_ >= kMemsetFirst && tag_ <= kMemsetLast; }
+
   uintptr_t arena_bits() const {
-    ABSL_DCHECK_NE(+tag(), +kFunc);
+    ABSL_DCHECK_NE(+tag_, +kFunc);
     return arena_bits_;
   }
 
@@ -1181,81 +1191,156 @@ inline void AssertDownCast(const MessageLite& from, const MessageLite& to) {
       << "Cannot downcast " << from.GetTypeName() << " to " << to.GetTypeName();
 }
 
+constexpr MessageCreator MessageCreator::ZeroInit(uint32_t allocation_size,
+                                                  uint8_t alignment,
+                                                  uintptr_t arena_bits) {
+  MessageCreator out;
+  out.allocation_size_ = allocation_size;
+  out.tag_ = sizeof(MessageLite) != 16                ? kJustMemset
+             : allocation_size == sizeof(MessageLite) ? kZero
+             : allocation_size <= 32                  ? kMemset17to32
+             : allocation_size <= 64                  ? kMemset33to64
+             : allocation_size <= 128                 ? kMemset65to128
+                                                      : kMemset129toMax;
+  out.alignment_ = alignment;
+  out.arena_bits_ = arena_bits;
+  return out;
+}
+
+constexpr MessageCreator MessageCreator::CopyInit(uint32_t allocation_size,
+                                                  uint8_t alignment,
+                                                  uintptr_t arena_bits) {
+  MessageCreator out;
+  out.allocation_size_ = allocation_size;
+  out.tag_ = sizeof(MessageLite) != 16 ? kJustMemcpy
+             : allocation_size <= 32   ? kMemcpy17to32
+             : allocation_size <= 64   ? kMemcpy33to64
+             : allocation_size <= 128  ? kMemcpy65to128
+                                       : kMemcpy129toMax;
+  out.alignment_ = alignment;
+  out.arena_bits_ = arena_bits;
+  return out;
+}
+
 template <bool test_call, typename MessageLite>
 PROTOBUF_ALWAYS_INLINE inline MessageLite* MessageCreator::PlacementNew(
     const MessageLite* prototype_for_func,
     const MessageLite* prototype_for_copy, void* mem, Arena* arena) const {
   ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(mem) % alignment_, 0u);
-  const Tag as_tag = tag();
-  // When the feature is not enabled we skip the `as_tag` check since it is
-  // unnecessary. Except for testing, where we want to test the copy logic even
-  // when we can't use it for real messages.
-  constexpr bool kMustBeFunc = !test_call && !internal::EnableCustomNew();
-  static_assert(kFunc < 0 && !(kZeroInit < 0) && !(kMemcpy < 0),
-                "Only kFunc must be the only negative value");
-  if (ABSL_PREDICT_FALSE(kMustBeFunc || as_tag < 0)) {
-    PROTOBUF_DEBUG_COUNTER("MessageCreator.Func").Inc();
-    return static_cast<MessageLite*>(func_(prototype_for_func, mem, arena));
-  }
 
   char* dst = static_cast<char*>(mem);
   const size_t size = allocation_size_;
   const char* src = reinterpret_cast<const char*>(prototype_for_copy);
 
+  // Make sure the input is really all zeros.
+  ABSL_DCHECK(!is_memset() || std::all_of(src + sizeof(MessageLite), src + size,
+                                          [](auto c) { return c == 0; }));
+
+  // When the feature is not enabled we skip the checks since it is
+  // unnecessary. Except for testing, where we want to test the copy logic even
+  // when we can't use it for real messages.
+  constexpr bool kMustBeFunc = !test_call && !internal::EnableCustomNew();
+
   // These are a bit more efficient than calling normal memset/memcpy because:
   //  - We know the minimum size is 16. We have a fallback for when it is not.
   //  - We can "underflow" the buffer because those are the MessageLite bytes
   //    we will set later.
-  if (as_tag == kZeroInit) {
-    // Make sure the input is really all zeros.
-    ABSL_DCHECK(std::all_of(src + sizeof(MessageLite), src + size,
-                            [](auto c) { return c == 0; }));
-
-    if (sizeof(MessageLite) != 16) {
-      memset(dst, 0, size);
-    } else if (size <= 32) {
+  switch (kMustBeFunc ? kFunc : tag_) {
+    case kZero:
+      // Nothing to do here. The message has no members.
+      PROTOBUF_DEBUG_COUNTER("MessageCreator(Size).0").Inc();
+      break;
+    case kMemset17to32:
+      PROTOBUF_DEBUG_COUNTER("MessageCreator(Size).32").Inc();
       memset(dst + size - 16, 0, 16);
-    } else if (size <= 64) {
+      break;
+    case kMemset33to64:
+      PROTOBUF_DEBUG_COUNTER("MessageCreator(Size).64").Inc();
       memset(dst + 16, 0, 16);
       memset(dst + size - 32, 0, 32);
-    } else {
-      for (size_t offset = 16; offset + 64 < size; offset += 64) {
+      break;
+    case kMemset65to128:
+      PROTOBUF_DEBUG_COUNTER("MessageCreator(Size).128").Inc();
+      absl::PrefetchToLocalCacheForWrite(dst + 64);
+      memset(dst, 0, 64);
+      memset(dst + size - 64, 0, 64);
+      break;
+    case kMemset129toMax:
+      PROTOBUF_DEBUG_COUNTER("MessageCreator(Size).Big").Inc();
+      absl::PrefetchToLocalCacheForWrite(dst + 64);
+      absl::PrefetchToLocalCacheForWrite(dst + 128);
+      memset(dst, 0, 128);
+      for (size_t offset = 128; offset + 64 < size; offset += 64) {
         absl::PrefetchToLocalCacheForWrite(dst + offset + 64);
         memset(dst + offset, 0, 64);
       }
       memset(dst + size - 64, 0, 64);
-    }
-  } else {
-    ABSL_DCHECK_EQ(+as_tag, +kMemcpy);
-
-    if (sizeof(MessageLite) != 16) {
-      memcpy(dst, src, size);
-    } else if (size <= 32) {
+      break;
+    case kMemcpy17to32:
+      PROTOBUF_DEBUG_COUNTER("MessageCreator(Size).32").Inc();
       memcpy(dst + size - 16, src + size - 16, 16);
-    } else if (size <= 64) {
+      break;
+    case kMemcpy33to64:
+      PROTOBUF_DEBUG_COUNTER("MessageCreator(Size).64").Inc();
       memcpy(dst + 16, src + 16, 16);
       memcpy(dst + size - 32, src + size - 32, 32);
-    } else {
-      for (size_t offset = 16; offset + 64 < size; offset += 64) {
+      break;
+    case kMemcpy65to128:
+      PROTOBUF_DEBUG_COUNTER("MessageCreator(Size).128").Inc();
+      absl::PrefetchToLocalCache(src + 64);
+      absl::PrefetchToLocalCacheForWrite(dst + 64);
+      memcpy(dst, src, 64);
+      memcpy(dst + size - 64, src + size - 64, 64);
+      break;
+    case kMemcpy129toMax:
+      PROTOBUF_DEBUG_COUNTER("MessageCreator(Size).Big").Inc();
+      absl::PrefetchToLocalCache(src + 64);
+      absl::PrefetchToLocalCache(src + 128);
+      absl::PrefetchToLocalCacheForWrite(dst + 64);
+      absl::PrefetchToLocalCacheForWrite(dst + 128);
+      memcpy(dst, src, 128);
+      for (size_t offset = 128; offset + 64 < size; offset += 64) {
         absl::PrefetchToLocalCache(src + offset + 64);
         absl::PrefetchToLocalCacheForWrite(dst + offset + 64);
         memcpy(dst + offset, src + offset, 64);
       }
       memcpy(dst + size - 64, src + size - 64, 64);
-    }
+      break;
+    case kFunc:
+      PROTOBUF_DEBUG_COUNTER("MessageCreator(Kind).Func").Inc();
+      return static_cast<MessageLite*>(func_(prototype_for_func, mem, arena));
+    case kJustMemset:
+      // We can't use the fast path if the layout is not as we expect, so call
+      // normal memcpy.
+      PROTOBUF_ASSUME(sizeof(MessageLite) != 16);
+      memset(dst + sizeof(MessageLite), 0, size - sizeof(MessageLite));
+      break;
+    case kJustMemcpy:
+      // We can't use the fast path if the layout is not as we expect, so call
+      // normal memcpy.
+      PROTOBUF_ASSUME(sizeof(MessageLite) != 16);
+      memcpy(dst + sizeof(MessageLite), src, size - sizeof(MessageLite));
+      break;
+    default:
+      Unreachable();
   }
+#ifndef PROTO2_OPENSOURCE
+    // This manual handling shows a 1.85% improvement in the parsing
+    // microbenchmark.
+    // TODO: Verify this is still the case.
+#endif  // !PROTO2_OPENSOUCE
 
   if (arena_bits() != 0) {
-    if (as_tag == kZeroInit) {
-      PROTOBUF_DEBUG_COUNTER("MessageCreator.ZeroArena").Inc();
+    if (is_memset()) {
+      PROTOBUF_DEBUG_COUNTER("MessageCreator(Kind).ZeroArena").Inc();
     } else {
-      PROTOBUF_DEBUG_COUNTER("MessageCreator.McpyArena").Inc();
+      PROTOBUF_DEBUG_COUNTER("MessageCreator(Kind).McpyArena").Inc();
     }
   } else {
-    if (as_tag == kZeroInit) {
-      PROTOBUF_DEBUG_COUNTER("MessageCreator.Zero").Inc();
+    if (is_memset()) {
+      PROTOBUF_DEBUG_COUNTER("MessageCreator(Kind).Zero").Inc();
     } else {
-      PROTOBUF_DEBUG_COUNTER("MessageCreator.Mcpy").Inc();
+      PROTOBUF_DEBUG_COUNTER("MessageCreator(Kind).Mcpy").Inc();
     }
   }
 
