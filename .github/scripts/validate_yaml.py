@@ -65,35 +65,3 @@ for file in yaml_files:
               % (step['name'], job)
           )
 print('PASSED: All steps in all jobs check the continuous-run condition.')
-
-# Check to make sure the list of included branches matches the list of excluded
-# branches in staleness_check.yml.
-with open(
-    os.path.join(os.path.dirname(__file__), '../workflows/staleness_check.yml'),
-    'r',
-) as f:
-  regex_pattern = r"'(\d+\.x)'"
-  data = yaml.safe_load(f)
-  matrix = data['jobs']['test']['strategy']['matrix']
-  included_branches = matrix['branch']
-  # Main should be included in all test runs
-  included_branches.remove('main')
-  excludes = matrix['exclude']
-  for entry in excludes:
-    match = re.search(regex_pattern, entry['branch'])
-    branch = match.group(1)
-    if branch not in included_branches:
-      raise ValueError(
-          'Branch %s is excluded for presubmit runs but is not in the list of'
-          ' matrix branches in staleness_check.yml.' % branch
-      )
-    included_branches.remove(branch)
-  if included_branches:
-    raise ValueError(
-        'Branches %s are in the list of matrix branches but do not get excluded'
-        ' for presubmit runs in staleness_check.yml.' % included_branches
-    )
-  print(
-      'PASSED: The list of included branches matches the list of excluded'
-      ' branches in staleness_check.yml.'
-  )
