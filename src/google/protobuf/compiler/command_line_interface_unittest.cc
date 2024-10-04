@@ -2737,7 +2737,7 @@ TEST_F(CommandLineInterfaceTest, ParseErrors) {
       "--proto_path=$tmpdir foo.proto");
 
   ExpectErrorText(
-      "foo.proto:2:1: Expected top-level statement (e.g. \"message\").\n");
+      "$tmpdir/foo.proto:2:1: Expected top-level statement (e.g. \"message\").\n");
 }
 
 TEST_F(CommandLineInterfaceTest, ParseErrors_DescriptorSetIn) {
@@ -2771,10 +2771,10 @@ TEST_F(CommandLineInterfaceTest, ParseErrorsMultipleFiles) {
       "--proto_path=$tmpdir foo.proto");
 
   ExpectErrorText(
-      "bar.proto:2:1: Expected top-level statement (e.g. \"message\").\n"
-      "baz.proto:2:1: Import \"bar.proto\" was not found or had errors.\n"
-      "foo.proto:2:1: Import \"bar.proto\" was not found or had errors.\n"
-      "foo.proto:3:1: Import \"baz.proto\" was not found or had errors.\n");
+      "$tmpdir/bar.proto:2:1: Expected top-level statement (e.g. \"message\").\n"
+      "$tmpdir/baz.proto:2:1: Import \"bar.proto\" was not found or had errors.\n"
+      "$tmpdir/foo.proto:2:1: Import \"bar.proto\" was not found or had errors.\n"
+      "$tmpdir/foo.proto:3:1: Import \"baz.proto\" was not found or had errors.\n");
 }
 
 TEST_F(CommandLineInterfaceTest, RecursiveImportFails) {
@@ -3238,7 +3238,7 @@ TEST_F(CommandLineInterfaceTest, GccFormatErrors) {
       "--proto_path=$tmpdir --error_format=gcc foo.proto");
 
   ExpectErrorText(
-      "foo.proto:2:1: Expected top-level statement (e.g. \"message\").\n");
+      "$tmpdir/foo.proto:2:1: Expected top-level statement (e.g. \"message\").\n");
 }
 
 TEST_F(CommandLineInterfaceTest, MsvsFormatErrors) {
