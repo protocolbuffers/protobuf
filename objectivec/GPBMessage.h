@@ -12,12 +12,10 @@
 #import "GPBCodedOutputStream.h"
 #import "GPBDescriptor.h"
 #import "GPBExtensionRegistry.h"
-#import "GPBUnknownFieldSet.h"
 #import "GPBUnknownFields.h"
 
 @class GPBCodedInputStream;
 @class GPBCodedOutputStream;
-@class GPBUnknownFieldSet;
 @class GPBUnknownFields;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -71,13 +69,6 @@ CF_EXTERN_C_END
 // If you add an instance method/property to this class that may conflict with
 // fields declared in protos, you need to update objective_helpers.cc. The main
 // cases are methods that take no arguments, or setFoo:/hasFoo: type methods.
-
-/**
- * The set of unknown fields for this message.
- **/
-@property(nonatomic, copy, nullable) GPBUnknownFieldSet *unknownFields __attribute__((
-    deprecated("Use GPBUnknownFields and the -initFromMessage: initializer and "
-               "mergeUnknownFields:extensionRegistry:error: to add the data back to a message.")));
 
 /**
  * Whether the message, along with all submessages, have the required fields

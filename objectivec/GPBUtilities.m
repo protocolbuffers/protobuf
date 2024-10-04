@@ -18,7 +18,6 @@
 #import "GPBMessage.h"
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBUnknownField.h"
-#import "GPBUnknownFieldSet.h"
 #import "GPBUnknownField_PackagePrivate.h"
 #import "GPBUnknownFields.h"
 #import "GPBUtilities.h"
@@ -2004,13 +2003,6 @@ static void AppendTextFormatForUnknownFields(GPBUnknownFields *ufs, NSMutableStr
           [toStr appendFormat:@"%@}\n", lineIndent];
         }
       } break;
-      case GPBUnknownFieldTypeLegacy:
-#if defined(DEBUG) && DEBUG
-        NSCAssert(
-            NO,
-            @"Internal error: Shouldn't have gotten a legacy field type in the unknown fields.");
-#endif
-        break;
     }
   }
   [subIndent release];
@@ -2054,45 +2046,6 @@ NSString *GPBTextFormatForMessage(GPBMessage *message, NSString *lineIndent) {
   NSMutableString *buildString = [NSMutableString string];
   AppendTextFormatForMessage(message, buildString, lineIndent);
   return buildString;
-}
-
-NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet *unknownSet, NSString *lineIndent) {
-  if (unknownSet == nil) return @"";
-  if (lineIndent == nil) lineIndent = @"";
-
-  NSMutableString *result = [NSMutableString string];
-  for (GPBUnknownField *field in [unknownSet sortedFields]) {
-    int32_t fieldNumber = [field number];
-
-#define PRINT_LOOP(PROPNAME, CTYPE, FORMAT)                                                    \
-  [field.PROPNAME                                                                              \
-      enumerateValuesWithBlock:^(CTYPE value, __unused NSUInteger idx, __unused BOOL * stop) { \
-        [result appendFormat:@"%@%d: " FORMAT "\n", lineIndent, fieldNumber, value];           \
-      }];
-
-    PRINT_LOOP(varintList, uint64_t, "%llu");
-    PRINT_LOOP(fixed32List, uint32_t, "0x%X");
-    PRINT_LOOP(fixed64List, uint64_t, "0x%llX");
-
-#undef PRINT_LOOP
-
-    // NOTE: C++ version of TextFormat tries to parse this as a message
-    // and print that if it succeeds.
-    for (NSData *data in field.lengthDelimitedList) {
-      [result appendFormat:@"%@%d: ", lineIndent, fieldNumber];
-      AppendBufferAsString(data, result);
-      [result appendString:@"\n"];
-    }
-
-    for (GPBUnknownFieldSet *subUnknownSet in field.groupList) {
-      [result appendFormat:@"%@%d: {\n", lineIndent, fieldNumber];
-      NSString *subIndent = [lineIndent stringByAppendingString:@"  "];
-      NSString *subUnknownSetStr = GPBTextFormatForUnknownFieldSet(subUnknownSet, subIndent);
-      [result appendString:subUnknownSetStr];
-      [result appendFormat:@"%@}\n", lineIndent];
-    }
-  }
-  return result;
 }
 
 // Helpers to decode a varint. Not using GPBCodedInputStream version because
