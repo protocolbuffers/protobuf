@@ -346,7 +346,7 @@ inline_sh_binary(
         "conformance_php.php",
     ],
     cmd = """
-        php -d include_path=conformance:src/google/protobuf \\
+        php -d include_path=php/generated:conformance:src/google/protobuf:editions/golden \\
             -d auto_prepend_file=$(rootpath autoload.php) \\
             $(rootpath conformance_php.php)
     """,
@@ -354,6 +354,7 @@ inline_sh_binary(
     deps = [
         ":conformance_php_proto",
         "//:test_messages_proto3_php_proto",
+        "//editions:test_messages_proto3_editions_php_proto",
         "//php:source_files",
     ],
 )
