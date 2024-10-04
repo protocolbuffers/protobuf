@@ -186,7 +186,8 @@ jobs:
           - version: '8.3'
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} MacOS PHP ${{ matrix.version }}
-    runs-on: macos-12
+    # noop
+    runs-on: macos-13
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
