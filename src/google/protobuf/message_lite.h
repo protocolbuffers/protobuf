@@ -77,6 +77,10 @@ class MessageTableTester;
 
 namespace internal {
 
+namespace v2 {
+class TableDriven;
+}  // namespace v2
+
 class MessageCreator {
  public:
   using Func = void* (*)(const void*, void*, Arena*);
@@ -987,6 +991,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
   friend class internal::RustMapHelper;
+  friend class internal::v2::TableDriven;
   friend internal::MessageCreator;
 
   template <typename Type>
