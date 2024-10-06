@@ -33,6 +33,7 @@
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
@@ -160,6 +161,17 @@ PROTOBUF_NOINLINE const std::string& NameOfDenseEnumSlow(
     delete[] new_cache;
     return *old_cache[v - deci->min_val];
   }
+}
+
+bool IsMatchingCType(const FieldDescriptor* field, int ctype) {
+  switch (field->cpp_string_type()) {
+    case FieldDescriptor::CppStringType::kCord:
+      return ctype == FieldOptions::CORD;
+    case FieldDescriptor::CppStringType::kView:
+    case FieldDescriptor::CppStringType::kString:
+      return ctype == FieldOptions::STRING;
+  }
+  internal::Unreachable();
 }
 
 }  // namespace internal
@@ -2669,8 +2681,7 @@ const void* Reflection::GetRawRepeatedField(const Message& message,
     ReportReflectionUsageTypeError(descriptor_, field, "GetRawRepeatedField",
                                    cpptype);
   if (ctype >= 0)
-    ABSL_CHECK_EQ(internal::cpp::EffectiveStringCType(field), ctype)
-        << "subtype mismatch";
+    ABSL_CHECK(IsMatchingCType(field, ctype)) << "subtype mismatch";
   if (desc != nullptr)
     ABSL_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
   if (field->is_extension()) {
