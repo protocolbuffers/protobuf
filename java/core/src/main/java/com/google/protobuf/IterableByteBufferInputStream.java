@@ -61,11 +61,13 @@ class IterableByteBufferInputStream extends InputStream {
   }
 
   private boolean getNextByteBuffer() {
-    currentIndex++;
-    if (!iterator.hasNext()) {
-      return false;
-    }
-    currentByteBuffer = iterator.next();
+    do {
+      currentIndex++;
+      if (!iterator.hasNext()) {
+        return false;
+      }
+      currentByteBuffer = iterator.next();
+    } while (!currentByteBuffer.hasRemaining());
     currentByteBufferPos = currentByteBuffer.position();
     if (currentByteBuffer.hasArray()) {
       hasArray = true;
