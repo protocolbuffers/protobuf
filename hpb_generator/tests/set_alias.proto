@@ -17,3 +17,7 @@ message Parent {
   optional int32 x = 1;
   optional Child child = 2;
 }
+
+message ParentWithRepeated {
+  repeated Child children = 1;
+}

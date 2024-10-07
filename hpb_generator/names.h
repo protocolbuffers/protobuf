@@ -40,6 +40,7 @@ std::string MessageBaseType(const protobuf::FieldDescriptor* field,
 // signatures.
 std::string MessagePtrConstType(const protobuf::FieldDescriptor* field,
                                 bool is_const);
+std::string MessageWithoutAddendum(const protobuf::FieldDescriptor* field);
 std::string MessageCProxyType(const protobuf::FieldDescriptor* field,
                               bool is_const);
 std::string MessageProxyType(const protobuf::FieldDescriptor* field,

@@ -161,6 +161,12 @@ std::string MessagePtrConstType(const protobuf::FieldDescriptor* field,
          QualifiedClassName(field->message_type()) + ">";
 }
 
+std::string MessageWithoutAddendum(const protobuf::FieldDescriptor* field) {
+  ABSL_DCHECK(field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE);
+  auto desc = field->message_type();
+  return absl::StrCat(Namespace(desc->file()->package()), "_", ClassName(desc));
+}
+
 std::string MessageCProxyType(const protobuf::FieldDescriptor* field,
                               bool is_const) {
   ABSL_DCHECK(field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE);
