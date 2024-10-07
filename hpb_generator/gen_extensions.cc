@@ -10,6 +10,7 @@
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/names.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google::protobuf::hpb_generator {
 
@@ -32,30 +33,38 @@ std::string ContainingTypeName(const protobuf::FieldDescriptor* ext) {
 }
 
 void WriteExtensionIdentifierHeader(const protobuf::FieldDescriptor* ext,
-                                    Output& output) {
+                                    io::Printer& printer) {
   std::string mini_table_name =
       absl::StrCat(ExtensionIdentifierBase(ext), "_", ext->name(), "_ext");
   if (ext->extension_scope()) {
-    output(
+    printer.Emit(
+        {{"containing_type", ContainingTypeName(ext)},
+         {"cpp_type", CppTypeParameterName(ext)},
+         {"ext_name", ext->name()}},
         R"cc(
-          static const ::hpb::internal::ExtensionIdentifier<$0, $1> $2;
-        )cc",
-        ContainingTypeName(ext), CppTypeParameterName(ext), ext->name());
+          ystatic const ::hpb::internal::ExtensionIdentifier<$containing_type$,
+                                                             $cpp_type$>
+              $ext_name$;
+        )cc");
   } else {
-    output(
+    printer.Emit(
+        {{"containing_type", ContainingTypeName(ext)},
+         {"cpp_type", CppTypeParameterName(ext)},
+         {"ext_name", ext->name()}},
         R"cc(
-          extern const ::hpb::internal::ExtensionIdentifier<$0, $1> $2;
-        )cc",
-        ContainingTypeName(ext), CppTypeParameterName(ext), ext->name());
+          yextern const ::hpb::internal::ExtensionIdentifier<$containing_type$,
+                                                             $cpp_type$>
+              $ext_name$;
+        )cc");
   }
 }
 
 void WriteExtensionIdentifiersHeader(
     const std::vector<const protobuf::FieldDescriptor*>& extensions,
-    Output& output) {
+    io::Printer& printer) {
   for (const auto* ext : extensions) {
     if (!ext->extension_scope()) {
-      WriteExtensionIdentifierHeader(ext, output);
+      WriteExtensionIdentifierHeader(ext, printer);
     }
   }
 }
