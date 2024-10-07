@@ -1,7 +1,10 @@
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
 cc_library(
     name = "kotlin",
     srcs = ["generator.cc"],
     hdrs = ["generator.h"],
+    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
@@ -31,6 +34,7 @@ cc_library(
         "file.h",
         "message.h",
     ],
+    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
