@@ -101,8 +101,8 @@ kt_jvm_library(
     deps = [
         ":bytestring_lib",
         "//java/lite",
-        "@maven//:com_google_truth_truth",
-        "@maven//:junit_junit",
+        "@protobuf_maven//:com_google_truth_truth",
+        "@protobuf_maven//:junit_junit",
         "@rules_kotlin//kotlin/compiler:kotlin-test",
     ],
 )
@@ -136,9 +136,9 @@ kt_jvm_library(
         ":example_extensible_message_java_proto",
         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
         ":shared_runtime",
-        "@maven//:com_google_guava_guava_testlib",
-        "@maven//:com_google_truth_truth",
-        "@maven//:junit_junit",
+        "@protobuf_maven//:com_google_guava_guava_testlib",
+        "@protobuf_maven//:com_google_truth_truth",
+        "@protobuf_maven//:junit_junit",
         "@rules_kotlin//kotlin/compiler:kotlin-test",
     ],
 )
@@ -162,8 +162,8 @@ kt_jvm_library(
         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
         ":shared_runtime",
         "//java/core",
-        "@maven//:com_google_truth_truth",
-        "@maven//:junit_junit",
+        "@protobuf_maven//:com_google_truth_truth",
+        "@protobuf_maven//:junit_junit",
         "@rules_kotlin//kotlin/compiler:kotlin-test",
     ],
 )
@@ -274,8 +274,8 @@ kt_jvm_library(
     deps = [
         ":kotlin_unittest",
         "//java/core:test_util",
-        "@maven//:com_google_truth_truth",
-        "@maven//:junit_junit",
+        "@protobuf_maven//:com_google_truth_truth",
+        "@protobuf_maven//:junit_junit",
         "@rules_kotlin//kotlin/compiler:kotlin-reflect",
     ],
 )
@@ -292,8 +292,8 @@ kt_jvm_library(
     deps = [
         ":kotlin_proto3_unittest",
         "//java/core:test_util",
-        "@maven//:com_google_truth_truth",
-        "@maven//:junit_junit",
+        "@protobuf_maven//:com_google_truth_truth",
+        "@protobuf_maven//:junit_junit",
     ],
 )
 
