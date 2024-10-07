@@ -523,6 +523,7 @@ inline PROTOBUF_NDEBUG_INLINE void ArenaStringPtr::InternalSwap(
 
 inline void ArenaStringPtr::ClearNonDefaultToEmpty() {
   // Unconditionally mask away the tag.
+  ABSL_DCHECK(!tagged_ptr_.IsDefault());
   tagged_ptr_.Get()->clear();
 }
 
