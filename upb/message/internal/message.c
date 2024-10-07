@@ -17,9 +17,29 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-const float kUpb_FltInfinity = (float)(1.0 / 0.0);
-const double kUpb_Infinity = 1.0 / 0.0;
-const double kUpb_NaN = 0.0 / 0.0;
+const float kUpb_FltInfinity = INFINITY;
+const double kUpb_Infinity = INFINITY;
+
+// The latest win32 SDKs have an invalid definition of NAN.
+// https://developercommunity.visualstudio.com/t/NAN-is-no-longer-compile-time-constant-i/10688907
+//
+// Unfortunately, the `0.0 / 0.0` workaround doesn't work in Clang under C23, so
+// try __builtin_nan first, if that exists.
+#ifdef _WIN32
+#ifdef __has_builtin
+#if __has_builtin(__builtin_nan)
+#define UPB_NAN __builtin_nan("0")
+#endif
+#endif
+#ifndef UPB_NAN
+#define UPB_NAN 0.0 / 0.0
+#endif
+#else
+// For !_WIN32, assume math.h works.
+#define UPB_NAN NAN
+#endif
+
+const double kUpb_NaN = UPB_NAN;
 
 bool UPB_PRIVATE(_upb_Message_Realloc)(struct upb_Message* msg, size_t need,
                                        upb_Arena* a) {
