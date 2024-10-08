@@ -110,7 +110,7 @@ jobs:
         bazel-cache: java_linux/11
         bash: |
           set -ex
-          bazel build //java:release
+          bazel build //java:release $BAZEL_FLAGS
           mvn install:install-file -Dfile=java/bom/pom.xml -DpomFile=java/bom/pom.xml
           mvn install:install-file -Dfile=java/pom.xml -DpomFile=java/pom.xml
           mvn install:install-file -Dfile=bazel-bin/java/core/core_mvn-project.jar -DpomFile=bazel-bin/java/core/core_mvn-pom.xml
