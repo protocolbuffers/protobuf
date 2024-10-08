@@ -189,7 +189,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   Value<TypeHandler>* Add() {
-    if (std::is_same<Value<TypeHandler>, std::string>{}) {
+    if PROTOBUF_IF_CONSTEXPR (std::is_same<Value<TypeHandler>, std::string>{}) {
       return cast<TypeHandler>(AddString());
     }
     return cast<TypeHandler>(AddMessageLite(TypeHandler::GetNewFunc()));
@@ -272,13 +272,12 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename T>
   void MergeFrom(const RepeatedPtrFieldBase& from) {
     static_assert(std::is_base_of<MessageLite, T>::value, "");
-#ifdef __cpp_if_constexpr
-    if constexpr (!std::is_base_of<Message, T>::value) {
+    if PROTOBUF_IF_CONSTEXPR (!std::is_base_of<Message, T>::value) {
       // For LITE objects we use the generic MergeFrom to save on binary size.
-      return MergeFrom<MessageLite>(from);
+      MergeFrom<MessageLite>(from);
+    } else {
+      MergeFromConcreteMessage(from, Arena::CopyConstruct<T>);
     }
-#endif
-    MergeFromConcreteMessage(from, Arena::CopyConstruct<T>);
   }
 
   inline void InternalSwap(RepeatedPtrFieldBase* PROTOBUF_RESTRICT rhs) {
@@ -824,17 +823,13 @@ class GenericTypeHandler {
   }
   static inline void Delete(Type* value, Arena* arena) {
     if (arena != nullptr) return;
-#ifdef __cpp_if_constexpr
-    if constexpr (std::is_base_of<MessageLite, Type>::value) {
+    if PROTOBUF_IF_CONSTEXPR (std::is_base_of<MessageLite, Type>::value) {
       // Using virtual destructor to reduce generated code size that would have
       // happened otherwise due to inlined `~Type()`.
       InternalOutOfLineDeleteMessageLite(value);
     } else {
       delete value;
     }
-#else
-    delete value;
-#endif
   }
   static inline void Clear(Type* value) { value->Clear(); }
   static inline size_t SpaceUsedLong(const Type& value) {
@@ -1245,11 +1240,7 @@ template <typename Element>
 RepeatedPtrField<Element>::~RepeatedPtrField() {
   StaticValidityCheck();
   if (!NeedsDestroy()) return;
-#ifdef __cpp_if_constexpr
-  if constexpr (std::is_base_of<MessageLite, Element>::value) {
-#else
-  if (std::is_base_of<MessageLite, Element>::value) {
-#endif
+  if PROTOBUF_IF_CONSTEXPR (std::is_base_of<MessageLite, Element>::value) {
     DestroyProtos();
   } else {
     Destroy<TypeHandler>();
@@ -1339,9 +1330,10 @@ inline void RepeatedPtrField<Element>::Add(Element&& value) {
 template <typename Element>
 template <typename Iter>
 inline void RepeatedPtrField<Element>::Add(Iter begin, Iter end) {
-  if (std::is_base_of<
-          std::forward_iterator_tag,
-          typename std::iterator_traits<Iter>::iterator_category>::value) {
+  if PROTOBUF_IF_CONSTEXPR (std::is_base_of<
+                                std::forward_iterator_tag,
+                                typename std::iterator_traits<
+                                    Iter>::iterator_category>::value) {
     int reserve = static_cast<int>(std::distance(begin, end));
     Reserve(size() + reserve);
   }

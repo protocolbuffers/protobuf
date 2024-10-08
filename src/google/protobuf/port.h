@@ -405,6 +405,12 @@ constexpr bool EnableCustomNewFor() {
 
 constexpr bool IsOss() { return true; }
 
+#if __cpp_if_constexpr
+#define PROTOBUF_IF_CONSTEXPR constexpr
+#else
+#define PROTOBUF_IF_CONSTEXPR
+#endif
+
 // Counter library for debugging internal protobuf logic.
 // It allows instrumenting code that has different options (eg fast vs slow
 // path) to get visibility into how much we are hitting each path.
