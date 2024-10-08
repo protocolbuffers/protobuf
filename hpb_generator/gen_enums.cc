@@ -111,12 +111,5 @@ void WriteEnumDeclarations(
   }
 }
 
-void WriteHeaderEnumForwardDecls(
-    std::vector<const protobuf::EnumDescriptor*>& enums, Output& output) {
-  for (const auto* enumdesc : enums) {
-    output("enum $0 : int;\n", EnumTypeName(enumdesc));
-  }
-}
-
 }  // namespace protobuf
 }  // namespace google::hpb_generator
