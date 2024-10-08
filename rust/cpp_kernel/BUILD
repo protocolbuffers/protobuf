@@ -15,7 +15,6 @@ cc_library(
     hdrs = [
         "compare.h",
         "debug.h",
-        "map.h",
         "rust_alloc_for_cpp_api.h",
         "serialized_data.h",
         "strings.h",
