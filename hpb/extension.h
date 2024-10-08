@@ -25,6 +25,14 @@ class ExtensionRegistry;
 
 namespace internal {
 
+absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
+                           const upb_MiniTableExtension* ext,
+                           upb_Message* extension, upb_Arena* extension_arena);
+
+absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
+                          const upb_MiniTableExtension* ext,
+                          const upb_Message* extension);
+
 class ExtensionMiniTableProvider {
  public:
   constexpr explicit ExtensionMiniTableProvider(
@@ -126,6 +134,75 @@ template <typename T, typename Extension,
 void ClearExtension(
     T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id) {
   ClearExtension(Ptr(message), id);
+}
+
+template <typename T, typename Extension,
+          typename = hpb::internal::EnableIfHpbClass<T>,
+          typename = hpb::internal::EnableIfMutableProto<T>>
+absl::Status SetExtension(
+    Ptr<T> message,
+    const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
+    const Extension& value) {
+  static_assert(!std::is_const_v<T>);
+  auto* message_arena = hpb::interop::upb::GetArena(message);
+  return ::hpb::internal::SetExtension(hpb::interop::upb::GetMessage(message),
+                                       message_arena, id.mini_table_ext(),
+                                       hpb::interop::upb::GetMessage(&value));
+}
+
+template <typename T, typename Extension,
+          typename = hpb::internal::EnableIfHpbClass<T>,
+          typename = hpb::internal::EnableIfMutableProto<T>>
+absl::Status SetExtension(
+    Ptr<T> message,
+    const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
+    Ptr<Extension> value) {
+  static_assert(!std::is_const_v<T>);
+  auto* message_arena = hpb::interop::upb::GetArena(message);
+  return ::hpb::internal::SetExtension(hpb::interop::upb::GetMessage(message),
+                                       message_arena, id.mini_table_ext(),
+                                       hpb::interop::upb::GetMessage(value));
+}
+
+template <typename T, typename Extension,
+          typename = hpb::internal::EnableIfHpbClass<T>,
+          typename = hpb::internal::EnableIfMutableProto<T>>
+absl::Status SetExtension(
+    Ptr<T> message,
+    const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
+    Extension&& value) {
+  Extension ext = std::move(value);
+  static_assert(!std::is_const_v<T>);
+  auto* message_arena = hpb::interop::upb::GetArena(message);
+  auto* extension_arena = hpb::interop::upb::GetArena(&ext);
+  return ::hpb::internal::MoveExtension(hpb::interop::upb::GetMessage(message),
+                                        message_arena, id.mini_table_ext(),
+                                        hpb::interop::upb::GetMessage(&ext),
+                                        extension_arena);
+}
+
+template <typename T, typename Extension,
+          typename = hpb::internal::EnableIfHpbClass<T>>
+absl::Status SetExtension(
+    T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
+    const Extension& value) {
+  return ::hpb::SetExtension(Ptr(message), id, value);
+}
+
+template <typename T, typename Extension,
+          typename = hpb::internal::EnableIfHpbClass<T>>
+absl::Status SetExtension(
+    T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
+    Extension&& value) {
+  return ::hpb::SetExtension(Ptr(message), id, std::forward<Extension>(value));
+}
+
+template <typename T, typename Extension,
+          typename = hpb::internal::EnableIfHpbClass<T>>
+absl::Status SetExtension(
+    T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
+    Ptr<Extension> value) {
+  return ::hpb::SetExtension(Ptr(message), id, value);
 }
 
 }  // namespace hpb
