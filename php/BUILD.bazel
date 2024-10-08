@@ -7,108 +7,12 @@ load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//:protobuf_version.bzl", "PROTOBUF_PHP_VERSION", "PROTOC_VERSION")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("//conformance:defs.bzl", "conformance_test")
+load("//php:internal_generated_files.bzl", "DESCRIPTOR_GENERATED_FILES", "WKT_GENERATED_FILES")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
 
 # We must explicitly classify every checked-in php file because we can't
 # distinguish gencode from hand-written code.  The former must be kept
 # up-to-date though, using our staleness infrastructure.
-
-_WKT_GENERATED_FILES = glob([
-    "src/Google/Protobuf/Any.php",
-    "src/Google/Protobuf/Api.php",
-    "src/Google/Protobuf/BoolValue.php",
-    "src/Google/Protobuf/BytesValue.php",
-    "src/Google/Protobuf/DoubleValue.php",
-    "src/Google/Protobuf/Duration.php",
-    "src/Google/Protobuf/Enum.php",
-    "src/Google/Protobuf/EnumValue.php",
-    "src/Google/Protobuf/Field.php",
-    "src/Google/Protobuf/Field/Cardinality.php",
-    "src/Google/Protobuf/Field/Kind.php",
-    "src/Google/Protobuf/FieldMask.php",
-    "src/Google/Protobuf/FloatValue.php",
-    "src/Google/Protobuf/GPBEmpty.php",
-    "src/Google/Protobuf/Int32Value.php",
-    "src/Google/Protobuf/Int64Value.php",
-    "src/Google/Protobuf/ListValue.php",
-    "src/Google/Protobuf/Method.php",
-    "src/Google/Protobuf/Mixin.php",
-    "src/Google/Protobuf/NullValue.php",
-    "src/Google/Protobuf/Option.php",
-    "src/Google/Protobuf/SourceContext.php",
-    "src/Google/Protobuf/StringValue.php",
-    "src/Google/Protobuf/Struct.php",
-    "src/Google/Protobuf/Syntax.php",
-    "src/Google/Protobuf/Timestamp.php",
-    "src/Google/Protobuf/Type.php",
-    "src/Google/Protobuf/UInt32Value.php",
-    "src/Google/Protobuf/UInt64Value.php",
-    "src/Google/Protobuf/Value.php",
-    "src/GPBMetadata/Google/Protobuf/Any.php",
-    "src/GPBMetadata/Google/Protobuf/Api.php",
-    "src/GPBMetadata/Google/Protobuf/Duration.php",
-    "src/GPBMetadata/Google/Protobuf/FieldMask.php",
-    "src/GPBMetadata/Google/Protobuf/GPBEmpty.php",
-    "src/GPBMetadata/Google/Protobuf/SourceContext.php",
-    "src/GPBMetadata/Google/Protobuf/Struct.php",
-    "src/GPBMetadata/Google/Protobuf/Timestamp.php",
-    "src/GPBMetadata/Google/Protobuf/Type.php",
-    "src/GPBMetadata/Google/Protobuf/Wrappers.php",
-])
-
-_DESCRIPTOR_GENERATED_FILES = [
-    "src/Google/Protobuf/Internal/DescriptorProto.php",
-    "src/Google/Protobuf/Internal/DescriptorProto/ExtensionRange.php",
-    "src/Google/Protobuf/Internal/DescriptorProto/ReservedRange.php",
-    "src/Google/Protobuf/Internal/Edition.php",
-    "src/Google/Protobuf/Internal/EnumDescriptorProto.php",
-    "src/Google/Protobuf/Internal/EnumDescriptorProto/EnumReservedRange.php",
-    "src/Google/Protobuf/Internal/EnumOptions.php",
-    "src/Google/Protobuf/Internal/EnumValueDescriptorProto.php",
-    "src/Google/Protobuf/Internal/EnumValueOptions.php",
-    "src/Google/Protobuf/Internal/ExtensionRangeOptions.php",
-    "src/Google/Protobuf/Internal/ExtensionRangeOptions/Declaration.php",
-    "src/Google/Protobuf/Internal/ExtensionRangeOptions/VerificationState.php",
-    "src/Google/Protobuf/Internal/FeatureSet.php",
-    "src/Google/Protobuf/Internal/FeatureSet/EnumType.php",
-    "src/Google/Protobuf/Internal/FeatureSet/FieldPresence.php",
-    "src/Google/Protobuf/Internal/FeatureSet/JsonFormat.php",
-    "src/Google/Protobuf/Internal/FeatureSet/MessageEncoding.php",
-    "src/Google/Protobuf/Internal/FeatureSet/RepeatedFieldEncoding.php",
-    "src/Google/Protobuf/Internal/FeatureSet/Utf8Validation.php",
-    "src/Google/Protobuf/Internal/FeatureSetDefaults.php",
-    "src/Google/Protobuf/Internal/FeatureSetDefaults/FeatureSetEditionDefault.php",
-    "src/Google/Protobuf/Internal/FieldDescriptorProto.php",
-    "src/Google/Protobuf/Internal/FieldDescriptorProto/Label.php",
-    "src/Google/Protobuf/Internal/FieldDescriptorProto/Type.php",
-    "src/Google/Protobuf/Internal/FieldOptions.php",
-    "src/Google/Protobuf/Internal/FieldOptions/CType.php",
-    "src/Google/Protobuf/Internal/FieldOptions/EditionDefault.php",
-    "src/Google/Protobuf/Internal/FieldOptions/FeatureSupport.php",
-    "src/Google/Protobuf/Internal/FieldOptions/JSType.php",
-    "src/Google/Protobuf/Internal/FieldOptions/OptionRetention.php",
-    "src/Google/Protobuf/Internal/FieldOptions/OptionTargetType.php",
-    "src/Google/Protobuf/Internal/FileDescriptorProto.php",
-    "src/Google/Protobuf/Internal/FileDescriptorSet.php",
-    "src/Google/Protobuf/Internal/FileOptions.php",
-    "src/Google/Protobuf/Internal/FileOptions/OptimizeMode.php",
-    "src/Google/Protobuf/Internal/GeneratedCodeInfo.php",
-    "src/Google/Protobuf/Internal/GeneratedCodeInfo/Annotation.php",
-    "src/Google/Protobuf/Internal/GeneratedCodeInfo/Annotation/Semantic.php",
-    "src/Google/Protobuf/Internal/MessageOptions.php",
-    "src/Google/Protobuf/Internal/MethodDescriptorProto.php",
-    "src/Google/Protobuf/Internal/MethodOptions.php",
-    "src/Google/Protobuf/Internal/MethodOptions/IdempotencyLevel.php",
-    "src/Google/Protobuf/Internal/OneofDescriptorProto.php",
-    "src/Google/Protobuf/Internal/OneofOptions.php",
-    "src/Google/Protobuf/Internal/ServiceDescriptorProto.php",
-    "src/Google/Protobuf/Internal/ServiceOptions.php",
-    "src/Google/Protobuf/Internal/SourceCodeInfo.php",
-    "src/Google/Protobuf/Internal/SourceCodeInfo/Location.php",
-    "src/Google/Protobuf/Internal/UninterpretedOption.php",
-    "src/Google/Protobuf/Internal/UninterpretedOption/NamePart.php",
-    "src/GPBMetadata/Google/Protobuf/Internal/Descriptor.php",
-]
 
 _RUNTIME_SOURCES = [
     "src/Google/Protobuf/Descriptor.php",
@@ -165,7 +69,7 @@ _RUNTIME_SOURCES = [
 filegroup(
     name = "source_files",
     srcs = _RUNTIME_SOURCES +
-           ["generated/" + f for f in _DESCRIPTOR_GENERATED_FILES + _WKT_GENERATED_FILES] + [
+           ["generated/" + f for f in DESCRIPTOR_GENERATED_FILES + WKT_GENERATED_FILES] + [
         "composer.json",
         ":php_ext_source_files",
     ],
@@ -268,7 +172,7 @@ _CHECK_GENCODE = """
 for f in $$(find $(@D) -name "*.php"); do
     local=$$(echo $$f | sed "s:bazel-out.*.bin.php.::g");
     if [[ "$(OUTS)" != *$$local* ]]; then
-        echo "Extra generated file $$local!  Please update the lists in php/BUILD.bazel" && exit 1;
+        echo "Extra generated file $$local!  Please update the lists in php/internal_generated_files.bzl" && exit 1;
     fi
 done
 """
@@ -280,7 +184,7 @@ genrule(
         "//src/google/protobuf:well_known_type_protos",
         "//src/google/protobuf:descriptor_proto_srcs",
     ],
-    outs = ["generated/" + wkt for wkt in _WKT_GENERATED_FILES + _DESCRIPTOR_GENERATED_FILES] + [
+    outs = ["generated/" + wkt for wkt in WKT_GENERATED_FILES + DESCRIPTOR_GENERATED_FILES] + [
         "generated/ext/google/protobuf/wkt.inc",
     ],
     cmd = """
@@ -294,7 +198,8 @@ genrule(
 staleness_test(
     name = "proto_staleness_test",
     outs = glob(
-        ["src/**/*.php"],
+        ["src/**/*.php"] + WKT_GENERATED_FILES + DESCRIPTOR_GENERATED_FILES,
+        allow_empty = True,
         exclude = _RUNTIME_SOURCES,
     ),
     generated_pattern = "generated/%s",
