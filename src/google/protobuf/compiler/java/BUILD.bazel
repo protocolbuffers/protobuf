@@ -35,6 +35,7 @@ cc_library(
     hdrs = [
         "context.h",
         "doc_comment.h",
+        "generator.h",
         "helpers.h",
         "name_resolver.h",
         "names.h",
@@ -48,6 +49,7 @@ cc_library(
         "//src/google/protobuf/compiler/kotlin:__subpackages__",
     ],
     deps = [
+        ":java_features_bootstrap",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf/compiler:code_generator",

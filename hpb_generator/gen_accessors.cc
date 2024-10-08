@@ -181,6 +181,8 @@ void WriteMapFieldAccessors(const protobuf::Descriptor* desc,
         R"cc(
           bool set_$0($1 key, $3 value);
           bool set_$0($1 key, $4 value);
+          bool set_alias_$0($1 key, $3 value);
+          bool set_alias_$0($1 key, $4 value);
           absl::StatusOr<$3> get_$0($1 key);
         )cc",
         resolved_field_name, CppConstType(key), CppConstType(val),
@@ -340,6 +342,28 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
             val->message_type()->full_name()));
     output(
         R"cc(
+          bool $0::set_alias_$1($2 key, $3 value) {
+            $6return $4_$8_set(
+                msg_, $7, ($5*)hpb::interop::upb::GetMessage(value), arena_);
+          }
+        )cc",
+        class_name, resolved_field_name, CppConstType(key),
+        MessagePtrConstType(val, /* is_const */ true), MessageName(message),
+        MessageName(val->message_type()), optional_conversion_code,
+        converted_key_name, upbc_name);
+    output(
+        R"cc(
+          bool $0::set_alias_$1($2 key, $3 value) {
+            $6return $4_$8_set(
+                msg_, $7, ($5*)hpb::interop::upb::GetMessage(value), arena_);
+          }
+        )cc",
+        class_name, resolved_field_name, CppConstType(key),
+        MessagePtrConstType(val, /* is_const */ false), MessageName(message),
+        MessageName(val->message_type()), optional_conversion_code,
+        converted_key_name, upbc_name);
+    output(
+        R"cc(
           absl::StatusOr<$3> $0::get_$1($2 key) {
             $5* msg_value;
             $7bool success = $4_$9_get(msg_, $8, &msg_value);
@@ -462,6 +486,15 @@ void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
               using $0Access::set_$1;
             )cc",
             class_name, resolved_field_name);
+        // only emit set_alias for maps when value is a message
+        if (field->message_type()->FindFieldByNumber(2)->cpp_type() ==
+            protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
+          output(
+              R"cc(
+                using $0Access::set_alias_$1;
+              )cc",
+              class_name, resolved_field_name);
+        }
       }
     } else if (desc->options().map_entry()) {
       // TODO Implement map entry
