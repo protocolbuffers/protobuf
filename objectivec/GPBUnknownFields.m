@@ -18,8 +18,6 @@
 #import "GPBMessage.h"
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBUnknownField.h"
-#import "GPBUnknownFieldSet.h"
-#import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUnknownField_PackagePrivate.h"
 #import "GPBWireFormat.h"
 
@@ -66,11 +64,6 @@ static size_t ComputeSerializeSize(GPBUnknownFields *_Nonnull self) {
         result +=
             (GPBComputeTagSize(fieldNumber) * 2) + ComputeSerializeSize(field->storage_.group);
         break;
-      case GPBUnknownFieldTypeLegacy:
-#if defined(DEBUG) && DEBUG
-        NSCAssert(NO, @"Internal error within the library");
-#endif
-        break;
     }
   }
   return result;
@@ -98,11 +91,6 @@ static void WriteToCoddedOutputStream(GPBUnknownFields *_Nonnull self,
         [output writeRawVarint32:GPBWireFormatMakeTag(fieldNumber, GPBWireFormatStartGroup)];
         WriteToCoddedOutputStream(field->storage_.group, output);
         [output writeRawVarint32:GPBWireFormatMakeTag(fieldNumber, GPBWireFormatEndGroup)];
-        break;
-      case GPBUnknownFieldTypeLegacy:
-#if defined(DEBUG) && DEBUG
-        NSCAssert(NO, @"Internal error within the library");
-#endif
         break;
     }
   }
@@ -326,10 +314,6 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
 }
 
 - (GPBUnknownField *)addCopyOfField:(nonnull GPBUnknownField *)field {
-  if (field->type_ == GPBUnknownFieldTypeLegacy) {
-    [NSException raise:NSInternalInconsistencyException
-                format:@"GPBUnknownField is the wrong type"];
-  }
   GPBUnknownField *result = [field copy];
   [fields_ addObject:result];
   return [result autorelease];
