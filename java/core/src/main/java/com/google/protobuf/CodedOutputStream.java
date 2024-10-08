@@ -1354,7 +1354,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             buffer[position++] = (byte) value;
             break;
           } else {
-            buffer[position++] = (byte) ((value | 0x80) & 0xFF);
+            buffer[position++] = (byte) (value | 0x80);
             value >>>= 7;
           }
         }
@@ -1368,10 +1368,10 @@ public abstract class CodedOutputStream extends ByteOutput {
     public final void writeFixed32NoTag(int value) throws IOException {
       int position = this.position; // Perf: hoist field to register to avoid load/stores.
       try {
-        buffer[position] = (byte) (value & 0xFF);
-        buffer[position + 1] = (byte) ((value >> 8) & 0xFF);
-        buffer[position + 2] = (byte) ((value >> 16) & 0xFF);
-        buffer[position + 3] = (byte) ((value >> 24) & 0xFF);
+        buffer[position] = (byte) value;
+        buffer[position + 1] = (byte) (value >> 8);
+        buffer[position + 2] = (byte) (value >> 16);
+        buffer[position + 3] = (byte) (value >> 24);
       } catch (IndexOutOfBoundsException e) {
         throw new OutOfSpaceException(position, limit, FIXED32_SIZE, e);
       }
@@ -1388,7 +1388,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             UnsafeUtil.putByte(buffer, position++, (byte) value);
             break;
           } else {
-            UnsafeUtil.putByte(buffer, position++, (byte) (((int) value | 0x80) & 0xFF));
+            UnsafeUtil.putByte(buffer, position++, (byte) ((int) value | 0x80));
             value >>>= 7;
           }
         }
@@ -1399,7 +1399,7 @@ public abstract class CodedOutputStream extends ByteOutput {
               buffer[position++] = (byte) value;
               break;
             } else {
-              buffer[position++] = (byte) (((int) value | 0x80) & 0xFF);
+              buffer[position++] = (byte) ((int) value | 0x80);
               value >>>= 7;
             }
           }
@@ -1414,14 +1414,14 @@ public abstract class CodedOutputStream extends ByteOutput {
     public final void writeFixed64NoTag(long value) throws IOException {
       int position = this.position; // Perf: hoist field to register to avoid load/stores.
       try {
-        buffer[position] = (byte) ((int) (value) & 0xFF);
-        buffer[position + 1] = (byte) ((int) (value >> 8) & 0xFF);
-        buffer[position + 2] = (byte) ((int) (value >> 16) & 0xFF);
-        buffer[position + 3] = (byte) ((int) (value >> 24) & 0xFF);
-        buffer[position + 4] = (byte) ((int) (value >> 32) & 0xFF);
-        buffer[position + 5] = (byte) ((int) (value >> 40) & 0xFF);
-        buffer[position + 6] = (byte) ((int) (value >> 48) & 0xFF);
-        buffer[position + 7] = (byte) ((int) (value >> 56) & 0xFF);
+        buffer[position] = (byte) ((int) value);
+        buffer[position + 1] = (byte) ((int) (value >> 8));
+        buffer[position + 2] = (byte) ((int) (value >> 16));
+        buffer[position + 3] = (byte) ((int) (value >> 24));
+        buffer[position + 4] = (byte) ((int) (value >> 32));
+        buffer[position + 5] = (byte) ((int) (value >> 40));
+        buffer[position + 6] = (byte) ((int) (value >> 48));
+        buffer[position + 7] = (byte) ((int) (value >> 56));
       } catch (IndexOutOfBoundsException e) {
         throw new OutOfSpaceException(position, limit, FIXED64_SIZE, e);
       }
@@ -1715,7 +1715,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             buffer.put((byte) value);
             return;
           } else {
-            buffer.put((byte) ((value | 0x80) & 0xFF));
+            buffer.put((byte) (value | 0x80));
             value >>>= 7;
           }
         }
@@ -1741,7 +1741,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             buffer.put((byte) value);
             return;
           } else {
-            buffer.put((byte) (((int) value | 0x80) & 0xFF));
+            buffer.put((byte) ((int) value | 0x80));
             value >>>= 7;
           }
         }
@@ -2046,7 +2046,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             UnsafeUtil.putByte(position++, (byte) value);
             break;
           } else {
-            UnsafeUtil.putByte(position++, (byte) ((value | 0x80) & 0xFF));
+            UnsafeUtil.putByte(position++, (byte) (value | 0x80));
             value >>>= 7;
           }
         }
@@ -2060,7 +2060,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             UnsafeUtil.putByte(position++, (byte) value);
             break;
           } else {
-            UnsafeUtil.putByte(position++, (byte) ((value | 0x80) & 0xFF));
+            UnsafeUtil.putByte(position++, (byte) (value | 0x80));
             value >>>= 7;
           }
         }
@@ -2088,7 +2088,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             UnsafeUtil.putByte(position++, (byte) value);
             break;
           } else {
-            UnsafeUtil.putByte(position++, (byte) (((int) value | 0x80) & 0xFF));
+            UnsafeUtil.putByte(position++, (byte) ((int) value | 0x80));
             value >>>= 7;
           }
         }
@@ -2101,7 +2101,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             UnsafeUtil.putByte(position++, (byte) value);
             break;
           } else {
-            UnsafeUtil.putByte(position++, (byte) (((int) value | 0x80) & 0xFF));
+            UnsafeUtil.putByte(position++, (byte) ((int) value | 0x80));
             value >>>= 7;
           }
         }
@@ -2306,7 +2306,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             UnsafeUtil.putByte(buffer, position++, (byte) value);
             break;
           } else {
-            UnsafeUtil.putByte(buffer, position++, (byte) ((value | 0x80) & 0xFF));
+            UnsafeUtil.putByte(buffer, position++, (byte) (value | 0x80));
             value >>>= 7;
           }
         }
@@ -2319,7 +2319,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             totalBytesWritten++;
             return;
           } else {
-            buffer[position++] = (byte) ((value | 0x80) & 0xFF);
+            buffer[position++] = (byte) (value | 0x80);
             totalBytesWritten++;
             value >>>= 7;
           }
@@ -2339,7 +2339,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             UnsafeUtil.putByte(buffer, position++, (byte) value);
             break;
           } else {
-            UnsafeUtil.putByte(buffer, position++, (byte) (((int) value | 0x80) & 0xFF));
+            UnsafeUtil.putByte(buffer, position++, (byte) ((int) value | 0x80));
             value >>>= 7;
           }
         }
@@ -2352,7 +2352,7 @@ public abstract class CodedOutputStream extends ByteOutput {
             totalBytesWritten++;
             return;
           } else {
-            buffer[position++] = (byte) (((int) value | 0x80) & 0xFF);
+            buffer[position++] = (byte) ((int) value | 0x80);
             totalBytesWritten++;
             value >>>= 7;
           }
@@ -2366,10 +2366,10 @@ public abstract class CodedOutputStream extends ByteOutput {
      */
     final void bufferFixed32NoTag(int value) {
       int position = this.position; // Perf: hoist field to register to avoid load/stores.
-      buffer[position++] = (byte) (value & 0xFF);
-      buffer[position++] = (byte) ((value >> 8) & 0xFF);
-      buffer[position++] = (byte) ((value >> 16) & 0xFF);
-      buffer[position++] = (byte) ((value >> 24) & 0xFF);
+      buffer[position++] = (byte) value;
+      buffer[position++] = (byte) (value >> 8);
+      buffer[position++] = (byte) (value >> 16);
+      buffer[position++] = (byte) (value >> 24);
       this.position = position;
       totalBytesWritten += FIXED32_SIZE;
     }
@@ -2380,14 +2380,14 @@ public abstract class CodedOutputStream extends ByteOutput {
      */
     final void bufferFixed64NoTag(long value) {
       int position = this.position; // Perf: hoist field to register to avoid load/stores.
-      buffer[position++] = (byte) (value & 0xFF);
-      buffer[position++] = (byte) ((value >> 8) & 0xFF);
-      buffer[position++] = (byte) ((value >> 16) & 0xFF);
-      buffer[position++] = (byte) ((value >> 24) & 0xFF);
-      buffer[position++] = (byte) ((int) (value >> 32) & 0xFF);
-      buffer[position++] = (byte) ((int) (value >> 40) & 0xFF);
-      buffer[position++] = (byte) ((int) (value >> 48) & 0xFF);
-      buffer[position++] = (byte) ((int) (value >> 56) & 0xFF);
+      buffer[position++] = (byte) value;
+      buffer[position++] = (byte) (value >> 8);
+      buffer[position++] = (byte) (value >> 16);
+      buffer[position++] = (byte) (value >> 24);
+      buffer[position++] = (byte) ((int) (value >> 32));
+      buffer[position++] = (byte) ((int) (value >> 40));
+      buffer[position++] = (byte) ((int) (value >> 48));
+      buffer[position++] = (byte) ((int) (value >> 56));
       this.position = position;
       totalBytesWritten += FIXED64_SIZE;
     }
