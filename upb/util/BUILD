@@ -31,6 +31,7 @@ proto_library(
         "def_to_proto_regular_import_test.proto",
         "def_to_proto_test.proto",
     ],
+    has_services = True,
 )
 
 upb_c_proto_library(
