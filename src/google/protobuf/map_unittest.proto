@@ -7,14 +7,12 @@
 
 syntax = "proto3";
 
-option cc_enable_arenas = true;
-
-import "google/protobuf/unittest.proto";
-
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
 // In map_test_util.h we do "using namespace unittest = protobuf_unittest".
 package protobuf_unittest;
+
+import "google/protobuf/unittest.proto";
 
 // Tests maps.
 message TestMap {
@@ -105,6 +103,7 @@ message MessageContainingEnumCalledType {
   enum Type {
     TYPE_FOO = 0;
   }
+
   map<string, MessageContainingEnumCalledType> type = 1;
 }
 
