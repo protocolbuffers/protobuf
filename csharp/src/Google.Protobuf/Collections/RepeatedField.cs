@@ -14,6 +14,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security;
+#if NET5_0_OR_GREATER
+using System.Runtime.CompilerServices;
+#endif
 
 namespace Google.Protobuf.Collections
 {
@@ -355,7 +358,7 @@ namespace Google.Protobuf.Collections
             if (index == -1)
             {
                 return false;
-            }            
+            }
             Array.Copy(array, index + 1, array, index, count - index - 1);
             count--;
             array[count] = default;
@@ -463,7 +466,7 @@ namespace Google.Protobuf.Collections
         ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
         public override bool Equals(object obj) => Equals(obj as RepeatedField<T>);
-        
+
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
         /// </summary>
@@ -476,7 +479,7 @@ namespace Google.Protobuf.Collections
         /// Returns a hash code for this instance.
         /// </summary>
         /// <returns>
-        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.
         /// </returns>
         public override int GetHashCode()
         {
@@ -611,6 +614,39 @@ namespace Google.Protobuf.Collections
             }
         }
 
+        [SecuritySafeCritical]
+        internal Span<T> AsSpan() => array.AsSpan(0, count);
+
+        internal void SetCount(int targetCount)
+        {
+            if (targetCount < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(targetCount),
+                    targetCount,
+                    "Non-negative number required.");
+            }
+
+            if (targetCount > Capacity)
+            {
+                EnsureSize(targetCount);
+            }
+#if NET5_0_OR_GREATER
+            else if (targetCount < count && RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            {
+                // Only reference types need to be cleared to allow GC to collect them.
+                Array.Clear(array, targetCount, count - targetCount);
+            }
+#else
+            else if (targetCount < count)
+            {
+                Array.Clear(array, targetCount, count - targetCount);
+            }
+#endif
+
+            count = targetCount;
+        }
+
         #region Explicit interface implementation for IList and ICollection.
         bool IList.IsFixedSize => false;
 
@@ -645,7 +681,7 @@ namespace Google.Protobuf.Collections
                 Remove(t);
             }
         }
-        #endregion        
+        #endregion
 
         private sealed class RepeatedFieldDebugView
         {
