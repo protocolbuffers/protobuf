@@ -713,16 +713,6 @@ absl::Cord MessageLite::SerializePartialAsCord() const {
 
 namespace internal {
 
-MessageLite* NewFromPrototypeHelper(const MessageLite* prototype,
-                                    Arena* arena) {
-  return prototype->New(arena);
-}
-template <>
-void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
-                                            MessageLite* to) {
-  to->CheckTypeAndMergeFrom(from);
-}
-
 // Non-inline variants of std::string specializations for
 // various InternalMetadata routines.
 template <>
