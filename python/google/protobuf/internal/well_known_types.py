@@ -26,7 +26,7 @@ from typing import Union
 
 FieldMask = field_mask.FieldMask
 
-_TIMESTAMPFOMAT = '%Y-%m-%dT%H:%M:%S'
+_TIMESTAMPFORMAT = '%Y-%m-%dT%H:%M:%S'
 _NANOS_PER_SECOND = 1000000000
 _NANOS_PER_MILLISECOND = 1000000
 _NANOS_PER_MICROSECOND = 1000
@@ -142,7 +142,7 @@ class Timestamp(object):
       raise ValueError(
           'time data \'{0}\' does not match format \'%Y-%m-%dT%H:%M:%S\', '
           'lowercase \'t\' is not accepted'.format(second_value))
-    date_object = datetime.datetime.strptime(second_value, _TIMESTAMPFOMAT)
+    date_object = datetime.datetime.strptime(second_value, _TIMESTAMPFORMAT)
     td = date_object - datetime.datetime(1970, 1, 1)
     seconds = td.seconds + td.days * _SECONDS_PER_DAY
     if len(nano_value) > 9:
