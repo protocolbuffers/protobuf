@@ -521,3 +521,8 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://userver.tech/
     *   Extensions: 1240-1249
+
+1.  protoc-gen-default / protoc-gen-env (confpb)
+
+    *   Website: https://github.com/MarnixBouhuis/confpb
+    *   Extensions: 1250-1251

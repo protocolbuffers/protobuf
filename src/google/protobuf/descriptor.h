@@ -2973,7 +2973,13 @@ PROTOBUF_EXPORT bool IsLazilyInitializedFile(absl::string_view filename);
 // Returns true during internal calls that should avoid calling trackers.  These
 // calls can be particularly dangerous during build steps like feature
 // resolution, where a MergeFrom call can wind up in a deadlock.
-PROTOBUF_EXPORT bool IsTrackingEnabled();
+PROTOBUF_EXPORT inline bool& IsTrackingEnabledVar() {
+  static PROTOBUF_THREAD_LOCAL bool is_tracking_enabled = true;
+  return is_tracking_enabled;
+}
+PROTOBUF_EXPORT inline bool IsTrackingEnabled() {
+  return ABSL_PREDICT_TRUE(IsTrackingEnabledVar());
+}
 
 template <typename F>
 auto VisitDescriptorsInFileOrder(const Descriptor* desc,

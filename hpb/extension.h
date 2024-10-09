@@ -16,6 +16,7 @@
 #include "google/protobuf/hpb/internal/message_lock.h"
 #include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/ptr.h"
+#include "google/protobuf/hpb/status.h"
 #include "upb/mem/arena.hpp"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
@@ -203,6 +204,37 @@ absl::Status SetExtension(
     T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id,
     Ptr<Extension> value) {
   return ::hpb::SetExtension(Ptr(message), id, value);
+}
+
+template <typename T, typename Extendee, typename Extension,
+          typename = hpb::internal::EnableIfHpbClass<T>>
+absl::StatusOr<Ptr<const Extension>> GetExtension(
+    Ptr<T> message,
+    const ::hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
+  upb_MessageValue value;
+  const bool ok = ::hpb::internal::GetOrPromoteExtension(
+      hpb::interop::upb::GetMessage(message), id.mini_table_ext(),
+      hpb::interop::upb::GetArena(message), &value);
+  if (!ok) {
+    return ExtensionNotFoundError(
+        upb_MiniTableExtension_Number(id.mini_table_ext()));
+  }
+  return Ptr<const Extension>(::hpb::interop::upb::MakeCHandle<Extension>(
+      (upb_Message*)value.msg_val, hpb::interop::upb::GetArena(message)));
+}
+
+template <typename T, typename Extendee, typename Extension,
+          typename = hpb::internal::EnableIfHpbClass<T>>
+absl::StatusOr<Ptr<const Extension>> GetExtension(
+    const T* message,
+    const ::hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
+  return GetExtension(Ptr(message), id);
+}
+
+template <typename T, typename Extension>
+constexpr uint32_t ExtensionNumber(
+    ::hpb::internal::ExtensionIdentifier<T, Extension> id) {
+  return ::hpb::internal::PrivateAccess::GetExtensionNumber(id);
 }
 
 }  // namespace hpb

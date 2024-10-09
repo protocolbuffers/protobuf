@@ -182,8 +182,7 @@ public class JsonFormat {
      * Creates a new {@link Printer} that will also print default-valued fields if their
      * FieldDescriptors are found in the supplied set. Empty repeated fields and map fields will be
      * printed as well, if they match. The new Printer clones all other configurations from the
-     * current {@link Printer}. Call includingDefaultValueFields() with no args to unconditionally
-     * output all fields.
+     * current {@link Printer}.
      *
      * <p>Note that non-repeated message fields or fields in a oneof are not honored if provided
      * here.

@@ -583,17 +583,11 @@ class FlatAllocatorImpl {
   TypeMap<IntT, T...> used_;
 };
 
-// Allows us to disable tracking in the current thread while certain build steps
-// are happening.
-bool& is_tracking_enabled() {
-  static PROTOBUF_THREAD_LOCAL bool value = true;
-  return value;
-}
-
-auto DisableTracking() {
-  bool old_value = is_tracking_enabled();
-  is_tracking_enabled() = false;
-  return absl::MakeCleanup([=] { is_tracking_enabled() = old_value; });
+static auto DisableTracking() {
+  bool old_value = internal::cpp::IsTrackingEnabled();
+  internal::cpp::IsTrackingEnabledVar() = false;
+  return absl::MakeCleanup(
+      [=] { internal::cpp::IsTrackingEnabledVar() = old_value; });
 }
 
 }  // namespace
@@ -9861,8 +9855,6 @@ bool IsLazilyInitializedFile(absl::string_view filename) {
   return filename == "net/proto2/proto/descriptor.proto" ||
          filename == "google/protobuf/descriptor.proto";
 }
-
-bool IsTrackingEnabled() { return is_tracking_enabled(); }
 
 }  // namespace cpp
 }  // namespace internal
