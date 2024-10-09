@@ -146,6 +146,7 @@ def _impl(ctx):
                         flags = [
                             bit_flag,
                             "-Wall",
+                            "-Wundef",
                             "-no-canonical-prefixes",
                             "--target=" + ctx.attr.target_full_name,
                             "-fvisibility=hidden",
