@@ -210,14 +210,6 @@ void GPBCheckRuntimeVersionSupport(int32_t objcRuntimeVersion) {
                        @" supports back to %d!",
                        objcRuntimeVersion, GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION];
   }
-#if defined(DEBUG) && DEBUG
-  if (objcRuntimeVersion < GOOGLE_PROTOBUF_OBJC_VERSION) {
-    // This is a version we haven't generated for yet.
-    NSLog(@"WARNING: Code from generated Objective-C proto from an older version of the library is "
-          @"being used. Please regenerate with the current version as the code will stop working "
-          @"in a future release.");
-  }
-#endif
 }
 
 void GPBRuntimeMatchFailure(void) {
@@ -225,20 +217,6 @@ void GPBRuntimeMatchFailure(void) {
               format:@"Proto generation source appears to have been from a"
                      @" version newer that this runtime (%d).",
                      GOOGLE_PROTOBUF_OBJC_VERSION];
-}
-
-// This api is no longer used for version checks. 30001 is the last version
-// using this old versioning model. When that support is removed, this function
-// can be removed (along with the declaration in GPBUtilities_PackagePrivate.h).
-void GPBCheckRuntimeVersionInternal(int32_t version) {
-  GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30001,
-                           time_to_remove_this_old_version_shim);
-  if (version != GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION) {
-    [NSException raise:NSInternalInconsistencyException
-                format:@"Linked to ProtocolBuffer runtime version %d,"
-                       @" but code compiled with version %d!",
-                       GOOGLE_PROTOBUF_OBJC_GEN_VERSION, version];
-  }
 }
 
 BOOL GPBMessageHasFieldNumberSet(GPBMessage *self, uint32_t fieldNumber) {
