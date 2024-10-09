@@ -81,11 +81,6 @@ inline void memswap(char* PROTOBUF_RESTRICT a, char* PROTOBUF_RESTRICT b) {
   std::swap_ranges(a, a + N, b);
 }
 
-template <typename T>
-struct IsMovable
-    : std::integral_constant<bool, std::is_move_constructible<T>::value &&
-                                       std::is_move_assignable<T>::value> {};
-
 // A trait that tells offset of `T::arena_`.
 //
 // Do not use this struct - it exists for internal use only.
@@ -93,6 +88,11 @@ template <typename T>
 struct ArenaOffsetHelper {
   static constexpr size_t value = offsetof(T, arena_);
 };
+
+// Copies the object in the arena.
+// Used in the slow path. Out-of-line for lower binary size cost.
+PROTOBUF_EXPORT MessageLite* CloneSlow(Arena* arena, const MessageLite& value);
+PROTOBUF_EXPORT std::string* CloneSlow(Arena* arena, const std::string& value);
 
 // Defined further below.
 template <typename Type>
@@ -106,17 +106,14 @@ class GenericTypeHandler;
 //   class TypeHandler {
 //    public:
 //     using Type = MyType;
-//     using Movable = ...;
 //
 //     static Type*(*)(Arena*) GetNewFunc();
 //     static void GetArena(Type* value);
 //
 //     static Type* New(Arena* arena);
 //     static Type* New(Arena* arena, Type&& value);
-//     static Type* NewFromPrototype(const Type* prototype, Arena* arena);
 //     static void Delete(Type*, Arena* arena);
 //     static void Clear(Type*);
-//     static void Merge(const Type& from, Type* to);
 //
 //     // Only needs to be implemented if SpaceUsedExcludingSelf() is called.
 //     static int SpaceUsedLong(const Type&);
@@ -198,10 +195,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return cast<TypeHandler>(AddMessageLite(TypeHandler::GetNewFunc()));
   }
 
-  template <
-      typename TypeHandler,
-      typename std::enable_if<TypeHandler::Movable::value>::type* = nullptr>
+  template <typename TypeHandler>
   inline void Add(Value<TypeHandler>&& value) {
+    static_assert(std::is_move_constructible<Value<TypeHandler>>::value, "");
+    static_assert(std::is_move_assignable<Value<TypeHandler>>::value, "");
     if (current_size_ < allocated_size()) {
       *cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1))) =
           std::move(value);
@@ -337,10 +334,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   static inline Value<TypeHandler>* copy(const Value<TypeHandler>* value) {
-    using H = CommonHandler<TypeHandler>;
-    auto* new_value = H::NewFromPrototype(value, nullptr);
-    H::Merge(*value, new_value);
-    return cast<TypeHandler>(new_value);
+    return cast<TypeHandler>(CloneSlow(nullptr, *value));
   }
 
   // Used for constructing iterators.
@@ -505,9 +499,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       my_arena->Own(value);
     } else if (my_arena != value_arena) {
       ABSL_DCHECK(value_arena != nullptr);
-      auto* new_value = TypeHandler::NewFromPrototype(value, my_arena);
-      H::Merge(*value, new_value);
-      value = new_value;
+      value = cast<TypeHandler>(CloneSlow(my_arena, *value));
     }
 
     UnsafeArenaAddAllocated<H>(value);
@@ -818,7 +810,6 @@ template <typename GenericType>
 class GenericTypeHandler {
  public:
   using Type = GenericType;
-  using Movable = IsMovable<Type>;
 
   static constexpr auto GetNewFunc() { return Arena::DefaultConstruct<Type>; }
   static inline Arena* GetArena(Type* value) {
@@ -830,10 +821,6 @@ class GenericTypeHandler {
   }
   static inline Type* New(Arena* arena, Type&& value) {
     return Arena::Create<Type>(arena, std::move(value));
-  }
-  static inline Type* NewFromPrototype(const Type* /*prototype*/,
-                                       Arena* arena = nullptr) {
-    return New(arena);
   }
   static inline void Delete(Type* value, Arena* arena) {
     if (arena != nullptr) return;
@@ -850,43 +837,19 @@ class GenericTypeHandler {
 #endif
   }
   static inline void Clear(Type* value) { value->Clear(); }
-  static void Merge(const Type& from, Type* to);
   static inline size_t SpaceUsedLong(const Type& value) {
     return value.SpaceUsedLong();
   }
 };
 
-// NewFromPrototypeHelper() is not defined inline here, as we will need to do a
-// virtual function dispatch anyways to go from Message* to call New/Merge. (The
-// additional helper is needed as a workaround for MSVC.)
-PROTOBUF_EXPORT MessageLite* NewFromPrototypeHelper(
-    const MessageLite* prototype, Arena* arena);
-
-template <>
-inline MessageLite* GenericTypeHandler<MessageLite>::NewFromPrototype(
-    const MessageLite* prototype, Arena* arena) {
-  return NewFromPrototypeHelper(prototype, arena);
-}
 template <>
 inline Arena* GenericTypeHandler<MessageLite>::GetArena(MessageLite* value) {
   return value->GetArena();
 }
 
-template <typename GenericType>
-PROTOBUF_NOINLINE inline void GenericTypeHandler<GenericType>::Merge(
-    const GenericType& from, GenericType* to) {
-  to->MergeFrom(from);
-}
-template <>
-PROTOBUF_EXPORT void GenericTypeHandler<MessageLite>::Merge(
-    const MessageLite& from, MessageLite* to);
-
 // Message specialization bodies defined in message.cc. This split is necessary
 // to allow proto2-lite (which includes this header) to be independent of
 // Message.
-template <>
-PROTOBUF_EXPORT Message* GenericTypeHandler<Message>::NewFromPrototype(
-    const Message* prototype, Arena* arena);
 template <>
 PROTOBUF_EXPORT Arena* GenericTypeHandler<Message>::GetArena(Message* value);
 
@@ -896,7 +859,6 @@ template <>
 class GenericTypeHandler<std::string> {
  public:
   using Type = std::string;
-  using Movable = IsMovable<Type>;
 
   static constexpr auto GetNewFunc() { return NewStringElement; }
   static inline Arena* GetArena(Type*) { return nullptr; }
@@ -906,9 +868,6 @@ class GenericTypeHandler<std::string> {
   }
   static PROTOBUF_NOINLINE Type* New(Arena* arena, Type&& value) {
     return Arena::Create<Type>(arena, std::move(value));
-  }
-  static inline Type* NewFromPrototype(const Type*, Arena* arena) {
-    return New(arena);
   }
   static inline void Delete(Type* value, Arena* arena) {
     if (arena == nullptr) {

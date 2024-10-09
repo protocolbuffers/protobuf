@@ -176,6 +176,7 @@ bool RustGenerator::Generate(const FileDescriptor* file,
       {"NonNull", "::__std::ptr::NonNull"},
       {"Phantom", "::__std::marker::PhantomData"},
       {"Result", "::__std::result::Result"},
+      {"Option", "::__std::option::Option"},
   });
 
   ctx.Emit({{"kernel", KernelRsName(ctx.opts().kernel)}}, R"rs(

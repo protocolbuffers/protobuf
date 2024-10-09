@@ -173,6 +173,9 @@ std::string QualifiedDefaultInstancePtr(const Descriptor* descriptor,
                                         const Options& options,
                                         bool split = false);
 
+// Name of the ClassData subclass used for a message.
+std::string ClassDataType(const Descriptor* descriptor, const Options& options);
+
 // DescriptorTable variable name.
 std::string DescriptorTableName(const FileDescriptor* file,
                                 const Options& options);
@@ -327,19 +330,15 @@ inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
 
 inline bool IsCord(const FieldDescriptor* field) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD;
+         field->cpp_string_type() == FieldDescriptor::CppStringType::kCord;
 }
 
 inline bool IsString(const FieldDescriptor* field) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         internal::cpp::EffectiveStringCType(field) == FieldOptions::STRING;
+         (field->cpp_string_type() == FieldDescriptor::CppStringType::kString ||
+          field->cpp_string_type() == FieldDescriptor::CppStringType::kView);
 }
 
-inline bool IsStringPiece(const FieldDescriptor* field) {
-  return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         internal::cpp::EffectiveStringCType(field) ==
-             FieldOptions::STRING_PIECE;
-}
 
 bool IsProfileDriven(const Options& options);
 

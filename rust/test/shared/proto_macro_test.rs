@@ -14,6 +14,8 @@ use unittest_rust_proto::{
     NestedTestAllTypes, TestAllTypes,
 };
 
+use map_unittest_rust_proto::{TestMap, TestMapWithMessages};
+
 struct TestValue {
     val: i64,
 }
@@ -201,4 +203,31 @@ fn test_repeated_msg() {
     assert_that!(msg.repeated_child().len(), eq(2));
     assert_that!(msg.repeated_child().get(0).unwrap().payload().optional_int32(), eq(1));
     assert_that!(msg.repeated_child().get(1).unwrap().payload().optional_int32(), eq(2));
+}
+
+#[gtest]
+fn test_string_maps() {
+    let msg =
+        proto!(TestMap { map_string_string: [("foo", "bar"), ("baz", "qux"), ("quux", "quuz")] });
+    assert_that!(msg.map_string_string().len(), eq(3));
+    assert_that!(msg.map_string_string().get("foo").unwrap(), eq("bar"));
+    assert_that!(msg.map_string_string().get("baz").unwrap(), eq("qux"));
+    assert_that!(msg.map_string_string().get("quux").unwrap(), eq("quuz"));
+}
+
+#[gtest]
+fn test_message_maps() {
+    let msg3 = proto!(TestAllTypes { optional_int32: 3 });
+    let kv3 = ("quux", msg3);
+    let msg = proto!(TestMapWithMessages {
+        map_string_all_types: [
+            ("foo", TestAllTypes { optional_int32: 1 }),
+            ("baz", __ { optional_int32: 2 }),
+            kv3
+        ]
+    });
+    assert_that!(msg.map_string_all_types().len(), eq(3));
+    assert_that!(msg.map_string_all_types().get("foo").unwrap().optional_int32(), eq(1));
+    assert_that!(msg.map_string_all_types().get("baz").unwrap().optional_int32(), eq(2));
+    assert_that!(msg.map_string_all_types().get("quux").unwrap().optional_int32(), eq(3));
 }

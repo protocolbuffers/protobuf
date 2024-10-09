@@ -394,10 +394,6 @@ class CommandLineInterface::ErrorPrinter
                          std::ostream& out) {
     std::string dfile;
     if (
-#ifndef PROTOBUF_OPENSOURCE
-        // Print full path when running under MSVS
-        format_ == CommandLineInterface::ERROR_FORMAT_MSVS &&
-#endif  // !PROTOBUF_OPENSOURCE
         tree_ != nullptr && tree_->VirtualFileToDiskFile(filename, &dfile)) {
       out << dfile;
     } else {

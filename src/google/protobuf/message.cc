@@ -156,7 +156,7 @@ Metadata Message::GetMetadata() const {
   return GetMetadataImpl(GetClassData()->full());
 }
 
-Metadata Message::GetMetadataImpl(const ClassDataFull& data) {
+Metadata Message::GetMetadataImpl(const internal::ClassDataFull& data) {
   auto* table = data.descriptor_table;
   // Only codegen types provide a table. DynamicMessage does not provide a table
   // and instead eagerly initializes the descriptor/reflection members.
@@ -206,7 +206,7 @@ size_t Message::SpaceUsedLong() const {
   return GetClassData()->full().descriptor_methods->space_used_long(*this);
 }
 
-absl::string_view Message::GetTypeNameImpl(const ClassData* data) {
+absl::string_view Message::GetTypeNameImpl(const internal::ClassData* data) {
   return GetMetadataImpl(data->full()).descriptor->full_name();
 }
 
@@ -228,7 +228,7 @@ static std::string DebugStringImpl(const MessageLite& msg) {
   return DownCastMessage<Message>(msg).DebugString();
 }
 
-PROTOBUF_CONSTINIT const MessageLite::DescriptorMethods
+PROTOBUF_CONSTINIT const internal::DescriptorMethods
     Message::kDescriptorMethods = {
         GetTypeNameImpl,     InitializationErrorStringImpl,
         GetTcParseTableImpl, SpaceUsedLongImpl,
@@ -497,17 +497,6 @@ const internal::RepeatedFieldAccessor* Reflection::RepeatedFieldAccessor(
 }
 
 namespace internal {
-template <>
-#if defined(_MSC_VER) && (_MSC_VER >= 1800)
-// Note: force noinline to workaround MSVC compiler bug with /Zc:inline, issue
-// #240
-PROTOBUF_NOINLINE
-#endif
-    Message*
-    GenericTypeHandler<Message>::NewFromPrototype(const Message* prototype,
-                                                  Arena* arena) {
-  return prototype->New(arena);
-}
 template <>
 #if defined(_MSC_VER) && (_MSC_VER >= 1800)
 // Note: force noinline to workaround MSVC compiler bug with /Zc:inline, issue

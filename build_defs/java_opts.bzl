@@ -5,7 +5,7 @@ load("@rules_jvm_external//:defs.bzl", "java_export")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
 load("//java/osgi:osgi.bzl", "osgi_java_library")
 
-JAVA_OPTS = [
+JAVA_RELEASE_OPTS = [
     "-source 8",
     "-target 8",
     "-Xep:Java8ApiChecker:ERROR",
@@ -16,7 +16,7 @@ BUNDLE_LICENSE = "https://opensource.org/licenses/BSD-3-Clause"
 
 def protobuf_java_export(**kwargs):
     java_export(
-        javacopts = JAVA_OPTS,
+        javacopts = JAVA_RELEASE_OPTS,
         # https://github.com/bazelbuild/rules_jvm_external/issues/1245
         javadocopts = [
             "-notimestamp",
@@ -31,7 +31,6 @@ def protobuf_java_export(**kwargs):
 
 def protobuf_java_library(**kwargs):
     java_library(
-        javacopts = JAVA_OPTS,
         **kwargs
     )
 
@@ -77,7 +76,7 @@ def protobuf_versioned_java_library(
             java_library target.
     """
     osgi_java_library(
-        javacopts = JAVA_OPTS,
+        javacopts = JAVA_RELEASE_OPTS,
         automatic_module_name = automatic_module_name,
         bundle_doc_url = BUNDLE_DOC_URL,
         bundle_license = BUNDLE_LICENSE,

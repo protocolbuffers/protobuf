@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
@@ -255,6 +256,60 @@ TEST(NoFieldPresenceTest, MessageFieldPresenceTest) {
   // Test field presence of a message field on the default instance.
   EXPECT_EQ(false,
             TestAllTypes::default_instance().has_optional_nested_message());
+}
+
+class NoFieldPresenceListFieldsTest : public testing::Test {
+ protected:
+  NoFieldPresenceListFieldsTest()
+      : message_(), r_(message_.GetReflection()), fields_() {
+    // Check initial state: scalars not present (due to need to be consistent
+    // with MergeFrom()), message fields not present, oneofs not present.
+    r_->ListFields(message_, &fields_);
+    ABSL_CHECK(fields_.empty());
+  }
+
+  TestAllTypes message_;
+  const Reflection* r_;
+  std::vector<const FieldDescriptor*> fields_;
+};
+
+TEST_F(NoFieldPresenceListFieldsTest, ScalarTest) {
+  // Check zero/empty-means-not-present semantics.
+  message_.set_optional_int32(0);
+  r_->ListFields(message_, &fields_);
+  EXPECT_TRUE(fields_.empty());
+
+  message_.Clear();
+  message_.set_optional_int32(42);
+  r_->ListFields(message_, &fields_);
+  EXPECT_EQ(1, fields_.size());
+}
+
+TEST_F(NoFieldPresenceListFieldsTest, MessageTest) {
+  // Message fields always have explicit presence.
+  message_.mutable_optional_nested_message();
+  r_->ListFields(message_, &fields_);
+  EXPECT_EQ(1, fields_.size());
+
+  fields_.clear();
+  message_.Clear();
+  message_.mutable_optional_nested_message()->set_bb(123);
+  r_->ListFields(message_, &fields_);
+  EXPECT_EQ(1, fields_.size());
+}
+
+TEST_F(NoFieldPresenceListFieldsTest, OneOfTest) {
+  // Oneof fields behave essentially like an explicit presence field.
+  message_.set_oneof_uint32(0);
+  r_->ListFields(message_, &fields_);
+  EXPECT_EQ(1, fields_.size());
+
+  fields_.clear();
+  // Note:
+  // we don't clear message_ -- oneof must only maintain one present field.
+  message_.set_oneof_uint32(42);
+  r_->ListFields(message_, &fields_);
+  EXPECT_EQ(1, fields_.size());
 }
 
 TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {

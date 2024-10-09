@@ -210,24 +210,26 @@ using KeyForBase = typename KeyForBaseImpl<T>::type;
 // only accept `key_type`.
 template <typename key_type>
 struct TransparentSupport {
+  static_assert(std::is_scalar<key_type>::value,
+                "Should only be used for ints.");
+
   // We hash all the scalars as uint64_t so that we can implement the same hash
   // function for VariantKey. This way we can have MapKey provide the same hash
   // as the underlying value would have.
-  using hash = std::hash<
-      std::conditional_t<std::is_scalar<key_type>::value, uint64_t, key_type>>;
+  using hash = absl::Hash<uint64_t>;
 
-  static bool Equals(const key_type& a, const key_type& b) { return a == b; }
+  static bool Equals(key_type a, key_type b) { return a == b; }
 
   template <typename K>
   using key_arg = key_type;
 
-  using ViewType = std::conditional_t<std::is_scalar<key_type>::value, key_type,
-                                      const key_type&>;
-  static ViewType ToView(const key_type& v) { return v; }
+  using ViewType = key_type;
+
+  static key_type ToView(key_type v) { return v; }
 };
 
 // We add transparent support for std::string keys. We use
-// std::hash<absl::string_view> as it supports the input types we care about.
+// absl::Hash<absl::string_view> as it supports the input types we care about.
 // The lookup functions accept arbitrary `K`. This will include any key type
 // that is convertible to absl::string_view.
 template <>
@@ -350,12 +352,6 @@ struct VariantKey {
     if (data == nullptr) data = "";
   }
 
-  size_t Hash() const {
-    return data == nullptr ? std::hash<uint64_t>{}(integral)
-                           : absl::Hash<absl::string_view>{}(
-                                 absl::string_view(data, integral));
-  }
-
   friend bool operator<(const VariantKey& left, const VariantKey& right) {
     ABSL_DCHECK_EQ(left.data == nullptr, right.data == nullptr);
     if (left.integral != right.integral) {
@@ -378,12 +374,26 @@ struct RealKeyToVariantKey {
   VariantKey operator()(T value) const { return VariantKey(value); }
 };
 
+template <typename T, typename = void>
+struct RealKeyToVariantKeyAlternative;
+
+template <typename T>
+struct RealKeyToVariantKeyAlternative<
+    T, typename std::enable_if<std::is_integral<T>::value>::type> {
+  uint64_t operator()(uint64_t value) const { return value; }
+};
+
 template <>
 struct RealKeyToVariantKey<std::string> {
   template <typename T>
   VariantKey operator()(const T& value) const {
     return VariantKey(TransparentSupport<std::string>::ImplicitConvert(value));
   }
+};
+
+template <>
+struct RealKeyToVariantKeyAlternative<std::string> {
+  absl::string_view operator()(absl::string_view value) const { return value; }
 };
 
 // We use a single kind of tree for all maps. This reduces code duplication.
@@ -689,13 +699,21 @@ class PROTOBUF_EXPORT UntypedMapBase {
   TableEntryPtr ConvertToTree(NodeBase* node, GetKey get_key);
   void EraseFromTree(map_index_t b, typename Tree::iterator tree_it);
 
-  map_index_t VariantBucketNumber(VariantKey key) const;
+  map_index_t VariantBucketNumber(VariantKey key) const {
+    return key.data == nullptr
+               ? VariantBucketNumber(key.integral)
+               : VariantBucketNumber(absl::string_view(
+                     key.data, static_cast<size_t>(key.integral)));
+  }
 
-  map_index_t BucketNumberFromHash(uint64_t h) const {
-    // We xor the hash value against the random seed so that we effectively
-    // have a random hash function.
-    // We use absl::Hash to do bit mixing for uniform bucket selection.
-    return absl::HashOf(h ^ seed_) & (num_buckets_ - 1);
+  map_index_t VariantBucketNumber(absl::string_view key) const {
+    return static_cast<map_index_t>(absl::HashOf(seed_, key) &
+                                    (num_buckets_ - 1));
+  }
+
+  map_index_t VariantBucketNumber(uint64_t key) const {
+    return static_cast<map_index_t>(absl::HashOf(key ^ seed_) &
+                                    (num_buckets_ - 1));
   }
 
   TableEntryPtr* CreateEmptyTable(map_index_t n) {
@@ -1001,7 +1019,7 @@ class KeyMapBase : public UntypedMapBase {
     // determined whether we are inserting into an empty list, a short list,
     // or whatever.  But it's probably cheap enough to recompute that here;
     // it's likely that we're inserting into an empty or short list.
-    ABSL_DCHECK(FindHelper(node->key()).node == nullptr);
+    ABSL_DCHECK(FindHelper(TS::ToView(node->key())).node == nullptr);
     if (TableEntryIsEmpty(b)) {
       InsertUniqueInList(b, node);
       index_of_first_non_null_ = (std::min)(index_of_first_non_null_, b);
@@ -1100,15 +1118,16 @@ class KeyMapBase : public UntypedMapBase {
   void TransferList(KeyNode* node) {
     do {
       auto* next = static_cast<KeyNode*>(node->next);
-      InsertUnique(BucketNumber(node->key()), node);
+      InsertUnique(BucketNumber(TS::ToView(node->key())), node);
       node = next;
     } while (node != nullptr);
   }
 
   map_index_t BucketNumber(typename TS::ViewType k) const {
-    ABSL_DCHECK_EQ(BucketNumberFromHash(hash_function()(k)),
-                   VariantBucketNumber(RealKeyToVariantKey<Key>{}(k)));
-    return BucketNumberFromHash(hash_function()(k));
+    ABSL_DCHECK_EQ(
+        VariantBucketNumber(RealKeyToVariantKeyAlternative<Key>{}(k)),
+        VariantBucketNumber(RealKeyToVariantKey<Key>{}(k)));
+    return VariantBucketNumber(RealKeyToVariantKeyAlternative<Key>{}(k));
   }
 
   // Assumes node_ and m_ are correct and non-null, but other fields may be
@@ -1135,7 +1154,7 @@ class KeyMapBase : public UntypedMapBase {
     // not.  Revalidate just to be sure.  This case is rare enough that we
     // don't worry about potential optimizations, such as having a custom
     // find-like method that compares Node* instead of the key.
-    auto res = FindHelper(node->key(), it);
+    auto res = FindHelper(TS::ToView(node->key()), it);
     bucket_index = res.bucket;
     return TableEntryIsList(bucket_index);
   }
@@ -1155,6 +1174,18 @@ class RustMapHelper {
  public:
   using NodeAndBucket = UntypedMapBase::NodeAndBucket;
   using ClearInput = UntypedMapBase::ClearInput;
+
+  static void GetSizeAndAlignment(const google::protobuf::MessageLite* m, uint16_t* size,
+                                  uint8_t* alignment) {
+    const auto* class_data = m->GetClassData();
+    *size = static_cast<uint16_t>(class_data->allocation_size());
+    *alignment = class_data->alignment();
+  }
+
+  static constexpr MapNodeSizeInfoT MakeSizeInfo(uint16_t size,
+                                                 uint16_t value_offset) {
+    return MakeNodeInfo(size, value_offset);
+  }
 
   template <typename Key, typename Value>
   static constexpr MapNodeSizeInfoT SizeInfo() {

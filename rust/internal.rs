@@ -13,7 +13,10 @@
 pub use paste::paste;
 
 pub use crate::r#enum::Enum;
+use crate::map;
+use crate::repeated;
 pub use crate::ProtoStr;
+use crate::Proxied;
 pub use std::fmt::Debug;
 
 // TODO: Temporarily re-export these symbols which are now under
@@ -36,4 +39,20 @@ pub trait SealedInternal {}
 /// A trait used by the proto_eq() gtest macro.
 pub trait MatcherEq: SealedInternal + Debug {
     fn matches(&self, o: &Self) -> bool;
+}
+
+/// Used by the proto! macro to get a default value for a repeated field.
+pub fn get_repeated_default_value<T: repeated::ProxiedInRepeated + Default>(
+    _: Private,
+    _: repeated::RepeatedView<'_, T>,
+) -> T {
+    Default::default()
+}
+
+/// Used by the proto! macro to get a default value for a map field.
+pub fn get_map_default_value<K: Proxied, V: map::ProxiedInMapValue<K> + Default>(
+    _: Private,
+    _: map::MapView<'_, K, V>,
+) -> V {
+    Default::default()
 }

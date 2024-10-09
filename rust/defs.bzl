@@ -1,7 +1,4 @@
-"""This file implements an experimental, do-not-use-kind of rust_proto_library.
-
-Disclaimer: This project is experimental, under heavy development, and should not
-be used yet."""
+"""This file implements rust_proto_library."""
 
 load("@rules_rust//rust:defs.bzl", "rust_common")
 load("//bazel/common:proto_common.bzl", "proto_common")
@@ -19,7 +16,6 @@ def rust_proto_library(name, deps, **args):
     """Declares all the boilerplate needed to use Rust protobufs conveniently.
 
     Hopefully no user will ever need to read this code.
-
 
     Args:
         name: name of the Rust protobuf target.
@@ -102,6 +98,12 @@ def _rust_proto_library_impl(ctx):
     pkg, name = _user_visible_label(ctx).rsplit(":")
     label = struct(**{"name": name, "pkg": pkg})
     fields["name"] = label_to_crate_name(ctx, label, toolchain)
+
+    # These two fields present on the dir(crate_info) but break on some versions of Bazel when
+    # passed back in to crate_info. Strip them for now.
+    fields.pop("to_json", None)
+    fields.pop("to_proto", None)
+
     crate_info_with_rust_proto_name = rust_common.crate_info(**fields)
 
     return [

@@ -227,6 +227,12 @@ void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
   }
 }
 
+pb::CppFeatures::StringType FieldGeneratorBase::GetDeclaredStringType() const {
+  return CppGenerator::GetResolvedSourceFeatures(*field_)
+      .GetExtension(pb::cpp)
+      .string_type();
+}
+
 namespace {
 std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
                                                   const Options& options,

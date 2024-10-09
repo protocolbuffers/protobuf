@@ -34,7 +34,6 @@ jobs:
             # TODO: b/318555165 - enable the layering check. Currently it does
             # not work correctly with the toolchain in this Docker image.
             targets: //java/... //java/internal:java_version //compatibility/... --features=-layering_check
-            continuous-only: true
           - name: OpenJDK 11
             cache_key: '11'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:6.4.0-11-27cf7b86212020d7e552bc13b1e084abb971da75
@@ -111,7 +110,7 @@ jobs:
         bazel-cache: java_linux/11
         bash: |
           set -ex
-          bazel build //java:release
+          bazel build //java:release $BAZEL_FLAGS
           mvn install:install-file -Dfile=java/bom/pom.xml -DpomFile=java/bom/pom.xml
           mvn install:install-file -Dfile=java/pom.xml -DpomFile=java/pom.xml
           mvn install:install-file -Dfile=bazel-bin/java/core/core_mvn-project.jar -DpomFile=bazel-bin/java/core/core_mvn-pom.xml

@@ -134,10 +134,10 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output,
 #ifndef $0_HPB_PROTO_H_
 #define $0_HPB_PROTO_H_
 
+#include "google/protobuf/hpb/repeated_field.h"
+
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-
-#include "google/protobuf/hpb/repeated_field.h"
       )cc",
       ToPreproc(file->name()));
 
@@ -198,6 +198,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
   output(
       R"cc(
 #include <stddef.h>
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "$0"
       )cc",

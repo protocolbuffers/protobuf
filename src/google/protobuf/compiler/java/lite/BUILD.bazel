@@ -24,7 +24,10 @@ cc_library(
         "string_field.h",
     ],
     strip_include_prefix = "/src",
-    visibility = ["//src/google/protobuf/compiler/java:__subpackages__"],
+    visibility = [
+        "//src/google/protobuf/compiler/java:__subpackages__",
+        "//src/google/protobuf/compiler/kotlin:__subpackages__",
+    ],
     deps = [
         "//src/google/protobuf",
         "//src/google/protobuf:port",

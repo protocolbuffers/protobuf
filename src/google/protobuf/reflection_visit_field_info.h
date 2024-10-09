@@ -117,8 +117,8 @@ struct DynamicFieldInfoHelper {
   static absl::string_view GetStringView(const Reflection* reflection,
                                          const Message& message,
                                          const FieldDescriptor* field) {
-    auto ctype = cpp::EffectiveStringCType(field);
-    ABSL_DCHECK_NE(ctype, FieldOptions::CORD);
+    auto string_type = field->cpp_string_type();
+    ABSL_DCHECK(string_type != FieldDescriptor::CppStringType::kCord);
     ABSL_DCHECK(!is_oneof || reflection->HasOneofField(message, field));
     auto str = Get<ArenaStringPtr>(reflection, message, field);
     ABSL_DCHECK(!str.IsDefault());
@@ -1245,7 +1245,7 @@ PROTOBUF_MAP_VALUE_INFO(Bool, bool, BOOL);
 PROTOBUF_MAP_VALUE_INFO(Enum, int, ENUM);
 PROTOBUF_MAP_VALUE_INFO(Float, float, FLOAT);
 PROTOBUF_MAP_VALUE_INFO(Double, double, DOUBLE);
-PROTOBUF_MAP_VALUE_INFO(String, const std::string&, STRING);
+PROTOBUF_MAP_VALUE_INFO(String, absl::string_view, STRING);
 
 #undef PROTOBUF_MAP_VALUE_INFO
 

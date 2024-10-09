@@ -541,7 +541,7 @@ std::string BinaryToPhpString(const std::string& src) {
 
 bool GenerateField(const FieldDescriptor* field, io::Printer* printer,
                    const Options& options, std::string* error) {
-  if (field->is_required()) {
+  if (!options.is_descriptor && field->is_required()) {
     *error = absl::StrCat("Can't generate PHP code for required field ",
                           field->full_name(), ".\n");
     return false;
@@ -1155,7 +1155,7 @@ void GenerateMetadataFile(const FileDescriptor* file, const Options& options,
 bool GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
                       const Options& options,
                       GeneratorContext* generator_context, std::string* error) {
-  if (en->is_closed()) {
+  if (!options.is_descriptor && en->is_closed()) {
     *error = absl::StrCat("Can't generate PHP code for closed enum ",
                           en->full_name(),
                           ".  Please use either proto3 or editions without "

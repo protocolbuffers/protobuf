@@ -32,8 +32,10 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "absl/types/variant.h"
 #include "google/protobuf/io/zero_copy_sink.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
 
 // Must be included last.
@@ -124,8 +126,8 @@ class AnnotationProtoCollector : public AnnotationCollector {
                      const std::string& file_path, const std::vector<int>& path,
                      absl::optional<Semantic> semantic) override {
     auto* annotation = annotation_proto_->add_annotation();
-    for (int i = 0; i < path.size(); ++i) {
-      annotation->add_path(path[i]);
+    for (const int segment : path) {
+      annotation->add_path(segment);
     }
     annotation->set_source_file(file_path);
     annotation->set_begin(begin_offset);

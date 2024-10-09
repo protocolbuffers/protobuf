@@ -1307,6 +1307,15 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
   }
 }
 
+TEST(MESSAGE_TEST_NAME, MessageTraitsWork) {
+  EXPECT_EQ(
+      &UNITTEST::TestAllTypes::default_instance(),
+      internal::MessageTraits<UNITTEST::TestAllTypes>::default_instance());
+  EXPECT_EQ(
+      internal::GetClassData(UNITTEST::TestAllTypes::default_instance()),
+      internal::MessageTraits<UNITTEST::TestAllTypes>::class_data());
+}
+
 
 TEST(MESSAGE_TEST_NAME, CheckSerializationWhenInterleavedExtensions) {
   UNITTEST::TestExtensionRangeSerialize in_message;

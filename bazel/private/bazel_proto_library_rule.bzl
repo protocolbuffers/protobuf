@@ -166,8 +166,7 @@ def _write_descriptor_set(ctx, proto_info, deps, exports, descriptor_set):
 
     if ctx.attr._experimental_proto_descriptor_sets_include_source_info[BuildSettingInfo].value:
         args.add("--include_source_info")
-    if hasattr(ctx.attr, "_retain_options") and ctx.attr._retain_options:
-        args.add("--retain_options")
+    args.add("--retain_options")
 
     strict_deps = ctx.attr._strict_proto_deps[BuildSettingInfo].value
     if strict_deps:

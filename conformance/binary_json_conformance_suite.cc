@@ -2303,7 +2303,8 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalInt64": "-9223372036854775809"})");
   ExpectParseFailureForJson("Uint64FieldTooLarge", REQUIRED,
                             R"({"optionalUint64": "18446744073709551616"})");
-  // Parser reject non-integer numeric values as well.
+
+  // Parser reject non-integer numeric values.
   ExpectParseFailureForJson("Int32FieldNotInteger", REQUIRED,
                             R"({"optionalInt32": 0.5})");
   ExpectParseFailureForJson("Uint32FieldNotInteger", REQUIRED,
@@ -2312,6 +2313,16 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalInt64": "0.5"})");
   ExpectParseFailureForJson("Uint64FieldNotInteger", REQUIRED,
                             R"({"optionalUint64": "0.5"})");
+
+  // Parser reject empty string values.
+  ExpectParseFailureForJson("Int32FieldEmptyString", REQUIRED,
+                            R"({"optionalInt32": ""})");
+  ExpectParseFailureForJson("Uint32FieldEmptyString", REQUIRED,
+                            R"({"optionalUint32": ""})");
+  ExpectParseFailureForJson("Int64FieldEmptyString", REQUIRED,
+                            R"({"optionalInt64": ""})");
+  ExpectParseFailureForJson("Uint64FieldEmptyString", REQUIRED,
+                            R"({"optionalUint64": ""})");
 
   // Integers but represented as float values are accepted.
   RunValidJsonTest("Int32FieldFloatTrailingZero", REQUIRED,
@@ -2436,11 +2447,16 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalFloat": Infinity})");
   ExpectParseFailureForJson("FloatFieldNegativeInfinityNotQuoted", RECOMMENDED,
                             R"({"optionalFloat": -Infinity})");
+
   // Parsers should reject out-of-bound values.
   ExpectParseFailureForJson("FloatFieldTooSmall", REQUIRED,
                             R"({"optionalFloat": -3.502823e+38})");
   ExpectParseFailureForJson("FloatFieldTooLarge", REQUIRED,
                             R"({"optionalFloat": 3.502823e+38})");
+
+  // Parsers should reject empty string values.
+  ExpectParseFailureForJson("FloatFieldEmptyString", REQUIRED,
+                            R"({"optionalFloat": ""})");
 
   // Double fields.
   RunValidJsonTest("DoubleFieldMinPositiveValue", REQUIRED,
@@ -2493,6 +2509,10 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalDouble": -1.89769e+308})");
   ExpectParseFailureForJson("DoubleFieldTooLarge", REQUIRED,
                             R"({"optionalDouble": +1.89769e+308})");
+
+  // Parsers should reject empty string values.
+  ExpectParseFailureForJson("DoubleFieldEmptyString", REQUIRED,
+                            R"({"optionalDouble": ""})");
 
   // Enum fields.
   RunValidJsonTest("EnumField", REQUIRED, R"({"optionalNestedEnum": "FOO"})",

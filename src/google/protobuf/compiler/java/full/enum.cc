@@ -17,6 +17,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
@@ -82,14 +83,13 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
     }
   }
 
-  for (int i = 0; i < canonical_values_.size(); i++) {
+  for (const EnumValueDescriptor* value : canonical_values_) {
     absl::flat_hash_map<absl::string_view, std::string> vars;
-    vars["name"] = canonical_values_[i]->name();
-    vars["index"] = absl::StrCat(canonical_values_[i]->index());
-    vars["number"] = absl::StrCat(canonical_values_[i]->number());
-    WriteEnumValueDocComment(printer, canonical_values_[i],
-                             context_->options());
-    if (canonical_values_[i]->options().deprecated()) {
+    vars["name"] = value->name();
+    vars["index"] = absl::StrCat(value->index());
+    vars["number"] = absl::StrCat(value->number());
+    WriteEnumValueDocComment(printer, value, context_->options());
+    if (value->options().deprecated()) {
       printer->Print("@java.lang.Deprecated\n");
     }
     if (ordinal_is_index) {
@@ -97,7 +97,7 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
     } else {
       printer->Print(vars, "$name$($index$, $number$),\n");
     }
-    printer->Annotate("name", canonical_values_[i]);
+    printer->Annotate("name", value);
   }
 
   if (!descriptor_->is_closed()) {
@@ -122,15 +122,15 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
   printer->Outdent();
   printer->Print("}\n");
 
-  for (int i = 0; i < aliases_.size(); i++) {
+  for (const Alias& alias : aliases_) {
     absl::flat_hash_map<absl::string_view, std::string> vars;
     vars["classname"] = descriptor_->name();
-    vars["name"] = aliases_[i].value->name();
-    vars["canonical_name"] = aliases_[i].canonical_value->name();
-    WriteEnumValueDocComment(printer, aliases_[i].value, context_->options());
+    vars["name"] = alias.value->name();
+    vars["canonical_name"] = alias.canonical_value->name();
+    WriteEnumValueDocComment(printer, alias.value, context_->options());
     printer->Print(
         vars, "public static final $classname$ $name$ = $canonical_name$;\n");
-    printer->Annotate("name", aliases_[i].value);
+    printer->Annotate("name", alias.value);
   }
 
   for (int i = 0; i < descriptor_->value_count(); i++) {
@@ -206,10 +206,9 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
   printer->Indent();
   printer->Indent();
 
-  for (int i = 0; i < canonical_values_.size(); i++) {
-    printer->Print("case $number$: return $name$;\n", "name",
-                   canonical_values_[i]->name(), "number",
-                   absl::StrCat(canonical_values_[i]->number()));
+  for (const EnumValueDescriptor* value : canonical_values_) {
+    printer->Print("case $number$: return $name$;\n", "name", value->name(),
+                   "number", absl::StrCat(value->number()));
   }
 
   printer->Outdent();

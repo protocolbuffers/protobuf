@@ -2618,7 +2618,6 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileGivenTwoInputs) {
       "Can only process one input file when using --dependency_out=FILE.\n");
 }
 
-#ifdef PROTOBUF_OPENSOURCE
 TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile) {
   CreateTempFile("foo.proto",
                  "syntax = \"proto2\";\n"
@@ -2630,7 +2629,8 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile) {
                  "  optional Foo foo = 1;\n"
                  "}\n");
 
-  std::string current_working_directory = getcwd(nullptr, 0);
+  char current_dir[PATH_MAX];
+  ASSERT_EQ(getcwd(current_dir, sizeof(current_dir)), current_dir);
   SwitchToTempDirectory();
 
   Run("protocol_compiler --dependency_out=manifest --test_out=. "
@@ -2642,12 +2642,8 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile) {
                     "bar.proto.MockCodeGenerator.test_generator: "
                     "foo.proto\\\n bar.proto");
 
-  File::ChangeWorkingDirectory(current_working_directory);
+  File::ChangeWorkingDirectory(current_dir);
 }
-#else  // !PROTOBUF_OPENSOURCE
-// TODO: Figure out how to change and get working directory in
-// google3.
-#endif  // !PROTOBUF_OPENSOURCE
 
 TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForAbsolutePath) {
   CreateTempFile("foo.proto",
@@ -2771,9 +2767,12 @@ TEST_F(CommandLineInterfaceTest, ParseErrorsMultipleFiles) {
       "--proto_path=$tmpdir foo.proto");
 
   ExpectErrorText(
-      "bar.proto:2:1: Expected top-level statement (e.g. \"message\").\n"
-      "baz.proto:2:1: Import \"bar.proto\" was not found or had errors.\n"
-      "foo.proto:2:1: Import \"bar.proto\" was not found or had errors.\n"
+      "bar.proto:2:1: Expected top-level statement (e.g. \"message\").\n");
+  ExpectErrorText(
+      "baz.proto:2:1: Import \"bar.proto\" was not found or had errors.\n");
+  ExpectErrorText(
+      "foo.proto:2:1: Import \"bar.proto\" was not found or had errors.\n");
+  ExpectErrorText(
       "foo.proto:3:1: Import \"baz.proto\" was not found or had errors.\n");
 }
 

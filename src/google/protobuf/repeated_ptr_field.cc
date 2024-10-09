@@ -33,6 +33,15 @@ namespace protobuf {
 
 namespace internal {
 
+MessageLite* CloneSlow(Arena* arena, const MessageLite& value) {
+  auto* msg = value.New(arena);
+  msg->CheckTypeAndMergeFrom(value);
+  return msg;
+}
+std::string* CloneSlow(Arena* arena, const std::string& value) {
+  return Arena::Create<std::string>(arena, value);
+}
+
 void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   ABSL_DCHECK(extend_amount > 0);
   constexpr size_t kPtrSize = sizeof(rep()->elements[0]);

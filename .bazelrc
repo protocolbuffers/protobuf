@@ -32,7 +32,6 @@ build:ubsan --copt=-fno-sanitize=nonnull-attribute
 # TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
 # https://github.com/protocolbuffers/protobuf/issues/14313
 common --noenable_bzlmod
-common --enable_workspace
 
 # Important: this flag ensures that we remain compliant with the C++ layering
 # check.

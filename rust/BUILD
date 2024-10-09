@@ -2,9 +2,10 @@
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
-load("@rules_pkg//pkg:zip.bzl", "pkg_zip")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
+load("//rust:dist.bzl", "pkg_cross_compiled_binaries")
 
 licenses(["notice"])
 
@@ -284,8 +285,8 @@ pkg_filegroup(
     prefix = "libupb",
 )
 
-pkg_zip(
-    name = "rust_crate",
+pkg_tar(
+    name = "protobuf_crate_dist",
     srcs = [
         ":crate_root_files",
         ":rust_protobuf_libupb_src",
@@ -300,12 +301,25 @@ pkg_files(
     strip_prefix = strip_prefix.from_root("rust/protobuf_codegen"),
 )
 
-pkg_zip(
-    name = "codegen_crate",
+pkg_tar(
+    name = "codegen_crate_dist",
     srcs = [
         ":protobuf_codegen_files",
+        ":vendored_protocs_dist",
         "//:LICENSE",
     ],
+    tags = ["manual"],
+    visibility = ["//rust:__pkg__"],
+)
+
+pkg_tar(
+    name = "codegen_crate_test",
+    srcs = [
+        ":protobuf_codegen_files",
+        ":vendored_protocs_test",
+        "//:LICENSE",
+    ],
+    tags = ["manual"],
     visibility = ["//rust:__pkg__"],
 )
 
@@ -315,8 +329,8 @@ pkg_files(
     strip_prefix = strip_prefix.from_root("rust/protobuf_codegen/example"),
 )
 
-pkg_zip(
-    name = "codegen_example",
+pkg_tar(
+    name = "codegen_example_test",
     srcs = [
         ":codegen_example_files",
         "//:LICENSE",
@@ -324,15 +338,65 @@ pkg_zip(
     visibility = ["//rust:__pkg__"],
 )
 
+# Bundle all protoc binaries for all platforms. Requires the toolchains to be installed.
+pkg_cross_compiled_binaries(
+    name = "vendored_protocs_dist",
+    cpus = [
+        # TODO: Re-enable these platforms once the toolchains are available.
+        # "osx-x86_64",
+        # "osx-aarch_64",
+        "linux-aarch_64",
+        "linux-ppcle_64",
+        # "linux-s390_64",
+        "linux-x86_32",
+        "linux-x86_64",
+        "win32",
+        "win64",
+    ],
+    prefix = "bin",
+    tags = ["manual"],
+    targets = [
+        "//upb_generator/minitable:protoc-gen-upb_minitable",
+        "//:protoc",
+    ],
+)
+
+# Bundle only the linux-x86_64 protoc for testing.
+pkg_cross_compiled_binaries(
+    name = "vendored_protocs_test",
+    cpus = [
+        "linux-x86_64",
+    ],
+    prefix = "bin",
+    tags = ["manual"],
+    targets = [
+        "//upb_generator/minitable:protoc-gen-upb_minitable",
+        "//:protoc",
+    ],
+)
+
+# Run the cargo test with only a bundled linux-x86_64 protoc.
 sh_binary(
     name = "cargo_test",
     srcs = ["cargo_test.sh"],
     data = [
-        ":codegen_crate",
-        ":codegen_example",
-        ":rust_crate",
-        "//:protoc",
-        "//upb_generator/minitable:protoc-gen-upb_minitable",
+        ":codegen_crate_test",
+        ":codegen_example_test",
+        ":protobuf_crate_dist",
     ],
+    tags = ["manual"],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+)
+
+# Run the cargo test with all bundled protocs.
+sh_binary(
+    name = "cargo_release_test",
+    srcs = ["cargo_test.sh"],
+    data = [
+        ":codegen_crate_dist",
+        ":codegen_example_test",
+        ":protobuf_crate_dist",
+    ],
+    tags = ["manual"],
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )

@@ -20,8 +20,10 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/hpb/tests/child_model.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/no_package.upb.proto.h"
+#include "google/protobuf/compiler/hpb/tests/set_alias.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/test_extension.upb.proto.h"
 #include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
+#include "google/protobuf/hpb/arena.h"
 #include "google/protobuf/hpb/backend/upb/interop.h"
 #include "google/protobuf/hpb/hpb.h"
 #include "google/protobuf/hpb/ptr.h"
@@ -33,10 +35,12 @@
 namespace {
 
 using ::hpb::internal::Requires;
+using ::hpb_unittest::protos::Child;
 using ::hpb_unittest::protos::ChildModel1;
 using ::hpb_unittest::protos::container_ext;
 using ::hpb_unittest::protos::ContainerExtension;
 using ::hpb_unittest::protos::other_ext;
+using ::hpb_unittest::protos::Parent;
 using ::hpb_unittest::protos::RED;
 using ::hpb_unittest::protos::TestEnum;
 using ::hpb_unittest::protos::TestModel;
@@ -1242,6 +1246,31 @@ TEST(CppGeneratedCode, ClearConstMessageShouldFailForConstChild) {
   TestModel model;
   EXPECT_FALSE(CanCallClearMessage<decltype(model.child_model_1())>());
   EXPECT_TRUE(CanCallClearMessage<decltype(model.mutable_child_model_1())>());
+}
+
+TEST(CppGeneratedCode, SetAlias) {
+  hpb::Arena arena;
+  auto child = hpb::CreateMessage<Child>(arena);
+  child.set_peeps(12);
+  auto parent1 = hpb::CreateMessage<Parent>(arena);
+  auto parent2 = hpb::CreateMessage<Parent>(arena);
+  parent1.set_alias_child(child);
+  parent2.set_alias_child(child);
+
+  ASSERT_EQ(parent1.child()->peeps(), parent2.child()->peeps());
+  ASSERT_EQ(hpb::interop::upb::GetMessage(parent1.child()),
+            hpb::interop::upb::GetMessage(parent2.child()));
+  auto childPtr = hpb::Ptr<Child>(child);
+  ASSERT_EQ(hpb::interop::upb::GetMessage(childPtr),
+            hpb::interop::upb::GetMessage(parent1.child()));
+}
+
+TEST(CppGeneratedCode, SetAliasFailsForDifferentArena) {
+  hpb::Arena arena;
+  auto child = hpb::CreateMessage<Child>(arena);
+  hpb::Arena different_arena;
+  auto parent = hpb::CreateMessage<Parent>(different_arena);
+  EXPECT_DEATH(parent.set_alias_child(child), "hpb::interop::upb::GetArena");
 }
 
 }  // namespace

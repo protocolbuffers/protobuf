@@ -3,7 +3,7 @@
 
 module(
     name = "protobuf",
-    version = "29.0-dev",  # Automatically updated on release
+    version = "30.0-dev",  # Automatically updated on release
     compatibility_level = 1,
     repo_name = "com_google_protobuf",
 )
@@ -50,7 +50,7 @@ bazel_dep(
 
 bazel_dep(
     name = "rules_kotlin",
-    version = "1.9.0",
+    version = "1.9.6",
 )
 
 bazel_dep(
@@ -70,7 +70,7 @@ bazel_dep(
 
 bazel_dep(
     name = "rules_rust",
-    version = "0.45.1",
+    version = "0.51.0",
 )
 
 bazel_dep(

@@ -204,8 +204,7 @@ void CppMessageExterns(Context& ctx, const Descriptor& msg) {
        {"repeated_add_thunk", ThunkName(ctx, msg, "repeated_add")},
        {"repeated_clear_thunk", ThunkName(ctx, msg, "repeated_clear")},
        {"repeated_copy_from_thunk", ThunkName(ctx, msg, "repeated_copy_from")},
-       {"repeated_reserve_thunk", ThunkName(ctx, msg, "repeated_reserve")},
-       {"map_size_info_thunk", ThunkName(ctx, msg, "size_info")}},
+       {"repeated_reserve_thunk", ThunkName(ctx, msg, "repeated_reserve")}},
       R"rs(
       fn $new_thunk$() -> $pbr$::RawMessage;
       fn $default_instance_thunk$() -> $pbr$::RawMessage;
@@ -218,7 +217,6 @@ void CppMessageExterns(Context& ctx, const Descriptor& msg) {
       fn $repeated_clear_thunk$(raw: $pbr$::RawRepeatedField);
       fn $repeated_copy_from_thunk$(dst: $pbr$::RawRepeatedField, src: $pbr$::RawRepeatedField);
       fn $repeated_reserve_thunk$(raw: $pbr$::RawRepeatedField, additional: usize);
-      fn $map_size_info_thunk$(i: $pbr$::MapNodeSizeInfoIndex) -> $pbr$::MapNodeSizeInfo;
     )rs");
 }
 
@@ -580,8 +578,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
     case Kernel::kCpp:
       for (const auto& t : kMapKeyTypes) {
         ctx.Emit(
-            {{"map_size_info_thunk", ThunkName(ctx, msg, "size_info")},
-             {"map_insert",
+            {{"map_insert",
               absl::StrCat("proto2_rust_map_insert_", t.thunk_ident)},
              {"map_remove",
               absl::StrCat("proto2_rust_map_remove_", t.thunk_ident)},
@@ -610,13 +607,13 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                 }
 
                 unsafe fn map_free(_private: $pbi$::Private, map: &mut $pb$::Map<$key_t$, Self>) {
-                    use $pbr$::MapNodeSizeInfoIndexForType;
-                    unsafe { $pbr$::proto2_rust_map_free(map.as_raw($pbi$::Private), $key_is_string$, $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX)); }
+                    use $pbr$::MapKey;
+                    unsafe { $pbr$::proto2_rust_map_free(map.as_raw($pbi$::Private), $key_t$::CATEGORY, <$pb$::View::<$Msg$> as std::default::Default>::default().raw_msg()); }
                 }
 
                 fn map_clear(mut map: $pb$::MapMut<$key_t$, Self>) {
-                    use $pbr$::MapNodeSizeInfoIndexForType;
-                    unsafe { $pbr$::proto2_rust_map_clear(map.as_raw($pbi$::Private), $key_is_string$, $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX)); }
+                    use $pbr$::MapKey;
+                    unsafe { $pbr$::proto2_rust_map_clear(map.as_raw($pbi$::Private), $key_t$::CATEGORY, <$pb$::View::<$Msg$> as std::default::Default>::default().raw_msg()); }
                 }
 
                 fn map_len(map: $pb$::MapView<$key_t$, Self>) -> usize {
@@ -624,24 +621,21 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                 }
 
                 fn map_insert(mut map: $pb$::MapMut<$key_t$, Self>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
-                    use $pbr$::MapNodeSizeInfoIndexForType;
                     unsafe {
                         $pbr$::$map_insert$(
                             map.as_raw($pbi$::Private),
-                            $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
                             $key_expr$,
                             value.into_proxied($pbi$::Private).raw_msg())
                     }
                 }
 
-                fn map_get<'a>(map: $pb$::MapView<'a, $key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
-                    use $pbr$::MapNodeSizeInfoIndexForType;
+                fn map_get<'a>(map: $pb$::MapView<'a, $key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> $Option$<$pb$::View<'a, Self>> {
                     let key = $key_expr$;
                     let mut value = $std$::mem::MaybeUninit::uninit();
                     let found = unsafe {
                         $pbr$::$map_get$(
                             map.as_raw($pbi$::Private),
-                            $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
+                            <$pb$::View::<$Msg$> as std::default::Default>::default().raw_msg(),
                             key,
                             value.as_mut_ptr())
                     };
@@ -652,11 +646,10 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                 }
 
                 fn map_remove(mut map: $pb$::MapMut<$key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> bool {
-                    use $pbr$::MapNodeSizeInfoIndexForType;
                     unsafe {
                         $pbr$::$map_remove$(
                             map.as_raw($pbi$::Private),
-                            $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX),
+                            <$pb$::View::<$Msg$> as std::default::Default>::default().raw_msg(),
                             $key_expr$)
                     }
                 }
@@ -675,8 +668,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     }
                 }
 
-                fn map_iter_next<'a>(iter: &mut $pb$::MapIter<'a, $key_t$, Self>) -> Option<($pb$::View<'a, $key_t$>, $pb$::View<'a, Self>)> {
-                    use $pbr$::MapNodeSizeInfoIndexForType;
+                fn map_iter_next<'a>(iter: &mut $pb$::MapIter<'a, $key_t$, Self>) -> $Option$<($pb$::View<'a, $key_t$>, $pb$::View<'a, Self>)> {
                     // SAFETY:
                     // - The `MapIter` API forbids the backing map from being mutated for 'a,
                     //   and guarantees that it's the correct key and value types.
@@ -686,7 +678,7 @@ void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
                     unsafe {
                         iter.as_raw_mut($pbi$::Private).next_unchecked::<$key_t$, Self, _, _>(
                             |iter, key, value| { $pbr$::$map_iter_get$(
-                                iter, $map_size_info_thunk$($key_t$::SIZE_INFO_INDEX), key, value) },
+                                iter, <$pb$::View::<$Msg$> as std::default::Default>::default().raw_msg(), key, value) },
                             |ffi_key| $from_ffi_key_expr$,
                             |raw_msg| $Msg$View::new($pbi$::Private, raw_msg)
                         )
@@ -1397,7 +1389,6 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
        {"repeated_clear_thunk", ThunkName(ctx, msg, "repeated_clear")},
        {"repeated_copy_from_thunk", ThunkName(ctx, msg, "repeated_copy_from")},
        {"repeated_reserve_thunk", ThunkName(ctx, msg, "repeated_reserve")},
-       {"map_size_info_thunk", ThunkName(ctx, msg, "size_info")},
        {"nested_msg_thunks",
         [&] {
           for (int i = 0; i < msg.nested_type_count(); ++i) {
@@ -1464,23 +1455,6 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
           google::protobuf::RepeatedPtrField<$QualifiedMsg$>* field,
           size_t additional) {
           field->Reserve(field->size() + additional);
-        }
-        google::protobuf::internal::MapNodeSizeInfoT $map_size_info_thunk$(int32_t i) {
-          static constexpr google::protobuf::internal::MapNodeSizeInfoT size_infos[] = {)cc"
-      // LINT.IfChange(size_info_mapping)
-      R"cc(
-        google::protobuf::internal::RustMapHelper::SizeInfo<int32_t, $QualifiedMsg$>(),
-            google::protobuf::internal::RustMapHelper::SizeInfo<int64_t,
-                                                      $QualifiedMsg$>(),
-            google::protobuf::internal::RustMapHelper::SizeInfo<bool, $QualifiedMsg$>(),
-            google::protobuf::internal::RustMapHelper::SizeInfo<std::string,
-                                                      $QualifiedMsg$>()
-      )cc"
-      // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp.rs:size_info_mapping)
-      R"cc(
-        }
-        ;
-        return size_infos[i];
         }
 
         $accessor_thunks$

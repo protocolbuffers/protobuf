@@ -98,7 +98,7 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
             unsafe { $pbr$::$map_insert_thunk$(map.as_raw($pbi$::Private), $to_ffi_key_expr$, value.into_proxied($pbi$::Private).0) }
         }
 
-        fn map_get<'a>(map: $pb$::MapView<'a, $key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> Option<$pb$::View<'a, Self>> {
+        fn map_get<'a>(map: $pb$::MapView<'a, $key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> $Option$<$pb$::View<'a, Self>> {
             let key = $to_ffi_key_expr$;
             let mut value = $std$::mem::MaybeUninit::uninit();
             let found = unsafe { $pbr$::$map_get_thunk$(map.as_raw($pbi$::Private), key, value.as_mut_ptr()) };
@@ -127,7 +127,7 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
             }
         }
 
-        fn map_iter_next<'a>(iter: &mut $pb$::MapIter<'a, $key_t$, Self>) -> Option<($pb$::View<'a, $key_t$>, $pb$::View<'a, Self>)> {
+        fn map_iter_next<'a>(iter: &mut $pb$::MapIter<'a, $key_t$, Self>) -> $Option$<($pb$::View<'a, $key_t$>, $pb$::View<'a, Self>)> {
             // SAFETY:
             // - The `MapIter` API forbids the backing map from being mutated for 'a,
             //   and guarantees that it's the correct key and value types.

@@ -204,7 +204,7 @@ class DynamicMessage final : public Message {
 
   // implements Message ----------------------------------------------
 
-  const ClassData* GetClassData() const PROTOBUF_FINAL;
+  const internal::ClassData* GetClassData() const PROTOBUF_FINAL;
 
 #if defined(__cpp_lib_destroying_delete) && defined(__cpp_sized_deallocation)
   static void operator delete(DynamicMessage* msg, std::destroying_delete_t);
@@ -265,8 +265,8 @@ struct DynamicMessageFactory::TypeInfo {
   std::unique_ptr<uint32_t[]> has_bits_indices;
   int weak_field_map_offset;  // The offset for the weak_field_map;
 
-  DynamicMessage::ClassDataFull class_data = {
-      DynamicMessage::ClassData{
+  internal::ClassDataFull class_data = {
+      internal::ClassData{
           nullptr,  // default_instance
           nullptr,  // tc_table
           nullptr,  // on_demand_register_arena_dtor
@@ -634,7 +634,7 @@ void DynamicMessage::CrossLinkPrototypes() {
   }
 }
 
-const MessageLite::ClassData* DynamicMessage::GetClassData() const {
+const internal::ClassData* DynamicMessage::GetClassData() const {
   return type_info_->class_data.base();
 }
 

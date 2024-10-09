@@ -380,17 +380,18 @@ const FieldDescriptor* MapKeyField(const FieldDescriptor* descriptor);
 
 const FieldDescriptor* MapValueField(const FieldDescriptor* descriptor);
 
-inline std::string JvmSynthetic(const Options& options) {
-  return options.jvm_dsl ? "@kotlin.jvm.JvmSynthetic\n" : "";
+inline std::string JvmSynthetic(bool jvm_dsl) {
+  return jvm_dsl ? "@kotlin.jvm.JvmSynthetic\n" : "";
 }
 
 struct JvmNameContext {
   const Options& options;
   io::Printer* printer;
+  bool lite = true;
 };
 
 inline void JvmName(absl::string_view name, const JvmNameContext& context) {
-  if (!context.options.jvm_dsl) return;
+  if (context.lite && !context.options.jvm_dsl) return;
   context.printer->Emit("@kotlin.jvm.JvmName(\"");
   // Note: `name` will likely have vars in it that we do want to interpolate.
   context.printer->Emit(name);

@@ -521,6 +521,17 @@ std::string QualifiedDefaultInstancePtr(const Descriptor* descriptor,
                       "ptr_");
 }
 
+std::string ClassDataType(const Descriptor* descriptor,
+                          const Options& options) {
+  return HasDescriptorMethods(descriptor->file(), options) ||
+                 // Boostrap protos are always full, even when lite is forced
+                 // via options.
+                 IsBootstrapProto(options, descriptor->file())
+             ? "ClassDataFull"
+             : absl::StrFormat("ClassDataLite<%d>",
+                               descriptor->full_name().size() + 1);
+}
+
 std::string DescriptorTableName(const FileDescriptor* file,
                                 const Options& options) {
   return UniqueName("descriptor_table", file, options);
@@ -1083,18 +1094,8 @@ bool HasRepeatedFields(const FileDescriptor* file) {
   return false;
 }
 
-static bool IsStringPieceField(const FieldDescriptor* field,
-                               const Options& options) {
-  return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         internal::cpp::EffectiveStringCType(field) ==
-             FieldOptions::STRING_PIECE;
-}
-
 static bool HasStringPieceFields(const Descriptor* descriptor,
                                  const Options& options) {
-  for (int i = 0; i < descriptor->field_count(); ++i) {
-    if (IsStringPieceField(descriptor->field(i), options)) return true;
-  }
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
     if (HasStringPieceFields(descriptor->nested_type(i), options)) return true;
   }
@@ -1108,15 +1109,10 @@ bool HasStringPieceFields(const FileDescriptor* file, const Options& options) {
   return false;
 }
 
-static bool IsCordField(const FieldDescriptor* field, const Options& options) {
-  return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD;
-}
-
 static bool HasCordFields(const Descriptor* descriptor,
                           const Options& options) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
-    if (IsCordField(descriptor->field(i), options)) return true;
+    if (IsCord(descriptor->field(i))) return true;
   }
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
     if (HasCordFields(descriptor->nested_type(i), options)) return true;

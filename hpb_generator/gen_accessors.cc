@@ -111,6 +111,13 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
         output(R"cc(
                  $1 $2() const;
                  $0 mutable_$2();
+                 /**
+                  * Re-points submessage to the given target.
+                  *
+                  * REQUIRES:
+                  * - both messages must be in the same arena.
+                  */
+                 void set_alias_$2($0 target);
                )cc",
                MessagePtrConstType(field, /* const */ false),
                MessagePtrConstType(field, /* const */ true),
@@ -262,11 +269,18 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
                 return hpb::interop::upb::MakeHandle<$4>(
                     (upb_Message*)($3_mutable_$5(msg_, $6)), $6);
               }
+              void $0::set_alias_$2($1 target) {
+                ABSL_CHECK_EQ(arena_, hpb::interop::upb::GetArena(target));
+                upb_Message_SetBaseFieldMessage(
+                    UPB_UPCAST(msg_),
+                    upb_MiniTable_GetFieldByIndex($7::minitable(), $8),
+                    hpb::interop::upb::GetMessage(target));
+              }
             )cc",
             class_name, MessagePtrConstType(field, /* is_const */ false),
             resolved_field_name, MessageName(desc),
             MessageBaseType(field, /* maybe_const */ false), resolved_upbc_name,
-            arena_expression);
+            arena_expression, ClassName(desc), field->index());
       }
     }
   }
@@ -459,6 +473,8 @@ void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
         output("using $0Access::$1;\n", ClassName(desc), resolved_field_name);
         if (!read_only) {
           output("using $0Access::mutable_$1;\n", class_name,
+                 resolved_field_name);
+          output("using $0Access::set_alias_$1;\n", class_name,
                  resolved_field_name);
         }
       } else {

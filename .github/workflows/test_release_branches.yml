@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        branch: [25.x, 27.x, 28.x]
+        branch: [25.x, 28.x, 29.x]
     runs-on: ubuntu-latest
     permissions:
       actions: write
