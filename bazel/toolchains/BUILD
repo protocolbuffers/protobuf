@@ -28,8 +28,13 @@ bzl_library(
 )
 
 filegroup(
-    name = "bazel_osx_p4deps",
-    srcs = glob(["**"]),
+    name = "for_bazel_tests",
+    testonly = True,
+    srcs = [
+        "BUILD",
+        "proto_lang_toolchain_bzl",
+        "proto_toolchain_bzl",
+    ],
     visibility = [
         "//bazel:__pkg__",
     ],

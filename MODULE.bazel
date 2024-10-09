@@ -30,7 +30,7 @@ bazel_dep(
 
 bazel_dep(
     name = "rules_cc",
-    version = "0.0.9",
+    version = "0.0.13",
 )
 
 bazel_dep(
