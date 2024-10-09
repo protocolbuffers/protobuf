@@ -239,20 +239,6 @@
   }
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-// Helper to make an unknown field set with something in it.
-static GPBUnknownFieldSet *UnknownFieldsSetHelper(int num) {
-  GPBUnknownFieldSet *result = [[[GPBUnknownFieldSet alloc] init] autorelease];
-
-  GPBUnknownField *field = [[[GPBUnknownField alloc] initWithNumber:num] autorelease];
-  [field addVarint:num];
-  [result addField:field];
-
-  return result;
-}
-#pragma clang diagnostic pop
-
 // Helper to add an unknown field data to messages.
 static void AddUnknownFields(GPBMessage *message, int num) {
   GPBUnknownFields *ufs = [[GPBUnknownFields alloc] init];
@@ -272,11 +258,7 @@ static BOOL HasUnknownFields(GPBMessage *message) {
 - (void)testDropMessageUnknownFieldsRecursively {
   TestAllExtensions *message = [TestAllExtensions message];
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
   // Give it unknownFields.
-  message.unknownFields = UnknownFieldsSetHelper(777);
   AddUnknownFields(message, 1777);
 
   // Given it extensions that include a message with unknown fields of its own.
@@ -287,21 +269,18 @@ static BOOL HasUnknownFields(GPBMessage *message) {
     // Group
     OptionalGroup_extension *optionalGroup = [OptionalGroup_extension message];
     optionalGroup.a = 123;
-    optionalGroup.unknownFields = UnknownFieldsSetHelper(779);
     AddUnknownFields(optionalGroup, 1779);
     [message setExtension:[UnittestRoot optionalGroupExtension] value:optionalGroup];
 
     // Message
     TestAllTypes_NestedMessage *nestedMessage = [TestAllTypes_NestedMessage message];
     nestedMessage.bb = 456;
-    nestedMessage.unknownFields = UnknownFieldsSetHelper(778);
     AddUnknownFields(nestedMessage, 1778);
     [message setExtension:[UnittestRoot optionalNestedMessageExtension] value:nestedMessage];
 
     // Repeated Group
     RepeatedGroup_extension *repeatedGroup = [[RepeatedGroup_extension alloc] init];
     repeatedGroup.a = 567;
-    repeatedGroup.unknownFields = UnknownFieldsSetHelper(780);
     AddUnknownFields(repeatedGroup, 1780);
     [message addExtension:[UnittestRoot repeatedGroupExtension] value:repeatedGroup];
     [repeatedGroup release];
@@ -309,7 +288,6 @@ static BOOL HasUnknownFields(GPBMessage *message) {
     // Repeated Message
     nestedMessage = [[TestAllTypes_NestedMessage alloc] init];
     nestedMessage.bb = 678;
-    nestedMessage.unknownFields = UnknownFieldsSetHelper(781);
     AddUnknownFields(nestedMessage, 1781);
     [message addExtension:[UnittestRoot repeatedNestedMessageExtension] value:nestedMessage];
     [nestedMessage release];
@@ -319,7 +297,6 @@ static BOOL HasUnknownFields(GPBMessage *message) {
 
   XCTAssertNotNil(message);
   XCTAssertTrue(HasUnknownFields(message));
-  XCTAssertNotNil(message.unknownFields);
   XCTAssertTrue([message hasExtension:[UnittestRoot optionalInt32Extension]]);
 
   {
@@ -329,7 +306,6 @@ static BOOL HasUnknownFields(GPBMessage *message) {
     XCTAssertNotNil(optionalGroup);
     XCTAssertEqual(optionalGroup.a, 123);
     XCTAssertTrue(HasUnknownFields(optionalGroup));
-    XCTAssertNotNil(optionalGroup.unknownFields);
   }
 
   {
@@ -339,7 +315,6 @@ static BOOL HasUnknownFields(GPBMessage *message) {
     XCTAssertNotNil(nestedMessage);
     XCTAssertEqual(nestedMessage.bb, 456);
     XCTAssertTrue(HasUnknownFields(nestedMessage));
-    XCTAssertNotNil(nestedMessage.unknownFields);
   }
 
   {
@@ -350,7 +325,6 @@ static BOOL HasUnknownFields(GPBMessage *message) {
     XCTAssertNotNil(repeatedGroup);
     XCTAssertEqual(repeatedGroup.a, 567);
     XCTAssertTrue(HasUnknownFields(repeatedGroup));
-    XCTAssertNotNil(repeatedGroup.unknownFields);
   }
 
   {
@@ -362,7 +336,6 @@ static BOOL HasUnknownFields(GPBMessage *message) {
     XCTAssertNotNil(repeatedNestedMessage);
     XCTAssertEqual(repeatedNestedMessage.bb, 678);
     XCTAssertTrue(HasUnknownFields(repeatedNestedMessage));
-    XCTAssertNotNil(repeatedNestedMessage.unknownFields);
   }
 
   // Drop them.
@@ -372,7 +345,6 @@ static BOOL HasUnknownFields(GPBMessage *message) {
 
   XCTAssertNotNil(message);
   XCTAssertFalse(HasUnknownFields(message));
-  XCTAssertNil(message.unknownFields);
   XCTAssertTrue([message hasExtension:[UnittestRoot optionalInt32Extension]]);
 
   {
@@ -382,7 +354,6 @@ static BOOL HasUnknownFields(GPBMessage *message) {
     XCTAssertNotNil(optionalGroup);
     XCTAssertEqual(optionalGroup.a, 123);
     XCTAssertFalse(HasUnknownFields(optionalGroup));
-    XCTAssertNil(optionalGroup.unknownFields);
   }
 
   {
@@ -392,7 +363,6 @@ static BOOL HasUnknownFields(GPBMessage *message) {
     XCTAssertNotNil(nestedMessage);
     XCTAssertEqual(nestedMessage.bb, 456);
     XCTAssertFalse(HasUnknownFields(nestedMessage));
-    XCTAssertNil(nestedMessage.unknownFields);
   }
 
   {
@@ -403,7 +373,6 @@ static BOOL HasUnknownFields(GPBMessage *message) {
     XCTAssertNotNil(repeatedGroup);
     XCTAssertEqual(repeatedGroup.a, 567);
     XCTAssertFalse(HasUnknownFields(repeatedGroup));
-    XCTAssertNil(repeatedGroup.unknownFields);
   }
 
   {
@@ -415,26 +384,18 @@ static BOOL HasUnknownFields(GPBMessage *message) {
     XCTAssertNotNil(repeatedNestedMessage);
     XCTAssertEqual(repeatedNestedMessage.bb, 678);
     XCTAssertFalse(HasUnknownFields(repeatedNestedMessage));
-    XCTAssertNil(repeatedNestedMessage.unknownFields);
   }
-
-#pragma clang diagnostic pop
 }
 
 - (void)testDropMessageUnknownFieldsRecursively_Maps {
   TestMap *message = [TestMap message];
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
   {
     ForeignMessage *foreignMessage = [ForeignMessage message];
-    foreignMessage.unknownFields = UnknownFieldsSetHelper(100);
     AddUnknownFields(foreignMessage, 1000);
     [message.mapInt32ForeignMessage setObject:foreignMessage forKey:100];
 
     foreignMessage = [ForeignMessage message];
-    foreignMessage.unknownFields = UnknownFieldsSetHelper(101);
     AddUnknownFields(foreignMessage, 1001);
     [message.mapStringForeignMessage setObject:foreignMessage forKey:@"101"];
   }
@@ -447,14 +408,12 @@ static BOOL HasUnknownFields(GPBMessage *message) {
     ForeignMessage *foreignMessage = [message.mapInt32ForeignMessage objectForKey:100];
     XCTAssertNotNil(foreignMessage);
     XCTAssertTrue(HasUnknownFields(foreignMessage));
-    XCTAssertNotNil(foreignMessage.unknownFields);
   }
 
   {
     ForeignMessage *foreignMessage = [message.mapStringForeignMessage objectForKey:@"101"];
     XCTAssertNotNil(foreignMessage);
     XCTAssertTrue(HasUnknownFields(foreignMessage));
-    XCTAssertNotNil(foreignMessage.unknownFields);
   }
 
   GPBMessageDropUnknownFieldsRecursively(message);
@@ -467,17 +426,13 @@ static BOOL HasUnknownFields(GPBMessage *message) {
     ForeignMessage *foreignMessage = [message.mapInt32ForeignMessage objectForKey:100];
     XCTAssertNotNil(foreignMessage);
     XCTAssertFalse(HasUnknownFields(foreignMessage));
-    XCTAssertNil(foreignMessage.unknownFields);
   }
 
   {
     ForeignMessage *foreignMessage = [message.mapStringForeignMessage objectForKey:@"101"];
     XCTAssertNotNil(foreignMessage);
     XCTAssertFalse(HasUnknownFields(foreignMessage));
-    XCTAssertNil(foreignMessage.unknownFields);
   }
-
-#pragma clang diagnostic pop
 }
 
 @end

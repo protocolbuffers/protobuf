@@ -18,7 +18,6 @@
 #import "GPBMessage.h"
 #import "GPBRootObject.h"
 #import "GPBUnknownField.h"
-#import "GPBUnknownFieldSet.h"
 #import "GPBUnknownFields.h"
 #import "GPBUtilities.h"
 #import "GPBWellKnownTypes.h"
