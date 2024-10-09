@@ -198,10 +198,10 @@ genrule(
 staleness_test(
     name = "proto_staleness_test",
     outs = glob(
-        ["src/**/*.php"] + WKT_GENERATED_FILES + DESCRIPTOR_GENERATED_FILES,
+        ["src/**/*.php"],
         allow_empty = True,
-        exclude = _RUNTIME_SOURCES,
-    ),
+        exclude = _RUNTIME_SOURCES + WKT_GENERATED_FILES + DESCRIPTOR_GENERATED_FILES,
+    ) + WKT_GENERATED_FILES + DESCRIPTOR_GENERATED_FILES,
     generated_pattern = "generated/%s",
     tags = ["manual"],
 )

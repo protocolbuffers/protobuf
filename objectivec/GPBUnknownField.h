@@ -8,10 +8,8 @@
 #import <Foundation/Foundation.h>
 
 #import "GPBArray.h"
-#import "GPBUnknownFieldSet.h"
 #import "GPBUnknownFields.h"
 
-@class GPBUnknownFieldSet;
 @class GPBUnknownFields;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -22,13 +20,6 @@ typedef NS_ENUM(uint8_t, GPBUnknownFieldType) {
   GPBUnknownFieldTypeFixed64,
   GPBUnknownFieldTypeLengthDelimited,  // Length prefixed
   GPBUnknownFieldTypeGroup,            // Tag delimited
-
-  /**
-   * This type is only used with fields from `GPBUnknownFieldsSet`. Some methods
-   * only work with instances with this type and other apis require the other
-   * type(s). It is a programming error to use the wrong methods.
-   **/
-  GPBUnknownFieldTypeLegacy,
 };
 
 /**
@@ -36,11 +27,6 @@ typedef NS_ENUM(uint8_t, GPBUnknownFieldType) {
  **/
 __attribute__((objc_subclassing_restricted))
 @interface GPBUnknownField : NSObject<NSCopying>
-
-/** Initialize a field with the given number. */
-- (instancetype)initWithNumber:(int32_t)number
-    __attribute__((deprecated(
-        "Use the apis on GPBUnknownFields to add new fields instead of making them directly.")));
 
 /** The field number the data is stored under. */
 @property(nonatomic, readonly, assign) int32_t number;
@@ -83,106 +69,6 @@ __attribute__((objc_subclassing_restricted))
  * It is a programming error to call this when the `type` is not a group.
  */
 @property(nonatomic, readonly, strong, nonnull) GPBUnknownFields *group;
-
-/**
- * An array of varint values for this field.
- *
- * Only valid for type == GPBUnknownFieldTypeLegacy, it is a programming error
- * to use with any other type.
- */
-@property(nonatomic, readonly, strong) GPBUInt64Array *varintList
-    __attribute__((deprecated("See the new apis on GPBUnknownFields and thus reduced api here.")));
-
-/**
- * An array of fixed32 values for this field.
- *
- * Only valid for type == GPBUnknownFieldTypeLegacy, it is a programming error
- * to use with any other type.
- */
-@property(nonatomic, readonly, strong) GPBUInt32Array *fixed32List
-    __attribute__((deprecated("See the new apis on GPBUnknownFields and thus reduced api here.")));
-
-/**
- * An array of fixed64 values for this field.
- *
- * Only valid for type == GPBUnknownFieldTypeLegacy, it is a programming error
- * to use with any other type.
- */
-@property(nonatomic, readonly, strong) GPBUInt64Array *fixed64List
-    __attribute__((deprecated("See the new apis on GPBUnknownFields and thus reduced api here.")));
-
-/**
- * An array of data values for this field.
- *
- * Only valid for type == GPBUnknownFieldTypeLegacy, it is a programming error
- * to use with any other type.
- */
-@property(nonatomic, readonly, strong) NSArray<NSData *> *lengthDelimitedList
-    __attribute__((deprecated("See the new apis on GPBUnknownFields and thus reduced api here.")));
-
-/**
- * An array of groups of values for this field.
- *
- * Only valid for type == GPBUnknownFieldTypeLegacy, it is a programming error
- * to use with any other type.
- */
-@property(nonatomic, readonly, strong) NSArray<GPBUnknownFieldSet *> *groupList
-    __attribute__((deprecated("See the new apis on GPBUnknownFields and thus reduced api here.")));
-
-/**
- * Add a value to the varintList.
- *
- * Only valid for type == GPBUnknownFieldTypeLegacy, it is a programming error
- * to use with any other type.
- *
- * @param value The value to add.
- **/
-- (void)addVarint:(uint64_t)value
-    __attribute__((deprecated("See the new apis on GPBUnknownFields and thus reduced api here.")));
-
-/**
- * Add a value to the fixed32List.
- *
- * Only valid for type == GPBUnknownFieldTypeLegacy, it is a programming error
- * to use with any other type.
- *
- * @param value The value to add.
- **/
-- (void)addFixed32:(uint32_t)value
-    __attribute__((deprecated("See the new apis on GPBUnknownFields and thus reduced api here.")));
-
-/**
- * Add a value to the fixed64List.
- *
- * Only valid for type == GPBUnknownFieldTypeLegacy, it is a programming error
- * to use with any other type.
- *
- * @param value The value to add.
- **/
-- (void)addFixed64:(uint64_t)value
-    __attribute__((deprecated("See the new apis on GPBUnknownFields and thus reduced api here.")));
-
-/**
- * Add a value to the lengthDelimitedList.
- *
- * Only valid for type == GPBUnknownFieldTypeLegacy, it is a programming error
- * to use with any other type.
- *
- * @param value The value to add.
- **/
-- (void)addLengthDelimited:(NSData *)value
-    __attribute__((deprecated("See the new apis on GPBUnknownFields and thus reduced api here.")));
-
-/**
- * Add a value to the groupList.
- *
- * Only valid for type == GPBUnknownFieldTypeLegacy, it is a programming error
- * to use with any other type.
- *
- * @param value The value to add.
- **/
-- (void)addGroup:(GPBUnknownFieldSet *)value
-    __attribute__((deprecated("See the new apis on GPBUnknownFields and thus reduced api here.")));
 
 @end
 

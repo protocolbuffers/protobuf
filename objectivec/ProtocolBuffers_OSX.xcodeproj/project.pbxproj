@@ -14,7 +14,6 @@
 		7461B5490F94FB4E00A0C422 /* GPBExtensionRegistry.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B4A90F94F99000A0C422 /* GPBExtensionRegistry.m */; };
 		7461B54C0F94FB4E00A0C422 /* GPBUnknownField.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B4AF0F94F99000A0C422 /* GPBUnknownField.m */; };
 		7461B5530F94FB4E00A0C422 /* GPBMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B4BF0F94F99000A0C422 /* GPBMessage.m */; };
-		7461B5610F94FB4E00A0C422 /* GPBUnknownFieldSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B4E20F94F99000A0C422 /* GPBUnknownFieldSet.m */; };
 		7461B5630F94FB4E00A0C422 /* GPBUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B4E60F94F99000A0C422 /* GPBUtilities.m */; };
 		7461B5640F94FB4E00A0C422 /* GPBWireFormat.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B4E80F94F99000A0C422 /* GPBWireFormat.m */; };
 		8B210CCE159383D60032D72D /* golden_message in Resources */ = {isa = PBXBuildFile; fileRef = 8B210CCD159383D60032D72D /* golden_message */; };
@@ -29,7 +28,6 @@
 		8BBEA4AA147C727D00C4ADB7 /* GPBCodedOutputStreamTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B69D0F94FDF800A0C422 /* GPBCodedOutputStreamTests.m */; };
 		8BBEA4AC147C727D00C4ADB7 /* GPBMessageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B6A30F94FDF800A0C422 /* GPBMessageTests.m */; };
 		8BBEA4B0147C727D00C4ADB7 /* GPBTestUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B6AC0F94FDF800A0C422 /* GPBTestUtilities.m */; };
-		8BBEA4B6147C727D00C4ADB7 /* GPBUnknownFieldSetTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B6B80F94FDF900A0C422 /* GPBUnknownFieldSetTest.m */; };
 		8BBEA4B7147C727D00C4ADB7 /* GPBUtilitiesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B6BA0F94FDF900A0C422 /* GPBUtilitiesTests.m */; };
 		8BBEA4B8147C727D00C4ADB7 /* GPBWireFormatTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B6BC0F94FDF900A0C422 /* GPBWireFormatTests.m */; };
 		8BBEA4BB147C729200C4ADB7 /* libProtocolBuffers.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7461B52E0F94FAF800A0C422 /* libProtocolBuffers.a */; };
@@ -73,7 +71,6 @@
 		F43ADD302C2F2B91005312E5 /* GPBUnknownFields.m in Sources */ = {isa = PBXBuildFile; fileRef = F43ADD2E2C2F2B91005312E5 /* GPBUnknownFields.m */; };
 		F43ADD312C2F2B91005312E5 /* GPBUnknownFields.h in Headers */ = {isa = PBXBuildFile; fileRef = F43ADD2F2C2F2B91005312E5 /* GPBUnknownFields.h */; };
 		F43ADD332C2F2BAD005312E5 /* GPBUnknownFieldsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F43ADD322C2F2BAD005312E5 /* GPBUnknownFieldsTest.m */; };
-		F43ADD432C2F381F005312E5 /* GPBCompileTest25.m in Sources */ = {isa = PBXBuildFile; fileRef = F43ADD422C2F381F005312E5 /* GPBCompileTest25.m */; };
 		F43ADD502C333D6C005312E5 /* GPBUnknownFields+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43ADD4F2C333D6B005312E5 /* GPBUnknownFields+Additions.swift */; };
 		F43ADD562C345CED005312E5 /* GPBUnknownField+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43ADD552C345CED005312E5 /* GPBUnknownField+Additions.swift */; };
 		F43ADD5C2C35A6CC005312E5 /* GPBUnknownFields_PackagePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = F43ADD5B2C35A6CC005312E5 /* GPBUnknownFields_PackagePrivate.h */; };
@@ -139,8 +136,6 @@
 		7461B4BE0F94F99000A0C422 /* GPBMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBMessage.h; sourceTree = "<group>"; };
 		7461B4BF0F94F99000A0C422 /* GPBMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBMessage.m; sourceTree = "<group>"; };
 		7461B4CD0F94F99000A0C422 /* GPBProtocolBuffers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBProtocolBuffers.h; sourceTree = "<group>"; };
-		7461B4E10F94F99000A0C422 /* GPBUnknownFieldSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBUnknownFieldSet.h; sourceTree = "<group>"; };
-		7461B4E20F94F99000A0C422 /* GPBUnknownFieldSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBUnknownFieldSet.m; sourceTree = "<group>"; };
 		7461B4E50F94F99000A0C422 /* GPBUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBUtilities.h; sourceTree = "<group>"; };
 		7461B4E60F94F99000A0C422 /* GPBUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBUtilities.m; sourceTree = "<group>"; };
 		7461B4E70F94F99000A0C422 /* GPBWireFormat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBWireFormat.h; sourceTree = "<group>"; };
@@ -151,7 +146,6 @@
 		7461B6A30F94FDF800A0C422 /* GPBMessageTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBMessageTests.m; sourceTree = "<group>"; };
 		7461B6AB0F94FDF800A0C422 /* GPBTestUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBTestUtilities.h; sourceTree = "<group>"; };
 		7461B6AC0F94FDF800A0C422 /* GPBTestUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBTestUtilities.m; sourceTree = "<group>"; };
-		7461B6B80F94FDF900A0C422 /* GPBUnknownFieldSetTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBUnknownFieldSetTest.m; sourceTree = "<group>"; };
 		7461B6BA0F94FDF900A0C422 /* GPBUtilitiesTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBUtilitiesTests.m; sourceTree = "<group>"; };
 		7461B6BC0F94FDF900A0C422 /* GPBWireFormatTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBWireFormatTests.m; sourceTree = "<group>"; };
 		8B09AAF614B663A7007B4184 /* unittest_objc.proto */ = {isa = PBXFileReference; lastKnownFileType = text; path = unittest_objc.proto; sourceTree = "<group>"; };
@@ -216,7 +210,6 @@
 		F43ADD2E2C2F2B91005312E5 /* GPBUnknownFields.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBUnknownFields.m; sourceTree = "<group>"; };
 		F43ADD2F2C2F2B91005312E5 /* GPBUnknownFields.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBUnknownFields.h; sourceTree = "<group>"; };
 		F43ADD322C2F2BAD005312E5 /* GPBUnknownFieldsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBUnknownFieldsTest.m; sourceTree = "<group>"; };
-		F43ADD422C2F381F005312E5 /* GPBCompileTest25.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest25.m; sourceTree = "<group>"; };
 		F43ADD4F2C333D6B005312E5 /* GPBUnknownFields+Additions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GPBUnknownFields+Additions.swift"; sourceTree = "<group>"; };
 		F43ADD552C345CED005312E5 /* GPBUnknownField+Additions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GPBUnknownField+Additions.swift"; sourceTree = "<group>"; };
 		F43ADD5B2C35A6CC005312E5 /* GPBUnknownFields_PackagePrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBUnknownFields_PackagePrivate.h; sourceTree = "<group>"; };
@@ -275,7 +268,6 @@
 		F4AC9E1D1A8BEB3500BD6E83 /* unittest_cycle.proto */ = {isa = PBXFileReference; lastKnownFileType = text; path = unittest_cycle.proto; sourceTree = "<group>"; };
 		F4B51B1D1BBC610700744318 /* GPBObjectiveCPlusPlusTest.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = GPBObjectiveCPlusPlusTest.mm; sourceTree = "<group>"; };
 		F4B6B8AF1A9CC98000892426 /* GPBUnknownField_PackagePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPBUnknownField_PackagePrivate.h; sourceTree = "<group>"; };
-		F4B6B8B21A9CCBDA00892426 /* GPBUnknownFieldSet_PackagePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPBUnknownFieldSet_PackagePrivate.h; sourceTree = "<group>"; };
 		F4B6B8B61A9CD1DE00892426 /* GPBExtensionInternals.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPBExtensionInternals.h; sourceTree = "<group>"; };
 		F4B6B8B81A9CD1DE00892426 /* GPBRootObject_PackagePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPBRootObject_PackagePrivate.h; sourceTree = "<group>"; };
 		F4C4B9E21E1D974F00D3B61D /* GPBDictionaryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBDictionaryTests.m; sourceTree = "<group>"; };
@@ -428,9 +420,6 @@
 				F43ADD2F2C2F2B91005312E5 /* GPBUnknownFields.h */,
 				F43ADD2E2C2F2B91005312E5 /* GPBUnknownFields.m */,
 				F43ADD4F2C333D6B005312E5 /* GPBUnknownFields+Additions.swift */,
-				F4B6B8B21A9CCBDA00892426 /* GPBUnknownFieldSet_PackagePrivate.h */,
-				7461B4E10F94F99000A0C422 /* GPBUnknownFieldSet.h */,
-				7461B4E20F94F99000A0C422 /* GPBUnknownFieldSet.m */,
 			);
 			name = Fields;
 			sourceTree = "<group>";
@@ -497,7 +486,6 @@
 				F40EE48A206BF8B00071091A /* GPBCompileTest22.m */,
 				F40EE487206BF8B00071091A /* GPBCompileTest23.m */,
 				F4A92AFC2B88E105001E4F69 /* GPBCompileTest24.m */,
-				F43ADD422C2F381F005312E5 /* GPBCompileTest25.m */,
 				5102DABB1891A052002037B6 /* GPBConcurrencyTests.m */,
 				F4353D1C1AB8822D005A6198 /* GPBDescriptorTests.m */,
 				F4C4B9E21E1D974F00D3B61D /* GPBDictionaryTests.m */,
@@ -521,7 +509,6 @@
 				7461B6AC0F94FDF800A0C422 /* GPBTestUtilities.m */,
 				8BD3981E14BE59D70081D629 /* GPBUnittestProtos.m */,
 				F4F8D8811D789FCE002CE128 /* GPBUnittestProtos2.m */,
-				7461B6B80F94FDF900A0C422 /* GPBUnknownFieldSetTest.m */,
 				F43ADD322C2F2BAD005312E5 /* GPBUnknownFieldsTest.m */,
 				7461B6BA0F94FDF900A0C422 /* GPBUtilitiesTests.m */,
 				8B4248DB1A92933A00BC1EC6 /* GPBWellKnownTypesTest.m */,
@@ -743,7 +730,6 @@
 				7461B5490F94FB4E00A0C422 /* GPBExtensionRegistry.m in Sources */,
 				7461B54C0F94FB4E00A0C422 /* GPBUnknownField.m in Sources */,
 				7461B5530F94FB4E00A0C422 /* GPBMessage.m in Sources */,
-				7461B5610F94FB4E00A0C422 /* GPBUnknownFieldSet.m in Sources */,
 				F47CF93423D9006000C7B24C /* GPBFieldMask.pbobjc.m in Sources */,
 				7461B5630F94FB4E00A0C422 /* GPBUtilities.m in Sources */,
 				7461B5640F94FB4E00A0C422 /* GPBWireFormat.m in Sources */,
@@ -798,7 +784,6 @@
 				5102DABC1891A073002037B6 /* GPBConcurrencyTests.m in Sources */,
 				F4487C751AADF7F500531423 /* GPBMessageTests+Runtime.m in Sources */,
 				F40EE4AC206BF8B90071091A /* GPBCompileTest02.m in Sources */,
-				F43ADD432C2F381F005312E5 /* GPBCompileTest25.m in Sources */,
 				F4353D351AC06F10005A6198 /* GPBDictionaryTests+Int32.m in Sources */,
 				F40EE4AF206BF8B90071091A /* GPBCompileTest05.m in Sources */,
 				F40EE4B8206BF8B90071091A /* GPBCompileTest14.m in Sources */,
@@ -810,7 +795,6 @@
 				F4353D341AC06F10005A6198 /* GPBDictionaryTests+Bool.m in Sources */,
 				F4487C831AAF6AB300531423 /* GPBMessageTests+Merge.m in Sources */,
 				F40EE4AB206BF8B90071091A /* GPBCompileTest01.m in Sources */,
-				8BBEA4B6147C727D00C4ADB7 /* GPBUnknownFieldSetTest.m in Sources */,
 				F4353D371AC06F10005A6198 /* GPBDictionaryTests+String.m in Sources */,
 				F4353D381AC06F10005A6198 /* GPBDictionaryTests+UInt32.m in Sources */,
 				F40EE4B3206BF8B90071091A /* GPBCompileTest09.m in Sources */,
