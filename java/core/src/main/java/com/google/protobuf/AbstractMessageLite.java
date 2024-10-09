@@ -344,8 +344,7 @@ public abstract class AbstractMessageLite<
         int growth = ((Collection<T>) values).size();
         if (list instanceof ArrayList) {
           ((ArrayList<T>) list).ensureCapacity(list.size() + growth);
-        }
-        if (list instanceof ProtobufArrayList) {
+        } else if (list instanceof ProtobufArrayList) {
           ((ProtobufArrayList<T>) list).ensureCapacity(list.size() + growth);
         }
       }

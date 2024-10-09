@@ -12,6 +12,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <limits>
 #include <new>  // IWYU pragma: keep for operator new().
 #include <string>
@@ -30,7 +31,6 @@ using type_info = ::type_info;
 #include "absl/base/attributes.h"
 #include "absl/base/macros.h"
 #include "absl/base/optimization.h"
-#include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "absl/utility/internal/if_constexpr.h"
 #include "google/protobuf/arena_align.h"
@@ -283,21 +283,52 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // trivially destructible.
   template <typename T>
   PROTOBUF_NDEBUG_INLINE static T* CreateArray(Arena* arena,
-                                               size_t num_elements) {
+                                               size_t num_elements,
+                                               size_t align = alignof(T)) {
     static_assert(std::is_trivial<T>::value,
                   "CreateArray requires a trivially constructible type");
     static_assert(std::is_trivially_destructible<T>::value,
                   "CreateArray requires a trivially destructible type");
     ABSL_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))
         << "Requested size is too large to fit into size_t.";
+    // TODO: Just use `std::aligned_alloc` instead of all this once
+    // we're at C++17. Account for some platforms that still don't support it
+    // even at C++17, e.g. older versions of MaxOS.
+    size_t array_bytes = sizeof(T) * num_elements;
+    size_t alloc_bytes = 0;
+    void* alloc = nullptr;
     if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
-      return new T[num_elements];
+      if (align == alignof(T)) {
+        alloc_bytes = array_bytes;
+        alloc = new T[num_elements];
+      } else {
+        // NOTE: `new char[]` is guaranteed to align at least at
+        // `alignof(std::max_align_t)`.
+        if (align <= alignof(std::max_align_t)) {
+          alloc_bytes = array_bytes;
+          alloc = new char[alloc_bytes];
+        } else {
+          alloc_bytes = array_bytes + align - 1;
+          alloc = new char[alloc_bytes];
+          // NOTE: Updates `alloc` to point to the first aligned element.
+          (void)std::align(align, array_bytes, alloc, alloc_bytes);
+        }
+      }
     } else {
       // We count on compiler to realize that if sizeof(T) is a multiple of
       // 8 AlignUpTo can be elided.
-      return static_cast<T*>(
-          arena->AllocateAlignedForArray(sizeof(T) * num_elements, alignof(T)));
+      alloc_bytes = array_bytes;
+      alloc = arena->AllocateAlignedForArray(alloc_bytes, align);
     }
+    const bool alloc_ok =
+        (num_elements == 0 && alloc == nullptr) ||
+        (alloc != nullptr && reinterpret_cast<uintptr_t>(alloc) % align == 0);
+    ABSL_DCHECK(alloc_ok) << "alloc=" << alloc
+                          << " num_elements=" << num_elements
+                          << " sizeof(T)=" << sizeof(T) << " align=" << align
+                          << " array_bytes=" << array_bytes
+                          << " alloc_bytes=" << alloc_bytes;
+    return static_cast<T*>(alloc);
   }
 
   // The following routines are for monitoring. They will approximate the total
