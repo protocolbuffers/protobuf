@@ -9,9 +9,7 @@ edition = "2023";
 
 package proto2_arena_unittest;
 
-// Use expanded encoding for repeated fields by default (proto2 behavior).
 option features.repeated_field_encoding = EXPANDED;
-option cc_enable_arenas = true;
 
 message NestedMessage {
   int32 d = 1;
