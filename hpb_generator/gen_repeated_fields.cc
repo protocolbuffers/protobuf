@@ -43,6 +43,7 @@ void WriteRepeatedFieldUsingAccessors(const protobuf::FieldDescriptor* field,
       output(
           R"cc(
             using $0Access::add_$1;
+            using $0Access::add_alias_$1;
             using $0Access::mutable_$1;
           )cc",
           class_name, resolved_field_name);
@@ -89,6 +90,12 @@ void WriteRepeatedFieldsInMessageHeader(const protobuf::Descriptor* desc,
           const ::hpb::RepeatedField<const $4>::CProxy $2() const;
           ::hpb::Ptr<::hpb::RepeatedField<$4>> mutable_$2();
           absl::StatusOr<$0> add_$2();
+          /**
+           * Re-points submsg of repeated field to given target.
+           *
+           * REQUIRES: both messages must be in the same arena.
+           */
+          bool add_alias_$2($0 target);
           $0 mutable_$2(size_t index) const;
         )cc",
         MessagePtrConstType(field, /* const */ false),   // $0
@@ -149,13 +156,26 @@ void WriteRepeatedMessageAccessor(const protobuf::Descriptor* message,
           if (!new_msg) {
             return ::hpb::MessageAllocationError();
           }
-          return hpb::interop::upb::MakeHandle<$4>((upb_Message*)new_msg, $5);
+          return hpb::interop::upb::MakeHandle<$4>((upb_Message *)new_msg, $5);
+        }
+
+        bool $0::add_alias_$2($1 target) {
+          ABSL_CHECK_EQ(arena_, hpb::interop::upb::GetArena(target));
+          size_t size = 0;
+          $3_$2(msg_, &size);
+          auto elements = $3_resize_$2(msg_, size + 1, arena_);
+          if (!elements) {
+            return false;
+          }
+          elements[size] = ($9 *)hpb::interop::upb::GetMessage(target);
+          return true;
         }
       )cc",
       class_name, MessagePtrConstType(field, /* const */ false),
       resolved_field_name, MessageName(message),
       MessageBaseType(field, /* maybe_const */ false), arena_expression,
-      upbc_name);
+      upbc_name, ClassName(message), field->index(),
+      upb::generator::CApiMessageType(field->message_type()->full_name()));
   output(
       R"cc(
         $1 $0::mutable_$2(size_t index) const {

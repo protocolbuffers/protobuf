@@ -121,8 +121,6 @@ __attribute__((objc_subclassing_restricted))
  * the `.group` of that result is also new, so if you intent is to modify the group
  * it *must* be fetched out of the result.
  *
- * It is a programming error to call this when the `type` is a legacy field.
- *
  * @param field The field to add.
  *
  * @return The autoreleased field that was added.
