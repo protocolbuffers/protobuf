@@ -409,7 +409,9 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   // The number of fields in this message type.
   int field_count() const;
   // Gets a field by index, where 0 <= index < field_count().
-  // These are returned in the order they were defined in the .proto file.
+  // These are returned in the order they were defined in the .proto file, not
+  // the field number order. (Use `FindFieldByNumber()` for
+  // tag number -> value lookup).
   const FieldDescriptor* field(int index) const;
 
   // Looks up a field by declared tag number.  Returns nullptr if no such field
@@ -1321,7 +1323,8 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   // than zero.
   int value_count() const;
   // Gets a value by index, where 0 <= index < value_count().
-  // These are returned in the order they were defined in the .proto file.
+  // These are returned in the order they were defined in the .proto file, not
+  // the enum value order. (Use `FindValueByNumber()` for enum -> value lookup).
   const EnumValueDescriptor* value(int index) const;
 
   // Looks up a value by name.  Returns nullptr if no such value exists.
