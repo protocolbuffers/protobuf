@@ -521,3 +521,10 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://userver.tech/
     *   Extensions: 1240-1249
+
+1. JaiaBot
+
+    *   Website: https://github.com/jaiarobotics/jaiabot
+    *   Extensions: 1250
+
+
