@@ -54,6 +54,9 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fcpp_5ffeatures_2eproto {
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto;
 namespace pb {
+enum CppFeatures_StringType : int;
+PROTOBUF_EXPORT bool CppFeatures_StringType_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t CppFeatures_StringType_internal_data_[];
 class CppFeatures;
 struct CppFeaturesDefaultTypeInternal;
 PROTOBUF_EXPORT extern CppFeaturesDefaultTypeInternal _CppFeatures_default_instance_;
@@ -61,6 +64,9 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull CppFeat
 }  // namespace pb
 namespace google {
 namespace protobuf {
+template <>
+internal::EnumTraitsT<::pb::CppFeatures_StringType_internal_data_>
+    internal::EnumTraitsImpl::value<::pb::CppFeatures_StringType>;
 }  // namespace protobuf
 }  // namespace google
 

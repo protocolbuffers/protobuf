@@ -136,28 +136,14 @@ void ExtensionSet::RegisterExtension(const MessageLite* extendee, int number,
   Register(info);
 }
 
-static bool CallNoArgValidityFunc(const void* arg, int number) {
-  // Note:  Must use C-style cast here rather than reinterpret_cast because
-  //   the C++ standard at one point did not allow casts between function and
-  //   data pointers and some compilers enforce this for C++-style casts.  No
-  //   compiler enforces it for C-style casts since lots of C-style code has
-  //   relied on these kinds of casts for a long time, despite being
-  //   technically undefined.  See:
-  //     http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#195
-  // Also note:  Some compilers do not allow function pointers to be "const".
-  //   Which makes sense, I suppose, because it's meaningless.
-  return ((EnumValidityFunc*)arg)(number);
-}
-
 void ExtensionSet::RegisterEnumExtension(const MessageLite* extendee,
                                          int number, FieldType type,
                                          bool is_repeated, bool is_packed,
-                                         EnumValidityFunc* is_valid) {
+                                         const uint32_t* validation_data) {
   ABSL_CHECK_EQ(type, WireFormatLite::TYPE_ENUM);
   ExtensionInfo info(extendee, number, type, is_repeated, is_packed);
-  info.enum_validity_check.func = CallNoArgValidityFunc;
-  // See comment in CallNoArgValidityFunc() about why we use a c-style cast.
-  info.enum_validity_check.arg = (void*)is_valid;
+  info.enum_validity_check.func = nullptr;
+  info.enum_validity_check.arg = validation_data;
   Register(info);
 }
 
