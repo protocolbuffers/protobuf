@@ -21,3 +21,7 @@ message Parent {
 message ParentWithRepeated {
   repeated Child children = 1;
 }
+
+message ParentWithMap {
+  map<int32, Child> child_map = 1;
+}
