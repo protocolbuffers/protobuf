@@ -440,6 +440,7 @@ class PROTOBUF_EXPORT TextFormat {
     // particular Descriptor.
     // Returns "true" if the registration succeeded, or "false" if there is
     // already a printer for that Descriptor.
+    // Takes ownership of the printer on successful registration.
     bool RegisterMessagePrinter(const Descriptor* descriptor,
                                 const MessagePrinter* printer);
 

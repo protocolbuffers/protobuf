@@ -47,15 +47,15 @@ typedef struct GPBMessage_Storage *GPBMessage_StoragePtr;
 // Parses a message of this type from the input and merges it with this
 // message.
 //
+// `endingTag` should be zero if expected to consume to the end of input, but if
+// the input is supposed to be a Group, it should be the endgroup tag to look for.
+//
 // Warning:  This does not verify that all required fields are present in
 // the input message.
-// Note:  The caller should call
-// -[CodedInputStream checkLastTagWas:] after calling this to
-// verify that the last tag seen was the appropriate end-group tag,
-// or zero for EOF.
 // NOTE: This will throw if there is an error while parsing.
 - (void)mergeFromCodedInputStream:(GPBCodedInputStream *)input
-                extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry;
+                extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry
+                        endingTag:(uint32_t)endingTag;
 
 - (void)addUnknownMapEntry:(int32_t)fieldNum value:(NSData *)data;
 
@@ -80,5 +80,8 @@ void GPBAutocreatedDictionaryModified(GPBMessage *self, id dictionary);
 // Clear the autocreator, if any. Asserts if the autocreator still has an
 // autocreated reference to this message.
 void GPBClearMessageAutocreator(GPBMessage *self);
+
+// The data (or null) from the unknown fields of a message;
+NSData *GPBMessageUnknownFieldsData(GPBMessage *self);
 
 CF_EXTERN_C_END

@@ -277,8 +277,8 @@ final class SchemaUtil {
     }
   }
 
-  public static void writeMessageList(int fieldNumber, List<?> value, Writer writer, Schema schema)
-      throws IOException {
+  public static void writeMessageList(
+      int fieldNumber, List<?> value, Writer writer, Schema<?> schema) throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeMessageList(fieldNumber, value, schema);
     }
@@ -300,7 +300,7 @@ final class SchemaUtil {
     }
   }
 
-  public static void writeGroupList(int fieldNumber, List<?> value, Writer writer, Schema schema)
+  public static void writeGroupList(int fieldNumber, List<?> value, Writer writer, Schema<?> schema)
       throws IOException {
     if (value != null && !value.isEmpty()) {
       writer.writeGroupList(fieldNumber, value, schema);
@@ -644,7 +644,7 @@ final class SchemaUtil {
     return size;
   }
 
-  static int computeSizeMessage(int fieldNumber, Object value, Schema schema) {
+  static int computeSizeMessage(int fieldNumber, Object value, Schema<?> schema) {
     if (value instanceof LazyFieldLite) {
       return CodedOutputStream.computeLazyFieldSize(fieldNumber, (LazyFieldLite) value);
     } else {
@@ -669,7 +669,7 @@ final class SchemaUtil {
     return size;
   }
 
-  static int computeSizeMessageList(int fieldNumber, List<?> list, Schema schema) {
+  static int computeSizeMessageList(int fieldNumber, List<?> list, Schema<?> schema) {
     final int length = list.size();
     if (length == 0) {
       return 0;
@@ -710,7 +710,7 @@ final class SchemaUtil {
     return size;
   }
 
-  static int computeSizeGroupList(int fieldNumber, List<MessageLite> list, Schema schema) {
+  static int computeSizeGroupList(int fieldNumber, List<MessageLite> list, Schema<?> schema) {
     final int length = list.size();
     if (length == 0) {
       return 0;

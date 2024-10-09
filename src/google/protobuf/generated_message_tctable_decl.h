@@ -18,9 +18,12 @@
 #include <cstdint>
 #include <type_traits>
 
+#include "absl/log/absl_check.h"
 #include "absl/types/span.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 
 // Must come last:
 #include "google/protobuf/port_def.inc"
@@ -284,7 +287,7 @@ struct alignas(uint64_t) TcParseTableBase {
   uint16_t num_aux_entries;
   uint32_t aux_offset;
 
-  const MessageLite::ClassData* class_data;
+  const ClassData* class_data;
   using PostLoopHandler = const char* (*)(MessageLite* msg, const char* ptr,
                                           ParseContext* ctx);
   PostLoopHandler post_loop_handler;
@@ -309,7 +312,7 @@ struct alignas(uint64_t) TcParseTableBase {
                              uint32_t field_entries_offset,
                              uint16_t num_field_entries,
                              uint16_t num_aux_entries, uint32_t aux_offset,
-                             const MessageLite::ClassData* class_data,
+                             const ClassData* class_data,
                              PostLoopHandler post_loop_handler,
                              TailCallParseFunc fallback
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -425,8 +428,6 @@ struct alignas(uint64_t) TcParseTableBase {
         : message_default_p(msg) {}
     constexpr FieldAux(const TcParseTableBase* table) : table(table) {}
     constexpr FieldAux(MapAuxInfo map_info) : map_info(map_info) {}
-    constexpr FieldAux(void (*create_in_arena)(Arena*, void*))
-        : create_in_arena(create_in_arena) {}
     constexpr FieldAux(LazyEagerVerifyFnType verify_func)
         : verify_func(verify_func) {}
     struct {
@@ -438,7 +439,6 @@ struct alignas(uint64_t) TcParseTableBase {
     const uint32_t* enum_data;
     const TcParseTableBase* table;
     MapAuxInfo map_info;
-    void (*create_in_arena)(Arena*, void*);
     LazyEagerVerifyFnType verify_func;
 
     const MessageLite* message_default() const {
@@ -551,8 +551,7 @@ PROTOBUF_CC const char* StubParseImpl(PROTOBUF_TC_PARAM_DECL) {
 }
 
 template <typename T,
-          PROTOBUF_CC const char* (*func)(T*, const char*, ParseContext*),
-          typename ClassData>
+          PROTOBUF_CC const char* (*func)(T*, const char*, ParseContext*)>
 constexpr TcParseTable<0> CreateStubTcParseTable(
     const ClassData* class_data,
     TcParseTableBase::PostLoopHandler post_loop_handler = nullptr) {

@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.RandomAccess;
 
 /**
  * A partial implementation of the {@link MessageLite} interface which implements as many methods of
@@ -339,21 +340,44 @@ public abstract class AbstractMessageLite<
 
     // We check nulls as we iterate to avoid iterating over values twice.
     private static <T> void addAllCheckingNulls(Iterable<T> values, List<? super T> list) {
-      if (list instanceof ArrayList && values instanceof Collection) {
-        ((ArrayList<T>) list).ensureCapacity(list.size() + ((Collection<T>) values).size());
+      if (values instanceof Collection) {
+        int growth = ((Collection<T>) values).size();
+        if (list instanceof ArrayList) {
+          ((ArrayList<T>) list).ensureCapacity(list.size() + growth);
+        }
+        if (list instanceof ProtobufArrayList) {
+          ((ProtobufArrayList<T>) list).ensureCapacity(list.size() + growth);
+        }
       }
       int begin = list.size();
-      for (T value : values) {
-        if (value == null) {
-          // encountered a null value so we must undo our modifications prior to throwing
-          String message = "Element at index " + (list.size() - begin) + " is null.";
-          for (int i = list.size() - 1; i >= begin; i--) {
-            list.remove(i);
+      if (values instanceof List && values instanceof RandomAccess) {
+        List<T> valuesList = (List<T>) values;
+        int n = valuesList.size();
+        // Optimisation: avoid allocating Iterator for RandomAccess lists.
+        for (int i = 0; i < n; i++) {
+          T value = valuesList.get(i);
+          if (value == null) {
+            resetListAndThrow(list, begin);
           }
-          throw new NullPointerException(message);
+          list.add(value);
         }
-        list.add(value);
+      } else {
+        for (T value : values) {
+          if (value == null) {
+            resetListAndThrow(list, begin);
+          }
+          list.add(value);
+        }
       }
+    }
+
+    /** Remove elements after index begin from the List and throw NullPointerException. */
+    private static void resetListAndThrow(List<?> list, int begin) {
+      String message = "Element at index " + (list.size() - begin) + " is null.";
+      for (int i = list.size() - 1; i >= begin; i--) {
+        list.remove(i);
+      }
+      throw new NullPointerException(message);
     }
 
     /** Construct an UninitializedMessageException reporting missing fields in the given message. */

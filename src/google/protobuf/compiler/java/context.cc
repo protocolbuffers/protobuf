@@ -153,6 +153,7 @@ void Context::InitializeFieldGeneratorInfoForFields(
       absl::StrAppend(&info.capitalized_name, field->number());
       info.disambiguated_reason = conflict_reason[i];
     }
+    info.options = options_;
     field_generator_info_map_[field] = info;
   }
 }

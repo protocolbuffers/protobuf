@@ -201,9 +201,10 @@ pkg_files(
     name = "generated_wkt",
     srcs = [
         ":well_known_proto_py_pb2",
-        "//upb:descriptor_upb_minitable_proto",
-        "//upb:descriptor_upb_proto",
-        "//upb:descriptor_upb_proto_reflection",
+        "//src/google/protobuf:descriptor_upb_c_proto",
+        "//src/google/protobuf:descriptor_upb_minitable_proto",
+        "//src/google/protobuf:descriptor_upb_reflection_proto",
+        "//upb/reflection:descriptor_upb_proto",
     ],
     prefix = "google/protobuf",
 )

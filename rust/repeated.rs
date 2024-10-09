@@ -5,7 +5,6 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use std::fmt::{self, Debug};
 use std::iter;
 use std::iter::FusedIterator;
 /// Repeated scalar fields are implemented around the runtime-specific
@@ -13,10 +12,12 @@ use std::iter::FusedIterator;
 /// runtime-specific representation of a repeated scalar (`upb_Array*` on upb,
 /// and `RepeatedField<T>*` on cpp).
 use std::marker::PhantomData;
+use std::fmt::{self, Debug};
 
 use crate::{
-    IntoProxied, Mut, MutProxied, MutProxy, Proxied, View, ViewProxy,
-    __internal::Private,
+    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy, View,
+    ViewProxy,
+    __internal::{Private, SealedInternal},
     __runtime::{InnerRepeated, InnerRepeatedMut, RawRepeatedField},
 };
 
@@ -232,15 +233,6 @@ where
     }
 }
 
-impl<T> IntoProxied<Repeated<T>> for Repeated<T>
-where
-    T: ProxiedInRepeated,
-{
-    fn into_proxied(self, _private: Private) -> Repeated<T> {
-        self
-    }
-}
-
 impl<'msg, T> IntoProxied<Repeated<T>> for RepeatedView<'msg, T>
 where
     T: 'msg + ProxiedInRepeated,
@@ -261,6 +253,19 @@ where
     }
 }
 
+impl<'msg, T, I, U> IntoProxied<Repeated<T>> for I
+where
+    I: Iterator<Item = U>,
+    T: 'msg + ProxiedInRepeated,
+    U: IntoProxied<T>,
+{
+    fn into_proxied(self, _private: Private) -> Repeated<T> {
+        let mut repeated: Repeated<T> = Repeated::new();
+        repeated.as_mut().extend(self);
+        repeated
+    }
+}
+
 /// Types that can appear in a `Repeated<T>`.
 ///
 /// This trait is implemented by generated code to communicate how the proxied
@@ -274,18 +279,14 @@ where
 pub unsafe trait ProxiedInRepeated: Proxied {
     /// Constructs a new owned `Repeated` field.
     #[doc(hidden)]
-    fn repeated_new(_private: Private) -> Repeated<Self> {
-        unimplemented!("not required")
-    }
+    fn repeated_new(_private: Private) -> Repeated<Self>;
 
     /// Frees the repeated field in-place, for use in `Drop`.
     ///
     /// # Safety
     /// - After `repeated_free`, no other methods on the input are safe to call.
     #[doc(hidden)]
-    unsafe fn repeated_free(_private: Private, _repeated: &mut Repeated<Self>) {
-        unimplemented!("not required")
-    }
+    unsafe fn repeated_free(_private: Private, _repeated: &mut Repeated<Self>);
 
     /// Gets the length of the repeated field.
     fn repeated_len(repeated: View<Repeated<Self>>) -> usize;
@@ -351,8 +352,8 @@ impl<T: ProxiedInRepeated> Repeated<T> {
     pub fn new() -> Self {
         T::repeated_new(Private)
     }
-
-    pub(crate) fn from_inner(inner: InnerRepeated) -> Self {
+    #[doc(hidden)]
+    pub fn from_inner(_private: Private, inner: InnerRepeated) -> Self {
         Self { inner, _phantom: PhantomData }
     }
 
@@ -381,6 +382,19 @@ where
     type View<'msg> = RepeatedView<'msg, T> where Repeated<T>: 'msg;
 }
 
+impl<T> SealedInternal for Repeated<T> where T: ProxiedInRepeated {}
+
+impl<T> AsView for Repeated<T>
+where
+    T: ProxiedInRepeated,
+{
+    type Proxied = Self;
+
+    fn as_view(&self) -> RepeatedView<'_, T> {
+        self.as_view()
+    }
+}
+
 impl<T> MutProxied for Repeated<T>
 where
     T: ProxiedInRepeated,
@@ -388,17 +402,37 @@ where
     type Mut<'msg> = RepeatedMut<'msg, T> where Repeated<T>: 'msg;
 }
 
-impl<'msg, T> ViewProxy<'msg> for RepeatedView<'msg, T>
+impl<T> AsMut for Repeated<T>
+where
+    T: ProxiedInRepeated,
+{
+    type MutProxied = Self;
+
+    fn as_mut(&mut self) -> RepeatedMut<'_, T> {
+        self.as_mut()
+    }
+}
+
+impl<'msg, T> SealedInternal for RepeatedView<'msg, T> where T: ProxiedInRepeated + 'msg {}
+
+impl<'msg, T> Proxy<'msg> for RepeatedView<'msg, T> where T: ProxiedInRepeated + 'msg {}
+
+impl<'msg, T> AsView for RepeatedView<'msg, T>
 where
     T: ProxiedInRepeated + 'msg,
 {
     type Proxied = Repeated<T>;
 
     #[inline]
-    fn as_view(&self) -> View<'_, Self::Proxied> {
+    fn as_view(&self) -> View<'msg, Self::Proxied> {
         *self
     }
+}
 
+impl<'msg, T> IntoView<'msg> for RepeatedView<'msg, T>
+where
+    T: ProxiedInRepeated + 'msg,
+{
     #[inline]
     fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
     where
@@ -408,43 +442,63 @@ where
     }
 }
 
-impl<'msg, T> ViewProxy<'msg> for RepeatedMut<'msg, T>
+impl<'msg, T> ViewProxy<'msg> for RepeatedView<'msg, T> where T: ProxiedInRepeated + 'msg {}
+
+impl<'msg, T> SealedInternal for RepeatedMut<'msg, T> where T: ProxiedInRepeated + 'msg {}
+
+impl<'msg, T> Proxy<'msg> for RepeatedMut<'msg, T> where T: ProxiedInRepeated + 'msg {}
+
+impl<'msg, T> AsView for RepeatedMut<'msg, T>
 where
     T: ProxiedInRepeated + 'msg,
 {
     type Proxied = Repeated<T>;
 
     #[inline]
-    fn as_view(&self) -> View<'_, Self::Proxied> {
-        RepeatedView { raw: self.inner.raw, _phantom: PhantomData }
-    }
-
-    #[inline]
-    fn into_view<'shorter>(self) -> View<'shorter, Self::Proxied>
-    where
-        'msg: 'shorter,
-    {
+    fn as_view(&self) -> RepeatedView<'_, T> {
         RepeatedView { raw: self.inner.raw, _phantom: PhantomData }
     }
 }
 
-impl<'msg, T> MutProxy<'msg> for RepeatedMut<'msg, T>
+impl<'msg, T> IntoView<'msg> for RepeatedMut<'msg, T>
 where
     T: ProxiedInRepeated + 'msg,
 {
     #[inline]
-    fn as_mut(&mut self) -> Mut<'_, Self::Proxied> {
-        RepeatedMut { inner: self.inner, _phantom: PhantomData }
+    fn into_view<'shorter>(self) -> RepeatedView<'shorter, T>
+    where
+        'msg: 'shorter,
+    {
+        RepeatedView { raw: self.inner.raw, _phantom: PhantomData }
     }
+}
+
+impl<'msg, T> AsMut for RepeatedMut<'msg, T>
+where
+    T: ProxiedInRepeated + 'msg,
+{
+    type MutProxied = Repeated<T>;
 
     #[inline]
-    fn into_mut<'shorter>(self) -> Mut<'shorter, Self::Proxied>
+    fn as_mut(&mut self) -> RepeatedMut<'_, T> {
+        RepeatedMut { inner: self.inner, _phantom: PhantomData }
+    }
+}
+
+impl<'msg, T> IntoMut<'msg> for RepeatedMut<'msg, T>
+where
+    T: ProxiedInRepeated + 'msg,
+{
+    #[inline]
+    fn into_mut<'shorter>(self) -> RepeatedMut<'shorter, T>
     where
         'msg: 'shorter,
     {
         RepeatedMut { inner: self.inner, _phantom: PhantomData }
     }
 }
+
+impl<'msg, T> MutProxy<'msg> for RepeatedMut<'msg, T> where T: ProxiedInRepeated + 'msg {}
 
 impl<'msg, T> iter::Iterator for RepeatedIter<'msg, T>
 where
@@ -531,7 +585,7 @@ mod tests {
     use super::*;
     use googletest::prelude::*;
 
-    #[test]
+    #[gtest]
     fn test_primitive_repeated() {
         macro_rules! primitive_repeated_tests {
             ($($t:ty => [$($vals:expr),* $(,)?]),* $(,)?) => {
@@ -572,7 +626,7 @@ mod tests {
         );
     }
 
-    #[test]
+    #[gtest]
     fn test_repeated_extend() {
         let mut r = Repeated::<i32>::new();
 
@@ -587,5 +641,11 @@ mod tests {
         r.as_mut().extend(&x.as_mut());
 
         assert_that!(r.as_mut(), elements_are![eq(0), eq(1), eq(2), eq(3)]);
+    }
+
+    #[gtest]
+    fn test_repeated_iter_into_proxied() {
+        let r: Repeated<i32> = [0, 1, 2, 3].into_iter().into_proxied(Private);
+        assert_that!(r.as_view(), elements_are![eq(0), eq(1), eq(2), eq(3)]);
     }
 }

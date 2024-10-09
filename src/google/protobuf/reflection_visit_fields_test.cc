@@ -200,7 +200,7 @@ TEST_P(VisitFieldsTest, MutateNothingByVisitIdempotent) {
   MutateNothingByVisit(*message_);
 
   // Checking the identity by comparing serialize bytes is discouraged, but this
-  // allows us to be type-agnositc for this test. Also, the back to back
+  // allows us to be type-agnostic for this test. Also, the back to back
   // serialization should be stable.
   EXPECT_EQ(data, message_->SerializeAsString());
 }

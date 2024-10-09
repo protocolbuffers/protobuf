@@ -8,10 +8,9 @@
 #import <Foundation/Foundation.h>
 
 #import "GPBArray.h"
+#import "GPBDescriptor.h"
 #import "GPBMessage.h"
 #import "GPBRuntimeTypes.h"
-
-@class GPBOneofDescriptor;
 
 CF_EXTERN_C_BEGIN
 
@@ -40,7 +39,9 @@ NSString *GPBTextFormatForMessage(GPBMessage *message, NSString *__nullable line
  * @return An NSString with the TextFormat of the unknown field set.
  **/
 NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet *__nullable unknownSet,
-                                          NSString *__nullable lineIndent);
+                                          NSString *__nullable lineIndent)
+    __attribute__((deprecated("Use GPBTextFormatForMessage will include the unknown fields, and "
+                              "GPBUnknownFieldSet it going away.")));
 
 /**
  * Checks if the given field number is set on a message.

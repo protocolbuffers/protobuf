@@ -96,7 +96,8 @@ static bool PyStringToSTL(PyObject* py_string, std::string* stl_string) {
   }
 }
 
-static bool PythonToMapKey(MapContainer* self, PyObject* obj, MapKey* key) {
+static bool PythonToMapKey(MapContainer* self, PyObject* obj, MapKey* key,
+                           std::string* key_string) {
   const FieldDescriptor* field_descriptor =
       self->parent_field_descriptor->message_type()->map_key();
   switch (field_descriptor->cpp_type()) {
@@ -126,11 +127,10 @@ static bool PythonToMapKey(MapContainer* self, PyObject* obj, MapKey* key) {
       break;
     }
     case FieldDescriptor::CPPTYPE_STRING: {
-      std::string str;
-      if (!PyStringToSTL(CheckString(obj, field_descriptor), &str)) {
+      if (!PyStringToSTL(CheckString(obj, field_descriptor), key_string)) {
         return false;
       }
-      key->SetStringValue(str);
+      key->SetStringValue(*key_string);
       break;
     }
     default:
@@ -334,9 +334,10 @@ PyObject* MapReflectionFriend::Contains(PyObject* _self, PyObject* key) {
 
   const Message* message = self->parent->message;
   const Reflection* reflection = message->GetReflection();
+  std::string map_key_string;
   MapKey map_key;
 
-  if (!PythonToMapKey(self, key, &map_key)) {
+  if (!PythonToMapKey(self, key, &map_key, &map_key_string)) {
     return nullptr;
   }
 
@@ -379,10 +380,11 @@ PyObject* MapReflectionFriend::ScalarMapGetItem(PyObject* _self,
 
   Message* message = self->GetMutableMessage();
   const Reflection* reflection = message->GetReflection();
+  std::string map_key_string;
   MapKey map_key;
   MapValueRef value;
 
-  if (!PythonToMapKey(self, key, &map_key)) {
+  if (!PythonToMapKey(self, key, &map_key, &map_key_string)) {
     return nullptr;
   }
 
@@ -400,10 +402,11 @@ int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
 
   Message* message = self->GetMutableMessage();
   const Reflection* reflection = message->GetReflection();
+  std::string map_key_string;
   MapKey map_key;
   MapValueRef value;
 
-  if (!PythonToMapKey(self, key, &map_key)) {
+  if (!PythonToMapKey(self, key, &map_key, &map_key_string)) {
     return -1;
   }
 
@@ -593,12 +596,13 @@ int MapReflectionFriend::MessageMapSetItem(PyObject* _self, PyObject* key,
   MessageMapContainer* self = GetMessageMap(_self);
   Message* message = self->GetMutableMessage();
   const Reflection* reflection = message->GetReflection();
+  std::string map_key_string;
   MapKey map_key;
   MapValueRef value;
 
   self->version++;
 
-  if (!PythonToMapKey(self, key, &map_key)) {
+  if (!PythonToMapKey(self, key, &map_key, &map_key_string)) {
     return -1;
   }
 
@@ -635,10 +639,11 @@ PyObject* MapReflectionFriend::MessageMapGetItem(PyObject* _self,
 
   Message* message = self->GetMutableMessage();
   const Reflection* reflection = message->GetReflection();
+  std::string map_key_string;
   MapKey map_key;
   MapValueRef value;
 
-  if (!PythonToMapKey(self, key, &map_key)) {
+  if (!PythonToMapKey(self, key, &map_key, &map_key_string)) {
     return nullptr;
   }
 

@@ -19,8 +19,6 @@ std::string EnumTypeName(const protobuf::EnumDescriptor* enum_descriptor);
 std::string EnumValueSymbolInNameSpace(
     const protobuf::EnumDescriptor* desc,
     const protobuf::EnumValueDescriptor* value);
-void WriteHeaderEnumForwardDecls(
-    std::vector<const protobuf::EnumDescriptor*>& enums, Output& output);
 void WriteEnumDeclarations(
     const std::vector<const protobuf::EnumDescriptor*>& enums, Output& output);
 

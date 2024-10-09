@@ -2025,7 +2025,7 @@ static int PyUpb_MessageMeta_Traverse(PyObject* self, visitproc visit,
   return cpython_bits.type_traverse(self, visit, arg);
 }
 
-static int PyUpb_MessageMeta_Clear(PyObject* self, visitproc visit, void* arg) {
+static int PyUpb_MessageMeta_Clear(PyObject* self) {
   PyUpb_MessageMeta* meta = PyUpb_GetMessageMeta(self);
   Py_CLEAR(meta->py_message_descriptor);
   return cpython_bits.type_clear(self);

@@ -6,11 +6,13 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBUnknownField.h"
+#import "GPBUnknownField_PackagePrivate.h"
 
 #import "GPBArray.h"
+#import "GPBCodedOutputStream.h"
 #import "GPBCodedOutputStream_PackagePrivate.h"
 #import "GPBUnknownFieldSet.h"
-#import "GPBUnknownField_PackagePrivate.h"
+#import "GPBUnknownFields.h"
 #import "GPBUnknownFields_PackagePrivate.h"
 #import "GPBWireFormat.h"
 
@@ -165,10 +167,20 @@
     case GPBUnknownFieldTypeFixed32:
     case GPBUnknownFieldTypeFixed64:
     case GPBUnknownFieldTypeLengthDelimited:
-    case GPBUnknownFieldTypeGroup:
       // In these modes, the object isn't mutable, so just return self.
       return [self retain];
+    case GPBUnknownFieldTypeGroup: {
+      // The `GPBUnknownFields` for the group is mutable, so a new instance of this object and
+      // the group is needed.
+      GPBUnknownFields *copyGroup = [storage_.group copyWithZone:zone];
+      GPBUnknownField *copy = [[GPBUnknownField allocWithZone:zone] initWithNumber:number_
+                                                                             group:copyGroup];
+      [copyGroup release];
+      return copy;
+    }
     case GPBUnknownFieldTypeLegacy: {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
       GPBUnknownField *result = [[GPBUnknownField allocWithZone:zone] initWithNumber:number_];
       result->storage_.legacy.mutableFixed32List =
           [storage_.legacy.mutableFixed32List copyWithZone:zone];
@@ -187,6 +199,7 @@
           [copied release];
         }
       }
+#pragma clang diagnostic pop
       return result;
     }
   }
@@ -264,6 +277,8 @@
 }
 
 - (void)writeToOutput:(GPBCodedOutputStream *)output {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   ASSERT_FIELD_TYPE(GPBUnknownFieldTypeLegacy);
   NSUInteger count = storage_.legacy.mutableVarintList.count;
   if (count > 0) {
@@ -285,10 +300,13 @@
   if (count > 0) {
     [output writeUnknownGroupArray:number_ values:storage_.legacy.mutableGroupList];
   }
+#pragma clang diagnostic pop
 }
 
 - (size_t)serializedSize {
   ASSERT_FIELD_TYPE(GPBUnknownFieldTypeLegacy);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   __block size_t result = 0;
   int32_t number = number_;
   [storage_.legacy.mutableVarintList
@@ -313,6 +331,7 @@
   for (GPBUnknownFieldSet *set in storage_.legacy.mutableGroupList) {
     result += GPBComputeUnknownGroupSize(number, set);
   }
+#pragma clang diagnostic pop
 
   return result;
 }
@@ -353,6 +372,8 @@
       [description appendFormat:@" group: %@", storage_.group];
       break;
     case GPBUnknownFieldTypeLegacy:
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
       [description appendString:@" {\n"];
       [storage_.legacy.mutableVarintList
           enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
@@ -373,12 +394,15 @@
         [description appendFormat:@"\t%@\n", set];
       }
       [description appendString:@"}"];
+#pragma clang diagnostic pop
       break;
   }
   return description;
 }
 
 - (void)mergeFromField:(GPBUnknownField *)other {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   ASSERT_FIELD_TYPE(GPBUnknownFieldTypeLegacy);
   GPBUInt64Array *otherVarintList = other.varintList;
   if (otherVarintList.count > 0) {
@@ -429,6 +453,7 @@
       [copied release];
     }
   }
+#pragma clang diagnostic pop
 }
 
 - (void)addVarint:(uint64_t)value {

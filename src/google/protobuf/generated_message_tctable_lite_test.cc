@@ -51,11 +51,10 @@ TcFieldData Xor2SerializedBytes(TcFieldData tfd, const char* ptr) {
 absl::optional<const char*> fallback_ptr_received;
 absl::optional<uint64_t> fallback_hasbits_received;
 absl::optional<uint64_t> fallback_tag_received;
-const char* FastParserGaveUp(::google::protobuf::MessageLite*, const char* ptr,
-                             ::google::protobuf::internal::ParseContext*,
-                             ::google::protobuf::internal::TcFieldData data,
-                             const ::google::protobuf::internal::TcParseTableBase*,
-                             uint64_t hasbits) {
+PROTOBUF_CC const char* FastParserGaveUp(
+    ::google::protobuf::MessageLite*, const char* ptr, ::google::protobuf::internal::ParseContext*,
+    ::google::protobuf::internal::TcFieldData data,
+    const ::google::protobuf::internal::TcParseTableBase*, uint64_t hasbits) {
   fallback_ptr_received = ptr;
   fallback_hasbits_received = hasbits;
   fallback_tag_received = data.tag();

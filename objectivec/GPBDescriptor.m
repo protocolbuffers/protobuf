@@ -5,11 +5,14 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#import "GPBDescriptor.h"
 #import "GPBDescriptor_PackagePrivate.h"
 
 #import <objc/runtime.h>
 
+#import "GPBMessage.h"
 #import "GPBMessage_PackagePrivate.h"
+#import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
 #import "GPBWireFormat.h"
 
@@ -267,6 +270,10 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
                        fields:(NSArray *)fields
                   storageSize:(uint32_t)storageSize
                    wireFormat:(BOOL)wireFormat {
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
+  // This is also checked by the generator.
+  NSAssert(!wireFormat || fields.count == 0, @"Internal error: MessageSets should not have fields");
+#endif
   if ((self = [super init])) {
     messageClass_ = messageClass;
     messageName_ = [messageName copy];
@@ -1139,8 +1146,18 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
     GPBRuntimeMatchFailure();
   }
 
-#if defined(DEBUG) && DEBUG
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   NSAssert(usesClassRefs, @"Internal error: all extensions should have class refs");
+
+  // These are also checked by the generator.
+  if ((desc->options & GPBExtensionSetWireFormat) != 0) {
+    NSAssert(desc->dataType == GPBDataTypeMessage,
+             @"Internal error: If a MessageSet extension is set, the data type must be a message.");
+    NSAssert((desc->options & GPBExtensionRepeated) == 0,
+             @"Internal Error: MessageSet extension can't be repeated.");
+    // NOTE: Could also check that the extended class is a MessageSet, but that would force the
+    // ObjC runtime to start up that class and that isn't desirable here.
+  }
 #endif
 
   if ((self = [super init])) {

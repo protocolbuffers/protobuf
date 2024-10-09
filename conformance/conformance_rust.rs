@@ -6,13 +6,9 @@
 
 use conformance_rust_proto::{ConformanceRequest, ConformanceResponse, WireFormat};
 
-#[cfg(cpp_kernel)]
-use protobuf_cpp as kernel;
-
-#[cfg(upb_kernel)]
-use protobuf_upb as kernel;
-
-use kernel::Optional::{Set, Unset};
+use protobuf::prelude::*;
+use protobuf::Optional::{Set, Unset};
+use protobuf::ParseError;
 
 use std::io::{self, ErrorKind, Read, Write};
 use test_messages_edition2023_rust_proto::TestAllTypesEdition2023;
@@ -73,52 +69,39 @@ fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
         Set(bytes) => bytes,
     };
 
+    fn roundtrip<T: Message>(bytes: &[u8]) -> Result<Vec<u8>, ParseError> {
+        T::parse(bytes).map(|msg| msg.serialize().unwrap())
+    }
+
     let serialized = match message_type.as_bytes() {
         b"protobuf_test_messages.proto2.TestAllTypesProto2" => {
-            if let Ok(msg) = TestAllTypesProto2::parse(bytes) {
-                msg.serialize().unwrap()
-            } else {
-                resp.set_parse_error("failed to parse bytes");
-                return resp;
-            }
+            roundtrip::<TestAllTypesProto2>(bytes)
         }
         b"protobuf_test_messages.proto3.TestAllTypesProto3" => {
-            if let Ok(msg) = TestAllTypesProto3::parse(bytes) {
-                msg.serialize().unwrap()
-            } else {
-                resp.set_parse_error("failed to parse bytes");
-                return resp;
-            }
+            roundtrip::<TestAllTypesProto3>(bytes)
         }
         b"protobuf_test_messages.editions.TestAllTypesEdition2023" => {
-            if let Ok(msg) = TestAllTypesEdition2023::parse(bytes) {
-                msg.serialize().unwrap()
-            } else {
-                resp.set_parse_error("failed to parse bytes");
-                return resp;
-            }
+            roundtrip::<TestAllTypesEdition2023>(bytes)
         }
         b"protobuf_test_messages.editions.proto2.TestAllTypesProto2" => {
-            if let Ok(msg) = EditionsTestAllTypesProto2::parse(bytes) {
-                msg.serialize().unwrap()
-            } else {
-                resp.set_parse_error("failed to parse bytes");
-                return resp;
-            }
+            roundtrip::<EditionsTestAllTypesProto2>(bytes)
         }
         b"protobuf_test_messages.editions.proto3.TestAllTypesProto3" => {
-            if let Ok(msg) = EditionsTestAllTypesProto3::parse(bytes) {
-                msg.serialize().unwrap()
-            } else {
-                resp.set_parse_error("failed to parse bytes");
-                return resp;
-            }
+            roundtrip::<EditionsTestAllTypesProto3>(bytes)
         }
         _ => panic!("unexpected msg type {message_type}"),
     };
 
-    resp.set_protobuf_payload(serialized);
-    return resp;
+    match serialized {
+        Ok(serialized) => {
+            resp.set_protobuf_payload(serialized);
+        }
+        Err(_) => {
+            resp.set_parse_error("failed to parse bytes");
+        }
+    }
+
+    resp
 }
 
 fn main() {

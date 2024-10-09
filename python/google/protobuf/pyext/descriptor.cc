@@ -81,8 +81,8 @@ namespace python {
 // All descriptors are stored here.
 std::unordered_map<const void*, PyObject*>* interned_descriptors;
 
-PyObject* PyString_FromCppString(const std::string& str) {
-  return PyUnicode_FromStringAndSize(str.c_str(), str.size());
+PyObject* PyString_FromCppString(absl::string_view str) {
+  return PyUnicode_FromStringAndSize(str.data(), str.size());
 }
 
 // Check that the calling Python code is the global scope of a _pb2.py module.
@@ -266,7 +266,7 @@ static PyObject* GetOrBuildMessageInDefaultPool(
       message_factory::GetOrCreateMessageClass(message_factory, message_type);
   if (message_class == nullptr) {
     PyErr_Format(PyExc_TypeError, "Could not retrieve class for: %s",
-                 message_type->full_name().c_str());
+                 std::string(message_type->full_name()).c_str());
     return nullptr;
   }
   ScopedPyObjectPtr args(PyTuple_New(0));
@@ -278,7 +278,7 @@ static PyObject* GetOrBuildMessageInDefaultPool(
   }
   if (!PyObject_TypeCheck(value.get(), CMessage_Type)) {
     PyErr_Format(PyExc_TypeError, "Invalid class for %s: %s",
-                 message_type->full_name().c_str(),
+                 std::string(message_type->full_name()).c_str(),
                  Py_TYPE(value.get())->tp_name);
     return nullptr;
   }
@@ -339,7 +339,7 @@ static PyObject* CopyToPythonProto(const DescriptorClass *descriptor,
   if (!PyObject_TypeCheck(target, CMessage_Type) ||
       message->message->GetDescriptor() != self_descriptor) {
     PyErr_Format(PyExc_TypeError, "Not a %s message",
-                 self_descriptor->full_name().c_str());
+                 std::string(self_descriptor->full_name()).c_str());
     return nullptr;
   }
   cmessage::AssureWritable(message);
@@ -853,6 +853,10 @@ static PyObject* IsExtension(PyBaseDescriptor *self, void *closure) {
   return PyBool_FromLong(_GetDescriptor(self)->is_extension());
 }
 
+static PyObject* IsPacked(PyBaseDescriptor* self, void* closure) {
+  return PyBool_FromLong(_GetDescriptor(self)->is_packed());
+}
+
 static PyObject* HasDefaultValue(PyBaseDescriptor *self, void *closure) {
   return PyBool_FromLong(_GetDescriptor(self)->has_default_value());
 }
@@ -902,8 +906,8 @@ static PyObject* GetDefaultValue(PyBaseDescriptor *self, void *closure) {
       break;
     }
     case FieldDescriptor::CPPTYPE_STRING: {
-      const std::string& value = _GetDescriptor(self)->default_value_string();
-      result = ToStringObject(_GetDescriptor(self), value);
+      result = ToStringObject(_GetDescriptor(self),
+                              _GetDescriptor(self)->default_value_string());
       break;
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
@@ -918,7 +922,7 @@ static PyObject* GetDefaultValue(PyBaseDescriptor *self, void *closure) {
     }
     default:
       PyErr_Format(PyExc_NotImplementedError, "default value for %s",
-                   _GetDescriptor(self)->full_name().c_str());
+                   std::string(_GetDescriptor(self)->full_name()).c_str());
       return nullptr;
   }
   return result;
@@ -1050,6 +1054,7 @@ static PyGetSetDef Getters[] = {
     {"default_value", (getter)GetDefaultValue, nullptr, "Default Value"},
     {"has_default_value", (getter)HasDefaultValue},
     {"is_extension", (getter)IsExtension, nullptr, "ID"},
+    {"is_packed", (getter)IsPacked, nullptr, "Is Packed"},
     {"id", (getter)GetID, nullptr, "ID"},
     {"_cdescriptor", (getter)GetCDescriptor, nullptr, "HAACK REMOVE ME"},
 
@@ -1508,6 +1513,11 @@ static int SetHasOptions(PyFileDescriptor *self, PyObject *value,
 }
 
 static PyObject* GetDebugString(PyFileDescriptor* self) {
+  PyErr_Warn(nullptr,
+             "GetDebugString() API is deprecated. This API only "
+             "exists in protobuf c++ and does not exists in pure python, upb "
+             "or any other languages. GetDebugString() for python cpp "
+             "extension will be removed in Jan 2025");
   return PyString_FromCppString(_GetDescriptor(self)->DebugString());
 }
 
@@ -2052,8 +2062,8 @@ static bool AddEnumValues(PyTypeObject *type,
     if (obj == nullptr) {
       return false;
     }
-    if (PyDict_SetItemString(type->tp_dict, value->name().c_str(), obj.get()) <
-        0) {
+    if (PyDict_SetItemString(type->tp_dict, std::string(value->name()).c_str(),
+                             obj.get()) < 0) {
       return false;
     }
   }

@@ -152,7 +152,6 @@ final class MessageSchema<T> implements Schema<T> {
   private final MessageLite defaultInstance;
   private final boolean hasExtensions;
   private final boolean lite;
-  private final ProtoSyntax syntax;
   // TODO: Make both full-runtime and lite-runtime support cached field size.
   private final boolean useCachedSizeField;
 
@@ -183,7 +182,6 @@ final class MessageSchema<T> implements Schema<T> {
       int minFieldNumber,
       int maxFieldNumber,
       MessageLite defaultInstance,
-      ProtoSyntax syntax,
       boolean useCachedSizeField,
       int[] intArray,
       int checkInitialized,
@@ -199,7 +197,6 @@ final class MessageSchema<T> implements Schema<T> {
     this.maxFieldNumber = maxFieldNumber;
 
     this.lite = defaultInstance instanceof GeneratedMessageLite;
-    this.syntax = syntax;
     this.hasExtensions = extensionSchema != null && extensionSchema.hasExtensions(defaultInstance);
     this.useCachedSizeField = useCachedSizeField;
 
@@ -585,7 +582,6 @@ final class MessageSchema<T> implements Schema<T> {
         minFieldNumber,
         maxFieldNumber,
         messageInfo.getDefaultInstance(),
-        messageInfo.getSyntax(),
         /* useCachedSizeField= */ false,
         intArray,
         checkInitialized,
@@ -700,17 +696,23 @@ final class MessageSchema<T> implements Schema<T> {
     if (repeatedFieldOffsets == null) {
       repeatedFieldOffsets = EMPTY_INT_ARRAY;
     }
-    int[] combined =
-        new int[checkInitialized.length + mapFieldPositions.length + repeatedFieldOffsets.length];
-    System.arraycopy(checkInitialized, 0, combined, 0, checkInitialized.length);
-    System.arraycopy(
-        mapFieldPositions, 0, combined, checkInitialized.length, mapFieldPositions.length);
-    System.arraycopy(
-        repeatedFieldOffsets,
-        0,
-        combined,
-        checkInitialized.length + mapFieldPositions.length,
-        repeatedFieldOffsets.length);
+    int combinedLength =
+        checkInitialized.length + mapFieldPositions.length + repeatedFieldOffsets.length;
+    int[] combined;
+    if (combinedLength > 0) {
+      combined = new int[combinedLength];
+      System.arraycopy(checkInitialized, 0, combined, 0, checkInitialized.length);
+      System.arraycopy(
+          mapFieldPositions, 0, combined, checkInitialized.length, mapFieldPositions.length);
+      System.arraycopy(
+          repeatedFieldOffsets,
+          0,
+          combined,
+          checkInitialized.length + mapFieldPositions.length,
+          repeatedFieldOffsets.length);
+    } else {
+      combined = EMPTY_INT_ARRAY;
+    }
 
     return new MessageSchema<T>(
         buffer,
@@ -718,7 +720,6 @@ final class MessageSchema<T> implements Schema<T> {
         minFieldNumber,
         maxFieldNumber,
         messageInfo.getDefaultInstance(),
-        messageInfo.getSyntax(),
         /* useCachedSizeField= */ true,
         combined,
         checkInitialized.length,
@@ -3006,7 +3007,8 @@ final class MessageSchema<T> implements Schema<T> {
               unknownFields = unknownFieldSchema.getBuilderFromMessage(message);
             }
             // Unknown field.
-            if (unknownFieldSchema.mergeOneFieldFrom(unknownFields, reader)) {
+            if (unknownFieldSchema.mergeOneFieldFrom(
+                unknownFields, reader, /* currentDepth= */ 0)) {
               continue;
             }
           }
@@ -3381,7 +3383,8 @@ final class MessageSchema<T> implements Schema<T> {
               if (unknownFields == null) {
                 unknownFields = unknownFieldSchema.getBuilderFromMessage(message);
               }
-              if (!unknownFieldSchema.mergeOneFieldFrom(unknownFields, reader)) {
+              if (!unknownFieldSchema.mergeOneFieldFrom(
+                  unknownFields, reader, /* currentDepth= */ 0)) {
                 return;
               }
               break;
@@ -3397,7 +3400,8 @@ final class MessageSchema<T> implements Schema<T> {
             if (unknownFields == null) {
               unknownFields = unknownFieldSchema.getBuilderFromMessage(message);
             }
-            if (!unknownFieldSchema.mergeOneFieldFrom(unknownFields, reader)) {
+            if (!unknownFieldSchema.mergeOneFieldFrom(
+                unknownFields, reader, /* currentDepth= */ 0)) {
               return;
             }
           }
@@ -3573,9 +3577,7 @@ final class MessageSchema<T> implements Schema<T> {
     ProtobufList<?> list = (ProtobufList<?>) UNSAFE.getObject(message, fieldOffset);
     if (!list.isModifiable()) {
       final int size = list.size();
-      list =
-          list.mutableCopyWithCapacity(
-              size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+      list = list.mutableCopyWithCapacity(size * 2);
       UNSAFE.putObject(message, fieldOffset, list);
     }
     switch (fieldType) {

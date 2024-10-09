@@ -29,6 +29,8 @@ using type_info = ::type_info;
 
 #include "absl/base/attributes.h"
 #include "absl/base/macros.h"
+#include "absl/base/optimization.h"
+#include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "absl/utility/internal/if_constexpr.h"
 #include "google/protobuf/arena_align.h"
@@ -55,6 +57,7 @@ template <typename Key, typename T>
 class Map;
 namespace internal {
 struct RepeatedFieldBase;
+class ExtensionSet;
 }  // namespace internal
 
 namespace arena_metrics {
@@ -84,6 +87,27 @@ template <typename T>
 void arena_delete_object(void* object) {
   delete reinterpret_cast<T*>(object);
 }
+
+inline bool CanUseInternalSwap(Arena* lhs, Arena* rhs) {
+  if (DebugHardenForceCopyInSwap()) {
+    // We force copy in swap when we are not using an arena.
+    // If we did with an arena we would grow arena usage too much.
+    return lhs != nullptr && lhs == rhs;
+  } else {
+    return lhs == rhs;
+  }
+}
+
+inline bool CanMoveWithInternalSwap(Arena* lhs, Arena* rhs) {
+  if (DebugHardenForceCopyInMove()) {
+    // We force copy in move when we are not using an arena.
+    // If we did with an arena we would grow arena usage too much.
+    return lhs != nullptr && lhs == rhs;
+  } else {
+    return lhs == rhs;
+  }
+}
+
 }  // namespace internal
 
 // ArenaOptions provides optional additional parameters to arena construction
@@ -173,8 +197,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   inline ~Arena() = default;
 
-  // Deprecated. Use Create<T> instead. TODO: depreate OSS version
-  // once internal migration to Arena::Create is done.
+#ifndef PROTOBUF_FUTURE_REMOVE_CREATEMESSAGE
+  // Deprecated. Use Create<T> instead.
   template <typename T, typename... Args>
   ABSL_DEPRECATED("Use Create")
   static T* CreateMessage(Arena* arena, Args&&... args) {
@@ -184,6 +208,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
         "CreateMessage can only construct types that are ArenaConstructable");
     return Create<Type>(arena, std::forward<Args>(args)...);
   }
+#endif  // !PROTOBUF_FUTURE_REMOVE_CREATEMESSAGE
 
   // Allocates an object type T if the arena passed in is not nullptr;
   // otherwise, returns a heap-allocated object.
@@ -275,12 +300,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
   }
 
-  // The following are routines are for monitoring. They will approximate the
-  // total sum allocated and used memory, but the exact value is an
-  // implementation deal. For instance allocated space depends on growth
-  // policies. Do not use these in unit tests.
-  // Returns the total space allocated by the arena, which is the sum of the
-  // sizes of the underlying blocks.
+  // The following routines are for monitoring. They will approximate the total
+  // sum allocated and used memory, but the exact value is an implementation
+  // deal. For instance allocated space depends on growth policies. Do not use
+  // these in unit tests. Returns the total space allocated by the arena, which
+  // is the sum of the sizes of the underlying blocks.
   uint64_t SpaceAllocated() const { return impl_.SpaceAllocated(); }
   // Returns the total space used by the arena. Similar to SpaceAllocated but
   // does not include free space and block overhead.  This is a best-effort
@@ -646,7 +670,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename>
   friend class RepeatedField;                   // For ReturnArrayMemory
   friend class internal::RepeatedPtrFieldBase;  // For ReturnArrayMemory
-  friend class internal::UntypedMapBase;        // For ReturnArenaMemory
+  friend class internal::UntypedMapBase;        // For ReturnArrayMemory
+  friend class internal::ExtensionSet;          // For ReturnArrayMemory
 
   friend struct internal::ArenaTestPeer;
 };
@@ -665,6 +690,12 @@ PROTOBUF_NOINLINE void* Arena::DefaultConstruct(Arena* arena) {
 
 template <typename T>
 PROTOBUF_NOINLINE void* Arena::CopyConstruct(Arena* arena, const void* from) {
+  // If the object is larger than half a cache line, prefetch it.
+  // This way of prefetching is a little more aggressive than if we
+  // condition off a whole cache line, but benchmarks show better results.
+  if (sizeof(T) > ABSL_CACHELINE_SIZE / 2) {
+    PROTOBUF_PREFETCH_WITH_OFFSET(from, 64);
+  }
   static_assert(is_destructor_skippable<T>::value, "");
   void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
                                : ::operator new(sizeof(T));

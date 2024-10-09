@@ -133,7 +133,7 @@ class SingularStringView : public FieldGeneratorBase {
   void GenerateByteSize(io::Printer* p) const override {
     p->Emit(R"cc(
       total_size += $kTagBytes$ + $pbi$::WireFormatLite::$DeclaredType$Size(
-                                      this->_internal_$name$());
+                                      this_._internal_$name$());
     )cc");
   }
 
@@ -216,19 +216,9 @@ void SingularStringView::GenerateStaticMembers(io::Printer* p) const {
 }
 
 void SingularStringView::GenerateAccessorDeclarations(io::Printer* p) const {
-  ABSL_CHECK(!field_->options().has_ctype());
-
-  auto vars = AnnotatedAccessors(field_, {"", "set_allocated_"});
-  vars.push_back(Sub{
-      "release_name",
-      SafeFunctionName(field_->containing_type(), field_, "release_"),
-  }
-                     .AnnotatedAs(field_));
-  auto v1 = p->WithVars(vars);
+  auto v1 = p->WithVars(AnnotatedAccessors(field_, {""}));
   auto v2 = p->WithVars(
       AnnotatedAccessors(field_, {"set_"}, AnnotationCollector::kSet));
-  auto v3 = p->WithVars(
-      AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
 
   p->Emit(
       {{"donated",
@@ -305,8 +295,6 @@ void SingularStringView::GenerateInlineAccessorDefinitions(
                }
              )cc");
            }},
-          {"release_name",
-           SafeFunctionName(field_->containing_type(), field_, "release_")},
       },
       R"cc(
         inline absl::string_view $Msg$::$name$() const
@@ -445,9 +433,9 @@ void SingularStringView::GenerateConstructorCode(io::Printer* p) const {
 
   if (EmptyDefault()) {
     p->Emit(R"cc(
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-      $field_$.Set("", GetArena());
-#endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+      if ($pbi$::DebugHardenForceCopyDefaultString()) {
+        $field_$.Set("", GetArena());
+      }
     )cc");
   }
 }
@@ -502,7 +490,7 @@ void SingularStringView::GenerateDestructorCode(io::Printer* p) const {
   }
 
   p->Emit(R"cc(
-    $field_$.Destroy();
+    this_.$field_$.Destroy();
   )cc");
 }
 
@@ -515,7 +503,7 @@ void SingularStringView::GenerateSerializeWithCachedSizesToArray(
                                              "static_cast<int>(_s.length()),");
             }}},
           R"cc(
-            const std::string& _s = this->_internal_$name$();
+            const std::string& _s = this_._internal_$name$();
             $utf8_check$;
             target = stream->Write$DeclaredType$MaybeAliased($number$, _s, target);
           )cc");
@@ -612,7 +600,7 @@ class RepeatedStringView : public FieldGeneratorBase {
   void GenerateDestructorCode(io::Printer* p) const override {
     if (should_split()) {
       p->Emit(R"cc(
-        $field_$.DeleteIfNotDefault();
+        this_.$field_$.DeleteIfNotDefault();
       )cc");
     }
   }
@@ -631,10 +619,11 @@ class RepeatedStringView : public FieldGeneratorBase {
 
   void GenerateByteSize(io::Printer* p) const override {
     p->Emit(R"cc(
-      total_size += $kTagBytes$ * $pbi$::FromIntSize(_internal_$name$().size());
-      for (int i = 0, n = _internal_$name$().size(); i < n; ++i) {
+      total_size +=
+          $kTagBytes$ * $pbi$::FromIntSize(this_._internal_$name$().size());
+      for (int i = 0, n = this_._internal_$name$().size(); i < n; ++i) {
         total_size += $pbi$::WireFormatLite::$DeclaredType$Size(
-            _internal_$name$().Get(i));
+            this_._internal_$name$().Get(i));
       }
     )cc");
   }
@@ -648,8 +637,7 @@ class RepeatedStringView : public FieldGeneratorBase {
 };
 
 void RepeatedStringView::GenerateAccessorDeclarations(io::Printer* p) const {
-  bool unknown_ctype =
-      field_->options().ctype() != internal::cpp::EffectiveStringCType(field_);
+  bool unknown_ctype = GetDeclaredStringType() != pb::CppFeatures::VIEW;
 
   if (unknown_ctype) {
     p->Emit(R"cc(
@@ -816,8 +804,8 @@ void RepeatedStringView::GenerateSerializeWithCachedSizesToArray(
                   "s.data(), static_cast<int>(s.length()),");
             }}},
           R"cc(
-            for (int i = 0, n = this->_internal_$name$_size(); i < n; ++i) {
-              const auto& s = this->_internal_$name$().Get(i);
+            for (int i = 0, n = this_._internal_$name$_size(); i < n; ++i) {
+              const auto& s = this_._internal_$name$().Get(i);
               $utf8_check$;
               target = stream->Write$DeclaredType$($number$, s, target);
             }

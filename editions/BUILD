@@ -1,6 +1,10 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("//:protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
+load("//bazel:java_proto_library.bzl", "java_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
+load("//bazel:py_proto_library.bzl", "py_proto_library")
 load("//bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflection_library")
 load(":defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
 
@@ -8,6 +12,7 @@ bzl_library(
     name = "defaults",
     srcs = ["defaults.bzl"],
     visibility = ["//visibility:public"],
+    deps = ["//bazel/common:proto_info_bzl"],
 )
 
 # Aggregate all the features owned by the Protobuf repo.
@@ -245,7 +250,7 @@ internal_php_proto_library(
         "golden",
         "src",
     ],
-    proto_deps = ["//:well_known_protos"],
+    proto_deps = ["//:well_known_type_protos"],
     visibility = ["//conformance:__pkg__"],
 )
 

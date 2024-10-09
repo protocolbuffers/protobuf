@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"

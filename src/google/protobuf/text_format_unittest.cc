@@ -45,7 +45,6 @@
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_delimited.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
@@ -1212,7 +1211,7 @@ TEST_F(TextFormatTest, FieldsPopulatedCorrectly) {
   }
   {
     // The address returned by the field is a string_view, which is a separate
-    // alocation. Check address directly.
+    // allocation. Check address directly.
     no_op_fields = {};
     const absl::string_view parse_string = "optional_string: \"\"";
     EXPECT_TRUE(parser.ParseFromString(parse_string, &proto));
@@ -1221,7 +1220,7 @@ TEST_F(TextFormatTest, FieldsPopulatedCorrectly) {
   }
   {
     // The address returned by the field is a string_view, which is a separate
-    // alocation. Check address directly.
+    // allocation. Check address directly.
     no_op_fields = {};
     const absl::string_view parse_string = "optional_bytes: \"\"";
     EXPECT_TRUE(parser.ParseFromString(parse_string, &proto));

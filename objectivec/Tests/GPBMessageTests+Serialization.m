@@ -5,12 +5,10 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#import "GPBTestUtilities.h"
-
 #import <objc/runtime.h>
 
 #import "GPBMessage.h"
-
+#import "GPBTestUtilities.h"
 #import "objectivec/Tests/MapProto2Unittest.pbobjc.h"
 #import "objectivec/Tests/MapUnittest.pbobjc.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
@@ -419,6 +417,20 @@
 
   // All the values should be in unknown fields.
 
+  GPBUnknownFields *ufs = [[GPBUnknownFields alloc] initFromMessage:msg];
+  XCTAssertEqual(ufs.count, 3U);
+  uint64_t varint;
+  XCTAssertTrue([ufs getFirst:Message2_FieldNumber_OptionalEnum varint:&varint]);
+  XCTAssertEqual(varint, (uint64_t)Message3_Enum_Extra3);
+  XCTAssertTrue([ufs getFirst:Message2_FieldNumber_RepeatedEnumArray varint:&varint]);
+  XCTAssertEqual(varint, (uint64_t)Message3_Enum_Extra3);
+  XCTAssertTrue([ufs getFirst:Message2_FieldNumber_OneofEnum varint:&varint]);
+  XCTAssertEqual(varint, (uint64_t)Message3_Enum_Extra3);
+  [ufs release];
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
   GPBUnknownFieldSet *unknownFields = msg.unknownFields;
 
   XCTAssertEqual([unknownFields countOfFields], 3U);
@@ -437,6 +449,8 @@
   field = [unknownFields getField:Message2_FieldNumber_OneofEnum];
   XCTAssertEqual(field.varintList.count, 1U);
   XCTAssertEqual([field.varintList valueAtIndex:0], (uint64_t)Message3_Enum_Extra3);
+
+#pragma clang diagnostic pop
 
   [msg release];
   [orig release];
@@ -1398,7 +1412,13 @@
   int32_t val = -1;
   XCTAssertTrue([msg1.knownMapField getEnum:&val forKey:0]);
   XCTAssertEqual(val, Proto2MapEnum_Proto2MapEnumFoo);
+  GPBUnknownFields *ufs = [[GPBUnknownFields alloc] initFromMessage:msg1];
+  XCTAssertEqual(ufs.count, 1U);
+  [ufs release];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   XCTAssertEqual(msg1.unknownFields.countOfFields, 1U);
+#pragma clang diagnostic pop
 
   data = [msg1 data];
   TestEnumMapPlusExtra *msg2 = [TestEnumMapPlusExtra parseFromData:data error:NULL];
@@ -1410,7 +1430,13 @@
   XCTAssertEqual(msg2.unknownMapField.count, 1U);
   XCTAssertTrue([msg2.unknownMapField getEnum:&val forKey:0]);
   XCTAssertEqual(val, Proto2MapEnumPlusExtra_EProto2MapEnumExtra);
+  ufs = [[GPBUnknownFields alloc] initFromMessage:msg2];
+  XCTAssertTrue(ufs.empty);
+  [ufs release];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   XCTAssertEqual(msg2.unknownFields.countOfFields, 0U);
+#pragma clang diagnostic pop
 
   XCTAssertEqualObjects(orig, msg2);
 

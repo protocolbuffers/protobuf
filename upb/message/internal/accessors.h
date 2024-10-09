@@ -639,6 +639,13 @@ UPB_API_INLINE void upb_Message_SetBaseFieldInt64(struct upb_Message* msg,
   upb_Message_SetBaseField(msg, f, &value);
 }
 
+UPB_API_INLINE void upb_Message_SetBaseFieldMessage(struct upb_Message* msg,
+                                                    const upb_MiniTableField* f,
+                                                    struct upb_Message* value) {
+  UPB_PRIVATE(_upb_Message_SetTaggedMessagePtr)
+  (msg, f, UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(value, false));
+}
+
 UPB_API_INLINE void upb_Message_SetBaseFieldString(struct upb_Message* msg,
                                                    const upb_MiniTableField* f,
                                                    upb_StringView value) {
@@ -807,8 +814,8 @@ UPB_API_INLINE bool upb_Message_SetInt64(struct upb_Message* msg,
 UPB_API_INLINE void upb_Message_SetMessage(struct upb_Message* msg,
                                            const upb_MiniTableField* f,
                                            struct upb_Message* value) {
-  UPB_PRIVATE(_upb_Message_SetTaggedMessagePtr)
-  (msg, f, UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(value, false));
+  UPB_ASSERT(!upb_MiniTableField_IsExtension(f));
+  upb_Message_SetBaseFieldMessage(msg, f, value);
 }
 
 // Sets the value of a `string` or `bytes` field. The bytes of the value are not

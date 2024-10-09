@@ -93,6 +93,8 @@ add_executable(conformance_test_runner
   ${protobuf_SOURCE_DIR}/conformance/conformance_test_main.cc
   ${protobuf_SOURCE_DIR}/conformance/text_format_conformance_suite.cc
   ${protobuf_SOURCE_DIR}/conformance/text_format_conformance_suite.h
+  ${protobuf_SOURCE_DIR}/conformance/failure_list_trie_node.cc
+  ${protobuf_SOURCE_DIR}/conformance/failure_list_trie_node.h
 )
 
 add_executable(conformance_cpp

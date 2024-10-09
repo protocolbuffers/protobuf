@@ -17,12 +17,13 @@ package protobuf_editions_test;
 import "net/proto/proto1_features.proto";
 import "google/protobuf/java_features.proto";
 import "google/protobuf/cpp_features.proto";
-import "google/protobuf/editions/proto/editions_transform_proto3.proto";
+import "editions/proto/editions_transform_proto3.proto";
 
 option features.repeated_field_encoding = EXPANDED;
 option features.utf8_validation = NONE;
 option java_api_version = 1;
 option java_multiple_files = true;
+option cc_enable_arenas = true;
 
 message EmptyMessage {
 }
@@ -114,7 +115,6 @@ enum TestEnum {
   option features.enum_type = CLOSED;
 
   FOO = 1; // Non-zero default
-
   BAR = 2;
   BAZ = 3;
   NEG = -1; // Intentionally negative.

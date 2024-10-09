@@ -18,17 +18,18 @@ from google.protobuf import descriptor_pool
 from google.protobuf import symbol_database
 from google.protobuf import text_format
 from google.protobuf.internal import api_implementation
+from google.protobuf.internal import test_proto2_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 
 from google.protobuf.internal import _parameterized
-from google.protobuf import unittest_legacy_features_pb2
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_features_pb2
 from google.protobuf import unittest_import_pb2
+from google.protobuf import unittest_legacy_features_pb2
 from google.protobuf import unittest_pb2
-from google.protobuf import unittest_proto3_pb2
 from google.protobuf import unittest_proto3_extensions_pb2
+from google.protobuf import unittest_proto3_pb2
 
 
 TEST_EMPTY_MESSAGE_DESCRIPTOR_ASCII = """
@@ -726,7 +727,7 @@ class GeneratedDescriptorTest(unittest.TestCase):
     excepted_dict['new_key'] = 'new'
     self.assertNotEqual(mapping, excepted_dict)
     self.assertRaises(KeyError, mapping.__getitem__, 'key_error')
-    self.assertRaises(KeyError, mapping.__getitem__, len(mapping) + 1)
+    self.assertRaises(KeyError, mapping.__getitem__, len(mapping) * 2)
     # TODO: Add __repr__ support for DescriptorMapping.
     if api_implementation.Type() == 'cpp':
       self.assertEqual(str(mapping)[0], '<')
@@ -1325,7 +1326,7 @@ class FeaturesTest(_parameterized.TestCase):
     )
 
   def testProto2Defaults(self):
-    features = unittest_pb2.TestAllTypes.DESCRIPTOR.fields_by_name[
+    features = test_proto2_pb2.TestProto2.DESCRIPTOR.fields_by_name[
         'optional_int32'
     ]._GetFeatures()
     fs = descriptor_pb2.FeatureSet
@@ -1474,6 +1475,7 @@ class FeatureInheritanceTest(unittest.TestCase):
     file = descriptor_pb2.FileDescriptorProto()
     descriptor_pb2.DESCRIPTOR.CopyToProto(file)
     ret.pool.Add(file)
+    file.Clear()
     unittest_features_pb2.DESCRIPTOR.CopyToProto(file)
     ret.pool.Add(file)
 

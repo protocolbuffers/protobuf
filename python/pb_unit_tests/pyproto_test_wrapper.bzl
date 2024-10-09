@@ -1,4 +1,4 @@
-# begin:github_only
+"""Wrapper for another py_test to run with upb, possibly with a set of expected failures."""
 
 def pyproto_test_wrapper(name, deps = []):
     src = name + "_wrapper.py"
@@ -20,27 +20,3 @@ def pyproto_test_wrapper(name, deps = []):
             "//conditions:default": ["@platforms//:incompatible"],
         }),
     )
-
-# end:github_only
-
-# begin:google_only
-#
-# load("@rules_python//python:py_test.bzl", "py_test")
-#
-# def pyproto_test_wrapper(name):
-#     src = name + "_wrapper.py"
-#     py_test(
-#         name = name,
-#         srcs = [src],
-#         main = src,
-#         deps = [
-#             "//third_party/py/google/protobuf/internal:" + name + "_for_deps",
-#             "//third_party/py/google/protobuf:use_upb_protos",
-#         ],
-#         target_compatible_with = select({
-#             "@platforms//os:windows": ["@platforms//:incompatible"],
-#             "//conditions:default": [],
-#         }),
-#     )
-#
-# end:google_only

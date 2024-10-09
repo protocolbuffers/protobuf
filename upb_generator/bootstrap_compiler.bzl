@@ -1,12 +1,9 @@
 """Macros that implement bootstrapping for the upb code generator."""
 
-# begin:github_only
 load(
     "//bazel:upb_minitable_proto_library.bzl",
     "upb_minitable_proto_library",
 )
-# end:github_only
-
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_proto_library",
@@ -18,71 +15,107 @@ load(
 
 _stages = ["_stage0", "_stage1", ""]
 _protoc = "//:protoc"
-_upbc_base = "//upb_generator:protoc-gen-"
 
-# begin:google_only
-# _is_google3 = True
-# _extra_proto_path = ""
-# end:google_only
-
-# begin:github_only
 _is_google3 = False
 _extra_proto_path = "-I$$(dirname $(location @com_google_protobuf//:descriptor_proto_srcs))/../.. "
-# end:github_only
+
+# This visibility is used automatically for anything used by the bootstrapping process.
+_bootstrap_visibility = [
+    "//upb_generator:__subpackages__",
+    "//upb/reflection:__pkg__",
+    "//upb:__pkg__",  # For the amalgamations.
+    "//python/dist:__pkg__",  # For the Python source package.
+]
+
+def _stage_visibility(stage, visibility):
+    return visibility if stage == "" else _bootstrap_visibility
 
 def _upbc(generator, stage):
-    return _upbc_base + generator + _stages[stage]
+    if generator == "upb":
+        return "//upb_generator/c:protoc-gen-upb" + _stages[stage]
+    else:
+        return "//upb_generator/minitable:protoc-gen-upb_minitable" + _stages[stage]
 
-def bootstrap_cc_library(name, visibility, deps = [], bootstrap_deps = [], **kwargs):
+def bootstrap_cc_library(name, visibility = [], deps = [], bootstrap_deps = [], **kwargs):
+    """A version of cc_library() that is augmented to allow for bootstrapping the compiler.
+
+    In addition to the normal cc_library() target, this rule will also generate _stage0 and _stage1
+    targets that are used internally for bootstrapping, and will automatically have bootstrap
+    visibility. However the final target will use the normal visibility, and will behave like a
+    normal cc_library() target.
+
+    Args:
+        name: Name of this rule.  This name will resolve to a upb_proto_library().
+        deps: Normal cc_library() deps.
+        bootstrap_deps: Special bootstrap_upb_proto_library() or bootstrap_cc_library() deps.
+        visibility: Visibility of the final target.
+        **kwargs: Other arguments that will be passed through to cc_library().
+          upb_proto_library().
+    """
     for stage in _stages:
-        stage_visibility = visibility if stage == "" else ["//upb_generator:__pkg__"]
         native.cc_library(
             name = name + stage,
             deps = deps + [dep + stage for dep in bootstrap_deps],
-            visibility = stage_visibility,
+            visibility = _stage_visibility(stage, visibility),
             **kwargs
         )
 
-def bootstrap_cc_binary(name, deps = [], bootstrap_deps = [], **kwargs):
+def bootstrap_cc_binary(name, visibility = [], deps = [], bootstrap_deps = [], **kwargs):
+    """A version of cc_binary() that is augmented to allow for bootstrapping the compiler.
+
+    In addition to the normal cc_binary() target, this rule will also generate _stage0 and _stage1
+    targets that are used internally for bootstrapping, and will automatically have bootstrap
+    visibility. However the final target will use the normal visibility, and will behave like a
+    normal cc_binary() target.
+
+    Args:
+        name: Name of this rule.  This name will resolve to a upb_proto_library().
+        deps: Normal cc_library() deps.
+        bootstrap_deps: Special bootstrap_upb_proto_library() or bootstrap_cc_library() deps.
+        visibility: Visibility of the final target.
+        **kwargs: Other arguments that will be passed through to cc_binary().
+          upb_proto_library().
+    """
     for stage in _stages:
         native.cc_binary(
             name = name + stage,
             deps = deps + [dep + stage for dep in bootstrap_deps],
+            visibility = _stage_visibility(stage, visibility),
             **kwargs
         )
 
-def _generated_srcs_for_suffix(prefix, srcs, suffix):
-    return [prefix + "/" + src[:-len(".proto")] + suffix for src in srcs]
+def _generated_file(proto, stage, generator, suffix):
+    stripped = proto[:-len(".proto")]
+    return "{}/{}.{}.{}".format(stage, stripped, generator, suffix)
 
-def _generated_srcs_for_generator(prefix, srcs, generator):
-    ret = _generated_srcs_for_suffix(prefix, srcs, ".{}.h".format(generator))
+def _generated_files(protos, stage, generator, suffix):
+    return [_generated_file(proto, stage, generator, suffix) for proto in protos]
 
-    if generator != "upb" or prefix.endswith("stage0"):
-        ret += _generated_srcs_for_suffix(prefix, srcs, ".{}.c".format(generator))
+def _generated_hdrs_and_srcs(protos, stage, generator):
+    ret = _generated_files(protos, stage, generator, "h")
+    if generator != "upb" or stage == "stage0":
+        ret += _generated_files(protos, stage, generator, "c")
     return ret
 
-def _generated_srcs(prefix, srcs):
-    return _generated_srcs_for_generator(prefix, srcs, "upb")
-
-def _stage0_proto_staleness_test(name, base_dir, src_files, src_rules, strip_prefix):
+def _stage0_proto_staleness_test(name, src_files, src_rules, strip_prefix):
     native.genrule(
         name = name + "_generate_bootstrap",
         srcs = src_rules,
-        outs = _generated_srcs("bootstrap_generated_sources/" + base_dir + "stage0", src_files),
+        outs = ["bootstrap_generated_sources/" + f for f in _generated_hdrs_and_srcs(src_files, "stage0", "upb")],
         tools = [_protoc, _upbc("upb", 0)],
         cmd =
             "$(location " + _protoc + ") " +
             "-I$(GENDIR)/" + strip_prefix + " " + _extra_proto_path +
             "--plugin=protoc-gen-upb=$(location " + _upbc("upb", 0) + ") " +
-            "--upb_out=bootstrap_upb:$(@D)/bootstrap_generated_sources/" + base_dir + "stage0 " +
+            "--upb_out=bootstrap_stage=0:$(@D)/bootstrap_generated_sources/stage0 " +
             " ".join(src_files),
     )
 
     staleness_test(
         name = name + "_stage0_staleness_test",
-        outs = _generated_srcs(base_dir + "stage0", src_files),
+        outs = _generated_hdrs_and_srcs(src_files, "stage0", "upb"),
         generated_pattern = "bootstrap_generated_sources/%s",
-        target_files = native.glob([base_dir + "stage0/**"]),
+        target_files = native.glob(["stage0/**"]),
         # To avoid skew problems for descriptor.proto/pluging.proto between
         # GitHub repos.  It's not critical that the checked-in protos are up to
         # date for every change, they just needs to be complete enough to have
@@ -90,17 +123,17 @@ def _stage0_proto_staleness_test(name, base_dir, src_files, src_rules, strip_pre
         tags = ["manual"],
     )
 
-def _generate_stage1_proto(name, base_dir, src_files, src_rules, generator, kwargs):
+def _generate_stage1_proto(name, src_files, src_rules, generator, kwargs):
     native.genrule(
         name = "gen_{}_{}_stage1".format(name, generator),
         srcs = src_rules,
-        outs = _generated_srcs_for_generator(base_dir + "stage1", src_files, generator),
+        outs = _generated_hdrs_and_srcs(src_files, "stage1", generator),
         cmd = "$(location " + _protoc + ") " +
               "--plugin=protoc-gen-" + generator +
               "=$(location " + _upbc(generator, 0) + ") " + _extra_proto_path +
-              "--" + generator + "_out=$(RULEDIR)/" + base_dir + "stage1 " +
+              "--" + generator + "_out=bootstrap_stage=1:$(RULEDIR)/stage1 " +
               " ".join(src_files),
-        visibility = ["//upb_generator:__pkg__"],
+        visibility = _bootstrap_visibility,
         tools = [
             _protoc,
             _upbc(generator, 0),
@@ -108,8 +141,7 @@ def _generate_stage1_proto(name, base_dir, src_files, src_rules, generator, kwar
         **kwargs
     )
 
-# begin:github_only
-def _cmake_staleness_test(name, base_dir, src_files, proto_lib_deps, **kwargs):
+def _cmake_staleness_test(name, src_files, proto_lib_deps, **kwargs):
     upb_minitable_proto_library(
         name = name + "_minitable",
         deps = proto_lib_deps,
@@ -117,15 +149,15 @@ def _cmake_staleness_test(name, base_dir, src_files, proto_lib_deps, **kwargs):
     )
 
     # Copy the final gencode for staleness comparison
-    files = _generated_srcs("cmake" + base_dir, src_files) + \
-            _generated_srcs_for_generator("cmake" + base_dir, src_files, "upb_minitable")
+    files = _generated_hdrs_and_srcs(src_files, "cmake", "upb") + \
+            _generated_hdrs_and_srcs(src_files, "cmake", "upb_minitable")
     genrule = 0
     for src in files:
         genrule += 1
         native.genrule(
             name = name + "_copy_gencode_%d" % genrule,
             outs = ["generated_sources/" + src],
-            srcs = [name, name + "_minitable"],
+            srcs = [name + "_upb_proto", name + "_minitable"],
             cmd = """
                 mkdir -p $(@D)
                 for src in $(SRCS); do
@@ -144,25 +176,27 @@ def _cmake_staleness_test(name, base_dir, src_files, proto_lib_deps, **kwargs):
         tags = ["manual"],
     )
 
-# end:github_only
-
 def bootstrap_upb_proto_library(
         name,
-        base_dir,
+        bootstrap_hdr,
         google3_src_files,
         google3_src_rules,
         oss_src_files,
         oss_src_rules,
         oss_strip_prefix,
         proto_lib_deps,
-        visibility,
         deps = [],
         **kwargs):
     """A version of upb_proto_library() that is augmented to allow for bootstrapping the compiler.
 
+    Note that this rule is only intended to be used by bootstrap_cc_library() targets. End users
+    should use the normal upb_proto_library() targets. As a result, we don't have a visibility
+    parameter: all targets will automatically have bootstrap visibility.
+
     Args:
         name: Name of this rule.  This name will resolve to a upb_proto_library().
-        base_dir: The directory that all generated files should be placed under.
+        bootstrap_hdr: The forwarding header that exposes the generated code, taking into account
+          the current stage.
         google3_src_files: Google3 filenames of .proto files that should be built by this rule.
           The names should be relative to the depot base.
         google3_src_rules: Target names of the Blaze rules that will provide these filenames.
@@ -171,23 +205,19 @@ def bootstrap_upb_proto_library(
         oss_strip_prefix: Prefix that should be stripped from OSS file names.
         proto_lib_deps: proto_library() rules that we will use to build the protos when we are
           not bootstrapping.
-        visibility: Visibility list for the final upb_proto_library() rule.  Bootstrapping rules
-          will always be hidden, and will not honor the visibility parameter passed here.
         deps: other bootstrap_upb_proto_library() rules that this one depends on.
         **kwargs: Other arguments that will be passed through to cc_library(), genrule(), and
           upb_proto_library().
     """
-    _stage0_proto_staleness_test(name, base_dir, oss_src_files, oss_src_rules, oss_strip_prefix)
+    _stage0_proto_staleness_test(name, oss_src_files, oss_src_rules, oss_strip_prefix)
 
     # stage0 uses checked-in protos, and has no MiniTable.
     native.cc_library(
         name = name + "_stage0",
-        srcs = _generated_srcs_for_suffix(base_dir + "stage0", oss_src_files, ".upb.c"),
-        hdrs = _generated_srcs_for_suffix(base_dir + "stage0", oss_src_files, ".upb.h"),
-        includes = [base_dir + "stage0"],
-        visibility = ["//upb_generator:__pkg__"],
-        # This macro signals to the runtime that it must use OSS APIs for descriptor.proto/plugin.proto.
-        defines = ["UPB_BOOTSTRAP_STAGE0"],
+        srcs = _generated_hdrs_and_srcs(oss_src_files, "stage0", "upb"),
+        hdrs = [bootstrap_hdr],
+        visibility = _bootstrap_visibility,
+        defines = ["UPB_BOOTSTRAP_STAGE=0"],
         deps = [
             "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
             "//upb:mini_table",
@@ -199,41 +229,45 @@ def bootstrap_upb_proto_library(
     src_rules = google3_src_rules if _is_google3 else oss_src_rules
 
     # Generate stage1 protos (C API and MiniTables) using stage0 compiler.
-    _generate_stage1_proto(name, base_dir, src_files, src_rules, "upb", kwargs)
-    _generate_stage1_proto(name, base_dir, src_files, src_rules, "upb_minitable", kwargs)
+    _generate_stage1_proto(name, src_files, src_rules, "upb", kwargs)
+    _generate_stage1_proto(name, src_files, src_rules, "upb_minitable", kwargs)
 
     native.cc_library(
         name = name + "_minitable_stage1",
-        srcs = _generated_srcs_for_suffix(base_dir + "stage1", src_files, ".upb_minitable.c"),
-        hdrs = _generated_srcs_for_suffix(base_dir + "stage1", src_files, ".upb_minitable.h"),
-        includes = [base_dir + "stage1"],
-        visibility = ["//upb_generator:__pkg__"],
+        srcs = _generated_files(src_files, "stage1", "upb_minitable", "c"),
+        hdrs = _generated_files(src_files, "stage1", "upb_minitable", "h"),
+        visibility = _bootstrap_visibility,
+        defines = ["UPB_BOOTSTRAP_STAGE=1"],
         deps = [
             "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-        ] + [dep + "_stage1" for dep in deps],
+        ] + [dep + "_minitable_stage1" for dep in deps],
         **kwargs
     )
     native.cc_library(
         name = name + "_stage1",
-        hdrs = _generated_srcs_for_suffix(base_dir + "stage1", src_files, ".upb.h"),
-        includes = [base_dir + "stage1"],
-        visibility = ["//upb_generator:__pkg__"],
+        srcs = _generated_files(src_files, "stage1", "upb", "h"),
+        hdrs = [bootstrap_hdr],
+        visibility = _bootstrap_visibility,
+        defines = ["UPB_BOOTSTRAP_STAGE=1"],
         deps = [
             "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
             ":" + name + "_minitable_stage1",
-        ] + [dep + "_stage1" for dep in deps],
+        ] + [dep + "_minitable_stage1" for dep in deps],
         **kwargs
     )
 
     # The final protos are generated via normal upb_proto_library().
     upb_proto_library(
-        name = name,
+        name = name + "_upb_proto",
         deps = proto_lib_deps,
-        visibility = visibility,
+        **kwargs
+    )
+    native.cc_library(
+        name = name,
+        hdrs = [bootstrap_hdr],
+        deps = [name + "_upb_proto"],
+        visibility = _bootstrap_visibility,
         **kwargs
     )
 
-    # begin:github_only
-    _cmake_staleness_test(name, base_dir, src_files, proto_lib_deps, **kwargs)
-
-# end:github_only
+    _cmake_staleness_test(name, src_files, proto_lib_deps, **kwargs)

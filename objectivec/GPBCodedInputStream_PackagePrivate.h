@@ -11,8 +11,10 @@
 
 #import "GPBCodedInputStream.h"
 
+#import "GPBDescriptor.h"
+#import "GPBUnknownFieldSet.h"
+
 @class GPBUnknownFieldSet;
-@class GPBFieldDescriptor;
 
 typedef struct GPBCodedInputStreamState {
   const uint8_t *bytes;
@@ -42,7 +44,10 @@ typedef struct GPBCodedInputStreamState {
 
 // Reads a group field value from the stream and merges it into the given
 // UnknownFieldSet.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)readUnknownGroup:(int32_t)fieldNumber message:(GPBUnknownFieldSet *)message;
+#pragma clang diagnostic pop
 
 // Reads a map entry.
 - (void)readMapEntry:(id)mapDictionary
@@ -53,6 +58,7 @@ typedef struct GPBCodedInputStreamState {
 
 CF_EXTERN_C_BEGIN
 
+void GPBRaiseStreamError(NSInteger code, NSString *reason);
 int32_t GPBCodedInputStreamReadTag(GPBCodedInputStreamState *state);
 
 double GPBCodedInputStreamReadDouble(GPBCodedInputStreamState *state);
@@ -74,6 +80,9 @@ NSString *GPBCodedInputStreamReadRetainedString(GPBCodedInputStreamState *state)
 NSData *GPBCodedInputStreamReadRetainedBytes(GPBCodedInputStreamState *state)
     __attribute((ns_returns_retained));
 NSData *GPBCodedInputStreamReadRetainedBytesNoCopy(GPBCodedInputStreamState *state)
+    __attribute((ns_returns_retained));
+NSData *GPBCodedInputStreamReadRetainedBytesToEndGroupNoCopy(GPBCodedInputStreamState *state,
+                                                             int32_t fieldNumber)
     __attribute((ns_returns_retained));
 
 size_t GPBCodedInputStreamPushLimit(GPBCodedInputStreamState *state, size_t byteLimit);

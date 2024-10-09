@@ -6,8 +6,11 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use googletest::prelude::*;
+use protobuf::prelude::*;
+use protobuf::View;
+
+use edition_unittest_rust_proto::TestAllTypes as TestAllTypesEditions;
 use paste::paste;
-use unittest_edition_rust_proto::TestAllTypes as TestAllTypesEditions;
 use unittest_proto3_optional_rust_proto::TestProto3Optional;
 use unittest_proto3_rust_proto::TestAllTypes as TestAllTypesProto3;
 use unittest_rust_proto::TestAllTypes as TestAllTypesProto2;
@@ -15,7 +18,7 @@ use unittest_rust_proto::TestAllTypes as TestAllTypesProto2;
 macro_rules! generate_parameterized_serialization_test {
     ($(($type: ident, $name_ext: ident)),*) => {
         paste! { $(
-            #[test]
+            #[gtest]
             fn [< serialization_zero_length_ $name_ext >]() {
                 let mut msg = [< $type >]::new();
 
@@ -29,7 +32,13 @@ macro_rules! generate_parameterized_serialization_test {
                 assert_that!(serialized.len(), eq(0));
             }
 
-            #[test]
+            #[gtest]
+            fn [< serialize_default_view $name_ext>]() {
+                let default = View::<[< $type >]>::default();
+                assert_that!(default.serialize().unwrap().len(), eq(0));
+            }
+
+            #[gtest]
             fn [< serialize_deserialize_message_ $name_ext>]() {
                 let mut msg = [< $type >]::new();
                 msg.set_optional_int64(42);
@@ -44,17 +53,17 @@ macro_rules! generate_parameterized_serialization_test {
                 assert_that!(msg.optional_bytes(), eq(msg2.optional_bytes()));
             }
 
-            #[test]
+            #[gtest]
             fn [< deserialize_empty_ $name_ext>]() {
                 assert!([< $type >]::parse(&[]).is_ok());
             }
 
-            #[test]
+            #[gtest]
             fn [< deserialize_error_ $name_ext>]() {
                 assert!([< $type >]::parse(b"not a serialized proto").is_err());
             }
 
-            #[test]
+            #[gtest]
             fn [< set_bytes_with_serialized_data_ $name_ext>]() {
                 let mut msg = [< $type >]::new();
                 msg.set_optional_int64(42);
@@ -64,7 +73,7 @@ macro_rules! generate_parameterized_serialization_test {
                 assert_that!(msg2.optional_bytes(), eq(msg.serialize().unwrap()));
             }
 
-            #[test]
+            #[gtest]
             fn [< deserialize_on_previously_allocated_message_ $name_ext>]() {
                 let mut msg = [< $type >]::new();
                 msg.set_optional_int64(42);
@@ -95,7 +104,7 @@ macro_rules! generate_parameterized_int32_byte_size_test {
     ($(($type: ident, $name_ext: ident)),*) => {
         paste! { $(
 
-            #[test]
+            #[gtest]
             fn [< test_int32_byte_size_ $name_ext>]() {
                 let args = vec![(0, 1), (127, 1), (128, 2), (-1, 10)];
                 for arg in args {

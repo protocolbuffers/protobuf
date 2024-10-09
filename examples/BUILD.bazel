@@ -5,7 +5,6 @@
 # example.
 
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("@protobuf//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("@protobuf//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("@protobuf//bazel:java_proto_library.bzl", "java_proto_library")
 load("@protobuf//bazel:proto_library.bzl", "proto_library")
@@ -13,6 +12,9 @@ load("@protobuf//bazel:py_proto_library.bzl", "py_proto_library")
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:py_binary.bzl", "py_binary")
+
+# cc_proto_library is intentionally not loaded, to test Bazel's built-in implementation
+# against Protobuf's implementation (already used building protoc)
 
 # For each .proto file, a proto_library target should be defined. This target
 # is not bound to any particular language. Instead, it defines the dependency

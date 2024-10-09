@@ -529,6 +529,15 @@ bool MessageDifferencer::FieldBefore(const FieldDescriptor* field1,
 
 bool MessageDifferencer::Compare(const Message& message1,
                                  const Message& message2) {
+  const Descriptor* descriptor1 = message1.GetDescriptor();
+  const Descriptor* descriptor2 = message2.GetDescriptor();
+  if (descriptor1 != descriptor2) {
+    ABSL_DLOG(FATAL) << "Comparison between two messages with different "
+                     << "descriptors. " << descriptor1->full_name() << " vs "
+                     << descriptor2->full_name();
+    return false;
+  }
+
   std::vector<SpecificField> parent_fields;
   force_compare_no_presence_fields_.clear();
   force_compare_failure_triggering_fields_.clear();
@@ -602,17 +611,8 @@ bool MessageDifferencer::CompareWithFields(
 bool MessageDifferencer::Compare(const Message& message1,
                                  const Message& message2, int unpacked_any,
                                  std::vector<SpecificField>* parent_fields) {
-  const Descriptor* descriptor1 = message1.GetDescriptor();
-  const Descriptor* descriptor2 = message2.GetDescriptor();
-  if (descriptor1 != descriptor2) {
-    ABSL_DLOG(FATAL) << "Comparison between two messages with different "
-                     << "descriptors. " << descriptor1->full_name() << " vs "
-                     << descriptor2->full_name();
-    return false;
-  }
-
   // Expand google.protobuf.Any payload if possible.
-  if (descriptor1->full_name() == internal::kAnyFullTypeName) {
+  if (message1.GetDescriptor()->full_name() == internal::kAnyFullTypeName) {
     std::unique_ptr<Message> data1;
     std::unique_ptr<Message> data2;
     if (unpack_any_field_.UnpackAny(message1, &data1) &&
@@ -898,7 +898,7 @@ bool MessageDifferencer::CompareWithFieldsInternal(
       const bool ignore_field =
           IsIgnored(message1, message2, field2, *parent_fields);
       if (!ignore_field && force_compare_no_presence_fields_.contains(field2)) {
-        force_compare_failure_triggering_fields_.insert(field2->full_name());
+        force_compare_failure_triggering_fields_.emplace(field2->full_name());
       }
 
       // Field 2 is not in the field list for message 1.
@@ -990,7 +990,7 @@ bool MessageDifferencer::CompareWithFieldsInternal(
           message1, message2, unpacked_any, field1, -1, -1, parent_fields);
 
       if (force_compare_no_presence_fields_.contains(field1)) {
-        force_compare_failure_triggering_fields_.insert(field1->full_name());
+        force_compare_failure_triggering_fields_.emplace(field1->full_name());
       }
 
       if (reporter_ != nullptr) {
@@ -2382,3 +2382,5 @@ MessageDifferencer::CreateMultipleFieldsMapKeyComparator(
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

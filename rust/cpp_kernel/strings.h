@@ -22,8 +22,6 @@ struct PtrAndLen {
   /// Borrows the memory.
   const char* ptr;
   size_t len;
-
-  PtrAndLen(const char* ptr, size_t len) : ptr(ptr), len(len) {}
 };
 
 // Represents an owned string for FFI purposes.

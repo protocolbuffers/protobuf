@@ -352,10 +352,3 @@ message ConflictJsonName {
   optional int32 value = 1 [json_name = "old_value"];
   optional int32 new_value = 2 [json_name = "value"];
 }
-
-message WKTMessage {
-  optional Timestamp optional_timestamp = 1;
-  optional Duration optional_duration = 2;
-  optional Struct optional_struct = 3;
-  optional ListValue optional_list_value = 4;
-}

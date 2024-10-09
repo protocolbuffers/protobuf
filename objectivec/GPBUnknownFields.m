@@ -6,17 +6,21 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBUnknownFields.h"
+#import "GPBUnknownFields_PackagePrivate.h"
 
 #import <Foundation/Foundation.h>
 
+#import "GPBCodedInputStream.h"
 #import "GPBCodedInputStream_PackagePrivate.h"
 #import "GPBCodedOutputStream.h"
 #import "GPBCodedOutputStream_PackagePrivate.h"
+#import "GPBDescriptor.h"
 #import "GPBMessage.h"
+#import "GPBMessage_PackagePrivate.h"
 #import "GPBUnknownField.h"
+#import "GPBUnknownFieldSet.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUnknownField_PackagePrivate.h"
-#import "GPBUnknownFields_PackagePrivate.h"
 #import "GPBWireFormat.h"
 
 #define CHECK_FIELD_NUMBER(number)                                                      \
@@ -195,12 +199,15 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
   self = [super init];
   if (self) {
     fields_ = [[NSMutableArray alloc] init];
-    // TODO: b/349146447 - Move off the legacy class and directly to the data once Message is
-    // updated.
-    GPBUnknownFieldSet *legacyUnknownFields = [message unknownFields];
-    if (legacyUnknownFields) {
-      GPBCodedInputStream *input =
-          [[GPBCodedInputStream alloc] initWithData:[legacyUnknownFields data]];
+    // This shouldn't happen with the annotations, but just incase something claiming nonnull
+    // does return nil, block it.
+    if (!message) {
+      [self release];
+      [NSException raise:NSInvalidArgumentException format:@"Message cannot be nil"];
+    }
+    NSData *data = GPBMessageUnknownFieldsData(message);
+    if (data) {
+      GPBCodedInputStream *input = [[GPBCodedInputStream alloc] initWithData:data];
       // Parse until the end of the data (tag will be zero).
       if (!MergeFromInputStream(self, input, 0)) {
         [input release];
@@ -223,9 +230,8 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-  GPBUnknownFields *copy = [[GPBUnknownFields alloc] init];
-  // Fields are r/o in this api, so just copy the array.
-  copy->fields_ = [fields_ mutableCopyWithZone:zone];
+  GPBUnknownFields *copy = [[GPBUnknownFields allocWithZone:zone] init];
+  copy->fields_ = [[NSMutableArray allocWithZone:zone] initWithArray:fields_ copyItems:YES];
   return copy;
 }
 
@@ -317,6 +323,44 @@ static BOOL MergeFromInputStream(GPBUnknownFields *self, GPBCodedInputStream *in
   [fields_ addObject:field];
   [field release];
   return [group autorelease];
+}
+
+- (GPBUnknownField *)addCopyOfField:(nonnull GPBUnknownField *)field {
+  if (field->type_ == GPBUnknownFieldTypeLegacy) {
+    [NSException raise:NSInternalInconsistencyException
+                format:@"GPBUnknownField is the wrong type"];
+  }
+  GPBUnknownField *result = [field copy];
+  [fields_ addObject:result];
+  return [result autorelease];
+}
+
+- (void)removeField:(nonnull GPBUnknownField *)field {
+  NSUInteger count = fields_.count;
+  [fields_ removeObjectIdenticalTo:field];
+  if (count == fields_.count) {
+    [NSException raise:NSInvalidArgumentException format:@"The field was not present."];
+  }
+}
+
+- (void)clearFieldNumber:(int32_t)fieldNumber {
+  CHECK_FIELD_NUMBER(fieldNumber);
+  NSMutableIndexSet *toRemove = nil;
+  NSUInteger idx = 0;
+  for (GPBUnknownField *field in fields_) {
+    if (field->number_ == fieldNumber) {
+      if (toRemove == nil) {
+        toRemove = [[NSMutableIndexSet alloc] initWithIndex:idx];
+      } else {
+        [toRemove addIndex:idx];
+      }
+    }
+    ++idx;
+  }
+  if (toRemove) {
+    [fields_ removeObjectsAtIndexes:toRemove];
+    [toRemove release];
+  }
 }
 
 #pragma mark - NSFastEnumeration protocol

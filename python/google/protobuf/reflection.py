@@ -24,6 +24,7 @@ this file*.
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
+import warnings
 
 from google.protobuf import message_factory
 from google.protobuf import symbol_database
@@ -40,7 +41,7 @@ def ParseMessage(descriptor, byte_str):
   """Generate a new Message instance from this Descriptor and a byte string.
 
   DEPRECATED: ParseMessage is deprecated because it is using MakeClass().
-  Please use MessageFactory.GetPrototype() instead.
+  Please use MessageFactory.GetMessageClass() instead.
 
   Args:
     descriptor: Protobuf Descriptor object
@@ -49,6 +50,12 @@ def ParseMessage(descriptor, byte_str):
   Returns:
     Newly created protobuf Message object.
   """
+  warnings.warn(
+      'reflection.ParseMessage() is deprecated. Please use '
+      'MessageFactory.GetMessageClass() and message.ParseFromString() instead. '
+      'reflection.ParseMessage() will be removed in Jan 2025.',
+      stacklevel=2,
+  )
   result_class = MakeClass(descriptor)
   new_msg = result_class()
   new_msg.ParseFromString(byte_str)
@@ -59,13 +66,19 @@ def ParseMessage(descriptor, byte_str):
 def MakeClass(descriptor):
   """Construct a class object for a protobuf described by descriptor.
 
-  DEPRECATED: use MessageFactory.GetPrototype() instead.
+  DEPRECATED: use MessageFactory.GetMessageClass() instead.
 
   Args:
     descriptor: A descriptor.Descriptor object describing the protobuf.
   Returns:
     The Message class object described by the descriptor.
   """
+  warnings.warn(
+      'reflection.MakeClass() is deprecated. Please use '
+      'MessageFactory.GetMessageClass() instead. '
+      'reflection.MakeClass() will be removed in Jan 2025.',
+      stacklevel=2,
+  )
   # Original implementation leads to duplicate message classes, which won't play
   # well with extensions. Message factory info is also missing.
   # Redirect to message_factory.

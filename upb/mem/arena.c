@@ -433,7 +433,7 @@ static void _upb_Arena_DoFuseArenaLists(upb_ArenaInternal* const parent,
 
 static upb_ArenaInternal* _upb_Arena_DoFuse(upb_Arena* a1, upb_Arena* a2,
                                             uintptr_t* ref_delta) {
-  // `parent_or_count` has two disctint modes
+  // `parent_or_count` has two distinct modes
   // -  parent pointer mode
   // -  refcount mode
   //

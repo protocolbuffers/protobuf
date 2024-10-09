@@ -50,7 +50,7 @@ rust_test(
     deps = [
         ":debug_cpp_rust_proto",
         ":optimize_for_lite_cpp_rust_proto",
-        "//rust:protobuf_cpp",
+        "//rust:protobuf_cpp_export",
         "@crate_index//:googletest",
     ],
 )

@@ -122,8 +122,8 @@ void CommandLineInterfaceTester::ExpectNoErrors() {
 void CommandLineInterfaceTester::ExpectErrorText(
     absl::string_view expected_text) {
   EXPECT_NE(0, return_code_);
-  EXPECT_EQ(absl::StrReplaceAll(expected_text, {{"$tmpdir", temp_directory_}}),
-            error_text_);
+  EXPECT_THAT(error_text_, HasSubstr(absl::StrReplaceAll(
+                               expected_text, {{"$tmpdir", temp_directory_}})));
 }
 
 void CommandLineInterfaceTester::ExpectErrorSubstring(

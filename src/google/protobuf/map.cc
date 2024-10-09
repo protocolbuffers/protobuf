@@ -50,10 +50,6 @@ void UntypedMapBase::EraseFromTree(map_index_t b,
   }
 }
 
-map_index_t UntypedMapBase::VariantBucketNumber(VariantKey key) const {
-  return BucketNumberFromHash(key.Hash());
-}
-
 void UntypedMapBase::InsertUniqueInTree(map_index_t b, GetKey get_key,
                                         NodeBase* node) {
   if (TableEntryIsNonEmptyList(b)) {
@@ -162,14 +158,14 @@ void UntypedMapBase::ClearTable(const ClearInput input) {
       case kValueIsProto:
         loop([size_info = input.size_info](NodeBase* node) {
           static_cast<MessageLite*>(node->GetVoidValue(size_info))
-              ->DestroyInstance(false);
+              ->DestroyInstance();
         });
         break;
       case kKeyIsString | kValueIsProto:
         loop([size_info = input.size_info](NodeBase* node) {
           static_cast<std::string*>(node->GetVoidKey())->~basic_string();
           static_cast<MessageLite*>(node->GetVoidValue(size_info))
-              ->DestroyInstance(false);
+              ->DestroyInstance();
         });
         break;
       case kUseDestructFunc:

@@ -13,9 +13,9 @@
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/names.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google::protobuf::hpb_generator {
 
@@ -108,13 +108,6 @@ void WriteEnumDeclarations(
     output("enum $0 : int {\n", EnumTypeName(enumdesc));
     WriteEnumValues(enumdesc, output);
     output("};\n\n");
-  }
-}
-
-void WriteHeaderEnumForwardDecls(
-    std::vector<const protobuf::EnumDescriptor*>& enums, Output& output) {
-  for (const auto* enumdesc : enums) {
-    output("enum $0 : int;\n", EnumTypeName(enumdesc));
   }
 }
 

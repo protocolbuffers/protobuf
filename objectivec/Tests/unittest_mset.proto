@@ -14,6 +14,7 @@ option objc_class_prefix = "MSet";
 // A message with message_set_wire_format.
 message Message {
   option message_set_wire_format = true;
+
   extensions 4 to max;
 }
 
@@ -38,5 +39,14 @@ message RawMessageSet {
   repeated group Item = 1 {
     required int32 type_id = 2;
     required bytes message = 3;
+  }
+}
+
+// MessageSet wire format is equivalent to this but since the fields
+// are repeated they can be left off or over present to testing.
+message RawBreakableMessageSet {
+  repeated group Item = 1 {
+    repeated int32 type_id = 2;
+    repeated bytes message = 3;
   }
 }

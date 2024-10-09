@@ -36,7 +36,7 @@ std::string CppTypeParameterName(const protobuf::FieldDescriptor* field);
 
 std::string MessageBaseType(const protobuf::FieldDescriptor* field,
                             bool is_const);
-// Generate protos::Ptr<const Model> to be used in accessors as public
+// Generate hpb::Ptr<const Model> to be used in accessors as public
 // signatures.
 std::string MessagePtrConstType(const protobuf::FieldDescriptor* field,
                                 bool is_const);

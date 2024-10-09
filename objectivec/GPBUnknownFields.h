@@ -7,6 +7,9 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GPBMessage.h"
+#import "GPBUnknownField.h"
+
 @class GPBMessage;
 @class GPBUnknownField;
 
@@ -33,7 +36,7 @@ __attribute__((objc_subclassing_restricted))
  *
  * Note: The instance is not linked to the message, any change will not be
  * reflected on the message the changes have to be pushed back to the message
- * with `-[GPBMessage mergeUnknownFields:error:]`.
+ * with `-[GPBMessage mergeUnknownFields:extensionRegistry:error:]`.
  **/
 - (instancetype)initFromMessage:(nonnull GPBMessage *)message;
 
@@ -108,6 +111,43 @@ __attribute__((objc_subclassing_restricted))
  * @return A new `GPBUnknownFields` to set the field of the group too.
  **/
 - (nonnull GPBUnknownFields *)addGroupWithFieldNumber:(int32_t)fieldNumber;
+
+/**
+ * Add the copy of the given unknown field.
+ *
+ * This can be useful from processing one `GPBUnknownFields` to create another.
+ *
+ * NOTE: If the field being copied is an Group, this instance added is new and thus
+ * the `.group` of that result is also new, so if you intent is to modify the group
+ * it *must* be fetched out of the result.
+ *
+ * It is a programming error to call this when the `type` is a legacy field.
+ *
+ * @param field The field to add.
+ *
+ * @return The autoreleased field that was added.
+ **/
+- (GPBUnknownField *)addCopyOfField:(nonnull GPBUnknownField *)field;
+
+/**
+ * Removes the given field from the set.
+ *
+ * It is a programming error to attempt to remove a field that is not in this collection.
+ *
+ * Reminder: it is not save to mutate the collection while also using fast enumeration on it.
+ *
+ * @param field The field to remove.
+ **/
+- (void)removeField:(nonnull GPBUnknownField *)field;
+
+/**
+ * Removes all of the fields from the collection that have the given field number.
+ *
+ * If there are no fields with the given field number, this is a no-op.
+ *
+ * @param fieldNumber The field number to remove.
+ **/
+- (void)clearFieldNumber:(int32_t)fieldNumber;
 
 @end
 

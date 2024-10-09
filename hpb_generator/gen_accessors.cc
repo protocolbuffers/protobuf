@@ -13,14 +13,14 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/hpb/gen_repeated_fields.h"
 #include "google/protobuf/compiler/hpb/gen_utils.h"
+#include "google/protobuf/compiler/hpb/keywords.h"
 #include "google/protobuf/compiler/hpb/names.h"
 #include "google/protobuf/compiler/hpb/output.h"
-#include "upb_generator/common.h"
-#include "upb_generator/keywords.h"
-#include "upb_generator/names.h"
+#include "google/protobuf/descriptor.h"
+#include "upb_generator/c/names.h"
+#include "upb_generator/minitable/names.h"
 
 namespace google::protobuf::hpb_generator {
 
@@ -59,6 +59,11 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
 std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
                              const NameToFieldDescriptorMap& field_names);
 
+upb::generator::NameMangler CreateNameMangler(
+    const protobuf::Descriptor* message) {
+  return upb::generator::NameMangler(upb::generator::GetCppFields(message));
+}
+
 NameToFieldDescriptorMap CreateFieldNameMap(
     const protobuf::Descriptor* message) {
   NameToFieldDescriptorMap field_names;
@@ -75,12 +80,11 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
   OutputIndenter i(output);
 
   auto field_names = CreateFieldNameMap(desc);
-  auto upbc_field_names = upb::generator::CreateFieldNameMap(desc);
+  auto mangler = CreateNameMangler(desc);
 
   for (const auto* field : FieldNumberOrder(desc)) {
     std::string resolved_field_name = ResolveFieldName(field, field_names);
-    std::string resolved_upbc_name =
-        upb::generator::ResolveFieldName(field, upbc_field_names);
+    std::string resolved_upbc_name = mangler.ResolveFieldName(field->name());
     WriteFieldAccessorHazzer(desc, field, resolved_field_name,
                              resolved_upbc_name, output);
     WriteFieldAccessorClear(desc, field, resolved_field_name,
@@ -107,10 +111,17 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
         output(R"cc(
                  $1 $2() const;
                  $0 mutable_$2();
+                 /**
+                  * Re-points submessage to the given target.
+                  *
+                  * REQUIRES:
+                  * - both messages must be in the same arena.
+                  */
+                 void set_alias_$2($0 target);
                )cc",
                MessagePtrConstType(field, /* const */ false),
                MessagePtrConstType(field, /* const */ true),
-               resolved_field_name, resolved_upbc_name);
+               resolved_field_name);
       } else {
         output(
             R"cc(
@@ -191,14 +202,13 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
   output("namespace internal {\n");
   const char arena_expression[] = "arena_";
   auto field_names = CreateFieldNameMap(desc);
-  auto upbc_field_names = upb::generator::CreateFieldNameMap(desc);
+  auto mangler = CreateNameMangler(desc);
 
   // Generate const methods.
   OutputIndenter i(output);
   for (const auto* field : FieldNumberOrder(desc)) {
     std::string resolved_field_name = ResolveFieldName(field, field_names);
-    std::string resolved_upbc_name =
-        upb::generator::ResolveFieldName(field, upbc_field_names);
+    std::string resolved_upbc_name = mangler.ResolveFieldName(field->name());
     if (field->is_map()) {
       WriteMapAccessorDefinitions(desc, field, resolved_field_name, class_name,
                                   output);
@@ -222,7 +232,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
         output(
             R"cc(
               $1 $0::$2() const {
-                return ::protos::UpbStrToStringView($3_$4(msg_));
+                return hpb::interop::upb::FromUpbStringView($3_$4(msg_));
               }
             )cc",
             class_name, CppConstType(field), resolved_field_name,
@@ -231,7 +241,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
         output(
             R"cc(
               void $0::set_$2($1 value) {
-                $4_set_$3(msg_, ::protos::UpbStrFromStringView(value, $5));
+                $4_set_$3(msg_, hpb::interop::upb::CopyToUpbStringView(value, $5));
               }
             )cc",
             class_name, CppConstType(field), resolved_field_name,
@@ -244,7 +254,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
                 if (!has_$2()) {
                   return $4::default_instance();
                 }
-                return ::protos::internal::CreateMessage<$4>(
+                return ::hpb::interop::upb::MakeCHandle<$4>(
                     (upb_Message*)($3_$5(msg_)), arena_);
               }
             )cc",
@@ -256,14 +266,21 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output) {
         output(
             R"cc(
               $1 $0::mutable_$2() {
-                return ::protos::internal::CreateMessageProxy<$4>(
+                return hpb::interop::upb::MakeHandle<$4>(
                     (upb_Message*)($3_mutable_$5(msg_, $6)), $6);
+              }
+              void $0::set_alias_$2($1 target) {
+                ABSL_CHECK_EQ(arena_, hpb::interop::upb::GetArena(target));
+                upb_Message_SetBaseFieldMessage(
+                    UPB_UPCAST(msg_),
+                    upb_MiniTable_GetFieldByIndex($7::minitable(), $8),
+                    hpb::interop::upb::GetMessage(target));
               }
             )cc",
             class_name, MessagePtrConstType(field, /* is_const */ false),
             resolved_field_name, MessageName(desc),
             MessageBaseType(field, /* maybe_const */ false), resolved_upbc_name,
-            arena_expression);
+            arena_expression, ClassName(desc), field->index());
       }
     }
   }
@@ -295,7 +312,7 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
         R"cc(
           bool $0::set_$1($2 key, $3 value) {
             upb_Message* clone = upb_Message_DeepClone(
-                ::protos::internal::PrivateAccess::GetInternalMsg(value), &$9,
+                ::hpb::internal::PrivateAccess::GetInternalMsg(value), &$9,
                 arena_);
             $6return $4_$8_set(msg_, $7, ($5*)clone, arena_);
           }
@@ -304,12 +321,13 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
         MessagePtrConstType(val, /* is_const */ true), MessageName(message),
         MessageName(val->message_type()), optional_conversion_code,
         converted_key_name, upbc_name,
-        ::upb::generator::MessageInit(val->message_type()->full_name()));
+        ::upb::generator::MiniTableMessageVarName(
+            val->message_type()->full_name()));
     output(
         R"cc(
           bool $0::set_$1($2 key, $3 value) {
             upb_Message* clone = upb_Message_DeepClone(
-                ::protos::internal::PrivateAccess::GetInternalMsg(value), &$9,
+                ::hpb::internal::PrivateAccess::GetInternalMsg(value), &$9,
                 arena_);
             $6return $4_$8_set(msg_, $7, ($5*)clone, arena_);
           }
@@ -318,14 +336,15 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
         MessagePtrConstType(val, /* is_const */ false), MessageName(message),
         MessageName(val->message_type()), optional_conversion_code,
         converted_key_name, upbc_name,
-        ::upb::generator::MessageInit(val->message_type()->full_name()));
+        ::upb::generator::MiniTableMessageVarName(
+            val->message_type()->full_name()));
     output(
         R"cc(
           absl::StatusOr<$3> $0::get_$1($2 key) {
             $5* msg_value;
             $7bool success = $4_$9_get(msg_, $8, &msg_value);
             if (success) {
-              return ::protos::internal::CreateMessage<$6>(UPB_UPCAST(msg_value), arena_);
+              return ::hpb::interop::upb::MakeCHandle<$6>(UPB_UPCAST(msg_value), arena_);
             }
             return absl::NotFoundError("");
           }
@@ -347,9 +366,9 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
     output(
         R"cc(
           bool $0::set_$1($2 key, $3 value) {
-            $5return $4_$7_set(msg_, $6,
-                               ::protos::UpbStrFromStringView(value, arena_),
-                               arena_);
+            $5return $4_$7_set(
+                msg_, $6, hpb::interop::upb::CopyToUpbStringView(value, arena_),
+                arena_);
           }
         )cc",
         class_name, resolved_field_name, CppConstType(key), CppConstType(val),
@@ -454,6 +473,8 @@ void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
         output("using $0Access::$1;\n", ClassName(desc), resolved_field_name);
         if (!read_only) {
           output("using $0Access::mutable_$1;\n", class_name,
+                 resolved_field_name);
+          output("using $0Access::set_alias_$1;\n", class_name,
                  resolved_field_name);
         }
       } else {
@@ -563,7 +584,7 @@ std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
       }
     }
   }
-  return upb::generator::ResolveKeywordConflict(std::string(field_name));
+  return ResolveKeywordConflict(field_name);
 }
 
 }  // namespace protobuf

@@ -11,14 +11,14 @@ use googletest::prelude::*;
 // is _not_ a test for Rust Edition 2023 (which doesn't exist) but instead
 // Protobuf Edition 2023 (which exists).
 
-#[test]
+#[gtest]
 fn check_edition2023_works() {
     let msg = edition2023_rust_proto::EditionsMessage::new();
     assert_that!(msg.plain_field_opt().into_inner(), eq(0));
     assert_that!(msg.implicit_presence_field(), eq(0));
 }
 
-#[test]
+#[gtest]
 fn string_view_works() {
     let mut msg = edition2023_rust_proto::EditionsMessage::new();
     assert_that!(msg.str_view(), eq(""));
@@ -28,7 +28,7 @@ fn string_view_works() {
     assert_that!(msg.has_str_view(), eq(true));
 }
 
-#[test]
+#[gtest]
 fn repeated_string_view_works() {
     let mut msg = edition2023_rust_proto::EditionsMessage::new();
     assert_that!(msg.repeated_str_view().len(), eq(0));

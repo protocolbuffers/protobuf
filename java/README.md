@@ -29,7 +29,7 @@ If you are using Maven, use the following:
 
 And **replace `<!--version-->` with a version from the
 [Maven Protocol Buffers Repository](https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java).**
-For example, `3.25.3`.
+For example, `4.28.2`.
 
 Make sure the version number of the runtime matches (or is newer than) the
 version number of the protoc.
@@ -93,49 +93,63 @@ package).
 
 4) Install the classes wherever you prefer.
 
-### Build from Source - With Maven
+## Kotlin Protocol Buffers
 
-WARNING: Building from source with Maven is deprecated and will be removed in the 4.28.x release.
+This directory also provides support for Kotlin protocol buffers, which are
+built on top of Java protocol buffers. Kotlin protocol buffers require a
+dependency on Java protocol buffers, and both Java and Kotlin protocol buffer
+code must be generated for every proto file.
 
-1) Install Apache Maven if you don't have it:
+The main goal of Kotlin protobuf is to provide idiomatic ways to build and read
+protocol buffers in Kotlin. Learn more about Kotlin protobufs in our
+[documentation](https://protobuf.dev/getting-started/kotlintutorial/).
 
-     http://maven.apache.org/
+### Use Kotlin Protocol Buffers
 
-2) Build the C++ code, or obtain a binary distribution of protoc (see
-   the toplevel [README.md](../README.md)). If you install a binary
-   distribution, make sure that it is the same version as this package.
-   If in doubt, run:
+To use protobuf in Kotlin, first install the protocol compiler (protoc --
+instructions for installing are in the top-level [README.md](../README.md)) and
+use it to generate Java and Kotlin code for your .proto files:
 
-     $ protoc --version
+```
+$ protoc --java_out=${OUTPUT_DIR} --kotlin_out=${OUTPUT_DIR} path/to/your/proto/file
+```
 
-   You will need to place the protoc executable in ../src.  (If you
-   built it yourself, it should already be there.)
+Include the generated Java and Kotlin files in your project and add a dependency on the
+protobuf Java and Kotlin runtime.
 
-3) Run the tests:
+### Maven
 
-     $ mvn test
+If you are using Maven, use the following:
 
-   If some tests fail, this library may not work correctly on your
-   system.  Continue at your own risk.
+```xml
+<dependency>
+  <groupId>com.google.protobuf</groupId>
+  <artifactId>protobuf-java</artifactId>
+  <version><!--version--></version>
+</dependency>
 
-4) Install the library into your Maven repository:
+<dependency>
+  <groupId>com.google.protobuf</groupId>
+  <artifactId>protobuf-kotlin</artifactId>
+  <version><!--version--></version>
+</dependency>
+```
 
-     $ mvn install
+**Replace `<!--version-->` with a version from the
+[Maven Protocol Buffers Repository](https://mvnrepository.com/artifact/com.google.protobuf/protobuf-kotlin),**
+such as `4.28.2`.
 
-5) If you do not use Maven to manage your own build, you can build a
-   .jar file to use:
+Make sure the version number of the runtimes match each other and match (or are 
+newer than) the version number of the protoc.
 
-     $ mvn package
+### Use Kotlin Protocol Buffers on Android
 
-   The .jar will be placed in the "target" directory.
-
-The above instructions will install 2 maven artifacts:
-
-  * protobuf-java: The core Java Protocol Buffers library. Most users only
-                   need this artifact.
-  * protobuf-java-util: Utilities to work with protos. It contains JSON support
-                        as well as utilities to work with proto3 well-known
-                        types.
+For Android users, it's recommended to use the Java Lite runtime for its smaller
+code size. We provide a `protobuf-kotlin-lite` package in Maven and Bazel to
+pair with the Java Lite runtime. Use these if you want to use Kotlin on
+Android or in another context where you want to use Java Lite. Similar to the
+full runtime, `protobuf-kotlin-lite` requires a dependency on
+`protobuf-java-lite`.
 
 ## Compatibility Notice
 
@@ -177,8 +191,3 @@ The complete documentation for Protocol Buffers is available via the
 web at:
 
   https://developers.google.com/protocol-buffers/
-
-## Kotlin Protocol Buffers
-
-Code to support more idiomatic Kotlin protocol buffers has been added to the
-repository, and Kotlin support will be launched in the next numbered release.

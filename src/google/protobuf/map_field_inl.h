@@ -16,6 +16,7 @@
 #include <type_traits>
 
 #include "absl/base/casts.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_type_handler.h"
@@ -50,11 +51,15 @@ inline uint64_t UnwrapMapKeyImpl(const MapKey& map_key, const uint64_t*) {
 inline bool UnwrapMapKeyImpl(const MapKey& map_key, const bool*) {
   return map_key.GetBoolValue();
 }
-inline const std::string& UnwrapMapKeyImpl(const MapKey& map_key,
-                                           const std::string*) {
+inline absl::string_view UnwrapMapKeyImpl(const MapKey& map_key,
+                                          const std::string*) {
   return map_key.GetStringValue();
 }
 inline const MapKey& UnwrapMapKeyImpl(const MapKey& map_key, const MapKey*) {
+  return map_key;
+}
+inline const MapKey& UnwrapMapKeyImpl(const MapKey& map_key,
+                                      const DynamicMapKey*) {
   return map_key;
 }
 
@@ -79,11 +84,14 @@ inline void SetMapKey(MapKey* map_key, uint64_t value) {
 inline void SetMapKey(MapKey* map_key, bool value) {
   map_key->SetBoolValue(value);
 }
-inline void SetMapKey(MapKey* map_key, const std::string& value) {
+inline void SetMapKey(MapKey* map_key, absl::string_view value) {
   map_key->SetStringValue(value);
 }
 inline void SetMapKey(MapKey* map_key, const MapKey& value) {
-  map_key->CopyFrom(value);
+  *map_key = value;
+}
+inline void SetMapKey(MapKey* map_key, const DynamicMapKey& value) {
+  *map_key = value.ToMapKey();
 }
 
 // ------------------------TypeDefinedMapFieldBase---------------

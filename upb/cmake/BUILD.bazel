@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load(
     "//upb/bazel:build_defs.bzl",
     "make_shell_script",
@@ -46,8 +47,8 @@ genrule(
 genrule(
     name = "copy_protos",
     srcs = [
-        "//upb:descriptor_upb_proto",
-        "//upb:descriptor_upb_minitable_proto",
+        "//src/google/protobuf:descriptor_upb_c_proto",
+        "//src/google/protobuf:descriptor_upb_minitable_proto",
     ],
     outs = [
         "generated-in/google/protobuf/descriptor.upb.h",
@@ -105,4 +106,27 @@ sh_test(
         "//conditions:default": [],
     }),
     deps = ["@bazel_tools//tools/bash/runfiles"],
+)
+
+pkg_files(
+    name = "upb_cmake_dist",
+    srcs = [
+        ":copy_protos",
+        ":gen_cmakelists",
+        "//third_party/utf8_range:utf8_range_srcs",
+        "//upb:source_files",
+        "//upb/base:source_files",
+        "//upb/hash:source_files",
+        "//upb/lex:source_files",
+        "//upb/mem:source_files",
+        "//upb/message:source_files",
+        "//upb/mini_descriptor:source_files",
+        "//upb/mini_table:source_files",
+        "//upb/port:source_files",
+        "//upb/reflection:source_files",
+        "//upb/text:source_files",
+        "//upb/wire:source_files",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//rust:__pkg__"],
 )

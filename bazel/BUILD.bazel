@@ -40,6 +40,7 @@ bzl_library(
     deps = [
         "//bazel/common:proto_common_bzl",
         "//bazel/common:proto_info_bzl",
+        "//bazel/private:toolchain_helpers_bzl",
         "@rules_python//python:py_info_bzl",
     ],
 )

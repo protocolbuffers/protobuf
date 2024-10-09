@@ -16,6 +16,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
@@ -27,6 +28,7 @@
 #include "google/protobuf/compiler/rust/rust_field_type.h"
 #include "google/protobuf/compiler/rust/rust_keywords.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -37,7 +39,7 @@ namespace compiler {
 namespace rust {
 
 std::string GetCrateName(Context& ctx, const FileDescriptor& dep) {
-  return RsSafeName(ctx.generator_context().ImportPathToCrateName(dep.name()));
+  return RsSafeName(ctx.ImportPathToCrateName(dep.name()));
 }
 
 std::string GetRsFile(Context& ctx, const FileDescriptor& file) {
@@ -60,7 +62,9 @@ std::string GetThunkCcFile(Context& ctx, const FileDescriptor& file) {
 
 std::string GetHeaderFile(Context& ctx, const FileDescriptor& file) {
   auto basename = StripProto(file.name());
-  return absl::StrCat(basename, ".proto.h");
+  constexpr absl::string_view kCcGencodeExt = ".pb.h";
+
+  return absl::StrCat(basename, kCcGencodeExt);
 }
 
 std::string RawMapThunk(Context& ctx, const Descriptor& msg,
@@ -71,84 +75,29 @@ std::string RawMapThunk(Context& ctx, const Descriptor& msg,
 
 std::string RawMapThunk(Context& ctx, const EnumDescriptor& desc,
                         absl::string_view key_t, absl::string_view op) {
-  return absl::StrCat("proto2_rust_thunk_Map_", key_t, "_",
-                      GetUnderscoreDelimitedFullName(ctx, *&desc), "_", op);
+  // Enums are always 32 bits.
+  return absl::StrCat("proto2_rust_thunk_Map_", key_t, "_i32_", op);
 }
-
-namespace {
-
-template <typename T>
-std::string FieldPrefix(Context& ctx, const T& field) {
-  // NOTE: When ctx.is_upb(), this functions outputs must match the symbols
-  // that the upbc plugin generates exactly. Failure to do so correctly results
-  // in a link-time failure.
-  absl::string_view prefix = ctx.is_cpp() ? "proto2_rust_thunk_" : "";
-  std::string thunk_prefix = absl::StrCat(
-      prefix, GetUnderscoreDelimitedFullName(ctx, *field.containing_type()));
-  return thunk_prefix;
-}
-
-template <typename T>
-std::string ThunkName(Context& ctx, const T& field, absl::string_view op) {
-  std::string thunkName = FieldPrefix(ctx, field);
-
-  absl::string_view format;
-  if (ctx.is_upb() && op == "get") {
-    // upb getter is simply the field name (no "get" in the name).
-    format = "_$1";
-  } else if (ctx.is_upb() && op == "get_mut") {
-    // same as above, with with `mutable` prefix
-    format = "_mutable_$1";
-  } else if (ctx.is_upb() && op == "case") {
-    // some upb functions are in the order x_op compared to has/set/clear which
-    // are in the other order e.g. op_x.
-    format = "_$1_$0";
-  } else {
-    format = "_$0_$1";
-  }
-
-  absl::SubstituteAndAppend(&thunkName, format, op, field.name());
-  return thunkName;
-}
-
-std::string ThunkMapOrRepeated(Context& ctx, const FieldDescriptor& field,
-                               absl::string_view op) {
-  if (!ctx.is_upb()) {
-    return ThunkName<FieldDescriptor>(ctx, field, op);
-  }
-
-  std::string thunkName = absl::StrCat("_", FieldPrefix(ctx, field));
-  absl::string_view format;
-  if (op == "get") {
-    format = field.is_map() ? "_$1_upb_map" : "_$1_upb_array";
-  } else if (op == "get_mut") {
-    format = field.is_map() ? "_$1_mutable_upb_map" : "_$1_mutable_upb_array";
-  } else {
-    return ThunkName<FieldDescriptor>(ctx, field, op);
-  }
-
-  absl::SubstituteAndAppend(&thunkName, format, op, field.name());
-  return thunkName;
-}
-
-}  // namespace
 
 std::string ThunkName(Context& ctx, const FieldDescriptor& field,
                       absl::string_view op) {
-  if (field.is_map() || field.is_repeated()) {
-    return ThunkMapOrRepeated(ctx, field, op);
-  }
-  return ThunkName<FieldDescriptor>(ctx, field, op);
+  ABSL_CHECK(ctx.is_cpp());
+  return absl::StrCat("proto2_rust_thunk_",
+                      UnderscoreDelimitFullName(ctx, field.full_name()), "_",
+                      op);
 }
 
 std::string ThunkName(Context& ctx, const OneofDescriptor& field,
                       absl::string_view op) {
-  return ThunkName<OneofDescriptor>(ctx, field, op);
+  ABSL_CHECK(ctx.is_cpp());
+  return absl::StrCat("proto2_rust_thunk_",
+                      UnderscoreDelimitFullName(ctx, field.full_name()), "_",
+                      op);
 }
 
 std::string ThunkName(Context& ctx, const Descriptor& msg,
                       absl::string_view op) {
-  absl::string_view prefix = ctx.is_cpp() ? "proto2_rust_thunk_" : "";
+  absl::string_view prefix = ctx.is_cpp() ? "proto2_rust_thunk_Message_" : "";
   return absl::StrCat(prefix, GetUnderscoreDelimitedFullName(ctx, msg), "_",
                       op);
 }
@@ -199,7 +148,40 @@ std::string RsTypePath(Context& ctx, const FieldDescriptor& field) {
     case RustFieldType::ENUM:
       return GetFullyQualifiedPath(ctx, *field.enum_type());
   }
+  ABSL_LOG(ERROR) << "Unknown field type: " << field.type_name();
+  internal::Unreachable();
+}
+
+std::string RsViewType(Context& ctx, const FieldDescriptor& field,
+                       absl::string_view lifetime) {
+  switch (GetRustFieldType(field)) {
+    case RustFieldType::BOOL:
+    case RustFieldType::INT32:
+    case RustFieldType::INT64:
+    case RustFieldType::UINT32:
+    case RustFieldType::UINT64:
+    case RustFieldType::FLOAT:
+    case RustFieldType::DOUBLE:
+    case RustFieldType::ENUM:
+      // The View type of all scalars and enums can be spelled as the type
+      // itself.
+      return RsTypePath(ctx, field);
+    case RustFieldType::BYTES:
+      return absl::StrFormat("&%s [u8]", lifetime);
+    case RustFieldType::STRING:
+      return absl::StrFormat("&%s ::__pb::ProtoStr", lifetime);
+    case RustFieldType::MESSAGE:
+      if (lifetime.empty()) {
+        return absl::StrFormat(
+            "%sView", GetFullyQualifiedPath(ctx, *field.message_type()));
+      } else {
+        return absl::StrFormat(
+            "%sView<%s>", GetFullyQualifiedPath(ctx, *field.message_type()),
+            lifetime);
+      }
+  }
   ABSL_LOG(FATAL) << "Unsupported field type: " << field.type_name();
+  internal::Unreachable();
 }
 
 std::string RustModuleForContainingType(Context& ctx,
@@ -459,7 +441,7 @@ PROTOBUF_CONSTINIT const MapKeyType kMapKeyTypes[] = {
      /*cc_ffi_key_t=*/"google::protobuf::rust::PtrAndLen",
      /*cc_from_ffi_key_expr=*/
      "std::string(key.ptr, key.len)", /*cc_to_ffi_key_expr=*/
-     "google::protobuf::rust::PtrAndLen(cpp_key.data(), cpp_key.size())"}};
+     "google::protobuf::rust::PtrAndLen{cpp_key.data(), cpp_key.size()}"}};
 
 }  // namespace rust
 }  // namespace compiler

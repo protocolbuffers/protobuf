@@ -12,37 +12,52 @@
 #include "google/protobuf/compiler/cpp/helpers.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <memory>
+#include <new>
 #include <queue>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
+#include "absl/base/thread_annotations.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
+#include "absl/types/optional.h"
+#include "absl/types/span.h"
+#include "google/protobuf/arenastring.h"
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
+#include "google/protobuf/map.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -278,7 +293,7 @@ std::string UnderscoresToCamelCase(absl::string_view input,
                                    bool cap_next_letter) {
   std::string result;
   // Note:  I distrust ctype.h due to locales.
-  for (int i = 0; i < input.size(); i++) {
+  for (size_t i = 0; i < input.size(); ++i) {
     if ('a' <= input[i] && input[i] <= 'z') {
       if (cap_next_letter) {
         result += input[i] + ('A' - 'a');
@@ -506,6 +521,17 @@ std::string QualifiedDefaultInstancePtr(const Descriptor* descriptor,
                       "ptr_");
 }
 
+std::string ClassDataType(const Descriptor* descriptor,
+                          const Options& options) {
+  return HasDescriptorMethods(descriptor->file(), options) ||
+                 // Boostrap protos are always full, even when lite is forced
+                 // via options.
+                 IsBootstrapProto(options, descriptor->file())
+             ? "ClassDataFull"
+             : absl::StrFormat("ClassDataLite<%d>",
+                               descriptor->full_name().size() + 1);
+}
+
 std::string DescriptorTableName(const FileDescriptor* file,
                                 const Options& options) {
   return UniqueName("descriptor_table", file, options);
@@ -529,7 +555,7 @@ std::string SuperClassName(const Descriptor* descriptor,
 }
 
 std::string FieldName(const FieldDescriptor* field) {
-  std::string result = field->name();
+  std::string result = std::string(field->name());
   absl::AsciiStrToLower(&result);
   if (Keywords().count(result) > 0) {
     result.append("_");
@@ -563,7 +589,7 @@ std::string QualifiedOneofCaseConstantName(const FieldDescriptor* field) {
 }
 
 std::string EnumValueName(const EnumValueDescriptor* enum_value) {
-  std::string result = enum_value->name();
+  std::string result = std::string(enum_value->name());
   if (Keywords().count(result) > 0) {
     result.append("_");
   }
@@ -864,7 +890,7 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
 // Convert a file name into a valid identifier.
 std::string FilenameIdentifier(absl::string_view filename) {
   std::string result;
-  for (int i = 0; i < filename.size(); i++) {
+  for (size_t i = 0; i < filename.size(); ++i) {
     if (absl::ascii_isalnum(filename[i])) {
       result.push_back(filename[i]);
     } else {
@@ -902,7 +928,7 @@ std::string SafeFunctionName(const Descriptor* descriptor,
                              const FieldDescriptor* field,
                              absl::string_view prefix) {
   // Do not use FieldName() since it will escape keywords.
-  std::string name = field->name();
+  std::string name = std::string(field->name());
   absl::AsciiStrToLower(&name);
   std::string function_name = absl::StrCat(prefix, name);
   if (descriptor->FindFieldByName(function_name)) {
@@ -1068,18 +1094,8 @@ bool HasRepeatedFields(const FileDescriptor* file) {
   return false;
 }
 
-static bool IsStringPieceField(const FieldDescriptor* field,
-                               const Options& options) {
-  return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         internal::cpp::EffectiveStringCType(field) ==
-             FieldOptions::STRING_PIECE;
-}
-
 static bool HasStringPieceFields(const Descriptor* descriptor,
                                  const Options& options) {
-  for (int i = 0; i < descriptor->field_count(); ++i) {
-    if (IsStringPieceField(descriptor->field(i), options)) return true;
-  }
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
     if (HasStringPieceFields(descriptor->nested_type(i), options)) return true;
   }
@@ -1093,15 +1109,10 @@ bool HasStringPieceFields(const FileDescriptor* file, const Options& options) {
   return false;
 }
 
-static bool IsCordField(const FieldDescriptor* field, const Options& options) {
-  return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-         internal::cpp::EffectiveStringCType(field) == FieldOptions::CORD;
-}
-
 static bool HasCordFields(const Descriptor* descriptor,
                           const Options& options) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
-    if (IsCordField(descriptor->field(i), options)) return true;
+    if (IsCord(descriptor->field(i))) return true;
   }
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
     if (HasCordFields(descriptor->nested_type(i), options)) return true;
@@ -1150,6 +1161,17 @@ static bool HasMapFields(const Descriptor* descriptor) {
 bool HasMapFields(const FileDescriptor* file) {
   for (int i = 0; i < file->message_type_count(); ++i) {
     if (HasMapFields(file->message_type(i))) return true;
+  }
+  return false;
+}
+
+bool HasV2Table(const Descriptor* descriptor) {
+  return false;
+}
+
+bool HasV2Table(const FileDescriptor* file) {
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    if (HasV2Table(file->message_type(i))) return true;
   }
   return false;
 }
@@ -1555,7 +1577,7 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
   if (UsingImplicitWeakFields(scc->GetFile(), options_)) {
     result.contains_weak = true;
   }
-  for (int i = 0; i < scc->descriptors.size(); i++) {
+  for (size_t i = 0; i < scc->descriptors.size(); ++i) {
     const Descriptor* descriptor = scc->descriptors[i];
     if (descriptor->extension_range_count() > 0) {
       result.contains_extension = true;
@@ -1571,7 +1593,8 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
       switch (field->type()) {
         case FieldDescriptor::TYPE_STRING:
         case FieldDescriptor::TYPE_BYTES: {
-          if (field->options().ctype() == FieldOptions::CORD) {
+          if (field->cpp_string_type() ==
+              FieldDescriptor::CppStringType::kCord) {
             result.contains_cord = true;
           }
           break;
@@ -1662,8 +1685,6 @@ bool GetBootstrapBasename(const Options& options, absl::string_view basename,
            "third_party/protobuf/descriptor"},
           {"third_party/protobuf/cpp_features",
            "third_party/protobuf/cpp_features"},
-          {"third_party/java/protobuf/java_features",
-           "third_party/java/protobuf/java_features_bootstrap"},
           {"third_party/protobuf/compiler/plugin",
            "third_party/protobuf/compiler/plugin"},
           {"net/proto2/compiler/proto/profile",

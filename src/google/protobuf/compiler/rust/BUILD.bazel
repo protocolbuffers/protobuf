@@ -86,11 +86,11 @@ cc_library(
         ":enum",
         ":naming",
         ":oneof",
+        ":upb_helpers",
         "//src/google/protobuf",
         "//src/google/protobuf/compiler/cpp:names",
         "//src/google/protobuf/compiler/cpp:names_internal",
         "//src/google/protobuf/compiler/rust/accessors",
-        "//upb_generator:mangle",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
@@ -178,6 +178,7 @@ cc_library(
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
@@ -191,10 +192,12 @@ cc_library(
         ":context",
         ":naming",
         ":rust_field_type",
+        ":upb_helpers",
         "//src/google/protobuf",
         "//src/google/protobuf/compiler/cpp:names",
         "//src/google/protobuf/compiler/cpp:names_internal",
         "//src/google/protobuf/compiler/rust/accessors",
+        "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
     ],
@@ -232,6 +235,22 @@ cc_library(
     ],
     deps = [
         "//src/google/protobuf",
+        "//src/google/protobuf:port",
         "@com_google_absl//absl/log:absl_log",
+    ],
+)
+
+cc_library(
+    name = "upb_helpers",
+    srcs = ["upb_helpers.cc"],
+    hdrs = ["upb_helpers.h"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//src/google/protobuf/compiler/rust:__subpackages__",
+    ],
+    deps = [
+        "//src/google/protobuf",
+        "//upb_generator/minitable:names",
+        "@com_google_absl//absl/log:absl_check",
     ],
 )

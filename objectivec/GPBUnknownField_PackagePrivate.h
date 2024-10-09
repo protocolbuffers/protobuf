@@ -9,6 +9,8 @@
 
 #import "GPBUnknownField.h"
 
+#import "GPBArray.h"
+
 @class GPBCodedOutputStream;
 
 @interface GPBUnknownField () {
@@ -25,7 +27,10 @@
       GPBUInt32Array *_Null_unspecified mutableFixed32List;
       GPBUInt64Array *_Null_unspecified mutableFixed64List;
       NSMutableArray<NSData *> *_Null_unspecified mutableLengthDelimitedList;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
       NSMutableArray<GPBUnknownFieldSet *> *_Null_unspecified mutableGroupList;
+#pragma clang diagnostic pop
     } legacy;
   } storage_;
 }

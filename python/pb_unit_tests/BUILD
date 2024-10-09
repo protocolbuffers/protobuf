@@ -5,15 +5,9 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-# begin:github_only
-load("@pip_deps//:requirements.bzl", "requirement")
-# end:github_only
-
 load(":pyproto_test_wrapper.bzl", "pyproto_test_wrapper")
 
-# begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
-# end:google_only
+package(default_applicable_licenses = ["//:license"])
 
 licenses(["notice"])
 
@@ -21,9 +15,7 @@ pyproto_test_wrapper(name = "descriptor_pool_test")
 
 pyproto_test_wrapper(name = "descriptor_test")
 
-# begin:github_only
 pyproto_test_wrapper(name = "generator_test")
-# end:github_only
 
 pyproto_test_wrapper(name = "message_factory_test")
 

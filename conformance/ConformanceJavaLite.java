@@ -67,7 +67,7 @@ class ConformanceJavaLite {
   }
 
   private enum BinaryDecoderType {
-    BTYE_STRING_DECODER,
+    BYTE_STRING_DECODER,
     BYTE_ARRAY_DECODER,
     ARRAY_BYTE_BUFFER_DECODER,
     READONLY_ARRAY_BYTE_BUFFER_DECODER,
@@ -84,7 +84,7 @@ class ConformanceJavaLite {
         ExtensionRegistryLite extensions)
         throws InvalidProtocolBufferException {
       switch (type) {
-        case BTYE_STRING_DECODER:
+        case BYTE_STRING_DECODER:
         case BYTE_ARRAY_DECODER:
           return parser.parseFrom(bytes, extensions);
         case ARRAY_BYTE_BUFFER_DECODER:

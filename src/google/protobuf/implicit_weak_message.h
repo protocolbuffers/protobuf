@@ -59,10 +59,6 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 
   const ClassData* GetClassData() const PROTOBUF_FINAL;
 
-  MessageLite* New(Arena* arena) const PROTOBUF_FINAL {
-    return Arena::Create<ImplicitWeakMessage>(arena);
-  }
-
   void Clear() PROTOBUF_FINAL { data_->clear(); }
 
   size_t ByteSizeLong() const PROTOBUF_FINAL {
@@ -91,11 +87,25 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 
   static void MergeImpl(MessageLite&, const MessageLite&);
 
+  static void DestroyImpl(MessageLite& msg) {
+    static_cast<ImplicitWeakMessage&>(msg).~ImplicitWeakMessage();
+  }
+  static size_t ByteSizeLongImpl(const MessageLite& msg) {
+    return static_cast<const ImplicitWeakMessage&>(msg).ByteSizeLong();
+  }
+
+  static uint8_t* _InternalSerializeImpl(const MessageLite& msg,
+                                         uint8_t* target,
+                                         io::EpsCopyOutputStream* stream) {
+    return static_cast<const ImplicitWeakMessage&>(msg)._InternalSerialize(
+        target, stream);
+  }
+
   // This std::string is allocated on the heap, but we use a raw pointer so that
   // the default instance can be constant-initialized. In the const methods, we
   // have to handle the possibility of data_ being null.
   std::string* data_;
-  mutable google::protobuf::internal::CachedSize cached_size_{};
+  google::protobuf::internal::CachedSize cached_size_{};
 };
 
 struct ImplicitWeakMessageDefaultType;
@@ -202,6 +212,11 @@ struct WeakRepeatedPtrField {
   union {
     RepeatedPtrField<T> weak;
   };
+
+  static constexpr size_t InternalGetArenaOffset(
+      internal::InternalVisibility visibility) {
+    return decltype(weak)::InternalGetArenaOffset(visibility);
+  }
 
  private:
   WeakRepeatedPtrField(Arena* arena, const WeakRepeatedPtrField& rhs)

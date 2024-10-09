@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GPBUnknownField.h"
+
 @class GPBUnknownField;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -15,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
  * A collection of unknown fields. Fields parsed from the binary representation
  * of a message that are unknown end up in an instance of this set.
  **/
+__attribute__((deprecated("Use GPBUnknownFields instead.", "GPBUnknownFields")))
 __attribute__((objc_subclassing_restricted))
 @interface GPBUnknownFieldSet : NSObject<NSCopying>
 

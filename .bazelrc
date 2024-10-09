@@ -1,5 +1,9 @@
 build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
 
+# Needed for java_lite_proto_library, that's using ProguardSpecProvider
+# Once the provider is ported to Starlark the flag may be removed.
+common --experimental_google_legacy_api
+
 build:dbg --compilation_mode=dbg
 
 build:opt --compilation_mode=opt
@@ -22,6 +26,8 @@ build:ubsan --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
 # Workaround for the fact that Bazel links with $CC, not $CXX
 # https://github.com/bazelbuild/bazel/issues/11122#issuecomment-613746748
 build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
+# Abseil passes nullptr to memcmp with 0 size
+build:ubsan --copt=-fno-sanitize=nonnull-attribute
 
 # TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
 # https://github.com/protocolbuffers/protobuf/issues/14313
