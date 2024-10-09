@@ -1422,6 +1422,7 @@ class FileGenerator::ForwardDeclarations {
       p->Emit({Sub("enum", e.first).AnnotatedAs(e.second)}, R"cc(
         enum $enum$ : int;
         bool $enum$_IsValid(int value);
+        extern const uint32_t $enum$_internal_data_[];
       )cc");
     }
 

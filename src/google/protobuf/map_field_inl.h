@@ -90,9 +90,8 @@ inline void SetMapKey(MapKey* map_key, absl::string_view value) {
 inline void SetMapKey(MapKey* map_key, const MapKey& value) {
   *map_key = value;
 }
-inline void SetMapKey(MapKey* map_key, const DynamicMapKey& value) {
-  *map_key = value.ToMapKey();
-}
+// The overload of SetMapKey for DynamicMapKey is located in dynamic_message.cc
+// and is discovered via ADL.
 
 // ------------------------TypeDefinedMapFieldBase---------------
 template <typename Key, typename T>
