@@ -19,24 +19,30 @@ option java_package = "bar_java_package";
 option java_outer_classname = "baz_java_outer_classname";
 option csharp_namespace = "quux_csharp_namespace";
 option objc_class_prefix = "the_objc_prefix";
-option cc_enable_arenas = true;
 
 message Message {
   optional int32 a = 1 [default = 3];
+
   oneof foo {
     string oneof_string = 2 [default = "abc\n"];
+
     string oneof_bool = 3 [default = "true"];
-    bytes oneof_bytes = 4 [default = "abc\xef\xfe"];
+
+    bytes oneof_bytes = 4 [default = "abc\357\376"];
   }
+
   optional pkg.RegularImportMessage regular_import_message = 6;
   optional pkg.PublicImportMessage public_import_message = 7;
   optional pkg.Proto3Enum proto3_enum = 8;
+
   extensions 1000 to max;
+
   extend Message {
     optional int32 ext = 1000;
   }
 
   message NestedMessage {}
+
   message NestedEnum {}
 
   // TODO: support reserved ranges in defs.
@@ -61,7 +67,6 @@ enum HasDuplicateValues {
   B = 1;
   C = 120;
   D = 130;
-
   G = 120;
   F = 1;
   E = 0;
@@ -106,5 +111,6 @@ message MessageSetItem {
 
 message UnusualDefaults {
   optional bytes foo = 1 [default = "\\X"];
+
   optional string bar = 2 [default = "\\X"];
 }
