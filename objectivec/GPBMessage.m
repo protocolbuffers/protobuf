@@ -2227,15 +2227,6 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
 
 #pragma mark - mergeFrom
 
-- (void)mergeFromData:(NSData *)data extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
-  GPBCodedInputStream *input = [[GPBCodedInputStream alloc] initWithData:data];
-  @try {
-    [self mergeFromCodedInputStream:input extensionRegistry:extensionRegistry endingTag:0];
-  } @finally {
-    [input release];
-  }
-}
-
 - (BOOL)mergeFromData:(NSData *)data
     extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
                 error:(NSError **)errorPtr {

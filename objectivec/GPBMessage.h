@@ -247,21 +247,6 @@ CF_EXTERN_C_END
  *
  * @param data              The binary representation of the message to merge.
  * @param extensionRegistry The extension registry to use to look up extensions.
- *
- * @exception GPBCodedInputStreamException Exception thrown when parsing was
- *                                         unsuccessful.
- **/
-- (void)mergeFromData:(NSData *)data
-    extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
-    __attribute__((deprecated(
-        "Use -mergeFromData:extensionRegistry:error: instead, especaily if calling from Swift.")));
-
-/**
- * Parses the given data as this message's class, and merges those values into
- * this message.
- *
- * @param data              The binary representation of the message to merge.
- * @param extensionRegistry The extension registry to use to look up extensions.
  * @param errorPtr          An optional error pointer to fill in with a failure
  *                          reason if the data can not be parsed. Will only be
  *                          filled in if the data failed to be parsed.
