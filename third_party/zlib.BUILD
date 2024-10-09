@@ -34,6 +34,14 @@ genrule(
     ),
 )
 
+config_setting(
+    name = "mingw_gcc_compiler",
+    flag_values = {
+        "@bazel_tools//tools/cpp:compiler": "mingw-gcc",
+    },
+    visibility = [":__subpackages__"],
+)
+
 cc_library(
     name = "zlib",
     srcs = [
@@ -58,6 +66,9 @@ cc_library(
     ] + _ZLIB_HEADERS,
     hdrs = _ZLIB_PREFIXED_HEADERS,
     copts = select({
+        ":mingw_gcc_compiler": [
+            "-fpermissive",
+        ],
         "@platforms//os:windows": [],
         "@platforms//os:macos": [
             "-Wno-unused-variable",
