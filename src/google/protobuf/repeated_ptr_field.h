@@ -110,6 +110,7 @@ class GenericTypeHandler;
 //     static Type*(*)(Arena*) GetNewFunc();
 //     static void GetArena(Type* value);
 //
+//     static Type* New(Arena* arena);
 //     static Type* New(Arena* arena, Type&& value);
 //     static void Delete(Type*, Arena* arena);
 //     static void Clear(Type*);
@@ -815,6 +816,9 @@ class GenericTypeHandler {
     return Arena::InternalGetArena(value);
   }
 
+  static inline Type* New(Arena* arena) {
+    return static_cast<Type*>(Arena::DefaultConstruct<Type>(arena));
+  }
   static inline Type* New(Arena* arena, Type&& value) {
     return Arena::Create<Type>(arena, std::move(value));
   }
@@ -859,6 +863,9 @@ class GenericTypeHandler<std::string> {
   static constexpr auto GetNewFunc() { return NewStringElement; }
   static inline Arena* GetArena(Type*) { return nullptr; }
 
+  static PROTOBUF_NOINLINE Type* New(Arena* arena) {
+    return Arena::Create<Type>(arena);
+  }
   static PROTOBUF_NOINLINE Type* New(Arena* arena, Type&& value) {
     return Arena::Create<Type>(arena, std::move(value));
   }
