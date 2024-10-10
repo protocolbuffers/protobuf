@@ -3925,6 +3925,78 @@ bool EnumDescriptor::is_closed() const {
   return features().enum_type() == FeatureSet::CLOSED;
 }
 
+// Traverse the tree of field options and check if any of them are sensitive.
+// We check for sensitive enum values in the options and in the fields of the
+// message-type options, recursively.
+std::pair<bool, bool> FieldDescriptor::is_option_sensitive(
+    const Message& opts, const Reflection* reflection,
+    const FieldDescriptor* option) const {
+  if (option->type() == FieldDescriptor::TYPE_ENUM) {
+    auto count =
+        option->is_repeated() ? reflection->FieldSize(opts, option) : 1;
+    for (auto i = 0; i < count; i++) {
+      int enum_val = option->is_repeated()
+                         ? reflection->GetRepeatedEnumValue(opts, option, i)
+                         : reflection->GetEnumValue(opts, option);
+      const EnumValueDescriptor* option_value =
+          option->enum_type()->FindValueByNumber(enum_val);
+      if (option_value->options().debug_redact()) {
+        return std::make_pair(true, false);
+      }
+    }
+  } else if (option->type() == FieldDescriptor::TYPE_MESSAGE) {
+    auto count =
+        option->is_repeated() ? reflection->FieldSize(opts, option) : 1;
+    for (auto i = 0; i < count; i++) {
+      const Message& sub_message =
+          option->is_repeated()
+              ? reflection->GetRepeatedMessage(opts, option, i)
+              : reflection->GetMessage(opts, option);
+      const Reflection* sub_reflection = sub_message.GetReflection();
+      std::vector<const FieldDescriptor*> message_fields;
+      sub_reflection->ListFields(sub_message, &message_fields);
+      for (const FieldDescriptor* message_field : message_fields) {
+        auto result =
+            is_option_sensitive(sub_message, sub_reflection, message_field);
+        if (result.first) {
+          return result;
+        }
+      }
+    }
+  }
+  return std::make_pair(false, false);
+}
+
+std::pair<bool, bool> FieldDescriptor::calculate_sensitivity() const {
+  if (sensitivity_ == kUnknown) {
+    bool is_sensitive = options().debug_redact();
+    if (!is_sensitive) {
+      std::vector<const FieldDescriptor*> field_options;
+      const Reflection* reflection = options().GetReflection();
+      reflection->ListFields(options(), &field_options);
+      for (const FieldDescriptor* option : field_options) {
+        auto result = is_option_sensitive(options(), reflection, option);
+        is_sensitive = result.first;
+        is_reportable_ = result.second;
+        if (is_sensitive) {
+          break;
+        }
+      }
+    }
+    sensitivity_ = is_sensitive ? kSensitive : kNotSensitive;
+  }
+  return std::make_pair(sensitivity_ == kSensitive,
+                        static_cast<bool>(is_reportable_));
+}
+
+bool FieldDescriptor::is_sensitive() const {
+  return calculate_sensitivity().first;
+}
+
+bool FieldDescriptor::is_reportable() const {
+  return calculate_sensitivity().second;
+}
+
 bool FieldDescriptor::is_packed() const {
   if (!is_packable()) return false;
   return features().repeated_field_encoding() == FeatureSet::PACKED;
@@ -6608,6 +6680,8 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   result->is_oneof_ = false;
   result->in_real_oneof_ = false;
   result->proto3_optional_ = proto.proto3_optional();
+  result->sensitivity_ = FieldDescriptor::kUnknown;
+  result->is_reportable_ = false;
 
   if (proto.proto3_optional() && file_->edition() != Edition::EDITION_PROTO3) {
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,

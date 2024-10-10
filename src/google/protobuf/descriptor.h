@@ -1020,6 +1020,12 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
     absl::Format(&sink, "%s", d.DebugString());
   }
 
+  // Used to determine if a field should be redacted via a debug_redact option.
+  bool is_sensitive() const;
+
+  // Used to determine if a field should be reported due to debug_redact.
+  bool is_reportable() const;
+
   // Helper method to get the CppType for a particular Type.
   static CppType TypeToCppType(Type type);
 
@@ -1091,6 +1097,18 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
 
   // Helper function that returns the field type name for DebugString.
   std::string FieldTypeNameDebugString() const;
+
+  enum Sensitivity {
+    kUnknown,
+    kSensitive,
+    kNotSensitive,
+  };
+  mutable Sensitivity sensitivity_ : 2;
+  mutable bool is_reportable_ : 1;
+  std::pair<bool, bool> is_option_sensitive(
+      const Message& opts, const Reflection* reflection,
+      const FieldDescriptor* option) const;
+  std::pair<bool, bool> calculate_sensitivity() const;
 
   // Walks up the descriptor tree to generate the source location path
   // to this descriptor from the file root.
@@ -1186,7 +1204,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   friend class OneofDescriptor;
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 88);
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 96);
 
 // Describes a oneof defined in a message type.
 class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
