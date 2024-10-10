@@ -127,7 +127,7 @@ static upb_UnknownFields* upb_UnknownFields_DoBuild(
   uint32_t last_tag = 0;
   bool sorted = true;
   while (!upb_EpsCopyInputStream_IsDone(&ctx->stream, &ptr)) {
-    uint32_t tag;
+    uint32_t tag = 0;
     ptr = upb_WireReader_ReadTag(ptr, &tag);
     UPB_ASSERT(tag <= UINT32_MAX);
     int wire_type = upb_WireReader_GetWireType(tag);
@@ -153,7 +153,7 @@ static upb_UnknownFields* upb_UnknownFields_DoBuild(
         ptr = upb_WireReader_ReadFixed32(ptr, &field->data.uint32);
         break;
       case kUpb_WireType_Delimited: {
-        int size;
+        int size = 0;
         ptr = upb_WireReader_ReadSize(ptr, &size);
         const char* s_ptr = ptr;
         ptr = upb_EpsCopyInputStream_ReadStringAliased(&ctx->stream, &s_ptr,
