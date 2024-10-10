@@ -116,7 +116,7 @@ static_assert(PROTOBUF_GNUC_MIN(7, 3), "Protobuf only supports GCC 7.3 and newer
 #elif defined(_MSVC_LANG)
 static_assert(PROTOBUF_MSC_VER_MIN(1910), "Protobuf only supports MSVC 2017 and newer.");
 #endif
-static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and newer.");
+static_assert(PROTOBUF_CPLUSPLUS_MIN(201703L), "Protobuf only supports C++17 and newer.");
 
 // Check minimum Abseil version.
 #if defined(ABSL_LTS_RELEASE_VERSION) && defined(ABSL_LTS_RELEASE_PATCH_LEVEL)
@@ -371,7 +371,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #ifdef PROTOBUF_NODISCARD
 #error PROTOBUF_NODISCARD was previously defined
 #endif
-#if ABSL_HAVE_CPP_ATTRIBUTE(nodiscard) && PROTOBUF_CPLUSPLUS_MIN(201703L)
+#if ABSL_HAVE_CPP_ATTRIBUTE(nodiscard)
 #define PROTOBUF_NODISCARD [[nodiscard]]
 #elif ABSL_HAVE_ATTRIBUTE(warn_unused_result) || defined(__GNUC__)
 #define PROTOBUF_NODISCARD __attribute__((warn_unused_result))
@@ -615,8 +615,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #ifdef PROTOBUF_UNUSED
 #error PROTOBUF_UNUSED was previously defined
 #endif
-#if ABSL_HAVE_CPP_ATTRIBUTE(maybe_unused) || \
-    (PROTOBUF_MSC_VER_MIN(1911) && PROTOBUF_CPLUSPLUS_MIN(201703L))
+#if ABSL_HAVE_CPP_ATTRIBUTE(maybe_unused) || (PROTOBUF_MSC_VER_MIN(1911))
 #define PROTOBUF_UNUSED [[maybe_unused]]
 #elif ABSL_HAVE_ATTRIBUTE(unused) || defined(__GNUC__)
 #define PROTOBUF_UNUSED __attribute__((__unused__))
