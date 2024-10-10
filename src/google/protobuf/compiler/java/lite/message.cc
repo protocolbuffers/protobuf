@@ -357,7 +357,6 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
 
   printer->Print(
       "}\n"
-      "// fall through\n"
       "case GET_DEFAULT_INSTANCE: {\n"
       "  return DEFAULT_INSTANCE;\n"
       "}\n"
@@ -384,8 +383,6 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
       "  return parser;\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
-  printer->Outdent();
-
   if (HasRequiredFields(descriptor_)) {
     printer->Print(
         "}\n"
@@ -409,11 +406,13 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
 
   printer->Outdent();
   printer->Print(
-      "  }\n"
-      "  throw new UnsupportedOperationException();\n"
       "}\n"
-      "\n",
-      "classname", name_resolver_->GetImmutableClassName(descriptor_));
+      "// Should never happen. Generates tight code to throw an exception.\n"
+      "throw null;\n");
+  printer->Outdent();
+  printer->Print(
+      "}\n"
+      "\n");
 
   printer->Print(
       "\n"
