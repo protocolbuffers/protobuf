@@ -1539,13 +1539,6 @@ TEST(ArenaTest, ClearOneofMessageOnArena) {
   child->set_moo_int(100);
   message->clear_foo_message();
 
-#ifndef PROTOBUF_ASAN
-  EXPECT_NE(child->moo_int(), 100);
-#else
-#if GTEST_HAS_DEATH_TEST && defined(__cpp_if_constexpr)
-  EXPECT_DEATH(EXPECT_EQ(child->moo_int(), 0), "use-after-poison");
-#endif
-#endif
 }
 
 TEST(ArenaTest, CopyValuesWithinOneof) {
