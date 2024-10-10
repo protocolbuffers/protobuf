@@ -83,7 +83,7 @@ jobs:
             flags: --define=use_fast_cpp_protos=true
 
     name: MacOS ${{ matrix.type }} ${{ matrix.version }}
-    runs-on: macos-12
+    runs-on: macos-13
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
