@@ -92,16 +92,6 @@ objc_library(
         "GPBUtilities.h",
         "GPBWellKnownTypes.h",
         "GPBWireFormat.h",
-        "google/protobuf/Any.pbobjc.h",
-        "google/protobuf/Api.pbobjc.h",
-        "google/protobuf/Duration.pbobjc.h",
-        "google/protobuf/Empty.pbobjc.h",
-        "google/protobuf/FieldMask.pbobjc.h",
-        "google/protobuf/SourceContext.pbobjc.h",
-        "google/protobuf/Struct.pbobjc.h",
-        "google/protobuf/Timestamp.pbobjc.h",
-        "google/protobuf/Type.pbobjc.h",
-        "google/protobuf/Wrappers.pbobjc.h",
         # Package private headers, but exposed because the generated sources
         # need to use them.
         "GPBArray_PackagePrivate.h",

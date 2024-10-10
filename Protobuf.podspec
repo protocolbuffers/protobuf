@@ -18,17 +18,7 @@ Pod::Spec.new do |s|
   s.source = { :git => 'https://github.com/protocolbuffers/protobuf.git',
                :tag => "v#{s.version}" }
 
-  s.source_files = 'objectivec/*.{h,m,swift}',
-                   'objectivec/google/protobuf/Any.pbobjc.h',
-                   'objectivec/google/protobuf/Api.pbobjc.h',
-                   'objectivec/google/protobuf/Duration.pbobjc.h',
-                   'objectivec/google/protobuf/Empty.pbobjc.h',
-                   'objectivec/google/protobuf/FieldMask.pbobjc.h',
-                   'objectivec/google/protobuf/SourceContext.pbobjc.h',
-                   'objectivec/google/protobuf/Struct.pbobjc.h',
-                   'objectivec/google/protobuf/Timestamp.pbobjc.h',
-                   'objectivec/google/protobuf/Type.pbobjc.h',
-                   'objectivec/google/protobuf/Wrappers.pbobjc.h'
+  s.source_files = 'objectivec/*.{h,m,swift}'
   # The following would cause duplicate symbol definitions. GPBProtocolBuffers is expected to be
   # left out, as it's an umbrella implementation file.
   s.exclude_files = 'objectivec/GPBProtocolBuffers.m'
