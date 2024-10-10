@@ -106,7 +106,9 @@ string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\3"
 string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\5"
   protobuf_VERSION_PRERELEASE "${protobuf_VERSION_STRING}")
 
-message(STATUS "${protobuf_VERSION_PRERELEASE}")
+if(protobuf_VERSION_PRERELEASE)
+  message(STATUS "${protobuf_VERSION_PRERELEASE}")
+endif()
 
 # Package version
 set(protobuf_VERSION
