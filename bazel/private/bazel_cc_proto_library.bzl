@@ -13,7 +13,7 @@ load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:cc_proto_support.bzl", "cc_proto_compile_and_link")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
-_CC_PROTO_TOOLCHAIN = "//bazel/private:cc_toolchain_type"
+_CC_PROTO_TOOLCHAIN = Label("//bazel/private:cc_toolchain_type")
 
 _ProtoCcFilesInfo = provider(fields = ["files"], doc = "Provide cc proto files.")
 _ProtoCcHeaderInfo = provider(fields = ["headers"], doc = "Provide cc proto headers.")

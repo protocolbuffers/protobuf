@@ -12,7 +12,7 @@ load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:java_proto_support.bzl", "JavaProtoAspectInfo", "java_compile_for_protos", "java_info_merge_for_protos")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
-_JAVA_PROTO_TOOLCHAIN = "//bazel/private:java_toolchain_type"
+_JAVA_PROTO_TOOLCHAIN = Label("//bazel/private:java_toolchain_type")
 
 def _filter_provider(provider, *attrs):
     return [dep[provider] for attr in attrs for dep in attr if provider in dep]
