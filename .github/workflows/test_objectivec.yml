@@ -25,11 +25,11 @@ jobs:
           destination: "platform=macOS"
           xc_project: "ProtocolBuffers_OSX.xcodeproj"
         - platform: "iOS"
-          destination: "platform=iOS Simulator,name=iPhone 13,OS=latest"
+          destination: "platform=iOS Simulator,name=iPhone 14,OS=latest"
           xc_project: "ProtocolBuffers_iOS.xcodeproj"
 
     name: Xcode ${{ matrix.platform}} ${{ matrix.xc_config }}
-    runs-on: macos-12
+    runs-on: macos-13
     env:
       DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
     steps:
@@ -72,7 +72,7 @@ jobs:
         PLATFORM: ["ios", "macos", "tvos"]
         CONFIGURATION: ["Debug", "Release"]
     name: CocoaPods ${{ matrix.PLATFORM}} ${{ matrix.CONFIGURATION}}
-    runs-on: macos-12
+    runs-on: macos-13
     env:
       DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
     steps:
@@ -115,7 +115,7 @@ jobs:
         - platform: "macOS"
           bazel_targets: //objectivec/...
     name: Bazel ${{ matrix.platform }} ${{ matrix.config.name }}
-    runs-on: macos-12
+    runs-on: macos-13
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
