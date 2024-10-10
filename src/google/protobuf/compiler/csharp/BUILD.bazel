@@ -4,13 +4,11 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
     name = "names",
     srcs = ["names.cc"],
     hdrs = ["names.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
@@ -59,7 +57,7 @@ cc_library(
         "csharp_source_generator_base.h",
         "csharp_wrapper_field.h",
     ],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": ["-Wno-overloaded-virtual"],
     }),

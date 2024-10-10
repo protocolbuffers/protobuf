@@ -4,13 +4,11 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
     name = "names",
     srcs = ["names.cc"],
     hdrs = ["names.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
@@ -25,7 +23,6 @@ cc_library(
     name = "php",
     srcs = ["php_generator.cc"],
     hdrs = ["php_generator.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",

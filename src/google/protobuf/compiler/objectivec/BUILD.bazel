@@ -4,12 +4,10 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
     name = "names",
     hdrs = ["names.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
@@ -26,7 +24,6 @@ cc_library(
         "names.h",
         "nsobject_methods.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//pkg:__pkg__"],
     deps = [
@@ -45,7 +42,6 @@ cc_library(
     name = "line_consumer",
     srcs = ["line_consumer.cc"],
     hdrs = ["line_consumer.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//pkg:__pkg__"],
     deps = [
@@ -92,7 +88,6 @@ cc_library(
         "primitive_field.h",
         "tf_decode_data.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",

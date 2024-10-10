@@ -3,13 +3,11 @@
 ################################################################################
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
     name = "rust",
     srcs = ["generator.cc"],
     hdrs = ["generator.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
@@ -79,7 +77,6 @@ cc_library(
     name = "message",
     srcs = ["message.cc"],
     hdrs = ["message.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":context",
@@ -102,7 +99,6 @@ cc_library(
     name = "context",
     srcs = ["context.cc"],
     hdrs = ["context.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//src/google/protobuf/compiler/rust:__subpackages__",
@@ -126,7 +122,6 @@ cc_library(
     name = "enum",
     srcs = ["enum.cc"],
     hdrs = ["enum.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":context",
@@ -162,7 +157,6 @@ cc_library(
         "naming.h",
         "rust_keywords.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//src/google/protobuf/compiler/rust:__subpackages__",
@@ -186,7 +180,6 @@ cc_library(
     name = "oneof",
     srcs = ["oneof.cc"],
     hdrs = ["oneof.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":context",
