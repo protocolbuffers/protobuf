@@ -3,7 +3,7 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+load("//build_defs:cpp_opts.bzl", "LINK_OPTS")
 
 package(
     default_visibility = ["//:__subpackages__"],
@@ -21,7 +21,6 @@ cc_library(
         "port.h",
         "status_macros.h",
     ],
-    copts = COPTS,
     linkopts = LINK_OPTS,
     strip_include_prefix = "/src",
     deps = [
@@ -39,7 +38,6 @@ cc_library(
     ],
     hdrs = [
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     textual_hdrs = [
         "callback.h",
@@ -62,7 +60,7 @@ cc_test(
     srcs = [
         "common_unittest.cc",
     ],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-deprecated-declarations",

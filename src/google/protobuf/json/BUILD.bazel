@@ -1,5 +1,4 @@
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
-load("//build_defs:cpp_opts.bzl", "COPTS")
 
 package(
     default_visibility = [
@@ -14,7 +13,6 @@ cc_library(
     name = "json",
     srcs = ["json.cc"],
     hdrs = ["json.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
@@ -37,7 +35,6 @@ cc_library(
 cc_test(
     name = "json_test",
     srcs = ["json_test.cc"],
-    copts = COPTS,
     deps = [
         ":json",
         "//src/google/protobuf",
@@ -67,7 +64,6 @@ cc_library(
     name = "zero_copy_buffered_stream",
     srcs = ["internal/zero_copy_buffered_stream.cc"],
     hdrs = ["internal/zero_copy_buffered_stream.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         "//src/google/protobuf:port",
@@ -86,7 +82,6 @@ cc_library(
 cc_test(
     name = "zero_copy_buffered_stream_test",
     srcs = ["internal/zero_copy_buffered_stream_test.cc"],
-    copts = COPTS,
     deps = [
         ":zero_copy_buffered_stream",
         "//src/google/protobuf/io:test_zero_copy_stream",
@@ -101,7 +96,6 @@ cc_library(
     name = "untyped_message",
     srcs = ["internal/untyped_message.cc"],
     hdrs = ["internal/untyped_message.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         "//src/google/protobuf",
@@ -128,7 +122,6 @@ cc_library(
     name = "lexer",
     srcs = ["internal/lexer.cc"],
     hdrs = ["internal/lexer.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":message_path",
@@ -152,7 +145,6 @@ cc_test(
     name = "lexer_test",
     timeout = "long",
     srcs = ["internal/lexer_test.cc"],
-    copts = COPTS,
     deps = [
         ":lexer",
         "//src/google/protobuf:port",
@@ -174,7 +166,6 @@ cc_library(
     name = "writer",
     srcs = ["internal/writer.cc"],
     hdrs = ["internal/writer.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         "//src/google/protobuf:port",
@@ -192,7 +183,6 @@ cc_library(
 cc_library(
     name = "descriptor_traits",
     hdrs = ["internal/descriptor_traits.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":lexer",
@@ -218,7 +208,6 @@ cc_library(
         "internal/parser.h",
         "internal/parser_traits.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":descriptor_traits",
@@ -255,7 +244,6 @@ cc_library(
         "internal/unparser.h",
         "internal/unparser_traits.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":descriptor_traits",
@@ -282,7 +270,6 @@ cc_library(
     name = "message_path",
     srcs = ["internal/message_path.cc"],
     hdrs = ["internal/message_path.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         "//src/google/protobuf",

@@ -6,12 +6,10 @@ load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
-load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
     name = "names",
     hdrs = ["names.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
@@ -32,7 +30,6 @@ cc_library(
         "names.h",
         "options.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
@@ -100,7 +97,6 @@ cc_library(
         "service.h",
         "tracker.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
@@ -177,7 +173,6 @@ cc_library(
 cc_test(
     name = "unittest",
     srcs = ["unittest.cc"],
-    copts = COPTS,
     data = [
         "//src/google/protobuf:test_proto_all_srcs",
         "//src/google/protobuf:testdata",
@@ -297,7 +292,6 @@ cc_test(
 cc_test(
     name = "move_unittest",
     srcs = ["move_unittest.cc"],
-    copts = COPTS,
     deps = [
         "//:protobuf",
         "//src/google/protobuf:cc_test_protos",
@@ -311,7 +305,6 @@ cc_test(
 cc_test(
     name = "copy_unittest",
     srcs = ["copy_unittest.cc"],
-    copts = COPTS,
     deps = [
         "//:protobuf",
         "//src/google/protobuf:arena",
@@ -326,7 +319,6 @@ cc_test(
 cc_test(
     name = "arena_ctor_visibility_test",
     srcs = ["arena_ctor_visibility_test.cc"],
-    copts = COPTS,
     deps = [
         "//:protobuf",
         "//src/google/protobuf:arena",

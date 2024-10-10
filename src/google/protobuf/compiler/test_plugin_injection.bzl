@@ -28,8 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-load("//build_defs:cpp_opts.bzl", "COPTS")
-
 # This works around https://github.com/bazelbuild/bazel/issues/19124 by using a generated header to
 # inject the Bazel path of the test plugins.  The simpler alternative is broken in Bazel 6.3.0,
 # which is to just inject these via copts.
@@ -60,6 +58,5 @@ cat <<'EOF' >$(OUTS)
         name = name,
         hdrs = [hdr],
         strip_include_prefix = "/src",
-        copts = COPTS,
         testonly = True,
     )

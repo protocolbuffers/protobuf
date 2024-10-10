@@ -11,7 +11,6 @@ load("@rules_python//python:defs.bzl", "py_library")
 load("//:protobuf.bzl", "internal_py_proto_library")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
-load("//build_defs:cpp_opts.bzl", "COPTS")
 load("//conformance:defs.bzl", "conformance_test")
 load("//editions:defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
 load(":internal.bzl", "internal_copy_files", "internal_py_test")
@@ -73,7 +72,7 @@ def build_targets(name):
     native.cc_binary(
         name = "google/protobuf/internal/_api_implementation.so",
         srcs = ["google/protobuf/internal/api_implementation.cc"],
-        copts = COPTS + [
+        copts = [
             "-DPYTHON_PROTO2_CPP_IMPL_V2",
         ],
         linkshared = 1,
@@ -104,7 +103,7 @@ def build_targets(name):
             "google/protobuf/pyext/*.cc",
             "google/protobuf/pyext/*.h",
         ]),
-        copts = COPTS + [
+        copts = [
             "-DGOOGLE_PROTOBUF_HAS_ONEOF=1",
         ] + select({
             "//conditions:default": [],

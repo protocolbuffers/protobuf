@@ -4,7 +4,6 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
     name = "python",
@@ -18,7 +17,6 @@ cc_library(
         "helpers.h",
         "pyi_generator.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
@@ -48,7 +46,6 @@ cc_library(
 cc_test(
     name = "plugin_unittest",
     srcs = ["plugin_unittest.cc"],
-    copts = COPTS,
     deps = [
         ":python",
         "//src/google/protobuf/compiler:command_line_interface",

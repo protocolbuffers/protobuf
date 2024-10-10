@@ -3,7 +3,7 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+load("//build_defs:cpp_opts.bzl", "LINK_OPTS")
 
 package(
     default_visibility = ["//:__subpackages__"],
@@ -13,7 +13,6 @@ cc_library(
     name = "file",
     srcs = ["file.cc"],
     hdrs = ["file.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         "//src/google/protobuf:port",
@@ -36,7 +35,6 @@ cc_library(
     hdrs = [
         "googletest.h",
     ],
-    copts = COPTS,
     linkopts = LINK_OPTS,
     strip_include_prefix = "/src",
     deps = [

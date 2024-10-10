@@ -2,7 +2,6 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("//build_defs:cpp_opts.bzl", "COPTS")
 
 package(
     default_visibility = ["//visibility:public"],
@@ -22,7 +21,6 @@ cc_library(
         "zero_copy_stream_impl.h",
         "zero_copy_stream_impl_lite.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":io_win32",
@@ -46,7 +44,6 @@ cc_library(
     name = "test_zero_copy_stream",
     testonly = 1,
     hdrs = ["test_zero_copy_stream.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":io",
@@ -59,7 +56,6 @@ cc_library(
 cc_test(
     name = "test_zero_copy_stream_test",
     srcs = ["test_zero_copy_stream_test.cc"],
-    copts = COPTS,
     deps = [
         ":test_zero_copy_stream",
         "//src/google/protobuf/stubs",
@@ -73,7 +69,6 @@ cc_library(
     name = "zero_copy_sink",
     srcs = ["zero_copy_sink.cc"],
     hdrs = ["zero_copy_sink.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":io",
@@ -85,7 +80,6 @@ cc_library(
 cc_test(
     name = "zero_copy_sink_test",
     srcs = ["zero_copy_sink_test.cc"],
-    copts = COPTS,
     deps = [
         ":zero_copy_sink",
         "//src/google/protobuf/stubs",
@@ -100,7 +94,6 @@ cc_library(
     name = "printer",
     srcs = ["printer.cc"],
     hdrs = ["printer.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":io",
@@ -133,7 +126,6 @@ cc_library(
         "strtod.h",
         "tokenizer.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":io",
@@ -150,7 +142,7 @@ cc_library(
     name = "gzip_stream",
     srcs = ["gzip_stream.cc"],
     hdrs = ["gzip_stream.h"],
-    copts = COPTS,
+    copts = ["-DHAVE_ZLIB"],
     strip_include_prefix = "/src",
     deps = [
         ":io",
@@ -168,7 +160,6 @@ cc_library(
     name = "io_win32",
     srcs = ["io_win32.cc"],
     hdrs = ["io_win32.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
@@ -192,7 +183,7 @@ cc_test(
         "tokenizer_unittest.cc",
         "zero_copy_stream_unittest.cc",
     ],
-    copts = COPTS,
+    copts = ["-DHAVE_ZLIB"],
     deps = [
         ":gzip_stream",
         ":io",

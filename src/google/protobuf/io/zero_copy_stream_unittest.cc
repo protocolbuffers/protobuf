@@ -341,7 +341,6 @@ TEST_F(IoTest, TwoSessionWrite) {
   delete[] buffer;
 }
 
-#if HAVE_ZLIB
 TEST_F(IoTest, GzipIo) {
   const int kBufferSize = 2 * 1024;
   uint8* buffer = new uint8[kBufferSize];
@@ -688,7 +687,6 @@ TEST_F(IoTest, GzipInputByteCountAfterClosedConcatenatedStreams) {
     EXPECT_EQ(total_size, gz_input.ByteCount());
   }
 }
-#endif
 
 // There is no string input, only string output.  Also, it doesn't support
 // explicit block sizes.  So, we'll only run one test and we'll use

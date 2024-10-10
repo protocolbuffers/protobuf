@@ -6,13 +6,11 @@ load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
-load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
     name = "delimited_message_util",
     srcs = ["delimited_message_util.cc"],
     hdrs = ["delimited_message_util.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = [
@@ -25,7 +23,6 @@ cc_library(
 cc_test(
     name = "delimited_message_util_test",
     srcs = ["delimited_message_util_test.cc"],
-    copts = COPTS,
     deps = [
         ":delimited_message_util",
         "//src/google/protobuf:cc_test_protos",
@@ -84,7 +81,7 @@ cc_test(
 cc_test(
     name = "message_differencer_unittest",
     srcs = ["message_differencer_unittest.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-deprecated-declarations",
@@ -114,7 +111,6 @@ cc_library(
     name = "field_mask_util",
     srcs = ["field_mask_util.cc"],
     hdrs = ["field_mask_util.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = [
@@ -134,7 +130,6 @@ cc_library(
 cc_test(
     name = "field_mask_util_test",
     srcs = ["field_mask_util_test.cc"],
-    copts = COPTS,
     deps = [
         ":field_mask_util",
         "//src/google/protobuf",
@@ -152,7 +147,6 @@ cc_test(
 cc_library(
     name = "json_util",
     hdrs = ["json_util.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = ["//src/google/protobuf/json"],
@@ -203,7 +197,6 @@ cc_library(
         "type_resolver.h",
         "type_resolver_util.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = [
@@ -226,7 +219,6 @@ cc_library(
 cc_test(
     name = "type_resolver_util_test",
     srcs = ["type_resolver_util_test.cc"],
-    copts = COPTS,
     deps = [
         ":json_format_cc_proto",
         ":json_format_proto3_cc_proto",
