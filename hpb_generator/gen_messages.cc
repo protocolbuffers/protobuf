@@ -34,11 +34,11 @@ void WriteModelPublicDeclaration(
     const protobuf::Descriptor* descriptor,
     const std::vector<const protobuf::FieldDescriptor*>& file_exts,
     const std::vector<const protobuf::EnumDescriptor*>& file_enums,
-    Output& output);
+    Output& output, io::Printer& printer);
 void WriteExtensionIdentifiersInClassHeader(
     const protobuf::Descriptor* message,
     const std::vector<const protobuf::FieldDescriptor*>& file_exts,
-    Output& output);
+    Output& output, io::Printer& printer);
 void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
                                 Output& output);
 void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
@@ -64,7 +64,7 @@ void WriteMessageClassDeclarations(
     const protobuf::Descriptor* descriptor,
     const std::vector<const protobuf::FieldDescriptor*>& file_exts,
     const std::vector<const protobuf::EnumDescriptor*>& file_enums,
-    Output& output) {
+    Output& output, io::Printer& printer) {
   if (IsMapEntryMessage(descriptor)) {
     // Skip map entry generation. Low level accessors for maps are
     // generated that don't require a separate map type.
@@ -79,7 +79,8 @@ void WriteMessageClassDeclarations(
   WriteInternalForwardDeclarationsInHeader(descriptor, output);
   output("\n");
   output("}  // namespace internal\n\n");
-  WriteModelPublicDeclaration(descriptor, file_exts, file_enums, output);
+  WriteModelPublicDeclaration(descriptor, file_exts, file_enums, output,
+                              printer);
   output("namespace internal {\n");
   WriteModelCProxyDeclaration(descriptor, output);
   WriteModelProxyDeclaration(descriptor, output);
@@ -174,7 +175,7 @@ void WriteModelPublicDeclaration(
     const protobuf::Descriptor* descriptor,
     const std::vector<const protobuf::FieldDescriptor*>& file_exts,
     const std::vector<const protobuf::EnumDescriptor*>& file_enums,
-    Output& output) {
+    Output& output, io::Printer& printer) {
   output(
       R"cc(
         class $0 final : private internal::$0Access {
@@ -210,7 +211,8 @@ void WriteModelPublicDeclaration(
   WriteUsingAccessorsInHeader(descriptor, MessageClassType::kMessage, output);
   WriteUsingEnumsInHeader(descriptor, file_enums, output);
   WriteDefaultInstanceHeader(descriptor, output);
-  WriteExtensionIdentifiersInClassHeader(descriptor, file_exts, output);
+  WriteExtensionIdentifiersInClassHeader(descriptor, file_exts, output,
+                                         printer);
   if (descriptor->extension_range_count()) {
     // for typetrait checking
     output("using ExtendableType = $0;\n", ClassName(descriptor));
@@ -476,11 +478,11 @@ void WriteInternalForwardDeclarationsInHeader(
 void WriteExtensionIdentifiersInClassHeader(
     const protobuf::Descriptor* message,
     const std::vector<const protobuf::FieldDescriptor*>& file_exts,
-    Output& output) {
+    Output& output, io::Printer& printer) {
   for (auto* ext : file_exts) {
     if (ext->extension_scope() &&
         ext->extension_scope()->full_name() == message->full_name()) {
-      WriteExtensionIdentifierHeader(ext, output);
+      WriteExtensionIdentifierHeader(ext, printer);
     }
   }
 }

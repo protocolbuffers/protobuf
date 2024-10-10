@@ -21,6 +21,7 @@
 #include "google/protobuf/compiler/hpb/output.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google::protobuf::hpb_generator {
 namespace {
@@ -33,7 +34,7 @@ using google::protobuf::Edition;
 void WriteSource(const protobuf::FileDescriptor* file, Output& output,
                  bool fasttable_enabled, bool strip_feature_includes);
 void WriteHeader(const protobuf::FileDescriptor* file, Output& output,
-                 bool strip_feature_includes);
+                 io::Printer& printer, bool strip_feature_includes);
 void WriteForwardingHeader(const protobuf::FileDescriptor* file,
                            Output& output);
 void WriteMessageImplementations(const protobuf::FileDescriptor* file,
@@ -90,7 +91,8 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> header_output_stream(
       context->Open(CppHeaderFilename(file)));
   Output header_output(header_output_stream.get());
-  WriteHeader(file, header_output, strip_nonfunctional_codegen);
+  io::Printer printer(header_output_stream.get());
+  WriteHeader(file, header_output, printer, strip_nonfunctional_codegen);
 
   // Write model.upb.proto.cc
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> cc_output_stream(
@@ -127,7 +129,7 @@ void WriteForwardingHeader(const protobuf::FileDescriptor* file,
 }
 
 void WriteHeader(const protobuf::FileDescriptor* file, Output& output,
-                 bool strip_feature_includes) {
+                 io::Printer& printer, bool strip_feature_includes) {
   EmitFileWarning(file, output);
   output(
       R"cc(
@@ -175,11 +177,11 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output,
 
   for (auto message : this_file_messages) {
     WriteMessageClassDeclarations(message, this_file_exts, this_file_enums,
-                                  output);
+                                  output, printer);
   }
   output("\n");
 
-  WriteExtensionIdentifiersHeader(this_file_exts, output);
+  WriteExtensionIdentifiersHeader(this_file_exts, printer);
   output("\n");
 
   WriteEndNamespace(file, output);
