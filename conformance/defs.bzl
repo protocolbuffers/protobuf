@@ -3,6 +3,8 @@
 PLEASE DO NOT DEPEND ON THE CONTENTS OF THIS FILE, IT IS UNSTABLE.
 """
 
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
 def conformance_test(
         name,
         testee,
@@ -31,7 +33,7 @@ def conformance_test(
     if maximum_edition:
         args = args + ["--maximum_edition %s" % maximum_edition]
 
-    native.sh_test(
+    sh_test(
         name = name,
         srcs = ["//conformance:bazel_conformance_test_runner.sh"],
         data = [testee] + failure_lists + [

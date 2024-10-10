@@ -84,6 +84,11 @@ bazel_dep(
     repo_name = "proto_bazel_features",
 )
 
+bazel_dep(
+    name = "rules_shell",
+    version = "0.2.0"
+)
+
 # Proto toolchains
 register_toolchains("//bazel/private/toolchains:all")
 
