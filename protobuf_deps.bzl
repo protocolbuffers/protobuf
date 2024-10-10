@@ -104,6 +104,14 @@ def protobuf_deps():
             sha256 = "6f3ce0e9fba979a844faba2d60467843fbf5191d8ca61fa3d2ea17655b56bb8c",
         )
 
+    if not native.existing_rule("rules_shell"):
+        http_archive(
+            name = "rules_shell",
+            url = "https://github.com/bazelbuild/rules_shell/releases/download/v0.1.1/rules_shell-v0.1.1.tar.gz",
+            strip_prefix = "rules_shell-0.1.1",
+            sha256 = "0d0c56d01c3c40420bf7bf14d73113f8a92fbd9f5cd13205a3b89f72078f0321",
+        )
+
     if not native.existing_rule("proto_bazel_features"):
         proto_bazel_features(name = "proto_bazel_features")
 
