@@ -27,8 +27,6 @@ namespace protobuf {
 namespace internal {
 namespace {
 
-#ifdef __cpp_if_constexpr
-
 using ::protobuf_unittest::NestedTestAllTypes;
 using ::protobuf_unittest::TestAllExtensions;
 using ::protobuf_unittest::TestAllTypes;
@@ -172,7 +170,7 @@ void MutateNothingByVisit(Message& message) {
         }
       } else {
         for (auto& it : info.Mutable()) {
-          it = it;
+          it = *&it;  // Avoid -Wself-assign.
         }
       }
     } else {
@@ -452,8 +450,6 @@ TEST(ReflectionVisitTest, VisitMapAfterMutableRepeated) {
   EXPECT_THAT(key_val_pairs, testing::UnorderedElementsAre(
                                  testing::Pair(0, 200), testing::Pair(1, 200)));
 }
-
-#endif  // __cpp_if_constexpr
 
 }  // namespace
 }  // namespace internal
