@@ -8,7 +8,7 @@ load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
-load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+load("//build_defs:cpp_opts.bzl", "LINK_OPTS")
 load(":protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library")
 
 licenses(["notice"])
@@ -231,7 +231,6 @@ alias(
 
 cc_binary(
     name = "protoc",
-    copts = COPTS,
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
     deps = ["//src/google/protobuf/compiler:protoc_lib"],
@@ -239,7 +238,6 @@ cc_binary(
 
 cc_binary(
     name = "protoc_static",
-    copts = COPTS,
     features = select({
         # This isn't possible on mac because there is no static library for lcrt0.o
         "@platforms//os:osx": [],

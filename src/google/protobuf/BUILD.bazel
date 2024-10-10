@@ -9,7 +9,7 @@ load("//bazel:proto_library.bzl", "proto_library")
 load("//bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
 load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
 load("//bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
-load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+load("//build_defs:cpp_opts.bzl", "LINK_OPTS")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
 
 package(
@@ -201,7 +201,6 @@ cc_library(
     name = "cmake_wkt_cc_proto",
     srcs = ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
     hdrs = ["wkt/google/protobuf/" + wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES],
-    copts = COPTS,
     includes = ["wkt"],
     linkopts = LINK_OPTS,
     strip_include_prefix = "/src",
@@ -290,7 +289,6 @@ cc_library(
 cc_library(
     name = "varint_shuffle",
     hdrs = ["varint_shuffle.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
@@ -315,7 +313,7 @@ cc_test(
     name = "reflection_visit_fields_test",
     size = "small",
     srcs = ["reflection_visit_fields_test.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-error=sign-compare",
@@ -460,7 +458,6 @@ cc_library(
 cc_library(
     name = "internal_visibility",
     hdrs = ["internal_visibility.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
@@ -472,7 +469,6 @@ cc_library(
     name = "internal_visibility_for_testing",
     testonly = 1,
     hdrs = ["internal_visibility_for_testing.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
@@ -533,7 +529,7 @@ cc_library(
         "thread_safe_arena.h",
         "wire_format_lite.h",
     ],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-error",
@@ -639,7 +635,6 @@ cc_library(
         "wire_format.cc",
     ],
     hdrs = PROTOBUF_HEADERS,
-    copts = COPTS,
     linkopts = LINK_OPTS,
     strip_include_prefix = "/src",
     visibility = [
@@ -696,7 +691,6 @@ cc_library(
 cc_library(
     name = "protobuf_layering_check_legacy",
     hdrs = PROTOBUF_HEADERS,
-    copts = COPTS,
     linkopts = LINK_OPTS,
     strip_include_prefix = "/src",
     visibility = [
@@ -727,7 +721,6 @@ cc_library(
 cc_test(
     name = "has_bits_test",
     srcs = ["has_bits_test.cc"],
-    copts = COPTS,
     deps = [
         ":protobuf_lite",
         "@com_google_googletest//:gtest",
@@ -751,7 +744,6 @@ cc_library(
 cc_library(
     name = "descriptor_visitor",
     hdrs = ["descriptor_visitor.h"],
-    copts = COPTS,
     linkopts = LINK_OPTS,
     strip_include_prefix = "/src",
     visibility = ["//:__subpackages__"],
@@ -764,7 +756,6 @@ cc_library(
 cc_library(
     name = "descriptor_legacy",
     hdrs = ["descriptor_legacy.h"],
-    copts = COPTS,
     linkopts = LINK_OPTS,
     strip_include_prefix = "/src",
     visibility = ["//:__subpackages__"],
@@ -1253,7 +1244,7 @@ cc_library(
         "test_util_lite.h",
         "wire_format_unittest.inc",
     ],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-error=sign-compare",
@@ -1310,7 +1301,7 @@ cc_test(
 cc_test(
     name = "arena_align_test",
     srcs = ["arena_align_test.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-error=sign-compare",
@@ -1326,7 +1317,7 @@ cc_test(
 cc_test(
     name = "arena_unittest",
     srcs = ["arena_unittest.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-error=sign-compare",
@@ -1397,7 +1388,7 @@ cc_test(
 cc_test(
     name = "descriptor_unittest",
     srcs = ["descriptor_unittest.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-error=sign-compare",
@@ -1469,7 +1460,7 @@ cc_test(
 cc_test(
     name = "dynamic_message_unittest",
     srcs = ["dynamic_message_unittest.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-error=sign-compare",
@@ -1490,7 +1481,7 @@ cc_test(
 cc_test(
     name = "extension_set_unittest",
     srcs = ["extension_set_unittest.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-error=sign-compare",
@@ -1519,7 +1510,6 @@ cc_test(
 cc_test(
     name = "feature_resolver_test",
     srcs = ["feature_resolver_test.cc"],
-    copts = COPTS,
     deps = [
         ":cc_test_protos",
         ":port",
@@ -1547,7 +1537,7 @@ cc_test(
 cc_test(
     name = "generated_message_reflection_unittest",
     srcs = ["generated_message_reflection_unittest.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-error=sign-compare",
@@ -1575,7 +1565,7 @@ cc_test(
 cc_test(
     name = "generated_message_tctable_lite_test",
     srcs = ["generated_message_tctable_lite_test.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-error=sign-compare",
@@ -1615,7 +1605,7 @@ cc_test(
 cc_test(
     name = "lite_arena_unittest",
     srcs = ["lite_arena_unittest.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-error=sign-compare",
@@ -1677,7 +1667,7 @@ cc_test(
         "map_test.cc",
         "map_test.inc",
     ],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-deprecated-declarations",
@@ -1836,7 +1826,7 @@ cc_test(
 cc_test(
     name = "proto3_arena_unittest",
     srcs = ["proto3_arena_unittest.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-error=sign-compare",
@@ -1866,7 +1856,7 @@ cc_test(
         "proto3_lite_unittest.cc",
         "proto3_lite_unittest.inc",
     ],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-deprecated-declarations",
@@ -1888,7 +1878,7 @@ cc_test(
 cc_test(
     name = "reflection_ops_unittest",
     srcs = ["reflection_ops_unittest.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-error=sign-compare",
@@ -1913,7 +1903,7 @@ cc_test(
         "repeated_field_reflection_unittest.cc",
         "repeated_field_reflection_unittest.inc",
     ],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-deprecated-declarations",
@@ -1935,7 +1925,7 @@ cc_test(
 cc_test(
     name = "repeated_field_unittest",
     srcs = ["repeated_field_unittest.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-deprecated-declarations",
@@ -1966,7 +1956,7 @@ cc_test(
 cc_test(
     name = "text_format_unittest",
     srcs = ["text_format_unittest.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-deprecated-declarations",
@@ -2001,7 +1991,7 @@ cc_test(
 cc_test(
     name = "unknown_field_set_unittest",
     srcs = ["unknown_field_set_unittest.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-error=sign-compare",
@@ -2030,7 +2020,7 @@ cc_test(
 cc_test(
     name = "well_known_types_unittest",
     srcs = ["well_known_types_unittest.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-deprecated-declarations",

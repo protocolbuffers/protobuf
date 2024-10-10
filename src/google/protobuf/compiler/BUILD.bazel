@@ -14,7 +14,6 @@ load("//bazel:proto_library.bzl", "proto_library")
 load("//bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
 load("//bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
-load("//build_defs:cpp_opts.bzl", "COPTS")
 load("test_plugin_injection.bzl", "inject_plugin_paths")
 
 proto_library(
@@ -56,7 +55,6 @@ cc_library(
         "importer.h",
         "parser.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
@@ -91,7 +89,6 @@ cc_library(
         "plugin.pb.h",
         "scc.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
@@ -116,7 +113,6 @@ cc_library(
     name = "code_generator_lite",
     srcs = ["code_generator_lite.cc"],
     hdrs = ["code_generator_lite.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
@@ -133,7 +129,6 @@ cc_library(
     hdrs = [
         "versions.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//src/google/protobuf/compiler:__subpackages__",
@@ -171,7 +166,6 @@ cc_library(
         "subprocess.h",
         "zip_writer.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
@@ -208,7 +202,6 @@ cc_library(
     srcs = [
         "main.cc",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//:__pkg__",
@@ -239,7 +232,6 @@ cc_binary(
     srcs = [
         "main_no_generators.cc",
     ],
-    copts = COPTS,
     visibility = [
         "//:__subpackages__",
     ],
@@ -278,7 +270,6 @@ cc_library(
     testonly = 1,
     srcs = ["annotation_test_util.cc"],
     hdrs = ["annotation_test_util.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
@@ -338,7 +329,6 @@ cc_library(
     testonly = 1,
     srcs = ["mock_code_generator.cc"],
     hdrs = ["mock_code_generator.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//pkg:__pkg__"],
     deps = [
@@ -363,7 +353,6 @@ cc_binary(
     name = "test_plugin",
     testonly = 1,
     srcs = ["test_plugin.cc"],
-    copts = COPTS,
     deps = [
         ":code_generator",
         ":mock_code_generator",
@@ -374,7 +363,6 @@ cc_binary(
     name = "fake_plugin",
     testonly = True,
     srcs = ["fake_plugin.cc"],
-    copts = COPTS,
     deps = [
         ":code_generator",
         ":plugin_cc_proto",
@@ -388,7 +376,6 @@ cc_binary(
 cc_test(
     name = "code_generator_unittest",
     srcs = ["code_generator_unittest.cc"],
-    copts = COPTS,
     deps = [
         ":code_generator",
         ":importer",
@@ -414,7 +401,7 @@ inject_plugin_paths("test_plugin_paths")
 cc_test(
     name = "command_line_interface_unittest",
     srcs = ["command_line_interface_unittest.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-deprecated",
@@ -468,7 +455,6 @@ cc_library(
     testonly = True,
     srcs = ["command_line_interface_tester.cc"],
     hdrs = ["command_line_interface_tester.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
@@ -492,7 +478,6 @@ cc_library(
 cc_test(
     name = "importer_unittest",
     srcs = ["importer_unittest.cc"],
-    copts = COPTS,
     deps = [
         ":importer",
         "//:protobuf",
@@ -513,7 +498,7 @@ cc_test(
 cc_test(
     name = "parser_unittest",
     srcs = ["parser_unittest.cc"],
-    copts = COPTS + select({
+    copts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-deprecated",

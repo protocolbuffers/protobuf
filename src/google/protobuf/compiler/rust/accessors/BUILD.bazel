@@ -3,7 +3,6 @@
 ################################################################################
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
     name = "accessors",
@@ -27,7 +26,6 @@ cc_library(
         "generator.h",
         "with_presence.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",

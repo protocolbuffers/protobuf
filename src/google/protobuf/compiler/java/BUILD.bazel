@@ -4,7 +4,6 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("//build_defs:cpp_opts.bzl", "COPTS")
 
 package(
     default_visibility = [
@@ -15,7 +14,6 @@ package(
 cc_library(
     name = "names",
     hdrs = ["names.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
@@ -40,7 +38,6 @@ cc_library(
         "names.h",
         "options.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
@@ -117,7 +114,6 @@ cc_library(
         "java_features.pb.h",
         "shared_code_generator.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
