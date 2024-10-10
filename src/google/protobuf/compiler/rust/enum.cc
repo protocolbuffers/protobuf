@@ -159,7 +159,7 @@ void EnumProxiedInMapValue(Context& ctx, const EnumDescriptor& desc) {
                 }
 
                 unsafe fn into_message_value_fuse_if_required(
-                  raw_parent_arena: $pbr$::RawArena,
+                  _raw_parent_arena: $pbr$::RawArena,
                   val: Self) -> $pbr$::upb_MessageValue {
                     $pbr$::upb_MessageValue { int32_val: val.0 }
                 }
