@@ -86,23 +86,24 @@ public abstract class GeneratedMessageLite<
   @Override
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   public final Parser<MessageType> getParserForType() {
-    return (Parser<MessageType>) dynamicMethod(MethodToInvoke.GET_PARSER);
+    return (Parser<MessageType>) dynamicMethod(MethodToInvoke.GET_PARSER, null, null);
   }
 
   @Override
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   public final MessageType getDefaultInstanceForType() {
-    return (MessageType) dynamicMethod(MethodToInvoke.GET_DEFAULT_INSTANCE);
+    return (MessageType) dynamicMethod(MethodToInvoke.GET_DEFAULT_INSTANCE, null, null);
   }
 
   @Override
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   public final BuilderType newBuilderForType() {
-    return (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER);
+    return (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER, null, null);
   }
 
+  @SuppressWarnings("unchecked") // Guaranteed by runtime.
   MessageType newMutableInstance() {
-    return (MessageType) dynamicMethod(MethodToInvoke.NEW_MUTABLE_INSTANCE);
+    return (MessageType) dynamicMethod(MethodToInvoke.NEW_MUTABLE_INSTANCE, null, null);
   }
 
   /**
@@ -202,11 +203,12 @@ public abstract class GeneratedMessageLite<
     markImmutable();
   }
 
+  @SuppressWarnings("unchecked") // Guaranteed by runtime.
   protected final <
           MessageType extends GeneratedMessageLite<MessageType, BuilderType>,
           BuilderType extends GeneratedMessageLite.Builder<MessageType, BuilderType>>
       BuilderType createBuilder() {
-    return (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER);
+    return (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER, null, null);
   }
 
   protected final <
@@ -224,7 +226,7 @@ public abstract class GeneratedMessageLite<
   @Override
   @SuppressWarnings("unchecked")
   public final BuilderType toBuilder() {
-    BuilderType builder = (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER);
+    BuilderType builder = (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER, null, null);
     return builder.mergeFrom((MessageType) this);
   }
 
@@ -274,19 +276,6 @@ public abstract class GeneratedMessageLite<
       MethodToInvoke method,
           Object arg0,
           Object arg1);
-
-  /** Same as {@link #dynamicMethod(MethodToInvoke, Object, Object)} with {@code null} padding. */
-  @CanIgnoreReturnValue
-  protected Object dynamicMethod(
-      MethodToInvoke method,
-          Object arg0) {
-    return dynamicMethod(method, arg0, null);
-  }
-
-  /** Same as {@link #dynamicMethod(MethodToInvoke, Object, Object)} with {@code null} padding. */
-  protected Object dynamicMethod(MethodToInvoke method) {
-    return dynamicMethod(method, null, null);
-  }
 
   void clearMemoizedSerializedSize() {
     setMemoizedSerializedSize(UNINITIALIZED_SERIALIZED_SIZE);
@@ -355,7 +344,7 @@ public abstract class GeneratedMessageLite<
 
   /** Constructs a {@link MessageInfo} for this message type. */
   Object buildMessageInfo() throws Exception {
-    return dynamicMethod(MethodToInvoke.BUILD_MESSAGE_INFO);
+    return dynamicMethod(MethodToInvoke.BUILD_MESSAGE_INFO, null, null);
   }
 
   private static Map<Class<?>, GeneratedMessageLite<?, ?>> defaultInstanceMap =
@@ -1474,7 +1463,7 @@ public abstract class GeneratedMessageLite<
   protected static final <T extends GeneratedMessageLite<T, ?>> boolean isInitialized(
       T message, boolean shouldMemoize) {
     byte memoizedIsInitialized =
-        (Byte) message.dynamicMethod(MethodToInvoke.GET_MEMOIZED_IS_INITIALIZED);
+        (Byte) message.dynamicMethod(MethodToInvoke.GET_MEMOIZED_IS_INITIALIZED, null, null);
     if (memoizedIsInitialized == 1) {
       return true;
     }
@@ -1486,7 +1475,7 @@ public abstract class GeneratedMessageLite<
       // TODO: remove the unused variable
       Object unused =
           message.dynamicMethod(
-              MethodToInvoke.SET_MEMOIZED_IS_INITIALIZED, isInitialized ? message : null);
+              MethodToInvoke.SET_MEMOIZED_IS_INITIALIZED, isInitialized ? message : null, null);
     }
     return isInitialized;
   }
