@@ -41,7 +41,7 @@ pub mod __public {
     pub use crate::repeated::{
         ProxiedInRepeated, Repeated, RepeatedIter, RepeatedMut, RepeatedView,
     };
-    pub use crate::string::{ProtoBytes, ProtoStr, ProtoString};
+    pub use crate::string::{ProtoBytes, ProtoStr, ProtoString, Utf8Error};
     pub use crate::{ParseError, SerializeError};
 }
 pub use __public::*;
