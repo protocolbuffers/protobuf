@@ -41,6 +41,7 @@ using ::hpb_unittest::protos::container_ext;
 using ::hpb_unittest::protos::ContainerExtension;
 using ::hpb_unittest::protos::other_ext;
 using ::hpb_unittest::protos::Parent;
+using ::hpb_unittest::protos::ParentWithMap;
 using ::hpb_unittest::protos::ParentWithRepeated;
 using ::hpb_unittest::protos::RED;
 using ::hpb_unittest::protos::TestEnum;
@@ -1297,6 +1298,25 @@ TEST(CppGeneratedCode, SetAliasRepeatedFailsForDifferentArena) {
   hpb::Arena different_arena;
   auto parent = hpb::CreateMessage<ParentWithRepeated>(different_arena);
   EXPECT_DEATH(parent.add_alias_children(child), "hpb::interop::upb::GetArena");
+}
+
+TEST(CppGeneratedCode, SetAliasMap) {
+  hpb::Arena arena;
+  auto parent1 = hpb::CreateMessage<ParentWithMap>(arena);
+  auto parent2 = hpb::CreateMessage<ParentWithMap>(arena);
+
+  auto child = hpb::CreateMessage<Child>(arena);
+
+  constexpr int key = 1;
+  parent1.set_alias_child_map(key, child);
+  parent2.set_alias_child_map(key, child);
+  auto c1 = parent1.get_child_map(key);
+  auto c2 = parent2.get_child_map(key);
+
+  EXPECT_TRUE(c1.ok());
+  EXPECT_TRUE(c2.ok());
+  ASSERT_EQ(hpb::interop::upb::GetMessage(c1.value()),
+            hpb::interop::upb::GetMessage(c2.value()));
 }
 
 }  // namespace
