@@ -1,8 +1,10 @@
 """Wrapper for another py_test to run with upb, possibly with a set of expected failures."""
 
+load("@rules_python//python:py_test.bzl", "py_test")
+
 def pyproto_test_wrapper(name, deps = []):
     src = name + "_wrapper.py"
-    native.py_test(
+    py_test(
         name = name,
         srcs = [src],
         legacy_create_init = False,
