@@ -209,31 +209,6 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
 - (void)setupExtensionRanges:(const GPBExtensionRange *)ranges count:(int32_t)count;
 - (void)setupContainingMessageClass:(Class)msgClass;
 
-// Deprecated, these remain to support older versions of source generation.
-+ (instancetype)allocDescriptorForClass:(Class)messageClass
-                                   file:(GPBFileDescriptor *)file
-                                 fields:(void *)fieldDescriptions
-                             fieldCount:(uint32_t)fieldCount
-                            storageSize:(uint32_t)storageSize
-                                  flags:(GPBDescriptorInitializationFlags)flags
-    __attribute__((deprecated("Please use a newer version of protoc to regenerate your sources. "
-                              "Support for this version will go away in the future.")));
-+ (instancetype)allocDescriptorForClass:(Class)messageClass
-                              rootClass:(Class)rootClass
-                                   file:(GPBFileDescriptor *)file
-                                 fields:(void *)fieldDescriptions
-                             fieldCount:(uint32_t)fieldCount
-                            storageSize:(uint32_t)storageSize
-                                  flags:(GPBDescriptorInitializationFlags)flags
-    __attribute__((deprecated("Please use a newer version of protoc to regenerate your sources. "
-                              "Support for this version will go away in the future.")));
-- (void)setupContainingMessageClassName:(const char *)msgClassName
-    __attribute__((deprecated("Please use a newer version of protoc to regenerate your sources. "
-                              "Support for this version will go away in the future.")));
-- (void)setupMessageClassNameSuffix:(NSString *)suffix
-    __attribute__((deprecated("Please use a newer version of protoc to regenerate your sources. "
-                              "Support for this version will go away in the future.")));
-
 @end
 
 @interface GPBFileDescriptor ()
@@ -285,22 +260,6 @@ typedef NS_OPTIONS(uint32_t, GPBEnumDescriptorInitializationFlags) {
                                  flags:(GPBEnumDescriptorInitializationFlags)flags
                    extraTextFormatInfo:(const char *)extraTextFormatInfo;
 
-// Deprecated, these remain to support older versions of source generation.
-+ (instancetype)allocDescriptorForName:(NSString *)name
-                            valueNames:(const char *)valueNames
-                                values:(const int32_t *)values
-                                 count:(uint32_t)valueCount
-                          enumVerifier:(GPBEnumValidationFunc)enumVerifier
-    __attribute__((deprecated("Please use a newer version of protoc to regenerate your sources. "
-                              "Support for this version will go away in the future.")));
-+ (instancetype)allocDescriptorForName:(NSString *)name
-                            valueNames:(const char *)valueNames
-                                values:(const int32_t *)values
-                                 count:(uint32_t)valueCount
-                          enumVerifier:(GPBEnumValidationFunc)enumVerifier
-                   extraTextFormatInfo:(const char *)extraTextFormatInfo
-    __attribute__((deprecated("Please use a newer version of protoc to regenerate your sources. "
-                              "Support for this version will go away in the future.")));
 @end
 
 @interface GPBExtensionDescriptor () {
@@ -318,10 +277,6 @@ typedef NS_OPTIONS(uint32_t, GPBEnumDescriptorInitializationFlags) {
 // description has to be long lived, it is held as a raw pointer.
 - (instancetype)initWithExtensionDescription:(GPBExtensionDescription *)desc
                                usesClassRefs:(BOOL)usesClassRefs;
-// Deprecated. Calls above with `usesClassRefs = NO`
-- (instancetype)initWithExtensionDescription:(GPBExtensionDescription *)desc
-    __attribute__((deprecated("Please use a newer version of protoc to regenerate your sources. "
-                              "Support for this version will go away in the future.")));
 
 - (NSComparisonResult)compareByFieldNumber:(GPBExtensionDescriptor *)other;
 @end
