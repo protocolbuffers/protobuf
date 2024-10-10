@@ -356,18 +356,18 @@ jobs:
       matrix:
         include:
           - name: MacOS Bazel
-            os: macos-12
-            cache_key: macos-12
+            os: macos-13
+            cache_key: macos-13
             bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
           - name: MacOS Bazel 7
-            os: macos-12
-            cache_key: macos-12-bazel7
+            os: macos-13
+            cache_key: macos-13-bazel7
             bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
             bazel_version: '7.1.2'
             continuous-only: true
           - name: MacOS Apple Silicon (build only) Bazel
-            os: macos-12
-            cache_key: macos-12-arm
+            os: macos-13
+            cache_key: macos-13-arm
             # Current github runners are all Intel based, so just build/compile
             # for Apple Silicon to detect issues there.
             bazel: build --cpu=darwin_arm64 //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
@@ -457,7 +457,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout pending changes
-        if: ${{ runner.os == 'Windows' && (!matrix.continuous-only || inputs.continuous-run) }}
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
@@ -488,7 +488,7 @@ jobs:
         shell: bash
 
       - name: Setup sccache
-        if: ${{ runner.os == 'Windows' && (!matrix.continuous-only || inputs.continuous-run) }}
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: ${{ matrix.cache-prefix }}
