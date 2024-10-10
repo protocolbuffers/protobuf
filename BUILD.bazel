@@ -266,7 +266,7 @@ alias(
 
 alias(
     name = "protobuf_nowkt",
-    actual = "//src/google/protobuf:protobuf_layering_check_legacy",
+    actual = "//src/google/protobuf",
     deprecation = "Use //:protobuf instead",
     visibility = ["//visibility:public"],
 )
