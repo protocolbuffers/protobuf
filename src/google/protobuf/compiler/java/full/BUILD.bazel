@@ -1,8 +1,12 @@
 # We use abbreviated target names in this directory to work around:
 #     https://github.com/bazelbuild/bazel/issues/18683
+
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
 cc_library(
     name = "fg",
     hdrs = ["field_generator.h"],
+    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//src/google/protobuf/compiler/kotlin:__subpackages__"],
     deps = [
@@ -29,6 +33,7 @@ cc_library(
         "primitive_field.h",
         "string_field.h",
     ],
+    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":fg",
@@ -49,6 +54,7 @@ cc_library(
     name = "mfg",
     srcs = ["make_field_gens.cc"],
     hdrs = ["make_field_gens.h"],
+    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//src/google/protobuf/compiler/kotlin:__subpackages__"],
     deps = [
@@ -64,6 +70,7 @@ cc_library(
     name = "service",
     srcs = ["service.cc"],
     hdrs = ["service.h"],
+    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//src/google/protobuf/compiler/java/lite:__pkg__"],
     deps = [
@@ -81,6 +88,7 @@ cc_library(
     name = "eg",
     srcs = ["enum.cc"],
     hdrs = ["enum.h"],
+    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         "//src/google/protobuf",
@@ -113,6 +121,7 @@ cc_library(
         "extension.h",
         "message_builder.h",
     ],
+    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//src/google/protobuf/compiler/java:__pkg__",

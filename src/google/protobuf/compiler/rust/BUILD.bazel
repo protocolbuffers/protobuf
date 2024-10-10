@@ -46,6 +46,7 @@ cc_library(
     name = "crate_mapping",
     srcs = ["crate_mapping.cc"],
     hdrs = ["crate_mapping.h"],
+    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":context",
@@ -207,6 +208,7 @@ cc_library(
     name = "relative_path",
     srcs = ["relative_path.cc"],
     hdrs = ["relative_path.h"],
+    copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         "@com_google_absl//absl/algorithm:container",
@@ -229,6 +231,7 @@ cc_library(
     name = "rust_field_type",
     srcs = ["rust_field_type.cc"],
     hdrs = ["rust_field_type.h"],
+    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//src/google/protobuf/compiler/rust:__subpackages__",
@@ -244,6 +247,7 @@ cc_library(
     name = "upb_helpers",
     srcs = ["upb_helpers.cc"],
     hdrs = ["upb_helpers.h"],
+    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//src/google/protobuf/compiler/rust:__subpackages__",

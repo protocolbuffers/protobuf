@@ -1,3 +1,5 @@
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
 cc_library(
     name = "field_generators",
     srcs = [
@@ -23,6 +25,7 @@ cc_library(
         "primitive_field.h",
         "string_field.h",
     ],
+    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//src/google/protobuf/compiler/java:__subpackages__",
@@ -62,6 +65,7 @@ cc_library(
         "message.h",
         "message_builder.h",
     ],
+    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//src/google/protobuf/compiler/java:__subpackages__",
