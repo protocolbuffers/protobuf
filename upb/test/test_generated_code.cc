@@ -18,6 +18,8 @@
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/base/status.h"
 #include "upb/base/string_view.h"
+#include "upb/mem/alloc.h"
+#include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/array.h"
 #include "upb/message/map.h"
@@ -870,6 +872,93 @@ TEST(GeneratedCode, StatusTruncation) {
 
     free(msg);
   }
+}
+
+static void decrement_int(void* ptr) {
+  int* iptr = static_cast<int*>(ptr);
+  (*iptr)--;
+}
+
+TEST(GeneratedCode, ArenaFuse) {
+  int i1 = 5;
+  int i2 = 5;
+  int i3 = 5;
+  int i4 = 5;
+
+  upb_Arena* arena1 = upb_Arena_New();
+  upb_Arena* arena2 = upb_Arena_New();
+
+  upb_Arena_AddCleanup(arena1, &i1, decrement_int);
+  upb_Arena_AddCleanup(arena2, &i2, decrement_int);
+
+  EXPECT_TRUE(upb_Arena_Fuse(arena1, arena2));
+
+  upb_Arena_AddCleanup(arena1, &i3, decrement_int);
+  upb_Arena_AddCleanup(arena2, &i4, decrement_int);
+
+  upb_Arena_Free(arena1);
+  EXPECT_EQ(5, i1);
+  EXPECT_EQ(5, i2);
+  EXPECT_EQ(5, i3);
+  EXPECT_EQ(5, i4);
+  upb_Arena_Free(arena2);
+  EXPECT_EQ(4, i1);
+  EXPECT_EQ(4, i2);
+  EXPECT_EQ(4, i3);
+  EXPECT_EQ(4, i4);
+}
+
+TEST(GeneratedCode, FuseWithInitialBlock) {
+  char buf1[1024];
+  char buf2[1024];
+  upb_Arena* arenas[] = {upb_Arena_Init(buf1, 1024, &upb_alloc_global),
+                         upb_Arena_Init(buf2, 1024, &upb_alloc_global),
+                         upb_Arena_Init(nullptr, 0, &upb_alloc_global)};
+  int size = sizeof(arenas) / sizeof(arenas[0]);
+  for (int i = 0; i < size; ++i) {
+    for (int j = 0; j < size; ++j) {
+      if (i == j) {
+        EXPECT_TRUE(upb_Arena_Fuse(arenas[i], arenas[j]));
+      } else {
+        EXPECT_FALSE(upb_Arena_Fuse(arenas[i], arenas[j]));
+      }
+    }
+  }
+
+  for (int i = 0; i < size; ++i) upb_Arena_Free(arenas[i]);
+}
+
+TEST(GeneratedCode, ArenaDecode) {
+  // Tests against a bug that previously existed when passing an arena to
+  // upb_decode().
+  char large_string[1024] = {0};
+  upb_StringView large_string_view = {large_string, sizeof(large_string)};
+  upb_Arena* tmp = upb_Arena_New();
+
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(tmp);
+
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_bytes(
+      msg, large_string_view);
+
+  upb_StringView serialized;
+  serialized.data = protobuf_test_messages_proto3_TestAllTypesProto3_serialize(
+      msg, tmp, &serialized.size);
+
+  upb_Arena* arena = upb_Arena_New();
+  // Parse the large payload, forcing an arena block to be allocated. This used
+  // to corrupt the cleanup list, preventing subsequent upb_Arena_AddCleanup()
+  // calls from working properly.
+  protobuf_test_messages_proto3_TestAllTypesProto3_parse(
+      serialized.data, serialized.size, arena);
+
+  int i1 = 5;
+  upb_Arena_AddCleanup(arena, &i1, decrement_int);
+  EXPECT_EQ(5, i1);
+  upb_Arena_Free(arena);
+  EXPECT_EQ(4, i1);
+
+  upb_Arena_Free(tmp);
 }
 
 TEST(GeneratedCode, ArenaUnaligned) {
