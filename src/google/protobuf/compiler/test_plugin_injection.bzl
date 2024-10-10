@@ -51,6 +51,7 @@ cat <<'EOF' >$(OUTS)
 #define GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH "$(rootpath :fake_plugin)"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_TEST_PLUGIN_PATHS_H__
+EOF
 """,
         visibility = ["//visibility:private"],
         testonly = True,
