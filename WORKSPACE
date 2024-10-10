@@ -63,6 +63,7 @@ rules_jvm_external_setup()
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
+    name = "protobuf_maven",
     artifacts = PROTOBUF_MAVEN_ARTIFACTS,
     # For updating instructions, see:
     # https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson
