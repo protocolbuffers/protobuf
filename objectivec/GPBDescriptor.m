@@ -319,7 +319,6 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 
 @synthesize package = package_;
 @synthesize objcPrefix = objcPrefix_;
-@synthesize syntax = syntax_;
 
 - (instancetype)initWithPackage:(NSString *)package
                      objcPrefix:(NSString *)objcPrefix
