@@ -866,6 +866,7 @@ static const char* VarintParseSlowArm(const char* p, uint64_t* out,
 // The caller must ensure that p points to at least 10 valid bytes.
 template <typename T>
 PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
+  AssertBytesAreReadable(p, 10);
 #if defined(__aarch64__) && defined(ABSL_IS_LITTLE_ENDIAN) && !defined(_MSC_VER)
   // This optimization is not supported in big endian mode
   uint64_t first8;
@@ -1044,9 +1045,11 @@ inline const char* ParseBigVarint(const char* p, uint64_t* out) {
 
 PROTOBUF_EXPORT
 std::pair<const char*, int32_t> ReadSizeFallback(const char* p, uint32_t first);
-// Used for tags, could read up to 5 bytes which must be available. Additionally
-// it makes sure the unsigned value fits a int32_t, otherwise returns nullptr.
-// Caller must ensure its safe to call.
+
+// Used for length prefixes. Could read up to 5 bytes, but no more than
+// necessary for a single varint. The caller must ensure enough bytes are
+// available. Additionally it makes sure the unsigned value fits in an int32_t,
+// otherwise returns nullptr. Caller must ensure it is safe to call.
 inline uint32_t ReadSize(const char** pp) {
   auto p = *pp;
   uint32_t res = static_cast<uint8_t>(p[0]);
