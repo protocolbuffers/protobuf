@@ -38,6 +38,9 @@ else()
   endif()
 
   target_link_libraries(gmock ${CMAKE_THREAD_LIBS_INIT})
+  if(QNX)
+    target_link_libraries(gmock regex)
+  endif()
   add_library(gmock_main STATIC "${googlemock_source_dir}/src/gmock_main.cc")
   target_link_libraries(gmock_main gmock)
 
