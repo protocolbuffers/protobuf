@@ -5,6 +5,8 @@ Protocol Buffers - Google's data interchange format
 
 Copyright 2023 Google LLC
 
+Translate to:[简体中文](README_Chinese.md)
+
 Overview
 --------
 
