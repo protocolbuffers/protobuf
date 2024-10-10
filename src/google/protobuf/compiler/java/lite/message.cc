@@ -328,7 +328,8 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
 
   printer->Print(
       "@java.lang.Override\n"
-      "@java.lang.SuppressWarnings({\"unchecked\", \"fallthrough\"})\n"
+      "@java.lang.SuppressWarnings({\"ThrowNull\", \"unchecked\", "
+      "\"fallthrough\"})\n"
       "protected final java.lang.Object dynamicMethod(\n"
       "    com.google.protobuf.GeneratedMessageLite.MethodToInvoke method,\n"
       "    java.lang.Object arg0, java.lang.Object arg1) {\n"
@@ -407,7 +408,8 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   printer->Outdent();
   printer->Print(
       "}\n"
-      "throw new UnsupportedOperationException();\n");
+      "// Should never happen. Generates tight code to throw an exception.\n"
+      "throw null;\n");
   printer->Outdent();
   printer->Print(
       "}\n"
