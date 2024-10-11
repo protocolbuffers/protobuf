@@ -128,14 +128,6 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 
 use_repo(pip, "pip_deps")
 
-rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
-
-rust.toolchain(edition = "2021")
-
-use_repo(rust, "rust_toolchains")
-
-register_toolchains("@rust_toolchains//:all")
-
 crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
 
 crate.spec(
