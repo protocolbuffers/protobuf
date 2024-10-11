@@ -256,3 +256,5 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
     `clojurescript`
 *   [gRPC Federation - generates a gRPC server by writing a custom option in
     Protocol Buffers](https://github.com/mercari/grpc-federation)
+*   [Proto Boiler - A plugin to generate boilerplate code from .proto files
+    using templates](https://github.com/in4lio/protoboiler)
