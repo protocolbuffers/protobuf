@@ -72,3 +72,14 @@ toolchain(
     toolchain = "//java/lite:toolchain",
     toolchain_type = "@rules_java//java/proto:lite_toolchain_type",
 )
+
+filegroup(
+    name = "for_bazel_tests",
+    testonly = True,
+    srcs = [
+        "BUILD.bazel",
+    ],
+    visibility = [
+        "//bazel/private:__pkg__",
+    ],
+)
