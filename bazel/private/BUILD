@@ -116,6 +116,7 @@ bzl_library(
         "//bazel/common:proto_common_bzl",
         "//bazel/common:proto_info_bzl",
         "@proto_bazel_features//:features",
+        "@rules_cc//cc:find_cc_toolchain_bzl",
     ],
 )
 
