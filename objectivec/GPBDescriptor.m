@@ -107,10 +107,8 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   NSAssert((flags & GPBDescriptorInitializationFlag_ClosedEnumSupportKnown) != 0,
            @"Internal error: close enum should be known");
 
-  // `messageName` and `fileDescription` should both be set or both be unset depending on if this is
-  // being called from current code generation or legacy code generation.
-  NSAssert((messageName == nil) == (fileDescription == NULL),
-           @"name and fileDescription should always be provided together");
+  NSAssert((messageName != nil), @"Internal error: missing messageName");
+  NSAssert((fileDescription != NULL), @"Internal error: missing fileDescription");
 #endif
 
   NSMutableArray *fields =
