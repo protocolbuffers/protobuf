@@ -150,7 +150,10 @@ cc_library(
     name = "gzip_stream",
     srcs = ["gzip_stream.cc"],
     hdrs = ["gzip_stream.h"],
-    copts = COPTS,
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": ["-DHAVE_ZLIB"],
+    }),
     strip_include_prefix = "/src",
     deps = [
         ":io",
@@ -192,7 +195,10 @@ cc_test(
         "tokenizer_unittest.cc",
         "zero_copy_stream_unittest.cc",
     ],
-    copts = COPTS,
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": ["-DHAVE_ZLIB"],
+    }),
     deps = [
         ":gzip_stream",
         ":io",
