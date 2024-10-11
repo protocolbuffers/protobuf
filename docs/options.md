@@ -525,6 +525,6 @@ with info about your project (name and website) so we can add an entry for you.
 1. JaiaBot
 
     *   Website: https://github.com/jaiarobotics/jaiabot
-    *   Extensions: 1250
+    *   Extensions: 1252
 
 
