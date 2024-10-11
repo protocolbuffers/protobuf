@@ -421,9 +421,9 @@ std::string PhpGetterTypeName(const FieldDescriptor* field,
     // accommodate for edge case with multiple types.
     size_t start_pos = type.find('|');
     if (start_pos != std::string::npos) {
-      type.replace(start_pos, 1, "[]|");
+      type.replace(start_pos, 1, absl::StrCat(type, ">|RepeatedField<", type));
     }
-    type = absl::StrCat(type, "[]");
+    type = absl::StrCat("RepeatedField<", type, ">");
   }
   return type;
 }
@@ -536,11 +536,11 @@ std::string BinaryToPhpString(const std::string& src) {
 
 bool GenerateField(const FieldDescriptor* field, io::Printer* printer,
                    const Options& options, std::string* error) {
-  if (field->is_required()) {
-    *error = absl::StrCat("Can't generate PHP code for required field ",
-                          field->full_name(), ".\n");
-    return false;
-  }
+  // if (field->is_required()) {
+  //   *error = absl::StrCat("Can't generate PHP code for required field ",
+  //                         field->full_name(), ".\n");
+  //   return false;
+  // }
   if (field->type() == FieldDescriptor::TYPE_GROUP) {
     *error = absl::StrCat("Can't generate PHP code for group field ",
                           field->full_name(),
@@ -1060,15 +1060,15 @@ void GenerateUseDeclaration(const Options& options, io::Printer* printer) {
   if (!options.is_descriptor) {
     printer->Print(
         "use Google\\Protobuf\\Internal\\GPBType;\n"
-        "use Google\\Protobuf\\Internal\\RepeatedField;\n"
-        "use Google\\Protobuf\\Internal\\GPBUtil;\n\n");
+        "use Google\\Protobuf\\Internal\\GPBUtil;\n"
+        "use Google\\Protobuf\\RepeatedField;\n\n");
   } else {
     printer->Print(
         "use Google\\Protobuf\\Internal\\GPBType;\n"
         "use Google\\Protobuf\\Internal\\GPBWire;\n"
-        "use Google\\Protobuf\\Internal\\RepeatedField;\n"
         "use Google\\Protobuf\\Internal\\InputStream;\n"
-        "use Google\\Protobuf\\Internal\\GPBUtil;\n\n");
+        "use Google\\Protobuf\\Internal\\GPBUtil;\n"
+        "use Google\\Protobuf\\RepeatedField;\n\n");
   }
 }
 
@@ -1133,11 +1133,11 @@ bool GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
                       const Options& options,
                       GeneratorContext* generator_context, std::string* error) {
   if (en->is_closed()) {
-    *error = absl::StrCat("Can't generate PHP code for closed enum ",
-                          en->full_name(),
-                          ".  Please use either proto3 or editions without "
-                          "`enum_type = CLOSED`.\n");
-    return false;
+    // *error = absl::StrCat("Can't generate PHP code for closed enum ",
+    //                       en->full_name(),
+    //                       ".  Please use either proto3 or editions without "
+    //                       "`enum_type = CLOSED`.\n");
+    // return false;
   }
 
   std::string filename = GeneratedClassFileName(en, options);
