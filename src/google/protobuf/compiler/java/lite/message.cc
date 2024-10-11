@@ -328,11 +328,10 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
 
   printer->Print(
       "@java.lang.Override\n"
-      "@java.lang.SuppressWarnings({\"ThrowNull\", \"unchecked\", "
-      "\"fallthrough\"})\n"
+      "@java.lang.SuppressWarnings({\"ThrowNull\"})\n"
       "protected final java.lang.Object dynamicMethod(\n"
       "    com.google.protobuf.GeneratedMessageLite.MethodToInvoke method,\n"
-      "    java.lang.Object arg0, java.lang.Object arg1) {\n"
+      "    java.lang.Object arg0) {\n"
       "  switch (method) {\n"
       "    case NEW_MUTABLE_INSTANCE: {\n"
       "      return new $classname$();\n"
@@ -397,11 +396,11 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   } else {
     printer->Print(
         "}\n"
+        "// The return value of SET_ is unused. Combine clauses for smaller "
+        "codegen.\n"
+        "case SET_MEMOIZED_IS_INITIALIZED:\n"
         "case GET_MEMOIZED_IS_INITIALIZED: {\n"
         "  return (byte) 1;\n"
-        "}\n"
-        "case SET_MEMOIZED_IS_INITIALIZED: {\n"
-        "  return null;\n"
         "}\n");
   }
 
@@ -499,7 +498,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
   WriteIntToUtf16CharSequence(descriptor_->field_count(), &chars);
 
   if (descriptor_->field_count() == 0) {
-    printer->Print("java.lang.Object[] objects = null;");
+    printer->Print("java.lang.Object[] objects = null;\n");
   } else {
     // A single array of all fields (including oneof, oneofCase, hasBits).
     printer->Print("java.lang.Object[] objects = new java.lang.Object[] {\n");
