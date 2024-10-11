@@ -16,6 +16,11 @@
 #import "GPBUtilities_PackagePrivate.h"
 #import "GPBWireFormat.h"
 
+@interface GPBFileDescriptor ()
+- (instancetype)initWithPackage:(NSString *)package objcPrefix:(NSString *)objcPrefix;
+- (instancetype)initWithPackage:(NSString *)package;
+@end
+
 @interface GPBDescriptor ()
 - (instancetype)initWithClass:(Class)messageClass
                   messageName:(NSString *)messageName
@@ -243,12 +248,10 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
       NSString *package = fileDescription_->package ? @(fileDescription_->package) : @"";
       if (fileDescription_->prefix) {
         result = [[GPBFileDescriptor alloc] initWithPackage:package
-                                                 objcPrefix:@(fileDescription_->prefix)
-                                                     syntax:fileDescription_->syntax];
+                                                 objcPrefix:@(fileDescription_->prefix)];
 
       } else {
-        result = [[GPBFileDescriptor alloc] initWithPackage:package
-                                                     syntax:fileDescription_->syntax];
+        result = [[GPBFileDescriptor alloc] initWithPackage:package];
       }
       objc_setAssociatedObject(result, &kFileDescriptorCacheKey, result,
                                OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -312,29 +315,24 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
 @implementation GPBFileDescriptor {
   NSString *package_;
   NSString *objcPrefix_;
-  GPBFileSyntax syntax_;
 }
 
 @synthesize package = package_;
 @synthesize objcPrefix = objcPrefix_;
 
-- (instancetype)initWithPackage:(NSString *)package
-                     objcPrefix:(NSString *)objcPrefix
-                         syntax:(GPBFileSyntax)syntax {
+- (instancetype)initWithPackage:(NSString *)package objcPrefix:(NSString *)objcPrefix {
   self = [super init];
   if (self) {
     package_ = [package copy];
     objcPrefix_ = [objcPrefix copy];
-    syntax_ = syntax;
   }
   return self;
 }
 
-- (instancetype)initWithPackage:(NSString *)package syntax:(GPBFileSyntax)syntax {
+- (instancetype)initWithPackage:(NSString *)package {
   self = [super init];
   if (self) {
     package_ = [package copy];
-    syntax_ = syntax;
   }
   return self;
 }
@@ -354,7 +352,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   }
   GPBFileDescriptor *otherFile = other;
   // objcPrefix can be nil, otherwise, straight up compare.
-  return (syntax_ == otherFile->syntax_ && [package_ isEqual:otherFile->package_] &&
+  return ([package_ isEqual:otherFile->package_] &&
           (objcPrefix_ == otherFile->objcPrefix_ ||
            (otherFile->objcPrefix_ && [objcPrefix_ isEqual:otherFile->objcPrefix_])));
 }
@@ -488,7 +486,6 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 #endif  // DEBUG
     }
 
-    // Non map<>/repeated fields can have defaults in proto2 syntax.
     BOOL isMapOrArray = GPBFieldIsMapOrArray(self);
     if (!isMapOrArray && includesDefault) {
       defaultValue_ = ((GPBMessageFieldDescriptionWithDefault *)description)->defaultValue;

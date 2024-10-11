@@ -211,13 +211,6 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
 
 @end
 
-@interface GPBFileDescriptor ()
-- (instancetype)initWithPackage:(NSString *)package
-                     objcPrefix:(NSString *)objcPrefix
-                         syntax:(GPBFileSyntax)syntax;
-- (instancetype)initWithPackage:(NSString *)package syntax:(GPBFileSyntax)syntax;
-@end
-
 @interface GPBOneofDescriptor () {
  @package
   const char *name_;
