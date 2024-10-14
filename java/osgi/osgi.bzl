@@ -1,7 +1,6 @@
 """ Custom rule to generate OSGi Manifest """
 
 load("@rules_java//java:defs.bzl", "JavaInfo", "java_library")
-load("@rules_kotlin//kotlin/internal:defs.bzl", "KtJvmInfo")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 # Note that this rule is currently agnostic of protobuf concerns and could be
