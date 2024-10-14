@@ -1,6 +1,8 @@
 """ Custom rule to generate OSGi Manifest """
 
 load("@rules_java//java:defs.bzl", "JavaInfo", "java_library")
+load("@rules_kotlin//kotlin/internal:defs.bzl", "KtJvmInfo")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 # Note that this rule is currently agnostic of protobuf concerns and could be
 # pulled out as a general purpose helper to allow migrations from maven to bazel
@@ -138,6 +140,64 @@ def osgi_java_library(
         visibility = visibility,
     )
 
+def osgi_kt_jvm_library(
+        name,
+        automatic_module_name,
+        bundle_description,
+        bundle_doc_url,
+        bundle_license,
+        bundle_name,
+        bundle_symbolic_name,
+        bundle_version,
+        bundle_additional_imports = [],
+        bundle_additional_exports = [],
+        deps = [],
+        exports = [],
+        exported_plugins = [],
+        neverlink = False,
+        runtime_deps = [],
+        visibility = [],
+        **kwargs):
+    """Extends `kt_jvm_library` to add OSGi headers to the MANIFEST.MF using bndlib
+
+    This macro should be usable as a drop-in replacement for kt_jvm_library.
+
+    The additional arguments are the same as osgi_java_library above.
+    """
+
+    # Build the private jar without the OSGI manifest
+    private_library_name = "%s-no-manifest-do-not-use" % name
+    kt_jvm_library(
+        name = private_library_name,
+        deps = deps,
+        runtime_deps = runtime_deps,
+        neverlink = True,
+        visibility = ["//visibility:private"],
+        **kwargs
+    )
+
+    # Repackage the jar with an OSGI manifest
+    _osgi_kt_jvm_jar(
+        name = name,
+        automatic_module_name = automatic_module_name,
+        bundle_description = bundle_description,
+        bundle_doc_url = bundle_doc_url,
+        bundle_license = bundle_license,
+        bundle_name = bundle_name,
+        bundle_symbolic_name = bundle_symbolic_name,
+        bundle_version = bundle_version,
+        export_package = bundle_additional_exports + ["*;version=${Bundle-Version}"],
+        import_package = bundle_additional_imports + ["*"],
+        target = private_library_name,
+        deps = deps,
+        runtime_deps = runtime_deps,
+        exported_plugins = exported_plugins,
+        neverlink = neverlink,
+        exports = exports,
+        visibility = visibility,
+    )
+
+
 def _run_osgi_wrapper(ctx, input_jar, classpath_jars, output_jar):
     args = ctx.actions.args()
     args.add_joined("--classpath", classpath_jars, join_with = ":")
@@ -161,6 +221,7 @@ def _run_osgi_wrapper(ctx, input_jar, classpath_jars, output_jar):
         outputs = [output_jar],
         progress_message = "Generating OSGi bundle Manifest for %s" % input_jar.path,
     )
+
 
 def _osgi_jar_impl(ctx):
     if len(ctx.attr.target[JavaInfo].java_outputs) != 1:
@@ -214,6 +275,76 @@ def _osgi_jar_impl(ctx):
 
 _osgi_jar = rule(
     implementation = _osgi_jar_impl,
+    outputs = {
+        "output_jar": "lib%{name}.jar",
+    },
+    attrs = {
+        "automatic_module_name": attr.string(),
+        "bundle_copyright": attr.string(),
+        "bundle_description": attr.string(),
+        "bundle_doc_url": attr.string(),
+        "bundle_license": attr.string(),
+        "bundle_name": attr.string(),
+        "bundle_version": attr.string(),
+        "bundle_symbolic_name": attr.string(),
+        "export_package": attr.string_list(),
+        "import_package": attr.string_list(),
+        "target": attr.label(),
+        "deps": attr.label_list(),
+        "runtime_deps": attr.label_list(),
+        "exports": attr.label_list(),
+        "neverlink": attr.bool(),
+        "exported_plugins": attr.label_list(),
+        "_osgi_wrapper_exe": attr.label(
+            executable = True,
+            cfg = "exec",
+            allow_files = True,
+            default = Label("//java/osgi:osgi_wrapper"),
+        ),
+    },
+)
+
+
+# Kotlin implementation of osgi jar, removes classpath and source_jar
+def _osgi_kt_jvm_jar_impl(ctx):
+    if len(ctx.attr.target[JavaInfo].java_outputs) != 1:
+        fail("osgi_jar rule can only be used on a single java target.")
+    target_java_output = ctx.attr.target[JavaInfo].java_outputs[0]
+
+    output_jar = ctx.outputs.output_jar
+
+    input_jar = target_java_output.class_jar
+
+    _run_osgi_wrapper(ctx, input_jar, [], output_jar)
+
+    return [
+        DefaultInfo(
+            files = depset([output_jar]),
+            # Workaround for https://github.com/bazelbuild/bazel/issues/15043
+            # Bazel's native rule such as sh_test do not pick up 'files' in
+            # DefaultInfo for a target in 'data'.
+            data_runfiles = ctx.runfiles([output_jar]),
+        ),
+        JavaInfo(
+            output_jar = output_jar,
+
+            # compile_jar should be an ijar, but using an ijar results in
+            # missing protobuf import version.
+            compile_jar = output_jar,
+            generated_class_jar = target_java_output.generated_class_jar,
+            native_headers_jar = target_java_output.native_headers_jar,
+            manifest_proto = target_java_output.manifest_proto,
+            neverlink = ctx.attr.neverlink,
+            deps = [dep[JavaInfo] for dep in ctx.attr.deps],
+            runtime_deps = [dep[JavaInfo] for dep in ctx.attr.runtime_deps],
+            exports = [exp[JavaInfo] for exp in ctx.attr.exports],
+            exported_plugins = ctx.attr.exported_plugins,
+        ),
+    ]
+
+
+_osgi_kt_jvm_jar = rule(
+    implementation = _osgi_kt_jvm_jar_impl,
     outputs = {
         "output_jar": "lib%{name}.jar",
     },
