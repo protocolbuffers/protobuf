@@ -12,82 +12,21 @@ module(
 # Bzlmod follows MVS:
 # https://bazel.build/versions/6.0.0/build/bzlmod#version-resolution
 # Thus the highest version in their module graph is resolved.
-bazel_dep(
-    name = "abseil-cpp",
-    version = "20230802.0.bcr.1",
-    repo_name = "com_google_absl",
-)
-
-bazel_dep(
-    name = "bazel_skylib",
-    version = "1.7.0",
-)
-
-bazel_dep(
-    name = "jsoncpp",
-    version = "1.9.5",
-)
-
-bazel_dep(
-    name = "rules_cc",
-    version = "0.0.9",
-)
-
-bazel_dep(
-    name = "rules_fuzzing",
-    version = "0.5.2",
-)
-
-bazel_dep(
-    name = "rules_java",
-    version = "7.11.1",
-)
-
-bazel_dep(
-    name = "rules_jvm_external",
-    version = "6.3",
-)
-
-bazel_dep(
-    name = "rules_kotlin",
-    version = "1.9.6",
-)
-
-bazel_dep(
-    name = "rules_license",
-    version = "1.0.0",
-)
-
-bazel_dep(
-    name = "rules_pkg",
-    version = "1.0.1",
-)
-
-bazel_dep(
-    name = "rules_python",
-    version = "0.28.0",
-)
-
-bazel_dep(
-    name = "rules_rust",
-    version = "0.51.0",
-)
-
-bazel_dep(
-    name = "platforms",
-    version = "0.0.8",
-)
-
-bazel_dep(
-    name = "zlib",
-    version = "1.3.1",
-)
-
-bazel_dep(
-    name = "bazel_features",
-    version = "1.17.0",
-    repo_name = "proto_bazel_features",
-)
+bazel_dep(name = "abseil-cpp", version = "20230802.0.bcr.1", repo_name = "com_google_absl")
+bazel_dep(name = "bazel_skylib", version = "1.7.0")
+bazel_dep(name = "jsoncpp", version = "1.9.5")
+bazel_dep(name = "rules_cc", version = "0.0.9")
+bazel_dep(name = "rules_fuzzing", version = "0.5.2")
+bazel_dep(name = "rules_java", version = "7.11.1")
+bazel_dep(name = "rules_jvm_external", version = "6.3")
+bazel_dep(name = "rules_kotlin", version = "1.9.6")
+bazel_dep(name = "rules_license", version = "1.0.0")
+bazel_dep(name = "rules_pkg", version = "1.0.1")
+bazel_dep(name = "rules_python", version = "0.28.0")
+bazel_dep(name = "rules_rust", version = "0.51.0")
+bazel_dep(name = "platforms", version = "0.0.8")
+bazel_dep(name = "zlib", version = "1.3.1")
+bazel_dep(name = "bazel_features", version = "1.17.0", repo_name = "proto_bazel_features")
 
 # Proto toolchains
 register_toolchains("//bazel/private/toolchains:all")
@@ -129,26 +68,18 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 use_repo(pip, "pip_deps")
 
 crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
-
 crate.spec(
     package = "googletest",
     version = ">0.0.0",
 )
-
 crate.spec(
     package = "paste",
     version = ">=1",
 )
-
 crate.from_specs()
-
-use_repo(
-    crate,
-    crate_index = "crates",
-)
+use_repo(crate, crate_index = "crates")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
-
 maven.install(
     name = "protobuf_maven",
     artifacts = [
@@ -170,32 +101,12 @@ maven.install(
         "https://repo.maven.apache.org/maven2",
     ],
 )
-
 use_repo(maven, "protobuf_maven")
 
 # Development dependencies
-bazel_dep(
-    name = "googletest",
-    version = "1.14.0",
-    dev_dependency = True,
-    repo_name = "com_google_googletest",
-)
-
-bazel_dep(
-    name = "rules_buf",
-    version = "0.3.0",
-    dev_dependency = True,
-)
-
-bazel_dep(
-    name = "rules_testing",
-    version = "0.6.0",
-    dev_dependency = True,
-)
+bazel_dep(name = "googletest", version = "1.14.0", dev_dependency = True, repo_name = "com_google_googletest")
+bazel_dep(name = "rules_buf", version = "0.3.0", dev_dependency = True)
+bazel_dep(name = "rules_testing", version = "0.6.0", dev_dependency = True)
 
 # rules_proto are needed for @com_google_protobuf_v25.0 used in //compatibility/... tests
-bazel_dep(
-    name = "rules_proto",
-    version = "4.0.0",
-    dev_dependency = True,
-)
+bazel_dep(name = "rules_proto", version = "4.0.0", dev_dependency = True)
