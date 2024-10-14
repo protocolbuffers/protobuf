@@ -4511,12 +4511,23 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
 void MessageGenerator::GenerateSerializeOneExtensionRange(io::Printer* p,
                                                           int start, int end) {
   auto v = p->WithVars(variables_);
-  p->Emit({{"start", start}, {"end", end}},
-          R"cc(
-            // Extension range [$start$, $end$)
-            target = this_.$extensions$._InternalSerialize(
-                internal_default_instance(), $start$, $end$, target, stream);
-          )cc");
+  p->Emit(  //
+      {{"start", start}, {"end", end}},
+      R"cc(
+        // Extension range [$start$, $end$)
+        target = this_.$extensions$._InternalSerialize(
+            internal_default_instance(), $start$, $end$, target, stream);
+      )cc");
+}
+
+void MessageGenerator::GenerateSerializeAllExtensions(io::Printer* p) {
+  auto v = p->WithVars(variables_);
+  p->Emit(
+      R"cc(
+        // All extensions.
+        target = this_.$extensions$._InternalSerializeAll(
+            internal_default_instance(), target, stream);
+      )cc");
 }
 
 void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
@@ -4682,16 +4693,23 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
       }
     }
 
-    void Flush() {
-      if (has_current_range_) {
-        mg_->GenerateSerializeOneExtensionRange(p_, min_start_, max_end_);
+    void Flush(bool is_last_range) {
+      if (!has_current_range_) {
+        return;
       }
       has_current_range_ = false;
+      ++range_count_;
+      if (is_last_range && range_count_ == 1) {
+        mg_->GenerateSerializeAllExtensions(p_);
+      } else {
+        mg_->GenerateSerializeOneExtensionRange(p_, min_start_, max_end_);
+      }
     }
 
    private:
     MessageGenerator* mg_;
     io::Printer* p_;
+    int range_count_ = 0;
     bool has_current_range_ = false;
     int min_start_ = 0;
     int max_end_ = 0;
@@ -4749,12 +4767,13 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
              size_t i, j;
              for (i = 0, j = 0;
                   i < ordered_fields.size() || j < sorted_extensions.size();) {
-               if ((j == sorted_extensions.size()) ||
+               bool no_more_extensions = j == sorted_extensions.size();
+               if (no_more_extensions ||
                    (i < static_cast<size_t>(descriptor_->field_count()) &&
                     ordered_fields[i]->number() <
                         sorted_extensions[j]->start_number())) {
                  const FieldDescriptor* field = ordered_fields[i++];
-                 re.Flush();
+                 re.Flush(no_more_extensions);
                  if (field->options().weak()) {
                    largest_weak_field.ReplaceIfLarger(field);
                    PrintFieldComment(Formatter{p}, field, options_);
@@ -4768,7 +4787,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
                  re.AddToRange(sorted_extensions[j++]);
                }
              }
-             re.Flush();
+             re.Flush(/*is_last_range=*/true);
              e.EmitIfNotNull(largest_weak_field.Release());
            }},
           {"handle_unknown_fields",

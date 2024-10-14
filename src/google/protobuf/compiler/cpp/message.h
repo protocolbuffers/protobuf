@@ -157,6 +157,7 @@ class MessageGenerator {
   void GenerateSerializeOneofFields(
       io::Printer* p, const std::vector<const FieldDescriptor*>& fields);
   void GenerateSerializeOneExtensionRange(io::Printer* p, int start, int end);
+  void GenerateSerializeAllExtensions(io::Printer* p);
 
   // Generates has_foo() functions and variables for singular field has-bits.
   void GenerateSingularFieldHasBits(const FieldDescriptor* field,
