@@ -9,9 +9,9 @@
   - hpb_proto_library()
 """
 
-load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
 load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
+load("//bazel/common:proto_common.bzl", "proto_common")
 
 def upb_use_cpp_toolchain():
     return use_cpp_toolchain()
@@ -38,13 +38,6 @@ def _get_real_short_path(file):
 def _get_real_root(file):
     real_short_path = _get_real_short_path(file)
     return file.path[:-len(real_short_path) - 1]
-
-def _generate_output_file(ctx, src, extension):
-    real_short_path = _get_real_short_path(src)
-    real_short_path = paths.relativize(real_short_path, ctx.label.package)
-    output_filename = paths.replace_extension(real_short_path, extension)
-    ret = ctx.actions.declare_file(output_filename)
-    return ret
 
 def _filter_none(elems):
     return [e for e in elems if e]
@@ -117,7 +110,7 @@ hpb_proto_library_copts = rule(
     attrs = {"copts": attr.string_list(default = [])},
 )
 
-_UpbCcWrappedCcInfo = provider("Provider for cc_info for protos", fields = ["cc_info"])
+_UpbCcWrappedCcInfo = provider("Provider for cc_info for hpb", fields = ["cc_info"])
 _WrappedCcGeneratedSrcsInfo = provider("Provider for generated sources", fields = ["srcs"])
 
 def _compile_upb_cc_protos(ctx, generator, proto_info, proto_sources):
@@ -125,9 +118,25 @@ def _compile_upb_cc_protos(ctx, generator, proto_info, proto_sources):
         return GeneratedSrcsInfo(srcs = [], hdrs = [])
 
     tool = getattr(ctx.executable, "_gen_" + generator)
-    srcs = [_generate_output_file(ctx, name, ".upb.proto.cc") for name in proto_sources]
-    hdrs = [_generate_output_file(ctx, name, ".upb.proto.h") for name in proto_sources]
-    hdrs += [_generate_output_file(ctx, name, ".upb.fwd.h") for name in proto_sources]
+
+    srcs = []
+    srcs += proto_common.declare_generated_files(
+        ctx.actions,
+        extension = ".upb.proto.cc",
+        proto_info = proto_info,
+    )
+
+    hdrs = []
+    hdrs += proto_common.declare_generated_files(
+        ctx.actions,
+        extension = ".upb.proto.h",
+        proto_info = proto_info,
+    )
+    hdrs += proto_common.declare_generated_files(
+        ctx.actions,
+        extension = ".upb.fwd.h",
+        proto_info = proto_info,
+    )
     transitive_sets = proto_info.transitive_descriptor_sets.to_list()
 
     args = ctx.actions.args()
@@ -148,7 +157,7 @@ def _compile_upb_cc_protos(ctx, generator, proto_info, proto_sources):
         outputs = srcs + hdrs,
         executable = ctx.executable._protoc,
         arguments = [args],
-        progress_message = "Generating upb cc protos for :" + ctx.label.name,
+        progress_message = "Generating hpb protocol buffers for :" + ctx.label.name,
     )
     return GeneratedSrcsInfo(srcs = srcs, hdrs = hdrs)
 
