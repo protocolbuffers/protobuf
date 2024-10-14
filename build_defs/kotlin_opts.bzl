@@ -1,7 +1,7 @@
 """Protobuf-specific kotlin build rules."""
 
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
-load("//java/osgi:osgi.bzl", "osgi_kt_jvm_library")
+load("//java/osgi:kotlin_osgi.bzl", "osgi_kt_jvm_library")
 
 
 BUNDLE_DOC_URL = "https://developers.google.com/protocol-buffers/"
