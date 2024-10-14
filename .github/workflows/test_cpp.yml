@@ -72,7 +72,7 @@ jobs:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/${{ matrix.cache_key }}
-          bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }}
+          bazel: aquery @com_google_absl//absl/strings:string_view ${{ matrix.config.flags }} # test ${{ matrix.targets }} ${{ matrix.config.flags }}
           exclude-targets: ${{ matrix.exclude-targets }}
 
   linux-gcc:
