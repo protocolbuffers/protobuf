@@ -1,6 +1,7 @@
 """Macro to support py_extension """
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@rules_python//python:py_library.bzl", "py_library")
 
 def py_extension(name, srcs, copts, deps = [], **kwargs):
     """Creates a C++ library to extend python
@@ -50,7 +51,7 @@ def py_extension(name, srcs, copts, deps = [], **kwargs):
         visibility = ["//python:__subpackages__"],
     )
 
-    native.py_library(
+    py_library(
         name = name,
         data = [output_file],
         imports = ["."],
