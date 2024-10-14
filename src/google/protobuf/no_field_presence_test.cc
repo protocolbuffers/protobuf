@@ -259,6 +259,82 @@ TEST(NoFieldPresenceTest, MessageFieldPresenceTest) {
             TestAllTypes::default_instance().has_optional_nested_message());
 }
 
+TEST(NoFieldPresenceTest, MergeFromDefaultStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+  dst.MergeFrom(src);
+
+  dst.Clear();
+}
+
+TEST(NoFieldPresenceTest, MergeFromAllocatedStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+
+  src.mutable_optional_string();  // this causes a memory allocation.
+  dst.MergeFrom(src);
+
+  dst.Clear();
+}
+
+TEST(NoFieldPresenceTest, MergeFromEmptyStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+
+  // set one field to zero.
+  src.set_optional_string("");
+  dst.MergeFrom(src);
+
+  dst.Clear();
+}
+
+TEST(NoFieldPresenceTest, CopyTwiceDefaultStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+
+  dst = src;
+  dst = src;
+}
+
+TEST(NoFieldPresenceTest, CopyTwiceAllocatedStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+
+  src.mutable_optional_string();  // this causes a memory allocation.
+
+  dst = src;
+  dst = src;
+}
+
+TEST(NoFieldPresenceTest, CopyTwiceEmptyStringFieldTest) {
+  // As an optimization, we maintain a default string in memory and messages
+  // with uninitialized fields will be constructed with a pointer to this
+  // default string object. The destructor should clear the field only when it
+  // is "set" to a nondefault object.
+  TestAllTypes src, dst;
+
+  // set one field to zero.
+  src.set_optional_string("");
+
+  dst = src;
+  dst = src;
+}
+
 class NoFieldPresenceSwapFieldTest : public testing::Test {
  protected:
   NoFieldPresenceSwapFieldTest()
