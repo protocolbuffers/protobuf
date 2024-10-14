@@ -76,7 +76,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   }
 
   void ReturnArrayMemory(void* p, size_t size) {
-    SerialArena* arena;
+    SerialArena* arena = nullptr;
     if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
       arena->ReturnArrayMemory(p, size);
     }
@@ -88,7 +88,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // have fallback function calls in tail position. This substantially improves
   // code for the happy path.
   PROTOBUF_NDEBUG_INLINE bool MaybeAllocateAligned(size_t n, void** out) {
-    SerialArena* arena;
+    SerialArena* arena = nullptr;
     if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
       return arena->MaybeAllocateAligned(n, out);
     }
