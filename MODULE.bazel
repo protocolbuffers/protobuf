@@ -68,9 +68,10 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 use_repo(pip, "pip_deps")
 
 crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
-# As of rules_rust@0.52.2 crate.from_specs specifies the crate module extension
-# as non reproducible and non os/arch dependent, which can cause bazel lockfile
-# non reproducibility between platforms for users of the `protobuf` module.
+# As of rules_rust@0.52.2 crate.from_specs still specifies the crate
+# module extension as non reproducible and non os/arch dependent, which can
+# cause bazel lockfile non reproducibility between platforms for users of the
+#`protobuf` module.
 #
 # crate.from_cargo is specified reproducible since using Cargo.lock mechanism
 # directly and does not result in a Bazel lockfile entry for the crate module
