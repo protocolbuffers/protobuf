@@ -236,7 +236,7 @@ public abstract class GeneratedMessageLite<
    *
    * <p>For use by generated code only.
    */
-  public static enum MethodToInvoke {
+  protected static enum MethodToInvoke {
     // Rely on/modify instance state
     GET_MEMOIZED_IS_INITIALIZED,
     SET_MEMOIZED_IS_INITIALIZED,
