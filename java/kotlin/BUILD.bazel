@@ -5,6 +5,7 @@ load("//:protobuf.bzl", "internal_gen_kt_protos")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
+load("//build_defs:kotlin_opts.bzl", "protobuf_versioned_kt_jvm_library")
 
 exports_files([
     "src/test/kotlin/com/google/protobuf/Proto3Test.kt",
@@ -50,6 +51,24 @@ kt_jvm_library(
     deps = ["//java/core"],
 )
 
+protobuf_versioned_kt_jvm_library(
+    name = "kotlin_bundle",
+    automatic_module_name = "com.google.protobuf",
+    bundle_description = "Kotlin core Protocol Buffers library. Protocol " +
+                         "Buffers are a way of encoding structured data in an" +
+                         "efficient yet extensible format.",
+    bundle_name = "Protocol Buffers [Kotlin-Core]",
+    bundle_symbolic_name = "com.google.protobuf",
+    visibility = ["//visibility:public"],
+    exports = [
+        ":bytestring_lib",
+        ":full_extensions",
+        ":only_for_use_in_proto_generated_code_its_generator_and_tests",
+        ":shared_runtime",
+        ":well_known_protos_kotlin",
+    ],
+)
+
 kt_jvm_export(
     name = "kotlin_mvn",
     deploy_env = [
@@ -65,11 +84,7 @@ kt_jvm_export(
     ],
     tags = ["manual"],
     runtime_deps = [
-        ":bytestring_lib",
-        ":full_extensions",
-        ":only_for_use_in_proto_generated_code_its_generator_and_tests",
-        ":shared_runtime",
-        ":well_known_protos_kotlin",
+        ":kotlin_bundle",
     ],
 )
 
