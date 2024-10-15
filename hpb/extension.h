@@ -223,14 +223,6 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
       (upb_Message*)value.msg_val, hpb::interop::upb::GetArena(message)));
 }
 
-template <typename T, typename Extendee, typename Extension,
-          typename = hpb::internal::EnableIfHpbClass<T>>
-absl::StatusOr<Ptr<const Extension>> GetExtension(
-    const T* message,
-    const ::hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
-  return GetExtension(Ptr(message), id);
-}
-
 template <typename T, typename Extension>
 constexpr uint32_t ExtensionNumber(
     ::hpb::internal::ExtensionIdentifier<T, Extension> id) {
