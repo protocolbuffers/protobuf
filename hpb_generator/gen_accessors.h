@@ -8,21 +8,22 @@
 #ifndef PROTOBUF_COMPILER_HBP_GEN_ACCESSORS_H_
 #define PROTOBUF_COMPILER_HBP_GEN_ACCESSORS_H_
 
-#include "google/protobuf/descriptor.h"
+#include "google/protobuf/compiler/hpb/context.h"
 #include "google/protobuf/compiler/hpb/gen_utils.h"
-#include "google/protobuf/compiler/hpb/output.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google::protobuf::hpb_generator {
 
 namespace protobuf = ::proto2;
 
 void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
-                                 Output& output);
-void WriteAccessorsInSource(const protobuf::Descriptor* desc, Output& output);
+                                 Context& ctx);
+void WriteAccessorsInSource(const protobuf::Descriptor* desc, Context& ctx);
+
 void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
-                                 MessageClassType handle_type, Output& output);
+                                 MessageClassType handle_type, Context& ctx);
 void WriteOneofAccessorsInHeader(const protobuf::Descriptor* desc,
-                                 Output& output);
+                                 Context& ctx);
 }  // namespace protobuf
 }  // namespace google::hpb_generator
 

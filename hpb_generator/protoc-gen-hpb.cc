@@ -13,12 +13,12 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/hpb/context.h"
 #include "google/protobuf/compiler/hpb/gen_enums.h"
 #include "google/protobuf/compiler/hpb/gen_extensions.h"
 #include "google/protobuf/compiler/hpb/gen_messages.h"
 #include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/names.h"
-#include "google/protobuf/compiler/hpb/output.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/descriptor.h"
 
@@ -30,21 +30,19 @@ namespace protobuf = ::proto2;
 using FileDescriptor = ::google::protobuf::FileDescriptor;
 using google::protobuf::Edition;
 
-void WriteSource(const protobuf::FileDescriptor* file, Output& output,
+void WriteSource(const protobuf::FileDescriptor* file, Context& ctx,
                  bool fasttable_enabled, bool strip_feature_includes);
-void WriteHeader(const protobuf::FileDescriptor* file, Output& output,
+void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx,
                  bool strip_feature_includes);
-void WriteForwardingHeader(const protobuf::FileDescriptor* file,
-                           Output& output);
+void WriteForwardingHeader(const protobuf::FileDescriptor* file, Context& ctx);
 void WriteMessageImplementations(const protobuf::FileDescriptor* file,
-                                 Output& output);
+                                 Context& ctx);
 void WriteTypedefForwardingHeader(
     const protobuf::FileDescriptor* file,
     const std::vector<const protobuf::Descriptor*>& file_messages,
-    Output& output);
+    Context& ctx);
 void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
-                                    Output& output,
-                                    bool strip_feature_includes);
+                                    Context& ctx, bool strip_feature_includes);
 
 class Generator : public protoc::CodeGenerator {
  public:
@@ -83,53 +81,53 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
   // Write model.upb.fwd.h
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> output_stream(
       context->Open(ForwardingHeaderFilename(file)));
-  Output forwarding_header_output(output_stream.get());
-  WriteForwardingHeader(file, forwarding_header_output);
+  auto fwd_ctx = Context(output_stream.get(), Options{.backend = Backend::UPB});
+  WriteForwardingHeader(file, fwd_ctx);
 
   // Write model.upb.proto.h
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> header_output_stream(
       context->Open(CppHeaderFilename(file)));
-  Output header_output(header_output_stream.get());
-  WriteHeader(file, header_output, strip_nonfunctional_codegen);
+  Context hdr_ctx(header_output_stream.get(), Options{.backend = Backend::UPB});
+  WriteHeader(file, hdr_ctx, strip_nonfunctional_codegen);
 
   // Write model.upb.proto.cc
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> cc_output_stream(
       context->Open(CppSourceFilename(file)));
-  Output cc_output(cc_output_stream.get());
-  WriteSource(file, cc_output, fasttable_enabled, strip_nonfunctional_codegen);
+  auto cc_ctx =
+      Context(cc_output_stream.get(), Options{.backend = Backend::UPB});
+  WriteSource(file, cc_ctx, fasttable_enabled, strip_nonfunctional_codegen);
   return true;
 }
 
 // The forwarding header defines Access/Proxy/CProxy for message classes
 // used to include when referencing dependencies to prevent transitive
 // dependency headers from being included.
-void WriteForwardingHeader(const protobuf::FileDescriptor* file,
-                           Output& output) {
-  EmitFileWarning(file, output);
-  output(
+void WriteForwardingHeader(const protobuf::FileDescriptor* file, Context& ctx) {
+  EmitFileWarning(file, ctx);
+  ctx.EmitLegacy(
       R"cc(
 #ifndef $0_UPB_FWD_H_
 #define $0_UPB_FWD_H_
       )cc",
       ToPreproc(file->name()));
-  output("\n");
+  ctx.Emit("\n");
   for (int i = 0; i < file->public_dependency_count(); ++i) {
-    output("#include \"$0\"\n",
-           ForwardingHeaderFilename(file->public_dependency(i)));
+    ctx.EmitLegacy("#include \"$0\"\n",
+                   ForwardingHeaderFilename(file->public_dependency(i)));
   }
   if (file->public_dependency_count() > 0) {
-    output("\n");
+    ctx.Emit("\n");
   }
   const std::vector<const protobuf::Descriptor*> this_file_messages =
       SortedMessages(file);
-  WriteTypedefForwardingHeader(file, this_file_messages, output);
-  output("#endif  /* $0_UPB_FWD_H_ */\n", ToPreproc(file->name()));
+  WriteTypedefForwardingHeader(file, this_file_messages, ctx);
+  ctx.EmitLegacy("#endif  /* $0_UPB_FWD_H_ */\n", ToPreproc(file->name()));
 }
 
-void WriteHeader(const protobuf::FileDescriptor* file, Output& output,
+void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx,
                  bool strip_feature_includes) {
-  EmitFileWarning(file, output);
-  output(
+  EmitFileWarning(file, ctx);
+  ctx.EmitLegacy(
       R"cc(
 #ifndef $0_HPB_PROTO_H_
 #define $0_HPB_PROTO_H_
@@ -144,15 +142,16 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output,
   // Import headers for proto public dependencies.
   for (int i = 0; i < file->public_dependency_count(); i++) {
     if (i == 0) {
-      output("// Public Imports.\n");
+      ctx.Emit("// Public Imports.\n");
     }
-    output("#include \"$0\"\n", CppHeaderFilename(file->public_dependency(i)));
+    ctx.EmitLegacy("#include \"$0\"\n",
+                   CppHeaderFilename(file->public_dependency(i)));
     if (i == file->public_dependency_count() - 1) {
-      output("\n");
+      ctx.Emit("\n");
     }
   }
 
-  output("#include \"upb/port/def.inc\"\n");
+  ctx.Emit("#include \"upb/port/def.inc\"\n");
 
   const std::vector<const protobuf::Descriptor*> this_file_messages =
       SortedMessages(file);
@@ -160,42 +159,42 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output,
       SortedExtensions(file);
 
   if (!this_file_messages.empty()) {
-    output("\n");
+    ctx.Emit("\n");
   }
 
-  WriteHeaderMessageForwardDecls(file, output, strip_feature_includes);
-  WriteStartNamespace(file, output);
+  WriteHeaderMessageForwardDecls(file, ctx, strip_feature_includes);
+  WriteStartNamespace(file, ctx);
 
   std::vector<const protobuf::EnumDescriptor*> this_file_enums =
       SortedEnums(file);
 
   // Write Class and Enums.
-  WriteEnumDeclarations(this_file_enums, output);
-  output("\n");
+  WriteEnumDeclarations(this_file_enums, ctx);
+  ctx.Emit("\n");
 
   for (auto message : this_file_messages) {
     WriteMessageClassDeclarations(message, this_file_exts, this_file_enums,
-                                  output);
+                                  ctx);
   }
-  output("\n");
+  ctx.Emit("\n");
 
-  WriteExtensionIdentifiersHeader(this_file_exts, output);
-  output("\n");
+  WriteExtensionIdentifiersHeader(this_file_exts, ctx);
+  ctx.Emit("\n");
 
-  WriteEndNamespace(file, output);
+  WriteEndNamespace(file, ctx);
 
-  output("\n#include \"upb/port/undef.inc\"\n\n");
+  ctx.Emit("\n#include \"upb/port/undef.inc\"\n\n");
   // End of "C" section.
 
-  output("#endif  /* $0_HPB_PROTO_H_ */\n", ToPreproc(file->name()));
+  ctx.EmitLegacy("#endif  /* $0_HPB_PROTO_H_ */\n", ToPreproc(file->name()));
 }
 
 // Writes a .upb.cc source file.
-void WriteSource(const protobuf::FileDescriptor* file, Output& output,
+void WriteSource(const protobuf::FileDescriptor* file, Context& ctx,
                  bool fasttable_enabled, bool strip_feature_includes) {
-  EmitFileWarning(file, output);
+  EmitFileWarning(file, ctx);
 
-  output(
+  ctx.EmitLegacy(
       R"cc(
 #include <stddef.h>
 #include "absl/log/absl_check.h"
@@ -210,40 +209,40 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
       // Strip feature imports for editions codegen tests.
       continue;
     }
-    output("#include \"$0\"\n", CppHeaderFilename(file->dependency(i)));
+    ctx.EmitLegacy("#include \"$0\"\n", CppHeaderFilename(file->dependency(i)));
   }
-  output("#include \"upb/port/def.inc\"\n");
+  ctx.EmitLegacy("#include \"upb/port/def.inc\"\n");
 
-  WriteStartNamespace(file, output);
-  WriteMessageImplementations(file, output);
+  WriteStartNamespace(file, ctx);
+  WriteMessageImplementations(file, ctx);
   const std::vector<const protobuf::FieldDescriptor*> this_file_exts =
       SortedExtensions(file);
-  WriteExtensionIdentifiers(this_file_exts, output);
-  WriteEndNamespace(file, output);
+  WriteExtensionIdentifiers(this_file_exts, ctx);
+  WriteEndNamespace(file, ctx);
 
-  output("#include \"upb/port/undef.inc\"\n\n");
+  ctx.Emit("#include \"upb/port/undef.inc\"\n\n");
 }
 
 void WriteMessageImplementations(const protobuf::FileDescriptor* file,
-                                 Output& output) {
+                                 Context& ctx) {
   const std::vector<const protobuf::FieldDescriptor*> file_exts =
       SortedExtensions(file);
   const std::vector<const protobuf::Descriptor*> this_file_messages =
       SortedMessages(file);
   for (auto message : this_file_messages) {
-    WriteMessageImplementation(message, file_exts, output);
+    WriteMessageImplementation(message, file_exts, ctx);
   }
 }
 
 void WriteTypedefForwardingHeader(
     const protobuf::FileDescriptor* file,
     const std::vector<const protobuf::Descriptor*>& file_messages,
-    Output& output) {
-  WriteStartNamespace(file, output);
+    Context& ctx) {
+  WriteStartNamespace(file, ctx);
 
   // Forward-declare types defined in this file.
   for (auto message : file_messages) {
-    output(
+    ctx.EmitLegacy(
         R"cc(
           class $0;
           namespace internal {
@@ -254,17 +253,16 @@ void WriteTypedefForwardingHeader(
         )cc",
         ClassName(message));
   }
-  output("\n");
-  WriteEndNamespace(file, output);
+  ctx.Emit("\n");
+  WriteEndNamespace(file, ctx);
 }
 
 /// Writes includes for upb C minitables and fwd.h for transitive typedefs.
 void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
-                                    Output& output,
-                                    bool strip_feature_includes) {
+                                    Context& ctx, bool strip_feature_includes) {
   // Import forward-declaration of types defined in this file.
-  output("#include \"$0\"\n", UpbCFilename(file));
-  output("#include \"$0\"\n", ForwardingHeaderFilename(file));
+  ctx.EmitLegacy("#include \"$0\"\n", UpbCFilename(file));
+  ctx.EmitLegacy("#include \"$0\"\n", ForwardingHeaderFilename(file));
   // Import forward-declaration of types in dependencies.
   for (int i = 0; i < file->dependency_count(); ++i) {
     if (strip_feature_includes &&
@@ -272,9 +270,10 @@ void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
       // Strip feature imports for editions codegen tests.
       continue;
     }
-    output("#include \"$0\"\n", ForwardingHeaderFilename(file->dependency(i)));
+    ctx.EmitLegacy("#include \"$0\"\n",
+                   ForwardingHeaderFilename(file->dependency(i)));
   }
-  output("\n");
+  ctx.Emit("\n");
 }
 
 }  // namespace

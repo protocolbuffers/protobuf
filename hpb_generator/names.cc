@@ -11,6 +11,7 @@
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/hpb/context.h"
 #include "google/protobuf/compiler/hpb/keywords.h"
 
 namespace google::protobuf::hpb_generator {
@@ -120,20 +121,22 @@ std::string CppHeaderFilename(const google::protobuf::FileDescriptor* file) {
   return compiler::StripProto(file->name()) + ".upb.proto.h";
 }
 
-void WriteStartNamespace(const protobuf::FileDescriptor* file, Output& output) {
+void WriteStartNamespace(const protobuf::FileDescriptor* file, Context& ctx) {
   // Skip namespace generation if package name is not specified.
   if (file->package().empty()) {
     return;
   }
 
-  output("namespace $0 {\n\n", NamespaceFromPackageName(file->package()));
+  ctx.EmitLegacy("namespace $0 {\n\n",
+                 NamespaceFromPackageName(file->package()));
 }
 
-void WriteEndNamespace(const protobuf::FileDescriptor* file, Output& output) {
+void WriteEndNamespace(const protobuf::FileDescriptor* file, Context& ctx) {
   if (file->package().empty()) {
     return;
   }
-  output("} //  namespace $0\n\n", NamespaceFromPackageName(file->package()));
+  ctx.EmitLegacy("} //  namespace $0\n\n",
+                 NamespaceFromPackageName(file->package()));
 }
 
 std::string CppConstType(const protobuf::FieldDescriptor* field) {
