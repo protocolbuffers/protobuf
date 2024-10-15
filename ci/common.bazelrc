@@ -81,6 +81,10 @@ build --incompatible_use_host_features
 # https://github.com/protocolbuffers/protobuf/issues/14313
 common --noenable_bzlmod
 
+# For easier debugging of build failures.
+common --announce_rc
+build --verbose_failures
+
 # Important: this flag ensures that we remain compliant with the C++ layering
 # check.
 build --features=layering_check
