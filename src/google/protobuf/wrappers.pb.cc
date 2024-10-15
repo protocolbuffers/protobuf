@@ -421,8 +421,14 @@ DoubleValue::DoubleValue(::google::protobuf::Arena* arena)
 }
 DoubleValue::DoubleValue(
     ::google::protobuf::Arena* arena, const DoubleValue& from)
-    : DoubleValue(arena) {
-  MergeFrom(from);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, DoubleValue_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 inline PROTOBUF_NDEBUG_INLINE DoubleValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
@@ -633,8 +639,14 @@ FloatValue::FloatValue(::google::protobuf::Arena* arena)
 }
 FloatValue::FloatValue(
     ::google::protobuf::Arena* arena, const FloatValue& from)
-    : FloatValue(arena) {
-  MergeFrom(from);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, FloatValue_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 inline PROTOBUF_NDEBUG_INLINE FloatValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
@@ -845,8 +857,14 @@ Int64Value::Int64Value(::google::protobuf::Arena* arena)
 }
 Int64Value::Int64Value(
     ::google::protobuf::Arena* arena, const Int64Value& from)
-    : Int64Value(arena) {
-  MergeFrom(from);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, Int64Value_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 inline PROTOBUF_NDEBUG_INLINE Int64Value::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
@@ -1058,8 +1076,14 @@ UInt64Value::UInt64Value(::google::protobuf::Arena* arena)
 }
 UInt64Value::UInt64Value(
     ::google::protobuf::Arena* arena, const UInt64Value& from)
-    : UInt64Value(arena) {
-  MergeFrom(from);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, UInt64Value_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 inline PROTOBUF_NDEBUG_INLINE UInt64Value::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
@@ -1271,8 +1295,14 @@ Int32Value::Int32Value(::google::protobuf::Arena* arena)
 }
 Int32Value::Int32Value(
     ::google::protobuf::Arena* arena, const Int32Value& from)
-    : Int32Value(arena) {
-  MergeFrom(from);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, Int32Value_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 inline PROTOBUF_NDEBUG_INLINE Int32Value::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
@@ -1484,8 +1514,14 @@ UInt32Value::UInt32Value(::google::protobuf::Arena* arena)
 }
 UInt32Value::UInt32Value(
     ::google::protobuf::Arena* arena, const UInt32Value& from)
-    : UInt32Value(arena) {
-  MergeFrom(from);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, UInt32Value_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 inline PROTOBUF_NDEBUG_INLINE UInt32Value::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
@@ -1697,8 +1733,14 @@ BoolValue::BoolValue(::google::protobuf::Arena* arena)
 }
 BoolValue::BoolValue(
     ::google::protobuf::Arena* arena, const BoolValue& from)
-    : BoolValue(arena) {
-  MergeFrom(from);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, BoolValue_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 inline PROTOBUF_NDEBUG_INLINE BoolValue::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,

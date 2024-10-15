@@ -125,8 +125,14 @@ Timestamp::Timestamp(::google::protobuf::Arena* arena)
 }
 Timestamp::Timestamp(
     ::google::protobuf::Arena* arena, const Timestamp& from)
-    : Timestamp(arena) {
-  MergeFrom(from);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, Timestamp_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 inline PROTOBUF_NDEBUG_INLINE Timestamp::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
