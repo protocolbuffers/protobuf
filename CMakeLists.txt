@@ -153,14 +153,6 @@ file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/cmaketest.map)
 
 find_package(Threads REQUIRED)
 
-# We can install dependencies from submodules if we're running
-# CMake v3.13 or newer.
-if(CMAKE_VERSION VERSION_LESS 3.13)
-  set(_protobuf_INSTALL_SUPPORTED_FROM_MODULE OFF)
-else()
-  set(_protobuf_INSTALL_SUPPORTED_FROM_MODULE ON)
-endif()
-
 set(_protobuf_FIND_ZLIB)
 if (protobuf_WITH_ZLIB)
   find_package(ZLIB)
@@ -289,11 +281,13 @@ include_directories(
   ${protobuf_BINARY_DIR}/src
   ${protobuf_SOURCE_DIR}/src)
 
-set(protobuf_ABSL_PROVIDER "module" CACHE STRING "Provider of absl library")
-set_property(CACHE protobuf_ABSL_PROVIDER PROPERTY STRINGS "module" "package")
+set(protobuf_FETCH_DEPENDENCIES OFF CACHE BOOL "Download dependencies from GitHub. If this option is not set, the dependency must be available locally, either as a sub-module or an installed package.")
 
-set(protobuf_JSONCPP_PROVIDER "module" CACHE STRING "Provider of jsoncpp library")
-set_property(CACHE protobuf_JSONCPP_PROVIDER PROPERTY STRINGS "module" "package")
+set(protobuf_ABSL_PROVIDER "module" CACHE STRING "Provider of absl library.  `module` uses sub-modules, `package` searches for a local installation, and `fetch` downloads from GitHub")
+set_property(CACHE protobuf_ABSL_PROVIDER PROPERTY STRINGS "module" "package" "fetch")
+
+set(protobuf_JSONCPP_PROVIDER "module" CACHE STRING "Provider of jsoncpp library.  `module` uses sub-modules, `package` searches for a local installation, and `fetch` downloads from GitHub")
+set_property(CACHE protobuf_JSONCPP_PROVIDER PROPERTY STRINGS "module" "package" "fetch")
 
 if (protobuf_BUILD_TESTS)
   include(${protobuf_SOURCE_DIR}/cmake/gtest.cmake)

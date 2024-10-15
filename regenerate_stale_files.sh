@@ -15,6 +15,7 @@ readonly BazelBin="${BAZEL:-bazel} ${BAZEL_STARTUP_FLAGS}"
 STALENESS_TESTS=(
   "java/core:generated_java_defaults_staleness_test"
   "upb/reflection:bootstrap_upb_defaults_staleness_test"
+  "cmake:test_dependencies_staleness"
   "src:cmake_lists_staleness_test"
   "src/google/protobuf:well_known_types_staleness_test"
   "objectivec:well_known_types_staleness_test"

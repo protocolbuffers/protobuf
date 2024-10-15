@@ -24,6 +24,11 @@ license(
     license_text = ":LICENSE",
 )
 
+exports_files(
+    ["MODULE.bazel"],
+    visibility = ["//cmake:__pkg__"],
+)
+
 ################################################################################
 # Well Known Types Proto Library Rules
 #
@@ -641,54 +646,4 @@ filegroup(
     name = "bzl_srcs",
     srcs = glob(["**/*.bzl"]),
     visibility = ["//visibility:public"],
-)
-
-################################################################################
-# Packaging rules
-################################################################################
-
-# Files included in all source distributions
-pkg_files(
-    name = "common_dist_files",
-    srcs = glob(
-        [
-            "*.bzl",
-            "cmake/*.cmake",
-            "cmake/*.in",
-            "editors/*",
-        ],
-        allow_empty = True,
-    ) + [
-        "BUILD.bazel",
-        "CMakeLists.txt",
-        "CONTRIBUTORS.txt",
-        "LICENSE",
-        "README.md",
-        "WORKSPACE",
-        "cmake/README.md",
-        "generate_descriptor_proto.sh",
-        "maven_install.json",
-        "//third_party:BUILD.bazel",
-        "//third_party:zlib.BUILD",
-    ],
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
-)
-
-# Additional files for C#
-pkg_files(
-    name = "csharp_dist_files",
-    srcs = [
-        "global.json",
-    ],
-    visibility = ["//pkg:__pkg__"],
-)
-
-# Additional files for ObjC
-pkg_files(
-    name = "objectivec_dist_files",
-    srcs = [
-        "Protobuf.podspec",
-    ],
-    visibility = ["//pkg:__pkg__"],
 )

@@ -2,6 +2,17 @@ option(protobuf_USE_EXTERNAL_GTEST "Use external Google Test (i.e. not the one i
 
 if (protobuf_USE_EXTERNAL_GTEST)
   find_package(GTest REQUIRED CONFIG)
+elseif (protobuf_FETCH_DEPENDENCIES)
+  include(${protobuf_SOURCE_DIR}/cmake/dependencies.cmake)
+  include(FetchContent)
+  FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY "https://github.com/google/googletest.git"
+    GIT_TAG "v${googletest-version}"
+  )
+  # Due to https://github.com/google/googletest/issues/4384, we can't name this
+  # GTest for use with find_package until 1.15.0.
+  FetchContent_MakeAvailable(googletest)
 else()
   if (NOT EXISTS "${protobuf_SOURCE_DIR}/third_party/googletest/CMakeLists.txt")
     message(FATAL_ERROR
