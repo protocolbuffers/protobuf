@@ -415,6 +415,7 @@ public final class Descriptors {
       return result;
     }
 
+    @SuppressWarnings("deprecation")
     private static byte[] latin1Cat(final String[] strings) {
       // Hack:  We can't embed a raw byte array inside generated Java code
       //   (at least, not efficiently), but we can embed Strings.  So, the
@@ -428,11 +429,19 @@ public final class Descriptors {
       if (strings.length == 1) {
         return strings[0].getBytes(Internal.ISO_8859_1);
       }
-      StringBuilder descriptorData = new StringBuilder();
+      int totalSize = 0;
       for (String part : strings) {
-        descriptorData.append(part);
+        totalSize += part.length();
       }
-      return descriptorData.toString().getBytes(Internal.ISO_8859_1);
+      byte[] resultBytes = new byte[totalSize];
+
+      // this function is deprecated, but does exactly what we want for latin1
+      int writeIndex = 0;
+      for (String part : strings) {
+        part.getBytes(0, part.length(), resultBytes, writeIndex);
+        writeIndex += part.length();
+      }
+      return resultBytes;
     }
 
     private static FileDescriptor[] findDescriptors(
