@@ -498,7 +498,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
   WriteIntToUtf16CharSequence(descriptor_->field_count(), &chars);
 
   if (descriptor_->field_count() == 0) {
-    printer->Print("java.lang.Object[] objects = null;");
+    printer->Print("java.lang.Object[] objects = null;\n");
   } else {
     // A single array of all fields (including oneof, oneofCase, hasBits).
     printer->Print("java.lang.Object[] objects = new java.lang.Object[] {\n");
