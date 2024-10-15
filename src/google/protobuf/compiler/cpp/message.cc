@@ -3049,32 +3049,18 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
       )cc");
 }
 
-bool MessageGenerator::ImplHasCopyCtor() const {
+bool MessageGenerator::CanUseTrivialCopy() const {
   if (ShouldSplit(descriptor_, options_)) return false;
   if (HasSimpleBaseClass(descriptor_, options_)) return false;
   if (descriptor_->extension_range_count() > 0) return false;
-  if (descriptor_->real_oneof_decl_count() > 0) return false;
   if (num_weak_fields_ > 0) return false;
 
-  // If the message contains only scalar fields (ints and enums),
-  // then we can copy the entire impl_ section with a single statement.
-  for (const auto* field : optimized_order_) {
-    if (field->is_repeated()) return false;
-    if (field->is_extension()) return false;
-    switch (field->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_ENUM:
-      case FieldDescriptor::CPPTYPE_INT32:
-      case FieldDescriptor::CPPTYPE_INT64:
-      case FieldDescriptor::CPPTYPE_UINT32:
-      case FieldDescriptor::CPPTYPE_UINT64:
-      case FieldDescriptor::CPPTYPE_FLOAT:
-      case FieldDescriptor::CPPTYPE_DOUBLE:
-      case FieldDescriptor::CPPTYPE_BOOL:
-        break;
-      default:
-        return false;
-    }
+  // If all fields are trivially copyable then we can use the trivial copy
+  // constructor of Impl_
+  for (const auto* field : FieldRange(descriptor_)) {
+    if (!field_generators_.get(field).has_trivial_copy()) return false;
   }
+
   return true;
 }
 
@@ -3381,13 +3367,19 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
         MergeFrom(from);
       }
     )cc");
-  } else if (ImplHasCopyCtor()) {
+  } else if (CanUseTrivialCopy()) {
     p->Emit(R"cc(
       $classname$::$classname$(
           //~ Force alignment
           ::$proto_ns$::Arena* arena, const $classname$& from)
-          : $classname$(arena) {
-        MergeFrom(from);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          : $superclass$(arena, $classname$_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+          : $superclass$(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+            _impl_(from._impl_) {
+        _internal_metadata_.MergeFrom<$unknown_fields_type$>(
+            from._internal_metadata_);
       }
     )cc");
   } else {

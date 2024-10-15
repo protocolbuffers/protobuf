@@ -167,8 +167,14 @@ CppFeatures::CppFeatures(::google::protobuf::Arena* arena)
 }
 CppFeatures::CppFeatures(
     ::google::protobuf::Arena* arena, const CppFeatures& from)
-    : CppFeatures(arena) {
-  MergeFrom(from);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, CppFeatures_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 inline PROTOBUF_NDEBUG_INLINE CppFeatures::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,

@@ -174,8 +174,9 @@ class MessageGenerator {
   // the current message's arena, reducing `GetArena()` call churn.
   bool RequiresArena(GeneratorFunction function) const;
 
-  // Returns whether impl_ has a copy ctor.
-  bool ImplHasCopyCtor() const;
+  // Returns true if all fields are trivially copayble, and has no non-field
+  // state (eg extensions).
+  bool CanUseTrivialCopy() const;
 
   // Returns the level that this message needs ArenaDtor. If the message has
   // a field that is not arena-exclusive, it needs an ArenaDtor

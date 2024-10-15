@@ -254,6 +254,8 @@ class FieldGenerator {
   // Properties: see FieldGeneratorBase for documentation
   bool should_split() const { return impl_->should_split(); }
   bool is_trivial() const { return impl_->is_trivial(); }
+  // Returns true if the field has trivial copy construction.
+  bool has_trivial_copy() const { return is_trivial(); }
   bool has_trivial_value() const { return impl_->has_trivial_value(); }
   bool has_trivial_zero_default() const {
     return impl_->has_trivial_zero_default();

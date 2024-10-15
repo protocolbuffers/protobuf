@@ -167,8 +167,14 @@ JavaFeatures::JavaFeatures(::google::protobuf::Arena* arena)
 }
 JavaFeatures::JavaFeatures(
     ::google::protobuf::Arena* arena, const JavaFeatures& from)
-    : JavaFeatures(arena) {
-  MergeFrom(from);
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, JavaFeatures_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 inline PROTOBUF_NDEBUG_INLINE JavaFeatures::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
