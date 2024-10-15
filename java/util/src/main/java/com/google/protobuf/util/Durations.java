@@ -237,7 +237,12 @@ public final class Durations {
       nanoValue = secondValue.substring(pointPosition + 1);
       secondValue = secondValue.substring(0, pointPosition);
     }
-    long seconds = Long.parseLong(secondValue);
+    long seconds;
+    try {
+      seconds = Long.parseLong(secondValue);
+    } catch (NumberFormatException e) {
+      throw new ParseException("Invalid duration string: " + value, 0);
+    }
     int nanos = nanoValue.isEmpty() ? 0 : Timestamps.parseNanos(nanoValue);
     if (seconds < 0) {
       throw new ParseException("Invalid duration string: " + value, 0);
