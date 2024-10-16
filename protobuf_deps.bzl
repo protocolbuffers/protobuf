@@ -90,11 +90,11 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("rules_cc"):
-        _github_archive(
+        http_archive(
             name = "rules_cc",
-            repo = "https://github.com/bazelbuild/rules_cc",
-            commit = "c8c38f8c710cbbf834283e4777916b68261b359c",  # 0.0.9
-            sha256 = "5f862a44bbd032e1b48ed53c9c211ba2a1da60e10c5baa01c97369c249299ecb",
+            urls = ["https://github.com/bazelbuild/rules_cc/releases/download/0.0.13/rules_cc-0.0.13.tar.gz"],
+            sha256 = "d9bdd3ec66b6871456ec9c965809f43a0901e692d754885e89293807762d3d80",
+            strip_prefix = "rules_cc-0.0.13",
         )
 
     if not native.existing_rule("rules_java"):
@@ -102,6 +102,14 @@ def protobuf_deps():
             name = "rules_java",
             url = "https://github.com/bazelbuild/rules_java/releases/download/7.11.1/rules_java-7.11.1.tar.gz",
             sha256 = "6f3ce0e9fba979a844faba2d60467843fbf5191d8ca61fa3d2ea17655b56bb8c",
+        )
+
+    if not native.existing_rule("rules_shell"):
+        http_archive(
+            name = "rules_shell",
+            sha256 = "410e8ff32e018b9efd2743507e7595c26e2628567c42224411ff533b57d27c28",
+            strip_prefix = "rules_shell-0.2.0",
+            url = "https://github.com/bazelbuild/rules_shell/releases/download/v0.2.0/rules_shell-v0.2.0.tar.gz",
         )
 
     if not native.existing_rule("proto_bazel_features"):

@@ -2,6 +2,8 @@
 Internal helpers for building the Python protobuf runtime.
 """
 
+load("@rules_python//python:py_test.bzl", "py_test")
+
 def _remove_cross_repo_path(path):
     components = path.split("/")
     if components[0] == "..":
@@ -123,7 +125,7 @@ def internal_py_test(deps = [], **kwargs):
       deps: any additional dependencies of the test.
       **kwargs: arguments forwarded to py_test.
     """
-    native.py_test(
+    py_test(
         imports = ["."],
         deps = deps + ["//python:python_test_lib"],
         target_compatible_with = select({

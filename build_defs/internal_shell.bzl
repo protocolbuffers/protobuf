@@ -3,6 +3,9 @@ Internal tools to migrate shell commands to Bazel as an intermediate step
 to wider Bazelification.
 """
 
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
 def inline_sh_binary(
         name,
         srcs = [],
@@ -41,7 +44,7 @@ def inline_sh_binary(
         testonly = kwargs["testonly"] if "testonly" in kwargs else None,
     )
 
-    native.sh_binary(
+    sh_binary(
         name = name,
         srcs = [name + "_genrule"],
         data = srcs + tools + deps,
@@ -86,7 +89,7 @@ def inline_sh_test(
         testonly = kwargs["testonly"] if "testonly" in kwargs else None,
     )
 
-    native.sh_test(
+    sh_test(
         name = name,
         srcs = [name + "_genrule"],
         data = srcs + tools + deps,
