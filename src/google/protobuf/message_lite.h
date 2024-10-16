@@ -21,9 +21,11 @@
 #include <cstdint>
 #include <cstring>
 #include <iosfwd>
+#include <memory>
 #include <new>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 #include "absl/base/attributes.h"
 #include "absl/base/casts.h"
@@ -1436,6 +1438,28 @@ template <typename T>
 PROTOBUF_DEPRECATE_AND_INLINE()
 T& DownCastToGenerated(MessageLite& from) {
   return DownCastMessage<T>(from);
+}
+
+// Overloads for `std::shared_ptr` to substitute `std::dynamic_pointer_cast`
+template <typename T>
+std::shared_ptr<T> DynamicCastMessage(std::shared_ptr<MessageLite> ptr) {
+  if (auto* res = DynamicCastMessage<T>(ptr.get())) {
+    // Use aliasing constructor to keep the same control block.
+    return std::shared_ptr<T>(std::move(ptr), res);
+  } else {
+    return nullptr;
+  }
+}
+
+template <typename T>
+std::shared_ptr<const T> DynamicCastMessage(
+    std::shared_ptr<const MessageLite> ptr) {
+  if (auto* res = DynamicCastMessage<T>(ptr.get())) {
+    // Use aliasing constructor to keep the same control block.
+    return std::shared_ptr<const T>(std::move(ptr), res);
+  } else {
+    return nullptr;
+  }
 }
 
 }  // namespace protobuf

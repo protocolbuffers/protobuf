@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -1381,6 +1382,17 @@ TEST(LiteTest, DynamicCastMessage) {
   const MessageLite& test_type_1_pointer_const_ref = test_type_1;
   EXPECT_EQ(&test_type_1,
             &DynamicCastMessage<CastType1>(test_type_1_pointer_const_ref));
+
+  std::shared_ptr<MessageLite> shared(new CastType1);
+  EXPECT_EQ(1, shared.use_count());
+  std::shared_ptr<CastType1> shared_1 = DynamicCastMessage<CastType1>(shared);
+  // Check that both shared_ptr instances are pointing to the same control
+  // block by checking use_count().
+  EXPECT_EQ(2, shared.use_count());
+  EXPECT_EQ(shared_1.get(), shared.get());
+  std::shared_ptr<CastType2> shared_2 = DynamicCastMessage<CastType2>(shared);
+  EXPECT_EQ(2, shared.use_count());
+  EXPECT_EQ(shared_2, nullptr);
 }
 
 #if GTEST_HAS_DEATH_TEST
