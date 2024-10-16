@@ -47,6 +47,11 @@ struct PrivateAccess {
   static constexpr uint32_t GetExtensionNumber(const ExtensionId& id) {
     return id.number();
   }
+
+  template <typename ExtensionId>
+  static decltype(auto) GetDefaultValue(const ExtensionId& id) {
+    return id.default_value();
+  }
 };
 
 }  // namespace hpb::internal
