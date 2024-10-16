@@ -8,7 +8,7 @@ Copyright 2023 Google LLC
 Overview
 --------
 
-Protocol Buffers (a.k.a., protobuf) are Google's language-neutral,
+Protocol Buffers are Google's language-neutral,
 platform-neutral, extensible mechanism for serializing structured data. You
 can learn more about it in [protobuf's documentation](https://protobuf.dev).
 
