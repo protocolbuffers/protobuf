@@ -172,7 +172,7 @@ void MutateNothingByVisit(Message& message) {
         }
       } else {
         for (auto& it : info.Mutable()) {
-          it = it;
+          it = *&it;  // Avoid -Wself-assign.
         }
       }
     } else {
@@ -207,6 +207,8 @@ TEST_P(VisitFieldsTest, MutateNothingByVisitIdempotent) {
 
 template <typename InfoT>
 inline size_t MapKeyByteSizeLong(FieldDescriptor::Type type, InfoT info) {
+  (void)type;  // workaround GCC 9.5 bug: https://gcc.gnu.org/bugzilla/xxx
+
   if constexpr (info.cpp_type == FieldDescriptor::CPPTYPE_STRING) {
     return WireFormatLite::StringSize(info.Get());
   } else {
@@ -216,6 +218,8 @@ inline size_t MapKeyByteSizeLong(FieldDescriptor::Type type, InfoT info) {
 
 template <typename InfoT>
 inline size_t MapValueByteSizeLong(FieldDescriptor::Type type, InfoT info) {
+  (void)type;  // workaround GCC 9.5 bug: https://gcc.gnu.org/bugzilla/xxx
+
   if constexpr (info.cpp_type == FieldDescriptor::CPPTYPE_STRING) {
     return WireFormatLite::StringSize(info.Get());
   } else if constexpr (info.cpp_type == FieldDescriptor::CPPTYPE_MESSAGE) {

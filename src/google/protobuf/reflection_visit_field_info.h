@@ -1137,6 +1137,9 @@ struct RepeatedGroupDynamicExtensionInfo
 // users from a similar dispatch without creating KeyInfo or ValueInfo per type.
 template <FieldDescriptor::CppType cpp_type, typename T>
 inline size_t MapPrimitiveFieldByteSize(FieldDescriptor::Type type, T value) {
+  (void)type;   // workaround GCC 9.5 bug: https://gcc.gnu.org/bugzilla/xxx
+  (void)value;  // workaround GCC 9.5 bug: https://gcc.gnu.org/bugzilla/xxx
+
   if constexpr (cpp_type == FieldDescriptor::CPPTYPE_INT32) {
     static_assert(std::is_same_v<T, int32_t>, "type mismatch");
     switch (type) {
