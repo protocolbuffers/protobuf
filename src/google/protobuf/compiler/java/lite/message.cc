@@ -399,9 +399,10 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
         "case GET_MEMOIZED_IS_INITIALIZED: {\n"
         "  return (byte) 1;\n"
         "}\n"
-        "case SET_MEMOIZED_IS_INITIALIZED: {\n"
-        "  return null;\n"
-        "}\n");
+        "// SET_MEMOIZED_IS_INITIALIZED is never called for this message.\n"
+        "// So it can do anything. Combine with default case for smaller "
+        "codegen.\n"
+        "case SET_MEMOIZED_IS_INITIALIZED:\n");
   }
 
   printer->Outdent();
