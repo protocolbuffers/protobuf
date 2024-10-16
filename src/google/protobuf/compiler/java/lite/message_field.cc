@@ -173,7 +173,7 @@ void ImmutableMessageFieldLiteGenerator::GenerateMembers(
                  "  value.getClass();  // minimal bytecode null check\n"
                  "  $name$_ = value;\n"
                  "  $set_has_field_bit_message$\n"
-                 "  }\n");
+                 "}\n");
 
   // Field.Builder mergeField(Field value)
   WriteFieldDocComment(printer, descriptor_, context_->options());
