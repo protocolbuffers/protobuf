@@ -177,17 +177,19 @@ void WriteMapFieldAccessors(const protobuf::Descriptor* desc,
       resolved_upbc_name);
 
   if (val->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
-    ctx.EmitLegacy(
-        R"cc(
-          bool set_$0($1 key, $3 value);
-          bool set_$0($1 key, $4 value);
-          bool set_alias_$0($1 key, $3 value);
-          bool set_alias_$0($1 key, $4 value);
-          absl::StatusOr<$3> get_$0($1 key);
-        )cc",
-        resolved_field_name, CppConstType(key), CppConstType(val),
-        MessagePtrConstType(val, /* is_const */ true),
-        MessagePtrConstType(val, /* is_const */ false));
+    ctx.Emit({{"field_name", resolved_field_name},
+              {"const_key", CppConstType(key)},
+              {"const_val", CppConstType(val)},
+              {"ConstPtr", MessagePtrConstType(val, true)},
+              {"MutPtr", MessagePtrConstType(val, false)}},
+             R"cc(
+               bool set_$field_name$($const_key$ key, $ConstPtr$ value);
+               bool set_$field_name$($const_key$ key, $MutPtr$ value);
+               bool set_alias_$field_name$($const_key$ key, $ConstPtr$ value);
+               bool set_alias_$field_name$($const_key$ key, $MutPtr$ value);
+               absl::StatusOr<$ConstPtr$> get_$field_name$($const_key$ key);
+               absl::StatusOr<$MutPtr$> get_mutable_$field_name$($const_key$ key);
+             )cc");
   } else {
     ctx.EmitLegacy(
         R"cc(
@@ -378,6 +380,31 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
         MessageName(val->message_type()),
         QualifiedClassName(val->message_type()), optional_conversion_code,
         converted_key_name, upbc_name);
+    ctx.Emit(
+        {{"class_name", class_name},
+         {"hpb_field_name", resolved_field_name},
+         {"const_key", CppConstType(key)},
+         {"PtrMut", MessagePtrConstType(val, false)},
+         {"upb_msg_name", MessageName(message)},
+         {"return_type", MessageName(val->message_type())},
+         {"proto_class", QualifiedClassName(val->message_type())},
+         {"optional_conversion_code", optional_conversion_code},
+         {"converted_key_name", converted_key_name},
+         {"upb_field_name", upbc_name}},
+        R"cc(
+          absl::StatusOr<$PtrMut$> $class_name$::get_mutable_$hpb_field_name$(
+              $const_key$ key) {
+            $return_type$* msg_value;
+            $optional_conversion_code$bool success =
+                $upb_msg_name$_$upb_field_name$_get(msg_, $converted_key_name$,
+                                                    &msg_value);
+            if (success) {
+              return ::hpb::interop::upb::MakeHandle<$proto_class$>(
+                  UPB_UPCAST(msg_value), arena_);
+            }
+            return absl::NotFoundError("");
+          }
+        )cc");
     ctx.EmitLegacy(
         R"cc(
           void $0::delete_$1($2 key) { $6$4_$8_delete(msg_, $7); }
@@ -488,14 +515,15 @@ void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
               using $0Access::set_$1;
             )cc",
             class_name, resolved_field_name);
-        // only emit set_alias for maps when value is a message
+        // only emit set_alias and get_mutable for maps when value is a message
         if (field->message_type()->FindFieldByNumber(2)->cpp_type() ==
             protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
-          ctx.EmitLegacy(
+          ctx.Emit(
+              {{"class_name", class_name}, {"field_name", resolved_field_name}},
               R"cc(
-                using $0Access::set_alias_$1;
-              )cc",
-              class_name, resolved_field_name);
+                using $class_name$Access::get_mutable_$field_name$;
+                using $class_name$Access::set_alias_$field_name$;
+              )cc");
         }
       }
     } else if (desc->options().map_entry()) {

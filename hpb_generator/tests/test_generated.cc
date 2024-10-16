@@ -654,6 +654,23 @@ TEST(CppGeneratedCode, MessageMapInt32KeyMessageValue) {
   EXPECT_EQ(false, map_result_after_delete.ok());
 }
 
+TEST(CppGeneratedCode, MapMutableValue) {
+  constexpr int key = 1;
+  hpb::Arena arena;
+  auto msg = hpb::CreateMessage<ParentWithMap>(arena);
+  auto child = hpb::CreateMessage<Child>(arena);
+  child.set_peeps(12);
+  msg.set_child_map(key, child);
+  auto const_map_result = msg.get_child_map(key);
+  EXPECT_EQ(true, const_map_result.ok());
+  EXPECT_EQ(12, const_map_result.value()->peeps());
+
+  auto mut_map_result = msg.get_mutable_child_map(key);
+  EXPECT_EQ(true, mut_map_result.ok());
+  mut_map_result.value()->set_peeps(9001);
+  EXPECT_EQ(9001, mut_map_result.value()->peeps());
+}
+
 TEST(CppGeneratedCode, MessageMapStringKeyAndStringValue) {
   ::hpb::Arena arena;
   auto test_model = ::hpb::CreateMessage<TestModel>(arena);
