@@ -107,7 +107,6 @@ inline void EmitFileWarning(const google::protobuf::FileDescriptor* file, Contex
       file->name());
   ctx.Emit("\n");
 }
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator {
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_HPB_CONTEXT_H__
