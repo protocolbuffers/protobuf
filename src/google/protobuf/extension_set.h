@@ -26,7 +26,7 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
+#include "base/types.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/base/prefetch.h"
