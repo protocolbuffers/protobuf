@@ -15,6 +15,17 @@ use read::Serialize;
 use std::fmt::Debug;
 use write::{Clear, ClearAndParse, MergeFrom};
 
+pub struct EnumEntity;
+pub struct MessageEntity;
+
+// Generated entities implement EntityType with the appropriate associated type.
+// For example, generated messages implement EntityType<Type = MessageEntity>.
+// This allows trait blanket implementations to delegate to code specific to
+// messages or enums.
+pub trait EntityType {
+    type Type;
+}
+
 /// A trait that all generated owned message types implement.
 pub trait Message: SealedInternal
   + MutProxied

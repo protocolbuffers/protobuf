@@ -1194,6 +1194,7 @@ class RustMapHelper {
 
   enum {
     kKeyIsString = UntypedMapBase::kKeyIsString,
+    kValueIsString = UntypedMapBase::kValueIsString,
     kValueIsProto = UntypedMapBase::kValueIsProto,
   };
 

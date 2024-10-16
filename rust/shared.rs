@@ -27,7 +27,7 @@ pub mod __public {
         interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop},
         read::Serialize,
         write::{Clear, ClearAndParse, MergeFrom},
-        Message, MessageMut, MessageView,
+        EntityType, EnumEntity, Message, MessageEntity, MessageMut, MessageView,
     };
     pub use crate::cord::{ProtoBytesCow, ProtoStringCow};
     pub use crate::r#enum::{Enum, UnknownEnumValue};
