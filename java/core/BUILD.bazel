@@ -540,3 +540,72 @@ pkg_files(
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//java:__pkg__"],
 )
+
+# Genrules to expose test gencode srcjars / jars for testing compatibility of old gencode against newer runtimes.
+genrule(
+    name = "generic_test_protos_java_proto_srcjar",
+    srcs = [
+        "//java/core:java_test_protos_java_proto",
+        "//java/core:generic_test_protos_java_proto",
+        "//java/core:lite_test_protos_java_proto",
+    ],
+    outs = [
+        "testdata/java_test_protos-speed.srcjar",
+        "testdata/generic_test_protos-speed.srcjar",
+        "testdata/lite_test_protos-speed.srcjar",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+    cmd = """
+          for location in $(locations //java/core:java_test_protos_java_proto); do
+            if [[ $$(basename $$location) == 'java_test_protos-speed-src.jar' ]]; then
+              cp $$location $(location testdata/java_test_protos-speed.srcjar);
+            fi
+          done;
+          for location in $(locations //java/core:generic_test_protos_java_proto); do
+            if [[ $$(basename $$location) == 'generic_test_protos-speed-src.jar' ]]; then
+              cp $$location $(location testdata/generic_test_protos-speed.srcjar);
+            fi
+          done;
+          for location in $(locations //java/core:lite_test_protos_java_proto); do
+            if [[ $$(basename $$location) == 'lite_test_protos-speed-src.jar' ]]; then
+              cp $$location $(location testdata/lite_test_protos-speed.srcjar);
+            fi
+          done;
+          """,
+)
+
+genrule(
+    name = "generic_test_protos_java_proto_jar",
+    srcs = [
+        "//java/core:java_test_protos_java_proto",
+        "//java/core:generic_test_protos_java_proto",
+        "//java/core:lite_test_protos_java_proto",
+    ],
+    outs = [
+        "testdata/libjava_test_protos-speed.jar",
+        "testdata/libgeneric_test_protos-speed.jar",
+        "testdata/liblite_test_protos-speed.jar",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+    cmd = """
+          for location in $(locations //java/core:java_test_protos_java_proto); do
+            if [[ $$(basename $$location) == 'libjava_test_protos-speed.jar' ]]; then
+              cp $$location $(location testdata/libjava_test_protos-speed.jar);
+            fi
+          done;
+          for location in $(locations //java/core:generic_test_protos_java_proto); do
+            if [[ $$(basename $$location) == 'libgeneric_test_protos-speed.jar' ]]; then
+              cp $$location $(location testdata/libgeneric_test_protos-speed.jar);
+            fi
+          done;
+          for location in $(locations //java/core:lite_test_protos_java_proto); do
+            if [[ $$(basename $$location) == 'liblite_test_protos-speed.jar' ]]; then
+              cp $$location $(location testdata/liblite_test_protos-speed.jar);
+            fi
+          done;
+          """,
+)
