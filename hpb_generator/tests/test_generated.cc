@@ -25,6 +25,7 @@
 #include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
 #include "google/protobuf/hpb/arena.h"
 #include "google/protobuf/hpb/backend/upb/interop.h"
+#include "google/protobuf/hpb/extension.h"
 #include "google/protobuf/hpb/hpb.h"
 #include "google/protobuf/hpb/ptr.h"
 #include "google/protobuf/hpb/repeated_field.h"
@@ -52,6 +53,7 @@ using ::hpb_unittest::protos::TestModel_Category_NEWS;
 using ::hpb_unittest::protos::TestModel_Category_VIDEO;
 using ::hpb_unittest::protos::theme;
 using ::hpb_unittest::protos::ThemeExtension;
+using ::hpb_unittest::someotherpackage::protos::int_ext;
 using ::testing::ElementsAre;
 
 TEST(CppGeneratedCode, Constructor) { TestModel test_model; }
@@ -874,6 +876,14 @@ TEST(CppGeneratedCode, GetExtension) {
   EXPECT_EQ(true, ::hpb::SetExtension(&model, theme, extension1).ok());
   EXPECT_EQ("Hello World",
             hpb::GetExtension(&model, theme).value()->ext_name());
+}
+
+TEST(CppGeneratedCode, GetExtensionScalar) {
+  TestModel model;
+  EXPECT_EQ(false, hpb::HasExtension(&model, int_ext));
+  auto res = hpb::GetExtensionNumeric(&model, int_ext);
+  EXPECT_TRUE(res.ok());
+  EXPECT_EQ(res.value(), 0);
 }
 
 TEST(CppGeneratedCode, GetExtensionOnMutableChild) {

@@ -9,6 +9,7 @@
 #define GOOGLE_PROTOBUF_HPB_INTERNAL_INTERNAL_H__
 
 #include <cstdint>
+#include <type_traits>
 
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
@@ -40,6 +41,15 @@ struct PrivateAccess {
   template <typename ExtensionId>
   static constexpr uint32_t GetExtensionNumber(const ExtensionId& id) {
     return id.number();
+  }
+
+  template <typename T>
+  static constexpr auto GetDefaultValue() {
+    if constexpr (std::is_integral<T>::value) {
+      return 0;
+    } else {
+      return -1;
+    }
   }
 };
 

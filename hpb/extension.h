@@ -12,12 +12,14 @@
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/status/statusor.h"
 #include "google/protobuf/hpb/backend/upb/interop.h"
 #include "google/protobuf/hpb/internal/message_lock.h"
 #include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/ptr.h"
 #include "google/protobuf/hpb/status.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/array.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 
@@ -227,8 +229,47 @@ template <typename T, typename Extendee, typename Extension,
           typename = hpb::internal::EnableIfHpbClass<T>>
 absl::StatusOr<Ptr<const Extension>> GetExtension(
     const T* message,
-    const ::hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
+    const hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
   return GetExtension(Ptr(message), id);
+}
+
+template <typename T>
+struct UpbExtensionTrait;
+
+template <>
+struct UpbExtensionTrait<int32_t> {
+  using ReturnType = int32_t;
+  static constexpr auto kValueMember = &upb_MessageValue::int32_val;
+};
+
+template <>
+struct UpbExtensionTrait<int64_t> {
+  using ReturnType = int64_t;
+  static constexpr auto kValueMember = &upb_MessageValue::int64_val;
+};
+
+/*
+template <typename T, typename = hpb::internal::EnableIfHpbClass<T>>
+struct UpbExtensionTrait {
+  using ReturnType = Ptr<const Extension>;
+ // static constexpr auto kValueMember = &upb_MessageValue::msg_val;
+};
+*/
+
+template <typename T, typename Extendee, typename Extension,
+          typename = hpb::internal::EnableIfHpbClass<T>>
+absl::StatusOr<typename UpbExtensionTrait<Extension>::ReturnType>
+GetExtensionNumeric(
+    const T* message,
+    const hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
+  // TODO: utilize constexpr if to overload GetExtension instead of
+  // needing Numeric suffix
+  upb_MessageValue val;
+  auto default_value =
+      hpb::internal::PrivateAccess::GetDefaultValue<Extension>();
+  _upb_Message_GetExtensionField(hpb::interop::upb::GetMessage(message),
+                                 id.mini_table_ext(), &default_value, &val);
+  return val.*UpbExtensionTrait<Extension>::kValueMember;
 }
 
 template <typename T, typename Extension>
