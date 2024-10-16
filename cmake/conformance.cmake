@@ -1,7 +1,9 @@
 # Don't run jsoncpp tests.
 set(JSONCPP_WITH_TESTS OFF)
 
-if (protobuf_FETCH_DEPENDENCIES OR protobuf_JSONCPP_PROVIDER STREQUAL "fetch")
+if (TARGET jsoncpp_lib)
+  # jsoncpp is already present.
+elseif (protobuf_FETCH_DEPENDENCIES AND protobuf_JSONCPP_PROVIDER STREQUAL "fetch")
   include(${protobuf_SOURCE_DIR}/cmake/dependencies.cmake)
   include(FetchContent)
   FetchContent_Declare(
@@ -11,17 +13,7 @@ if (protobuf_FETCH_DEPENDENCIES OR protobuf_JSONCPP_PROVIDER STREQUAL "fetch")
     GIT_TAG "1.9.4"
   )
   FetchContent_MakeAvailable(jsoncpp)
-elseif (protobuf_JSONCPP_PROVIDER STREQUAL "module")
-  if (NOT EXISTS "${protobuf_SOURCE_DIR}/third_party/jsoncpp/CMakeLists.txt")
-    message(FATAL_ERROR
-            "Cannot find third_party/jsoncpp directory that's needed to "
-            "build conformance tests. If you use git, make sure you have cloned "
-            "submodules:\n"
-            "  git submodule update --init --recursive\n"
-            "If instead you want to skip them, run cmake with:\n"
-            "  cmake -Dprotobuf_BUILD_CONFORMANCE=OFF\n")
-  endif()
-elseif(protobuf_JSONCPP_PROVIDER STREQUAL "package")
+else ()
   find_package(jsoncpp REQUIRED)
 endif()
 

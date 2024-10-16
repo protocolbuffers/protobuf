@@ -131,7 +131,7 @@ jobs:
             sccache -z;
             cmake . -DWITH_PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
             -Dprotobuf_BUILD_LIBUPB=OFF -Dprotobuf_BUILD_CONFORMANCE=ON -DCMAKE_CXX_STANDARD=14
-            -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_FETCH_DEPENDENCIES=ON ${{ env.SCCACHE_CMAKE_FLAGS }};
+            -Dprotobuf_WITH_ZLIB=OFF ${{ env.SCCACHE_CMAKE_FLAGS }};
             cmake --build . --parallel 20;
             ctest --parallel 20;
             sccache -s"
@@ -141,19 +141,19 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - flags: -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14  -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package -Dprotobuf_JSONCPP_PROVIDER=package
+          - flags: -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14  -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
           - name: Ninja
-            flags: -G Ninja -DCMAKE_CXX_STANDARD=14 -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package -Dprotobuf_JSONCPP_PROVIDER=package
+            flags: -G Ninja -DCMAKE_CXX_STANDARD=14 -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
             continuous-only: true
           - name: Shared
-            flags: -Dprotobuf_BUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14 -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package -Dprotobuf_JSONCPP_PROVIDER=package
+            flags: -Dprotobuf_BUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14 -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
             continuous-only: true
           - name: C++17
-            flags: -DCMAKE_CXX_STANDARD=17 -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package -Dprotobuf_JSONCPP_PROVIDER=package
+            flags: -DCMAKE_CXX_STANDARD=17 -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
           - name: C++20
-            flags: -DCMAKE_CXX_STANDARD=20 -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package -Dprotobuf_JSONCPP_PROVIDER=package
+            flags: -DCMAKE_CXX_STANDARD=20 -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
           - name: Fetch
-            flags: -DCMAKE_CXX_STANDARD=17 -Dprotobuf_FETCH_DEPENDENCIES=ON
+            flags: -DCMAKE_CXX_STANDARD=17
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux CMake ${{ matrix.name}}
     runs-on: ubuntu-latest
@@ -190,12 +190,11 @@ jobs:
           # Set defaults
           - type: package
             name: Install
-            flags: -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package -Dprotobuf_JSONCPP_PROVIDER=package
+            flags: -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
           - type: fetch
             name: Install (Fetch)
-            flags: -Dprotobuf_FETCH_DEPENDENCIES=ON
             continuous-only: true
-    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }}Linux CMake ${{ matrix.name }})
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }}Linux CMake ${{ matrix.name }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
@@ -255,7 +254,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.SCCACHE_CMAKE_FLAGS }}
-            -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
+            -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
             -Dprotobuf_BUILD_EXAMPLES=OFF \&\&
             mkdir examples/build \&\&
             cd examples/build \&\&
@@ -302,35 +301,10 @@ jobs:
               -c 'set -ex;
               cd /workspace;
               sccache -z;
-              cmake . ${{ matrix.flags }} ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_FETCH_DEPENDENCIES=ON;
+              cmake . ${{ matrix.flags }} ${{ env.SCCACHE_CMAKE_FLAGS }};
               cmake --build . --parallel 20;
               ctest --verbose --parallel 20;
               sccache -s'
-
-  linux-cmake-submodules:
-    name: Linux CMake Submodules
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
-        with:
-          ref: ${{ inputs.safe-checkout }}
-          submodules: recursive
-
-      - name: Setup sccache
-        uses: protocolbuffers/protobuf-ci/sccache@v3
-        with:
-          cache-prefix: linux-cmake-submodules
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-
-      - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v3
-        with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-f39fc8b4e244fe5cd4c7138d0b6959a52b46ca48
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          command: >-
-            /test.sh ${{ env.SCCACHE_CMAKE_FLAGS }}
-            -Dprotobuf_BUILD_CONFORMANCE=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
 
   linux-cmake-32-bit:
     name: Linux CMake 32-bit
@@ -357,7 +331,7 @@ jobs:
               /bin/bash -cex '
               cd /workspace;
               sccache -z;
-              cmake . -DCMAKE_CXX_STANDARD=14  -Dprotobuf_FETCH_DEPENDENCIES=ON ${{ env.SCCACHE_CMAKE_FLAGS }};
+              cmake . -DCMAKE_CXX_STANDARD=14 ${{ env.SCCACHE_CMAKE_FLAGS }};
               cmake --build . --parallel 20;
               ctest --verbose --parallel 20;
               sccache -s'
@@ -511,7 +485,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bash@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          command: cmake . ${{ matrix.install-flags }} ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON -Dprotobuf_FETCH_DEPENDENCIES=ON
+          command: cmake . ${{ matrix.install-flags }} ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON
       - name: Build for install
         if: ${{ matrix.install-flags && (!matrix.continuous-only || inputs.continuous-run) }}
         shell: bash
@@ -534,7 +508,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bash@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          command: cmake . ${{ matrix.flags }} ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON -Dprotobuf_FETCH_DEPENDENCIES=ON 
+          command: cmake . ${{ matrix.flags }} ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON
 
       - name: Build
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}

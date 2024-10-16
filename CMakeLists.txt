@@ -281,13 +281,13 @@ include_directories(
   ${protobuf_BINARY_DIR}/src
   ${protobuf_SOURCE_DIR}/src)
 
-set(protobuf_FETCH_DEPENDENCIES OFF CACHE BOOL "Download dependencies from GitHub. If this option is not set, the dependency must be available locally, either as a sub-module or an installed package.")
+set(protobuf_FETCH_DEPENDENCIES ON CACHE BOOL "Allow downloading dependencies from GitHub. If this option is not set, the dependency must be available locally as an installed package.")
 
-set(protobuf_ABSL_PROVIDER "module" CACHE STRING "Provider of absl library.  `module` uses sub-modules, `package` searches for a local installation, and `fetch` downloads from GitHub")
-set_property(CACHE protobuf_ABSL_PROVIDER PROPERTY STRINGS "module" "package" "fetch")
+set(protobuf_ABSL_PROVIDER "fetch" CACHE STRING "Provider of absl library.  `fetch` downloads from GitHub and `package` searches for a local installation")
+set_property(CACHE protobuf_ABSL_PROVIDER PROPERTY STRINGS "package" "fetch")
 
-set(protobuf_JSONCPP_PROVIDER "module" CACHE STRING "Provider of jsoncpp library.  `module` uses sub-modules, `package` searches for a local installation, and `fetch` downloads from GitHub")
-set_property(CACHE protobuf_JSONCPP_PROVIDER PROPERTY STRINGS "module" "package" "fetch")
+set(protobuf_JSONCPP_PROVIDER "fetch" CACHE STRING "Provider of jsoncpp library.  `fetch` downloads from GitHub and `package` searches for a local installation")
+set_property(CACHE protobuf_JSONCPP_PROVIDER PROPERTY STRINGS "package" "fetch")
 
 if (protobuf_BUILD_TESTS)
   include(${protobuf_SOURCE_DIR}/cmake/gtest.cmake)
