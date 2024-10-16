@@ -196,7 +196,7 @@ void ImmutableMessageFieldLiteGenerator::GenerateMembers(
   // Field.Builder clearField()
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
-                 "private void clear$capitalized_name$() {"
+                 "private void clear$capitalized_name$() {\n"
                  "  $name$_ = null;\n"
                  "  $clear_has_field_bit_message$\n"
                  "}\n");
