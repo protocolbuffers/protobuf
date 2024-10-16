@@ -338,7 +338,7 @@ bool HasRequiredFields(const Descriptor* descriptor);
 bool IsRealOneof(const FieldDescriptor* descriptor);
 
 inline bool HasHasbit(const FieldDescriptor* descriptor) {
-  return internal::cpp::HasHasbit(descriptor);
+  return descriptor->has_presence() && !descriptor->real_containing_oneof();
 }
 
 // Check whether a message has repeated fields.
