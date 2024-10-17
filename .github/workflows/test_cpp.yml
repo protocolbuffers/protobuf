@@ -402,7 +402,6 @@ jobs:
               -Dprotobuf_BUILD_EXAMPLES=ON
             vsversion: '2022'
             cache-prefix: windows-2022-cmake
-            continuous-only: true
           - name: Windows CMake 2019
             os: windows-2019
             flags: >-
@@ -454,12 +453,6 @@ jobs:
         with:
           arch: ${{ matrix.windows-arch || 'x64' }}
           vsversion: ${{ matrix.vsversion }}
-
-      # Workaround for Abseil incompatibility with CMake 3.30 (b/352354235).
-      - name: Downgrade CMake
-        if: ${{ runner.os == 'Windows' && (!matrix.continuous-only || inputs.continuous-run)}}
-        run: choco install cmake --version 3.29.6 --force
-        shell: bash
 
       # Workaround for incompatibility between gcloud and windows-2019 runners.
       - name: Install Python
