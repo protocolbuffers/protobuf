@@ -43,7 +43,7 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v3.1.1
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v3.1.1
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
@@ -84,7 +84,7 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v3.1.1
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: "Setup Python"
@@ -112,7 +112,7 @@ jobs:
     runs-on: macos-13
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v3.1.1
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: "Setup Python"
@@ -135,7 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v3.1.1
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
@@ -156,7 +156,7 @@ jobs:
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v3.1.1
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Build Wheels

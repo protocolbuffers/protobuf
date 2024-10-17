@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v3.1.1
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -53,7 +53,7 @@ jobs:
     runs-on: windows-2019
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v3.1.1
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v3.1.1
         with:
           ref: ${{ inputs.safe-checkout }}
 
