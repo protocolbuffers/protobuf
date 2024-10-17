@@ -172,7 +172,7 @@ void MutateNothingByVisit(Message& message) {
         }
       } else {
         for (auto& it : info.Mutable()) {
-          it = it;
+          it = *&it;  // Avoid -Wself-assign.
         }
       }
     } else {
@@ -207,6 +207,12 @@ TEST_P(VisitFieldsTest, MutateNothingByVisitIdempotent) {
 
 template <typename InfoT>
 inline size_t MapKeyByteSizeLong(FieldDescriptor::Type type, InfoT info) {
+  // There is a bug in GCC 9.5 where if-constexpr arguments are not understood
+  // if passed into a helper function. A reproduction of the bug can be found
+  // at: https://godbolt.org/z/65qW3vGhP
+  // This is fixed in GCC 10.1+.
+  (void)type;  // Suppress -Wunused-but-set-parameter
+
   if constexpr (info.cpp_type == FieldDescriptor::CPPTYPE_STRING) {
     return WireFormatLite::StringSize(info.Get());
   } else {
@@ -216,6 +222,12 @@ inline size_t MapKeyByteSizeLong(FieldDescriptor::Type type, InfoT info) {
 
 template <typename InfoT>
 inline size_t MapValueByteSizeLong(FieldDescriptor::Type type, InfoT info) {
+  // There is a bug in GCC 9.5 where if-constexpr arguments are not understood
+  // if passed into a helper function. A reproduction of the bug can be found
+  // at: https://godbolt.org/z/65qW3vGhP
+  // This is fixed in GCC 10.1+.
+  (void)type;  // Suppress -Wunused-but-set-parameter
+
   if constexpr (info.cpp_type == FieldDescriptor::CPPTYPE_STRING) {
     return WireFormatLite::StringSize(info.Get());
   } else if constexpr (info.cpp_type == FieldDescriptor::CPPTYPE_MESSAGE) {
