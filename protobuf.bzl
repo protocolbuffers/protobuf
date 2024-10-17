@@ -65,6 +65,9 @@ def _PyOuts(srcs, use_grpc_plugin = False):
 def _RubyOuts(srcs):
     return [s[:-len(".proto")] + "_pb.rb" for s in srcs]
 
+def _RBSOuts(srcs):
+    return [s[:-len(".proto")] + "_pb.rbs" for s in srcs]
+
 def _CsharpOuts(srcs):
     return [
         "".join([token.capitalize() for token in src[:-len(".proto")].split("_")]) + ".cs"
@@ -154,6 +157,8 @@ def _proto_gen_impl(ctx):
                 outs.extend(_PyOuts([src.basename], use_grpc_plugin = use_grpc_plugin))
             elif lang == "ruby":
                 outs.extend(_RubyOuts([src.basename]))
+            elif lang == "rbs":
+                outs.extend(_RBSOuts([src.basename]))
 
             # Otherwise, rely on user-supplied outs.
             args += [("--%s_out=" + path_tpl) % (lang, gen_dir)]
@@ -522,8 +527,6 @@ def internal_ruby_proto_library(
 
     """
 
-    # Note: we need to run the protoc build twice to get separate targets for
-    # the generated header and the source files.
     _proto_gen(
         name = name + "_genproto",
         srcs = srcs,
@@ -543,6 +546,58 @@ def internal_ruby_proto_library(
         name = name,
         srcs = [name + "_genproto"],
         deps = deps,
+        testonly = testonly,
+        visibility = visibility,
+        includes = includes,
+        **kwargs
+    )
+
+def internal_rbs_proto_library(
+        name,
+        ruby_library,
+        srcs = [],
+        deps = [],
+        includes = ["."],
+        protoc = "@com_google_protobuf//:protoc",
+        testonly = None,
+        visibility = ["//visibility:public"],
+        **kwargs):
+    """Bazel rule to create an RBS type definitions for the Ruby protobuf library
+    from proto source files
+
+    NOTE: the rule is only an internal workaround to generate protos. The
+    interface may change and the rule may be removed when bazel has introduced
+    the native rule.
+
+    Args:
+      name: the name of the ruby_proto_library.
+      srcs: the .proto files to compile.
+      deps: a list of dependency labels; must be a internal_rbs_proto_library.
+      includes: a string indicating the include path of the .proto files.
+      protoc: the label of the protocol compiler to generate the sources.
+      testonly: common rule attribute (see:
+          https://bazel.build/reference/be/common-definitions#common-attributes)
+      visibility: the visibility of the generated files.
+      **kwargs: other keyword arguments that are passed to ruby_library.
+
+    """
+
+    _proto_gen(
+        name = name + "_genproto_rbs",
+        srcs = srcs,
+        deps = [s + "_genproto_rbs" for s in deps],
+        langs = ["rbs"],
+        includes = includes,
+        protoc = protoc,
+        testonly = testonly,
+        visibility = visibility,
+        tags = ["manual"],
+    )
+
+    ruby_library(
+        name = name,
+        srcs = [name + "_genproto_rbs"],
+        deps = [],
         testonly = testonly,
         visibility = visibility,
         includes = includes,

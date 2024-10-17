@@ -209,3 +209,23 @@ jobs:
             bazel-bin/protoc --proto_path=src --proto_path=ruby/tests --proto_path=ruby --ruby_out=ruby tests/basic_test.proto;
             ${{ matrix.ffi == 'FFI' && 'PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }} ruby ruby/tests/basic.rb;
             ${{ matrix.ffi == 'FFI' && 'PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION=FFI' || '' }} ruby ruby/tests/implementation.rb
+
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v2
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run type checker
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v2
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:ruby-3.3.0-6.3.0-904cad5249547845454998ca3837a34c71fabf96
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: ruby_typecheck
+          bash:
+            bazel build //:protoc
+            cd ruby
+            cp typecheck.gemfile.lock Gemfile.lock
+            bundle exec rake steep
