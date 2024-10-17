@@ -6,6 +6,7 @@ load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//bazel:py_proto_library.bzl", "py_proto_library")
 load("//bazel:upb_proto_library.bzl", "upb_c_proto_library", "upb_proto_reflection_library")
+load("//tools/build_defs/go:go_proto_library.bzl", "go_proto_library")
 load(":defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
 
 bzl_library(
