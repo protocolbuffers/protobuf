@@ -1,6 +1,5 @@
-# Needed for java_lite_proto_library, that's using ProguardSpecProvider
-# TODO: Once the provider is ported to Starlark the flag may be removed.
-common --experimental_google_legacy_api
+# TODO: ErrorProne's SelfAssertions are violated in tests
+build --javacopt=-Xep:SelfAssertion:WARN
 
 build:dbg --compilation_mode=dbg
 
