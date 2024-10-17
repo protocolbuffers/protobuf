@@ -2757,5 +2757,52 @@ class OversizeProtosTest(unittest.TestCase):
     msg.ParseFromString(self.GenerateNestedProto(101))
 
 
+@_parameterized.named_parameters(('_proto2', unittest_pb2),
+                                ('_proto3', unittest_proto3_arena_pb2))
+class WeakRefMessageTest(unittest.TestCase):
+  def testWeakRefable(self, message_module):
+    """
+    Test that Message objects can have weakrefs created from them.
+    """
+    import weakref
+
+    message = message_module.TestAllTypes()
+    try:
+      weakref.ref(message)
+    except TypeError as e:
+      self.fail(e)
+
+  def testProperWeakRef(self, message_module):
+    """
+    Test that proper weakref semantics are implemented for Message objects, and that
+    distinct objects of the same Message class have independent weakrefs.
+    """
+    import weakref
+
+    message1 = message_module.TestAllTypes()
+    message1_1 = message1
+
+    message2 = message_module.TestAllTypes()
+
+    ref2 = weakref.ref(message2)
+
+    ref1 = weakref.ref(message1)
+
+    self.assertIs(ref1(), message1)
+
+    del message1
+
+    self.assertIs(ref1(), message1_1)
+
+    del message1_1
+
+    self.assertIsNone(ref1())
+
+    self.assertIs(ref2(), message2)
+
+    del message2
+    self.assertIsNone(ref2())
+
+
 if __name__ == '__main__':
   unittest.main()

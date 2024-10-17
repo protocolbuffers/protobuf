@@ -190,6 +190,7 @@ typedef struct PyUpb_Message {
   // name->obj dict for non-present msg/map/repeated, NULL if none.
   PyUpb_WeakMap* unset_subobj_map;
   int version;
+  PyObject* weakreflist;
 } PyUpb_Message;
 
 static PyObject* PyUpb_Message_GetAttr(PyObject* _self, PyObject* attr);
@@ -812,6 +813,10 @@ void PyUpb_Message_SetConcreteSubobj(PyObject* _self, const upb_FieldDef* f,
 
 static void PyUpb_Message_Dealloc(PyObject* _self) {
   PyUpb_Message* self = (void*)_self;
+
+  if (self->weakreflist != NULL) {
+    PyObject_ClearWeakRefs(_self);
+  }
 
   if (PyUpb_Message_IsStub(self)) {
     PyUpb_Message_CacheDelete((PyObject*)self->ptr.parent,
@@ -1866,6 +1871,8 @@ PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
   }
 
   PyObject* ret = cpython_bits.type_new(state->message_meta_type, args, NULL);
+  ((PyTypeObject*)(ret))->tp_weaklistoffset =
+      offsetof(PyUpb_Message, weakreflist);
   Py_DECREF(args);
   if (!ret) return NULL;
 
