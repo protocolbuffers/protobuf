@@ -53,15 +53,21 @@ for file in yaml_files:
       continuous_condition = 'inputs.continuous-prefix' in jobs[job]['name']
       steps = jobs[job]['steps']
       for step in steps:
+        if 'name' in step:
+          name = step['name']
+        elif 'with' in step and 'name' in step['with']:
+          name = step['with']['name']
+        else:
+          raise ValueError('Step in job %s does not have a name.' % job)
         if continuous_condition and 'continuous-run' not in step.get('if', ''):
           raise ValueError(
               'Step %s in job %s does not check the continuous-run condition'
-              % (step['name'], job)
+              % (name, job)
           )
         if not continuous_condition and 'continuous-run' in step.get('if', ''):
           raise ValueError(
               'Step %s in job %s checks the continuous-run condition but '
               'the job does not contain the continuous-prefix'
-              % (step['name'], job)
+              % (name, job)
           )
 print('PASSED: All steps in all jobs check the continuous-run condition.')
