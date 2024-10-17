@@ -74,7 +74,6 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/NewInstanceSchema.java",
     "src/main/java/com/google/protobuf/NewInstanceSchemaLite.java",
     "src/main/java/com/google/protobuf/NewInstanceSchemas.java",
-    "src/main/java/com/google/protobuf/NioByteString.java",
     "src/main/java/com/google/protobuf/OneofInfo.java",
     "src/main/java/com/google/protobuf/Parser.java",
     "src/main/java/com/google/protobuf/PrimitiveNonBoxingCollection.java",
@@ -376,6 +375,117 @@ junit_tests(
         ":generic_test_protos_java_proto",
         ":java_test_protos_java_proto",
         ":lite_test_protos_java_proto",
+        ":test_util",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+        "@maven//:org_mockito_mockito_core",
+    ],
+)
+
+junit_tests(
+    name = "head_generated_message_test",
+    size = "small",
+    srcs = [
+        "src/test/java/com/google/protobuf/GeneratedMessageTest.java",
+    ],
+    data = ["//src/google/protobuf:testdata"],
+    deps = [
+        "@com_google_protobuf_head//java/core:core",
+        ":generic_test_protos_java_proto",
+        ":java_test_protos_java_proto",
+        ":lite_test_protos_java_proto",
+        ":test_util",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+        "@maven//:org_mockito_mockito_core",
+    ],
+)
+
+junit_tests(
+    name = "head_core_tests",
+    size = "small",
+    srcs = glob(
+        ["src/test/java/**/*.java"],
+        exclude = [
+            # Exclusions from :core_tests
+            "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
+            "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
+            "src/test/java/com/google/protobuf/TestUtil.java",
+            "src/test/java/com/google/protobuf/TestUtilLite.java",
+            # Already failing on :core_tests
+            # "src/test/java/com/google/protobuf/AbstractProto2LiteSchemaTest.java",
+            # "src/test/java/com/google/protobuf/AbstractProto2SchemaTest.java",
+            # "src/test/java/com/google/protobuf/AbstractProto3LiteSchemaTest.java",
+            # "src/test/java/com/google/protobuf/AbstractProto3SchemaTest.java",
+            # "src/test/java/com/google/protobuf/AbstractSchemaTest.java",
+        ],
+    ),
+    data = ["//src/google/protobuf:testdata"],
+    deps = [
+        "@com_google_protobuf_head//java/core:core",
+        ":generic_test_protos_java_proto",
+        ":java_test_protos_java_proto",
+        ":lite_test_protos_java_proto",
+        ":test_util",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+        "@maven//:org_mockito_mockito_core",
+    ],
+)
+
+java_library(
+    name = "25.0_gencode",
+    srcs = [
+        "v25.0_gencode/src_jars/generic_test_protos-speed-src.srcjar",
+        "v25.0_gencode/src_jars/java_test_protos-speed-src.srcjar",
+        "v25.0_gencode/src_jars/lite_test_protos-speed-src.srcjar",
+        # Don't include WKT from 25.x, due to bin incompatibility
+        #"v25.0_gencode/src_jars/any_proto-speed-src.srcjar",
+        # "v25.0_gencode/src_jars/api_proto-speed-src.srcjar",
+        # "v25.0_gencode/src_jars/descriptor_proto-speed-src.srcjar",
+        # "v25.0_gencode/src_jars/duration_proto-speed-src.srcjar",
+        # "v25.0_gencode/src_jars/empty_proto-speed-src.srcjar",
+        # "v25.0_gencode/src_jars/field_mask_proto-speed-src.srcjar",
+        # "v25.0_gencode/src_jars/source_context_proto-speed-src.srcjar",
+        # "v25.0_gencode/src_jars/struct_proto-speed-src.srcjar",
+        # "v25.0_gencode/src_jars/timestamp_proto-speed-src.srcjar",
+        # "v25.0_gencode/src_jars/type_proto-speed-src.srcjar",
+        # "v25.0_gencode/src_jars/wrappers_proto-speed-src.srcjar",
+    ],
+    deps = ["//java/core:core"],
+)
+
+junit_tests(
+    name = "head_generated_message_test_srcjars",
+    size = "small",
+    srcs = [
+        "src/test/java/com/google/protobuf/GeneratedMessageTest.java",
+    ],
+    data = ["//src/google/protobuf:testdata"],
+    deps = [
+        "@com_google_protobuf_head//java/core:core",
+        ":25.0_gencode",
+        ":test_util",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+        "@maven//:org_mockito_mockito_core",
+    ],
+)
+
+junit_tests(
+    name = "head_generated_message_test_binjars",
+    size = "small",
+    srcs = [
+        "src/test/java/com/google/protobuf/GeneratedMessageTest.java",
+    ],
+    data = ["//src/google/protobuf:testdata"],
+    deps = [
+        "@com_google_protobuf_head//java/core:core",
+        ":lib25.0_gencode.jar",
         ":test_util",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_truth_truth",
