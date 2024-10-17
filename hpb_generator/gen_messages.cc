@@ -22,6 +22,7 @@
 #include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/names.h"
 #include "google/protobuf/descriptor.h"
+#include "upb_generator/c/names.h"
 #include "upb_generator/minitable/names.h"
 
 namespace google::protobuf::hpb_generator {
@@ -101,7 +102,8 @@ void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
             assert(arena != nullptr);
           }  // NOLINT
       )cc",
-      ClassName(descriptor), MessageName(descriptor));
+      ClassName(descriptor),
+      upb::generator::CApiMessageType(descriptor->full_name()));
   WriteFieldAccessorsInHeader(descriptor, ctx);
   WriteOneofAccessorsInHeader(descriptor, ctx);
   ctx.EmitLegacy(
@@ -114,7 +116,8 @@ void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
         $1* msg_;
         upb_Arena* arena_;
       )cc",
-      ClassName(descriptor), MessageName(descriptor),
+      ClassName(descriptor),
+      upb::generator::CApiMessageType(descriptor->full_name()),
       QualifiedClassName(descriptor));
   ctx.Emit("};\n");
 }
@@ -203,7 +206,8 @@ void WriteModelPublicDeclaration(
       )cc",
       ClassName(descriptor),
       ::upb::generator::MiniTableMessageVarName(descriptor->full_name()),
-      MessageName(descriptor), QualifiedClassName(descriptor));
+      upb::generator::CApiMessageType(descriptor->full_name()),
+      QualifiedClassName(descriptor));
 
   WriteUsingAccessorsInHeader(descriptor, MessageClassType::kMessage, ctx);
   WriteUsingEnumsInHeader(descriptor, file_enums, ctx);
@@ -252,7 +256,8 @@ void WriteModelPublicDeclaration(
         friend $0(hpb::interop::upb::MoveMessage<$0>(upb_Message* msg,
                                                      upb_Arena* arena));
       )cc",
-      ClassName(descriptor), MessageName(descriptor),
+      ClassName(descriptor),
+      upb::generator::CApiMessageType(descriptor->full_name()),
       QualifiedClassName(descriptor));
   ctx.Emit("};\n\n");
 }
@@ -312,7 +317,8 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
           lhs.arena_ = rhs.arena_;
         }
       )cc",
-      ClassName(descriptor), MessageName(descriptor),
+      ClassName(descriptor),
+      upb::generator::CApiMessageType(descriptor->full_name()),
       QualifiedClassName(descriptor));
   ctx.Emit("};\n\n");
 }
@@ -329,7 +335,8 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
               : internal::$0Access(m->msg_, hpb::interop::upb::GetArena(m)) {}
           $0CProxy($0Proxy m);
       )cc",
-      ClassName(descriptor), MessageName(descriptor));
+      ClassName(descriptor),
+      upb::generator::CApiMessageType(descriptor->full_name()));
 
   WriteUsingAccessorsInHeader(descriptor, MessageClassType::kMessageCProxy,
                               ctx);
@@ -358,7 +365,8 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
           lhs.arena_ = rhs.arena_;
         }
       )cc",
-      ClassName(descriptor), MessageName(descriptor));
+      ClassName(descriptor),
+      upb::generator::CApiMessageType(descriptor->full_name()));
   ctx.Emit("};\n\n");
 }
 
@@ -407,7 +415,8 @@ void WriteMessageImplementation(
             return *this;
           }
         )cc",
-        ClassName(descriptor), MessageName(descriptor),
+        ClassName(descriptor),
+        upb::generator::CApiMessageType(descriptor->full_name()),
         ::upb::generator::MiniTableMessageVarName(descriptor->full_name()),
         QualifiedClassName(descriptor));
     ctx.Emit("\n");
@@ -436,7 +445,8 @@ void WriteMessageImplementation(
           }
           $0DefaultTypeInternal _$0_default_instance_ = _$0DefaultTypeBuilder();
         )cc",
-        ClassName(descriptor), MessageName(descriptor));
+        ClassName(descriptor),
+        upb::generator::CApiMessageType(descriptor->full_name()));
 
     ctx.EmitLegacy(
         R"cc(

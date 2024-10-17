@@ -8,7 +8,6 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_HPB_CONTEXT_H__
 #define GOOGLE_PROTOBUF_COMPILER_HPB_CONTEXT_H__
 
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -80,10 +79,6 @@ class Context final {
 };
 
 // TODO: b/373438292 - re-house these 4 legacy funcs post io::Printer move
-inline std::string MessageName(const google::protobuf::Descriptor* descriptor) {
-  return upb::generator::CApiMessageType(descriptor->full_name());
-}
-
 inline std::string ToCIdent(absl::string_view str) {
   return absl::StrReplaceAll(str, {{".", "_"}, {"/", "_"}, {"-", "_"}});
 }
