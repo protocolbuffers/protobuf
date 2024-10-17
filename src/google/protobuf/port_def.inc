@@ -674,6 +674,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 // ThreadSafeArenaz is turned off completely in opensource builds.
 
+
 // noreturn is defined as a macro in C's stdnoreturn.h
 #ifdef noreturn
 #define PROTOBUF_DID_UNDEF_noreturn
