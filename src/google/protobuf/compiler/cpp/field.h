@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -35,17 +12,21 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_FIELD_H__
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <vector>
 
-#include "google/protobuf/descriptor.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -56,19 +37,81 @@ namespace cpp {
 // Customization points for each field codegen type. See FieldGenerator to
 // see how each of these functions is used.
 //
-// TODO(b/245791219): Make every function except the dtor in this generator
+// TODO: Make every function except the dtor in this generator
 // non-pure-virtual. A generator with no implementation should be able to
 // automatically not contribute any code to the message it is part of, as a
 // matter of clean composability.
 class FieldGeneratorBase {
  public:
-  FieldGeneratorBase(const FieldDescriptor* descriptor, const Options& options)
-      : descriptor_(descriptor), options_(options) {}
+  // `GeneratorFunction` defines a subset of generator functions that may have
+  // additional optimizations or requirements such as 'uses a local `arena`
+  // variable instead of calling GetArena()'
+  enum class GeneratorFunction { kMergeFrom };
+
+  FieldGeneratorBase(const FieldDescriptor* field, const Options& options,
+                     MessageSCCAnalyzer* scc_analyzer);
 
   FieldGeneratorBase(const FieldGeneratorBase&) = delete;
   FieldGeneratorBase& operator=(const FieldGeneratorBase&) = delete;
 
   virtual ~FieldGeneratorBase() = 0;
+
+  // Returns true if this field should be placed in the cold 'Split' section.
+  bool should_split() const { return should_split_; }
+
+  // Returns true if this field is trivial. (int, float, double, enum, bool)
+  bool is_trivial() const { return is_trivial_; }
+
+  // Returns true if the field value itself is trivial, i.e., the field is
+  // trivial, or a (raw) pointer value to a singular, non lazy message.
+  bool has_trivial_value() const { return has_trivial_value_; }
+
+  // Returns true if the provided field has a trivial zero default.
+  // I.e., the field can be initialized with `memset(&field, 0, sizeof(field))`
+  bool has_trivial_zero_default() const { return has_trivial_zero_default_; }
+
+  // Returns true if the provided field can be initialized with `= {}`.
+  bool has_brace_default_assign() const { return has_brace_default_assign_; }
+
+  // Returns true if the field is a singular or repeated message.
+  // This includes group message types. To explicitly check if a message
+  // type is a group type, use the `is_group()` function,
+  bool is_message() const { return is_message_; }
+
+  // Returns true if the field is a group message field (TYPE_GROUP).
+  bool is_group() const { return is_group_; }
+
+  // Returns true if the field is a weak message
+  bool is_weak() const { return is_weak_; }
+
+  // Returns true if the field is a lazy message.
+  bool is_lazy() const { return is_lazy_; }
+
+  // Returns true if the field is a foreign message field.
+  bool is_foreign() const { return is_foreign_; }
+
+  // Returns true if the field is a string field.
+  bool is_string() const { return is_string_; }
+
+  // Returns true if the field API uses bytes (void) instead of chars.
+  bool is_bytes() const { return is_bytes_; }
+
+  // Returns true if this field is part of a oneof field.
+  bool is_oneof() const { return is_oneof_; }
+
+  // Returns true if the field should be inlined instead of dynamically
+  // allocated. Applies to string and message value.
+  bool is_inlined() const { return is_inlined_; }
+
+  // Returns true if this field has an appropriate default constexpr
+  // constructor. i.e., there is no need for an explicit initializer.
+  bool has_default_constexpr_constructor() const {
+    return has_default_constexpr_constructor_;
+  }
+
+  // Returns true if this generator requires an 'arena' parameter on the
+  // given generator function.
+  virtual bool RequiresArena(GeneratorFunction) const { return false; }
 
   virtual std::vector<io::Printer::Sub> MakeVars() const { return {}; }
 
@@ -81,10 +124,6 @@ class FieldGeneratorBase {
   virtual void GenerateInlineAccessorDefinitions(io::Printer* p) const = 0;
 
   virtual void GenerateNonInlineAccessorDefinitions(io::Printer* p) const {}
-
-  virtual void GenerateInternalAccessorDefinitions(io::Printer* p) const {}
-
-  virtual void GenerateInternalAccessorDeclarations(io::Printer* p) const {}
 
   virtual void GenerateClearingCode(io::Printer* p) const = 0;
 
@@ -104,8 +143,34 @@ class FieldGeneratorBase {
 
   virtual void GenerateArenaDestructorCode(io::Printer* p) const {
     ABSL_CHECK(NeedsArenaDestructor() == ArenaDtorNeeds::kNone)
-        << descriptor_->cpp_type_name();
+        << field_->cpp_type_name();
   }
+
+  // Generates constexpr member initialization code, e.g.: `foo_{5}`.
+  // The default implementation generates the following code:
+  // - repeated fields and maps: `field_{}`
+  // - all other fields: `field_{<default value>}`
+  virtual void GenerateMemberConstexprConstructor(io::Printer* p) const;
+
+  // Generates member initialization code, e.g.: `foo_(5)`.
+  // The default implementation generates the following code:
+  // - repeated fields and maps: `field_{visibility, arena}`
+  // - split repeated fields (RawPtr): `field_{}`
+  // - all other fields: `field_{<default value>}`
+  virtual void GenerateMemberConstructor(io::Printer* p) const;
+
+  // Generates member copy initialization code, e.g.: `foo_(5)`.
+  // The default implementation generates the following code:
+  // - repeated fields and maps: `field_{visibility, arena, from.field_}`
+  // - all other fields: `field_{from.field_}`
+  virtual void GenerateMemberCopyConstructor(io::Printer* p) const;
+
+  // Generates 'placement new' copy construction code used to
+  // explicitly copy initialize oneof field values.
+  // The default implementation checks the current field to not be repeated,
+  // an extension or a map, and generates the following code:
+  // - `field_ = from.field_`
+  virtual void GenerateOneofCopyConstruct(io::Printer* p) const;
 
   virtual void GenerateAggregateInitializer(io::Printer* p) const;
 
@@ -118,9 +183,10 @@ class FieldGeneratorBase {
 
   virtual void GenerateByteSize(io::Printer* p) const = 0;
 
-  virtual void GenerateIsInitialized(io::Printer* p) const {}
-
-  virtual void GenerateIfHasField(io::Printer* p) const;
+  virtual void GenerateIsInitialized(io::Printer* p) const {
+    ABSL_CHECK(!NeedsIsInitialized());
+  }
+  virtual bool NeedsIsInitialized() const { return false; }
 
   virtual bool IsInlined() const { return false; }
 
@@ -129,10 +195,29 @@ class FieldGeneratorBase {
   }
 
  protected:
-  // TODO(b/245791219): Remove these members and make this a pure interface.
-  const FieldDescriptor* descriptor_;
+  const FieldDescriptor* field_;
   const Options& options_;
+  MessageSCCAnalyzer* scc_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
+
+  pb::CppFeatures::StringType GetDeclaredStringType() const;
+
+ private:
+  bool should_split_ = false;
+  bool is_trivial_ = false;
+  bool has_trivial_value_ = false;
+  bool has_trivial_zero_default_ = false;
+  bool has_brace_default_assign_ = false;
+  bool is_message_ = false;
+  bool is_group_ = false;
+  bool is_string_ = false;
+  bool is_bytes_ = false;
+  bool is_inlined_ = false;
+  bool is_foreign_ = false;
+  bool is_lazy_ = false;
+  bool is_weak_ = false;
+  bool is_oneof_ = false;
+  bool has_default_constexpr_constructor_ = false;
 };
 
 inline FieldGeneratorBase::~FieldGeneratorBase() = default;
@@ -159,10 +244,42 @@ class FieldGenerator {
   }
 
  public:
+  using GeneratorFunction = FieldGeneratorBase::GeneratorFunction;
+
   FieldGenerator(const FieldGenerator&) = delete;
   FieldGenerator& operator=(const FieldGenerator&) = delete;
   FieldGenerator(FieldGenerator&&) = default;
   FieldGenerator& operator=(FieldGenerator&&) = default;
+
+  // Properties: see FieldGeneratorBase for documentation
+  bool should_split() const { return impl_->should_split(); }
+  bool is_trivial() const { return impl_->is_trivial(); }
+  // Returns true if the field has trivial copy construction.
+  bool has_trivial_copy() const { return is_trivial(); }
+  bool has_trivial_value() const { return impl_->has_trivial_value(); }
+  bool has_trivial_zero_default() const {
+    return impl_->has_trivial_zero_default();
+  }
+  bool has_brace_default_assign() const {
+    return impl_->has_brace_default_assign();
+  }
+  bool is_message() const { return impl_->is_message(); }
+  bool is_group() const { return impl_->is_group(); }
+  bool is_weak() const { return impl_->is_weak(); }
+  bool is_lazy() const { return impl_->is_lazy(); }
+  bool is_foreign() const { return impl_->is_foreign(); }
+  bool is_string() const { return impl_->is_string(); }
+  bool is_bytes() const { return impl_->is_bytes(); }
+  bool is_oneof() const { return impl_->is_oneof(); }
+  bool is_inlined() const { return impl_->is_inlined(); }
+  bool has_default_constexpr_constructor() const {
+    return impl_->has_default_constexpr_constructor();
+  }
+
+  // Requirements: see FieldGeneratorBase for documentation
+  bool RequiresArena(GeneratorFunction function) const {
+    return impl_->RequiresArena(function);
+  }
 
   // Prints private members needed to represent this field.
   //
@@ -178,6 +295,26 @@ class FieldGenerator {
   void GenerateStaticMembers(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateStaticMembers(p);
+  }
+
+  void GenerateMemberConstructor(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateMemberConstructor(p);
+  }
+
+  void GenerateMemberCopyConstructor(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateMemberCopyConstructor(p);
+  }
+
+  void GenerateOneofCopyConstruct(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateOneofCopyConstruct(p);
+  }
+
+  void GenerateMemberConstexprConstructor(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateMemberConstexprConstructor(p);
   }
 
   // Generates declarations for all of the accessor functions related to this
@@ -204,18 +341,6 @@ class FieldGenerator {
   void GenerateNonInlineAccessorDefinitions(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateNonInlineAccessorDefinitions(p);
-  }
-
-  // Generates declarations of accessors that are for internal purposes only.
-  void GenerateInternalAccessorDefinitions(io::Printer* p) const {
-    auto vars = PushVarsForCall(p);
-    impl_->GenerateInternalAccessorDefinitions(p);
-  }
-
-  // Generates definitions of accessors that are for internal purposes only.
-  void GenerateInternalAccessorDeclarations(io::Printer* p) const {
-    auto vars = PushVarsForCall(p);
-    impl_->GenerateInternalAccessorDeclarations(p);
   }
 
   // Generates statements which clear the field.
@@ -252,7 +377,7 @@ class FieldGenerator {
 
   // Generates a copy constructor
   //
-  // TODO(b/245791219): Document this properly.
+  // TODO: Document this properly.
   void GenerateCopyConstructorCode(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateCopyConstructorCode(p);
@@ -359,16 +484,12 @@ class FieldGenerator {
     impl_->GenerateIsInitialized(p);
   }
 
-  // TODO(b/245791219): Document this properly.
-  void GenerateIfHasField(io::Printer* p) const {
-    auto vars = PushVarsForCall(p);
-    impl_->GenerateIfHasField(p);
-  }
+  bool NeedsIsInitialized() const { return impl_->NeedsIsInitialized(); }
 
-  // TODO(b/245791219): Document this properly.
+  // TODO: Document this properly.
   bool IsInlined() const { return impl_->IsInlined(); }
 
-  // TODO(b/245791219): Document this properly.
+  // TODO: Document this properly.
   ArenaDtorNeeds NeedsArenaDestructor() const {
     return impl_->NeedsArenaDestructor();
   }
@@ -401,7 +522,8 @@ class FieldGeneratorTable {
 
   const FieldGenerator& get(const FieldDescriptor* field) const {
     ABSL_CHECK_EQ(field->containing_type(), descriptor_);
-    return fields_[field->index()];
+    ABSL_DCHECK_GE(field->index(), 0);
+    return fields_[static_cast<size_t>(field->index())];
   }
 
  private:
@@ -411,7 +533,7 @@ class FieldGeneratorTable {
 
 // Returns variables common to all fields.
 //
-// TODO(b/245791219): Make this function .cc-private.
+// TODO: Make this function .cc-private.
 std::vector<io::Printer::Sub> FieldVars(const FieldDescriptor* field,
                                         const Options& opts);
 }  // namespace cpp

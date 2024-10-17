@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 // emulates google3/testing/base/public/googletest.cc
@@ -45,6 +22,8 @@
 #include "absl/strings/str_replace.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/testing/file.h"
+#include <gtest/gtest.h>
+
 #ifdef _MSC_VER
 // #include <direct.h>
 #else
@@ -84,7 +63,7 @@ std::string TestSourceDir() {
 #ifndef _MSC_VER
   // automake sets the "srcdir" environment variable.
   char* result = getenv("srcdir");
-  if (result != NULL) {
+  if (result != nullptr) {
     return result;
   }
 #endif  // _MSC_VER
@@ -116,45 +95,8 @@ std::string TestSourceDir() {
 namespace {
 
 std::string GetTemporaryDirectoryName() {
-  // Tests run under Bazel "should not" use /tmp. Bazel sets this environment
-  // variable for tests to use instead.
-  char* from_environment = getenv("TEST_TMPDIR");
-  if (from_environment != NULL && from_environment[0] != '\0') {
-    return absl::StrCat(from_environment, "/protobuf_tmpdir");
-  }
-
-  // tmpnam() is generally not considered safe but we're only using it for
-  // testing.  We cannot use tmpfile() or mkstemp() since we're creating a
-  // directory.
-  char b[L_tmpnam + 1];     // HPUX multithread return 0 if s is 0
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  std::string result = tmpnam(b);
-#pragma GCC diagnostic pop
+  std::string result = absl::StrCat(testing::TempDir(), "protobuf_tempdir");
 #ifdef _WIN32
-  // Avoid a trailing dot by changing it to an underscore. On Win32 the names of
-  // files and directories can, but should not, end with dot.
-  //
-  // In MS-DOS and FAT16 filesystem the filenames were 8dot3 style so it didn't
-  // make sense to have a name ending in dot without an extension, so the shell
-  // silently ignored trailing dots. To this day the Win32 API still maintains
-  // this behavior and silently ignores trailing dots in path arguments of
-  // functions such as CreateFile{A,W}. Even POSIX API function implementations
-  // seem to wrap the Win32 API functions (e.g. CreateDirectoryA) and behave
-  // this way.
-  // It's possible to avoid this behavior and create files / directories with
-  // trailing dots (using CreateFileW / CreateDirectoryW and prefixing the path
-  // with "\\?\") but these will be degenerate in the sense that you cannot
-  // chdir into such directories (or navigate into them with Windows Explorer)
-  // nor can you open such files with some programs (e.g. Notepad).
-  if (result[result.size() - 1] == '.') {
-    result[result.size() - 1] = '_';
-  }
-  // On Win32, tmpnam() returns a file prefixed with '\', but which is supposed
-  // to be used in the current working directory.  WTF?
-  if (absl::StartsWith(result, "\\")) {
-    result.erase(0, 1);
-  }
   // The Win32 API accepts forward slashes as a path delimiter as long as the
   // path doesn't use the "\\?\" prefix.
   // Let's avoid confusion and use only forward slashes.
@@ -170,7 +112,7 @@ class TempDirDeleter {
   TempDirDeleter() {}
   ~TempDirDeleter() {
     if (!name_.empty()) {
-      File::DeleteRecursively(name_, NULL, NULL);
+      File::DeleteRecursively(name_, nullptr, nullptr);
     }
   }
 
@@ -197,7 +139,7 @@ TempDirDeleter temp_dir_deleter_;
 
 std::string TestTempDir() { return temp_dir_deleter_.GetTempDir(); }
 
-// TODO(kenton):  Share duplicated code below.  Too busy/lazy for now.
+// TODO:  Share duplicated code below.  Too busy/lazy for now.
 
 static std::string stdout_capture_filename_;
 static std::string stderr_capture_filename_;
@@ -239,6 +181,7 @@ std::string GetCapturedTestStdout() {
 
   close(1);
   dup2(original_stdout_, 1);
+  close(original_stdout_);
   original_stdout_ = -1;
 
   std::string result;
@@ -254,6 +197,7 @@ std::string GetCapturedTestStderr() {
 
   close(2);
   dup2(original_stderr_, 2);
+  close(original_stderr_);
   original_stderr_ = -1;
 
   std::string result;

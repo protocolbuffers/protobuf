@@ -1,35 +1,14 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/objectivec/generator.h"
 
+#include <cstddef>
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -38,12 +17,18 @@
 #include <vector>
 
 #include "absl/container/flat_hash_set.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/objectivec/file.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/compiler/objectivec/options.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
@@ -78,8 +63,6 @@ std::string NumberedObjCMFileName(absl::string_view basename, int number) {
 }
 
 }  // namespace
-
-bool ObjectiveCGenerator::HasGenerateAll() const { return true; }
 
 bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
                                    const std::string& parameter,
@@ -258,6 +241,33 @@ bool ObjectiveCGenerator::GenerateAll(
             options[i].second);
         return false;
       }
+    } else if (options[i].first == "strip_custom_options") {
+      // Controls if extensions that define custom options are included the
+      // generated code. Since ObjC protos does not capture these descriptor
+      // options, there normally isn't a need for these extensions. Docs on
+      // custom options:
+      //   https://protobuf.dev/programming-guides/proto2/#customoptions
+      if (!StringToBool(options[i].second,
+                        &generation_options.strip_custom_options)) {
+        *error = absl::StrCat("error: Unknown value for strip_custom_options: ",
+                              options[i].second);
+        return false;
+      }
+    } else if (options[i].first == "generate_minimal_imports") {
+      // Controls if minimal imports should be generated from a files imports.
+      // Since custom options require imports, they current cause generated
+      // imports even though there is nothing captured in the generated code,
+      // this provides smaller imports only for the things referenced. This
+      // could break code in complex cases where code uses types via long
+      // import chains with public imports mixed through the way, as things
+      // that aren't really needed for the local usages could be pruned.
+      if (!StringToBool(options[i].second,
+                        &generation_options.generate_minimal_imports)) {
+        *error =
+            absl::StrCat("error: Unknown value for generate_minimal_imports: ",
+                         options[i].second);
+        return false;
+      }
     } else if (options[i].first == "experimental_multi_source_generation") {
       // This is an experimental option, and could be removed or change at any
       // time; it is not documented in the README.md for that reason.
@@ -274,6 +284,16 @@ bool ObjectiveCGenerator::GenerateAll(
             options[i].second);
         return false;
       }
+    } else if (options[i].first == "experimental_strip_nonfunctional_codegen") {
+      if (!StringToBool(
+              options[i].second,
+              &generation_options.experimental_strip_nonfunctional_codegen)) {
+        *error = absl::StrCat(
+            "error: Unknown value for "
+            "experimental_strip_nonfunctional_codegen: ",
+            options[i].second);
+        return false;
+      }
     } else {
       *error =
           absl::StrCat("error: Unknown generator option: ", options[i].first);
@@ -281,10 +301,66 @@ bool ObjectiveCGenerator::GenerateAll(
     }
   }
 
-  // Multi source generation forces off the use of fwd decls in favor of
-  // imports.
+  // Multi source generation forces:
+  // - off the use of fwd decls in favor of imports
+  // - on the minimal imports support
   if (generation_options.experimental_multi_source_generation) {
     generation_options.headers_use_forward_declarations = false;
+    generation_options.generate_minimal_imports = true;
+  }
+  if (generation_options.experimental_strip_nonfunctional_codegen) {
+    generation_options.generate_minimal_imports = true;
+  }
+
+  // -----------------------------------------------------------------
+
+  // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
+  // error cases, so it seems to be ok to use as a back door for warnings.
+
+  // This is a way to turn off these warnings, the intent is that if you find
+  // this then you also did as asked and filed an issue so the need for the
+  // generation option is known. But it allows you to keep your builds quiet
+  // after opening the issue. The value of the environment variable should be
+  // a comma separated list of the names of the options to suppress their usage
+  // warning.
+  char* options_warnings_suppressions_cstr =
+      getenv("GPB_OBJC_SUPPRESS_DEPRECATED_OPTIONS_WARNINGS");
+  const absl::string_view options_warnings_suppressions =
+      options_warnings_suppressions_cstr != nullptr
+          ? options_warnings_suppressions_cstr
+          : "";
+  if (generation_options.headers_use_forward_declarations &&
+      !absl::StrContains(options_warnings_suppressions,
+                         "headers_use_forward_declarations")) {
+    std::cerr << "WARNING: headers_use_forward_declarations is enabled, this "
+                 "is deprecated and will be removed in the future. If you have "
+                 "a need for enabling it please file an issue at "
+                 "https://github.com/protocolbuffers/protobuf/issues with "
+                 "your use case."
+              << std::endl;
+    std::cerr.flush();
+  }
+  if (!generation_options.generate_minimal_imports &&
+      !absl::StrContains(options_warnings_suppressions,
+                         "generate_minimal_imports")) {
+    std::cerr << "WARNING: generate_minimal_imports is disabled, this is "
+                 "deprecated and will be removed in the future. If you have a "
+                 "need for disabling it please file an issue at "
+                 "https://github.com/protocolbuffers/protobuf/issues with "
+                 "your use case."
+              << std::endl;
+    std::cerr.flush();
+  }
+  if (!generation_options.strip_custom_options &&
+      !absl::StrContains(options_warnings_suppressions,
+                         "strip_custom_options")) {
+    std::cerr << "WARNING: strip_custom_options is disabled, this is deprecated"
+                 "and will be removed in the future. If you have a need for "
+                 "disabling it please file an issue at "
+                 "https://github.com/protocolbuffers/protobuf/issues with "
+                 "your use case."
+              << std::endl;
+    std::cerr.flush();
   }
 
   // -----------------------------------------------------------------
@@ -314,9 +390,10 @@ bool ObjectiveCGenerator::GenerateAll(
     return false;
   }
 
-  FileGenerator::CommonState state;
+  FileGenerator::CommonState state(!generation_options.strip_custom_options);
   for (const auto& file : files) {
-    const FileGenerator file_generator(file, generation_options, state);
+    const FileGenerator file_generator(GetEdition(*file), file,
+                                       generation_options, state);
     std::string filepath = FilePath(file);
 
     // Generate header.
@@ -391,7 +468,7 @@ bool ObjectiveCGenerator::GenerateAll(
         }
       }
     }  // if (!headers_only && skip_impls.count(file->name()) == 0)
-  }    // for(file : files)
+  }  // for(file : files)
 
   return true;
 }

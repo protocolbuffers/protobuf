@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // This file contains declarations needed in generated headers for messages
 // that use tail-call table parsing. Everything in this file is for internal
@@ -41,8 +18,12 @@
 #include <cstdint>
 #include <type_traits>
 
+#include "absl/log/absl_check.h"
+#include "absl/types/span.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 
 // Must come last:
 #include "google/protobuf/port_def.inc"
@@ -149,7 +130,7 @@ struct TcFieldData {
 struct TcParseTableBase;
 
 // TailCallParseFunc is the function pointer type used in the tailcall table.
-typedef const char* (*TailCallParseFunc)(PROTOBUF_TC_PARAM_DECL);
+typedef PROTOBUF_CC const char* (*TailCallParseFunc)(PROTOBUF_TC_PARAM_DECL);
 
 namespace field_layout {
 struct Offset {
@@ -164,6 +145,7 @@ struct Offset {
 #endif
 
 struct FieldAuxDefaultMessage {};
+struct FieldAuxEnumData {};
 
 // Small type card used by mini parse to handle map entries.
 // Map key/values are very limited, so we can encode the whole thing in a single
@@ -257,8 +239,9 @@ constexpr MapTypeCard MakeMapTypeCard(WireFormatLite::FieldType type) {
       return {WireFormatLite::WIRETYPE_LENGTH_DELIMITED, MapTypeCard::kMessage,
               false, false};
 
+    case WireFormatLite::TYPE_GROUP:
     default:
-      PROTOBUF_ASSUME(false);
+      Unreachable();
   }
 }
 
@@ -292,6 +275,10 @@ struct alignas(uint64_t) TcParseTableBase {
   uint16_t extension_offset;
   uint32_t max_field_number;
   uint8_t fast_idx_mask;
+  // Testing one bit is cheaper than testing whether post_loop_handler is null,
+  // and we expect it to be null most of the time so no reason to load the
+  // pointer.
+  uint8_t has_post_loop_handler : 1;
   uint16_t lookup_table_offset;
   uint32_t skipmap32;
   uint32_t field_entries_offset;
@@ -300,35 +287,59 @@ struct alignas(uint64_t) TcParseTableBase {
   uint16_t num_aux_entries;
   uint32_t aux_offset;
 
-  const MessageLite* default_instance;
+  const ClassData* class_data;
+  using PostLoopHandler = const char* (*)(MessageLite* msg, const char* ptr,
+                                          ParseContext* ctx);
+  PostLoopHandler post_loop_handler;
 
   // Handler for fields which are not handled by table dispatch.
   TailCallParseFunc fallback;
+
+  // A sub message's table to be prefetched.
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+  const TcParseTableBase* to_prefetch;
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
 
   // This constructor exactly follows the field layout, so it's technically
   // not necessary.  However, it makes it much much easier to add or re-arrange
   // fields, because it can be overloaded with an additional constructor,
   // temporarily allowing both old and new protocol buffer headers to be
   // compiled.
-  constexpr TcParseTableBase(
-      uint16_t has_bits_offset, uint16_t extension_offset,
-      uint32_t max_field_number, uint8_t fast_idx_mask,
-      uint16_t lookup_table_offset, uint32_t skipmap32,
-      uint32_t field_entries_offset, uint16_t num_field_entries,
-      uint16_t num_aux_entries, uint32_t aux_offset,
-      const MessageLite* default_instance, TailCallParseFunc fallback)
+  constexpr TcParseTableBase(uint16_t has_bits_offset,
+                             uint16_t extension_offset,
+                             uint32_t max_field_number, uint8_t fast_idx_mask,
+                             uint16_t lookup_table_offset, uint32_t skipmap32,
+                             uint32_t field_entries_offset,
+                             uint16_t num_field_entries,
+                             uint16_t num_aux_entries, uint32_t aux_offset,
+                             const ClassData* class_data,
+                             PostLoopHandler post_loop_handler,
+                             TailCallParseFunc fallback
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+                             ,
+                             const TcParseTableBase* to_prefetch
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+                             )
       : has_bits_offset(has_bits_offset),
         extension_offset(extension_offset),
         max_field_number(max_field_number),
         fast_idx_mask(fast_idx_mask),
+        has_post_loop_handler(post_loop_handler != nullptr),
         lookup_table_offset(lookup_table_offset),
         skipmap32(skipmap32),
         field_entries_offset(field_entries_offset),
         num_field_entries(num_field_entries),
         num_aux_entries(num_aux_entries),
         aux_offset(aux_offset),
-        default_instance(default_instance),
-        fallback(fallback) {}
+        class_data(class_data),
+        post_loop_handler(post_loop_handler),
+        fallback(fallback)
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+        ,
+        to_prefetch(to_prefetch)
+#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+  {
+  }
 
   // Table entry for fast-path tailcall dispatch handling.
   struct FastFieldEntry {
@@ -396,6 +407,9 @@ struct alignas(uint64_t) TcParseTableBase {
     return reinterpret_cast<const FieldEntry*>(
         reinterpret_cast<uintptr_t>(this) + field_entries_offset);
   }
+  absl::Span<const FieldEntry> field_entries() const {
+    return {field_entries_begin(), num_field_entries};
+  }
   FieldEntry* field_entries_begin() {
     return reinterpret_cast<FieldEntry*>(reinterpret_cast<uintptr_t>(this) +
                                          field_entries_offset);
@@ -404,8 +418,8 @@ struct alignas(uint64_t) TcParseTableBase {
   // Auxiliary entries for field types that need extra information.
   union FieldAux {
     constexpr FieldAux() : message_default_p(nullptr) {}
-    constexpr FieldAux(bool (*enum_validator)(int))
-        : enum_validator(enum_validator) {}
+    constexpr FieldAux(FieldAuxEnumData, const uint32_t* enum_data)
+        : enum_data(enum_data) {}
     constexpr FieldAux(field_layout::Offset off) : offset(off.off) {}
     constexpr FieldAux(int16_t range_start, uint16_t range_length)
         : enum_range{range_start, range_length} {}
@@ -414,20 +428,17 @@ struct alignas(uint64_t) TcParseTableBase {
         : message_default_p(msg) {}
     constexpr FieldAux(const TcParseTableBase* table) : table(table) {}
     constexpr FieldAux(MapAuxInfo map_info) : map_info(map_info) {}
-    constexpr FieldAux(void (*create_in_arena)(Arena*, void*))
-        : create_in_arena(create_in_arena) {}
     constexpr FieldAux(LazyEagerVerifyFnType verify_func)
         : verify_func(verify_func) {}
-    bool (*enum_validator)(int);
     struct {
       int16_t start;    // minimum enum number (if it fits)
       uint16_t length;  // length of range (i.e., max = start + length - 1)
     } enum_range;
     uint32_t offset;
     const void* message_default_p;
+    const uint32_t* enum_data;
     const TcParseTableBase* table;
     MapAuxInfo map_info;
-    void (*create_in_arena)(Arena*, void*);
     LazyEagerVerifyFnType verify_func;
 
     const MessageLite* message_default() const {
@@ -462,6 +473,8 @@ struct alignas(uint64_t) TcParseTableBase {
                                    aux_offset +
                                    num_aux_entries * sizeof(FieldAux));
   }
+
+  const MessageLite* default_instance() const { return class_data->prototype; }
 };
 
 #if defined(_MSC_VER) && !defined(_WIN64)
@@ -530,6 +543,40 @@ static_assert(std::is_standard_layout<TcParseTable<1>>::value,
 static_assert(offsetof(TcParseTable<1>, fast_entries) ==
                   sizeof(TcParseTableBase),
               "Table entries must be laid out after TcParseTableBase.");
+
+template <typename T,
+          PROTOBUF_CC const char* (*func)(T*, const char*, ParseContext*)>
+PROTOBUF_CC const char* StubParseImpl(PROTOBUF_TC_PARAM_DECL) {
+  return func(static_cast<T*>(msg), ptr, ctx);
+}
+
+template <typename T,
+          PROTOBUF_CC const char* (*func)(T*, const char*, ParseContext*)>
+constexpr TcParseTable<0> CreateStubTcParseTable(
+    const ClassData* class_data,
+    TcParseTableBase::PostLoopHandler post_loop_handler = nullptr) {
+  return {
+      {
+          0,                  // has_bits_offset
+          0,                  // extension_offset
+          0,                  // max_field_number
+          0,                  // fast_idx_mask
+          0,                  // lookup_table_offset
+          0,                  // skipmap32
+          0,                  // field_entries_offset
+          0,                  // num_field_entries
+          0,                  // num_aux_entries
+          0,                  // aux_offset
+          class_data,         //
+          post_loop_handler,  //
+          nullptr,            // fallback
+#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+          nullptr,  // to_prefetch
+#endif              // PROTOBUF_PREFETCH_PARSE_TABLE
+      },
+      {{{StubParseImpl<T, func>, {}}}},
+  };
+}
 
 }  // namespace internal
 }  // namespace protobuf

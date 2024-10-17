@@ -1,33 +1,10 @@
 #region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using Google.Protobuf.Collections;
@@ -44,6 +21,7 @@ namespace Google.Protobuf.Reflection
     /// <summary>
     /// The syntax of a .proto file
     /// </summary>
+    [Obsolete("Use features instead")]
     public enum Syntax
     {
         /// <summary>
@@ -54,6 +32,10 @@ namespace Google.Protobuf.Reflection
         /// Proto3 syntax
         /// </summary>
         Proto3,
+        /// <summary>
+        /// Editions syntax
+        /// </summary>
+        Editions,
         /// <summary>
         /// An unknown declared syntax
         /// </summary>
@@ -70,7 +52,9 @@ namespace Google.Protobuf.Reflection
         // Prevent linker failures when using IL2CPP with the well-known types.
         static FileDescriptor()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             ForceReflectionInitialization<Syntax>();
+#pragma warning restore CS0618 // Type or member is obsolete
             ForceReflectionInitialization<NullValue>();
             ForceReflectionInitialization<Field.Types.Cardinality>();
             ForceReflectionInitialization<Field.Types.Kind>();
@@ -84,6 +68,9 @@ namespace Google.Protobuf.Reflection
             SerializedData = descriptorData;
             DescriptorPool = pool;
             Proto = proto;
+            // Note: the Edition property relies on the proto being set first, so this line
+            // has to come after Proto = proto.
+            Features = FeatureSetDescriptor.GetEditionDefaults(Edition).MergedWith(proto.Options?.Features);
             Dependencies = new ReadOnlyCollection<FileDescriptor>(dependencies.ToList());
 
             PublicDependencies = DeterminePublicDependencies(this, proto, dependencies, allowUnknownDependencies);
@@ -105,19 +92,6 @@ namespace Google.Protobuf.Reflection
             Extensions = new ExtensionCollection(this, generatedCodeInfo?.Extensions);
 
             declarations = new Lazy<Dictionary<IDescriptor, DescriptorDeclaration>>(CreateDeclarationMap, LazyThreadSafetyMode.ExecutionAndPublication);
-
-            if (!proto.HasSyntax || proto.Syntax == "proto2")
-            {
-                Syntax = Syntax.Proto2;
-            }
-            else if (proto.Syntax == "proto3")
-            {
-                Syntax = Syntax.Proto3;
-            }
-            else
-            {
-                Syntax = Syntax.Unknown;
-            }
         }
 
         private Dictionary<IDescriptor, DescriptorDeclaration> CreateDeclarationMap()
@@ -249,9 +223,32 @@ namespace Google.Protobuf.Reflection
         public FileDescriptorProto ToProto() => Proto.Clone();
 
         /// <summary>
-        /// The syntax of the file
+        /// The feature set for this file, including inherited features.
         /// </summary>
-        public Syntax Syntax { get; }
+        internal FeatureSetDescriptor Features { get; }
+
+        /// <summary>
+        /// Returns the edition of the file descriptor.
+        /// </summary>
+        internal Edition Edition => Proto.Syntax switch
+        {
+            "editions" => Proto.Edition,
+            "proto3" => Edition.Proto3,
+            _ => Edition.Proto2
+        };
+
+        /// <summary>
+        /// The syntax of the file.
+        /// </summary>
+        [Obsolete("Use features instead of proto syntax.")]
+        public Syntax Syntax => Proto.HasEdition ?  Syntax.Editions
+            : Proto.Syntax switch
+            {
+                "proto3" => Syntax.Proto3,
+                "proto2" => Syntax.Proto2,
+                "" => Syntax.Proto2,
+                _ => throw new InvalidOperationException("No edition or known syntax present")
+            };
 
         /// <value>
         /// The file name.
@@ -569,7 +566,18 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public FileOptions GetOptions() => Proto.Options?.Clone();
+        public FileOptions GetOptions()
+        {
+            var clone = Proto.Options?.Clone();
+            if (clone is null)
+            {
+                return null;
+            }
+            // Clients should be using feature accessor methods, not accessing features on the
+            // options proto.
+            clone.Features = null;
+            return clone;
+        }
 
         /// <summary>
         /// Gets a single value file option for this descriptor

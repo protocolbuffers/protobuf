@@ -36,7 +36,11 @@ import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.DescriptorValidationException;
 import com.google.protobuf.Descriptors.EnumDescriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
+import com.google.protobuf.Descriptors.ServiceDescriptor;
+import com.google.protobuf.Descriptors.MethodDescriptor;
+import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,6 +74,10 @@ public class RubyDescriptorPool extends RubyObject {
             cDescriptorPool.newInstance(runtime.getCurrentContext(), Block.NULL_BLOCK);
     cDescriptor = (RubyClass) runtime.getClassFromPath("Google::Protobuf::Descriptor");
     cEnumDescriptor = (RubyClass) runtime.getClassFromPath("Google::Protobuf::EnumDescriptor");
+    cFieldDescriptor = (RubyClass) runtime.getClassFromPath("Google::Protobuf::FieldDescriptor");
+    cServiceDescriptor =
+        (RubyClass) runtime.getClassFromPath("Google::Protobuf::ServiceDescriptor");
+    cMethodDescriptor = (RubyClass) runtime.getClassFromPath("Google::Protobuf::MethodDescriptor");
   }
 
   public RubyDescriptorPool(Ruby runtime, RubyClass klazz) {
@@ -92,8 +100,8 @@ public class RubyDescriptorPool extends RubyObject {
    * call-seq:
    *     DescriptorPool.lookup(name) => descriptor
    *
-   * Finds a Descriptor or EnumDescriptor by name and returns it, or nil if none
-   * exists with the given name.
+   * Finds a Descriptor, EnumDescriptor, FieldDescriptor or ServiceDescriptor by name and returns it,
+   * or nil if none exists with the given name.
    *
    * This currently lazy loads the ruby descriptor objects as they are requested.
    * This allows us to leave the heavy lifting to the java library
@@ -121,7 +129,8 @@ public class RubyDescriptorPool extends RubyObject {
   public IRubyObject add_serialized_file(ThreadContext context, IRubyObject data) {
     byte[] bin = data.convertToString().getBytes();
     try {
-      FileDescriptorProto.Builder builder = FileDescriptorProto.newBuilder().mergeFrom(bin);
+      FileDescriptorProto.Builder builder =
+          FileDescriptorProto.newBuilder().mergeFrom(bin, registry);
       registerFileDescriptor(context, builder);
     } catch (InvalidProtocolBufferException e) {
       throw RaiseException.from(
@@ -150,6 +159,10 @@ public class RubyDescriptorPool extends RubyObject {
     for (EnumDescriptor ed : fd.getEnumTypes()) registerEnumDescriptor(context, ed, packageName);
     for (Descriptor message : fd.getMessageTypes())
       registerDescriptor(context, message, packageName);
+    for (FieldDescriptor fieldDescriptor : fd.getExtensions())
+      registerExtension(context, fieldDescriptor, packageName);
+    for (ServiceDescriptor serviceDescriptor : fd.getServices())
+      registerService(context, serviceDescriptor, packageName);
 
     // Mark this as a loaded file
     fileDescriptors.add(fd);
@@ -170,6 +183,24 @@ public class RubyDescriptorPool extends RubyObject {
       registerEnumDescriptor(context, ed, fullPath);
     for (Descriptor message : descriptor.getNestedTypes())
       registerDescriptor(context, message, fullPath);
+    for (FieldDescriptor fieldDescriptor : descriptor.getExtensions())
+      registerExtension(context, fieldDescriptor, fullPath);
+  }
+
+  private void registerExtension(
+      ThreadContext context, FieldDescriptor descriptor, String parentPath) {
+    if (descriptor.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+      registry.add(descriptor, descriptor.toProto());
+    } else {
+      registry.add(descriptor);
+    }
+    RubyString name = context.runtime.newString(parentPath + descriptor.getName());
+    RubyFieldDescriptor des =
+        (RubyFieldDescriptor) cFieldDescriptor.newInstance(context, Block.NULL_BLOCK);
+    des.setName(name);
+    des.setDescriptor(context, descriptor, this);
+    // For MessageSet extensions, there is the possibility of a name conflict. Prefer the Message.
+    symtab.putIfAbsent(name, des);
   }
 
   private void registerEnumDescriptor(
@@ -182,14 +213,30 @@ public class RubyDescriptorPool extends RubyObject {
     symtab.put(name, des);
   }
 
+  private void registerService(
+      ThreadContext context, ServiceDescriptor descriptor, String parentPath) {
+    String fullName = parentPath + descriptor.getName();
+    RubyString name = context.runtime.newString(fullName);
+    RubyServiceDescriptor des =
+        (RubyServiceDescriptor) cServiceDescriptor.newInstance(context, Block.NULL_BLOCK);
+    des.setName(name);
+    // n.b. this will also construct the descriptors for the service's methods.
+    des.setDescriptor(context, descriptor, this);
+    symtab.putIfAbsent(name, des);
+  }
+
   private FileDescriptor[] existingFileDescriptors() {
     return fileDescriptors.toArray(new FileDescriptor[fileDescriptors.size()]);
   }
 
   private static RubyClass cDescriptor;
   private static RubyClass cEnumDescriptor;
+  private static RubyClass cFieldDescriptor;
+  private static RubyClass cServiceDescriptor;
+  private static RubyClass cMethodDescriptor;
   private static RubyDescriptorPool descriptorPool;
 
   private List<FileDescriptor> fileDescriptors;
   private Map<IRubyObject, IRubyObject> symtab;
+  protected static final ExtensionRegistry registry = ExtensionRegistry.newInstance();
 }

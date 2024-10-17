@@ -1,0 +1,38 @@
+matrix:
+  platform: ["debian10", "macos", "ubuntu2004", "windows"]
+  bazel: [7.x]
+
+tasks:
+  verify_targets:
+    name: "Verify build targets"
+    platform: ${{ platform }}
+    bazel: ${{ bazel }}
+    build_flags:
+    - '--host_cxxopt=-std=c++14'
+    - '--cxxopt=-std=c++14'
+    - '--experimental_google_legacy_api'
+    build_targets:
+    - '@protobuf//:protobuf'
+    - '@protobuf//:protobuf_lite'
+    - '@protobuf//:protobuf_python'
+    - '@protobuf//:protobuf_java'
+    - '@protobuf//:protoc'
+    - '@protobuf//:test_messages_proto2_cc_proto'
+    - '@protobuf//:test_messages_proto3_cc_proto'
+
+bcr_test_module:
+  module_path: "examples"
+  matrix:
+    platform: ["debian10", "macos", "ubuntu2004", "windows"]
+    bazel: [7.x]
+  tasks:
+    run_test_module:
+      name: "Run test module"
+      platform: ${{ platform }}
+      bazel: ${{ bazel }}
+      build_flags:
+      - '--host_cxxopt=-std=c++14'
+      - '--cxxopt=-std=c++14'
+      - '--experimental_google_legacy_api'
+      build_targets:
+      - "//..."

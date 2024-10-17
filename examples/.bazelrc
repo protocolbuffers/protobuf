@@ -1,1 +1,13 @@
-build --cxxopt=-std=c++14 --host_cxxopt=-std=c++14
+common --enable_platform_specific_config
+
+# Needed for java_lite_proto_library, that's using ProguardSpecProvider
+# TODO: Once the provider is ported to Starlark the flag may be removed.
+common --experimental_google_legacy_api
+
+build:linux --cxxopt=-std=c++14 --host_cxxopt=-std=c++14
+build:macos --cxxopt=-std=c++14 --host_cxxopt=-std=c++14
+
+common:windows --enable_runfiles
+
+build --experimental_remote_cache_eviction_retries=5
+build --remote_download_outputs=all

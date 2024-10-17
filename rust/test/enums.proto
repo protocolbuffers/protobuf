@@ -1,0 +1,65 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+// LINT: LEGACY_NAMES
+
+// The names in this file are meant to test edge cases.
+syntax = "proto3";
+
+package enums;
+
+// This should result in an enum with these accessible values:
+// - Unknown = 0
+// - Unrecognized = 0
+// - Foo = 1
+// - Bar = 2
+// - DifferentNameAlias = 2
+enum TestEnumWithDuplicateStrippedPrefixNames {
+  option allow_alias = true;
+
+  UNKNOWN = 0;
+  TestEnumWithDuplicateStrippedPrefixNamesUNRECOGNIZED = 0;
+
+  TestEnumWithDuplicateStrippedPrefixNames_FOO = 1;
+  TEST_ENUM_WITH_DUPLICATE_STRIPPED_PREFIX_NAMES_FOO = 1;
+  FOO = 1;
+
+  TestEnumWithDuplicateStrippedPrefixNamesBAR = 2;
+  TEST_ENUM_WITH_DUPLICATE_STRIPPED_PREFIX_NAMESBar = 2;
+  BAR = 2;
+  TEST_ENUM_WITH_DUPLICATE_STRIPPED_PREFIX_NAMES_DIFFERENT_NAME_ALIAS = 2;
+}
+
+// This should result in an enum with these accessible values:
+// - Unknown = 0
+// - _2020 = 1
+// - _2021 = 2
+// - _2022 = 3
+enum TestEnumWithNumericNames {
+  TestEnumWithNumericNamesUNKNOWN = 0;
+  TestEnumWithNumericNames_2020 = 1;
+  TEST_ENUM_WITH_NUMERIC_NAMES_2021 = 2;
+  TEST_ENUM_WITH_NUMERIC_NAMES2022 = 3;
+}
+
+// This should result in an enum with these accessible values:
+// - Unknown = 0
+// - TestEnumValueNameSameAsEnum = 1
+enum TestEnumValueNameSameAsEnum {
+  TEST_ENUM_VALUE_NAME_SAME_AS_ENUM_UNKNOWN = 0;
+  TEST_ENUM_VALUE_NAME_SAME_AS_ENUM = 1;
+}
+
+// Regression test for maps with nested enum as value.
+message TestMapWithNestedEnum {
+  message InnerNested {
+    enum NestedEnum {
+      UNKNOWN = 0;
+      FOO = 1;
+    }
+  }
+  map<string, InnerNested.NestedEnum> string_map = 1;
+}

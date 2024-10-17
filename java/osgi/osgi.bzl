@@ -1,6 +1,6 @@
 """ Custom rule to generate OSGi Manifest """
 
-load("@rules_java//java:defs.bzl", "java_library")
+load("@rules_java//java:defs.bzl", "JavaInfo", "java_library")
 
 # Note that this rule is currently agnostic of protobuf concerns and could be
 # pulled out as a general purpose helper to allow migrations from maven to bazel
@@ -23,6 +23,7 @@ load("@rules_java//java:defs.bzl", "java_library")
 #    which is probably sub-optimal.
 def osgi_java_library(
         name,
+        automatic_module_name,
         bundle_description,
         bundle_doc_url,
         bundle_license,
@@ -119,6 +120,7 @@ def osgi_java_library(
     # Repackage the jar with an OSGI manifest
     _osgi_jar(
         name = name,
+        automatic_module_name = automatic_module_name,
         bundle_description = bundle_description,
         bundle_doc_url = bundle_doc_url,
         bundle_license = bundle_license,
@@ -141,6 +143,7 @@ def _run_osgi_wrapper(ctx, input_jar, classpath_jars, output_jar):
     args.add_joined("--classpath", classpath_jars, join_with = ":")
     args.add("--input_jar", input_jar.path)
     args.add("--output_jar", output_jar.path)
+    args.add("--automatic_module_name", ctx.attr.automatic_module_name)
     args.add("--bundle_copyright", ctx.attr.bundle_copyright)
     args.add("--bundle_description", ctx.attr.bundle_description)
     args.add("--bundle_doc_url", ctx.attr.bundle_doc_url)
@@ -164,9 +167,14 @@ def _osgi_jar_impl(ctx):
         fail("osgi_jar rule can only be used on a single java target.")
     target_java_output = ctx.attr.target[JavaInfo].java_outputs[0]
 
-    if len(target_java_output.source_jars) > 1:
+    # source_jars may be a list or a Depset due to:
+    # https://github.com/bazelbuild/bazel/issues/18966
+    source_jars = target_java_output.source_jars
+    if hasattr(source_jars, "to_list"):
+        source_jars = source_jars.to_list()
+    if len(source_jars) > 1:
         fail("osgi_jar rule doesn't know how to deal with more than one source jar.")
-    source_jar = target_java_output.source_jars[0]
+    source_jar = source_jars[0]
 
     output_jar = ctx.outputs.output_jar
 
@@ -210,6 +218,7 @@ _osgi_jar = rule(
         "output_jar": "lib%{name}.jar",
     },
     attrs = {
+        "automatic_module_name": attr.string(),
         "bundle_copyright": attr.string(),
         "bundle_description": attr.string(),
         "bundle_doc_url": attr.string(),

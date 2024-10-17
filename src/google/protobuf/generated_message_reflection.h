@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -38,12 +15,13 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_MESSAGE_REFLECTION_H__
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_REFLECTION_H__
 
+#include <atomic>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/call_once.h"
-#include "absl/base/casts.h"
-#include "absl/strings/string_view.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_enum_reflection.h"
 #include "google/protobuf/port.h"
@@ -63,6 +41,10 @@ class MapValueRef;
 class MessageLayoutInspector;
 class Message;
 struct Metadata;
+
+namespace io {
+class CodedOutputStream;
+}
 }  // namespace protobuf
 }  // namespace google
 
@@ -328,7 +310,6 @@ struct PROTOBUF_EXPORT DescriptorTable {
   const Message* const* default_instances;
   const uint32_t* offsets;
   // update the following descriptor arrays.
-  Metadata* file_level_metadata;
   const EnumDescriptor** file_level_enum_descriptors;
   const ServiceDescriptor** file_level_service_descriptors;
 };
@@ -338,16 +319,10 @@ struct PROTOBUF_EXPORT DescriptorTable {
 // the descriptor objects.  It also constructs the reflection objects.  It is
 // called the first time anyone calls descriptor() or GetReflection() on one of
 // the types defined in the file.  AssignDescriptors() is thread-safe.
-void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* table,
-                                       bool eager = false);
-
-// Overload used to implement GetMetadataStatic in the generated code.
-// See comments in compiler/cpp/internal/file.cc as to why.
-// It takes a `Metadata` and returns it to allow for tail calls and reduce
-// binary size.
-Metadata PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* (*table)(),
-                                           absl::once_flag* once,
-                                           const Metadata& metadata);
+void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* table);
+// As above, but the caller did the call_once call already.
+void PROTOBUF_EXPORT
+AssignDescriptorsOnceInnerCall(const DescriptorTable* table);
 
 // These cannot be in lite so we put them in the reflection.
 PROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8_t* base,
@@ -355,9 +330,20 @@ PROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8_t* base,
                                                uint32_t has_offset,
                                                io::CodedOutputStream* output);
 
+PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstances();
+
+PROTOBUF_EXPORT void AddDescriptors(const DescriptorTable* table);
+
 struct PROTOBUF_EXPORT AddDescriptorsRunner {
   explicit AddDescriptorsRunner(const DescriptorTable* table);
 };
+
+// Retrieves the existing prototype out of a descriptor table.
+// If it doesn't exist:
+//  - If force_build is true, asks the generated message factory for one.
+//  - Otherwise, return null
+const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
+                                             int index, bool force_build);
 
 struct DenseEnumCacheInfo {
   std::atomic<const std::string**> cache;
@@ -386,6 +372,11 @@ const std::string& NameOfDenseEnum(int v) {
   }
   return NameOfDenseEnumSlow(v, &deci);
 }
+
+// Returns whether this type of field is stored in the split struct as a raw
+// pointer.
+PROTOBUF_EXPORT bool SplitFieldHasExtraIndirection(
+    const FieldDescriptor* field);
 
 }  // namespace internal
 }  // namespace protobuf

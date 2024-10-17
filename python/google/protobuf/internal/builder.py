@@ -1,32 +1,9 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# https://developers.google.com/protocol-buffers/
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 """Builds descriptors, message classes and services for generated _pb2.py.
 
@@ -38,6 +15,7 @@ in generated code.
 __author__ = 'jieluo@google.com (Jie Luo)'
 
 from google.protobuf.internal import enum_type_wrapper
+from google.protobuf.internal import python_message
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
@@ -108,6 +86,16 @@ def BuildTopDescriptorsAndMessages(file_des, module_name, module):
     module[name] = BuildMessage(msg_des)
 
 
+def AddHelpersToExtensions(file_des):
+  """no-op to keep old generated code work with new runtime.
+
+  Args:
+    file_des: FileDescriptor of the .proto file
+  """
+  # TODO: Remove this on-op
+  return
+
+
 def BuildServices(file_des, module_name, module):
   """Builds services classes and services stub class.
 
@@ -117,12 +105,11 @@ def BuildServices(file_des, module_name, module):
     module: Generated _pb2 module
   """
   # pylint: disable=g-import-not-at-top
-  from google.protobuf import service as _service
   from google.protobuf import service_reflection
   # pylint: enable=g-import-not-at-top
   for (name, service) in file_des.services_by_name.items():
     module[name] = service_reflection.GeneratedServiceType(
-        name, (_service.Service,),
+        name, (),
         dict(DESCRIPTOR=service, __module__=module_name))
     stub_name = name + '_Stub'
     module[stub_name] = service_reflection.GeneratedServiceStubType(

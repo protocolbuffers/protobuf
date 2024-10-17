@@ -14,10 +14,9 @@ generation functionality.
 
 ## Requirements
 
-To use PHP runtime library requires:
-
-- C extension: PHP 7.x, 8.0
-- [PHP package](http://php.net/downloads.php): PHP 5.5, 5.6, 7.x, or 8.0.
+For information on supported language versions and how the support levels for
+PHP versions will change over time, see
+[Supported PHP versions](https://cloud.google.com/php/getting-started/supported-php-versions).
 
 ## Installation
 

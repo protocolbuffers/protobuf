@@ -2,6 +2,11 @@
 
 This directory contains the Protobuf library for Python.
 
+For user documentation about how to use Protobuf Python, see
+https://protobuf.dev/getting-started/pythontutorial/
+
+# Installation
+
 In most cases you should install the library using `pip` or another package
 manager:
 
@@ -12,22 +17,28 @@ $ pip install protobuf
 The packages released on https://pypi.org/project/protobuf/#files include both a
 source distribution and binary wheels.
 
-For user documentation about how to use Protobuf Python, see
-https://protobuf.dev/getting-started/pythontutorial/
-
-# Building packages from this repo
+## Building packages from this repo
 
 If for some reason you wish to build the packages directly from this repo, you
 can use the following Bazel commands:
 
 ```
-$ bazel build @upb//python/dist:source_wheel
-$ bazel build @upb//python/dist:binary_wheel
+$ bazel build //python/dist:source_wheel
+$ bazel build //python/dist:binary_wheel
 ```
 
 The binary wheel will build against whatever version of Python is installed on
 your system. The source package is always the same and does not depend on a
 local version of Python.
+
+## Building from `setup.py`
+
+We support building from `setup.py`, but only from a Python source package.
+You cannot build from `setup.py` using the GitHub repo or the GitHub source
+tarball.
+
+To build a source package from this repo, see the instructions in the previous
+section.
 
 # Implementation backends
 
@@ -43,13 +54,12 @@ you can request a specific backend by setting the
 following values:
 
 1.  **upb**: Built on the
-    [upb C library](https://github.com/protocolbuffers/upb), this is a new
-    extension module
+    [upb C library](https://github.com/protocolbuffers/protobuf/tree/main/upb),
+    this is a new extension module
     [released in 4.21.0](https://protobuf.dev/news/2022-05-06/). It offers
     better performance than any of the previous backends, and it is now the
     default. It is distributed in our PyPI packages, and requires no special
-    installation. The code for this module lives in
-    [@upb/python](https://github.com/protocolbuffers/upb/tree/main/python).
+    installation. The code for this module lives in this directory.
 1.  **cpp**: This extension module wraps the C++ protobuf library. It is
     deprecated and is no longer released in our PyPI packages, however it is
     still used in some legacy cases where apps want to perform zero-copy message

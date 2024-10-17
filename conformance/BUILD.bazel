@@ -1,15 +1,20 @@
 # Conformance testing for Protobuf.
 
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library", "objc_library")
-load("@rules_ruby//ruby:defs.bzl", "ruby_binary")
-load("//:protobuf.bzl", "internal_csharp_proto_library", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library", "internal_ruby_proto_library")
-load("//build_defs:internal_shell.bzl", "inline_sh_binary")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "objc_library")
 load(
-    "@rules_pkg//:mappings.bzl",
+    "@rules_pkg//pkg:mappings.bzl",
     "pkg_filegroup",
     "pkg_files",
     "strip_prefix",
 )
+load("@rules_ruby//ruby:defs.bzl", "ruby_binary")
+load("//:protobuf.bzl", "internal_csharp_proto_library", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library", "internal_ruby_proto_library")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
+load("//bazel:java_proto_library.bzl", "java_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
+load("//build_defs:internal_shell.bzl", "inline_sh_binary")
+load("//ruby:defs.bzl", "internal_ruby_proto_library")
 
 exports_files([
     "bazel_conformance_test_runner.sh",
@@ -22,18 +27,18 @@ exports_files([
     "failure_list_php_c.txt",
     "failure_list_python.txt",
     "failure_list_python_cpp.txt",
+    "failure_list_python_upb.txt",
     "failure_list_ruby.txt",
     "failure_list_jruby.txt",
+    "failure_list_jruby_ffi.txt",
     "text_format_failure_list_cpp.txt",
-    "text_format_failure_list_csharp.txt",
     "text_format_failure_list_java.txt",
     "text_format_failure_list_java_lite.txt",
     "text_format_failure_list_php.txt",
     "text_format_failure_list_php_c.txt",
     "text_format_failure_list_python.txt",
     "text_format_failure_list_python_cpp.txt",
-    "text_format_failure_list_ruby.txt",
-    "text_format_failure_list_jruby.txt",
+    "text_format_failure_list_python_upb.txt",
 ])
 
 cc_proto_library(
@@ -128,51 +133,107 @@ internal_ruby_proto_library(
 
 cc_library(
     name = "conformance_test",
+    testonly = 1,
     srcs = [
         "conformance_test.cc",
         "conformance_test_runner.cc",
+        "failure_list_trie_node.cc",
     ],
     hdrs = [
         "conformance_test.h",
+        "failure_list_trie_node.h",
     ],
     includes = ["."],
     deps = [
         ":conformance_cc_proto",
+        "//src/google/protobuf",
         "//src/google/protobuf:descriptor_legacy",
+        "//src/google/protobuf:endian",
+        "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/util:differencer",
         "//src/google/protobuf/util:json_util",
-        "//src/google/protobuf/util:type_resolver_util",
+        "//src/google/protobuf/util:type_resolver",
+        "@com_google_absl//absl/container:btree",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:optional",
     ],
+)
+
+cc_test(
+    name = "failure_list_trie_node_test",
+    srcs = ["failure_list_trie_node_test.cc"],
+    deps = [
+        ":conformance_test",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+# Add more meta-testing here. This is not to be confused with a conformance test itself.
+test_suite(
+    name = "conformance_framework_tests",
+    tests = ["failure_list_trie_node_test"],
 )
 
 cc_library(
     name = "binary_json_conformance_suite",
+    testonly = 1,
     srcs = ["binary_json_conformance_suite.cc"],
     hdrs = ["binary_json_conformance_suite.h"],
     deps = [
+        ":conformance_cc_proto",
         ":conformance_test",
         ":test_messages_proto2_proto_cc",
         ":test_messages_proto3_proto_cc",
+        "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//editions:test_messages_proto2_editions_cc_proto",
+        "//editions:test_messages_proto3_editions_cc_proto",
+        "//src/google/protobuf",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/json",
+        "//src/google/protobuf/util:type_resolver",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/log:die_if_null",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
         "@jsoncpp",
     ],
 )
 
 cc_library(
     name = "text_format_conformance_suite",
+    testonly = 1,
     srcs = ["text_format_conformance_suite.cc"],
     hdrs = ["text_format_conformance_suite.h"],
     deps = [
         ":conformance_test",
         ":test_messages_proto2_proto_cc",
         ":test_messages_proto3_proto_cc",
+        "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//editions:test_messages_proto2_editions_cc_proto",
+        "//editions:test_messages_proto3_editions_cc_proto",
+        "//src/google/protobuf",
+        "@com_google_absl//absl/log:absl_log",
+        "@com_google_absl//absl/log:die_if_null",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
 cc_binary(
     name = "conformance_test_runner",
+    testonly = 1,
     srcs = ["conformance_test_main.cc"],
     visibility = ["//visibility:public"],
     deps = [
@@ -193,8 +254,21 @@ cc_binary(
         "//:protobuf",
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
+        "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//editions:test_messages_proto2_editions_cc_proto",
+        "//editions:test_messages_proto3_editions_cc_proto",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/json",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/util:json_util",
+        "//src/google/protobuf/util:type_resolver",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -212,6 +286,9 @@ java_binary(
         "//:protobuf_java_util",
         "//:test_messages_proto2_java_proto",
         "//:test_messages_proto3_java_proto",
+        "//conformance/test_protos:test_messages_edition2023_java_proto",
+        "//editions:test_messages_proto2_editions_java_proto",
+        "//editions:test_messages_proto3_editions_java_proto",
     ],
 )
 
@@ -229,6 +306,9 @@ java_binary(
         "//:protobuf_javalite",
         "//:test_messages_proto2_java_proto_lite",
         "//:test_messages_proto3_java_proto_lite",
+        "//conformance/test_protos:test_messages_edition2023_java_proto_lite",
+        "//editions:test_messages_proto2_editions_java_proto_lite",
+        "//editions:test_messages_proto3_editions_java_proto_lite",
     ],
 )
 
@@ -245,9 +325,17 @@ py_binary(
     deps = [
         ":conformance_py_proto",
         "//:protobuf_python",
-        "//python:test_messages_proto2_py_proto",
-        "//python:test_messages_proto3_py_proto",
+        "//conformance/test_protos:test_messages_edition2023_py_proto",
+        "//editions:test_messages_proto2_editions_py_pb2",
+        "//editions:test_messages_proto3_editions_py_pb2",
+        "//python:_message",  # Make upb visible if we need it.
+        "//python:conformance_test_py_proto",
     ],
+)
+
+py_binary(
+    name = "update_failure_list",
+    srcs = ["update_failure_list.py"],
 )
 
 inline_sh_binary(
@@ -258,7 +346,7 @@ inline_sh_binary(
         "conformance_php.php",
     ],
     cmd = """
-        php -d include_path=conformance:src/google/protobuf \\
+        php -d include_path=php/generated:conformance:src/google/protobuf:editions/golden \\
             -d auto_prepend_file=$(rootpath autoload.php) \\
             $(rootpath conformance_php.php)
     """,
@@ -266,6 +354,7 @@ inline_sh_binary(
     deps = [
         ":conformance_php_proto",
         "//:test_messages_proto3_php_proto",
+        "//editions:test_messages_proto3_editions_php_proto",
         "//php:source_files",
     ],
 )
@@ -279,13 +368,14 @@ inline_sh_binary(
     ],
     cmd = """
         php -dextension=$(rootpath //php:extension) \\
-            -d include_path=conformance:src/google/protobuf \\
+            -d include_path=conformance:src/google/protobuf:editions/golden \\
             $(rootpath conformance_php.php)
     """,
     visibility = ["//php:__subpackages__"],
     deps = [
         ":conformance_php_proto",
         "//:test_messages_proto3_php_proto",
+        "//editions:test_messages_proto3_editions_php_proto",
     ],
 )
 
@@ -296,6 +386,7 @@ inline_sh_binary(
     cmd = "dotnet $(rootpath //csharp/src/Google.Protobuf.Conformance:conformance_dll)",
     visibility = ["//csharp:__subpackages__"],
     deps = [
+        "//conformance/test_protos:test_messages_edition2023_csharp_proto",
         "//csharp/src/Google.Protobuf.Conformance:conformance_runfiles",
     ],
 )
@@ -310,6 +401,9 @@ objc_library(
         ":conformance_objc_proto",
         "//:test_messages_proto2_objc_proto",
         "//:test_messages_proto3_objc_proto",
+        "//conformance/test_protos:test_messages_edition2023_objc_proto",
+        "//editions:test_messages_proto2_editions_objc_proto",
+        "//editions:test_messages_proto3_editions_objc_proto",
     ],
 )
 
@@ -326,12 +420,14 @@ ruby_binary(
     name = "conformance_ruby",
     testonly = True,
     srcs = ["conformance_ruby.rb"],
+    visibility = ["//ruby:__subpackages__"],
     deps = [
         ":conformance_ruby_proto",
-        "//:test_messages_proto2_ruby_proto",
-        "//:test_messages_proto3_ruby_proto",        
+        "//conformance/test_protos:test_messages_edition2023_ruby_proto",
+        "//ruby:conformance_editions_test_ruby_proto",
+        "//ruby:conformance_test_ruby_proto",
+        "//ruby:protobuf",
     ],
-    visibility = ["//ruby:__subpackages__"],
 )
 
 ################################################################################

@@ -447,9 +447,9 @@ with info about your project (name and website) so we can add an entry for you.
     *   Website: http://buf.build/
     *   Extension: 1157-1166
 
-1.  Connect
+1.  Connect RPC
 
-    *   Website: http://connect.build/
+    *   Website: http://connectrpc.com/
     *   Extension: 1167-1176
 
 1.  protocel
@@ -462,12 +462,72 @@ with info about your project (name and website) so we can add an entry for you.
     *   Website: https://github.com/cybozu/protobuf
     *   Extension: 1179
 
-1.  Wire use_array
-
-    *   Website: https://square.github.io/wire/
-    *   Extensions: 1180
-
 1.  EngFlow
 
     *   Website: https://github.com/EngFlow/engflowapis
     *   Extensions: 1181
+
+1.  Proto-telemetry
+
+    *   Website: https://github.com/clly/proto-telemetry
+    *   Extensions: 1182
+
+1.  Digital Twins Definition Language (DTDL)
+
+    *   Website: https://github.com/Azure/opendigitaltwins-dtdl
+    *   Extensions: 1183
+
+1.  RabbitMQ
+
+    *   Website: https://github.com/guihouchang/protoc-gen-go-event
+    *   Extensions: 1184
+
+1.  Wire use_array
+
+    *   Website: https://square.github.io/wire/
+    *   Extensions: 1185
+
+1.  Protons
+
+    *   Website: https://github.com/ipfs/protons
+    *   Extensions: 1186
+
+1.  gRPC Federation
+
+    *   Website: https://github.com/mercari/grpc-federation
+    *   Extensions: 1187
+
+1.  protoc-gen-openapi
+
+    *   Website: https://github.com/solo-io/protoc-gen-openapi
+    *   Extensions: 1188-1189
+
+1.  Wire enumMode
+
+    *   Website: https://square.github.io/wire/
+    *   Extensions: 1190
+
+1.  Nebius AI
+
+    *   Website: https://nebius.ai
+    *   Extensions: 1191-1199
+
+1.  Buf
+
+    *   Website: http://buf.build/
+    *   Extension: 1200-1239
+
+1.  userver
+
+    *   Website: https://userver.tech/
+    *   Extensions: 1240-1249
+
+1.  protoc-gen-default / protoc-gen-env (confpb)
+
+    *   Website: https://github.com/MarnixBouhuis/confpb
+    *   Extensions: 1250-1251
+
+1.  JaiaBot
+
+    *   Website: https://github.com/jaiarobotics/jaiabot
+    *   Extensions: 1252

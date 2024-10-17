@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -36,29 +13,32 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <cstddef>
 #include <cstdint>
 
 #include <gmock/gmock.h>
 #include "absl/log/absl_check.h"
+#include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
+#include "absl/types/span.h"
+#include "google/protobuf/compiler/command_line_interface_tester.h"
+#include "google/protobuf/unittest_features.pb.h"
+#include "google/protobuf/unittest_invalid_features.pb.h"
 
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
-#include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include "absl/status/status.h"
-#include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
@@ -66,13 +46,23 @@
 #include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/mock_code_generator.h"
-#include "google/protobuf/compiler/subprocess.h"
-#include "google/protobuf/io/io_win32.h"
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/compiler/plugin.pb.h"
+#include "google/protobuf/test_textproto.h"
+#include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
+#include "google/protobuf/unittest_import.pb.h"
+
+#ifdef GOOGLE_PROTOBUF_USE_BAZEL_GENERATED_PLUGIN_PATHS
+// This is needed because of https://github.com/bazelbuild/bazel/issues/19124.
+#include "google/protobuf/compiler/test_plugin_paths.h"
+#endif  // GOOGLE_PROTOBUF_USE_BAZEL_GENERATED_PLUGIN_PATHS
+
+#ifdef _WIN32
+#include "google/protobuf/compiler/subprocess.h"
+#include "google/protobuf/io/io_win32.h"
+#endif
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -99,19 +89,58 @@ using google::protobuf::io::win32::write;
 
 namespace {
 
-bool FileExists(const std::string& path) {
-  return File::Exists(path);
+std::string CreatePluginArg() {
+  std::string plugin_path;
+#ifdef GOOGLE_PROTOBUF_TEST_PLUGIN_PATH
+  plugin_path = GOOGLE_PROTOBUF_TEST_PLUGIN_PATH;
+#else
+  const char* possible_paths[] = {
+      // When building with shared libraries, libtool hides the real
+      // executable
+      // in .libs and puts a fake wrapper in the current directory.
+      // Unfortunately, due to an apparent bug on Cygwin/MinGW, if one program
+      // wrapped in this way (e.g. protobuf-tests.exe) tries to execute
+      // another
+      // program wrapped in this way (e.g. test_plugin.exe), the latter fails
+      // with error code 127 and no explanation message.  Presumably the
+      // problem
+      // is that the wrapper for protobuf-tests.exe set some environment
+      // variables that confuse the wrapper for test_plugin.exe.  Luckily, it
+      // turns out that if we simply invoke the wrapped test_plugin.exe
+      // directly, it works -- I guess the environment variables set by the
+      // protobuf-tests.exe wrapper happen to be correct for it too.  So we do
+      // that.
+      ".libs/test_plugin.exe",  // Win32 w/autotool (Cygwin / MinGW)
+      "test_plugin.exe",        // Other Win32 (MSVC)
+      "test_plugin",            // Unix
+  };
+  for (int i = 0; i < ABSL_ARRAYSIZE(possible_paths); ++i) {
+    if (access(possible_paths[i], F_OK) == 0) {
+      plugin_path = possible_paths[i];
+      break;
+    }
+  }
+#endif
+
+  if (plugin_path.empty() || !File::Exists(plugin_path)) {
+    ABSL_LOG(ERROR)
+        << "Plugin executable not found.  Plugin tests are likely to fail. "
+        << plugin_path;
+    return "";
+  }
+  return absl::StrCat("--plugin=prefix-gen-plug=", plugin_path);
 }
 
-class CommandLineInterfaceTest : public testing::Test {
+class CommandLineInterfaceTest : public CommandLineInterfaceTester {
  protected:
+  CommandLineInterfaceTest() = default;
+
   void SetUp() override;
-  void TearDown() override;
 
   // Runs the CommandLineInterface with the given command line.  The
   // command is automatically split on spaces, and the string "$tmpdir"
   // is replaced with TestTempDir().
-  void Run(const std::string& command);
+  void Run(std::string command);
   void RunWithArgs(std::vector<std::string> args);
 
   // -----------------------------------------------------------------
@@ -122,63 +151,6 @@ class CommandLineInterfaceTest : public testing::Test {
   // Normally plugins are allowed for all tests.  Call this to explicitly
   // disable them.
   void DisallowPlugins() { disallow_plugins_ = true; }
-
-  // Create a temp file within temp_directory_ with the given name.
-  // The containing directory is also created if necessary.
-  void CreateTempFile(absl::string_view name, absl::string_view contents);
-
-  // Create a subdirectory within temp_directory_.
-  void CreateTempDir(absl::string_view name);
-
-#ifdef PROTOBUF_OPENSOURCE
-  // Change working directory to temp directory.
-  void SwitchToTempDirectory() {
-    File::ChangeWorkingDirectory(temp_directory_);
-  }
-#else  // !PROTOBUF_OPENSOURCE
-  // TODO(teboring): Figure out how to change and get working directory in
-  // google3.
-#endif  // !PROTOBUF_OPENSOURCE
-
-  // -----------------------------------------------------------------
-  // Methods to check the test results (called after Run()).
-
-  // Checks that no text was written to stderr during Run(), and Run()
-  // returned 0.
-  void ExpectNoErrors();
-
-  // Checks that Run() returned non-zero and the stderr output is exactly
-  // the text given.  expected_test may contain references to "$tmpdir",
-  // which will be replaced by the temporary directory path.
-  void ExpectErrorText(const std::string& expected_text);
-
-  // Checks that Run() returned non-zero and the stderr contains the given
-  // substring.
-  void ExpectErrorSubstring(const std::string& expected_substring);
-
-  // Checks that Run() returned zero and the stderr contains the given
-  // substring.
-  void ExpectWarningSubstring(const std::string& expected_substring);
-
-  // Checks that the captured stdout is the same as the expected_text.
-  void ExpectCapturedStdout(const std::string& expected_text);
-
-  // Checks that Run() returned zero and the stdout contains the given
-  // substring.
-  void ExpectCapturedStdoutSubstringWithZeroReturnCode(
-      const std::string& expected_substring);
-
-  // Checks that Run() returned zero and the stderr contains the given
-  // substring.
-  void ExpectCapturedStderrSubstringWithZeroReturnCode(
-      const std::string& expected_substring);
-
-#if defined(_WIN32) && !defined(__CYGWIN__)
-  // Returns true if ExpectErrorSubstring(expected_substring) would pass, but
-  // does not fail otherwise.
-  bool HasAlternateErrorSubstring(const std::string& expected_substring);
-#endif  // _WIN32 && !__CYGWIN__
-
   // Checks that MockCodeGenerator::Generate() was called in the given
   // context (or the generator in test_plugin.cc, which produces the same
   // output).  That is, this tests if the generator with the given name
@@ -214,57 +186,46 @@ class CommandLineInterfaceTest : public testing::Test {
 #endif  // _WIN32
 
 
+  std::string ReadFile(absl::string_view filename);
   void ReadDescriptorSet(absl::string_view filename,
                          FileDescriptorSet* descriptor_set);
 
   void WriteDescriptorSet(absl::string_view filename,
                           const FileDescriptorSet* descriptor_set);
 
-  void ExpectFileContent(absl::string_view filename, absl::string_view content);
+  FeatureSetDefaults ReadEditionDefaults(absl::string_view filename);
 
   // The default code generators support all features. Use this to create a
   // code generator that omits the given feature(s).
   void CreateGeneratorWithMissingFeatures(const std::string& name,
                                           const std::string& description,
                                           uint64_t features) {
-    MockCodeGenerator* generator = new MockCodeGenerator(name);
+    auto generator = std::make_unique<MockCodeGenerator>(name);
     generator->SuppressFeatures(features);
-    mock_generators_to_delete_.push_back(generator);
-    cli_.RegisterGenerator(name, generator, description);
+    RegisterGenerator(name, std::move(generator), description);
   }
 
+  void SetMockGeneratorTestCase(absl::string_view name) {
+#ifdef _WIN32
+    ::_putenv(absl::StrCat("TEST_CASE", "=", name).c_str());
+#else
+    ::setenv("TEST_CASE", name.data(), 1);
+#endif
+  }
+
+  MockCodeGenerator* mock_generator_ = nullptr;
+
  private:
-  // The object we are testing.
-  CommandLineInterface cli_;
-
   // Was DisallowPlugins() called?
-  bool disallow_plugins_;
+  bool disallow_plugins_ = false;
 
-  // We create a directory within TestTempDir() in order to add extra
-  // protection against accidentally deleting user files (since we recursively
-  // delete this directory during the test).  This is the full path of that
-  // directory.
-  std::string temp_directory_;
-
-  // The result of Run().
-  int return_code_;
-
-  // The captured stderr output.
-  std::string error_text_;
-
-  // The captured stdout.
-  std::string captured_stdout_;
-
-  // Pointers which need to be deleted later.
-  std::vector<CodeGenerator*> mock_generators_to_delete_;
-
-  NullCodeGenerator* null_generator_;
+  NullCodeGenerator* null_generator_ = nullptr;
 };
 
 class CommandLineInterfaceTest::NullCodeGenerator : public CodeGenerator {
  public:
   NullCodeGenerator() : called_(false) {}
-  ~NullCodeGenerator() override {}
+  ~NullCodeGenerator() override = default;
 
   mutable bool called_;
   mutable std::string parameter_;
@@ -278,187 +239,61 @@ class CommandLineInterfaceTest::NullCodeGenerator : public CodeGenerator {
   }
 };
 
+class ProtocMinimalCLITest : public CommandLineInterfaceTest {
+ protected:
+  void SetUp() override {}
+};
+
 // ===================================================================
 
 void CommandLineInterfaceTest::SetUp() {
-  temp_directory_ = absl::StrCat(TestTempDir(), "/proto2_cli_test_temp");
-
-  // If the temp directory already exists, it must be left over from a
-  // previous run.  Delete it.
-  if (FileExists(temp_directory_)) {
-    File::DeleteRecursively(temp_directory_, NULL, NULL);
-  }
-
-  // Create the temp directory.
-  ABSL_CHECK_OK(File::CreateDir(temp_directory_, 0777));
+  // Reset the mock generator's test case environment variable.
+  SetMockGeneratorTestCase("");
 
   // Register generators.
-  CodeGenerator* generator = new MockCodeGenerator("test_generator");
-  mock_generators_to_delete_.push_back(generator);
-  cli_.RegisterGenerator("--test_out", "--test_opt", generator, "Test output.");
-  cli_.RegisterGenerator("-t", generator, "Test output.");
+  auto mock_generator = std::make_unique<MockCodeGenerator>("test_generator");
+  mock_generator_ = mock_generator.get();
+  RegisterGenerator("--test_out", "--test_opt", std::move(mock_generator),
+                    "Test output.");
+  RegisterGenerator("-t", std::make_unique<MockCodeGenerator>("test_generator"),
+                    "Test output.");
 
-  generator = new MockCodeGenerator("alt_generator");
-  mock_generators_to_delete_.push_back(generator);
-  cli_.RegisterGenerator("--alt_out", generator, "Alt output.");
+  RegisterGenerator("--alt_out",
+                    std::make_unique<MockCodeGenerator>("alt_generator"),
+                    "Alt output.");
 
-  generator = null_generator_ = new NullCodeGenerator();
-  mock_generators_to_delete_.push_back(generator);
-  cli_.RegisterGenerator("--null_out", generator, "Null output.");
+  auto null_generator = std::make_unique<NullCodeGenerator>();
+  null_generator_ = null_generator.get();
+  RegisterGenerator("--null_out", std::move(null_generator), "Null output.");
 
-
-  disallow_plugins_ = false;
 }
 
-void CommandLineInterfaceTest::TearDown() {
-  // Delete the temp directory.
-  if (FileExists(temp_directory_)) {
-    File::DeleteRecursively(temp_directory_, NULL, NULL);
+void CommandLineInterfaceTest::Run(std::string command) {
+  if (!disallow_plugins_) {
+    AllowPlugins("prefix-");
+    absl::StrAppend(&command, " ", CreatePluginArg());
   }
 
-  // Delete all the MockCodeGenerators.
-  for (int i = 0; i < mock_generators_to_delete_.size(); i++) {
-    delete mock_generators_to_delete_[i];
-  }
-  mock_generators_to_delete_.clear();
-}
-
-void CommandLineInterfaceTest::Run(const std::string& command) {
-  RunWithArgs(absl::StrSplit(command, " ", absl::SkipEmpty()));
+  RunProtoc(command);
 }
 
 void CommandLineInterfaceTest::RunWithArgs(std::vector<std::string> args) {
   if (!disallow_plugins_) {
-    cli_.AllowPlugins("prefix-");
-    std::string plugin_path;
-#ifdef GOOGLE_PROTOBUF_TEST_PLUGIN_PATH
-    plugin_path = GOOGLE_PROTOBUF_TEST_PLUGIN_PATH;
-#else
-    const char* possible_paths[] = {
-        // When building with shared libraries, libtool hides the real
-        // executable
-        // in .libs and puts a fake wrapper in the current directory.
-        // Unfortunately, due to an apparent bug on Cygwin/MinGW, if one program
-        // wrapped in this way (e.g. protobuf-tests.exe) tries to execute
-        // another
-        // program wrapped in this way (e.g. test_plugin.exe), the latter fails
-        // with error code 127 and no explanation message.  Presumably the
-        // problem
-        // is that the wrapper for protobuf-tests.exe set some environment
-        // variables that confuse the wrapper for test_plugin.exe.  Luckily, it
-        // turns out that if we simply invoke the wrapped test_plugin.exe
-        // directly, it works -- I guess the environment variables set by the
-        // protobuf-tests.exe wrapper happen to be correct for it too.  So we do
-        // that.
-        ".libs/test_plugin.exe",  // Win32 w/autotool (Cygwin / MinGW)
-        "test_plugin.exe",        // Other Win32 (MSVC)
-        "test_plugin",            // Unix
-    };
-    for (int i = 0; i < ABSL_ARRAYSIZE(possible_paths); i++) {
-      if (access(possible_paths[i], F_OK) == 0) {
-        plugin_path = possible_paths[i];
-        break;
-      }
-    }
-#endif
-
-    if (plugin_path.empty() || !FileExists(plugin_path)) {
-      ABSL_LOG(ERROR)
-          << "Plugin executable not found.  Plugin tests are likely to fail."
-          << plugin_path;
-    } else {
-      args.push_back(absl::StrCat("--plugin=prefix-gen-plug=", plugin_path));
-    }
+    AllowPlugins("prefix-");
+    args.push_back(CreatePluginArg());
   }
 
-  std::unique_ptr<const char*[]> argv(new const char*[args.size()]);
-
-  for (size_t i = 0; i < args.size(); i++) {
-    args[i] = absl::StrReplaceAll(args[i], {{"$tmpdir", temp_directory_}});
-    argv[i] = args[i].c_str();
-  }
-
-  // TODO(jieluo): Cygwin doesn't work well if we try to capture stderr and
-  // stdout at the same time. Need to figure out why and add this capture back
-  // for Cygwin.
-#if !defined(__CYGWIN__)
-  CaptureTestStdout();
-#endif
-  CaptureTestStderr();
-
-  return_code_ = cli_.Run(args.size(), argv.get());
-
-  error_text_ = GetCapturedTestStderr();
-#if !defined(__CYGWIN__)
-  captured_stdout_ = GetCapturedTestStdout();
-#endif
+  RunProtocWithArgs(std::move(args));
 }
 
 // -------------------------------------------------------------------
-
-void CommandLineInterfaceTest::CreateTempFile(absl::string_view name,
-                                              absl::string_view contents) {
-  // Create parent directory, if necessary.
-  std::string::size_type slash_pos = name.find_last_of('/');
-  if (slash_pos != std::string::npos) {
-    absl::string_view dir = name.substr(0, slash_pos);
-    if (!FileExists(absl::StrCat(temp_directory_, "/", dir))) {
-      ABSL_CHECK_OK(File::RecursivelyCreateDir(
-          absl::StrCat(temp_directory_, "/", dir), 0777));
-    }
-  }
-
-  // Write file.
-  std::string full_name = absl::StrCat(temp_directory_, "/", name);
-  ABSL_CHECK_OK(File::SetContents(
-      full_name, absl::StrReplaceAll(contents, {{"$tmpdir", temp_directory_}}),
-      true));
-}
-
-void CommandLineInterfaceTest::CreateTempDir(absl::string_view name) {
-  ABSL_CHECK_OK(File::RecursivelyCreateDir(
-      absl::StrCat(temp_directory_, "/", name), 0777));
-}
-
-// -------------------------------------------------------------------
-
-void CommandLineInterfaceTest::ExpectNoErrors() {
-  EXPECT_EQ(0, return_code_);
-  EXPECT_EQ("", error_text_);
-}
-
-void CommandLineInterfaceTest::ExpectErrorText(
-    const std::string& expected_text) {
-  EXPECT_NE(0, return_code_);
-  EXPECT_EQ(absl::StrReplaceAll(expected_text, {{"$tmpdir", temp_directory_}}),
-            error_text_);
-}
-
-void CommandLineInterfaceTest::ExpectErrorSubstring(
-    const std::string& expected_substring) {
-  EXPECT_NE(0, return_code_);
-  EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring, error_text_);
-}
-
-void CommandLineInterfaceTest::ExpectWarningSubstring(
-    const std::string& expected_substring) {
-  EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring, error_text_);
-  EXPECT_EQ(0, return_code_);
-}
-
-#if defined(_WIN32) && !defined(__CYGWIN__)
-bool CommandLineInterfaceTest::HasAlternateErrorSubstring(
-    const std::string& expected_substring) {
-  EXPECT_NE(0, return_code_);
-  return error_text_.find(expected_substring) != std::string::npos;
-}
-#endif  // _WIN32 && !__CYGWIN__
 
 void CommandLineInterfaceTest::ExpectGenerated(
     const std::string& generator_name, const std::string& parameter,
     const std::string& proto_name, const std::string& message_name) {
   MockCodeGenerator::ExpectGenerated(generator_name, parameter, "", proto_name,
-                                     message_name, proto_name, temp_directory_);
+                                     message_name, proto_name,
+                                     temp_directory());
 }
 
 void CommandLineInterfaceTest::ExpectGenerated(
@@ -467,7 +302,7 @@ void CommandLineInterfaceTest::ExpectGenerated(
     const std::string& output_directory) {
   MockCodeGenerator::ExpectGenerated(
       generator_name, parameter, "", proto_name, message_name, proto_name,
-      absl::StrCat(temp_directory_, "/", output_directory));
+      absl::StrCat(temp_directory(), "/", output_directory));
 }
 
 void CommandLineInterfaceTest::ExpectGeneratedWithMultipleInputs(
@@ -475,7 +310,7 @@ void CommandLineInterfaceTest::ExpectGeneratedWithMultipleInputs(
     const std::string& proto_name, const std::string& message_name) {
   MockCodeGenerator::ExpectGenerated(generator_name, "", "", proto_name,
                                      message_name, all_proto_names,
-                                     temp_directory_);
+                                     temp_directory());
 }
 
 void CommandLineInterfaceTest::ExpectGeneratedWithInsertions(
@@ -484,12 +319,12 @@ void CommandLineInterfaceTest::ExpectGeneratedWithInsertions(
     const std::string& message_name) {
   MockCodeGenerator::ExpectGenerated(generator_name, parameter, insertions,
                                      proto_name, message_name, proto_name,
-                                     temp_directory_);
+                                     temp_directory());
 }
 
 void CommandLineInterfaceTest::CheckGeneratedAnnotations(
     const std::string& name, const std::string& file) {
-  MockCodeGenerator::CheckGeneratedAnnotations(name, file, temp_directory_);
+  MockCodeGenerator::CheckGeneratedAnnotations(name, file, temp_directory());
 }
 
 #if defined(_WIN32)
@@ -501,15 +336,28 @@ void CommandLineInterfaceTest::ExpectNullCodeGeneratorCalled(
 #endif  // _WIN32
 
 
-void CommandLineInterfaceTest::ReadDescriptorSet(
-    absl::string_view filename, FileDescriptorSet* descriptor_set) {
-  std::string path = absl::StrCat(temp_directory_, "/", filename);
+std::string CommandLineInterfaceTest::ReadFile(absl::string_view filename) {
+  std::string path = absl::StrCat(temp_directory(), "/", filename);
   std::string file_contents;
   ABSL_CHECK_OK(File::GetContents(path, &file_contents, true));
+  return file_contents;
+}
 
+void CommandLineInterfaceTest::ReadDescriptorSet(
+    absl::string_view filename, FileDescriptorSet* descriptor_set) {
+  std::string file_contents = ReadFile(filename);
   if (!descriptor_set->ParseFromString(file_contents)) {
-    FAIL() << "Could not parse file contents: " << path;
+    FAIL() << "Could not parse file contents: " << filename;
   }
+}
+
+FeatureSetDefaults CommandLineInterfaceTest::ReadEditionDefaults(
+    absl::string_view filename) {
+  FeatureSetDefaults defaults;
+  std::string file_contents = ReadFile(filename);
+  ABSL_CHECK(defaults.ParseFromString(file_contents))
+      << "Could not parse file contents: " << filename;
+  return defaults;
 }
 
 void CommandLineInterfaceTest::WriteDescriptorSet(
@@ -517,34 +365,6 @@ void CommandLineInterfaceTest::WriteDescriptorSet(
   std::string binary_proto;
   ABSL_CHECK(descriptor_set->SerializeToString(&binary_proto));
   CreateTempFile(filename, binary_proto);
-}
-
-void CommandLineInterfaceTest::ExpectCapturedStdout(
-    const std::string& expected_text) {
-  EXPECT_EQ(expected_text, captured_stdout_);
-}
-
-void CommandLineInterfaceTest::ExpectCapturedStdoutSubstringWithZeroReturnCode(
-    const std::string& expected_substring) {
-  EXPECT_EQ(0, return_code_);
-  EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring,
-                      captured_stdout_);
-}
-
-void CommandLineInterfaceTest::ExpectCapturedStderrSubstringWithZeroReturnCode(
-    const std::string& expected_substring) {
-  EXPECT_EQ(0, return_code_);
-  EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring, error_text_);
-}
-
-void CommandLineInterfaceTest::ExpectFileContent(absl::string_view filename,
-                                                 absl::string_view content) {
-  std::string path = absl::StrCat(temp_directory_, "/", filename);
-  std::string file_contents;
-  ABSL_CHECK_OK(File::GetContents(path, &file_contents, true));
-
-  EXPECT_EQ(absl::StrReplaceAll(content, {{"$tmpdir", temp_directory_}}),
-            file_contents);
 }
 
 // ===================================================================
@@ -608,6 +428,137 @@ TEST_F(CommandLineInterfaceTest, BasicPlugin_DescriptorSetIn) {
 
   ExpectNoErrors();
   ExpectGenerated("test_plugin", "", "foo.proto", "Foo");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_OptionRetention) {
+  CreateTempFile("foo.proto",
+                 R"pb(syntax = "proto2"
+                      ;
+                      import "bar.proto";
+                      package foo;
+                      message Foo {
+                        optional bar.Bar b = 1;
+                        extensions 1000 to max [
+                          declaration = {
+                            number: 1000
+                            full_name: ".foo.my_ext"
+                            type: ".foo.MyType"
+                          }
+                        ];
+                      })pb");
+  CreateTempFile("bar.proto",
+                 R"pb(syntax = "proto2"
+                      ;
+                      package bar;
+                      message Bar {
+                        extensions 1000 to max [
+                          declaration = {
+                            number: 1000
+                            full_name: ".baz.my_ext"
+                            type: ".baz.MyType"
+                          }
+                        ];
+                      })pb");
+
+#ifdef GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH
+  std::string plugin_path = GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH;
+#else
+  std::string plugin_path = absl::StrCat(
+      TestUtil::TestSourceDir(), "/google/protobuf/compiler/fake_plugin");
+#endif
+
+  // Invoke protoc with fake_plugin to get ahold of the CodeGeneratorRequest
+  // sent by protoc.
+  Run(absl::StrCat(
+      "protocol_compiler --fake_plugin_out=$tmpdir --proto_path=$tmpdir "
+      "foo.proto --plugin=prefix-gen-fake_plugin=",
+      plugin_path));
+  ExpectNoErrors();
+  std::string base64_output = ReadFile("foo.proto.request");
+  std::string binary_request;
+  ASSERT_TRUE(absl::Base64Unescape(base64_output, &binary_request));
+  CodeGeneratorRequest request;
+  ASSERT_TRUE(request.ParseFromString(binary_request));
+
+  // request.proto_file() should include source-retention options for bar.proto
+  // but not for foo.proto. Protoc should strip source-retention options from
+  // the immediate proto files being built, but not for all dependencies.
+  ASSERT_EQ(request.proto_file_size(), 2);
+  {
+    EXPECT_EQ(request.proto_file(0).name(), "bar.proto");
+    ASSERT_EQ(request.proto_file(0).message_type_size(), 1);
+    const DescriptorProto& m = request.proto_file(0).message_type(0);
+    ASSERT_EQ(m.extension_range_size(), 1);
+    EXPECT_EQ(m.extension_range(0).options().declaration_size(), 1);
+  }
+
+  {
+    EXPECT_EQ(request.proto_file(1).name(), "foo.proto");
+    ASSERT_EQ(request.proto_file(1).message_type_size(), 1);
+    const DescriptorProto& m = request.proto_file(1).message_type(0);
+    ASSERT_EQ(m.extension_range_size(), 1);
+    EXPECT_TRUE(m.extension_range(0).options().declaration().empty());
+  }
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_SourceFileDescriptors) {
+  CreateTempFile("foo.proto",
+                 R"pb(syntax = "proto2"
+                      ;
+                      import "bar.proto";
+                      package foo;
+                      message Foo {
+                        optional bar.Bar b = 1;
+                        extensions 1000 to max [
+                          declaration = {
+                            number: 1000
+                            full_name: ".foo.my_ext"
+                            type: ".foo.MyType"
+                          }
+                        ];
+                      })pb");
+  CreateTempFile("bar.proto",
+                 R"pb(syntax = "proto2"
+                      ;
+                      package bar;
+                      message Bar {
+                        extensions 1000 to max [
+                          declaration = {
+                            number: 1000
+                            full_name: ".baz.my_ext"
+                            type: ".baz.MyType"
+                          }
+                        ];
+                      })pb");
+
+#ifdef GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH
+  std::string plugin_path = GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH;
+#else
+  std::string plugin_path = absl::StrCat(
+      TestUtil::TestSourceDir(), "/google/protobuf/compiler/fake_plugin");
+#endif
+
+  // Invoke protoc with fake_plugin to get ahold of the CodeGeneratorRequest
+  // sent by protoc.
+  Run(absl::StrCat(
+      "protocol_compiler --fake_plugin_out=$tmpdir --proto_path=$tmpdir "
+      "foo.proto --plugin=prefix-gen-fake_plugin=",
+      plugin_path));
+  ExpectNoErrors();
+  std::string base64_output = ReadFile("foo.proto.request");
+  std::string binary_request;
+  ASSERT_TRUE(absl::Base64Unescape(base64_output, &binary_request));
+  CodeGeneratorRequest request;
+  ASSERT_TRUE(request.ParseFromString(binary_request));
+
+  // request.source_file_descriptors() should consist of a descriptor for
+  // foo.proto that includes source-retention options.
+  ASSERT_EQ(request.source_file_descriptors_size(), 1);
+  EXPECT_EQ(request.source_file_descriptors(0).name(), "foo.proto");
+  ASSERT_EQ(request.source_file_descriptors(0).message_type_size(), 1);
+  const DescriptorProto& m = request.source_file_descriptors(0).message_type(0);
+  ASSERT_EQ(m.extension_range_size(), 1);
+  EXPECT_EQ(m.extension_range(0).options().declaration_size(), 1);
 }
 
 TEST_F(CommandLineInterfaceTest, GeneratorAndPlugin) {
@@ -738,7 +689,7 @@ TEST_F(CommandLineInterfaceTest, MultipleInputs_UnusedImport_DescriptorSetIn) {
       "--descriptor_set_in=$tmpdir/foo.bin "
       "import_custom_unknown_options.proto");
 
-  // TODO(jieluo): Fix this test. This test case only happens when
+  // TODO: Fix this test. This test case only happens when
   // CommandLineInterface::Run() is used instead of invoke protoc combined
   // with descriptor_set_in, and same custom options are defined in both
   // generated pool and descriptor_set_in. There's no such uages for now but
@@ -876,7 +827,7 @@ TEST_F(CommandLineInterfaceTest,
   foo_file_descriptor_proto.set_name("foo.proto");
   foo_file_descriptor_proto.add_message_type()->set_name("Foo");
 
-  file_descriptor_set.add_file()->CopyFrom(foo_file_descriptor_proto);
+  *file_descriptor_set.add_file() = foo_file_descriptor_proto;
 
   FileDescriptorProto* file_descriptor_proto = file_descriptor_set.add_file();
   file_descriptor_proto->set_name("bar.proto");
@@ -895,7 +846,7 @@ TEST_F(CommandLineInterfaceTest,
   WriteDescriptorSet("foo_and_bar.bin", &file_descriptor_set);
 
   file_descriptor_set.clear_file();
-  file_descriptor_set.add_file()->CopyFrom(foo_file_descriptor_proto);
+  *file_descriptor_set.add_file() = foo_file_descriptor_proto;
 
   file_descriptor_proto = file_descriptor_set.add_file();
   file_descriptor_proto->set_name("baz.proto");
@@ -1002,7 +953,7 @@ TEST_F(CommandLineInterfaceTest,
       "--proto_path=$tmpdir unused.proto bar.proto foo.proto");
   // Reporting unused imports here is unfair, since it's unactionable. Notice
   // the lack of a line number.
-  // TODO(b/144853061): If the file with unused import is from the descriptor
+  // TODO: If the file with unused import is from the descriptor
   // set and not from the file system, suppress the warning.
   ExpectWarningSubstring("bar.proto: warning: Import unused.proto is unused.");
 }
@@ -1028,7 +979,7 @@ TEST_F(CommandLineInterfaceTest,
   ExpectNoErrors();
 }
 
-TEST_F(CommandLineInterfaceTest, ReportsTransitiveMisingImports_LeafFirst) {
+TEST_F(CommandLineInterfaceTest, ReportsTransitiveMissingImports_LeafFirst) {
   CreateTempFile("unused.proto",
                  "syntax = \"proto2\";\n"
                  "message Unused {}\n");
@@ -1049,7 +1000,7 @@ TEST_F(CommandLineInterfaceTest, ReportsTransitiveMisingImports_LeafFirst) {
       "bar.proto:2:1: warning: Import unused.proto is unused.");
 }
 
-TEST_F(CommandLineInterfaceTest, ReportsTransitiveMisingImports_LeafLast) {
+TEST_F(CommandLineInterfaceTest, ReportsTransitiveMissingImports_LeafLast) {
   CreateTempFile("unused.proto",
                  "syntax = \"proto2\";\n"
                  "message Unused {}\n");
@@ -1418,6 +1369,883 @@ TEST_F(CommandLineInterfaceTest, AllowServicesHasService) {
   ExpectGenerated("test_generator", "", "foo.proto", "Foo");
 }
 
+TEST_F(CommandLineInterfaceTest, NonExperimentalEditions) {
+  CreateTempFile("foo.proto",
+                 "edition = \"2023\";\n"
+                 "message FooRequest {}\n");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, EditionsFlagExplicitTrue) {
+  CreateTempFile("foo.proto",
+                 "edition = \"2023\";\n"
+                 "message FooRequest {}\n");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, FeaturesEditionZero) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    option features.field_presence = IMPLICIT;
+    message Foo {
+      int32 bar = 1 [default = 5, features.field_presence = EXPLICIT];
+      int32 baz = 2;
+    })schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, FeatureExtensions) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("features.proto",
+                 R"schema(
+    syntax = "proto2";
+    package pb;
+    import "google/protobuf/descriptor.proto";
+    extend google.protobuf.FeatureSet {
+      optional TestFeatures test = 9999;
+    }
+    message TestFeatures {
+      optional int32 int_feature = 1 [
+        retention = RETENTION_RUNTIME,
+        targets = TARGET_TYPE_FIELD,
+        edition_defaults = { edition: EDITION_2023, value: "3" }
+      ];
+    })schema");
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    import "features.proto";
+    message Foo {
+      int32 bar = 1;
+      int32 baz = 2 [features.(pb.test).int_feature = 5];
+    })schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, FeatureValidationError) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    option features.field_presence = IMPLICIT;
+    message Foo {
+      int32 bar = 1 [default = 5, features.field_presence = FIELD_PRESENCE_UNKNOWN];
+      int32 baz = 2;
+    })schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "`field_presence` must resolve to a known value, found "
+      "FIELD_PRESENCE_UNKNOWN");
+}
+
+TEST_F(CommandLineInterfaceTest, FeatureTargetError) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    message Foo {
+      option features.field_presence = IMPLICIT;
+      int32 bar = 1 [default = 5, features.field_presence = EXPLICIT];
+      int32 baz = 2;
+    })schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "FeatureSet.field_presence cannot be set on an entity of type `message`");
+}
+
+TEST_F(CommandLineInterfaceTest, FeatureExtensionError) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("features.proto",
+                 pb::TestInvalidFeatures::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    import "features.proto";
+    message Foo {
+      int32 bar = 1;
+      int32 baz = 2 [features.(pb.test_invalid).repeated_feature = 5];
+    })schema");
+
+  mock_generator_->set_feature_extensions(
+      {GetExtensionReflection(pb::test_invalid)});
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Feature field pb.TestInvalidFeatures.repeated_feature is an unsupported "
+      "repeated field");
+}
+
+TEST_F(CommandLineInterfaceTest, InvalidMinimumEditionError) {
+  CreateTempFile("foo.proto", R"schema(edition = "2023";)schema");
+
+  mock_generator_->set_minimum_edition(EDITION_1_TEST_ONLY);
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "generator --test_out specifies a minimum edition 1_TEST_ONLY which is "
+      "not the protoc minimum PROTO2");
+}
+
+TEST_F(CommandLineInterfaceTest, InvalidMaximumEditionError) {
+  CreateTempFile("foo.proto", R"schema(edition = "2023";)schema");
+
+  mock_generator_->set_maximum_edition(EDITION_99999_TEST_ONLY);
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "generator --test_out specifies a maximum edition 99999_TEST_ONLY which "
+      "is not the protoc maximum 2023");
+}
+
+TEST_F(CommandLineInterfaceTest, InvalidFeatureExtensionError) {
+  CreateTempFile("foo.proto", R"schema(edition = "2023";)schema");
+
+  mock_generator_->set_feature_extensions({nullptr});
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "generator --test_out specifies an unknown feature extension");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_InvalidFeatureExtensionError) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  SetMockGeneratorTestCase("invalid_features");
+  Run("protocol_compiler --proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
+  ExpectErrorSubstring(
+      "error generating feature defaults: Unknown extension of "
+      "google.protobuf.FeatureSet");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_DeprecatedEdition) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  SetMockGeneratorTestCase("high_minimum");
+  Run("protocol_compiler "
+      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
+  ExpectErrorSubstring(
+      "foo.proto: is a file using edition 2023, which isn't supported by code "
+      "generator prefix-gen-plug.  Please upgrade your file to at least "
+      "edition 99997_TEST_ONLY.");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_DeprecatedFeature) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("google/protobuf/unittest_features.proto",
+                 pb::TestFeatures::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    import "google/protobuf/unittest_features.proto";
+    package foo;
+    option features.(pb.test).removed_feature = VALUE9;
+  )schema");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectWarningSubstring(
+      "foo.proto:4:5: warning: Feature pb.TestFeatures.removed_feature has "
+      "been deprecated in edition 2023: Custom feature deprecation warning\n");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_TransitiveDeprecatedFeature) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("google/protobuf/unittest_features.proto",
+                 pb::TestFeatures::descriptor()->file()->DebugString());
+  CreateTempFile("unused.proto",
+                 R"schema(
+    edition = "2023";
+    import "google/protobuf/unittest_features.proto";
+    package foo;
+    option features.(pb.test).removed_feature = VALUE9;
+    message Foo {}
+  )schema");
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    import "unused.proto";
+    package foo;
+    message Bar {
+      Foo foo = 1;
+    }
+  )schema");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_FutureEdition) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  SetMockGeneratorTestCase("low_maximum");
+  Run("protocol_compiler "
+      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
+  ExpectErrorSubstring(
+      "foo.proto: is a file using edition 2023, which isn't supported by code "
+      "generator prefix-gen-plug.  Please ask the owner of this code generator "
+      "to add support or switch back to a maximum of edition PROTO2.");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_VersionSkewFuture) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "99997_TEST_ONLY";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  SetMockGeneratorTestCase("high_maximum");
+  Run("protocol_compiler "
+      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
+  ExpectErrorSubstring(
+      "foo.proto:2:5: Edition 99997_TEST_ONLY is later than the maximum "
+      "supported edition 2023");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_VersionSkewPast) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "1_TEST_ONLY";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  SetMockGeneratorTestCase("low_minimum");
+  Run("protocol_compiler "
+      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
+  ExpectErrorSubstring(
+      "foo.proto:2:5: Edition 1_TEST_ONLY is earlier than the minimum "
+      "supported edition PROTO2");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_MissingFeatureExtensionError) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  SetMockGeneratorTestCase("no_feature_defaults");
+  Run("protocol_compiler --proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
+  ExpectErrorSubstring("Test features were not resolved properly");
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_TestFeatures) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_LegacyFeatures) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+                      syntax = "proto2";
+                      package foo;
+                      message Foo {
+                        optional int32 b = 1;
+                      })schema");
+
+#ifdef GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH
+  std::string plugin_path = GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH;
+#else
+  std::string plugin_path = absl::StrCat(
+      TestUtil::TestSourceDir(), "/google/protobuf/compiler/fake_plugin");
+#endif
+
+  // Invoke protoc with fake_plugin to get ahold of the CodeGeneratorRequest
+  // sent by protoc.
+  Run(absl::StrCat(
+      "protocol_compiler --fake_plugin_out=$tmpdir --proto_path=$tmpdir "
+      "foo.proto --plugin=prefix-gen-fake_plugin=",
+      plugin_path));
+  ExpectNoErrors();
+  std::string base64_output = ReadFile("foo.proto.request");
+  std::string binary_request;
+  ASSERT_TRUE(absl::Base64Unescape(base64_output, &binary_request));
+  CodeGeneratorRequest request;
+  ASSERT_TRUE(request.ParseFromString(binary_request));
+
+  EXPECT_FALSE(
+      request.proto_file(0).message_type(0).field(0).options().has_features());
+  EXPECT_FALSE(request.source_file_descriptors(0)
+                   .message_type(0)
+                   .field(0)
+                   .options()
+                   .has_features());
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_RuntimeFeatures) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+                      edition = "2023";
+                      package foo;
+                      message Foo {
+                        int32 b = 1 [features.field_presence = IMPLICIT];
+                      })schema");
+
+#ifdef GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH
+  std::string plugin_path = GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH;
+#else
+  std::string plugin_path = absl::StrCat(
+      TestUtil::TestSourceDir(), "/google/protobuf/compiler/fake_plugin");
+#endif
+
+  // Invoke protoc with fake_plugin to get ahold of the CodeGeneratorRequest
+  // sent by protoc.
+  Run(absl::StrCat(
+      "protocol_compiler --fake_plugin_out=$tmpdir --proto_path=$tmpdir "
+      "foo.proto --plugin=prefix-gen-fake_plugin=",
+      plugin_path));
+  ExpectNoErrors();
+  std::string base64_output = ReadFile("foo.proto.request");
+  std::string binary_request;
+  ASSERT_TRUE(absl::Base64Unescape(base64_output, &binary_request));
+  CodeGeneratorRequest request;
+  ASSERT_TRUE(request.ParseFromString(binary_request));
+
+  EXPECT_THAT(
+      request.proto_file(0).message_type(0).field(0).options().features(),
+      EqualsProto(R"pb(field_presence: IMPLICIT)pb"));
+  EXPECT_THAT(request.source_file_descriptors(0)
+                  .message_type(0)
+                  .field(0)
+                  .options()
+                  .features(),
+              EqualsProto(R"pb(field_presence: IMPLICIT)pb"));
+}
+
+TEST_F(CommandLineInterfaceTest, Plugin_SourceFeatures) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("google/protobuf/unittest_features.proto",
+                 pb::TestFeatures::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    import "google/protobuf/unittest_features.proto";
+    package foo;
+    message Foo {
+      int32 b = 1 [
+        features.(pb.test).field_feature = VALUE6,
+        features.(pb.test).source_feature = VALUE5
+      ];
+    }
+  )schema");
+
+#ifdef GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH
+  std::string plugin_path = GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH;
+#else
+  std::string plugin_path = absl::StrCat(
+      TestUtil::TestSourceDir(), "/google/protobuf/compiler/fake_plugin");
+#endif
+
+  // Invoke protoc with fake_plugin to get ahold of the CodeGeneratorRequest
+  // sent by protoc.
+  Run(absl::StrCat(
+      "protocol_compiler --fake_plugin_out=$tmpdir --proto_path=$tmpdir "
+      "foo.proto --plugin=prefix-gen-fake_plugin=",
+      plugin_path));
+  ExpectNoErrors();
+  std::string base64_output = ReadFile("foo.proto.request");
+  std::string binary_request;
+  ASSERT_TRUE(absl::Base64Unescape(base64_output, &binary_request));
+  CodeGeneratorRequest request;
+  ASSERT_TRUE(request.ParseFromString(binary_request));
+
+  {
+    ASSERT_EQ(request.proto_file(2).name(), "foo.proto");
+    const FeatureSet& features =
+        request.proto_file(2).message_type(0).field(0).options().features();
+    EXPECT_THAT(features,
+                EqualsProto(R"pb([pb.test] { field_feature: VALUE6 })pb"));
+  }
+
+  {
+    ASSERT_EQ(request.source_file_descriptors(0).name(), "foo.proto");
+    const FeatureSet& features = request.source_file_descriptors(0)
+                                     .message_type(0)
+                                     .field(0)
+                                     .options()
+                                     .features();
+    EXPECT_THAT(features, EqualsProto(R"pb([pb.test] {
+                                             field_feature: VALUE6
+                                             source_feature: VALUE5
+                                           })pb"));
+  }
+}
+
+TEST_F(CommandLineInterfaceTest, GeneratorFeatureLifetimeError) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("google/protobuf/unittest_features.proto",
+                 pb::TestFeatures::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+    import "google/protobuf/unittest_features.proto";
+    package foo;
+    message Foo {
+      int32 b = 1 [
+        features.(pb.test).removed_feature = VALUE6
+      ];
+    }
+  )schema");
+
+  Run("protocol_compiler --experimental_editions --proto_path=$tmpdir "
+      "--test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "foo.proto:6:13: Feature pb.TestFeatures.removed_feature has been "
+      "removed in edition 2024");
+}
+
+TEST_F(CommandLineInterfaceTest, PluginFeatureLifetimeError) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("google/protobuf/unittest_features.proto",
+                 pb::TestFeatures::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    import "google/protobuf/unittest_features.proto";
+    package foo;
+    message Foo {
+      int32 b = 1 [
+        features.(pb.test).future_feature = VALUE6
+      ];
+    }
+  )schema");
+
+#ifdef GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH
+  std::string plugin_path = GOOGLE_PROTOBUF_FAKE_PLUGIN_PATH;
+#else
+  std::string plugin_path = absl::StrCat(
+      TestUtil::TestSourceDir(), "/google/protobuf/compiler/fake_plugin");
+#endif
+
+  Run(absl::StrCat(
+      "protocol_compiler --fake_plugin_out=$tmpdir --proto_path=$tmpdir "
+      "foo.proto --plugin=prefix-gen-fake_plugin=",
+      plugin_path));
+  ExpectErrorSubstring(
+      "foo.proto:6:13: Feature pb.TestFeatures.future_feature wasn't "
+      "introduced until edition 2024");
+}
+
+TEST_F(CommandLineInterfaceTest, GeneratorNoEditionsSupport) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  CreateGeneratorWithMissingFeatures("--no_editions_out",
+                                     "Doesn't support editions",
+                                     CodeGenerator::FEATURE_SUPPORTS_EDITIONS);
+
+  Run("protocol_compiler "
+      "--proto_path=$tmpdir foo.proto --no_editions_out=$tmpdir");
+
+  ExpectErrorSubstring(
+      "code generator --no_editions_out hasn't been updated to support "
+      "editions");
+}
+
+TEST_F(CommandLineInterfaceTest, PluginNoEditionsSupport) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message Foo {
+      int32 i = 1;
+    }
+  )schema");
+
+  SetMockGeneratorTestCase("no_editions");
+  Run("protocol_compiler "
+      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
+  ExpectErrorSubstring(
+      "code generator prefix-gen-plug hasn't been updated to support editions");
+}
+
+TEST_F(CommandLineInterfaceTest, PluginErrorAndNoEditionsSupport) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    message MockCodeGenerator_Error { }
+  )schema");
+
+  SetMockGeneratorTestCase("no_editions");
+  Run("protocol_compiler "
+      "--proto_path=$tmpdir foo.proto --plug_out=$tmpdir");
+
+  ExpectErrorSubstring(
+      "code generator prefix-gen-plug hasn't been updated to support editions");
+  ExpectErrorSubstring(
+      "--plug_out: foo.proto: Saw message type MockCodeGenerator_Error.");
+}
+
+TEST_F(CommandLineInterfaceTest, EditionDefaults) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--edition_defaults_out=$tmpdir/defaults "
+      "google/protobuf/descriptor.proto");
+  ExpectNoErrors();
+
+  FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
+  EXPECT_THAT(defaults, EqualsProto(R"pb(
+                defaults {
+                  edition: EDITION_LEGACY
+                  overridable_features {}
+                  fixed_features {
+                    field_presence: EXPLICIT
+                    enum_type: CLOSED
+                    repeated_field_encoding: EXPANDED
+                    utf8_validation: NONE
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: LEGACY_BEST_EFFORT
+                  }
+                }
+                defaults {
+                  edition: EDITION_PROTO3
+                  overridable_features {}
+                  fixed_features {
+                    field_presence: IMPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                  }
+                }
+                defaults {
+                  edition: EDITION_2023
+                  overridable_features {
+                    field_presence: EXPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                  }
+                  fixed_features {}
+                }
+                minimum_edition: EDITION_PROTO2
+                maximum_edition: EDITION_2023
+              )pb"));
+}
+
+TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--edition_defaults_out=$tmpdir/defaults "
+      "--edition_defaults_maximum=99997_TEST_ONLY "
+      "google/protobuf/descriptor.proto");
+  ExpectNoErrors();
+
+  FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
+  EXPECT_THAT(defaults, EqualsProto(R"pb(
+                defaults {
+                  edition: EDITION_LEGACY
+                  overridable_features {}
+                  fixed_features {
+                    field_presence: EXPLICIT
+                    enum_type: CLOSED
+                    repeated_field_encoding: EXPANDED
+                    utf8_validation: NONE
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: LEGACY_BEST_EFFORT
+                  }
+                }
+                defaults {
+                  edition: EDITION_PROTO3
+                  overridable_features {}
+                  fixed_features {
+                    field_presence: IMPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                  }
+                }
+                defaults {
+                  edition: EDITION_2023
+                  overridable_features {
+                    field_presence: EXPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                  }
+                  fixed_features {}
+                }
+                minimum_edition: EDITION_PROTO2
+                maximum_edition: EDITION_99997_TEST_ONLY
+              )pb"));
+}
+
+TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--edition_defaults_out=$tmpdir/defaults "
+      "--edition_defaults_minimum=99997_TEST_ONLY "
+      "--edition_defaults_maximum=99999_TEST_ONLY "
+      "google/protobuf/descriptor.proto");
+  ExpectNoErrors();
+
+  FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
+  EXPECT_THAT(defaults, EqualsProto(R"pb(
+                defaults {
+                  edition: EDITION_LEGACY
+                  overridable_features {}
+                  fixed_features {
+                    field_presence: EXPLICIT
+                    enum_type: CLOSED
+                    repeated_field_encoding: EXPANDED
+                    utf8_validation: NONE
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: LEGACY_BEST_EFFORT
+                  }
+                }
+                defaults {
+                  edition: EDITION_PROTO3
+                  overridable_features {}
+                  fixed_features {
+                    field_presence: IMPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                  }
+                }
+                defaults {
+                  edition: EDITION_2023
+                  overridable_features {
+                    field_presence: EXPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                  }
+                  fixed_features {}
+                }
+                minimum_edition: EDITION_99997_TEST_ONLY
+                maximum_edition: EDITION_99999_TEST_ONLY
+              )pb"));
+}
+
+TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("features.proto",
+                 pb::TestFeatures::descriptor()->file()->DebugString());
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--edition_defaults_out=$tmpdir/defaults "
+      "--edition_defaults_maximum=99999_TEST_ONLY "
+      "features.proto google/protobuf/descriptor.proto");
+  ExpectNoErrors();
+
+  FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
+  EXPECT_EQ(defaults.minimum_edition(), EDITION_PROTO2);
+  EXPECT_EQ(defaults.maximum_edition(), EDITION_99999_TEST_ONLY);
+  ASSERT_EQ(defaults.defaults_size(), 7);
+  EXPECT_EQ(defaults.defaults(0).edition(), EDITION_LEGACY);
+  EXPECT_EQ(defaults.defaults(2).edition(), EDITION_2023);
+  EXPECT_EQ(defaults.defaults(3).edition(), EDITION_2024);
+  EXPECT_EQ(defaults.defaults(4).edition(), EDITION_99997_TEST_ONLY);
+  EXPECT_EQ(defaults.defaults(5).edition(), EDITION_99998_TEST_ONLY);
+  EXPECT_EQ(defaults.defaults(0)
+                .fixed_features()
+                .GetExtension(pb::test)
+                .file_feature(),
+            pb::EnumFeature::VALUE1);
+  EXPECT_EQ(defaults.defaults(2)
+                .overridable_features()
+                .GetExtension(pb::test)
+                .file_feature(),
+            pb::EnumFeature::VALUE3);
+  EXPECT_EQ(defaults.defaults(3)
+                .overridable_features()
+                .GetExtension(pb::test)
+                .file_feature(),
+            pb::EnumFeature::VALUE3);
+  EXPECT_EQ(defaults.defaults(4)
+                .overridable_features()
+                .GetExtension(pb::test)
+                .file_feature(),
+            pb::EnumFeature::VALUE4);
+  EXPECT_EQ(defaults.defaults(5)
+                .overridable_features()
+                .GetExtension(pb::test)
+                .file_feature(),
+            pb::EnumFeature::VALUE5);
+}
+
+#ifndef _WIN32
+TEST_F(CommandLineInterfaceTest, EditionDefaultsDependencyManifest) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("features.proto",
+                 pb::TestFeatures::descriptor()->file()->DebugString());
+
+  Run("protocol_compiler --dependency_out=$tmpdir/manifest "
+      "--edition_defaults_out=$tmpdir/defaults "
+      "--proto_path=$tmpdir features.proto");
+
+  ExpectNoErrors();
+
+  ExpectFileContent(
+      "manifest",
+      "$tmpdir/defaults: "
+      "$tmpdir/google/protobuf/descriptor.proto\\\n $tmpdir/features.proto");
+}
+#endif  // _WIN32
+
+TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMissingDescriptor) {
+  CreateTempFile("features.proto", R"schema(
+    syntax = "proto2";
+    message Foo {}
+  )schema");
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--edition_defaults_out=$tmpdir/defaults "
+      "features.proto");
+  ExpectErrorSubstring("Could not find FeatureSet in descriptor pool");
+}
+
+TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidTwice) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--edition_defaults_out=$tmpdir/defaults "
+      "--edition_defaults_out=$tmpdir/defaults "
+      "google/protobuf/descriptor.proto");
+  ExpectErrorSubstring("edition_defaults_out may only be passed once");
+}
+
+TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidEmpty) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--edition_defaults_out= "
+      "google/protobuf/descriptor.proto");
+  ExpectErrorSubstring("edition_defaults_out requires a non-empty value");
+}
+
+TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidCompile) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--encode=pb.CppFeatures "
+      "--edition_defaults_out=$tmpdir/defaults "
+      "google/protobuf/descriptor.proto");
+  ExpectErrorSubstring("Cannot use --encode or --decode and generate defaults");
+}
+
+TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMinimumTwice) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--edition_defaults_minimum=2023 "
+      "--edition_defaults_minimum=2023 "
+      "google/protobuf/descriptor.proto");
+  ExpectErrorSubstring("edition_defaults_minimum may only be passed once");
+}
+
+TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMinimumEmpty) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--edition_defaults_minimum= "
+      "google/protobuf/descriptor.proto");
+  ExpectErrorSubstring("unknown edition \"\"");
+}
+
+TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMinimumUnknown) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--edition_defaults_minimum=2022 "
+      "google/protobuf/descriptor.proto");
+  ExpectErrorSubstring("unknown edition \"2022\"");
+}
+
+TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMaximumTwice) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--edition_defaults_maximum=2023 "
+      "--edition_defaults_maximum=2023 "
+      "google/protobuf/descriptor.proto");
+  ExpectErrorSubstring("edition_defaults_maximum may only be passed once");
+}
+
+TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMaximumEmpty) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--edition_defaults_maximum= "
+      "google/protobuf/descriptor.proto");
+  ExpectErrorSubstring("unknown edition \"\"");
+}
+
+TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMaximumUnknown) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--edition_defaults_maximum=2022 "
+      "google/protobuf/descriptor.proto");
+  ExpectErrorSubstring("unknown edition \"2022\"");
+}
+
 
 TEST_F(CommandLineInterfaceTest, DirectDependencies_Missing_EmptyList) {
   CreateTempFile("foo.proto",
@@ -1770,7 +2598,7 @@ TEST_F(CommandLineInterfaceTest, DescriptorSetOptionRetentionOverride) {
 }
 
 #ifdef _WIN32
-// TODO(teboring): Figure out how to write test on windows.
+// TODO: Figure out how to write test on windows.
 #else
 TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileGivenTwoInputs) {
   CreateTempFile("foo.proto",
@@ -1790,7 +2618,6 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileGivenTwoInputs) {
       "Can only process one input file when using --dependency_out=FILE.\n");
 }
 
-#ifdef PROTOBUF_OPENSOURCE
 TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile) {
   CreateTempFile("foo.proto",
                  "syntax = \"proto2\";\n"
@@ -1802,7 +2629,8 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile) {
                  "  optional Foo foo = 1;\n"
                  "}\n");
 
-  std::string current_working_directory = getcwd(nullptr, 0);
+  char current_dir[PATH_MAX];
+  ASSERT_EQ(getcwd(current_dir, sizeof(current_dir)), current_dir);
   SwitchToTempDirectory();
 
   Run("protocol_compiler --dependency_out=manifest --test_out=. "
@@ -1814,12 +2642,8 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile) {
                     "bar.proto.MockCodeGenerator.test_generator: "
                     "foo.proto\\\n bar.proto");
 
-  File::ChangeWorkingDirectory(current_working_directory);
+  File::ChangeWorkingDirectory(current_dir);
 }
-#else  // !PROTOBUF_OPENSOURCE
-// TODO(teboring): Figure out how to change and get working directory in
-// google3.
-#endif  // !PROTOBUF_OPENSOURCE
 
 TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForAbsolutePath) {
   CreateTempFile("foo.proto",
@@ -1943,9 +2767,12 @@ TEST_F(CommandLineInterfaceTest, ParseErrorsMultipleFiles) {
       "--proto_path=$tmpdir foo.proto");
 
   ExpectErrorText(
-      "bar.proto:2:1: Expected top-level statement (e.g. \"message\").\n"
-      "baz.proto:2:1: Import \"bar.proto\" was not found or had errors.\n"
-      "foo.proto:2:1: Import \"bar.proto\" was not found or had errors.\n"
+      "bar.proto:2:1: Expected top-level statement (e.g. \"message\").\n");
+  ExpectErrorText(
+      "baz.proto:2:1: Import \"bar.proto\" was not found or had errors.\n");
+  ExpectErrorText(
+      "foo.proto:2:1: Import \"bar.proto\" was not found or had errors.\n");
+  ExpectErrorText(
       "foo.proto:3:1: Import \"baz.proto\" was not found or had errors.\n");
 }
 
@@ -2679,7 +3506,7 @@ TEST_F(CommandLineInterfaceTest, PrintFreeFieldNumbers) {
 
   ExpectNoErrors();
 
-  // TODO(jieluo): Cygwin doesn't work well if we try to capture stderr and
+  // TODO: Cygwin doesn't work well if we try to capture stderr and
   // stdout at the same time. Need to figure out why and add this test back
   // for Cygwin.
 #if !defined(__CYGWIN__)
@@ -2700,13 +3527,13 @@ TEST_F(CommandLineInterfaceTest, TargetTypeEnforcement) {
   // The target option on a field indicates what kind of entity it may apply to
   // when it is used as an option. This test verifies that the enforcement
   // works correctly on all entity types.
-  CreateTempFile("net/proto2/proto/descriptor.proto",
+  CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
                  R"schema(
       syntax = "proto2";
       package protobuf_unittest;
-      import "net/proto2/proto/descriptor.proto";
+      import "google/protobuf/descriptor.proto";
       message MyOptions {
         optional string file_option = 1 [targets = TARGET_TYPE_FILE];
         optional string extension_range_option = 2 [targets =
@@ -2800,13 +3627,13 @@ TEST_F(CommandLineInterfaceTest, TargetTypeEnforcement) {
 }
 
 TEST_F(CommandLineInterfaceTest, TargetTypeEnforcementMultipleTargetsValid) {
-  CreateTempFile("net/proto2/proto/descriptor.proto",
+  CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
                  R"schema(
       syntax = "proto2";
       package protobuf_unittest;
-      import "net/proto2/proto/descriptor.proto";
+      import "google/protobuf/descriptor.proto";
       message MyOptions {
         optional string message_or_file_option = 1 [
             targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FILE];
@@ -2828,13 +3655,13 @@ TEST_F(CommandLineInterfaceTest, TargetTypeEnforcementMultipleTargetsValid) {
 }
 
 TEST_F(CommandLineInterfaceTest, TargetTypeEnforcementMultipleTargetsInvalid) {
-  CreateTempFile("net/proto2/proto/descriptor.proto",
+  CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
                  R"schema(
       syntax = "proto2";
       package protobuf_unittest;
-      import "net/proto2/proto/descriptor.proto";
+      import "google/protobuf/descriptor.proto";
       message MyOptions {
         optional string message_or_file_option = 1 [
             targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FILE];
@@ -2856,13 +3683,13 @@ TEST_F(CommandLineInterfaceTest, TargetTypeEnforcementMultipleTargetsInvalid) {
 
 TEST_F(CommandLineInterfaceTest,
        TargetTypeEnforcementMultipleEdgesWithConstraintsValid) {
-  CreateTempFile("net/proto2/proto/descriptor.proto",
+  CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
                  R"schema(
       syntax = "proto2";
       package protobuf_unittest;
-      import "net/proto2/proto/descriptor.proto";
+      import "google/protobuf/descriptor.proto";
       message A {
         optional B b = 1 [targets = TARGET_TYPE_FILE,
                           targets = TARGET_TYPE_ENUM];
@@ -2883,13 +3710,13 @@ TEST_F(CommandLineInterfaceTest,
 
 TEST_F(CommandLineInterfaceTest,
        TargetTypeEnforcementMultipleEdgesWithConstraintsInvalid) {
-  CreateTempFile("net/proto2/proto/descriptor.proto",
+  CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
                  R"schema(
       syntax = "proto2";
       package protobuf_unittest;
-      import "net/proto2/proto/descriptor.proto";
+      import "google/protobuf/descriptor.proto";
       message A {
         optional B b = 1 [targets = TARGET_TYPE_ENUM];
       }
@@ -2909,6 +3736,320 @@ TEST_F(CommandLineInterfaceTest,
       "Option protobuf_unittest.A.b cannot be set on an entity of type `file`.");
   ExpectErrorSubstring(
       "Option protobuf_unittest.B.i cannot be set on an entity of type `file`.");
+}
+
+
+TEST_F(CommandLineInterfaceTest, ExtensionDeclarationEnforcement) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          full_name: ".foo.o"
+          type: "int32"
+        },
+        declaration = {
+          number: 9000,
+          full_name: ".baz.z"
+          type: ".foo.Bar"
+      }];
+    }
+
+    extend Foo {
+      optional int32 o = 5000;
+      repeated int32 i = 9000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "extension field 9000 is expected to be type \".foo.Bar\", not "
+      "\"int32\"");
+  ExpectErrorSubstring(
+      "extension field 9000 is expected to have field name \".baz.z\", not "
+      "\".foo.i\"");
+  ExpectErrorSubstring("extension field 9000 is expected to be optional");
+}
+
+TEST_F(CommandLineInterfaceTest, ExtensionDeclarationDuplicateNames) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          full_name: ".foo.o"
+          type: "int32"
+        },
+        declaration = {
+          number: 9000,
+          full_name: ".foo.o"
+          type: ".foo.Bar"
+      }];
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Extension field name \".foo.o\" is declared multiple times");
+}
+
+TEST_F(CommandLineInterfaceTest, ExtensionDeclarationDuplicateNumbers) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          full_name: ".foo.o"
+          type: "int32"
+        },
+        declaration = {
+          number: 5000,
+          full_name: ".foo.o"
+          type: ".foo.Bar"
+      }];
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Extension declaration number 5000 is declared multiple times");
+}
+
+TEST_F(CommandLineInterfaceTest, ExtensionDeclarationCannotUseReservedNumber) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          reserved: true
+          full_name: ".foo.o"
+          type: "int32"
+        }];
+    }
+
+    extend Foo {
+      optional int32 o = 5000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Cannot use number 5000 for extension field foo.o, as it is reserved in "
+      "the extension declarations for message foo.Foo.");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationReservedMissingOneOfNameAndType) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          reserved: true
+          type: "int32"
+        }];
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Extension declaration #5000 should have both \"full_name\" and \"type\" "
+      "set");
+}
+
+TEST_F(CommandLineInterfaceTest, ExtensionDeclarationMissingBothNameAndType) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 6000
+        }];
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Extension declaration #6000 should have both \"full_name\" and \"type\" "
+      "set");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationReservedOptionalNameAndType) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        declaration = {
+          number: 5000,
+          reserved: true
+          full_name: ".foo.o"
+          type: "int32"
+        },
+        declaration = {
+          number: 9000,
+          reserved: true
+        }];
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationRequireDeclarationsForAll) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [ declaration = {
+          number: 5000,
+          full_name: ".foo.o"
+          type: "int32"
+        }];
+    }
+
+    extend Foo {
+      optional int32 o = 5000;
+      repeated int32 i = 9000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Missing extension declaration for field foo.i with number 9000 in "
+      "extendee message foo.Foo");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationVerificationDeclarationUndeclaredError) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [verification = DECLARATION];
+    }
+    extend Foo {
+      optional string my_field = 5000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Missing extension declaration for field foo.my_field with number 5000 "
+      "in extendee message foo.Foo");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationVerificationDeclarationDeclaredCompile) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        verification = DECLARATION,
+        declaration = {
+          number: 5000,
+          full_name: ".foo.my_field",
+          type: "string"
+      }];
+    }
+    extend Foo {
+      optional string my_field = 5000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationUnverifiedWithDeclarationsError) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max [
+        verification = UNVERIFIED,
+        declaration = {
+          number: 5000,
+          full_name: "foo.my_field",
+          type: "string"
+        }];
+    }
+    extend Foo {
+      optional string my_field = 5000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "Cannot mark the extension range as UNVERIFIED when it has extension(s) "
+      "declared.");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionDeclarationDefaultUnverifiedEmptyRange) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Foo {
+      extensions 4000 to max;
+    }
+    extend Foo {
+      optional string my_field = 5000;
+    })schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+// Returns true if x is a prefix of y.
+bool IsPrefix(absl::Span<const int> x, absl::Span<const int> y) {
+  return x.size() <= y.size() && x == y.subspan(0, x.size());
+}
+
+TEST_F(CommandLineInterfaceTest, SourceInfoOptionRetention) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {\n"
+                 "  extensions 1000 to max [\n"
+                 "    declaration = {\n"
+                 "      number: 1000\n"
+                 "      full_name: \".video.cat_video\"\n"
+                 "      type: \".video.CatVideo\"\n"
+                 "  }];\n"
+                 "}\n");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--include_source_info --proto_path=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("descriptor_set", &descriptor_set);
+  if (HasFatalFailure()) return;
+  ASSERT_EQ(descriptor_set.file_size(), 1);
+  EXPECT_EQ(descriptor_set.file(0).name(), "foo.proto");
+
+  // Everything starting with this path should be have been stripped from the
+  // source code info.
+  const int declaration_option_path[] = {
+      FileDescriptorProto::kMessageTypeFieldNumber,
+      0,
+      DescriptorProto::kExtensionRangeFieldNumber,
+      0,
+      DescriptorProto::ExtensionRange::kOptionsFieldNumber,
+      ExtensionRangeOptions::kDeclarationFieldNumber};
+
+  const SourceCodeInfo& source_code_info =
+      descriptor_set.file(0).source_code_info();
+  EXPECT_GT(source_code_info.location_size(), 0);
+  for (const SourceCodeInfo::Location& location : source_code_info.location()) {
+    EXPECT_FALSE(IsPrefix(declaration_option_path, location.path()));
+  }
 }
 
 // ===================================================================
@@ -2950,7 +4091,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
   std::string StripCR(const std::string& text) {
     std::string result;
 
-    for (int i = 0; i < text.size(); i++) {
+    for (size_t i = 0; i < text.size(); ++i) {
       if (text[i] != '\r') {
         result.push_back(text[i]);
       }
@@ -2966,7 +4107,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
     std::vector<std::string> args;
     args.push_back("protoc");
     for (absl::string_view split_piece :
-         absl::StrSplit(command, " ", absl::SkipEmpty())) {
+         absl::StrSplit(command, ' ', absl::SkipEmpty())) {
       args.push_back(std::string(split_piece));
     }
     if (specify_proto_files) {
@@ -2985,7 +4126,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
     }
 
     std::unique_ptr<const char*[]> argv(new const char*[args.size()]);
-    for (int i = 0; i < args.size(); i++) {
+    for (size_t i = 0; i < args.size(); ++i) {
       argv[i] = args[i].c_str();
     }
 
@@ -3061,30 +4202,38 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
   std::string unittest_proto_descriptor_set_filename_;
 };
 
+static void WriteGoldenMessage(const std::string& filename) {
+  protobuf_unittest::TestAllTypes message;
+  TestUtil::SetAllFields(&message);
+  std::string golden = message.SerializeAsString();
+  ABSL_CHECK_OK(File::SetContents(filename, golden, true));
+}
+
 TEST_P(EncodeDecodeTest, Encode) {
+  std::string golden_path = absl::StrCat(TestTempDir(), "/golden_message");
+  WriteGoldenMessage(golden_path);
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
-      "third_party/protobuf/"
+      "google/protobuf/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
   std::string args;
   if (GetParam() != DESCRIPTOR_SET_IN) {
-    args.append(
-        TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto"));
+    args.append("google/protobuf/unittest.proto");
   }
   EXPECT_TRUE(
       Run(absl::StrCat(args, " --encode=protobuf_unittest.TestAllTypes")));
-  ExpectStdoutMatchesBinaryFile(TestUtil::GetTestDataPath(
-      "third_party/protobuf/testdata/golden_message_oneof_implemented"));
+  ExpectStdoutMatchesBinaryFile(golden_path);
   ExpectStderrMatchesText("");
 }
 
 TEST_P(EncodeDecodeTest, Decode) {
-  RedirectStdinFromFile(TestUtil::GetTestDataPath(
-      "third_party/protobuf/testdata/golden_message_oneof_implemented"));
+  std::string golden_path = absl::StrCat(TestTempDir(), "/golden_message");
+  WriteGoldenMessage(golden_path);
+  RedirectStdinFromFile(golden_path);
   EXPECT_TRUE(
-      Run(TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto") +
+      Run("google/protobuf/unittest.proto"
           " --decode=protobuf_unittest.TestAllTypes"));
   ExpectStdoutMatchesTextFile(TestUtil::GetTestDataPath(
-      "third_party/protobuf/"
+      "google/protobuf/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
   ExpectStderrMatchesText("");
 }
@@ -3092,7 +4241,7 @@ TEST_P(EncodeDecodeTest, Decode) {
 TEST_P(EncodeDecodeTest, Partial) {
   RedirectStdinFromText("");
   EXPECT_TRUE(
-      Run(TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto") +
+      Run("google/protobuf/unittest.proto"
           " --encode=protobuf_unittest.TestRequired"));
   ExpectStdoutMatchesText("");
   ExpectStderrMatchesText(
@@ -3116,7 +4265,7 @@ TEST_P(EncodeDecodeTest, DecodeRaw) {
 
 TEST_P(EncodeDecodeTest, UnknownType) {
   EXPECT_FALSE(
-      Run(TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto") +
+      Run("google/protobuf/unittest.proto"
           " --encode=NoSuchType"));
   ExpectStdoutMatchesText("");
   ExpectStderrMatchesText("Type not defined: NoSuchType\n");
@@ -3132,26 +4281,27 @@ TEST_P(EncodeDecodeTest, ProtoParseError) {
 }
 
 TEST_P(EncodeDecodeTest, EncodeDeterministicOutput) {
+  std::string golden_path = absl::StrCat(TestTempDir(), "/golden_message");
+  WriteGoldenMessage(golden_path);
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
-      "third_party/protobuf/"
+      "google/protobuf/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
   std::string args;
   if (GetParam() != DESCRIPTOR_SET_IN) {
-    args.append(
-        TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto"));
+    args.append("google/protobuf/unittest.proto");
   }
   EXPECT_TRUE(Run(absl::StrCat(
       args, " --encode=protobuf_unittest.TestAllTypes --deterministic_output")));
-  ExpectStdoutMatchesBinaryFile(TestUtil::GetTestDataPath(
-      "third_party/protobuf/testdata/golden_message_oneof_implemented"));
+  ExpectStdoutMatchesBinaryFile(golden_path);
   ExpectStderrMatchesText("");
 }
 
 TEST_P(EncodeDecodeTest, DecodeDeterministicOutput) {
-  RedirectStdinFromFile(TestUtil::GetTestDataPath(
-      "third_party/protobuf/testdata/golden_message_oneof_implemented"));
+  std::string golden_path = absl::StrCat(TestTempDir(), "/golden_message");
+  WriteGoldenMessage(golden_path);
+  RedirectStdinFromFile(golden_path);
   EXPECT_FALSE(
-      Run(TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto") +
+      Run("google/protobuf/unittest.proto"
           " --decode=protobuf_unittest.TestAllTypes --deterministic_output"));
   ExpectStderrMatchesText(
       "Can only use --deterministic_output with --encode.\n");

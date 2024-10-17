@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2022 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/cpp/tracker.h"
 
@@ -34,14 +11,16 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/descriptor.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -119,10 +98,15 @@ std::vector<Sub> GenerateTrackerCalls(
     }
 
     if (!call_str.empty()) {
-      // TODO(b/245791219): Until we migrate all of the C++ backend to use
+      // TODO: Until we migrate all of the C++ backend to use
       // Emit(), we need to include a newline here so that the line that follows
       // the annotation is on its own line.
       call_str.push_back('\n');
+      if (enable_tracking) {
+        call_str =
+            absl::StrCat("if (::", ProtobufNamespace(opts),
+                         "::internal::cpp::IsTrackingEnabled()) ", call_str);
+      }
     }
 
     subs.push_back(
@@ -171,15 +155,17 @@ std::vector<Sub> MakeTrackerCalls(const Descriptor* message,
   return GenerateTrackerCalls(
       opts, message, absl::nullopt,
       {
-          Call("serialize", "OnSerialize"),
-          Call("deserialize", "OnDeserialize"),
-          // TODO(danilak): Ideally annotate_reflection should not exist and we
+          Call("serialize", "OnSerialize").This("&this_"),
+          Call("deserialize", "OnDeserialize").This("_this"),
+          // TODO: Ideally annotate_reflection should not exist and we
           // need to annotate all reflective calls on our own, however, as this
           // is a cause for side effects, i.e. reading values dynamically, we
           // want the users know that dynamic access can happen.
           Call("reflection", "OnGetMetadata").This(absl::nullopt),
-          Call("bytesize", "OnByteSize"),
+          Call("bytesize", "OnByteSize").This("&this_"),
           Call("mergefrom", "OnMergeFrom").This("_this").Arg("&from"),
+          Call("unknown_fields", "OnUnknownFields"),
+          Call("mutable_unknown_fields", "OnMutableUnknownFields"),
 
           // "Has" is here as users calling "has" on a repeated field is a
           // mistake.
@@ -204,7 +190,7 @@ std::vector<Sub> MakeTrackerCalls(const Descriptor* message,
                              "OnMutableListExtension"),
 
           // Generic accessors such as "clear".
-          // TODO(b/190614678): Generalize clear from both repeated and non
+          // TODO: Generalize clear from both repeated and non
           // repeated calls, currently their underlying memory interfaces are
           // very different. Or think of removing clear callback as no usages
           // are needed and no memory exist
@@ -221,14 +207,13 @@ struct Getters {
 
 Getters RepeatedFieldGetters(const FieldDescriptor* field,
                              const Options& opts) {
-  std::string member = FieldMemberName(field, ShouldSplit(field, opts));
-
   Getters getters;
   if (!field->is_map() &&
       field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-    getters.base = absl::Substitute("&$0.Get(index)", member);
-    getters.for_last = absl::Substitute("&$0.Get($0.size() - 1)", member);
-    getters.for_flat = absl::StrCat("&", member);
+    std::string accessor = absl::StrCat("_internal_", FieldName(field), "()");
+    getters.base = absl::Substitute("&$0.Get(index)", accessor);
+    getters.for_last = absl::Substitute("&$0.Get($0.size() - 1)", accessor);
+    getters.for_flat = absl::StrCat("&", accessor);
   }
 
   return getters;
@@ -236,7 +221,8 @@ Getters RepeatedFieldGetters(const FieldDescriptor* field,
 
 Getters StringFieldGetters(const FieldDescriptor* field, const Options& opts) {
   std::string member = FieldMemberName(field, ShouldSplit(field, opts));
-  bool is_std_string = field->options().ctype() == FieldOptions::STRING;
+  bool is_std_string =
+      field->cpp_string_type() == FieldDescriptor::CppStringType::kString;
 
   Getters getters;
   if (is_std_string && !field->default_value_string().empty()) {
@@ -256,7 +242,8 @@ Getters StringOneofGetters(const FieldDescriptor* field,
   ABSL_CHECK(oneof != nullptr);
 
   std::string member = FieldMemberName(field, ShouldSplit(field, opts));
-  bool is_std_string = field->options().ctype() == FieldOptions::STRING;
+  bool is_std_string =
+      field->cpp_string_type() == FieldDescriptor::CppStringType::kString;
 
   std::string field_ptr = member;
   if (is_std_string) {
@@ -273,8 +260,8 @@ Getters StringOneofGetters(const FieldDescriptor* field,
   }
 
   Getters getters;
-  if (field->default_value_string().empty() ||
-      field->options().ctype() == FieldOptions::STRING_PIECE) {
+  if (field->default_value_string().empty()
+  ) {
     getters.base = absl::Substitute("$0 ? $1 : nullptr", has, field_ptr);
   } else {
     getters.base =

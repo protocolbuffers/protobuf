@@ -1,43 +1,27 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
-#import "GPBUtilities_PackagePrivate.h"
+#import "GPBUtilities.h"
 
 #import <objc/runtime.h>
 
+#import "GPBArray.h"
 #import "GPBArray_PackagePrivate.h"
+#import "GPBDescriptor.h"
 #import "GPBDescriptor_PackagePrivate.h"
+#import "GPBDictionary.h"
 #import "GPBDictionary_PackagePrivate.h"
+#import "GPBMessage.h"
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBUnknownField.h"
-#import "GPBUnknownFieldSet.h"
+#import "GPBUnknownField_PackagePrivate.h"
+#import "GPBUnknownFields.h"
+#import "GPBUtilities.h"
+#import "GPBUtilities_PackagePrivate.h"
 
 // Direct access is use for speed, to avoid even internally declaring things
 // read/write, etc. The warning is enabled in the project to ensure code calling
@@ -86,7 +70,7 @@ void GPBMessageDropUnknownFieldsRecursively(GPBMessage *initialMessage) {
     [todo removeLastObject];
 
     // Clear unknowns.
-    msg.unknownFields = nil;
+    [msg clearUnknownFields];
 
     // Handle the message fields.
     GPBDescriptor *descriptor = [[msg class] descriptor];
@@ -172,8 +156,8 @@ void GPBMessageDropUnknownFieldsRecursively(GPBMessage *initialMessage) {
           }
           break;
         }  // switch(field.mapKeyDataType)
-      }    // switch(field.fieldType)
-    }      // for(fields)
+      }  // switch(field.fieldType)
+    }  // for(fields)
 
     // Handle any extensions holding messages.
     for (GPBExtensionDescriptor *extension in [msg extensionsCurrentlySet]) {
@@ -233,20 +217,6 @@ void GPBRuntimeMatchFailure(void) {
               format:@"Proto generation source appears to have been from a"
                      @" version newer that this runtime (%d).",
                      GOOGLE_PROTOBUF_OBJC_VERSION];
-}
-
-// This api is no longer used for version checks. 30001 is the last version
-// using this old versioning model. When that support is removed, this function
-// can be removed (along with the declaration in GPBUtilities_PackagePrivate.h).
-void GPBCheckRuntimeVersionInternal(int32_t version) {
-  GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30001,
-                           time_to_remove_this_old_version_shim);
-  if (version != GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION) {
-    [NSException raise:NSInternalInconsistencyException
-                format:@"Linked to ProtocolBuffer runtime version %d,"
-                       @" but code compiled with version %d!",
-                       GOOGLE_PROTOBUF_OBJC_GEN_VERSION, version];
-  }
 }
 
 BOOL GPBMessageHasFieldNumberSet(GPBMessage *self, uint32_t fieldNumber) {
@@ -562,16 +532,17 @@ void GPBSetRetainedObjectIvarWithFieldPrivate(GPBMessage *self, GPBFieldDescript
     // field, and fall back on the default value. The warning below will only
     // appear in debug, but the could should be changed so the intention is
     // clear.
-    NSString *hasSel = NSStringFromSelector(field->hasOrCountSel_);
     NSString *propName = field.name;
     NSString *className = self.descriptor.name;
+    NSString *firstLetterCapitalizedName = [[[className substringToIndex:1] uppercaseString]
+        stringByAppendingString:[className substringFromIndex:1]];
     NSLog(@"warning: '%@.%@ = nil;' is not clearly defined for fields with "
           @"default values. Please use '%@.%@ = %@' if you want to set it to "
-          @"empty, or call '%@.%@ = NO' to reset it to it's default value of "
+          @"empty, or call '%@.has%@ = NO' to reset it to it's default value of "
           @"'%@'. Defaulting to resetting default value.",
           className, propName, className, propName,
-          (fieldType == GPBDataTypeString) ? @"@\"\"" : @"GPBEmptyNSData()", className, hasSel,
-          field.defaultValue.valueString);
+          (fieldType == GPBDataTypeString) ? @"@\"\"" : @"GPBEmptyNSData()", className,
+          firstLetterCapitalizedName, field.defaultValue.valueString);
     // Note: valueString, depending on the type, it could easily be
     // valueData/valueMessage.
   }
@@ -1951,6 +1922,71 @@ static void AppendTextFormatForMessageExtensionRange(GPBMessage *message, NSArra
   }  // for..in(activeExtensions)
 }
 
+static void AppendTextFormatForUnknownFields(GPBUnknownFields *ufs, NSMutableString *toStr,
+                                             NSString *lineIndent) {
+#if defined(DEBUG) && DEBUG
+  NSCAssert(!ufs.empty, @"Internal Error: No unknown fields to format.");
+#endif
+  // Extract the fields and sort them by field number. Use a stable sort and sort just by the field
+  // numbers, that way the output will still show the order the different types were added as well
+  // as maintaining the order within a give number/type pair (i.e. - repeated fields say in order).
+  NSMutableArray *sortedFields = [[NSMutableArray alloc] initWithCapacity:ufs.count];
+  for (GPBUnknownField *field in ufs) {
+    [sortedFields addObject:field];
+  }
+  [sortedFields
+      sortWithOptions:NSSortStable
+      usingComparator:^NSComparisonResult(GPBUnknownField *field1, GPBUnknownField *field2) {
+        int32_t fieldNumber1 = field1->number_;
+        int32_t fieldNumber2 = field2->number_;
+        if (fieldNumber1 < fieldNumber2) {
+          return NSOrderedAscending;
+        } else if (fieldNumber1 > fieldNumber2) {
+          return NSOrderedDescending;
+        } else {
+          return NSOrderedSame;
+        }
+      }];
+
+  NSString *subIndent = nil;
+
+  for (GPBUnknownField *field in sortedFields) {
+    int32_t fieldNumber = field->number_;
+    switch (field->type_) {
+      case GPBUnknownFieldTypeVarint:
+        [toStr appendFormat:@"%@%d: %llu\n", lineIndent, fieldNumber, field->storage_.intValue];
+        break;
+      case GPBUnknownFieldTypeFixed32:
+        [toStr appendFormat:@"%@%d: 0x%X\n", lineIndent, fieldNumber,
+                            (uint32_t)field->storage_.intValue];
+        break;
+      case GPBUnknownFieldTypeFixed64:
+        [toStr appendFormat:@"%@%d: 0x%llX\n", lineIndent, fieldNumber, field->storage_.intValue];
+        break;
+      case GPBUnknownFieldTypeLengthDelimited:
+        [toStr appendFormat:@"%@%d: ", lineIndent, fieldNumber];
+        AppendBufferAsString(field->storage_.lengthDelimited, toStr);
+        [toStr appendString:@"\n"];
+        break;
+      case GPBUnknownFieldTypeGroup: {
+        GPBUnknownFields *group = field->storage_.group;
+        if (group.empty) {
+          [toStr appendFormat:@"%@%d: {}\n", lineIndent, fieldNumber];
+        } else {
+          [toStr appendFormat:@"%@%d: {\n", lineIndent, fieldNumber];
+          if (subIndent == nil) {
+            subIndent = [lineIndent stringByAppendingString:@"  "];
+          }
+          AppendTextFormatForUnknownFields(group, toStr, subIndent);
+          [toStr appendFormat:@"%@}\n", lineIndent];
+        }
+      } break;
+    }
+  }
+  [subIndent release];
+  [sortedFields release];
+}
+
 static void AppendTextFormatForMessage(GPBMessage *message, NSMutableString *toStr,
                                        NSString *lineIndent) {
   GPBDescriptor *descriptor = [message descriptor];
@@ -1973,11 +2009,12 @@ static void AppendTextFormatForMessage(GPBMessage *message, NSMutableString *toS
     }
   }
 
-  NSString *unknownFieldsStr = GPBTextFormatForUnknownFieldSet(message.unknownFields, lineIndent);
-  if ([unknownFieldsStr length] > 0) {
+  GPBUnknownFields *ufs = [[GPBUnknownFields alloc] initFromMessage:message];
+  if (ufs.count > 0) {
     [toStr appendFormat:@"%@# --- Unknown fields ---\n", lineIndent];
-    [toStr appendString:unknownFieldsStr];
+    AppendTextFormatForUnknownFields(ufs, toStr, lineIndent);
   }
+  [ufs release];
 }
 
 NSString *GPBTextFormatForMessage(GPBMessage *message, NSString *lineIndent) {
@@ -1987,45 +2024,6 @@ NSString *GPBTextFormatForMessage(GPBMessage *message, NSString *lineIndent) {
   NSMutableString *buildString = [NSMutableString string];
   AppendTextFormatForMessage(message, buildString, lineIndent);
   return buildString;
-}
-
-NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet *unknownSet, NSString *lineIndent) {
-  if (unknownSet == nil) return @"";
-  if (lineIndent == nil) lineIndent = @"";
-
-  NSMutableString *result = [NSMutableString string];
-  for (GPBUnknownField *field in [unknownSet sortedFields]) {
-    int32_t fieldNumber = [field number];
-
-#define PRINT_LOOP(PROPNAME, CTYPE, FORMAT)                                                    \
-  [field.PROPNAME                                                                              \
-      enumerateValuesWithBlock:^(CTYPE value, __unused NSUInteger idx, __unused BOOL * stop) { \
-        [result appendFormat:@"%@%d: " FORMAT "\n", lineIndent, fieldNumber, value];           \
-      }];
-
-    PRINT_LOOP(varintList, uint64_t, "%llu");
-    PRINT_LOOP(fixed32List, uint32_t, "0x%X");
-    PRINT_LOOP(fixed64List, uint64_t, "0x%llX");
-
-#undef PRINT_LOOP
-
-    // NOTE: C++ version of TextFormat tries to parse this as a message
-    // and print that if it succeeds.
-    for (NSData *data in field.lengthDelimitedList) {
-      [result appendFormat:@"%@%d: ", lineIndent, fieldNumber];
-      AppendBufferAsString(data, result);
-      [result appendString:@"\n"];
-    }
-
-    for (GPBUnknownFieldSet *subUnknownSet in field.groupList) {
-      [result appendFormat:@"%@%d: {\n", lineIndent, fieldNumber];
-      NSString *subIndent = [lineIndent stringByAppendingString:@"  "];
-      NSString *subUnknownSetStr = GPBTextFormatForUnknownFieldSet(subUnknownSet, subIndent);
-      [result appendString:subUnknownSetStr];
-      [result appendFormat:@"%@}\n", lineIndent];
-    }
-  }
-  return result;
 }
 
 // Helpers to decode a varint. Not using GPBCodedInputStream version because

@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -56,10 +33,9 @@ static const Reflection* GetReflectionOrDie(const Message& m) {
   const Reflection* r = m.GetReflection();
   if (r == nullptr) {
     const Descriptor* d = m.GetDescriptor();
-    const std::string& mtype = d ? d->name() : "unknown";
     // RawMessage is one known type for which GetReflection() returns nullptr.
-    ABSL_LOG(FATAL) << "Message does not support reflection (type " << mtype
-                    << ").";
+    ABSL_LOG(FATAL) << "Message does not support reflection (type "
+                    << (d ? d->name() : "unknown") << ").";
   }
   return r;
 }
@@ -285,7 +261,13 @@ bool ReflectionOps::IsInitialized(const Message& message) {
   std::vector<const FieldDescriptor*> fields;
   // Should be safe to skip stripped fields because required fields are not
   // stripped.
-  reflection->ListFields(message, &fields);
+  if (descriptor->options().map_entry()) {
+    // MapEntry objects always check the value regardless of has bit.
+    // We don't need to bother with the key.
+    fields = {descriptor->map_value()};
+  } else {
+    reflection->ListFields(message, &fields);
+  }
   for (const FieldDescriptor* field : fields) {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
 
@@ -350,10 +332,10 @@ void ReflectionOps::DiscardUnknownFields(Message* message) {
       continue;
     }
     // Discard the unknown fields in maps that contain message values.
-    if (field->is_map() && IsMapValueMessageTyped(field)) {
-      const MapFieldBase* map_field =
-          reflection->MutableMapData(message, field);
-      if (map_field->IsMapValid()) {
+    const MapFieldBase* map_field =
+        field->is_map() ? reflection->MutableMapData(message, field) : nullptr;
+    if (map_field != nullptr && map_field->IsMapValid()) {
+      if (IsMapValueMessageTyped(field)) {
         MapIterator iter(message, field);
         MapIterator end(message, field);
         for (map_field->MapBegin(&iter), map_field->MapEnd(&end); iter != end;
@@ -406,7 +388,7 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
     for (int i = 0; i < field_count; i++) {
       if (descriptor->field(i)->is_required()) {
         if (!reflection->HasField(message, descriptor->field(i))) {
-          errors->push_back(prefix + descriptor->field(i)->name());
+          errors->push_back(absl::StrCat(prefix, descriptor->field(i)->name()));
         }
       }
     }
@@ -437,17 +419,15 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
 }
 
 void GenericSwap(Message* lhs, Message* rhs) {
-#ifndef PROTOBUF_FORCE_COPY_IN_SWAP
-  ABSL_DCHECK(Arena::InternalGetOwningArena(lhs) !=
-              Arena::InternalGetOwningArena(rhs));
-  ABSL_DCHECK(Arena::InternalGetOwningArena(lhs) != nullptr ||
-              Arena::InternalGetOwningArena(rhs) != nullptr);
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+  if (!internal::DebugHardenForceCopyInSwap()) {
+    ABSL_DCHECK(lhs->GetArena() != rhs->GetArena());
+    ABSL_DCHECK(lhs->GetArena() != nullptr || rhs->GetArena() != nullptr);
+  }
   // At least one of these must have an arena, so make `rhs` point to it.
-  Arena* arena = Arena::InternalGetOwningArena(rhs);
+  Arena* arena = rhs->GetArena();
   if (arena == nullptr) {
     std::swap(lhs, rhs);
-    arena = Arena::InternalGetOwningArena(rhs);
+    arena = rhs->GetArena();
   }
 
   // Improve efficiency by placing the temporary on an arena so that messages
@@ -456,13 +436,13 @@ void GenericSwap(Message* lhs, Message* rhs) {
   tmp->CheckTypeAndMergeFrom(*lhs);
   lhs->Clear();
   lhs->CheckTypeAndMergeFrom(*rhs);
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  rhs->Clear();
-  rhs->CheckTypeAndMergeFrom(*tmp);
-  if (arena == nullptr) delete tmp;
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-  rhs->GetReflection()->Swap(tmp, rhs);
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+  if (internal::DebugHardenForceCopyInSwap()) {
+    rhs->Clear();
+    rhs->CheckTypeAndMergeFrom(*tmp);
+    if (arena == nullptr) delete tmp;
+  } else {
+    rhs->GetReflection()->Swap(tmp, rhs);
+  }
 }
 
 }  // namespace internal

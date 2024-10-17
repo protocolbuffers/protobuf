@@ -1,7 +1,9 @@
 Protocol Buffers - Google's data interchange format
 ===================================================
 
-Copyright 2008 Google Inc.
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/protocolbuffers/protobuf/badge)](https://securityscorecards.dev/viewer/?uri=github.com/protocolbuffers/protobuf)
+
+Copyright 2023 Google LLC
 
 Overview
 --------
@@ -14,10 +16,27 @@ This README file contains protobuf installation instructions. To install
 protobuf, you need to install the protocol compiler (used to compile .proto
 files) and the protobuf runtime for your chosen programming language.
 
-Protocol Compiler Installation
+Working With Protobuf Source Code
+---------------------------------
+
+Most users will find working from
+[supported releases](https://github.com/protocolbuffers/protobuf/releases) to be
+the easiest path.
+
+If you choose to work from the head revision of the main branch your build will
+occasionally be broken by source-incompatible changes and insufficiently-tested
+(and therefore broken) behavior.
+
+If you are using C++ or otherwise need to build protobuf from source as a part
+of your project, you should pin to a release commit on a release branch.
+
+This is because even release branches can experience some instability in between
+release commits.
+
+Protobuf Compiler Installation
 ------------------------------
 
-The protocol compiler is written in C++. If you are using C++, please follow
+The protobuf compiler is written in C++. If you are using C++, please follow
 the [C++ Installation Instructions](src/README.md) to install protoc along
 with the C++ runtime.
 
@@ -56,7 +75,7 @@ how to install protobuf runtime for that specific language:
 | Go                                   | [protocolbuffers/protobuf-go](https://github.com/protocolbuffers/protobuf-go)|
 | PHP                                  | [php](php)                                                  |
 | Dart                                 | [dart-lang/protobuf](https://github.com/dart-lang/protobuf) |
-| Javascript                           | [protocolbuffers/protobuf-javascript](https://github.com/protocolbuffers/protobuf-javascript)|
+| JavaScript                           | [protocolbuffers/protobuf-javascript](https://github.com/protocolbuffers/protobuf-javascript)|
 
 Quick Start
 -----------

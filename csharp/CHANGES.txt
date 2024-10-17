@@ -72,7 +72,7 @@ Features:
   custom implementation of writers with both speed and size optimizations.
 - Addition of the "Google.ProtoBuffers.Serialization" assembly to support
   reading and writing messages to/from XML, JSON, IDictionary<,> and others.
-- Several performance related fixes and tweeks
+- Several performance related fixes and tweaks
 - Issue 3:	Add option to mark generated code with attribute
 - Issue 20:	Support for decorating classes [Serializable]
 - Issue 21:	Decorate fields with [deprecated=true] as [System.Obsolete]

@@ -1,43 +1,22 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "google/protobuf/arena.h"
-#include "google/protobuf/text_format.h"
+#include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
-#include "google/protobuf/descriptor_legacy.h"
-#include "google/protobuf/test_util.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_proto3_arena.pb.h"
 #include "google/protobuf/unittest_proto3_optional.pb.h"
@@ -50,19 +29,6 @@ using proto3_arena_unittest::TestAllTypes;
 
 namespace google {
 namespace protobuf {
-
-namespace internal {
-
-class Proto3ArenaTestHelper {
- public:
-  template <typename T>
-  static Arena* GetOwningArena(const T& msg) {
-    return msg.GetOwningArena();
-  }
-};
-
-}  // namespace internal
-
 namespace {
 // We selectively set/check a few representative fields rather than all fields
 // as this test is only expected to cover the basics of arena support.
@@ -137,7 +103,7 @@ TEST(Proto3ArenaTest, Parsing) {
   SetAllFields(&original);
 
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   arena_message->ParseFromString(original.SerializeAsString());
   ExpectAllFieldsSet(*arena_message);
 }
@@ -147,7 +113,7 @@ TEST(Proto3ArenaTest, UnknownFields) {
   SetAllFields(&original);
 
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   arena_message->ParseFromString(original.SerializeAsString());
   ExpectAllFieldsSet(*arena_message);
 
@@ -167,7 +133,7 @@ TEST(Proto3ArenaTest, GetArena) {
   Arena arena;
 
   // Tests arena-allocated message and submessages.
-  auto* arena_message1 = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* arena_message1 = Arena::Create<TestAllTypes>(&arena);
   auto* arena_submessage1 = arena_message1->mutable_optional_foreign_message();
   auto* arena_repeated_submessage1 =
       arena_message1->add_repeated_foreign_message();
@@ -176,7 +142,7 @@ TEST(Proto3ArenaTest, GetArena) {
   EXPECT_EQ(&arena, arena_repeated_submessage1->GetArena());
 
   // Tests attached heap-allocated messages.
-  auto* arena_message2 = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* arena_message2 = Arena::Create<TestAllTypes>(&arena);
   arena_message2->set_allocated_optional_foreign_message(new ForeignMessage());
   arena_message2->mutable_repeated_foreign_message()->AddAllocated(
       new ForeignMessage());
@@ -188,14 +154,14 @@ TEST(Proto3ArenaTest, GetArena) {
 
   // Tests message created by Arena::Create.
   auto* arena_message3 = Arena::Create<TestAllTypes>(&arena);
-  EXPECT_EQ(nullptr, arena_message3->GetArena());
+  EXPECT_EQ(&arena, arena_message3->GetArena());
 }
 
 TEST(Proto3ArenaTest, GetArenaWithUnknown) {
   Arena arena;
 
   // Tests arena-allocated message and submessages.
-  auto* arena_message1 = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* arena_message1 = Arena::Create<TestAllTypes>(&arena);
   arena_message1->GetReflection()->MutableUnknownFields(arena_message1);
   auto* arena_submessage1 = arena_message1->mutable_optional_foreign_message();
   arena_submessage1->GetReflection()->MutableUnknownFields(arena_submessage1);
@@ -208,7 +174,7 @@ TEST(Proto3ArenaTest, GetArenaWithUnknown) {
   EXPECT_EQ(&arena, arena_repeated_submessage1->GetArena());
 
   // Tests attached heap-allocated messages.
-  auto* arena_message2 = Arena::CreateMessage<TestAllTypes>(&arena);
+  auto* arena_message2 = Arena::Create<TestAllTypes>(&arena);
   arena_message2->set_allocated_optional_foreign_message(new ForeignMessage());
   arena_message2->mutable_repeated_foreign_message()->AddAllocated(
       new ForeignMessage());
@@ -227,8 +193,8 @@ TEST(Proto3ArenaTest, Swap) {
   Arena arena2;
 
   // Test Swap().
-  TestAllTypes* arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
-  TestAllTypes* arena2_message = Arena::CreateMessage<TestAllTypes>(&arena2);
+  TestAllTypes* arena1_message = Arena::Create<TestAllTypes>(&arena1);
+  TestAllTypes* arena2_message = Arena::Create<TestAllTypes>(&arena2);
   arena1_message->Swap(arena2_message);
   EXPECT_EQ(&arena1, arena1_message->GetArena());
   EXPECT_EQ(&arena2, arena2_message->GetArena());
@@ -236,7 +202,7 @@ TEST(Proto3ArenaTest, Swap) {
 
 TEST(Proto3ArenaTest, SetAllocatedMessage) {
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   TestAllTypes::NestedMessage* nested = new TestAllTypes::NestedMessage;
   nested->set_bb(118);
   arena_message->set_allocated_optional_nested_message(nested);
@@ -245,7 +211,7 @@ TEST(Proto3ArenaTest, SetAllocatedMessage) {
 
 TEST(Proto3ArenaTest, ReleaseMessage) {
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   arena_message->mutable_optional_nested_message()->set_bb(118);
   std::unique_ptr<TestAllTypes::NestedMessage> nested(
       arena_message->release_optional_nested_message());
@@ -255,7 +221,7 @@ TEST(Proto3ArenaTest, ReleaseMessage) {
 TEST(Proto3ArenaTest, MessageFieldClear) {
   // GitHub issue #310: https://github.com/protocolbuffers/protobuf/issues/310
   Arena arena;
-  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
   arena_message->mutable_optional_nested_message()->set_bb(118);
   // This should not crash, but prior to the bugfix, it tried to use `operator
   // delete` the nested message (which is on the arena):
@@ -264,7 +230,7 @@ TEST(Proto3ArenaTest, MessageFieldClear) {
 
 TEST(Proto3ArenaTest, MessageFieldClearViaReflection) {
   Arena arena;
-  TestAllTypes* message = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* message = Arena::Create<TestAllTypes>(&arena);
   const Reflection* r = message->GetReflection();
   const Descriptor* d = message->GetDescriptor();
   const FieldDescriptor* msg_field =
@@ -292,21 +258,57 @@ TEST(Proto3OptionalTest, OptionalFields) {
   EXPECT_EQ(serialized.size(), 0);
 }
 
+TEST(Proto3ArenaTest, CheckMessageFieldIsCleared) {
+  Arena arena;
+  auto msg = Arena::Create<TestAllTypes>(&arena);
+
+  // Referring to a saved pointer to a child message is never guaranteed to
+  // work. IOW, protobufs do not guarantee pointer stability. This test only
+  // does this to replicate (unsupported) user behaviors.
+  auto child = msg->mutable_optional_foreign_message();
+  child->set_c(100);
+  msg->Clear();
+
+  EXPECT_EQ(child->c(), 0);
+}
+
+TEST(Proto3ArenaTest, CheckOneofMessageFieldIsCleared) {
+  if (!internal::DebugHardenClearOneofMessageOnArena()) {
+    GTEST_SKIP() << "arena allocated oneof message fields are not hardened.";
+  }
+
+  Arena arena;
+  auto msg = Arena::Create<TestAllTypes>(&arena);
+
+  // Referring to a saved pointer to a child message is never guaranteed to
+  // work. IOW, protobufs do not guarantee pointer stability. This test only
+  // does this to replicate (unsupported) user behaviors.
+  auto child = msg->mutable_oneof_nested_message();
+  child->set_bb(100);
+  msg->Clear();
+
+#ifndef PROTOBUF_ASAN
+  EXPECT_EQ(child->bb(), 0);
+#else
+#if GTEST_HAS_DEATH_TEST && defined(__cpp_if_constexpr)
+  EXPECT_DEATH(EXPECT_EQ(child->bb(), 100), "use-after-poison");
+#endif
+#endif
+}
+
 TEST(Proto3OptionalTest, OptionalFieldDescriptor) {
   const Descriptor* d = protobuf_unittest::TestProto3Optional::descriptor();
 
   for (int i = 0; i < d->field_count(); i++) {
     const FieldDescriptor* f = d->field(i);
     if (absl::StartsWith(f->name(), "singular")) {
-      EXPECT_FALSE(FieldDescriptorLegacy(f).has_optional_keyword())
-          << f->full_name();
       EXPECT_FALSE(f->has_presence()) << f->full_name();
       EXPECT_FALSE(f->containing_oneof()) << f->full_name();
+      EXPECT_FALSE(f->real_containing_oneof()) << f->full_name();
     } else {
-      EXPECT_TRUE(FieldDescriptorLegacy(f).has_optional_keyword())
-          << f->full_name();
       EXPECT_TRUE(f->has_presence()) << f->full_name();
       EXPECT_TRUE(f->containing_oneof()) << f->full_name();
+      EXPECT_FALSE(f->real_containing_oneof()) << f->full_name();
     }
   }
 }
@@ -319,8 +321,6 @@ TEST(Proto3OptionalTest, Extensions) {
       "protobuf_unittest.Proto3OptionalExtensions.ext_with_optional");
   ABSL_CHECK(no_optional);
   ABSL_CHECK(with_optional);
-  EXPECT_FALSE(FieldDescriptorLegacy(no_optional).has_optional_keyword());
-  EXPECT_TRUE(FieldDescriptorLegacy(with_optional).has_optional_keyword());
 
   const Descriptor* d = protobuf_unittest::Proto3OptionalExtensions::descriptor();
   EXPECT_TRUE(d->options().HasExtension(
@@ -368,7 +368,8 @@ TEST(Proto3OptionalTest, OptionalFieldReflection) {
   const google::protobuf::OneofDescriptor* o = d->FindOneofByName("_optional_int32");
   ABSL_CHECK(f);
   ABSL_CHECK(o);
-  EXPECT_TRUE(OneofDescriptorLegacy(o).is_synthetic());
+  EXPECT_EQ(f->containing_oneof(), o);
+  EXPECT_EQ(f->real_containing_oneof(), nullptr);
 
   EXPECT_FALSE(r->HasField(msg, f));
   EXPECT_FALSE(r->HasOneof(msg, o));
@@ -635,3 +636,5 @@ TEST(Proto3OptionalTest, PlainFields) {
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

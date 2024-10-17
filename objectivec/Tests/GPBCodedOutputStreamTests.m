@@ -1,37 +1,15 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-#import "GPBTestUtilities.h"
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #import "GPBCodedInputStream.h"
+#import "GPBCodedOutputStream.h"
 #import "GPBCodedOutputStream_PackagePrivate.h"
+#import "GPBTestUtilities.h"
+#import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
 
@@ -352,7 +330,7 @@
   // This test exists to verify that CFStrings with embedded NULLs still expose
   // their raw buffer if they are backed by UTF8 storage. If this fails, the
   // quick/direct access paths in GPBCodedOutputStream that depend on
-  // CFStringGetCStringPtr need to be re-evalutated (maybe just removed).
+  // CFStringGetCStringPtr need to be re-evaluated (maybe just removed).
   // And yes, we do get NULLs in strings from some servers.
 
   char zeroTest[] = "\0Test\0String";
@@ -414,6 +392,29 @@
   const char* cString = "raw";
   XCTAssertThrowsSpecificNamed([codedOutput writeRawPtr:cString offset:0 length:strlen(cString)],
                                NSException, GPBCodedOutputStreamException_WriteFailed);
+}
+
+- (void)testThatDeallocNeverThrows {
+  uint8_t buffer[1] = {0};
+
+  // Output stream which can write precisely 1 byte of data before it's full.
+  NSOutputStream* output = [[[NSOutputStream alloc] initToBuffer:buffer
+                                                        capacity:sizeof(buffer)] autorelease];
+
+  NSMutableData* outputBuffer = [NSMutableData data];
+  GPBCodedOutputStream* codedOutput =
+      [[GPBCodedOutputStream alloc] initWithOutputStream:output data:outputBuffer];
+
+  [codedOutput writeRawByte:0x23];
+  [codedOutput flush];
+
+  // Put one more byte in the output buffer.
+  [codedOutput writeRawByte:0x42];
+  XCTAssertThrowsSpecificNamed([codedOutput flush], NSException,
+                               GPBCodedOutputStreamException_WriteFailed);
+
+  // -dealloc must not throw when it flushes, even if a previous flush failed.
+  XCTAssertNoThrow([codedOutput release]);
 }
 
 @end

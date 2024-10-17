@@ -3,10 +3,24 @@ name: Python Tests
 on:
   workflow_call:
     inputs:
+      continuous-run:
+        required: true
+        description: "Boolean string denoting whether this run is continuous --
+          empty string for presubmit, non-empty string for continuous."
+        type: string
       safe-checkout:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
+      continuous-prefix:
+        required: true
+        description: "The string continuous-only tests should be prefixed with when displaying test
+          results."
+        type: string
+
+
+permissions:
+  contents: read
 
 jobs:
   linux:
@@ -14,35 +28,44 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         type: [ Pure, C++]
-        version: [ "3.7", "3.8", "3.9", "3.10" ]
+        version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         include:
           - type: Pure
-            targets: //python/... @upb//python/... //python:python_version
+            targets: //python/... //python:python_version_test
             flags: --define=use_fast_cpp_protos=false
           - type: C++
-            targets: //python/... //python:python_version
+            targets: //python/... //python:python_version_test
             flags: --define=use_fast_cpp_protos=true
           - type: C++
             version: aarch64
             targets: //python/... //python:aarch64_test
-            # TODO(b/262628111) Enable this once conformance tests are fixed.
+            # TODO Enable this once conformance tests are fixed.
             flags: --define=use_fast_cpp_protos=true --test_tag_filters=-conformance
-            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-3af05275178e16af30961976af126eabbbb2c733
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-63dd26c0c7a808d92673a3e52e848189d4ab0f17
+          - version: "3.8"
+          - version: "3.9"
+            continuous-only: true
+          - version: "3.10"
+            continuous-only: true
+          - version: "3.11"
 
-    name: Linux ${{ matrix.type }} ${{ matrix.version }}
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.type }} ${{ matrix.version }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:{0}-508417e5215994ade7585d28ba3aad681a25fa5d', matrix.version) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:6.4.0-{0}-27cf7b86212020d7e552bc13b1e084abb971da75', matrix.version) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_linux/${{ matrix.type }}_${{ matrix.version }}
           bazel: test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_PYTHON_VERSION
+          exclude-targets: -//python/pb_unit_tests/...
 
 
   macos:
@@ -50,28 +73,29 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         type: [ Pure, C++]
-        # TODO(b/267550843) Consider expanding this set of versions.
-        version: [ "3.10" ]
+        # TODO Consider expanding this set of versions.
+        version: [ "3.12" ]
         include:
           - type: Pure
-            targets: //python/... @upb//python/... //python:python_version
+            targets: //python/... //python:python_version_test
           - type: C++
-            targets: //python/... //python:python_version
+            targets: //python/... //python:python_version_test
             flags: --define=use_fast_cpp_protos=true
 
     name: MacOS ${{ matrix.type }} ${{ matrix.version }}
-    runs-on: macos-12
+    runs-on: macos-13
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Pin Python version
-        uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435 # v4.5.0
+        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
         with:
           python-version: ${{ matrix.version }}
           cache: pip
+          cache-dependency-path: 'python/requirements.txt'
 
       - name: Validate version
         run: python3 --version | grep ${{ matrix.version }} || (echo "Invalid Python version - $(python3 --version)" && exit 1)
@@ -82,7 +106,7 @@ jobs:
           source venv/bin/activate
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v1
+        uses: protocolbuffers/protobuf-ci/bazel@v3
         env:
           KOKORO_PYTHON_VERSION: ${{ matrix.version }}
         with:
@@ -92,3 +116,4 @@ jobs:
             test ${{ matrix.targets }} ${{ matrix.flags }}
             --test_env=KOKORO_PYTHON_VERSION=${{ matrix.version }}
             --macos_minimum_os=10.9
+          exclude-targets: -//python/pb_unit_tests/...

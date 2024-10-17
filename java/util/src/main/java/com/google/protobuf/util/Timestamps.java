@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf.util;
 
@@ -160,13 +137,23 @@ public final class Timestamps {
    */
   @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static boolean isValid(long seconds, int nanos) {
-    if (seconds < TIMESTAMP_SECONDS_MIN || seconds > TIMESTAMP_SECONDS_MAX) {
+    if (!isValidSeconds(seconds)) {
       return false;
     }
     if (nanos < 0 || nanos >= NANOS_PER_SECOND) {
       return false;
     }
     return true;
+  }
+
+  /**
+   * Returns true if the given number of seconds is valid, if combined with a valid number of nanos.
+   * The {@code seconds} value must be in the range [-62,135,596,800, +253,402,300,799] (i.e.,
+   * between 0001-01-01T00:00:00Z and 9999-12-31T23:59:59Z).
+   */
+  @SuppressWarnings("GoodTime") // this is a legacy conversion API
+  private static boolean isValidSeconds(long seconds) {
+    return seconds >= TIMESTAMP_SECONDS_MIN && seconds <= TIMESTAMP_SECONDS_MAX;
   }
 
   /** Throws an {@link IllegalArgumentException} if the given {@link Timestamp} is not valid. */
@@ -197,9 +184,9 @@ public final class Timestamps {
 
   /**
    * Convert Timestamp to RFC 3339 date string format. The output will always be Z-normalized and
-   * uses 3, 6 or 9 fractional digits as required to represent the exact value. Note that Timestamp
-   * can only represent time from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z. See
-   * https://www.ietf.org/rfc/rfc3339.txt
+   * uses 0, 3, 6 or 9 fractional digits as required to represent the exact value. Note that
+   * Timestamp can only represent time from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z.
+   * See https://www.ietf.org/rfc/rfc3339.txt
    *
    * <p>Example of generated format: "1972-01-01T10:00:20.021Z"
    *
@@ -327,7 +314,13 @@ public final class Timestamps {
     }
   }
 
-  /** Create a Timestamp using the best-available system clock. */
+  /**
+   * Create a {@link Timestamp} using the best-available (in terms of precision) system clock.
+   *
+   * <p><b>Note:</b> that while this API is convenient, it may harm the testability of your code, as
+   * you're unable to mock the current time. Instead, you may want to consider injecting a clock
+   * instance to read the current time.
+   */
   public static Timestamp now() {
     if (INSTANT_NOW != null) {
       try {
@@ -444,7 +437,17 @@ public final class Timestamps {
         checkedMultiply(timestamp.getSeconds(), NANOS_PER_SECOND), timestamp.getNanos());
   }
 
-  /** Calculate the difference between two timestamps. */
+  /**
+   * Calculate the difference between two timestamps.
+   *
+   * <!-- MOE:begin_intracomment_strip -->
+   * @deprecated Do not use this method for new code. Instead, convert to {@link java.time.Instant}
+   *     using {@link com.google.protobuf.util.JavaTimeConversions#toJavaInstant}, do the arithmetic
+   *     there, and convert back using {@link
+   *     com.google.protobuf.util.JavaTimeConversions#toProtoDuration}.
+   * <!-- MOE:end_intracomment_strip -->
+   */
+  @Deprecated // MOE:strip_line
   public static Duration between(Timestamp from, Timestamp to) {
     checkValid(from);
     checkValid(to);
@@ -453,7 +456,18 @@ public final class Timestamps {
         checkedSubtract(to.getNanos(), from.getNanos()));
   }
 
-  /** Add a duration to a timestamp. */
+  /**
+   * Add a duration to a timestamp.
+   *
+   * <!-- MOE:begin_intracomment_strip -->
+   * @deprecated Do not use this method for new code. Instead, convert to {@link java.time.Instant}
+   *     and {@link java.time.Duration} using {@link
+   *     com.google.protobuf.util.JavaTimeConversions#toJavaInstant} and {@link
+   *     com.google.protobuf.util.JavaTimeConversions#toJavaDuration}, do the arithmetic there, and
+   *     convert back using {@link com.google.protobuf.util.JavaTimeConversions#toProtoTimestamp}.
+   * <!-- MOE:end_intracomment_strip -->
+   */
+  @Deprecated // MOE:strip_line
   public static Timestamp add(Timestamp start, Duration length) {
     checkValid(start);
     Durations.checkValid(length);
@@ -462,7 +476,18 @@ public final class Timestamps {
         checkedAdd(start.getNanos(), length.getNanos()));
   }
 
-  /** Subtract a duration from a timestamp. */
+  /**
+   * Subtract a duration from a timestamp.
+   *
+   * <!-- MOE:begin_intracomment_strip -->
+   * @deprecated Do not use this method for new code. Instead, convert to {@link java.time.Instant}
+   *     and {@link java.time.Duration} using {@link
+   *     com.google.protobuf.util.JavaTimeConversions#toJavaInstant} and {@link
+   *     com.google.protobuf.util.JavaTimeConversions#toJavaDuration}, do the arithmetic there, and
+   *     convert back using {@link com.google.protobuf.util.JavaTimeConversions#toProtoTimestamp}.
+   * <!-- MOE:end_intracomment_strip -->
+   */
+  @Deprecated // MOE:strip_line
   public static Timestamp subtract(Timestamp start, Duration length) {
     checkValid(start);
     Durations.checkValid(length);
@@ -472,6 +497,15 @@ public final class Timestamps {
   }
 
   static Timestamp normalizedTimestamp(long seconds, int nanos) {
+    // This only checks seconds, because nanos can intentionally overflow to increment the seconds
+    // when normalized.
+    if (!isValidSeconds(seconds)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Timestamp is not valid. Input seconds is too large. "
+                  + "Seconds (%s) must be in range [-62,135,596,800, +253,402,300,799]. ",
+              seconds));
+    }
     if (nanos <= -NANOS_PER_SECOND || nanos >= NANOS_PER_SECOND) {
       seconds = checkedAdd(seconds, nanos / NANOS_PER_SECOND);
       nanos = (int) (nanos % NANOS_PER_SECOND);
@@ -493,7 +527,13 @@ public final class Timestamps {
     }
     String hours = value.substring(0, pos);
     String minutes = value.substring(pos + 1);
-    return (Long.parseLong(hours) * 60 + Long.parseLong(minutes)) * 60;
+    try {
+      return (Long.parseLong(hours) * 60 + Long.parseLong(minutes)) * 60;
+    } catch (NumberFormatException e) {
+      ParseException ex = new ParseException("Invalid offset value: " + value, 0);
+      ex.initCause(e);
+      throw ex;
+    }
   }
 
   static int parseNanos(String value) throws ParseException {

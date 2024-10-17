@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -682,7 +659,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
   @Override
   public <K, V> void writeMap(int fieldNumber, MapEntryLite.Metadata<K, V> metadata, Map<K, V> map)
       throws IOException {
-    // TODO(liujisi): Reverse write those entries.
+    // TODO: Reverse write those entries.
     for (Map.Entry<K, V> entry : map.entrySet()) {
       int prevBytes = getTotalBytesWritten();
       writeMapEntryField(this, MAP_VALUE_NUMBER, metadata.valueType, entry.getValue());
@@ -1306,22 +1283,22 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
 
     @Override
     void writeFixed32(int value) {
-      buffer[pos--] = (byte) ((value >> 24) & 0xFF);
-      buffer[pos--] = (byte) ((value >> 16) & 0xFF);
-      buffer[pos--] = (byte) ((value >> 8) & 0xFF);
-      buffer[pos--] = (byte) (value & 0xFF);
+      buffer[pos--] = (byte) (value >> 24);
+      buffer[pos--] = (byte) (value >> 16);
+      buffer[pos--] = (byte) (value >> 8);
+      buffer[pos--] = (byte) value;
     }
 
     @Override
     void writeFixed64(long value) {
-      buffer[pos--] = (byte) ((int) (value >> 56) & 0xFF);
-      buffer[pos--] = (byte) ((int) (value >> 48) & 0xFF);
-      buffer[pos--] = (byte) ((int) (value >> 40) & 0xFF);
-      buffer[pos--] = (byte) ((int) (value >> 32) & 0xFF);
-      buffer[pos--] = (byte) ((int) (value >> 24) & 0xFF);
-      buffer[pos--] = (byte) ((int) (value >> 16) & 0xFF);
-      buffer[pos--] = (byte) ((int) (value >> 8) & 0xFF);
-      buffer[pos--] = (byte) ((int) (value) & 0xFF);
+      buffer[pos--] = (byte) ((int) (value >> 56));
+      buffer[pos--] = (byte) ((int) (value >> 48));
+      buffer[pos--] = (byte) ((int) (value >> 40));
+      buffer[pos--] = (byte) ((int) (value >> 32));
+      buffer[pos--] = (byte) ((int) (value >> 24));
+      buffer[pos--] = (byte) ((int) (value >> 16));
+      buffer[pos--] = (byte) ((int) (value >> 8));
+      buffer[pos--] = (byte) ((int) value);
     }
 
     @Override
@@ -1402,7 +1379,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
         buffers.addFirst(AllocatedBuffer.wrap(value, offset, length));
 
         // Advance the writer to the next buffer.
-        // TODO(nathanmittler): Consider slicing if space available above some threshold.
+        // TODO: Consider slicing if space available above some threshold.
         nextBuffer();
         return;
       }
@@ -1432,7 +1409,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
         buffers.addFirst(AllocatedBuffer.wrap(value));
 
         // Advance the writer to the next buffer.
-        // TODO(nathanmittler): Consider slicing if space available above some threshold.
+        // TODO: Consider slicing if space available above some threshold.
         nextBuffer();
       }
 
@@ -1843,22 +1820,22 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
 
     @Override
     void writeFixed32(int value) {
-      UnsafeUtil.putByte(buffer, pos--, (byte) ((value >> 24) & 0xFF));
-      UnsafeUtil.putByte(buffer, pos--, (byte) ((value >> 16) & 0xFF));
-      UnsafeUtil.putByte(buffer, pos--, (byte) ((value >> 8) & 0xFF));
-      UnsafeUtil.putByte(buffer, pos--, (byte) (value & 0xFF));
+      UnsafeUtil.putByte(buffer, pos--, (byte) (value >> 24));
+      UnsafeUtil.putByte(buffer, pos--, (byte) (value >> 16));
+      UnsafeUtil.putByte(buffer, pos--, (byte) (value >> 8));
+      UnsafeUtil.putByte(buffer, pos--, (byte) value);
     }
 
     @Override
     void writeFixed64(long value) {
-      UnsafeUtil.putByte(buffer, pos--, (byte) ((int) (value >> 56) & 0xFF));
-      UnsafeUtil.putByte(buffer, pos--, (byte) ((int) (value >> 48) & 0xFF));
-      UnsafeUtil.putByte(buffer, pos--, (byte) ((int) (value >> 40) & 0xFF));
-      UnsafeUtil.putByte(buffer, pos--, (byte) ((int) (value >> 32) & 0xFF));
-      UnsafeUtil.putByte(buffer, pos--, (byte) ((int) (value >> 24) & 0xFF));
-      UnsafeUtil.putByte(buffer, pos--, (byte) ((int) (value >> 16) & 0xFF));
-      UnsafeUtil.putByte(buffer, pos--, (byte) ((int) (value >> 8) & 0xFF));
-      UnsafeUtil.putByte(buffer, pos--, (byte) ((int) (value) & 0xFF));
+      UnsafeUtil.putByte(buffer, pos--, (byte) ((int) (value >> 56)));
+      UnsafeUtil.putByte(buffer, pos--, (byte) ((int) (value >> 48)));
+      UnsafeUtil.putByte(buffer, pos--, (byte) ((int) (value >> 40)));
+      UnsafeUtil.putByte(buffer, pos--, (byte) ((int) (value >> 32)));
+      UnsafeUtil.putByte(buffer, pos--, (byte) ((int) (value >> 24)));
+      UnsafeUtil.putByte(buffer, pos--, (byte) ((int) (value >> 16)));
+      UnsafeUtil.putByte(buffer, pos--, (byte) ((int) (value >> 8)));
+      UnsafeUtil.putByte(buffer, pos--, (byte) ((int) value));
     }
 
     @Override
@@ -1943,7 +1920,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
         buffers.addFirst(AllocatedBuffer.wrap(value, offset, length));
 
         // Advance the writer to the next buffer.
-        // TODO(nathanmittler): Consider slicing if space available above some threshold.
+        // TODO: Consider slicing if space available above some threshold.
         nextBuffer();
         return;
       }
@@ -1971,7 +1948,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
         buffers.addFirst(AllocatedBuffer.wrap(value));
 
         // Advance the writer to the next buffer.
-        // TODO(nathanmittler): Consider slicing if space available above some threshold.
+        // TODO: Consider slicing if space available above some threshold.
         nextBuffer();
       }
 
@@ -2488,7 +2465,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
         buffers.addFirst(AllocatedBuffer.wrap(value, offset, length));
 
         // Advance the writer to the next buffer.
-        // TODO(nathanmittler): Consider slicing if space available above some threshold.
+        // TODO: Consider slicing if space available above some threshold.
         nextBuffer();
         return;
       }
@@ -2520,7 +2497,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
         buffers.addFirst(AllocatedBuffer.wrap(value));
 
         // Advance the writer to the next buffer.
-        // TODO(nathanmittler): Consider slicing if space available above some threshold.
+        // TODO: Consider slicing if space available above some threshold.
         nextBuffer();
         return;
       }
@@ -2936,22 +2913,22 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
 
     @Override
     void writeFixed32(int value) {
-      UnsafeUtil.putByte(pos--, (byte) ((value >> 24) & 0xFF));
-      UnsafeUtil.putByte(pos--, (byte) ((value >> 16) & 0xFF));
-      UnsafeUtil.putByte(pos--, (byte) ((value >> 8) & 0xFF));
-      UnsafeUtil.putByte(pos--, (byte) (value & 0xFF));
+      UnsafeUtil.putByte(pos--, (byte) (value >> 24));
+      UnsafeUtil.putByte(pos--, (byte) (value >> 16));
+      UnsafeUtil.putByte(pos--, (byte) (value >> 8));
+      UnsafeUtil.putByte(pos--, (byte) value);
     }
 
     @Override
     void writeFixed64(long value) {
-      UnsafeUtil.putByte(pos--, (byte) ((int) (value >> 56) & 0xFF));
-      UnsafeUtil.putByte(pos--, (byte) ((int) (value >> 48) & 0xFF));
-      UnsafeUtil.putByte(pos--, (byte) ((int) (value >> 40) & 0xFF));
-      UnsafeUtil.putByte(pos--, (byte) ((int) (value >> 32) & 0xFF));
-      UnsafeUtil.putByte(pos--, (byte) ((int) (value >> 24) & 0xFF));
-      UnsafeUtil.putByte(pos--, (byte) ((int) (value >> 16) & 0xFF));
-      UnsafeUtil.putByte(pos--, (byte) ((int) (value >> 8) & 0xFF));
-      UnsafeUtil.putByte(pos--, (byte) ((int) (value) & 0xFF));
+      UnsafeUtil.putByte(pos--, (byte) ((int) (value >> 56)));
+      UnsafeUtil.putByte(pos--, (byte) ((int) (value >> 48)));
+      UnsafeUtil.putByte(pos--, (byte) ((int) (value >> 40)));
+      UnsafeUtil.putByte(pos--, (byte) ((int) (value >> 32)));
+      UnsafeUtil.putByte(pos--, (byte) ((int) (value >> 24)));
+      UnsafeUtil.putByte(pos--, (byte) ((int) (value >> 16)));
+      UnsafeUtil.putByte(pos--, (byte) ((int) (value >> 8)));
+      UnsafeUtil.putByte(pos--, (byte) ((int) value));
     }
 
     @Override
@@ -3029,7 +3006,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
         buffers.addFirst(AllocatedBuffer.wrap(value, offset, length));
 
         // Advance the writer to the next buffer.
-        // TODO(nathanmittler): Consider slicing if space available above some threshold.
+        // TODO: Consider slicing if space available above some threshold.
         nextBuffer();
         return;
       }
@@ -3061,7 +3038,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
         buffers.addFirst(AllocatedBuffer.wrap(value));
 
         // Advance the writer to the next buffer.
-        // TODO(nathanmittler): Consider slicing if space available above some threshold.
+        // TODO: Consider slicing if space available above some threshold.
         nextBuffer();
         return;
       }

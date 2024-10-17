@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -36,6 +13,8 @@ package com.google.protobuf;
  */
 @CheckReturnValue
 final class RawMessageInfo implements MessageInfo {
+  private static final int IS_PROTO2_BIT = 0x1;
+  private static final int IS_EDITION_BIT = 0x4;
 
   private final MessageLite defaultInstance;
 
@@ -60,7 +39,8 @@ final class RawMessageInfo implements MessageInfo {
    * <p>The integer sequence encoded in the String object has the following layout:
    *
    * <ul>
-   *   <li>[0]: flags, flags & 0x1 = is proto2?, flags & 0x2 = is message?.
+   *   <li>[0]: flags, flags & 0x1 = is proto2?, flags & 0x2 = is message?, flags & 0x4 = is
+   *       edition?
    *   <li>[1]: field count, if 0, this is the end of the integer sequence and the corresponding
    *       Object[] array should be null.
    *   <li>[2]: oneof count
@@ -84,7 +64,7 @@ final class RawMessageInfo implements MessageInfo {
    *         <li>v & 0x0100 = is required?
    *         <li>v & 0x0200 = is checkUtf8?
    *         <li>v & 0x0400 = needs isInitialized check?
-   *         <li>v & 0x0800 = is map field with proto2 enum value?
+   *         <li>v & 0x0800 = is enum field or map field enum value with legacy closedness?
    *         <li>v & 0x1000 = supports presence checking?
    *       </ul>
    * </ul>
@@ -212,7 +192,13 @@ final class RawMessageInfo implements MessageInfo {
 
   @Override
   public ProtoSyntax getSyntax() {
-    return (flags & 0x1) == 0x1 ? ProtoSyntax.PROTO2 : ProtoSyntax.PROTO3;
+    if ((flags & IS_PROTO2_BIT) != 0) {
+      return ProtoSyntax.PROTO2;
+    } else if ((flags & IS_EDITION_BIT) == 0x4) {
+      return ProtoSyntax.EDITIONS;
+    } else {
+      return ProtoSyntax.PROTO3;
+    }
   }
 
   @Override

@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/objectivec/import_writer.h"
 
@@ -39,8 +16,11 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
 #include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
@@ -180,20 +160,18 @@ std::string ImportWriter::ModuleForFile(const FileDescriptor* file) {
 }
 
 void ImportWriter::PrintFileImports(io::Printer* p) const {
-  if (!other_framework_imports_.empty()) {
-    for (const auto& header : other_framework_imports_) {
-      p->Print("#import <$header$>\n", "header", header);
-    }
+  for (const auto& header : other_framework_imports_) {
+    p->Emit({{"header", header}},
+            R"objc(
+              #import <$header$>
+            )objc");
   }
 
-  if (!other_imports_.empty()) {
-    if (!other_framework_imports_.empty()) {
-      p->Print("\n");
-    }
-
-    for (const auto& header : other_imports_) {
-      p->Print("#import \"$header$\"\n", "header", header);
-    }
+  for (const auto& header : other_imports_) {
+    p->Emit({{"header", header}},
+            R"objc(
+              #import "$header$"
+            )objc");
   }
 }
 
@@ -202,8 +180,10 @@ void ImportWriter::PrintRuntimeImports(io::Printer* p,
   // Given an override, use that.
   if (!runtime_import_prefix_.empty()) {
     for (const auto& header : protobuf_imports_) {
-      p->Print("#import \"$import_prefix$/$header$\"\n", "header", header,
-               "import_prefix", runtime_import_prefix_);
+      p->Emit({{"import_prefix", runtime_import_prefix_}, {"header", header}},
+              R"objc(
+                #import "$import_prefix$/$header$"
+              )objc");
     }
     return;
   }
@@ -212,37 +192,60 @@ void ImportWriter::PrintRuntimeImports(io::Printer* p,
   if (for_bundled_proto_) {
     ABSL_DCHECK(!default_cpp_symbol);
     for (const auto& header : protobuf_imports_) {
-      p->Print("#import \"$header$\"\n", "header", header);
+      p->Emit({{"header", header}},
+              R"objc(
+                #import "$header$"
+              )objc");
     }
     return;
   }
 
-  const std::string cpp_symbol(
-      ProtobufFrameworkImportSymbol(ProtobufLibraryFrameworkName));
+  p->Emit(
+      {
+          {"cpp_symbol",
+           ProtobufFrameworkImportSymbol(ProtobufLibraryFrameworkName)},
+          {"maybe_default_cpp_symbol",
+           [&] {
+             if (default_cpp_symbol) {
+               p->Emit(
+                   R"objc(
+                     // This CPP symbol can be defined to use imports that match up to the framework
+                     // imports needed when using CocoaPods.
+                     #if !defined($cpp_symbol$)
+                      #define $cpp_symbol$ 0
+                     #endif
+                   )objc");
+             }
+           }},
+          {"framework_name", ProtobufLibraryFrameworkName},
+          {"framework_imports",
+           [&] {
+             for (const auto& header : protobuf_imports_) {
+               p->Emit({{"header", header}},
+                       R"objc(
+                         #import <$framework_name$/$header$>
+                       )objc");
+             }
+           }},
+          {"raw_imports",
+           [&] {
+             for (const auto& header : protobuf_imports_) {
+               p->Emit({{"header", header}},
+                       R"objc(
+                         #import "$header$"
+                       )objc");
+             }
+           }},
+      },
+      R"objc(
+        $maybe_default_cpp_symbol$
 
-  if (default_cpp_symbol) {
-    p->Print(
-        // clang-format off
-        "// This CPP symbol can be defined to use imports that match up to the framework\n"
-        "// imports needed when using CocoaPods.\n"
-        "#if !defined($cpp_symbol$)\n"
-        " #define $cpp_symbol$ 0\n"
-        "#endif\n"
-        "\n",
-        // clang-format on
-        "cpp_symbol", cpp_symbol);
-  }
-
-  p->Print("#if $cpp_symbol$\n", "cpp_symbol", cpp_symbol);
-  for (const auto& header : protobuf_imports_) {
-    p->Print(" #import <$framework_name$/$header$>\n", "framework_name",
-             ProtobufLibraryFrameworkName, "header", header);
-  }
-  p->Print("#else\n");
-  for (const auto& header : protobuf_imports_) {
-    p->Print(" #import \"$header$\"\n", "header", header);
-  }
-  p->Print("#endif\n");
+        #if $cpp_symbol$
+         $framework_imports$
+        #else
+         $raw_imports$
+        #endif
+      )objc");
 }
 
 void ImportWriter::ParseFrameworkMappings() {

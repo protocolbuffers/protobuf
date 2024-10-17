@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -34,20 +11,25 @@
 
 #include "google/protobuf/compiler/cpp/field.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "absl/container/flat_hash_map.h"
+#include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
+#include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/compiler/cpp/tracker.h"
+#include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -66,6 +48,8 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       // This will eventually be renamed to "field", once the existing "field"
       // variable is replaced with "field_" everywhere.
       {"name", FieldName(field)},
+      // Same as above, but represents internal use.
+      {"name_internal", FieldName(field)},
 
       {"index", field->index()},
       {"number", field->number()},
@@ -86,6 +70,14 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"{", ""},
       {"}", ""},
 
+      // For TSan validation.
+      {"TsanDetectConcurrentMutation",
+       absl::StrCat("::", ProtobufNamespace(opts),
+                    "::internal::TSanWrite(&_impl_)")},
+      {"TsanDetectConcurrentRead",
+       absl::StrCat("::", ProtobufNamespace(opts),
+                    "::internal::TSanRead(&_impl_)")},
+
       // Old-style names.
       {"field", FieldMemberName(field, split)},
       {"declared_type", DeclaredTypeMethodName(field->type())},
@@ -93,6 +85,12 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"ns", Namespace(field, opts)},
       {"tag_size", WireFormat::TagSize(field->number(), field->type())},
       {"deprecated_attr", DeprecatedAttribute(opts, field)},
+      Sub("WeakDescriptorSelfPin",
+          UsingImplicitWeakDescriptor(field->file(), opts)
+              ? absl::StrCat(
+                    StrongReferenceToType(field->containing_type(), opts), ";")
+              : "")
+          .WithSuffix(";"),
   };
 
   if (const auto* oneof = field->containing_oneof()) {
@@ -111,29 +109,117 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
   return vars;
 }
 
-void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
-  Formatter format(p, variables_);
-  if (ShouldSplit(descriptor_, options_)) {
-    format("decltype(Impl_::Split::$name$_){arena}");
-    return;
+FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* field,
+                                       const Options& options,
+                                       MessageSCCAnalyzer* scc)
+    : field_(field), options_(options) {
+  bool is_repeated_or_map = field->is_repeated();
+  should_split_ = ShouldSplit(field, options);
+  is_oneof_ = field->real_containing_oneof() != nullptr;
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_BOOL:
+      is_trivial_ = has_trivial_value_ = !is_repeated_or_map;
+      has_default_constexpr_constructor_ = is_repeated_or_map;
+      break;
+    case FieldDescriptor::CPPTYPE_STRING:
+      is_string_ = true;
+      is_inlined_ = IsStringInlined(field, options);
+      is_bytes_ = field->type() == FieldDescriptor::TYPE_BYTES;
+      has_default_constexpr_constructor_ = is_repeated_or_map;
+      break;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      is_message_ = true;
+      is_group_ = field->type() == FieldDescriptor::TYPE_GROUP;
+      is_foreign_ = IsCrossFileMessage(field);
+      is_weak_ = IsImplicitWeakField(field, options, scc);
+      is_lazy_ = IsLazy(field, options, scc);
+      has_trivial_value_ = !(is_repeated_or_map || is_lazy_);
+      has_default_constexpr_constructor_ = is_repeated_or_map || is_lazy_;
+      break;
   }
-  format("decltype($field$){arena}");
+
+  has_trivial_zero_default_ = CanInitializeByZeroing(field, options, scc);
+  has_brace_default_assign_ = has_trivial_zero_default_ && !is_lazy_;
+}
+
+void FieldGeneratorBase::GenerateMemberConstexprConstructor(
+    io::Printer* p) const {
+  ABSL_CHECK(!field_->is_extension());
+  if (field_->is_repeated()) {
+    p->Emit("$name$_{}");
+  } else {
+    p->Emit({{"default", DefaultValue(options_, field_)}},
+            "$name$_{$default$}");
+  }
+}
+
+void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
+  ABSL_CHECK(!field_->is_extension());
+  if (field_->is_map()) {
+    p->Emit("$name$_{visibility, arena}");
+  } else if (field_->is_repeated()) {
+    if (ShouldSplit(field_, options_)) {
+      p->Emit("$name$_{}");  // RawPtr<Repeated>
+    } else {
+      p->Emit("$name$_{visibility, arena}");
+    }
+  } else {
+    p->Emit({{"default", DefaultValue(options_, field_)}},
+            "$name$_{$default$}");
+  }
+}
+
+void FieldGeneratorBase::GenerateMemberCopyConstructor(io::Printer* p) const {
+  ABSL_CHECK(!field_->is_extension());
+  if (field_->is_repeated()) {
+    p->Emit("$name$_{visibility, arena, from.$name$_}");
+  } else {
+    p->Emit("$name$_{from.$name$_}");
+  }
+}
+
+void FieldGeneratorBase::GenerateOneofCopyConstruct(io::Printer* p) const {
+  ABSL_CHECK(!field_->is_extension()) << "Not supported";
+  ABSL_CHECK(!field_->is_repeated()) << "Not supported";
+  ABSL_CHECK(!field_->is_map()) << "Not supported";
+  p->Emit("$field$ = from.$field$;\n");
+}
+
+void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
+  if (ShouldSplit(field_, options_)) {
+    p->Emit(R"cc(
+      decltype(Impl_::Split::$name$_){arena},
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      decltype($field$){arena},
+    )cc");
+  }
 }
 
 void FieldGeneratorBase::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
-  Formatter format(p, variables_);
-  format("/*decltype($field$)*/{}");
+  p->Emit(R"cc(
+    /*decltype($field$)*/ {},
+  )cc");
 }
 
 void FieldGeneratorBase::GenerateCopyAggregateInitializer(
     io::Printer* p) const {
-  Formatter format(p, variables_);
-  format("decltype($field$){from.$field$}");
+  p->Emit(R"cc(
+    decltype($field$){from.$field$},
+  )cc");
 }
 
 void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
-  if (ShouldSplit(descriptor_, options_)) {
+  if (should_split()) {
     // There is no copy constructor for the `Split` struct, so we need to copy
     // the value here.
     Formatter format(p, variables_);
@@ -141,11 +227,10 @@ void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
   }
 }
 
-void FieldGeneratorBase::GenerateIfHasField(io::Printer* p) const {
-  ABSL_CHECK(internal::cpp::HasHasbit(descriptor_));
-
-  Formatter format(p);
-  format("if (($has_hasbit$) != 0) {\n");
+pb::CppFeatures::StringType FieldGeneratorBase::GetDeclaredStringType() const {
+  return CppGenerator::GetResolvedSourceFeatures(*field_)
+      .GetExtension(pb::cpp)
+      .string_type();
 }
 
 namespace {
@@ -154,14 +239,23 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
                                                   MessageSCCAnalyzer* scc) {
 
   if (field->is_map()) {
+    ABSL_CHECK(
+        !(field->options().lazy() || field->options().unverified_lazy()));
     return MakeMapGenerator(field, options, scc);
   }
   if (field->is_repeated()) {
+    ABSL_CHECK(!field->options().unverified_lazy());
+
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_MESSAGE:
         return MakeRepeatedMessageGenerator(field, options, scc);
-      case FieldDescriptor::CPPTYPE_STRING:
-        return MakeRepeatedStringGenerator(field, options, scc);
+      case FieldDescriptor::CPPTYPE_STRING: {
+        if (field->cpp_string_type() == FieldDescriptor::CppStringType::kView) {
+          return MakeRepeatedStringViewGenerator(field, options, scc);
+        } else {
+          return MakeRepeatedStringGenerator(field, options, scc);
+        }
+      }
       case FieldDescriptor::CPPTYPE_ENUM:
         return MakeRepeatedEnumGenerator(field, options, scc);
       default:
@@ -177,19 +271,25 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return MakeSinguarMessageGenerator(field, options, scc);
-    case FieldDescriptor::CPPTYPE_STRING:
-      if (field->type() == FieldDescriptor::TYPE_BYTES &&
-          field->options().ctype() == FieldOptions::CORD) {
-        if (field->real_containing_oneof()) {
-          return MakeOneofCordGenerator(field, options, scc);
-        } else {
-          return MakeSingularCordGenerator(field, options, scc);
-        }
-      } else {
-        return MakeSinguarStringGenerator(field, options, scc);
-      }
     case FieldDescriptor::CPPTYPE_ENUM:
       return MakeSinguarEnumGenerator(field, options, scc);
+    case FieldDescriptor::CPPTYPE_STRING: {
+      switch (field->cpp_string_type()) {
+        case FieldDescriptor::CppStringType::kView:
+          return MakeSingularStringViewGenerator(field, options, scc);
+        case FieldDescriptor::CppStringType::kCord:
+          if (field->type() == FieldDescriptor::TYPE_BYTES) {
+            if (field->real_containing_oneof()) {
+              return MakeOneofCordGenerator(field, options, scc);
+            } else {
+              return MakeSingularCordGenerator(field, options, scc);
+            }
+          }
+          ABSL_FALLTHROUGH_INTENDED;
+        default:
+          return MakeSinguarStringGenerator(field, options, scc);
+      }
+    }
     default:
       return MakeSinguarPrimitiveGenerator(field, options, scc);
   }
@@ -198,8 +298,8 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
 void HasBitVars(const FieldDescriptor* field, const Options& opts,
                 absl::optional<uint32_t> idx, std::vector<Sub>& vars) {
   if (!idx.has_value()) {
-    vars.emplace_back("set_hasbit", "");
-    vars.emplace_back("clear_hasbit", "");
+    vars.emplace_back(Sub("set_hasbit", "").WithSuffix(";"));
+    vars.emplace_back(Sub("clear_hasbit", "").WithSuffix(";"));
     return;
   }
 
@@ -229,11 +329,13 @@ void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
   }
 
   // The first bit is the tracking bit for on demand registering ArenaDtor.
-  ABSL_CHECK_GT(*idx, 0)
+  ABSL_CHECK_GT(*idx, 0u)
       << "_inlined_string_donated_'s bit 0 is reserved for arena dtor tracking";
 
   int32_t index = *idx / 32;
   std::string mask = absl::StrFormat("0x%08xu", 1u << (*idx % 32));
+  vars.emplace_back("inlined_string_index", index);
+  vars.emplace_back("inlined_string_mask", mask);
 
   absl::string_view array = IsMapEntryMessage(field->containing_type())
                                 ? "_inlined_string_donated_"
@@ -265,18 +367,18 @@ void FieldGeneratorTable::Build(
     absl::Span<const int32_t> has_bit_indices,
     absl::Span<const int32_t> inlined_string_indices) {
   // Construct all the FieldGenerators.
-  fields_.reserve(descriptor_->field_count());
+  fields_.reserve(static_cast<size_t>(descriptor_->field_count()));
   for (const auto* field : internal::FieldRange(descriptor_)) {
+    size_t index = static_cast<size_t>(field->index());
     absl::optional<uint32_t> has_bit_index;
-    if (!has_bit_indices.empty() && has_bit_indices[field->index()] >= 0) {
-      has_bit_index = static_cast<uint32_t>(has_bit_indices[field->index()]);
+    if (!has_bit_indices.empty() && has_bit_indices[index] >= 0) {
+      has_bit_index = static_cast<uint32_t>(has_bit_indices[index]);
     }
 
     absl::optional<uint32_t> inlined_string_index;
-    if (!inlined_string_indices.empty() &&
-        inlined_string_indices[field->index()] >= 0) {
+    if (!inlined_string_indices.empty() && inlined_string_indices[index] >= 0) {
       inlined_string_index =
-          static_cast<uint32_t>(inlined_string_indices[field->index()]);
+          static_cast<uint32_t>(inlined_string_indices[index]);
     }
 
     fields_.push_back(FieldGenerator(field, options, scc, has_bit_index,

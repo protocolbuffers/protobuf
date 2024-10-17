@@ -1,0 +1,75 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package nest;
+
+message Outer {
+  message Inner {
+    message InnerSubMsg {
+      optional bool flag = 1;
+    }
+
+    enum InnerEnum {
+      INNER_ENUM_UNSPECIFIED = 0;
+      INNER_ENUM_FOO = 1;
+    }
+
+    optional double double = 1;
+    optional float float = 2;
+    optional int32 int32 = 3;
+    optional int64 int64 = 4;
+    optional uint32 uint32 = 5;
+    optional uint64 uint64 = 6;
+    optional sint32 sint32 = 7;
+    optional sint64 sint64 = 8;
+    optional fixed32 fixed32 = 9;
+    optional fixed64 fixed64 = 10;
+    optional sfixed32 sfixed32 = 11;
+    optional sfixed64 sfixed64 = 12;
+    optional bool bool = 13;
+    optional string string = 14;
+    optional bytes bytes = 15;
+    optional InnerSubMsg inner_submsg = 16;
+    optional InnerEnum inner_enum = 17;
+    repeated int32 repeated_int32 = 18 [packed = true];
+    repeated InnerSubMsg repeated_inner_submsg = 19;
+    map<string, string> string_map = 20;
+
+    message SuperInner {
+      message DuperInner {
+        message EvenMoreInner {
+          message CantBelieveItsSoInner {
+            optional int32 num = 99;
+          }
+
+          enum JustWayTooInner {
+            JUST_WAY_TOO_INNER_UNSPECIFIED = 0;
+          }
+        }
+      }
+    }
+  }
+  optional Inner inner = 1;
+  optional .nest.Outer.Inner.SuperInner.DuperInner.EvenMoreInner
+      .CantBelieveItsSoInner deep = 2;
+
+  optional .nest.Outer.Inner.SuperInner.DuperInner.EvenMoreInner.JustWayTooInner
+      deep_enum = 4;
+
+  optional NotInside notinside = 3;
+}
+
+message NotInside {
+  optional int32 num = 1;
+}
+
+message Recursive {
+  optional Recursive rec = 1;
+  optional int32 num = 2;
+}

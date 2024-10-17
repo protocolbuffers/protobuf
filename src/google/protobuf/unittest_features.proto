@@ -1,0 +1,242 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package pb;
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.FeatureSet {
+  TestFeatures test = 9999;
+}
+
+message TestMessage {
+  extend google.protobuf.FeatureSet {
+    TestFeatures test_message = 9998;
+  }
+  message Nested {
+    extend google.protobuf.FeatureSet {
+      TestFeatures test_nested = 9997;
+    }
+  }
+}
+
+enum EnumFeature {
+  TEST_ENUM_FEATURE_UNKNOWN = 0;
+  VALUE1 = 1;
+  VALUE2 = 2;
+  VALUE3 = 3;
+  VALUE4 = 4;
+  VALUE5 = 5;
+  VALUE6 = 6;
+  VALUE7 = 7;
+  VALUE8 = 8;
+  VALUE9 = 9;
+  VALUE10 = 10;
+  VALUE11 = 11;
+  VALUE12 = 12;
+  VALUE13 = 13;
+  VALUE14 = 14;
+  VALUE15 = 15;
+}
+
+enum ValueLifetimeFeature {
+  TEST_VALUE_LIFETIME_UNKNOWN = 0;
+  VALUE_LIFETIME_INHERITED = 1;
+  VALUE_LIFETIME_SUPPORT = 2 [feature_support = {
+    edition_introduced: EDITION_99997_TEST_ONLY
+    edition_deprecated: EDITION_99998_TEST_ONLY
+    deprecation_warning: "Custom feature deprecation warning"
+    edition_removed: EDITION_99999_TEST_ONLY
+  }];
+  VALUE_LIFETIME_EMPTY_SUPPORT = 3 [feature_support = {}];
+  VALUE_LIFETIME_FUTURE = 4
+      [feature_support.edition_introduced = EDITION_99997_TEST_ONLY];
+  VALUE_LIFETIME_DEPRECATED = 5 [feature_support = {
+    edition_deprecated: EDITION_99997_TEST_ONLY
+    deprecation_warning: "Custom feature deprecation warning"
+  }];
+  VALUE_LIFETIME_REMOVED = 6 [feature_support = {
+    edition_deprecated: EDITION_2023
+    edition_removed: EDITION_99997_TEST_ONLY
+  }];
+}
+
+message TestFeatures {
+  EnumFeature file_feature = 1 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "VALUE2" },
+    edition_defaults = { edition: EDITION_2023, value: "VALUE3" },
+    edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "VALUE4" },
+    edition_defaults = { edition: EDITION_99998_TEST_ONLY, value: "VALUE5" }
+  ];
+  EnumFeature extension_range_feature = 2 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_EXTENSION_RANGE,
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
+  ];
+  EnumFeature message_feature = 3 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_MESSAGE,
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
+  ];
+  EnumFeature field_feature = 4 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FIELD,
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
+  ];
+  EnumFeature oneof_feature = 5 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_ONEOF,
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
+  ];
+  EnumFeature enum_feature = 6 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_ENUM,
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
+  ];
+  EnumFeature enum_entry_feature = 7 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_ENUM_ENTRY,
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
+  ];
+  EnumFeature service_feature = 8 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_SERVICE,
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
+  ];
+  EnumFeature method_feature = 9 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_METHOD,
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
+  ];
+  EnumFeature multiple_feature = 10 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_MESSAGE,
+    targets = TARGET_TYPE_ENUM,
+    targets = TARGET_TYPE_ENUM_ENTRY,
+    targets = TARGET_TYPE_SERVICE,
+    targets = TARGET_TYPE_METHOD,
+    targets = TARGET_TYPE_ONEOF,
+    targets = TARGET_TYPE_EXTENSION_RANGE,
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
+  ];
+
+  bool bool_field_feature = 11 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FIELD,
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "false" },
+    edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "true" }
+  ];
+
+  EnumFeature source_feature = 15 [
+    retention = RETENTION_SOURCE,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_MESSAGE,
+    targets = TARGET_TYPE_ENUM,
+    targets = TARGET_TYPE_ENUM_ENTRY,
+    targets = TARGET_TYPE_SERVICE,
+    targets = TARGET_TYPE_METHOD,
+    targets = TARGET_TYPE_ONEOF,
+    targets = TARGET_TYPE_EXTENSION_RANGE,
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
+  ];
+
+  EnumFeature source_feature2 = 16 [
+    retention = RETENTION_SOURCE,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_MESSAGE,
+    targets = TARGET_TYPE_ENUM,
+    targets = TARGET_TYPE_ENUM_ENTRY,
+    targets = TARGET_TYPE_SERVICE,
+    targets = TARGET_TYPE_METHOD,
+    targets = TARGET_TYPE_ONEOF,
+    targets = TARGET_TYPE_EXTENSION_RANGE,
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
+  ];
+
+  EnumFeature removed_feature = 17 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_FIELD,
+    feature_support = {
+      edition_introduced: EDITION_2023
+      edition_deprecated: EDITION_2023
+      deprecation_warning: "Custom feature deprecation warning"
+      edition_removed: EDITION_2024
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
+    edition_defaults = { edition: EDITION_2023, value: "VALUE2" },
+    edition_defaults = { edition: EDITION_2024, value: "VALUE3" }
+  ];
+
+  EnumFeature future_feature = 18 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_FIELD,
+    feature_support = { edition_introduced: EDITION_2024 },
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
+    edition_defaults = { edition: EDITION_2024, value: "VALUE2" }
+  ];
+
+  EnumFeature legacy_feature = 19 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_FIELD,
+    feature_support = {
+      edition_introduced: EDITION_PROTO3
+      edition_removed: EDITION_2023
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
+    edition_defaults = { edition: EDITION_2023, value: "VALUE2" }
+  ];
+
+  ValueLifetimeFeature value_lifetime_feature = 20 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    feature_support = {
+      edition_introduced: EDITION_2023
+      edition_deprecated: EDITION_99998_TEST_ONLY
+      deprecation_warning: "Custom feature deprecation warning"
+      edition_removed: EDITION_99999_TEST_ONLY
+    },
+    edition_defaults = {
+      edition: EDITION_LEGACY,
+      value: "VALUE_LIFETIME_INHERITED"
+    },
+    // Verify edition defaults can use future values.
+    edition_defaults = {
+      edition: EDITION_2023,
+      value: "VALUE_LIFETIME_FUTURE"
+    },
+    // Verify edition defaults can use removed values.
+    edition_defaults = {
+      edition: EDITION_99999_TEST_ONLY,
+      value: "VALUE_LIFETIME_FUTURE"
+    }
+  ];
+}

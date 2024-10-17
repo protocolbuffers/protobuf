@@ -1,48 +1,31 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
+#include <cstdint>
 #include <memory>
 
-#include "google/protobuf/arena.h"
-#include "google/protobuf/map.h"
-#include "google/protobuf/map_field_inl.h"
-#include "google/protobuf/message.h"
-#include "google/protobuf/repeated_field.h"
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_format.h"
+#include "absl/synchronization/barrier.h"
+#include "absl/synchronization/blocking_counter.h"
+#include "absl/types/optional.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/arena_test_util.h"
+#include "google/protobuf/map.h"
+#include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -54,53 +37,18 @@ namespace internal {
 
 using unittest::TestAllTypes;
 
-class MapFieldBaseStub : public MapFieldBase {
- public:
-  using InternalArenaConstructable_ = void;
-  typedef void DestructorSkippable_;
-  MapFieldBaseStub() {}
-  virtual ~MapFieldBaseStub() {}
-  explicit MapFieldBaseStub(Arena* arena) : MapFieldBase(arena) {}
-  void SetMapDirty() {
-    payload().state.store(STATE_MODIFIED_MAP, std::memory_order_relaxed);
-  }
-  void SetRepeatedDirty() {
-    payload().state.store(STATE_MODIFIED_REPEATED, std::memory_order_relaxed);
-  }
-  void SyncRepeatedFieldWithMapNoLock() const override {}
-  void SyncMapWithRepeatedFieldNoLock() const override {}
-  UntypedMapBase* MutableMap() override { return nullptr; }
-  bool ContainsMapKey(const MapKey& map_key) const override { return false; }
-  bool InsertOrLookupMapValue(const MapKey& map_key,
-                              MapValueRef* val) override {
-    return false;
-  }
-  bool LookupMapValue(const MapKey& map_key,
-                      MapValueConstRef* val) const override {
-    return false;
-  }
-  bool DeleteMapValue(const MapKey& map_key) override { return false; }
-  bool EqualIterator(const MapIterator& a,
-                     const MapIterator& b) const override {
-    return false;
-  }
-  int size() const override { return 0; }
-  void Clear() override {}
-  void MapBegin(MapIterator* map_iter) const override {}
-  void MapEnd(MapIterator* map_iter) const override {}
-  void MergeFrom(const MapFieldBase& other) override {}
-  void Swap(MapFieldBase* other) override {}
-  void InitializeIterator(MapIterator* map_iter) const override {}
-  void DeleteIterator(MapIterator* map_iter) const override {}
-  void CopyIterator(MapIterator* this_iterator,
-                    const MapIterator& other_iterator) const override {}
-  void IncreaseIterator(MapIterator* map_iter) const override {}
-
-  Arena* GetArenaForInternalRepeatedField() {
-    auto* repeated_field = MutableRepeatedField();
-    return repeated_field->GetArena();
+struct MapFieldTestPeer {
+  static auto GetArena(const RepeatedPtrFieldBase& v) { return v.GetArena(); }
+  template <typename T>
+  static auto& GetMap(T& t) {
+    return t.map_;
   }
 };
+
+using TestMapField = ::google::protobuf::internal::MapField<
+    unittest::TestMap_MapInt32Int32Entry_DoNotUse, ::int32_t, ::int32_t,
+    ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
+    ::google::protobuf::internal::WireFormatLite::TYPE_INT32>;
 
 class MapFieldBasePrimitiveTest : public testing::TestWithParam<bool> {
  protected:
@@ -183,11 +131,11 @@ TEST_P(MapFieldBasePrimitiveTest, Arena) {
   Arena arena(options);
 
   {
-    // TODO(liujisi): Re-write the test to ensure the memory for the map and
+    // TODO: Re-write the test to ensure the memory for the map and
     // repeated fields are allocated from arenas.
     // NoHeapChecker no_heap;
 
-    MapFieldType* map_field = Arena::CreateMessage<MapFieldType>(&arena);
+    MapFieldType* map_field = Arena::Create<MapFieldType>(&arena);
 
     // Set content in map
     (*map_field->MutableMap())[100] = 101;
@@ -197,24 +145,23 @@ TEST_P(MapFieldBasePrimitiveTest, Arena) {
   }
 
   {
-    // TODO(liujisi): Re-write the test to ensure the memory for the map and
+    // TODO: Re-write the test to ensure the memory for the map and
     // repeated fields are allocated from arenas.
     // NoHeapChecker no_heap;
 
-    MapFieldBaseStub* map_field =
-        Arena::CreateMessage<MapFieldBaseStub>(&arena);
+    TestMapField* map_field = Arena::Create<TestMapField>(&arena);
 
     // Trigger conversion to repeated field.
     EXPECT_TRUE(map_field->MutableRepeatedField() != nullptr);
 
-    EXPECT_EQ(map_field->GetArenaForInternalRepeatedField(), &arena);
+    EXPECT_EQ(MapFieldTestPeer::GetArena(map_field->GetRepeatedField()),
+              &arena);
   }
 }
 
 TEST_P(MapFieldBasePrimitiveTest, EnforceNoArena) {
-  std::unique_ptr<MapFieldBaseStub> map_field(
-      Arena::CreateMessage<MapFieldBaseStub>(nullptr));
-  EXPECT_EQ(map_field->GetArenaForInternalRepeatedField(), nullptr);
+  std::unique_ptr<TestMapField> map_field(Arena::Create<TestMapField>(nullptr));
+  EXPECT_EQ(MapFieldTestPeer::GetArena(map_field->GetRepeatedField()), nullptr);
 }
 
 namespace {
@@ -268,17 +215,16 @@ class MapFieldStateTest
     MakeMapDirty(map_field);
     MapFieldBase* map_field_base = map_field;
     map_field_base->MutableRepeatedField();
-    // We use MutableMap on impl_ because we don't want to disturb the syncing
-    Map<int32_t, int32_t>* map = map_field->impl_.MutableMap();
-    map->clear();
+    // We use map_ because we don't want to disturb the syncing
+    map_field->map_.clear();
 
     Expect(map_field, REPEATED_DIRTY, 0, 1);
   }
 
   void Expect(MapFieldType* map_field, State state, int map_size,
               int repeated_size) {
-    // We use MutableMap on impl_ because we don't want to disturb the syncing
-    Map<int32_t, int32_t>* map = map_field->impl_.MutableMap();
+    // We use map_ because we don't want to disturb the syncing
+    Map<int32_t, int32_t>* map = &map_field->map_;
 
     switch (state) {
       case MAP_DIRTY:
@@ -510,3 +456,5 @@ TEST(MapFieldTest, ConstInit) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

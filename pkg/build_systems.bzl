@@ -1,6 +1,8 @@
-# Starlark utilities for working with other build systems
+"""Starlark utilities for working with other build systems."""
 
-load("@rules_pkg//:providers.bzl", "PackageFilegroupInfo", "PackageFilesInfo")
+load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@rules_pkg//pkg:providers.bzl", "PackageFilegroupInfo", "PackageFilesInfo")
+load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load(":cc_dist_library.bzl", "CcFileList")
 
 ################################################################################
@@ -129,7 +131,10 @@ def _create_file_list_impl(ctx, fragment_generator):
     out = ctx.outputs.out
 
     fragments = []
-    for srcrule, libname in ctx.attr.src_libs.items():
+    for srcrule, value in ctx.attr.src_libs.items():
+        split_value = value.split(",")
+        libname = split_value[0]
+        gencode_dir = split_value[1] if len(split_value) == 2 else ""
         if CcFileList in srcrule:
             cc_file_list = srcrule[CcFileList]
 
@@ -170,13 +175,13 @@ def _create_file_list_impl(ctx, fragment_generator):
                     srcrule.label,
                     libname + "_srcs",
                     ctx.attr.source_prefix,
-                    proto_file_list.srcs,
+                    [gencode_dir + paths.basename(s) if gencode_dir else s for s in proto_file_list.srcs],
                 ),
                 fragment_generator(
                     srcrule.label,
                     libname + "_hdrs",
                     ctx.attr.source_prefix,
-                    proto_file_list.hdrs,
+                    [gencode_dir + paths.basename(s) if gencode_dir else s for s in proto_file_list.hdrs],
                 ),
             ])
 
@@ -232,14 +237,14 @@ _source_list_common_attrs = {
     ),
     "src_libs": attr.label_keyed_string_dict(
         doc = (
-            "A dict, {target: libname} of libraries to include. " +
+            "A dict, {target: libname[,gencode_dir]} of libraries to include. " +
             "Targets can be C++ rules (like `cc_library` or `cc_test`), " +
             "`proto_library` rules, files, `filegroup` rules, `pkg_files` " +
             "rules, or `pkg_filegroup` rules. " +
             "The libname is a string, and used to construct the variable " +
             "name in the `out` file holding the target's sources. " +
             "For generated files, the output root (like `bazel-bin/`) is not " +
-            "included. " +
+            "included. gencode_dir is used instead of target's location if provided." +
             "For `pkg_files` and `pkg_filegroup` rules, the destination path " +
             "is used."
         ),
@@ -306,8 +311,8 @@ For C++ rules, the following are generated:
 
 For proto_library, the following are generated:
     {libname}_proto_srcs: contains the srcs from the `proto_library` rule.
-    {libname}_srcs: contains syntesized paths for generated C++ sources.
-    {libname}_hdrs: contains syntesized paths for generated C++ headers.
+    {libname}_srcs: contains synthesized paths for generated C++ sources.
+    {libname}_hdrs: contains synthesized paths for generated C++ headers.
 
 """,
     implementation = _cmake_file_list_impl,

@@ -1,39 +1,16 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/csharp/csharp_reflection_class.h"
 
 #include <sstream>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/strings/str_join.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_enum.h"
 #include "google/protobuf/compiler/csharp/csharp_field_base.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
@@ -113,7 +90,7 @@ void ReflectionClassGenerator::Generate(io::Printer* printer) {
     printer->Print("\n");
   }
 
-  // TODO(jtattermusch): add insertion point for services.
+  // TODO: add insertion point for services.
 
   if (!namespace_.empty()) {
     printer->Outdent();
@@ -174,8 +151,10 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
   printer->Print("string.Concat(\n");
   printer->Indent();
 
-  // TODO(jonskeet): Consider a C#-escaping format here instead of just Base64.
-  std::string base64 = FileDescriptorToBase64(file_);
+  // TODO: Consider a C#-escaping format here instead of just Base64.
+  std::string base64 = options()->strip_nonfunctional_codegen
+                           ? ""
+                           : FileDescriptorToBase64(file_);
   while (base64.size() > 60) {
     printer->Print("\"$base64$\",\n", "base64", base64.substr(0, 60));
     base64 = base64.substr(60);
@@ -191,10 +170,14 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
       "descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,\n");
   printer->Print("    new pbr::FileDescriptor[] { ");
   for (int i = 0; i < file_->dependency_count(); i++) {
-      printer->Print(
-      "$full_reflection_class_name$.Descriptor, ",
-      "full_reflection_class_name",
-      GetReflectionClassName(file_->dependency(i)));
+    if (options()->strip_nonfunctional_codegen &&
+        IsKnownFeatureProto(file_->dependency(i)->name())) {
+      // Strip feature imports for editions codegen tests.
+      continue;
+    }
+    printer->Print("$full_reflection_class_name$.Descriptor, ",
+                   "full_reflection_class_name",
+                   GetReflectionClassName(file_->dependency(i)));
   }
   printer->Print("},\n"
       "    new pbr::GeneratedClrTypeInfo(");
@@ -277,9 +260,21 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
       std::vector<std::string> oneofs;
       oneofs.reserve(descriptor->oneof_decl_count());
       for (int i = 0; i < descriptor->oneof_decl_count(); i++) {
-          oneofs.push_back(UnderscoresToCamelCase(descriptor->oneof_decl(i)->name(), true));
+        if (options()->strip_nonfunctional_codegen &&
+            i >= descriptor->real_oneof_decl_count()) {
+          // Skip synthetic oneofs, which don't affect any actual behavior
+          // outside reflection.
+          break;
+        }
+        oneofs.push_back(
+            UnderscoresToCamelCase(descriptor->oneof_decl(i)->name(), true));
       }
-      printer->Print("new[]{ \"$oneofs$\" }, ", "oneofs", absl::StrJoin(oneofs, "\", \""));
+      if (oneofs.empty()) {
+        printer->Print("null, ");
+      } else {
+        printer->Print("new[]{ \"$oneofs$\" }, ", "oneofs",
+                       absl::StrJoin(oneofs, "\", \""));
+      }
   }
   else {
       printer->Print("null, ");

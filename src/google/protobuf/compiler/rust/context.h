@@ -1,40 +1,23 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2023 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// Copyright 2023 Google LLC.  All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #ifndef GOOGLE_PROTOBUF_COMPILER_RUST_CONTEXT_H__
 #define GOOGLE_PROTOBUF_COMPILER_RUST_CONTEXT_H__
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
+#include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -62,27 +45,58 @@ inline absl::string_view KernelRsName(Kernel kernel) {
 // Global options for a codegen invocation.
 struct Options {
   Kernel kernel;
+  std::string mapping_file_path;
+  bool strip_nonfunctional_codegen = false;
 
   static absl::StatusOr<Options> Parse(absl::string_view param);
 };
 
+class RustGeneratorContext {
+ public:
+  explicit RustGeneratorContext(
+      const std::vector<const FileDescriptor*>* files_in_current_crate,
+      const absl::flat_hash_map<std::string, std::string>*
+          import_path_to_crate_name)
+      : files_in_current_crate_(*files_in_current_crate),
+        import_path_to_crate_name_(*import_path_to_crate_name) {}
+
+  const FileDescriptor& primary_file() const {
+    return *files_in_current_crate_.front();
+  }
+
+  bool is_file_in_current_crate(const FileDescriptor& f) const {
+    return std::find(files_in_current_crate_.begin(),
+                     files_in_current_crate_.end(),
+                     &f) != files_in_current_crate_.end();
+  }
+
+ private:
+  const std::vector<const FileDescriptor*>& files_in_current_crate_;
+  const absl::flat_hash_map<std::string, std::string>&
+      import_path_to_crate_name_;
+
+  friend class Context;
+};
+
 // A context for generating a particular kind of definition.
-// This type acts as an options struct (as in go/totw/173) for most of the
-// generator.
-//
-// `Descriptor` is the type of a descriptor.h class relevant for the current
-// context.
-template <typename Descriptor>
 class Context {
  public:
-  Context(const Options* opts, const Descriptor* desc, io::Printer* printer)
-      : opts_(opts), desc_(desc), printer_(printer) {}
+  Context(const Options* opts,
+          const RustGeneratorContext* rust_generator_context,
+          io::Printer* printer)
+      : opts_(opts),
+        rust_generator_context_(rust_generator_context),
+        printer_(printer) {}
 
-  Context(const Context&) = default;
-  Context& operator=(const Context&) = default;
+  Context(const Context&) = delete;
+  Context& operator=(const Context&) = delete;
+  Context(Context&&) = default;
+  Context& operator=(Context&&) = default;
 
-  const Descriptor& desc() const { return *desc_; }
   const Options& opts() const { return *opts_; }
+  const RustGeneratorContext& generator_context() const {
+    return *rust_generator_context_;
+  }
 
   bool is_cpp() const { return opts_->kernel == Kernel::kCpp; }
   bool is_upb() const { return opts_->kernel == Kernel::kUpb; }
@@ -90,19 +104,8 @@ class Context {
   // NOTE: prefer ctx.Emit() over ctx.printer().Emit();
   io::Printer& printer() const { return *printer_; }
 
-  // Creates a new context over a different descriptor.
-  template <typename D>
-  Context<D> WithDesc(const D& desc) const {
-    return Context<D>(opts_, &desc, printer_);
-  }
-
-  template <typename D>
-  Context<D> WithDesc(const D* desc) const {
-    return Context<D>(opts_, desc, printer_);
-  }
-
   Context WithPrinter(io::Printer* printer) const {
-    return Context(opts_, desc_, printer);
+    return Context(opts_, rust_generator_context_, printer);
   }
 
   // Forwards to Emit(), which will likely be called all the time.
@@ -117,11 +120,32 @@ class Context {
     printer_->Emit(vars, format, loc);
   }
 
+  absl::string_view ImportPathToCrateName(absl::string_view import_path) const {
+    if (opts_->strip_nonfunctional_codegen) {
+      return "test";
+    }
+    auto it =
+        rust_generator_context_->import_path_to_crate_name_.find(import_path);
+    if (it == rust_generator_context_->import_path_to_crate_name_.end()) {
+      ABSL_LOG(FATAL)
+          << "Path " << import_path
+          << " not found in crate mapping. Crate mapping has "
+          << rust_generator_context_->import_path_to_crate_name_.size()
+          << " entries";
+    }
+    return it->second;
+  }
+
  private:
   const Options* opts_;
-  const Descriptor* desc_;
+  const RustGeneratorContext* rust_generator_context_;
   io::Printer* printer_;
 };
+
+bool IsInCurrentlyGeneratingCrate(Context& ctx, const FileDescriptor& file);
+bool IsInCurrentlyGeneratingCrate(Context& ctx, const Descriptor& message);
+bool IsInCurrentlyGeneratingCrate(Context& ctx, const EnumDescriptor& enum_);
+
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf

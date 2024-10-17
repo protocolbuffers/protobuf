@@ -1,97 +1,90 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2023 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// Copyright 2023 Google LLC.  All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
-use std::ptr::NonNull;
-use unittest_proto::proto2_unittest::TestAllExtensions;
-use unittest_proto::proto2_unittest::TestAllTypes;
+use googletest::prelude::*;
+use protobuf_cpp::prelude::*;
+
+use protobuf_cpp::__runtime::PtrAndLen;
+use protobuf_cpp::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop};
+use std::ffi::c_void;
+
+use interop_test_rust_proto::{InteropTestMessage, InteropTestMessageMut, InteropTestMessageView};
 
 macro_rules! proto_assert_eq {
     ($lhs:expr, $rhs:expr) => {{
         let lhs = &$lhs;
         let rhs = &$rhs;
 
-        assert_eq!(lhs.optional_int64(), rhs.optional_int64());
-        assert_eq!(lhs.optional_bytes(), rhs.optional_bytes());
-        assert_eq!(lhs.optional_bool(), rhs.optional_bool());
+        assert_that!(lhs.i64(), eq(rhs.i64()));
+        assert_that!(lhs.bytes(), eq(rhs.bytes()));
+        assert_that!(lhs.b(), eq(rhs.b()));
     }};
 }
 
 // Helper functions invoking C++ Protobuf APIs directly in C++.
 // Defined in `test_utils.cc`.
 extern "C" {
-    fn DeserializeTestAllTypes(data: *const u8, len: usize) -> NonNull<u8>;
-    fn MutateTestAllTypes(msg: NonNull<u8>);
-    fn SerializeTestAllTypes(msg: NonNull<u8>) -> protobuf_cpp::SerializedData;
+    fn TakeOwnershipAndGetOptionalInt64(msg: *mut c_void) -> i64;
+    fn DeserializeInteropTestMessage(data: *const u8, len: usize) -> *mut c_void;
+    fn MutateInteropTestMessage(msg: *mut c_void);
+    fn SerializeInteropTestMessage(msg: *const c_void) -> protobuf_cpp::__runtime::SerializedData;
+    fn DeleteInteropTestMessage(msg: *mut c_void);
 
-    fn NewWithExtension() -> NonNull<u8>;
-    fn GetBytesExtension(msg: NonNull<u8>) -> protobuf_cpp::PtrAndLen;
+    fn NewWithExtension() -> *mut c_void;
+    fn GetBytesExtension(msg: *const c_void) -> PtrAndLen;
+
+    fn GetConstStaticInteropTestMessage() -> *const c_void;
 }
 
-#[test]
-fn mutate_message_in_cpp() {
-    let mut msg1 = TestAllTypes::new();
+#[gtest]
+fn send_to_cpp() {
+    let mut msg1 = InteropTestMessage::new();
+    msg1.set_i64(7);
+    let i = unsafe { TakeOwnershipAndGetOptionalInt64(msg1.__unstable_leak_raw_message()) };
+    assert_eq!(i, 7);
+}
+
+#[gtest]
+fn mutate_message_mut_in_cpp() {
+    let mut msg1 = InteropTestMessage::new();
     unsafe {
-        MutateTestAllTypes(msg1.__unstable_cpp_repr_grant_permission_to_break());
+        MutateInteropTestMessage(msg1.as_mut().__unstable_as_raw_message_mut());
     }
 
-    let mut msg2 = TestAllTypes::new();
-    msg2.optional_int64_set(Some(42));
-    msg2.optional_bytes_set(Some(b"something mysterious"));
-    msg2.optional_bool_set(Some(false));
+    let mut msg2 = InteropTestMessage::new();
+    msg2.set_i64(42);
+    msg2.set_bytes(b"something mysterious");
+    msg2.set_b(false);
 
     proto_assert_eq!(msg1, msg2);
 }
 
-#[test]
+#[gtest]
 fn deserialize_in_rust() {
-    let mut msg1 = TestAllTypes::new();
-    msg1.optional_int64_set(Some(-1));
-    msg1.optional_bytes_set(Some(b"some cool data I guess"));
+    let mut msg1 = InteropTestMessage::new();
+    msg1.set_i64(-1);
+    msg1.set_bytes(b"some cool data I guess");
     let serialized =
-        unsafe { SerializeTestAllTypes(msg1.__unstable_cpp_repr_grant_permission_to_break()) };
+        unsafe { SerializeInteropTestMessage(msg1.as_view().__unstable_as_raw_message()) };
 
-    let mut msg2 = TestAllTypes::new();
-    msg2.deserialize(&serialized).unwrap();
+    let msg2 = InteropTestMessage::parse(&serialized).unwrap();
     proto_assert_eq!(msg1, msg2);
 }
 
-#[test]
+#[gtest]
 fn deserialize_in_cpp() {
-    let mut msg1 = TestAllTypes::new();
-    msg1.optional_int64_set(Some(-1));
-    msg1.optional_bytes_set(Some(b"some cool data I guess"));
-    let data = msg1.serialize();
+    let mut msg1 = InteropTestMessage::new();
+    msg1.set_i64(-1);
+    msg1.set_bytes(b"some cool data I guess");
+    let data = msg1.serialize().unwrap();
 
     let msg2 = unsafe {
-        TestAllTypes::__unstable_wrap_cpp_grant_permission_to_break(DeserializeTestAllTypes(
-            data.as_ptr(),
+        InteropTestMessage::__unstable_take_ownership_of_raw_message(DeserializeInteropTestMessage(
+            (*data).as_ptr(),
             data.len(),
         ))
     };
@@ -99,19 +92,64 @@ fn deserialize_in_cpp() {
     proto_assert_eq!(msg1, msg2);
 }
 
+#[gtest]
+fn deserialize_in_cpp_into_mut() {
+    let mut msg1 = InteropTestMessage::new();
+    msg1.set_i64(-1);
+    msg1.set_bytes(b"some cool data I guess");
+    let data = msg1.serialize().unwrap();
+
+    let mut raw_msg = unsafe { DeserializeInteropTestMessage((*data).as_ptr(), data.len()) };
+    let msg2 = unsafe { InteropTestMessageMut::__unstable_wrap_raw_message_mut(&mut raw_msg) };
+
+    proto_assert_eq!(msg1, msg2);
+
+    // The C++ still owns the message here and needs to delete it.
+    unsafe {
+        DeleteInteropTestMessage(raw_msg);
+    }
+}
+
+#[gtest]
+fn deserialize_in_cpp_into_view() {
+    let mut msg1 = InteropTestMessage::new();
+    msg1.set_i64(-1);
+    msg1.set_bytes(b"some cool data I guess");
+    let data = msg1.serialize().unwrap();
+
+    let raw_msg = unsafe { DeserializeInteropTestMessage((*data).as_ptr(), data.len()) };
+    let const_msg = raw_msg as *const _;
+    let msg2 = unsafe { InteropTestMessageView::__unstable_wrap_raw_message(&const_msg) };
+
+    proto_assert_eq!(msg1, msg2);
+
+    // The C++ still owns the message here and needs to delete it.
+    unsafe {
+        DeleteInteropTestMessage(raw_msg);
+    }
+}
+
 // This test ensures that random fields we (Rust) don't know about don't
 // accidentally get destroyed by Rust.
-#[test]
+#[gtest]
 fn smuggle_extension() {
-    let msg1 = unsafe {
-        TestAllExtensions::__unstable_wrap_cpp_grant_permission_to_break(NewWithExtension())
-    };
-    let data = msg1.serialize();
+    let msg1 =
+        unsafe { InteropTestMessage::__unstable_take_ownership_of_raw_message(NewWithExtension()) };
+    let data = msg1.serialize().unwrap();
 
-    let mut msg2 = TestAllExtensions::new();
-    msg2.deserialize(&data).unwrap();
-    let bytes = unsafe {
-        GetBytesExtension(msg2.__unstable_cpp_repr_grant_permission_to_break()).as_ref()
+    let mut msg2 = InteropTestMessage::parse(&data).unwrap();
+    let bytes =
+        unsafe { GetBytesExtension(msg2.as_mut().__unstable_as_raw_message_mut()).as_ref() };
+    assert_eq!(bytes, b"smuggled");
+}
+
+#[gtest]
+fn view_of_const_static() {
+    let view: InteropTestMessageView<'static> = unsafe {
+        InteropTestMessageView::__unstable_wrap_raw_message_unchecked_lifetime(
+            GetConstStaticInteropTestMessage(),
+        )
     };
-    assert_eq!(&*bytes, b"smuggled");
+    assert_eq!(view.i64(), 0);
+    assert_eq!(view.default_int32(), 41);
 }

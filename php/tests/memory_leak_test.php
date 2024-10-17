@@ -42,7 +42,7 @@ $data = $from->serializeToString();
 
 $to->mergeFromString($data);
 
-// TODO(teboring): This causes following tests fail in php7.
+// TODO: This causes following tests fail in php7.
 # $from->setRecursive($from);
 
 $arr = new RepeatedField(GPBType::MESSAGE, TestMessage::class);

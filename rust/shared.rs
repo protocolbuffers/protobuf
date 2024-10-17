@@ -1,51 +1,103 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2023 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// Copyright 2023 Google LLC.  All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 //! Kernel-agnostic logic for the Rust Protobuf Runtime.
 //!
-//! For kernel-specific logic this crate delegates to the respective __runtime
+//! For kernel-specific logic this crate delegates to the respective `__runtime`
 //! crate.
-
-#[cfg(cpp_kernel)]
-pub extern crate cpp as __runtime;
-#[cfg(upb_kernel)]
-pub extern crate upb as __runtime;
-
-pub use __runtime::SerializedData;
+#![deny(unsafe_op_in_unsafe_fn)]
 
 use std::fmt;
-use std::slice;
 
-/// Represents error during deserialization.
+// There are a number of manual `Debug` and similar impls instead of using their
+// derives, in order to to avoid unnecessary bounds on a generic `T`.
+// This problem is referred to as "perfect derive".
+// https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
+
+/// Everything in `__public` is re-exported in `protobuf.rs`.
+/// These are the items protobuf users can access directly.
+#[doc(hidden)]
+pub mod __public {
+    pub use crate::codegen_traits::{
+        create::Parse,
+        interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop},
+        read::Serialize,
+        write::{Clear, ClearAndParse, MergeFrom},
+        Message, MessageMut, MessageView,
+    };
+    pub use crate::cord::{ProtoBytesCow, ProtoStringCow};
+    pub use crate::r#enum::{Enum, UnknownEnumValue};
+    pub use crate::map::{Map, MapIter, MapMut, MapView, ProxiedInMapValue};
+    pub use crate::optional::Optional;
+    pub use crate::proto;
+    pub use crate::proxied::{
+        AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy,
+        View, ViewProxy,
+    };
+    pub use crate::repeated::{
+        ProxiedInRepeated, Repeated, RepeatedIter, RepeatedMut, RepeatedView,
+    };
+    pub use crate::string::{ProtoBytes, ProtoStr, ProtoString, Utf8Error};
+    pub use crate::{ParseError, SerializeError};
+}
+pub use __public::*;
+
+pub mod prelude;
+
+/// Everything in `__internal` is allowed to change without it being considered
+/// a breaking change for the protobuf library. Nothing in here should be
+/// exported in `protobuf.rs`.
+#[path = "internal.rs"]
+pub mod __internal;
+
+/// Everything in `__runtime` is allowed to change without it being considered
+/// a breaking change for the protobuf library. Nothing in here should be
+/// exported in `protobuf.rs`.
+#[cfg(all(bzl, cpp_kernel))]
+#[path = "cpp.rs"]
+pub mod __runtime;
+#[cfg(any(not(bzl), upb_kernel))]
+#[path = "upb.rs"]
+pub mod __runtime;
+
+mod codegen_traits;
+mod cord;
+#[path = "enum.rs"]
+mod r#enum;
+mod map;
+mod optional;
+mod primitive;
+mod proto_macro;
+mod proxied;
+mod repeated;
+mod string;
+
+#[cfg(not(bzl))]
+#[path = "upb/lib.rs"]
+mod upb;
+
+#[cfg(not(bzl))]
+mod utf8;
+
+// Forces the utf8 crate to be accessible from crate::.
+#[cfg(bzl)]
+#[allow(clippy::single_component_path_imports)]
+use utf8;
+
+// If the Upb and C++ kernels are both linked into the same binary, this symbol
+// will be defined twice and cause a link error.
+#[no_mangle]
+extern "C" fn __Disallow_Upb_And_Cpp_In_Same_Binary() {}
+
+/// An error that happened during parsing.
 #[derive(Debug, Clone)]
 pub struct ParseError;
+
+impl std::error::Error for ParseError {}
 
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -53,18 +105,14 @@ impl fmt::Display for ParseError {
     }
 }
 
-/// Represents an ABI-stable version of &[u8]/string_view (a borrowed slice of
-/// bytes) for FFI use only.
-#[repr(C)]
-#[derive(Copy, Clone)]
-pub struct PtrAndLen {
-    /// Borrows the memory.
-    pub ptr: *const u8,
-    pub len: usize,
-}
+/// An error that happened during serialization.
+#[derive(Debug, Clone)]
+pub struct SerializeError;
 
-impl PtrAndLen {
-    pub unsafe fn as_ref<'a>(self) -> &'a [u8] {
-        slice::from_raw_parts(self.ptr, self.len)
+impl std::error::Error for SerializeError {}
+
+impl fmt::Display for SerializeError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Couldn't serialize proto into bytes (depth too deep or missing required fields)")
     }
 }

@@ -1,41 +1,22 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 
 #include <climits>
+#include <cstdint>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
@@ -48,10 +29,12 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_lite_test_util.h"
 #include "google/protobuf/map_lite_unittest.pb.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/test_util_lite.h"
 #include "google/protobuf/unittest_lite.pb.h"
 #include "google/protobuf/wire_format_lite.h"
+
 
 // Must be included last
 #include "google/protobuf/port_def.inc"
@@ -126,7 +109,7 @@ void SetSomeTypesInEmptyMessageUnknownFields(
 
 TEST(ParseVarintTest, Varint32) {
   auto test_value = [](uint32_t value, int varint_length) {
-    uint8_t buffer[10];
+    uint8_t buffer[10] = {0};
     uint8_t* p = io::CodedOutputStream::WriteVarint32ToArray(value, buffer);
     ASSERT_EQ(p - buffer, varint_length) << "Value = " << value;
 
@@ -153,7 +136,7 @@ TEST(ParseVarintTest, Varint32) {
 
 TEST(ParseVarintTest, Varint64) {
   auto test_value = [](uint64_t value, int varint_length) {
-    uint8_t buffer[10];
+    uint8_t buffer[10] = {0};
     uint8_t* p = io::CodedOutputStream::WriteVarint64ToArray(value, buffer);
     ASSERT_EQ(p - buffer, varint_length) << "Value = " << value;
 
@@ -978,6 +961,18 @@ TYPED_TEST(LiteTest, AllLite43) {
     EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
     EXPECT_EQ(17, message2.oneof_int32());
   }
+
+  // Bytes [ctype = CORD]
+  {
+    protobuf_unittest::TestOneofParsingLite message2;
+    message2.set_oneof_bytes_cord("bytes cord");
+    io::CodedInputStream input_stream(
+        reinterpret_cast<const ::uint8_t*>(serialized.data()),
+        serialized.size());
+    EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
+    EXPECT_EQ(17, message2.oneof_int32());
+  }
+
 }
 
 // Verify that we can successfully parse fields of various types within oneof
@@ -1064,6 +1059,18 @@ TYPED_TEST(LiteTest, AllLite44) {
     }
   }
 
+  // Bytes [ctype = CORD]
+  {
+    protobuf_unittest::TestOneofParsingLite original;
+    original.set_oneof_bytes_cord("bytes cord");
+    std::string serialized;
+    EXPECT_TRUE(original.SerializeToString(&serialized));
+    protobuf_unittest::TestOneofParsingLite parsed;
+    EXPECT_TRUE(parsed.MergeFromString(serialized));
+    EXPECT_EQ("bytes cord", std::string(parsed.oneof_bytes_cord()));
+    EXPECT_TRUE(parsed.MergeFromString(serialized));
+  }
+
   std::cout << "PASS" << std::endl;
 }
 
@@ -1116,7 +1123,7 @@ TYPED_TEST(LiteTest, AllLite47) {
 TYPED_TEST(LiteTest, MapCrash) {
   // See b/113635730
   Arena arena;
-  auto msg = Arena::CreateMessage<protobuf_unittest::TestMapLite>(&arena);
+  auto msg = Arena::Create<protobuf_unittest::TestMapLite>(&arena);
   // Payload for the map<string, Enum> with a enum varint that's longer >
   // 10 bytes. This causes a parse fail and a subsequent delete. field 16
   // (map<int32, MapEnumLite>) tag = 128+2 = \202 \1
@@ -1183,6 +1190,7 @@ TYPED_TEST(LiteTest, EnumValueToName) {
   EXPECT_EQ("", protobuf_unittest::ForeignEnumLite_Name(0));
   EXPECT_EQ("", protobuf_unittest::ForeignEnumLite_Name(999));
 }
+
 
 TYPED_TEST(LiteTest, NestedEnumValueToName) {
   EXPECT_EQ("FOO", protobuf_unittest::TestAllTypesLite::NestedEnum_Name(
@@ -1346,6 +1354,105 @@ TEST(LiteBasicTest, CodedInputStreamRollback) {
   }
 }
 
+// Two arbitrary types
+using CastType1 = protobuf_unittest::TestAllTypesLite;
+using CastType2 = protobuf_unittest::TestPackedTypesLite;
+
+TEST(LiteTest, DynamicCastMessage) {
+  CastType1 test_type_1;
+
+  MessageLite* test_type_1_pointer = &test_type_1;
+  EXPECT_EQ(&test_type_1, DynamicCastMessage<CastType1>(test_type_1_pointer));
+  EXPECT_EQ(nullptr, DynamicCastMessage<CastType2>(test_type_1_pointer));
+
+  const MessageLite* test_type_1_pointer_const = &test_type_1;
+  EXPECT_EQ(&test_type_1,
+            DynamicCastMessage<const CastType1>(test_type_1_pointer_const));
+  EXPECT_EQ(nullptr,
+            DynamicCastMessage<const CastType2>(test_type_1_pointer_const));
+
+  MessageLite* test_type_1_pointer_nullptr = nullptr;
+  EXPECT_EQ(nullptr,
+            DynamicCastMessage<CastType1>(test_type_1_pointer_nullptr));
+
+  MessageLite& test_type_1_pointer_ref = test_type_1;
+  EXPECT_EQ(&test_type_1,
+            &DynamicCastMessage<CastType1>(test_type_1_pointer_ref));
+
+  const MessageLite& test_type_1_pointer_const_ref = test_type_1;
+  EXPECT_EQ(&test_type_1,
+            &DynamicCastMessage<CastType1>(test_type_1_pointer_const_ref));
+
+  std::shared_ptr<MessageLite> shared(new CastType1);
+  EXPECT_EQ(1, shared.use_count());
+  std::shared_ptr<CastType1> shared_1 = DynamicCastMessage<CastType1>(shared);
+  // Check that both shared_ptr instances are pointing to the same control
+  // block by checking use_count().
+  EXPECT_EQ(2, shared.use_count());
+  EXPECT_EQ(shared_1.get(), shared.get());
+  std::shared_ptr<CastType2> shared_2 = DynamicCastMessage<CastType2>(shared);
+  EXPECT_EQ(2, shared.use_count());
+  EXPECT_EQ(shared_2, nullptr);
+}
+
+#if GTEST_HAS_DEATH_TEST
+TEST(LiteTest, DynamicCastMessageInvalidReferenceType) {
+  CastType1 test_type_1;
+  const MessageLite& test_type_1_pointer_const_ref = test_type_1;
+  ASSERT_DEATH(
+      DynamicCastMessage<CastType2>(test_type_1_pointer_const_ref),
+      absl::StrCat("Cannot downcast ", test_type_1.GetTypeName(), " to ",
+                   CastType2::default_instance().GetTypeName()));
+}
+#endif  // GTEST_HAS_DEATH_TEST
+
+TEST(LiteTest, DownCastMessageValidType) {
+  CastType1 test_type_1;
+
+  MessageLite* test_type_1_pointer = &test_type_1;
+  EXPECT_EQ(&test_type_1, DownCastMessage<CastType1>(test_type_1_pointer));
+
+  const MessageLite* test_type_1_pointer_const = &test_type_1;
+  EXPECT_EQ(&test_type_1,
+            DownCastMessage<const CastType1>(test_type_1_pointer_const));
+
+  MessageLite* test_type_1_pointer_nullptr = nullptr;
+  EXPECT_EQ(nullptr, DownCastMessage<CastType1>(test_type_1_pointer_nullptr));
+
+  MessageLite& test_type_1_pointer_ref = test_type_1;
+  EXPECT_EQ(&test_type_1, &DownCastMessage<CastType1>(test_type_1_pointer_ref));
+
+  const MessageLite& test_type_1_pointer_const_ref = test_type_1;
+  EXPECT_EQ(&test_type_1,
+            &DownCastMessage<CastType1>(test_type_1_pointer_const_ref));
+}
+
+#if GTEST_HAS_DEATH_TEST
+TEST(LiteTest, DownCastMessageInvalidPointerType) {
+  CastType1 test_type_1;
+
+  MessageLite* test_type_1_pointer = &test_type_1;
+
+  ASSERT_DEBUG_DEATH(
+      DownCastMessage<CastType2>(test_type_1_pointer),
+      absl::StrCat("Cannot downcast ", test_type_1.GetTypeName(), " to ",
+                   CastType2::default_instance().GetTypeName()));
+}
+
+TEST(LiteTest, DownCastMessageInvalidReferenceType) {
+  CastType1 test_type_1;
+
+  MessageLite& test_type_1_pointer = test_type_1;
+
+  ASSERT_DEBUG_DEATH(
+      DownCastMessage<CastType2>(test_type_1_pointer),
+      absl::StrCat("Cannot downcast ", test_type_1.GetTypeName(), " to ",
+                   CastType2::default_instance().GetTypeName()));
+}
+#endif  // GTEST_HAS_DEATH_TEST
+
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

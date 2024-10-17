@@ -12,10 +12,25 @@ cd $(dirname -- "$0")
 
 readonly BazelBin="${BAZEL:-bazel} ${BAZEL_STARTUP_FLAGS}"
 
+STALENESS_TESTS=(
+  "java/core:generated_java_defaults_staleness_test"
+  "upb/reflection:bootstrap_upb_defaults_staleness_test"
+  "cmake:test_dependencies_staleness"
+  "src:cmake_lists_staleness_test"
+  "src/google/protobuf:well_known_types_staleness_test"
+  "objectivec:well_known_types_staleness_test"
+  "php:test_amalgamation_staleness"
+  "php:proto_staleness_test"
+  "ruby/ext/google/protobuf_c:test_amalgamation_staleness"
+  "upb/cmake:test_generated_files"
+  "upb/reflection:descriptor_upb_proto_staleness_test"
+  "upb_generator:plugin_upb_proto_staleness_test"
+)
+
 # Run and fix all staleness tests.
-${BazelBin} test src:cmake_lists_staleness_test "$@" || ./bazel-bin/src/cmake_lists_staleness_test --fix
-${BazelBin} test src/google/protobuf:well_known_types_staleness_test "$@" || ./bazel-bin/src/google/protobuf/well_known_types_staleness_test --fix
-${BazelBin} test objectivec:well_known_types_staleness_test "$@" || ./bazel-bin/objectivec/well_known_types_staleness_test --fix
+for test in ${STALENESS_TESTS[@]}; do
+  ${BazelBin} test $test "$@" || ./bazel-bin/${test%%:*}/${test#*:} --fix
+done
 
 # Generate C# code.
 # This doesn't currently have Bazel staleness tests, but there's an existing

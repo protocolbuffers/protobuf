@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -35,19 +12,25 @@
 #include "google/protobuf/compiler/cpp/enum.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/descriptor.h"
+#include "absl/algorithm/container.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_enum_util.h"
 
 namespace google {
 namespace protobuf {
@@ -61,7 +44,8 @@ absl::flat_hash_map<absl::string_view, std::string> EnumVars(
     const EnumValueDescriptor* min, const EnumValueDescriptor* max) {
   auto classname = ClassName(enum_, false);
   return {
-      {"Enum", enum_->name()},
+      {"DEPRECATED", enum_->options().deprecated() ? "[[deprecated]]" : ""},
+      {"Enum", std::string(enum_->name())},
       {"Enum_", ResolveKeyword(enum_->name())},
       {"Msg_Enum", classname},
       {"::Msg_Enum", QualifiedClassName(enum_, options)},
@@ -69,6 +53,11 @@ absl::flat_hash_map<absl::string_view, std::string> EnumVars(
        enum_->containing_type() == nullptr ? "" : absl::StrCat(classname, "_")},
       {"kMin", absl::StrCat(min->number())},
       {"kMax", absl::StrCat(max->number())},
+      {"return_type", CppGenerator::GetResolvedSourceFeatures(*enum_)
+                              .GetExtension(::pb::cpp)
+                              .enum_name_uses_string_view()
+                          ? "::absl::string_view"
+                          : "const std::string&"},
   };
 }
 
@@ -174,12 +163,13 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
            }},
       },
       R"cc(
-        enum $Msg_Enum_annotated$ : int {
+        enum $DEPRECATED $$Msg_Enum_annotated$ : int {
           $values$,
           $open_enum_sentinels$,
         };
 
         $dllexport_decl $bool $Msg_Enum$_IsValid(int value);
+        $dllexport_decl $extern const uint32_t $Msg_Enum$_internal_data_[];
         constexpr $Msg_Enum$ $Msg_Enum_Enum_MIN$ = static_cast<$Msg_Enum$>($kMin$);
         constexpr $Msg_Enum$ $Msg_Enum_Enum_MAX$ = static_cast<$Msg_Enum$>($kMax$);
       )cc");
@@ -201,7 +191,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
     )cc");
   } else {
     p->Emit(R"cc(
-      const std::string& $Msg_Enum$_Name($Msg_Enum$ value);
+      $return_type$ $Msg_Enum$_Name($Msg_Enum$ value);
     )cc");
   }
 
@@ -223,7 +213,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
   if (should_cache_ || !has_reflection_) {
     p->Emit({{"static_assert", write_assert}}, R"cc(
       template <typename T>
-      const std::string& $Msg_Enum$_Name(T value) {
+      $return_type$ $Msg_Enum$_Name(T value) {
         $static_assert$;
         return $Msg_Enum$_Name(static_cast<$Msg_Enum$>(value));
       }
@@ -235,21 +225,17 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
       // pointers, so if the enum values are sparse, it's not worth it.
       p->Emit(R"cc(
         template <>
-        inline const std::string& $Msg_Enum$_Name($Msg_Enum$ value) {
+        inline $return_type$ $Msg_Enum$_Name($Msg_Enum$ value) {
           return ::$proto_ns$::internal::NameOfDenseEnum<$Msg_Enum$_descriptor,
                                                          $kMin$, $kMax$>(
               static_cast<int>(value));
         }
       )cc");
-    } else {
-      p->Emit(R"cc(
-        const std::string& $Msg_Enum$_Name($Msg_Enum$ value);
-      )cc");
     }
   } else {
     p->Emit({{"static_assert", write_assert}}, R"cc(
       template <typename T>
-      const std::string& $Msg_Enum$_Name(T value) {
+      $return_type$ $Msg_Enum$_Name(T value) {
         $static_assert$;
         return ::$proto_ns$::internal::NameOfEnum($Msg_Enum$_descriptor(), value);
       }
@@ -287,6 +273,7 @@ void EnumGenerator::GenerateGetEnumDescriptorSpecializations(io::Printer* p) {
     }
   )cc");
 }
+
 
 void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
   auto v = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
@@ -344,7 +331,7 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
 
   p->Emit(R"cc(
     template <typename T>
-    static inline const std::string& $Enum$_Name(T value) {
+    static inline $return_type$ $Enum$_Name(T value) {
       return $Msg_Enum$_Name(value);
     }
     static inline bool $Enum$_Parse(absl::string_view name, $Enum_$* value) {
@@ -365,39 +352,65 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
     )cc");
   }
 
-  p->Emit({{"cases",
+  // Multiple values may have the same number. Sort and dedup.
+  std::vector<int> numbers;
+  numbers.reserve(enum_->value_count());
+  for (int i = 0; i < enum_->value_count(); ++i) {
+    numbers.push_back(enum_->value(i)->number());
+  }
+  // Sort and deduplicate `numbers`.
+  absl::c_sort(numbers);
+  numbers.erase(std::unique(numbers.begin(), numbers.end()), numbers.end());
+
+  // We now generate the XXX_IsValid functions, as well as their encoded enum
+  // data.
+  // For simple enums we skip the generic ValidateEnum call and use better
+  // codegen. It matches the speed of the previous switch-based codegen.
+  // For more complex enums we use the new algorithm with the encoded data.
+  // Always generate the data array, even on the simple cases because someone
+  // might be using it for TDP entries. If it is not used in the end, the linker
+  // will drop it.
+  p->Emit({{"encoded",
             [&] {
-              // Multiple values may have the same number.  Make sure we only
-              // cover each number once by first constructing a set containing
-              // all valid numbers, then printing a case statement for each
-              // element.
-
-              std::vector<int> numbers;
-              numbers.reserve(enum_->value_count());
-              for (int i = 0; i < enum_->value_count(); ++i) {
-                numbers.push_back(enum_->value(i)->number());
-              }
-              // Sort and deduplicate `numbers`.
-              absl::c_sort(numbers);
-              numbers.erase(std::unique(numbers.begin(), numbers.end()),
-                            numbers.end());
-
-              for (int n : numbers) {
-                p->Emit({{"n", n}}, R"cc(
-                  case $n$:
-                )cc");
+              for (uint32_t n : google::protobuf::internal::GenerateEnumData(numbers)) {
+                p->Emit({{"n", n}}, "$n$u, ");
               }
             }}},
-          R"(
-            bool $Msg_Enum$_IsValid(int value) {
-              switch (value) {
-                $cases$;
-                  return true;
-                default:
-                  return false;
+          R"cc(
+            PROTOBUF_CONSTINIT const uint32_t $Msg_Enum$_internal_data_[] = {
+                $encoded$};
+          )cc");
+
+  if (numbers.front() + static_cast<int64_t>(numbers.size()) - 1 ==
+      numbers.back()) {
+    // They are sequential. Do a simple range check.
+    p->Emit({{"min", numbers.front()}, {"max", numbers.back()}},
+            R"cc(
+              bool $Msg_Enum$_IsValid(int value) {
+                return $min$ <= value && value <= $max$;
               }
-            }
-          )");
+            )cc");
+  } else if (numbers.front() >= 0 && numbers.back() < 64) {
+    // Not sequential, but they fit in a 64-bit bitmap.
+    uint64_t bitmap = 0;
+    for (int n : numbers) {
+      bitmap |= uint64_t{1} << n;
+    }
+    p->Emit({{"bitmap", bitmap}, {"max", numbers.back()}},
+            R"cc(
+              bool $Msg_Enum$_IsValid(int value) {
+                return 0 <= value && value <= $max$ && (($bitmap$u >> value) & 1) != 0;
+              }
+            )cc");
+  } else {
+    // More complex struct. Use enum data structure for lookup.
+    p->Emit(
+        R"cc(
+          bool $Msg_Enum$_IsValid(int value) {
+            return ::_pbi::ValidateEnum(value, $Msg_Enum$_internal_data_);
+          }
+        )cc");
+  }
 
   if (!has_reflection_) {
     // In lite mode (where descriptors are unavailable), we generate separate
@@ -438,12 +451,12 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
       ++index;
       offset += e.first.size();
     }
-    absl::c_sort(offsets, [](const auto& a, const auto& b) {
+    absl::c_stable_sort(offsets, [](const auto& a, const auto& b) {
       return a.byte_offset < b.byte_offset;
     });
 
     std::vector<Offset> offsets_by_number = offsets;
-    absl::c_sort(offsets_by_number, [](const auto& a, const auto& b) {
+    absl::c_stable_sort(offsets_by_number, [](const auto& a, const auto& b) {
       return a.number < b.number;
     });
 
@@ -510,7 +523,7 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
               $entries_by_number$,
           };
 
-          const std::string& $Msg_Enum$_Name($Msg_Enum$ value) {
+          $return_type$ $Msg_Enum$_Name($Msg_Enum$ value) {
             static const bool kDummy =
                 ::$proto_ns$::internal::InitializeEnumStrings(
                     $Msg_Enum$_entries, $Msg_Enum$_entries_by_number,

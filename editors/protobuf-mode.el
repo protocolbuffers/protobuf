@@ -87,7 +87,7 @@
              "string" "bytes" "group"))
 
 (c-lang-defconst c-modifier-kwds
-  protobuf '("required" "optional" "repeated"))
+  protobuf '("required" "optional" "repeated" "oneof"))
 
 (c-lang-defconst c-class-decl-kwds
   protobuf '("message" "enum" "service"))
@@ -96,7 +96,7 @@
   protobuf '("true" "false"))
 
 (c-lang-defconst c-other-decl-kwds
-  protobuf '("package" "import"))
+  protobuf '("package" "import" "syntax" "edition"))
 
 (c-lang-defconst c-other-kwds
   protobuf '("default" "max"))
@@ -112,7 +112,7 @@
   protobuf '("extensions" "to" "reserved"))
 
 (c-lang-defconst c-typeless-decl-kwds
-  protobuf '("extend" "rpc" "option" "returns"))
+  protobuf '("extend" "rpc" "stream" "option" "returns"))
 
 
 ;; Here we remove default syntax for loops, if-statements and other C

@@ -3,10 +3,21 @@ name: PHP Extension Tests
 on:
   workflow_call:
     inputs:
+      continuous-run:
+        required: true
+        description: "Boolean string denoting whether this run is continuous --
+          empty string for presubmit, non-empty string for continuous."
+        type: string
       safe-checkout:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
+      continuous-prefix:
+        required: true
+        description: "The string continuous-only tests should be prefixed with when displaying test
+          results."
+        type: string
+
 
 permissions:
   contents: read  #  to fetch code (actions/checkout)
@@ -17,20 +28,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Package extension
-        uses: protocolbuffers/protobuf-ci/bazel@v1
+        uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_ext/${{ matrix.version }}
           bash: >
+            ./regenerate_stale_files.sh $BAZEL_FLAGS;
             bazel build //php:release $BAZEL_FLAGS;
             cp bazel-bin/php/protobuf-*.tgz .
 
-      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+      - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: protobuf-php-release
           path: protobuf-*.tgz
@@ -41,33 +53,24 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - php-image: php:7.4-cli
-            version: "7.4"
-          - php-image: php:8.1-cli
-            version: "8.1"
-          - php-image: php:8.2-cli
-            version: "8.2"
-    name: Build ${{ matrix.version }}
+          - version: "8.1"
+            continuous-only: true
+          - version: "8.2"
+            continuous-only: true
+          - version: "8.3"
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Build ${{ matrix.version }}
     runs-on: ubuntu-latest
-    container: ${{ matrix.php-image }}
     steps:
-      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           name: protobuf-php-release
-      - name: Compile extension
-        run: |
-          cd /tmp
-          MAKE="make -j$(nproc)" pecl install $GITHUB_WORKSPACE/protobuf-*.tgz
-      - name: Enable extension
-        run: docker-php-ext-enable protobuf
-      - name: Check for PHP startup warnings
-        run: |
-          php -d display_errors=stderr -d display_startup_errors=1 -d error_reporting=-1 -r ';' 2>/tmp/protobuf-warnings
-          if [ -s /tmp/protobuf-warnings ]; then
-            echo 'The PHP extension was successfully installed, but PHP raised these warnings:' >&2
-            cat /tmp/protobuf-warnings >&2
-            exit 1
-          fi
-          echo "PHP didn't raise any warnings at startup."
-      - name: Inspect extension
-        run: php --ri protobuf
+
+      - name: Run tests
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/docker@v3
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php-extension:${{ matrix.version }}-a48f26c08d9a803dd0177dda63563f6ea6f7b2d4
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          skip-staleness-check: true
+          command: protobuf-*.tgz

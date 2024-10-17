@@ -1,38 +1,16 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "absl/strings/ascii.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -76,12 +54,28 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   };
 }
 
+void EmitFuncs(const FieldDescriptor* field, io::Printer* p) {
+  const auto* key = field->message_type()->map_key();
+  const auto* val = field->message_type()->map_value();
+  p->Emit(
+      {
+          {"key_wire_type",
+           absl::StrCat("TYPE_", absl::AsciiStrToUpper(
+                                     DeclaredTypeMethodName(key->type())))},
+          {"val_wire_type",
+           absl::StrCat("TYPE_", absl::AsciiStrToUpper(
+                                     DeclaredTypeMethodName(val->type())))},
+      },
+      R"cc(_pbi::MapEntryFuncs<$Key$, $Val$,
+                               _pbi::WireFormatLite::$key_wire_type$,
+                               _pbi::WireFormatLite::$val_wire_type$>)cc");
+}
+
 class Map : public FieldGeneratorBase {
  public:
   Map(const FieldDescriptor* field, const Options& opts,
       MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts),
-        field_(field),
+      : FieldGeneratorBase(field, opts, scc),
         key_(field->message_type()->map_key()),
         val_(field->message_type()->map_value()),
         opts_(&opts),
@@ -117,53 +111,55 @@ class Map : public FieldGeneratorBase {
   }
 
   void GenerateIsInitialized(io::Printer* p) const override {
-    if (!has_required_) return;
+    if (!NeedsIsInitialized()) return;
 
     p->Emit(R"cc(
-      if (!$pbi$::AllAreInitialized($field_$)) {
+      if (!$pbi$::AllAreInitialized(this_.$field_$)) {
         return false;
       }
     )cc");
   }
 
+  bool NeedsIsInitialized() const override { return has_required_; }
+
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
-    p->Emit(R"cc(/* decltype($field_$) */ {})cc");
+    p->Emit(R"cc(
+      /* decltype($field_$) */ {},
+    )cc");
   }
 
   void GenerateCopyAggregateInitializer(io::Printer* p) const override {
     // MapField has no move constructor, which prevents explicit aggregate
     // initialization pre-C++17.
-    p->Emit(R"cc(/* decltype($field_$) */ {})cc");
+    p->Emit(R"cc(
+      /* decltype($field_$) */ {},
+    )cc");
   }
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
-    if (ShouldSplit(field_, *opts_)) {
+    if (should_split()) {
       p->Emit(R"cc(
         /* decltype($Msg$::Split::$name$_) */ {
-          $pbi$::ArenaInitialized(), arena
-        }
+            $pbi$::ArenaInitialized(),
+            arena,
+        },
       )cc");
-      return;
+    } else {
+      p->Emit(R"cc(
+        /* decltype($field_$) */ {$pbi$::ArenaInitialized(), arena},
+      )cc");
     }
-
-    p->Emit(R"cc(
-      /* decltype($field_$) */ { $pbi$::ArenaInitialized(), arena }
-    )cc");
   }
 
   void GenerateConstructorCode(io::Printer* p) const override {}
 
   void GenerateDestructorCode(io::Printer* p) const override {
-    if (ShouldSplit(field_, *opts_)) {
+    if (should_split()) {
       p->Emit(R"cc(
         $cached_split_ptr$->$name$_.~$MapField$();
       )cc");
       return;
     }
-
-    p->Emit(R"cc(
-      $field_$.~$MapField$();
-    )cc");
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override;
@@ -173,7 +169,6 @@ class Map : public FieldGeneratorBase {
   void GenerateByteSize(io::Printer* p) const override;
 
  private:
-  const FieldDescriptor* field_;
   const FieldDescriptor* key_;
   const FieldDescriptor* val_;
   const Options* opts_;
@@ -182,16 +177,23 @@ class Map : public FieldGeneratorBase {
 };
 
 void Map::GeneratePrivateMembers(io::Printer* p) const {
-  p->Emit({{"kKeyType",
-            absl::AsciiStrToUpper(DeclaredTypeMethodName(key_->type()))},
-           {"kValType",
-            absl::AsciiStrToUpper(DeclaredTypeMethodName(val_->type()))}},
-          R"cc(
-            $pbi$::$MapField$<$Entry$, $Key$, $Val$,
-                              $pbi$::WireFormatLite::TYPE_$kKeyType$,
-                              $pbi$::WireFormatLite::TYPE_$kValType$>
-                $name$_;
-          )cc");
+  if (lite_) {
+    p->Emit(
+        R"cc(
+          $pbi$::MapFieldLite<$Key$, $Val$> $name$_;
+        )cc");
+  } else {
+    p->Emit({{"kKeyType",
+              absl::AsciiStrToUpper(DeclaredTypeMethodName(key_->type()))},
+             {"kValType",
+              absl::AsciiStrToUpper(DeclaredTypeMethodName(val_->type()))}},
+            R"cc(
+              $pbi$::$MapField$<$Entry$, $Key$, $Val$,
+                                $pbi$::WireFormatLite::TYPE_$kKeyType$,
+                                $pbi$::WireFormatLite::TYPE_$kValType$>
+                  $name$_;
+            )cc");
+  }
 }
 
 void Map::GenerateAccessorDeclarations(io::Printer* p) const {
@@ -213,22 +215,32 @@ void Map::GenerateAccessorDeclarations(io::Printer* p) const {
 
 void Map::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   p->Emit(R"cc(
-    inline const $Map$& $Msg$::_internal_$name$() const {
+    inline const $Map$& $Msg$::_internal_$name_internal$() const {
+      $TsanDetectConcurrentRead$;
       return $field_$.GetMap();
     }
-    inline const $Map$& $Msg$::$name$() const {
+  )cc");
+  p->Emit(R"cc(
+    inline const $Map$& $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
       $annotate_get$;
       // @@protoc_insertion_point(field_map:$pkg.Msg.field$)
-      return _internal_$name$();
+      return _internal_$name_internal$();
     }
-    inline $Map$* $Msg$::_internal_mutable_$name$() {
+  )cc");
+  p->Emit(R"cc(
+    inline $Map$* $Msg$::_internal_mutable_$name_internal$() {
       $PrepareSplitMessageForWrite$;
+      $TsanDetectConcurrentMutation$;
       return $field_$.MutableMap();
     }
-    inline $Map$* $Msg$::mutable_$name$() {
+  )cc");
+  p->Emit(R"cc(
+    inline $Map$* $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
       $annotate_mutable$;
       // @@protoc_insertion_point(field_mutable_map:$pkg.Msg.field$)
-      return _internal_mutable_$name$();
+      return _internal_mutable_$name_internal$();
     }
   )cc");
 }
@@ -240,27 +252,34 @@ void Map::GenerateSerializeWithCachedSizesToArray(io::Printer* p) const {
   p->Emit(
       {
           {"Sorter", string_key ? "MapSorterPtr" : "MapSorterFlat"},
-          {"CheckUtf8",
+          {
+              "CheckUtf8",
+              [&] {
+                if (string_key) {
+                  GenerateUtf8CheckCodeForString(
+                      p, key_, *opts_, /*for_parse=*/false,
+                      "entry.first.data(), "
+                      "static_cast<int>(entry.first.length()),\n");
+                }
+                if (string_val) {
+                  GenerateUtf8CheckCodeForString(
+                      p, val_, *opts_, /*for_parse=*/false,
+                      "entry.second.data(), "
+                      "static_cast<int>(entry.second.length()),\n");
+                }
+              },
+          },
+          {"Funcs",
            [&] {
-             if (string_key) {
-               GenerateUtf8CheckCodeForString(
-                   p, key_, *opts_, /*for_parse=*/false,
-                   "entry.first.data(), "
-                   "static_cast<int>(entry.first.length()),\n");
-             }
-             if (string_val) {
-               GenerateUtf8CheckCodeForString(
-                   p, val_, *opts_, /*for_parse=*/false,
-                   "entry.second.data(), "
-                   "static_cast<int>(entry.second.length()),\n");
-             }
+             EmitFuncs(field_, p);
+             p->Emit(";");
            }},
       },
       R"cc(
-        if (!_internal_$name$().empty()) {
+        if (!this_._internal_$name$().empty()) {
           using MapType = $Map$;
-          using WireHelper = $Entry$::Funcs;
-          const auto& field = _internal_$name$();
+          using WireHelper = $Funcs$;
+          const auto& field = this_._internal_$name$();
 
           if (stream->IsSerializationDeterministic() && field.size() > 1) {
             for (const auto& entry : $pbi$::$Sorter$<MapType>(field)) {
@@ -280,12 +299,17 @@ void Map::GenerateSerializeWithCachedSizesToArray(io::Printer* p) const {
 }
 
 void Map::GenerateByteSize(io::Printer* p) const {
-  p->Emit(R"cc(
-    total_size += $kTagBytes$ * $pbi$::FromIntSize(_internal_$name$_size());
-    for (const auto& entry : _internal_$name$()) {
-      total_size += $Entry$::Funcs::ByteSizeLong(entry.first, entry.second);
-    }
-  )cc");
+  p->Emit(
+      {
+          {"Funcs", [&] { EmitFuncs(field_, p); }},
+      },
+      R"cc(
+        total_size +=
+            $kTagBytes$ * $pbi$::FromIntSize(this_._internal_$name$_size());
+        for (const auto& entry : this_._internal_$name$()) {
+          total_size += $Funcs$::ByteSizeLong(entry.first, entry.second);
+        }
+      )cc");
 }
 }  // namespace
 

@@ -17,6 +17,9 @@ on:
     paths:
       - '.github/workflows/**'
 
+permissions:
+  contents: read
+
 jobs:
   check:
     name: Check PR source

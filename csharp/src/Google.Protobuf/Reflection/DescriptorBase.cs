@@ -1,50 +1,41 @@
 #region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 #endregion
 
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Google.Protobuf.Reflection
 {
+    // Implementation note: The descriptors which don't derive from this class are FileDescriptor
+    // and FeatureSetDescriptor - the latter of which isn't a descriptor in exactly the same way
+    // that the others are anyway.
+
     /// <summary>
     /// Base class for nearly all descriptors, providing common functionality.
     /// </summary>
+    [DebuggerDisplay("Type = {GetType().Name,nq}, FullName = {FullName}")]
     public abstract class DescriptorBase : IDescriptor
     {
-        internal DescriptorBase(FileDescriptor file, string fullName, int index)
+        internal DescriptorBase(FileDescriptor file, string fullName, int index, FeatureSetDescriptor features)
         {
             File = file;
             FullName = fullName;
             Index = index;
+            Features = features;
         }
+
+        /// <summary>
+        /// The feature set for this descriptor, including inherited features.
+        /// This is internal as external users should use the properties on individual
+        /// descriptor types (e.g. FieldDescriptor.IsPacked) rather than querying features directly.
+        /// </summary>
+        internal FeatureSetDescriptor Features { get; }
 
         /// <value>
         /// The index of this descriptor within its parent descriptor.

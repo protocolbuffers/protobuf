@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -37,16 +14,17 @@
 
 #include "google/protobuf/unknown_field_set.h"
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/stubs/callback.h"
 #include "google/protobuf/stubs/common.h"
 #include <gmock/gmock.h>
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_set.h"
 #include "absl/functional/bind_front.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/time/clock.h"
@@ -60,12 +38,27 @@
 #include "google/protobuf/unittest_lite.pb.h"
 #include "google/protobuf/wire_format.h"
 
-
 namespace google {
 namespace protobuf {
+namespace internal {
+struct UnknownFieldSetTestPeer {
+  static auto AddLengthDelimited(UnknownFieldSet& set, int number) {
+    return set.AddLengthDelimited(number);
+  }
+};
+}  // namespace internal
 
 using internal::WireFormat;
 using ::testing::ElementsAre;
+
+template <typename T>
+T UnknownToProto(const UnknownFieldSet& set) {
+  T message;
+  std::string serialized_message;
+  ABSL_CHECK(set.SerializeToString(&serialized_message));
+  ABSL_CHECK(message.ParseFromString(serialized_message));
+  return message;
+}
 
 class UnknownFieldSetTest : public testing::Test {
  protected:
@@ -197,6 +190,96 @@ TEST_F(UnknownFieldSetTest, Group) {
   EXPECT_EQ(nested_field_descriptor->number(), nested_field.number());
   ASSERT_EQ(UnknownField::TYPE_VARINT, nested_field.type());
   EXPECT_EQ(all_fields_.optionalgroup().a(), nested_field.varint());
+}
+
+static void PopulateUFS(UnknownFieldSet& set) {
+  UnknownFieldSet* node = &set;
+  for (int i = 0; i < 3; ++i) {
+    node->AddVarint(1, 100);
+    const char* long_str = "This is a very long string, not sso";
+    node->AddLengthDelimited(2, long_str);
+    node->AddLengthDelimited(2, std::string(long_str));
+    node->AddLengthDelimited(2, absl::Cord(long_str));
+    *internal::UnknownFieldSetTestPeer::AddLengthDelimited(*node, 3) = long_str;
+    // Test some recursion too.
+    node = node->AddGroup(4);
+  }
+}
+
+TEST_F(UnknownFieldSetTest, ArenaSupportWorksWithMergeFrom) {
+  Arena arena;
+
+  for (bool lhs_arena : {false, true}) {
+    for (bool rhs_arena : {false, true}) {
+      UnknownFieldSet lhs_stack, rhs_stack;
+      auto& lhs =
+          lhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : lhs_stack;
+      auto& rhs =
+          rhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : rhs_stack;
+      PopulateUFS(rhs);
+      lhs.MergeFrom(rhs);
+    }
+  }
+}
+
+TEST_F(UnknownFieldSetTest, ArenaSupportWorksWithMergeAndDestroy) {
+  Arena arena;
+
+  for (bool lhs_arena : {false, true}) {
+    for (bool populate_lhs : {false, true}) {
+      for (bool rhs_arena : {false, true}) {
+        for (bool populate_rhs : {false, true}) {
+          UnknownFieldSet lhs_stack, rhs_stack;
+          auto& lhs =
+              lhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : lhs_stack;
+          auto& rhs =
+              rhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : rhs_stack;
+          if (populate_lhs) PopulateUFS(lhs);
+          if (populate_rhs) PopulateUFS(rhs);
+          lhs.MergeFromAndDestroy(&rhs);
+        }
+      }
+    }
+  }
+}
+
+TEST_F(UnknownFieldSetTest, ArenaSupportWorksWithSwap) {
+  Arena arena;
+
+  for (bool lhs_arena : {false, true}) {
+    for (bool rhs_arena : {false, true}) {
+      UnknownFieldSet lhs_stack, rhs_stack;
+      auto& lhs =
+          lhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : lhs_stack;
+      auto& rhs =
+          rhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : rhs_stack;
+      PopulateUFS(lhs);
+      lhs.Swap(&rhs);
+    }
+  }
+}
+
+TEST_F(UnknownFieldSetTest, ArenaSupportWorksWithClear) {
+  Arena arena;
+  auto* ufs = Arena::Create<UnknownFieldSet>(&arena);
+  PopulateUFS(*ufs);
+  // Clear should not try to delete memory from the arena.
+  ufs->Clear();
+}
+
+TEST_F(UnknownFieldSetTest, ArenaSupportWorksDelete) {
+  Arena arena;
+
+  auto* ufs = Arena::Create<UnknownFieldSet>(&arena);
+  PopulateUFS(*ufs);
+
+  while (ufs->field_count() != 0) {
+    ufs->DeleteByNumber(ufs->field(0).number());
+  }
+
+  ufs = Arena::Create<UnknownFieldSet>(&arena);
+  PopulateUFS(*ufs);
+  ufs->DeleteSubrange(0, ufs->field_count());
 }
 
 TEST_F(UnknownFieldSetTest, SerializeFastAndSlowAreEquivalent) {
@@ -357,7 +440,6 @@ TEST_F(UnknownFieldSetTest, MergeFromMessageLite) {
   EXPECT_EQ(unknown_field.number(), 7);
   EXPECT_EQ(unknown_field.fixed32(), 42);
 }
-
 
 TEST_F(UnknownFieldSetTest, Clear) {
   // Clear the set.
@@ -541,13 +623,15 @@ TEST_F(UnknownFieldSetTest, UnknownEnumValue) {
 TEST_F(UnknownFieldSetTest, SpaceUsedExcludingSelf) {
   UnknownFieldSet empty;
   empty.AddVarint(1, 0);
-  EXPECT_EQ(sizeof(UnknownField), empty.SpaceUsedExcludingSelf());
+  RepeatedField<UnknownField> rep;
+  rep.Add();
+  EXPECT_EQ(rep.SpaceUsedExcludingSelf(), empty.SpaceUsedExcludingSelf());
 }
 
 TEST_F(UnknownFieldSetTest, SpaceUsed) {
   // Keep shadow vectors to avoid making assumptions about its capacity growth.
   // We imitate the push back calls here to determine the expected capacity.
-  std::vector<UnknownField> shadow_vector, shadow_vector_group;
+  RepeatedField<UnknownField> shadow_vector, shadow_vector_group;
   unittest::TestEmptyMessage empty_message;
 
   // Make sure an unknown field set has zero space used until a field is
@@ -557,8 +641,8 @@ TEST_F(UnknownFieldSetTest, SpaceUsed) {
   UnknownFieldSet* group = nullptr;
   const auto total = [&] {
     size_t result = base;
-    result += shadow_vector.capacity() * sizeof(UnknownField);
-    result += shadow_vector_group.capacity() * sizeof(UnknownField);
+    result += shadow_vector.SpaceUsedExcludingSelfLong();
+    result += shadow_vector_group.SpaceUsedExcludingSelfLong();
     if (str != nullptr) {
       result += sizeof(std::string);
       static const size_t sso_capacity = std::string().capacity();
@@ -575,29 +659,29 @@ TEST_F(UnknownFieldSetTest, SpaceUsed) {
 
   // Make sure each thing we add to the set increases the SpaceUsedLong().
   unknown_fields->AddVarint(1, 0);
-  shadow_vector.emplace_back();
+  shadow_vector.Add();
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Var";
 
-  str = unknown_fields->AddLengthDelimited(1);
-  shadow_vector.emplace_back();
+  str =
+      internal::UnknownFieldSetTestPeer::AddLengthDelimited(*unknown_fields, 1);
+  shadow_vector.Add();
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Str";
 
   str->assign(sizeof(std::string) + 1, 'x');
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Str2";
 
   group = unknown_fields->AddGroup(1);
-  shadow_vector.emplace_back();
+  shadow_vector.Add();
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Group";
 
   group->AddVarint(1, 0);
-  shadow_vector_group.emplace_back();
+  shadow_vector_group.Add();
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Group2";
 
   unknown_fields->AddVarint(1, 0);
-  shadow_vector.emplace_back();
+  shadow_vector.Add();
   EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Var2";
 }
-
 
 TEST_F(UnknownFieldSetTest, Empty) {
   UnknownFieldSet unknown_fields;
@@ -637,15 +721,15 @@ TEST_F(UnknownFieldSetTest, DeleteSubrange) {
 
 void CheckDeleteByNumber(const std::vector<int>& field_numbers,
                          int deleted_number,
-                         const std::vector<int>& expected_field_nubmers) {
+                         const std::vector<int>& expected_field_numbers) {
   UnknownFieldSet unknown_fields;
   for (int i = 0; i < field_numbers.size(); ++i) {
     unknown_fields.AddFixed32(field_numbers[i], i);
   }
   unknown_fields.DeleteByNumber(deleted_number);
-  ASSERT_EQ(expected_field_nubmers.size(), unknown_fields.field_count());
-  for (int i = 0; i < expected_field_nubmers.size(); ++i) {
-    EXPECT_EQ(expected_field_nubmers[i], unknown_fields.field(i).number());
+  ASSERT_EQ(expected_field_numbers.size(), unknown_fields.field_count());
+  for (int i = 0; i < expected_field_numbers.size(); ++i) {
+    EXPECT_EQ(expected_field_numbers[i], unknown_fields.field(i).number());
   }
 }
 
@@ -687,7 +771,12 @@ TEST_F(UnknownFieldSetTest, SerializeToString) {
   field_set.AddVarint(1, -1);
   field_set.AddVarint(2, -2);
   field_set.AddLengthDelimited(44, "str");
-  field_set.AddLengthDelimited(44, "byv");
+  field_set.AddLengthDelimited(44, std::string("byv"));
+  field_set.AddLengthDelimited(44,
+                               absl::Cord("this came from cord and is long"));
+  *internal::UnknownFieldSetTestPeer::AddLengthDelimited(field_set, 44) =
+      "0123456789";
+
   field_set.AddFixed32(7, 7);
   field_set.AddFixed64(8, 8);
 
@@ -696,10 +785,8 @@ TEST_F(UnknownFieldSetTest, SerializeToString) {
   group_field_set = field_set.AddGroup(46);
   group_field_set->AddVarint(47, 2048);
 
-  unittest::TestAllTypes message;
-  std::string serialized_message;
-  ASSERT_TRUE(field_set.SerializeToString(&serialized_message));
-  ASSERT_TRUE(message.ParseFromString(serialized_message));
+  unittest::TestAllTypes message =
+      UnknownToProto<unittest::TestAllTypes>(field_set);
 
   EXPECT_EQ(message.optional_int32(), -1);
   EXPECT_EQ(message.optional_int64(), -2);
@@ -707,8 +794,9 @@ TEST_F(UnknownFieldSetTest, SerializeToString) {
   EXPECT_EQ(message.optional_uint64(), 4);
   EXPECT_EQ(message.optional_fixed32(), 7);
   EXPECT_EQ(message.optional_fixed64(), 8);
-  EXPECT_EQ(message.repeated_string(0), "str");
-  EXPECT_EQ(message.repeated_string(1), "byv");
+  EXPECT_THAT(message.repeated_string(),
+              ElementsAre("str", "byv", "this came from cord and is long",
+                          "0123456789"));
   EXPECT_EQ(message.repeatedgroup(0).a(), 1024);
   EXPECT_EQ(message.repeatedgroup(1).a(), 2048);
 }
@@ -754,7 +842,42 @@ TEST_F(UnknownFieldSetTest, SerializeToCord_TestPackedTypes) {
   EXPECT_THAT(message.packed_uint64(), ElementsAre(5, 6, 7));
 }
 
-}  // namespace
+TEST(UnknownFieldTest, SettersOverrideTheDataProperly) {
+  using T = unittest::TestAllTypes;
+  UnknownFieldSet set;
+  set.AddVarint(T::kOptionalInt32FieldNumber, 2);
+  set.AddFixed32(T::kOptionalFixed32FieldNumber, 3);
+  set.AddFixed64(T::kOptionalFixed64FieldNumber, 4);
+  set.AddLengthDelimited(T::kOptionalStringFieldNumber, "5");
 
+  T message = UnknownToProto<T>(set);
+
+  EXPECT_EQ(message.optional_int32(), 2);
+  EXPECT_EQ(message.optional_fixed32(), 3);
+  EXPECT_EQ(message.optional_fixed64(), 4);
+  EXPECT_EQ(message.optional_string(), "5");
+
+  set.mutable_field(0)->set_varint(22);
+  set.mutable_field(1)->set_fixed32(33);
+  set.mutable_field(2)->set_fixed64(44);
+  set.mutable_field(3)->set_length_delimited("55");
+
+  message = UnknownToProto<T>(set);
+
+  EXPECT_EQ(message.optional_int32(), 22);
+  EXPECT_EQ(message.optional_fixed32(), 33);
+  EXPECT_EQ(message.optional_fixed64(), 44);
+  EXPECT_EQ(message.optional_string(), "55");
+
+  set.mutable_field(3)->set_length_delimited(std::string("555"));
+  message = UnknownToProto<T>(set);
+  EXPECT_EQ(message.optional_string(), "555");
+
+  set.mutable_field(3)->set_length_delimited(absl::Cord("5555"));
+  message = UnknownToProto<T>(set);
+  EXPECT_EQ(message.optional_string(), "5555");
+}
+
+}  // namespace
 }  // namespace protobuf
 }  // namespace google

@@ -8,23 +8,36 @@ on:
         description: "The SHA key for the commit we want to run over"
         type: string
 
+permissions:
+  contents: read
+
 jobs:
+  # This job should be run on presubmit, if any continuous-only tests are added we will need to input test-type above
   linux:
     name: Linux
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.0.0-6361b3a6e5c97e9951d03a4de28542fc45f1adab
+          image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.1-97f82260fd504923d8af642d567afb2d83a1959d"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: rust_linux
-          bazel: |
-            test //rust:protobuf_upb_test //rust:protobuf_cpp_test \
-              //rust/upb_kernel:upb_test //rust/cpp_kernel:cpp_test \
-              //rust/test/rust_proto_library_unit_test:rust_upb_aspect_test \
-              //rust/upb_kernel:upb_test //src/google/protobuf/compiler/rust/...
+          bazel: >-
+            test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 --@rules_rust//rust/settings:experimental_use_cc_common_link=True
+            //rust:all
+            //rust/test/cpp/interop/...
+            //rust/test/rust_proto_library_unit_test:rust_upb_aspect_test
+            //src/google/protobuf/compiler/rust/...
+      - name: Run Cargo tests
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+        with:
+          image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:6.3.0-1.74.0-8858126dd9480abf91e6ce8d6e41a5cd3c03882c"
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: rust_linux
+          bazel: >-
+            run --crosstool_top=//toolchain:clang_suite --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 //rust:cargo_test

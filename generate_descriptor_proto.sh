@@ -23,6 +23,7 @@ cd src
 declare -a RUNTIME_PROTO_FILES=(\
   google/protobuf/any.proto \
   google/protobuf/api.proto \
+  google/protobuf/cpp_features.proto \
   google/protobuf/descriptor.proto \
   google/protobuf/duration.proto \
   google/protobuf/empty.proto \

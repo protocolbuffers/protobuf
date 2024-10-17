@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #ifndef GOOGLE_PROTOBUF_FIELD_ACCESS_LISTENER_H__
 #define GOOGLE_PROTOBUF_FIELD_ACCESS_LISTENER_H__
@@ -57,14 +34,15 @@ struct NoOpAccessListener {
   // to differentiate the protos during the runtime before the start of the
   // program, use this functor to get its name. We either way need it for
   // LITE_RUNTIME protos as they don't have descriptors at all.
-  explicit NoOpAccessListener(absl::string_view (*name_extractor)()) {}
+  explicit NoOpAccessListener(absl::string_view (* /*name_extractor*/)()) {}
   // called repeatedly during serialization/deserialization/ByteSize of
   // Reflection as:
   //   AccessListener<MessageT>::OnSerialize(this);
-  static void OnSerialize(const MessageLite* msg) {}
-  static void OnDeserialize(const MessageLite* msg) {}
-  static void OnByteSize(const MessageLite* msg) {}
-  static void OnMergeFrom(const MessageLite* to, const MessageLite* from) {}
+  static void OnSerialize(const MessageLite* /*msg*/) {}
+  static void OnDeserialize(const MessageLite* /*msg*/) {}
+  static void OnByteSize(const MessageLite* /*msg*/) {}
+  static void OnMergeFrom(const MessageLite* /*to*/,
+                          const MessageLite* /*from*/) {}
 
   // NOTE: This function can be called pre-main. Make sure it does not make
   // the state of the listener invalid.
@@ -86,71 +64,82 @@ struct NoOpAccessListener {
 
   // add_<field>(f)
   template <int kFieldNum>
-  static void OnAdd(const MessageLite* msg, const void* field) {}
+  static void OnAdd(const MessageLite* /*msg*/, const void* /*field*/) {}
 
   // add_<field>()
   template <int kFieldNum>
-  static void OnAddMutable(const MessageLite* msg, const void* field) {}
+  static void OnAddMutable(const MessageLite* /*msg*/, const void* /*field*/) {}
 
   // <field>() and <repeated_field>(i)
   template <int kFieldNum>
-  static void OnGet(const MessageLite* msg, const void* field) {}
+  static void OnGet(const MessageLite* /*msg*/, const void* /*field*/) {}
 
   // clear_<field>()
   template <int kFieldNum>
-  static void OnClear(const MessageLite* msg, const void* field) {}
+  static void OnClear(const MessageLite* /*msg*/, const void* /*field*/) {}
 
   // has_<field>()
   template <int kFieldNum>
-  static void OnHas(const MessageLite* msg, const void* field) {}
+  static void OnHas(const MessageLite* /*msg*/, const void* /*field*/) {}
 
   // <repeated_field>()
   template <int kFieldNum>
-  static void OnList(const MessageLite* msg, const void* field) {}
+  static void OnList(const MessageLite* /*msg*/, const void* /*field*/) {}
 
   // mutable_<field>()
   template <int kFieldNum>
-  static void OnMutable(const MessageLite* msg, const void* field) {}
+  static void OnMutable(const MessageLite* /*msg*/, const void* /*field*/) {}
 
   // mutable_<repeated_field>()
   template <int kFieldNum>
-  static void OnMutableList(const MessageLite* msg, const void* field) {}
+  static void OnMutableList(const MessageLite* /*msg*/, const void* /*field*/) {
+  }
 
   // release_<field>()
   template <int kFieldNum>
-  static void OnRelease(const MessageLite* msg, const void* field) {}
+  static void OnRelease(const MessageLite* /*msg*/, const void* /*field*/) {}
 
   // set_<field>() and set_<repeated_field>(i)
   template <int kFieldNum>
-  static void OnSet(const MessageLite* msg, const void* field) {}
+  static void OnSet(const MessageLite* /*msg*/, const void* /*field*/) {}
 
   // <repeated_field>_size()
   template <int kFieldNum>
-  static void OnSize(const MessageLite* msg, const void* field) {}
+  static void OnSize(const MessageLite* /*msg*/, const void* /*field*/) {}
 
-  static void OnHasExtension(const MessageLite* msg, int extension_tag,
-                             const void* field) {}
-  // TODO(b/190614678): Support clear in the proto compiler.
-  static void OnClearExtension(const MessageLite* msg, int extension_tag,
-                               const void* field) {}
-  static void OnExtensionSize(const MessageLite* msg, int extension_tag,
-                              const void* field) {}
-  static void OnGetExtension(const MessageLite* msg, int extension_tag,
-                             const void* field) {}
-  static void OnMutableExtension(const MessageLite* msg, int extension_tag,
-                                 const void* field) {}
-  static void OnSetExtension(const MessageLite* msg, int extension_tag,
-                             const void* field) {}
-  static void OnReleaseExtension(const MessageLite* msg, int extension_tag,
-                                 const void* field) {}
-  static void OnAddExtension(const MessageLite* msg, int extension_tag,
-                             const void* field) {}
-  static void OnAddMutableExtension(const MessageLite* msg, int extension_tag,
-                                    const void* field) {}
-  static void OnListExtension(const MessageLite* msg, int extension_tag,
-                              const void* field) {}
-  static void OnMutableListExtension(const MessageLite* msg, int extension_tag,
-                                     const void* field) {}
+  // unknown_fields()
+  static void OnUnknownFields(const MessageLite* /*msg*/) {}
+
+  // mutable_unknown_fields()
+  static void OnMutableUnknownFields(const MessageLite* /*msg*/) {}
+
+  static void OnHasExtension(const MessageLite* /*msg*/, int /*extension_tag*/,
+                             const void* /*field*/) {}
+  // TODO: Support clear in the proto compiler.
+  static void OnClearExtension(const MessageLite* /*msg*/,
+                               int /*extension_tag*/, const void* /*field*/) {}
+  static void OnExtensionSize(const MessageLite* /*msg*/, int /*extension_tag*/,
+                              const void* /*field*/) {}
+  static void OnGetExtension(const MessageLite* /*msg*/, int /*extension_tag*/,
+                             const void* /*field*/) {}
+  static void OnMutableExtension(const MessageLite* /*msg*/,
+                                 int /*extension_tag*/, const void* /*field*/) {
+  }
+  static void OnSetExtension(const MessageLite* /*msg*/, int /*extension_tag*/,
+                             const void* /*field*/) {}
+  static void OnReleaseExtension(const MessageLite* /*msg*/,
+                                 int /*extension_tag*/, const void* /*field*/) {
+  }
+  static void OnAddExtension(const MessageLite* /*msg*/, int /*extension_tag*/,
+                             const void* /*field*/) {}
+  static void OnAddMutableExtension(const MessageLite* /*msg*/,
+                                    int /*extension_tag*/,
+                                    const void* /*field*/) {}
+  static void OnListExtension(const MessageLite* /*msg*/, int /*extension_tag*/,
+                              const void* /*field*/) {}
+  static void OnMutableListExtension(const MessageLite* /*msg*/,
+                                     int /*extension_tag*/,
+                                     const void* /*field*/) {}
 };
 
 }  // namespace protobuf

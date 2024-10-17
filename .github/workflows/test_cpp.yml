@@ -3,10 +3,24 @@ name: C++ Tests
 on:
   workflow_call:
     inputs:
+      continuous-run:
+        required: true
+        description: "Boolean string denoting whether this run is continuous --
+          empty string for presubmit, non-empty string for continuous."
+        type: string
       safe-checkout:
         required: true
         description: "The SHA key for the commit we want to run over"
         type: string
+      continuous-prefix:
+        required: true
+        description: "The string continuous-only tests should be prefixed with when displaying test
+          results."
+        type: string
+
+
+permissions:
+  contents: read
 
 jobs:
   linux:
@@ -15,41 +29,52 @@ jobs:
       matrix:
         config:
           - { name: Optimized, flags: --config=opt }
-          - { name: Debug, flags: --config=dbg }
-          - { name: ASAN, flags: --config=asan }
-          - { name: MSAN, flags: --config=docker-msan }
-          - { name: TSAN, flags: --config=tsan }
-          - { name: UBSAN, flags: --config=ubsan }
-          - { name: No-RTTI, flags: --cxxopt=-fno-rtti }
+          - { name: Debug, flags: --config=dbg, continuous-only: true }
+          - { name: ASAN, flags: --config=asan, runner: ubuntu-22-4core }
+          - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-22-4core, continuous-only: true }
+          - { name: TSAN, flags: --config=tsan, runner: ubuntu-22-4core, continuous-only: true }
+          - { name: UBSAN, flags: --config=ubsan, runner: ubuntu-22-4core, continuous-only: true,}
+          - { name: No-RTTI, flags: --cxxopt=-fno-rtti, continuous-only: true }
         include:
           # Set defaults
-          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize@sha256:309dae3122031447d714414814d262e5f31cb93c0e248e9c02f9d8cdafd7e3b9
-          - targets: //pkg/... //src/... @com_google_protobuf_examples//...
+          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:6.4.0-27cf7b86212020d7e552bc13b1e084abb971da75
+          - targets: //pkg/... //src/... @com_google_protobuf_examples//... //third_party/utf8_range/... //conformance:conformance_framework_tests
 
           # Override cases with custom images
+          - config: { name: "Bazel7", flags: --noenable_bzlmod }
+            cache_key: Bazel7
+            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e"
+            targets: "//src/... //third_party/utf8_range/..."
+            # TODO: remove -Wno-unreachable-code" when dropping C++14
+          - config: { name: "Bazel7 with Bzlmod", flags: --enable_bzlmod --enable_workspace --per_file_copt=.*/absl/strings/string_view.h@-Wno-unreachable-code --cxxopt="-Wno-self-assign-overloaded" }
+            cache_key: Bazel7bzlmod
+            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-cf84e92285ca133b9c8104ad7b14d70e953cbb8e"
+            targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "TCMalloc" }
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc@sha256:4df3b4749e787ba0a671ec0b783d0f1ba05f60be4c9e9fd72c875550a0cde1ea"
-            targets: "//src/..."
+            cache_key: TcMalloc
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/tcmalloc:6.4.0-27cf7b86212020d7e552bc13b1e084abb971da75"
+            targets: "//src/... //third_party/utf8_range/..."
           - config: { name: "aarch64" }
-            targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test"
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:aarch64-3af05275178e16af30961976af126eabbbb2c733"
-          - config: { name: "Bazel4" }
-            targets: "//src/..."
-            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:4.2.3-6361b3a6e5c97e9951d03a4de28542fc45f1adab"
-    name: Linux ${{ matrix.config.name }}
-    runs-on: ubuntu-latest
+            cache_key: TcMalloc
+            targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:6.4.0-aarch64-08714ed7a713068c8418003a2d95f423d4b1eac9"
+    name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+        if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: cpp_linux/${{ matrix.config.name }}
+          bazel-cache: cpp_linux/${{ matrix.cache_key }}
           bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }}
+          exclude-targets: ${{ matrix.exclude-targets }}
 
   linux-gcc:
     strategy:
@@ -60,16 +85,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v1
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:${{ matrix.version }}-5.4.0-2d15d9e888c9e7f90961dbd3afc8ea209717fb4b
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:6.4.0-${{ matrix.version }}-27cf7b86212020d7e552bc13b1e084abb971da75
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/gcc-${{ matrix.version }}
-          bazel: test //pkg/... //src/... @com_google_protobuf_examples//...
+          bazel: test //pkg/... //src/... @com_google_protobuf_examples//... //third_party/utf8_range/... //conformance:conformance_framework_tests
 
   linux-release:
     strategy:
@@ -77,124 +102,159 @@ jobs:
       matrix:
         arch: [x86_64, aarch64]
     name: Linux Release ${{ matrix.arch}}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20-4core
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
-          submodules: recursive
       - name: Cross compile protoc for ${{ matrix.arch }}
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v1
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:5.1.1-6361b3a6e5c97e9951d03a4de28542fc45f1adab
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.4.0-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-${{ matrix.arch }}
-      - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+      - name: Setup sccache
+        uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: linux-release-${{ matrix.arch }}
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
+        uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:${{ matrix.arch }}-3af05275178e16af30961976af126eabbbb2c733
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:6.4.0-${{ matrix.arch }}-08714ed7a713068c8418003a2d95f423d4b1eac9
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >
             -c "set -ex;
-            ccache -z;
-            cmake . -DWITH_PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} -Dprotobuf_BUILD_CONFORMANCE=ON -DCMAKE_CXX_STANDARD=14 -Dprotobuf_WITH_ZLIB=OFF ${{ env.CCACHE_CMAKE_FLAGS }};
+            sccache -z;
+            cmake . -DWITH_PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
+            -Dprotobuf_BUILD_LIBUPB=OFF -Dprotobuf_BUILD_CONFORMANCE=ON -DCMAKE_CXX_STANDARD=14
+            -Dprotobuf_WITH_ZLIB=OFF ${{ env.SCCACHE_CMAKE_FLAGS }};
             cmake --build . --parallel 20;
             ctest --parallel 20;
-            ccache -s -v"
+            sccache -s"
 
   linux-cmake:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - flags: -Dprotobuf_BUILD_EXAMPLES=ON
+          - flags: -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14  -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
           - name: Ninja
-            flags: -G Ninja
+            flags: -G Ninja -DCMAKE_CXX_STANDARD=14 -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
+            continuous-only: true
           - name: Shared
-            flags: -Dprotobuf_BUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_EXAMPLES=ON
+            flags: -Dprotobuf_BUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14 -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
+            continuous-only: true
+          - name: C++17
+            flags: -DCMAKE_CXX_STANDARD=17 -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
+          - name: C++20
+            flags: -DCMAKE_CXX_STANDARD=20 -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
+          - name: Fetch
+            flags: -DCMAKE_CXX_STANDARD=17
 
-    name: Linux CMake ${{ matrix.name}}
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux CMake ${{ matrix.name}}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
-      - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+      - name: Setup sccache
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
-          cache-prefix: linux-cmake-${{ matrix.name }}
+          cache-prefix: linux-cmake
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.10.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-f39fc8b4e244fe5cd4c7138d0b6959a52b46ca48
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
-            /test.sh ${{ matrix.flags}} ${{ env.CCACHE_CMAKE_FLAGS }}
-            -DCMAKE_CXX_STANDARD=14 -Dprotobuf_BUILD_TESTS=ON
-            -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
+            /test.sh ${{ matrix.flags}} ${{ env.SCCACHE_CMAKE_FLAGS }}
+            -Dprotobuf_BUILD_TESTS=ON ${{ matrix.package_flags }}
 
   linux-cmake-install:
-    name: Linux CMake Install
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        type: [package, fetch]
+        include:
+          # Set defaults
+          - type: package
+            name: Install
+            flags: -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
+          - type: fetch
+            name: Install (Fetch)
+            continuous-only: true
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }}Linux CMake ${{ matrix.name }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v3
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           ref: ${{ inputs.safe-checkout }}
-          submodules: recursive
 
-      - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+      - name: Setup sccache
+        uses: protocolbuffers/protobuf-ci/sccache@v3
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           cache-prefix: linux-cmake-install
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
+        uses: protocolbuffers/protobuf-ci/docker@v3
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.10.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-f39fc8b4e244fe5cd4c7138d0b6959a52b46ca48
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
-            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }} -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package \&\&
+            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.SCCACHE_CMAKE_FLAGS }}
+            ${{ matrix.flags }}
+            -Dprotobuf_BUILD_SHARED_LIBS=ON \&\&
             /test.sh
-            ${{ env.CCACHE_CMAKE_FLAGS }}
+            ${{ env.SCCACHE_CMAKE_FLAGS }}
             -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
             -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
             -Dprotobuf_BUILD_CONFORMANCE=ON
             -DCMAKE_CXX_STANDARD=14
-            -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
+            ${{ matrix.flags }}
 
+  # This test should always be skipped on presubmit
   linux-cmake-examples:
-    name: Linux CMake Examples
+    name: ${{ inputs.continuous-prefix }} Linux CMake Examples
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        if: ${{ inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
 
-      - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+      - name: Setup sccache
+        if: ${{ inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: linux-cmake-examples
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
+        if: ${{ inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.10.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-f39fc8b4e244fe5cd4c7138d0b6959a52b46ca48
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
-            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }}
-            -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_ABSL_PROVIDER=package
+            /install.sh -DCMAKE_CXX_STANDARD=14 ${{ env.SCCACHE_CMAKE_FLAGS }}
+            -Dprotobuf_USE_EXTERNAL_GTEST=ON -Dprotobuf_FETCH_DEPENDENCIES=OFF
             -Dprotobuf_BUILD_EXAMPLES=OFF \&\&
             mkdir examples/build \&\&
             cd examples/build \&\&
@@ -202,121 +262,127 @@ jobs:
             cmake --build .
 
   linux-cmake-gcc:
-    name: Linux CMake GCC
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          - name: C++14
+            flags: -DCMAKE_CXX_STANDARD=14
+          - name: C++17
+            flags: -DCMAKE_CXX_STANDARD=17
+            continuous-only: true
+          - name: C++20
+            flags: -DCMAKE_CXX_STANDARD=20
+
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux CMake GCC ${{ matrix.name }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
-          submodules: recursive
 
-      - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+      - name: Setup sccache
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: linux-cmake-gcc
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:13.1-5.4.0-307caa02808127e49720f3e77d6a9f3b3ef5a915
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:6.4.0-12.2-27cf7b86212020d7e552bc13b1e084abb971da75
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: bash
           command: >-
               -c 'set -ex;
               cd /workspace;
-              ccache -z;
-              cmake . -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }};
+              sccache -z;
+              cmake . ${{ matrix.flags }} ${{ env.SCCACHE_CMAKE_FLAGS }};
               cmake --build . --parallel 20;
               ctest --verbose --parallel 20;
-              ccache -s'
-
-  linux-cmake-submodules:
-    name: Linux CMake Submodules
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-        with:
-          ref: ${{ inputs.safe-checkout }}
-          submodules: recursive
-
-      - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
-        with:
-          cache-prefix: linux-cmake-${{ matrix.name }}
-
-      - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
-        with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.13.3-1da1e086a7d1863b8bdd181ef6388a02dcd62f3a
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          command: >-
-            /test.sh ${{ env.CCACHE_CMAKE_FLAGS }}
-            -Dprotobuf_BUILD_CONFORMANCE=ON -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=14
+              sccache -s'
 
   linux-cmake-32-bit:
     name: Linux CMake 32-bit
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
-          submodules: recursive
 
-      - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+      - name: Setup sccache
+        uses: protocolbuffers/protobuf-ci/sccache@v3
         with:
           cache-prefix: linux-cmake-32-bit
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v1
+        uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:f99f051daa8b12f4ebad5927f389bc71372f771ab080290ab451cbaf1648f9ea
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:56548bef786201330017eae685cc3d2fdb564fd2ca3b88e30e28d84572e4c5dd
           platform: linux/386
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
               /bin/bash -cex '
               cd /workspace;
-              ccache -z;
-              cmake . -DCMAKE_CXX_STANDARD=14 ${{ env.CCACHE_CMAKE_FLAGS }};
+              sccache -z;
+              cmake . -DCMAKE_CXX_STANDARD=14 ${{ env.SCCACHE_CMAKE_FLAGS }};
               cmake --build . --parallel 20;
               ctest --verbose --parallel 20;
-              ccache -s'
+              sccache -s'
 
   non-linux:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - name: MacOS
-            os: macos-12
-            cache_key: macos-12
-            bazel: test //src/...
-          - name: MacOS Apple Silicon (build only)
-            os: macos-12
-            cache_key: macos-12-arm
+          - name: MacOS Bazel
+            os: macos-13
+            cache_key: macos-13
+            bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
+          - name: MacOS Bazel 7
+            os: macos-13
+            cache_key: macos-13-bazel7
+            bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
+            bazel_version: '7.1.2'
+            continuous-only: true
+          - name: MacOS Apple Silicon (build only) Bazel
+            os: macos-13
+            cache_key: macos-13-arm
             # Current github runners are all Intel based, so just build/compile
             # for Apple Silicon to detect issues there.
-            bazel: build --cpu=darwin_arm64 //src/...
-          - name: Windows
-            os: windows-2019
-            cache_key: windows-2019
+            bazel: build --cpu=darwin_arm64 //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
+          - name: Windows Bazel
+            os: windows-2022
+            cache_key: windows-2022
             bazel: test //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
-    name: ${{ matrix.name }} Bazel
+          - name: Windows Bazel 7 
+            os: windows-2022
+            cache_key: windows-2022-bazel7
+            bazel: test //src/...  @com_google_protobuf_examples//... --test_tag_filters=-conformance --build_tag_filters=-conformance
+            bazel_version: '7.1.2'
+            continuous-only: true
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v1
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.bazel }}
           bazel-cache: cpp_${{ matrix.cache_key }}
+          version: ${{ matrix.bazel_version || '6.4.0' }}
 
   non-linux-cmake:
     strategy:
@@ -324,89 +390,130 @@ jobs:
       matrix:
         include:
           - name: MacOS CMake
-            os: macos-12
+            os: macos-13
             flags: -DCMAKE_CXX_STANDARD=14
+            cache-prefix: macos-cmake
+            continuous-only: true
           - name: Windows CMake
-            os: windows-2019
-            flags: >-
-              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
-              -Dprotobuf_BUILD_SHARED_LIBS=OFF
-              -Dprotobuf_BUILD_EXAMPLES=ON
-            vsversion: '2019'
-          - name: Windows CMake 2022
             os: windows-2022
             flags: >-
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_BUILD_SHARED_LIBS=OFF
               -Dprotobuf_BUILD_EXAMPLES=ON
             vsversion: '2022'
-          - name: Windows CMake Shared
+            cache-prefix: windows-2022-cmake
+          - name: Windows CMake 2019
             os: windows-2019
             flags: >-
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
-              -Dprotobuf_BUILD_SHARED_LIBS=ON
+              -Dprotobuf_BUILD_SHARED_LIBS=OFF
+              -Dprotobuf_BUILD_EXAMPLES=ON
             vsversion: '2019'
+            cache-prefix: windows-2019-cmake
+            # windows-2019 has python3.7 installed, which is incompatible with the latest gcloud
+            python-version: '3.9'
+            continuous-only: true
+          - name: Windows CMake 32-bit
+            os: windows-2022
+            flags: >-
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+            vsversion: '2022'
+            windows-arch: 'win32'
+            cache-prefix: windows-2022-win32-cmake
+            continuous-only: true
+          - name: Windows CMake Shared
+            os: windows-2022
+            flags: >-
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -Dprotobuf_BUILD_SHARED_LIBS=ON
+            vsversion: '2022'
+            cache-prefix: windows-2022-cmake
           - name: Windows CMake Install
-            os: windows-2019
+            os: windows-2022
             install-flags: -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_BUILD_TESTS=OFF
             flags: >-
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
               -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
               -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
-            vsversion: '2019'
-    name: ${{ matrix.name }}
+            vsversion: '2022'
+            cache-prefix: windows-2022-cmake
+            continuous-only: true
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout pending changes
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v3
         with:
           ref: ${{ inputs.safe-checkout }}
-          submodules: recursive
 
-      - name: Setup ccache
-        uses: protocolbuffers/protobuf-ci/ccache@v1
+      - name: Setup MSVC
+        if: ${{ runner.os == 'Windows' && (!matrix.continuous-only || inputs.continuous-run) }}
+        uses: ilammy/msvc-dev-cmd@cec98b9d092141f74527d0afa6feb2af698cfe89 # v1.12.1
         with:
-          cache-prefix: ${{ matrix.name }}
+          arch: ${{ matrix.windows-arch || 'x64' }}
           vsversion: ${{ matrix.vsversion }}
+
+      # Workaround for incompatibility between gcloud and windows-2019 runners.
+      - name: Install Python
+        if: ${{ matrix.python-version && (!matrix.continuous-only || inputs.continuous-run) }}
+        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Use custom python for gcloud
+        if: ${{ matrix.python-version  && (!matrix.continuous-only || inputs.continuous-run) }}
+        run: echo "CLOUDSDK_PYTHON=${Python3_ROOT_DIR}\\python3" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Setup sccache
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/sccache@v3
+        with:
+          cache-prefix: ${{ matrix.cache-prefix }}
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
 
       # Install phase.
       - name: Configure CMake for install
-        if: matrix.install-flags
-        uses: protocolbuffers/protobuf-ci/bash@v1
+        if: ${{ matrix.install-flags && (!matrix.continuous-only || inputs.continuous-run) }}
+        uses: protocolbuffers/protobuf-ci/bash@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          command: cmake . ${{ matrix.install-flags }} ${{ env.CCACHE_CMAKE_FLAGS }}
+          command: cmake . ${{ matrix.install-flags }} ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON
       - name: Build for install
-        if: matrix.install-flags
+        if: ${{ matrix.install-flags && (!matrix.continuous-only || inputs.continuous-run) }}
         shell: bash
         run: VERBOSE=1 cmake --build . --parallel 20
       - name: Install
-        if: matrix.install-flags
+        if: ${{ matrix.install-flags && (!matrix.continuous-only || inputs.continuous-run) }}
         shell: bash
         run: cmake --build . --target install
-      - name: Report and clear ccache stats
-        if: matrix.install-flags
+      - name: Report and clear sccache stats
+        if: ${{ matrix.install-flags && (!matrix.continuous-only || inputs.continuous-run) }}
         shell: bash
-        run: ccache -s -v && ccache -z
+        run: sccache -s && sccache -z
       - name: Clear CMake cache
-        if: matrix.install-flags
+        if: ${{ matrix.install-flags && (!matrix.continuous-only || inputs.continuous-run) }}
         shell: bash
         run: cmake --build . --target clean && rm CMakeCache.txt
 
       - name: Configure CMake
-        uses: protocolbuffers/protobuf-ci/bash@v1
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bash@v3
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          command: cmake . ${{ matrix.flags }} ${{ env.CCACHE_CMAKE_FLAGS }}
+          command: cmake . ${{ matrix.flags }} ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON
 
       - name: Build
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         shell: bash
         run: VERBOSE=1 cmake --build . --parallel 20
 
       - name: Test
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         shell: bash
         run: ctest --verbose --parallel 20 -C Debug
 
-      - name: Report ccache stats
+      - name: Report sccache stats
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         shell: bash
-        run: ccache -s -v
+        run: sccache -s

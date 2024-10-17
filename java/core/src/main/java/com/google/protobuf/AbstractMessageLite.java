@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 package com.google.protobuf;
 
@@ -39,6 +16,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.RandomAccess;
 
 /**
  * A partial implementation of the {@link MessageLite} interface which implements as many methods of
@@ -134,12 +112,6 @@ public abstract class AbstractMessageLite<
     if (!byteString.isValidUtf8()) {
       throw new IllegalArgumentException("Byte string is not UTF-8.");
     }
-  }
-
-  // For binary compatibility
-  @Deprecated
-  protected static <T> void addAll(final Iterable<T> values, final Collection<? super T> list) {
-    Builder.addAll(values, (List) list);
   }
 
   protected static <T> void addAll(final Iterable<T> values, final List<? super T> list) {
@@ -368,21 +340,43 @@ public abstract class AbstractMessageLite<
 
     // We check nulls as we iterate to avoid iterating over values twice.
     private static <T> void addAllCheckingNulls(Iterable<T> values, List<? super T> list) {
-      if (list instanceof ArrayList && values instanceof Collection) {
-        ((ArrayList<T>) list).ensureCapacity(list.size() + ((Collection<T>) values).size());
+      if (values instanceof Collection) {
+        int growth = ((Collection<T>) values).size();
+        if (list instanceof ArrayList) {
+          ((ArrayList<T>) list).ensureCapacity(list.size() + growth);
+        } else if (list instanceof ProtobufArrayList) {
+          ((ProtobufArrayList<T>) list).ensureCapacity(list.size() + growth);
+        }
       }
       int begin = list.size();
-      for (T value : values) {
-        if (value == null) {
-          // encountered a null value so we must undo our modifications prior to throwing
-          String message = "Element at index " + (list.size() - begin) + " is null.";
-          for (int i = list.size() - 1; i >= begin; i--) {
-            list.remove(i);
+      if (values instanceof List && values instanceof RandomAccess) {
+        List<T> valuesList = (List<T>) values;
+        int n = valuesList.size();
+        // Optimisation: avoid allocating Iterator for RandomAccess lists.
+        for (int i = 0; i < n; i++) {
+          T value = valuesList.get(i);
+          if (value == null) {
+            resetListAndThrow(list, begin);
           }
-          throw new NullPointerException(message);
+          list.add(value);
         }
-        list.add(value);
+      } else {
+        for (T value : values) {
+          if (value == null) {
+            resetListAndThrow(list, begin);
+          }
+          list.add(value);
+        }
       }
+    }
+
+    /** Remove elements after index begin from the List and throw NullPointerException. */
+    private static void resetListAndThrow(List<?> list, int begin) {
+      String message = "Element at index " + (list.size() - begin) + " is null.";
+      for (int i = list.size() - 1; i >= begin; i--) {
+        list.remove(i);
+      }
+      throw new NullPointerException(message);
     }
 
     /** Construct an UninitializedMessageException reporting missing fields in the given message. */
@@ -409,7 +403,7 @@ public abstract class AbstractMessageLite<
       if (values instanceof LazyStringList) {
         // For StringOrByteStringLists, check the underlying elements to avoid
         // forcing conversions of ByteStrings to Strings.
-        // TODO(dweis): Could we just prohibit nulls in all protobuf lists and get rid of this? Is
+        // TODO: Could we just prohibit nulls in all protobuf lists and get rid of this? Is
         // if even possible to hit this condition as all protobuf methods check for null first,
         // right?
         List<?> lazyValues = ((LazyStringList) values).getUnderlyingElements();
@@ -426,6 +420,8 @@ public abstract class AbstractMessageLite<
           }
           if (value instanceof ByteString) {
             lazyList.add((ByteString) value);
+          } else if (value instanceof byte[]) {
+            lazyList.add(ByteString.copyFrom((byte[]) value));
           } else {
             lazyList.add((String) value);
           }

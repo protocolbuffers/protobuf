@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/compiler/python/pyi_generator.h"
 
@@ -40,6 +17,8 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/python/helpers.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -60,7 +39,7 @@ std::string PyiGenerator::ModuleLevelName(const DescriptorT& descriptor) const {
   std::string name = NamePrefixedWithNestedTypes(descriptor, ".");
   if (descriptor.file() != file_) {
     std::string module_alias;
-    std::string filename = descriptor.file()->name();
+    const absl::string_view filename = descriptor.file()->name();
     if (import_map_.find(filename) == import_map_.end()) {
       std::string module_name = ModuleName(descriptor.file()->name());
       std::vector<absl::string_view> tokens = absl::StrSplit(module_name, '.');
@@ -92,7 +71,7 @@ struct ImportModules {
 };
 
 // Checks whether a descriptor name matches a well-known type.
-bool IsWellKnownType(const std::string& name) {
+bool IsWellKnownType(const absl::string_view name) {
   // LINT.IfChange(wktbases)
   return (name == "google.protobuf.Any" ||
           name == "google.protobuf.Duration" ||
@@ -151,41 +130,53 @@ void CheckImportModules(const Descriptor* descriptor,
 }
 
 void PyiGenerator::PrintImportForDescriptor(
-    const FileDescriptor& desc,
-    absl::flat_hash_set<std::string>* seen_aliases) const {
-  const std::string& filename = desc.name();
+    const FileDescriptor& desc, absl::flat_hash_set<std::string>* seen_aliases,
+    bool* has_importlib) const {
+  const absl::string_view filename = desc.name();
   std::string module_name_owned = StrippedModuleName(filename);
   absl::string_view module_name(module_name_owned);
   size_t last_dot_pos = module_name.rfind('.');
-  std::string import_statement;
-  if (last_dot_pos == std::string::npos) {
-    import_statement = absl::StrCat("import ", module_name);
-  } else {
-    import_statement =
-        absl::StrCat("from ", module_name.substr(0, last_dot_pos), " import ",
-                     module_name.substr(last_dot_pos + 1));
-    module_name = module_name.substr(last_dot_pos + 1);
-  }
-  std::string alias = absl::StrCat("_", module_name);
+  std::string alias = absl::StrCat("_", module_name.substr(last_dot_pos + 1));
   // Generate a unique alias by adding _1 suffixes until we get an unused alias.
   while (seen_aliases->find(alias) != seen_aliases->end()) {
     absl::StrAppend(&alias, "_1");
   }
-  printer_->Print("$statement$ as $alias$\n", "statement",
-                  import_statement, "alias", alias);
-  import_map_[filename] = alias;
-  seen_aliases->insert(alias);
+  if (ContainsPythonKeyword(module_name)) {
+    if (*has_importlib == false) {
+      printer_->Print("import importlib\n");
+      *has_importlib = true;
+    }
+    printer_->Print("$alias$ = importlib.import_module('$name$')\n", "alias",
+                    alias, "name", module_name);
+  } else {
+    std::string import_statement;
+    if (last_dot_pos == std::string::npos) {
+      import_statement = absl::StrCat("import ", module_name);
+    } else {
+      import_statement =
+          absl::StrCat("from ", module_name.substr(0, last_dot_pos), " import ",
+                       module_name.substr(last_dot_pos + 1));
+    }
+    printer_->Print("$statement$ as $alias$\n", "statement", import_statement,
+                    "alias", alias);
+    import_map_[filename] = alias;
+    seen_aliases->insert(alias);
+  }
 }
 
 void PyiGenerator::PrintImports() const {
   // Prints imported dependent _pb2 files.
   absl::flat_hash_set<std::string> seen_aliases;
+  bool has_importlib = false;
   for (int i = 0; i < file_->dependency_count(); ++i) {
     const FileDescriptor* dep = file_->dependency(i);
-    PrintImportForDescriptor(*dep, &seen_aliases);
+    if (strip_nonfunctional_codegen_ && IsKnownFeatureProto(dep->name())) {
+      continue;
+    }
+    PrintImportForDescriptor(*dep, &seen_aliases, &has_importlib);
     for (int j = 0; j < dep->public_dependency_count(); ++j) {
-      PrintImportForDescriptor(
-          *dep->public_dependency(j), &seen_aliases);
+      PrintImportForDescriptor(*dep->public_dependency(j), &seen_aliases,
+                               &has_importlib);
     }
   }
 
@@ -274,14 +265,14 @@ void PyiGenerator::PrintImports() const {
     std::string module_name = StrippedModuleName(public_dep->name());
     // Top level messages in public imports
     for (int i = 0; i < public_dep->message_type_count(); ++i) {
-      printer_->Print("from $module$ import $message_class$\n", "module",
-                      module_name, "message_class",
-                      public_dep->message_type(i)->name());
+      printer_->Print(
+          "from $module$ import $message_class$ as $message_class$\n", "module",
+          module_name, "message_class", public_dep->message_type(i)->name());
     }
     // Top level enums for public imports
     for (int i = 0; i < public_dep->enum_type_count(); ++i) {
-      printer_->Print("from $module$ import $enum_class$\n", "module",
-                      module_name, "enum_class",
+      printer_->Print("from $module$ import $enum_class$ as $enum_class$\n",
+                      "module", module_name, "enum_class",
                       public_dep->enum_type(i)->name());
     }
   }
@@ -297,10 +288,10 @@ printer_->Annotate(label.c_str(), descriptor);
 }
 
 void PyiGenerator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
-  std::string enum_name = enum_descriptor.name();
+  const absl::string_view enum_name = enum_descriptor.name();
   printer_->Print(
       "class $enum_name$(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):\n"
-      "    __slots__ = []\n",
+      "    __slots__ = ()\n",
       "enum_name", enum_name);
   Annotate("enum_name", &enum_descriptor);
   printer_->Indent();
@@ -394,7 +385,7 @@ void PyiGenerator::PrintMessage(
   if (!is_nested) {
     printer_->Print("\n");
   }
-  std::string class_name = message_descriptor.name();
+  const absl::string_view class_name = message_descriptor.name();
   std::string extra_base;
   // A well-known type needs to inherit from its corresponding base class in
   // net/proto2/python/internal/well_known_types.
@@ -410,21 +401,20 @@ void PyiGenerator::PrintMessage(
   printer_->Indent();
 
   // Prints slots
-  printer_->Print("__slots__ = [", "class_name", class_name);
-  bool first_item = true;
+  printer_->Print("__slots__ = (");
+  int items_printed = 0;
   for (int i = 0; i < message_descriptor.field_count(); ++i) {
     const FieldDescriptor* field_des = message_descriptor.field(i);
     if (IsPythonKeyword(field_des->name())) {
       continue;
     }
-    if (first_item) {
-      first_item = false;
-    } else {
+    if (items_printed > 0) {
       printer_->Print(", ");
     }
+    ++items_printed;
     printer_->Print("\"$field_name$\"", "field_name", field_des->name());
   }
-  printer_->Print("]\n");
+  printer_->Print(items_printed == 1 ? ",)\n" : ")\n");
 
   // Prints Extensions for extendable messages
   if (message_descriptor.extension_range_count() > 0) {
@@ -485,23 +475,25 @@ void PyiGenerator::PrintMessage(
   }
 
   // Prints __init__
-  printer_->Print("def __init__(self");
-  bool has_key_words = false;
-  bool is_first = true;
+  printer_->Print("def __init__(");
+  // If the message has a field named "self" (see b/144146793), it can still be
+  // passed to the initializer, which takes those as **kwargs. To avoid name
+  // collision, we rename the self parameter by appending underscores until it
+  // no longer collides. The self-parameter is in fact positional-only, so the
+  // name in the pyi doesn't matter with regard to what runtime usage is valid.
+  std::string self_arg_name = "self";
+  while (message_descriptor.FindFieldByName(self_arg_name) != nullptr) {
+    self_arg_name.append("_");
+  }
+  printer_->Print(self_arg_name);
+  bool has_python_keywords = false;
   for (int i = 0; i < message_descriptor.field_count(); ++i) {
     const FieldDescriptor* field_des = message_descriptor.field(i);
     if (IsPythonKeyword(field_des->name())) {
-      has_key_words = true;
+      has_python_keywords = true;
       continue;
     }
-    std::string field_name = field_des->name();
-    if (is_first && field_name == "self") {
-      // See b/144146793 for an example of real code that generates a (self,
-      // self) method signature. Since repeating a parameter name is illegal in
-      // Python, we rename the duplicate self.
-      field_name = "self_";
-    }
-    is_first = false;
+    std::string field_name = std::string(field_des->name());
     printer_->Print(", $field_name$: ", "field_name", field_name);
     Annotate("field_name", field_des);
     if (field_des->is_repeated() ||
@@ -543,7 +535,7 @@ void PyiGenerator::PrintMessage(
     }
     printer_->Print(" = ...");
   }
-  if (has_key_words) {
+  if (has_python_keywords) {
     printer_->Print(", **kwargs");
   }
   printer_->Print(") -> None: ...\n");
@@ -577,18 +569,21 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
   import_map_.clear();
   // Calculate file name.
   file_ = file;
-  // In google3, devtools/python/blaze/pytype/pytype_impl.bzl uses --pyi_out to
+  // In google3, devtools/python/bazel/pytype/pytype_impl.bzl uses --pyi_out to
   // directly set the output file name.
   std::vector<std::pair<std::string, std::string> > options;
   ParseGeneratorParameter(parameter, &options);
 
   std::string filename;
   bool annotate_code = false;
+  strip_nonfunctional_codegen_ = false;
   for (const std::pair<std::string, std::string>& option : options) {
     if (option.first == "annotate_code") {
       annotate_code = true;
     } else if (absl::EndsWith(option.first, ".pyi")) {
       filename = option.first;
+    } else if (option.first == "experimental_strip_nonfunctional_codegen") {
+      strip_nonfunctional_codegen_ = true;
     } else {
       *error = absl::StrCat("Unknown generator option: ", option.first);
       return false;

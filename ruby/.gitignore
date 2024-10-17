@@ -7,3 +7,9 @@ target/
 pkg/
 tmp/
 tests/google/
+ext/google/protobuf_c/third_party/utf8_range/utf8_range.h
+ext/google/protobuf_c/third_party/utf8_range/utf8_range.c
+ext/google/protobuf_c/third_party/utf8_range/utf8_range_sse.inc
+ext/google/protobuf_c/third_party/utf8_range/utf8_range_neon.inc
+ext/google/protobuf_c/third_party/utf8_range/LICENSE
+lib/google/protobuf/*_pb.rb

@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
@@ -35,8 +12,8 @@
 #include "google/protobuf/generated_message_util.h"
 
 #include <atomic>
+#include <cstdint>
 #include <limits>
-#include <vector>
 
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/extension_set.h"
@@ -44,37 +21,74 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/metadata_lite.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/wire_format_lite.h"
 
 // Must be included last
 #include "google/protobuf/port_def.inc"
 
+#ifndef PROTOBUF_PRAGMA_INIT_SEG_DONE
 PROTOBUF_PRAGMA_INIT_SEG
+#define PROTOBUF_PRAGMA_INIT_SEG_DONE
+#endif
 
 
 namespace google {
 namespace protobuf {
 namespace internal {
 
-void DestroyMessage(const void* message) {
-  static_cast<const MessageLite*>(message)->~MessageLite();
-}
 void DestroyString(const void* s) {
   static_cast<const std::string*>(s)->~basic_string();
 }
 
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExplicitlyConstructedArenaString
-        fixed_address_empty_string{};  // NOLINT
-
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT const EmptyCord empty_cord_;
 
+#if defined(PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED)
+
+// We add a single dummy entry to guarantee the section is never empty.
+struct DummyWeakDefault {
+  const Message* m;
+  WeakDescriptorDefaultTail tail;
+};
+DummyWeakDefault dummy_weak_default __attribute__((section("pb_defaults"))) = {
+    nullptr, {&dummy_weak_default.m, sizeof(dummy_weak_default)}};
+
+extern "C" {
+// When using --descriptor_implicit_weak_messages we expect the default instance
+// objects to live in the `pb_defaults` section. We load them all using the
+// __start/__end symbols provided by the linker.
+// Each object is its own type and size, so we use a `char` to load them
+// appropriately.
+extern const char __start_pb_defaults;
+extern const char __stop_pb_defaults;
+}
+static void InitWeakDefaults() {
+  // force link the dummy entry.
+  StrongPointer<DummyWeakDefault*, &dummy_weak_default>();
+  // We don't know the size of each object, but we know the layout of the tail.
+  // It contains a WeakDescriptorDefaultTail object.
+  // As such, we iterate the section backwards.
+  const char* start = &__start_pb_defaults;
+  const char* end = &__stop_pb_defaults;
+  while (start != end) {
+    auto* tail = reinterpret_cast<const WeakDescriptorDefaultTail*>(end) - 1;
+    end -= tail->size;
+    const Message* instance = reinterpret_cast<const Message*>(end);
+    *tail->target = instance;
+  }
+}
+#else
+void InitWeakDefaults() {}
+#endif
+
 PROTOBUF_CONSTINIT std::atomic<bool> init_protobuf_defaults_state{false};
 static bool InitProtobufDefaultsImpl() {
-  fixed_address_empty_string.DefaultConstruct();
-  OnShutdownDestroyString(fixed_address_empty_string.get_mutable());
+  if (auto* to_destroy = fixed_address_empty_string.Init()) {
+    OnShutdownDestroyString(to_destroy);
+  }
+  InitWeakDefaults();
 
 
   init_protobuf_defaults_state.store(true, std::memory_order_release);
@@ -391,7 +405,7 @@ void GenericSwap(MessageLite* m1, MessageLite* m2) {
 MessageLite* GetOwnedMessageInternal(Arena* message_arena,
                                      MessageLite* submessage,
                                      Arena* submessage_arena) {
-  ABSL_DCHECK(Arena::InternalGetOwningArena(submessage) == submessage_arena);
+  ABSL_DCHECK(submessage->GetArena() == submessage_arena);
   ABSL_DCHECK(message_arena != submessage_arena);
   ABSL_DCHECK_EQ(submessage_arena, nullptr);
   if (message_arena != nullptr && submessage_arena == nullptr) {

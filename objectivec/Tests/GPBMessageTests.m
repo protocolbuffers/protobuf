@@ -1,43 +1,23 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-#import "GPBTestUtilities.h"
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #import <objc/runtime.h>
 
+#import "GPBArray.h"
 #import "GPBArray_PackagePrivate.h"
 #import "GPBDescriptor.h"
+#import "GPBDictionary.h"
 #import "GPBDictionary_PackagePrivate.h"
+#import "GPBMessage.h"
 #import "GPBMessage_PackagePrivate.h"
-#import "GPBUnknownFieldSet_PackagePrivate.h"
+#import "GPBTestUtilities.h"
+#import "GPBUnknownField.h"
 #import "GPBUnknownField_PackagePrivate.h"
+#import "GPBUnknownFields.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
 #import "objectivec/Tests/UnittestImport.pbobjc.h"
 #import "objectivec/Tests/UnittestObjc.pbobjc.h"
@@ -89,7 +69,7 @@
 
 @implementation MessageTests
 
-// TODO(thomasvl): this should get split into a few files of logic junks, it is
+// TODO: this should get split into a few files of logic junks, it is
 // a jumble of things at the moment (and the testutils have a bunch of the real
 // assertions).
 
@@ -514,15 +494,10 @@
   TestAllTypes *message = [TestAllTypes message];
   [self setAllFields:message repeatedCount:kGPBDefaultRepeatCount];
 
-  GPBUnknownFieldSet *unknownFields = [[[GPBUnknownFieldSet alloc] init] autorelease];
-  GPBUnknownField *field = [[[GPBUnknownField alloc] initWithNumber:2] autorelease];
-  [field addVarint:2];
-  [unknownFields addField:field];
-  field = [[[GPBUnknownField alloc] initWithNumber:3] autorelease];
-  [field addVarint:4];
-  [unknownFields addField:field];
-
-  [message setUnknownFields:unknownFields];
+  GPBUnknownFields *ufs = [[[GPBUnknownFields alloc] init] autorelease];
+  [ufs addFieldNumber:1234 fixed32:1234];
+  [ufs addFieldNumber:2345 varint:54321];
+  XCTAssertTrue([message mergeUnknownFields:ufs extensionRegistry:nil error:NULL]);
 
   NSString *description = [message description];
   XCTAssertGreaterThan([description length], 0U);
@@ -989,25 +964,6 @@
   XCTAssertFalse(GPBWasMessageAutocreatedBy(nestedMessage, message));
 
   [nestedMessage release];
-}
-
-- (void)testAutocreatedUnknownFields {
-  // Doing anything with (except reading) unknown fields should cause the
-  // submessage to become visible.
-  TestAllTypes *message = [TestAllTypes message];
-  XCTAssertNotNil(message.optionalNestedMessage);
-  XCTAssertFalse([message hasOptionalNestedMessage]);
-  XCTAssertNil(message.optionalNestedMessage.unknownFields);
-  XCTAssertFalse([message hasOptionalNestedMessage]);
-
-  GPBUnknownFieldSet *unknownFields = [[[GPBUnknownFieldSet alloc] init] autorelease];
-  message.optionalNestedMessage.unknownFields = unknownFields;
-  XCTAssertTrue([message hasOptionalNestedMessage]);
-
-  message.optionalNestedMessage = nil;
-  XCTAssertFalse([message hasOptionalNestedMessage]);
-  [message.optionalNestedMessage setUnknownFields:unknownFields];
-  XCTAssertTrue([message hasOptionalNestedMessage]);
 }
 
 - (void)testSetAutocreatedSubmessageToSelf {
@@ -1504,20 +1460,18 @@
   XCTAssertFalse([msg hasExtension:[UnittestRoot repeatedNestedEnumExtension]]);
   XCTAssertFalse([msg hasExtension:[UnittestRoot repeatedForeignEnumExtension]]);
 
-  GPBUnknownFieldSet *unknownFields = msg.unknownFields;
-  GPBUnknownField *field =
-      [unknownFields getField:[UnittestRoot optionalNestedEnumExtension].fieldNumber];
-  XCTAssertNotNil(field);
-  XCTAssertEqual(field.varintList.count, 1);
-  XCTAssertEqual([field.varintList valueAtIndex:0], 10);
-  field = [unknownFields getField:[UnittestRoot repeatedNestedEnumExtension].fieldNumber];
-  XCTAssertNotNil(field);
-  XCTAssertEqual(field.varintList.count, 1);
-  XCTAssertEqual([field.varintList valueAtIndex:0], 11);
-  field = [unknownFields getField:[UnittestRoot repeatedForeignEnumExtension].fieldNumber];
-  XCTAssertNotNil(field);
-  XCTAssertEqual(field.varintList.count, 1);
-  XCTAssertEqual([field.varintList valueAtIndex:0], 12);
+  GPBUnknownFields *ufs = [[[GPBUnknownFields alloc] initFromMessage:msg] autorelease];
+  XCTAssertEqual(ufs.count, 3);
+  uint64_t varint;
+  XCTAssertTrue([ufs getFirst:[UnittestRoot optionalNestedEnumExtension].fieldNumber
+                       varint:&varint]);
+  XCTAssertEqual(varint, 10);
+  XCTAssertTrue([ufs getFirst:[UnittestRoot repeatedNestedEnumExtension].fieldNumber
+                       varint:&varint]);
+  XCTAssertEqual(varint, 11);
+  XCTAssertTrue([ufs getFirst:[UnittestRoot repeatedForeignEnumExtension].fieldNumber
+                       varint:&varint]);
+  XCTAssertEqual(varint, 12);
 
   // Unknown and known, the known come though an unknown go to unknown fields.
 
@@ -1546,19 +1500,17 @@
   expected = @[ @4, @6 ];
   XCTAssertEqualObjects([msg getExtension:[UnittestRoot repeatedForeignEnumExtension]], expected);
 
-  unknownFields = msg.unknownFields;
-  field = [unknownFields getField:[UnittestRoot optionalNestedEnumExtension].fieldNumber];
-  XCTAssertNotNil(field);
-  XCTAssertEqual(field.varintList.count, 1);
-  XCTAssertEqual([field.varintList valueAtIndex:0], 10);
-  field = [unknownFields getField:[UnittestRoot repeatedNestedEnumExtension].fieldNumber];
-  XCTAssertNotNil(field);
-  XCTAssertEqual(field.varintList.count, 1);
-  XCTAssertEqual([field.varintList valueAtIndex:0], 11);
-  field = [unknownFields getField:[UnittestRoot repeatedForeignEnumExtension].fieldNumber];
-  XCTAssertNotNil(field);
-  XCTAssertEqual(field.varintList.count, 1);
-  XCTAssertEqual([field.varintList valueAtIndex:0], 12);
+  ufs = [[[GPBUnknownFields alloc] initFromMessage:msg] autorelease];
+  XCTAssertEqual(ufs.count, 3);
+  XCTAssertTrue([ufs getFirst:[UnittestRoot optionalNestedEnumExtension].fieldNumber
+                       varint:&varint]);
+  XCTAssertEqual(varint, 10);
+  XCTAssertTrue([ufs getFirst:[UnittestRoot repeatedNestedEnumExtension].fieldNumber
+                       varint:&varint]);
+  XCTAssertEqual(varint, 11);
+  XCTAssertTrue([ufs getFirst:[UnittestRoot repeatedForeignEnumExtension].fieldNumber
+                       varint:&varint]);
+  XCTAssertEqual(varint, 12);
 }
 
 - (void)testDefaultingExtensionMessages {
@@ -1692,14 +1644,14 @@
   // Mutable copy shouldn't copy autocreated extensions.
   TestAllExtensions *message = [TestAllExtensions message];
   GPBExtensionDescriptor *optionalGroupExtension = [UnittestRoot optionalGroupExtension];
-  GPBExtensionDescriptor *optionalNestedMessageExtesion =
+  GPBExtensionDescriptor *optionalNestedMessageExtension =
       [UnittestRoot optionalNestedMessageExtension];
   TestAllTypes_OptionalGroup *optionalGroup = [message getExtension:optionalGroupExtension];
   optionalGroup.a = 42;
   XCTAssertNotNil(optionalGroup);
-  XCTAssertNotNil([message getExtension:optionalNestedMessageExtesion]);
+  XCTAssertNotNil([message getExtension:optionalNestedMessageExtension]);
   XCTAssertTrue([message hasExtension:optionalGroupExtension]);
-  XCTAssertFalse([message hasExtension:optionalNestedMessageExtesion]);
+  XCTAssertFalse([message hasExtension:optionalNestedMessageExtension]);
 
   TestAllExtensions *message2 = [[message copy] autorelease];
 
@@ -1711,11 +1663,11 @@
   XCTAssertNotEqual([message getExtension:optionalGroupExtension],
                     [message2 getExtension:optionalGroupExtension]);
 
-  XCTAssertFalse([message2 hasExtension:optionalNestedMessageExtesion]);
+  XCTAssertFalse([message2 hasExtension:optionalNestedMessageExtension]);
   // Intentionally doing a pointer comparison (auto creation should be
   // different)
-  XCTAssertNotEqual([message getExtension:optionalNestedMessageExtesion],
-                    [message2 getExtension:optionalNestedMessageExtesion]);
+  XCTAssertNotEqual([message getExtension:optionalNestedMessageExtension],
+                    [message2 getExtension:optionalNestedMessageExtension]);
 }
 
 - (void)testClearMessageAutocreatedExtension {
@@ -1859,26 +1811,26 @@
 }
 
 - (void)testGenerateAndParseUnknownMessage {
-  GPBUnknownFieldSet *unknowns = [[[GPBUnknownFieldSet alloc] init] autorelease];
-  [unknowns mergeVarintField:123 value:456];
+  GPBUnknownFields *ufs = [[[GPBUnknownFields alloc] init] autorelease];
+  [ufs addFieldNumber:1234 varint:5678];
   GPBMessage *message = [GPBMessage message];
-  [message setUnknownFields:unknowns];
+  XCTAssertTrue([message mergeUnknownFields:ufs extensionRegistry:nil error:NULL]);
   NSData *data = [message data];
   GPBMessage *message2 = [GPBMessage parseFromData:data extensionRegistry:nil error:NULL];
   XCTAssertEqualObjects(message, message2);
 }
 
 - (void)testDelimitedWriteAndParseMultipleMessages {
-  GPBUnknownFieldSet *unknowns1 = [[[GPBUnknownFieldSet alloc] init] autorelease];
-  [unknowns1 mergeVarintField:123 value:456];
+  GPBUnknownFields *ufs1 = [[[GPBUnknownFields alloc] init] autorelease];
+  [ufs1 addFieldNumber:1234 varint:5678];
   GPBMessage *message1 = [GPBMessage message];
-  [message1 setUnknownFields:unknowns1];
+  XCTAssertTrue([message1 mergeUnknownFields:ufs1 extensionRegistry:nil error:NULL]);
 
-  GPBUnknownFieldSet *unknowns2 = [[[GPBUnknownFieldSet alloc] init] autorelease];
-  [unknowns2 mergeVarintField:789 value:987];
-  [unknowns2 mergeVarintField:654 value:321];
+  GPBUnknownFields *ufs2 = [[[GPBUnknownFields alloc] init] autorelease];
+  [ufs2 addFieldNumber:2345 fixed32:6789];
+  [ufs2 addFieldNumber:3456 fixed32:7890];
   GPBMessage *message2 = [GPBMessage message];
-  [message2 setUnknownFields:unknowns2];
+  XCTAssertTrue([message2 mergeUnknownFields:ufs2 extensionRegistry:nil error:NULL]);
 
   NSMutableData *delimitedData = [NSMutableData data];
   [delimitedData appendData:[message1 delimitedData]];
@@ -2043,6 +1995,37 @@
   XCTAssertEqual([msgPrime.mumbleArray valueAtIndex:2], EnumTestMsg_MyEnum_Two);
   XCTAssertEqual([msgPrime.mumbleArray valueAtIndex:3], EnumTestMsg_MyEnum_NegOne);
   XCTAssertEqual([msgPrime.mumbleArray valueAtIndex:4], EnumTestMsg_MyEnum_NegTwo);
+}
+
+- (void)testCloseEnumsValuesOutOfRange {
+  // The unknown values should all make it into the unknown fields.
+  EnumTestMsg *msg1 = [EnumTestMsg message];
+  msg1.bar = EnumTestMsg_MyEnum_NegTwo;
+  msg1.baz = EnumTestMsg_MyEnum_Two;
+  [msg1.mumbleArray addValue:EnumTestMsg_MyEnum_Two];
+  [msg1.mumbleArray addValue:EnumTestMsg_MyEnum_NegTwo];
+
+  NSData *data = [msg1 data];
+  XCTAssertNotNil(data);
+
+  EnumTestMsgPrime *msg2 = [EnumTestMsgPrime parseFromData:data error:NULL];
+  XCTAssertNotNil(msg2);
+  XCTAssertEqualObjects(data, [msg2 data]);
+  XCTAssertFalse(msg2.hasBar);
+  XCTAssertFalse(msg2.hasBaz);
+  XCTAssertEqual(msg2.mumbleArray_Count, 0U);
+
+  GPBUnknownFields *ufs = [[[GPBUnknownFields alloc] initFromMessage:msg2] autorelease];
+  XCTAssertEqual(ufs.count, 4U);
+  uint64_t varint;
+  XCTAssertTrue([ufs getFirst:EnumTestMsg_FieldNumber_Bar varint:&varint]);
+  XCTAssertEqual(varint, (uint64_t)EnumTestMsg_MyEnum_NegTwo);
+  XCTAssertTrue([ufs getFirst:EnumTestMsg_FieldNumber_Baz varint:&varint]);
+  XCTAssertEqual(varint, (uint64_t)EnumTestMsg_MyEnum_Two);
+  NSArray<GPBUnknownField *> *fields = [ufs fields:EnumTestMsg_FieldNumber_MumbleArray];
+  XCTAssertEqual(fields.count, 2U);
+  XCTAssertEqual(fields[0].varint, (uint64_t)EnumTestMsg_MyEnum_Two);
+  XCTAssertEqual(fields[1].varint, (uint64_t)EnumTestMsg_MyEnum_NegTwo);
 }
 
 - (void)testReservedWordNaming {
@@ -2246,6 +2229,19 @@
   // letter DO get the prefix.
   GPBTESTGPBTESTshouldGetAPrefixMessage *shouldGetAPrefixMessage = nil;
   XCTAssertNil(shouldGetAPrefixMessage);
+}
+
+- (void)testWriteToFullOutputStreamShouldThrow {
+  uint8_t buffer[1] = {0};
+
+  // Output stream which can write precisely 1 byte of data before it's full.
+  NSOutputStream *output = [[[NSOutputStream alloc] initToBuffer:buffer
+                                                        capacity:sizeof(buffer)] autorelease];
+
+  TestAllTypes *message = [TestAllTypes message];
+  [message setOptionalInt32:1];
+  XCTAssertThrowsSpecificNamed([message writeToOutputStream:output], NSException,
+                               GPBCodedOutputStreamException_WriteFailed);
 }
 
 @end
