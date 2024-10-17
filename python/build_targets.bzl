@@ -441,8 +441,16 @@ def build_targets(name):
             "//src/google/protobuf",
             "@com_google_absl//absl/log:absl_check",
             "@com_google_absl//absl/status",
-            "@system_python//:python_headers",
-        ],
+        ] + select({
+            "//python:limited_api_3.8": ["@python-3.8.0//:python_headers"],
+            "//python:full_api_3.8_win32": ["@nuget_python_i686_3.8.0//:python_full_api"],
+            "//python:full_api_3.8_win64": ["@nuget_python_x86-64_3.8.0//:python_full_api"],
+            "//python:full_api_3.9_win32": ["@nuget_python_i686_3.9.0//:python_full_api"],
+            "//python:full_api_3.9_win64": ["@nuget_python_x86-64_3.9.0//:python_full_api"],
+            "//python:limited_api_3.10_win32": ["@nuget_python_i686_3.10.0//:python_limited_api"],
+            "//python:limited_api_3.10_win64": ["@nuget_python_x86-64_3.10.0//:python_limited_api"],
+            "//conditions:default": ["@system_python//:python_headers"],
+        }),
     )
 
     internal_py_test(
