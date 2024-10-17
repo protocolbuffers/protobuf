@@ -1,8 +1,7 @@
 build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
 
-# Needed for java_lite_proto_library, that's using ProguardSpecProvider
-# Once the provider is ported to Starlark the flag may be removed.
-common --experimental_google_legacy_api
+# TODO: ErrorProne's SelfAssertions are violated in protobuf's test
+build --javacopt=-Xep:SelfAssertion:WARN
 
 build:dbg --compilation_mode=dbg
 
