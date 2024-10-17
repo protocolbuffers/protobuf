@@ -46,8 +46,8 @@ class MutableRepeatedFieldRef;
 // RepeatedFieldRef definition for non-message types.
 template <typename T>
 class RepeatedFieldRef<
-    T, typename std::enable_if<!std::is_base_of<Message, T>::value>::type> {
-  typedef typename internal::RefTypeTraits<T>::iterator IteratorType;
+    T, typename std::enable_if<!std::is_base_of<Message, typename std::remove_const<T>::type>::value>::type> {
+  typedef typename internal::RefTypeTraits<const T>::iterator IteratorType;
   typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
 
  public:
@@ -83,7 +83,8 @@ class RepeatedFieldRef<
 // MutableRepeatedFieldRef definition for non-message types.
 template <typename T>
 class MutableRepeatedFieldRef<
-    T, typename std::enable_if<!std::is_base_of<Message, T>::value>::type> {
+    T, typename std::enable_if<!std::is_base_of<Message, typename std::remove_const<T>::type>::value>::type> {
+  typedef typename internal::RefTypeTraits<T>::iterator IteratorType;
   typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
 
  public:
@@ -119,6 +120,14 @@ class MutableRepeatedFieldRef<
     MergeFrom(container);
   }
 
+  typedef IteratorType iterator;
+  typedef IteratorType const_iterator;
+  typedef int size_type;
+  typedef ptrdiff_t difference_type;
+
+  iterator begin() const { return iterator(data_, accessor_, true); }
+  iterator end() const { return iterator(data_, accessor_, false); }
+
  private:
   friend class Reflection;
   MutableRepeatedFieldRef(MakeDependent<T, Message>* message,
@@ -136,8 +145,8 @@ class MutableRepeatedFieldRef<
 // RepeatedFieldRef definition for message types.
 template <typename T>
 class RepeatedFieldRef<
-    T, typename std::enable_if<std::is_base_of<Message, T>::value>::type> {
-  typedef typename internal::RefTypeTraits<T>::iterator IteratorType;
+    T, typename std::enable_if<std::is_base_of<Message, typename std::remove_const<T>::type>::value>::type> {
+  typedef typename internal::RefTypeTraits<const T>::iterator IteratorType;
   typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
 
  public:
@@ -182,7 +191,7 @@ class RepeatedFieldRef<
     const auto* reflection = message.GetReflection();
     data_ = reflection->RepeatedFieldData(
         message, field, internal::RefTypeTraits<T>::cpp_type,
-        internal::RefTypeTraits<T>::GetMessageFieldDescriptor());
+        internal::RefTypeTraits<typename std::conditional<std::is_same<Message, typename std::remove_const<T>::type>::value, void, T>::type>::GetMessageFieldDescriptor());
     accessor_ = reflection->RepeatedFieldAccessor(field);
     default_instance_ = static_cast<const T*>(
         reflection->GetMessageFactory()->GetPrototype(field->message_type()));
@@ -196,15 +205,16 @@ class RepeatedFieldRef<
 // MutableRepeatedFieldRef definition for message types.
 template <typename T>
 class MutableRepeatedFieldRef<
-    T, typename std::enable_if<std::is_base_of<Message, T>::value>::type> {
+    T, typename std::enable_if<std::is_base_of<Message, typename std::remove_const<T>::type>::value>::type> {
+  typedef typename internal::RefTypeTraits<T>::iterator IteratorType;
   typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
 
  public:
   bool empty() const { return accessor_->IsEmpty(data_); }
   int size() const { return accessor_->Size(data_); }
   // See comments for RepeatedFieldRef<Message>::Get()
-  const T& Get(int index, T* scratch_space) const {
-    return *static_cast<const T*>(accessor_->Get(data_, index, scratch_space));
+  T& Get(int index, T* scratch_space) const {
+    return *static_cast<T*>(accessor_->Get(data_, index, scratch_space));
   }
   // Create a new message of the same type as the messages stored in this
   // repeated field. Caller takes ownership of the returned object.
@@ -238,6 +248,19 @@ class MutableRepeatedFieldRef<
     MergeFrom(container);
   }
 
+  typedef IteratorType iterator;
+  typedef IteratorType const_iterator;
+  typedef int size_type;
+  typedef ptrdiff_t difference_type;
+
+  iterator begin() const {
+    return iterator(data_, accessor_, true, NewMessage());
+  }
+  iterator end() const {
+    // The end iterator must not be dereferenced, no need for scratch space.
+    return iterator(data_, accessor_, false, nullptr);
+  }
+
  private:
   friend class Reflection;
   MutableRepeatedFieldRef(MakeDependent<T, Message>* message,
@@ -245,7 +268,7 @@ class MutableRepeatedFieldRef<
     const auto* reflection = message->GetReflection();
     data_ = reflection->RepeatedFieldData(
         message, field, internal::RefTypeTraits<T>::cpp_type,
-        internal::RefTypeTraits<T>::GetMessageFieldDescriptor());
+        internal::RefTypeTraits<typename std::conditional<std::is_same<Message, typename std::remove_const<T>::type>::value, void, T>::type>::GetMessageFieldDescriptor());
     accessor_ = reflection->RepeatedFieldAccessor(field);
     default_instance_ = static_cast<const T*>(
         reflection->GetMessageFactory()->GetPrototype(field->message_type()));
@@ -299,6 +322,9 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
   virtual const Value* Get(const Field* data, int index,
                            Value* scratch_space) const = 0;
 
+  virtual Value* Get(Field* data, int index,
+                     Value* scratch_space) const = 0;
+
   virtual void Clear(Field* data) const = 0;
   virtual void Set(Field* data, int index, const Value* value) const = 0;
   virtual void Add(Field* data, const Value* value) const = 0;
@@ -328,6 +354,10 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
   virtual const Value* GetIteratorValue(const Field* data,
                                         const Iterator* iterator,
                                         Value* scratch_space) const = 0;
+
+  virtual Value* GetIteratorValue(Field* data,
+                                  const Iterator* iterator,
+                                  Value* scratch_space) const = 0;
 
   // Templated methods that make using this interface easier for non-message
   // types.
@@ -379,6 +409,8 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
 template <typename T>
 class RepeatedFieldRefIterator {
   typedef typename RefTypeTraits<T>::AccessorValueType AccessorValueType;
+  typedef typename std::conditional<std::is_const<T>::value, const void*, void *>::type DataType;
+  typedef typename std::remove_const<T>::type ScratchSpaceType;
   typedef typename RefTypeTraits<T>::IteratorValueType IteratorValueType;
   typedef typename RefTypeTraits<T>::IteratorPointerType IteratorPointerType;
 
@@ -390,23 +422,23 @@ class RepeatedFieldRefIterator {
   using difference_type = std::ptrdiff_t;
 
   // Constructor for non-message fields.
-  RepeatedFieldRefIterator(const void* data,
+  RepeatedFieldRefIterator(DataType data,
                            const RepeatedFieldAccessor* accessor, bool begin)
       : data_(data),
         accessor_(accessor),
         iterator_(begin ? accessor->BeginIterator(data)
                         : accessor->EndIterator(data)),
         // The end iterator must not be dereferenced, no need for scratch space.
-        scratch_space_(begin ? new AccessorValueType : nullptr) {}
+        scratch_space_(begin ? new ScratchSpaceType : nullptr) {}
   // Constructor for message fields.
-  RepeatedFieldRefIterator(const void* data,
+  RepeatedFieldRefIterator(DataType data,
                            const RepeatedFieldAccessor* accessor, bool begin,
-                           AccessorValueType* scratch_space)
+                           ScratchSpaceType* scratch_space)
       : data_(data),
         accessor_(accessor),
         iterator_(begin ? accessor->BeginIterator(data)
                         : accessor->EndIterator(data)),
-        scratch_space_(scratch_space) {}
+         scratch_space_(scratch_space) {}
   ~RepeatedFieldRefIterator() { accessor_->DeleteIterator(data_, iterator_); }
   RepeatedFieldRefIterator operator++(int) {
     RepeatedFieldRefIterator tmp(*this);
@@ -418,8 +450,8 @@ class RepeatedFieldRefIterator {
     return *this;
   }
   IteratorValueType operator*() const {
-    return static_cast<IteratorValueType>(
-        *static_cast<const AccessorValueType*>(accessor_->GetIteratorValue(
+    return *static_cast<IteratorPointerType>(
+				static_cast<AccessorValueType*>(accessor_->GetIteratorValue(
             data_, iterator_, scratch_space_.get())));
   }
   IteratorPointerType operator->() const {
@@ -450,10 +482,10 @@ class RepeatedFieldRefIterator {
   }
 
  protected:
-  const void* data_;
+  DataType data_;
   const RepeatedFieldAccessor* accessor_;
   void* iterator_;
-  std::unique_ptr<AccessorValueType> scratch_space_;
+  std::unique_ptr<ScratchSpaceType> scratch_space_;
 };
 
 // TypeTraits that maps the type parameter T of RepeatedFieldRef or
@@ -481,26 +513,31 @@ DEFINE_PRIMITIVE(BOOL, bool)
 
 template <typename T>
 struct RefTypeTraits<
-    T, typename std::enable_if<PrimitiveTraits<T>::is_primitive>::type> {
-  typedef RepeatedFieldRefIterator<T> iterator;
-  typedef RepeatedFieldAccessor AccessorType;
-  typedef T AccessorValueType;
-  typedef T IteratorValueType;
-  typedef T* IteratorPointerType;
-  static constexpr FieldDescriptor::CppType cpp_type =
-      PrimitiveTraits<T>::cpp_type;
+    T, typename std::enable_if<std::is_void<T>::value>::type> {
   static const Descriptor* GetMessageFieldDescriptor() { return nullptr; }
 };
 
 template <typename T>
 struct RefTypeTraits<
-    T, typename std::enable_if<is_proto_enum<T>::value>::type> {
+    T, typename std::enable_if<PrimitiveTraits<typename std::remove_const<T>::type>::is_primitive>::type> {
   typedef RepeatedFieldRefIterator<T> iterator;
   typedef RepeatedFieldAccessor AccessorType;
-  // We use int32_t for repeated enums in RepeatedFieldAccessor.
-  typedef int32_t AccessorValueType;
-  typedef T IteratorValueType;
-  typedef int32_t* IteratorPointerType;
+  typedef T AccessorValueType;
+  typedef T& IteratorValueType;
+  typedef T* IteratorPointerType;
+  static constexpr FieldDescriptor::CppType cpp_type =
+      PrimitiveTraits<typename std::remove_const<T>::type>::cpp_type;
+  static const Descriptor* GetMessageFieldDescriptor() { return nullptr; }
+};
+
+template <typename T>
+struct RefTypeTraits<
+    T, typename std::enable_if<is_proto_enum<typename std::remove_const<T>::type>::value>::type> {
+  typedef RepeatedFieldRefIterator<T> iterator;
+  typedef RepeatedFieldAccessor AccessorType;
+  typedef T AccessorValueType;
+  typedef T& IteratorValueType;
+  typedef T* IteratorPointerType;
   static constexpr FieldDescriptor::CppType cpp_type =
       FieldDescriptor::CPPTYPE_ENUM;
   static const Descriptor* GetMessageFieldDescriptor() { return nullptr; }
@@ -508,12 +545,12 @@ struct RefTypeTraits<
 
 template <typename T>
 struct RefTypeTraits<
-    T, typename std::enable_if<std::is_same<std::string, T>::value>::type> {
+    T, typename std::enable_if<std::is_same<std::string, typename std::remove_const<T>::type>::value>::type> {
   typedef RepeatedFieldRefIterator<T> iterator;
   typedef RepeatedFieldAccessor AccessorType;
-  typedef std::string AccessorValueType;
-  typedef const std::string IteratorValueType;
-  typedef const std::string* IteratorPointerType;
+  typedef T AccessorValueType;
+  typedef T& IteratorValueType;
+  typedef T* IteratorPointerType;
   static constexpr FieldDescriptor::CppType cpp_type =
       FieldDescriptor::CPPTYPE_STRING;
   static const Descriptor* GetMessageFieldDescriptor() { return nullptr; }
@@ -521,8 +558,9 @@ struct RefTypeTraits<
 
 template <typename T>
 struct MessageDescriptorGetter {
+	typedef typename std::remove_const<T>::type ValueType;
   static const Descriptor* get() {
-    return T::default_instance().GetDescriptor();
+    return ValueType::default_instance().GetDescriptor();
   }
 };
 template <>
@@ -532,12 +570,12 @@ struct MessageDescriptorGetter<Message> {
 
 template <typename T>
 struct RefTypeTraits<
-    T, typename std::enable_if<std::is_base_of<Message, T>::value>::type> {
+    T, typename std::enable_if<std::is_base_of<Message, typename std::remove_const<T>::type>::value>::type> {
   typedef RepeatedFieldRefIterator<T> iterator;
   typedef RepeatedFieldAccessor AccessorType;
-  typedef Message AccessorValueType;
-  typedef const T& IteratorValueType;
-  typedef const T* IteratorPointerType;
+  typedef typename std::conditional<std::is_const<T>::value, const Message, Message>::type AccessorValueType;
+  typedef T& IteratorValueType;
+  typedef T* IteratorPointerType;
   static constexpr FieldDescriptor::CppType cpp_type =
       FieldDescriptor::CPPTYPE_MESSAGE;
   static const Descriptor* GetMessageFieldDescriptor() {
