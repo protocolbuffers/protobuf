@@ -168,6 +168,14 @@ UPB_API_INLINE void upb_Message_SetBaseFieldUInt64(struct upb_Message* msg,
                                                    const upb_MiniTableField* f,
                                                    uint64_t value);
 
+// Extension Getters ///////////////////////////////////////////////////////////
+
+UPB_API_INLINE int32_t upb_Message_GetExtensionInt32(
+    const upb_Message* msg, const upb_MiniTableField* f, int32_t default_val);
+
+UPB_API_INLINE int64_t upb_Message_GetExtensionInt64(
+    const upb_Message* msg, const upb_MiniTableField* f, int64_t default_val);
+
 // Extension Setters ///////////////////////////////////////////////////////////
 
 UPB_API_INLINE bool upb_Message_SetExtension(upb_Message* msg,
