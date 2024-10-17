@@ -9,8 +9,7 @@ elseif (protobuf_FETCH_DEPENDENCIES AND protobuf_JSONCPP_PROVIDER STREQUAL "fetc
   FetchContent_Declare(
     jsoncpp
     GIT_REPOSITORY "https://github.com/open-source-parsers/jsoncpp.git"
-    # TODO Use ${jsoncpp-version} here once it supports cmake.
-    GIT_TAG "1.9.4"
+    GIT_TAG "${jsoncpp-version}"
   )
   FetchContent_MakeAvailable(jsoncpp)
 else ()

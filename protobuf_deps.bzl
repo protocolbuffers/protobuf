@@ -84,8 +84,8 @@ def protobuf_deps():
         _github_archive(
             name = "jsoncpp",
             repo = "https://github.com/open-source-parsers/jsoncpp",
-            commit = "5defb4ed1a4293b8e2bf641e16b156fb9de498cc",  # 1.9.5
-            sha256 = "a03d3136ff6dd092143bba8d3ded641e87b44e6c0b1f632b368f6cc8587524b5",
+            commit = "89e2973c754a9c02a49974d839779b151e95afd6",  # 1.9.6
+            sha256 = "02f0804596c1e18c064d890ac9497fa17d585e822fcacf07ff8a8aa0b344a7bd",
             build_file = Label("//:third_party/jsoncpp.BUILD"),
         )
 
