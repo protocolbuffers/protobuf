@@ -28,7 +28,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         type: [ Pure, C++]
-        version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -74,7 +74,7 @@ jobs:
       matrix:
         type: [ Pure, C++]
         # TODO Consider expanding this set of versions.
-        version: [ "3.12" ]
+        version: [ "3.13" ]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -100,7 +100,7 @@ jobs:
       - name: Validate version
         run: python3 --version | grep ${{ matrix.version }} || (echo "Invalid Python version - $(python3 --version)" && exit 1)
 
-      - name: Create and start virtual environment
+      - name: Create and start a virtual environment
         run: |
           python3 -m venv venv
           source venv/bin/activate
