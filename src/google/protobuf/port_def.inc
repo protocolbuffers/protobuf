@@ -861,6 +861,12 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // captured `this`.
 // https://bugzilla.mozilla.org/show_bug.cgi?id=1373625
 #pragma GCC diagnostic ignored "-Wunused-lambda-capture"
+// GCC complains when attributes are specified on anything other than the first
+// declaration for enums, even if they all specify the same set.
+// Eg this would trigger the warning:
+//   enum [[deprecated]] foo : int;
+//   enum [[deprecated]] foo : int;
+#pragma GCC diagnostic ignored "-Wattributes"
 // -Wsign-conversion causes a lot of warnings on mostly code like:
 //   int index = ...
 //   int value = vec[index];

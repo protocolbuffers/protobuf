@@ -1354,30 +1354,13 @@ PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* PackedSInt64Parser(
 PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* PackedEnumParser(
     void* object, const char* ptr, ParseContext* ctx);
 
-template <typename T>
-PROTOBUF_NODISCARD const char* PackedEnumParser(void* object, const char* ptr,
-                                                ParseContext* ctx,
-                                                bool (*is_valid)(int),
-                                                InternalMetadata* metadata,
-                                                int field_num) {
-  return ctx->ReadPackedVarint(
-      ptr, [object, is_valid, metadata, field_num](int32_t val) {
-        if (is_valid(val)) {
-          static_cast<RepeatedField<int>*>(object)->Add(val);
-        } else {
-          WriteVarint(field_num, val, metadata->mutable_unknown_fields<T>());
-        }
-      });
-}
-
-template <typename T>
+template <typename T, typename Validator>
 PROTOBUF_NODISCARD const char* PackedEnumParserArg(
-    void* object, const char* ptr, ParseContext* ctx,
-    bool (*is_valid)(const void*, int), const void* data,
+    void* object, const char* ptr, ParseContext* ctx, Validator validator,
     InternalMetadata* metadata, int field_num) {
   return ctx->ReadPackedVarint(
-      ptr, [object, is_valid, data, metadata, field_num](int32_t val) {
-        if (is_valid(data, val)) {
+      ptr, [object, validator, metadata, field_num](int32_t val) {
+        if (validator.IsValid(val)) {
           static_cast<RepeatedField<int>*>(object)->Add(val);
         } else {
           WriteVarint(field_num, val, metadata->mutable_unknown_fields<T>());
