@@ -645,7 +645,105 @@ namespace Google.Protobuf.Collections
                 Remove(t);
             }
         }
-        #endregion        
+        #endregion
+
+        /// <summary>
+        /// Returns an <see cref="Enumerable"/> view over this repeated field, enabling
+        /// iteration over the entries without any boxing operations.
+        /// The returned value contains a reference to the instance this method
+        /// is called on; it doesn't create a snapshot of the content.
+        /// </summary>
+        /// <remarks>
+        /// Use this method to avoid allocating any new objects when iterating over
+        /// the repeated field. In most applications this will not have any significant
+        /// performance impact, and most developers should just iterate over the repeated
+        /// field directly. However, in some cases (particularly when iterating over
+        /// many empty repeated fields) the boxing operation required to iterate can be
+        /// significant.
+        /// </remarks>
+        /// <returns>
+        /// An <see cref="Enumerable"/> allowing for efficient iteration over
+        /// the content of the repeated field.
+        /// </returns>
+        public Enumerable AsStructEnumerable() => new Enumerable(this);
+
+        /// <summary>
+        /// A value type wrapping a <see cref="RepeatedField{T}"/> to enable
+        /// efficient iteration without boxing.
+        /// </summary>
+        /// <seealso cref="RepeatedField{T}.AsStructEnumerable"/>
+        public readonly struct Enumerable : IEnumerable<T>
+        {
+            private readonly RepeatedField<T> field;
+
+            internal Enumerable(RepeatedField<T> field)
+            {
+                this.field = field;
+            }
+
+            /// <summary>
+            /// Creates a new <see cref="Enumerator"/> to iterate over the repeated field.
+            /// </summary>
+            /// <returns>An <see cref="Enumerator"/> to iterate over the repeated field.</returns>
+            public Enumerator GetEnumerator() => new Enumerator(field);
+
+            IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        /// <summary>
+        /// A value type implementation of <see cref="IEnumerator{T}"/>,
+        /// to enable efficient iteration over a <see cref="RepeatedField{T}"/> without boxing.
+        /// </summary>
+        /// <seealso cref="MapField{TKey, TValue}.AsStructEnumerable"/>
+        public struct Enumerator : IEnumerator<T>
+        {
+            private readonly RepeatedField<T> field;
+            private int index;
+
+            internal Enumerator(RepeatedField<T> field)
+            {
+                this.field = field;
+                this.index = -1;
+            }
+
+            /// <summary>
+            /// Gets the element at the current position of the enumerator.
+            /// </summary>
+            public T Current => index == -1 || index >= field.Count
+                ? throw new InvalidOperationException()
+                : field[index];
+
+            object IEnumerator.Current => Current;
+
+            /// <summary>
+            /// Releases all resources used by the enumerator.
+            /// </summary>
+            public void Dispose()
+            {
+            }
+
+            /// <summary>
+            /// Advances the enumerator to the next element of the repeated field.
+            /// </summary>
+            /// <returns><c>true</c> if the enumerator was successfully advanced to the next element;
+            /// <c>false</c> if the enumerator has passed the end of the collection.</returns>
+            public bool MoveNext()
+            {
+                var count = field.Count;
+                index = Math.Min(index + 1, count);
+                return index < count;
+            }
+
+            /// <summary>
+            /// Resets the enumerator to its initial state, before the start of the repeated field.
+            /// </summary>
+            void IEnumerator.Reset()
+            {
+                index = -1;
+            }
+        }
 
         private sealed class RepeatedFieldDebugView
         {
