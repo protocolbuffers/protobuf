@@ -916,6 +916,18 @@ UPB_API_INLINE void* upb_Message_ResizeArrayUninitialized(
   return upb_Array_MutableDataPtr(arr);
 }
 
+UPB_API_INLINE int32_t upb_Message_GetExtensionInt32(
+    const struct upb_Message* msg, const upb_MiniTableField* f,
+    int32_t default_val) {
+  return upb_Message_GetInt32(msg, f, default_val);
+}
+
+UPB_API_INLINE int64_t upb_Message_GetExtensionInt64(
+    const struct upb_Message* msg, const upb_MiniTableField* f,
+    int64_t default_val) {
+  return upb_Message_GetInt64(msg, f, default_val);
+}
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
