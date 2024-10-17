@@ -9,6 +9,7 @@
 #define GOOGLE_PROTOBUF_HPB_INTERNAL_INTERNAL_H__
 
 #include <cstdint>
+#include <utility>
 
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
@@ -35,6 +36,11 @@ struct PrivateAccess {
   template <typename T>
   static auto CreateMessage(upb_Arena* arena) {
     return typename T::Proxy(upb_Message_New(T::minitable(), arena), arena);
+  }
+
+  template <typename T, typename... Args>
+  static auto InvokeConstructor(Args&&... args) {
+    return T(std::forward<Args>(args)...);
   }
 
   template <typename ExtensionId>
