@@ -1170,9 +1170,11 @@ bool HasV2Table(const Descriptor* descriptor) {
 }
 
 bool HasV2Table(const FileDescriptor* file) {
+#ifdef PROTOBUF_V2_EXPERIMENT
   for (int i = 0; i < file->message_type_count(); ++i) {
     if (HasV2Table(file->message_type(i))) return true;
   }
+#endif
   return false;
 }
 
