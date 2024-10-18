@@ -9,6 +9,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/hpb/context.h"
+#include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/names.h"
 #include "upb_generator/c/names.h"
 
@@ -68,18 +69,14 @@ void WriteExtensionIdentifier(const protobuf::FieldDescriptor* ext,
   if (ext->extension_scope()) {
     ctx.EmitLegacy(
         R"cc(
-          const hpb::internal::ExtensionIdentifier<$0, $3> $4::$2 =
-              hpb::internal::PrivateAccess::InvokeConstructor<
-                  hpb::internal::ExtensionIdentifier<$0, $3>>(&$1);
+          const hpb::internal::ExtensionIdentifier<$0, $3> $4::$2(&$1);
         )cc",
         ContainingTypeName(ext), mini_table_name, ext->name(),
         CppTypeParameterName(ext), ClassName(ext->extension_scope()));
   } else {
     ctx.EmitLegacy(
         R"cc(
-          const hpb::internal::ExtensionIdentifier<$0, $3> $2 =
-              hpb::internal::PrivateAccess::InvokeConstructor<
-                  hpb::internal::ExtensionIdentifier<$0, $3>>(&$1);
+          const hpb::internal::ExtensionIdentifier<$0, $3> $2(&$1);
         )cc",
         ContainingTypeName(ext), mini_table_name, ext->name(),
         CppTypeParameterName(ext));
