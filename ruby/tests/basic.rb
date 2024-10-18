@@ -448,6 +448,21 @@ module BasicTest
                     "b" => TestMessage2.new(:foo => 2)}, kv)
     end
 
+    def test_protobuf_decode_json_int_empty_string
+      # e = assert_raises Google::Protobuf::ParseError do
+      m = TestMessage.decode_json({
+        optional_int32: "",
+      }.to_json)
+      m.inspect
+
+      expected_result = {
+        :optional_int32=>0,
+      }
+      assert_equal expected_result, m.to_h
+      # end
+      # e.inspect
+    end
+
     def test_protobuf_decode_json_ignore_unknown_fields
       m = TestMessage.decode_json({
         optional_string: "foo",
