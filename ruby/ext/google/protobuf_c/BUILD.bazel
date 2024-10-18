@@ -118,7 +118,7 @@ apple_binary(
         "-undefined,dynamic_lookup",
         "-multiply_defined,suppress",
     ],
-    minimum_os_version = "10.11",
+    minimum_os_version = "11.0",
     platform_type = "macos",
     tags = ["manual"],
     deps = [
@@ -133,7 +133,7 @@ apple_binary(
         "-undefined,dynamic_lookup",
         "-multiply_defined,suppress",
     ],
-    minimum_os_version = "10.11",
+    minimum_os_version = "11.0",
     platform_type = "macos",
     tags = ["manual"],
     deps = [
