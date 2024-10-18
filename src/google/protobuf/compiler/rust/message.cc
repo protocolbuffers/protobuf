@@ -573,120 +573,29 @@ void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
   ABSL_LOG(FATAL) << "unreachable";
 }
 
-void MessageProxiedInMapValue(Context& ctx, const Descriptor& msg) {
+void TypeConversions(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
-      for (const auto& t : kMapKeyTypes) {
-        ctx.Emit(
-            {{"map_insert",
-              absl::StrCat("proto2_rust_map_insert_", t.thunk_ident)},
-             {"map_remove",
-              absl::StrCat("proto2_rust_map_remove_", t.thunk_ident)},
-             {"map_get", absl::StrCat("proto2_rust_map_get_", t.thunk_ident)},
-             {"map_iter_get",
-              absl::StrCat("proto2_rust_map_iter_get_", t.thunk_ident)},
-             {"key_expr", t.rs_to_ffi_key_expr},
-             {"key_is_string",
-              t.thunk_ident == "ProtoString" ? "true" : "false"},
-             io::Printer::Sub("ffi_key_t", [&] { ctx.Emit(t.rs_ffi_key_t); })
-                 .WithSuffix(""),
-             io::Printer::Sub("key_t", [&] { ctx.Emit(t.rs_key_t); })
-                 .WithSuffix(""),
-             io::Printer::Sub("from_ffi_key_expr",
-                              [&] { ctx.Emit(t.rs_from_ffi_key_expr); })
-                 .WithSuffix("")},
-            R"rs(
-            impl $pb$::ProxiedInMapValue<$key_t$> for $Msg$ {
-                fn map_new(_private: $pbi$::Private) -> $pb$::Map<$key_t$, Self> {
-                    unsafe {
-                        $pb$::Map::from_inner(
-                            $pbi$::Private,
-                            $pbr$::InnerMap::new($pbr$::proto2_rust_map_new())
-                        )
-                    }
-                }
+      ctx.Emit(
+          R"rs(
+          impl $pbr$::CppMapTypeConversions for $Msg$ {
+              fn get_prototype() -> $pbr$::MapValue {
+                  $pbr$::MapValue::make_message(<$Msg$View as $std$::default::Default>::default().raw_msg())
+              }
 
-                unsafe fn map_free(_private: $pbi$::Private, map: &mut $pb$::Map<$key_t$, Self>) {
-                    use $pbr$::MapKey;
-                    unsafe { $pbr$::proto2_rust_map_free(map.as_raw($pbi$::Private), $key_t$::CATEGORY, <$pb$::View::<$Msg$> as std::default::Default>::default().raw_msg()); }
-                }
+              fn to_map_value(self) -> $pbr$::MapValue {
+                  use $pb$::OwnedMessageInterop;
+                  $pbr$::MapValue::make_message(unsafe {
+                      $NonNull$::new_unchecked(self.__unstable_leak_raw_message() as *mut _)
+                  })
+              }
 
-                fn map_clear(mut map: $pb$::MapMut<$key_t$, Self>) {
-                    use $pbr$::MapKey;
-                    unsafe { $pbr$::proto2_rust_map_clear(map.as_raw($pbi$::Private), $key_t$::CATEGORY, <$pb$::View::<$Msg$> as std::default::Default>::default().raw_msg()); }
-                }
-
-                fn map_len(map: $pb$::MapView<$key_t$, Self>) -> usize {
-                    unsafe { $pbr$::proto2_rust_map_size(map.as_raw($pbi$::Private)) }
-                }
-
-                fn map_insert(mut map: $pb$::MapMut<$key_t$, Self>, key: $pb$::View<'_, $key_t$>, value: impl $pb$::IntoProxied<Self>) -> bool {
-                    unsafe {
-                        $pbr$::$map_insert$(
-                            map.as_raw($pbi$::Private),
-                            $key_expr$,
-                            value.into_proxied($pbi$::Private).raw_msg())
-                    }
-                }
-
-                fn map_get<'a>(map: $pb$::MapView<'a, $key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> $Option$<$pb$::View<'a, Self>> {
-                    let key = $key_expr$;
-                    let mut value = $std$::mem::MaybeUninit::uninit();
-                    let found = unsafe {
-                        $pbr$::$map_get$(
-                            map.as_raw($pbi$::Private),
-                            <$pb$::View::<$Msg$> as std::default::Default>::default().raw_msg(),
-                            key,
-                            value.as_mut_ptr())
-                    };
-                    if !found {
-                        return None;
-                    }
-                    Some($Msg$View::new($pbi$::Private, unsafe { value.assume_init() }))
-                }
-
-                fn map_remove(mut map: $pb$::MapMut<$key_t$, Self>, key: $pb$::View<'_, $key_t$>) -> bool {
-                    unsafe {
-                        $pbr$::$map_remove$(
-                            map.as_raw($pbi$::Private),
-                            <$pb$::View::<$Msg$> as std::default::Default>::default().raw_msg(),
-                            $key_expr$)
-                    }
-                }
-
-                fn map_iter(map: $pb$::MapView<$key_t$, Self>) -> $pb$::MapIter<$key_t$, Self> {
-                    // SAFETY:
-                    // - The backing map for `map.as_raw` is valid for at least '_.
-                    // - A View that is live for '_ guarantees the backing map is unmodified for '_.
-                    // - The `iter` function produces an iterator that is valid for the key
-                    //   and value types, and live for at least '_.
-                    unsafe {
-                        $pb$::MapIter::from_raw(
-                            $pbi$::Private,
-                            $pbr$::proto2_rust_map_iter(map.as_raw($pbi$::Private))
-                        )
-                    }
-                }
-
-                fn map_iter_next<'a>(iter: &mut $pb$::MapIter<'a, $key_t$, Self>) -> $Option$<($pb$::View<'a, $key_t$>, $pb$::View<'a, Self>)> {
-                    // SAFETY:
-                    // - The `MapIter` API forbids the backing map from being mutated for 'a,
-                    //   and guarantees that it's the correct key and value types.
-                    // - The thunk is safe to call as long as the iterator isn't at the end.
-                    // - The thunk always writes to key and value fields and does not read.
-                    // - The thunk does not increment the iterator.
-                    unsafe {
-                        iter.as_raw_mut($pbi$::Private).next_unchecked::<$key_t$, Self, _, _>(
-                            |iter, key, value| { $pbr$::$map_iter_get$(
-                                iter, <$pb$::View::<$Msg$> as std::default::Default>::default().raw_msg(), key, value) },
-                            |ffi_key| $from_ffi_key_expr$,
-                            |raw_msg| $Msg$View::new($pbi$::Private, raw_msg)
-                        )
-                    }
-                }
-            }
-      )rs");
-      }
+              unsafe fn from_map_value<'b>(value: $pbr$::MapValue) -> $Msg$View<'b> {
+                  debug_assert_eq!(value.tag, $pbr$::MapValueTag::Message);
+                  unsafe { $Msg$View::new($pbi$::Private, value.val.m) }
+              }
+          }
+          )rs");
       return;
     case Kernel::kUpb:
       ctx.Emit(
@@ -845,7 +754,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
        {"upb_generated_message_trait_impls",
         [&] { UpbGeneratedMessageTraitImpls(ctx, msg); }},
        {"repeated_impl", [&] { MessageProxiedInRepeated(ctx, msg); }},
-       {"map_value_impl", [&] { MessageProxiedInMapValue(ctx, msg); }},
+       {"type_conversions_impl", [&] { TypeConversions(ctx, msg); }},
        {"unwrap_upb",
         [&] {
           if (ctx.is_upb()) {
@@ -1008,7 +917,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
         $into_proxied_impl$
 
         $repeated_impl$
-        $map_value_impl$
+        $type_conversions_impl$
 
         #[allow(dead_code)]
         #[allow(non_camel_case_types)]
