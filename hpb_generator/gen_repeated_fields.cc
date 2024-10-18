@@ -25,7 +25,7 @@
 
 namespace google::protobuf::hpb_generator {
 
-namespace protobuf = ::proto2;
+namespace protobuf = ::google::protobuf;
 
 // Adds using accessors to reuse base Access class members from a Proxy/CProxy.
 void WriteRepeatedFieldUsingAccessors(const protobuf::FieldDescriptor* field,
@@ -347,5 +347,4 @@ void WriteRepeatedScalarAccessor(const protobuf::Descriptor* desc,
   );
 }
 
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator

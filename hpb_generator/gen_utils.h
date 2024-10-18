@@ -18,7 +18,7 @@
 
 namespace google::protobuf::hpb_generator {
 
-namespace protobuf = ::proto2;
+namespace protobuf = ::google::protobuf;
 
 enum class MessageClassType {
   kMessage,
@@ -41,7 +41,6 @@ std::vector<const protobuf::FieldDescriptor*> FieldNumberOrder(
 
 std::string ToCamelCase(absl::string_view input, bool lower_first);
 
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google::protobuf::hpb_generator
 
 #endif  // PROTOBUF_COMPILER_HBP_GEN_UTILS_H_

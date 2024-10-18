@@ -12,7 +12,7 @@
 #include "google/protobuf/descriptor.h"
 
 namespace google::protobuf::hpb_generator {
-namespace protobuf = ::proto2;
+namespace protobuf = ::google::protobuf;
 
 void WriteMessageClassDeclarations(
     const protobuf::Descriptor* descriptor,
@@ -23,7 +23,7 @@ void WriteMessageImplementation(
     const protobuf::Descriptor* descriptor,
     const std::vector<const protobuf::FieldDescriptor*>& file_exts,
     Context& ctx);
-}  // namespace protobuf
-}  // namespace google::hpb_generator
+    Output& output);
+}  // namespace google::protobuf::hpb_generator
 
 #endif  // PROTOBUF_COMPILER_HBP_GEN_MESSAGES_H_
