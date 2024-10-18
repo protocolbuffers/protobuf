@@ -66,7 +66,7 @@ static Py_ssize_t len(ExtensionDict* self) {
 }
 
 struct ExtensionIterator {
-  PyObject_HEAD;
+  PyObject_HEAD
   Py_ssize_t index;
   std::vector<const FieldDescriptor*> fields;
 
