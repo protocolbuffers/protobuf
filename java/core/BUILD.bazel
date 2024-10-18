@@ -198,7 +198,10 @@ proto_library(
 
 cc_proto_library(
     name = "java_features_cc_proto",
-    visibility = ["//editions:__pkg__"],
+    visibility = [
+        "//editions:__pkg__",
+        "//src/google/protobuf/compiler/java:__pkg__",  # For java/names.h
+    ],
     deps = [":java_features_proto"],
 )
 
