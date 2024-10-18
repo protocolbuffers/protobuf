@@ -14,8 +14,9 @@ message Child {
 }
 
 message Parent {
-  optional int32 x = 1;
-  optional Child child = 2;
+  optional int32 x = 2;
+  optional Child child = 3;
+  optional int64 out_of_order = 1;  // set_alias must work regardless of order
 }
 
 message ParentWithRepeated {
