@@ -25,7 +25,7 @@ jobs:
     if: ${{ github.event.repository.full_name == 'protocolbuffers/protobuf' }}
     steps:
       - name: Checkout
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v3.1.1
         with:
           ref: ${{ inputs.safe-checkout || github.head_ref || github.ref }}
 
