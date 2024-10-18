@@ -1183,7 +1183,7 @@ inline void AssertDownCast(const MessageLite& from, const MessageLite& to) {
 }
 
 template <bool test_call, typename MessageLite>
-PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
+inline PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
     const MessageLite* prototype_for_func,
     const MessageLite* prototype_for_copy, void* mem, Arena* arena) const {
   ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(mem) % alignment_, 0u);
@@ -1284,7 +1284,7 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
 }
 
 template <bool test_call, typename MessageLite>
-PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::New(
+inline PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::New(
     const MessageLite* prototype_for_func,
     const MessageLite* prototype_for_copy, Arena* arena) const {
   return PlacementNew<test_call>(prototype_for_func, prototype_for_copy,
