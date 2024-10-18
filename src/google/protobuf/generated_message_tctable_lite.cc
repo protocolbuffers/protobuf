@@ -73,6 +73,110 @@ const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
       PROTOBUF_TC_PARAM_PASS);
 }
 
+namespace {
+bool ReadHas(const FieldEntry& entry, const MessageLite* msg) {
+  auto has_idx = static_cast<uint32_t>(entry.has_idx);
+  const auto& hasblock = TcParser::RefAt<const uint32_t>(msg, has_idx / 32 * 4);
+  return (hasblock & (uint32_t{1} << (has_idx % 32))) != 0;
+}
+}  // namespace
+
+void TcParser::VerifyHasBitConsistency(const MessageLite* msg,
+                                       const TcParseTableBase* table) {
+  namespace fl = internal::field_layout;
+  if (table->has_bits_offset == 0) {
+    // Nothing to check
+    return;
+  }
+  for (auto entry : table->field_entries()) {
+    if ((entry.type_card & fl::kFcMask) != fl::kFcOptional) continue;
+    const bool has_bit = ReadHas(entry, msg);
+    const void* const base =
+        MaybeGetSplitBase(const_cast<MessageLite*>(msg),
+                          (entry.type_card & field_layout::kSplitMask) ==
+                              field_layout::kSplitTrue,
+                          table);
+    switch (entry.type_card & fl::kFkMask) {
+      case fl::kFkVarint:
+      case fl::kFkFixed:
+        // Numerics can have any value when the has bit is on.
+        if (has_bit) continue;
+        switch (entry.type_card & fl::kRepMask) {
+          case fl::kRep8Bits:
+            ABSL_CHECK_EQ(RefAt<bool>(base, entry.offset),
+                          RefAt<bool>(table->default_instance(), entry.offset));
+            break;
+          case fl::kRep32Bits:
+            ABSL_CHECK_EQ(
+                RefAt<uint32_t>(base, entry.offset),
+                RefAt<uint32_t>(table->default_instance(), entry.offset));
+            break;
+          case fl::kRep64Bits:
+            ABSL_CHECK_EQ(
+                RefAt<uint64_t>(base, entry.offset),
+                RefAt<uint64_t>(table->default_instance(), entry.offset));
+            break;
+        }
+        break;
+
+      case fl::kFkString:
+        switch (entry.type_card & fl::kRepMask) {
+          case field_layout::kRepAString:
+            // ArenaStringPtr must have the has bit consistent with IsDefault.
+            ABSL_CHECK_EQ(RefAt<ArenaStringPtr>(base, entry.offset).IsDefault(),
+                          !has_bit);
+            break;
+          case field_layout::kRepCord:
+            if (!has_bit) {
+              // If the has bit is off, it must match the default.
+              ABSL_CHECK_EQ(
+                  RefAt<absl::Cord>(base, entry.offset),
+                  RefAt<absl::Cord>(table->default_instance(), entry.offset));
+            }
+            break;
+          case field_layout::kRepIString:
+            if (!has_bit) {
+              // If the has bit is off, it must match the default.
+              ABSL_CHECK_EQ(RefAt<InlinedStringField>(base, entry.offset).Get(),
+                            RefAt<InlinedStringField>(table->default_instance(),
+                                                      entry.offset)
+                                .Get());
+            }
+            break;
+          case field_layout::kRepSString:
+            Unreachable();
+        }
+        break;
+      case fl::kFkMessage:
+        switch (entry.type_card & fl::kRepMask) {
+          case fl::kRepMessage:
+          case fl::kRepGroup: {
+            const bool has_msg =
+                RefAt<const MessageLite*>(base, entry.offset) != nullptr;
+            // has_bit implies has_msg, but you can still have a msg without a
+            // has bit.
+            ABSL_CHECK_LE(has_bit, has_msg);
+            break;
+          }
+          case fl::kRepLazy:
+            if (!has_bit) {
+              // If the has bit is off, the lazy field must have no state.
+              ABSL_CHECK(
+                  RefAt<const LazyField>(base, entry.offset).IsCleared());
+            }
+            break;
+          default:
+            Unreachable();
+        }
+        break;
+
+      default:
+        // All other types are not `optional`.
+        Unreachable();
+    }
+  }
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // Core fast parsing implementation:
 //////////////////////////////////////////////////////////////////////////////
