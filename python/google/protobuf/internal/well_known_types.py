@@ -68,7 +68,7 @@ class Any(object):
   def TypeName(self):
     """Returns the protobuf type name of the inner message."""
     # Only last part is to be used: b/25630112
-    return self.type_url.split('/')[-1]
+    return self.type_url.rpartition('/')[2]
 
   def Is(self, descriptor):
     """Checks if this Any represents the given protobuf type."""
