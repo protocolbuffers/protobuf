@@ -452,37 +452,6 @@ class NoopDebugCounter {
   constexpr void Inc() {}
 };
 
-// Default empty string object. Don't use this directly. Instead, call
-// GetEmptyString() to get the reference. This empty string is aligned with a
-// minimum alignment of 8 bytes to match the requirement of ArenaStringPtr.
-#if defined(__cpp_lib_constexpr_string)
-// Take advantage of C++20 constexpr support in std::string.
-class alignas(8) GlobalEmptyString {
- public:
-  const std::string& get() const { return value_; }
-  // Nothing to init, or destroy.
-  std::string* Init() const { return nullptr; }
-
- private:
-  std::string value_;
-};
-PROTOBUF_EXPORT extern const GlobalEmptyString fixed_address_empty_string;
-#else
-class alignas(8) GlobalEmptyString {
- public:
-  const std::string& get() const {
-    return *reinterpret_cast<const std::string*>(internal::Launder(buffer_));
-  }
-  std::string* Init() {
-    return ::new (static_cast<void*>(buffer_)) std::string();
-  }
-
- private:
-  alignas(std::string) char buffer_[sizeof(std::string)];
-};
-PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
-#endif
-
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

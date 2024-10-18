@@ -35,6 +35,10 @@ class EpsCopyInputStream;
 
 class SwapFieldHelper;
 
+// Declared in message_lite.h
+PROTOBUF_EXPORT extern ExplicitlyConstructedArenaString
+    fixed_address_empty_string;
+
 // Lazy string instance to support string fields with non-empty default.
 // These are initialized on the first call to .get().
 class PROTOBUF_EXPORT LazyString {
@@ -103,8 +107,8 @@ class PROTOBUF_EXPORT TaggedStringPtr {
   };
 
   TaggedStringPtr() = default;
-  explicit constexpr TaggedStringPtr(const GlobalEmptyString* ptr)
-      : ptr_(const_cast<void*>(static_cast<const void*>(ptr))) {}
+  explicit constexpr TaggedStringPtr(ExplicitlyConstructedArenaString* ptr)
+      : ptr_(ptr) {}
 
   // Sets the value to `p`, tagging the value as being a 'default' value.
   // See documentation for kDefault for more info.
@@ -227,7 +231,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   ArenaStringPtr() = default;
 
   // Constexpr constructor, initializes to a constexpr, empty string value.
-  constexpr ArenaStringPtr(const GlobalEmptyString* default_value,
+  constexpr ArenaStringPtr(ExplicitlyConstructedArenaString* default_value,
                            ConstantInitialized)
       : tagged_ptr_(default_value) {}
 

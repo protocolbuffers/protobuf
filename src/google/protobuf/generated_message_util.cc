@@ -42,6 +42,10 @@ void DestroyString(const void* s) {
   static_cast<const std::string*>(s)->~basic_string();
 }
 
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExplicitlyConstructedArenaString
+        fixed_address_empty_string{};  // NOLINT
+
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT const EmptyCord empty_cord_;
 
@@ -85,9 +89,8 @@ void InitWeakDefaults() {}
 
 PROTOBUF_CONSTINIT std::atomic<bool> init_protobuf_defaults_state{false};
 static bool InitProtobufDefaultsImpl() {
-  if (auto* to_destroy = fixed_address_empty_string.Init()) {
-    OnShutdownDestroyString(to_destroy);
-  }
+  fixed_address_empty_string.DefaultConstruct();
+  OnShutdownDestroyString(fixed_address_empty_string.get_mutable());
   InitWeakDefaults();
 
 

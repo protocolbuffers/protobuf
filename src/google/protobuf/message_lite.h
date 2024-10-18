@@ -314,8 +314,14 @@ using GetTypeNameReturnType = absl::string_view;
 using GetTypeNameReturnType = std::string;
 #endif
 
+// Default empty string object. Don't use this directly. Instead, call
+// GetEmptyString() to get the reference. This empty string is aligned with a
+// minimum alignment of 8 bytes to match the requirement of ArenaStringPtr.
+PROTOBUF_EXPORT extern ExplicitlyConstructedArenaString
+    fixed_address_empty_string;
 
-PROTOBUF_EXPORT inline const std::string& GetEmptyStringAlreadyInited() {
+
+PROTOBUF_EXPORT constexpr const std::string& GetEmptyStringAlreadyInited() {
   return fixed_address_empty_string.get();
 }
 

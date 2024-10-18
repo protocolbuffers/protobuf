@@ -15,7 +15,6 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
-#include "google/protobuf/port.h"
 
 // clang-format off
 #include "google/protobuf/port_def.inc"
@@ -43,7 +42,7 @@ constexpr size_t kNewAlign = alignof(std::max_align_t);
 constexpr size_t kStringAlign = alignof(std::string);
 
 static_assert((kStringAlign > kNewAlign ? kStringAlign : kNewAlign) >= 4, "");
-static_assert(alignof(GlobalEmptyString) >= 4, "");
+static_assert(alignof(ExplicitlyConstructedArenaString) >= 4, "");
 
 }  // namespace
 
