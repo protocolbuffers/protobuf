@@ -449,6 +449,15 @@ module BasicTest
     end
 
     def test_protobuf_decode_json_ignore_unknown_fields
+      e = assert_raises Google::Protobuf::ParseError do
+        m = TestMessage.decode_json({
+          optional_int32: "",
+        }.to_json)
+        m.inspect
+      end
+    end
+
+    def test_protobuf_decode_json_ignore_unknown_fields
       m = TestMessage.decode_json({
         optional_string: "foo",
         not_in_message: "some_value"
