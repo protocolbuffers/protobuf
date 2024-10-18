@@ -81,7 +81,12 @@ def _rust_proto_library_impl(ctx):
     dep = deps[0]
     rust_proto_info = dep[RustProtoInfo]
 
-    dep_variant_info = rust_proto_info.dep_variant_info
+    if len(rust_proto_info.dep_variant_infos) != 1:
+        fail(
+            "{}: rust_proto_library does not support src-less proto_library targets."
+                .format(_user_visible_label(ctx)),
+        )
+    dep_variant_info = rust_proto_info.dep_variant_infos[0]
     crate_info = dep_variant_info.crate_info
 
     # Change the crate name from the hame of the proto_library to the name of the rust_proto_library.

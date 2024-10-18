@@ -24,8 +24,8 @@ CrateMappingInfo = provider(
 RustProtoInfo = provider(
     doc = "Rust protobuf provider info",
     fields = {
-        "dep_variant_info": "DepVariantInfo for the compiled Rust gencode (also covers its " +
-                            "transitive dependencies)",
+        "dep_variant_infos": "List of DepVariantInfo for the compiled Rust " +
+                             "gencode (also covers its transitive dependencies)",
         "crate_mapping": "depset(CrateMappingInfo) containing mappings of all transitive " +
                          "dependencies of the current proto_library.",
     },
@@ -344,25 +344,33 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
     )
     dep_variant_info_for_native_gencode = DepVariantInfo(cc_info = thunks_cc_info)
 
-    dep_variant_info = _compile_rust(
-        ctx = ctx,
-        attr = ctx.rule.attr,
-        src = gencode[0],
-        extra_srcs = gencode[1:],
-        deps = [dep_variant_info_for_runtime, dep_variant_info_for_native_gencode] + (
-            [d[RustProtoInfo].dep_variant_info for d in proto_deps]
-        ),
-    )
-    return [RustProtoInfo(
-        dep_variant_info = dep_variant_info,
-        crate_mapping = depset(
-            direct = [CrateMappingInfo(
-                crate_name = label_to_crate_name(ctx, target.label, toolchain),
-                import_paths = tuple([get_import_path(f) for f in proto_srcs]),
-            )],
-            transitive = transitive_crate_mappings,
-        ),
-    )]
+    dep_variant_infos = []
+    for info in [d[RustProtoInfo].dep_variant_infos for d in proto_deps]:
+        dep_variant_infos += info
+
+    if proto_srcs:
+        dep_variant_info = _compile_rust(
+            ctx = ctx,
+            attr = ctx.rule.attr,
+            src = gencode[0],
+            extra_srcs = gencode[1:],
+            deps = [dep_variant_info_for_runtime, dep_variant_info_for_native_gencode] + dep_variant_infos,
+        )
+        return [RustProtoInfo(
+            dep_variant_infos = [dep_variant_info],
+            crate_mapping = depset(
+                direct = [CrateMappingInfo(
+                    crate_name = label_to_crate_name(ctx, target.label, toolchain),
+                    import_paths = tuple([get_import_path(f) for f in proto_srcs]),
+                )],
+                transitive = transitive_crate_mappings,
+            ),
+        )]
+    else:
+        return [RustProtoInfo(
+            dep_variant_infos = dep_variant_infos,
+            crate_mapping = depset(transitive = transitive_crate_mappings),
+        )]
 
 def _make_proto_library_aspect(is_upb):
     return aspect(
