@@ -12,7 +12,7 @@ endif()
 
 set(abseil-cpp-version "20240722.0")
 set(bazel_skylib-version "1.7.0")
-set(jsoncpp-version "1.9.5")
+set(jsoncpp-version "1.9.6")
 set(rules_cc-version "0.0.13")
 set(rules_fuzzing-version "0.5.2")
 set(rules_java-version "7.12.2")
