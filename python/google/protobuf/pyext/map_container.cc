@@ -46,7 +46,7 @@ class MapReflectionFriend {
 };
 
 struct MapIterator {
-  PyObject_HEAD;
+  PyObject_HEAD
 
   std::unique_ptr<::google::protobuf::MapIterator> iter;
 
