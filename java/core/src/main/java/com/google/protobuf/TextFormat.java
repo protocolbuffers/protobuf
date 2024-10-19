@@ -125,20 +125,22 @@ public final class TextFormat {
     // Printer instance which escapes non-ASCII characters and prints in the text format.
     private static final Printer DEFAULT_TEXT_FORMAT =
         new Printer(
-            true,
+            /* escapeNonAscii= */ true,
+            /* useShortRepeatedPrimitives= */ false,
             TypeRegistry.getEmptyTypeRegistry(),
             ExtensionRegistryLite.getEmptyRegistry(),
-            false,
-            false);
+            /* enablingSafeDebugFormat= */ false,
+            /* singleLine= */ false);
 
     // Printer instance which escapes non-ASCII characters and prints in the debug format.
     private static final Printer DEFAULT_DEBUG_FORMAT =
         new Printer(
-            true,
+            /* escapeNonAscii= */ true,
+            /* useShortRepeatedPrimitives= */ true,
             TypeRegistry.getEmptyTypeRegistry(),
             ExtensionRegistryLite.getEmptyRegistry(),
-            true,
-            false);
+            /* enablingSafeDebugFormat= */ true,
+            /* singleLine= */ false);
 
     /**
      * A list of the public APIs that output human-readable text from a message. A higher-level API
@@ -168,6 +170,9 @@ public final class TextFormat {
     /** Whether to escape non ASCII characters with backslash and octal. */
     private final boolean escapeNonAscii;
 
+    /** Whether to print repeated primitive fields using short square bracket notation. */
+    private final boolean useShortRepeatedPrimitives;
+
     private final TypeRegistry typeRegistry;
     private final ExtensionRegistryLite extensionRegistry;
 
@@ -191,11 +196,13 @@ public final class TextFormat {
 
     private Printer(
         boolean escapeNonAscii,
+        boolean useShortRepeatedPrimitives,
         TypeRegistry typeRegistry,
         ExtensionRegistryLite extensionRegistry,
         boolean enablingSafeDebugFormat,
         boolean singleLine) {
       this.escapeNonAscii = escapeNonAscii;
+      this.useShortRepeatedPrimitives = useShortRepeatedPrimitives;
       this.typeRegistry = typeRegistry;
       this.extensionRegistry = extensionRegistry;
       this.enablingSafeDebugFormat = enablingSafeDebugFormat;
@@ -213,7 +220,12 @@ public final class TextFormat {
      */
     public Printer escapingNonAscii(boolean escapeNonAscii) {
       return new Printer(
-          escapeNonAscii, typeRegistry, extensionRegistry, enablingSafeDebugFormat, singleLine);
+          escapeNonAscii,
+          useShortRepeatedPrimitives,
+          typeRegistry,
+          extensionRegistry,
+          enablingSafeDebugFormat,
+          singleLine);
     }
 
     /**
@@ -227,7 +239,12 @@ public final class TextFormat {
         throw new IllegalArgumentException("Only one typeRegistry is allowed.");
       }
       return new Printer(
-          escapeNonAscii, typeRegistry, extensionRegistry, enablingSafeDebugFormat, singleLine);
+          escapeNonAscii,
+          useShortRepeatedPrimitives,
+          typeRegistry,
+          extensionRegistry,
+          enablingSafeDebugFormat,
+          singleLine);
     }
 
     /**
@@ -241,7 +258,12 @@ public final class TextFormat {
         throw new IllegalArgumentException("Only one extensionRegistry is allowed.");
       }
       return new Printer(
-          escapeNonAscii, typeRegistry, extensionRegistry, enablingSafeDebugFormat, singleLine);
+          escapeNonAscii,
+          useShortRepeatedPrimitives,
+          typeRegistry,
+          extensionRegistry,
+          enablingSafeDebugFormat,
+          singleLine);
     }
 
     /**
@@ -255,7 +277,30 @@ public final class TextFormat {
      */
     Printer enablingSafeDebugFormat(boolean enablingSafeDebugFormat) {
       return new Printer(
-          escapeNonAscii, typeRegistry, extensionRegistry, enablingSafeDebugFormat, singleLine);
+          escapeNonAscii,
+          useShortRepeatedPrimitives,
+          typeRegistry,
+          extensionRegistry,
+          enablingSafeDebugFormat,
+          singleLine);
+    }
+
+    /**
+     * Return a new Printer instance that outputs primitive repeated fields in short notation
+     *
+     * @param useShortRepeatedPrimitives If true, repeated fields with a primitive type are printed
+     *     using the short hand notation with comma-delimited field values in square brackets.
+     * @return a new Printer that clones all other configurations from the current {@link Printer},
+     *     with the useShortRepeatedPrimitives mode set to the given parameter.
+     */
+    Printer usingShortRepeatedPrimitives(boolean useShortRepeatedPrimitives) {
+      return new Printer(
+          escapeNonAscii,
+          useShortRepeatedPrimitives,
+          typeRegistry,
+          extensionRegistry,
+          enablingSafeDebugFormat,
+          singleLine);
     }
 
     /**
@@ -267,7 +312,12 @@ public final class TextFormat {
      */
     public Printer emittingSingleLine(boolean singleLine) {
       return new Printer(
-          escapeNonAscii, typeRegistry, extensionRegistry, enablingSafeDebugFormat, singleLine);
+          escapeNonAscii,
+          useShortRepeatedPrimitives,
+          typeRegistry,
+          extensionRegistry,
+          enablingSafeDebugFormat,
+          singleLine);
     }
 
     void setSensitiveFieldReportingLevel(FieldReporterLevel level) {
@@ -397,9 +447,12 @@ public final class TextFormat {
           printSingleField(field, adapter.getEntry(), generator);
         }
       } else if (field.isRepeated()) {
-        // Repeated field.  Print each element.
-        for (Object element : (List<?>) value) {
-          printSingleField(field, element, generator);
+        if (useShortRepeatedPrimitives && field.getJavaType() != FieldDescriptor.JavaType.MESSAGE) {
+          printShortRepeatedField(field, value, generator);
+        } else {
+          for (Object element : (List<?>) value) {
+            printSingleField(field, element, generator);
+          }
         }
       } else {
         printSingleField(field, value, generator);
@@ -712,6 +765,22 @@ public final class TextFormat {
         printField(field.getKey(), field.getValue(), generator);
       }
       printUnknownFields(message.getUnknownFields(), generator, this.enablingSafeDebugFormat);
+    }
+
+    private void printShortRepeatedField(
+        final FieldDescriptor field, final Object value, final TextGenerator generator)
+        throws IOException {
+      generator.print(field.getName());
+      generator.print(": ");
+      generator.print("[");
+      String separator = "";
+      for (Object element : (List<?>) value) {
+        generator.print(separator);
+        printFieldValue(field, element, generator);
+        separator = ", ";
+      }
+      generator.print("]");
+      generator.eol();
     }
 
     private void printSingleField(

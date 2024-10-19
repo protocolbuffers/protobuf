@@ -14,6 +14,7 @@ import static com.google.protobuf.TestUtil.TEST_REQUIRED_UNINITIALIZED;
 import static protobuf_unittest.UnittestProto.optionalInt32Extension;
 import static org.junit.Assert.assertThrows;
 
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
@@ -238,6 +239,39 @@ public class TextFormatTest {
 
     assertThat(TextFormat.printer().printFieldToString(optionalField, value))
         .isEqualTo("optional_nested_message {\n  bb: 42\n}\n");
+  }
+
+  @Test
+  public void testPrintRepeatedFieldUsingShortRepeatedPrimitives_usesRegularNotationForMessageType()
+      throws Exception {
+    final FieldDescriptor repeatedMessageField =
+        TestAllTypes.getDescriptor().findFieldByName("repeated_nested_message");
+    assertThat(
+            TextFormat.printer()
+                .usingShortRepeatedPrimitives(true)
+                .printFieldToString(
+                    repeatedMessageField,
+                    ImmutableList.of(
+                        TestAllTypes.NestedMessage.getDefaultInstance(),
+                        TestAllTypes.NestedMessage.getDefaultInstance())))
+        .isEqualTo("repeated_nested_message {\n}\nrepeated_nested_message {\n}\n");
+  }
+
+  @Test
+  public void testPrintRepeatedFieldUsingShortRepeatedPrimitives_usesShortNotationForPrimitiveType()
+      throws Exception {
+    final FieldDescriptor repeatedInt32Field =
+        TestAllTypes.getDescriptor().findFieldByName("repeated_int32");
+    assertThat(
+            TextFormat.printer()
+                .usingShortRepeatedPrimitives(true)
+                .printFieldToString(repeatedInt32Field, ImmutableList.of(0)))
+        .isEqualTo("repeated_int32: [0]\n");
+    assertThat(
+            TextFormat.printer()
+                .usingShortRepeatedPrimitives(true)
+                .printFieldToString(repeatedInt32Field, ImmutableList.of(0, 1, 2, 3)))
+        .isEqualTo("repeated_int32: [0, 1, 2, 3]\n");
   }
 
   /**
