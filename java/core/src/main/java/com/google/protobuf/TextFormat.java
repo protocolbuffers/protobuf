@@ -293,7 +293,7 @@ public final class TextFormat {
      * @return a new Printer that clones all other configurations from the current {@link Printer},
      *     with the useShortRepeatedPrimitives mode set to the given parameter.
      */
-    Printer usingShortRepeatedPrimitives(boolean useShortRepeatedPrimitives) {
+    public Printer usingShortRepeatedPrimitives(boolean useShortRepeatedPrimitives) {
       return new Printer(
           escapeNonAscii,
           useShortRepeatedPrimitives,
