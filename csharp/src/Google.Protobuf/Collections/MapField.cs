@@ -531,6 +531,26 @@ namespace Google.Protobuf.Collections
             return writer.ToString();
         }
 
+        /// <summary>
+        /// Returns an <see cref="Enumerable"/> view over this map, enabling
+        /// iteration over the entries without any boxing operations.
+        /// The returned value contains a reference to the instance this method
+        /// is called on; it doesn't create a snapshot of the content.
+        /// </summary>
+        /// <remarks>
+        /// Use this method to avoid allocating any new objects when iterating over
+        /// the map. In most applications this will not have any significant
+        /// performance impact, and most developers should just iterate over the map
+        /// directly. However, in some cases (particularly when iterating over
+        /// many empty maps) the boxing operation required to iterate can be
+        /// significant.
+        /// </remarks>
+        /// <returns>
+        /// An <see cref="Enumerable"/> allowing for efficient iteration over
+        /// the content of the map.
+        /// </returns>
+        public Enumerable AsStructEnumerable() => new Enumerable(this);
+
         #region IDictionary explicit interface implementation
 
         void IDictionary.Add(object key, object value) => Add((TKey)key, (TValue)value);
@@ -719,6 +739,70 @@ namespace Google.Protobuf.Collections
                     array.SetValue(item, index++);
                 }
             }
+        }
+
+        /// <summary>
+        /// A value type wrapping a <see cref="MapField{TKey, TValue}"/> to enable
+        /// efficient iteration without boxing.
+        /// </summary>
+        /// <seealso cref="MapField{TKey, TValue}.AsStructEnumerable"/>
+        public readonly struct Enumerable : IEnumerable<KeyValuePair<TKey, TValue>>
+        {
+            private readonly MapField<TKey, TValue> field;
+
+            internal Enumerable(MapField<TKey, TValue> field)
+            {
+                this.field = field;
+            }
+
+            /// <summary>
+            /// Creates a new <see cref="Enumerator"/> to iterate over the map.
+            /// </summary>
+            /// <returns>An <see cref="Enumerator"/> to iterate over the map.</returns>
+            public Enumerator GetEnumerator() => new Enumerator(field);
+
+            IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator() => GetEnumerator();
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        /// <summary>
+        /// A value type implementation of <see cref="IEnumerator{T}"/>,
+        /// to enable efficient iteration over a <see cref="MapField{TKey, TValue}"/> without boxing.
+        /// </summary>
+        /// <seealso cref="MapField{TKey, TValue}.AsStructEnumerable"/>
+        public struct Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>
+        {
+            private LinkedList<KeyValuePair<TKey, TValue>>.Enumerator enumerator;
+
+            internal Enumerator(MapField<TKey, TValue> field)
+            {
+                this.enumerator = field.list.GetEnumerator();
+            }
+
+            /// <summary>
+            /// Gets the element at the current position of the enumerator.
+            /// </summary>
+            public KeyValuePair<TKey, TValue> Current => enumerator.Current;
+
+            object IEnumerator.Current => Current;
+
+            /// <summary>
+            /// Releases all resources used by the enumerator.
+            /// </summary>
+            public void Dispose() => enumerator.Dispose();
+
+            /// <summary>
+            /// Advances the enumerator to the next element of the map.
+            /// </summary>
+            /// <returns><c>true</c> if the enumerator was successfully advanced to the next element;
+            /// <c>false</c> if the enumerator has passed the end of the collection.</returns>
+            public bool MoveNext() => enumerator.MoveNext();
+
+            /// <summary>
+            /// Always throws <see cref="NotSupportedException"/>.
+            /// </summary>
+            void IEnumerator.Reset() => throw new NotSupportedException();
         }
 
         private sealed class MapFieldDebugView
