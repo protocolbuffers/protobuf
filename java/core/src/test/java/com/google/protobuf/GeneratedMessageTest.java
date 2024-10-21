@@ -15,6 +15,8 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.test.UnittestImport;
 import protobuf_unittest.EnumWithNoOuter;
+import protobuf_unittest.JavaUnnestedEnum;
+import protobuf_unittest.JavaUnnestedMessage;
 import protobuf_unittest.MessageWithNoOuter;
 import protobuf_unittest.MultipleFilesTestProto;
 import protobuf_unittest.NestedExtension.MyNestedExtension;
@@ -25,6 +27,8 @@ import protobuf_unittest.OuterClassNameTest2OuterClass;
 import protobuf_unittest.OuterClassNameTest3OuterClass;
 import protobuf_unittest.OuterClassNameTestOuterClass;
 import protobuf_unittest.ServiceWithNoOuter;
+import protobuf_unittest.TestNestedInFile2024Proto.JavaNestedInFileClassEnum;
+import protobuf_unittest.TestNestedInFile2024Proto.JavaNestedInFileClassMessage;
 import protobuf_unittest.UnittestOptimizeFor.TestOptimizedForSize;
 import protobuf_unittest.UnittestOptimizeFor.TestOptionalOptimizedForSize;
 import protobuf_unittest.UnittestOptimizeFor.TestRequiredOptimizedForSize;
@@ -1972,5 +1976,29 @@ public class GeneratedMessageTest {
     assertThrows(UnsupportedOperationException.class, list::clear);
     builder.clearField(repeatedMsgField);
     assertThat(list).hasSize(1);
+  }
+
+  @Test
+  public void generateMultipleFilesEdition2024() throws Exception {
+    // Ensures that the generated code compiles.
+    JavaUnnestedMessage unnested1 =
+        JavaUnnestedMessage.newBuilder()
+            .setNestedInFileClassEnum(JavaNestedInFileClassEnum.FOO_VALUE)
+            .build();
+    JavaUnnestedMessage unnested2 =
+        JavaUnnestedMessage.parseFrom(
+            unnested1.toByteString(), ExtensionRegistry.getEmptyRegistry());
+    JavaNestedInFileClassMessage nested1 =
+        JavaNestedInFileClassMessage.newBuilder()
+            .setUnnestedEnum(JavaUnnestedEnum.BAR_VALUE)
+            .build();
+    JavaNestedInFileClassMessage nested2 =
+        JavaNestedInFileClassMessage.parseFrom(
+            nested1.toByteString(), ExtensionRegistry.getEmptyRegistry());
+
+    assertThat(unnested1.getNestedInFileClassEnumValue()).isEqualTo(1);
+    assertThat(unnested2.getNestedInFileClassEnumValue()).isEqualTo(1);
+    assertThat(nested1.getUnnestedEnumValue()).isEqualTo(1);
+    assertThat(nested2.getUnnestedEnumValue()).isEqualTo(1);
   }
 }

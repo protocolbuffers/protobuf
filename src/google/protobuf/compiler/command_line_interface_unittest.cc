@@ -186,10 +186,6 @@ class CommandLineInterfaceTest : public CommandLineInterfaceTester {
 #endif  // _WIN32
 
 
-  std::string ReadFile(absl::string_view filename);
-  void ReadDescriptorSet(absl::string_view filename,
-                         FileDescriptorSet* descriptor_set);
-
   void WriteDescriptorSet(absl::string_view filename,
                           const FileDescriptorSet* descriptor_set);
 
@@ -335,21 +331,6 @@ void CommandLineInterfaceTest::ExpectNullCodeGeneratorCalled(
 }
 #endif  // _WIN32
 
-
-std::string CommandLineInterfaceTest::ReadFile(absl::string_view filename) {
-  std::string path = absl::StrCat(temp_directory(), "/", filename);
-  std::string file_contents;
-  ABSL_CHECK_OK(File::GetContents(path, &file_contents, true));
-  return file_contents;
-}
-
-void CommandLineInterfaceTest::ReadDescriptorSet(
-    absl::string_view filename, FileDescriptorSet* descriptor_set) {
-  std::string file_contents = ReadFile(filename);
-  if (!descriptor_set->ParseFromString(file_contents)) {
-    FAIL() << "Could not parse file contents: " << filename;
-  }
-}
 
 FeatureSetDefaults CommandLineInterfaceTest::ReadEditionDefaults(
     absl::string_view filename) {
@@ -2308,6 +2289,19 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMaximumUnknown) {
       "--edition_defaults_maximum=2022 "
       "google/protobuf/descriptor.proto");
   ExpectErrorSubstring("unknown edition \"2022\"");
+}
+
+TEST_F(CommandLineInterfaceTest, JavaMultipleFilesEdition2024Invalid) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+                 edition = "2024";
+                 option java_multiple_files = true;
+                 message Bar {}
+                 )schema");
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "foo.proto --test_out=$tmpdir --experimental_editions");
+  ExpectErrorSubstring(
+      "`java_multiple_files` is not supported in editions 2024 and above");
 }
 
 

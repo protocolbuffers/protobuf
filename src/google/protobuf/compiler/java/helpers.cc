@@ -27,6 +27,8 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/java/java_features.pb.h"
+#include "google/protobuf/compiler/java/generator.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -918,6 +920,64 @@ const FieldDescriptor* MapValueField(const FieldDescriptor* descriptor) {
 }
 
 
+namespace {
+
+// Get the value of `nest_in_file_class` feature and returns whether the
+// generated class should be nested in the generated proto file Java class.
+template <typename Descriptor>
+inline bool NestInFileClass(const Descriptor& descriptor) {
+  // TODO b/373884685 - Clean up this check once when we have a way to query
+  // Java features in the C++ runtime.
+  if (JavaGenerator::GetEdition(*descriptor.file()) < EDITION_2024) {
+    return !descriptor.file()->options().java_multiple_files();
+  }
+  auto nest_in_file_class = JavaGenerator::GetResolvedSourceFeatures(descriptor)
+                                .GetExtension(pb::java)
+                                .nest_in_file_class();
+  ABSL_CHECK(nest_in_file_class != pb::JavaFeatures::LEGACY);
+  return nest_in_file_class == pb::JavaFeatures::YES;
+}
+
+// Get the value of `nest_in_file_class` feature from the file level.
+template <>
+inline bool NestInFileClass(const FileDescriptor& descriptor) {
+  if (JavaGenerator::GetEdition(descriptor) < EDITION_2024) {
+    return !descriptor.options().java_multiple_files();
+  }
+  auto nest_in_file_class = JavaGenerator::GetResolvedSourceFeatures(descriptor)
+                                .GetExtension(pb::java)
+                                .nest_in_file_class();
+  ABSL_CHECK(nest_in_file_class != pb::JavaFeatures::LEGACY);
+  return nest_in_file_class == pb::JavaFeatures::YES;
+}
+
+// Returns whether multiple Java files should be generated for the given
+// descriptor, depending on different Protobuf Java API versions.
+bool MultipleJavaFiles(bool multiple_files, const FileDescriptor& file,
+                       bool immutable) {
+  (void)immutable;
+  return multiple_files;
+}
+}  // namespace
+
+bool NestedInFileClass(const Descriptor& descriptor, bool immutable) {
+  return !MultipleJavaFiles(!NestInFileClass(descriptor), *descriptor.file(),
+                            immutable);
+}
+
+bool NestedInFileClass(const EnumDescriptor& descriptor, bool immutable) {
+  return !MultipleJavaFiles(!NestInFileClass(descriptor), *descriptor.file(),
+                            immutable);
+}
+
+bool NestedInFileClass(const ServiceDescriptor& descriptor, bool immutable) {
+  return !MultipleJavaFiles(!NestInFileClass(descriptor), *descriptor.file(),
+                            immutable);
+}
+
+bool NestInFileClassFileFeature(const FileDescriptor& descriptor) {
+  return NestInFileClass(descriptor);
+}
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf

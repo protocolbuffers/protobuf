@@ -123,6 +123,10 @@ class CommandLineInterfaceTester : public testing::Test {
 
   void ExpectFileContent(absl::string_view filename, absl::string_view content);
 
+  std::string ReadFile(absl::string_view filename);
+  void ReadDescriptorSet(absl::string_view filename,
+                         FileDescriptorSet* descriptor_set);
+
  private:
   // The object we are testing.
   CommandLineInterface cli_;

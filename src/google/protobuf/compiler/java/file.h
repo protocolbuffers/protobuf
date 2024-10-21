@@ -61,8 +61,7 @@ class FileGenerator {
   // If we aren't putting everything into one file, this will write all the
   // files other than the outer file (i.e. one for each message, enum, and
   // service type).
-  void GenerateSiblings(const std::string& package_dir,
-                        GeneratorContext* generator_context,
+  void GenerateSiblings(GeneratorContext* generator_context,
                         std::vector<std::string>* file_list,
                         std::vector<std::string>* annotation_list);
 

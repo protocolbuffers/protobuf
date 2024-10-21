@@ -14,10 +14,7 @@
 
 #include <cstdint>
 #include <string>
-#include <utility>
-#include <vector>
 
-#include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/compiler/java/options.h"
@@ -87,6 +84,17 @@ std::string FileClassName(const FileDescriptor* file, bool immutable);
 std::string FileJavaPackage(const FileDescriptor* file, bool immutable,
                             Options options = {});
 
+// Returns the Java package name for types.
+// For Immutable and Proto1, this always returns the file's Java package name.
+// For Mutable API, it uses `java_multiple_files_mutable_package` if the type is
+// not nested in the file's Java class.
+std::string JavaPackageForType(const Descriptor& descriptor, bool immutable,
+                               Options options = {});
+std::string JavaPackageForType(const EnumDescriptor& descriptor, bool immutable,
+                               Options options = {});
+std::string JavaPackageForType(const ServiceDescriptor& descriptor,
+                               bool immutable, Options options = {});
+
 // Returns output directory for the given package name.
 std::string JavaPackageToDir(std::string package_name);
 
@@ -142,25 +150,34 @@ inline Proto1EnumRepresentation GetProto1EnumRepresentation(
   return Proto1EnumRepresentation::kInteger;
 }
 
-// Whether we should generate multiple java files for messages.
-inline bool MultipleJavaFiles(const FileDescriptor* descriptor,
-                              bool immutable) {
-  (void)immutable;
-  return descriptor->options().java_multiple_files();
-}
+// Returns true if the generated class for the type is nested in the generated
+// proto file Java class.
+// `immutable` should be set to true if we're generating for the immutable API.
+// TODO b/372482046 - Make these functions public so that plugins can use them
+// to determine whether to generate multiple files for arbitrary editions
+// instead of accessing the `java_multiple_files` file option directly.
+bool NestedInFileClass(const Descriptor& descriptor, bool immutable);
+bool NestedInFileClass(const EnumDescriptor& descriptor, bool immutable);
+bool NestedInFileClass(const ServiceDescriptor& descriptor, bool immutable);
 
+// Returns the result of the file's `nest_in_file_class` feature value directly
+// without checking the immutability.
+bool NestInFileClassFileFeature(const FileDescriptor& descriptor);
 
 // Returns true if `descriptor` will be written to its own .java file.
 // `immutable` should be set to true if we're generating for the immutable API.
+// For nested messages, this always returns false, since their generated Java
+// class is always nested in their parent message's Java class i.e. they never
+// have their own Java file.
 template <typename Descriptor>
 bool IsOwnFile(const Descriptor* descriptor, bool immutable) {
   return descriptor->containing_type() == nullptr &&
-         MultipleJavaFiles(descriptor->file(), immutable);
+         !NestedInFileClass(*descriptor, immutable);
 }
 
 template <>
 inline bool IsOwnFile(const ServiceDescriptor* descriptor, bool immutable) {
-  return MultipleJavaFiles(descriptor->file(), immutable);
+  return !NestedInFileClass(*descriptor, immutable);
 }
 
 // If `descriptor` describes an object with its own .java file,

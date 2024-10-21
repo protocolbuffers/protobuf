@@ -110,24 +110,37 @@ class PROTOC_EXPORT ClassNameResolver {
   std::string GetDowngradedFileClassName(const FileDescriptor* file);
   std::string GetDowngradedClassName(const Descriptor* descriptor);
 
-  // Get the full name of a Java class by prepending the Java package name
-  // or outer class name.
+  // Get the fully qualified name of the generated type (i.e. message, enum,
+  // service).
   std::string GetClassFullName(absl::string_view name_without_package,
-                               const FileDescriptor* file, bool immutable,
-                               bool is_own_file);
+                               const Descriptor& descriptor, bool immutable,
+                               bool nested_in_file_class);
   std::string GetClassFullName(absl::string_view name_without_package,
-                               const FileDescriptor* file, bool immutable,
-                               bool is_own_file, bool kotlin);
-
+                               const EnumDescriptor& descriptor, bool immutable,
+                               bool nested_in_file_class);
+  std::string GetClassFullName(absl::string_view name_without_package,
+                               const ServiceDescriptor& descriptor,
+                               bool immutable, bool nested_in_file_class);
   Options options_;
 
  private:
-  // Get the Java Class style full name of a message.
+  // Get the Java Class style full name of a type.
+  template <typename Descriptor>
   std::string GetJavaClassFullName(absl::string_view name_without_package,
-                                   const FileDescriptor* file, bool immutable);
+                                   const Descriptor& descriptor,
+                                   bool immutable);
+
+  template <typename Descriptor>
   std::string GetJavaClassFullName(absl::string_view name_without_package,
-                                   const FileDescriptor* file, bool immutable,
+                                   const Descriptor& descriptor, bool immutable,
                                    bool kotlin);
+
+  template <typename Descriptor>
+  std::string GetClassFullNameForType(absl::string_view name_without_package,
+                                      const Descriptor& descriptor,
+                                      bool immutable, bool nested_in_file_class,
+                                      bool kotlin);
+
   // Caches the result to provide better performance.
   absl::flat_hash_map<const FileDescriptor*, std::string>
       file_immutable_outer_class_names_;

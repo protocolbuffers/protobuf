@@ -1,0 +1,27 @@
+edition = "2024";
+
+package protobuf_unittest;
+
+import "google/protobuf/java_features.proto";
+
+enum JavaNestedInFileClassEnum {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  FOO_DEFAULT = 0;
+  FOO_VALUE = 1;
+}
+
+enum JavaUnnestedEnum {
+  BAR_DEFAULT = 0;
+  BAR_VALUE = 1;
+}
+
+message JavaNestedInFileClassMessage {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  JavaUnnestedEnum unnested_enum = 1;
+}
+
+message JavaUnnestedMessage {
+  JavaNestedInFileClassEnum nested_in_file_class_enum = 1;
+}

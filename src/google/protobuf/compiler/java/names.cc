@@ -120,25 +120,53 @@ std::string ClassName(const FileDescriptor* descriptor) {
   return name_resolver.GetClassName(descriptor, true);
 }
 
-std::string FileJavaPackage(const FileDescriptor* file, bool immutable,
-                            Options options) {
+namespace {
+std::string FileClassJavaPackage(const FileDescriptor& file, bool immutable,
+                                 Options options) {
   std::string result;
 
-  if (file->options().has_java_package()) {
-    result = file->options().java_package();
+  if (file.options().has_java_package()) {
+    result = file.options().java_package();
   } else {
     result = DefaultPackage(options);
-    if (!file->package().empty()) {
+    if (!file.package().empty()) {
       if (!result.empty()) result += '.';
-      result += file->package();
+      result += file.package();
     }
   }
 
   return result;
 }
 
+template <typename Descriptor>
+std::string JavaPackage(const Descriptor& descriptor, Options options,
+                        bool immutable) {
+  const FileDescriptor* file = descriptor.file();
+
+  return FileClassJavaPackage(*file, immutable, options);
+}
+}  // namespace
+
+std::string FileJavaPackage(const FileDescriptor* file, bool immutable,
+                            Options options) {
+  return FileClassJavaPackage(*file, immutable, options);
+}
+
 std::string FileJavaPackage(const FileDescriptor* file, Options options) {
   return FileJavaPackage(file, true /* immutable */, options);
+}
+
+std::string JavaPackageForType(const Descriptor& descriptor, bool immutable,
+                               Options options) {
+  return JavaPackage(descriptor, options, immutable);
+}
+std::string JavaPackageForType(const EnumDescriptor& descriptor, bool immutable,
+                               Options options) {
+  return JavaPackage(descriptor, options, immutable);
+}
+std::string JavaPackageForType(const ServiceDescriptor& descriptor,
+                               bool immutable, Options options) {
+  return JavaPackage(descriptor, options, immutable);
 }
 
 std::string JavaPackageDirectory(const FileDescriptor* file) {

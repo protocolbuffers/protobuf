@@ -142,8 +142,7 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
     file_generator->Generate(&printer);
 
     // Generate sibling files.
-    file_generator->GenerateSiblings(package_dir, context, &all_files,
-                                     &all_annotations);
+    file_generator->GenerateSiblings(context, &all_files, &all_annotations);
 
     if (file_options.annotate_code) {
       std::unique_ptr<io::ZeroCopyOutputStream> info_output(

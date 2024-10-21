@@ -175,6 +175,21 @@ void CommandLineInterfaceTester::ExpectFileContent(absl::string_view filename,
             file_contents);
 }
 
+std::string CommandLineInterfaceTester::ReadFile(absl::string_view filename) {
+  std::string path = absl::StrCat(temp_directory_, "/", filename);
+  std::string file_contents;
+  ABSL_CHECK_OK(File::GetContents(path, &file_contents, true));
+  return file_contents;
+}
+
+void CommandLineInterfaceTester::ReadDescriptorSet(
+    absl::string_view filename, FileDescriptorSet* descriptor_set) {
+  std::string file_contents = ReadFile(filename);
+  if (!descriptor_set->ParseFromString(file_contents)) {
+    FAIL() << "Could not parse file contents: " << filename;
+  }
+}
+
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
