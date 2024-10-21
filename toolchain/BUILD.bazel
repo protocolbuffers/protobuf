@@ -108,7 +108,7 @@ cc_toolchain_config(
     linker_path = "/usr/tools",
     sysroot = "/usr/tools/xcode_14_0/macosx",
     target_cpu = "aarch64",
-    target_full_name = "aarch64-apple-macosx10.15",
+    target_full_name = "aarch64-apple-macosx11.0",
 )
 
 cc_toolchain_config(
@@ -125,7 +125,7 @@ cc_toolchain_config(
     linker_path = "/usr/tools",
     sysroot = "/usr/tools/xcode_14_0/macosx",
     target_cpu = "x86_64",
-    target_full_name = "x86_64-apple-macosx10.15",
+    target_full_name = "x86_64-apple-macosx11.0",
 )
 
 cc_toolchain_config(
