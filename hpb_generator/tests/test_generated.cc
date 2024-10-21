@@ -1284,6 +1284,18 @@ TEST(CppGeneratedCode, SetAlias) {
             hpb::interop::upb::GetMessage(parent1.child()));
 }
 
+TEST(CppGeneratedCode, SetAliasFieldsOutofOrder) {
+  hpb::Arena arena;
+  auto child = hpb::CreateMessage<Child>(arena);
+  child.set_peeps(12);
+  auto parent1 = hpb::CreateMessage<Parent>(arena);
+  auto parent2 = hpb::CreateMessage<Parent>(arena);
+  parent1.set_alias_child(child);
+  parent2.set_alias_child(child);
+  ASSERT_EQ(parent1.child()->peeps(), parent2.child()->peeps());
+  ASSERT_EQ(parent1.child()->peeps(), 12);
+}
+
 TEST(CppGeneratedCode, SetAliasFailsForDifferentArena) {
   hpb::Arena arena;
   auto child = hpb::CreateMessage<Child>(arena);

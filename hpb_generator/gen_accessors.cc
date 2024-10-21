@@ -285,7 +285,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Context& ctx) {
                 ABSL_CHECK_EQ(arena_, hpb::interop::upb::GetArena(target));
                 upb_Message_SetBaseFieldMessage(
                     UPB_UPCAST(msg_),
-                    upb_MiniTable_GetFieldByIndex($7::minitable(), $8),
+                    upb_MiniTable_FindFieldByNumber($7::minitable(), $8),
                     hpb::interop::upb::GetMessage(target));
               }
             )cc",
@@ -293,7 +293,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Context& ctx) {
             resolved_field_name,
             upb::generator::CApiMessageType(desc->full_name()),
             MessageBaseType(field, /* maybe_const */ false), resolved_upbc_name,
-            arena_expression, ClassName(desc), field->index());
+            arena_expression, ClassName(desc), field->number());
       }
     }
   }
