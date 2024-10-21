@@ -47,13 +47,10 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 
   // TODO: make this constructor private
   explicit ImplicitWeakMessage(Arena* arena)
-      : MessageLite(arena, class_data_.base()), data_(new std::string) {}
+      : MessageLite(arena, class_data_.base()),
+        data_(Arena::Create<std::string>(arena)) {}
 
-  ~ImplicitWeakMessage() PROTOBUF_FINAL {
-    // data_ will be null in the default instance, but we can safely call delete
-    // here because the default instance will never be destroyed.
-    delete data_;
-  }
+  ~ImplicitWeakMessage() PROTOBUF_FINAL { delete data_; }
 
   static const ImplicitWeakMessage& default_instance();
 
@@ -76,7 +73,8 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
                             target);
   }
 
-  typedef void InternalArenaConstructable_;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
 
   static PROTOBUF_CC const char* ParseImpl(ImplicitWeakMessage* msg,
                                            const char* ptr, ParseContext* ctx);
