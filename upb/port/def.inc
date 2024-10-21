@@ -82,6 +82,13 @@ Error, UINTPTR_MAX is undefined
 #define UPB_INLINE static
 #endif
 
+// UPB_INLINE_IF_NOT_GCC: because gcc can be very noisy at times.
+#if defined(__GNUC__) && !defined(__clang__)
+#define UPB_INLINE_IF_NOT_GCC static
+#else
+#define UPB_INLINE_IF_NOT_GCC UPB_INLINE
+#endif
+
 #ifdef UPB_BUILD_API
 #define UPB_API UPB_EXPORT
 #define UPB_API_INLINE UPB_EXPORT
