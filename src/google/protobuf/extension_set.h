@@ -32,6 +32,7 @@
 #include "absl/base/prefetch.h"
 #include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
+#include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -88,11 +89,6 @@ class InternalMetadata;
 // ExtensionSet::Extension small.
 typedef uint8_t FieldType;
 
-// A function which, given an integer value, returns true if the number
-// matches one of the defined values for the corresponding enum type.  This
-// is used with RegisterEnumExtension, below.
-typedef bool EnumValidityFunc(int number);
-
 // Version of the above which takes an argument.  This is needed to deal with
 // extensions that are not compiled in.
 typedef bool EnumValidityFuncWithArg(const void* arg, int number);
@@ -136,8 +132,15 @@ struct ExtensionInfo {
   LazyAnnotation is_lazy = LazyAnnotation::kUndefined;
 
   struct EnumValidityCheck {
+    // TODO: Fully remove the function pointer approach.
     EnumValidityFuncWithArg* func;
     const void* arg;
+
+    bool IsValid(int value) const {
+      return func != nullptr ? func(arg, value)
+                             : internal::ValidateEnum(
+                                   value, static_cast<const uint32_t*>(arg));
+    }
   };
 
   struct MessageInfo {
@@ -225,7 +228,8 @@ class PROTOBUF_EXPORT ExtensionSet {
                                 bool is_packed);
   static void RegisterEnumExtension(const MessageLite* extendee, int number,
                                     FieldType type, bool is_repeated,
-                                    bool is_packed, EnumValidityFunc* is_valid);
+                                    bool is_packed,
+                                    const uint32_t* validation_data);
   static void RegisterMessageExtension(const MessageLite* extendee, int number,
                                        FieldType type, bool is_repeated,
                                        bool is_packed,
@@ -553,10 +557,10 @@ class PROTOBUF_EXPORT ExtensionSet {
   template <typename Type>
   friend class RepeatedPrimitiveTypeTraits;
 
-  template <typename Type, bool IsValid(int)>
+  template <typename Type>
   friend class EnumTypeTraits;
 
-  template <typename Type, bool IsValid(int)>
+  template <typename Type>
   friend class RepeatedEnumTypeTraits;
 
   friend class google::protobuf::Reflection;
@@ -1393,14 +1397,14 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
 
 // ExtensionSet represents enums using integers internally, so we have to
 // static_cast around.
-template <typename Type, bool IsValid(int)>
+template <typename Type>
 class EnumTypeTraits {
  public:
   typedef Type ConstType;
   typedef Type MutableType;
   using InitType = ConstType;
   static const ConstType& FromInitType(const InitType& v) { return v; }
-  typedef EnumTypeTraits<Type, IsValid> Singular;
+  typedef EnumTypeTraits<Type> Singular;
   static constexpr bool kLifetimeBound = false;
 
   static inline ConstType Get(int number, const ExtensionSet& set,
@@ -1414,19 +1418,20 @@ class EnumTypeTraits {
   }
   static inline void Set(int number, FieldType field_type, ConstType value,
                          ExtensionSet* set) {
-    ABSL_DCHECK(IsValid(value));
+    ABSL_DCHECK(
+        internal::ValidateEnum(value, EnumTraits<Type>::validation_data()));
     set->SetEnum(number, field_type, value, nullptr);
   }
 };
 
-template <typename Type, bool IsValid(int)>
+template <typename Type>
 class RepeatedEnumTypeTraits {
  public:
   typedef Type ConstType;
   typedef Type MutableType;
   using InitType = ConstType;
   static const ConstType& FromInitType(const InitType& v) { return v; }
-  typedef RepeatedEnumTypeTraits<Type, IsValid> Repeated;
+  typedef RepeatedEnumTypeTraits<Type> Repeated;
   static constexpr bool kLifetimeBound = false;
 
   typedef RepeatedField<Type> RepeatedFieldType;
@@ -1441,12 +1446,14 @@ class RepeatedEnumTypeTraits {
   }
   static inline void Set(int number, int index, ConstType value,
                          ExtensionSet* set) {
-    ABSL_DCHECK(IsValid(value));
+    ABSL_DCHECK(
+        internal::ValidateEnum(value, EnumTraits<Type>::validation_data()));
     set->SetRepeatedEnum(number, index, value);
   }
   static inline void Add(int number, FieldType field_type, bool is_packed,
                          ConstType value, ExtensionSet* set) {
-    ABSL_DCHECK(IsValid(value));
+    ABSL_DCHECK(
+        internal::ValidateEnum(value, EnumTraits<Type>::validation_data()));
     set->AddEnum(number, field_type, is_packed, value, nullptr);
   }
   static inline const RepeatedField<Type>& GetRepeated(

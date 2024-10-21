@@ -41,9 +41,7 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
     case FieldDescriptor::CPPTYPE_ENUM:
       type_traits_.append("EnumTypeTraits< ");
       type_traits_.append(ClassName(descriptor_->enum_type(), true));
-      type_traits_.append(", ");
-      type_traits_.append(ClassName(descriptor_->enum_type(), true));
-      type_traits_.append("_IsValid>");
+      type_traits_.append(">");
       break;
     case FieldDescriptor::CPPTYPE_STRING:
       type_traits_.append("StringTypeTraits");
@@ -214,7 +212,7 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
                              ::_pbi::GetPrototypeForWeakDescriptor(
                                  &$extendee_table$, $extendee_index$, true),
                              $number$, $field_type$, $repeated$, $packed$,
-                             $enum_name$_IsValid)
+                             $enum_name$_internal_data_)
                        : (void)0),
                 )cc");
       } else if (priority == kInitPriority102) {
@@ -222,7 +220,7 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
                 R"cc(
                   ::_pbi::ExtensionSet::RegisterEnumExtension(
                       &$extendee$::default_instance(), $number$, $field_type$,
-                      $repeated$, $packed$, $enum_name$_IsValid),
+                      $repeated$, $packed$, $enum_name$_internal_data_),
                 )cc");
       }
 

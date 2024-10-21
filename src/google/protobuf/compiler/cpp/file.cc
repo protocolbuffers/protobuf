@@ -42,6 +42,7 @@
 #include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/printer.h"
 
@@ -1419,10 +1420,18 @@ class FileGenerator::ForwardDeclarations {
 
   void Print(io::Printer* p, const Options& options) const {
     for (const auto& e : enums_) {
-      p->Emit({Sub("enum", e.first).AnnotatedAs(e.second)}, R"cc(
-        enum $enum$ : int;
-        bool $enum$_IsValid(int value);
-      )cc");
+      // TODO: Remove _IsValid forward declaration.
+      p->Emit(
+          {
+              Sub("enum", e.first).AnnotatedAs(e.second),
+              {"DEPRECATED",
+               e.second->options().deprecated() ? "[[deprecated]]" : ""},
+          },
+          R"cc(
+            enum $DEPRECATED $$enum$ : int;
+            $dllexport_decl $bool $enum$_IsValid(int value);
+            $dllexport_decl $extern const uint32_t $enum$_internal_data_[];
+          )cc");
     }
 
     for (const auto& c : classes_) {
@@ -1459,6 +1468,14 @@ class FileGenerator::ForwardDeclarations {
   }
 
   void PrintTopLevelDecl(io::Printer* p, const Options& options) const {
+    for (const auto& e : enums_) {
+      p->Emit({{"enum", QualifiedClassName(e.second, options)}},
+              R"cc(
+                template <>
+                internal::EnumTraitsT<$enum$_internal_data_>
+                    internal::EnumTraitsImpl::value<$enum$>;
+              )cc");
+    }
     if (ShouldGenerateExternSpecializations(options)) {
       for (const auto& c : classes_) {
         if (!ShouldGenerateClass(c.second, options)) continue;
@@ -1529,6 +1546,10 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
     }
 
     ListAllTypesForServices(file_, &classes);
+  } else {
+    // List all enums in this file, to declare the traits.
+    google::protobuf::internal::VisitDescriptors(
+        *file_, [&](const EnumDescriptor& e) { enums.push_back(&e); });
   }
 
   // Calculate the set of files whose definitions we get through include.

@@ -54,6 +54,9 @@ struct PROTOC_EXPORT TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffe
 PROTOC_EXPORT extern const ::google::protobuf::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto;
 namespace pb {
+enum JavaFeatures_Utf8Validation : int;
+PROTOC_EXPORT bool JavaFeatures_Utf8Validation_IsValid(int value);
+PROTOC_EXPORT extern const uint32_t JavaFeatures_Utf8Validation_internal_data_[];
 class JavaFeatures;
 struct JavaFeaturesDefaultTypeInternal;
 PROTOC_EXPORT extern JavaFeaturesDefaultTypeInternal _JavaFeatures_default_instance_;
@@ -61,6 +64,9 @@ PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull JavaFeatu
 }  // namespace pb
 namespace google {
 namespace protobuf {
+template <>
+internal::EnumTraitsT<::pb::JavaFeatures_Utf8Validation_internal_data_>
+    internal::EnumTraitsImpl::value<::pb::JavaFeatures_Utf8Validation>;
 }  // namespace protobuf
 }  // namespace google
 

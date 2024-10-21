@@ -54,6 +54,57 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2fdescriptor_2eproto;
 namespace google {
 namespace protobuf {
+enum Edition : int;
+PROTOBUF_EXPORT bool Edition_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t Edition_internal_data_[];
+enum ExtensionRangeOptions_VerificationState : int;
+PROTOBUF_EXPORT bool ExtensionRangeOptions_VerificationState_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t ExtensionRangeOptions_VerificationState_internal_data_[];
+enum FeatureSet_EnumType : int;
+PROTOBUF_EXPORT bool FeatureSet_EnumType_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnumType_internal_data_[];
+enum FeatureSet_FieldPresence : int;
+PROTOBUF_EXPORT bool FeatureSet_FieldPresence_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_FieldPresence_internal_data_[];
+enum FeatureSet_JsonFormat : int;
+PROTOBUF_EXPORT bool FeatureSet_JsonFormat_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_JsonFormat_internal_data_[];
+enum FeatureSet_MessageEncoding : int;
+PROTOBUF_EXPORT bool FeatureSet_MessageEncoding_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_MessageEncoding_internal_data_[];
+enum FeatureSet_RepeatedFieldEncoding : int;
+PROTOBUF_EXPORT bool FeatureSet_RepeatedFieldEncoding_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_RepeatedFieldEncoding_internal_data_[];
+enum FeatureSet_Utf8Validation : int;
+PROTOBUF_EXPORT bool FeatureSet_Utf8Validation_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_Utf8Validation_internal_data_[];
+enum FieldDescriptorProto_Label : int;
+PROTOBUF_EXPORT bool FieldDescriptorProto_Label_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FieldDescriptorProto_Label_internal_data_[];
+enum FieldDescriptorProto_Type : int;
+PROTOBUF_EXPORT bool FieldDescriptorProto_Type_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FieldDescriptorProto_Type_internal_data_[];
+enum FieldOptions_CType : int;
+PROTOBUF_EXPORT bool FieldOptions_CType_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FieldOptions_CType_internal_data_[];
+enum FieldOptions_JSType : int;
+PROTOBUF_EXPORT bool FieldOptions_JSType_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FieldOptions_JSType_internal_data_[];
+enum FieldOptions_OptionRetention : int;
+PROTOBUF_EXPORT bool FieldOptions_OptionRetention_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FieldOptions_OptionRetention_internal_data_[];
+enum FieldOptions_OptionTargetType : int;
+PROTOBUF_EXPORT bool FieldOptions_OptionTargetType_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FieldOptions_OptionTargetType_internal_data_[];
+enum FileOptions_OptimizeMode : int;
+PROTOBUF_EXPORT bool FileOptions_OptimizeMode_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t FileOptions_OptimizeMode_internal_data_[];
+enum GeneratedCodeInfo_Annotation_Semantic : int;
+PROTOBUF_EXPORT bool GeneratedCodeInfo_Annotation_Semantic_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t GeneratedCodeInfo_Annotation_Semantic_internal_data_[];
+enum MethodOptions_IdempotencyLevel : int;
+PROTOBUF_EXPORT bool MethodOptions_IdempotencyLevel_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t MethodOptions_IdempotencyLevel_internal_data_[];
 class DescriptorProto;
 struct DescriptorProtoDefaultTypeInternal;
 PROTOBUF_EXPORT extern DescriptorProtoDefaultTypeInternal _DescriptorProto_default_instance_;
@@ -186,6 +237,57 @@ class UninterpretedOption_NamePart;
 struct UninterpretedOption_NamePartDefaultTypeInternal;
 PROTOBUF_EXPORT extern UninterpretedOption_NamePartDefaultTypeInternal _UninterpretedOption_NamePart_default_instance_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull UninterpretedOption_NamePart_class_data_;
+template <>
+internal::EnumTraitsT<::google::protobuf::Edition_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::Edition>;
+template <>
+internal::EnumTraitsT<::google::protobuf::ExtensionRangeOptions_VerificationState_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::ExtensionRangeOptions_VerificationState>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FeatureSet_EnumType_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_EnumType>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FeatureSet_FieldPresence_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_FieldPresence>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FeatureSet_JsonFormat_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_JsonFormat>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FeatureSet_MessageEncoding_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_MessageEncoding>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FeatureSet_RepeatedFieldEncoding_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_RepeatedFieldEncoding>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FeatureSet_Utf8Validation_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_Utf8Validation>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FieldDescriptorProto_Label_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FieldDescriptorProto_Label>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FieldDescriptorProto_Type_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FieldDescriptorProto_Type>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FieldOptions_CType_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FieldOptions_CType>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FieldOptions_JSType_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FieldOptions_JSType>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FieldOptions_OptionRetention_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FieldOptions_OptionRetention>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FieldOptions_OptionTargetType_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FieldOptions_OptionTargetType>;
+template <>
+internal::EnumTraitsT<::google::protobuf::FileOptions_OptimizeMode_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::FileOptions_OptimizeMode>;
+template <>
+internal::EnumTraitsT<::google::protobuf::GeneratedCodeInfo_Annotation_Semantic_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::GeneratedCodeInfo_Annotation_Semantic>;
+template <>
+internal::EnumTraitsT<::google::protobuf::MethodOptions_IdempotencyLevel_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::MethodOptions_IdempotencyLevel>;
 namespace internal {
 #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
 PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow();

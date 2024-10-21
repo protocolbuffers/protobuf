@@ -1184,7 +1184,7 @@ TEST(ExtensionSetTest, InvalidEnumDeath) {
   EXPECT_DEBUG_DEATH(
       message.SetExtension(unittest::optional_foreign_enum_extension,
                            static_cast<unittest::ForeignEnum>(53)),
-      "IsValid");
+      "ValidateEnum");
 }
 
 #endif  // GTEST_HAS_DEATH_TEST

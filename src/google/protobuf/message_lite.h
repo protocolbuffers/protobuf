@@ -252,7 +252,12 @@ struct FallbackMessageTraits {
   static constexpr auto StrongPointer() { return &T::default_instance; }
 };
 
-// Traits for message T.
+template <const uint32_t* kValidationData>
+struct EnumTraitsT {
+  static constexpr const uint32_t* validation_data() { return kValidationData; }
+};
+
+// Traits for messages and enums.
 // We use a class scope variable template, which can be specialized with a
 // different type in a non-defining declaration.
 // We need non-defining declarations because we might have duplicates of the
@@ -264,6 +269,14 @@ struct MessageTraitsImpl {
 };
 template <typename T>
 using MessageTraits = decltype(MessageTraitsImpl::value<T>);
+
+struct EnumTraitsImpl {
+  struct Undefined;
+  template <typename T>
+  static Undefined value;
+};
+template <typename T>
+using EnumTraits = decltype(EnumTraitsImpl::value<T>);
 
 class SwapFieldHelper;
 
