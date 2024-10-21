@@ -1,0 +1,13 @@
+edition = "2024";
+
+package protobuf_unittest;
+
+message Nested {
+  option features.pb.java.nest_in_file_class = YES;
+
+  int32 foo = 1;
+}
+
+message Unnested {
+  int32 bar = 1;
+}

@@ -15,7 +15,10 @@
 #include <cstdint>
 #include <string>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/java/java_features.pb.h"
+#include "google/protobuf/compiler/java/generator.h"
 #include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
@@ -139,25 +142,59 @@ inline Proto1EnumRepresentation GetProto1EnumRepresentation(
   return Proto1EnumRepresentation::kInteger;
 }
 
-// Whether we should generate multiple java files for messages.
-inline bool MultipleJavaFiles(const FileDescriptor* descriptor,
-                              bool immutable) {
-  (void)immutable;
-  return descriptor->options().java_multiple_files();
+// Wrapper around the `nest_in_file_class` feature or the legacy
+// `java_multiple_files` option.
+inline bool NestInFileClass(const FileDescriptor* descriptor) {
+  if (JavaGenerator::GetEdition(*descriptor) < EDITION_2024) {
+    return !descriptor->options().java_multiple_files();
+  }
+  auto nest_in_file_class =
+      JavaGenerator::GetResolvedSourceFeatures(*descriptor)
+          .GetExtension(pb::java)
+          .nest_in_file_class();
+  ABSL_CHECK(nest_in_file_class != pb::JavaFeatures::LEGACY);
+  return nest_in_file_class == pb::JavaFeatures::YES;
 }
 
+// Wrapper around the `nest_in_file_class` feature or the legacy
+// `java_multiple_files` file option if nest_in_file_class==LEGACY.
+template <typename Descriptor>
+inline bool NestInFileClass(const Descriptor* descriptor) {
+  if (JavaGenerator::GetEdition(*descriptor->file()) < EDITION_2024) {
+    return !descriptor->file()->options().java_multiple_files();
+  }
+  auto nest_in_file_class =
+      JavaGenerator::GetResolvedSourceFeatures(*descriptor)
+          .GetExtension(pb::java)
+          .nest_in_file_class();
+  ABSL_CHECK(nest_in_file_class != pb::JavaFeatures::LEGACY);
+  return nest_in_file_class == pb::JavaFeatures::YES;
+}
+
+// Returns true if the generated class for the type is nested in the file's
+// outer class.
+// `immutable` should be set to true if we're generating for the immutable API.
+bool NestedInFileClass(const Descriptor* descriptor, bool immutable);
+bool NestedInFileClass(const EnumDescriptor* descriptor, bool immutable);
+bool NestedInFileClass(const ServiceDescriptor* descriptor, bool immutable);
+
+// Returns true if the FileDescriptor specifies generating multiple files.
+bool MultipleJavaFiles(const FileDescriptor* descriptor, bool immutable);
 
 // Returns true if `descriptor` will be written to its own .java file.
 // `immutable` should be set to true if we're generating for the immutable API.
+// For nested messages, this always returns false, since their generated Java
+// class is always nested in their parent message's Java class i.e. they never
+// have their own Java file.
 template <typename Descriptor>
 bool IsOwnFile(const Descriptor* descriptor, bool immutable) {
   return descriptor->containing_type() == nullptr &&
-         MultipleJavaFiles(descriptor->file(), immutable);
+         !NestedInFileClass(descriptor, immutable);
 }
 
 template <>
 inline bool IsOwnFile(const ServiceDescriptor* descriptor, bool immutable) {
-  return MultipleJavaFiles(descriptor->file(), immutable);
+  return !NestedInFileClass(descriptor, immutable);
 }
 
 // If `descriptor` describes an object with its own .java file,

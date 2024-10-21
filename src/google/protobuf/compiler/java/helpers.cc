@@ -27,6 +27,7 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/java/java_features.pb.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -917,6 +918,30 @@ const FieldDescriptor* MapValueField(const FieldDescriptor* descriptor) {
   return message->map_value();
 }
 
+
+namespace {
+bool MultipleJavaFiles(bool multiple_files, const FileDescriptor* descriptor,
+                       bool immutable) {
+  (void)immutable;
+  return multiple_files;
+}
+}  // namespace
+bool NestedInFileClass(const Descriptor* descriptor, bool immutable) {
+  return !MultipleJavaFiles(!NestInFileClass(descriptor), descriptor->file(),
+                            immutable);
+}
+bool NestedInFileClass(const EnumDescriptor* descriptor, bool immutable) {
+  return !MultipleJavaFiles(!NestInFileClass(descriptor), descriptor->file(),
+                            immutable);
+}
+bool NestedInFileClass(const ServiceDescriptor* descriptor, bool immutable) {
+  return !MultipleJavaFiles(!NestInFileClass(descriptor), descriptor->file(),
+                            immutable);
+}
+
+bool MultipleJavaFiles(const FileDescriptor* descriptor, bool immutable) {
+  return MultipleJavaFiles(!NestInFileClass(descriptor), descriptor, immutable);
+}
 
 }  // namespace java
 }  // namespace compiler
