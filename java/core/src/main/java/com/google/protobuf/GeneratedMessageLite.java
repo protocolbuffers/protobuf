@@ -1455,12 +1455,8 @@ public abstract class GeneratedMessageLite<
     return (GeneratedExtension<MessageType, T>) extension;
   }
 
-  /**
-   * A static helper method for checking if a message is initialized, optionally memoizing.
-   *
-   * <p>For use by generated code only.
-   */
-  protected static final <T extends GeneratedMessageLite<T, ?>> boolean isInitialized(
+  /** A static helper method for checking if a message is initialized, optionally memoizing. */
+  private static final <T extends GeneratedMessageLite<T, ?>> boolean isInitialized(
       T message, boolean shouldMemoize) {
     byte memoizedIsInitialized =
         (Byte) message.dynamicMethod(MethodToInvoke.GET_MEMOIZED_IS_INITIALIZED, null, null);
