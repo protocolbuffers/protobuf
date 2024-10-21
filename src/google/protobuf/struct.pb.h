@@ -57,6 +57,9 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2fstruct_2eproto;
 namespace google {
 namespace protobuf {
+enum NullValue : int;
+PROTOBUF_EXPORT bool NullValue_IsValid(int value);
+PROTOBUF_EXPORT extern const uint32_t NullValue_internal_data_[];
 class ListValue;
 struct ListValueDefaultTypeInternal;
 PROTOBUF_EXPORT extern ListValueDefaultTypeInternal _ListValue_default_instance_;
@@ -73,6 +76,9 @@ class Value;
 struct ValueDefaultTypeInternal;
 PROTOBUF_EXPORT extern ValueDefaultTypeInternal _Value_default_instance_;
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Value_class_data_;
+template <>
+internal::EnumTraitsT<::google::protobuf::NullValue_internal_data_>
+    internal::EnumTraitsImpl::value<::google::protobuf::NullValue>;
 }  // namespace protobuf
 }  // namespace google
 
