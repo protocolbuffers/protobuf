@@ -542,14 +542,14 @@ class RepeatedField final
   // (previously annotated) memory is released.
   void AnnotateSize(int old_size, int new_size) const {
     if (old_size != new_size) {
-      ABSL_ATTRIBUTE_UNUSED const bool is_soo = this->is_soo();
-      ABSL_ATTRIBUTE_UNUSED const Element* elem = unsafe_elements(is_soo);
-      ABSL_ANNOTATE_CONTIGUOUS_CONTAINER(elem, elem + Capacity(is_soo),
-                                         elem + old_size, elem + new_size);
-      if (new_size < old_size) {
-        ABSL_ANNOTATE_MEMORY_IS_UNINITIALIZED(
-            elem + new_size, (old_size - new_size) * sizeof(Element));
-      }
+      // ABSL_ATTRIBUTE_UNUSED const bool is_soo = this->is_soo();
+      // ABSL_ATTRIBUTE_UNUSED const Element* elem = unsafe_elements(is_soo);
+      // ABSL_ANNOTATE_CONTIGUOUS_CONTAINER(elem, elem + Capacity(is_soo),
+      //                                    elem + old_size, elem + new_size);
+      // if (new_size < old_size) {
+      //   ABSL_ANNOTATE_MEMORY_IS_UNINITIALIZED(
+      //       elem + new_size, (old_size - new_size) * sizeof(Element));
+      // }
     }
   }
 
