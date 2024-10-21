@@ -173,7 +173,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-f39fc8b4e244fe5cd4c7138d0b6959a52b46ca48
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /test.sh ${{ matrix.flags}} ${{ env.SCCACHE_CMAKE_FLAGS }}
@@ -212,7 +212,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v3
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-f39fc8b4e244fe5cd4c7138d0b6959a52b46ca48
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=17 ${{ env.SCCACHE_CMAKE_FLAGS }}
@@ -248,7 +248,7 @@ jobs:
         if: ${{ inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-f39fc8b4e244fe5cd4c7138d0b6959a52b46ca48
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=17 ${{ env.SCCACHE_CMAKE_FLAGS }}

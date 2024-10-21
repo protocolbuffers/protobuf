@@ -507,7 +507,8 @@ class ThreadSafeArena::SerialArenaChunk {
   constexpr static int kArenas = 2;
 
   using layout_type = absl::container_internal::Layout<
-      SerialArenaChunkHeader, std::atomic<void*>, std::atomic<SerialArena*>>;
+      SerialArenaChunkHeader, std::atomic<void*>,
+      std::atomic<SerialArena*>>::WithStaticSizes</*header*/ 1>;
 
   const char* ptr() const { return reinterpret_cast<const char*>(this); }
   char* ptr() { return reinterpret_cast<char*>(this); }
@@ -529,7 +530,7 @@ class ThreadSafeArena::SerialArenaChunk {
   }
 
   constexpr static layout_type Layout(size_t n) {
-    return layout_type(/*header*/ 1, /*ids*/ n, /*arenas*/ n);
+    return layout_type(/*ids*/ n, /*arenas*/ n);
   }
   layout_type Layout() const { return Layout(capacity()); }
 };
