@@ -541,6 +541,11 @@ class RepeatedField final
   // from previous memory, and UnpoisonBuffer() should be called right before
   // (previously annotated) memory is released.
   void AnnotateSize(int old_size, int new_size) const {
+// The Block runtime support libraries for Objective-C++ and Swift copy closures
+// by performing a memcpy on the entire block followed by calling the copy
+// constructor of any objects in the block.  These ASAN annotations cause the
+// memcpy to fail.
+#ifndef __APPLE__
     if (old_size != new_size) {
       ABSL_ATTRIBUTE_UNUSED const bool is_soo = this->is_soo();
       ABSL_ATTRIBUTE_UNUSED const Element* elem = unsafe_elements(is_soo);
@@ -551,6 +556,7 @@ class RepeatedField final
             elem + new_size, (old_size - new_size) * sizeof(Element));
       }
     }
+#endif
   }
 
   // Unpoisons the memory buffer.
