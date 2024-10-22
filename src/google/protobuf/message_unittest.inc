@@ -51,6 +51,7 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/test_util2.h"
+#include "google/protobuf/wire_format_lite.h"
 
 
 // Must be included last.
@@ -362,6 +363,29 @@ TEST(MESSAGE_TEST_NAME, ExplicitLazyExceedRecursionLimit) {
   // Lazy read results in parsing error which can be verified by not having
   // expected value.
   EXPECT_NE(parsed.lazy_child().child().payload().optional_int32(), -1);
+}
+
+TEST(MESSAGE_TEST_NAME, ExplicitLazyBadLengthDelimitedSize) {
+  std::string serialized;
+
+  // This is a regression test for a bug in lazy field verification.  It
+  // requires invalid wire format to trigger the bug.
+
+  // NestedMessage optional_lazy_message = 27 [lazy=true];
+  uint32_t tag = internal::WireFormatLite::MakeTag(
+      1, internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+  ASSERT_LT(tag, INT8_MAX);
+  serialized.push_back(tag);
+  serialized.push_back(6);
+
+  // bytes bytes_field = 1;
+  serialized.push_back(tag);
+
+  // To trigger this bug, we need an overlong size.
+  serialized.append(5, 0xff);
+
+  UNITTEST::TestLazyMessage parsed;
+  EXPECT_FALSE(parsed.ParseFromString(serialized));
 }
 
 TEST(MESSAGE_TEST_NAME, NestedLazyRecursionLimit) {

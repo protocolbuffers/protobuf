@@ -7,13 +7,13 @@
 
 #include "google/protobuf/compiler/cpp/file.h"
 
-#include <algorithm>
-#include <cstddef>
+#include <string>
 #include <vector>
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/unittest.pb.h"
 
@@ -94,6 +94,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestExtensionInsideTable",
       "TestEmptyMessageWithExtensions",
       "TestEmptyMessage",
+      "TestEagerlyVerifiedLazyMessage.LazyMessage",
       "TestDynamicExtensions.DynamicMessageType",
       "TestDupFieldNumber.Foo",
       "TestDupFieldNumber.Bar",
@@ -149,6 +150,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestGroup",
       "TestForeignNested",
       "TestFieldOrderings",
+      "TestEagerlyVerifiedLazyMessage",
       "TestEagerMaybeLazy.NestedMessage",
       "TestDynamicExtensions",
       "TestDupFieldNumber",
@@ -196,23 +198,14 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestLazyMessageRepeated",
       "TestNestedRequiredForeign",
   };
-  static constexpr size_t kExpectedDescriptorCount =
-      std::end(kExpectedDescriptorOrder) - std::begin(kExpectedDescriptorOrder);
-  std::vector<const Descriptor*> actual_descriptor_order =
-      FileGeneratorFriendForTesting::MessagesInTopologicalOrder(fgen);
-  EXPECT_TRUE(kExpectedDescriptorCount == actual_descriptor_order.size())
-      << "Expected: " << kExpectedDescriptorCount
-      << ", got: " << actual_descriptor_order.size();
-
-  auto limit =
-      std::min(kExpectedDescriptorCount, actual_descriptor_order.size());
-  for (auto i = 0u; i < limit; ++i) {
-    const Descriptor* desc = actual_descriptor_order[i];
-    bool match = absl::EndsWith(desc->full_name(), kExpectedDescriptorOrder[i]);
-    EXPECT_TRUE(match) << "failed to match; expected "
-                       << kExpectedDescriptorOrder[i] << ", got "
-                       << desc->full_name();
+  std::vector<std::string> actual_order;
+  for (const Descriptor* desc :
+       FileGeneratorFriendForTesting::MessagesInTopologicalOrder(fgen)) {
+    actual_order.emplace_back(
+        absl::StripPrefix(desc->full_name(), "protobuf_unittest."));
   }
+  EXPECT_THAT(actual_order,
+              ::testing::ElementsAreArray(kExpectedDescriptorOrder));
 }
 
 }  // namespace
