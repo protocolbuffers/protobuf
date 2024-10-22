@@ -46,7 +46,10 @@ absl::flat_hash_map<absl::string_view, std::string> EnumVars(
   return {
       {"DEPRECATED", enum_->options().deprecated() ? "[[deprecated]]" : ""},
       {"Enum", std::string(enum_->name())},
-      {"Enum_", ResolveKeyword(enum_->name())},
+      {"Enum_",
+       ResolveKeyword(enum_->name(), enum_->containing_type() != nullptr
+                                         ? NameContext::kMessage
+                                         : NameContext::kFile)},
       {"Msg_Enum", classname},
       {"::Msg_Enum", QualifiedClassName(enum_, options)},
       {"Msg_Enum_",

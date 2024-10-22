@@ -61,7 +61,10 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   variables_["extendee"] =
       QualifiedClassName(descriptor_->containing_type(), options_);
   variables_["type_traits"] = type_traits_;
-  variables_["name"] = ResolveKeyword(descriptor_->name());
+  variables_["name"] = ResolveKeyword(descriptor_->name(),
+                                      descriptor_->containing_type() != nullptr
+                                          ? NameContext::kMessage
+                                          : NameContext::kFile);
   variables_["constant_name"] = FieldConstantName(descriptor_);
   variables_["field_type"] =
       absl::StrCat(static_cast<int>(descriptor_->type()));

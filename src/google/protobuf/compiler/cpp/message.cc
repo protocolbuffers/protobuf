@@ -1976,7 +1976,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                   {
                       Sub{"nested_full_name", ClassName(nested_type, false)}
                           .AnnotatedAs(nested_type),
-                      Sub{"nested_name", ResolveKeyword(nested_type->name())}
+                      Sub{"nested_name", ResolveKeyword(nested_type->name(),
+                                                        NameContext::kMessage)}
                           .AnnotatedAs(nested_type),
                   },
                   R"cc(
