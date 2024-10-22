@@ -9847,7 +9847,7 @@ bool IsGroupLike(const FieldDescriptor& field) {
                                     field.containing_type();
 }
 
-bool IsLazilyInitializedFile(absl::string_view filename) {
+bool IsLazilyInitializedFile(const absl::string_view filename) {
   if (filename == "third_party/protobuf/cpp_features.proto" ||
       filename == "google/protobuf/cpp_features.proto") {
     return true;
