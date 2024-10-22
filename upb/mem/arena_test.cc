@@ -101,6 +101,23 @@ class Environment {
     }
   }
 
+  void RandomStableFuse(absl::BitGen& gen) {
+    return SpecificFuse(absl::Uniform<size_t>(gen, 0, arenas_.size()),
+                        absl::Uniform<size_t>(gen, 0, arenas_.size()));
+  }
+
+  void SpecificFuse(size_t index1, size_t index2) {
+    EXPECT_TRUE(upb_Arena_Fuse(LoadArena(index1), LoadArena(index2)));
+  }
+
+  upb_Arena* LoadArena(size_t index) {
+    upb_Arena* a = arenas_[index].load(std::memory_order_relaxed);
+    if (a != nullptr) return a;
+    upb_Arena* new_arena = upb_Arena_New();
+    arenas_[index].exchange(new_arena, std::memory_order_relaxed);
+    return new_arena;
+  }
+
   void RandomPoke(absl::BitGen& gen) {
     switch (absl::Uniform(gen, 0, 2)) {
       case 0:
@@ -283,6 +300,52 @@ TEST(ArenaTest, IncRefCountShouldFailForInitialBlock) {
   char buf1[1024];
   upb_Arena* arena = upb_Arena_Init(buf1, 1024, &upb_alloc_global);
   EXPECT_FALSE(upb_Arena_IncRefFor(arena, nullptr));
+}
+
+TEST(ArenaTest, IsFused) {
+  upb_Arena* arena1 = upb_Arena_New();
+  upb_Arena* arena2 = upb_Arena_New();
+  upb_Arena* arena3 = upb_Arena_New();
+
+  EXPECT_TRUE(upb_Arena_IsFused(arena1, arena1));
+  EXPECT_FALSE(upb_Arena_IsFused(arena1, arena2));
+  upb_Arena_Fuse(arena1, arena2);
+  EXPECT_TRUE(upb_Arena_IsFused(arena1, arena2));
+  upb_Arena_Fuse(arena2, arena3);
+  EXPECT_TRUE(upb_Arena_IsFused(arena1, arena3));
+
+  upb_Arena_Free(arena1);
+  upb_Arena_Free(arena2);
+  upb_Arena_Free(arena3);
+}
+
+TEST(ArenaTest, FuzzFuseIsFusedRace) {
+  Environment env;
+
+  env.SpecificFuse(0, 1);
+  upb_Arena* a = env.LoadArena(0);
+  upb_Arena* b = env.LoadArena(1);
+  EXPECT_TRUE(upb_Arena_IsFused(a, b));
+
+  absl::Notification done;
+  std::vector<std::thread> threads;
+  for (int i = 0; i < 10; ++i) {
+    threads.emplace_back([&]() {
+      absl::BitGen gen;
+      while (!done.HasBeenNotified()) {
+        env.RandomStableFuse(gen);
+      }
+    });
+  }
+
+  absl::BitGen gen;
+  auto end = absl::Now() + absl::Seconds(2);
+  while (absl::Now() < end) {
+    env.RandomStableFuse(gen);
+    EXPECT_TRUE(upb_Arena_IsFused(a, b));
+  }
+  done.Notify();
+  for (auto& t : threads) t.join();
 }
 
 #endif
