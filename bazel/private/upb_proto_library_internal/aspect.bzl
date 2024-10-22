@@ -228,7 +228,7 @@ def upb_proto_aspect_impl(
     if not getattr(ctx.rule.attr, "srcs", []):
         # This target doesn't declare any sources, reexport all its deps instead.
         # This is known as an "alias library":
-        #    https://bazel.build/reference/be/protocol-buffer#proto_library.srcs
+        # https://bazel.build/versions/6.4.0/reference/be/protocol-buffer#proto_library.srcs
         files = _merge_generated_srcs([dep[file_provider].srcs for dep in ctx.rule.attr.deps])
         wrapped_cc_info = cc_provider(
             cc_info = cc_common.merge_cc_infos(direct_cc_infos = dep_ccinfos),
