@@ -552,21 +552,17 @@ class FlatAllocatorImpl {
     return pointers_.template Get<char>() != nullptr;
   }
 
-  static bool IsLower(char c) { return 'a' <= c && c <= 'z'; }
-  static bool IsDigit(char c) { return '0' <= c && c <= '9'; }
-  static bool IsLowerOrDigit(char c) { return IsLower(c) || IsDigit(c); }
-
   enum class FieldNameCase { kAllLower, kSnakeCase, kOther };
   FieldNameCase GetFieldNameCase(const absl::string_view name) {
-    if (!name.empty() && !IsLower(name[0])) return FieldNameCase::kOther;
+    if (!name.empty() && !absl::ascii_islower(name[0])) {
+      return FieldNameCase::kOther;
+    }
     FieldNameCase best = FieldNameCase::kAllLower;
     for (char c : name) {
-      if (IsLowerOrDigit(c)) {
-        // nothing to do
+      if (absl::ascii_isupper(c)) {
+        return FieldNameCase::kOther;
       } else if (c == '_') {
         best = FieldNameCase::kSnakeCase;
-      } else {
-        return FieldNameCase::kOther;
       }
     }
     return best;
