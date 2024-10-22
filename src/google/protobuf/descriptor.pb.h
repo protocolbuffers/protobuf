@@ -12057,11 +12057,7 @@ inline std::string* FileDescriptorProto::release_name() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.name_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.name_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.name_.Release();
 }
 inline void FileDescriptorProto::set_allocated_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -12071,9 +12067,6 @@ inline void FileDescriptorProto::set_allocated_name(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.name_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
-    _impl_.name_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.name)
 }
 
@@ -12126,11 +12119,7 @@ inline std::string* FileDescriptorProto::release_package() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000002u;
-  auto* released = _impl_.package_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.package_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.package_.Release();
 }
 inline void FileDescriptorProto::set_allocated_package(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -12140,9 +12129,6 @@ inline void FileDescriptorProto::set_allocated_package(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
   _impl_.package_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.package_.IsDefault()) {
-    _impl_.package_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.package)
 }
 
@@ -12737,11 +12723,7 @@ inline std::string* FileDescriptorProto::release_syntax() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000004u;
-  auto* released = _impl_.syntax_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.syntax_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.syntax_.Release();
 }
 inline void FileDescriptorProto::set_allocated_syntax(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -12751,9 +12733,6 @@ inline void FileDescriptorProto::set_allocated_syntax(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000004u;
   }
   _impl_.syntax_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.syntax_.IsDefault()) {
-    _impl_.syntax_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.syntax)
 }
 
@@ -13055,11 +13034,7 @@ inline std::string* DescriptorProto::release_name() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.name_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.name_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.name_.Release();
 }
 inline void DescriptorProto::set_allocated_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -13069,9 +13044,6 @@ inline void DescriptorProto::set_allocated_name(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.name_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
-    _impl_.name_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.DescriptorProto.name)
 }
 
@@ -13659,11 +13631,7 @@ inline std::string* ExtensionRangeOptions_Declaration::release_full_name() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.full_name_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.full_name_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.full_name_.Release();
 }
 inline void ExtensionRangeOptions_Declaration::set_allocated_full_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -13673,9 +13641,6 @@ inline void ExtensionRangeOptions_Declaration::set_allocated_full_name(std::stri
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.full_name_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.full_name_.IsDefault()) {
-    _impl_.full_name_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ExtensionRangeOptions.Declaration.full_name)
 }
 
@@ -13728,11 +13693,7 @@ inline std::string* ExtensionRangeOptions_Declaration::release_type() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000002u;
-  auto* released = _impl_.type_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.type_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.type_.Release();
 }
 inline void ExtensionRangeOptions_Declaration::set_allocated_type(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -13742,9 +13703,6 @@ inline void ExtensionRangeOptions_Declaration::set_allocated_type(std::string* v
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
   _impl_.type_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.type_.IsDefault()) {
-    _impl_.type_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ExtensionRangeOptions.Declaration.type)
 }
 
@@ -14084,11 +14042,7 @@ inline std::string* FieldDescriptorProto::release_name() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.name_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.name_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.name_.Release();
 }
 inline void FieldDescriptorProto::set_allocated_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -14098,9 +14052,6 @@ inline void FieldDescriptorProto::set_allocated_name(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.name_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
-    _impl_.name_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.name)
 }
 
@@ -14239,11 +14190,7 @@ inline std::string* FieldDescriptorProto::release_type_name() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000004u;
-  auto* released = _impl_.type_name_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.type_name_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.type_name_.Release();
 }
 inline void FieldDescriptorProto::set_allocated_type_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -14253,9 +14200,6 @@ inline void FieldDescriptorProto::set_allocated_type_name(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000004u;
   }
   _impl_.type_name_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.type_name_.IsDefault()) {
-    _impl_.type_name_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.type_name)
 }
 
@@ -14308,11 +14252,7 @@ inline std::string* FieldDescriptorProto::release_extendee() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000002u;
-  auto* released = _impl_.extendee_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.extendee_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.extendee_.Release();
 }
 inline void FieldDescriptorProto::set_allocated_extendee(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -14322,9 +14262,6 @@ inline void FieldDescriptorProto::set_allocated_extendee(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
   _impl_.extendee_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.extendee_.IsDefault()) {
-    _impl_.extendee_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.extendee)
 }
 
@@ -14377,11 +14314,7 @@ inline std::string* FieldDescriptorProto::release_default_value() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000008u;
-  auto* released = _impl_.default_value_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.default_value_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.default_value_.Release();
 }
 inline void FieldDescriptorProto::set_allocated_default_value(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -14391,9 +14324,6 @@ inline void FieldDescriptorProto::set_allocated_default_value(std::string* value
     _impl_._has_bits_[0] &= ~0x00000008u;
   }
   _impl_.default_value_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.default_value_.IsDefault()) {
-    _impl_.default_value_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.default_value)
 }
 
@@ -14474,11 +14404,7 @@ inline std::string* FieldDescriptorProto::release_json_name() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000010u;
-  auto* released = _impl_.json_name_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.json_name_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.json_name_.Release();
 }
 inline void FieldDescriptorProto::set_allocated_json_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -14488,9 +14414,6 @@ inline void FieldDescriptorProto::set_allocated_json_name(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000010u;
   }
   _impl_.json_name_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.json_name_.IsDefault()) {
-    _impl_.json_name_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.json_name)
 }
 
@@ -14671,11 +14594,7 @@ inline std::string* OneofDescriptorProto::release_name() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.name_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.name_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.name_.Release();
 }
 inline void OneofDescriptorProto::set_allocated_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -14685,9 +14604,6 @@ inline void OneofDescriptorProto::set_allocated_name(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.name_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
-    _impl_.name_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.OneofDescriptorProto.name)
 }
 
@@ -14900,11 +14816,7 @@ inline std::string* EnumDescriptorProto::release_name() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.name_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.name_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.name_.Release();
 }
 inline void EnumDescriptorProto::set_allocated_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -14914,9 +14826,6 @@ inline void EnumDescriptorProto::set_allocated_name(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.name_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
-    _impl_.name_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumDescriptorProto.name)
 }
 
@@ -15231,11 +15140,7 @@ inline std::string* EnumValueDescriptorProto::release_name() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.name_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.name_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.name_.Release();
 }
 inline void EnumValueDescriptorProto::set_allocated_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -15245,9 +15150,6 @@ inline void EnumValueDescriptorProto::set_allocated_name(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.name_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
-    _impl_.name_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumValueDescriptorProto.name)
 }
 
@@ -15428,11 +15330,7 @@ inline std::string* ServiceDescriptorProto::release_name() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.name_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.name_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.name_.Release();
 }
 inline void ServiceDescriptorProto::set_allocated_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -15442,9 +15340,6 @@ inline void ServiceDescriptorProto::set_allocated_name(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.name_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
-    _impl_.name_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ServiceDescriptorProto.name)
 }
 
@@ -15646,11 +15541,7 @@ inline std::string* MethodDescriptorProto::release_name() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.name_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.name_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.name_.Release();
 }
 inline void MethodDescriptorProto::set_allocated_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -15660,9 +15551,6 @@ inline void MethodDescriptorProto::set_allocated_name(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.name_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
-    _impl_.name_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodDescriptorProto.name)
 }
 
@@ -15715,11 +15603,7 @@ inline std::string* MethodDescriptorProto::release_input_type() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000002u;
-  auto* released = _impl_.input_type_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.input_type_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.input_type_.Release();
 }
 inline void MethodDescriptorProto::set_allocated_input_type(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -15729,9 +15613,6 @@ inline void MethodDescriptorProto::set_allocated_input_type(std::string* value) 
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
   _impl_.input_type_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.input_type_.IsDefault()) {
-    _impl_.input_type_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodDescriptorProto.input_type)
 }
 
@@ -15784,11 +15665,7 @@ inline std::string* MethodDescriptorProto::release_output_type() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000004u;
-  auto* released = _impl_.output_type_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.output_type_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.output_type_.Release();
 }
 inline void MethodDescriptorProto::set_allocated_output_type(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -15798,9 +15675,6 @@ inline void MethodDescriptorProto::set_allocated_output_type(std::string* value)
     _impl_._has_bits_[0] &= ~0x00000004u;
   }
   _impl_.output_type_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.output_type_.IsDefault()) {
-    _impl_.output_type_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.MethodDescriptorProto.output_type)
 }
 
@@ -16009,11 +15883,7 @@ inline std::string* FileOptions::release_java_package() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.java_package_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.java_package_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.java_package_.Release();
 }
 inline void FileOptions::set_allocated_java_package(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -16023,9 +15893,6 @@ inline void FileOptions::set_allocated_java_package(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.java_package_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.java_package_.IsDefault()) {
-    _impl_.java_package_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.java_package)
 }
 
@@ -16078,11 +15945,7 @@ inline std::string* FileOptions::release_java_outer_classname() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000002u;
-  auto* released = _impl_.java_outer_classname_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.java_outer_classname_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.java_outer_classname_.Release();
 }
 inline void FileOptions::set_allocated_java_outer_classname(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -16092,9 +15955,6 @@ inline void FileOptions::set_allocated_java_outer_classname(std::string* value) 
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
   _impl_.java_outer_classname_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.java_outer_classname_.IsDefault()) {
-    _impl_.java_outer_classname_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.java_outer_classname)
 }
 
@@ -16260,11 +16120,7 @@ inline std::string* FileOptions::release_go_package() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000004u;
-  auto* released = _impl_.go_package_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.go_package_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.go_package_.Release();
 }
 inline void FileOptions::set_allocated_go_package(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -16274,9 +16130,6 @@ inline void FileOptions::set_allocated_go_package(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000004u;
   }
   _impl_.go_package_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.go_package_.IsDefault()) {
-    _impl_.go_package_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.go_package)
 }
 
@@ -16469,11 +16322,7 @@ inline std::string* FileOptions::release_objc_class_prefix() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000008u;
-  auto* released = _impl_.objc_class_prefix_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.objc_class_prefix_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.objc_class_prefix_.Release();
 }
 inline void FileOptions::set_allocated_objc_class_prefix(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -16483,9 +16332,6 @@ inline void FileOptions::set_allocated_objc_class_prefix(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000008u;
   }
   _impl_.objc_class_prefix_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.objc_class_prefix_.IsDefault()) {
-    _impl_.objc_class_prefix_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.objc_class_prefix)
 }
 
@@ -16538,11 +16384,7 @@ inline std::string* FileOptions::release_csharp_namespace() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000010u;
-  auto* released = _impl_.csharp_namespace_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.csharp_namespace_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.csharp_namespace_.Release();
 }
 inline void FileOptions::set_allocated_csharp_namespace(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -16552,9 +16394,6 @@ inline void FileOptions::set_allocated_csharp_namespace(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000010u;
   }
   _impl_.csharp_namespace_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.csharp_namespace_.IsDefault()) {
-    _impl_.csharp_namespace_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.csharp_namespace)
 }
 
@@ -16607,11 +16446,7 @@ inline std::string* FileOptions::release_swift_prefix() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000020u;
-  auto* released = _impl_.swift_prefix_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.swift_prefix_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.swift_prefix_.Release();
 }
 inline void FileOptions::set_allocated_swift_prefix(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -16621,9 +16456,6 @@ inline void FileOptions::set_allocated_swift_prefix(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000020u;
   }
   _impl_.swift_prefix_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.swift_prefix_.IsDefault()) {
-    _impl_.swift_prefix_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.swift_prefix)
 }
 
@@ -16676,11 +16508,7 @@ inline std::string* FileOptions::release_php_class_prefix() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000040u;
-  auto* released = _impl_.php_class_prefix_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.php_class_prefix_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.php_class_prefix_.Release();
 }
 inline void FileOptions::set_allocated_php_class_prefix(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -16690,9 +16518,6 @@ inline void FileOptions::set_allocated_php_class_prefix(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000040u;
   }
   _impl_.php_class_prefix_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.php_class_prefix_.IsDefault()) {
-    _impl_.php_class_prefix_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.php_class_prefix)
 }
 
@@ -16745,11 +16570,7 @@ inline std::string* FileOptions::release_php_namespace() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000080u;
-  auto* released = _impl_.php_namespace_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.php_namespace_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.php_namespace_.Release();
 }
 inline void FileOptions::set_allocated_php_namespace(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -16759,9 +16580,6 @@ inline void FileOptions::set_allocated_php_namespace(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000080u;
   }
   _impl_.php_namespace_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.php_namespace_.IsDefault()) {
-    _impl_.php_namespace_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.php_namespace)
 }
 
@@ -16814,11 +16632,7 @@ inline std::string* FileOptions::release_php_metadata_namespace() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000100u;
-  auto* released = _impl_.php_metadata_namespace_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.php_metadata_namespace_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.php_metadata_namespace_.Release();
 }
 inline void FileOptions::set_allocated_php_metadata_namespace(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -16828,9 +16642,6 @@ inline void FileOptions::set_allocated_php_metadata_namespace(std::string* value
     _impl_._has_bits_[0] &= ~0x00000100u;
   }
   _impl_.php_metadata_namespace_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.php_metadata_namespace_.IsDefault()) {
-    _impl_.php_metadata_namespace_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.php_metadata_namespace)
 }
 
@@ -16883,11 +16694,7 @@ inline std::string* FileOptions::release_ruby_package() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000200u;
-  auto* released = _impl_.ruby_package_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.ruby_package_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.ruby_package_.Release();
 }
 inline void FileOptions::set_allocated_ruby_package(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -16897,9 +16704,6 @@ inline void FileOptions::set_allocated_ruby_package(std::string* value) {
     _impl_._has_bits_[0] &= ~0x00000200u;
   }
   _impl_.ruby_package_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.ruby_package_.IsDefault()) {
-    _impl_.ruby_package_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.ruby_package)
 }
 
@@ -17419,11 +17223,7 @@ inline std::string* FieldOptions_EditionDefault::release_value() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.value_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.value_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.value_.Release();
 }
 inline void FieldOptions_EditionDefault::set_allocated_value(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -17433,9 +17233,6 @@ inline void FieldOptions_EditionDefault::set_allocated_value(std::string* value)
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.value_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.value_.IsDefault()) {
-    _impl_.value_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldOptions.EditionDefault.value)
 }
 
@@ -17550,11 +17347,7 @@ inline std::string* FieldOptions_FeatureSupport::release_deprecation_warning() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.deprecation_warning_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.deprecation_warning_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.deprecation_warning_.Release();
 }
 inline void FieldOptions_FeatureSupport::set_allocated_deprecation_warning(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -17564,9 +17357,6 @@ inline void FieldOptions_FeatureSupport::set_allocated_deprecation_warning(std::
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.deprecation_warning_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.deprecation_warning_.IsDefault()) {
-    _impl_.deprecation_warning_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldOptions.FeatureSupport.deprecation_warning)
 }
 
@@ -19314,11 +19104,7 @@ inline std::string* UninterpretedOption_NamePart::release_name_part() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.name_part_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.name_part_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.name_part_.Release();
 }
 inline void UninterpretedOption_NamePart::set_allocated_name_part(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -19328,9 +19114,6 @@ inline void UninterpretedOption_NamePart::set_allocated_name_part(std::string* v
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.name_part_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_part_.IsDefault()) {
-    _impl_.name_part_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.UninterpretedOption.NamePart.name_part)
 }
 
@@ -19464,11 +19247,7 @@ inline std::string* UninterpretedOption::release_identifier_value() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.identifier_value_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.identifier_value_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.identifier_value_.Release();
 }
 inline void UninterpretedOption::set_allocated_identifier_value(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -19478,9 +19257,6 @@ inline void UninterpretedOption::set_allocated_identifier_value(std::string* val
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.identifier_value_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.identifier_value_.IsDefault()) {
-    _impl_.identifier_value_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.UninterpretedOption.identifier_value)
 }
 
@@ -19617,11 +19393,7 @@ inline std::string* UninterpretedOption::release_string_value() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000002u;
-  auto* released = _impl_.string_value_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.string_value_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.string_value_.Release();
 }
 inline void UninterpretedOption::set_allocated_string_value(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -19631,9 +19403,6 @@ inline void UninterpretedOption::set_allocated_string_value(std::string* value) 
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
   _impl_.string_value_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.string_value_.IsDefault()) {
-    _impl_.string_value_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.UninterpretedOption.string_value)
 }
 
@@ -19686,11 +19455,7 @@ inline std::string* UninterpretedOption::release_aggregate_value() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000004u;
-  auto* released = _impl_.aggregate_value_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.aggregate_value_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.aggregate_value_.Release();
 }
 inline void UninterpretedOption::set_allocated_aggregate_value(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -19700,9 +19465,6 @@ inline void UninterpretedOption::set_allocated_aggregate_value(std::string* valu
     _impl_._has_bits_[0] &= ~0x00000004u;
   }
   _impl_.aggregate_value_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.aggregate_value_.IsDefault()) {
-    _impl_.aggregate_value_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.UninterpretedOption.aggregate_value)
 }
 
@@ -20363,11 +20125,7 @@ inline std::string* SourceCodeInfo_Location::release_leading_comments() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.leading_comments_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.leading_comments_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.leading_comments_.Release();
 }
 inline void SourceCodeInfo_Location::set_allocated_leading_comments(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -20377,9 +20135,6 @@ inline void SourceCodeInfo_Location::set_allocated_leading_comments(std::string*
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.leading_comments_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.leading_comments_.IsDefault()) {
-    _impl_.leading_comments_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceCodeInfo.Location.leading_comments)
 }
 
@@ -20432,11 +20187,7 @@ inline std::string* SourceCodeInfo_Location::release_trailing_comments() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000002u;
-  auto* released = _impl_.trailing_comments_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.trailing_comments_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.trailing_comments_.Release();
 }
 inline void SourceCodeInfo_Location::set_allocated_trailing_comments(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -20446,9 +20197,6 @@ inline void SourceCodeInfo_Location::set_allocated_trailing_comments(std::string
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
   _impl_.trailing_comments_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.trailing_comments_.IsDefault()) {
-    _impl_.trailing_comments_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceCodeInfo.Location.trailing_comments)
 }
 
@@ -20667,11 +20415,7 @@ inline std::string* GeneratedCodeInfo_Annotation::release_source_file() {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* released = _impl_.source_file_.Release();
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.source_file_.Set("", GetArena());
-  }
-  return released;
+  return _impl_.source_file_.Release();
 }
 inline void GeneratedCodeInfo_Annotation::set_allocated_source_file(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -20681,9 +20425,6 @@ inline void GeneratedCodeInfo_Annotation::set_allocated_source_file(std::string*
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.source_file_.SetAllocated(value, GetArena());
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.source_file_.IsDefault()) {
-    _impl_.source_file_.Set("", GetArena());
-  }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
 }
 

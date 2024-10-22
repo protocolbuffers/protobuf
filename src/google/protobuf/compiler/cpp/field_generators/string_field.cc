@@ -359,11 +359,7 @@ void SingularString::ReleaseImpl(io::Printer* p) const {
   }
 
   p->Emit(R"cc(
-    auto* released = $field_$.Release();
-    if ($pbi$::DebugHardenForceCopyDefaultString()) {
-      $field_$.Set("", $set_args$);
-    }
-    return released;
+    return $field_$.Release();
   )cc");
 }
 
@@ -402,14 +398,6 @@ void SingularString::SetAllocatedImpl(io::Printer* p) const {
   p->Emit(R"cc(
     $field_$.SetAllocated(value, $set_args$);
   )cc");
-
-  if (EmptyDefault()) {
-    p->Emit(R"cc(
-      if ($pbi$::DebugHardenForceCopyDefaultString() && $field_$.IsDefault()) {
-        $field_$.Set("", $set_args$);
-      }
-    )cc");
-  }
 }
 
 void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
@@ -612,14 +600,6 @@ void SingularString::GenerateConstructorCode(io::Printer* p) const {
   p->Emit(R"cc(
     $field_$.InitDefault();
   )cc");
-
-  if (IsString(field_) && EmptyDefault()) {
-    p->Emit(R"cc(
-      if ($pbi$::DebugHardenForceCopyDefaultString()) {
-        $field_$.Set("", GetArena());
-      }
-    )cc");
-  }
 }
 
 void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
