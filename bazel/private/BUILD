@@ -149,6 +149,12 @@ bzl_library(
 )
 
 bzl_library(
+    name = "cc_proto_aspect_bzl",
+    srcs = ["cc_proto_aspect.bzl"],
+    deps = [":bazel_cc_proto_library_bzl"],
+)
+
+bzl_library(
     name = "toolchain_helpers_bzl",
     srcs = [
         "toolchain_helpers.bzl",
