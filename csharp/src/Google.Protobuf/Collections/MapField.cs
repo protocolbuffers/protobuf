@@ -526,7 +526,7 @@ namespace Google.Protobuf.Collections
         /// </summary>
         public override string ToString()
         {
-            var writer = new StringWriter();
+            using var writer = new StringWriter();
             JsonFormatter.Default.WriteDictionary(writer, this);
             return writer.ToString();
         }
@@ -590,7 +590,7 @@ namespace Google.Protobuf.Collections
         IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => Values;
         #endregion
 
-        private class DictionaryEnumerator : IDictionaryEnumerator
+        private sealed class DictionaryEnumerator : IDictionaryEnumerator
         {
             private readonly IEnumerator<KeyValuePair<TKey, TValue>> enumerator;
 

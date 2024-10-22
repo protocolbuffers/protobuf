@@ -39,7 +39,7 @@ namespace Google.Protobuf.WellKnownTypes
             var firstInvalid = paths.FirstOrDefault(p => !IsPathValid(p));
             if (firstInvalid == null)
             {
-                var writer = new StringWriter();
+                using var writer = new StringWriter();
                 JsonFormatter.WriteString(writer, string.Join(",", paths.Select(JsonFormatter.ToJsonName)));
                 return writer.ToString();
             }
@@ -47,7 +47,7 @@ namespace Google.Protobuf.WellKnownTypes
             {
                 if (diagnosticOnly)
                 {
-                    var writer = new StringWriter();
+                    using var writer = new StringWriter();
                     writer.Write("{ \"@warning\": \"Invalid FieldMask\", \"paths\": ");
                     JsonFormatter.Default.WriteList(writer, (IList)paths);
                     writer.Write(" }");
