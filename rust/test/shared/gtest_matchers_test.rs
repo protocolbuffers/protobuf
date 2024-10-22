@@ -5,6 +5,10 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+google3::import! {
+  "//third_party/protobuf/rust:protobuf_gtest_matchers";
+}
+
 use edition_unittest_rust_proto::TestAllTypes as TestAllTypesEditions;
 use googletest::prelude::*;
 use paste::paste;
