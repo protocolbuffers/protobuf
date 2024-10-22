@@ -685,6 +685,60 @@ namespace Google.Protobuf.Collections
             CollectionAssert.AreEqual(new[] { false, true }, sortedKeys);
         }
 
+        [Test]
+        public void AsStructEnumerable_Empty()
+        {
+            var map = new MapField<string, string>();
+            var enumerable = map.AsStructEnumerable();
+            var enumerator = enumerable.GetEnumerator();
+            // Ideally this would throw, but we're using the LinkedList enumerator, which just returns the default.
+            // It's not a problem if the enumerator is being used properly (with a call to MoveNext to start with).
+            Assert.AreEqual(default(KeyValuePair<string, string>), enumerator.Current);
+            Assert.IsFalse(enumerator.MoveNext());
+            Assert.AreEqual(default(KeyValuePair<string, string>), enumerator.Current);
+        }
+
+        [Test]
+        public void AsStructEnumerable_NonEmpty()
+        {
+            var map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
+            var enumerable = map.AsStructEnumerable();
+            var enumerator = enumerable.GetEnumerator();
+            Assert.AreEqual(default(KeyValuePair<string, string>), enumerator.Current);
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual(NewKeyValuePair("foo", "bar"), enumerator.Current);
+
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual(NewKeyValuePair("x", "y"), enumerator.Current);
+
+            Assert.IsFalse(enumerator.MoveNext());
+            // This is not ideal, but it's the behavior of the LinkedList enumerator.
+            // (Again, this isn't a problem if the enumerator is being used properly -
+            // Current shouldn't be called after MoveNext returns false.)
+            Assert.AreEqual(NewKeyValuePair("x", "y"), enumerator.Current);
+
+            // No Reset call, as it isn't exposed other than via the interface.
+        }
+
+        [Test]
+        public void AsStructEnumerable_NonEmpty_AsInterface()
+        {
+            var map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
+            IEnumerable<KeyValuePair<string, string>> enumerable = map.AsStructEnumerable();
+            IEnumerator<KeyValuePair<string, string>> enumerator = enumerable.GetEnumerator();
+            Assert.AreEqual(default(KeyValuePair<string, string>), enumerator.Current);
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual(NewKeyValuePair("foo", "bar"), enumerator.Current);
+
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual(NewKeyValuePair("x", "y"), enumerator.Current);
+
+            Assert.IsFalse(enumerator.MoveNext());
+            Assert.AreEqual(NewKeyValuePair("x", "y"), enumerator.Current);
+
+            Assert.Throws<NotSupportedException>(() => enumerator.Reset());
+        }
+
         private static KeyValuePair<TKey, TValue> NewKeyValuePair<TKey, TValue>(TKey key, TValue value)
         {
             return new KeyValuePair<TKey, TValue>(key, value);
