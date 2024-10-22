@@ -155,11 +155,11 @@ pub(crate) mod interop {
         /// This takes a ref of a pointer so that a stack variable's lifetime
         /// can be used for a safe lifetime; under most cases this is
         /// the correct lifetime and this should be used as:
-        /// ```
+        /// ```ignore
         /// fn called_from_cpp(msg: *const c_void) {
         ///   // `msg` is known live for the current stack frame, so view's
         ///   // lifetime is also tied to the current stack frame here:
-        ///   let view = unsafe { __unstable_wrap_raw_message(&msg); }
+        ///   let view = unsafe { __unstable_wrap_raw_message(&msg) };
         ///   do_something_with_view(view);
         /// }
         /// ```
@@ -205,11 +205,11 @@ pub(crate) mod interop {
         /// This takes a ref of a pointer so that a stack variable's lifetime
         /// can be used for a safe lifetime; under most cases this is
         /// the correct lifetime and this should be used as:
-        /// ```
+        /// ```ignore
         /// fn called_from_cpp(msg: *mut c_void) {
         ///   // `msg` is known live for the current stack frame, so mut's
         ///   // lifetime is also tied to the current stack frame here:
-        ///   let m = unsafe { __unstable_wrap_raw_message_mut(&mut msg); }
+        ///   let m = unsafe { __unstable_wrap_raw_message_mut(&mut msg) };
         ///   do_something_with_mut(m);
         /// }
         ///
