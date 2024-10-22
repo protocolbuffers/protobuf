@@ -123,7 +123,7 @@ namespace Google.Protobuf {
     /// </remarks>
     /// <returns>The formatted message.</returns>
     public string Format(IMessage message, int indentationLevel) {
-      using var writer = new StringWriter();
+      var writer = new StringWriter();
       Format(message, writer, indentationLevel);
       return writer.ToString();
     }

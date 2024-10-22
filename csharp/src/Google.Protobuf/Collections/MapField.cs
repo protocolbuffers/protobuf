@@ -526,7 +526,7 @@ namespace Google.Protobuf.Collections
         /// </summary>
         public override string ToString()
         {
-            using var writer = new StringWriter();
+            var writer = new StringWriter();
             JsonFormatter.Default.WriteDictionary(writer, this);
             return writer.ToString();
         }
