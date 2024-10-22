@@ -71,7 +71,7 @@ namespace Google.Protobuf.Reflection
             // Note: the Edition property relies on the proto being set first, so this line
             // has to come after Proto = proto.
             Features = FeatureSetDescriptor.GetEditionDefaults(Edition).MergedWith(proto.Options?.Features);
-            Dependencies = new ReadOnlyCollection<FileDescriptor>(dependencies);
+            Dependencies = new ReadOnlyCollection<FileDescriptor>(dependencies.ToList());
 
             PublicDependencies = DeterminePublicDependencies(this, proto, dependencies, allowUnknownDependencies);
 
