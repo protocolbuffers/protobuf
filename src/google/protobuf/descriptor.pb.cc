@@ -384,8 +384,8 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
 
 inline constexpr SourceCodeInfo::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
-      : location_{},
-        _cached_size_{0} {}
+      : _cached_size_{0},
+        location_{} {}
 
 template <typename>
 PROTOBUF_CONSTEXPR SourceCodeInfo::SourceCodeInfo(::_pbi::ConstantInitialized)
@@ -414,8 +414,8 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
 
 inline constexpr GeneratedCodeInfo::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
-      : annotation_{},
-        _cached_size_{0} {}
+      : _cached_size_{0},
+        annotation_{} {}
 
 template <typename>
 PROTOBUF_CONSTEXPR GeneratedCodeInfo::GeneratedCodeInfo(::_pbi::ConstantInitialized)
@@ -1203,8 +1203,8 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
 
 inline constexpr FileDescriptorSet::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
-      : file_{},
-        _cached_size_{0} {}
+      : _cached_size_{0},
+        file_{} {}
 
 template <typename>
 PROTOBUF_CONSTEXPR FileDescriptorSet::FileDescriptorSet(::_pbi::ConstantInitialized)
@@ -2618,8 +2618,8 @@ FileDescriptorSet::FileDescriptorSet(::google::protobuf::Arena* arena)
 inline PROTOBUF_NDEBUG_INLINE FileDescriptorSet::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::FileDescriptorSet& from_msg)
-      : file_{visibility, arena, from.file_},
-        _cached_size_{0} {}
+      : _cached_size_{0},
+        file_{visibility, arena, from.file_} {}
 
 FileDescriptorSet::FileDescriptorSet(
     ::google::protobuf::Arena* arena,
@@ -2640,8 +2640,8 @@ FileDescriptorSet::FileDescriptorSet(
 inline PROTOBUF_NDEBUG_INLINE FileDescriptorSet::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
-      : file_{visibility, arena},
-        _cached_size_{0} {}
+      : _cached_size_{0},
+        file_{visibility, arena} {}
 
 inline void FileDescriptorSet::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -14949,8 +14949,8 @@ SourceCodeInfo::SourceCodeInfo(::google::protobuf::Arena* arena)
 inline PROTOBUF_NDEBUG_INLINE SourceCodeInfo::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::SourceCodeInfo& from_msg)
-      : location_{visibility, arena, from.location_},
-        _cached_size_{0} {}
+      : _cached_size_{0},
+        location_{visibility, arena, from.location_} {}
 
 SourceCodeInfo::SourceCodeInfo(
     ::google::protobuf::Arena* arena,
@@ -14971,8 +14971,8 @@ SourceCodeInfo::SourceCodeInfo(
 inline PROTOBUF_NDEBUG_INLINE SourceCodeInfo::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
-      : location_{visibility, arena},
-        _cached_size_{0} {}
+      : _cached_size_{0},
+        location_{visibility, arena} {}
 
 inline void SourceCodeInfo::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -15582,8 +15582,8 @@ GeneratedCodeInfo::GeneratedCodeInfo(::google::protobuf::Arena* arena)
 inline PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::google::protobuf::GeneratedCodeInfo& from_msg)
-      : annotation_{visibility, arena, from.annotation_},
-        _cached_size_{0} {}
+      : _cached_size_{0},
+        annotation_{visibility, arena, from.annotation_} {}
 
 GeneratedCodeInfo::GeneratedCodeInfo(
     ::google::protobuf::Arena* arena,
@@ -15604,8 +15604,8 @@ GeneratedCodeInfo::GeneratedCodeInfo(
 inline PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
-      : annotation_{visibility, arena},
-        _cached_size_{0} {}
+      : _cached_size_{0},
+        annotation_{visibility, arena} {}
 
 inline void GeneratedCodeInfo::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);

@@ -1452,6 +1452,14 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
                         _inlined_string_donated_;
                   )cc");
         }},
+       {"cached_size",
+        [&] {
+          if (!need_to_emit_cached_size) return;
+
+          p->Emit(R"cc(
+            ::$proto_ns$::internal::CachedSize _cached_size_;
+          )cc");
+        }},
        {"has_bits",
         [&] {
           if (has_bit_indices_.empty()) return;
@@ -1463,12 +1471,6 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
           p->Emit({{"sizeof_has_bits", sizeof_has_bits}}, R"cc(
             ::$proto_ns$::internal::HasBits<$sizeof_has_bits$> _has_bits_;
           )cc");
-          if (need_to_emit_cached_size) {
-            p->Emit(R"cc(
-              ::$proto_ns$::internal::CachedSize _cached_size_;
-            )cc");
-            need_to_emit_cached_size = false;
-          }
         }},
        {"field_members",
         [&] {
@@ -1529,15 +1531,6 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
             }
           }
         }},
-       {"cached_size_if_no_hasbits",
-        [&] {
-          if (!need_to_emit_cached_size) return;
-
-          need_to_emit_cached_size = false;
-          p->Emit(R"cc(
-            ::$proto_ns$::internal::CachedSize _cached_size_;
-          )cc");
-        }},
        {"oneof_case",
         [&] {
           // Generate _oneof_case_.
@@ -1565,6 +1558,15 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
             p->Emit(R"cc(union { Impl_ _impl_; };)cc");
           // clang-format on
         }}},
+      // Laying out field members of generated message types can significantly
+      // affect performance and should be carefully evaluated. While minimizing
+      // padding is good for minimum cache footprint and memory overhead, we
+      // should be mindful that protobuf messages can have **lots** of fields
+      // that are not very hot. IOW, the bottom of the messages tend to be cold.
+      //
+      // We assume fields like extension_set, has_bits, cached_size, oneof_case,
+      // etc. are hotter than average user-defined fields and place them near
+      // the top of the messages.
       R"cc(
         struct Impl_ {
           //~ TODO: check if/when there is a need for an
@@ -1576,26 +1578,21 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
           inline explicit Impl_($pbi$::InternalVisibility visibility,
                                 ::$proto_ns$::Arena* arena, const Impl_& from,
                                 const $classname$& from_msg);
-          //~ Members assumed to align to 8 bytes:
           $extension_set$;
-          $tracker$;
-          $inlined_string_donated$;
           $has_bits$;
-          //~ Field members:
+          $cached_size$;
+          $oneof_case$;
+          $inlined_string_donated$;
           $field_members$;
           $decl_split$;
           $oneof_members$;
-          //~ Members assumed to align to 4 bytes:
-          $cached_size_if_no_hasbits$;
-          $oneof_case$;
           $weak_field_map$;
+          $tracker$;
           //~ For detecting when concurrent accessor calls cause races.
           PROTOBUF_TSAN_DECLARE_MEMBER
         };
         $union_impl$;
       )cc");
-
-  ABSL_DCHECK(!need_to_emit_cached_size);
 }
 
 void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
@@ -2725,8 +2722,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
         separator();
         p->Emit("_has_bits_{from._has_bits_}");
       }
-      separator();
-      p->Emit("_cached_size_{0}");
     }
   };
 
@@ -2771,11 +2766,9 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
     }
   };
 
-  auto init_cached_size_if_no_hasbits = [&] {
-    if (has_bit_indices_.empty()) {
-      separator();
-      p->Emit("_cached_size_{0}");
-    }
+  auto init_cached_size = [&] {
+    separator();
+    p->Emit("_cached_size_{0}");
   };
 
   auto init_oneof_cases = [&] {
@@ -2808,13 +2801,13 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
 
   // Initialization order of the various fields inside `_impl_(...)`
   init_extensions();
-  init_inlined_string_indices();
   init_has_bits();
+  init_cached_size();
+  init_oneof_cases();
+  init_inlined_string_indices();
   init_fields();
   init_split();
   init_oneofs();
-  init_cached_size_if_no_hasbits();
-  init_oneof_cases();
   init_weak_field_map();
 }
 
