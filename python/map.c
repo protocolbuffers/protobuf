@@ -18,7 +18,7 @@
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  PyObject_HEAD
   PyObject* arena;
   // The field descriptor (upb_FieldDef*).
   // The low bit indicates whether the container is reified (see ptr below).
@@ -410,7 +410,7 @@ static PyType_Spec PyUpb_MessageMapContainer_Spec = {
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  PyObject_HEAD
   PyUpb_MapContainer* map;  // We own a reference.
   size_t iter;
   int version;
