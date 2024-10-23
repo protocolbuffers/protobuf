@@ -12,12 +12,15 @@
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/status/statusor.h"
 #include "google/protobuf/hpb/backend/upb/interop.h"
 #include "google/protobuf/hpb/internal/message_lock.h"
 #include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/ptr.h"
 #include "google/protobuf/hpb/status.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/accessors.h"
+#include "upb/message/array.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 
@@ -47,6 +50,29 @@ class ExtensionMiniTableProvider {
   const upb_MiniTableExtension* mini_table_ext_;
 };
 
+/**
+ * Trait that maps upb extension types to the corresponding
+ * return value: ubp_MessageValue.
+ *
+ * All partial specialiations must have:
+ * - ReturnType: the type of the return value.
+ * - kGetter: the corresponding upb_MessageValue upb_Message_GetExtension* func
+ */
+template <typename T>
+struct UpbExtensionTrait;
+
+template <>
+struct UpbExtensionTrait<int32_t> {
+  using ReturnType = int32_t;
+  static constexpr auto kGetter = upb_Message_GetExtensionInt32;
+};
+
+template <>
+struct UpbExtensionTrait<int64_t> {
+  using ReturnType = int64_t;
+  static constexpr auto kGetter = upb_Message_GetExtensionInt64;
+};
+
 // -------------------------------------------------------------------
 // ExtensionIdentifier
 // This is the type of actual extension objects.  E.g. if you have:
@@ -69,6 +95,7 @@ class ExtensionIdentifier : public ExtensionMiniTableProvider {
     return upb_MiniTableExtension_Number(mini_table_ext());
   }
 
+  ExtensionType default_value() const { return ExtensionType(); }
   friend struct PrivateAccess;
 };
 
@@ -229,6 +256,17 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
     const T* message,
     const ::hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
   return GetExtension(Ptr(message), id);
+}
+
+template <typename T, typename Extendee, typename Extension,
+          typename = hpb::internal::EnableIfHpbClass<T>>
+absl::StatusOr<typename hpb::internal::UpbExtensionTrait<Extension>::ReturnType>
+GetExtensionNumeric(
+    const T* message,
+    const hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
+  return hpb::internal::UpbExtensionTrait<Extension>::kGetter(
+      hpb::interop::upb::GetMessage(message), id.mini_table_ext(),
+      hpb::internal::PrivateAccess::GetDefaultValue(id));
 }
 
 template <typename T, typename Extension>
