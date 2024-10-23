@@ -12,6 +12,7 @@ edition = "2021"
 links = "libupb"
 license = "BSD-3-Clause"
 rust-version = "1.74"
+description = "Protocol Buffers - Google's data interchange format"
 
 [lib]
 path = "src/shared.rs"

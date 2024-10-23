@@ -3,6 +3,10 @@ edition = "2021"
 name = "protobuf-codegen"
 readme = "README.md"
 version = "4.27.3-beta.0"
+description = "Code generator for Rust Protocol Buffers bindings"
+license = "BSD-3-Clause"
+rust-version = "1.74"
+
 
 [dependencies]
 walkdir = "2.5.0"
