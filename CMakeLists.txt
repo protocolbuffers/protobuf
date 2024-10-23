@@ -106,18 +106,17 @@ string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\3"
 string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\5"
   protobuf_VERSION_PRERELEASE "${protobuf_VERSION_STRING}")
 
-message(STATUS "${protobuf_VERSION_PRERELEASE}")
-
 # Package version
 set(protobuf_VERSION
   "${protobuf_VERSION_MINOR}.${protobuf_VERSION_PATCH}")
 
 if(protobuf_VERSION_PRERELEASE)
+  message(STATUS "${protobuf_VERSION_PRERELEASE}")
   set(protobuf_VERSION "${protobuf_VERSION}.${protobuf_VERSION_PRERELEASE}")
 else()
   set(protobuf_VERSION "${protobuf_VERSION}.0")
 endif()
-message(STATUS "${protobuf_VERSION}")
+message(STATUS "protobuf version: ${protobuf_VERSION}")
 
 if(protobuf_VERBOSE)
   message(STATUS "Configuration script parsing status [")
