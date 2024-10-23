@@ -25,7 +25,7 @@
 #include <type_traits>
 #include <utility>
 
-#if !defined(GOOGLE_PROTOBUF_NO_RDTSC) && defined(__APPLE__)
+#if !defined(GOOGLE_PROTOBUF_NO_RDTSC) && defined(__APPLE__) && (!defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE))
 #include <time.h>
 #endif
 
@@ -728,9 +728,9 @@ class PROTOBUF_EXPORT UntypedMapBase {
   map_index_t Seed() const {
     uint64_t s = 0;
 #if !defined(GOOGLE_PROTOBUF_NO_RDTSC)
-#if defined(__APPLE__)
+#if defined(__APPLE__) && (!defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE))
     // Use a commpage-based fast time function on Apple environments (MacOS,
-    // iOS, tvOS, watchOS, etc).
+    // iOS, tvOS, watchOS, etc), if we think the system headers expose it.
     s = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
 #elif defined(__x86_64__) && defined(__GNUC__)
     uint32_t hi, lo;
