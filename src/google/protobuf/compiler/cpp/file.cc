@@ -1546,11 +1546,11 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
     }
 
     ListAllTypesForServices(file_, &classes);
-  } else {
-    // List all enums in this file, to declare the traits.
-    google::protobuf::internal::VisitDescriptors(
-        *file_, [&](const EnumDescriptor& e) { enums.push_back(&e); });
   }
+
+  // List all enums in this file, to declare the traits.
+  google::protobuf::internal::VisitDescriptors(
+      *file_, [&](const EnumDescriptor& e) { enums.push_back(&e); });
 
   // Calculate the set of files whose definitions we get through include.
   // No need to forward declare types that are defined in these.
