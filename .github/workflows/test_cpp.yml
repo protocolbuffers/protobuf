@@ -350,7 +350,6 @@ jobs:
             os: macos-13
             flags: -DCMAKE_CXX_STANDARD=14
             cache-prefix: macos-cmake
-            continuous-only: true
           - name: Windows CMake
             os: windows-2022
             flags: >-
