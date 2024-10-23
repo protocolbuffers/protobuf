@@ -2,7 +2,7 @@
     "29.x": {
         "protoc_version": "29.0-dev",
         "lts": false,
-        "date": "2024-09-30",
+        "date": "2024-10-23",
         "languages": {
             "cpp": "5.29.0-dev",
             "csharp": "3.29.0-dev",
