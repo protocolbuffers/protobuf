@@ -108,7 +108,7 @@ jobs:
           - { name: "macOS", bazel-command: "test" }
           - { name: "macOS ARM (build only)", bazel-command: "build", flags: "--cpu=darwin_arm64" }
     name: ${{ matrix.config.name }}
-    runs-on: macos-12
+    runs-on: macos-13
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v3
@@ -186,11 +186,11 @@ jobs:
           # supported Python versions and assume this gives us sufficient test
           # coverage.
           - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'binary' }
-          - { os: macos-12, python-version: "3.8", architecture: x64, type: 'binary' }
+          - { os: macos-13, python-version: "3.8", architecture: x64, type: 'binary' }
           - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'binary' }
           - { os: macos-13, python-version: "3.12", architecture: x64, type: 'binary' }
           - { os: ubuntu-latest, python-version: "3.8", architecture: x64, type: 'source', continuous-only: true }
-          - { os: macos-12, python-version: "3.8", architecture: x64, type: 'source', continuous-only: true }
+          - { os: macos-13, python-version: "3.8", architecture: x64, type: 'source', continuous-only: true }
           - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'source', continuous-only: true }
           - { os: macos-13, python-version: "3.12", architecture: x64, type: 'source', continuous-only: true }
 
