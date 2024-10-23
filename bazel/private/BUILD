@@ -150,7 +150,9 @@ bzl_library(
 
 bzl_library(
     name = "cc_proto_aspect_bzl",
-    srcs = ["cc_proto_aspect.bzl"],
+    srcs = [
+        "cc_proto_aspect.bzl",
+    ],
     deps = [":bazel_cc_proto_library_bzl"],
 )
 

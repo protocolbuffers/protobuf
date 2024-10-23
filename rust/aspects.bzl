@@ -10,6 +10,7 @@ load("@rules_rust//rust/private:rustc.bzl", "rustc_compile_action")
 load("//bazel:upb_minitable_proto_library.bzl", "UpbMinitableCcInfo", "upb_minitable_proto_library_aspect")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
+load("//bazel/private:cc_proto_aspect.bzl", "cc_proto_aspect")
 
 visibility(["//rust/..."])
 
