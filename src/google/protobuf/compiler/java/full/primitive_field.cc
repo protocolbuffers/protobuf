@@ -307,10 +307,22 @@ void ImmutablePrimitiveFieldGenerator::GenerateMergingCode(
                    "  set$capitalized_name$(other.get$capitalized_name$());\n"
                    "}\n");
   } else {
-    printer->Print(variables_,
-                   "if (other.get$capitalized_name$() != $default$) {\n"
-                   "  set$capitalized_name$(other.get$capitalized_name$());\n"
-                   "}\n");
+    switch (descriptor_->type()) {
+      case FieldDescriptor::TYPE_BYTES:
+        printer->Print(
+            variables_,
+            "if (!other.get$capitalized_name$().isEmpty()) {\n"
+            "  set$capitalized_name$(other.get$capitalized_name$());\n"
+            "}\n");
+        break;
+      default:
+        printer->Print(
+            variables_,
+            "if (other.get$capitalized_name$() != $default$) {\n"
+            "  set$capitalized_name$(other.get$capitalized_name$());\n"
+            "}\n");
+        break;
+    }
   }
 }
 
