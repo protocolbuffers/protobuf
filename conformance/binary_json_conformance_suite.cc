@@ -2314,6 +2314,23 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson("Uint64FieldNotInteger", REQUIRED,
                             R"({"optionalUint64": "0.5"})");
 
+  // Parser reject non-numeric string values.
+  RunValidJsonTest(
+      "Int32FieldStringValueNormal", REQUIRED, R"({"optionalInt32": "12"})",
+      "optional_int32: 12");  // (a) redundant with Int32FieldStringValue
+  RunValidJsonTest("Int32FieldStringValueZero", REQUIRED,
+                   R"({"optionalInt32": "0"})",
+                   "optional_int32: 0");  // (b)
+  ExpectParseFailureForJson("Int32FieldStringValueExponential", REQUIRED,
+                            R"({"optionalInt32": "-1.25e-1"})");  // (c)
+  ExpectParseFailureForJson(
+      "Int32FieldStringValueEmptyString", REQUIRED,
+      R"({"optionalInt32": ""})");  // (d) redundant with Int32FieldEmptyString
+  ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumeric", REQUIRED,
+                            R"({"optionalInt32": "12abc"})");  // (e)
+  ExpectParseFailureForJson("Int32FieldStringValueNonNumeric", REQUIRED,
+                            R"({"optionalInt32": "abc"})");  // (f)
+
   // Parser reject empty string values.
   ExpectParseFailureForJson("Int32FieldEmptyString", REQUIRED,
                             R"({"optionalInt32": ""})");
