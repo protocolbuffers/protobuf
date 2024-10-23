@@ -314,12 +314,12 @@ jobs:
       matrix:
         include:
           - name: MacOS
-            os: macos-12
-            cache_key: macos-12
+            os: macos-13
+            cache_key: macos-13
             bazel: test //src/...
           - name: MacOS Apple Silicon (build only)
-            os: macos-12
-            cache_key: macos-12-arm
+            os: macos-13
+            cache_key: macos-13-arm
             # Current github runners are all Intel based, so just build/compile
             # for Apple Silicon to detect issues there.
             bazel: build --cpu=darwin_arm64 //src/...
@@ -346,11 +346,10 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          # TODO: investigate and fix
-          # - name: MacOS CMake
-          #   os: macos-12
-          #   flags: -DCMAKE_CXX_STANDARD=14
-          #   cache-prefix: macos-cmake
+          - name: MacOS CMake
+            os: macos-13
+            flags: -DCMAKE_CXX_STANDARD=14
+            cache-prefix: macos-cmake
           - name: Windows CMake
             os: windows-2022
             flags: >-
