@@ -189,7 +189,11 @@ std::string SuperClassName(const Descriptor* descriptor,
                            const Options& options);
 
 // Adds an underscore if necessary to prevent conflicting with a keyword.
-std::string ResolveKeyword(absl::string_view name);
+enum class NameContext {
+  kFile,
+  kMessage,
+};
+std::string ResolveKeyword(absl::string_view name, NameContext name_context);
 
 // Get the (unqualified) name that should be used for this field in C++ code.
 // The name is coerced to lower-case to emulate proto1 behavior.  People

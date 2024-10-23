@@ -115,6 +115,23 @@ message TestConflictingSymbolNames {
   optional uint32 typedecl = 39;
   optional uint32 auto = 40;
 
+  // Methods generated in the parent type
+  optional int32 unknown_fields = 100;
+  optional int32 mutable_unknown_fields = 101;
+  optional int32 descriptor = 102;
+  message GetDescriptor {}
+  message GetReflection {}
+  optional int32 default_instance = 103;
+  optional int32 swap = 104;
+  message Swap {}
+  message UnsafeArenaSwap {}
+  message New {}
+  message CopyFrom {}
+  message MergeFrom {}
+  message GetMetadata {}
+  enum Clear { IsInitialized = 0; }  // enums and their values are also mangled
+
+
   // The generator used to #define a macro called "DO" inside the .cc file.
   message DO {}
   optional DO do = 32;

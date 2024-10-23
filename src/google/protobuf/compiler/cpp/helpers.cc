@@ -73,6 +73,28 @@ namespace {
 constexpr absl::string_view kAnyMessageName = "Any";
 constexpr absl::string_view kAnyProtoFile = "google/protobuf/any.proto";
 
+const absl::flat_hash_set<absl::string_view>& MessageKnownMethods() {
+  static constexpr const char* kMessageKnownMethods[] = {
+      "unknown_fields",
+      "mutable_unknown_fields",
+      "GetDescriptor",
+      "GetReflection",
+      "default_instance",
+      "swap",
+      "Swap",
+      "UnsafeArenaSwap",
+      "New",
+      "CopyFrom",
+      "MergeFrom",
+      "IsInitialized",
+      "GetMetadata",
+      "Clear",
+  };
+  static const auto* const methods = new absl::flat_hash_set<absl::string_view>(
+      std::begin(kMessageKnownMethods), std::end(kMessageKnownMethods));
+  return *methods;
+}
+
 static const char* const kKeywordList[] = {
     // clang-format off
     "NULL",
@@ -406,12 +428,13 @@ std::string ClassName(const Descriptor* descriptor) {
   if (parent) absl::StrAppend(&res, ClassName(parent), "_");
   absl::StrAppend(&res, descriptor->name());
   if (IsMapEntryMessage(descriptor)) absl::StrAppend(&res, "_DoNotUse");
-  return ResolveKeyword(res);
+  return ResolveKeyword(
+      res, parent != nullptr ? NameContext::kMessage : NameContext::kFile);
 }
 
 std::string ClassName(const EnumDescriptor* enum_descriptor) {
   if (enum_descriptor->containing_type() == nullptr) {
-    return ResolveKeyword(enum_descriptor->name());
+    return ResolveKeyword(enum_descriptor->name(), NameContext::kFile);
   } else {
     return absl::StrCat(ClassName(enum_descriptor->containing_type()), "_",
                         enum_descriptor->name());
@@ -436,9 +459,11 @@ std::string QualifiedClassName(const EnumDescriptor* d) {
 }
 
 std::string ExtensionName(const FieldDescriptor* d) {
-  if (const Descriptor* scope = d->extension_scope())
-    return absl::StrCat(ClassName(scope), "::", ResolveKeyword(d->name()));
-  return ResolveKeyword(d->name());
+  if (const Descriptor* scope = d->extension_scope()) {
+    return absl::StrCat(ClassName(scope),
+                        "::", ResolveKeyword(d->name(), NameContext::kMessage));
+  }
+  return ResolveKeyword(d->name(), NameContext::kFile);
 }
 
 std::string QualifiedExtensionName(const FieldDescriptor* d,
@@ -451,24 +476,23 @@ std::string QualifiedExtensionName(const FieldDescriptor* d) {
   return QualifiedExtensionName(d, Options());
 }
 
-std::string ResolveKeyword(absl::string_view name) {
-  if (Keywords().count(name) > 0) {
+std::string ResolveKeyword(absl::string_view name, NameContext name_context) {
+  if (Keywords().contains(name) || (name_context == NameContext::kMessage &&
+                                    MessageKnownMethods().contains(name))) {
     return absl::StrCat(name, "_");
   }
   return std::string(name);
 }
 
-std::string DotsToColons(absl::string_view name) {
-  std::vector<std::string> scope = absl::StrSplit(name, '.', absl::SkipEmpty());
-  for (auto& word : scope) {
-    word = ResolveKeyword(word);
-  }
-  return absl::StrJoin(scope, "::");
-}
-
 std::string Namespace(absl::string_view package) {
   if (package.empty()) return "";
-  return absl::StrCat("::", DotsToColons(package));
+
+  std::vector<std::string> scope =
+      absl::StrSplit(package, '.', absl::SkipEmpty());
+  for (auto& word : scope) {
+    word = ResolveKeyword(word, NameContext::kFile);
+  }
+  return absl::StrCat("::", absl::StrJoin(scope, "::"));
 }
 
 std::string Namespace(const FileDescriptor* d) { return Namespace(d, {}); }
@@ -557,10 +581,9 @@ std::string SuperClassName(const Descriptor* descriptor,
 std::string FieldName(const FieldDescriptor* field) {
   std::string result = std::string(field->name());
   absl::AsciiStrToLower(&result);
-  if (Keywords().count(result) > 0) {
-    result.append("_");
-  }
-  return result;
+  return ResolveKeyword(result, field->containing_type() != nullptr
+                                    ? NameContext::kMessage
+                                    : NameContext::kFile);
 }
 
 std::string FieldMemberName(const FieldDescriptor* field, bool split) {
@@ -589,11 +612,10 @@ std::string QualifiedOneofCaseConstantName(const FieldDescriptor* field) {
 }
 
 std::string EnumValueName(const EnumValueDescriptor* enum_value) {
-  std::string result = std::string(enum_value->name());
-  if (Keywords().count(result) > 0) {
-    result.append("_");
-  }
-  return result;
+  return ResolveKeyword(enum_value->name(),
+                        enum_value->type()->containing_type() == nullptr
+                            ? NameContext::kFile
+                            : NameContext::kMessage);
 }
 
 int EstimateAlignmentSize(const FieldDescriptor* field) {
