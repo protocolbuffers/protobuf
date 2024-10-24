@@ -13,6 +13,7 @@ import collections.abc as collections_abc
 import datetime
 import unittest
 
+from google.protobuf import json_format
 from google.protobuf import text_format
 from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import well_known_types
@@ -1039,6 +1040,36 @@ class AnyTest(unittest.TestCase):
               b'\x05\n\x015\x10\n\x1a\x05\n\x016\x10\x0c\x1a\x05\n\x017\x10'
               b'\x0e\x1a\x05\n\x018\x10\x10\x1a\x05\n\x019\x10\x12')
     self.assertEqual(golden, serialized)
+
+  def testJsonStruct(self):
+    value = struct_pb2.Value(struct_value=struct_pb2.Struct())
+    value_dict = json_format.MessageToDict(
+        value,
+        always_print_fields_with_no_presence=True,
+        preserving_proto_field_name=True,
+        use_integers_for_enums=True,
+    )
+    self.assertDictEqual(value_dict, {})
+
+    s = struct_pb2.Struct(
+        fields={
+            'a': struct_pb2.Value(struct_value=struct_pb2.Struct()),
+        },
+    )
+
+    sdict = json_format.MessageToDict(
+        s,
+        always_print_fields_with_no_presence=True,
+        preserving_proto_field_name=True,
+        use_integers_for_enums=True,
+    )
+
+    self.assertDictEqual(
+        sdict,
+        {
+            'a': {},
+        },
+    )
 
 
 if __name__ == '__main__':
