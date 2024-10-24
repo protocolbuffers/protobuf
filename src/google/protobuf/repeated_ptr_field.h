@@ -1146,10 +1146,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // Hardcore programs may choose to manipulate these cleared objects
   // to better optimize memory management using the following routines.
 
-  // Gets the number of cleared objects that are currently being kept
-  // around for reuse.
-  ABSL_DEPRECATED("This will be removed in a future release")
-  int ClearedCount() const;
 
   // Removes the element referenced by position.
   //
@@ -1526,10 +1522,6 @@ inline Element* RepeatedPtrField<Element>::UnsafeArenaReleaseLast() {
   return RepeatedPtrFieldBase::UnsafeArenaReleaseLast<TypeHandler>();
 }
 
-template <typename Element>
-inline int RepeatedPtrField<Element>::ClearedCount() const {
-  return RepeatedPtrFieldBase::ClearedCount();
-}
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::Reserve(int new_size) {
