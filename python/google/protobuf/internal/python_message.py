@@ -568,7 +568,7 @@ def _AddInitMethod(message_descriptor, cls):
               )
           )
 
-        if new_val:
+        if new_val != None:
           try:
             field_copy.MergeFrom(new_val)
           except TypeError:
