@@ -17,7 +17,7 @@ module Google
       attach_function :get_message_has,         :upb_Message_HasFieldByDef,   [:Message, FieldDescriptor], :bool
       attach_function :set_message_field,       :upb_Message_SetFieldByDef,   [:Message, FieldDescriptor, MessageValue.by_value, Internal::Arena], :bool
       attach_function :encode_message,          :upb_Encode,                  [:Message, MiniTable.by_ref, :size_t, Internal::Arena, :pointer, :pointer], EncodeStatus
-      attach_function :json_decode_message,     :upb_JsonDecode,              [:binary_string, :size_t, :Message, Descriptor, :DefPool, :int, Internal::Arena, Status.by_ref], :bool
+      attach_function :json_decode_message_detecting_nonconformance,     :upb_JsonDecodeDetectingNonconformance,   [:binary_string, :size_t, :Message, Descriptor, :DefPool, :int, Internal::Arena, Status.by_ref], :int
       attach_function :json_encode_message,     :upb_JsonEncode,              [:Message, Descriptor, :DefPool, :int, :binary_string, :size_t, Status.by_ref], :size_t
       attach_function :decode_message,          :upb_Decode,                  [:binary_string, :size_t, :Message, MiniTable.by_ref, :ExtensionRegistry, :int, Internal::Arena], DecodeStatus
       attach_function :get_mutable_message,     :upb_Message_Mutable,         [:Message, FieldDescriptor, Internal::Arena], MutableMessageValue.by_value
@@ -270,7 +270,11 @@ module Google
             message = new
             pool_def = message.class.descriptor.instance_variable_get(:@descriptor_pool).descriptor_pool
             status = Google::Protobuf::FFI::Status.new
-            unless Google::Protobuf::FFI.json_decode_message(data, data.bytesize, message.instance_variable_get(:@msg), message.class.descriptor, pool_def, decoding_options, message.instance_variable_get(:@arena), status)
+            result = Google::Protobuf::FFI.json_decode_message_detecting_nonconformance(data, data.bytesize, message.instance_variable_get(:@msg), message.class.descriptor, pool_def, decoding_options, message.instance_variable_get(:@arena), status)
+            case result
+            when Google::Protobuf::FFI::Upb_JsonDecodeResult_OkWithEmptyStringNumerics
+              warn Google::Protobuf::FFI.error_message(status)
+            when Google::Protobuf::FFI::Upb_JsonDecodeResult_Error
               raise ParseError.new "Error occurred during parsing: #{Google::Protobuf::FFI.error_message(status)}"
             end
             message
