@@ -73,7 +73,7 @@ void WriteMessageClassDeclarations(
   }
 
   // Forward declaration of Proto Class for GCC handling of free friend method.
-  ctx.EmitLegacy("class $0;\n", ClassName(descriptor));
+  ctx.Emit({{"class_name", ClassName(descriptor)}}, "class $class_name$;\n");
   ctx.Emit("namespace internal {\n\n");
   WriteModelAccessDeclaration(descriptor, ctx);
   ctx.Emit("\n");
@@ -89,36 +89,37 @@ void WriteMessageClassDeclarations(
 
 void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
                                  Context& ctx) {
-  ctx.EmitLegacy(
-      R"cc(
-        class $0Access {
-         public:
-          $0Access() {}
-          $0Access($1* msg, upb_Arena* arena) : msg_(msg), arena_(arena) {
-            assert(arena != nullptr);
-          }  // NOLINT
-          $0Access(const $1* msg, upb_Arena* arena)
-              : msg_(const_cast<$1*>(msg)), arena_(arena) {
-            assert(arena != nullptr);
-          }  // NOLINT
-      )cc",
-      ClassName(descriptor),
-      upb::generator::CApiMessageType(descriptor->full_name()));
+  ctx.Emit({{"class_name", ClassName(descriptor)},
+            {"upb_msg_name",
+             upb::generator::CApiMessageType(descriptor->full_name())}},
+           R"(
+             class $class_name$Access {
+              public:
+               $class_name$Access() {}
+               $class_name$Access($upb_msg_name$* msg, upb_Arena* arena)
+                   : msg_(msg), arena_(arena) {
+                 assert(arena != nullptr);
+               }  // NOLINT
+               $class_name$Access(const $upb_msg_name$* msg, upb_Arena* arena)
+                   : msg_(const_cast<$upb_msg_name$*>(msg)), arena_(arena) {
+                 assert(arena != nullptr);
+               }  // NOLINT
+           )");
   WriteFieldAccessorsInHeader(descriptor, ctx);
   WriteOneofAccessorsInHeader(descriptor, ctx);
-  ctx.EmitLegacy(
-      R"cc(
-        private:
-        friend class $2;
-        friend class $0Proxy;
-        friend class $0CProxy;
-        friend struct ::hpb::internal::PrivateAccess;
-        $1* msg_;
-        upb_Arena* arena_;
-      )cc",
-      ClassName(descriptor),
-      upb::generator::CApiMessageType(descriptor->full_name()),
-      QualifiedClassName(descriptor));
+  ctx.Emit({{"class_name", ClassName(descriptor)},
+            {"upb_msg_name",
+             upb::generator::CApiMessageType(descriptor->full_name())},
+            {"qualified_class_name", QualifiedClassName(descriptor)}},
+           R"cc(
+             private:
+             friend class $qualified_class_name$;
+             friend class $class_name$Proxy;
+             friend class $class_name$CProxy;
+             friend struct ::hpb::internal::PrivateAccess;
+             $upb_msg_name$* msg_;
+             upb_Arena* arena_;
+           )cc");
   ctx.Emit("};\n");
 }
 

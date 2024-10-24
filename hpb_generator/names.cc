@@ -127,16 +127,16 @@ void WriteStartNamespace(const protobuf::FileDescriptor* file, Context& ctx) {
     return;
   }
 
-  ctx.EmitLegacy("namespace $0 {\n\n",
-                 NamespaceFromPackageName(file->package()));
+  ctx.Emit({{"namespace", NamespaceFromPackageName(file->package())}},
+           "namespace $namespace${\n\n");
 }
 
 void WriteEndNamespace(const protobuf::FileDescriptor* file, Context& ctx) {
   if (file->package().empty()) {
     return;
   }
-  ctx.EmitLegacy("} //  namespace $0\n\n",
-                 NamespaceFromPackageName(file->package()));
+  ctx.Emit({{"namespace", NamespaceFromPackageName(file->package())}},
+           "} //  namespace $namespace$\n\n");
 }
 
 std::string CppConstType(const protobuf::FieldDescriptor* field) {
