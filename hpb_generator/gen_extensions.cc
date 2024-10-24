@@ -41,19 +41,17 @@ void WriteExtensionIdentifierHeader(const protobuf::FieldDescriptor* ext,
                                     Context& ctx) {
   std::string mini_table_name =
       absl::StrCat(ExtensionIdentifierBase(ext), "_", ext->name(), "_ext");
-  if (ext->extension_scope()) {
-    ctx.EmitLegacy(
-        R"cc(
-          static const ::hpb::internal::ExtensionIdentifier<$0, $1> $2;
-        )cc",
-        ContainingTypeName(ext), CppTypeParameterName(ext), ext->name());
-  } else {
-    ctx.EmitLegacy(
-        R"cc(
-          extern const ::hpb::internal::ExtensionIdentifier<$0, $1> $2;
-        )cc",
-        ContainingTypeName(ext), CppTypeParameterName(ext), ext->name());
-  }
+  std::string linkage = ext->extension_scope() ? "static" : "extern";
+  ctx.Emit(
+      {{"linkage", linkage},
+       {"extendee_type", ContainingTypeName(ext)},
+       {"extension_type", CppTypeParameterName(ext)},
+       {"extension_name", ext->name()}},
+      R"cc(
+        $linkage$ const ::hpb::internal::ExtensionIdentifier<$extendee_type$,
+                                                             $extension_type$>
+            $extension_name$;
+      )cc");
 }
 
 void WriteExtensionIdentifiersHeader(
