@@ -81,6 +81,7 @@ public class TextFormatTest {
           + "repeated_double: 0.125\n"
           + "repeated_double: .125\n"
           + "repeated_double: -.125\n"
+          + "repeated_double: .0\n"
           + "repeated_double: 1.23E17\n"
           + "repeated_double: 1.23E+17\n"
           + "repeated_double: -1.23e-17\n"
@@ -314,6 +315,7 @@ public class TextFormatTest {
             .addRepeatedDouble(0.125)
             .addRepeatedDouble(.125)
             .addRepeatedDouble(-.125)
+            .addRepeatedDouble(.0)
             .addRepeatedDouble(123e15)
             .addRepeatedDouble(123e15)
             .addRepeatedDouble(-1.23e-17)
@@ -949,6 +951,9 @@ public class TextFormatTest {
         "1:23: Enum type \"protobuf_unittest.TestAllTypes.NestedEnum\" has no "
             + "value with number 123.",
         "optional_nested_enum: 123");
+    assertParseError("1:18: Couldn't parse number: For input string: \".\"", "repeated_double: .");
+    assertParseError(
+        "1:18: Couldn't parse number: For input string: \".+\"", "repeated_double: .+");
 
     // Delimiters must match.
     assertParseError("1:22: Expected identifier. Found '}'", "OptionalGroup < a: 1 }");
