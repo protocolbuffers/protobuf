@@ -25,12 +25,14 @@
 #include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
 #include "google/protobuf/hpb/arena.h"
 #include "google/protobuf/hpb/backend/upb/interop.h"
+#include "google/protobuf/hpb/extension.h"
 #include "google/protobuf/hpb/hpb.h"
 #include "google/protobuf/hpb/ptr.h"
 #include "google/protobuf/hpb/repeated_field.h"
 #include "google/protobuf/hpb/requires.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
+#include "upb/mini_table/extension.h"
 
 namespace {
 
@@ -982,8 +984,11 @@ TEST(CppGeneratedCode, ParseWithExtensionRegistry) {
   ::upb::Arena arena;
   auto bytes = ::hpb::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
-  ::hpb::ExtensionRegistry extensions(
-      {&theme, &other_ext, &ThemeExtension::theme_extension}, arena);
+  std::vector<const upb_MiniTableExtension*> exts{
+      theme.mini_table_ext(), other_ext.mini_table_ext(),
+      ThemeExtension::theme_extension.mini_table_ext()};
+
+  ::hpb::ExtensionRegistry extensions(exts, arena);
   TestModel parsed_model =
       ::hpb::Parse<TestModel>(bytes.value(), extensions).value();
   EXPECT_EQ("Test123", parsed_model.str1());
@@ -1247,7 +1252,8 @@ TEST(CppGeneratedCode, HasExtensionAndRegistry) {
   std::string data = std::string(::hpb::Serialize(&source, arena).value());
 
   // Test with ExtensionRegistry
-  ::hpb::ExtensionRegistry extensions({&theme}, arena);
+  std::vector<const upb_MiniTableExtension*> exts{theme.mini_table_ext()};
+  hpb::ExtensionRegistry extensions(exts, arena);
   TestModel parsed_model = ::hpb::Parse<TestModel>(data, extensions).value();
   EXPECT_TRUE(::hpb::HasExtension(&parsed_model, theme));
 }

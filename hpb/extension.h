@@ -34,19 +34,6 @@ absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
                           const upb_MiniTableExtension* ext,
                           const upb_Message* extension);
 
-class ExtensionMiniTableProvider {
- public:
-  constexpr explicit ExtensionMiniTableProvider(
-      const upb_MiniTableExtension* mini_table_ext)
-      : mini_table_ext_(mini_table_ext) {}
-  const upb_MiniTableExtension* mini_table_ext() const {
-    return mini_table_ext_;
-  }
-
- private:
-  const upb_MiniTableExtension* mini_table_ext_;
-};
-
 // -------------------------------------------------------------------
 // ExtensionIdentifier
 // This is the type of actual extension objects.  E.g. if you have:
@@ -56,20 +43,25 @@ class ExtensionMiniTableProvider {
 // then "bar" will be defined in C++ as:
 //   ExtensionIdentifier<Foo, MyExtension> bar(&namespace_bar_ext);
 template <typename ExtendeeType, typename ExtensionType>
-class ExtensionIdentifier : public ExtensionMiniTableProvider {
+class ExtensionIdentifier {
  public:
   using Extension = ExtensionType;
   using Extendee = ExtendeeType;
 
+  // Placeholder for extant legacy callers, avoid use if possible
+  const upb_MiniTableExtension* mini_table_ext() const {
+    return mini_table_ext_;
+  }
+
  private:
-  constexpr explicit ExtensionIdentifier(
-      const upb_MiniTableExtension* mini_table_ext)
-      : ExtensionMiniTableProvider(mini_table_ext) {}
+  constexpr explicit ExtensionIdentifier(const upb_MiniTableExtension* mte)
+      : mini_table_ext_(mte) {}
   constexpr uint32_t number() const {
-    return upb_MiniTableExtension_Number(mini_table_ext());
+    return upb_MiniTableExtension_Number(mini_table_ext_);
   }
 
   friend struct PrivateAccess;
+  const upb_MiniTableExtension* mini_table_ext_;
 };
 
 upb_ExtensionRegistry* GetUpbExtensions(
@@ -80,13 +72,12 @@ upb_ExtensionRegistry* GetUpbExtensions(
 class ExtensionRegistry {
  public:
   ExtensionRegistry(
-      const std::vector<const internal::ExtensionMiniTableProvider*>&
-          extensions,
+      const std::vector<const upb_MiniTableExtension*>& extensions,
       const upb::Arena& arena)
       : registry_(upb_ExtensionRegistry_New(arena.ptr())) {
     if (registry_) {
-      for (const auto& ext_provider : extensions) {
-        const auto* ext = ext_provider->mini_table_ext();
+      for (const auto extension : extensions) {
+        const auto* ext = extension;
         bool success = upb_ExtensionRegistry_AddArray(registry_, &ext, 1);
         if (!success) {
           registry_ = nullptr;
