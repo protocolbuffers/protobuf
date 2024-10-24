@@ -530,6 +530,11 @@ bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
   }
 }
 
+bool upb_Arena_IsFused(upb_Arena* a, upb_Arena* b) {
+  if (a == b) return true;  // trivial fuse
+  return _upb_Arena_FindRoot(a).root == _upb_Arena_FindRoot(b).root;
+}
+
 bool upb_Arena_IncRefFor(upb_Arena* a, const void* owner) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   if (_upb_ArenaInternal_HasInitialBlock(ai)) return false;
