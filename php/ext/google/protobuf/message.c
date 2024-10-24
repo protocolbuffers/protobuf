@@ -312,7 +312,14 @@ static zval* Message_read_property(zend_object* obj, zend_string* member,
   const upb_FieldDef* f = get_field(intern, member);
 
   if (!f) return &EG(uninitialized_zval);
-  Message_get(intern, f, rv);
+
+  if (upb_FieldDef_IsOptional(f) && upb_FieldDef_HasPresence(f)
+    && Message_has_property(obj, member, 0, cache_slot) == false
+  ) {
+    ZVAL_NULL(rv);
+  } else {
+    Message_get(intern, f, rv);
+  }
   return rv;
 }
 
