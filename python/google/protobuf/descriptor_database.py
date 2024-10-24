@@ -52,14 +52,14 @@ class DescriptorDatabase(object):
       for name in _ExtractSymbols(message, package):
         self._AddSymbol(name, file_desc_proto)
     for enum in file_desc_proto.enum_type:
-      self._AddSymbol(('.'.join((package, enum.name))), file_desc_proto)
+      self._AddSymbol((_AddPackage(package, enum.name)), file_desc_proto)
       for enum_value in enum.value:
         self._file_desc_protos_by_symbol[
-            '.'.join((package, enum_value.name))] = file_desc_proto
+            _AddPackage(package, enum_value.name)] = file_desc_proto
     for extension in file_desc_proto.extension:
-      self._AddSymbol(('.'.join((package, extension.name))), file_desc_proto)
+      self._AddSymbol((_AddPackage(package, extension.name)), file_desc_proto)
     for service in file_desc_proto.service:
-      self._AddSymbol(('.'.join((package, service.name))), file_desc_proto)
+      self._AddSymbol(_AddPackage(package, service.name), file_desc_proto)
 
   def FindFileByName(self, name):
     """Finds the file descriptor proto by file name.
@@ -152,3 +152,16 @@ def _ExtractSymbols(desc_proto, package):
       yield symbol
   for enum_type in desc_proto.enum_type:
     yield '.'.join((message_name, enum_type.name))
+
+
+def _AddPackage(package, name):
+  """Adds a package to a name if it exists.
+
+  Args:
+    package: The package to add.
+    name: The name to add the package to.
+
+  Returns:
+    The fully qualified name.
+  """
+  return '.'.join((package, name)) if package else name
