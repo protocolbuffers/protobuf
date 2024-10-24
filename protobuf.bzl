@@ -99,6 +99,10 @@ def _proto_gen_impl(ctx):
 
     if ctx.attr.includes:
         for include in ctx.attr.includes:
+            if include == ".":
+                # This is effectively source_dir, which has already been handled,
+                # and may be generated incorrectly here.
+                continue
             import_flags += ["-I" + _GetPath(ctx, include)]
 
     import_flags = depset(direct = import_flags)
