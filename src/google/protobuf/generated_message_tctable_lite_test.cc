@@ -11,14 +11,19 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/algorithm/container.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor_database.h"
+#include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -333,6 +338,10 @@ class FindFieldEntryTest : public ::testing::Test {
     return TcParser::FieldName(&table.header, entry);
   }
 
+  static int FieldNumber(const TcParseTableBase* table, size_t index) {
+    return TcParser::FieldNumber(table, table->field_entries_begin() + index);
+  }
+
   // Calls the private `MessageName` function.
   template <size_t kFastTableSizeLog2, size_t kNumEntries, size_t kNumFieldAux,
             size_t kNameTableSize, size_t kFieldLookupTableSize>
@@ -345,6 +354,36 @@ class FindFieldEntryTest : public ::testing::Test {
   // Returns the number of fields scanned during a small scan.
   static constexpr int small_scan_size() { return TcParser::kMtSmallScanSize; }
 };
+
+TEST_F(FindFieldEntryTest, FieldNumberWorksForAllFields) {
+  // Look at all types registered in the binary and verify that field number
+  // calculation works for all the fields.
+  auto* gen_db = DescriptorPool::internal_generated_database();
+  std::vector<std::string> all_file_names;
+  gen_db->FindAllFileNames(&all_file_names);
+
+  for (const auto& filename : all_file_names) {
+    SCOPED_TRACE(filename);
+    const auto* file =
+        DescriptorPool::generated_pool()->FindFileByName(filename);
+    VisitDescriptors(*file, [&](const Descriptor& desc) {
+      SCOPED_TRACE(desc.full_name());
+      const auto* prototype =
+          MessageFactory::generated_factory()->GetPrototype(&desc);
+      const auto* tc_table = internal::GetClassData(*prototype)->tc_table;
+
+      std::vector<int> sorted_field_numbers;
+      for (auto* field : internal::FieldRange(&desc)) {
+        sorted_field_numbers.push_back(field->number());
+      }
+      absl::c_sort(sorted_field_numbers);
+
+      for (int i = 0; i < desc.field_count(); ++i) {
+        EXPECT_EQ(FieldNumber(tc_table, i), sorted_field_numbers[i]);
+      }
+    });
+  }
+}
 
 TEST_F(FindFieldEntryTest, SequentialFieldRange) {
   // Look up fields that are within the range of `lookup_table_offset`.
