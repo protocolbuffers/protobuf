@@ -298,7 +298,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         unsupported_features = ctx.disabled_features,
     )
 
-    proto_srcs = getattr(ctx.rule.files, "srcs", [])
+    proto_srcs = target[ProtoInfo].direct_sources
     proto_deps = getattr(ctx.rule.attr, "deps", [])
     transitive_crate_mappings = []
     for dep in proto_deps:
