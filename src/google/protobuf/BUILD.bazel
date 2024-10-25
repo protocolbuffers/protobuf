@@ -916,37 +916,42 @@ filegroup(
     visibility = ["//:__subpackages__"],
 )
 
+# This is is a legacy target: use the more specific proto_library targets should be used instead.
 proto_library(
     name = "test_protos",
+    strip_import_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":any_test_proto",
+        ":edition_unittest_proto",
+        ":test_protos_legacy_blob",
+        ":unittest_proto",
+    ],
+)
+
+# TODO: b/368022283 - Further break this down into narrow targets matching our internal target
+# structure.
+proto_library(
+    name = "test_protos_legacy_blob",
     srcs = [
-        "any_test.proto",
-        "edition_unittest.proto",
         "map_proto2_unittest.proto",
         "map_proto3_unittest.proto",
         "map_unittest.proto",
-        "unittest.proto",
         "unittest_arena.proto",
         "unittest_custom_options.proto",
         "unittest_delimited.proto",
         "unittest_delimited_import.proto",
         "unittest_drop_unknown_fields.proto",
-        "unittest_embed_optimize_for.proto",
-        "unittest_empty.proto",
         "unittest_enormous_descriptor.proto",
         "unittest_features.proto",
-        "unittest_import.proto",
-        "unittest_import_public.proto",
         "unittest_invalid_features.proto",
         "unittest_lazy_dependencies.proto",
         "unittest_lazy_dependencies_custom_option.proto",
         "unittest_lazy_dependencies_enum.proto",
         "unittest_legacy_features.proto",
         "unittest_lite_imports_nonlite.proto",
-        "unittest_mset.proto",
-        "unittest_mset_wire_format.proto",
         "unittest_no_field_presence.proto",
         "unittest_no_generic_services.proto",
-        "unittest_optimize_for.proto",
         "unittest_preserve_unknown_enum.proto",
         "unittest_preserve_unknown_enum2.proto",
         "unittest_proto3_bad_macros.proto",
@@ -958,7 +963,7 @@ proto_library(
         "unittest_well_known_types.proto",
     ],
     strip_import_prefix = "/src",
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:private"],
     deps = [
         ":any_proto",
         ":api_proto",
@@ -971,7 +976,56 @@ proto_library(
         ":struct_proto",
         ":timestamp_proto",
         ":type_proto",
+        ":unittest_proto",
         ":wrappers_proto",
+    ],
+)
+
+proto_library(
+    name = "any_test_proto",
+    srcs = ["any_test.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":any_proto",
+    ],
+)
+
+proto_library(
+    name = "edition_unittest_proto",
+    srcs = ["edition_unittest.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":cpp_features_proto",
+        ":unittest_proto",
+    ],
+)
+
+proto_library(
+    name = "unittest_proto",
+    srcs = [
+        "unittest.proto",
+        "unittest_embed_optimize_for.proto",
+        "unittest_empty.proto",
+        "unittest_import.proto",
+        "unittest_import_public.proto",
+        "unittest_mset.proto",
+        "unittest_mset_wire_format.proto",
+        "unittest_optimize_for.proto",
+    ],
+    strip_import_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+)
+
+proto_library(
+    name = "map_proto2_unittest_proto",
+    srcs = ["map_proto2_unittest.proto"],
+    strip_import_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":cpp_features_proto",
+        ":test_protos_legacy_blob",
     ],
 )
 

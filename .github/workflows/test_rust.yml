@@ -31,6 +31,7 @@ jobs:
             test --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 --@rules_rust//rust/settings:experimental_use_cc_common_link=True
             //rust:all
             //rust/test/cpp/interop/...
+            //rust/test/shared:ctype_cord_upb_test //rust/test/shared:ctype_cord_cpp_test
             //rust/test/rust_proto_library_unit_test:rust_upb_aspect_test
             //src/google/protobuf/compiler/rust/...
       - name: Run Cargo tests

@@ -368,3 +368,17 @@ rust_upb_proto_library(
     ],
     deps = [":fields-with-imported-types_proto"],
 )
+
+rust_upb_proto_library(
+    name = "unittest_upb_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = ["//src/google/protobuf:unittest_proto"],
+)
+
+rust_cc_proto_library(
+    name = "unittest_cpp_rust_proto",
+    testonly = True,
+    visibility = ["//rust/test/shared:__subpackages__"],
+    deps = ["//src/google/protobuf:unittest_proto"],
+)

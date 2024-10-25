@@ -24,7 +24,7 @@ rust_test(
     },
     deps = [
         "//rust:protobuf_upb_export",
-        "//src/google/protobuf:unittest_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -37,7 +37,7 @@ rust_test(
     },
     deps = [
         "//rust:protobuf_cpp_export",
-        "//src/google/protobuf:unittest_cpp_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
