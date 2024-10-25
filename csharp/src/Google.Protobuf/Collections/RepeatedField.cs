@@ -34,8 +34,8 @@ namespace Google.Protobuf.Collections
         private static readonly T[] EmptyArray = new T[0];
         private const int MinArraySize = 8;
 
-        private T[] array = EmptyArray;
-        private int count = 0;
+        internal T[] array = EmptyArray;
+        internal int count = 0;
 
         /// <summary>
         /// Creates a deep clone of this repeated field.
@@ -53,7 +53,7 @@ namespace Google.Protobuf.Collections
             RepeatedField<T> clone = new RepeatedField<T>();
             if (array != EmptyArray)
             {
-                clone.array = (T[])array.Clone();
+                clone.array = (T[]) array.Clone();
                 if (clone.array is IDeepCloneable<T>[] cloneableArray)
                 {
                     for (int i = 0; i < count; i++)
@@ -283,7 +283,7 @@ namespace Google.Protobuf.Collections
         }
 
         // May increase the size of the internal array, but will never shrink it.
-        private void EnsureSize(int size)
+        internal void EnsureSize(int size)
         {
             if (array.Length < size)
             {
@@ -355,7 +355,7 @@ namespace Google.Protobuf.Collections
             if (index == -1)
             {
                 return false;
-            }            
+            }
             Array.Copy(array, index + 1, array, index, count - index - 1);
             count--;
             array[count] = default;
@@ -463,7 +463,7 @@ namespace Google.Protobuf.Collections
         ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
         public override bool Equals(object obj) => Equals(obj as RepeatedField<T>);
-        
+
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
         /// </summary>
@@ -476,7 +476,7 @@ namespace Google.Protobuf.Collections
         /// Returns a hash code for this instance.
         /// </summary>
         /// <returns>
-        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.
         /// </returns>
         public override int GetHashCode()
         {
@@ -623,7 +623,7 @@ namespace Google.Protobuf.Collections
         object IList.this[int index]
         {
             get => this[index];
-            set => this[index] = (T)value;
+            set => this[index] = (T) value;
         }
 
         int IList.Add(object value)
@@ -645,7 +645,7 @@ namespace Google.Protobuf.Collections
                 Remove(t);
             }
         }
-        #endregion        
+        #endregion
 
         private sealed class RepeatedFieldDebugView
         {
