@@ -1330,7 +1330,53 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
 }
 
 void Reflection::MaybePoisonAfterClear(Message& root) const {
+  struct MemBlock {
+    explicit MemBlock(Message& msg)
+        : ptr(static_cast<void*>(&msg)), size(GetSize(msg)) {}
+
+    static uint32_t GetSize(const Message& msg) {
+      return msg.GetReflection()->schema_.GetObjectSize();
+    }
+
+    void* ptr;
+    uint32_t size;
+  };
+
+  bool heap_alloc = root.GetArena() == nullptr;
+  std::vector<MemBlock> nodes;
+
+#ifdef __cpp_if_constexpr
+  nodes.emplace_back(root);
+
+  std::queue<Message*> queue;
+  queue.push(&root);
+
+  while (!queue.empty() && !heap_alloc) {
+    Message* curr = queue.front();
+    queue.pop();
+    internal::VisitMutableMessageFields(*curr, [&](Message& msg) {
+      if (msg.GetArena() == nullptr) {
+        heap_alloc = true;
+        return;
+      }
+
+      nodes.emplace_back(msg);
+      // Also visits child messages.
+      queue.push(&msg);
+    });
+  }
+#endif
+
   root.Clear();
+
+  // Heap allocated oneof messages will be freed on clear. So, poisoning
+  // afterwards may cause use-after-free. Bailout.
+  if (heap_alloc) return;
+
+  for (auto it : nodes) {
+    (void)it;
+    PROTOBUF_POISON_MEMORY_REGION(it.ptr, it.size);
+  }
 }
 
 int Reflection::FieldSize(const Message& message,
