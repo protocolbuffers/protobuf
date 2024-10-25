@@ -1583,9 +1583,12 @@ cc_test(
     }),
     deps = [
         ":cc_test_protos",
+        ":descriptor_visitor",
         ":port",
+        ":protobuf",
         ":protobuf_lite",
         "//src/google/protobuf/io",
+        "@com_google_absl//absl/algorithm:container",
         "@com_google_absl//absl/log:absl_check",
         "@com_google_absl//absl/log:absl_log",
         "@com_google_absl//absl/strings",
