@@ -54,4 +54,26 @@ message GoFeatures {
     edition_defaults = { edition: EDITION_LEGACY, value: "API_LEVEL_UNSPECIFIED" },
     edition_defaults = { edition: EDITION_2024, value: "API_OPAQUE" }
    ];
+
+  enum StripEnumPrefix {
+    STRIP_ENUM_PREFIX_UNSPECIFIED = 0;
+    STRIP_ENUM_PREFIX_KEEP = 1;
+    STRIP_ENUM_PREFIX_GENERATE_BOTH = 2;
+    STRIP_ENUM_PREFIX_STRIP = 3;
+  }
+
+  optional StripEnumPrefix strip_enum_prefix = 3 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_ENUM,
+    targets = TARGET_TYPE_ENUM_ENTRY,
+    targets = TARGET_TYPE_FILE,
+    feature_support = {
+      edition_introduced: EDITION_2024,
+    },
+    // TODO: change the default to STRIP_ENUM_PREFIX_STRIP for edition 2025.
+    edition_defaults = {
+      edition: EDITION_LEGACY,
+      value: "STRIP_ENUM_PREFIX_KEEP"
+    }
+  ];
 }
