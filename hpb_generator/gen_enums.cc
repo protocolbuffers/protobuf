@@ -94,8 +94,8 @@ void WriteEnumValues(const protobuf::EnumDescriptor* desc, Context& ctx) {
 
   for (size_t i = 0; i < values.size(); i++) {
     auto value = values[i];
-    ctx.EmitLegacy("  $0", EnumValueSymbolInNameSpace(desc, value));
-    ctx.EmitLegacy(" = $0", EnumInt32ToString(value->number()));
+    ctx.Emit({{"enum", EnumValueSymbolInNameSpace(desc, value)}}, "  $enum$");
+    ctx.Emit({{"val", EnumInt32ToString(value->number())}}, " = $val$");
     if (i != values.size() - 1) {
       ctx.Emit(",");
     }
@@ -106,7 +106,7 @@ void WriteEnumValues(const protobuf::EnumDescriptor* desc, Context& ctx) {
 void WriteEnumDeclarations(
     const std::vector<const protobuf::EnumDescriptor*>& enums, Context& ctx) {
   for (auto enumdesc : enums) {
-    ctx.EmitLegacy("enum $0 : int {\n", EnumTypeName(enumdesc));
+    ctx.Emit({{"type", EnumTypeName(enumdesc)}}, "enum $type$ : int {\n");
     WriteEnumValues(enumdesc, ctx);
     ctx.Emit("};\n\n");
   }
