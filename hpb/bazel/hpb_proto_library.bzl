@@ -159,8 +159,6 @@ def _upb_cc_proto_rule_impl(ctx):
     ]
 
 def _upb_cc_proto_aspect_impl(target, ctx, cc_provider, file_provider):
-    proto_info = target[ProtoInfo]
-    files = _compile_upb_cc_protos(ctx, proto_info, proto_info.direct_sources)
     deps = ctx.rule.attr.deps + ctx.attr._upbprotos
     dep_ccinfos = [dep[CcInfo] for dep in deps if CcInfo in dep]
     dep_ccinfos += [dep[UpbWrappedCcInfo].cc_info for dep in deps if UpbWrappedCcInfo in dep]
@@ -168,15 +166,26 @@ def _upb_cc_proto_aspect_impl(target, ctx, cc_provider, file_provider):
     if UpbWrappedCcInfo not in target:
         fail("Target should have UpbWrappedCcInfo provider")
     dep_ccinfos.append(target[UpbWrappedCcInfo].cc_info)
-    cc_info = _cc_library_func(
-        ctx = ctx,
-        name = ctx.rule.attr.name + ".upbprotos",
-        hdrs = files.hdrs,
-        srcs = files.srcs,
-        copts = ctx.attr._ccopts[HpbProtoLibraryCoptsInfo].copts,
-        dep_ccinfos = dep_ccinfos,
-    )
-    return [cc_provider(cc_info = cc_info), file_provider(srcs = files)]
+    proto_info = target[ProtoInfo]
+
+    if not getattr(ctx.rule.attr, "srcs", []):
+        # This target doesn't declare any sources, reexport all its deps instead.
+        # This is known as an "alias library":
+        # https://bazel.build/versions/6.4.0/reference/be/protocol-buffer#proto_library.srcs
+        return [cc_provider(
+            cc_info = cc_common.merge_cc_infos(direct_cc_infos = dep_ccinfos),
+        ), file_provider(srcs = GeneratedSrcsInfo(srcs = [], hdrs = []))]
+    else:
+        files = _compile_upb_cc_protos(ctx, proto_info, proto_info.direct_sources)
+        cc_info = _cc_library_func(
+            ctx = ctx,
+            name = ctx.rule.attr.name + ".upbprotos",
+            hdrs = files.hdrs,
+            srcs = files.srcs,
+            copts = ctx.attr._ccopts[HpbProtoLibraryCoptsInfo].copts,
+            dep_ccinfos = dep_ccinfos,
+        )
+        return [cc_provider(cc_info = cc_info), file_provider(srcs = files)]
 
 def _upb_cc_proto_library_aspect_impl(target, ctx):
     return _upb_cc_proto_aspect_impl(target, ctx, _UpbCcWrappedCcInfo, _WrappedCcGeneratedSrcsInfo)

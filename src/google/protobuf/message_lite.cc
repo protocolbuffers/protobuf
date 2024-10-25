@@ -19,8 +19,10 @@
 #include <istream>
 #include <ostream>
 #include <string>
+#include <typeinfo>
 #include <utility>
 
+#include "absl/base/config.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
@@ -198,6 +200,9 @@ void MessageLite::LogInitializationErrorMessage() const {
 namespace internal {
 
 void FailDynamicCast(const MessageLite& from, const MessageLite& to) {
+#if defined(ABSL_HAVE_EXCEPTIONS)
+  throw std::bad_cast();
+#endif
   const auto to_name = to.GetTypeName();
   if (internal::GetClassData(from)->is_dynamic) {
     ABSL_LOG(FATAL)

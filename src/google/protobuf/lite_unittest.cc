@@ -1395,16 +1395,23 @@ TEST(LiteTest, DynamicCastMessage) {
   EXPECT_EQ(shared_2, nullptr);
 }
 
-#if GTEST_HAS_DEATH_TEST
 TEST(LiteTest, DynamicCastMessageInvalidReferenceType) {
   CastType1 test_type_1;
   const MessageLite& test_type_1_pointer_const_ref = test_type_1;
+#if defined(ABSL_HAVE_EXCEPTIONS)
+  EXPECT_THROW(DynamicCastMessage<CastType2>(test_type_1_pointer_const_ref),
+               std::bad_cast);
+#elif defined(GTEST_HAS_DEATH_TEST)
   ASSERT_DEATH(
       DynamicCastMessage<CastType2>(test_type_1_pointer_const_ref),
       absl::StrCat("Cannot downcast ", test_type_1.GetTypeName(), " to ",
                    CastType2::default_instance().GetTypeName()));
+#else
+  (void)test_type_1;
+  (void)test_type_1_pointer_const_ref;
+  GTEST_SKIP() << "Can't test the failure.";
+#endif
 }
-#endif  // GTEST_HAS_DEATH_TEST
 
 TEST(LiteTest, DownCastMessageValidType) {
   CastType1 test_type_1;

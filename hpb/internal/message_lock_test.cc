@@ -11,6 +11,7 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -19,6 +20,7 @@
 #include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
 #include "google/protobuf/hpb/hpb.h"
 #include "upb/mem/arena.hpp"
+#include "upb/mini_table/extension.h"
 
 #ifndef ASSERT_OK
 #define ASSERT_OK(x) ASSERT_TRUE(x.ok())
@@ -109,14 +111,18 @@ TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothLazy) {
 
 TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceOneLazyOneEager) {
   ::upb::Arena arena;
-  TestConcurrentExtensionAccess({{&theme}, arena});
-  TestConcurrentExtensionAccess({{&ThemeExtension::theme_extension}, arena});
+  std::vector<const upb_MiniTableExtension*> e1{theme.mini_table_ext()};
+  TestConcurrentExtensionAccess({e1, arena});
+  std::vector<const upb_MiniTableExtension*> e2{
+      ThemeExtension::theme_extension.mini_table_ext()};
+  TestConcurrentExtensionAccess({e2, arena});
 }
 
 TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothEager) {
   ::upb::Arena arena;
-  TestConcurrentExtensionAccess(
-      {{&theme, &ThemeExtension::theme_extension}, arena});
+  std::vector<const upb_MiniTableExtension*> exts{
+      theme.mini_table_ext(), ThemeExtension::theme_extension.mini_table_ext()};
+  TestConcurrentExtensionAccess({exts, arena});
 }
 
 }  // namespace

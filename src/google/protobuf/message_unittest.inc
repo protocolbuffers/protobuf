@@ -35,6 +35,7 @@
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "absl/base/config.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/scoped_mock_log.h"
 #include "absl/strings/cord.h"
@@ -816,11 +817,17 @@ TEST(MESSAGE_TEST_NAME, DynamicCastMessage) {
 TEST(MESSAGE_TEST_NAME, DynamicCastMessageInvalidReferenceType) {
   UNITTEST::TestAllTypes test_all_types;
   const MessageLite& test_all_types_pointer_const_ref = test_all_types;
+#if defined(ABSL_HAVE_EXCEPTIONS)
+  EXPECT_THROW(DynamicCastMessage<UNITTEST::TestRequired>(
+                   test_all_types_pointer_const_ref),
+               std::bad_cast);
+#else
   ASSERT_DEATH(
       DynamicCastMessage<UNITTEST::TestRequired>(
           test_all_types_pointer_const_ref),
       absl::StrCat("Cannot downcast ", test_all_types.GetTypeName(), " to ",
                    UNITTEST::TestRequired::default_instance().GetTypeName()));
+#endif
 }
 
 TEST(MESSAGE_TEST_NAME, DownCastMessageValidType) {
