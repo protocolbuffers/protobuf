@@ -424,10 +424,7 @@ class WellKnownTest extends TestBase {
     {
         $testMessage = new TestMessage();
 
-        $functionName = preg_replace_callback('/[_\-\s]+(.)?/',
-            function ($matches) {return strtoupper($matches[1] ?? '');},
-            $property
-        );
+        $functionName = implode('', array_map('ucwords', explode('_', $property)));
 
         $reflectionProperty = new \ReflectionProperty($testMessage, $property);
 
