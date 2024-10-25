@@ -57,7 +57,9 @@ class DescriptorDatabaseTest(unittest.TestCase):
     self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.FACTORY_2_VALUE_0'))
     self.assertEqual(file_desc_proto2, db.FindFileContainingSymbol(
-        '.NO_PACKAGE_VALUE_0'))
+        'NO_PACKAGE_VALUE_0'))
+    self.assertEqual(file_desc_proto2, db.FindFileContainingSymbol(
+        'NoPackageService'))
     # Can find top level extension.
     self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.another_field'))

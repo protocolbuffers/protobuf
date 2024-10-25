@@ -9,6 +9,8 @@
 
 syntax = "proto2";
 
+import "google/protobuf/empty.proto";
+
 enum NoPackageEnum {
   NO_PACKAGE_VALUE_0 = 0;
   NO_PACKAGE_VALUE_1 = 1;
@@ -16,4 +18,8 @@ enum NoPackageEnum {
 
 message NoPackageMessage {
   optional NoPackageEnum no_package_enum = 1;
+}
+
+service NoPackageService {
+  rpc NoPackageMethod(google.protobuf.Empty) returns (google.protobuf.Empty);
 }
