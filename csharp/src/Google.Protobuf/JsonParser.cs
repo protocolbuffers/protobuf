@@ -830,7 +830,7 @@ namespace Google.Protobuf
                 // TODO: It would be nice not to have to create all these objects... easy to optimize later though.
                 Timestamp timestamp = Timestamp.FromDateTime(parsed);
                 int nanosToAdd = 0;
-                if (subseconds != "")
+                if (subseconds.Length != 0)
                 {
                     // This should always work, as we've got 1-9 digits.
                     int parsedFraction = int.Parse(subseconds.Substring(1), CultureInfo.InvariantCulture);
@@ -906,7 +906,7 @@ namespace Google.Protobuf
             {
                 long seconds = long.Parse(secondsText, CultureInfo.InvariantCulture) * multiplier;
                 int nanos = 0;
-                if (subseconds != "")
+                if (subseconds.Length != 0)
                 {
                     // This should always work, as we've got 1-9 digits.
                     int parsedFraction = int.Parse(subseconds.Substring(1));
