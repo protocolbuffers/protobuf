@@ -129,6 +129,7 @@ cc_library(
     deps = [
         ":generator_common",
         ":helpers",
+        ":internal_helpers",
         ":java_features_bootstrap",
         ":names",
         "//src/google/protobuf",
@@ -191,6 +192,20 @@ cc_library(
         "//src/google/protobuf/io:printer",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_test(
+    name = "generator_unittest",
+    srcs = ["generator_unittest.cc"],
+    deps = [
+        ":java",
+        ":java_features_bootstrap",
+        "//:protobuf",
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:command_line_interface_tester",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
