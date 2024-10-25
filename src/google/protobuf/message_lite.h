@@ -195,6 +195,7 @@ class PROTOBUF_EXPORT CachedSize {
   }
 
   void SetNonZero(Scalar desired) const noexcept {
+    ABSL_DCHECK_NE(desired, 0);
     __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
   }
 #else
@@ -218,6 +219,7 @@ class PROTOBUF_EXPORT CachedSize {
   }
 
   void SetNonZero(Scalar desired) const noexcept {
+    ABSL_DCHECK_NE(desired, 0);
     atom_.store(desired, std::memory_order_relaxed);
   }
 #endif
