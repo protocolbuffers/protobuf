@@ -24,7 +24,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.1-97f82260fd504923d8af642d567afb2d83a1959d"
+          image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: rust_linux
           bazel: >-
@@ -36,7 +36,7 @@ jobs:
       - name: Run Cargo tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v3
         with:
-          image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:6.3.0-1.74.0-8858126dd9480abf91e6ce8d6e41a5cd3c03882c"
+          image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:7.1.2-1.74.0-d9624f2aa83cba3eaf906f751d75b36aacb9aa82"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: rust_linux
           bazel: >-

@@ -50,6 +50,7 @@ jobs:
         # commit.
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
+          version: 7.1.2 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: staleness
           bash: >

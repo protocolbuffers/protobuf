@@ -87,3 +87,9 @@ build --verbose_failures
 # Important: this flag ensures that we remain compliant with the C++ layering
 # check.
 build --features=layering_check
+
+build:linux-aarch64 --incompatible_enable_cc_toolchain_resolution=false
+build:linux-x86_64 --incompatible_enable_cc_toolchain_resolution=false
+build:linux-i386 --incompatible_enable_cc_toolchain_resolution=false
+# build --incompatible_enable_cc_toolchain_resolution=false
+build --enable_platform_specific_config

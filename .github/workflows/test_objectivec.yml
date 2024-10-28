@@ -111,6 +111,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
+          version: 7.1.2 # Bazel version, not Xcode version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cocoapods/${{ matrix.XCODE }}
           bash: |
@@ -158,6 +159,7 @@ jobs:
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
+          version: 7.1.2 # Bazel version, not Xcode version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.config.bazel_action }} ${{ matrix.config.flags }} ${{ matrix.bazel_targets }}
           bazel-cache: objc_${{ matrix.platform }}_${{ matrix.config.name }}

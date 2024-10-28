@@ -54,7 +54,7 @@ jobs:
             version-short: "8.3"
             command: composer test \&\& composer test_c
 
-    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name}}
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name }}
     runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
@@ -72,7 +72,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:6.4.0-${{ matrix.version }}-27cf7b86212020d7e552bc13b1e084abb971da75
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:7.1.2-${{ matrix.version }}-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           extra-flags: -e COMPOSER_HOME=/workspace/composer-cache
           command: ${{ matrix.command }}
@@ -81,7 +81,8 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:6.4.0-${{ matrix.version }}-27cf7b86212020d7e552bc13b1e084abb971da75
+          version: 7.1.2 # Bazel version, not PHP version
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:7.1.2-${{ matrix.version }}-d9624f2aa83cba3eaf906f751d75b36aacb9aa82
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_linux/${{ matrix.version }}
           bazel: test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH
@@ -122,7 +123,7 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.4.0-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
@@ -149,6 +150,10 @@ jobs:
             composer ${{ matrix.test }}'
 
   linux-aarch64:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        version: ['8.1']
     name: Linux aarch64
     runs-on: ubuntu-22-4core
     steps:
@@ -161,14 +166,14 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v3
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:6.4.0-cf84e92285ca133b9c8104ad7b14d70e953cbb8e
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
       - name: Setup composer
         uses: protocolbuffers/protobuf-ci/composer-setup@v3
         with:
-          cache-prefix: php-8.1
+          cache-prefix: php-${{ matrix.version }}
           directory: php
 
       - name: Run tests
@@ -188,6 +193,7 @@ jobs:
       - name: Run conformance tests
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
+          version: 7.1.2 # Bazel version, not PHP version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_linux/${{ matrix.version }}
           bazel: test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH
@@ -251,6 +257,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel@v3
         with:
+          version: 7.1.2 # Bazel version, not PHP version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_macos/${{ matrix.version }}
           bazel: test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH
