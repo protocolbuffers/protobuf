@@ -1330,7 +1330,7 @@ std::string Utf8Format(const MessageLite& message_lite);
 //
 // `DynamicCastMessage` is similar to `dynamic_cast`, returns `nullptr` when the
 // input is not an instance of `T`. The overloads that take a reference will
-// terminate on mismatch.
+// throw std::bad_cast on mismatch, or terminate if compiled without exceptions.
 //
 // `DownCastMessage` is a lightweight function for downcasting base
 // `MessageLite` pointer to derived type, where it only does type checking if
@@ -1364,6 +1364,11 @@ template <typename T>
 const T& DynamicCastMessage(const MessageLite& from) {
   const T* destination_message = DynamicCastMessage<T>(&from);
   if (ABSL_PREDICT_FALSE(destination_message == nullptr)) {
+    // If exceptions are enabled, throw.
+    // Otherwise, log a fatal error.
+#if defined(ABSL_HAVE_EXCEPTIONS)
+    throw std::bad_cast();
+#endif
     // Move the logging into an out-of-line function to reduce bloat in the
     // caller.
     internal::FailDynamicCast(from, T::default_instance());
