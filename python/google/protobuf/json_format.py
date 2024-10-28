@@ -752,8 +752,8 @@ class _Parser(object):
     """Convert a JSON representation into Value message."""
     if isinstance(value, dict):
       self._ConvertStructMessage(value, message.struct_value, path)
-    elif isinstance(value, list):
-      self._ConvertListValueMessage(value, message.list_value, path)
+    elif isinstance(value, (list, tuple)):
+      self._ConvertListOrTupleValueMessage(value, message.list_value, path)
     elif value is None:
       message.null_value = 0
     elif isinstance(value, bool):
@@ -769,9 +769,9 @@ class _Parser(object):
           )
       )
 
-  def _ConvertListValueMessage(self, value, message, path):
+  def _ConvertListOrTupleValueMessage(self, value, message, path):
     """Convert a JSON representation into ListValue message."""
-    if not isinstance(value, list):
+    if not isinstance(value, (list, tuple)):
       raise ParseError(
           'ListValue must be in [] which is {0} at {1}'.format(value, path)
       )
@@ -1052,7 +1052,7 @@ _WKTJSONMETHODS = {
     ],
     'google.protobuf.ListValue': [
         '_ListValueMessageToJsonObject',
-        '_ConvertListValueMessage',
+        '_ConvertListOrTupleValueMessage',
     ],
     'google.protobuf.Struct': [
         '_StructMessageToJsonObject',
