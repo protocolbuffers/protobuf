@@ -29,18 +29,7 @@ jobs:
         runner: [ ubuntu, windows, macos ]
         bazelversion: [ '7.1.2' ]
         bzlmod: [ true, false ]
-        toolchain_resolution: [ "" ]
-        include:
-          - runner: ubuntu
-            bazelversion: '6.4.0'
-            # Not running Bazel 6 with bzlmod, because it doesn't support use_repo_rule in rules_jvm_external
-            bzlmod: false
-          - runner: ubuntu
-            bzlmod: false
-            toolchain_resolution: --incompatible_enable_proto_toolchain_resolution=true
-          - runner: ubuntu
-            bzlmod: true
-            toolchain_resolution: --incompatible_enable_proto_toolchain_resolution=true
+        toolchain_resolution: [ "", "--incompatible_enable_proto_toolchain_resolution=true" ]
     runs-on: ${{ matrix.runner }}-latest
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }} ${{ matrix.toolchain_resolution && ' (toolchain resolution)' || '' }}
     steps:

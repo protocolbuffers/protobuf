@@ -35,5 +35,3 @@ common --noenable_bzlmod
 # Important: this flag ensures that we remain compliant with the C++ layering
 # check.
 build --features=layering_check
-
-common --repo_env=BAZEL_NO_APPLE_CPP_TOOLCHAIN=1
