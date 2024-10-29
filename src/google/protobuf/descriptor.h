@@ -31,6 +31,9 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H__
 
+#include <sys/types.h>
+
+#include <any>
 #include <atomic>
 #include <cstdint>
 #include <iterator>
@@ -2391,6 +2394,23 @@ class PROTOBUF_EXPORT DescriptorPool {
 #endif  // !PROTOBUF_FUTURE_RENAME_ADD_UNUSED_IMPORT && !SWIG
 
 
+  // Memoize a projection of a field.  This is used to cache the results of
+  // calling a function on a field, used for expensive descriptor calculations.
+  template <typename Result>
+  Result MemoizeProjection(const FieldDescriptor* field,
+                           Result (*project)(const FieldDescriptor*)) const {
+    auto key = std::make_pair(
+        field,
+        reinterpret_cast<void* (*)(const google::protobuf::FieldDescriptor*)>(project));
+    auto it = memo_.find(key);
+    if (it != memo_.end()) {
+      return std::any_cast<Result>(it->second);
+    }
+    Result result = project(field);
+    memo_[key] = result;
+    return result;
+  }
+
  private:
   friend class Descriptor;
   friend class internal::LazyDescriptor;
@@ -2462,6 +2482,10 @@ class PROTOBUF_EXPORT DescriptorPool {
   Symbol NewPlaceholderWithMutexHeld(absl::string_view name,
                                      PlaceholderType placeholder_type) const;
 
+  mutable absl::flat_hash_map<
+      std::pair<const FieldDescriptor*, void* (*)(const FieldDescriptor*)>,
+      std::any>
+      memo_;
   // If fallback_database_ is nullptr, this is nullptr.  Otherwise, this is a
   // mutex which must be locked while accessing tables_.
   absl::Mutex* mutex_;
