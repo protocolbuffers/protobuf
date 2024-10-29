@@ -795,8 +795,7 @@ class Message
     private function convertJsonValueToProtoValue(
         $value,
         $field,
-        $ignore_unknown,
-        $is_map_key = false)
+        $ignore_unknown)
     {
         switch ($field->getType()) {
             case GPBType::MESSAGE:
@@ -892,21 +891,20 @@ class Message
                 if (is_null($value)) {
                     return $this->defaultValue($field);
                 }
-                if ($is_map_key) {
-                    if ($value === "true") {
+                if (is_bool($value)) {
+                    return $value;
+                }
+                if (is_string($value)) {
+                    if ($value === 'true') {
                         return true;
                     }
-                    if ($value === "false") {
+                    if ($value === 'false') {
                         return false;
                     }
-                    throw new GPBDecodeException(
-                        "Bool field only accepts bool value");
                 }
-                if (!is_bool($value)) {
-                    throw new GPBDecodeException(
-                        "Bool field only accepts bool value");
-                }
-                return $value;
+
+                throw new GPBDecodeException(
+                    "Bool field only accepts bool value");
             case GPBType::FLOAT:
             case GPBType::DOUBLE:
                 if (is_null($value)) {
@@ -1249,8 +1247,7 @@ class Message
                     $proto_key = $this->convertJsonValueToProtoValue(
                         $tmp_key,
                         $key_field,
-                        $ignore_unknown,
-                        true);
+                        $ignore_unknown);
                     $proto_value = $this->convertJsonValueToProtoValue(
                         $tmp_value,
                         $value_field,
