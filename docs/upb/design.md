@@ -117,7 +117,7 @@ To help with the multiple arena case, upb provides a primitive called "fuse".
 ```c
 // Fuses the lifetimes of `a` and `b`.  None of the blocks from `a` or `b`
 // will be freed until both arenas are freed.
-UPB_API bool upb_Arena_Fuse(upb_Arena* a, upb_Arena* b);
+UPB_API bool upb_Arena_Fuse(const upb_Arena* a, const upb_Arena* b);
 ```
 
 When two arenas are fused together, their lifetimes are irreversibly joined,
