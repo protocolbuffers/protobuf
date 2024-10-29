@@ -1168,6 +1168,7 @@ set(protobuf_lite_test_files
 # @//src/google/protobuf:lite_test_proto_srcs
 set(protobuf_lite_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_lite_unittest.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/only_one_enum_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import_lite.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import_public_lite.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lite.proto
