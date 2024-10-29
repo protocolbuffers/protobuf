@@ -815,6 +815,7 @@ filegroup(
     name = "lite_test_proto_srcs",
     srcs = [
         "map_lite_unittest.proto",
+        "only_one_enum_test.proto",
         "unittest_import_lite.proto",
         "unittest_import_public_lite.proto",
         "unittest_lite.proto",
