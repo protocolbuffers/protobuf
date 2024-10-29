@@ -647,6 +647,7 @@ def py_proto_library(
       This is provided for backwards compatibility only.  Bazel 5.3 will
       introduce support for py_proto_library, which should be used instead.
     """
+    print("The py_proto_library macro is deprecated, switch to the rule defined by rules_python and protobuf (after 29.0).")
     internal_py_proto_library(*args, **kwargs)
 
 def _source_proto_library(
