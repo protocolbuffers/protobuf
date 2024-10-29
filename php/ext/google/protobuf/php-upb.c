@@ -3343,6 +3343,17 @@ bool upb_Arena_Fuse(const upb_Arena* a1, const upb_Arena* a2) {
   }
 }
 
+bool upb_Arena_IsFused(const upb_Arena* a, const upb_Arena* b) {
+  if (a == b) return true;  // trivial fuse
+  while (true) {
+    upb_ArenaRoot ra = _upb_Arena_FindRoot(a);
+    if (ra.root == _upb_Arena_FindRoot(b).root) return true;
+    if (ra.root == _upb_Arena_FindRoot(a).root) return false;
+
+    // a's root changed since we last checked.  Retry.
+  }
+}
+
 bool upb_Arena_IncRefFor(const upb_Arena* a, const void* owner) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   if (_upb_ArenaInternal_HasInitialBlock(ai)) return false;

@@ -694,6 +694,7 @@ UPB_API upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc);
 
 UPB_API void upb_Arena_Free(upb_Arena* a);
 UPB_API bool upb_Arena_Fuse(const upb_Arena* a, const upb_Arena* b);
+UPB_API bool upb_Arena_IsFused(const upb_Arena* a, const upb_Arena* b);
 
 bool upb_Arena_IncRefFor(const upb_Arena* a, const void* owner);
 void upb_Arena_DecRefFor(const upb_Arena* a, const void* owner);
