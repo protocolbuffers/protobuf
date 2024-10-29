@@ -762,16 +762,35 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
 
 void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   // TODO: move insertion points
-  p->Emit(R"cc(
-    inline $Submsg$* $Msg$::mutable_$name$(int index)
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
-      $WeakDescriptorSelfPin$;
-      $annotate_mutable$;
-      // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
-      $StrongRef$;
-      return _internal_mutable_$name_internal$()->Mutable(index);
-    }
-  )cc");
+  p->Emit(
+      {
+          {"Mutable",
+           [&] {
+             switch (opts_->bounds_check_mode) {
+               case BoundsCheckMode::kNoEnforcement:
+               case BoundsCheckMode::kReturnDefaultValue:
+                 p->Emit("_internal_mutable_$name_internal$()->Mutable(index)");
+                 break;
+               case BoundsCheckMode::kAbort:
+                 p->Emit(
+                     "::google::protobuf::internal::InternalEnforcedBoundsCheckMutable("
+                     "_internal_mutable_$name_internal$(), index)");
+                 break;
+             }
+           }},
+      },
+      R"cc(
+        inline $Submsg$* $Msg$::mutable_$name$(int index)
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $annotate_mutable$;
+          // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
+          $StrongRef$;
+          return $Mutable$;
+          ;
+        }
+      )cc");
+
   p->Emit(R"cc(
     inline $pb$::RepeatedPtrField<$Submsg$>* $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -785,10 +804,24 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   )cc");
   p->Emit(
       {
-          {"Get", opts_->safe_boundary_check ? "InternalCheckedGet" : "Get"},
+          {"Get",
+           [&] {
+             switch (opts_->bounds_check_mode) {
+               case BoundsCheckMode::kNoEnforcement:
+                 p->Emit("Get");
+                 break;
+               case BoundsCheckMode::kReturnDefaultValue:
+                 p->Emit("InternalCheckedGet");
+                 break;
+               case BoundsCheckMode::kAbort:
+                 p->Emit("InternalEnforcedBoundsCheckGet");
+                 break;
+             }
+           }},
           {"GetExtraArg",
            [&] {
-             p->Emit(opts_->safe_boundary_check
+             p->Emit(opts_->bounds_check_mode ==
+                             BoundsCheckMode::kReturnDefaultValue
                          ? ", reinterpret_cast<const $Submsg$&>($kDefault$)"
                          : "");
            }},

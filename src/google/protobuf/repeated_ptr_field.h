@@ -21,6 +21,8 @@
 #ifndef GOOGLE_PROTOBUF_REPEATED_PTR_FIELD_H__
 #define GOOGLE_PROTOBUF_REPEATED_PTR_FIELD_H__
 
+#include <stdlib.h>
+
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -1178,6 +1180,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   using RepeatedPtrFieldBase::InternalGetArenaOffset;
 
 
+
  private:
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
@@ -1309,6 +1312,7 @@ inline Element& RepeatedPtrField<Element>::at(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return RepeatedPtrFieldBase::at<TypeHandler>(index);
 }
+
 
 
 template <typename Element>
@@ -1801,6 +1805,7 @@ class RepeatedPtrOverPtrsIterator {
   // The internal iterator.
   VoidPtr* it_;
 };
+
 
 }  // namespace internal
 
