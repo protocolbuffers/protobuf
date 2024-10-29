@@ -422,17 +422,7 @@ public final class Durations {
 
   // Math operations
 
-  /**
-   * Add two durations.
-   *
-   * <!-- MOE:begin_intracomment_strip -->
-   * @deprecated Do not use this method for new code. Instead, convert to {@link java.time.Duration}
-   *     using {@link com.google.protobuf.util.JavaTimeConversions#toJavaDuration}, do the
-   *     arithmetic there, and convert back using {@link
-   *     com.google.protobuf.util.JavaTimeConversions#toProtoDuration}.
-   * <!-- MOE:end_intracomment_strip -->
-   */
-  @Deprecated // MOE:strip_line
+  /** Add two durations. */
   public static Duration add(Duration d1, Duration d2) {
     checkValid(d1);
     checkValid(d2);
@@ -440,17 +430,7 @@ public final class Durations {
         checkedAdd(d1.getSeconds(), d2.getSeconds()), checkedAdd(d1.getNanos(), d2.getNanos()));
   }
 
-  /**
-   * Subtract a duration from another.
-   *
-   * <!-- MOE:begin_intracomment_strip -->
-   * @deprecated Do not use this method for new code. Instead, convert to {@link java.time.Duration}
-   *     using {@link com.google.protobuf.util.JavaTimeConversions#toJavaDuration}, do the
-   *     arithmetic there, and convert back using {@link
-   *     com.google.protobuf.util.JavaTimeConversions#toProtoDuration}.
-   * <!-- MOE:end_intracomment_strip -->
-   */
-  @Deprecated // MOE:strip_line
+  /** Subtract a duration from another. */
   public static Duration subtract(Duration d1, Duration d2) {
     checkValid(d1);
     checkValid(d2);

@@ -437,17 +437,7 @@ public final class Timestamps {
         checkedMultiply(timestamp.getSeconds(), NANOS_PER_SECOND), timestamp.getNanos());
   }
 
-  /**
-   * Calculate the difference between two timestamps.
-   *
-   * <!-- MOE:begin_intracomment_strip -->
-   * @deprecated Do not use this method for new code. Instead, convert to {@link java.time.Instant}
-   *     using {@link com.google.protobuf.util.JavaTimeConversions#toJavaInstant}, do the arithmetic
-   *     there, and convert back using {@link
-   *     com.google.protobuf.util.JavaTimeConversions#toProtoDuration}.
-   * <!-- MOE:end_intracomment_strip -->
-   */
-  @Deprecated // MOE:strip_line
+  /** Calculate the difference between two timestamps. */
   public static Duration between(Timestamp from, Timestamp to) {
     checkValid(from);
     checkValid(to);
@@ -456,18 +446,7 @@ public final class Timestamps {
         checkedSubtract(to.getNanos(), from.getNanos()));
   }
 
-  /**
-   * Add a duration to a timestamp.
-   *
-   * <!-- MOE:begin_intracomment_strip -->
-   * @deprecated Do not use this method for new code. Instead, convert to {@link java.time.Instant}
-   *     and {@link java.time.Duration} using {@link
-   *     com.google.protobuf.util.JavaTimeConversions#toJavaInstant} and {@link
-   *     com.google.protobuf.util.JavaTimeConversions#toJavaDuration}, do the arithmetic there, and
-   *     convert back using {@link com.google.protobuf.util.JavaTimeConversions#toProtoTimestamp}.
-   * <!-- MOE:end_intracomment_strip -->
-   */
-  @Deprecated // MOE:strip_line
+  /** Add a duration to a timestamp. */
   public static Timestamp add(Timestamp start, Duration length) {
     checkValid(start);
     Durations.checkValid(length);
@@ -476,18 +455,7 @@ public final class Timestamps {
         checkedAdd(start.getNanos(), length.getNanos()));
   }
 
-  /**
-   * Subtract a duration from a timestamp.
-   *
-   * <!-- MOE:begin_intracomment_strip -->
-   * @deprecated Do not use this method for new code. Instead, convert to {@link java.time.Instant}
-   *     and {@link java.time.Duration} using {@link
-   *     com.google.protobuf.util.JavaTimeConversions#toJavaInstant} and {@link
-   *     com.google.protobuf.util.JavaTimeConversions#toJavaDuration}, do the arithmetic there, and
-   *     convert back using {@link com.google.protobuf.util.JavaTimeConversions#toProtoTimestamp}.
-   * <!-- MOE:end_intracomment_strip -->
-   */
-  @Deprecated // MOE:strip_line
+  /** Subtract a duration from a timestamp. */
   public static Timestamp subtract(Timestamp start, Duration length) {
     checkValid(start);
     Durations.checkValid(length);
