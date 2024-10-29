@@ -24,6 +24,7 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
@@ -82,6 +83,10 @@ namespace protobuf {
 namespace internal {
 
 class InternalMetadata;
+
+namespace v2 {
+class TableDriven;
+}  // namespace v2
 
 // Used to store values of type WireFormatLite::FieldType without having to
 // #include wire_format_lite.h.  Also, ensures that we use only one byte to
@@ -567,6 +572,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   friend class google::protobuf::internal::ReflectionVisit;
   friend struct google::protobuf::internal::DynamicExtensionInfoHelper;
   friend class google::protobuf::internal::WireFormat;
+  friend class google::protobuf::internal::v2::TableDriven;
 
   friend void internal::InitializeLazyExtensionSet();
 
@@ -644,6 +650,9 @@ class PROTOBUF_EXPORT ExtensionSet {
     }
     virtual size_t ByteSizeLong() const = 0;
     virtual size_t SpaceUsedLong() const = 0;
+
+    virtual std::variant<size_t, const MessageLite*> UnparsedSizeOrMessage()
+        const = 0;
 
     virtual void MergeFrom(const MessageLite* prototype,
                            const LazyMessageExtension& other, Arena* arena,

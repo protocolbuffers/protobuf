@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <variant>
 #include <vector>
 
 #include "absl/base/attributes.h"
