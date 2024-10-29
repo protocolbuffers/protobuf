@@ -69,9 +69,9 @@ TEST(ArenaTest, FuseWithInitialBlock) {
 
 class Environment {
  public:
-  void RandomNewFree(absl::BitGen& gen) {
+  void RandomNewFree(absl::BitGen& gen, size_t min_index = 0) {
     auto a = std::make_shared<const upb::Arena>();
-    SwapRandomArena(gen, a);
+    SwapRandomArena(gen, a, min_index);
   }
 
   void RandomIncRefCount(absl::BitGen& gen) {
@@ -86,10 +86,10 @@ class Environment {
     EXPECT_TRUE(upb_Arena_Fuse(a->ptr(), b->ptr()));
   }
 
-  void RandomPoke(absl::BitGen& gen) {
+  void RandomPoke(absl::BitGen& gen, size_t min_index = 0) {
     switch (absl::Uniform(gen, 0, 2)) {
       case 0:
-        RandomNewFree(gen);
+        RandomNewFree(gen, min_index);
         break;
       case 1:
         RandomFuse(gen);
@@ -99,15 +99,23 @@ class Environment {
     }
   }
 
+  std::shared_ptr<const upb::Arena> IndexedNonNullArena(size_t index) {
+    absl::MutexLock lock(&mutex_);
+    std::shared_ptr<const upb::Arena>& ret = arenas_[index];
+    if (!ret) ret = std::make_shared<const upb::Arena>();
+    return ret;
+  }
+
  private:
-  size_t RandomIndex(absl::BitGen& gen) {
-    return absl::Uniform<size_t>(gen, 0, std::tuple_size<ArenaArray>::value);
+  size_t RandomIndex(absl::BitGen& gen, size_t min_index = 0) {
+    return absl::Uniform<size_t>(gen, min_index,
+                                 std::tuple_size<ArenaArray>::value);
   }
 
   // Swaps a random arena from the set with the given arena.
-  void SwapRandomArena(absl::BitGen& gen,
-                       std::shared_ptr<const upb::Arena>& a) {
-    size_t i = RandomIndex(gen);
+  void SwapRandomArena(absl::BitGen& gen, std::shared_ptr<const upb::Arena>& a,
+                       size_t min_index) {
+    size_t i = RandomIndex(gen, min_index);
     absl::MutexLock lock(&mutex_);
     arenas_[i].swap(a);
   }
@@ -118,11 +126,7 @@ class Environment {
   // Note that the returned arena is shared and may be accessed concurrently
   // by other threads.
   std::shared_ptr<const upb::Arena> RandomNonNullArena(absl::BitGen& gen) {
-    size_t i = RandomIndex(gen);
-    absl::MutexLock lock(&mutex_);
-    std::shared_ptr<const upb::Arena>& ret = arenas_[i];
-    if (!ret) ret = std::make_shared<const upb::Arena>();
-    return ret;
+    return IndexedNonNullArena(RandomIndex(gen));
   }
 
   using ArenaArray = std::array<std::shared_ptr<const upb::Arena>, 100>;
@@ -290,6 +294,36 @@ TEST(ArenaTest, IncRefCountShouldFailForInitialBlock) {
   char buf1[1024];
   upb_Arena* arena = upb_Arena_Init(buf1, 1024, &upb_alloc_global);
   EXPECT_FALSE(upb_Arena_IncRefFor(arena, nullptr));
+}
+
+TEST(ArenaTest, FuzzFuseIsFusedRace) {
+  Environment env;
+
+  // Create two arenas and fuse them.
+  std::shared_ptr<const upb::Arena> a = env.IndexedNonNullArena(0);
+  std::shared_ptr<const upb::Arena> b = env.IndexedNonNullArena(1);
+  upb_Arena_Fuse(a->ptr(), b->ptr());
+  EXPECT_TRUE(upb_Arena_IsFused(a->ptr(), b->ptr()));
+
+  absl::Notification done;
+  std::vector<std::thread> threads;
+  for (int i = 0; i < 10; ++i) {
+    threads.emplace_back([&]() {
+      absl::BitGen gen;
+      while (!done.HasBeenNotified()) {
+        env.RandomPoke(gen, 2);
+      }
+    });
+  }
+
+  absl::BitGen gen;
+  auto end = absl::Now() + absl::Seconds(2);
+  while (absl::Now() < end) {
+    // Verify that the two arenas are still fused.
+    EXPECT_TRUE(upb_Arena_IsFused(a->ptr(), b->ptr()));
+  }
+  done.Notify();
+  for (auto& t : threads) t.join();
 }
 
 #endif
