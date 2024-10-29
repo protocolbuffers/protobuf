@@ -1492,16 +1492,7 @@ void Reflection::ClearField(Message* message,
         }
 
         case FieldDescriptor::CPPTYPE_MESSAGE:
-          if (schema_.HasBitIndex(field) == static_cast<uint32_t>(-1)) {
-            // Proto3 does not have has-bits and we need to set a message field
-            // to nullptr in order to indicate its un-presence.
-            if (message->GetArena() == nullptr) {
-              delete *MutableRaw<Message*>(message, field);
-            }
-            *MutableRaw<Message*>(message, field) = nullptr;
-          } else {
-            (*MutableRaw<Message*>(message, field))->Clear();
-          }
+          (*MutableRaw<Message*>(message, field))->Clear();
           break;
       }
     }
