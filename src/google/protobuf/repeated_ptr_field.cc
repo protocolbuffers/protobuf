@@ -19,6 +19,7 @@
 #include <new>
 #include <string>
 
+#include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/message_lite.h"
@@ -191,12 +192,21 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
   void** dst = InternalReserve(new_size);
   const void* const* src = from.elements();
   auto end = src + from.current_size_;
+  constexpr ptrdiff_t kPrefetchstride = 1;
   if (PROTOBUF_PREDICT_FALSE(ClearedCount() > 0)) {
     int recycled = MergeIntoClearedMessages(from);
     dst += recycled;
     src += recycled;
   }
   Arena* arena = GetArena();
+  if (from.current_size_ >= kPrefetchstride) {
+    auto prefetch_end = end - kPrefetchstride;
+    for (; src < prefetch_end; ++src, ++dst) {
+      auto next = src + kPrefetchstride;
+      absl::PrefetchToLocalCache(*next);
+      *dst = copy_fn(arena, *src);
+    }
+  }
   for (; src < end; ++src, ++dst) {
     *dst = copy_fn(arena, *src);
   }
