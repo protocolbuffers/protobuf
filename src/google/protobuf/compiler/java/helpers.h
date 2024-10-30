@@ -14,7 +14,10 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
+#include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/compiler/java/options.h"
