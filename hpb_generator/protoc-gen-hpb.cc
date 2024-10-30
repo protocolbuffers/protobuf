@@ -163,25 +163,24 @@ void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx,
   }
 
   WriteHeaderMessageForwardDecls(file, ctx, strip_feature_includes);
-  WriteStartNamespace(file, ctx);
 
   std::vector<const protobuf::EnumDescriptor*> this_file_enums =
       SortedEnums(file);
 
-  // Write Class and Enums.
-  WriteEnumDeclarations(this_file_enums, ctx);
-  ctx.Emit("\n");
+  WrapNamespace(file, ctx, [&]() {
+    // Write Class and Enums.
+    WriteEnumDeclarations(this_file_enums, ctx);
+    ctx.Emit("\n");
 
-  for (auto message : this_file_messages) {
-    WriteMessageClassDeclarations(message, this_file_exts, this_file_enums,
-                                  ctx);
-  }
-  ctx.Emit("\n");
+    for (auto message : this_file_messages) {
+      WriteMessageClassDeclarations(message, this_file_exts, this_file_enums,
+                                    ctx);
+    }
+    ctx.Emit("\n");
 
-  WriteExtensionIdentifiersHeader(this_file_exts, ctx);
-  ctx.Emit("\n");
-
-  WriteEndNamespace(file, ctx);
+    WriteExtensionIdentifiersHeader(this_file_exts, ctx);
+    ctx.Emit("\n");
+  });
 
   ctx.Emit("\n#include \"upb/port/undef.inc\"\n\n");
   // End of "C" section.
@@ -213,12 +212,12 @@ void WriteSource(const protobuf::FileDescriptor* file, Context& ctx,
   }
   ctx.EmitLegacy("#include \"upb/port/def.inc\"\n");
 
-  WriteStartNamespace(file, ctx);
-  WriteMessageImplementations(file, ctx);
-  const std::vector<const protobuf::FieldDescriptor*> this_file_exts =
-      SortedExtensions(file);
-  WriteExtensionIdentifiers(this_file_exts, ctx);
-  WriteEndNamespace(file, ctx);
+  WrapNamespace(file, ctx, [&]() {
+    WriteMessageImplementations(file, ctx);
+    const std::vector<const protobuf::FieldDescriptor*> this_file_exts =
+        SortedExtensions(file);
+    WriteExtensionIdentifiers(this_file_exts, ctx);
+  });
 
   ctx.Emit("#include \"upb/port/undef.inc\"\n\n");
 }
@@ -238,23 +237,21 @@ void WriteTypedefForwardingHeader(
     const protobuf::FileDescriptor* file,
     const std::vector<const protobuf::Descriptor*>& file_messages,
     Context& ctx) {
-  WriteStartNamespace(file, ctx);
-
-  // Forward-declare types defined in this file.
-  for (auto message : file_messages) {
-    ctx.EmitLegacy(
-        R"cc(
-          class $0;
-          namespace internal {
-          class $0Access;
-          class $0Proxy;
-          class $0CProxy;
-          }  // namespace internal
-        )cc",
-        ClassName(message));
-  }
+  WrapNamespace(file, ctx, [&]() {
+    // Forward-declare types defined in this file.
+    for (auto message : file_messages) {
+      ctx.Emit({{"class_name", ClassName(message)}},
+               R"cc(
+                 class $class_name$;
+                 namespace internal {
+                 class $class_name$Access;
+                 class $class_name$Proxy;
+                 class $class_name$CProxy;
+                 }  // namespace internal
+               )cc");
+    }
+  });
   ctx.Emit("\n");
-  WriteEndNamespace(file, ctx);
 }
 
 /// Writes includes for upb C minitables and fwd.h for transitive typedefs.

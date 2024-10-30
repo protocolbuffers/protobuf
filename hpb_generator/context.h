@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "absl/strings/ascii.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
@@ -101,6 +102,32 @@ inline void EmitFileWarning(const google::protobuf::FileDescriptor* file, Contex
       )cc",
       file->name());
   ctx.Emit("\n");
+}
+
+// TODO: b/346865271 append ::hpb instead of ::protos after namespace swap
+inline std::string NamespaceFromPackageName(absl::string_view package_name) {
+  return absl::StrCat(absl::StrReplaceAll(package_name, {{".", "::"}}),
+                      "::protos");
+}
+
+template <typename T>
+void WrapNamespace(const google::protobuf::FileDescriptor* file, Context& ctx, T&& body) {
+  if (file->package().empty()) {
+    body();
+  } else {
+    ctx.Emit(
+        {
+            {"body", body},
+            {"namespace", NamespaceFromPackageName(file->package())},
+        },
+        R"cc(
+          namespace $namespace$ {
+
+          $body$
+
+          }  // namespace $namespace$
+        )cc");
+  }
 }
 }  // namespace protobuf
 }  // namespace google::hpb_generator
