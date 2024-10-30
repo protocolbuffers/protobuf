@@ -170,8 +170,10 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
 
         $dllexport_decl $bool $Msg_Enum$_IsValid(int value);
         $dllexport_decl $extern const uint32_t $Msg_Enum$_internal_data_[];
-        constexpr $Msg_Enum$ $Msg_Enum_Enum_MIN$ = static_cast<$Msg_Enum$>($kMin$);
-        constexpr $Msg_Enum$ $Msg_Enum_Enum_MAX$ = static_cast<$Msg_Enum$>($kMax$);
+        inline constexpr $Msg_Enum$ $Msg_Enum_Enum_MIN$ =
+            static_cast<$Msg_Enum$>($kMin$);
+        inline constexpr $Msg_Enum$ $Msg_Enum_Enum_MAX$ =
+            static_cast<$Msg_Enum$>($kMax$);
       )cc");
 
   if (generate_array_size_) {
@@ -180,7 +182,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
                               "_ARRAYSIZE"))
                  .AnnotatedAs(enum_)},
             R"cc(
-              constexpr int $Msg_Enum_Enum_ARRAYSIZE$ = $kMax$ + 1;
+              inline constexpr int $Msg_Enum_Enum_ARRAYSIZE$ = $kMax$ + 1;
             )cc");
   }
 
@@ -547,45 +549,6 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
             return success;
           }
         )cc");
-  }
-
-  if (enum_->containing_type() != nullptr) {
-    // Before C++17, we must define the static constants which were
-    // declared in the header, to give the linker a place to put them.
-    // But MSVC++ pre-2015 and post-2017 (version 15.5+) insists that we not.
-    p->Emit(
-        {
-            {"Msg_", ClassName(enum_->containing_type(), false)},
-            {"constexpr_storage",
-             [&] {
-               for (int i = 0; i < enum_->value_count(); i++) {
-                 p->Emit({{"VALUE", EnumValueName(enum_->value(i))}},
-                         R"cc(
-                           constexpr $Msg_Enum$ $Msg_$::$VALUE$;
-                         )cc");
-               }
-             }},
-            {"array_size",
-             [&] {
-               if (generate_array_size_) {
-                 p->Emit(R"cc(
-                   constexpr int $Msg_$::$Enum$_ARRAYSIZE;
-                 )cc");
-               }
-             }},
-        },
-        R"(
-          #if (__cplusplus < 201703) && \
-            (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-          
-          $constexpr_storage$;
-          constexpr $Msg_Enum$ $Msg_$::$Enum$_MIN;
-          constexpr $Msg_Enum$ $Msg_$::$Enum$_MAX;
-          $array_size$;
-
-          #endif  // (__cplusplus < 201703) &&
-                  // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-        )");
   }
 }
 }  // namespace cpp

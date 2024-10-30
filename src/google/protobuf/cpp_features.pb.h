@@ -80,9 +80,11 @@ enum CppFeatures_StringType : int {
 
 PROTOBUF_EXPORT bool CppFeatures_StringType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t CppFeatures_StringType_internal_data_[];
-constexpr CppFeatures_StringType CppFeatures_StringType_StringType_MIN = static_cast<CppFeatures_StringType>(0);
-constexpr CppFeatures_StringType CppFeatures_StringType_StringType_MAX = static_cast<CppFeatures_StringType>(3);
-constexpr int CppFeatures_StringType_StringType_ARRAYSIZE = 3 + 1;
+inline constexpr CppFeatures_StringType CppFeatures_StringType_StringType_MIN =
+    static_cast<CppFeatures_StringType>(0);
+inline constexpr CppFeatures_StringType CppFeatures_StringType_StringType_MAX =
+    static_cast<CppFeatures_StringType>(3);
+inline constexpr int CppFeatures_StringType_StringType_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 CppFeatures_StringType_descriptor();
 template <typename T>
@@ -354,7 +356,8 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull CppFeat
 
 
 
-static const int kCppFieldNumber = 1000;
+inline constexpr int kCppFieldNumber =
+    1000;
 PROTOBUF_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
     ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::CppFeatures >, 11,
     false>

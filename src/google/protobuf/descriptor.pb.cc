@@ -2242,17 +2242,6 @@ PROTOBUF_CONSTINIT const uint32_t ExtensionRangeOptions_VerificationState_intern
 bool ExtensionRangeOptions_VerificationState_IsValid(int value) {
   return 0 <= value && value <= 1;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr ExtensionRangeOptions_VerificationState ExtensionRangeOptions::DECLARATION;
-constexpr ExtensionRangeOptions_VerificationState ExtensionRangeOptions::UNVERIFIED;
-constexpr ExtensionRangeOptions_VerificationState ExtensionRangeOptions::VerificationState_MIN;
-constexpr ExtensionRangeOptions_VerificationState ExtensionRangeOptions::VerificationState_MAX;
-constexpr int ExtensionRangeOptions::VerificationState_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* FieldDescriptorProto_Type_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[1];
@@ -2262,33 +2251,6 @@ PROTOBUF_CONSTINIT const uint32_t FieldDescriptorProto_Type_internal_data_[] = {
 bool FieldDescriptorProto_Type_IsValid(int value) {
   return 1 <= value && value <= 18;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_DOUBLE;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_FLOAT;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_INT64;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_UINT64;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_INT32;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_FIXED64;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_FIXED32;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_BOOL;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_STRING;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_GROUP;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_MESSAGE;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_BYTES;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_UINT32;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_ENUM;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_SFIXED32;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_SFIXED64;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_SINT32;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_SINT64;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::Type_MIN;
-constexpr FieldDescriptorProto_Type FieldDescriptorProto::Type_MAX;
-constexpr int FieldDescriptorProto::Type_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* FieldDescriptorProto_Label_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[2];
@@ -2298,18 +2260,6 @@ PROTOBUF_CONSTINIT const uint32_t FieldDescriptorProto_Label_internal_data_[] = 
 bool FieldDescriptorProto_Label_IsValid(int value) {
   return 1 <= value && value <= 3;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr FieldDescriptorProto_Label FieldDescriptorProto::LABEL_OPTIONAL;
-constexpr FieldDescriptorProto_Label FieldDescriptorProto::LABEL_REPEATED;
-constexpr FieldDescriptorProto_Label FieldDescriptorProto::LABEL_REQUIRED;
-constexpr FieldDescriptorProto_Label FieldDescriptorProto::Label_MIN;
-constexpr FieldDescriptorProto_Label FieldDescriptorProto::Label_MAX;
-constexpr int FieldDescriptorProto::Label_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* FileOptions_OptimizeMode_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[3];
@@ -2319,18 +2269,6 @@ PROTOBUF_CONSTINIT const uint32_t FileOptions_OptimizeMode_internal_data_[] = {
 bool FileOptions_OptimizeMode_IsValid(int value) {
   return 1 <= value && value <= 3;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr FileOptions_OptimizeMode FileOptions::SPEED;
-constexpr FileOptions_OptimizeMode FileOptions::CODE_SIZE;
-constexpr FileOptions_OptimizeMode FileOptions::LITE_RUNTIME;
-constexpr FileOptions_OptimizeMode FileOptions::OptimizeMode_MIN;
-constexpr FileOptions_OptimizeMode FileOptions::OptimizeMode_MAX;
-constexpr int FileOptions::OptimizeMode_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* FieldOptions_CType_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[4];
@@ -2340,18 +2278,6 @@ PROTOBUF_CONSTINIT const uint32_t FieldOptions_CType_internal_data_[] = {
 bool FieldOptions_CType_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr FieldOptions_CType FieldOptions::STRING;
-constexpr FieldOptions_CType FieldOptions::CORD;
-constexpr FieldOptions_CType FieldOptions::STRING_PIECE;
-constexpr FieldOptions_CType FieldOptions::CType_MIN;
-constexpr FieldOptions_CType FieldOptions::CType_MAX;
-constexpr int FieldOptions::CType_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* FieldOptions_JSType_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[5];
@@ -2361,18 +2287,6 @@ PROTOBUF_CONSTINIT const uint32_t FieldOptions_JSType_internal_data_[] = {
 bool FieldOptions_JSType_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr FieldOptions_JSType FieldOptions::JS_NORMAL;
-constexpr FieldOptions_JSType FieldOptions::JS_STRING;
-constexpr FieldOptions_JSType FieldOptions::JS_NUMBER;
-constexpr FieldOptions_JSType FieldOptions::JSType_MIN;
-constexpr FieldOptions_JSType FieldOptions::JSType_MAX;
-constexpr int FieldOptions::JSType_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* FieldOptions_OptionRetention_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[6];
@@ -2382,18 +2296,6 @@ PROTOBUF_CONSTINIT const uint32_t FieldOptions_OptionRetention_internal_data_[] 
 bool FieldOptions_OptionRetention_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr FieldOptions_OptionRetention FieldOptions::RETENTION_UNKNOWN;
-constexpr FieldOptions_OptionRetention FieldOptions::RETENTION_RUNTIME;
-constexpr FieldOptions_OptionRetention FieldOptions::RETENTION_SOURCE;
-constexpr FieldOptions_OptionRetention FieldOptions::OptionRetention_MIN;
-constexpr FieldOptions_OptionRetention FieldOptions::OptionRetention_MAX;
-constexpr int FieldOptions::OptionRetention_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* FieldOptions_OptionTargetType_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[7];
@@ -2403,25 +2305,6 @@ PROTOBUF_CONSTINIT const uint32_t FieldOptions_OptionTargetType_internal_data_[]
 bool FieldOptions_OptionTargetType_IsValid(int value) {
   return 0 <= value && value <= 9;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_UNKNOWN;
-constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_FILE;
-constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_EXTENSION_RANGE;
-constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_MESSAGE;
-constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_FIELD;
-constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_ONEOF;
-constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_ENUM;
-constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_ENUM_ENTRY;
-constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_SERVICE;
-constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_METHOD;
-constexpr FieldOptions_OptionTargetType FieldOptions::OptionTargetType_MIN;
-constexpr FieldOptions_OptionTargetType FieldOptions::OptionTargetType_MAX;
-constexpr int FieldOptions::OptionTargetType_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* MethodOptions_IdempotencyLevel_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[8];
@@ -2431,18 +2314,6 @@ PROTOBUF_CONSTINIT const uint32_t MethodOptions_IdempotencyLevel_internal_data_[
 bool MethodOptions_IdempotencyLevel_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr MethodOptions_IdempotencyLevel MethodOptions::IDEMPOTENCY_UNKNOWN;
-constexpr MethodOptions_IdempotencyLevel MethodOptions::NO_SIDE_EFFECTS;
-constexpr MethodOptions_IdempotencyLevel MethodOptions::IDEMPOTENT;
-constexpr MethodOptions_IdempotencyLevel MethodOptions::IdempotencyLevel_MIN;
-constexpr MethodOptions_IdempotencyLevel MethodOptions::IdempotencyLevel_MAX;
-constexpr int MethodOptions::IdempotencyLevel_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* FeatureSet_FieldPresence_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[9];
@@ -2452,19 +2323,6 @@ PROTOBUF_CONSTINIT const uint32_t FeatureSet_FieldPresence_internal_data_[] = {
 bool FeatureSet_FieldPresence_IsValid(int value) {
   return 0 <= value && value <= 3;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr FeatureSet_FieldPresence FeatureSet::FIELD_PRESENCE_UNKNOWN;
-constexpr FeatureSet_FieldPresence FeatureSet::EXPLICIT;
-constexpr FeatureSet_FieldPresence FeatureSet::IMPLICIT;
-constexpr FeatureSet_FieldPresence FeatureSet::LEGACY_REQUIRED;
-constexpr FeatureSet_FieldPresence FeatureSet::FieldPresence_MIN;
-constexpr FeatureSet_FieldPresence FeatureSet::FieldPresence_MAX;
-constexpr int FeatureSet::FieldPresence_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* FeatureSet_EnumType_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[10];
@@ -2474,18 +2332,6 @@ PROTOBUF_CONSTINIT const uint32_t FeatureSet_EnumType_internal_data_[] = {
 bool FeatureSet_EnumType_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr FeatureSet_EnumType FeatureSet::ENUM_TYPE_UNKNOWN;
-constexpr FeatureSet_EnumType FeatureSet::OPEN;
-constexpr FeatureSet_EnumType FeatureSet::CLOSED;
-constexpr FeatureSet_EnumType FeatureSet::EnumType_MIN;
-constexpr FeatureSet_EnumType FeatureSet::EnumType_MAX;
-constexpr int FeatureSet::EnumType_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* FeatureSet_RepeatedFieldEncoding_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[11];
@@ -2495,18 +2341,6 @@ PROTOBUF_CONSTINIT const uint32_t FeatureSet_RepeatedFieldEncoding_internal_data
 bool FeatureSet_RepeatedFieldEncoding_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr FeatureSet_RepeatedFieldEncoding FeatureSet::REPEATED_FIELD_ENCODING_UNKNOWN;
-constexpr FeatureSet_RepeatedFieldEncoding FeatureSet::PACKED;
-constexpr FeatureSet_RepeatedFieldEncoding FeatureSet::EXPANDED;
-constexpr FeatureSet_RepeatedFieldEncoding FeatureSet::RepeatedFieldEncoding_MIN;
-constexpr FeatureSet_RepeatedFieldEncoding FeatureSet::RepeatedFieldEncoding_MAX;
-constexpr int FeatureSet::RepeatedFieldEncoding_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* FeatureSet_Utf8Validation_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[12];
@@ -2516,18 +2350,6 @@ PROTOBUF_CONSTINIT const uint32_t FeatureSet_Utf8Validation_internal_data_[] = {
 bool FeatureSet_Utf8Validation_IsValid(int value) {
   return 0 <= value && value <= 3 && ((13u >> value) & 1) != 0;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr FeatureSet_Utf8Validation FeatureSet::UTF8_VALIDATION_UNKNOWN;
-constexpr FeatureSet_Utf8Validation FeatureSet::VERIFY;
-constexpr FeatureSet_Utf8Validation FeatureSet::NONE;
-constexpr FeatureSet_Utf8Validation FeatureSet::Utf8Validation_MIN;
-constexpr FeatureSet_Utf8Validation FeatureSet::Utf8Validation_MAX;
-constexpr int FeatureSet::Utf8Validation_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* FeatureSet_MessageEncoding_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[13];
@@ -2537,18 +2359,6 @@ PROTOBUF_CONSTINIT const uint32_t FeatureSet_MessageEncoding_internal_data_[] = 
 bool FeatureSet_MessageEncoding_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr FeatureSet_MessageEncoding FeatureSet::MESSAGE_ENCODING_UNKNOWN;
-constexpr FeatureSet_MessageEncoding FeatureSet::LENGTH_PREFIXED;
-constexpr FeatureSet_MessageEncoding FeatureSet::DELIMITED;
-constexpr FeatureSet_MessageEncoding FeatureSet::MessageEncoding_MIN;
-constexpr FeatureSet_MessageEncoding FeatureSet::MessageEncoding_MAX;
-constexpr int FeatureSet::MessageEncoding_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* FeatureSet_JsonFormat_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[14];
@@ -2558,18 +2368,6 @@ PROTOBUF_CONSTINIT const uint32_t FeatureSet_JsonFormat_internal_data_[] = {
 bool FeatureSet_JsonFormat_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr FeatureSet_JsonFormat FeatureSet::JSON_FORMAT_UNKNOWN;
-constexpr FeatureSet_JsonFormat FeatureSet::ALLOW;
-constexpr FeatureSet_JsonFormat FeatureSet::LEGACY_BEST_EFFORT;
-constexpr FeatureSet_JsonFormat FeatureSet::JsonFormat_MIN;
-constexpr FeatureSet_JsonFormat FeatureSet::JsonFormat_MAX;
-constexpr int FeatureSet::JsonFormat_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* GeneratedCodeInfo_Annotation_Semantic_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[15];
@@ -2579,18 +2377,6 @@ PROTOBUF_CONSTINIT const uint32_t GeneratedCodeInfo_Annotation_Semantic_internal
 bool GeneratedCodeInfo_Annotation_Semantic_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
-#if (__cplusplus < 201703) && \
-  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-
-constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::NONE;
-constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::SET;
-constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::ALIAS;
-constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::Semantic_MIN;
-constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::Semantic_MAX;
-constexpr int GeneratedCodeInfo_Annotation::Semantic_ARRAYSIZE;
-
-#endif  // (__cplusplus < 201703) &&
-        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::google::protobuf::EnumDescriptor* Edition_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[16];

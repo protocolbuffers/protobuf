@@ -305,9 +305,11 @@ enum ExtensionRangeOptions_VerificationState : int {
 
 PROTOBUF_EXPORT bool ExtensionRangeOptions_VerificationState_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t ExtensionRangeOptions_VerificationState_internal_data_[];
-constexpr ExtensionRangeOptions_VerificationState ExtensionRangeOptions_VerificationState_VerificationState_MIN = static_cast<ExtensionRangeOptions_VerificationState>(0);
-constexpr ExtensionRangeOptions_VerificationState ExtensionRangeOptions_VerificationState_VerificationState_MAX = static_cast<ExtensionRangeOptions_VerificationState>(1);
-constexpr int ExtensionRangeOptions_VerificationState_VerificationState_ARRAYSIZE = 1 + 1;
+inline constexpr ExtensionRangeOptions_VerificationState ExtensionRangeOptions_VerificationState_VerificationState_MIN =
+    static_cast<ExtensionRangeOptions_VerificationState>(0);
+inline constexpr ExtensionRangeOptions_VerificationState ExtensionRangeOptions_VerificationState_VerificationState_MAX =
+    static_cast<ExtensionRangeOptions_VerificationState>(1);
+inline constexpr int ExtensionRangeOptions_VerificationState_VerificationState_ARRAYSIZE = 1 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 ExtensionRangeOptions_VerificationState_descriptor();
 template <typename T>
@@ -350,9 +352,11 @@ enum FieldDescriptorProto_Type : int {
 
 PROTOBUF_EXPORT bool FieldDescriptorProto_Type_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldDescriptorProto_Type_internal_data_[];
-constexpr FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MIN = static_cast<FieldDescriptorProto_Type>(1);
-constexpr FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MAX = static_cast<FieldDescriptorProto_Type>(18);
-constexpr int FieldDescriptorProto_Type_Type_ARRAYSIZE = 18 + 1;
+inline constexpr FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MIN =
+    static_cast<FieldDescriptorProto_Type>(1);
+inline constexpr FieldDescriptorProto_Type FieldDescriptorProto_Type_Type_MAX =
+    static_cast<FieldDescriptorProto_Type>(18);
+inline constexpr int FieldDescriptorProto_Type_Type_ARRAYSIZE = 18 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FieldDescriptorProto_Type_descriptor();
 template <typename T>
@@ -380,9 +384,11 @@ enum FieldDescriptorProto_Label : int {
 
 PROTOBUF_EXPORT bool FieldDescriptorProto_Label_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldDescriptorProto_Label_internal_data_[];
-constexpr FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MIN = static_cast<FieldDescriptorProto_Label>(1);
-constexpr FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MAX = static_cast<FieldDescriptorProto_Label>(3);
-constexpr int FieldDescriptorProto_Label_Label_ARRAYSIZE = 3 + 1;
+inline constexpr FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MIN =
+    static_cast<FieldDescriptorProto_Label>(1);
+inline constexpr FieldDescriptorProto_Label FieldDescriptorProto_Label_Label_MAX =
+    static_cast<FieldDescriptorProto_Label>(3);
+inline constexpr int FieldDescriptorProto_Label_Label_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FieldDescriptorProto_Label_descriptor();
 template <typename T>
@@ -410,9 +416,11 @@ enum FileOptions_OptimizeMode : int {
 
 PROTOBUF_EXPORT bool FileOptions_OptimizeMode_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FileOptions_OptimizeMode_internal_data_[];
-constexpr FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MIN = static_cast<FileOptions_OptimizeMode>(1);
-constexpr FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MAX = static_cast<FileOptions_OptimizeMode>(3);
-constexpr int FileOptions_OptimizeMode_OptimizeMode_ARRAYSIZE = 3 + 1;
+inline constexpr FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MIN =
+    static_cast<FileOptions_OptimizeMode>(1);
+inline constexpr FileOptions_OptimizeMode FileOptions_OptimizeMode_OptimizeMode_MAX =
+    static_cast<FileOptions_OptimizeMode>(3);
+inline constexpr int FileOptions_OptimizeMode_OptimizeMode_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FileOptions_OptimizeMode_descriptor();
 template <typename T>
@@ -440,9 +448,11 @@ enum FieldOptions_CType : int {
 
 PROTOBUF_EXPORT bool FieldOptions_CType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldOptions_CType_internal_data_[];
-constexpr FieldOptions_CType FieldOptions_CType_CType_MIN = static_cast<FieldOptions_CType>(0);
-constexpr FieldOptions_CType FieldOptions_CType_CType_MAX = static_cast<FieldOptions_CType>(2);
-constexpr int FieldOptions_CType_CType_ARRAYSIZE = 2 + 1;
+inline constexpr FieldOptions_CType FieldOptions_CType_CType_MIN =
+    static_cast<FieldOptions_CType>(0);
+inline constexpr FieldOptions_CType FieldOptions_CType_CType_MAX =
+    static_cast<FieldOptions_CType>(2);
+inline constexpr int FieldOptions_CType_CType_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FieldOptions_CType_descriptor();
 template <typename T>
@@ -470,9 +480,11 @@ enum FieldOptions_JSType : int {
 
 PROTOBUF_EXPORT bool FieldOptions_JSType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldOptions_JSType_internal_data_[];
-constexpr FieldOptions_JSType FieldOptions_JSType_JSType_MIN = static_cast<FieldOptions_JSType>(0);
-constexpr FieldOptions_JSType FieldOptions_JSType_JSType_MAX = static_cast<FieldOptions_JSType>(2);
-constexpr int FieldOptions_JSType_JSType_ARRAYSIZE = 2 + 1;
+inline constexpr FieldOptions_JSType FieldOptions_JSType_JSType_MIN =
+    static_cast<FieldOptions_JSType>(0);
+inline constexpr FieldOptions_JSType FieldOptions_JSType_JSType_MAX =
+    static_cast<FieldOptions_JSType>(2);
+inline constexpr int FieldOptions_JSType_JSType_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FieldOptions_JSType_descriptor();
 template <typename T>
@@ -500,9 +512,11 @@ enum FieldOptions_OptionRetention : int {
 
 PROTOBUF_EXPORT bool FieldOptions_OptionRetention_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldOptions_OptionRetention_internal_data_[];
-constexpr FieldOptions_OptionRetention FieldOptions_OptionRetention_OptionRetention_MIN = static_cast<FieldOptions_OptionRetention>(0);
-constexpr FieldOptions_OptionRetention FieldOptions_OptionRetention_OptionRetention_MAX = static_cast<FieldOptions_OptionRetention>(2);
-constexpr int FieldOptions_OptionRetention_OptionRetention_ARRAYSIZE = 2 + 1;
+inline constexpr FieldOptions_OptionRetention FieldOptions_OptionRetention_OptionRetention_MIN =
+    static_cast<FieldOptions_OptionRetention>(0);
+inline constexpr FieldOptions_OptionRetention FieldOptions_OptionRetention_OptionRetention_MAX =
+    static_cast<FieldOptions_OptionRetention>(2);
+inline constexpr int FieldOptions_OptionRetention_OptionRetention_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FieldOptions_OptionRetention_descriptor();
 template <typename T>
@@ -537,9 +551,11 @@ enum FieldOptions_OptionTargetType : int {
 
 PROTOBUF_EXPORT bool FieldOptions_OptionTargetType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FieldOptions_OptionTargetType_internal_data_[];
-constexpr FieldOptions_OptionTargetType FieldOptions_OptionTargetType_OptionTargetType_MIN = static_cast<FieldOptions_OptionTargetType>(0);
-constexpr FieldOptions_OptionTargetType FieldOptions_OptionTargetType_OptionTargetType_MAX = static_cast<FieldOptions_OptionTargetType>(9);
-constexpr int FieldOptions_OptionTargetType_OptionTargetType_ARRAYSIZE = 9 + 1;
+inline constexpr FieldOptions_OptionTargetType FieldOptions_OptionTargetType_OptionTargetType_MIN =
+    static_cast<FieldOptions_OptionTargetType>(0);
+inline constexpr FieldOptions_OptionTargetType FieldOptions_OptionTargetType_OptionTargetType_MAX =
+    static_cast<FieldOptions_OptionTargetType>(9);
+inline constexpr int FieldOptions_OptionTargetType_OptionTargetType_ARRAYSIZE = 9 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FieldOptions_OptionTargetType_descriptor();
 template <typename T>
@@ -567,9 +583,11 @@ enum MethodOptions_IdempotencyLevel : int {
 
 PROTOBUF_EXPORT bool MethodOptions_IdempotencyLevel_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t MethodOptions_IdempotencyLevel_internal_data_[];
-constexpr MethodOptions_IdempotencyLevel MethodOptions_IdempotencyLevel_IdempotencyLevel_MIN = static_cast<MethodOptions_IdempotencyLevel>(0);
-constexpr MethodOptions_IdempotencyLevel MethodOptions_IdempotencyLevel_IdempotencyLevel_MAX = static_cast<MethodOptions_IdempotencyLevel>(2);
-constexpr int MethodOptions_IdempotencyLevel_IdempotencyLevel_ARRAYSIZE = 2 + 1;
+inline constexpr MethodOptions_IdempotencyLevel MethodOptions_IdempotencyLevel_IdempotencyLevel_MIN =
+    static_cast<MethodOptions_IdempotencyLevel>(0);
+inline constexpr MethodOptions_IdempotencyLevel MethodOptions_IdempotencyLevel_IdempotencyLevel_MAX =
+    static_cast<MethodOptions_IdempotencyLevel>(2);
+inline constexpr int MethodOptions_IdempotencyLevel_IdempotencyLevel_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 MethodOptions_IdempotencyLevel_descriptor();
 template <typename T>
@@ -598,9 +616,11 @@ enum FeatureSet_FieldPresence : int {
 
 PROTOBUF_EXPORT bool FeatureSet_FieldPresence_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_FieldPresence_internal_data_[];
-constexpr FeatureSet_FieldPresence FeatureSet_FieldPresence_FieldPresence_MIN = static_cast<FeatureSet_FieldPresence>(0);
-constexpr FeatureSet_FieldPresence FeatureSet_FieldPresence_FieldPresence_MAX = static_cast<FeatureSet_FieldPresence>(3);
-constexpr int FeatureSet_FieldPresence_FieldPresence_ARRAYSIZE = 3 + 1;
+inline constexpr FeatureSet_FieldPresence FeatureSet_FieldPresence_FieldPresence_MIN =
+    static_cast<FeatureSet_FieldPresence>(0);
+inline constexpr FeatureSet_FieldPresence FeatureSet_FieldPresence_FieldPresence_MAX =
+    static_cast<FeatureSet_FieldPresence>(3);
+inline constexpr int FeatureSet_FieldPresence_FieldPresence_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FeatureSet_FieldPresence_descriptor();
 template <typename T>
@@ -628,9 +648,11 @@ enum FeatureSet_EnumType : int {
 
 PROTOBUF_EXPORT bool FeatureSet_EnumType_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnumType_internal_data_[];
-constexpr FeatureSet_EnumType FeatureSet_EnumType_EnumType_MIN = static_cast<FeatureSet_EnumType>(0);
-constexpr FeatureSet_EnumType FeatureSet_EnumType_EnumType_MAX = static_cast<FeatureSet_EnumType>(2);
-constexpr int FeatureSet_EnumType_EnumType_ARRAYSIZE = 2 + 1;
+inline constexpr FeatureSet_EnumType FeatureSet_EnumType_EnumType_MIN =
+    static_cast<FeatureSet_EnumType>(0);
+inline constexpr FeatureSet_EnumType FeatureSet_EnumType_EnumType_MAX =
+    static_cast<FeatureSet_EnumType>(2);
+inline constexpr int FeatureSet_EnumType_EnumType_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FeatureSet_EnumType_descriptor();
 template <typename T>
@@ -658,9 +680,11 @@ enum FeatureSet_RepeatedFieldEncoding : int {
 
 PROTOBUF_EXPORT bool FeatureSet_RepeatedFieldEncoding_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_RepeatedFieldEncoding_internal_data_[];
-constexpr FeatureSet_RepeatedFieldEncoding FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_MIN = static_cast<FeatureSet_RepeatedFieldEncoding>(0);
-constexpr FeatureSet_RepeatedFieldEncoding FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_MAX = static_cast<FeatureSet_RepeatedFieldEncoding>(2);
-constexpr int FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_ARRAYSIZE = 2 + 1;
+inline constexpr FeatureSet_RepeatedFieldEncoding FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_MIN =
+    static_cast<FeatureSet_RepeatedFieldEncoding>(0);
+inline constexpr FeatureSet_RepeatedFieldEncoding FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_MAX =
+    static_cast<FeatureSet_RepeatedFieldEncoding>(2);
+inline constexpr int FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FeatureSet_RepeatedFieldEncoding_descriptor();
 template <typename T>
@@ -688,9 +712,11 @@ enum FeatureSet_Utf8Validation : int {
 
 PROTOBUF_EXPORT bool FeatureSet_Utf8Validation_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_Utf8Validation_internal_data_[];
-constexpr FeatureSet_Utf8Validation FeatureSet_Utf8Validation_Utf8Validation_MIN = static_cast<FeatureSet_Utf8Validation>(0);
-constexpr FeatureSet_Utf8Validation FeatureSet_Utf8Validation_Utf8Validation_MAX = static_cast<FeatureSet_Utf8Validation>(3);
-constexpr int FeatureSet_Utf8Validation_Utf8Validation_ARRAYSIZE = 3 + 1;
+inline constexpr FeatureSet_Utf8Validation FeatureSet_Utf8Validation_Utf8Validation_MIN =
+    static_cast<FeatureSet_Utf8Validation>(0);
+inline constexpr FeatureSet_Utf8Validation FeatureSet_Utf8Validation_Utf8Validation_MAX =
+    static_cast<FeatureSet_Utf8Validation>(3);
+inline constexpr int FeatureSet_Utf8Validation_Utf8Validation_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FeatureSet_Utf8Validation_descriptor();
 template <typename T>
@@ -718,9 +744,11 @@ enum FeatureSet_MessageEncoding : int {
 
 PROTOBUF_EXPORT bool FeatureSet_MessageEncoding_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_MessageEncoding_internal_data_[];
-constexpr FeatureSet_MessageEncoding FeatureSet_MessageEncoding_MessageEncoding_MIN = static_cast<FeatureSet_MessageEncoding>(0);
-constexpr FeatureSet_MessageEncoding FeatureSet_MessageEncoding_MessageEncoding_MAX = static_cast<FeatureSet_MessageEncoding>(2);
-constexpr int FeatureSet_MessageEncoding_MessageEncoding_ARRAYSIZE = 2 + 1;
+inline constexpr FeatureSet_MessageEncoding FeatureSet_MessageEncoding_MessageEncoding_MIN =
+    static_cast<FeatureSet_MessageEncoding>(0);
+inline constexpr FeatureSet_MessageEncoding FeatureSet_MessageEncoding_MessageEncoding_MAX =
+    static_cast<FeatureSet_MessageEncoding>(2);
+inline constexpr int FeatureSet_MessageEncoding_MessageEncoding_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FeatureSet_MessageEncoding_descriptor();
 template <typename T>
@@ -748,9 +776,11 @@ enum FeatureSet_JsonFormat : int {
 
 PROTOBUF_EXPORT bool FeatureSet_JsonFormat_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_JsonFormat_internal_data_[];
-constexpr FeatureSet_JsonFormat FeatureSet_JsonFormat_JsonFormat_MIN = static_cast<FeatureSet_JsonFormat>(0);
-constexpr FeatureSet_JsonFormat FeatureSet_JsonFormat_JsonFormat_MAX = static_cast<FeatureSet_JsonFormat>(2);
-constexpr int FeatureSet_JsonFormat_JsonFormat_ARRAYSIZE = 2 + 1;
+inline constexpr FeatureSet_JsonFormat FeatureSet_JsonFormat_JsonFormat_MIN =
+    static_cast<FeatureSet_JsonFormat>(0);
+inline constexpr FeatureSet_JsonFormat FeatureSet_JsonFormat_JsonFormat_MAX =
+    static_cast<FeatureSet_JsonFormat>(2);
+inline constexpr int FeatureSet_JsonFormat_JsonFormat_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 FeatureSet_JsonFormat_descriptor();
 template <typename T>
@@ -778,9 +808,11 @@ enum GeneratedCodeInfo_Annotation_Semantic : int {
 
 PROTOBUF_EXPORT bool GeneratedCodeInfo_Annotation_Semantic_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t GeneratedCodeInfo_Annotation_Semantic_internal_data_[];
-constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation_Semantic_Semantic_MIN = static_cast<GeneratedCodeInfo_Annotation_Semantic>(0);
-constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation_Semantic_Semantic_MAX = static_cast<GeneratedCodeInfo_Annotation_Semantic>(2);
-constexpr int GeneratedCodeInfo_Annotation_Semantic_Semantic_ARRAYSIZE = 2 + 1;
+inline constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation_Semantic_Semantic_MIN =
+    static_cast<GeneratedCodeInfo_Annotation_Semantic>(0);
+inline constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation_Semantic_Semantic_MAX =
+    static_cast<GeneratedCodeInfo_Annotation_Semantic>(2);
+inline constexpr int GeneratedCodeInfo_Annotation_Semantic_Semantic_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 GeneratedCodeInfo_Annotation_Semantic_descriptor();
 template <typename T>
@@ -817,8 +849,10 @@ enum Edition : int {
 
 PROTOBUF_EXPORT bool Edition_IsValid(int value);
 PROTOBUF_EXPORT extern const uint32_t Edition_internal_data_[];
-constexpr Edition Edition_MIN = static_cast<Edition>(0);
-constexpr Edition Edition_MAX = static_cast<Edition>(2147483647);
+inline constexpr Edition Edition_MIN =
+    static_cast<Edition>(0);
+inline constexpr Edition Edition_MAX =
+    static_cast<Edition>(2147483647);
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor*
 Edition_descriptor();
 template <typename T>
