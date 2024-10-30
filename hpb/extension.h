@@ -87,6 +87,11 @@ class ExtensionIdentifier {
   using Extension = ExtensionType;
   using Extendee = ExtendeeType;
 
+  ExtensionIdentifier(const ExtensionIdentifier&) = delete;
+  ExtensionIdentifier(ExtensionIdentifier&&) = delete;
+  ExtensionIdentifier& operator=(const ExtensionIdentifier&) = delete;
+  ExtensionIdentifier& operator=(ExtensionIdentifier&&) = delete;
+
   // Placeholder for extant legacy callers, avoid use if possible
   const upb_MiniTableExtension* mini_table_ext() const {
     return mini_table_ext_;
@@ -282,8 +287,8 @@ decltype(auto) GetExtension(
 
 template <typename T, typename Extension>
 constexpr uint32_t ExtensionNumber(
-    ::hpb::internal::ExtensionIdentifier<T, Extension> id) {
-  return ::hpb::internal::PrivateAccess::GetExtensionNumber(id);
+    const hpb::internal::ExtensionIdentifier<T, Extension>& id) {
+  return hpb::internal::PrivateAccess::GetExtensionNumber(id);
 }
 
 }  // namespace hpb
