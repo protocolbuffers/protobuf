@@ -115,7 +115,8 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
                           * Re-points submessage to the given target.
                           *
                           * REQUIRES:
-                          * - both messages must be in the same arena.
+                          * - both messages must be in the same arena, or in two
+                          * fused arenas.
                           */
                          void set_alias_$2($0 target);
                        )cc",
@@ -282,7 +283,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Context& ctx) {
                     (upb_Message*)($3_mutable_$5(msg_, $6)), $6);
               }
               void $0::set_alias_$2($1 target) {
-                ABSL_CHECK_EQ(arena_, hpb::interop::upb::GetArena(target));
+                ABSL_CHECK(upb_Arena_IsFused(arena_, hpb::interop::upb::GetArena(target)));
                 upb_Message_SetBaseFieldMessage(
                     UPB_UPCAST(msg_),
                     upb_MiniTable_FindFieldByNumber($7::minitable(), $8),
