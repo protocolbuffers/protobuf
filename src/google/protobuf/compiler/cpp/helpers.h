@@ -484,11 +484,11 @@ bool HasMapFields(const FileDescriptor* file);
 // Does this file have any enum type definitions?
 bool HasEnumDefinitions(const FileDescriptor* file);
 
-// Returns true if a message in the file can have v2 table.
+// Returns true if any message in the file can have v2 table.
 bool HasV2Table(const FileDescriptor* file);
 
 // Returns true if a message (descriptor) can have v2 table.
-bool HasV2Table(const Descriptor* descriptor);
+bool IsV2EnabledForMessage(const Descriptor* descriptor);
 
 // Does this file have generated parsing, serialization, and other
 // standard methods for which reflection-based fallback implementations exist?

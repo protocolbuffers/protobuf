@@ -405,6 +405,9 @@ constexpr auto Version::InternalGenerateClassData_() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(Version, _impl_._cached_size_),
           false,
+          #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+                           &_v2_table_.base
+          #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
       },
       &Version::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
@@ -477,6 +480,40 @@ const ::_pbi::TcParseTable<2, 4, 0, 47, 2> Version::_table_ = {
   }},
 };
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+        PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::_pbi::v2::MessageTable<4, 0,
+                                         0, false>
+            Version::_v2_table_ = {
+                /* .base */ {
+                  /* message_hint */ 0,
+                  /* oneof_case_count */ 0,
+                  PROTOBUF_FIELD_OFFSET(Version, _impl_._has_bits_),
+                  /* no _extensions_ */ 0,
+                  PROTOBUF_FIELD_OFFSET(Version, _impl_._cached_size_),
+                  /* repeated_field_count*/ 0,
+                  /* optional_field_count*/ 4,
+                  /* singular_field_count*/ 0,
+                  /* oneof_field_count */ 0,
+                  offsetof(decltype(_v2_table_), aux_entries),
+                  offsetof(decltype(_v2_table_), aux_table),
+                  /*fixed8_hasbits_mask*/ 0x00000000u,
+                  /*fixed32_hasbits_mask*/ 0x0000000eu,
+                  /*fixed64_hasbits_mask*/ 0x00000000u,
+                  /*string_hasbits_mask*/ 0x00000001u,
+                  /*message_hasbits_mask*/ 0x00000000u,
+                },
+                /* .field_entries */ {{
+                    {12, 255, 0, 4, PROTOBUF_FIELD_OFFSET(Version, _impl_.suffix_),},
+                    {42, 255, 1, 1, PROTOBUF_FIELD_OFFSET(Version, _impl_.major_),},
+                    {42, 255, 2, 2, PROTOBUF_FIELD_OFFSET(Version, _impl_.minor_),},
+                    {42, 255, 3, 3, PROTOBUF_FIELD_OFFSET(Version, _impl_.patch_),},
+                }},
+                /* .extended_field_entries */ {},
+                /* .aux_entries */ {},
+                /* .aux_table */ {},
+        };
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 PROTOBUF_NOINLINE void Version::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.Version)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -773,6 +810,9 @@ constexpr auto CodeGeneratorRequest::InternalGenerateClassData_() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._cached_size_),
           false,
+          #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+                           &_v2_table_.base
+          #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
       },
       &CodeGeneratorRequest::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
@@ -855,6 +895,44 @@ const ::_pbi::TcParseTable<3, 5, 3, 79, 2> CodeGeneratorRequest::_table_ = {
   }},
 };
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+        PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::_pbi::v2::MessageTable<5, 0,
+                                         2, false>
+            CodeGeneratorRequest::_v2_table_ = {
+                /* .base */ {
+                  /* message_hint */ 0,
+                  /* oneof_case_count */ 0,
+                  PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._has_bits_),
+                  /* no _extensions_ */ 0,
+                  PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._cached_size_),
+                  /* repeated_field_count*/ 3,
+                  /* optional_field_count*/ 2,
+                  /* singular_field_count*/ 0,
+                  /* oneof_field_count */ 0,
+                  offsetof(decltype(_v2_table_), aux_entries),
+                  offsetof(decltype(_v2_table_), aux_table),
+                  /*fixed8_hasbits_mask*/ 0x00000000u,
+                  /*fixed32_hasbits_mask*/ 0x00000000u,
+                  /*fixed64_hasbits_mask*/ 0x00000000u,
+                  /*string_hasbits_mask*/ 0x00000001u,
+                  /*message_hasbits_mask*/ 0x00000002u,
+                },
+                /* .field_entries */ {{
+                    {180, 255, 65535, 1, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.file_to_generate_),},
+                    {22, 0, 65535, 15, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.proto_file_),},
+                    {22, 0, 65535, 17, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.source_file_descriptors_),},
+                    {12, 255, 0, 2, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.parameter_),},
+                    {14, 1, 1, 3, PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.compiler_version_),},
+                }},
+                /* .extended_field_entries */ {},
+                /* .aux_entries */ {{
+                    {::_pbi::v2::TableDriven::GetTable<::google::protobuf::FileDescriptorProto>()},
+                    {::_pbi::v2::TableDriven::GetTable<::google::protobuf::compiler::Version>()},
+                }},
+                /* .aux_table */ {},
+        };
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorRequest)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1176,6 +1254,9 @@ constexpr auto CodeGeneratorResponse_File::InternalGenerateClassData_() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._cached_size_),
           false,
+          #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+                           &_v2_table_.base
+          #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
       },
       &CodeGeneratorResponse_File::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
@@ -1250,6 +1331,42 @@ const ::_pbi::TcParseTable<2, 4, 1, 86, 2> CodeGeneratorResponse_File::_table_ =
   }},
 };
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+        PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::_pbi::v2::MessageTable<4, 0,
+                                         1, false>
+            CodeGeneratorResponse_File::_v2_table_ = {
+                /* .base */ {
+                  /* message_hint */ 0,
+                  /* oneof_case_count */ 0,
+                  PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._has_bits_),
+                  /* no _extensions_ */ 0,
+                  PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._cached_size_),
+                  /* repeated_field_count*/ 0,
+                  /* optional_field_count*/ 4,
+                  /* singular_field_count*/ 0,
+                  /* oneof_field_count */ 0,
+                  offsetof(decltype(_v2_table_), aux_entries),
+                  offsetof(decltype(_v2_table_), aux_table),
+                  /*fixed8_hasbits_mask*/ 0x00000000u,
+                  /*fixed32_hasbits_mask*/ 0x00000000u,
+                  /*fixed64_hasbits_mask*/ 0x00000000u,
+                  /*string_hasbits_mask*/ 0x00000007u,
+                  /*message_hasbits_mask*/ 0x00000008u,
+                },
+                /* .field_entries */ {{
+                    {12, 255, 0, 1, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.name_),},
+                    {12, 255, 1, 2, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.insertion_point_),},
+                    {12, 255, 2, 15, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.content_),},
+                    {14, 0, 3, 16, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_.generated_code_info_),},
+                }},
+                /* .extended_field_entries */ {},
+                /* .aux_entries */ {{
+                    {::_pbi::v2::TableDriven::GetTable<::google::protobuf::GeneratedCodeInfo>()},
+                }},
+                /* .aux_table */ {},
+        };
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1546,6 +1663,9 @@ constexpr auto CodeGeneratorResponse::InternalGenerateClassData_() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._cached_size_),
           false,
+          #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+                           &_v2_table_.base
+          #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
       },
       &CodeGeneratorResponse::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
@@ -1627,6 +1747,43 @@ const ::_pbi::TcParseTable<3, 5, 1, 60, 2> CodeGeneratorResponse::_table_ = {
   }},
 };
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+        PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::_pbi::v2::MessageTable<5, 0,
+                                         1, false>
+            CodeGeneratorResponse::_v2_table_ = {
+                /* .base */ {
+                  /* message_hint */ 0,
+                  /* oneof_case_count */ 0,
+                  PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._has_bits_),
+                  /* no _extensions_ */ 0,
+                  PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_._cached_size_),
+                  /* repeated_field_count*/ 1,
+                  /* optional_field_count*/ 4,
+                  /* singular_field_count*/ 0,
+                  /* oneof_field_count */ 0,
+                  offsetof(decltype(_v2_table_), aux_entries),
+                  offsetof(decltype(_v2_table_), aux_table),
+                  /*fixed8_hasbits_mask*/ 0x00000000u,
+                  /*fixed32_hasbits_mask*/ 0x0000000cu,
+                  /*fixed64_hasbits_mask*/ 0x00000002u,
+                  /*string_hasbits_mask*/ 0x00000001u,
+                  /*message_hasbits_mask*/ 0x00000000u,
+                },
+                /* .field_entries */ {{
+                    {22, 0, 65535, 15, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.file_),},
+                    {12, 255, 0, 1, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.error_),},
+                    {11, 255, 1, 2, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.supported_features_),},
+                    {42, 255, 2, 3, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.minimum_edition_),},
+                    {42, 255, 3, 4, PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.maximum_edition_),},
+                }},
+                /* .extended_field_entries */ {},
+                /* .aux_entries */ {{
+                    {::_pbi::v2::TableDriven::GetTable<::google::protobuf::compiler::CodeGeneratorResponse_File>()},
+                }},
+                /* .aux_table */ {},
+        };
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.compiler.CodeGeneratorResponse)
   ::google::protobuf::internal::TSanWrite(&_impl_);

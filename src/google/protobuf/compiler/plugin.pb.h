@@ -21,6 +21,8 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/v2/generated_message_table.h"
+#include "google/protobuf/v2/generated_message_table_impl.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -340,6 +342,12 @@ class PROTOC_EXPORT Version final
       2, 4, 0,
       47, 2>
       _table_;
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+              friend class ::google::protobuf::internal::v2::TableDriven;
+              static const ::google::protobuf::internal::v2::MessageTable<
+                  4, 0, 0, false>
+                  _v2_table_;
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -597,6 +605,12 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final
       2, 4, 1,
       86, 2>
       _table_;
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+              friend class ::google::protobuf::internal::v2::TableDriven;
+              static const ::google::protobuf::internal::v2::MessageTable<
+                  4, 0, 1, false>
+                  _v2_table_;
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -877,6 +891,12 @@ class PROTOC_EXPORT CodeGeneratorResponse final
       3, 5, 1,
       60, 2>
       _table_;
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+              friend class ::google::protobuf::internal::v2::TableDriven;
+              static const ::google::protobuf::internal::v2::MessageTable<
+                  5, 0, 1, false>
+                  _v2_table_;
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1163,6 +1183,12 @@ class PROTOC_EXPORT CodeGeneratorRequest final
       3, 5, 3,
       79, 2>
       _table_;
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+              friend class ::google::protobuf::internal::v2::TableDriven;
+              static const ::google::protobuf::internal::v2::MessageTable<
+                  5, 0, 2, false>
+                  _v2_table_;
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;

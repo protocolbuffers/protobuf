@@ -212,6 +212,9 @@ constexpr auto CppFeatures::InternalGenerateClassData_() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
           PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
           false,
+          #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+                           &_v2_table_.base
+          #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
       },
       &CppFeatures::kDescriptorMethods,
       &descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
@@ -276,6 +279,39 @@ const ::_pbi::TcParseTable<2, 3, 1, 0, 2> CppFeatures::_table_ = {
   }},
 };
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+        PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::_pbi::v2::MessageTable<3, 0,
+                                         0, false>
+            CppFeatures::_v2_table_ = {
+                /* .base */ {
+                  /* message_hint */ 0,
+                  /* oneof_case_count */ 0,
+                  PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._has_bits_),
+                  /* no _extensions_ */ 0,
+                  PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_._cached_size_),
+                  /* repeated_field_count*/ 0,
+                  /* optional_field_count*/ 3,
+                  /* singular_field_count*/ 0,
+                  /* oneof_field_count */ 0,
+                  offsetof(decltype(_v2_table_), aux_entries),
+                  offsetof(decltype(_v2_table_), aux_table),
+                  /*fixed8_hasbits_mask*/ 0x00000006u,
+                  /*fixed32_hasbits_mask*/ 0x00000001u,
+                  /*fixed64_hasbits_mask*/ 0x00000000u,
+                  /*string_hasbits_mask*/ 0x00000000u,
+                  /*message_hasbits_mask*/ 0x00000000u,
+                },
+                /* .field_entries */ {{
+                    {42, 255, 0, 2, PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.string_type_),},
+                    {8, 255, 1, 1, PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.legacy_closed_enum_),},
+                    {8, 255, 2, 3, PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.enum_name_uses_string_view_),},
+                }},
+                /* .extended_field_entries */ {},
+                /* .aux_entries */ {},
+                /* .aux_table */ {},
+        };
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 PROTOBUF_NOINLINE void CppFeatures::Clear() {
 // @@protoc_insertion_point(message_clear_start:pb.CppFeatures)
   ::google::protobuf::internal::TSanWrite(&_impl_);

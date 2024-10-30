@@ -234,6 +234,10 @@ std::string IntTypeName(const Options& options, absl::string_view type) {
 
 
 
+bool HasV2Table(const Descriptor* descriptor) {
+  return false;
+}
+
 }  // namespace
 
 bool IsLazy(const FieldDescriptor* field, const Options& options,
@@ -1247,7 +1251,7 @@ bool HasMapFields(const FileDescriptor* file) {
   return false;
 }
 
-bool HasV2Table(const Descriptor* descriptor) {
+bool IsV2EnabledForMessage(const Descriptor* descriptor) {
   return false;
 }
 

@@ -21,6 +21,8 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/v2/generated_message_table.h"
+#include "google/protobuf/v2/generated_message_table_impl.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -322,6 +324,12 @@ class PROTOC_EXPORT JavaFeatures final
       2, 3, 1,
       0, 2>
       _table_;
+  #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+              friend class ::google::protobuf::internal::v2::TableDriven;
+              static const ::google::protobuf::internal::v2::MessageTable<
+                  3, 0, 0, false>
+                  _v2_table_;
+  #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
