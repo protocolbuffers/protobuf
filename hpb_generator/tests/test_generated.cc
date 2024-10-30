@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <climits>
 #include <cstdint>
 #include <iterator>
 #include <limits>
@@ -54,6 +55,8 @@ using ::hpb_unittest::protos::TestModel_Category_NEWS;
 using ::hpb_unittest::protos::TestModel_Category_VIDEO;
 using ::hpb_unittest::protos::theme;
 using ::hpb_unittest::protos::ThemeExtension;
+using ::hpb_unittest::someotherpackage::protos::int32_ext;
+using ::hpb_unittest::someotherpackage::protos::int64_ext;
 using ::testing::ElementsAre;
 
 TEST(CppGeneratedCode, Constructor) { TestModel test_model; }
@@ -876,6 +879,21 @@ TEST(CppGeneratedCode, GetExtension) {
   EXPECT_EQ(true, ::hpb::SetExtension(&model, theme, extension1).ok());
   EXPECT_EQ("Hello World",
             hpb::GetExtension(&model, theme).value()->ext_name());
+}
+
+TEST(CppGeneratedCode, GetExtensionInt32WithDefault) {
+  TestModel model;
+  auto res = hpb::GetExtension(&model, int32_ext);
+  EXPECT_TRUE(res.ok());
+  EXPECT_EQ(*res, 644);
+}
+
+TEST(CppGeneratedCode, GetExtensionInt64WithDefault) {
+  TestModel model;
+  auto res = hpb::GetExtension(&model, int64_ext);
+  EXPECT_TRUE(res.ok());
+  int64_t expected = std::numeric_limits<int32_t>::max() + int64_t{1};
+  EXPECT_EQ(*res, expected);
 }
 
 TEST(CppGeneratedCode, GetExtensionOnMutableChild) {

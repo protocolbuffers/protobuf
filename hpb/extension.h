@@ -9,15 +9,19 @@
 #define GOOGLE_PROTOBUF_HPB_EXTENSION_H__
 
 #include <cstdint>
+#include <type_traits>
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/status/statusor.h"
 #include "google/protobuf/hpb/backend/upb/interop.h"
 #include "google/protobuf/hpb/internal/message_lock.h"
 #include "google/protobuf/hpb/internal/template_help.h"
 #include "google/protobuf/hpb/ptr.h"
 #include "google/protobuf/hpb/status.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/accessors.h"
+#include "upb/message/array.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 
@@ -33,6 +37,41 @@ absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
 absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
                           const upb_MiniTableExtension* ext,
                           const upb_Message* extension);
+
+/**
+ * Trait that maps upb extension types to the corresponding
+ * return value: ubp_MessageValue.
+ *
+ * All partial specializations must have:
+ * - DefaultType: the type of the default value.
+ * - ReturnType: the type of the return value.
+ * - kGetter: the corresponding upb_MessageValue upb_Message_GetExtension* func
+ */
+template <typename T, typename = void>
+struct UpbExtensionTrait;
+
+template <>
+struct UpbExtensionTrait<int32_t> {
+  using DefaultType = int32_t;
+  using ReturnType = int32_t;
+  static constexpr auto kGetter = upb_Message_GetExtensionInt32;
+};
+
+template <>
+struct UpbExtensionTrait<int64_t> {
+  using DefaultType = int64_t;
+  using ReturnType = int64_t;
+  static constexpr auto kGetter = upb_Message_GetExtensionInt64;
+};
+
+// TODO: b/375460289 - flesh out non-promotional msg support that does
+// not return an error if missing but the default msg
+template <typename T>
+struct UpbExtensionTrait<T> {
+  using DefaultType = int;
+  using ReturnType = int;
+  using DefaultFuncType = void (*)();
+};
 
 // -------------------------------------------------------------------
 // ExtensionIdentifier
@@ -54,14 +93,24 @@ class ExtensionIdentifier {
   }
 
  private:
-  constexpr explicit ExtensionIdentifier(const upb_MiniTableExtension* mte)
-      : mini_table_ext_(mte) {}
+  constexpr explicit ExtensionIdentifier(
+      const upb_MiniTableExtension* mte,
+      typename UpbExtensionTrait<ExtensionType>::DefaultType val)
+      : mini_table_ext_(mte), default_val_(val) {}
+
   constexpr uint32_t number() const {
     return upb_MiniTableExtension_Number(mini_table_ext_);
   }
 
-  friend struct PrivateAccess;
   const upb_MiniTableExtension* mini_table_ext_;
+
+  typename UpbExtensionTrait<ExtensionType>::ReturnType default_value() const {
+    return default_val_;
+  }
+
+  typename UpbExtensionTrait<ExtensionType>::DefaultType default_val_;
+
+  friend struct PrivateAccess;
 };
 
 upb_ExtensionRegistry* GetUpbExtensions(
@@ -216,10 +265,19 @@ absl::StatusOr<Ptr<const Extension>> GetExtension(
 
 template <typename T, typename Extendee, typename Extension,
           typename = hpb::internal::EnableIfHpbClass<T>>
-absl::StatusOr<Ptr<const Extension>> GetExtension(
+decltype(auto) GetExtension(
     const T* message,
-    const ::hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
-  return GetExtension(Ptr(message), id);
+    const hpb::internal::ExtensionIdentifier<Extendee, Extension>& id) {
+  if constexpr (std::is_integral_v<Extension>) {
+    auto default_val = hpb::internal::PrivateAccess::GetDefaultValue(id);
+    absl::StatusOr<Extension> res =
+        hpb::internal::UpbExtensionTrait<Extension>::kGetter(
+            hpb::interop::upb::GetMessage(message), id.mini_table_ext(),
+            default_val);
+    return res;
+  } else {
+    return GetExtension(Ptr(message), id);
+  }
 }
 
 template <typename T, typename Extension>

@@ -8,10 +8,13 @@
 #include "google/protobuf/compiler/hpb/gen_extensions.h"
 
 #include <string>
+#include <vector>
 
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/hpb/context.h"
+#include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/names.h"
+#include "google/protobuf/descriptor.h"
 #include "upb_generator/c/names.h"
 
 namespace google::protobuf::hpb_generator {
@@ -73,6 +76,7 @@ void WriteExtensionIdentifier(const protobuf::FieldDescriptor* ext,
       {{"containing_type_name", ContainingTypeName(ext)},
        {"mini_table_name", mini_table_name},
        {"ext_name", ext->name()},
+       {"default_value", DefaultValue(ext)},
        {"ext_type", CppTypeParameterName(ext)},
        {"class_prefix", class_prefix}},
       R"cc(
@@ -82,7 +86,7 @@ void WriteExtensionIdentifier(const protobuf::FieldDescriptor* ext,
                 ::hpb::internal::PrivateAccess::InvokeConstructor<
                     ::hpb::internal::ExtensionIdentifier<$containing_type_name$,
                                                          $ext_type$>>(
-                    &$mini_table_name$);
+                    &$mini_table_name$, $default_value$);
       )cc");
 }
 
