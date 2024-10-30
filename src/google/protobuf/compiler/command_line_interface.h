@@ -233,6 +233,9 @@ class PROTOC_EXPORT CommandLineInterface {
       Edition minimum_edition, Edition maximum_edition,
       const std::vector<const FileDescriptor*>& parsed_files) const;
 
+  bool EnforceProtocEditionsSupport(
+      const std::vector<const FileDescriptor*>& parsed_files) const;
+
 
   // Return status for ParseArguments() and InterpretArgument().
   enum ParseArgumentStatus {

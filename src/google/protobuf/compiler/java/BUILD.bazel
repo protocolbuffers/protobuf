@@ -4,6 +4,8 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 package(
@@ -243,6 +245,76 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "name_resolver_test",
+    size = "small",
+    srcs = ["name_resolver_test.cc"],
+    deps = [
+        ":helpers",
+        ":java",
+        ":test_file_name_2024_cc_proto",
+        ":test_file_name_cc_proto",
+        ":test_multiple_file_no_cc_proto",
+        ":test_multiple_file_yes_cc_proto",
+        "//src/google/protobuf/compiler:command_line_interface",
+        "//src/google/protobuf/stubs:lite",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@com_google_absl//absl/log:absl_check",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+proto_library(
+    name = "test_file_name_proto",
+    srcs = ["test_file_name.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "test_file_name_cc_proto",
+    deps = [":test_file_name_proto"],
+)
+
+proto_library(
+    name = "test_file_name_2024_proto",
+    srcs = ["test_file_name_2024.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "test_file_name_2024_cc_proto",
+    deps = [":test_file_name_2024_proto"],
+)
+
+proto_library(
+    name = "test_multiple_file_no_proto",
+    testonly = 1,
+    srcs = ["test_multiple_file_no.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "test_multiple_file_no_cc_proto",
+    testonly = 1,
+    deps = [":test_multiple_file_no_proto"],
+)
+
+proto_library(
+    name = "test_multiple_file_yes_proto",
+    testonly = 1,
+    srcs = ["test_multiple_file_yes.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "test_multiple_file_yes_cc_proto",
+    testonly = 1,
+    deps = [":test_multiple_file_yes_proto"],
+)
+
 ################################################################################
 # Distribution packaging
 ################################################################################
@@ -263,5 +335,11 @@ filegroup(
         ],
         allow_empty = True,
     ),
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)
+
+filegroup(
+    name = "test_proto_srcs",
+    srcs = glob(["*.proto"]),
     visibility = ["//src/google/protobuf/compiler:__pkg__"],
 )

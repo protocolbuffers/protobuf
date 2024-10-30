@@ -162,8 +162,9 @@ class PROTOC_EXPORT CodeGenerator {
   }
 };
 
-constexpr auto MinimumAllowedEdition() { return Edition::EDITION_PROTO2; }
-constexpr auto MaximumAllowedEdition() { return Edition::EDITION_2023; }
+constexpr auto ProtocMinimumEdition() { return Edition::EDITION_PROTO2; }
+constexpr auto ProtocMaximumEdition() { return Edition::EDITION_2023; }
+constexpr auto MaximumKnownEdition() { return Edition::EDITION_2024; }
 
 // CodeGenerators generate one or more files in a given directory.  This
 // abstract interface represents the directory to which the CodeGenerator is

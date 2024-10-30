@@ -1318,6 +1318,10 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     return 1;
   }
 
+  if (!EnforceProtocEditionsSupport(parsed_files)) {
+    return 1;
+  }
+
   // We construct a separate GeneratorContext for each output location.  Note
   // that two code generators may output to the same location, in which case
   // they should share a single GeneratorContext so that OpenForInsert() works.
@@ -1520,10 +1524,6 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
   // Calculate the feature defaults for each built-in generator.  All generators
   // that support editions must agree on the supported edition range.
   std::vector<const FieldDescriptor*> feature_extensions;
-  Edition minimum_edition = MinimumAllowedEdition();
-  // Override maximum_edition if experimental_editions is true.
-  Edition maximum_edition =
-      !experimental_editions_ ? MaximumAllowedEdition() : Edition::EDITION_MAX;
   for (const auto& output : output_directives_) {
     if (output.generator == nullptr) continue;
     if (!experimental_editions_ &&
@@ -1532,20 +1532,20 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
       // Only validate min/max edition on generators that advertise editions
       // support.  Generators still under development will always use the
       // correct values.
-      if (output.generator->GetMinimumEdition() != minimum_edition) {
+      if (output.generator->GetMinimumEdition() != ProtocMinimumEdition()) {
         ABSL_LOG(ERROR) << "Built-in generator " << output.name
                         << " specifies a minimum edition "
                         << output.generator->GetMinimumEdition()
                         << " which is not the protoc minimum "
-                        << minimum_edition << ".";
+                        << ProtocMinimumEdition() << ".";
         return false;
       }
-      if (output.generator->GetMaximumEdition() != maximum_edition) {
+      if (output.generator->GetMaximumEdition() != ProtocMaximumEdition()) {
         ABSL_LOG(ERROR) << "Built-in generator " << output.name
                         << " specifies a maximum edition "
                         << output.generator->GetMaximumEdition()
                         << " which is not the protoc maximum "
-                        << maximum_edition << ".";
+                        << ProtocMaximumEdition() << ".";
         return false;
       }
     }
@@ -1560,9 +1560,9 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
     }
   }
   absl::StatusOr<FeatureSetDefaults> defaults =
-      FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
-                                       feature_extensions, minimum_edition,
-                                       maximum_edition);
+      FeatureResolver::CompileDefaults(
+          FeatureSet::descriptor(), feature_extensions, ProtocMinimumEdition(),
+          MaximumKnownEdition());
   if (!defaults.ok()) {
     ABSL_LOG(ERROR) << defaults.status();
     return false;
@@ -2613,6 +2613,31 @@ bool CommandLineInterface::EnforceEditionsSupport(
   return true;
 }
 
+bool CommandLineInterface::EnforceProtocEditionsSupport(
+    const std::vector<const FileDescriptor*>& parsed_files) const {
+  if (experimental_editions_) {
+    // The user has explicitly specified the experimental flag.
+    return true;
+  }
+  for (const auto* fd : parsed_files) {
+    Edition edition =
+        ::google::protobuf::internal::InternalFeatureHelper::GetEdition(*fd);
+    if (CanSkipEditionCheck(fd->name())) {
+      // Legacy proto2/proto3 or exempted files don't need any checks.
+      continue;
+    }
+
+    if (edition > ProtocMaximumEdition()) {
+      std::cerr << absl::Substitute(
+          "$0: is a file using edition $1, which is later than the protoc "
+          "maximum supported edition $2.",
+          fd->name(), edition, ProtocMaximumEdition());
+      return false;
+    }
+  }
+  return true;
+}
+
 bool CommandLineInterface::GenerateOutput(
     const std::vector<const FileDescriptor*>& parsed_files,
     const OutputDirective& output_directive,
@@ -3033,11 +3058,11 @@ bool CommandLineInterface::WriteEditionDefaults(const DescriptorPool& pool) {
   std::vector<const FieldDescriptor*> extensions;
   pool.FindAllExtensions(feature_set, &extensions);
 
-  Edition minimum = MinimumAllowedEdition();
+  Edition minimum = ProtocMinimumEdition();
   if (edition_defaults_minimum_ != EDITION_UNKNOWN) {
     minimum = edition_defaults_minimum_;
   }
-  Edition maximum = MaximumAllowedEdition();
+  Edition maximum = ProtocMaximumEdition();
   if (edition_defaults_maximum_ != EDITION_UNKNOWN) {
     maximum = edition_defaults_maximum_;
   }
