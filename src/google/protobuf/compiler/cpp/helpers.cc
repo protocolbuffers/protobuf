@@ -73,6 +73,50 @@ namespace {
 constexpr absl::string_view kAnyMessageName = "Any";
 constexpr absl::string_view kAnyProtoFile = "google/protobuf/any.proto";
 
+const absl::flat_hash_set<absl::string_view>& FileScopeKnownNames() {
+  static constexpr const char* kValue[] = {
+      "swap",
+  };
+  static const auto* const methods = new absl::flat_hash_set<absl::string_view>(
+      std::begin(kValue), std::end(kValue));
+  return *methods;
+}
+
+const absl::flat_hash_set<absl::string_view>& MessageKnownMethodsCamelCase() {
+  static constexpr const char* kMessageKnownMethods[] = {
+      "GetDescriptor", "GetReflection",   "default_instance",
+      "Swap",          "UnsafeArenaSwap", "New",
+      "CopyFrom",      "MergeFrom",       "IsInitialized",
+      "GetMetadata",   "Clear",
+  };
+  static const auto* const methods = new absl::flat_hash_set<absl::string_view>(
+      std::begin(kMessageKnownMethods), std::end(kMessageKnownMethods));
+  return *methods;
+}
+
+const absl::flat_hash_set<absl::string_view>&
+MessageKnownNullaryMethodsSnakeCase() {
+  static constexpr const char* kMessageKnownMethods[] = {
+      "unknown_fields",
+      "mutable_unknown_fields",
+      "descriptor",
+      "default_instance",
+  };
+  static const auto* const methods = new absl::flat_hash_set<absl::string_view>(
+      std::begin(kMessageKnownMethods), std::end(kMessageKnownMethods));
+  return *methods;
+}
+
+const absl::flat_hash_set<absl::string_view>&
+MessageKnownNonNullaryMethodsSnakeCase() {
+  static constexpr const char* kMessageKnownMethods[] = {
+      "swap",
+  };
+  static const auto* const methods = new absl::flat_hash_set<absl::string_view>(
+      std::begin(kMessageKnownMethods), std::end(kMessageKnownMethods));
+  return *methods;
+}
+
 static const char* const kKeywordList[] = {
     // clang-format off
     "NULL",
@@ -406,12 +450,14 @@ std::string ClassName(const Descriptor* descriptor) {
   if (parent) absl::StrAppend(&res, ClassName(parent), "_");
   absl::StrAppend(&res, descriptor->name());
   if (IsMapEntryMessage(descriptor)) absl::StrAppend(&res, "_DoNotUse");
-  return ResolveKeyword(res);
+  // This is the mangled message name which always goes in file scope.
+  return ResolveKnownNameCollisions(res, NameContext::kFile, NameKind::kType);
 }
 
 std::string ClassName(const EnumDescriptor* enum_descriptor) {
   if (enum_descriptor->containing_type() == nullptr) {
-    return ResolveKeyword(enum_descriptor->name());
+    return ResolveKnownNameCollisions(enum_descriptor->name(),
+                                      NameContext::kFile, NameKind::kType);
   } else {
     return absl::StrCat(ClassName(enum_descriptor->containing_type()), "_",
                         enum_descriptor->name());
@@ -436,9 +482,14 @@ std::string QualifiedClassName(const EnumDescriptor* d) {
 }
 
 std::string ExtensionName(const FieldDescriptor* d) {
-  if (const Descriptor* scope = d->extension_scope())
-    return absl::StrCat(ClassName(scope), "::", ResolveKeyword(d->name()));
-  return ResolveKeyword(d->name());
+  if (const Descriptor* scope = d->extension_scope()) {
+    return absl::StrCat(
+        ClassName(scope), "::",
+        ResolveKnownNameCollisions(d->name(), NameContext::kMessage,
+                                   NameKind::kValue));
+  }
+  return ResolveKnownNameCollisions(d->name(), NameContext::kFile,
+                                    NameKind::kValue);
 }
 
 std::string QualifiedExtensionName(const FieldDescriptor* d,
@@ -452,23 +503,53 @@ std::string QualifiedExtensionName(const FieldDescriptor* d) {
 }
 
 std::string ResolveKeyword(absl::string_view name) {
-  if (Keywords().count(name) > 0) {
+  if (Keywords().contains(name)) {
     return absl::StrCat(name, "_");
   }
   return std::string(name);
 }
 
-std::string DotsToColons(absl::string_view name) {
-  std::vector<std::string> scope = absl::StrSplit(name, '.', absl::SkipEmpty());
-  for (auto& word : scope) {
-    word = ResolveKeyword(word);
+std::string ResolveKnownNameCollisions(absl::string_view name,
+                                       NameContext name_context,
+                                       NameKind name_kind) {
+  const auto has_conflict = [&] {
+    if (Keywords().contains(name)) return true;
+
+    switch (name_kind) {
+      // We assume the style guide: types are CamelCase, fields are snake_case.
+      case NameKind::kType:
+        // Types can't overload names of existing functions.
+        return MessageKnownMethodsCamelCase().contains(name);
+      case NameKind::kValue:
+        if (name_context == NameContext::kFile) {
+          // At file scope we don't have the normal names, except a few.
+          return FileScopeKnownNames().contains(name);
+        }
+        // Values can't overload names of existing functions.
+        return MessageKnownNullaryMethodsSnakeCase().contains(name) ||
+               MessageKnownNonNullaryMethodsSnakeCase().contains(name);
+      case NameKind::kFunction:
+        // For functions, we can't overload existing nullary functions.
+        // Non-nullary functions are fine.
+        return MessageKnownNullaryMethodsSnakeCase().contains(name);
+    }
+    return false;
+  };
+  if (has_conflict()) {
+    return absl::StrCat(name, "_");
   }
-  return absl::StrJoin(scope, "::");
+  return std::string(name);
 }
 
 std::string Namespace(absl::string_view package) {
   if (package.empty()) return "";
-  return absl::StrCat("::", DotsToColons(package));
+
+  std::vector<std::string> scope =
+      absl::StrSplit(package, '.', absl::SkipEmpty());
+  for (auto& word : scope) {
+    word = ResolveKeyword(word);
+  }
+  return absl::StrCat("::", absl::StrJoin(scope, "::"));
 }
 
 std::string Namespace(const FileDescriptor* d) { return Namespace(d, {}); }
@@ -555,12 +636,17 @@ std::string SuperClassName(const Descriptor* descriptor,
 }
 
 std::string FieldName(const FieldDescriptor* field) {
+  if (field->containing_type() != nullptr &&
+      field->containing_type()->options().no_standard_descriptor_accessor() &&
+      field->name() == "descriptor") {
+    // Special case for `optional no_standard_descriptor_accessor = true;`
+    return "descriptor";
+  }
   std::string result = std::string(field->name());
   absl::AsciiStrToLower(&result);
-  if (Keywords().count(result) > 0) {
-    result.append("_");
-  }
-  return result;
+  ABSL_CHECK(field->containing_type() != nullptr);
+  return ResolveKnownNameCollisions(result, NameContext::kMessage,
+                                    NameKind::kFunction);
 }
 
 std::string FieldMemberName(const FieldDescriptor* field, bool split) {
@@ -589,11 +675,7 @@ std::string QualifiedOneofCaseConstantName(const FieldDescriptor* field) {
 }
 
 std::string EnumValueName(const EnumValueDescriptor* enum_value) {
-  std::string result = std::string(enum_value->name());
-  if (Keywords().count(result) > 0) {
-    result.append("_");
-  }
-  return result;
+  return ResolveKeyword(enum_value->name());
 }
 
 int EstimateAlignmentSize(const FieldDescriptor* field) {

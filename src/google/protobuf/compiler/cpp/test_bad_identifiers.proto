@@ -115,6 +115,41 @@ message TestConflictingSymbolNames {
   optional uint32 typedecl = 39;
   optional uint32 auto = 40;
 
+  // Methods generated in the parent type
+  message BadKnownNamesFields {
+    optional int32 unknown_fields = 1;
+    optional int32 mutable_unknown_fields = 2;
+    optional int32 descriptor = 3;
+    optional int32 default_instance = 4;
+    optional int32 swap = 5;
+  }
+  message BadKnownNamesFieldsNoStandardDescriptor {
+    option no_standard_descriptor_accessor = true;
+    optional int32 descriptor = 3;
+  }
+  message BadKnownNamesTypes {
+    message GetDescriptor {}
+    message GetReflection {}
+    message Swap {}
+    message UnsafeArenaSwap {}
+    message New {}
+    message CopyFrom {}
+    message MergeFrom {}
+    message GetMetadata {}
+    message Clear {}
+    message IsInitialized {}
+  }
+  message BadKnownNamesValues {  // NO_PROTO3
+    extensions 1 to 100;  // NO_PROTO3
+    extend BadKnownNamesValues {  // NO_PROTO3
+      optional int32 unknown_fields = 1;  // NO_PROTO3
+      optional int32 mutable_unknown_fields = 2;  // NO_PROTO3
+      optional int32 descriptor = 3;  // NO_PROTO3
+      optional int32 default_instance = 4;  // NO_PROTO3
+      optional int32 swap = 5;  // NO_PROTO3
+    }  // NO_PROTO3
+  }  // NO_PROTO3
+
   // The generator used to #define a macro called "DO" inside the .cc file.
   message DO {}
   optional DO do = 32;
@@ -136,6 +171,26 @@ message TestConflictingSymbolNames {
 
   extensions 1000 to max [verification = UNVERIFIED];  // NO_PROTO3
 }
+
+// Special names as above, but at file scope.
+message GetDescriptor {}
+message GetReflection {}
+message Swap {}
+message UnsafeArenaSwap {}
+message New {}
+message CopyFrom {}
+message MergeFrom {}
+message GetMetadata {}
+message Clear {}
+message IsInitialized {}
+
+extend TestConflictingSymbolNames.BadKnownNamesValues {  // NO_PROTO3
+  optional int32 unknown_fields = 11;          // NO_PROTO3
+  optional int32 mutable_unknown_fields = 12;  // NO_PROTO3
+  optional int32 descriptor = 13;              // NO_PROTO3
+  optional int32 default_instance = 14;        // NO_PROTO3
+  optional int32 swap = 15;                    // NO_PROTO3
+}  // NO_PROTO3
 
 message TestConflictingSymbolNamesExtension {                      // NO_PROTO3
   extend TestConflictingSymbolNames {                              // NO_PROTO3
