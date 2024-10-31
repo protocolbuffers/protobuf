@@ -259,7 +259,7 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
 
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    _impl_.file_name_.ClearToEmpty();
+    _impl_.file_name_.ClearNonDefaultToEmpty();
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -339,6 +339,10 @@ void SourceContext::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::g
   if (cached_has_bits & 0x00000001u) {
     if (!from._internal_file_name().empty()) {
       _this->_internal_set_file_name(from._internal_file_name());
+    } else {
+      if (_this->_impl_.file_name_.IsDefault()) {
+        _this->_internal_set_file_name("");
+      }
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;

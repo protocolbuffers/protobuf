@@ -497,10 +497,10 @@ PROTOBUF_NOINLINE void Api::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearToEmpty();
+      _impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.version_.ClearToEmpty();
+      _impl_.version_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000004u) {
       ABSL_DCHECK(_impl_.source_context_ != nullptr);
@@ -697,11 +697,19 @@ void Api::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pro
     if (cached_has_bits & 0x00000001u) {
       if (!from._internal_name().empty()) {
         _this->_internal_set_name(from._internal_name());
+      } else {
+        if (_this->_impl_.name_.IsDefault()) {
+          _this->_internal_set_name("");
+        }
       }
     }
     if (cached_has_bits & 0x00000002u) {
       if (!from._internal_version().empty()) {
         _this->_internal_set_version(from._internal_version());
+      } else {
+        if (_this->_impl_.version_.IsDefault()) {
+          _this->_internal_set_version("");
+        }
       }
     }
     if (cached_has_bits & 0x00000004u) {
@@ -981,13 +989,13 @@ PROTOBUF_NOINLINE void Method::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearToEmpty();
+      _impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.request_type_url_.ClearToEmpty();
+      _impl_.request_type_url_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000004u) {
-      _impl_.response_type_url_.ClearToEmpty();
+      _impl_.response_type_url_.ClearNonDefaultToEmpty();
     }
   }
   if (cached_has_bits & 0x00000038u) {
@@ -1177,16 +1185,28 @@ void Method::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::
     if (cached_has_bits & 0x00000001u) {
       if (!from._internal_name().empty()) {
         _this->_internal_set_name(from._internal_name());
+      } else {
+        if (_this->_impl_.name_.IsDefault()) {
+          _this->_internal_set_name("");
+        }
       }
     }
     if (cached_has_bits & 0x00000002u) {
       if (!from._internal_request_type_url().empty()) {
         _this->_internal_set_request_type_url(from._internal_request_type_url());
+      } else {
+        if (_this->_impl_.request_type_url_.IsDefault()) {
+          _this->_internal_set_request_type_url("");
+        }
       }
     }
     if (cached_has_bits & 0x00000004u) {
       if (!from._internal_response_type_url().empty()) {
         _this->_internal_set_response_type_url(from._internal_response_type_url());
+      } else {
+        if (_this->_impl_.response_type_url_.IsDefault()) {
+          _this->_internal_set_response_type_url("");
+        }
       }
     }
     if (cached_has_bits & 0x00000008u) {
@@ -1399,10 +1419,10 @@ PROTOBUF_NOINLINE void Mixin::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearToEmpty();
+      _impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.root_.ClearToEmpty();
+      _impl_.root_.ClearNonDefaultToEmpty();
     }
   }
   _impl_._has_bits_.Clear();
@@ -1502,11 +1522,19 @@ void Mixin::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::p
     if (cached_has_bits & 0x00000001u) {
       if (!from._internal_name().empty()) {
         _this->_internal_set_name(from._internal_name());
+      } else {
+        if (_this->_impl_.name_.IsDefault()) {
+          _this->_internal_set_name("");
+        }
       }
     }
     if (cached_has_bits & 0x00000002u) {
       if (!from._internal_root().empty()) {
         _this->_internal_set_root(from._internal_root());
+      } else {
+        if (_this->_impl_.root_.IsDefault()) {
+          _this->_internal_set_root("");
+        }
       }
     }
   }

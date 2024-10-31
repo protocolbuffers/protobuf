@@ -2198,7 +2198,7 @@ PROTOBUF_NOINLINE void StringValue::Clear() {
 
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    _impl_.value_.ClearToEmpty();
+    _impl_.value_.ClearNonDefaultToEmpty();
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -2278,6 +2278,10 @@ void StringValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   if (cached_has_bits & 0x00000001u) {
     if (!from._internal_value().empty()) {
       _this->_internal_set_value(from._internal_value());
+    } else {
+      if (_this->_impl_.value_.IsDefault()) {
+        _this->_internal_set_value("");
+      }
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
@@ -2451,7 +2455,7 @@ PROTOBUF_NOINLINE void BytesValue::Clear() {
 
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    _impl_.value_.ClearToEmpty();
+    _impl_.value_.ClearNonDefaultToEmpty();
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -2529,6 +2533,10 @@ void BytesValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   if (cached_has_bits & 0x00000001u) {
     if (!from._internal_value().empty()) {
       _this->_internal_set_value(from._internal_value());
+    } else {
+      if (_this->_impl_.value_.IsDefault()) {
+        _this->_internal_set_value("");
+      }
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;

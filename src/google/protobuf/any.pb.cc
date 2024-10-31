@@ -288,10 +288,10 @@ PROTOBUF_NOINLINE void Any::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.type_url_.ClearToEmpty();
+      _impl_.type_url_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.value_.ClearToEmpty();
+      _impl_.value_.ClearNonDefaultToEmpty();
     }
   }
   _impl_._has_bits_.Clear();
@@ -389,11 +389,19 @@ void Any::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pro
     if (cached_has_bits & 0x00000001u) {
       if (!from._internal_type_url().empty()) {
         _this->_internal_set_type_url(from._internal_type_url());
+      } else {
+        if (_this->_impl_.type_url_.IsDefault()) {
+          _this->_internal_set_type_url("");
+        }
       }
     }
     if (cached_has_bits & 0x00000002u) {
       if (!from._internal_value().empty()) {
         _this->_internal_set_value(from._internal_value());
+      } else {
+        if (_this->_impl_.value_.IsDefault()) {
+          _this->_internal_set_value("");
+        }
       }
     }
   }

@@ -652,10 +652,10 @@ PROTOBUF_NOINLINE void Type::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearToEmpty();
+      _impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.edition_.ClearToEmpty();
+      _impl_.edition_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000004u) {
       ABSL_DCHECK(_impl_.source_context_ != nullptr);
@@ -850,11 +850,19 @@ void Type::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pr
     if (cached_has_bits & 0x00000001u) {
       if (!from._internal_name().empty()) {
         _this->_internal_set_name(from._internal_name());
+      } else {
+        if (_this->_impl_.name_.IsDefault()) {
+          _this->_internal_set_name("");
+        }
       }
     }
     if (cached_has_bits & 0x00000002u) {
       if (!from._internal_edition().empty()) {
         _this->_internal_set_edition(from._internal_edition());
+      } else {
+        if (_this->_impl_.edition_.IsDefault()) {
+          _this->_internal_set_edition("");
+        }
       }
     }
     if (cached_has_bits & 0x00000004u) {
@@ -1157,16 +1165,16 @@ PROTOBUF_NOINLINE void Field::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearToEmpty();
+      _impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.type_url_.ClearToEmpty();
+      _impl_.type_url_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000004u) {
-      _impl_.json_name_.ClearToEmpty();
+      _impl_.json_name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000008u) {
-      _impl_.default_value_.ClearToEmpty();
+      _impl_.default_value_.ClearNonDefaultToEmpty();
     }
   }
   if (cached_has_bits & 0x000000f0u) {
@@ -1409,21 +1417,37 @@ void Field::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::p
     if (cached_has_bits & 0x00000001u) {
       if (!from._internal_name().empty()) {
         _this->_internal_set_name(from._internal_name());
+      } else {
+        if (_this->_impl_.name_.IsDefault()) {
+          _this->_internal_set_name("");
+        }
       }
     }
     if (cached_has_bits & 0x00000002u) {
       if (!from._internal_type_url().empty()) {
         _this->_internal_set_type_url(from._internal_type_url());
+      } else {
+        if (_this->_impl_.type_url_.IsDefault()) {
+          _this->_internal_set_type_url("");
+        }
       }
     }
     if (cached_has_bits & 0x00000004u) {
       if (!from._internal_json_name().empty()) {
         _this->_internal_set_json_name(from._internal_json_name());
+      } else {
+        if (_this->_impl_.json_name_.IsDefault()) {
+          _this->_internal_set_json_name("");
+        }
       }
     }
     if (cached_has_bits & 0x00000008u) {
       if (!from._internal_default_value().empty()) {
         _this->_internal_set_default_value(from._internal_default_value());
+      } else {
+        if (_this->_impl_.default_value_.IsDefault()) {
+          _this->_internal_set_default_value("");
+        }
       }
     }
     if (cached_has_bits & 0x00000010u) {
@@ -1714,10 +1738,10 @@ PROTOBUF_NOINLINE void Enum::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000007u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearToEmpty();
+      _impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.edition_.ClearToEmpty();
+      _impl_.edition_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000004u) {
       ABSL_DCHECK(_impl_.source_context_ != nullptr);
@@ -1894,11 +1918,19 @@ void Enum::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pr
     if (cached_has_bits & 0x00000001u) {
       if (!from._internal_name().empty()) {
         _this->_internal_set_name(from._internal_name());
+      } else {
+        if (_this->_impl_.name_.IsDefault()) {
+          _this->_internal_set_name("");
+        }
       }
     }
     if (cached_has_bits & 0x00000002u) {
       if (!from._internal_edition().empty()) {
         _this->_internal_set_edition(from._internal_edition());
+      } else {
+        if (_this->_impl_.edition_.IsDefault()) {
+          _this->_internal_set_edition("");
+        }
       }
     }
     if (cached_has_bits & 0x00000004u) {
@@ -2129,7 +2161,7 @@ PROTOBUF_NOINLINE void EnumValue::Clear() {
   _impl_.options_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000001u) {
-    _impl_.name_.ClearToEmpty();
+    _impl_.name_.ClearNonDefaultToEmpty();
   }
   _impl_.number_ = 0;
   _impl_._has_bits_.Clear();
@@ -2250,6 +2282,10 @@ void EnumValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::googl
     if (cached_has_bits & 0x00000001u) {
       if (!from._internal_name().empty()) {
         _this->_internal_set_name(from._internal_name());
+      } else {
+        if (_this->_impl_.name_.IsDefault()) {
+          _this->_internal_set_name("");
+        }
       }
     }
     if (cached_has_bits & 0x00000002u) {
@@ -2452,7 +2488,7 @@ PROTOBUF_NOINLINE void Option::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x00000003u) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.name_.ClearToEmpty();
+      _impl_.name_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
       ABSL_DCHECK(_impl_.value_ != nullptr);
@@ -2553,6 +2589,10 @@ void Option::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::
     if (cached_has_bits & 0x00000001u) {
       if (!from._internal_name().empty()) {
         _this->_internal_set_name(from._internal_name());
+      } else {
+        if (_this->_impl_.name_.IsDefault()) {
+          _this->_internal_set_name("");
+        }
       }
     }
     if (cached_has_bits & 0x00000002u) {
