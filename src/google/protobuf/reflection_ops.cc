@@ -20,6 +20,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_field_inl.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/unknown_field_set.h"
 
 // Must be included last.
@@ -320,7 +321,9 @@ static bool IsMapValueMessageTyped(const FieldDescriptor* map_field) {
 void ReflectionOps::DiscardUnknownFields(Message* message) {
   const Reflection* reflection = GetReflectionOrDie(*message);
 
-  reflection->MutableUnknownFields(message)->Clear();
+  if (reflection->GetUnknownFields(*message).field_count() != 0) {
+    reflection->MutableUnknownFields(message)->Clear();
+  }
 
   // Walk through the fields of this message and DiscardUnknownFields on any
   // messages present.
