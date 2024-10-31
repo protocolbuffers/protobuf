@@ -8,8 +8,16 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+#include <cstdint>
+#include <string>
+
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/log/absl_log.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/proto_api.h"
@@ -232,6 +240,42 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
   PyObject* DescriptorPool_FromPool(
       const google::protobuf::DescriptorPool* pool) const override {
     return google::protobuf::python::PyDescriptorPool_FromPool(pool);
+  }
+  PyObject* PyMessageDescriptor_FromDescriptor(
+      const google::protobuf::Descriptor* descriptor) const override {
+    return google::protobuf::python::PyMessageDescriptor_FromDescriptor(descriptor);
+  }
+  PyObject* PyFieldDescriptor_FromDescriptor(
+      const google::protobuf::FieldDescriptor* descriptor) const override {
+    return google::protobuf::python::PyFieldDescriptor_FromDescriptor(descriptor);
+  }
+  PyObject* PyEnumDescriptor_FromDescriptor(
+      const google::protobuf::EnumDescriptor* descriptor) const override {
+    return google::protobuf::python::PyEnumDescriptor_FromDescriptor(descriptor);
+  }
+  PyObject* PyEnumValueDescriptor_FromDescriptor(
+      const google::protobuf::EnumValueDescriptor* descriptor) const override {
+    return google::protobuf::python::PyEnumValueDescriptor_FromDescriptor(descriptor);
+  }
+  PyObject* PyOneofDescriptor_FromDescriptor(
+      const google::protobuf::OneofDescriptor* descriptor) const override {
+    return google::protobuf::python::PyOneofDescriptor_FromDescriptor(descriptor);
+  }
+  PyObject* PyFileDescriptor_FromDescriptor(
+      const google::protobuf::FileDescriptor* file_descriptor) const override {
+    return google::protobuf::python::PyFileDescriptor_FromDescriptor(file_descriptor);
+  }
+  PyObject* PyServiceDescriptor_FromDescriptor(
+      const google::protobuf::ServiceDescriptor* descriptor) const override {
+    return google::protobuf::python::PyServiceDescriptor_FromDescriptor(descriptor);
+  }
+  PyObject* PyMethodDescriptor_FromDescriptor(
+      const google::protobuf::MethodDescriptor* descriptor) const override {
+    return google::protobuf::python::PyMethodDescriptor_FromDescriptor(descriptor);
+  }
+  bool AddCachedPoolDependency(PyObject* py_pool,
+                               PyObject* py_dependency) const override {
+    return google::protobuf::python::AddCachedPoolDependency(py_pool, py_dependency);
   }
 };
 
