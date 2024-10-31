@@ -177,6 +177,8 @@ void TcParser::VerifyHasBitConsistency(const MessageLite* msg,
               // We might have a previous instance that we cached.
             }
             break;
+          case fl::kRepLazy:
+            break;
           default:
             Unreachable();
         }
