@@ -116,15 +116,15 @@ def protobuf_deps():
     if not native.existing_rule("rules_python"):
         http_archive(
             name = "rules_python",
-            sha256 = "d70cd72a7a4880f0000a6346253414825c19cdd40a28289bdf67b8e6480edff8",
-            strip_prefix = "rules_python-0.28.0",
-            url = "https://github.com/bazelbuild/rules_python/releases/download/0.28.0/rules_python-0.28.0.tar.gz",
+            sha256 = "c6fb25d0ba0246f6d5bd820dd0b2e66b339ccc510242fd4956b9a639b548d113",
+            strip_prefix = "rules_python-0.37.2",
+            url = "https://github.com/bazelbuild/rules_python/releases/download/0.37.2/rules_python-0.37.2.tar.gz",
         )
 
     if not native.existing_rule("system_python"):
         system_python(
             name = "system_python",
-            minimum_python_version = "3.8",
+            minimum_python_version = "3.9",
         )
 
     if not native.existing_rule("rules_jvm_external"):
@@ -177,18 +177,6 @@ def protobuf_deps():
         )
 
     # Python Downloads
-    python_source_archive(
-        name = "python-3.8.0",
-        sha256 = "f1069ad3cae8e7ec467aa98a6565a62a48ef196cb8f1455a245a08db5e1792df",
-    )
-    python_nuget_package(
-        name = "nuget_python_i686_3.8.0",
-        sha256 = "87a6481f5eef30b42ac12c93f06f73bd0b8692f26313b76a6615d1641c4e7bca",
-    )
-    python_nuget_package(
-        name = "nuget_python_x86-64_3.8.0",
-        sha256 = "96c61321ce90dd053c8a04f305a5f6cc6d91350b862db34440e4a4f069b708a0",
-    )
     python_nuget_package(
         name = "nuget_python_i686_3.9.0",
         sha256 = "229abecbe49dc08fe5709e0b31e70edfb3b88f23335ebfc2904c44f940fd59b6",
