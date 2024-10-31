@@ -16,7 +16,6 @@
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -24,15 +23,12 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
-#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
-using ::google::protobuf::internal::cpp::GetFieldHasbitMode;
-using ::google::protobuf::internal::cpp::HasbitMode;
 using ::google::protobuf::internal::cpp::HasHasbit;
 using ::google::protobuf::io::AnnotationCollector;
 using Sub = ::google::protobuf::io::Printer::Sub;
@@ -537,22 +533,6 @@ void SingularString::GenerateClearingCode(io::Printer* p) const {
   )cc");
 }
 
-// Returns "ClearNonDefaultToEmpty" or "ClearToEmpty" depending on whether the
-// field might still point to the default string instance.
-absl::string_view GetClearFunctionForField(const FieldDescriptor* field) {
-  switch (GetFieldHasbitMode(field)) {
-    case HasbitMode::kNoHasbit:
-    case HasbitMode::kHintHasbit:
-      // TODO: b/376149315 - Would be nice to call ClearNonDefaultToEmpty for
-      // hint hasbits too.
-      return "ClearToEmpty";
-    case HasbitMode::kTrueHasbit:
-      return "ClearNonDefaultToEmpty";
-    default:
-      internal::Unreachable();
-  }
-}
-
 void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
   if (is_oneof()) {
     p->Emit(R"cc(
@@ -593,7 +573,8 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
     return;
   }
 
-  p->Emit({{"Clear", GetClearFunctionForField(field_)}},
+  p->Emit({{"Clear",
+            HasHasbit(field_) ? "ClearNonDefaultToEmpty" : "ClearToEmpty"}},
           R"cc(
             $field_$.$Clear$();
           )cc");

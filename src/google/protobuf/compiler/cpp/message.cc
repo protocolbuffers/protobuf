@@ -187,7 +187,7 @@ RunMap FindRuns(const std::vector<const FieldDescriptor*>& fields,
   return runs;
 }
 
-void EmitNonDefaultCheck(io::Printer* p, const std::string& prefix,
+void EmitNonDefaultCheck(io::Printer* p, absl::string_view prefix,
                          const FieldDescriptor* field) {
   ABSL_CHECK(GetFieldHasbitMode(field) != HasbitMode::kTrueHasbit);
   ABSL_CHECK(!field->is_repeated());
@@ -224,6 +224,49 @@ bool ShouldEmitNonDefaultCheck(const FieldDescriptor* field) {
   return !field->is_repeated();
 }
 
+void EmitNonDefaultCheckForString(io::Printer* p, absl::string_view prefix,
+                                  const FieldDescriptor* field, bool split,
+                                  absl::AnyInvocable<void()> emit_body) {
+  ABSL_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
+  ABSL_DCHECK(field->cpp_string_type() ==
+              FieldDescriptor::CppStringType::kString);
+  p->Emit(
+      {
+          {"condition", [&] { EmitNonDefaultCheck(p, prefix, field); }},
+          {"emit_body", [&] { emit_body(); }},
+          {"set_empty_string",
+           [&] {
+             p->Emit(
+                 {
+                     {"prefix", prefix},
+                     {"name", FieldName(field)},
+                     {"field", FieldMemberName(field, split)},
+                 },
+                 // The merge semantic is "overwrite if present". This statement
+                 // is emitted when hasbit is set and src proto field is
+                 // nonpresent (i.e. an empty string). Now, the destination
+                 // string can be either empty or nonempty.
+                 // - If dst is empty and pointing to the default instance,
+                 //   allocate a new empty instance.
+                 // - If dst is already pointing to a nondefault instance,
+                 //   do nothing.
+                 // This will allow destructors and Clear() to be simpler.
+                 R"cc(
+                   if (_this->$field$.IsDefault()) {
+                     _this->_internal_set_$name$("");
+                   }
+                 )cc");
+           }},
+      },
+      R"cc(
+        if ($condition$) {
+          $emit_body$;
+        } else {
+          $set_empty_string$;
+        }
+      )cc");
+}
+
 // Emits an if-statement with a condition that evaluates to true if |field| is
 // considered non-default (will be sent over the wire), for message types
 // without true field presence. Should only be called if
@@ -235,7 +278,7 @@ bool ShouldEmitNonDefaultCheck(const FieldDescriptor* field) {
 // }
 // If |with_enclosing_braces_always| is set to false, enclosing braces will not
 // be generated if nondefault check is not emitted.
-void MayEmitIfNonDefaultCheck(io::Printer* p, const std::string& prefix,
+void MayEmitIfNonDefaultCheck(io::Printer* p, absl::string_view prefix,
                               const FieldDescriptor* field,
                               absl::AnyInvocable<void()> emit_body,
                               bool with_enclosing_braces_always) {
@@ -277,6 +320,29 @@ void MayEmitIfNonDefaultCheck(io::Printer* p, const std::string& prefix,
 
   // If no enclosing braces need to be emitted, just emit the body directly.
   emit_body();
+}
+
+void MayEmitMutableIfNonDefaultCheck(io::Printer* p, absl::string_view prefix,
+                                     const FieldDescriptor* field, bool split,
+                                     absl::AnyInvocable<void()> emit_body,
+                                     bool with_enclosing_braces_always) {
+  if (ShouldEmitNonDefaultCheck(field)) {
+    if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+        field->cpp_string_type() == FieldDescriptor::CppStringType::kString) {
+      // If a field is backed by std::string, when default initialized it will
+      // point to a global empty std::string instance. We prefer to spend some
+      // extra cycles here to create a local string instance in the else branch,
+      // so that we can get rid of a branch when Clear() is called (if we do
+      // this, Clear() can always assume string instance is nonglobal).
+      EmitNonDefaultCheckForString(p, prefix, field, split,
+                                   std::move(emit_body));
+      return;
+    }
+  }
+
+  // Fall back to the default implementation.
+  return MayEmitIfNonDefaultCheck(p, prefix, field, std::move(emit_body),
+                                  with_enclosing_braces_always);
 }
 
 bool HasInternalHasMethod(const FieldDescriptor* field) {
@@ -4252,8 +4318,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         } else if (field->is_optional() && !HasHasbit(field)) {
           // Merge semantics without true field presence: primitive fields are
           // merged only if non-zero (numeric) or non-empty (string).
-          MayEmitIfNonDefaultCheck(
-              p, "from.", field,
+          MayEmitMutableIfNonDefaultCheck(
+              p, "from.", field, ShouldSplit(field, options_),
               /*emit_body=*/[&]() { generator.GenerateMergingCode(p); },
               /*with_enclosing_braces_always=*/true);
         } else if (field->options().weak() ||
@@ -4279,8 +4345,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           if (GetFieldHasbitMode(field) == HasbitMode::kHintHasbit) {
             // Merge semantics without true field presence: primitive fields are
             // merged only if non-zero (numeric) or non-empty (string).
-            MayEmitIfNonDefaultCheck(
-                p, "from.", field,
+            MayEmitMutableIfNonDefaultCheck(
+                p, "from.", field, ShouldSplit(field, options_),
                 /*emit_body=*/[&]() { generator.GenerateMergingCode(p); },
                 /*with_enclosing_braces_always=*/false);
           } else {
