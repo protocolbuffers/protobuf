@@ -9,7 +9,6 @@
 #define GOOGLE_PROTOBUF_COMPILER_HPB_CONTEXT_H__
 
 #include <string>
-#include <utility>
 
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
@@ -21,7 +20,9 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-#include "upb_generator/c/names.h"
+#include "upb/reflection/def.hpp"
+#include "upb_generator/common/cpp_to_upb_def.h"
+
 namespace google::protobuf::hpb_generator {
 
 enum class Backend { UPB, CPP };
@@ -44,8 +45,11 @@ struct Options {
  */
 class Context final {
  public:
-  Context(io::ZeroCopyOutputStream* stream, const Options& options)
-      : stream_(stream), printer_(stream_), options_(options) {}
+  Context(const FileDescriptor* file, io::ZeroCopyOutputStream* stream,
+          const Options& options)
+      : stream_(stream), printer_(stream_), options_(options) {
+    BuildDefPool(file);
+  }
 
   void Emit(absl::Span<const io::Printer::Sub> vars, absl::string_view format,
             absl::SourceLocation loc = absl::SourceLocation::current()) {
@@ -68,15 +72,25 @@ class Context final {
   const Options& options() { return options_; }
   io::Printer& printer() { return printer_; }
 
+  inline std::string GetLayoutIndex(const FieldDescriptor* field) {
+    return absl::StrCat(
+        upb::generator::FindBaseFieldDef(pool_, field).layout_index());
+  }
+
   Context(const Context&) = delete;
   Context& operator=(const Context&) = delete;
   Context(Context&&) = delete;
   Context& operator=(Context&&) = delete;
 
  private:
+  inline void BuildDefPool(const FileDescriptor* file) {
+    upb::generator::AddFile(file, &pool_);
+  }
+
   io::ZeroCopyOutputStream* stream_;
   io::Printer printer_;
   const Options& options_;
+  upb::DefPool pool_;
 };
 
 // TODO: b/373438292 - re-house these 4 legacy funcs post io::Printer move

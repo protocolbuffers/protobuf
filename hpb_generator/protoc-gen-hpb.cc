@@ -81,20 +81,22 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
   // Write model.upb.fwd.h
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> output_stream(
       context->Open(ForwardingHeaderFilename(file)));
-  auto fwd_ctx = Context(output_stream.get(), Options{.backend = Backend::UPB});
+  Context fwd_ctx =
+      Context(file, output_stream.get(), Options{.backend = Backend::UPB});
   WriteForwardingHeader(file, fwd_ctx);
 
   // Write model.upb.proto.h
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> header_output_stream(
       context->Open(CppHeaderFilename(file)));
-  Context hdr_ctx(header_output_stream.get(), Options{.backend = Backend::UPB});
+  Context hdr_ctx(file, header_output_stream.get(),
+                  Options{.backend = Backend::UPB});
   WriteHeader(file, hdr_ctx, strip_nonfunctional_codegen);
 
   // Write model.upb.proto.cc
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> cc_output_stream(
       context->Open(CppSourceFilename(file)));
   auto cc_ctx =
-      Context(cc_output_stream.get(), Options{.backend = Backend::UPB});
+      Context(file, cc_output_stream.get(), Options{.backend = Backend::UPB});
   WriteSource(file, cc_ctx, fasttable_enabled, strip_nonfunctional_codegen);
   return true;
 }
