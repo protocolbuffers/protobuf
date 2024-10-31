@@ -286,10 +286,6 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
           << "Extension factory's GetPrototype() returned nullptr; extension: "
           << extension->full_name();
 
-      if (extension->options().has_lazy()) {
-        output->is_lazy = extension->options().lazy() ? LazyAnnotation::kLazy
-                                                      : LazyAnnotation::kEager;
-      }
     } else if (extension->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
       output->enum_validity_check.func = ValidateEnumUsingDescriptor;
       output->enum_validity_check.arg = extension->enum_type();

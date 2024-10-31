@@ -229,9 +229,7 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
                           ? absl::StrCat("&", message_type, "::InternalVerify")
                           : "nullptr"},
            {"message_type", message_type},
-           {"lazy", descriptor_->options().has_lazy()
-                        ? descriptor_->options().lazy() ? "kLazy" : "kEager"
-                        : "kUndefined"}});
+           {"lazy", "kUndefined"}});
       if (using_implicit_weak_descriptors) {
         p->Emit(
             {

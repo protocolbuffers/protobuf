@@ -356,20 +356,12 @@ bool Reflection::IsLazyExtension(const Message& message,
 }
 
 bool Reflection::IsLazilyVerifiedLazyField(const FieldDescriptor* field) const {
-  if (field->type() != FieldDescriptor::TYPE_MESSAGE || field->is_repeated()) {
-    return false;
-  }
-  return field->options().unverified_lazy();
+  return false;
 }
 
 bool Reflection::IsEagerlyVerifiedLazyField(
     const FieldDescriptor* field) const {
-  if (field->type() != FieldDescriptor::TYPE_MESSAGE) return false;
-
-  // Message fields with [lazy=true] will be eagerly verified
-  // (go/verified-lazy).
-  if (field->options().lazy() && !field->is_repeated()) return true;
-  return schema_.IsEagerlyVerifiedLazyField(field);
+  return false;
 }
 
 internal::field_layout::TransformValidation Reflection::GetLazyStyle(
