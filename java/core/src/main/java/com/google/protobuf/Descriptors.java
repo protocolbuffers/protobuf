@@ -2180,16 +2180,21 @@ public final class Descriptors {
      * present in all runtimes; as of writing, we know that:
      *
      * <ul>
-     *   <li> C++, Java, and C++-based Python share this quirk.
-     *   <li> UPB and UPB-based Python do not.
-     *   <li> PHP and Ruby treat all enums as open regardless of declaration.
+     *   <li>C++, Java, and C++-based Python share this quirk.
+     *   <li>UPB and UPB-based Python do not.
+     *   <li>PHP and Ruby treat all enums as open regardless of declaration.
      * </ul>
      *
      * <p>Care should be taken when using this function to respect the target runtime's enum
      * handling quirks.
      */
     public boolean isClosed() {
-      return getFeatures().getEnumType() == DescriptorProtos.FeatureSet.EnumType.CLOSED;
+      FeatureSet features = getFeatures();
+      if (features == null) {
+        throw new NullPointerException(
+            String.format("Features not yet loaded for %s (b/362326130)", getFullName()));
+      }
+      return features.getEnumType() == DescriptorProtos.FeatureSet.EnumType.CLOSED;
     }
 
     /** If this is a nested type, get the outer descriptor, otherwise null. */
@@ -2890,7 +2895,7 @@ public final class Descriptors {
               this, "Failed to parse features with Java feature extension registry.", e);
         }
       }
-      
+
       FeatureSet.Builder features;
       if (this.parent == null) {
         Edition edition = getFile().getEdition();
