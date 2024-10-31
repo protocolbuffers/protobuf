@@ -310,18 +310,18 @@ const ::_pbi::TcParseTable<1, 2, 1, 46, 2> Struct_FieldsEntry_DoNotUse::_table_ 
   }, {{
     // .google.protobuf.Value value = 2;
     {::_pbi::TcParser::FastMtS1,
-     {18, 0, 0, PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.value_)}},
+     {18, 1, 0, PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.value_)}},
     // string key = 1;
     {::_pbi::TcParser::FastUS1,
-     {10, 63, 0, PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.key_)}},
+     {10, 0, 0, PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.key_)}},
   }}, {{
     65535, 65535
   }}, {{
     // string key = 1;
-    {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.key_), -1, 0,
-    (0 | ::_fl::kFcSingular | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.key_), _Internal::kHasBitsOffset + 0, 0,
+    (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
     // .google.protobuf.Value value = 2;
-    {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.value_), _Internal::kHasBitsOffset + 0, 0,
+    {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.value_), _Internal::kHasBitsOffset + 1, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
   }}, {{
     {::_pbi::TcParser::GetTable<::google::protobuf::Value>()},

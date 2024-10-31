@@ -257,8 +257,9 @@ class PROTOBUF_EXPORT SourceContext final
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const SourceContext& from_msg);
-    ::google::protobuf::internal::ArenaStringPtr file_name_;
+    ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::ArenaStringPtr file_name_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -287,6 +288,7 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceC
 inline void SourceContext::clear_file_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.file_name_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& SourceContext::file_name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -297,6 +299,7 @@ template <typename Arg_, typename... Args_>
 inline PROTOBUF_ALWAYS_INLINE void SourceContext::set_file_name(Arg_&& arg,
                                                      Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.file_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.SourceContext.file_name)
 }
@@ -311,19 +314,34 @@ inline const std::string& SourceContext::_internal_file_name() const {
 }
 inline void SourceContext::_internal_set_file_name(const std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.file_name_.Set(value, GetArena());
 }
 inline std::string* SourceContext::_internal_mutable_file_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.file_name_.Mutable( GetArena());
 }
 inline std::string* SourceContext::release_file_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.SourceContext.file_name)
-  return _impl_.file_name_.Release();
+  if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000001u;
+  auto* released = _impl_.file_name_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.file_name_.Set("", GetArena());
+  }
+  return released;
 }
 inline void SourceContext::set_allocated_file_name(std::string* value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000001u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000001u;
+  }
   _impl_.file_name_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.file_name_.IsDefault()) {
     _impl_.file_name_.Set("", GetArena());
