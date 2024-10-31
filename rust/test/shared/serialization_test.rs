@@ -9,11 +9,10 @@ use googletest::prelude::*;
 use protobuf::prelude::*;
 use protobuf::View;
 
-use edition_unittest_rust_proto::TestAllTypes as TestAllTypesEditions;
 use paste::paste;
 use unittest_proto3_optional_rust_proto::TestProto3Optional;
 use unittest_proto3_rust_proto::TestAllTypes as TestAllTypesProto3;
-use unittest_rust_proto::TestAllTypes as TestAllTypesProto2;
+use unittest_rust_proto::TestAllTypes;
 
 macro_rules! generate_parameterized_serialization_test {
     ($(($type: ident, $name_ext: ident)),*) => {
@@ -94,9 +93,8 @@ macro_rules! generate_parameterized_serialization_test {
   }
 
 generate_parameterized_serialization_test!(
-    (TestAllTypesProto2, proto2),
+    (TestAllTypes, editions),
     (TestAllTypesProto3, proto3),
-    (TestAllTypesEditions, editions),
     (TestProto3Optional, proto3_optional)
 );
 
@@ -124,10 +122,9 @@ macro_rules! generate_parameterized_int32_byte_size_test {
   }
 
 generate_parameterized_int32_byte_size_test!(
-    (TestAllTypesProto2, proto2),
-    (TestProto3Optional, proto3_optional), /* Test would fail if we were to use
-                                            * TestAllTypesProto3: optional_int32 follows "no
-                                            * presence" semantics and setting it to 0 (default
-                                            * value) will cause it to not be serialized */
-    (TestAllTypesEditions, editions)
+    (TestAllTypes, editions),
+    (TestProto3Optional, proto3_optional) /* Test would fail if we were to use
+                                           * TestAllTypesProto3: optional_int32 follows "no
+                                           * presence" semantics and setting it to 0 (default
+                                           * value) will cause it to not be serialized */
 );

@@ -733,7 +733,7 @@ fn test_default_foreign_enum_accessors() {
 
 #[gtest]
 fn test_optional_import_enum_accessors() {
-    use unittest_rust_proto::ImportEnum;
+    use unittest_import_rust_proto::ImportEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_import_enum_opt(), eq(Optional::Unset(ImportEnum::ImportFoo)));
@@ -750,7 +750,7 @@ fn test_optional_import_enum_accessors() {
 
 #[gtest]
 fn test_default_import_enum_accessors() {
-    use unittest_rust_proto::ImportEnum;
+    use unittest_import_rust_proto::ImportEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.default_import_enum(), eq(ImportEnum::ImportBar));

@@ -24,7 +24,7 @@ rust_test(
     },
     deps = [
         "//rust:protobuf_upb_export",
-        "//src/google/protobuf:unittest_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -37,7 +37,7 @@ rust_test(
     },
     deps = [
         "//rust:protobuf_cpp_export",
-        "//src/google/protobuf:unittest_cpp_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -97,7 +97,7 @@ rust_test(
     deps = [
         "//rust:protobuf_cpp_export",
         "//rust/test:enums_cpp_rust_proto",
-        "//src/google/protobuf:unittest_cpp_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -111,7 +111,7 @@ rust_test(
     deps = [
         "//rust:protobuf_upb_export",
         "//rust/test:enums_upb_rust_proto",
-        "//src/google/protobuf:unittest_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -173,7 +173,7 @@ rust_test(
     srcs = ["bad_names_test.rs"],
     deps = [
         "//rust/test:bad_names_cpp_rust_proto",
-        "//src/google/protobuf:unittest_cpp_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -186,7 +186,7 @@ rust_test(
 #     deps = [
 #         "@crate_index//:googletest",
 #         "//rust/test:bad_names_upb_rust_proto",
-#         "//src/google/protobuf:unittest_upb_rust_proto",
+#         "//rust/test:unittest_upb_rust_proto",
 #     ],
 # )
 
@@ -194,7 +194,7 @@ rust_test(
     name = "nested_types_cpp_test",
     srcs = ["nested_types_test.rs"],
     deps = [
-        "//src/google/protobuf:unittest_cpp_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -203,7 +203,7 @@ rust_test(
     name = "nested_types_upb_test",
     srcs = ["nested_types_test.rs"],
     deps = [
-        "//src/google/protobuf:unittest_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -219,7 +219,8 @@ rust_test(
     ],
     deps = [
         "//rust:protobuf_cpp_export",
-        "//src/google/protobuf:unittest_cpp_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
+        "//rust/test:unittest_import_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -235,7 +236,8 @@ rust_test(
     ],
     deps = [
         "//rust:protobuf_upb_export",
-        "//src/google/protobuf:unittest_upb_rust_proto",
+        "//rust/test:unittest_import_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -248,8 +250,8 @@ rust_test(
     },
     deps = [
         "//rust:protobuf_cpp_export",
-        "//src/google/protobuf:unittest_proto3_cpp_rust_proto",
-        "//src/google/protobuf:unittest_proto3_optional_cpp_rust_proto",
+        "//rust/test:unittest_proto3_cpp_rust_proto",
+        "//rust/test:unittest_proto3_optional_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -262,8 +264,8 @@ rust_test(
     },
     deps = [
         "//rust:protobuf_upb_export",
-        "//src/google/protobuf:unittest_proto3_optional_upb_rust_proto",
-        "//src/google/protobuf:unittest_proto3_upb_rust_proto",
+        "//rust/test:unittest_proto3_optional_upb_rust_proto",
+        "//rust/test:unittest_proto3_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -279,10 +281,9 @@ rust_test(
     ],
     deps = [
         "//rust:protobuf_upb_export",
-        "//src/google/protobuf:edition_unittest_upb_rust_proto",
-        "//src/google/protobuf:unittest_proto3_optional_upb_rust_proto",
-        "//src/google/protobuf:unittest_proto3_upb_rust_proto",
-        "//src/google/protobuf:unittest_upb_rust_proto",
+        "//rust/test:unittest_proto3_optional_upb_rust_proto",
+        "//rust/test:unittest_proto3_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -298,10 +299,9 @@ rust_test(
     ],
     deps = [
         "//rust:protobuf_cpp_export",
-        "//src/google/protobuf:edition_unittest_cpp_rust_proto",
-        "//src/google/protobuf:unittest_cpp_rust_proto",
-        "//src/google/protobuf:unittest_proto3_cpp_rust_proto",
-        "//src/google/protobuf:unittest_proto3_optional_cpp_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
+        "//rust/test:unittest_proto3_cpp_rust_proto",
+        "//rust/test:unittest_proto3_optional_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -343,7 +343,7 @@ rust_test(
     ],
     deps = [
         "//rust:protobuf_cpp_export",
-        "//src/google/protobuf:unittest_cpp_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -359,7 +359,7 @@ rust_test(
     ],
     deps = [
         "//rust:protobuf_upb_export",
-        "//src/google/protobuf:unittest_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -377,7 +377,7 @@ rust_test(
         "//rust:protobuf_cpp_export",
         "//rust/test:enums_cpp_rust_proto",
         "//rust/test:map_unittest_cpp_rust_proto",
-        "//src/google/protobuf:unittest_cpp_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -395,7 +395,7 @@ rust_test(
         "//rust:protobuf_upb_export",
         "//rust/test:enums_upb_rust_proto",
         "//rust/test:map_unittest_upb_rust_proto",
-        "//src/google/protobuf:unittest_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -430,7 +430,7 @@ rust_test(
     },
     deps = [
         "//rust:protobuf_cpp",
-        "//src/google/protobuf:unittest_cpp_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -443,7 +443,7 @@ rust_test(
     },
     deps = [
         "//rust:protobuf_upb",
-        "//src/google/protobuf:unittest_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -457,7 +457,7 @@ rust_test(
     deps = [
         "//rust:protobuf_cpp",
         "//rust/test:map_unittest_cpp_rust_proto",
-        "//src/google/protobuf:unittest_cpp_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -473,7 +473,7 @@ rust_test(
         "//rust:protobuf_gtest_matchers_upb",
         "//rust:protobuf_upb",
         "//rust/test:map_unittest_upb_rust_proto",
-        "//src/google/protobuf:unittest_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -491,10 +491,9 @@ rust_test(
     deps = [
         "//rust:protobuf_cpp",
         "//rust:protobuf_gtest_matchers_cpp",
-        "//src/google/protobuf:edition_unittest_cpp_rust_proto",
-        "//src/google/protobuf:unittest_cpp_rust_proto",
-        "//src/google/protobuf:unittest_proto3_cpp_rust_proto",
-        "//src/google/protobuf:unittest_proto3_optional_cpp_rust_proto",
+        "//rust/test:unittest_cpp_rust_proto",
+        "//rust/test:unittest_proto3_cpp_rust_proto",
+        "//rust/test:unittest_proto3_optional_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -512,10 +511,9 @@ rust_test(
     deps = [
         "//rust:protobuf_gtest_matchers_upb",
         "//rust:protobuf_upb",
-        "//src/google/protobuf:edition_unittest_upb_rust_proto",
-        "//src/google/protobuf:unittest_proto3_optional_upb_rust_proto",
-        "//src/google/protobuf:unittest_proto3_upb_rust_proto",
-        "//src/google/protobuf:unittest_upb_rust_proto",
+        "//rust/test:unittest_proto3_optional_upb_rust_proto",
+        "//rust/test:unittest_proto3_upb_rust_proto",
+        "//rust/test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )

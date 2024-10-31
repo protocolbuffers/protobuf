@@ -9,12 +9,11 @@ google3::import! {
   "//third_party/protobuf/rust:protobuf_gtest_matchers";
 }
 
-use edition_unittest_rust_proto::TestAllTypes as TestAllTypesEditions;
 use googletest::prelude::*;
 use paste::paste;
 use protobuf_gtest_matchers::proto_eq;
 use unittest_proto3_rust_proto::TestAllTypes as TestAllTypesProto3;
-use unittest_rust_proto::TestAllTypes as TestAllTypesProto2;
+use unittest_rust_proto::TestAllTypes;
 
 macro_rules! generate_eq_msgs_tests {
   ($(($type: ident, $name_ext: ident)),*) => {
@@ -50,14 +49,6 @@ macro_rules! generate_not_eq_msgs_tests {
     }
 }
 
-generate_eq_msgs_tests!(
-    (TestAllTypesEditions, editions),
-    (TestAllTypesProto3, proto3),
-    (TestAllTypesProto2, proto2)
-);
+generate_eq_msgs_tests!((TestAllTypes, editions), (TestAllTypesProto3, proto3));
 
-generate_not_eq_msgs_tests!(
-    (TestAllTypesEditions, editions),
-    (TestAllTypesProto3, proto3),
-    (TestAllTypesProto2, proto2)
-);
+generate_not_eq_msgs_tests!((TestAllTypes, editions), (TestAllTypesProto3, proto3));
