@@ -83,7 +83,12 @@ void WithPresenceAccessorsInMsgImpl(Context& ctx, const FieldDescriptor& field,
        {"opt_getter",
         [&] {
           // Cord fields don't support the _opt getter.
-          if (field.options().ctype() == FieldOptions::CORD) return;
+          if (ctx.is_cpp() &&
+              field.cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+              field.cpp_string_type() ==
+                  FieldDescriptor::CppStringType::kCord) {
+            return;
+          }
           ctx.Emit(
               R"rs(
               pub fn $raw_field_name$_opt($view_self$) -> $pb$::Optional<$view_type$> {
