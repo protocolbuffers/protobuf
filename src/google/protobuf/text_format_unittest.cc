@@ -79,6 +79,7 @@ using ::google::protobuf::internal::kDebugStringSilentMarker;
 using ::google::protobuf::internal::UnsetFieldsMetadataTextFormatTestUtil;
 using ::testing::AllOf;
 using ::testing::HasSubstr;
+using ::testing::IsEmpty;
 using ::testing::UnorderedElementsAre;
 
 // A basic string with different escapable characters for testing.
@@ -2296,6 +2297,17 @@ TEST_F(TextFormatParserTest, ParseDeprecatedField) {
                 "WARNING:text format contains deprecated field "
                 "\"deprecated_message\"",
                 1, 20, &message, true);
+}
+
+TEST_F(TextFormatParserTest, WarnOnDeprecatedField) {
+  TextFormat::Parser parser;
+  parser.WarnOnDeprecatedField(false);
+  MockErrorCollector error_collector;
+  parser.RecordErrorsTo(&error_collector);
+
+  unittest::TestDeprecatedFields message;
+  EXPECT_TRUE(parser.ParseFromString("deprecated_int32: 42", &message));
+  EXPECT_THAT(error_collector.text_, IsEmpty());
 }
 
 TEST_F(TextFormatParserTest, SetRecursionLimit) {
