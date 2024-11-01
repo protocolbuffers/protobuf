@@ -889,10 +889,10 @@ namespace Google.Protobuf {
     }
 
 
-        // Effectively a cache of mapping from enum values to the original name as specified in the
-        // proto file, fetched by reflection. The need for this is unfortunate, as is its unbounded
-        // size, but realistically it shouldn't cause issues.
-        private static class OriginalEnumValueHelper {
+    // Effectively a cache of mapping from enum values to the original name as specified in the
+    // proto file, fetched by reflection. The need for this is unfortunate, as is its unbounded
+    // size, but realistically it shouldn't cause issues.
+    private static class OriginalEnumValueHelper {
       private static readonly ConcurrentDictionary<System.Type, Dictionary<object, string>>
           dictionaries = new ConcurrentDictionary<System.Type, Dictionary<object, string>>();
 
