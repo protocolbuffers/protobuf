@@ -702,6 +702,12 @@ class PROTOBUF_EXPORT TextFormat {
     // returns false.  Call AllowPartialMessage(true) to skip this check.
     void AllowPartialMessage(bool allow) { allow_partial_ = allow; }
 
+    // By default, the parser warns when text contains deprecated field. Use
+    // this method to suppress the warnings.
+    void WarnOnDeprecatedField(bool enabled) {
+      warn_on_deprecated_field_ = enabled;
+    }
+
     // Allow field names to be matched case-insensitively.
     // This is not advisable if there are fields that only differ in case, or
     // if you want to enforce writing in the canonical form.
@@ -790,6 +796,7 @@ class PROTOBUF_EXPORT TextFormat {
     const Finder* finder_;
     ParseInfoTree* parse_info_tree_;
     bool allow_partial_;
+    bool warn_on_deprecated_field_;
     bool allow_case_insensitive_field_;
     bool allow_unknown_field_;
     bool allow_unknown_extension_;
