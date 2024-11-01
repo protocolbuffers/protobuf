@@ -3759,8 +3759,13 @@ class PROTOBUF_EXPORT SourceCodeInfo final
 
   public:
   bool IsInitialized() const {
-    return true;
+    return IsInitializedImpl(*this);
   }
+
+  private:
+  static bool IsInitializedImpl(const MessageLite& msg);
+
+  public:
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
@@ -3834,6 +3839,185 @@ class PROTOBUF_EXPORT SourceCodeInfo final
   const ::google::protobuf::SourceCodeInfo_Location& location(int index) const;
   ::google::protobuf::SourceCodeInfo_Location* add_location();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>& location() const;
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Singular>
+  inline bool HasExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    return _impl_._extensions_.Has(id.number());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void ClearExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    _impl_._extensions_.ClearExtension(id.number());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Repeated>
+  inline int ExtensionSize(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    return _impl_._extensions_.ExtensionSize(id.number());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void SetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      typename _proto_TypeTraits::Singular::ConstType value) {
+    _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void SetAllocatedExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      typename _proto_TypeTraits::Singular::MutableType value) {
+    _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
+                                    &_impl_._extensions_);
+  }
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void UnsafeArenaSetAllocatedExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      typename _proto_TypeTraits::Singular::MutableType value) {
+    _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
+                                               value, &_impl_._extensions_);
+  }
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  PROTOBUF_NODISCARD inline
+      typename _proto_TypeTraits::Singular::MutableType
+      ReleaseExtension(
+          const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) {
+    return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
+  }
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Singular::MutableType
+  UnsafeArenaReleaseExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
+                                                 &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void SetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index, typename _proto_TypeTraits::Repeated::ConstType value) {
+    _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    typename _proto_TypeTraits::Repeated::MutableType to_add =
+        _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
+    return to_add;
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void AddExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      typename _proto_TypeTraits::Repeated::ConstType value) {
+    _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
+                           &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
+  GetRepeatedExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
+  MutableRepeatedExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
+                                              _is_packed, &_impl_._extensions_);
+  }
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceCodeInfo)
  private:
   class _Internal;
@@ -3857,6 +4041,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const SourceCodeInfo& from_msg);
+    ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location > location_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -11940,6 +12125,185 @@ class PROTOBUF_EXPORT FileDescriptorSet final
   const ::google::protobuf::FileDescriptorProto& file(int index) const;
   ::google::protobuf::FileDescriptorProto* add_file();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& file() const;
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Singular>
+  inline bool HasExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    return _impl_._extensions_.Has(id.number());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void ClearExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    _impl_._extensions_.ClearExtension(id.number());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            typename = typename _proto_TypeTraits::Repeated>
+  inline int ExtensionSize(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    return _impl_._extensions_.ExtensionSize(id.number());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void SetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      typename _proto_TypeTraits::Singular::ConstType value) {
+    _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void SetAllocatedExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      typename _proto_TypeTraits::Singular::MutableType value) {
+    _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
+                                    &_impl_._extensions_);
+  }
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void UnsafeArenaSetAllocatedExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      typename _proto_TypeTraits::Singular::MutableType value) {
+    _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
+                                               value, &_impl_._extensions_);
+  }
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  PROTOBUF_NODISCARD inline
+      typename _proto_TypeTraits::Singular::MutableType
+      ReleaseExtension(
+          const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) {
+    return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
+  }
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Singular::MutableType
+  UnsafeArenaReleaseExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
+                                                 &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<!_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed,
+            std::enable_if_t<_proto_TypeTraits::kLifetimeBound, int> = 0>
+  inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void SetExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      int index, typename _proto_TypeTraits::Repeated::ConstType value) {
+    _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    typename _proto_TypeTraits::Repeated::MutableType to_add =
+        _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
+    return to_add;
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline void AddExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
+      typename _proto_TypeTraits::Repeated::ConstType value) {
+    _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
+                           &_impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
+  GetRepeatedExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
+  }
+
+  template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
+            bool _is_packed>
+  inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
+  MutableRepeatedExtension(
+      const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
+                                              _is_packed, &_impl_._extensions_);
+  }
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorSet)
  private:
   class _Internal;
@@ -11963,6 +12327,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from,
                           const FileDescriptorSet& from_msg);
+    ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > file_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
