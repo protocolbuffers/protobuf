@@ -18,12 +18,22 @@ namespace Google.Protobuf
 {
     public class JsonFormatterSettingsTest
     {
+        static JsonFormatter.Settings.ShouldSerializeFieldDelegate shouldSerializeField = (IMessage message, FieldDescriptor field, object value) => true;
+
         [Test]
         public void WithIndentation()
         {
             var settings = JsonFormatter.Settings.Default.WithIndentation("\t");
             Assert.AreEqual("\t", settings.Indentation);
         }
+
+        [Test]
+        public void WithFormatField()
+        {
+            var settings = JsonFormatter.Settings.Default.WithShouldSerializeField(shouldSerializeField);
+            Assert.AreEqual(shouldSerializeField, settings.ShouldSerializeField);
+        }
+
 
         [Test]
         public void WithTypeRegistry()
@@ -62,19 +72,22 @@ namespace Google.Protobuf
                 .WithFormatDefaultValues(true)
                 .WithFormatEnumsAsIntegers(true)
                 .WithTypeRegistry(typeRegistry)
-                .WithPreserveProtoFieldNames(true);
+                .WithPreserveProtoFieldNames(true)
+                .WithShouldSerializeField(shouldSerializeField);
 
             var settings1 = baseSettings.WithIndentation("\t");
             var settings2 = baseSettings.WithFormatDefaultValues(true);
             var settings3 = baseSettings.WithFormatEnumsAsIntegers(true);
             var settings4 = baseSettings.WithTypeRegistry(typeRegistry);
             var settings5 = baseSettings.WithPreserveProtoFieldNames(true);
+            var settings6 = baseSettings.WithShouldSerializeField(shouldSerializeField);
 
             AssertAreEqual(baseSettings, settings1);
             AssertAreEqual(baseSettings, settings2);
             AssertAreEqual(baseSettings, settings3);
             AssertAreEqual(baseSettings, settings4);
             AssertAreEqual(baseSettings, settings5);
+            AssertAreEqual(baseSettings, settings6);
         }
 
         private static void AssertAreEqual(JsonFormatter.Settings settings, JsonFormatter.Settings other)
@@ -83,6 +96,7 @@ namespace Google.Protobuf
             Assert.AreEqual(settings.FormatDefaultValues, other.FormatDefaultValues);
             Assert.AreEqual(settings.FormatEnumsAsIntegers, other.FormatEnumsAsIntegers);
             Assert.AreEqual(settings.TypeRegistry, other.TypeRegistry);
+            Assert.AreEqual(settings.ShouldSerializeField, other.ShouldSerializeField);
         }
     }
 }

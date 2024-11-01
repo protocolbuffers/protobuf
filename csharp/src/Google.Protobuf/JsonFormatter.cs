@@ -238,12 +238,13 @@ namespace Google.Protobuf {
     /// its value in the message, and the settings of this formatter.
     /// </summary>
     private bool ShouldFormatFieldValue(IMessage message, FieldDescriptor field, object value) =>
-        field.HasPresence
+        (field.HasPresence
             // Fields that support presence *just* use that
             ? field.Accessor.HasValue(message)
             // Otherwise, format if either we've been asked to format default values, or if it's
             // not a default value anyway.
-            : settings.FormatDefaultValues || !IsDefaultValue(field, value);
+            : settings.FormatDefaultValues || !IsDefaultValue(field, value))
+        && (settings.ShouldSerializeField == null || settings.ShouldSerializeField(message, field, value));
 
     // Converted from java/core/src/main/java/com/google/protobuf/Descriptors.java
     internal static string ToJsonName(string name) {
@@ -767,6 +768,17 @@ namespace Google.Protobuf {
       /// </summary>
       public string Indentation { get; }
 
+
+      /// <summary>
+      /// Whether to serialize a field or ignore it
+      /// </summary>
+      public ShouldSerializeFieldDelegate ShouldSerializeField { get; }
+
+      /// <summary>
+      /// Delegate for a method to determine when to serialize a field
+      /// </summary>
+      public delegate bool ShouldSerializeFieldDelegate(IMessage message, FieldDescriptor field, object value);
+
       /// <summary>
       /// Creates a new <see cref="Settings"/> object with the specified formatting of default
       /// values and an empty type registry.
@@ -783,28 +795,30 @@ namespace Google.Protobuf {
       /// should be formatted; <c>false</c> otherwise.</param> <param name="typeRegistry">The <see
       /// cref="TypeRegistry"/> to use when formatting <see cref="Any"/> messages.</param>
       public Settings(bool formatDefaultValues, TypeRegistry typeRegistry)
-          : this(formatDefaultValues, typeRegistry, false, false) {}
+          : this(formatDefaultValues, typeRegistry, false, false, null) {}
 
-      /// <summary>
-      /// Creates a new <see cref="Settings"/> object with the specified parameters.
-      /// </summary>
-      /// <param name="formatDefaultValues"><c>true</c> if default values (0, empty strings etc)
-      /// should be formatted; <c>false</c> otherwise.</param> <param name="typeRegistry">The <see
-      /// cref="TypeRegistry"/> to use when formatting <see cref="Any"/> messages.
-      /// TypeRegistry.Empty will be used if it is null.</param> <param
-      /// name="formatEnumsAsIntegers"><c>true</c> to format the enums as integers; <c>false</c> to
-      /// format enums as enum names.</param> <param name="preserveProtoFieldNames"><c>true</c> to
-      /// preserve proto field names; <c>false</c> to convert them to lowerCamelCase.</param> <param
-      /// name="indentation">The indentation string to use for multi-line formatting. <c>null</c> to
-      /// disable multi-line format.</param>
-      private Settings(bool formatDefaultValues, TypeRegistry typeRegistry,
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object with the specified parameters.
+            /// </summary>
+            /// <param name="formatDefaultValues"><c>true</c> if default values (0, empty strings etc)
+            /// should be formatted; <c>false</c> otherwise.</param> <param name="typeRegistry">The <see
+            /// cref="TypeRegistry"/> to use when formatting <see cref="Any"/> messages.
+            /// TypeRegistry.Empty will be used if it is null.</param> <param
+            /// name="formatEnumsAsIntegers"><c>true</c> to format the enums as integers; <c>false</c> to
+            /// format enums as enum names.</param> <param name="preserveProtoFieldNames"><c>true</c> to
+            /// preserve proto field names; <c>false</c> to convert them to lowerCamelCase.</param> <param
+            /// name="indentation">The indentation string to use for multi-line formatting. <c>null</c> to
+            /// disable multi-line format.</param> <param name="shouldSerializeField">Delegate for a method to
+            /// determine when to serialize a field</param>
+            private Settings(bool formatDefaultValues, TypeRegistry typeRegistry,
                        bool formatEnumsAsIntegers, bool preserveProtoFieldNames,
-                       string indentation = null) {
+                       string indentation = null, ShouldSerializeFieldDelegate shouldSerializeField = null) {
         FormatDefaultValues = formatDefaultValues;
         TypeRegistry = typeRegistry ?? TypeRegistry.Empty;
         FormatEnumsAsIntegers = formatEnumsAsIntegers;
         PreserveProtoFieldNames = preserveProtoFieldNames;
         Indentation = indentation;
+        ShouldSerializeField = shouldSerializeField;
       }
 
       /// <summary>
@@ -815,7 +829,7 @@ namespace Google.Protobuf {
       /// should be formatted; <c>false</c> otherwise.</param>
       public Settings WithFormatDefaultValues(bool formatDefaultValues) =>
           new Settings(formatDefaultValues, TypeRegistry, FormatEnumsAsIntegers,
-                       PreserveProtoFieldNames, Indentation);
+                       PreserveProtoFieldNames, Indentation, ShouldSerializeField);
 
       /// <summary>
       /// Creates a new <see cref="Settings"/> object with the specified type registry and the
@@ -825,7 +839,7 @@ namespace Google.Protobuf {
       /// cref="Any"/> messages.</param>
       public Settings WithTypeRegistry(TypeRegistry typeRegistry) =>
           new Settings(FormatDefaultValues, typeRegistry, FormatEnumsAsIntegers,
-                       PreserveProtoFieldNames, Indentation);
+                       PreserveProtoFieldNames, Indentation, ShouldSerializeField);
 
       /// <summary>
       /// Creates a new <see cref="Settings"/> object with the specified enums formatting option and
@@ -835,7 +849,7 @@ namespace Google.Protobuf {
       /// <c>false</c> to format enums as enum names.</param>
       public Settings WithFormatEnumsAsIntegers(bool formatEnumsAsIntegers) =>
           new Settings(FormatDefaultValues, TypeRegistry, formatEnumsAsIntegers,
-                       PreserveProtoFieldNames, Indentation);
+                       PreserveProtoFieldNames, Indentation, ShouldSerializeField);
 
       /// <summary>
       /// Creates a new <see cref="Settings"/> object with the specified field name formatting
@@ -845,7 +859,7 @@ namespace Google.Protobuf {
       /// <c>false</c> to convert them to lowerCamelCase.</param>
       public Settings WithPreserveProtoFieldNames(bool preserveProtoFieldNames) =>
           new Settings(FormatDefaultValues, TypeRegistry, FormatEnumsAsIntegers,
-                       preserveProtoFieldNames, Indentation);
+                       preserveProtoFieldNames, Indentation, ShouldSerializeField);
 
       /// <summary>
       /// Creates a new <see cref="Settings"/> object with the specified indentation and the current
@@ -862,13 +876,23 @@ namespace Google.Protobuf {
       /// </remarks>
       public Settings WithIndentation(string indentation = "  ") =>
           new Settings(FormatDefaultValues, TypeRegistry, FormatEnumsAsIntegers,
-                       PreserveProtoFieldNames, indentation);
+                       PreserveProtoFieldNames, indentation, ShouldSerializeField);
+
+    /// <summary>
+    /// Creates a new <see cref="Settings"/> object with the specified format field delegate
+    /// option and the current settings.
+    /// </summary>
+    /// <param name="shouldSerializeField"><c>Func</c> to determine when to serialize a field</param>
+    public Settings WithShouldSerializeField(ShouldSerializeFieldDelegate shouldSerializeField) =>
+        new Settings(FormatDefaultValues, TypeRegistry, FormatEnumsAsIntegers,
+                        PreserveProtoFieldNames, Indentation, shouldSerializeField);
     }
 
-    // Effectively a cache of mapping from enum values to the original name as specified in the
-    // proto file, fetched by reflection. The need for this is unfortunate, as is its unbounded
-    // size, but realistically it shouldn't cause issues.
-    private static class OriginalEnumValueHelper {
+
+        // Effectively a cache of mapping from enum values to the original name as specified in the
+        // proto file, fetched by reflection. The need for this is unfortunate, as is its unbounded
+        // size, but realistically it shouldn't cause issues.
+        private static class OriginalEnumValueHelper {
       private static readonly ConcurrentDictionary<System.Type, Dictionary<object, string>>
           dictionaries = new ConcurrentDictionary<System.Type, Dictionary<object, string>>();
 

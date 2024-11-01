@@ -950,6 +950,76 @@ namespace Google.Protobuf
             AssertWriteValue(value, "{ 'FieldName13': 0 }");
         }
 
+        [Test]
+        public void WithFormatField_Message()
+        {
+            JsonFormatter.Settings.ShouldSerializeFieldDelegate shouldSerializeField =
+                (IMessage message, FieldDescriptor field, object value) =>           
+                    message.Descriptor.Name == "TestProto3Optional";
+
+            var formatter = new JsonFormatter(
+                JsonFormatter.Settings.Default
+                    .WithShouldSerializeField(shouldSerializeField)
+                    .WithFormatDefaultValues(true)
+            );
+
+            var message1 = new TestAllTypes();
+            var json1 = formatter.Format(message1);
+            AssertJson("{ }", json1);
+
+            var message2 = new TestProto3Optional { OptionalInt32 = 2 };
+            var json2 = formatter.Format(message2);
+            AssertJson(
+                "{ \"optionalInt32\": 2, \"singularInt32\": 0, \"singularInt64\": \"0\" }",
+                json2
+            );
+        }
+
+        [Test]
+        public void WithFormatField_Field()
+        {
+            JsonFormatter.Settings.ShouldSerializeFieldDelegate shouldSerializeField =
+                (IMessage message, FieldDescriptor field, object value) =>
+                    field.Name == "optional_int32";
+
+            var formatter = new JsonFormatter(
+                JsonFormatter.Settings.Default
+                    .WithShouldSerializeField(shouldSerializeField)
+                    .WithFormatDefaultValues(true)
+            );
+
+            var message1 = new TestAllTypes();
+            var json1 = formatter.Format(message1);
+            AssertJson("{ }", json1);
+
+            var message2 = new TestProto3Optional { OptionalInt32 = 2 };
+            var json2 = formatter.Format(message2);
+            AssertJson("{ \"optionalInt32\": 2 }", json2);
+        }
+
+        [Test]
+        public void WithFormatField_Value()
+        {
+            JsonFormatter.Settings.ShouldSerializeFieldDelegate shouldSerializeField =
+                (IMessage message, FieldDescriptor field, object value) =>
+                    Convert.ToString(value) == "2";
+
+            var formatter = new JsonFormatter(
+                JsonFormatter.Settings.Default
+                    .WithShouldSerializeField(shouldSerializeField)
+                    .WithFormatDefaultValues(true)
+            );
+
+            var message1 = new TestAllTypes();
+            var json1 = formatter.Format(message1);
+            AssertJson("{ }", json1);
+
+            var message2 = new TestProto3Optional { OptionalInt32 = 2 };
+            var json2 = formatter.Format(message2);
+            AssertJson("{ \"optionalInt32\": 2 }", json2);
+        }
+
+
         private static void AssertWriteValue(object value, string expectedJson, JsonFormatter.Settings settings = null)
         {
             var writer = new StringWriter { NewLine = "\n" };
