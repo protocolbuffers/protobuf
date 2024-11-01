@@ -888,7 +888,6 @@ namespace Google.Protobuf {
                         PreserveProtoFieldNames, Indentation, shouldSerializeField);
     }
 
-
     // Effectively a cache of mapping from enum values to the original name as specified in the
     // proto file, fetched by reflection. The need for this is unfortunate, as is its unbounded
     // size, but realistically it shouldn't cause issues.
