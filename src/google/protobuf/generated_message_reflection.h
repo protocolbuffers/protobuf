@@ -24,7 +24,6 @@
 #include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_enum_reflection.h"
-#include "google/protobuf/port.h"
 #include "google/protobuf/unknown_field_set.h"
 
 // Must be included last.
