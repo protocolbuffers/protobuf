@@ -1018,50 +1018,70 @@ final class Utf8 {
       int j = offset;
       int i = 0;
       int limit = offset + length;
+      // ASCII characters
       // Designed to take advantage of
       // https://wiki.openjdk.java.net/display/HotSpotInternals/RangeCheckElimination
       for (char c; i < utf16Length && i + j < limit && (c = in.charAt(i)) < 0x80; i++) {
         out[j + i] = (byte) c;
       }
-      if (i == utf16Length) {
-        return j + utf16Length;
-      }
       j += i;
-      for (char c; i < utf16Length; i++) {
+      // Remaining characters
+      char c = '\u0000';
+      for (; i < utf16Length; i++) {
         c = in.charAt(i);
-        if (c < 0x80 && j < limit) {
-          out[j++] = (byte) c;
-        } else if (c < 0x800 && j <= limit - 2) { // 11 bits, two UTF-8 bytes
-          out[j++] = (byte) ((0xF << 6) | (c >>> 6));
-          out[j++] = (byte) (0x80 | (0x3F & c));
-        } else if ((c < Character.MIN_SURROGATE || Character.MAX_SURROGATE < c) && j <= limit - 3) {
-          // Maximum single-char code point is 0xFFFF, 16 bits, three UTF-8 bytes
-          out[j++] = (byte) ((0xF << 5) | (c >>> 12));
-          out[j++] = (byte) (0x80 | (0x3F & (c >>> 6)));
-          out[j++] = (byte) (0x80 | (0x3F & c));
-        } else if (j <= limit - 4) {
-          // Minimum code point represented by a surrogate pair is 0x10000, 17 bits,
-          // four UTF-8 bytes
-          final char low;
-          if (i + 1 == in.length() || !Character.isSurrogatePair(c, (low = in.charAt(++i)))) {
-            throw new UnpairedSurrogateException((i - 1), utf16Length);
+        if (c < 0x80) {
+          if (j < limit) {
+            out[j++] = (byte) c;
+          } else {
+            break; // Not enough space
           }
-          int codePoint = Character.toCodePoint(c, low);
-          out[j++] = (byte) ((0xF << 4) | (codePoint >>> 18));
-          out[j++] = (byte) (0x80 | (0x3F & (codePoint >>> 12)));
-          out[j++] = (byte) (0x80 | (0x3F & (codePoint >>> 6)));
-          out[j++] = (byte) (0x80 | (0x3F & codePoint));
+        } else if (c < 0x800) { // 11 bits, two UTF-8 bytes
+          if (j <= limit - 2) {
+            out[j++] = (byte) (0xC0 | (c >>> 6));
+            out[j++] = (byte) (0x80 | (0x3F & c));
+          } else {
+            break; // Not enough space
+          }
+        } else if (c < Character.MIN_SURROGATE || c > Character.MAX_SURROGATE) {
+          // 16 bits, three UTF-8 bytes
+          if (j <= limit - 3) {
+            out[j++] = (byte) (0xE0 | (c >>> 12));
+            out[j++] = (byte) (0x80 | (0x3F & (c >>> 6)));
+            out[j++] = (byte) (0x80 | (0x3F & c));
+          } else {
+            break; // Not enough space
+          }
         } else {
+          // Surrogate pair, four UTF-8 bytes
           // If we are surrogates and we're not a surrogate pair, always throw an
           // UnpairedSurrogateException instead of an ArrayOutOfBoundsException.
-          if ((Character.MIN_SURROGATE <= c && c <= Character.MAX_SURROGATE)
-              && (i + 1 == in.length() || !Character.isSurrogatePair(c, in.charAt(i + 1)))) {
+          if (i + 1 < utf16Length && Character.isSurrogatePair(c, in.charAt(i + 1))) {
+            if (j <= limit - 4) {
+              int codePoint = Character.toCodePoint(c, in.charAt(++i));
+              out[j++] = (byte) (0xF0 | (codePoint >>> 18));
+              out[j++] = (byte) (0x80 | (0x3F & (codePoint >>> 12)));
+              out[j++] = (byte) (0x80 | (0x3F & (codePoint >>> 6)));
+              out[j++] = (byte) (0x80 | (0x3F & codePoint));
+            } else {
+              break; // Not enough space
+            }
+          } else {
             throw new UnpairedSurrogateException(i, utf16Length);
           }
-          throw new ArrayIndexOutOfBoundsException("Failed writing " + c + " at index " + j);
         }
       }
+
+      if (i < utf16Length) {
+        // This can only happen if the output buffer was too small
+        throwArrayIndexOutOfBoundsException(c, j);
+      }
+
       return j;
+    }
+
+    // Outlined for efficiency.
+    void throwArrayIndexOutOfBoundsException(char c, int index) {
+      throw new ArrayIndexOutOfBoundsException("Failed writing " + c + " at index " + index);
     }
 
     @Override
