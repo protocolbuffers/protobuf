@@ -20,7 +20,7 @@ def tmpl_cc_binary(name, gen, args, replacements = [], **kwargs):
     )
 
     if _is_google3:
-        kwargs["malloc"] = "//base:system_malloc"
+        kwargs["malloc"] = "@bazel_tools//tools/cpp:malloc"
         kwargs["features"] = ["-static_linking_mode"]
     native.cc_binary(
         name = name,
