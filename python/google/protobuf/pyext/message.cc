@@ -1900,10 +1900,9 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   // ctx has an explicit limit set (length of string_view), so we have to
   // check we ended at that limit.
   if (!ctx.EndedAtLimit()) {
-    // TODO: Raise error and return NULL instead.
-    // b/27494216
-    PyErr_Warn(nullptr, "Unexpected end-group tag: Not all data was converted");
-    return PyLong_FromLong(data.len - ctx.BytesUntilLimit(ptr));
+    PyErr_Format(DecodeError_class,
+                 "Unexpected end-group tag: Not all data was converted");
+    return nullptr;
   }
   return PyLong_FromLong(data.len);
 }
